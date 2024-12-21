@@ -1,0 +1,1703 @@
+[
+  {
+    "name": "Afghanistan",
+    "flag": "🇦🇫",
+    "code": "AF",
+    "dial_code": "+93",
+    "regex": "^\\+93\\d{9}$"
+  },
+  {
+    "name": "Åland Islands",
+    "flag": "🇦🇽",
+    "code": "AX",
+    "dial_code": "+358",
+    "regex": "^\\+358\\d{9,10}$"
+  },
+  {
+    "name": "Albania",
+    "flag": "🇦🇱",
+    "code": "AL",
+    "dial_code": "+355",
+    "regex": "^\\+355\\d{8,9}$"
+  },
+  {
+    "name": "Algeria",
+    "flag": "🇩🇿",
+    "code": "DZ",
+    "dial_code": "+213",
+    "regex": "^\\+213\\d{8,9}$"
+  },
+  {
+    "name": "American Samoa",
+    "flag": "🇦🇸",
+    "code": "AS",
+    "dial_code": "+1684",
+    "regex": "^\\+1684\\d{7}$"
+  },
+  {
+    "name": "Andorra",
+    "flag": "🇦🇩",
+    "code": "AD",
+    "dial_code": "+376",
+    "regex": "^\\+376\\d{6,9}$"
+  },
+  {
+    "name": "Angola",
+    "flag": "🇦🇴",
+    "code": "AO",
+    "dial_code": "+244",
+    "regex": "^\\+244\\d{9}$"
+  },
+  {
+    "name": "Anguilla",
+    "flag": "🇦🇮",
+    "code": "AI",
+    "dial_code": "+1264",
+    "regex": "^\\+1264\\d{7}$"
+  },
+  {
+    "name": "Antarctica",
+    "flag": "🇦🇶",
+    "code": "AQ",
+    "dial_code": "+672",
+    "regex": "^\\+672\\d{6,9}$"
+  },
+  {
+    "name": "Antigua and Barbuda",
+    "flag": "🇦🇬",
+    "code": "AG",
+    "dial_code": "+1268",
+    "regex": "^\\+1268\\d{7}$"
+  },
+  {
+    "name": "Argentina",
+    "flag": "🇦🇷",
+    "code": "AR",
+    "dial_code": "+54",
+    "regex": "^\\+54\\d{10}$"
+  },
+  {
+    "name": "Armenia",
+    "flag": "🇦🇲",
+    "code": "AM",
+    "dial_code": "+374",
+    "regex": "^\\+374\\d{8}$"
+  },
+  {
+    "name": "Aruba",
+    "flag": "🇦🇼",
+    "code": "AW",
+    "dial_code": "+297",
+    "regex": "^\\+297\\d{7}$"
+  },
+  {
+    "name": "Australia",
+    "flag": "🇦🇺",
+    "code": "AU",
+    "dial_code": "+61",
+    "regex": "^\\+61\\d{9}$"
+  },
+  {
+    "name": "Austria",
+    "flag": "🇦🇹",
+    "code": "AT",
+    "dial_code": "+43",
+    "regex": "^\\+43\\d{10}$"
+  },
+  {
+    "name": "Azerbaijan",
+    "flag": "🇦🇿",
+    "code": "AZ",
+    "dial_code": "+994",
+    "regex": "^\\+994\\d{9,10}$"
+  },
+  {
+    "name": "Bahamas",
+    "flag": "🇧🇸",
+    "code": "BS",
+    "dial_code": "+1242",
+    "regex": "^\\+1242\\d{7}$"
+  },
+  {
+    "name": "Bahrain",
+    "flag": "🇧🇭",
+    "code": "BH",
+    "dial_code": "+973",
+    "regex": "^\\+973\\d{8}$"
+  },
+  {
+    "name": "Bangladesh",
+    "flag": "🇧🇩",
+    "code": "BD",
+    "dial_code": "+880",
+    "regex": "^\\+880\\d{10}$"
+  },
+  {
+    "name": "Barbados",
+    "flag": "🇧🇧",
+    "code": "BB",
+    "dial_code": "+1246",
+    "regex": "^\\+1246\\d{7}$"
+  },
+  {
+    "name": "Belarus",
+    "flag": "🇧🇾",
+    "code": "BY",
+    "dial_code": "+375",
+    "regex": "^\\+375\\d{9}$"
+  },
+  {
+    "name": "Belgium",
+    "flag": "🇧🇪",
+    "code": "BE",
+    "dial_code": "+32",
+    "regex": "^\\+32\\d{9}$"
+  },
+  {
+    "name": "Belize",
+    "flag": "🇧🇿",
+    "code": "BZ",
+    "dial_code": "+501",
+    "regex": "^\\+501\\d{7}$"
+  },
+  {
+    "name": "Benin",
+    "flag": "🇧🇯",
+    "code": "BJ",
+    "dial_code": "+229",
+    "regex": "^\\+229\\d{8}$"
+  },
+  {
+    "name": "Bermuda",
+    "flag": "🇧🇲",
+    "code": "BM",
+    "dial_code": "+1441",
+    "regex": "^\\+1441\\d{7}$"
+  },
+  {
+    "name": "Bhutan",
+    "flag": "🇧🇹",
+    "code": "BT",
+    "dial_code": "+975",
+    "regex": "^\\+975\\d{8}$"
+  },
+  {
+    "name": "Bolivia, Plurinational State of bolivia",
+    "flag": "🇧🇴",
+    "code": "BO",
+    "dial_code": "+591",
+    "regex": "^\\+591\\d{8}$"
+  },
+  {
+    "name": "Bosnia and Herzegovina",
+    "flag": "🇧🇦",
+    "code": "BA",
+    "dial_code": "+387",
+    "regex": "^\\+387\\d{8,9}$"
+  },
+  {
+    "name": "Botswana",
+    "flag": "🇧🇼",
+    "code": "BW",
+    "dial_code": "+267",
+    "regex": "^\\+267\\d{7,8}$"
+  },
+  {
+    "name": "Bouvet Island",
+    "flag": "🇧🇻",
+    "code": "BV",
+    "dial_code": "+47",
+    "regex": "^\\+47\\d{8}$"
+  },
+  {
+    "name": "Brazil",
+    "flag": "🇧🇷",
+    "code": "BR",
+    "dial_code": "+55",
+    "regex": "^\\+55\\d{10,11}$"
+  },
+  {
+    "name": "British Indian Ocean Territory",
+    "flag": "🇮🇴",
+    "code": "IO",
+    "dial_code": "+246",
+    "regex": "^\\+246\\d{7}$"
+  },
+  {
+    "name": "Brunei Darussalam",
+    "flag": "🇧🇳",
+    "code": "BN",
+    "dial_code": "+673",
+    "regex": "^\\+673\\d{7}$"
+  },
+  {
+    "name": "Bulgaria",
+    "flag": "🇧🇬",
+    "code": "BG",
+    "dial_code": "+359",
+    "regex": "^\\+359\\d{9}$"
+  },
+  {
+    "name": "Burkina Faso",
+    "flag": "🇧🇫",
+    "code": "BF",
+    "dial_code": "+226",
+    "regex": "^\\+226\\d{8}$"
+  },
+  {
+    "name": "Burundi",
+    "flag": "🇧🇮",
+    "code": "BI",
+    "dial_code": "+257",
+    "regex": "^\\+257\\d{8}$"
+  },
+  {
+    "name": "Cambodia",
+    "flag": "🇰🇭",
+    "code": "KH",
+    "dial_code": "+855",
+    "regex": "^\\+855\\d{8,9}$"
+  },
+  {
+    "name": "Cameroon",
+    "flag": "🇨🇲",
+    "code": "CM",
+    "dial_code": "+237",
+    "regex": "^\\+237\\d{8}$"
+  },
+  {
+    "name": "Canada",
+    "flag": "🇨🇦",
+    "code": "CA",
+    "dial_code": "+1",
+    "regex": "^\\+1\\d{10}$"
+  },
+  {
+    "name": "Cape Verde",
+    "flag": "🇨🇻",
+    "code": "CV",
+    "dial_code": "+238",
+    "regex": "^\\+238\\d{7}$"
+  },
+  {
+    "name": "Cayman Islands",
+    "flag": "🇰🇾",
+    "code": "KY",
+    "dial_code": "+1345",
+    "regex": "^\\+1345\\d{7}$"
+  },
+  {
+    "name": "Central African Republic",
+    "flag": "🇨🇫",
+    "code": "CF",
+    "dial_code": "+236",
+    "regex": "^\\+236\\d{8}$"
+  },
+  {
+    "name": "Chad",
+    "flag": "🇹🇩",
+    "code": "TD",
+    "dial_code": "+235",
+    "regex": "^\\+235\\d{8}$"
+  },
+  {
+    "name": "Chile",
+    "flag": "🇨🇱",
+    "code": "CL",
+    "dial_code": "+56",
+    "regex": "^\\+56\\d{9}$"
+  },
+  {
+    "name": "China",
+    "flag": "🇨🇳",
+    "code": "CN",
+    "dial_code": "+86",
+    "regex": "^\\+86\\d{11}$"
+  },
+  {
+    "name": "Christmas Island",
+    "flag": "🇨🇽",
+    "code": "CX",
+    "dial_code": "+61",
+    "regex": "^\\+61\\d{9}$"
+  },
+  {
+    "name": "Cocos (Keeling) Islands",
+    "flag": "🇨🇨",
+    "code": "CC",
+    "dial_code": "+61",
+    "regex": "^\\+61\\d{9}$"
+  },
+  {
+    "name": "Colombia",
+    "flag": "🇨🇴",
+    "code": "CO",
+    "dial_code": "+57",
+    "regex": "^\\+57\\d{10}$"
+  },
+  {
+    "name": "Comoros",
+    "flag": "🇰🇲",
+    "code": "KM",
+    "dial_code": "+269",
+    "regex": "^\\+269\\d{7}$"
+  },
+  {
+    "name": "Congo",
+    "flag": "🇨🇬",
+    "code": "CG",
+    "dial_code": "+242",
+    "regex": "^\\+242\\d{9}$"
+  },
+  {
+    "name": "Congo, The Democratic Republic of the Congo",
+    "flag": "🇨🇩",
+    "code": "CD",
+    "dial_code": "+243",
+    "regex": "^\\+243\\d{9}$"
+  },
+  {
+    "name": "Cook Islands",
+    "flag": "🇨🇰",
+    "code": "CK",
+    "dial_code": "+682",
+    "regex": "^\\+682\\d{5}$"
+  },
+  {
+    "name": "Costa Rica",
+    "flag": "🇨🇷",
+    "code": "CR",
+    "dial_code": "+506",
+    "regex": "^\\+506\\d{8}$"
+  },
+  {
+    "name": "Cote d’Ivoire",
+    "flag": "🇨🇮",
+    "code": "CI",
+    "dial_code": "+225",
+    "regex": "^\\+225\\d{8}$"
+  },
+  {
+    "name": "Croatia",
+    "flag": "🇭🇷",
+    "code": "HR",
+    "dial_code": "+385",
+    "regex": "^\\+385\\d{8,9}$"
+  },
+  {
+    "name": "Cuba",
+    "flag": "🇨🇺",
+    "code": "CU",
+    "dial_code": "+53",
+    "regex": "^\\+53\\d{8}$"
+  },
+  {
+    "name": "Cyprus",
+    "flag": "🇨🇾",
+    "code": "CY",
+    "dial_code": "+357",
+    "regex": "^\\+357\\d{8}$"
+  },
+  {
+    "name": "Czech Republic",
+    "flag": "🇨🇿",
+    "code": "CZ",
+    "dial_code": "+420",
+    "regex": "^\\+420\\d{9}$"
+  },
+  {
+    "name": "Denmark",
+    "flag": "🇩🇰",
+    "code": "DK",
+    "dial_code": "+45",
+    "regex": "^\\+45\\d{8}$"
+  },
+  {
+    "name": "Djibouti",
+    "flag": "🇩🇯",
+    "code": "DJ",
+    "dial_code": "+253",
+    "regex": "^\\+253\\d{8}$"
+  },
+  {
+    "name": "Dominica",
+    "flag": "🇩🇲",
+    "code": "DM",
+    "dial_code": "+1767",
+    "regex": "^\\+1767\\d{7}$"
+  },
+  {
+    "name": "Dominican Republic",
+    "flag": "🇩🇴",
+    "code": "DO",
+    "dial_code": "+1849",
+    "regex": "^\\+1849\\d{10}$"
+  },
+  {
+    "name": "Ecuador",
+    "flag": "🇪🇨",
+    "code": "EC",
+    "dial_code": "+593",
+    "regex": "^\\+593\\d{9}$"
+  },
+  {
+    "name": "Egypt",
+    "flag": "🇪🇬",
+    "code": "EG",
+    "dial_code": "+20",
+    "regex": "^\\+20\\d{10}$"
+  },
+  {
+    "name": "El Salvador",
+    "flag": "🇸🇻",
+    "code": "SV",
+    "dial_code": "+503",
+    "regex": "^\\+503\\d{8}$"
+  },
+  {
+    "name": "Equatorial Guinea",
+    "flag": "🇬🇶",
+    "code": "GQ",
+    "dial_code": "+240",
+    "regex": "^\\+240\\d{9}$"
+  },
+  {
+    "name": "Eritrea",
+    "flag": "🇪🇷",
+    "code": "ER",
+    "dial_code": "+291",
+    "regex": "^\\+291\\d{7}$"
+  },
+  {
+    "name": "Estonia",
+    "flag": "🇪🇪",
+    "code": "EE",
+    "dial_code": "+372",
+    "regex": "^\\+372\\d{7,8}$"
+  },
+  {
+    "name": "Ethiopia",
+    "flag": "🇪🇹",
+    "code": "ET",
+    "dial_code": "+251",
+    "regex": "^\\+251\\d{9}$"
+  },
+  {
+    "name": "Falkland Islands (Malvinas)",
+    "flag": "🇫🇰",
+    "code": "FK",
+    "dial_code": "+500",
+    "regex": "^\\+500\\d{5}$"
+  },
+  {
+    "name": "Faroe Islands",
+    "flag": "🇫🇴",
+    "code": "FO",
+    "dial_code": "+298",
+    "regex": "^\\+298\\d{6}$"
+  },
+  {
+    "name": "Fiji",
+    "flag": "🇫🇯",
+    "code": "FJ",
+    "dial_code": "+679",
+    "regex": "^\\+679\\d{7}$"
+  },
+  {
+    "name": "Finland",
+    "flag": "🇫🇮",
+    "code": "FI",
+    "dial_code": "+358",
+    "regex": "^\\+358\\d{9,10}$"
+  },
+  {
+    "name": "France",
+    "flag": "🇫🇷",
+    "code": "FR",
+    "dial_code": "+33",
+    "regex": "^\\+33\\d{9}$"
+  },
+  {
+    "name": "French Guiana",
+    "flag": "🇬🇫",
+    "code": "GF",
+    "dial_code": "+594",
+    "regex": "^\\+594\\d{9}$"
+  },
+  {
+    "name": "French Polynesia",
+    "flag": "🇵🇫",
+    "code": "PF",
+    "dial_code": "+689",
+    "regex": "^\\+689\\d{6}$"
+  },
+  {
+    "name": "French Southern Territories",
+    "flag": "🇹🇫",
+    "code": "TF",
+    "dial_code": "+262",
+    "regex": "^\\+262\\d{9}$"
+  },
+  {
+    "name": "Gabon",
+    "flag": "🇬🇦",
+    "code": "GA",
+    "dial_code": "+241",
+    "regex": "^\\+241\\d{7}$"
+  },
+  {
+    "name": "Gambia",
+    "flag": "🇬🇲",
+    "code": "GM",
+    "dial_code": "+220",
+    "regex": "^\\+220\\d{7}$"
+  },
+  {
+    "name": "Georgia",
+    "flag": "🇬🇪",
+    "code": "GE",
+    "dial_code": "+995",
+    "regex": "^\\+995\\d{8,9}$"
+  },
+  {
+    "name": "Germany",
+    "flag": "🇩🇪",
+    "code": "DE",
+    "dial_code": "+49",
+    "regex": "^\\+49\\d{10}$"
+  },
+  {
+    "name": "Ghana",
+    "flag": "🇬🇭",
+    "code": "GH",
+    "dial_code": "+233",
+    "regex": "^\\+233\\d{9}$"
+  },
+  {
+    "name": "Gibraltar",
+    "flag": "🇬🇮",
+    "code": "GI",
+    "dial_code": "+350",
+    "regex": "^\\+350\\d{8}$"
+  },
+  {
+    "name": "Greece",
+    "flag": "🇬🇷",
+    "code": "GR",
+    "dial_code": "+30",
+    "regex": "^\\+30\\d{10}$"
+  },
+  {
+    "name": "Greenland",
+    "flag": "🇬🇱",
+    "code": "GL",
+    "dial_code": "+299",
+    "regex": "^\\+299\\d{6}$"
+  },
+  {
+    "name": "Grenada",
+    "flag": "🇬🇩",
+    "code": "GD",
+    "dial_code": "+1473",
+    "regex": "^\\+1473\\d{7}$"
+  },
+  {
+    "name": "Guadeloupe",
+    "flag": "🇬🇵",
+    "code": "GP",
+    "dial_code": "+590",
+    "regex": "^\\+590\\d{9}$"
+  },
+  {
+    "name": "Guam",
+    "flag": "🇬🇺",
+    "code": "GU",
+    "dial_code": "+1671",
+    "regex": "^\\+1671\\d{7}$"
+  },
+  {
+    "name": "Guatemala",
+    "flag": "🇬🇹",
+    "code": "GT",
+    "dial_code": "+502",
+    "regex": "^\\+502\\d{8}$"
+  },
+  {
+    "name": "Guernsey",
+    "flag": "🇬🇬",
+    "code": "GG",
+    "dial_code": "+44",
+    "regex": "^\\+44\\d{10}$"
+  },
+  {
+    "name": "Guinea",
+    "flag": "🇬🇳",
+    "code": "GN",
+    "dial_code": "+224",
+    "regex": "^\\+224\\d{9}$"
+  },
+  {
+    "name": "Guinea-Bissau",
+    "flag": "🇬🇼",
+    "code": "GW",
+    "dial_code": "+245",
+    "regex": "^\\+245\\d{7}$"
+  },
+  {
+    "name": "Guyana",
+    "flag": "🇬🇾",
+    "code": "GY",
+    "dial_code": "+592",
+    "regex": "^\\+592\\d{7}$"
+  },
+  {
+    "name": "Haiti",
+    "flag": "🇭🇹",
+    "code": "HT",
+    "dial_code": "+509",
+    "regex": "^\\+509\\d{8}$"
+  },
+  {
+    "name": "Honduras",
+    "flag": "🇭🇳",
+    "code": "HN",
+    "dial_code": "+504",
+    "regex": "^\\+504\\d{8}$"
+  },
+  {
+    "name": "Hong Kong",
+    "flag": "🇭🇰",
+    "code": "HK",
+    "dial_code": "+852",
+    "regex": "^\\+852\\d{8}$"
+  },
+  {
+    "name": "Hungary",
+    "flag": "🇭🇺",
+    "code": "HU",
+    "dial_code": "+36",
+    "regex": "^\\+36\\d{9}$"
+  },
+  {
+    "name": "Iceland",
+    "flag": "🇮🇸",
+    "code": "IS",
+    "dial_code": "+354",
+    "regex": "^\\+354\\d{7}$"
+  },
+  {
+    "name": "India",
+    "flag": "🇮🇳",
+    "code": "IN",
+    "dial_code": "+91",
+    "regex": "^\\+91\\d{10}$"
+  },
+  {
+    "name": "Indonesia",
+    "flag": "🇮🇩",
+    "code": "ID",
+    "dial_code": "+62",
+    "regex": "^\\+62\\d{9,10}$"
+  },
+  {
+    "name": "Iran, Islamic Republic of Persian Gulf",
+    "flag": "🇮🇷",
+    "code": "IR",
+    "dial_code": "+98",
+    "regex": "^\\+98\\d{10}$"
+  },
+  {
+    "name": "Iraq",
+    "flag": "🇮🇶",
+    "code": "IQ",
+    "dial_code": "+964",
+    "regex": "^\\+964\\d{10}$"
+  },
+  {
+    "name": "Ireland",
+    "flag": "🇮🇪",
+    "code": "IE",
+    "dial_code": "+353",
+    "regex": "^\\+353\\d{9}$"
+  },
+  {
+    "name": "Isle of Man",
+    "flag": "🇮🇲",
+    "code": "IM",
+    "dial_code": "+44",
+    "regex": "^\\+44\\d{10}$"
+  },
+  {
+    "name": "Israel",
+    "flag": "🇮🇱",
+    "code": "IL",
+    "dial_code": "+972",
+    "regex": "^\\+972\\d{9}$"
+  },
+  {
+    "name": "Italy",
+    "flag": "🇮🇹",
+    "code": "IT",
+    "dial_code": "+39",
+    "regex": "^\\+39\\d{10}$"
+  },
+  {
+    "name": "Jamaica",
+    "flag": "🇯🇲",
+    "code": "JM",
+    "dial_code": "+1876",
+    "regex": "^\\+1876\\d{7}$"
+  },
+  {
+    "name": "Japan",
+    "flag": "🇯🇵",
+    "code": "JP",
+    "dial_code": "+81",
+    "regex": "^\\+81\\d{10}$"
+  },
+  {
+    "name": "Jersey",
+    "flag": "🇯🇪",
+    "code": "JE",
+    "dial_code": "+44",
+    "regex": "^\\+44\\d{10}$"
+  },
+  {
+    "name": "Jordan",
+    "flag": "🇯🇴",
+    "code": "JO",
+    "dial_code": "+962",
+    "regex": "^\\+962\\d{9}$"
+  },
+  {
+    "name": "Kazakhstan",
+    "flag": "🇰🇿",
+    "code": "KZ",
+    "dial_code": "+7",
+    "regex": "^\\+7\\d{10}$"
+  },
+  {
+    "name": "Kenya",
+    "flag": "🇰🇪",
+    "code": "KE",
+    "dial_code": "+254",
+    "regex": "^\\+254\\d{9}$"
+  },
+  {
+    "name": "Kiribati",
+    "flag": "🇰🇮",
+    "code": "KI",
+    "dial_code": "+686",
+    "regex": "^\\+686\\d{5}$"
+  },
+  {
+    "name": "Korea, Democratic People's Republic of Korea",
+    "flag": "🇰🇵",
+    "code": "KP",
+    "dial_code": "+850",
+    "regex": "^\\+850\\d{9}$"
+  },
+  {
+    "name": "Korea, Republic of South Korea",
+    "flag": "🇰🇷",
+    "code": "KR",
+    "dial_code": "+82",
+    "regex": "^\\+82\\d{9}$"
+  },
+  {
+    "name": "Kuwait",
+    "flag": "🇰🇼",
+    "code": "KW",
+    "dial_code": "+965",
+    "regex": "^\\+965\\d{8}$"
+  },
+  {
+    "name": "Kyrgyzstan",
+    "flag": "🇰🇬",
+    "code": "KG",
+    "dial_code": "+996",
+    "regex": "^\\+996\\d{9}$"
+  },
+  {
+    "name": "Laos",
+    "flag": "🇱🇦",
+    "code": "LA",
+    "dial_code": "+856",
+    "regex": "^\\+856\\d{9}$"
+  },
+  {
+    "name": "Latvia",
+    "flag": "🇱🇻",
+    "code": "LV",
+    "dial_code": "+371",
+    "regex": "^\\+371\\d{8}$"
+  },
+  {
+    "name": "Lebanon",
+    "flag": "🇱🇧",
+    "code": "LB",
+    "dial_code": "+961",
+    "regex": "^\\+961\\d{7,8}$"
+  },
+  {
+    "name": "Lesotho",
+    "flag": "🇱🇸",
+    "code": "LS",
+    "dial_code": "+266",
+    "regex": "^\\+266\\d{8}$"
+  },
+  {
+    "name": "Liberia",
+    "flag": "🇱🇷",
+    "code": "LR",
+    "dial_code": "+231",
+    "regex": "^\\+231\\d{7,8}$"
+  },
+  {
+    "name": "Libyan Arab Jamahiriya",
+    "flag": "🇱🇾",
+    "code": "LY",
+    "dial_code": "+218",
+    "regex": "^\\+218\\d{9}$"
+  },
+  {
+    "name": "Liechtenstein",
+    "flag": "🇱🇮",
+    "code": "LI",
+    "dial_code": "+423",
+    "regex": "^\\+423\\d{7}$"
+  },
+  {
+    "name": "Lithuania",
+    "flag": "🇱🇹",
+    "code": "LT",
+    "dial_code": "+370",
+    "regex": "^\\+370\\d{8}$"
+  },
+  {
+    "name": "Luxembourg",
+    "flag": "🇱🇺",
+    "code": "LU",
+    "dial_code": "+352",
+    "regex": "^\\+352\\d{9}$"
+  },
+  {
+    "name": "Macao",
+    "flag": "🇲🇴",
+    "code": "MO",
+    "dial_code": "+853",
+    "regex": "^\\+853\\d{8}$"
+  },
+  {
+    "name": "Macedonia",
+    "flag": "🇲🇰",
+    "code": "MK",
+    "dial_code": "+389",
+    "regex": "^\\+389\\d{8}$"
+  },
+  {
+    "name": "Madagascar",
+    "flag": "🇲🇬",
+    "code": "MG",
+    "dial_code": "+261",
+    "regex": "^\\+261\\d{9}$"
+  },
+  {
+    "name": "Malawi",
+    "flag": "🇲🇼",
+    "code": "MW",
+    "dial_code": "+265",
+    "regex": "^\\+265\\d{7,9}$"
+  },
+  {
+    "name": "Malaysia",
+    "flag": "🇲🇾",
+    "code": "MY",
+    "dial_code": "+60",
+    "regex": "^\\+60\\d{9}$"
+  },
+  {
+    "name": "Maldives",
+    "flag": "🇲🇻",
+    "code": "MV",
+    "dial_code": "+960",
+    "regex": "^\\+960\\d{7}$"
+  },
+  {
+    "name": "Mali",
+    "flag": "🇲🇱",
+    "code": "ML",
+    "dial_code": "+223",
+    "regex": "^\\+223\\d{8}$"
+  },
+  {
+    "name": "Malta",
+    "flag": "🇲🇹",
+    "code": "MT",
+    "dial_code": "+356",
+    "regex": "^\\+356\\d{8}$"
+  },
+  {
+    "name": "Marshall Islands",
+    "flag": "🇲🇭",
+    "code": "MH",
+    "dial_code": "+692",
+    "regex": "^\\+692\\d{7}$"
+  },
+  {
+    "name": "Martinique",
+    "flag": "🇲🇶",
+    "code": "MQ",
+    "dial_code": "+596",
+    "regex": "^\\+596\\d{9}$"
+  },
+  {
+    "name": "Mauritania",
+    "flag": "🇲🇷",
+    "code": "MR",
+    "dial_code": "+222",
+    "regex": "^\\+222\\d{8}$"
+  },
+  {
+    "name": "Mauritius",
+    "flag": "🇲🇺",
+    "code": "MU",
+    "dial_code": "+230",
+    "regex": "^\\+230\\d{7}$"
+  },
+  {
+    "name": "Mayotte",
+    "flag": "🇾🇹",
+    "code": "YT",
+    "dial_code": "+262",
+    "regex": "^\\+262\\d{9}$"
+  },
+  {
+    "name": "Mexico",
+    "flag": "🇲🇽",
+    "code": "MX",
+    "dial_code": "+52",
+    "regex": "^\\+52\\d{10}$"
+  },
+  {
+    "name": "Micronesia, Federated States of Micronesia",
+    "flag": "🇫🇲",
+    "code": "FM",
+    "dial_code": "+691",
+    "regex": "^\\+691\\d{7}$"
+  },
+  {
+    "name": "Moldova",
+    "flag": "🇲🇩",
+    "code": "MD",
+    "dial_code": "+373",
+    "regex": "^\\+373\\d{8}$"
+  },
+  {
+    "name": "Monaco",
+    "flag": "🇲🇨",
+    "code": "MC",
+    "dial_code": "+377",
+    "regex": "^\\+377\\d{8}$"
+  },
+  {
+    "name": "Mongolia",
+    "flag": "🇲🇳",
+    "code": "MN",
+    "dial_code": "+976",
+    "regex": "^\\+976\\d{8}$"
+  },
+  {
+    "name": "Montenegro",
+    "flag": "🇲🇪",
+    "code": "ME",
+    "dial_code": "+382",
+    "regex": "^\\+382\\d{8}$"
+  },
+  {
+    "name": "Montserrat",
+    "flag": "🇲🇸",
+    "code": "MS",
+    "dial_code": "+1664",
+    "regex": "^\\+1664\\d{7}$"
+  },
+  {
+    "name": "Morocco",
+    "flag": "🇲🇦",
+    "code": "MA",
+    "dial_code": "+212",
+    "regex": "^\\+212\\d{9}$"
+  },
+  {
+    "name": "Mozambique",
+    "flag": "🇲🇿",
+    "code": "MZ",
+    "dial_code": "+258",
+    "regex": "^\\+258\\d{9}$"
+  },
+  {
+    "name": "Myanmar",
+    "flag": "🇲🇲",
+    "code": "MM",
+    "dial_code": "+95",
+    "regex": "^\\+95\\d{8}$"
+  },
+  {
+    "name": "Namibia",
+    "flag": "🇳🇦",
+    "code": "NA",
+    "dial_code": "+264",
+    "regex": "^\\+264\\d{9}$"
+  },
+  {
+    "name": "Nauru",
+    "flag": "🇳🇷",
+    "code": "NR",
+    "dial_code": "+674",
+    "regex": "^\\+674\\d{5}$"
+  },
+  {
+    "name": "Nepal",
+    "flag": "🇳🇵",
+    "code": "NP",
+    "dial_code": "+977",
+    "regex": "^\\+977\\d{10}$"
+  },
+  {
+    "name": "Netherlands",
+    "flag": "🇳🇱",
+    "code": "NL",
+    "dial_code": "+31",
+    "regex": "^\\+31\\d{9}$"
+  },
+  {
+    "name": "Netherlands Antilles",
+    "flag": "🇦🇳",
+    "code": "AN",
+    "dial_code": "+599",
+    "regex": "^\\+599\\d{7}$"
+  },
+  {
+    "name": "New Caledonia",
+    "flag": "🇳🇨",
+    "code": "NC",
+    "dial_code": "+687",
+    "regex": "^\\+687\\d{6}$"
+  },
+  {
+    "name": "New Zealand",
+    "flag": "🇳🇿",
+    "code": "NZ",
+    "dial_code": "+64",
+    "regex": "^\\+64\\d{8}$"
+  },
+  {
+    "name": "Nicaragua",
+    "flag": "🇳🇮",
+    "code": "NI",
+    "dial_code": "+505",
+    "regex": "^\\+505\\d{8}$"
+  },
+  {
+    "name": "Niger",
+    "flag": "🇳🇪",
+    "code": "NE",
+    "dial_code": "+227",
+    "regex": "^\\+227\\d{8}$"
+  },
+  {
+    "name": "Nigeria",
+    "flag": "🇳🇬",
+    "code": "NG",
+    "dial_code": "+234",
+    "regex": "^\\+234\\d{10}$"
+  },
+  {
+    "name": "Niue",
+    "flag": "🇳🇺",
+    "code": "NU",
+    "dial_code": "+683",
+    "regex": "^\\+683\\d{4}$"
+  },
+  {
+    "name": "Norfolk Island",
+    "flag": "🇳🇫",
+    "code": "NF",
+    "dial_code": "+672",
+    "regex": "^\\+672\\d{5}$"
+  },
+  {
+    "name": "Northern Mariana Islands",
+    "flag": "🇲🇵",
+    "code": "MP",
+    "dial_code": "+1670",
+    "regex": "^\\+1670\\d{7}$"
+  },
+  {
+    "name": "Norway",
+    "flag": "🇳🇴",
+    "code": "NO",
+    "dial_code": "+47",
+    "regex": "^\\+47\\d{8}$"
+  },
+  {
+    "name": "Oman",
+    "flag": "🇴🇲",
+    "code": "OM",
+    "dial_code": "+968",
+    "regex": "^\\+968\\d{8}$"
+  },
+  {
+    "name": "Pakistan",
+    "flag": "🇵🇰",
+    "code": "PK",
+    "dial_code": "+92",
+    "regex": "^\\+92\\d{10}$"
+  },
+  {
+    "name": "Palau",
+    "flag": "🇵🇼",
+    "code": "PW",
+    "dial_code": "+680",
+    "regex": "^\\+680\\d{7}$"
+  },
+  {
+    "name": "Palestinian Territory, Occupied",
+    "flag": "🇵🇸",
+    "code": "PS",
+    "dial_code": "+970",
+    "regex": "^\\+970\\d{9}$"
+  },
+  {
+    "name": "Panama",
+    "flag": "🇵🇦",
+    "code": "PA",
+    "dial_code": "+507",
+    "regex": "^\\+507\\d{8}$"
+  },
+  {
+    "name": "Papua New Guinea",
+    "flag": "🇵🇬",
+    "code": "PG",
+    "dial_code": "+675",
+    "regex": "^\\+675\\d{8}$"
+  },
+  {
+    "name": "Paraguay",
+    "flag": "🇵🇾",
+    "code": "PY",
+    "dial_code": "+595",
+    "regex": "^\\+595\\d{9}$"
+  },
+  {
+    "name": "Peru",
+    "flag": "🇵🇪",
+    "code": "PE",
+    "dial_code": "+51",
+    "regex": "^\\+51\\d{9}$"
+  },
+  {
+    "name": "Philippines",
+    "flag": "🇵🇭",
+    "code": "PH",
+    "dial_code": "+63",
+    "regex": "^\\+63\\d{10}$"
+  },
+  {
+    "name": "Pitcairn",
+    "flag": "🇵🇳",
+    "code": "PN",
+    "dial_code": "+872",
+    "regex": "^\\+872\\d{6}$"
+  },
+  {
+    "name": "Poland",
+    "flag": "🇵🇱",
+    "code": "PL",
+    "dial_code": "+48",
+    "regex": "^\\+48\\d{9}$"
+  },
+  {
+    "name": "Portugal",
+    "flag": "🇵🇹",
+    "code": "PT",
+    "dial_code": "+351",
+    "regex": "^\\+351\\d{9}$"
+  },
+  {
+    "name": "Puerto Rico",
+    "flag": "🇵🇷",
+    "code": "PR",
+    "dial_code": "+1939",
+    "regex": "^\\+1939\\d{7}$"
+  },
+  {
+    "name": "Qatar",
+    "flag": "🇶🇦",
+    "code": "QA",
+    "dial_code": "+974",
+    "regex": "^\\+974\\d{8}$"
+  },
+  {
+    "name": "Romania",
+    "flag": "🇷🇴",
+    "code": "RO",
+    "dial_code": "+40",
+    "regex": "^\\+40\\d{9}$"
+  },
+  {
+    "name": "Russia",
+    "flag": "🇷🇺",
+    "code": "RU",
+    "dial_code": "+7",
+    "regex": "^\\+7\\d{10}$"
+  },
+  {
+    "name": "Rwanda",
+    "flag": "🇷🇼",
+    "code": "RW",
+    "dial_code": "+250",
+    "regex": "^\\+250\\d{9}$"
+  },
+  {
+    "name": "Reunion",
+    "flag": "🇷🇪",
+    "code": "RE",
+    "dial_code": "+262",
+    "regex": "^\\+262\\d{9}$"
+  },
+  {
+    "name": "Saint Barthelemy",
+    "flag": "🇧🇱",
+    "code": "BL",
+    "dial_code": "+590",
+    "regex": "^\\+590\\d{9}$"
+  },
+  {
+    "name": "Saint Helena, Ascension and Tristan Da Cunha",
+    "flag": "🇸🇭",
+    "code": "SH",
+    "dial_code": "+290",
+    "regex": "^\\+290\\d{4}$"
+  },
+  {
+    "name": "Saint Kitts and Nevis",
+    "flag": "🇰🇳",
+    "code": "KN",
+    "dial_code": "+1869",
+    "regex": "^\\+1869\\d{7}$"
+  },
+  {
+    "name": "Saint Lucia",
+    "flag": "🇱🇨",
+    "code": "LC",
+    "dial_code": "+1758",
+    "regex": "^\\+1758\\d{7}$"
+  },
+  {
+    "name": "Saint Martin",
+    "flag": "🇲🇫",
+    "code": "MF",
+    "dial_code": "+590",
+    "regex": "^\\+590\\d{9}$"
+  },
+  {
+    "name": "Saint Pierre and Miquelon",
+    "flag": "🇵🇲",
+    "code": "PM",
+    "dial_code": "+508",
+    "regex": "^\\+508\\d{6}$"
+  },
+  {
+    "name": "Saint Vincent and the Grenadines",
+    "flag": "🇻🇨",
+    "code": "VC",
+    "dial_code": "+1784",
+    "regex": "^\\+1784\\d{7}$"
+  },
+  {
+    "name": "Samoa",
+    "flag": "🇼🇸",
+    "code": "WS",
+    "dial_code": "+685",
+    "regex": "^\\+685\\d{5}$"
+  },
+  {
+    "name": "San Marino",
+    "flag": "🇸🇲",
+    "code": "SM",
+    "dial_code": "+378",
+    "regex": "^\\+378\\d{10}$"
+  },
+  {
+    "name": "Sao Tome and Principe",
+    "flag": "🇸🇹",
+    "code": "ST",
+    "dial_code": "+239",
+    "regex": "^\\+239\\d{7}$"
+  },
+  {
+    "name": "Saudi Arabia",
+    "flag": "🇸🇦",
+    "code": "SA",
+    "dial_code": "+966",
+    "regex": "^\\+966\\d{9}$"
+  },
+  {
+    "name": "Senegal",
+    "flag": "🇸🇳",
+    "code": "SN",
+    "dial_code": "+221",
+    "regex": "^\\+221\\d{9}$"
+  },
+  {
+    "name": "Serbia",
+    "flag": "🇷🇸",
+    "code": "RS",
+    "dial_code": "+381",
+    "regex": "^\\+381\\d{9}$"
+  },
+  {
+    "name": "Seychelles",
+    "flag": "🇸🇨",
+    "code": "SC",
+    "dial_code": "+248",
+    "regex": "^\\+248\\d{6}$"
+  },
+  {
+    "name": "Sierra Leone",
+    "flag": "🇸🇱",
+    "code": "SL",
+    "dial_code": "+232",
+    "regex": "^\\+232\\d{8}$"
+  },
+  {
+    "name": "Singapore",
+    "flag": "🇸🇬",
+    "code": "SG",
+    "dial_code": "+65",
+    "regex": "^\\+65\\d{8}$"
+  },
+  {
+    "name": "Slovakia",
+    "flag": "🇸🇰",
+    "code": "SK",
+    "dial_code": "+421",
+    "regex": "^\\+421\\d{9}$"
+  },
+  {
+    "name": "Slovenia",
+    "flag": "🇸🇮",
+    "code": "SI",
+    "dial_code": "+386",
+    "regex": "^\\+386\\d{8}$"
+  },
+  {
+    "name": "Solomon Islands",
+    "flag": "🇸🇧",
+    "code": "SB",
+    "dial_code": "+677",
+    "regex": "^\\+677\\d{5}$"
+  },
+  {
+    "name": "Somalia",
+    "flag": "🇸🇴",
+    "code": "SO",
+    "dial_code": "+252",
+    "regex": "^\\+252\\d{7}$"
+  },
+  {
+    "name": "South Africa",
+    "flag": "🇿🇦",
+    "code": "ZA",
+    "dial_code": "+27",
+    "regex": "^\\+27\\d{9}$"
+  },
+  {
+    "name": "South Georgia and the South Sandwich Islands",
+    "flag": "🇬🇸",
+    "code": "GS",
+    "dial_code": "+500",
+    "regex": "^\\+500\\d{5}$"
+  },
+  {
+    "name": "South Sudan",
+    "flag": "🇸🇸",
+    "code": "SS",
+    "dial_code": "+211",
+    "regex": "^\\+211\\d{9}$"
+  },
+  {
+    "name": "Spain",
+    "flag": "🇪🇸",
+    "code": "ES",
+    "dial_code": "+34",
+    "regex": "^\\+34\\d{9}$"
+  },
+  {
+    "name": "Sri Lanka",
+    "flag": "🇱🇰",
+    "code": "LK",
+    "dial_code": "+94",
+    "regex": "^\\+94\\d{9}$"
+  },
+  {
+    "name": "Sudan",
+    "flag": "🇸🇩",
+    "code": "SD",
+    "dial_code": "+249",
+    "regex": "^\\+249\\d{9}$"
+  },
+  {
+    "name": "Suriname",
+    "flag": "🇸🇷",
+    "code": "SR",
+    "dial_code": "+597",
+    "regex": "^\\+597\\d{6}$"
+  },
+  {
+    "name": "Svalbard and Jan Mayen",
+    "flag": "🇸🇯",
+    "code": "SJ",
+    "dial_code": "+47",
+    "regex": "^\\+47\\d{8}$"
+  },
+  {
+    "name": "Swaziland",
+    "flag": "🇸🇿",
+    "code": "SZ",
+    "dial_code": "+268",
+    "regex": "^\\+268\\d{8}$"
+  },
+  {
+    "name": "Sweden",
+    "flag": "🇸🇪",
+    "code": "SE",
+    "dial_code": "+46",
+    "regex": "^\\+46\\d{9}$"
+  },
+  {
+    "name": "Switzerland",
+    "flag": "🇨🇭",
+    "code": "CH",
+    "dial_code": "+41",
+    "regex": "^\\+41\\d{9}$"
+  },
+  {
+    "name": "Syrian Arab Republic",
+    "flag": "🇸🇾",
+    "code": "SY",
+    "dial_code": "+963",
+    "regex": "^\\+963\\d{9}$"
+  },
+  {
+    "name": "Taiwan",
+    "flag": "🇹🇼",
+    "code": "TW",
+    "dial_code": "+886",
+    "regex": "^\\+886\\d{9}$"
+  },
+  {
+    "name": "Tajikistan",
+    "flag": "🇹🇯",
+    "code": "TJ",
+    "dial_code": "+992",
+    "regex": "^\\+992\\d{9}$"
+  },
+  {
+    "name": "Tanzania, United Republic of Tanzania",
+    "flag": "🇹🇿",
+    "code": "TZ",
+    "dial_code": "+255",
+    "regex": "^\\+255\\d{9}$"
+  },
+  {
+    "name": "Thailand",
+    "flag": "🇹🇭",
+    "code": "TH",
+    "dial_code": "+66",
+    "regex": "^\\+66\\d{9}$"
+  },
+  {
+    "name": "Timor-Leste",
+    "flag": "🇹🇱",
+    "code": "TL",
+    "dial_code": "+670",
+    "regex": "^\\+670\\d{7,8}$"
+  },
+  {
+    "name": "Togo",
+    "flag": "🇹🇬",
+    "code": "TG",
+    "dial_code": "+228",
+    "regex": "^\\+228\\d{8}$"
+  },
+  {
+    "name": "Tokelau",
+    "flag": "🇹🇰",
+    "code": "TK",
+    "dial_code": "+690",
+    "regex": "^\\+690\\d{4}$"
+  },
+  {
+    "name": "Tonga",
+    "flag": "🇹🇴",
+    "code": "TO",
+    "dial_code": "+676",
+    "regex": "^\\+676\\d{5}$"
+  },
+  {
+    "name": "Trinidad and Tobago",
+    "flag": "🇹🇹",
+    "code": "TT",
+    "dial_code": "+1868",
+    "regex": "^\\+1868\\d{7}$"
+  },
+  {
+    "name": "Tunisia",
+    "flag": "🇹🇳",
+    "code": "TN",
+    "dial_code": "+216",
+    "regex": "^\\+216\\d{8}$"
+  },
+  {
+    "name": "Turkey",
+    "flag": "🇹🇷",
+    "code": "TR",
+    "dial_code": "+90",
+    "regex": "^\\+90\\d{10}$"
+  },
+  {
+    "name": "Turkmenistan",
+    "flag": "🇹🇲",
+    "code": "TM",
+    "dial_code": "+993",
+    "regex": "^\\+993\\d{8}$"
+  },
+  {
+    "name": "Turks and Caicos Islands",
+    "flag": "🇹🇨",
+    "code": "TC",
+    "dial_code": "+1649",
+    "regex": "^\\+1649\\d{7}$"
+  },
+  {
+    "name": "Tuvalu",
+    "flag": "🇹🇻",
+    "code": "TV",
+    "dial_code": "+688",
+    "regex": "^\\+688\\d{5}$"
+  },
+  {
+    "name": "Uganda",
+    "flag": "🇺🇬",
+    "code": "UG",
+    "dial_code": "+256",
+    "regex": "^\\+256\\d{9}$"
+  },
+  {
+    "name": "Ukraine",
+    "flag": "🇺🇦",
+    "code": "UA",
+    "dial_code": "+380",
+    "regex": "^\\+380\\d{9}$"
+  },
+  {
+    "name": "United Arab Emirates",
+    "flag": "🇦🇪",
+    "code": "AE",
+    "dial_code": "+971",
+    "regex": "^\\+971\\d{9}$"
+  },
+  {
+    "name": "United Kingdom",
+    "flag": "🇬🇧",
+    "code": "GB",
+    "dial_code": "+44",
+    "regex": "^\\+44\\d{10}$"
+  },
+  {
+    "name": "United States",
+    "flag": "🇺🇸",
+    "code": "US",
+    "dial_code": "+1",
+    "regex": "^\\+1\\d{10}$"
+  },
+  {
+    "name": "Uruguay",
+    "flag": "🇺🇾",
+    "code": "UY",
+    "dial_code": "+598",
+    "regex": "^\\+598\\d{9}$"
+  },
+  {
+    "name": "Uzbekistan",
+    "flag": "🇺🇿",
+    "code": "UZ",
+    "dial_code": "+998",
+    "regex": "^\\+998\\d{9}$"
+  },
+  {
+    "name": "Vanuatu",
+    "flag": "🇻🇺",
+    "code": "VU",
+    "dial_code": "+678",
+    "regex": "^\\+678\\d{5}$"
+  },
+  {
+    "name": "Venezuela, Bolivarian Republic of Venezuela",
+    "flag": "🇻🇪",
+    "code": "VE",
+    "dial_code": "+58",
+    "regex": "^\\+58\\d{10}$"
+  },
+  {
+    "name": "Vietnam",
+    "flag": "🇻🇳",
+    "code": "VN",
+    "dial_code": "+84",
+    "regex": "^\\+84\\d{9}$"
+  },
+  {
+    "name": "Virgin Islands, British",
+    "flag": "🇻🇬",
+    "code": "VG",
+    "dial_code": "+1284",
+    "regex": "^\\+1284\\d{7}$"
+  },
+  {
+    "name": "Virgin Islands, U.S.",
+    "flag": "🇻🇮",
+    "code": "VI",
+    "dial_code": "+1 340",
+    "regex": "^\\+1 340\\d{7}$"
+  },
+  {
+    "name": "Wallis and Futuna",
+    "flag": "🇼🇫",
+    "code": "WF",
+    "dial_code": "+681",
+    "regex": "^\\+681\\d{6}$"
+  },
+  {
+    "name": "Yemen",
+    "flag": "🇾🇪",
+    "code": "YE",
+    "dial_code": "+967",
+    "regex": "^\\+967\\d{7}$"
+  },
+  {
+    "name": "Zambia",
+    "flag": "🇿🇲",
+    "code": "ZM",
+    "dial_code": "+260",
+    "regex": "^\\+260\\d{9}$"
+  },
+  {
+    "name": "Zimbabwe",
+    "flag": "🇿🇼",
+    "code": "ZW",
+    "dial_code": "+263",
+    "regex": "^\\+263\\d{9}$"
+  }
+]
