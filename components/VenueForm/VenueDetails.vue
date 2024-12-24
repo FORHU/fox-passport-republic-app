@@ -99,7 +99,7 @@
 </template>
 
 <script setup lang="ts">
-const { countries, ageRequirementItems } = useVenueData();
+const { countries, ageRequirementItems, parkingAccommodationOptions } = useVenueData();
 const { mode } = useVenue();
 const { requiredInput } = useUtils();
 
@@ -109,64 +109,7 @@ const emit = defineEmits<{
   (e: "save-draft"): void;
 }>();
 
-const parkingQuestions = ref([
-  {
-    question: "Free parking on premises",
-    answer: false,
-    type: "VENUE",
-    key: "0",
-    reference: "venue_details",
-    options: [],
-  },
-  {
-    question: "Free street parking",
-    answer: false,
-    type: "VENUE",
-    key: "1",
-    reference: "venue_details",
-    options: [],
-  },
-  {
-    question: "Paid parking on premises",
-    answer: false,
-    max_capacity: null,
-    type: "VENUE",
-    key: "2",
-    reference: "venue_details",
-    options: [],
-  },
-  {
-    question: "Paid parking off premises",
-    answer: false,
-    type: "VENUE",
-    key: "3",
-    reference: "venue_details",
-    options: [],
-  },
-  // alcoholQuestions
-  {
-    question: "Accommodation is available on-site",
-    answer: false,
-    max_capacity: null,
-    type: "VENUE",
-    key: "4",
-    reference: "venue_details",
-    options: [],
-  },
-
-  //authorizeEvents
-
-  {
-    question: "Popular for promoted and ticketed events",
-    answer: false,
-    type: "VENUE",
-    key: "5",
-    reference: "venue_details",
-    subtitle:
-      "You are frequently hosting promoted and ticketed events for which the organizer can publicly advertise and sell tickets.",
-    options: [],
-  },
-]);
+const parkingQuestions = ref(parkingAccommodationOptions);
 
 onMounted(() => {
   if (venue.value.venue_details.length > 0) {

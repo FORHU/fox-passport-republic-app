@@ -225,7 +225,7 @@
                 mobile
                   ? 'Venue allow external catering'
                   : option.name"
-                :value="option.name"
+                :value="option.question"
               >
               <template v-slot:label>
               <v-row no-gutters class=" text-opacity-1   mb-n2 mt-n2 py-2 pl-0 ml-0">
@@ -541,7 +541,7 @@
               <span class="font-weight-bold">Age restriction</span>
             </v-col>
             <v-col cols="12" class="px-3 d-flex flex-row justify-space-between">
-              <span class="mt-4">Only show venues without age restriction</span>
+              <span class="mt-4">Only show venues with age restriction</span>
               <v-switch
                 class="mr-2"
                 v-model="ageRestriction"
@@ -578,9 +578,9 @@
             >
               <v-checkbox
                 v-model="selectedParkingAccommodationOptions"
-                :value="option.name"
+                :value="option.question"
               ></v-checkbox>
-              <span class="mt-4">{{ option.name }}</span>
+              <span class="mt-4">{{ option.question }}</span>
             </v-col>
             <v-col
               cols="6"
