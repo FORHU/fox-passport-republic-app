@@ -1648,7 +1648,7 @@ const handleNext = async () => {
   if (!loggedIn.value) {
     dialogRequireLoggedIn.value = true;
     enquire.value = false;
-
+    return
   }
   bookingForm.type = (bookingForm.type
     ? bookingForm.type
