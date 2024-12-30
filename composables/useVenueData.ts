@@ -411,32 +411,117 @@ export const useVenueData = () => {
     "06:00",
   ];
 
+
   const cateringAndDrinksOptions = [
     {
-      name: "The venue offers in-house catering services",
+      question: "The venue offers in-house catering services", //value being passed
+      subtitle: "The venue employs its own chef and staff",
+      name: "The venue offers in-house catering services", // displayed sentence in filtering
+      answer: false,
+      type: "VENUE",
+      key: "0",
+      reference: "catering_options",
+      options: [],
     },
     {
-      name: "Your venue is authorized to sell or provide alcohol",
+      question:
+        "The venue exclusively collaborates with an approved roster of external caterers", //value being passed
+      subtitle:
+        "Only approved caterers are permitted to provide external catering",
+      name: "The venue exclusively collaborates with an approved roster of external caterers", // displayed sentence in filtering
+      answer: false,
+      type: "VENUE",
+      key: "1",
+      reference: "catering_options",
+      options: [],
     },
     {
-      name: "The venue exclusively collaborates with an approved roster of external caterers",
+      question: "Guests are permitted to bring their own catering/food", //value being passed
+      subtitle:
+        "Clients have the option to hire a caterer of their preference or bring their own food",
+      name: "Guests are permitted to bring their own alcohol", // displayed sentence in filter
+      answer: false,
+      type: "VENUE",
+      key: "2",
+      reference: "catering_options",
+      options: [],
     },
     {
-      name: "Guests are permitted to bring their own alcohol",
+      question: "Buyout fee for BYO catering/food", //value being passed
+      subtitle:
+        "Fee for clients using their own caterer or bringing their own food",
+      name: "Buyout fee for BYO catering/food", // displayed sentence in filter
+      answer: false,
+      type: "VENUE",
+      key: "2.1",
+      reference: "catering_options",
+      options: [],
     },
     {
-      name: "Buyout fee for BYO catering/food",
+      question: "Kitchen facilities available for guests", //value being passed
+      subtitle: "Space where clients can prepare their own food.",
+      name: "Kitchen facilities available for guests", // displayed sentence in filter
+      answer: false,
+      type: "VENUE",
+      key: "2.2",
+      reference: "catering_options",
+      options: [],
     },
     {
-      name: "A corkage fee applies if the customer brings their own alcohol",
+      question: "Refreshments provided for guests.", //value being passed
+      subtitle: "Included complimentary with every booking",
+      name: "Refreshments provided for guests.", // displayed sentence in filter
+      answer: false,
+      type: "VENUE",
+      key: "3",
+      reference: "catering_options",
+      options: [],
+    },
+  
+    // The venue supplies alcohol
+    {
+      question: "Liquor license", //value being passed
+      subtitle: "Your venue is authorized to sell or provide alcohol",
+      name: "Your venue is authorized to sell or provide alcohol", // displayed sentence in filtering
+      answer: false,
+      type: "VENUE",
+      key: "4",
+      reference: "alcohol_provided",
+      options: [],
+      max_capacity: null,
     },
     {
-      name: "Kitchen facilities available for guests",
+      question: "Alcohol license extension available", //value being passed
+      subtitle: "",
+      name: "Alcohol license extension available", // displayed sentence in filtering
+      answer: false,
+      type: "VENUE",
+      key: "4.1",
+      reference: "alcohol_provided",
+      options: [],
+    },
+    // BYO alcohol
+    {
+      question: "Guests are permitted to bring their own alcohol",  //value being passed
+      subtitle: "Guests are invited to bring their own alcoholic beverages",
+      name: "Guests are permitted to bring their own catering/food", // displayed sentence in filtering
+      answer: false,
+      type: "VENUE",
+      key: "5",
+      reference: "byo_alcohol",
+      options: [],
     },
     {
-      name: "Refreshments provided for guests.",
+      question: "Corkage fee for BYO alcohol", //value being passed
+      subtitle: "A corkage fee applies if the customer brings their own alcohol",
+      name: "A corkage fee applies if the customer brings their own alcohol", // displayed sentence in filtering
+      answer: false,
+      type: "VENUE",
+      key: "5.1",
+      reference: "byo_alcohol",
+      options: [],
     },
-  ];
+  ]
 
   const menuOfferOptions = [
     {
@@ -458,21 +543,62 @@ export const useVenueData = () => {
 
   const parkingAccommodationOptions = [
     {
-      name: "Free parking on premises",
+      question: "Free parking on premises",
+      answer: false,
+      type: "VENUE",
+      key: "0",
+      reference: "venue_details",
+      options: [],
     },
     {
-      name: "Free street parking",
+      question: "Free street parking",
+      answer: false,
+      type: "VENUE",
+      key: "1",
+      reference: "venue_details",
+      options: [],
     },
     {
-      name: "Paid parking on premises",
+      question: "Paid parking on premises",
+      answer: false,
+      max_capacity: null,
+      type: "VENUE",
+      key: "2",
+      reference: "venue_details",
+      options: [],
     },
     {
-      name: "Paid parking off premises",
+      question: "Paid parking off premises",
+      answer: false,
+      type: "VENUE",
+      key: "3",
+      reference: "venue_details",
+      options: [],
     },
+    // alcoholQuestions
     {
-      name: "Accommodation is available on-site",
+      question: "Accommodation is available on-site",
+      answer: false,
+      max_capacity: null,
+      type: "VENUE",
+      key: "4",
+      reference: "venue_details",
+      options: [],
     },
-  ];
+  
+    //authorizeEvents
+  
+    {
+      question: "Popular for promoted and ticketed events",
+      answer: false,
+      type: "VENUE",
+      key: "5",
+      reference: "venue_details",
+      subtitle:
+        "You are frequently hosting promoted and ticketed events for which the organizer can publicly advertise and sell tickets.",
+      options: [],
+    },
+  ]
 
   const allowdEventsOptions = [
     {

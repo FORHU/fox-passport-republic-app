@@ -112,7 +112,7 @@
 </template>
 
 <script setup lang="ts">
-const { countries } = useVenueData();
+const { countries, cateringAndDrinksOptions, menuOfferOptions } = useVenueData();
 const { requiredInput } = useUtils();
 const { mode } = useVenue();
 
@@ -122,7 +122,7 @@ const customMenu = ref("");
 const customBeverages = ref("")
 const handleCustomMenu = () => {
   cateringQuestions.value[0].options =
-    cateringQuestions.value[0].options.filter((item) => menu.includes(item));
+    cateringQuestions.value[0].options.filter((item) => menu.value.includes(item));
   if (customMenu.value) {
     cateringQuestions.value[0].options.push(customMenu.value);
   }
@@ -141,7 +141,7 @@ const handleCustomBeverages = () => {
 const customMenuRules = computed(() => {
   return [
     (v: string) => !!v || "This field is required",
-    (v: string) => !menu.includes(v) || "This menu is already listed",
+    (v: string) => !menu.value.includes(v) || "This menu is already listed",
   ];
 });
 
@@ -170,115 +170,12 @@ const emit = defineEmits<{
 //       "key": "catering_services"
 //     }
 
-const cateringQuestions = ref<TFoodAndBeverages[]>([
-  {
-    question: "The venue offers in-house catering services",
-    subtitle: "The venue employs its own chef and staff",
-    answer: false,
-    type: "VENUE",
-    key: "0",
-    reference: "catering_options",
-    options: [],
-  },
-  {
-    question:
-      "The venue exclusively collaborates with an approved roster of external caterers",
-    subtitle:
-      "Only approved caterers are permitted to provide external catering",
-    answer: false,
-    type: "VENUE",
-    key: "1",
-    reference: "catering_options",
-    options: [],
-  },
-  {
-    question: "Guests are permitted to bring their own catering/food",
-    subtitle:
-      "Clients have the option to hire a caterer of their preference or bring their own food",
-    answer: false,
-    type: "VENUE",
-    key: "2",
-    reference: "catering_options",
-    options: [],
-  },
-  {
-    question: "Buyout fee for BYO catering/food",
-    subtitle:
-      "Fee for clients using their own caterer or bringing their own food",
-    answer: false,
-    type: "VENUE",
-    key: "2.1",
-    reference: "catering_options",
-    options: [],
-  },
-  {
-    question: "Kitchen facilities available for guests",
-    subtitle: "Space where clients can prepare their own food.",
-    answer: false,
-    type: "VENUE",
-    key: "2.2",
-    reference: "catering_options",
-    options: [],
-  },
-  {
-    question: "Refreshments provided for guests.",
-    subtitle: "Included complimentary with every booking",
-    answer: false,
-    type: "VENUE",
-    key: "3",
-    reference: "catering_options",
-    options: [],
-  },
+const cateringQuestions = ref<TFoodAndBeverages[]>(cateringAndDrinksOptions);
 
-  // The venue supplies alcohol
-  {
-    question: "Liquor license",
-    subtitle: "Your venue is authorized to sell or provide alcohol",
-    answer: false,
-    type: "VENUE",
-    key: "4",
-    reference: "alcohol_provided",
-    options: [],
-    max_capacity: null,
-  },
-  {
-    question: "Alcohol license extension available",
-    subtitle: "",
-    answer: false,
-    type: "VENUE",
-    key: "4.1",
-    reference: "alcohol_provided",
-    options: [],
-  },
-  // BYO alcohol
-  {
-    question: "Guests are permitted to bring their own alcohol",
-    subtitle: "Guests are invited to bring their own alcoholic beverages",
-    answer: false,
-    type: "VENUE",
-    key: "5",
-    reference: "byo_alcohol",
-    options: [],
-  },
-  {
-    question: "Corkage fee for BYO alcohol",
-    subtitle: "A corkage fee applies if the customer brings their own alcohol",
-    answer: false,
-    type: "VENUE",
-    key: "5.1",
-    reference: "byo_alcohol",
-    options: [],
-  },
-]);
+const menu = computed(() => {
+  return menuOfferOptions.map(x => x.name).concat('Others');
+})
 
-const menu = [
-  "Halal menu",
-  "Kosher menu",
-  "Multiple vegan options",
-  "Multiple vegetarian options",
-  "Gluten-free menu",
-  "Others",
-];
 const beverages = ["Tea & coffee", "Water", "Cookies", "Others"];
 
 const timeArray = [
@@ -326,7 +223,7 @@ onMounted(() => {
   const array = obj?.options || [];
   if (array.includes("Others")) {
     array.forEach((item: string) => {
-      if (!menu.includes(item)) {
+      if (!menu.value.includes(item)) {
         customMenu.value = item;
       }
     });
@@ -346,7 +243,7 @@ onMounted(() => {
 const updateData = (key?: string) => {
   setConditions(key);
   venue.value.foods_and_beverages = cateringQuestions.value.map((item) => {
-    const { subtitle, ...rest } = item;
+    const { subtitle, name, ...rest } = item;
     return rest;
   });
 };
