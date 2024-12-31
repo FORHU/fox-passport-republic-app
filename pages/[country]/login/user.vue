@@ -44,7 +44,7 @@
       <v-row no-gutters class="d-flex ga-5 flex-wrap w-100 mt-7">
         <v-col cols="12">
           <v-btn variant="flat" color="primary" type="submit" size="large" rounded="lg" class="mt-1 w-100 font-500"
-            :disabled="!formValid" @click="onSubmit" :loading="processing">Login</v-btn>
+             @click="onSubmit" :loading="processing">Login</v-btn>
         </v-col>
       </v-row>
     </v-form>

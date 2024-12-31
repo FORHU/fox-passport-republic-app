@@ -88,7 +88,6 @@
             size="large"
             rounded="lg"
             class="mt-1 w-100 font-500"
-            :disabled="!formValid"
             @click="onSubmit"
             :loading="processing"
             >Login</v-btn
