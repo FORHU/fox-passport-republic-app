@@ -820,9 +820,8 @@ const infoMessage = computed(() => {
       };
     } else if (customOfferSent.value) {
       return {
-        title: `Book now to secure this date`,
-        subtitle:
-          "If you book later, there’s a chance the price will go up or the venue will be booked out.",
+        title: `${ownerFullName.value} have created an offer for you`,
+        subtitle: "If you book later, there’s a chance the price will go up or the venue will be booked out.",
       };
     } else if (bookingRequested.value) {
       return {
