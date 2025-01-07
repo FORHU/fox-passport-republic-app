@@ -10,14 +10,15 @@ export function useAPI<T>(url: string, options: UseFetchOptions<T> = {}) {
     maxAge: 30 * 24 * 60 * 60,
   };
   const accessToken = useCookie("accessToken", cookieOptions).value;
-  const retry = 0;
+  let retry = 0;
 
   const defaults: UseFetchOptions<T> = {
     baseURL: "/api",
     key: url,
     headers: loggedIn.value ? { Authorization: `Bearer ${accessToken}` } : {},
     async onResponseError({ response }) {
-      if (response.status === 401 && !retry) {
+      if (response.status === 401 && retry == 0) {
+        retry += 1;
         const refreshToken = useCookie("refreshToken", cookieOptions).value;
         try {
           const data = await useFetch("/api/v1/auth/refresh-token", {
@@ -38,6 +39,9 @@ export function useAPI<T>(url: string, options: UseFetchOptions<T> = {}) {
           console.error("Failed to refresh token:", error);
           clearCookies();
         }
+      } else if (response.status == 403){
+        // auto logout when token is inactive
+        clearCookies();
       }
     },
   };
