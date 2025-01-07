@@ -57,7 +57,9 @@ export default defineNuxtConfig({
       GOOGLE_API: process.env.GOOGLE_API as string,
       STRIPE_PUBLISHABLE_KEY: process.env.STRIPE_PUBLISHABLE_KEY as string,
       VERSION: process.env.VERSION as string,
-      USE_V2_ROUTES: process.env.USE_V2_ROUTES as string
+      USE_V2_ROUTES: process.env.USE_V2_ROUTES as string,
+      ALT_DOMAIN: process.env.ALT_DOMAIN as string,
+      MAIN_URL: process.env.MAIN_URL as string,
     },
   },
 
