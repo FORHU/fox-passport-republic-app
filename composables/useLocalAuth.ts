@@ -347,5 +347,6 @@ export default function useLocalAuth() {
     createSpace,
     updateSpace,
     forgotPasswordMailSend,
+    clearCookies
   };
 }

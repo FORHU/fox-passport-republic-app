@@ -21,9 +21,15 @@ export function useAPI<T>(url: string, options: UseFetchOptions<T> = {}) {
         retry += 1;
         const refreshToken = useCookie("refreshToken", cookieOptions).value;
         try {
-          const { data } = await useFetch("/api/v1/auth/refresh-token", {
+          const { data, status } = await useFetch("/api/v1/auth/refresh-token", {
             method: "POST",
             body: { refreshToken: refreshToken },
+            async onResponseError({ response }) { 
+              const code = response?.status
+              if(code == 403){
+                clearCookies();
+              }
+           }
           });
           const res = data?.value as any;
           const newAccessToken = res?.data?.accessToken;
@@ -38,16 +44,13 @@ export function useAPI<T>(url: string, options: UseFetchOptions<T> = {}) {
             );
             return useFetch(url, params);
           } else {
-            clearCookies();
             throw new Error("Failed to refresh token log");
           }
+
         } catch (error: any) {
           console.error("Failed to refresh token:", error);
-          console.log('log', error);
-          clearCookies();
         }
       } else if (response.status == 403){
-        // auto logout when token is inactive
         clearCookies();
       }
     },
@@ -60,11 +63,11 @@ export function useAPI<T>(url: string, options: UseFetchOptions<T> = {}) {
 
 // clear cookies them and logout when refreshToken failed
 function clearCookies() {
-  const { loggedIn } = useLocalAuth();
   const { country } = useLocal();
-  if (!loggedIn.value) return;
-  useCookie("accessToken").value = null;
-  useCookie("accessToken").value = null;
-  useCookie("user").value = null;
+  const { clearCookies } = useLocalAuth();
+  const loggedIn = useCookie("user").value
+  if (!loggedIn) return;
+  clearCookies();
+  console.log('cookies cleared');
   navigateTo(`/${country}`);
 }
