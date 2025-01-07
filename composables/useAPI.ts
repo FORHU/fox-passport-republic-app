@@ -21,22 +21,29 @@ export function useAPI<T>(url: string, options: UseFetchOptions<T> = {}) {
         retry += 1;
         const refreshToken = useCookie("refreshToken", cookieOptions).value;
         try {
-          const data = await useFetch("/api/v1/auth/refresh-token", {
+          const { data } = await useFetch("/api/v1/auth/refresh-token", {
             method: "POST",
             body: { refreshToken: refreshToken },
           });
-          const res = data.data.value as any;
-          useCookie("accessToken", cookieOptions).value = res.data.accessToken;
-          const params = defu(
-            {
-              ...options,
-              headers: { Authorization: `Bearer ${res.data.accessToken}` },
-            },
-            defaults,
-          );
-          return useFetch(url, params);
-        } catch (error) {
+          const res = data?.value as any;
+          const newAccessToken = res?.data?.accessToken;
+          if(newAccessToken){
+            useCookie("accessToken", cookieOptions).value = newAccessToken;
+            const params = defu(
+              {
+                ...options,
+                headers: { Authorization: `Bearer ${newAccessToken}` },
+              },
+              defaults,
+            );
+            return useFetch(url, params);
+          } else {
+            clearCookies();
+            throw new Error("Failed to refresh token log");
+          }
+        } catch (error: any) {
           console.error("Failed to refresh token:", error);
+          console.log('log', error);
           clearCookies();
         }
       } else if (response.status == 403){
