@@ -31,14 +31,13 @@
           <CustomPhoneNumberInputNew v-model:formattedNumber="form.phone_number" class="mt-1" />
         </v-col>
         <v-col>
-          <span class="w-100 text-16px text-secondary">Date of birth</span>
+          <span class="w-100 text-16px text-secondary">Date of birth (optional)</span>
           <!-- <v-text-field variant="outlined" placeholder="Pick a date" density="comfortable" rounded="lg" class="mt-1"></v-text-field> -->
           <v-menu v-model="showPicker" :close-on-content-click="false" :nudge-right="40" transition="scale-transition"
             offset-y min-width="290px">
             <template #activator="{ props }">
               <v-text-field dense v-model="formattedDate" readonly persistent-hint rounded="lg" v-bind="props"
-                placeholder="Select Date" prepend-inner-icon="mdi-calendar-badge" variant="outlined"
-                :rules="[requiredInput]" density="comfortable" class="mt-1">
+                placeholder="Select Date" prepend-inner-icon="mdi-calendar-badge" variant="outlined"  density="comfortable" class="mt-1">
               </v-text-field>
             </template>
             <v-date-picker v-model="dateOfBirth" @input="dateInput = false" show-adjacent-months elevation="24" no-time
