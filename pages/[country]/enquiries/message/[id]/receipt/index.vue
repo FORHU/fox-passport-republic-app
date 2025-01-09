@@ -174,8 +174,8 @@ const loadReceiptData = async () => {
       enquiry_id: id
     })
   })
-  if (data.value && data.value?.results) {
-    receipt_data.value = data.value.results;
+  if (data.value && data.value?.result) {
+    receipt_data.value = data.value.result;
   }
 
 }
@@ -231,7 +231,7 @@ onBeforeMount(async () => {
                   </v-col>
                   <v-col cols="12" class="font-700 text-18px mt-3" align="center">Your Venue4use Receipt</v-col>
                 </v-row>
-                <v-row no-gutters class="my-5 my-md-7 text-14px text-charcoal">
+                <v-row no-gutters class="my-5 my-md-7 text-14px text-charcoal w-100">
                   <v-row class="mt-5">
                     <v-col>
                       {{ formatDate(receipt_data?.receipt_date) }}
