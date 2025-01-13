@@ -1,19 +1,19 @@
 <template>
   <article class="location-card cursor-pointer" @click="navigate">
-    <v-carousel hide-delimiter-background :show-arrows="filteredPhotos.length > 1 ? 'hover' : false" height="auto" :aspect-ratio="1" @click.stop
-      transition="fade-transition">
+    <v-carousel hide-delimiter-background :show-arrows="filteredPhotos.length > 1 ? 'hover' : false" height="auto"
+      :aspect-ratio="1" @click.stop transition="fade-transition">
       <!-- Check if there are photos to display -->
       <template v-if="filteredPhotos.length > 0" v-for="photo, index in filteredPhotos" :key="photo?._id">
-          <v-carousel-item v-if="photo?.contentType?.includes('image')" @click="navigate" class="cursor-pointer">
-            <v-img :src="photo.path" :alt="`Space photo ${index + 1}`" class="location-image cursor-pointer"
-              width="100%" height="auto" aspect-ratio="1" cover>
-              <template v-slot:placeholder>
-                <v-row class="fill-height ma-0" align="center" justify="center">
-                  <v-progress-circular indeterminate color="grey lighten-5"></v-progress-circular>
-                </v-row>
-              </template>
-            </v-img>
-          </v-carousel-item>
+        <v-carousel-item v-if="photo?.contentType?.includes('image')" @click="navigate" class="cursor-pointer">
+          <v-img :src="photo.path" :alt="`Space photo ${index + 1}`" class="location-image cursor-pointer" width="100%"
+            height="auto" aspect-ratio="1" cover>
+            <template v-slot:placeholder>
+              <v-row class="fill-height ma-0" align="center" justify="center">
+                <v-progress-circular indeterminate color="grey lighten-5"></v-progress-circular>
+              </v-row>
+            </template>
+          </v-img>
+        </v-carousel-item>
       </template>
 
       <!-- Fallback when no photos are available -->
@@ -90,11 +90,16 @@
           getStandingMaxCapacity(space)
           }}</span>
       </div>
-      <template v-for="item, index in getRate(space)" :key="item?.type">
-        <span class="text-14px font-500">{{ index !== 0 ? ' /' : '' }}
-          {{ currencySymbol(space?.pricing?.currency) }} {{ item?.rate }}
-          <span class="font-weight-regular">{{ item.type }}</span>
-        </span>
+      <template v-if="getRate(space) && getRate(space).length > 0">
+        <template v-for="item, index in getRate(space)" :key="item?.type">
+          <span v-if="getRate(space)" class="text-14px font-500">{{ index !== 0 ? ' /' : '' }}
+            {{ currencySymbol(space?.pricing?.currency) }} {{ item?.rate }}
+            <span class="font-weight-regular">{{ item.type }}</span>
+          </span>
+        </template>
+      </template>
+      <template v-else>
+        <span class="text-secondary text-14px">Not available</span>
       </template>
     </div>
   </article>
@@ -103,7 +108,7 @@
 
 <script setup lang="ts">
 const { setSnackbar, getCurrencySymbol, country } = useLocal();
-const { sliceContent} = useUtils();
+const { sliceContent } = useUtils();
 const { isUser } = useAccess();
 const { loggedIn } = useLocalAuth();
 const props = defineProps({
@@ -222,10 +227,8 @@ const getRate = (space: any) => {
   const date_calendar = props?.date_calendar
   const [minPrice, maxPrice]: [string | null, string | null] = props?.priceFilter as [string | null, string | null] || [null, null];
 
-
   // Check for min/max price is in default;
-  const isDefaultPriceFilter = minPrice == null && !maxPrice || (parseInt(minPrice as string) === 0 && parseInt(maxPrice as string) === 10000);
-
+  const isDefaultPriceFilter = minPrice == null && !maxPrice || parseInt(maxPrice as string) === 0;
   let priceArray = [];
 
   if (selectedPricing == 'HIRE_FEE') {
@@ -265,7 +268,6 @@ const getRate = (space: any) => {
       }
     }
 
-
     if (date_calendar) {
       const date = new Date(date_calendar);
       const day = date?.toLocaleString("en-US", { weekday: 'long' })?.toUpperCase();
@@ -280,6 +282,10 @@ const getRate = (space: any) => {
       if (perDay) {
         priceArray.push({ rate: obj?.full_day_rate, type: 'per day' })
       }
+      if (!hourly && !perDay) {
+        return null;
+      }
+
     } else if (!date_calendar && !isDefaultPriceFilter) {
 
 
@@ -442,7 +448,7 @@ async function favoriteProcess(val) {
 }
 
 .location-card-icons {
-  margin:4px 0;
+  margin: 4px 0;
 }
 
 .location-card-icons v-icon {
@@ -483,6 +489,4 @@ async function favoriteProcess(val) {
 .word-break {
   word-break: break-word
 }
-
-
 </style>
