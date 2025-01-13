@@ -244,7 +244,7 @@ const getRate = (space: any) => {
           if (currentHourlyRate < lowestRate) {
             lowestHourlyRate = currentHourlyRate;
             lowestRate = currentHourlyRate;
-            lowestPerDayRate = currentFullDayRate ? currentFullDayRate : null;
+            lowestPerDayRate = (currentFullDayRate && x?.fullRateCheckkBox) ? currentFullDayRate : null;
           }
         }
 
@@ -252,7 +252,7 @@ const getRate = (space: any) => {
           if (currentFullDayRate < lowestRate) {
             lowestPerDayRate = currentFullDayRate
             lowestRate = currentFullDayRate;
-            lowestHourlyRate = currentHourlyRate ? currentHourlyRate : null;
+            lowestHourlyRate = (currentHourlyRate && x?.hourlyCheckBox) ? currentHourlyRate : null;
           }
         }
       })
