@@ -787,7 +787,7 @@ watch(numGuest, async (oldValue, newwVal) => {
   if (oldValue) {
     emits("searchVenues");
   }
-});
+},{ immediate: false});
 
 const handleClear = (): void => {
   areaTypeOptions.forEach((option) => {

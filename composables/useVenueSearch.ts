@@ -178,6 +178,10 @@ export function useVenueSearch() {
           : filterDateTo.value;
     }
 
+    if (date !== null) {
+      params.start_date = formatDate(date)
+  }
+  
     if (selectedKeysString.value !== "") {
       params.representation = selectedKeysString.value;
     }
@@ -399,6 +403,17 @@ export function useVenueSearch() {
     return result;
   });
 
+  const formatDate = (date: any) => {
+    const ddmmyyyyRegex = /^(\d{2})\/(\d{2})\/(\d{4})$/;
+    
+    if (ddmmyyyyRegex.test(date)) {
+      const [, day, month, year] = date.match(ddmmyyyyRegex);
+      const formattedDate = `${year}-${month}-${day}`;
+      return new Date(formattedDate).toISOString().substring(0, 10); // Returns date in yyyy-mm-dd format
+    }
+    return new Date(date).toISOString().substring(0, 10);// If the date doesn't match the pattern, return null
+  };
+
   const loadInitialData = async () => {
     venueLocation.value = location?.toUpperCase();
     numGuest.value = parseInt(total_guest)
@@ -412,16 +427,7 @@ export function useVenueSearch() {
     };
 
     if (date !== null) {
-      const ddmmyyyyRegex = /^(\d{2})\/(\d{2})\/(\d{4})$/;
-      if (ddmmyyyyRegex.test(date)) {
-        const [, day, month, year] = date.match(ddmmyyyyRegex)!;
-        const formattedDate = `${year}-${month}-${day}`;
-        params.start_date = new Date(formattedDate)
-          .toISOString()
-          .substring(0, 10);
-      } else {
-        params.start_date = new Date(date).toISOString().substring(0, 10);
-      }
+        params.start_date = formatDate(date)
     }
     
     
