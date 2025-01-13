@@ -17,7 +17,7 @@ export function useVenueSearch() {
   const favoriteCount = useState("favoriteCount", () => 0);
   const favoriteObj = useState("favoriteObj", () => undefined);
   const showGuestFilter = useState("showGuestFilter", () => false);
-  const priceValue = useState("priceValue", () => ["0", "10000"]);
+  const priceValue = useState("priceValue", () => ["0", "0"]);
   const showMoreFilterDialog = useState("showMoreFilterDialog", () => false);
   const mobileMap = useState("mobileMap", () => false);
   const isGuestMenuOpen = useState("isGuestMenuOpen", () => false);
@@ -138,7 +138,7 @@ export function useVenueSearch() {
       activeGuest.value = "";
     
       priceValue.value[0] = "0";
-      priceValue.value[1] = "10000";
+      priceValue.value[1] = "0";
       filterDateFrom.value = null;
       filterDateTo.value = null;
       if (smAndDown.value) {
@@ -213,7 +213,7 @@ export function useVenueSearch() {
       );
       params.start_date = selectedDate.toISOString().substring(0, 10);
     }
-    if (priceValue.value[0] !== "0" || priceValue.value[1] !== "10000") {
+    if (priceValue.value[0] !== "0" || priceValue.value[1] !== "0") {
       params.min_price = isNaN(parseInt(priceValue.value[0]))
         ? 0
         : parseInt(priceValue.value[0]);
@@ -246,7 +246,7 @@ export function useVenueSearch() {
     } else if (type === "price") {
       priceReset.value = true;
       priceValue.value[0] = "0";
-      priceValue.value[1] = "10000";
+      priceValue.value[1] = "0";
       searchVenues();
     } else if (type === "date") {
       date_calendar.value = null;
