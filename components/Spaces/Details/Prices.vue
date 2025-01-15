@@ -286,34 +286,48 @@ const hasHireFees = computed(() => {
 });
 
 const groupByUniqueDays = computed(() => {
-  const dayMap: Record<string, { day: string; slot: any[] }> = {};
-
-  props.specificSpace?.pricing?.custom_price?.prices?.forEach((entry) => {
-    entry.weekdays.forEach((day) => {
-      if (!dayMap[day]) {
-        dayMap[day] = { day: day, slot: [] };
-      }
-      dayMap[day].slot.push({
-        duration: entry.duration,
-        price: entry.price,
-        minimum_spend: entry?.minimum_spend,
-        time: entry.time,
-        package_per_person: entry?.package_per_person,
-        type: entry.type,
-        description: entry.description,
+    const dayMap: Record<string, { day: string; slot: any[] }> = {};
+  
+    props.specificSpace?.pricing?.custom_price?.prices?.forEach((entry) => {
+      entry.weekdays.forEach((day) => {
+        if (!dayMap[day]) {
+          dayMap[day] = { day: day, slot: [] };
+        }
+        dayMap[day].slot.push({
+          duration: entry.duration,
+          price: entry.price,
+          minimum_spend: entry?.minimum_spend,
+          time: entry.time,
+          package_per_person: entry?.package_per_person,
+          type: entry.type,
+          description: entry.description,
+        });
       });
     });
-  });
-
-  // Sort slots by start time
-  Object.values(dayMap).forEach((day) => {
-    day.slot.sort((a, b) => {
-      const [hourA, minuteA] = a.time.from.split(":").map(Number);
-      const [hourB, minuteB] = b.time.from.split(":").map(Number);
-      return hourA - hourB || minuteA - minuteB;
+  
+    // Sort slots by start time
+    Object.values(dayMap).forEach((day) => {
+      day.slot.sort((a, b) => {
+        const [hourA, minuteA] = a.time.from.split(":").map(Number);
+        const [hourB, minuteB] = b.time.from.split(":").map(Number);
+        return hourA - hourB || minuteA - minuteB;
+      });
     });
+  
+   
+    // Sort the dayMap by the correct order of days
+  const sortedDayMap = Object.keys(dayMap)
+    .sort((a, b) => {
+      return daysOfWeek.indexOf(a) - daysOfWeek.indexOf(b);
+    })
+    .reduce((acc, key) => {
+      acc[key] = dayMap[key];
+      return acc;
+    }, {} as Record<string, { day: string; slot: any[] }>);
+
+    return sortedDayMap;
   });
 
-  return dayMap;
-});
+  // Days of the week in correct order (Sunday - Saturday)
+  const daysOfWeek = ["SUNDAY", "MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY", "SATURDAY"];
 </script>
