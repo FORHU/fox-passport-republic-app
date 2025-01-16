@@ -612,9 +612,11 @@ const imageSrc = (venueId: string) => {
     ];
 
     const sortedVenuePhotos =
-        venueObj?.venue_photos?.length > 0
-            ? venueObj.venue_photos
-            : venueObj.space_photos
+        (venueObj?.venue_photos?.length > 0
+            ? venueObj?.venue_photos
+            : venueObj?.space_photos)
+    
+    if (!Array.isArray(sortedVenuePhotos)) return;
 
     const imageObj = sortedVenuePhotos.find((image) => {
         const extension = image.path
