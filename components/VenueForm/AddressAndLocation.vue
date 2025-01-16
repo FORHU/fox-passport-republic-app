@@ -5,7 +5,7 @@
     <v-col cols="12">
       <span class="w-100 text-18px font-500">Country</span>
       <v-select v-model="venue.address.country" class="mt-1" item-value="cca2" item-title="country_name"
-        :items="registeredCountries" name="street_address" rounded="lg" color="charcoal" base-color="charcoal"
+        :items="registeredCountries" name="country" rounded="lg" color="charcoal" base-color="charcoal"
         :rules="countryRules" height="44" />
     </v-col>
   </v-row>
