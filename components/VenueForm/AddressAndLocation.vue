@@ -1,7 +1,7 @@
 <template>
 
   <!-- ADMIN MEMBER COUNTRY INPUT -->
-  <v-row v-if="isAdminMember" no-gutters class="w-100 mt-5">
+  <v-row v-if="isAdminMember || isAdmin" no-gutters class="w-100 mt-5">
     <v-col cols="12">
       <span class="w-100 text-18px font-500">Country</span>
       <v-select v-model="venue.address.country" class="mt-1" item-value="cca2" item-title="country_name"
@@ -86,7 +86,7 @@ const { mode } = useVenue();
 const { country, setSnackbar, loadCountries, registeredCountries } = useLocal();
 const { currentUser } = useLocalAuth();
 const showCountryInfo = ref(false);
-const { isAdminMember } = useAccess();
+const { isAdminMember, isAdmin } = useAccess();
 
 const venue = defineModel<TVenue>({ required: true });
 const addressInvalid = ref(false);

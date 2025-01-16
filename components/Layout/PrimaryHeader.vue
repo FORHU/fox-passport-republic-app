@@ -24,7 +24,7 @@
           <template
             v-for="navigationItem in navigation"
             :key="navigationItem.title"
-            v-if="!smAndDown"
+            v-if="!mdAndDown"
           >
             <nuxt-link
               :to="{ name: navigationItem.to, params: navigationItem.params }"
@@ -129,7 +129,7 @@
 import { useDisplay } from "vuetify";
 import { ref, computed } from "vue";
 
-const { smAndDown } = useDisplay();
+const { smAndDown, mdAndDown } = useDisplay();
 const { loggedIn, currentUser, logout } = useLocalAuth();
 const { isAdminMember, isAdminSales } = useAccess();
 const { country } = useLocal();
