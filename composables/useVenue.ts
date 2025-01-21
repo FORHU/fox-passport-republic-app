@@ -55,6 +55,10 @@ export function useVenue() {
     };
     if (status) {
       params.status = status;
+
+      if(status === 'All') {
+        params.status = 'ALL'
+      }
     }
     if (venue_name) {
       params.venue_name = venue_name;
