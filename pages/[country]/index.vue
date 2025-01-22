@@ -51,7 +51,7 @@
                                  @keydown.enter="onSubmit"
                                 @update:model-value="handleChangeCountry" @click:append-inner="" :active="true"/>
                             </v-col>
-                            <v-col class="py-1 pb-5 d-flex justify-center align-end" v-if="!xs">
+                            <v-col class="py-1 pb-5 d-flex justify-center align-end" v-if="mdAndUp">
                               <v-divider vertical thickness="2"></v-divider>
                             </v-col>
                           </v-row>
@@ -141,7 +141,7 @@ definePageMeta({
   layout: "landing",
 });
 
-const { xs, smAndDown, mdAndDown } = useDisplay();
+const { xs, smAndDown, mdAndDown, mdAndUp } = useDisplay();
 const { tags } = useVenueData();
 const { loadCountries, registeredCountries, getDefaultCountryImage, defaultCountryImage, country } = useLocal();
 const { venueLocation: location, eventType, date_calendar, numGuest: numberOfGuests } = useVenueSearch();
