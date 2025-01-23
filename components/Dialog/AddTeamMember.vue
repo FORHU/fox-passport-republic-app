@@ -181,7 +181,7 @@ const sendInvitation = async () => {
     email: email.value,
     venues:
       venueSelection.value === "all"
-        ? venues.value.map((venue) => venue._id)
+        ? []
         : selectedVenues.value,
     assigned_roles: [selectedRole.value],
     all_venues: venueSelection.value === "all",
