@@ -194,8 +194,9 @@ export function useSpace() {
 
     // in YYYY-MM-DD
     function formatLocalDate(date: any) {
-      const timezoneOffset = date.getTimezoneOffset() * 60 * 1000;
-      const localDate = new Date(date.getTime() - timezoneOffset);
+      const formatDate = new Date(date)
+      const timezoneOffset = formatDate.getTimezoneOffset() * 60 * 1000;
+      const localDate = new Date(formatDate.getTime() - timezoneOffset);
       return localDate.toISOString().split("T")[0];
     }
 
