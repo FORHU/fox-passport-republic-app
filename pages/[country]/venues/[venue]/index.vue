@@ -340,7 +340,7 @@
                               <template #activator="{ props }">
                                 <v-text-field dense v-model="formattedDate" readonly persistent-hint v-bind="props"
                                   placeholder="Select Date" variant="plain" :rules="[requiredInput]" class="text-body-2"
-                                  @update:model-value="handleChangeDate">
+                                  @update:model-value="handleChangeDate" @click="isInitialized = false">
                                 </v-text-field>
                               </template>
                               <v-date-picker v-model="date_calendar" @input="dateInput = false" show-adjacent-months
@@ -655,7 +655,7 @@
                     <template #activator="{ props }">
                       <v-text-field dense v-model="formattedDate" readonly persistent-hint v-bind="props"
                         placeholder="Select Date" variant="plain" :rules="[requiredInput]" class="text-body-2"
-                        @update:model-value="handleChangeDate"></v-text-field>
+                        @update:model-value="handleChangeDate" @click="isInitialized = false"></v-text-field>
                     </template>
                     <v-date-picker v-model="date_calendar" @input="dateInput = false" show-adjacent-months elevation="0"
                       no-time @update:model-value="dateInput = false" :min="new Date().toISOString().substring(0, 10)"
@@ -1109,7 +1109,7 @@ const formDataCookie = useCookie<Object>("formData");
 const activeImageId = ref('')
 const showImageViewer = ref(false);
 const loadingEnquiry = ref(false);
-
+const isInitialized = ref(false);
 const space = ref({
   representation: {
     name: "",
@@ -1486,15 +1486,6 @@ const checkAllowedTimeTo = computed(() => {
   );
 });
 
-watch(date_calendar, (oldValue, newwVal) => {
-  if (oldValue) {
-    bookingForm.date.from = null;
-    bookingForm.date.to = null;
-    showComputation.value = false;
-    computePricing()
-  }
-});
-
 watch(
   () => bookingForm.date,
   async (newVal) => {
@@ -1719,8 +1710,12 @@ onMounted(() => {
   const savedFormData = useCookie("formData")
   const redirect = useCookie('redirect_booking')
   if (savedFormData.value && redirect.value) {
-    date_calendar.value = savedFormData.value.date_calendar
+    isInitialized.value = true;
+    const formatedDate = new Date (savedFormData.value.date_calendar)
+    date_calendar.value = formatedDate
     bookingForm.guests = savedFormData.value.guest
+    bookingForm.date.from = savedFormData.value.bookingFrom
+    bookingForm.date.to = savedFormData.value.bookingTo
     setTimeout(() => {
       //bookingForm.date.from = savedFormData.value.bookingFrom
       //bookingForm.date.to = savedFormData.value.bookingTo
@@ -1741,9 +1736,9 @@ onMounted(() => {
   }
   bookingForm.guests = useCookie("guestNumber").value || 1;
   // bookingForm.date.from = useCookie("timeFrom").value;
-  bookingForm.date.from = null;
+  // bookingForm.date.from = null;
   // bookingForm.date.to = useCookie("timeTo").value;
-  bookingForm.date.to = null;
+  // bookingForm.date.to = null;
 });
 
 onBeforeMount(async () => {
@@ -1761,6 +1756,16 @@ const toggleShareButton = () => {
     showShareModal.value = !showShareModal.value
   }
 }
+
+watch(date_calendar, (oldValue, newwVal) => {
+  if (isInitialized.value) return;
+  if (oldValue) {
+    bookingForm.date.from = null;
+    bookingForm.date.to = null;
+    showComputation.value = false;
+    computePricing()
+  }
+});
 
 watchEffect(() => {
   if (smAndDown.value && showShareModal.value) {
