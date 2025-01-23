@@ -142,6 +142,7 @@ const {
   adminRolesOptions,
   updateAdminTeamMember,
   deleteTeamMember,
+  deleteAdminTeamMember,
   getVenueDetails,
 } = useTeamMembers();
 const { setSnackbar } = useLocal();
@@ -204,7 +205,7 @@ const deleteMember = async () => {
   processingRemoveMember.value = true;
   try {
     const memberId = details.value?._id;
-    await deleteTeamMember(memberId as string);
+    await deleteAdminTeamMember(memberId as string);
     setSnackbar({
       color: "success",
       text: "Team member has been deleted!",

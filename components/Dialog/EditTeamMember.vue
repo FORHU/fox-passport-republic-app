@@ -144,7 +144,7 @@ const saveChanges = async () => {
 
     const memberId = details.value?._id;
     const updateData: any = {
-      venues: venueSelection.value === 'all' ? allAvailableVenues.value : selectedVenues.value,
+      venues: venueSelection.value === 'all' ? [] : selectedVenues.value,
       assigned_roles: selectedRole.value ? [selectedRole.value] : [],
       all_venues: venueSelection.value === 'all'
     };
