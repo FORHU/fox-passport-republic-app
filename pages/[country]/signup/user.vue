@@ -177,6 +177,8 @@ const redirectUrl = route.query.redirectUrl  as string; //
 
 const handleRedirect = () => {
   if (redirectUrl) {
+    const redirectBooking = useCookie<Boolean>("redirect_booking");
+    redirectBooking.value = true;
     router.push(decodeURIComponent(redirectUrl));
   } else {
     showSucessDialog.value = true;
