@@ -474,12 +474,12 @@ export function useSpace() {
     const selectedPricing = pricing?.selected_pricing;
     const [minPrice, maxPrice]: [string | null, string | null] =
       (priceFilter)
-  
+    
+      
     // Check for min/max price is in default;
-    const isDefaultPriceFilter =
-      (minPrice == null && !maxPrice) || parseInt(maxPrice as string) === 0;
-    let priceArray = [];
-  
+    const isDefaultPriceFilter =  parseInt(maxPrice as string) === 0;
+    let priceArray = []; // displayed price
+
     if (selectedPricing == "HIRE_FEE") {
       let lowestRate = Infinity;
       let lowestHourlyRate: null | number = null;
@@ -518,8 +518,8 @@ export function useSpace() {
         if (lowestPerDayRate) {
           priceArray.push({ rate: lowestPerDayRate, type: "/day" });
         }
-      };
-  
+      };     
+
       if (date_calendar) {
         const date = new Date(date_calendar);
         const day = date
@@ -529,6 +529,7 @@ export function useSpace() {
         const obj = pricing?.hire_fee?.days?.find(
           (x: any) => x?.name.toUpperCase() == day
         );
+
         const perDay = obj?.fullRateCheckkBox;
         const hourly = obj?.hourlyCheckBox;
   
@@ -538,23 +539,9 @@ export function useSpace() {
         if (perDay) {
           priceArray.push({ rate: obj?.full_day_rate, type: "/day" });
         }
-        if (!hourly && !perDay) {
-          return null;
-        }
-      } else if (!date_calendar && !isDefaultPriceFilter) {
-        // get prices that matches the price filter
-        const allPricesArray = pricing?.hire_fee?.days?.filter(
-          (x: any) =>
-            (parseInt(minPrice as string) <= x?.slots?.rate &&
-              parseInt(maxPrice as string) >= x.full_day_rate) ||
-            (parseInt(minPrice as string) <= x.full_day_rate &&
-              parseInt(maxPrice as string) >= x.full_day_rate)
-        );
-  
-        if (allPricesArray.length > 0) {
-          getLowestRate(allPricesArray);
-        }
-      } else {
+      } 
+      
+      if (priceArray.length == 0) {
         // get prices that matches the price filter
         const allPricesArray = pricing?.hire_fee?.days;
         if (allPricesArray.length > 0) {
@@ -566,22 +553,7 @@ export function useSpace() {
     } else {
       let lowestRate = Infinity;
       let duration = "";
-  
-      // get lowest rate with comparison on price range
-      const getLowestRateWithPricesFilter = (array: any = []) => {
-        array.forEach((x: any) => {
-          if (
-            x?.price < lowestRate &&
-            parseInt(minPrice as string) <= x.price &&
-            parseInt(maxPrice as string) >= x.price
-          ) {
-            lowestRate = x?.price;
-            duration = x?.duration;
-          }
-        });
-        priceArray.push({ rate: lowestRate, duration, type: duration });
-      };
-  
+    
       // get lowest rate without comparison on price range
       const getLowestRateWithoutPricesFilter = (array: any = []) => {
         array.forEach((x: any) => {
@@ -604,28 +576,38 @@ export function useSpace() {
         const filterPricesArray = pricing?.custom_price?.prices.filter((x: any) =>
           x.weekdays.includes(day)
         );
-  
-        if (isDefaultPriceFilter) {
-          getLowestRateWithoutPricesFilter(filterPricesArray);
-        } else {
-          // if both calendar and prices filter are defined
-          getLowestRateWithPricesFilter(filterPricesArray);
-        }
-      }
-  
-      // if calendar is null and filter are with values
-      else if (!date_calendar && !isDefaultPriceFilter) {
-        const pricesArray = pricing?.custom_price?.prices;
-        // const minSpendPrice = pricing?.custom_price?.prices.find((x => x?.minimum_spend ))
-        getLowestRateWithPricesFilter(pricesArray);
+        getLowestRateWithoutPricesFilter(filterPricesArray);
       } else {
         // if both calendar is null and filter are with values
         const pricesArray = pricing?.custom_price?.prices;
         getLowestRateWithoutPricesFilter(pricesArray);
       }
     }
-  
-    return priceArray;
+    
+    if (!isDefaultPriceFilter) {
+      let lowestRate = Infinity;
+      let duration = "";
+    
+      // Filter prices and find the lowest rate within the price range
+      const filteredArray = priceArray.filter((x: any) => {
+        if (
+          x?.rate < lowestRate &&
+          parseInt(minPrice || '0' as string) <= x.rate &&
+          parseInt(maxPrice as string) >= x.rate
+        ) {
+          lowestRate = x?.rate;
+          duration = x?.type;
+          return true; // This will include the element in the filtered array
+        }
+        return false; // This will exclude the element
+      });
+      
+      return filteredArray; // Return the filtered array based on conditions
+
+    } else {
+      return priceArray; // Return original array if filter is not applied
+    }
+    // return priceArray;
   };
 
   return {

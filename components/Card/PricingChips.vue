@@ -1,6 +1,6 @@
 <template>
    <span class="d-flex ga-1 flex-wrap">
-    <template v-for="(item, index) in getRate(space?.pricing,  null, [null, null])" :key="item?.type">
+    <template v-for="(item, index) in getRate(space?.pricing,  date_calendar || null, priceFilter || [null, null])" :key="item?.type">
               <v-chip variant="tonal" color="charcoal" class="mr-2" size="small">
                 <span class="d-flex align-center text-16px font-600">
                   {{ currencySymbol(space?.pricing?.currency as string) }}
