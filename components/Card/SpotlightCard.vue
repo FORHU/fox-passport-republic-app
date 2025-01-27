@@ -80,6 +80,9 @@
         </div> -->
       </div>
       <p class="location-card-description word-break"> {{ sliceContent(space?.venue?.name, 75) }}</p>
+      <v-row no-gutters class="my-1">
+         <CardPricingChips :space="space as TVenueSpace" :date_calendar="date_calendar" :price-filter="priceFilter" />
+      </v-row>
       <div class="location-card-icons d-flex align-center ga-2">
         <v-icon small v-if="isSeatingLayout(space)">mdi-seat</v-icon>
         <span v-if="isSeatingLayout(space)">{{
@@ -90,17 +93,6 @@
           getStandingMaxCapacity(space)
           }}</span>
       </div>
-      <template v-if="getRate(space) && getRate(space).length > 0">
-        <template v-for="item, index in getRate(space)" :key="item?.type">
-          <span v-if="getRate(space)" class="text-14px font-500">{{ index !== 0 ? ' /' : '' }}
-            {{ currencySymbol(space?.pricing?.currency) }} {{ item?.rate }}
-            <span class="font-weight-regular">{{ item.type }}</span>
-          </span>
-        </template>
-      </template>
-      <template v-else>
-        <span class="text-secondary text-14px">Not available</span>
-      </template>
     </div>
   </article>
   <FavoritesSignIn v-model="signInForFavoritesDialog" />
@@ -150,7 +142,7 @@ const props = defineProps({
     default: () => ({}),
   },
   priceFilter: {
-    type: Array,
+    type: Array as any,
     required: false,
   }
 });

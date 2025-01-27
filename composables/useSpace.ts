@@ -469,6 +469,165 @@ export function useSpace() {
     } else return null;
   }
 
+
+  const getRate = (pricing: any, date_calendar: string | null, priceFilter: [string | null, string | null]| [null, null]) => {
+    const selectedPricing = pricing?.selected_pricing;
+    const [minPrice, maxPrice]: [string | null, string | null] =
+      (priceFilter)
+  
+    // Check for min/max price is in default;
+    const isDefaultPriceFilter =
+      (minPrice == null && !maxPrice) || parseInt(maxPrice as string) === 0;
+    let priceArray = [];
+  
+    if (selectedPricing == "HIRE_FEE") {
+      let lowestRate = Infinity;
+      let lowestHourlyRate: null | number = null;
+      let lowestPerDayRate: null | number = null;
+  
+      const getLowestRate = (array: any = []) => {
+        array.forEach((x: any) => {
+          // Check if the current rates are valid
+          const currentHourlyRate = x?.slots?.rate;
+          const currentFullDayRate = x?.full_day_rate;
+  
+          if (currentHourlyRate != null && x?.hourlyCheckBox) {
+            if (currentHourlyRate < lowestRate) {
+              lowestHourlyRate = currentHourlyRate;
+              lowestRate = currentHourlyRate;
+              lowestPerDayRate =
+                currentFullDayRate && x?.fullRateCheckkBox
+                  ? currentFullDayRate
+                  : null;
+            }
+          }
+  
+          if (currentFullDayRate != null && x?.fullRateCheckkBox) {
+            if (currentFullDayRate < lowestRate) {
+              lowestPerDayRate = currentFullDayRate;
+              lowestRate = currentFullDayRate;
+              lowestHourlyRate =
+                currentHourlyRate && x?.hourlyCheckBox ? currentHourlyRate : null;
+            }
+          }
+        });
+  
+        if (lowestHourlyRate) {
+          priceArray.push({ rate: lowestHourlyRate, type: "/hour" });
+        }
+        if (lowestPerDayRate) {
+          priceArray.push({ rate: lowestPerDayRate, type: "/day" });
+        }
+      };
+  
+      if (date_calendar) {
+        const date = new Date(date_calendar);
+        const day = date
+          ?.toLocaleString("en-US", { weekday: "long" })
+          ?.toUpperCase();
+  
+        const obj = pricing?.hire_fee?.days?.find(
+          (x: any) => x?.name.toUpperCase() == day
+        );
+        const perDay = obj?.fullRateCheckkBox;
+        const hourly = obj?.hourlyCheckBox;
+  
+        if (hourly) {
+          priceArray.push({ rate: obj?.slots?.rate, type: "/hour" });
+        }
+        if (perDay) {
+          priceArray.push({ rate: obj?.full_day_rate, type: "/day" });
+        }
+        if (!hourly && !perDay) {
+          return null;
+        }
+      } else if (!date_calendar && !isDefaultPriceFilter) {
+        // get prices that matches the price filter
+        const allPricesArray = pricing?.hire_fee?.days?.filter(
+          (x: any) =>
+            (parseInt(minPrice as string) <= x?.slots?.rate &&
+              parseInt(maxPrice as string) >= x.full_day_rate) ||
+            (parseInt(minPrice as string) <= x.full_day_rate &&
+              parseInt(maxPrice as string) >= x.full_day_rate)
+        );
+  
+        if (allPricesArray.length > 0) {
+          getLowestRate(allPricesArray);
+        }
+      } else {
+        // get prices that matches the price filter
+        const allPricesArray = pricing?.hire_fee?.days;
+        if (allPricesArray.length > 0) {
+          getLowestRate(allPricesArray);
+        }
+      }
+  
+      // FOR CUSTOM PRICES
+    } else {
+      let lowestRate = Infinity;
+      let duration = "";
+  
+      // get lowest rate with comparison on price range
+      const getLowestRateWithPricesFilter = (array: any = []) => {
+        array.forEach((x: any) => {
+          if (
+            x?.price < lowestRate &&
+            parseInt(minPrice as string) <= x.price &&
+            parseInt(maxPrice as string) >= x.price
+          ) {
+            lowestRate = x?.price;
+            duration = x?.duration;
+          }
+        });
+        priceArray.push({ rate: lowestRate, duration, type: duration });
+      };
+  
+      // get lowest rate without comparison on price range
+      const getLowestRateWithoutPricesFilter = (array: any = []) => {
+        array.forEach((x: any) => {
+          if (x?.price < lowestRate) {
+            lowestRate = x?.price;
+            duration = x?.duration;
+          }
+        });
+        priceArray.push({ rate: lowestRate, duration, type: duration });
+      };
+  
+      // if calendar is defined
+      if (date_calendar) {
+        const date = new Date(date_calendar);
+        const day = date
+          ?.toLocaleString("en-US", { weekday: "long" })
+          ?.toUpperCase();
+  
+        // filter prices with similar weekday
+        const filterPricesArray = pricing?.custom_price?.prices.filter((x: any) =>
+          x.weekdays.includes(day)
+        );
+  
+        if (isDefaultPriceFilter) {
+          getLowestRateWithoutPricesFilter(filterPricesArray);
+        } else {
+          // if both calendar and prices filter are defined
+          getLowestRateWithPricesFilter(filterPricesArray);
+        }
+      }
+  
+      // if calendar is null and filter are with values
+      else if (!date_calendar && !isDefaultPriceFilter) {
+        const pricesArray = pricing?.custom_price?.prices;
+        // const minSpendPrice = pricing?.custom_price?.prices.find((x => x?.minimum_spend ))
+        getLowestRateWithPricesFilter(pricesArray);
+      } else {
+        // if both calendar is null and filter are with values
+        const pricesArray = pricing?.custom_price?.prices;
+        getLowestRateWithoutPricesFilter(pricesArray);
+      }
+    }
+  
+    return priceArray;
+  };
+
   return {
     spaces,
     space,
@@ -491,6 +650,7 @@ export function useSpace() {
     deleteMultipleSpaces,
     getAllSpacesWithoutPagination,
     getListSpaceManagement,
-    deleteSpaceWithValidation
+    deleteSpaceWithValidation,
+    getRate
   };
 }
