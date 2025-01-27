@@ -54,7 +54,7 @@
                 <v-img :src="featuredImage(item as any) || '/svg/default-draft-image.svg'
                   " height="54px" width="54px" cover rounded="lg"></v-img>
               </span>
-              <span>{{ sliceContent(item?.space as string, 30) }}</span>
+              <span>{{ sliceContent(item?.space as string, 30) || '(New Draft)' }}</span>
             </div>
           </td>
           <td>
@@ -237,7 +237,7 @@ const loadItems = async () => {
 
 const handleAddNewSpace = async () => {
   addingNewLoading.value = true;
-  let name = 'New Space';
+  let name = '';
   let status: 'DRAFT' | 'PENDING' = isAdminMember ? 'PENDING' : 'DRAFT';
   const { data: spaceData, error } = await addNewSpace(venueId as string, name, status);
   if (spaceData) {

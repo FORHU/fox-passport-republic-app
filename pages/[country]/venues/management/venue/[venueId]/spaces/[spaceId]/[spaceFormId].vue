@@ -585,29 +585,27 @@ const handleApproveDeleteSpace = async () => {
     processing.value = false;
 };
 
+
+let spaceListArr: any = []
+// get list of spaces without paginationso baka ka
+const getSpacesArray = async () => {
+    const { data, error } = await getAllSpacesWithoutPagination(venueId as string)
+    if (error.value) {
+        setSnackbar(somethingWentWrongMessage)
+        return;
+    }
+    const res = data.value as any;
+    const spaceData = res?.data
+    if (!spaceData || spaceData.length == 0) {
+        setSnackbar(somethingWentWrongMessage);
+        console.log('space-list API issue',);
+    }
+    spaceListArr = spaceData;
+}
+
 const handleAdminAction = async (status: "SUSPENDED" | "PUBLISHED" | "REJECTED") => {
     showSuspendPrompt.value = false;
     processing.value = true;
-
-    let spaceListArr: any = []
-
-    // get actual for space number for checking
-    const getSpacesArray = async () => {
-        // const filterStatus = 'PUBLISHED,FOR_APPROVAL'
-        // const { data } = await getFilteredSpaceList(venueId as string, filterStatus, 1, 1000)
-        const { data, error } = await getAllSpacesWithoutPagination(venueId as string)
-        if (error.value) {
-            setSnackbar(somethingWentWrongMessage)
-            return;
-        }
-        const res = data.value as any;
-        const spaceData = res?.data
-        if (!spaceData || spaceData.length == 0) {
-            setSnackbar(somethingWentWrongMessage);
-            console.log('space-list API issue',);
-        }
-        spaceListArr = spaceData;
-    }
 
     try {
         await adminUpdateSpace(spaceId as string, { status });
@@ -785,6 +783,23 @@ const handleNext = async () => {
     scrollToError();
 
     if (mode.value === "update" || mode.value === "create") {
+
+        // prevent space name to duplicate
+        if (activeSpacePage.value === 1 && formValid.value) {
+            await getSpacesArray(); // 
+            const duplicateName = spaceListArr.some((x: TVenueSpace) => x.name == space.value?.name);
+            if(duplicateName){
+                setSnackbar({
+                    text: "Space name already exists",
+                    color: "error",
+                    modal: true,
+                });
+                return;
+            }
+        }
+
+
+
         // add page 3 first to skip formValid validation
         if (activeSpacePage.value === 3) {
             if (
