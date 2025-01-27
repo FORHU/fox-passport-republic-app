@@ -269,6 +269,13 @@ export default function () {
       .join(' '); // Join the words back together
   }
 
+  const formatPricingType = (type: string) => {
+    if(!type) return;
+    const lowercaseType = type.toLowerCase().replace(" ", "");
+    return lowercaseType.replace("per", "/");
+  };
+
+
   return {
     validEmail,
     minPasswordLength,
@@ -295,6 +302,7 @@ export default function () {
     convertToDecimal,
     convertToPercentage,
     requiredInputForName,
-    capitalizeNames
+    capitalizeNames,
+    formatPricingType,
   };
 }

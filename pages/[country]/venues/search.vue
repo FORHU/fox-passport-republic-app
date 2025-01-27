@@ -662,24 +662,26 @@ const handelUpdateDate = (newValue: string) => {
   });
   searchVenues();
 };
-const handleUpdatePriceValue = (newValue: string) => {
-  loader.value = true;
-  setTimeout(() => {
-    debouncedSearchVenues();
-  }, 1000);
-};
+// const handleUpdatePriceValue = (newValue: string) => {
+//   loader.value = true;
+//   setTimeout(() => {
+//     debouncedSearchVenues();
+//   }, 1000);
+// };
 
-const handleUpdatePriceValueIndexZero = (newValue: string) => {
-  setTimeout(() => {
-    debouncedSearchVenues();
-  }, 1000);
-};
+// const handleUpdatePriceValueIndexZero = (newValue: string) => {
+//   setTimeout(() => {
+//     debouncedSearchVenues();
+//   }, 1000);
+// };
 
-const handleUpdatePriceValueIndexOne = (newValue: string) => {
-  setTimeout(() => {
-    debouncedSearchVenues();
-  }, 1000);
-};
+// const handleUpdatePriceValueIndexOne = (newValue: string) => {
+//   setTimeout(() => {
+//     debouncedSearchVenues();
+//   }, 1000);
+// };
+
+
 const currencySymbol = computed(() => {
   const currency = currentCurrency(country.toUpperCase());
   return currency?.symbol;
