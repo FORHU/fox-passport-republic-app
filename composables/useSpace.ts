@@ -477,7 +477,7 @@ export function useSpace() {
     
       
     // Check for min/max price is in default;
-    const isDefaultPriceFilter =  parseInt(maxPrice as string) === 0;
+    const isDefaultPriceFilter =  parseInt(maxPrice as string) === 0 || (maxPrice == null && minPrice === null) ;
     let priceArray = []; // displayed price
 
     if (selectedPricing == "HIRE_FEE") {
