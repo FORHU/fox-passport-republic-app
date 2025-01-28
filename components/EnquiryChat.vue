@@ -179,101 +179,27 @@
       <LoadingChat v-if="loading" :lines="15" />
       <EnquiryDetailsCard v-if="!loading" :enquiry="enquiry" :owner-full-name="ownerFullName"
         :customer-full-name="customerFullName" :info-message="infoMessage" :space="space"
-        @show-number="requestShowPhoneNumber" @go-to-space="goToSpace">
+        @show-number="requestShowPhoneNumber" @go-to-space="goToSpace"
+        @close="showEventDetailsSmallScreen = false" 
+        :booking-reviewed="bookingReviewed"
+        :rating-details="ratingDetails"
+        :update-offer-processing="updateOfferProcessing"
+        @request-to-book="handleRequestToBook"
+        @go-to-offer="goToOffer('view')"
+        @decline-offer="showDeclinePrompt = true"
+        @create-offer="goToCreateOffer"
+        @update-offer="goToOffer('update')"
+        @view-cancellation-details="goToOffer('cancellation-details')"
+        @payment-failed="goToOffer('payment')"
+        @review-booking="goToOffer('review-booking')"
+        @view-receipt="goToOffer('receipt')"
+        @rate="goToOffer('review-stay')"
+        @cancel-booking="goToOffer('cancel-booking')"
+        @archive-inquiry="showArchiveInquiryPrompt = true"
+        @view-invoice="goToOffer('invoice')"
+        >
         <template #buttons>
           <!-- VENUE OWNER BUTTONS -->
-          <v-row v-if="isVenueOwner || isVenueAdmin" no-gutters>
-            <v-col cols="12" v-if="newEnquiry || offerDeclined || bookingWithdrawn || bookingRequestDeclined"
-              class="d-flex flex-column ga-2">
-              <v-btn variant="outlined" block size="large" @click="goToCreateOffer"
-                :text="offerDeclined ? 'Create New Offer' : 'Create Offer'"></v-btn>
-            </v-col>
-            
-            <v-col cols="12" v-if="customOfferSent || paymentFailed" class="d-flex flex-column ga-2">
-              <v-btn variant="outlined" block size="large" :loading="updateOfferProcessing"
-                @click="goToOffer('update')">Update Offer</v-btn>
-            </v-col>
-
-            <v-col cols="12" v-if="bookingRequested" class="d-flex flex-column ga-2">
-              <v-btn variant="outlined" block size="large" :loading="approvingRequest"
-                @click="handleApproveBookingRequest">Approve Booking Request</v-btn>
-              <v-btn variant="outlined" block size="large" :loading="processingDeclineBookingRequest"
-                @click="handleDeclineBookingRequest">Decline Booking Request</v-btn>
-            </v-col>
-
-            <v-col cols="12" v-if="bookingConfirmed" class="d-flex flex-column ga-2">
-              <v-btn variant="outlined" block size="large" @click="goToOffer('review-booking')">Review Booking</v-btn>
-              <v-btn variant="outlined" block size="large" @click="goToOffer('cancel-booking')">Cancel Booking</v-btn>
-              <v-btn variant="outlined" block size="large" @click="goToOffer('invoice')">View Invoice</v-btn>
-            </v-col>
-
-            <v-col cols="12" v-if="bookingHappened" class="d-flex flex-column ga-2">
-              <v-btn variant="outlined" block size="large" @click="goToOffer('review-booking')">Review Booking</v-btn>
-            </v-col>
-
-            <v-col cols="12" v-if="bookingCancelled" class="d-flex flex-column ga-2">
-              <v-btn variant="outlined" block size="large" @click="goToOffer('cancellation-details')">View Cancellation
-                Details</v-btn>
-            </v-col>
-
-            <v-col cols="12" v-if="!bookingConfirmed && !bookingHappened && !bookingCancelled && !bookingArchived"
-              class="d-flex flex-column ga-2 pt-2">
-              <v-row justify="end" class="w-100 pt-2" no-gutters>
-                <v-btn text='Archive Inquiry' variant='text' density='compact' class="text-decoration-underline" @click="showArchiveInquiryPrompt = true" />
-              </v-row>
-            </v-col>
-
-          </v-row>
-
-          <!-- CUSTOMER BUTTONS -->
-          <v-row v-else-if="isUser" no-gutters>
-            <v-col cols="12" v-if="newEnquiry || offerDeclined || bookingWithdrawn || bookingRequestDeclined"
-              class="d-flex flex-column ga-2">
-              <v-btn v-if="userCanBook" variant="outlined" block size="large" @click="handleRequestToBook">Request To
-                Book</v-btn>
-              <v-btn v-if="userCanBook" variant="outlined" block size="large" @click="handleFindSimilarVenues">Find
-                Similar Venues</v-btn>
-            </v-col>
-            <v-col cols="12" v-if="customOfferSent" class="d-flex flex-column ga-2">
-              <v-btn variant="outlined" block size="large" @click="goToOffer('view')">View Offer</v-btn>
-              <v-btn v-if="!isAdmin" variant="outlined" block size="large" @click="showDeclinePrompt = true">Decline
-                Offer</v-btn>
-            </v-col>
-
-            <v-col cols="12" v-if="bookingRequested" class="d-flex flex-column ga-2">
-              <v-btn v-if="!isAdmin" variant="outlined" block size="large" :loading="withdrawBookingProcessing"
-                @click="handleWithdrawBookingRequest">Withdraw Booking</v-btn>
-            </v-col>
-
-            <v-col cols="12" v-if="offerAccepted" class="d-flex flex-column ga-2">
-              <v-btn v-if="!isAdmin" variant="outlined" block size="large" @click="goToOffer('payment')">Go to
-                Payment</v-btn>
-              <v-btn v-if="!isAdmin" variant="outlined" block size="large" @click="showDeclinePrompt = true">Decline
-                Offer</v-btn>
-            </v-col>
-
-            <v-col cols="12" v-if="paymentFailed || paymentInProgress" class="d-flex flex-column ga-2">
-              <v-btn v-if="!isAdmin" variant="outlined" block size="large" @click="goToOffer('payment')">Go to
-                Payment</v-btn>
-            </v-col>
-
-            <v-col cols="12" v-if="bookingConfirmed" class="d-flex flex-column ga-2">
-              <v-btn variant="outlined" block size="large" @click="goToOffer('review-booking')">Review Booking</v-btn>
-              <v-btn v-if="!isAdmin" variant="outlined" block size="large" @click="goToOffer('cancel-booking')">Cancel
-                Booking</v-btn>
-              <v-btn variant="outlined" block size="large" @click="goToOffer('receipt')">View Receipt</v-btn>
-            </v-col>
-
-            <v-col cols="12" v-if="bookingHappened" class="d-flex flex-column ga-2">
-              <v-btn variant="outlined" block size="large" @click="goToOffer('review-booking')">Review Booking</v-btn>
-            </v-col>
-
-            <v-col cols="12" v-if="bookingCancelled" class="d-flex flex-column ga-2">
-              <v-btn variant="outlined" block size="large" @click="goToOffer('cancellation-details')">View Cancellation
-                Details</v-btn>
-            </v-col>
-
-          </v-row>
         </template>
       </EnquiryDetailsCard>
       <!-- <EnquiryDetailsCardOwner v-if="!loading && !isUser" :enquiry="enquiry" :customer-full-name="customerFullName"
@@ -293,101 +219,26 @@
       <EnquiryDetailsCard v-if="!loading" :enquiry="enquiry" :owner-full-name="ownerFullName"
         :customer-full-name="customerFullName" :info-message="infoMessage" :space="space"
         @show-number="requestShowPhoneNumber" @go-to-space="goToSpace" close-button
-        @close="showEventDetailsSmallScreen = false">
+        @close="showEventDetailsSmallScreen = false" 
+        :booking-reviewed="bookingReviewed"
+        :rating-details="ratingDetails"
+        :update-offer-processing="updateOfferProcessing"
+        @request-to-book="handleRequestToBook"
+        @go-to-offer="goToOffer('view')"
+        @decline-offer="showDeclinePrompt = true"
+        @create-offer="goToCreateOffer"
+        @update-offer="goToOffer('update')"
+        @view-cancellation-details="goToOffer('cancellation-details')"
+        @payment-failed="goToOffer('payment')"
+        @review-booking="goToOffer('review-booking')"
+        @view-receipt="goToOffer('receipt')"
+        @rate="goToOffer('review-stay')"
+        @cancel-booking="goToOffer('cancel-booking')"
+        @archive-inquiry="showArchiveInquiryPrompt = true"
+        @view-invoice="goToOffer('invoice')"
+        >
         <template #buttons>
           <!-- VENUE OWNER BUTTONS -->
-          <v-row v-if="isVenueOwner || isVenueAdmin" no-gutters>
-            <v-col cols="12" v-if="newEnquiry || offerDeclined || bookingWithdrawn || bookingRequestDeclined"
-              class="d-flex flex-column ga-2">
-              <v-btn variant="outlined" block size="large" @click="goToCreateOffer"
-                :text="offerDeclined ? 'Create New Offer' : 'Create Offer'"></v-btn>
-            </v-col>
-
-            <v-col cols="12" v-if="customOfferSent || paymentFailed" class="d-flex flex-column ga-2">
-              <v-btn variant="outlined" block size="large" :loading="updateOfferProcessing"
-                @click="goToOffer('update')">Update Offer</v-btn>
-            </v-col>
-
-            <v-col cols="12" v-if="bookingRequested" class="d-flex flex-column ga-2">
-              <v-btn variant="outlined" block size="large" :loading="approvingRequest"
-                @click="handleApproveBookingRequest">Approve Booking Request</v-btn>
-              <v-btn variant="outlined" block size="large" :loading="processingDeclineBookingRequest"
-                @click="handleDeclineBookingRequest">Decline Booking Request</v-btn>
-            </v-col>
-
-            <v-col cols="12" v-if="bookingConfirmed" class="d-flex flex-column ga-2">
-              <v-btn variant="outlined" block size="large" @click="goToOffer('review-booking')">Review Booking</v-btn>
-              <v-btn variant="outlined" block size="large" @click="goToOffer('cancel-booking')">Cancel Booking</v-btn>
-              <v-btn variant="outlined" block size="large" @click="goToOffer('invoice')">View Invoice</v-btn>
-            </v-col>
-
-            <v-col cols="12" v-if="bookingHappened" class="d-flex flex-column ga-2">
-              <v-btn variant="outlined" block size="large" @click="goToOffer('review-booking')">Review Booking</v-btn>
-            </v-col>
-
-            <v-col cols="12" v-if="bookingCancelled" class="d-flex flex-column ga-2">
-              <v-btn variant="outlined" block size="large" @click="goToOffer('cancellation-details')">View Cancellation
-                Details</v-btn>
-            </v-col>
-
-            <v-col cols="12" v-if="!bookingConfirmed && !bookingHappened && !bookingCancelled && !bookingArchived"
-              class="d-flex flex-column ga-2 pt-2">
-              <v-row justify="end" class="w-100 pt-2" no-gutters>
-                <v-btn text='Archive Inquiry' variant='text' density='compact' class="text-decoration-underline" @click="showArchiveInquiryPrompt = true" />
-              </v-row>
-            </v-col>
-
-          </v-row>
-
-          <!-- CUSTOMER BUTTONS -->
-          <v-row v-else-if="isUser" no-gutters>
-            <v-col cols="12" v-if="newEnquiry || offerDeclined || bookingWithdrawn || bookingRequestDeclined"
-              class="d-flex flex-column ga-2">
-              <v-btn v-if="userCanBook" variant="outlined" block size="large" @click="handleRequestToBook">Request To
-                Book</v-btn>
-              <v-btn v-if="userCanBook" variant="outlined" block size="large" @click="handleFindSimilarVenues">Find
-                Similar Venues</v-btn>
-            </v-col>
-            <v-col cols="12" v-if="customOfferSent" class="d-flex flex-column ga-2">
-              <v-btn variant="outlined" block size="large" @click="goToOffer('view')">View Offer</v-btn>
-              <v-btn v-if="!isAdmin" variant="outlined" block size="large" @click="showDeclinePrompt = true">Decline
-                Offer</v-btn>
-            </v-col>
-
-            <v-col cols="12" v-if="bookingRequested" class="d-flex flex-column ga-2">
-              <v-btn v-if="!isAdmin" variant="outlined" block size="large" :loading="withdrawBookingProcessing"
-                @click="handleWithdrawBookingRequest">Withdraw Booking</v-btn>
-            </v-col>
-
-            <v-col cols="12" v-if="offerAccepted" class="d-flex flex-column ga-2">
-              <v-btn v-if="!isAdmin" variant="outlined" block size="large" @click="goToOffer('payment')">Go to
-                Payment</v-btn>
-              <v-btn v-if="!isAdmin" variant="outlined" block size="large" @click="showDeclinePrompt = true">Decline
-                Offer</v-btn>
-            </v-col>
-
-            <v-col cols="12" v-if="paymentFailed || paymentInProgress" class="d-flex flex-column ga-2">
-              <v-btn v-if="!isAdmin" variant="outlined" block size="large" @click="goToOffer('payment')">Go to
-                Payment</v-btn>
-            </v-col>
-
-            <v-col cols="12" v-if="bookingConfirmed" class="d-flex flex-column ga-2">
-              <v-btn variant="outlined" block size="large" @click="goToOffer('review-booking')">Review Booking</v-btn>
-              <v-btn v-if="!isAdmin" variant="outlined" block size="large" @click="goToOffer('cancel-booking')">Cancel
-                Booking</v-btn>
-              <v-btn variant="outlined" block size="large" @click="goToOffer('receipt')">View Receipt</v-btn>
-            </v-col>
-
-            <v-col cols="12" v-if="bookingHappened" class="d-flex flex-column ga-2">
-              <v-btn variant="outlined" block size="large" @click="goToOffer('review-booking')">Review Booking</v-btn>
-            </v-col>
-
-            <v-col cols="12" v-if="bookingCancelled" class="d-flex flex-column ga-2">
-              <v-btn variant="outlined" block size="large" @click="goToOffer('cancellation-details')">View Cancellation
-                Details</v-btn>
-            </v-col>
-
-          </v-row>
         </template>
       </EnquiryDetailsCard>
     </EnquiryModal>
@@ -492,6 +343,7 @@ const showEventDetails = ref(true);
 const showEventDetailsSmallScreen = ref(false);
 const showArchiveInquiryPrompt = ref(false);
 const processingArchive = ref(false);
+const ratingDetails = ref<null | number>(null);
 
 const showChatTemplateModal = ref(false);
 
