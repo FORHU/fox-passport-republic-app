@@ -60,6 +60,7 @@ export default defineNuxtConfig({
       USE_V2_ROUTES: process.env.USE_V2_ROUTES as string,
       ALT_DOMAIN: process.env.ALT_DOMAIN as string,
       MAIN_URL: process.env.MAIN_URL as string,
+      TENANT_CODE: process.env.TENANT_CODE as string
     },
   },
 
