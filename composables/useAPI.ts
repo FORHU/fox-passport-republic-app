@@ -4,6 +4,7 @@ import { defu } from "defu";
 export function useAPI<T>(url: string, options: UseFetchOptions<T> = {}) {
   const { loggedIn } = useLocalAuth();
   const config = useRuntimeConfig();
+  const tenantCode = config.public.TENANT_CODE
   const cookieOptions = {
     domain: config.public.DOMAIN,
     secure: true,
@@ -15,7 +16,10 @@ export function useAPI<T>(url: string, options: UseFetchOptions<T> = {}) {
   const defaults: UseFetchOptions<T> = {
     baseURL: "/api",
     key: url,
-    headers: loggedIn.value ? { Authorization: `Bearer ${accessToken}` } : {},
+    headers: {
+      ...loggedIn.value ? { Authorization: `Bearer ${accessToken}` } : {},
+      TENANT: tenantCode
+    },
     async onResponseError({ response }) {
       if (response.status === 401 && retry == 0) {
         retry += 1;
