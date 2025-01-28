@@ -51,6 +51,9 @@
     >
       <p>No popular venues available at the moment.</p>
     </v-col>
+    <v-row no-gutters class="w-100">
+    <v-btn variant="text" :loading="loadingMorePopular" v-if="currentPagePopular < totalPopularPages || loadingMorePopular" class="text-decoration-underline" @click="showMorePopular">Show more popular venues</v-btn>
+  </v-row>
   </v-row>
 
   <!-- Recently Listed Venues Section -->
@@ -105,6 +108,8 @@
     >
       <p>No recently listed venues available at the moment.</p>
     </v-col>
+    <v-row no-gutters class="w-100">
+  </v-row>
   </v-row>
 </template>
 
@@ -117,29 +122,57 @@ const { country, setSnackbar } = useLocal();
 const { smAndUp, lgAndUp, mdAndUp } = useDisplay();
 const { loggedIn } = useLocalAuth();
 const { getGroupOfFavorites, deselectFavorites } = useFavorites();
+const { getMostPopular } = useMostPopular();
 
-const spaceArrayPopular = ref([]);
-const spaceArrayRecent = ref([]);
-const slicedPopularArray = ref([]);
-const slicedRecentArray = ref([]);
+const spaceArrayPopular = ref<Partial<TVenueSpace>[]>([]);
+const spaceArrayRecent = ref<Partial<TVenueSpace>[]>([]);
+const slicedPopularArray = ref<Partial<TVenueSpace>[]>([]);
+const slicedRecentArray = ref<Partial<TVenueSpace>[]>([]);
 const favoriteCount = ref(0);
 const favoriteObj = ref();
 const loadingPopular = ref(true);
 const loadingRecent = ref(true);
+const currentPagePopular = ref(1);
+const totalPopularPages = ref(1);
+const loadingMorePopular = ref(false);
+const morePopularShown = ref(false);
 
 // Fetch popular venues
 const assignSpaceDataPopular = async () => {
   loadingPopular.value = true;
-  const { data } = await useAPI("/v1/space/most-popular", {
-    query: {
-      status: "PUBLISHED",
-      location: useCookie("country").value?.toUpperCase() || "SG",
-    },
-  });
-
-  spaceArrayPopular.value = data.value ? data.value.data.data : [];
+  // const { data } = await useAPI("/v1/space/most-popular", {
+  //   query: {
+  //     status: "PUBLISHED",
+  //     location: useCookie("country").value?.toUpperCase() || "SG",
+  //   },
+  // });
+  const res: any = await getMostPopular({status: "PUBLISHED", location: useCookie("country").value?.toUpperCase() || "SG"})
+  spaceArrayPopular.value = res?.data || [];
+  totalPopularPages.value = res?.total_pages
   loadingPopular.value = false;
 };
+
+const showMorePopular = async () => {
+  morePopularShown.value = true;
+  if(currentPagePopular.value == totalPopularPages.value){
+    return;
+  }
+  loadingMorePopular.value = true;
+  currentPagePopular.value++;
+  try {
+    const res: any = await getMostPopular({status: "PUBLISHED", location: useCookie("country").value?.toUpperCase() || "SG", page: currentPagePopular.value})
+    if(res?.data.length > 0){
+      spaceArrayPopular.value = [...spaceArrayPopular.value, ...res?.data]
+      slicedPopularArray.value = spaceArrayPopular.value
+    }
+    
+    totalPopularPages.value = res?.total_pages
+  } catch (e) {
+    console.error(e);
+  } finally {
+    loadingMorePopular.value = false;
+  }
+}
 
 // Fetch recently listed venues
 const assignSpaceDataRecent = async () => {
@@ -228,16 +261,16 @@ watchEffect(() => {
   const recent = spaceArrayRecent.value;
 
   if (lgAndUp.value) {
-    slicedPopularArray.value = popular.slice(0, 4);
+    slicedPopularArray.value = !morePopularShown.value ? popular.slice(0, 4) : spaceArrayPopular.value
     slicedRecentArray.value = recent.slice(0, 4);
   } else if (mdAndUp.value) {
-    slicedPopularArray.value = popular.slice(0, 4);
+    slicedPopularArray.value = !morePopularShown.value ? popular.slice(0, 4) : spaceArrayPopular.value
     slicedRecentArray.value = recent.slice(0, 4);
   } else if (smAndUp.value) {
-    slicedPopularArray.value = popular.slice(0, 6);
+    slicedPopularArray.value = !morePopularShown.value ? popular.slice(0, 6) : spaceArrayPopular.value
     slicedRecentArray.value = recent.slice(0, 6);
   } else {
-    slicedPopularArray.value = popular.slice(0, 4);
+    slicedPopularArray.value = !morePopularShown.value ? popular.slice(0, 4) : spaceArrayPopular.value
     slicedRecentArray.value = recent.slice(0, 4);
   }
 });
