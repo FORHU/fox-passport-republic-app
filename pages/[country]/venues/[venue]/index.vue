@@ -1070,7 +1070,6 @@ const {
   timesFrom,
   allowedTime,
   checkTimesToFunction,
-  getOverallSpaceRating,
 } = useSpace();
 const { getEnquiryList } = useEnquiry();
 const { setSnackbar } = useLocal();
@@ -1150,25 +1149,25 @@ const isSpacePublished = computed(() => {
   return specificSpace.value.status == "PUBLISHED";
 });
 
-const fetchOverallSpaceRating = async () => {
-  const spaceId = specificSpace.value._id;
+// const fetchOverallSpaceRating = async () => {
+//   const spaceId = specificSpace.value._id;
 
-  try {
-    const { data } = await getOverallSpaceRating(spaceId);
-    spaceRatingOverall.value = data.value.data;
-  } catch (error) {
-    console.error("Error fetching rating:", error);
-  }
-};
+//   try {
+//     const { data } = await getOverallSpaceRating(spaceId);
+//     spaceRatingOverall.value = data.value.data;
+//   } catch (error) {
+//     console.error("Error fetching rating:", error);
+//   }
+// };
 
-watch(
-  () => specificSpace.value._id,
-  (newSpaceId) => {
-    if (newSpaceId) {
-      fetchOverallSpaceRating();
-    }
-  }
-);
+// watch(
+//   () => specificSpace.value._id,
+//   (newSpaceId) => {
+//     if (newSpaceId) {
+//       fetchOverallSpaceRating();
+//     }
+//   }
+// );
 
 const hasOfferData = computed(() => {
   const foodAndBeveragesData =

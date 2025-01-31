@@ -13,24 +13,6 @@ export function useSpace() {
     });
   };
 
-  const getUserSpaceRating = async (spaceId: string) => {
-    return await useAPI(`/api/v1/rating/${spaceId}`, {
-      method: "GET",
-    });
-  };
-
-  const getOverallSpaceRating = async (spaceId: string) => {
-    return await useAPI(`/api/v1/rating/overall/${spaceId}`, {
-      method: "GET",
-    });
-  };
-
-  const submitRating = async (spaceId: string, rating: number) => {  
-    return await useAPI(`/api/v1/rating/${spaceId}`, {
-      method: "POST",
-      body: { rating: rating },
-    });
-  };
   
   const getSpaceList = async (venueId: string) => {
     return await useAPI("/v1/space", {
@@ -616,9 +598,6 @@ export function useSpace() {
     getSpace,
     getSpaceList,
     getFilteredSpaceList,
-    getUserSpaceRating,
-    getOverallSpaceRating,
-    submitRating,
     addNewSpace,
     updateSpace,
     deleteSpace,

@@ -275,6 +275,35 @@ export default function () {
     return lowercaseType.replace("per", "/");
   };
 
+  const timeAgo = (dateString: string, includeAgo: boolean = true): string => {
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
+  
+    const suffix = includeAgo ? " ago" : "";
+  
+    if (diffInSeconds < 60) {
+      return `${diffInSeconds} second${diffInSeconds > 1 ? "s" : ""}${suffix}`;
+    } else if (diffInSeconds < 3600) {
+      const minutes = Math.floor(diffInSeconds / 60);
+      return `${minutes} minute${minutes > 1 ? "s" : ""}${suffix}`;
+    } else if (diffInSeconds < 86400) {
+      const hours = Math.floor(diffInSeconds / 3600);
+      return `${hours} hour${hours > 1 ? "s" : ""}${suffix}`;
+    } else if (diffInSeconds < 604800) {
+      const days = Math.floor(diffInSeconds / 86400);
+      return `${days} day${days > 1 ? "s" : ""}${suffix}`;
+    } else if (diffInSeconds < 2419200) {
+      const weeks = Math.floor(diffInSeconds / 604800);
+      return `${weeks} week${weeks > 1 ? "s" : ""}${suffix}`;
+    } else if (diffInSeconds < 29030400) {
+      const months = Math.floor(diffInSeconds / 2419200);
+      return `${months} month${months > 1 ? "s" : ""}${suffix}`;
+    } else {
+      const years = Math.floor(diffInSeconds / 29030400);
+      return `${years} year${years > 1 ? "s" : ""}${suffix}`;
+    }
+  };
 
   return {
     validEmail,
@@ -304,5 +333,6 @@ export default function () {
     requiredInputForName,
     capitalizeNames,
     formatPricingType,
+    timeAgo
   };
 }
