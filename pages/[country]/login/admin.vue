@@ -135,7 +135,7 @@ const onSubmit = async () => {
           "Account not found or has been deleted. Please contact support if you think this is an error.";
         passwordError.value = "";
       } else {
-        emailError.value =
+        emailError.value = message || 
           "An unexpected error occurred. Please try again later.";
         passwordError.value = ""; 
       }
