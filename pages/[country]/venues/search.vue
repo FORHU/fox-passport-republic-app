@@ -48,6 +48,12 @@
                   navigationItem.title
                 }}</v-list-item-title>
               </v-list-item>
+              <v-list-item :to="`/settings/country`" class="text-decoration-none" v-if="isAdmin">
+                <v-list-item-title>Countries</v-list-item-title>
+              </v-list-item>
+              <v-list-item :to="`/${country}/team-members`" class="text-decoration-none" v-if="isAdmin || isVenueOwner || isVenueLister">
+                <v-list-item-title>Team Members</v-list-item-title>
+              </v-list-item>
               <v-list-item :to="`/${country}/profile/general-information`" class="text-decoration-none">
                 <v-list-item-title>Settings</v-list-item-title>
               </v-list-item>
@@ -512,13 +518,13 @@ const baseUrl = "country";
 // State to track if the menu is open or closed
 const menuOpen = ref(false);
 
+const isAdmin = currentUser.value.role == "ADMIN";
+const isUser = currentUser.value.role == "USER";
+const isVenueOwner = currentUser.value.role == "VENUE_OWNER";
+const isVenueLister = currentUser.value.role == "VENUE_LISTER";
+
 const navigation = computed(() => {
   const items = [];
-
-  const isAdmin = currentUser.value.role == "ADMIN";
-  const isUser = currentUser.value.role == "USER";
-  const isVenueOwner = currentUser.value.role == "VENUE_OWNER";
-  const isVenueLister = currentUser.value.role == "VENUE_LISTER";
 
   if (isAdmin || isVenueOwner || isVenueLister) {
     items.push({
@@ -556,14 +562,14 @@ const navigation = computed(() => {
     });
   }
 
-  if (isAdmin || isVenueOwner || isVenueLister) {
-    items.push({
-      title: "Team Members",
-      icon: "mdi-account-group-outline",
-      to: `${baseUrl}-team-members`,
-      params: { country },
-    });
-  }
+  // if (isAdmin || isVenueOwner || isVenueLister) {
+  //   items.push({
+  //     title: "Team Members",
+  //     icon: "mdi-account-group-outline",
+  //     to: `${baseUrl}-team-members`,
+  //     params: { country },
+  //   });
+  // }
 
   if (isAdmin || isVenueOwner || isVenueLister) {
     items.push({
@@ -583,13 +589,13 @@ const navigation = computed(() => {
   //   });
   // }
 
-  if (isAdmin) {
-    items.push({
-      title: "Countries",
-      icon: "mdi-earth-plus",
-      to: "settings-country",
-    });
-  }
+  // if (isAdmin) {
+  //   items.push({
+  //     title: "Countries",
+  //     icon: "mdi-earth-plus",
+  //     to: "settings-country",
+  //   });
+  // }
 
   return items;
 });
