@@ -54,7 +54,7 @@ export function useVenueSearch() {
   //Fetching venues from the landing page search
   onMounted(async () => {
     // run only in search page
-    if(!useRoute().path?.includes('/search')) return;
+    if (!useRoute().path?.includes("/search")) return;
 
     loader.value = true;
     await loadCountries();
@@ -136,7 +136,7 @@ export function useVenueSearch() {
       ageRestriction.value = false;
       cancellationFlexibility.value = false;
       activeGuest.value = "";
-    
+
       priceValue.value[0] = "0";
       priceValue.value[1] = "0";
       filterDateFrom.value = null;
@@ -151,10 +151,9 @@ export function useVenueSearch() {
 
   //Fetching the venues function
   const searchVenues = async () => {
-    
     // run only in search page
-    if(!useRoute().path?.includes('/search')) return;
-    
+    if (!useRoute().path?.includes("/search")) return;
+
     loader.value = true;
     const params: any = {
       page: page.value,
@@ -179,9 +178,9 @@ export function useVenueSearch() {
     }
 
     if (date !== null) {
-      params.start_date = formatDate(date)
-  }
-  
+      params.start_date = formatDate(date);
+    }
+
     if (selectedKeysString.value !== "") {
       params.representation = selectedKeysString.value;
     }
@@ -329,11 +328,15 @@ export function useVenueSearch() {
   //   }
   // } , {immediate: false});
 
-  watch(filterDateFrom, (newFilterDateFrom) => {
-    if (newFilterDateFrom) {
-      filterDateTo.value = null;
-    }
-  } , {immediate: false});
+  watch(
+    filterDateFrom,
+    (newFilterDateFrom) => {
+      if (newFilterDateFrom) {
+        filterDateTo.value = null;
+      }
+    },
+    { immediate: false }
+  );
 
   watch(
     [filterDateFrom, filterDateTo],
@@ -341,7 +344,8 @@ export function useVenueSearch() {
       if (newFilterDateFrom && newFilterDateTo) {
         searchVenues();
       }
-    } , {immediate: false}
+    },
+    { immediate: false }
   );
 
   const setActiveCard = (option: string): void => {
@@ -358,14 +362,26 @@ export function useVenueSearch() {
     },
   });
 
-  const getCoordinates = () => {
-    coordinates.value = venues.value.reduce((acc: object[], item: any) => {
-      if (item.venue?.address && item.venue.address.coordinates) {
+  const getCoordinates = (spacesArray: TVenueSpace[]) => {
+    if (!spacesArray) return [];
+    coordinates.value = spacesArray.reduce((acc: object[], item: any) => {
+      if (item?.venue?.address && item?.venue?.address?.coordinates) {
+        const prices = item?.pricing?.custom_price?.prices?.map((price) => ({
+          price: price?.price,
+          duration: price?.duration,
+        }));
+
         acc.push({
-          lat: parseFloat(item.venue.address.coordinates.latitude),
-          lng: parseFloat(item.venue.address.coordinates.longitude),
-          title: item.venue.name,
-          photo: getImage(item.space_photo),
+          lat: parseFloat(item?.venue?.address?.coordinates?.latitude),
+          lng: parseFloat(item?.venue?.address?.coordinates?.longitude),
+          location: `${item.venue.address.street}, ${item?.venue?.address?.city}`,
+          title: item?.venue.name,
+          photo: item?.space_photo,
+          rating: item?.rating?.averageRating,
+          currency: item?.pricing?.currency,
+          price: prices?.[0]?.price,
+          duration: prices?.[0]?.duration,
+          id: item._id,
         });
       }
       return acc;
@@ -405,18 +421,18 @@ export function useVenueSearch() {
 
   const formatDate = (date: any) => {
     const ddmmyyyyRegex = /^(\d{2})\/(\d{2})\/(\d{4})$/;
-    
+
     if (ddmmyyyyRegex.test(date)) {
       const [, day, month, year] = date.match(ddmmyyyyRegex);
       const formattedDate = `${year}-${month}-${day}`;
       return new Date(formattedDate).toISOString().substring(0, 10); // Returns date in yyyy-mm-dd format
     }
-    return new Date(date).toISOString().substring(0, 10);// If the date doesn't match the pattern, return null
+    return new Date(date).toISOString().substring(0, 10); // If the date doesn't match the pattern, return null
   };
 
   const loadInitialData = async () => {
     venueLocation.value = location?.toUpperCase();
-    numGuest.value = parseInt(total_guest)
+    numGuest.value = parseInt(total_guest);
 
     const params = {
       keywords: categories,
@@ -427,18 +443,26 @@ export function useVenueSearch() {
     };
 
     if (date !== null) {
-        params.start_date = formatDate(date)
+      const ddmmyyyyRegex = /^(\d{2})\/(\d{2})\/(\d{4})$/;
+      if (ddmmyyyyRegex.test(date)) {
+        const [, day, month, year] = date.match(ddmmyyyyRegex)!;
+        const formattedDate = `${year}-${month}-${day}`;
+        params.start_date = new Date(formattedDate)
+          .toISOString()
+          .substring(0, 10);
+      } else {
+        params.start_date = new Date(date).toISOString().substring(0, 10);
+      }
     }
-    
-    
+
     const { data }: { data: any } = await fetchVenues(params);
     if (data) {
       venues.value = data.value.data.data;
       currentPage.value = data.value.data.current_page;
       totalItems.value = data.value.data.total_items;
       totalPages.value = data.value.data.total_pages;
-      venueCount.value = (venues.value as any).length;
-      getCoordinates();
+      venueCount.value = data.value.data.total_items;
+      getCoordinates(venues.value);
     }
     await getFavoriteCount();
   };
@@ -542,11 +566,15 @@ export function useVenueSearch() {
     if (newVal) {
       mobileMap.value = false;
     }
-  } );
+  });
 
-  watch(page, async () => {
-    await searchVenues();
-  } , {immediate: false});
+  watch(
+    page,
+    async () => {
+      await searchVenues();
+    },
+    { immediate: false }
+  );
 
   watch(mobileMap, (newValue, oldValue) => {
     if (newValue == false && showingMethod.value != "List") {
@@ -653,6 +681,6 @@ export function useVenueSearch() {
     changeShowMethod,
     folderCreated,
     deselectFavorite,
-    debouncedSearchVenues
+    debouncedSearchVenues,
   };
 }
