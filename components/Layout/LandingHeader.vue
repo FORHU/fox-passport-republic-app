@@ -26,8 +26,8 @@
               style="max-width: 120px"
             />
           </nuxt-link>
-          <span :class="smAndDown?'ml-n2':''">
-            <ChangeCountryDropdown v-model:display="displayHeader"  />
+          <span :class="smAndDown ? 'ml-n2' : ''">
+            <ChangeCountryDropdown v-model:display="displayHeader" />
           </span>
         </span>
 
@@ -39,7 +39,10 @@
               v-if="!mdAndDown"
             >
               <nuxt-link
-                :to="{ name: navigationItem.to, params: {country: getCountry()}}"
+                :to="{
+                  name: navigationItem.to,
+                  params: { country: getCountry() },
+                }"
                 class="d-flex align-center mx-3"
                 style="text-decoration: unset; color: unset"
               >
@@ -65,21 +68,27 @@
                       :img-src="currentUser?.profile_picture"
                     />
                   </template>
-                  <v-icon class="ml-1 mt-1" :class="displayHeader ? 'text-secondary' : 'text-white'">
+                  <v-icon
+                    class="ml-1 mt-1"
+                    :class="displayHeader ? 'text-secondary' : 'text-white'"
+                  >
                     {{ menuOpen ? "mdi-chevron-up" : "mdi-chevron-down" }}
                   </v-icon>
                 </v-btn>
-                <div  v-else>
+                <div v-else>
                   <ProfileAvatar
-                      :first_name="currentUser?.first_name"
-                      :last_name="currentUser?.last_name"
-                      :img-src="currentUser?.profile_picture"
-                      @click="menuOpen = true"
-                      
-                    />
-                    <v-icon class="ml-1 mt-1 " :class="displayHeader ? 'text-secondary' : 'text-white'" v-bind="props">
-                  {{ menuOpen ? "mdi-chevron-up" : "mdi-chevron-down" }}
-                </v-icon>
+                    :first_name="currentUser?.first_name"
+                    :last_name="currentUser?.last_name"
+                    :img-src="currentUser?.profile_picture"
+                    @click="menuOpen = true"
+                  />
+                  <v-icon
+                    class="ml-1 mt-1"
+                    :class="displayHeader ? 'text-secondary' : 'text-white'"
+                    v-bind="props"
+                  >
+                    {{ menuOpen ? "mdi-chevron-up" : "mdi-chevron-down" }}
+                  </v-icon>
                 </div>
               </template>
               <v-list class="pa-0 mb-10">
@@ -89,7 +98,7 @@
                   v-show="mdAndDown"
                   :to="{
                     name: navigationItem.to,
-                    params: {country: getCountry()},
+                    params: { country: getCountry() },
                   }"
                   class="text-decoration-none"
                 >
@@ -97,15 +106,36 @@
                     navigationItem.title
                   }}</v-list-item-title>
                 </v-list-item>
-                <v-list-item :to="`/settings/country`" class="text-decoration-none" v-if="isAdmin">
-                <v-list-item-title>Countries</v-list-item-title>
-              </v-list-item>
-                <v-list-item :to="`/${country}/sales`" class="text-decoration-none" v-if="isAdmin || isAdminMember || isAdminSales">
-                <v-list-item-title>{{ isAdminSales ? "My Sales Transaction" : "Sales Transaction" }}</v-list-item-title>
-              </v-list-item>
-              <v-list-item :to="`/${country}/team-members`" class="text-decoration-none" v-if="isVenueOwner || isVenueLister || isAdmin">
-                <v-list-item-title>Team Members</v-list-item-title>
-              </v-list-item>
+                <v-list-item
+                  :to="`/settings/country`"
+                  class="text-decoration-none"
+                  v-if="isAdmin"
+                >
+                  <v-list-item-title>Countries</v-list-item-title>
+                </v-list-item>
+                <v-list-item
+                  :to="`/${country}/sales`"
+                  class="text-decoration-none"
+                  v-if="isAdmin || isAdminMember || isAdminSales"
+                >
+                  <v-list-item-title>{{
+                    isAdminSales ? "My Sales Transaction" : "Sales Transaction"
+                  }}</v-list-item-title>
+                </v-list-item>
+                <v-list-item
+                  :to="`/${country}/team-members`"
+                  class="text-decoration-none"
+                  v-if="isVenueOwner || isVenueLister || isAdmin"
+                >
+                  <v-list-item-title>Team Members</v-list-item-title>
+                </v-list-item>
+                <v-list-item
+                  :to="`/${country}/ratings`"
+                  class="text-decoration-none"
+                  v-if="isAdmin"
+                >
+                  <v-list-item-title>Ratings</v-list-item-title>
+                </v-list-item>
                 <v-list-item
                   :to="`/${country}/profile/general-information`"
                   class="text-decoration-none"
@@ -160,7 +190,7 @@ import { useDisplay } from "vuetify";
 
 const { displayHeader } = useUtils();
 const { isAdminMember, isAdminSales } = useAccess();
-const { smAndDown,mdAndDown } = useDisplay();
+const { smAndDown, mdAndDown } = useDisplay();
 const { loggedIn, currentUser, logout } = useLocalAuth();
 const { country } = useLocal();
 const baseUrl = "country";
@@ -298,9 +328,8 @@ const loginItems = [
 ];
 
 const getCountry = () => {
-  return useCookie('country').value;
-}
-
+  return useCookie("country").value;
+};
 </script>
 
 <style scoped>
