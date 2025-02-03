@@ -87,6 +87,13 @@
                 <v-list-item-title>Countries</v-list-item-title>
               </v-list-item>
               <v-list-item
+                :to="`/${country}/ratings`"
+                class="text-decoration-none"
+                v-if="isAdmin"
+              >
+                <v-list-item-title>Ratings</v-list-item-title>
+              </v-list-item>
+              <v-list-item
                 :to="`/${country}/team-members`"
                 class="text-decoration-none"
                 v-if="isAdmin || isVenueOwner || isVenueLister"

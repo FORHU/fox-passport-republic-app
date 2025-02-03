@@ -1,12 +1,11 @@
 <template>
   <v-app-bar app flat height="80" class="" elevation="1">
-    <v-row  
-      align="center"
-      justify="space-between"
-      class="py-5 py-md-10 px-5"
-    >
-      <v-col cols="6" sm="2" >
-        <nuxt-link v-slot="{ navigate }" :to="{ name: 'country', params: {country} }">
+    <v-row align="center" justify="space-between" class="py-5 py-md-10 px-5">
+      <v-col cols="6" sm="2">
+        <nuxt-link
+          v-slot="{ navigate }"
+          :to="{ name: 'country', params: { country } }"
+        >
           <img
             src="./../../public/venuelogo.svg"
             role="link"
@@ -16,10 +15,7 @@
         </nuxt-link>
       </v-col>
 
-      <v-col
-      cols="6" sm="10"
-        class="d-flex justify-end align-center"
-      >
+      <v-col cols="6" sm="10" class="d-flex justify-end align-center">
         <template v-if="loggedIn">
           <template
             v-for="navigationItem in navigation"
@@ -53,22 +49,21 @@
                     :img-src="currentUser?.profile_picture"
                   />
                 </template>
-                <v-icon class="ml-1 mt-1" >
+                <v-icon class="ml-1 mt-1">
                   {{ menuOpen ? "mdi-chevron-up" : "mdi-chevron-down" }}
                 </v-icon>
               </v-btn>
               <div v-else>
-                  <ProfileAvatar
-                      :first_name="currentUser?.first_name"
-                      :last_name="currentUser?.last_name"
-                      :img-src="currentUser?.profile_picture"
-                       @click="menuOpen = true"
-                      
-                    />
-                    <v-icon class="ml-1 mt-1" v-bind="props">
+                <ProfileAvatar
+                  :first_name="currentUser?.first_name"
+                  :last_name="currentUser?.last_name"
+                  :img-src="currentUser?.profile_picture"
+                  @click="menuOpen = true"
+                />
+                <v-icon class="ml-1 mt-1" v-bind="props">
                   {{ menuOpen ? "mdi-chevron-up" : "mdi-chevron-down" }}
                 </v-icon>
-                </div>
+              </div>
             </template>
             <v-list class="pa-0 mb-10">
               <v-list-item
@@ -82,14 +77,35 @@
                   navigationItem.title
                 }}</v-list-item-title>
               </v-list-item>
-              <v-list-item :to="`/settings/country`" class="text-decoration-none" v-if="isAdmin">
+              <v-list-item
+                :to="`/settings/country`"
+                class="text-decoration-none"
+                v-if="isAdmin"
+              >
                 <v-list-item-title>Countries</v-list-item-title>
               </v-list-item>
-                <v-list-item :to="`/${country}/sales`" class="text-decoration-none" v-if="isAdmin || isAdminMember || isAdminSales">
-                <v-list-item-title>{{ isAdminSales ? "My Sales Transaction" : "Sales Transaction" }}</v-list-item-title>
+              <v-list-item
+                :to="`/${country}/sales`"
+                class="text-decoration-none"
+                v-if="isAdmin || isAdminMember || isAdminSales"
+              >
+                <v-list-item-title>{{
+                  isAdminSales ? "My Sales Transaction" : "Sales Transaction"
+                }}</v-list-item-title>
               </v-list-item>
-              <v-list-item :to="`/${country}/team-members`" class="text-decoration-none" v-if="isVenueOwner || isVenueLister || isAdmin">
+              <v-list-item
+                :to="`/${country}/team-members`"
+                class="text-decoration-none"
+                v-if="isVenueOwner || isVenueLister || isAdmin"
+              >
                 <v-list-item-title>Team Members</v-list-item-title>
+              </v-list-item>
+              <v-list-item
+                :to="`/${country}/ratings`"
+                class="text-decoration-none"
+                v-if="isAdmin"
+              >
+                <v-list-item-title>Ratings</v-list-item-title>
               </v-list-item>
               <v-list-item
                 :to="`/${country}/profile/general-information`"
@@ -105,28 +121,32 @@
         </template>
 
         <template v-else>
-          <v-row no-gutters class="w-100 px-md-5 d-flex align-center ga-5" justify="end">
-           <template v-for="item in loginItems">
-            <nuxt-link class="  d-none d-sm-block link-style text-decoration-none"
-              :to="item.to">
-              {{  item.title }}
-            </nuxt-link>
-           </template>
-           
+          <v-row
+            no-gutters
+            class="w-100 px-md-5 d-flex align-center ga-5"
+            justify="end"
+          >
+            <template v-for="item in loginItems">
+              <nuxt-link
+                class="d-none d-sm-block link-style text-decoration-none"
+                :to="item.to"
+              >
+                {{ item.title }}
+              </nuxt-link>
+            </template>
 
             <span class="d-sm-none">
               <v-menu transition="slide-y-transition" v-model="menuOpen">
                 <template v-slot:activator="{ props }">
-                  <v-btn icon="mdi-menu" flat  v-bind="props"></v-btn>
+                  <v-btn icon="mdi-menu" flat v-bind="props"></v-btn>
                 </template>
                 <v-list class="w-100 d-flex flex-column text-16px">
-                 <template v-for="item in loginItems">
-                  <v-list-item :to="item.to">{{item.title}}</v-list-item>
-                 </template>
+                  <template v-for="item in loginItems">
+                    <v-list-item :to="item.to">{{ item.title }}</v-list-item>
+                  </template>
                 </v-list>
               </v-menu>
             </span>
-
           </v-row>
         </template>
       </v-col>
@@ -246,21 +266,18 @@ const navigation = computed(() => {
 
 const loginItems = [
   {
-      title: "List your venue",
-      to: `/${country}/signup/venue`,
-      
+    title: "List your venue",
+    to: `/${country}/signup/venue`,
   },
   {
-      title: "Signup",
-      to: `/${country}/signup`,
-
+    title: "Signup",
+    to: `/${country}/signup`,
   },
   {
-      title: "Login",
-      to: `/${country}/login`,
-  }
-]
-
+    title: "Login",
+    to: `/${country}/login`,
+  },
+];
 </script>
 
 <style scoped>
