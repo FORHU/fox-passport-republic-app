@@ -177,11 +177,11 @@ const onSubmit = async () => {
 };
 
 const goToHome = () => {
-  navigateTo({ name: "country", params: { country } });
+  navigateTo({ name: "country", params: { country: country || 'sg' } });
 };
 
 const goToSignupOptions = () => {
-  navigateTo({ name: "country-signup", params: { country } });
+  navigateTo({ name: "country-signup", params: { country: country || 'sg' } });
 };
 
 </script>
