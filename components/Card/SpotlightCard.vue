@@ -134,7 +134,7 @@
         style="line-height: 1.2"
       >
         <v-icon color="grey" class="mr-1">mdi-map-marker</v-icon>
-        {{ formatAddress(space?.venue.address) }}
+        {{ formatAddress(space?.venue.address) || {} }}
       </p>
       <div class="location-card-description d-flex align-center ga-2 mb-1">
         <span v-if="isSeatingLayout(space)" class="text-body-2">
