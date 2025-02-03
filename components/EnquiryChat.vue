@@ -193,7 +193,7 @@
         @payment-failed="goToOffer('payment')"
         @review-booking="goToOffer('review-booking')"
         @view-receipt="goToOffer('receipt')"
-        @rate="goToOffer('review-stay')"
+        @rate="handleRate"
         @cancel-booking="goToOffer('cancel-booking')"
         @archive-inquiry="showArchiveInquiryPrompt = true"
         @view-invoice="goToOffer('invoice')"
@@ -232,7 +232,7 @@
         @payment-failed="goToOffer('payment')"
         @review-booking="goToOffer('review-booking')"
         @view-receipt="goToOffer('receipt')"
-        @rate="goToOffer('review-stay')"
+        @rate="handleRate"
         @cancel-booking="goToOffer('cancel-booking')"
         @archive-inquiry="showArchiveInquiryPrompt = true"
         @view-invoice="goToOffer('invoice')"
@@ -248,6 +248,16 @@
       :prompt-title="`Are you sure you want to archive this inquiry?`" disagree-button-text="Nevermind"
       agree-button-text="Archive" />
   </v-row>
+  <RatingReviewStay
+    v-model="reviewStayDialog"
+    :ratingDetails="ratingDetails as TRatingDetails"
+    :bookingReviewed="bookingReviewed"
+    :venueName="space?.name || ''"
+    :owner-full-name="ownerFullName"
+    :space-id="space?._id"
+    style="z-index: 99"
+    @refetch-rating="fetchRatings"
+  />
 </template>
 
 <script setup lang="ts">
@@ -314,6 +324,7 @@ const {
 const { activeStatus, venue } = useVenue();
 const { cookieOptions, currentUser } = useLocalAuth();
 const { getSpace } = useSpace();
+const { getUserSpaceRating } = useRatings();
 const { id } = useRoute().params;
 const publicConfig = useRuntimeConfig().public;
 const showDeclinePrompt = ref(false);
@@ -343,7 +354,9 @@ const showEventDetails = ref(true);
 const showEventDetailsSmallScreen = ref(false);
 const showArchiveInquiryPrompt = ref(false);
 const processingArchive = ref(false);
-const ratingDetails = ref<null | number>(null);
+const bookingReviewed = ref(false);
+const ratingDetails = ref<TRatingDetails>()
+const reviewStayDialog = ref(false);
 
 const showChatTemplateModal = ref(false);
 
@@ -1288,11 +1301,32 @@ const handleAttachmentClick = () => {
   document.getElementById("chat-upload-file")?.click();
 }
 
+
+const fetchRatings = async () => {
+  if(!bookingHappened.value || !isUser) return;
+  try {
+    const res = await getUserSpaceRating(space.value._id)
+    if(!res || !res?.[0]) return; 
+    const obj = res?.[0].details?.find( (x: any) => x.user._id == currentUser.value._id )
+    if(obj){
+      bookingReviewed.value = true
+      ratingDetails.value = obj
+    }
+  } catch (error) {
+    
+  }
+} 
+
+const handleRate = () => {
+  reviewStayDialog.value = true;
+}
+
 onMounted(async () => {
   await fetchEnquiryData();
   await fetchSpaceData();
   await fetchCustomOffer();
   await joinRoom();
+  await fetchRatings();
   useCookie("offer_mode").value = null;
   loading.value = false;
 });
