@@ -1,8 +1,8 @@
 export const useRatings = () => {
 
-    const rates = useState((): number => 1);
-    const privateNote = useState((): string => "");
-    const publicNote = useState((): string => "");
+    const rates = useState('rates', (): number => 4);
+    const privateNote = useState('privateNote', (): string => "");
+    const publicNote = useState('publicNote', (): string => "");
 
     const getUserSpaceRating = async (spaceId: string) => {
         const { data, error } = await useAPI(`/v1/rating/${spaceId}`, {
@@ -43,9 +43,6 @@ export const useRatings = () => {
               publicNote: publicNote.value,
             },
           });
-          rates.value = 1;
-          privateNote.value = "";
-          publicNote.value = "";
           return response;
         } catch (error) {
           throw error;
@@ -63,6 +60,9 @@ export const useRatings = () => {
       };
 
       return {
+        rates,
+        privateNote,
+        publicNote,
         getUserSpaceRating,
         getOverallSpaceRating,
         submitRating,
