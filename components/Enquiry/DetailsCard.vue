@@ -11,7 +11,7 @@
             </v-carousel-item>
           </template>
         </v-carousel>
-        <v-row no-gutters class="pa-3 d-flex justify-space-between w-100" style="position: absolute;">
+        <v-row no-gutters class="pa-3 d-flex  justify-space-between w-100 ga-1" style="position: absolute;">
           <span>
             <v-chip class="font-weight-medium" color="white" label variant="flat" rounded="lg">
               {{ statusDetails(enquiry?.status).statusName }}
@@ -370,8 +370,6 @@ const computePricing = async () => {
 
 const cateringOptions = computed(() => {
   const arr = props.enquiry?.catering_options
-  console.log(arr);
-
   if (arr && arr.length > 0) {
     if (arr.some(x => x.value == true)) {
       const arrTrue = arr.filter(x => x.value).map(x => x.name)
