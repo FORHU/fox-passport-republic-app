@@ -14,7 +14,7 @@ export function useAPI<T>(url: string, options: UseFetchOptions<T> = {}) {
   let retry = 0;
 
   const defaults: UseFetchOptions<T> = {
-    baseURL: "/api",
+    baseURL: "https://venue-4-use-api-567zw.ondigitalocean.app/api",
     key: url,
     headers: {
       ...loggedIn.value ? { Authorization: `Bearer ${accessToken}` } : {},

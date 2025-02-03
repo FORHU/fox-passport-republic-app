@@ -1,15 +1,39 @@
 <template>
   <article class="location-card cursor-pointer" @click="navigate">
-    <v-carousel hide-delimiter-background :show-arrows="filteredPhotos.length > 1 ? 'hover' : false" height="auto"
-      :aspect-ratio="1" @click.stop transition="fade-transition">
+    <v-carousel
+      hide-delimiter-background
+      :show-arrows="filteredPhotos.length > 1 ? 'hover' : false"
+      height="auto"
+      :aspect-ratio="1"
+      @click.stop
+      transition="fade-transition"
+    >
       <!-- Check if there are photos to display -->
-      <template v-if="filteredPhotos.length > 0" v-for="photo, index in filteredPhotos" :key="photo?._id">
-        <v-carousel-item v-if="photo?.contentType?.includes('image')" @click="navigate" class="cursor-pointer">
-          <v-img :src="photo.path" :alt="`Space photo ${index + 1}`" class="location-image cursor-pointer" width="100%"
-            height="auto" aspect-ratio="1" cover>
+      <template
+        v-if="filteredPhotos.length > 0"
+        v-for="(photo, index) in filteredPhotos"
+        :key="photo?._id"
+      >
+        <v-carousel-item
+          v-if="photo?.contentType?.includes('image')"
+          @click="navigate"
+          class="cursor-pointer"
+        >
+          <v-img
+            :src="photo.path"
+            :alt="`Space photo ${index + 1}`"
+            class="location-image cursor-pointer"
+            width="100%"
+            height="auto"
+            aspect-ratio="1"
+            cover
+          >
             <template v-slot:placeholder>
               <v-row class="fill-height ma-0" align="center" justify="center">
-                <v-progress-circular indeterminate color="grey lighten-5"></v-progress-circular>
+                <v-progress-circular
+                  indeterminate
+                  color="grey lighten-5"
+                ></v-progress-circular>
               </v-row>
             </template>
           </v-img>
@@ -20,10 +44,19 @@
       <v-carousel-item v-else>
         <v-img
           src="https://images.unsplash.com/photo-1577969182166-d1a497458e6d?q=80&w=1964&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%D3"
-          alt="Default space photo" class="location-image" width="100%" height="auto" aspect-ratio="1" cover>
+          alt="Default space photo"
+          class="location-image"
+          width="100%"
+          height="auto"
+          aspect-ratio="1"
+          cover
+        >
           <template v-slot:placeholder>
             <v-row class="fill-height ma-0" align="center" justify="center">
-              <v-progress-circular indeterminate color="grey lighten-5"></v-progress-circular>
+              <v-progress-circular
+                indeterminate
+                color="grey lighten-5"
+              ></v-progress-circular>
             </v-row>
           </template>
         </v-img>
@@ -31,67 +64,98 @@
 
       <!-- Custom delimiters -->
       <template v-slot:delimiter="{ isActive }">
-        <span :class="['custom-delimiter', { 'custom-delimiter-active': isActive }]"></span>
+        <span
+          :class="['custom-delimiter', { 'custom-delimiter-active': isActive }]"
+        ></span>
       </template>
     </v-carousel>
 
     <!-- Badge and Favorite Icon -->
-    <v-chip class="location-badge rounded-xl" color="white" text-color="black" label>
+    <v-chip
+      class="location-badge rounded-xl"
+      color="white"
+      text-color="black"
+      label
+    >
       Elite Venue
     </v-chip>
-    <!-- <v-icon
-      :color="space.marked_as_favorite.isFavorite ? 'red' : ''"
-      @click.stop="
-        // favoriteCount === 0
-        //   ? (createFolderDialog = true)
-        //   : space.marked_as_favorite.isFavorite
-        //   ?deselectFavoriteFunction(space.marked_as_favorite)
-  //   : (addToFolderDialog = true)
-        favoriteProcess(space.marked_as_favorite)
+    <v-img
+      v-if="isUser || !loggedIn"
+      height="15%"
+      width="15%"
+      :src="
+        space?.marked_as_favorite?.isFavorite
+          ? '/images/navigation/redheartwhite.svg'
+          : '/images/navigation/blackheartwhite.svg'
       "
+      @click.stop="favoriteProcess(space?.marked_as_favorite)"
       class="location-heart"
     >
-      {{
-        space.marked_as_favorite.isFavorite ? "mdi-heart" : "mdi-heart-outline"
-      }}
-    </v-icon> -->
-    <v-img v-if="isUser || !loggedIn" height="15%" width="15%"
-      :src="space?.marked_as_favorite?.isFavorite ? '/images/navigation/redheartwhite.svg' : '/images/navigation/blackheartwhite.svg'"
-      @click.stop="
-        favoriteProcess(space?.marked_as_favorite)
-        " class="location-heart">
-
     </v-img>
 
     <!-- Folder Dialogs -->
-    <FavoritesCreateFolderDialog :space_id="space._id" v-model="createFolderDialog" @folderCreated="folderCreated" />
-    <FavoritesAddToFavorites :space_id="space._id" :favoriteObj="favoriteObj" v-model="addToFolderDialog"
-      @folderCreated="folderCreated" />
+    <FavoritesCreateFolderDialog
+      :space_id="space._id"
+      v-model="createFolderDialog"
+      @folderCreated="folderCreated"
+    />
+    <FavoritesAddToFavorites
+      :space_id="space._id"
+      :favoriteObj="favoriteObj"
+      v-model="addToFolderDialog"
+      @folderCreated="folderCreated"
+    />
 
     <!-- Card Content -->
     <div class="location-card-content">
-      <div class="d-flex justify-space-between align-center">
-        <p class="location-card-title font-weight-bold mt-2 word-break">
+      <div class="d-flex justify-space-between align-center px-1">
+        <p class="location-card-title font-weight-bold word-break text-22px">
           {{ sliceContent(space.name, 55) }}
         </p>
-        <!-- <div class="d-flex align-center">
+        <div class="d-flex align-center text-body-2">
           <v-icon small class="star-icon">mdi-star</v-icon>
-          <span class="ml-1">5.0</span>
-        </div> -->
+          <span class="ml-1"
+            >{{ space?.rating.averageRating }} ({{
+              space?.rating.totalRating
+            }})</span
+          >
+        </div>
       </div>
-      <p class="location-card-description word-break"> {{ sliceContent(space?.venue?.name, 75) }}</p>
-      <v-row no-gutters class="my-1">
-         <CardPricingChips :space="space as TVenueSpace" :date_calendar="date_calendar" :price-filter="priceFilter" />
+      <v-divider class="mt-2"></v-divider>
+      <v-row no-gutters class="my-3">
+        <CardPricingChips
+          :space="space as TVenueSpace"
+          :date_calendar="date_calendar"
+          :price-filter="priceFilter"
+        />
       </v-row>
-      <div class="location-card-icons d-flex align-center ga-2">
-        <v-icon small v-if="isSeatingLayout(space)">mdi-seat</v-icon>
-        <span v-if="isSeatingLayout(space)">{{
-          getSeatingMaxCapacity(space)
-          }}</span>
-        <v-icon small v-if="isStandingLayout(space)">mdi-human-male</v-icon>
-        <span v-if="isStandingLayout(space)">{{
-          getStandingMaxCapacity(space)
-          }}</span>
+      <p
+        class="location-card-description word-break font-400 mb-1 d-flex items-start ga-1"
+        style="line-height: 1.2"
+      >
+        <v-icon color="grey" class="mr-1">mdi-map-marker</v-icon>
+        {{ formatAddress(space?.venue.address) }}
+      </p>
+      <div class="location-card-description d-flex align-center ga-2 mb-1">
+        <span v-if="isSeatingLayout(space)" class="text-body-2">
+          <v-icon>mdi-table-chair</v-icon>
+          <span class="font-weight-medium ml-2">
+            {{ getSeatingMaxCapacity(space) }}
+          </span>
+          seating</span
+        >
+        <v-icon
+          v-if="isSeatingLayout(space) && isStandingLayout(space)"
+          class="mx-1"
+          >mdi-circle-small</v-icon
+        >
+        <span v-if="isStandingLayout(space)" class="text-body-2">
+          <v-icon size="large">mdi-human-male</v-icon>
+          <span class="font-weight-medium ml-1">
+            {{ getStandingMaxCapacity(space) }}
+          </span>
+          standing</span
+        >
       </div>
     </div>
   </article>
@@ -100,7 +164,7 @@
 
 <script setup lang="ts">
 const { setSnackbar, getCurrencySymbol, country } = useLocal();
-const { sliceContent } = useUtils();
+const { sliceContent, formatAddress } = useUtils();
 const { isUser } = useAccess();
 const { loggedIn } = useLocalAuth();
 const props = defineProps({
@@ -144,22 +208,21 @@ const props = defineProps({
   priceFilter: {
     type: Array as any,
     required: false,
-  }
+  },
 });
 
 const createFolderDialog = ref(false);
 const addToFolderDialog = ref(false);
-const signInForFavoritesDialog = ref(false)
+const signInForFavoritesDialog = ref(false);
 
 const filteredPhotos = computed(() => {
-  const arr = props.space.space_photo
+  const arr = props.space.space_photo;
   if (arr && arr.length > 0) {
-    return arr.filter((x: TFile) => x.contentType.includes('image'))
+    return arr.filter((x: TFile) => x.contentType.includes("image"));
   } else {
     return [];
   }
-
-})
+});
 
 const navigate = () => {
   useCookie("event_type").value = props.event_type as string;
@@ -207,34 +270,29 @@ const getSeatingMaxCapacity = (venue: any) => {
   return seatingLayout ? seatingLayout.max_capacity : null;
 };
 
-
-const emit = defineEmits(["folderCreated", 'deselectFavorite', 'signinFirst']);
+const emit = defineEmits(["folderCreated", "deselectFavorite", "signinFirst"]);
 function folderCreated() {
   emit("folderCreated");
 }
 
 async function deselectFavoriteFunction(item) {
-  const favoriteId = item._id
-  // console.log("galing Spotlight Card",item)
-  emit('deselectFavorite', favoriteId)
-
+  const favoriteId = item._id;
+  emit("deselectFavorite", favoriteId);
 }
 
 async function favoriteProcess(val) {
   if (!loggedIn.value) {
-    return signInForFavoritesDialog.value = true
+    return (signInForFavoritesDialog.value = true);
   }
   if (props.favoriteCount === 0) {
-    return createFolderDialog.value = true
+    return (createFolderDialog.value = true);
   }
   if (val.isFavorite) {
-    return deselectFavoriteFunction(val)
-  }
-  else {
-    return addToFolderDialog.value = true
+    return deselectFavoriteFunction(val);
+  } else {
+    return (addToFolderDialog.value = true);
   }
 }
-
 </script>
 
 <style scoped>
@@ -258,7 +316,6 @@ async function favoriteProcess(val) {
 
 .location-heart {
   position: absolute;
-  /* top: 12px; */
   top: 1px;
   right: 8px;
 }
@@ -309,10 +366,7 @@ async function favoriteProcess(val) {
 }
 
 .fade-transition-enter,
-.fade-transition-leave-to
-
-/* .fade-leave-active in <2.1.8 */
-  {
+.fade-transition-leave-to {
   opacity: 0;
 }
 
@@ -323,6 +377,6 @@ async function favoriteProcess(val) {
 }
 
 .word-break {
-  word-break: break-word
+  word-break: break-word;
 }
 </style>
