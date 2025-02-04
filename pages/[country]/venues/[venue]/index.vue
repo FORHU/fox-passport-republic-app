@@ -416,7 +416,7 @@
               <v-divider class="mt-5"></v-divider>
 
               <!-- Ratings -->
-              <SpacesDetailsRatings
+              <RatingDetails
                 :ratingAverage="ratingAverage"
                 :totalRatings="totalRatings"
                 :isShowReviews="true"
@@ -426,7 +426,7 @@
               <!-- Reviews -->
               <h3 class="my-5 px-2">What they say</h3>
               <v-col cols="12">
-                <SpacesDetailsReviews :userReviews="userReviews" />
+                <RatingUserReviews :userReviews="userReviews" />
                 <v-btn
                   class="my-2"
                   @click="handleShowAllReviews()"
@@ -1686,7 +1686,7 @@
       v-model="addToFolderDialog"
       @folderCreated="folderCreated"
     />
-    <ReviewOverallReviews
+    <RatingOverallReviews
       v-model="isShowAllReviewsDialog"
       :userReviews="userReviews"
       :ratingAverage="ratingAverage"
