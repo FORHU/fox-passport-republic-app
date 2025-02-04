@@ -49,7 +49,7 @@
             </v-col>
           </template>
         </v-row>
-        <v-row no-gutters class="w-100 d-flex justify-center text-12px">
+        <v-row v-if="ratingStatus?.desc" no-gutters class="w-100 d-flex justify-center text-12px">
             <v-alert :color="ratingStatus?.color" variant="tonal" class="rounded-none d-flex justify-center" density="compact">
               {{ ratingStatus?.desc }}
             </v-alert>
