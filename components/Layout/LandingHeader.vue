@@ -114,6 +114,13 @@
                   <v-list-item-title>Countries</v-list-item-title>
                 </v-list-item>
                 <v-list-item
+                  :to="`/${country}/ratings`"
+                  class="text-decoration-none"
+                  v-if="isAdmin"
+                >
+                  <v-list-item-title>Manage Review</v-list-item-title>
+                </v-list-item>
+                <v-list-item
                   :to="`/${country}/sales`"
                   class="text-decoration-none"
                   v-if="isAdmin || isAdminMember || isAdminSales"
@@ -128,13 +135,6 @@
                   v-if="isVenueOwner || isVenueLister || isAdmin"
                 >
                   <v-list-item-title>Team Members</v-list-item-title>
-                </v-list-item>
-                <v-list-item
-                  :to="`/${country}/ratings`"
-                  class="text-decoration-none"
-                  v-if="isAdmin"
-                >
-                  <v-list-item-title>Ratings</v-list-item-title>
                 </v-list-item>
                 <v-list-item
                   :to="`/${country}/profile/general-information`"

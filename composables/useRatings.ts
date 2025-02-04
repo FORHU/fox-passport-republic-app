@@ -1,71 +1,92 @@
 export const useRatings = () => {
+  const rates = useState("rates", (): number => 4);
+  const privateNote = useState("privateNote", (): string => "");
+  const publicNote = useState("publicNote", (): string => "");
 
-    const rates = useState('rates', (): number => 4);
-    const privateNote = useState('privateNote', (): string => "");
-    const publicNote = useState('publicNote', (): string => "");
+  const getUserSpaceRating = async (spaceId: string) => {
+    const { data, error } = await useAPI(`/v1/rating/${spaceId}`, {
+      method: "GET",
+    });
+    if (data.value) {
+      const res = data.value as any;
+      return res?.data;
+    }
 
-    const getUserSpaceRating = async (spaceId: string) => {
-        const { data, error } = await useAPI(`/v1/rating/${spaceId}`, {
-          method: "GET",
-        });
-        if(data.value){
-            const res = data.value as any;
-            return res?.data
-        }
+    if (error.value) {
+      return Promise.reject(error.value);
+    }
+  };
 
-        if(error.value){
-            return Promise.reject(error.value)
-        }
-      };
-    
-      const getOverallSpaceRating = async (spaceId: string) => {
-        const {data, error} = await useAPI(`/v1/rating/overall/${spaceId}`, {
-          method: "GET",
-        });
+  const getOverallSpaceRating = async (spaceId: string) => {
+    const { data, error } = await useAPI(`/v1/rating/overall/${spaceId}`, {
+      method: "GET",
+    });
 
-        if(data.value){
-            const res = data.value as any;
-            return res?.data
-        }
+    if (data.value) {
+      const res = data.value as any;
+      return res?.data;
+    }
 
-        if(error.value){
-            return Promise.reject(error.value)
-        }
-      };
-    
-      const submitRating = async (spaceId: string) => {
-        try {
-          const response = await useAPI(`/v1/rating/${spaceId}`, {
-            method: "POST",
-            body: {
-              rating: rates.value,
-              privateNote: privateNote.value,
-              publicNote: publicNote.value,
-            },
-          });
-          return response;
-        } catch (error) {
-          throw error;
-        }
-      };
-    
-      // get averageRating value only in number
-      const averageRatingValue = async (spaceId: string) => {
-        const { data } = await getUserSpaceRating(spaceId);
-    
-        const res = data.value as any;
-        if (!res) return null;
-        const rating = res?.data?.[0]?.averageRating;
-        return rating;
-      };
+    if (error.value) {
+      return Promise.reject(error.value);
+    }
+  };
 
-      return {
-        rates,
-        privateNote,
-        publicNote,
-        getUserSpaceRating,
-        getOverallSpaceRating,
-        submitRating,
-        averageRatingValue
-      }
-}
+  const submitRating = async (spaceId: string) => {
+    try {
+      const response = await useAPI(`/v1/rating/${spaceId}`, {
+        method: "POST",
+        body: {
+          rating: rates.value,
+          privateNote: privateNote.value,
+          publicNote: publicNote.value,
+        },
+      });
+      return response;
+    } catch (error) {
+      throw error;
+    }
+  };
+
+  // get averageRating value only in number
+  const averageRatingValue = async (spaceId: string) => {
+    const { data } = await getUserSpaceRating(spaceId);
+
+    const res = data.value as any;
+    if (!res) return null;
+    const rating = res?.data?.[0]?.averageRating;
+    return rating;
+  };
+
+  //get admin list of ratings
+  const getAdminRatingsList = async (
+    page: number,
+    limit: number,
+  ) => {
+    let params: any = {
+      page,
+      limit,
+    };
+
+    const { data, error } = await useAPI(`/v1/admin/ratings`, {
+      params,
+    });
+    if (data.value) {
+      return data.value;
+    }
+    if (error.value) {
+      return error.value;
+    }
+  }
+
+  return {
+    rates,
+    privateNote,
+    publicNote,
+    getUserSpaceRating,
+    getOverallSpaceRating,
+    submitRating,
+    averageRatingValue,
+    getAdminRatingsList
+  };
+};
