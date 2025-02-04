@@ -177,26 +177,25 @@ export default function () {
     return `${isToday ? '' :  formattedDate} ${formattedTime}`;
   }
 
-  function formatAddress({
-    street = "",
-    city = "",
-    country = "",
-    state = "",
-    postal_code = "",
-  }: Partial<TVenueAddress>) {
+  function formatAddress(address?: Partial<TVenueAddress>) {
+    if (!address) return "No address available";
+  
+    const {
+      street = "",
+      city = "",
+      country = "",
+      state = "",
+      postal_code = "",
+    } = address;
+  
     const parts = [street, city, state, country];
-
     let formattedAddress = parts.filter((part) => part !== "").join(", ");
-
+  
     if (postal_code) {
       formattedAddress += ` ${postal_code}`;
     }
-
     return formattedAddress;
   }
-
-
-
   const { statusList } = useVenue();
 
   const formatStatus = (status: string) => {

@@ -1,5 +1,4 @@
 <template>
-
   <LoadingSpacePage v-if="loader" />
   <!-- MAIN -->
   <v-row no-gutters v-else>
@@ -30,15 +29,26 @@
             </span>
 
             <div>
-              <v-btn class="hidden-sm-and-down" variant="text" prepend-icon="mdi-export-variant"
-                @click="toggleShareButton">
+              <v-btn
+                class="hidden-sm-and-down"
+                variant="text"
+                prepend-icon="mdi-export-variant"
+                @click="toggleShareButton"
+              >
                 Share
               </v-btn>
 
-              <v-btn class="hidden-sm-and-down" variant="text" :prepend-icon="specificSpace.marked_as_favorite.isFavorite
-                ? 'mdi-heart'
-                : 'mdi-heart-outline'
-                " @click="handleFavorite()" :disabled="loggedIn && currentUser?.role !== 'USER'">
+              <v-btn
+                class="hidden-sm-and-down"
+                variant="text"
+                :prepend-icon="
+                  specificSpace.marked_as_favorite.isFavorite
+                    ? 'mdi-heart'
+                    : 'mdi-heart-outline'
+                "
+                @click="handleFavorite()"
+                :disabled="loggedIn && currentUser?.role !== 'USER'"
+              >
                 {{
                   specificSpace.marked_as_favorite.isFavorite ? "Liked" : "Like"
                 }}
@@ -49,55 +59,120 @@
           <v-col cols="12">
             <v-row no-gutters>
               <v-col cols="12" class="d-block d-md-none">
-                <v-carousel hide-delimiters :show-arrows="false" v-model="currentIndex">
-                  <template v-for="(image, index) in imagesArray" :key="imagesArray?._id">
-                    <v-carousel-item v-if="image?.contentType?.includes('image')"
-                      :src="image.path || 'https://placehold.co/600x400'" height="470" class="cursor-pointer"
-                      @click="openModal(image._id)">
-                      <v-img :src="image.path || 'https://placehold.co/600x400'" height="470" cover
-                        class="cursor-pointer"></v-img>
+                <v-carousel
+                  hide-delimiters
+                  :show-arrows="false"
+                  v-model="currentIndex"
+                >
+                  <template
+                    v-for="(image, index) in imagesArray"
+                    :key="imagesArray?._id"
+                  >
+                    <v-carousel-item
+                      v-if="image?.contentType?.includes('image')"
+                      :src="image.path || 'https://placehold.co/600x400'"
+                      height="470"
+                      class="cursor-pointer"
+                      @click="openModal(image._id)"
+                    >
+                      <v-img
+                        :src="image.path || 'https://placehold.co/600x400'"
+                        height="470"
+                        cover
+                        class="cursor-pointer"
+                      ></v-img>
                     </v-carousel-item>
-                    <v-carousel-item v-else-if="image?.contentType?.includes('video')" height="470"
-                      @click="openModal(image._id)">
-                      <v-row no-gutters class="h-100 w-100" align="center" justify="center">
-                        <video width="100%" height="100%" controls style="object-fit: cover;">
+                    <v-carousel-item
+                      v-else-if="image?.contentType?.includes('video')"
+                      height="470"
+                      @click="openModal(image._id)"
+                    >
+                      <v-row
+                        no-gutters
+                        class="h-100 w-100"
+                        align="center"
+                        justify="center"
+                      >
+                        <video
+                          width="100%"
+                          height="100%"
+                          controls
+                          style="object-fit: cover"
+                        >
                           <source :src="image?.path" />
                         </video>
-                        <v-row class="w-full h-full" no-gutters
-                          style="position: absolute; top:0 ; bottom: 0; left: 0; right: 0"></v-row>
+                        <v-row
+                          class="w-full h-full"
+                          no-gutters
+                          style="
+                            position: absolute;
+                            top: 0;
+                            bottom: 0;
+                            left: 0;
+                            right: 0;
+                          "
+                        ></v-row>
                       </v-row>
                       <template v-slot:placeholder>
-                        <div class="d-flex align-center justify-center fill-height">
-                          <v-progress-circular color="grey-lighten-4" indeterminate></v-progress-circular>
+                        <div
+                          class="d-flex align-center justify-center fill-height"
+                        >
+                          <v-progress-circular
+                            color="grey-lighten-4"
+                            indeterminate
+                          ></v-progress-circular>
                         </div>
                       </template>
                     </v-carousel-item>
                   </template>
-                  <v-card class="rounded-md text-white px-5 py-1" style="
+                  <v-card
+                    class="rounded-md text-white px-5 py-1"
+                    style="
                       position: absolute;
                       bottom: 50px;
                       right: 25px;
                       z-index: 20;
                       background-color: rgba(0, 0, 0, 0.8);
-                    ">
+                    "
+                  >
                     {{ currentIndex + 1 }}/{{ imagesArray.length || 0 }}
                   </v-card>
-                  <div class="d-flex justify-space-between w-100 px-2" style="
-                    position: absolute;
-                    top: 20px;
-                    right: 0;
-                    left: 0;
-                    z-index: 10;
-                  ">
-                    <v-btn class="ma-2 rounded-pill" icon @click="$router.go(-1)">
+                  <div
+                    class="d-flex justify-space-between w-100 px-2"
+                    style="
+                      position: absolute;
+                      top: 20px;
+                      right: 0;
+                      left: 0;
+                      z-index: 10;
+                    "
+                  >
+                    <v-btn
+                      class="ma-2 rounded-pill"
+                      icon
+                      @click="$router.go(-1)"
+                    >
                       <v-icon>mdi-arrow-left</v-icon>
                     </v-btn>
                     <span>
-                      <v-btn class="ma-2 rounded-pill" icon @click="toggleSharingColumn">
-                        <v-img src="/public/share.svg" height="25px" width="25px" style="filter: invert(1)"></v-img>
+                      <v-btn
+                        class="ma-2 rounded-pill"
+                        icon
+                        @click="toggleSharingColumn"
+                      >
+                        <v-img
+                          src="/public/share.svg"
+                          height="25px"
+                          width="25px"
+                          style="filter: invert(1)"
+                        ></v-img>
                       </v-btn>
 
-                      <v-btn class="ma-2 rounded-pill" icon @click="handleFavorite()">
+                      <v-btn
+                        class="ma-2 rounded-pill"
+                        icon
+                        @click="handleFavorite()"
+                      >
                         <v-icon>
                           {{
                             specificSpace.marked_as_favorite.isFavorite
@@ -109,11 +184,6 @@
                     </span>
                   </div>
                 </v-carousel>
-
-
-
-
-
 
                 <v-col cols="12">
                   <h1 :class="mobile ? 'text-28px font-weight-bold' : ''">
@@ -136,32 +206,72 @@
 
               <!-- DESKTOP -->
               <v-col cols="12" md="6" class="pt-4 d-none d-md-flex">
-                <v-img :src="featuredImageSrc()?.path ||
-                  'https://picsum.photos/500/300?image=232'
-                  " height="413" cover class="cursor-pointer" @click="openModal(featuredImageSrc()?._id)"></v-img>
+                <v-img
+                  :src="
+                    featuredImageSrc()?.path ||
+                    'https://picsum.photos/500/300?image=232'
+                  "
+                  height="413"
+                  cover
+                  class="cursor-pointer"
+                  @click="openModal(featuredImageSrc()?._id)"
+                ></v-img>
               </v-col>
 
               <v-col cols="12" md="6" class="pa-2 d-none d-md-flex">
                 <v-row no-gutters>
-                  <template v-for="(image, index) in imagesArray.slice(0, 4)" :key="index">
+                  <template
+                    v-for="(image, index) in imagesArray.slice(0, 4)"
+                    :key="index"
+                  >
                     <v-col cols="6" class="pa-2" @click="openModal(image?._id)">
-                      <v-img v-if="image?.contentType.includes('image')"
-                        :src="image.path || 'https://placehold.co/600x400'" height="198" cover class="cursor-pointer">
+                      <v-img
+                        v-if="image?.contentType.includes('image')"
+                        :src="image.path || 'https://placehold.co/600x400'"
+                        height="198"
+                        cover
+                        class="cursor-pointer"
+                      >
                         <template v-if="index === 3">
-                          <v-row no-gutters class="fill-height pa-2" :justify="mobile ? 'center' : 'end'" align="end">
+                          <v-row
+                            no-gutters
+                            class="fill-height pa-2"
+                            :justify="mobile ? 'center' : 'end'"
+                            align="end"
+                          >
                             <v-btn>
-                              <v-img class="mr-2" src="/public/dot.svg" height="20px" width="20px" />
+                              <v-img
+                                class="mr-2"
+                                src="/public/dot.svg"
+                                height="20px"
+                                width="20px"
+                              />
                               see all {{ imagesArray.length || 0 }} photos
                             </v-btn>
                           </v-row>
                         </template>
                       </v-img>
                       <v-card flat v-if="image?.contentType.includes('video')">
-                        <video width="100%" height="198" controls cover style="object-fit: cover">
+                        <video
+                          width="100%"
+                          height="198"
+                          controls
+                          cover
+                          style="object-fit: cover"
+                        >
                           <source :src="image?.path" />
                         </video>
-                        <v-row class="w-full h-full" no-gutters
-                          style="position: absolute; top:0 ; bottom: 0; left: 0; right: 0"></v-row>
+                        <v-row
+                          class="w-full h-full"
+                          no-gutters
+                          style="
+                            position: absolute;
+                            top: 0;
+                            bottom: 0;
+                            left: 0;
+                            right: 0;
+                          "
+                        ></v-row>
                       </v-card>
                     </v-col>
                   </template>
@@ -170,7 +280,11 @@
             </v-row>
           </v-col>
 
-          <v-row no-gutters justify="space-between" :class="mobile ? 'mx-2' : ''">
+          <v-row
+            no-gutters
+            justify="space-between"
+            :class="mobile ? 'mx-2' : ''"
+          >
             <!-- LEFT COLUMN -->
             <v-col cols="12" sm="12" md="12" lg="6">
               <!-- Address and seating information -->
@@ -179,36 +293,48 @@
               </h2>
               <div class="d-flex mt-3">
                 <!-- Only display seating information if maxSeating is available -->
-                <p v-if="
-                  space.capacityLayout.maxSeating !== undefined &&
-                  space.capacityLayout.maxSeating !== null
-                " class="mr-2">
+                <p
+                  v-if="
+                    space.capacityLayout.maxSeating !== undefined &&
+                    space.capacityLayout.maxSeating !== null
+                  "
+                  class="mr-2"
+                >
                   {{ space.capacityLayout.maxSeating }} Seating
                 </p>
 
                 <!-- Display a separator only if both seating and standing data are available -->
-                <p v-if="
-                  space.capacityLayout.maxSeating !== undefined &&
-                  space.capacityLayout.maxSeating !== null &&
-                  space.capacityLayout.maxStanding !== undefined &&
-                  space.capacityLayout.maxStanding !== null
-                " class="mr-2">
+                <p
+                  v-if="
+                    space.capacityLayout.maxSeating !== undefined &&
+                    space.capacityLayout.maxSeating !== null &&
+                    space.capacityLayout.maxStanding !== undefined &&
+                    space.capacityLayout.maxStanding !== null
+                  "
+                  class="mr-2"
+                >
                   •
                 </p>
 
                 <!-- Only display standing information if maxStanding is available -->
-                <p v-if="
-                  space.capacityLayout.maxStanding !== undefined &&
-                  space.capacityLayout.maxStanding !== null
-                ">
+                <p
+                  v-if="
+                    space.capacityLayout.maxStanding !== undefined &&
+                    space.capacityLayout.maxStanding !== null
+                  "
+                >
                   {{ space.capacityLayout.maxStanding }} Standing
                 </p>
               </div>
               <!-- Host information card -->
               <v-card class="mt-5 pa-5 rounded-lg" variant="outlined">
                 <div class="d-flex">
-                  <ProfileAvatar :first_name="specificSpace.venue.user.first_name"
-                    :last_name="specificSpace.venue.user.last_name" size="50px" class="mr-5" />
+                  <ProfileAvatar
+                    :first_name="specificSpace.venue.user.first_name"
+                    :last_name="specificSpace.venue.user.last_name"
+                    size="50px"
+                    class="mr-5"
+                  />
                   <div class="d-flex justify-center text-center align-center">
                     <p class="font-weight-bold">
                       Hosted by {{ specificSpace.venue.user.first_name }}
@@ -236,7 +362,11 @@
 
                 <v-row class="mb-4" align="start">
                   <v-col cols="auto" class="mr-2">
-                    <v-img src="/public/svg/private.svg" height="30px" width="30px" />
+                    <v-img
+                      src="/public/svg/private.svg"
+                      height="30px"
+                      width="30px"
+                    />
                   </v-col>
                   <v-col>
                     <p class="mb-1 font-weight-bold">
@@ -288,7 +418,6 @@
                 <v-row class="hidden-lg-and-up">
                   <SpacesDetailsPrices :specificSpace="specificSpace" />
                 </v-row>
-
               </v-col>
 
               <ExpandableDescription :description="specificSpace.description" />
@@ -303,7 +432,10 @@
 
               <!-- What We Don't Allow section -->
               <h2 class="my-5">What We Don't Allow</h2>
-              <SpacesDetailsFoodAndBeverages :space="space" :specificSpace="specificSpace" />
+              <SpacesDetailsFoodAndBeverages
+                :space="space"
+                :specificSpace="specificSpace"
+              />
               <v-divider class="mt-5"></v-divider>
 
               <!-- Cancellation Policy section -->
@@ -315,9 +447,21 @@
             <!-- <div v-if="showBookingColumn" class="dim-overlay"></div> -->
 
             <!-- RIGHT COLUMN -->
-            <v-col class="right d-none d-md-block mb-n15" cols="12" sm="12" md="12" lg="5"
-              :style="{ height: md ? '800px' : '1000px' }" v-if="!mdAndDown">
-              <v-form @submit.prevent ref="form" v-model="bookingFormValid" :key="`form-${step}`">
+            <v-col
+              class="right d-none d-md-block mb-n15"
+              cols="12"
+              sm="12"
+              md="12"
+              lg="5"
+              :style="{ height: md ? '800px' : '1000px' }"
+              v-if="!mdAndDown"
+            >
+              <v-form
+                @submit.prevent
+                ref="form"
+                v-model="bookingFormValid"
+                :key="`form-${step}`"
+              >
                 <!-- Step 1: Booking Details -->
                 <template v-if="step === 1">
                   <v-card class="pa-sm-5 rounded-lg custom-card">
@@ -329,41 +473,89 @@
                         <!-- Date and Guests -->
                         <v-row class="ma-0" no-gutters>
                           <!-- Date -->
-                          <v-col class="py-1 px-3" style="
+                          <v-col
+                            class="py-1 px-3"
+                            style="
                               border-right: 1px solid #e0e0e0;
                               border-bottom: 1px solid #e0e0e0;
-                            ">
-                            <span class="text-body-2 font-weight-medium">DATE</span>
+                            "
+                          >
+                            <span class="text-body-2 font-weight-medium"
+                              >DATE</span
+                            >
                             <!-- Date Picker for Desktop -->
-                            <v-menu v-model="dateInput" :close-on-content-click="false" :nudge-right="40"
-                              transition="scale-transition" offset-y min-width="290px" class="d-none d-sm-block">
+                            <v-menu
+                              v-model="dateInput"
+                              :close-on-content-click="false"
+                              :nudge-right="40"
+                              transition="scale-transition"
+                              offset-y
+                              min-width="290px"
+                              class="d-none d-sm-block"
+                            >
                               <template #activator="{ props }">
-                                <v-text-field dense v-model="formattedDate" readonly persistent-hint v-bind="props"
-                                  placeholder="Select Date" variant="plain" :rules="[requiredInput]" class="text-body-2"
-                                  @update:model-value="handleChangeDate" @click="isInitialized = false">
+                                <v-text-field
+                                  dense
+                                  v-model="formattedDate"
+                                  readonly
+                                  persistent-hint
+                                  v-bind="props"
+                                  placeholder="Select Date"
+                                  variant="plain"
+                                  :rules="[requiredInput]"
+                                  class="text-body-2"
+                                  @update:model-value="handleChangeDate"
+                                  @click="isInitialized = false"
+                                >
                                 </v-text-field>
                               </template>
-                              <v-date-picker v-model="date_calendar" @input="dateInput = false" show-adjacent-months
-                                elevation="0" no-time @update:model-value="dateInput = false"
-                                :min="new Date().toISOString().substring(0, 10)" placeholder="Select a date"
-                                :allowed-dates="getAllowedDates" class="custom-border"></v-date-picker>
+                              <v-date-picker
+                                v-model="date_calendar"
+                                @input="dateInput = false"
+                                show-adjacent-months
+                                elevation="0"
+                                no-time
+                                @update:model-value="dateInput = false"
+                                :min="new Date().toISOString().substring(0, 10)"
+                                placeholder="Select a date"
+                                :allowed-dates="getAllowedDates"
+                                class="custom-border"
+                              ></v-date-picker>
                             </v-menu>
                           </v-col>
 
                           <!-- Guests -->
-                          <v-col class="py-1 px-3" style="border-bottom: 1px solid #e0e0e0">
-                            <span class="text-body-2 font-weight-medium">Guests</span>
-                            <v-text-field type="number" min="0" v-model="bookingForm.guests" dense persistent-hint
-                              @keydown="preventNegative" placeholder="Number of guests" variant="plain"
-                              :rules="[requiredInput]" :label="space.capacityLayout.maxCapacity <
+                          <v-col
+                            class="py-1 px-3"
+                            style="border-bottom: 1px solid #e0e0e0"
+                          >
+                            <span class="text-body-2 font-weight-medium"
+                              >Guests</span
+                            >
+                            <v-text-field
+                              type="number"
+                              min="0"
+                              v-model="bookingForm.guests"
+                              dense
+                              persistent-hint
+                              @keydown="preventNegative"
+                              placeholder="Number of guests"
+                              variant="plain"
+                              :rules="[requiredInput]"
+                              :label="
+                                space.capacityLayout.maxCapacity <
                                 bookingForm.guests
-                                ? `Guest (max ${space.capacityLayout.maxCapacity})`
-                                : ''
-                                " :color="space.capacityLayout.maxCapacity <
-                                  bookingForm.guests
+                                  ? `Guest (max ${space.capacityLayout.maxCapacity})`
+                                  : ''
+                              "
+                              :color="
+                                space.capacityLayout.maxCapacity <
+                                bookingForm.guests
                                   ? 'orange'
                                   : ''
-                                  " @update:model-value="handleGuestChange">
+                              "
+                              @update:model-value="handleGuestChange"
+                            >
                             </v-text-field>
                           </v-col>
                         </v-row>
@@ -371,29 +563,66 @@
                         <!-- Check In and Check Out -->
                         <v-row class="ma-0" no-gutters>
                           <!-- Check In -->
-                          <v-col class="py-1 px-3" style="border-right: 1px solid #e0e0e0">
-                            <span class="text-body-2 font-weight-medium">CHECK IN</span>
-                            <v-select v-model="bookingForm.date.from" :items="checkAllowedTimeFrom" item-title="label"
-                              item-value="value" item-disabled="disabled" dense persistent-hint placeholder="From"
-                              variant="plain" :rules="[requiredInput]" :disabled="!bookingForm.date.date"
-                              class="text-body-2" @update:model-value="handleTimeFromChange">
+                          <v-col
+                            class="py-1 px-3"
+                            style="border-right: 1px solid #e0e0e0"
+                          >
+                            <span class="text-body-2 font-weight-medium"
+                              >CHECK IN</span
+                            >
+                            <v-select
+                              v-model="bookingForm.date.from"
+                              :items="checkAllowedTimeFrom"
+                              item-title="label"
+                              item-value="value"
+                              item-disabled="disabled"
+                              dense
+                              persistent-hint
+                              placeholder="From"
+                              variant="plain"
+                              :rules="[requiredInput]"
+                              :disabled="!bookingForm.date.date"
+                              class="text-body-2"
+                              @update:model-value="handleTimeFromChange"
+                            >
                             </v-select>
                           </v-col>
 
                           <!-- Check Out -->
                           <v-col class="py-1 px-3">
-                            <span class="text-body-2 font-weight-medium">CHECK OUT</span>
-                            <v-select v-model="bookingForm.date.to" :items="checkAllowedTimeTo" item-title="label"
-                              item-value="value" item-disabled="disabled" dense persistent-hint placeholder="To"
-                              variant="plain" :rules="[requiredInput]" :disabled="!bookingForm.date.from"
-                              class="text-body-2" @update:model-value="handleTimeToChange">
+                            <span class="text-body-2 font-weight-medium"
+                              >CHECK OUT</span
+                            >
+                            <v-select
+                              v-model="bookingForm.date.to"
+                              :items="checkAllowedTimeTo"
+                              item-title="label"
+                              item-value="value"
+                              item-disabled="disabled"
+                              dense
+                              persistent-hint
+                              placeholder="To"
+                              variant="plain"
+                              :rules="[requiredInput]"
+                              :disabled="!bookingForm.date.from"
+                              class="text-body-2"
+                              @update:model-value="handleTimeToChange"
+                            >
                             </v-select>
                           </v-col>
                           <v-col cols="12" v-if="isBelowMinimumHours">
-                            <v-card variant="outlined" color="orange" class="py-2 px-7 my-1">
+                            <v-card
+                              variant="outlined"
+                              color="orange"
+                              class="py-2 px-7 my-1"
+                            >
                               <v-row no-gutters>
                                 <v-col cols="12">
-                                  <v-icon icon="mdi-alert-box" class="mr-3" size="20"></v-icon>
+                                  <v-icon
+                                    icon="mdi-alert-box"
+                                    class="mr-3"
+                                    size="20"
+                                  ></v-icon>
                                   <span class="text-black">
                                     {{ minimumHours }} hours minimum
                                   </span>
@@ -409,26 +638,38 @@
                           </v-col>
 
                           <v-col cols="12" v-if="existingEnquiry?.length > 0">
-                            <v-card variant="outlined" color="primary" class="py-2 px-7 my-1">
+                            <v-card
+                              variant="outlined"
+                              color="primary"
+                              class="py-2 px-7 my-1"
+                            >
                               <v-row no-gutters>
                                 <v-col cols="12">
                                   <v-row no-gutters>
                                     <v-col cols="1">
-                                      <v-icon icon="mdi-check-circle" class="mr-1" size="20"></v-icon>
+                                      <v-icon
+                                        icon="mdi-check-circle"
+                                        class="mr-1"
+                                        size="20"
+                                      ></v-icon>
                                     </v-col>
                                     <v-col class="">
                                       <span class="text-black text-14px">
                                         You have an ongoing enquiry with
-                                        <span class="font-weight-bold">{{
-                                          specificSpace.name
-                                        }}.</span> <br /><span class="text-black">
+                                        <span class="font-weight-bold"
+                                          >{{ specificSpace.name }}.</span
+                                        >
+                                        <br /><span class="text-black">
                                           Contact
-                                          <span class="font-weight-bold">{{
-                                            specificSpace.venue.user.first_name
-                                          }}
+                                          <span class="font-weight-bold"
+                                            >{{
+                                              specificSpace.venue.user
+                                                .first_name
+                                            }}
                                             {{
                                               specificSpace.venue.user.last_name
-                                            }}</span>
+                                            }}</span
+                                          >
                                           regarding your ongoing enquiry.
                                         </span>
                                       </span>
@@ -442,41 +683,74 @@
                       </v-card>
 
                       <!-- Flexibility Checkbox -->
-                      <v-row class="my-1 d-flex align-center no-gutters" v-if="existingEnquiry?.length === 0">
+                      <v-row
+                        class="my-1 d-flex align-center no-gutters"
+                        v-if="existingEnquiry?.length === 0"
+                      >
                         <v-col cols="auto" class="d-flex align-center">
-                          <v-checkbox v-model="bookingForm.flexible_time" class="ma-0" hide-details
-                            label="I'm flexible on date and time"></v-checkbox>
+                          <v-checkbox
+                            v-model="bookingForm.flexible_time"
+                            class="ma-0"
+                            hide-details
+                            label="I'm flexible on date and time"
+                          ></v-checkbox>
                         </v-col>
                       </v-row>
                     </div>
 
                     <v-row v-if="showComputation" no-gutters class="w-100 mb-5">
                       <v-divider class="mb-5"></v-divider>
-                      <EnquiryReviewOfferComputation :space="specificSpace" :computed-data="computedOffer"
-                        without-borders show-computation-only hide-price-details-label :loading="loadingComputation" />
+                      <EnquiryReviewOfferComputation
+                        :space="specificSpace"
+                        :computed-data="computedOffer"
+                        without-borders
+                        show-computation-only
+                        hide-price-details-label
+                        :loading="loadingComputation"
+                      />
                     </v-row>
 
                     <!-- Button in the Footer -->
-                    <v-btn class="rounded-lg mt-2" size="large" color="primary" block :style="{ fontSize: '14px' }"
-                      :disabled="loggedIn && currentUser?.role !== 'USER'" v-if="existingEnquiry?.length > 0">
-                      <NuxtLink class="text-decoration-none text-white" :to="{
-                        name: 'country-enquiries-message-id',
-                        params: { country, id: existingEnquiry[0]?._id },
-                      }">
-
+                    <v-btn
+                      class="rounded-lg mt-2"
+                      size="large"
+                      color="primary"
+                      block
+                      :style="{ fontSize: '14px' }"
+                      :disabled="loggedIn && currentUser?.role !== 'USER'"
+                      v-if="existingEnquiry?.length > 0"
+                    >
+                      <NuxtLink
+                        class="text-decoration-none text-white"
+                        :to="{
+                          name: 'country-enquiries-message-id',
+                          params: { country, id: existingEnquiry[0]?._id },
+                        }"
+                      >
                         Go to inbox
                       </NuxtLink>
                     </v-btn>
 
-                    <v-btn class="rounded-lg" size="large" color="primary" @click="handleNext"
-                      v-if="existingEnquiry?.length === 0 && step === 1" block :style="{ fontSize: '14px' }" :disabled="(loggedIn && currentUser?.role !== 'USER') ||
+                    <v-btn
+                      class="rounded-lg"
+                      size="large"
+                      color="primary"
+                      @click="handleNext"
+                      v-if="existingEnquiry?.length === 0 && step === 1"
+                      block
+                      :style="{ fontSize: '14px' }"
+                      :disabled="
+                        (loggedIn && currentUser?.role !== 'USER') ||
                         !isSpacePublished
-                        ">
+                      "
+                    >
                       Inquire Now
                     </v-btn>
-                    <span v-if="!isSpacePublished" class="text-warning text-14px d-flex justify-center mt-2">This space
-                      is not
-                      published.</span>
+                    <span
+                      v-if="!isSpacePublished"
+                      class="text-warning text-14px d-flex justify-center mt-2"
+                      >This space is not published.</span
+                    >
                   </v-card>
                 </template>
 
@@ -484,7 +758,11 @@
                 <template v-if="step === 2">
                   <v-card class="pa-5 px-6 rounded-lg custom-card">
                     <!-- Back Button -->
-                    <span class="font-500 text-16px" @click="step--" style="cursor: pointer">
+                    <span
+                      class="font-500 text-16px"
+                      @click="step--"
+                      style="cursor: pointer"
+                    >
                       <v-icon class="mr-1">mdi-arrow-left</v-icon>
                       Back
                     </span>
@@ -495,35 +773,80 @@
                       {{ specificSpace.venue.user.last_name }}
                     </p>
 
-                    <v-textarea variant="outlined" v-model="bookingForm.message" placeholder="Type your message..."
-                      rows="3" required no-resize :rules="[requiredInput]"></v-textarea>
+                    <v-textarea
+                      variant="outlined"
+                      v-model="bookingForm.message"
+                      placeholder="Type your message..."
+                      rows="3"
+                      required
+                      no-resize
+                      :rules="[requiredInput]"
+                    ></v-textarea>
 
                     <!-- Catering Options -->
-                    <v-row no-gutters class="d-flex align-center" v-if="space.FoodAndBeverages.offerCatering">
+                    <v-row
+                      no-gutters
+                      class="d-flex align-center"
+                      v-if="space.FoodAndBeverages.offerCatering"
+                    >
                       <v-col cols="auto" class="ma-0 d-flex align-center">
-                        <v-checkbox v-model="bookingForm.require_catering" class="ma-0" hide-details
-                          label="I require catering"></v-checkbox>
+                        <v-checkbox
+                          v-model="bookingForm.require_catering"
+                          class="ma-0"
+                          hide-details
+                          label="I require catering"
+                        ></v-checkbox>
                       </v-col>
                     </v-row>
-                    <v-row no-gutters class="d-flex align-center" v-if="bookingForm.require_catering">
-                      <v-col cols="6" v-for="cateringItem in bookingForm.catering_options"
-                        class="d-flex flex-row align-center">
-                        <v-responsive height="40" max-width="40" class="d-flex align-center">
-                          <v-checkbox hide-details v-model="cateringItem.value"></v-checkbox>
+                    <v-row
+                      no-gutters
+                      class="d-flex align-center"
+                      v-if="bookingForm.require_catering"
+                    >
+                      <v-col
+                        cols="6"
+                        v-for="cateringItem in bookingForm.catering_options"
+                        class="d-flex flex-row align-center"
+                      >
+                        <v-responsive
+                          height="40"
+                          max-width="40"
+                          class="d-flex align-center"
+                        >
+                          <v-checkbox
+                            hide-details
+                            v-model="cateringItem.value"
+                          ></v-checkbox>
                         </v-responsive>
                         <span>{{ cateringItem.name }}</span>
                       </v-col>
                     </v-row>
 
-                    <v-row no-gutters class="d-flex align-center" v-if="space.FoodAndBeverages.allowExternalCatering">
+                    <v-row
+                      no-gutters
+                      class="d-flex align-center"
+                      v-if="space.FoodAndBeverages.allowExternalCatering"
+                    >
                       <v-col cols="auto" class="ma-0 d-flex align-center">
-                        <v-checkbox v-model="bookingForm.own_catering" class="ma-0" hide-details
-                          label="I want my own catering"></v-checkbox>
+                        <v-checkbox
+                          v-model="bookingForm.own_catering"
+                          class="ma-0"
+                          hide-details
+                          label="I want my own catering"
+                        ></v-checkbox>
                       </v-col>
                     </v-row>
 
-                    <v-btn class="rounded-lg mt-5" size="large" color="primary" @click="handleNext" v-if="step === 2"
-                      block :style="{ fontSize: '14px' }" :loading="loadingEnquiry">
+                    <v-btn
+                      class="rounded-lg mt-5"
+                      size="large"
+                      color="primary"
+                      @click="handleNext"
+                      v-if="step === 2"
+                      block
+                      :style="{ fontSize: '14px' }"
+                      :loading="loadingEnquiry"
+                    >
                       Send Message
                     </v-btn>
                   </v-card>
@@ -619,25 +942,53 @@
       </v-card>
     </v-row> -->
 
-    <v-bottom-navigation :model-value="true" v-if="isSmallScreen" class="pa-4 d-block d-lg-none" height="100%">
+    <v-bottom-navigation
+      :model-value="true"
+      v-if="isSmallScreen"
+      class="pa-4 d-block d-lg-none"
+      height="100%"
+    >
       <v-card v-if="!isVisible" class="rounded-lg w-100" style="">
-        <v-btn variant="flat" block color="primary" class="bg-primary" density="comfortable"
-          @click.stop="toggleNavigation" :disabled="(loggedIn && currentUser?.role !== 'USER') || !isSpacePublished
-            ">
+        <v-btn
+          variant="flat"
+          block
+          color="primary"
+          class="bg-primary"
+          density="comfortable"
+          @click.stop="toggleNavigation"
+          :disabled="
+            (loggedIn && currentUser?.role !== 'USER') || !isSpacePublished
+          "
+        >
           BOOK
         </v-btn>
-        <span v-if="!isSpacePublished" class="d-flex text-warning text-14px d-flex justify-center mt-2">This
-          space
-          is not published.</span>
+        <span
+          v-if="!isSpacePublished"
+          class="d-flex text-warning text-14px d-flex justify-center mt-2"
+          >This space is not published.</span
+        >
       </v-card>
 
-
       <v-card v-if="isVisible" class="w-100" :elevation="0" flat>
-        <v-row class="justify-end py-3 pr-3" style="position: relative" no-gutters>
-          <v-btn variant="flat" :size="x - small" @click="closeNavigation" icon="mdi-close"></v-btn>
+        <v-row
+          class="justify-end py-3 pr-3"
+          style="position: relative"
+          no-gutters
+        >
+          <v-btn
+            variant="flat"
+            :size="x - small"
+            @click="closeNavigation"
+            icon="mdi-close"
+          ></v-btn>
         </v-row>
 
-        <v-form @submit.prevent ref="form" v-model="bookingFormValid" :key="`form-${step}`">
+        <v-form
+          @submit.prevent
+          ref="form"
+          v-model="bookingFormValid"
+          :key="`form-${step}`"
+        >
           <!-- Step 1: Booking Details -->
           <template v-if="step === 1">
             <!-- Prices and Booking Details -->
@@ -645,64 +996,141 @@
               <!-- Date and Guests -->
               <v-row class="ma-0" no-gutters>
                 <!-- Date -->
-                <v-col class="py-1 px-3" style="
-                      border-right: 1px solid #e0e0e0;
-                      border-bottom: 1px solid #e0e0e0;
-                    ">
+                <v-col
+                  class="py-1 px-3"
+                  style="
+                    border-right: 1px solid #e0e0e0;
+                    border-bottom: 1px solid #e0e0e0;
+                  "
+                >
                   <span class="text-body-2 font-weight-medium">DATE</span>
-                  <v-menu v-model="dateInput" :close-on-content-click="false" :nudge-right="40"
-                    transition="scale-transition" offset-y min-width="290px" class="included">
+                  <v-menu
+                    v-model="dateInput"
+                    :close-on-content-click="false"
+                    :nudge-right="40"
+                    transition="scale-transition"
+                    offset-y
+                    min-width="290px"
+                    class="included"
+                  >
                     <template #activator="{ props }">
-                      <v-text-field dense v-model="formattedDate" readonly persistent-hint v-bind="props"
-                        placeholder="Select Date" variant="plain" :rules="[requiredInput]" class="text-body-2"
-                        @update:model-value="handleChangeDate" @click="isInitialized = false"></v-text-field>
+                      <v-text-field
+                        dense
+                        v-model="formattedDate"
+                        readonly
+                        persistent-hint
+                        v-bind="props"
+                        placeholder="Select Date"
+                        variant="plain"
+                        :rules="[requiredInput]"
+                        class="text-body-2"
+                        @update:model-value="handleChangeDate"
+                        @click="isInitialized = false"
+                      ></v-text-field>
                     </template>
-                    <v-date-picker v-model="date_calendar" @input="dateInput = false" show-adjacent-months elevation="0"
-                      no-time @update:model-value="dateInput = false" :min="new Date().toISOString().substring(0, 10)"
-                      placeholder="Select a date" :allowed-dates="getAllowedDates"
-                      class="custom-border included"></v-date-picker>
+                    <v-date-picker
+                      v-model="date_calendar"
+                      @input="dateInput = false"
+                      show-adjacent-months
+                      elevation="0"
+                      no-time
+                      @update:model-value="dateInput = false"
+                      :min="new Date().toISOString().substring(0, 10)"
+                      placeholder="Select a date"
+                      :allowed-dates="getAllowedDates"
+                      class="custom-border included"
+                    ></v-date-picker>
                   </v-menu>
                 </v-col>
 
                 <!-- Guests -->
-                <v-col class="py-1 px-3" style="border-bottom: 1px solid #e0e0e0">
+                <v-col
+                  class="py-1 px-3"
+                  style="border-bottom: 1px solid #e0e0e0"
+                >
                   <span class="text-body-2 font-weight-medium">Guests</span>
-                  <v-text-field type="number" min="0" v-model="bookingForm.guests" dense persistent-hint
-                    @keydown="preventNegative" placeholder="Number of guests" variant="plain" :rules="[requiredInput]"
-                    :label="space.capacityLayout.maxCapacity < bookingForm.guests
-                      ? `Guest (max ${space.capacityLayout.maxCapacity})`
-                      : ''
-                      " :color="space.capacityLayout.maxCapacity < bookingForm.guests
+                  <v-text-field
+                    type="number"
+                    min="0"
+                    v-model="bookingForm.guests"
+                    dense
+                    persistent-hint
+                    @keydown="preventNegative"
+                    placeholder="Number of guests"
+                    variant="plain"
+                    :rules="[requiredInput]"
+                    :label="
+                      space.capacityLayout.maxCapacity < bookingForm.guests
+                        ? `Guest (max ${space.capacityLayout.maxCapacity})`
+                        : ''
+                    "
+                    :color="
+                      space.capacityLayout.maxCapacity < bookingForm.guests
                         ? 'orange'
                         : ''
-                        " @update:model-value="handleGuestChange"></v-text-field>
+                    "
+                    @update:model-value="handleGuestChange"
+                  ></v-text-field>
                 </v-col>
               </v-row>
 
               <!-- Check In and Check Out -->
               <v-row class="ma-0" no-gutters>
                 <!-- Check In -->
-                <v-col class="py-1 px-3" style="border-right: 1px solid #e0e0e0">
+                <v-col
+                  class="py-1 px-3"
+                  style="border-right: 1px solid #e0e0e0"
+                >
                   <span class="text-body-2 font-weight-medium">CHECK IN</span>
-                  <v-select v-model="bookingForm.date.from" :items="checkAllowedTimeFrom" item-title="label"
-                    item-value="value" item-disabled="disabled" dense persistent-hint placeholder="From" variant="plain"
-                    :rules="[requiredInput]" :disabled="!bookingForm.date.date"
-                    @update:model-value="handleTimeFromChange" class="text-body-2"></v-select>
+                  <v-select
+                    v-model="bookingForm.date.from"
+                    :items="checkAllowedTimeFrom"
+                    item-title="label"
+                    item-value="value"
+                    item-disabled="disabled"
+                    dense
+                    persistent-hint
+                    placeholder="From"
+                    variant="plain"
+                    :rules="[requiredInput]"
+                    :disabled="!bookingForm.date.date"
+                    @update:model-value="handleTimeFromChange"
+                    class="text-body-2"
+                  ></v-select>
                 </v-col>
 
                 <!-- Check Out -->
                 <v-col class="py-1 px-3">
                   <span class="text-body-2 font-weight-medium">CHECK OUT</span>
-                  <v-select v-model="bookingForm.date.to" :items="checkAllowedTimeTo" item-title="label"
-                    item-value="value" item-disabled="disabled" dense persistent-hint placeholder="To" variant="plain"
-                    :rules="[requiredInput]" :disabled="!bookingForm.date.from" class="text-body-2"
-                    @update:model-value="handleTimeToChange"></v-select>
+                  <v-select
+                    v-model="bookingForm.date.to"
+                    :items="checkAllowedTimeTo"
+                    item-title="label"
+                    item-value="value"
+                    item-disabled="disabled"
+                    dense
+                    persistent-hint
+                    placeholder="To"
+                    variant="plain"
+                    :rules="[requiredInput]"
+                    :disabled="!bookingForm.date.from"
+                    class="text-body-2"
+                    @update:model-value="handleTimeToChange"
+                  ></v-select>
                 </v-col>
                 <v-col cols="12" v-if="isBelowMinimumHours">
-                  <v-card variant="outlined" color="orange" class="py-2 px-7 my-1">
+                  <v-card
+                    variant="outlined"
+                    color="orange"
+                    class="py-2 px-7 my-1"
+                  >
                     <v-row no-gutters>
                       <v-col cols="12">
-                        <v-icon icon="mdi-alert-box" class="mr-3" size="20"></v-icon>
+                        <v-icon
+                          icon="mdi-alert-box"
+                          class="mr-3"
+                          size="20"
+                        ></v-icon>
                         <span class="text-black">
                           {{ minimumHours }} hours minimum
                         </span>
@@ -717,30 +1145,50 @@
                   </v-card>
                 </v-col>
 
-                <v-row v-if="showComputation" no-gutters class="w-100 mb-5 px-3">
+                <v-row
+                  v-if="showComputation"
+                  no-gutters
+                  class="w-100 mb-5 px-3"
+                >
                   <v-divider class="mb-5"></v-divider>
-                  <EnquiryReviewOfferComputation :space="specificSpace" :computed-data="computedOffer" without-borders
-                    show-computation-only hide-price-details-label :loading="loadingComputation"/>
+                  <EnquiryReviewOfferComputation
+                    :space="specificSpace"
+                    :computed-data="computedOffer"
+                    without-borders
+                    show-computation-only
+                    hide-price-details-label
+                    :loading="loadingComputation"
+                  />
                 </v-row>
 
                 <v-col cols="12" v-if="existingEnquiry?.length > 0">
-                  <v-card variant="outlined" color="primary" class="py-2 px-7 my-1">
+                  <v-card
+                    variant="outlined"
+                    color="primary"
+                    class="py-2 px-7 my-1"
+                  >
                     <v-row no-gutters>
                       <v-col cols="12">
                         <v-row no-gutters>
                           <v-col cols="1">
-                            <v-icon icon="mdi-check-circle" class="" size="20"></v-icon>
+                            <v-icon
+                              icon="mdi-check-circle"
+                              class=""
+                              size="20"
+                            ></v-icon>
                           </v-col>
                           <v-col class="">
                             <span class="text-black">
                               You have an ongoing enquiry with
-                              <span class="font-weight-bold">{{
-                                specificSpace.name
-                              }}.</span><br class="d-sm-none" />
+                              <span class="font-weight-bold"
+                                >{{ specificSpace.name }}.</span
+                              ><br class="d-sm-none" />
                               <span class="text-black">
                                 Contact
-                                <span class="font-weight-bold">{{ specificSpace.venue.user.first_name }}
-                                  {{ specificSpace.venue.user.last_name }}</span>
+                                <span class="font-weight-bold"
+                                  >{{ specificSpace.venue.user.first_name }}
+                                  {{ specificSpace.venue.user.last_name }}</span
+                                >
                                 regarding your ongoing enquiry.
                               </span>
                             </span>
@@ -753,41 +1201,68 @@
               </v-row>
 
               <!-- Flexibility Checkbox -->
-              <v-row class="my-1 d-flex align-center no-gutters" v-if="existingEnquiry?.length === 0">
+              <v-row
+                class="my-1 d-flex align-center no-gutters"
+                v-if="existingEnquiry?.length === 0"
+              >
                 <v-col cols="auto" class="d-flex align-center">
-                  <v-checkbox v-model="bookingForm.flexible_time" hide-details
-                    label="I'm flexible on date and time"></v-checkbox>
+                  <v-checkbox
+                    v-model="bookingForm.flexible_time"
+                    hide-details
+                    label="I'm flexible on date and time"
+                  ></v-checkbox>
                 </v-col>
               </v-row>
             </div>
 
             <!-- Button in the Footer -->
-            <v-btn class="mt-4 w-100 bg-primary" size="small" color="primary" density="compact"
-              :style="{ fontSize: '14px' }" :disabled="loggedIn && currentUser?.role !== 'USER'"
-              v-if="existingEnquiry?.length > 0">
-              <NuxtLink class="text-decoration-none text-white" :to="{
-                name: 'country-enquiries-message-id',
-                params: { country, id: existingEnquiry[0]?._id }
-              }">
-
+            <v-btn
+              class="mt-4 w-100 bg-primary"
+              size="small"
+              color="primary"
+              density="compact"
+              :style="{ fontSize: '14px' }"
+              :disabled="loggedIn && currentUser?.role !== 'USER'"
+              v-if="existingEnquiry?.length > 0"
+            >
+              <NuxtLink
+                class="text-decoration-none text-white"
+                :to="{
+                  name: 'country-enquiries-message-id',
+                  params: { country, id: existingEnquiry[0]?._id },
+                }"
+              >
                 Go to inbox
               </NuxtLink>
             </v-btn>
-            <v-btn class="bg-primary w-100" density="compact" @click="handleNext"
-              v-if="existingEnquiry?.length === 0 && step === 1" block :disabled="(loggedIn && currentUser?.role !== 'USER') ||
-                !isSpacePublished
-                ">
+            <v-btn
+              class="bg-primary w-100"
+              density="compact"
+              @click="handleNext"
+              v-if="existingEnquiry?.length === 0 && step === 1"
+              block
+              :disabled="
+                (loggedIn && currentUser?.role !== 'USER') || !isSpacePublished
+              "
+            >
               Inquire Now
             </v-btn>
 
-            <span v-if="!isSpacePublished" class="text-warning text-14px d-flex justify-center mt-2">This space is not
-              published.</span>
+            <span
+              v-if="!isSpacePublished"
+              class="text-warning text-14px d-flex justify-center mt-2"
+              >This space is not published.</span
+            >
           </template>
 
           <!-- Step 2: Message to Host -->
           <template v-if="step === 2">
             <!-- Back Button -->
-            <span class="font-500 text-16px" @click="step--" style="cursor: pointer">
+            <span
+              class="font-500 text-16px"
+              @click="step--"
+              style="cursor: pointer"
+            >
               <v-icon class="mr-1">mdi-arrow-left</v-icon>
               Back
             </span>
@@ -798,36 +1273,80 @@
               {{ specificSpace.venue.user.last_name }}
             </p>
 
-            <v-textarea variant="outlined" v-model="bookingForm.message" placeholder="Type your message..." rows="3"
-              required :rules="[requiredInput]" no-resize></v-textarea>
+            <v-textarea
+              variant="outlined"
+              v-model="bookingForm.message"
+              placeholder="Type your message..."
+              rows="3"
+              required
+              :rules="[requiredInput]"
+              no-resize
+            ></v-textarea>
 
             <!-- Catering Options -->
-            <v-row no-gutters class="d-flex align-center" v-if="space.FoodAndBeverages.offerCatering">
+            <v-row
+              no-gutters
+              class="d-flex align-center"
+              v-if="space.FoodAndBeverages.offerCatering"
+            >
               <v-col cols="auto" class="ma-0 d-flex align-center">
-                <v-checkbox v-model="bookingForm.require_catering" class="ma-0" hide-details
-                  label="I require catering"></v-checkbox>
+                <v-checkbox
+                  v-model="bookingForm.require_catering"
+                  class="ma-0"
+                  hide-details
+                  label="I require catering"
+                ></v-checkbox>
               </v-col>
             </v-row>
-            <v-row no-gutters class="d-flex align-center" v-if="bookingForm.require_catering">
-              <v-col cols="12" sm="6" v-for="cateringItem in bookingForm.catering_options"
-                class="d-flex flex-row align-center text-16px mt-1">
-                <v-responsive height="40" max-width="40" class="d-flex align-center">
-                  <v-checkbox hide-details v-model="cateringItem.value"></v-checkbox>
+            <v-row
+              no-gutters
+              class="d-flex align-center"
+              v-if="bookingForm.require_catering"
+            >
+              <v-col
+                cols="12"
+                sm="6"
+                v-for="cateringItem in bookingForm.catering_options"
+                class="d-flex flex-row align-center text-16px mt-1"
+              >
+                <v-responsive
+                  height="40"
+                  max-width="40"
+                  class="d-flex align-center"
+                >
+                  <v-checkbox
+                    hide-details
+                    v-model="cateringItem.value"
+                  ></v-checkbox>
                 </v-responsive>
                 <span>{{ cateringItem.name }}</span>
               </v-col>
             </v-row>
 
-
-            <v-row no-gutters class="d-flex align-center" v-if="space.FoodAndBeverages.allowExternalCatering">
+            <v-row
+              no-gutters
+              class="d-flex align-center"
+              v-if="space.FoodAndBeverages.allowExternalCatering"
+            >
               <v-col cols="auto" class="ma-0 d-flex align-center">
-                <v-checkbox v-model="bookingForm.own_catering" class="ma-0" hide-details
-                  label="I want my own catering"></v-checkbox>
+                <v-checkbox
+                  v-model="bookingForm.own_catering"
+                  class="ma-0"
+                  hide-details
+                  label="I want my own catering"
+                ></v-checkbox>
               </v-col>
             </v-row>
 
-            <v-btn density="compact" class="bg-primary mt-5" @click="handleNext" v-if="step === 2" block
-              :style="{ fontSize: '14px' }" :loading="loadingEnquiry">
+            <v-btn
+              density="compact"
+              class="bg-primary mt-5"
+              @click="handleNext"
+              v-if="step === 2"
+              block
+              :style="{ fontSize: '14px' }"
+              :loading="loadingEnquiry"
+            >
               Send Message
             </v-btn>
           </template>
@@ -836,18 +1355,38 @@
     </v-bottom-navigation>
 
     <!-- SHARING Column for Mobile -->
-    <v-bottom-sheet v-model="showSharingColumn" @click:outside="showSharingColumn = false">
-      <v-card class="pa-6 rounded-t-lg"
-        style="background: white; box-shadow: rgba(0, 0, 0, 0.45) 0px -15px 20px -10px;">
+    <v-bottom-sheet
+      v-model="showSharingColumn"
+      @click:outside="showSharingColumn = false"
+    >
+      <v-card
+        class="pa-6 rounded-t-lg"
+        style="
+          background: white;
+          box-shadow: rgba(0, 0, 0, 0.45) 0px -15px 20px -10px;
+        "
+      >
         <v-row no-gutters justify="space-between" align="center" class="mb-4">
           <p class="text-20px font-500">Share this venue</p>
-          <v-btn @click.stop="showSharingColumn = false" size="small" variant="flat" icon="mdi-close"></v-btn>
+          <v-btn
+            @click.stop="showSharingColumn = false"
+            size="small"
+            variant="flat"
+            icon="mdi-close"
+          ></v-btn>
         </v-row>
 
         <v-row no-gutters justify="space-between" align="center">
           <v-col cols="6">
-            <v-img :src="featuredImageSrc()?.path || 'https://picsum.photos/500/300?image=232'" cover rounded="lg"
-              height="140px"></v-img>
+            <v-img
+              :src="
+                featuredImageSrc()?.path ||
+                'https://picsum.photos/500/300?image=232'
+              "
+              cover
+              rounded="lg"
+              height="140px"
+            ></v-img>
           </v-col>
 
           <v-col cols="6">
@@ -861,7 +1400,13 @@
         <div class="links">
           <v-row no-gutters class="mt-3">
             <v-col cols="6" class="pa-1">
-              <v-card variant="outlined" class="pa-1 rounded-lg" color="grey" link @click="copyLink">
+              <v-card
+                variant="outlined"
+                class="pa-1 rounded-lg"
+                color="grey"
+                link
+                @click="copyLink"
+              >
                 <div class="d-flex align-center">
                   <v-col>
                     <span class="ml-2 text-black">Copy Link</span>
@@ -871,7 +1416,13 @@
             </v-col>
 
             <v-col cols="6" class="pa-1">
-              <v-card variant="outlined" class="pa-1 rounded-lg" color="grey" link @click="sendEmail">
+              <v-card
+                variant="outlined"
+                class="pa-1 rounded-lg"
+                color="grey"
+                link
+                @click="sendEmail"
+              >
                 <div class="d-flex align-center">
                   <v-col>
                     <span class="ml-2 text-black">Email</span>
@@ -883,7 +1434,13 @@
 
           <v-row no-gutters>
             <v-col cols="6" class="pa-1">
-              <v-card variant="outlined" class="pa-1 rounded-lg" color="grey" link @click="shareViaSMS">
+              <v-card
+                variant="outlined"
+                class="pa-1 rounded-lg"
+                color="grey"
+                link
+                @click="shareViaSMS"
+              >
                 <div class="d-flex align-center">
                   <v-col>
                     <span class="ml-2 text-black">Messages</span>
@@ -893,7 +1450,13 @@
             </v-col>
 
             <v-col cols="6" class="pa-1">
-              <v-card variant="outlined" class="pa-1 rounded-lg" color="grey" link @click="shareOnWhatsApp">
+              <v-card
+                variant="outlined"
+                class="pa-1 rounded-lg"
+                color="grey"
+                link
+                @click="shareOnWhatsApp"
+              >
                 <div class="d-flex align-center">
                   <v-col>
                     <span class="ml-2 text-black">WhatsApp</span>
@@ -905,7 +1468,13 @@
 
           <v-row no-gutters>
             <v-col cols="6" class="pa-1">
-              <v-card variant="outlined" class="pa-1 rounded-lg" color="grey" link @click="shareOnMessenger">
+              <v-card
+                variant="outlined"
+                class="pa-1 rounded-lg"
+                color="grey"
+                link
+                @click="shareOnMessenger"
+              >
                 <div class="d-flex align-center">
                   <v-col>
                     <span class="ml-2 text-black">Messenger</span>
@@ -915,7 +1484,13 @@
             </v-col>
 
             <v-col cols="6" class="pa-1">
-              <v-card variant="outlined" class="pa-1 rounded-lg" color="grey" link @click="shareOnFacebook">
+              <v-card
+                variant="outlined"
+                class="pa-1 rounded-lg"
+                color="grey"
+                link
+                @click="shareOnFacebook"
+              >
                 <div class="d-flex align-center">
                   <v-col>
                     <span class="ml-2 text-black">Facebook</span>
@@ -929,8 +1504,16 @@
     </v-bottom-sheet>
 
     <v-col cols="12" :class="md ? 'mt-15' : ''">
-      <v-col cols="12" style="height: 700px" :class="md ? 'mt-16 pt-16' : 'mt-15'">
-        <MapGoogleMap :country="country" :coordinates="coordinates" :showDetails="false" />
+      <v-col
+        cols="12"
+        style="height: 700px"
+        :class="md ? 'mt-16 pt-16' : 'mt-15'"
+      >
+        <MapGoogleMap
+          :country="country"
+          :coordinates="coordinates"
+          :showDetails="false"
+        />
       </v-col>
     </v-col>
 
@@ -939,90 +1522,155 @@
     </v-row>
 
     <DialogAddTeamMember v-model:reviewDialog="reviewDialog" />
-    <DialogRequireLoggedIn v-model="dialogRequireLoggedIn" :enquire="enquire" :formData="{
-      date_calendar: date_calendar,
-      bookingFrom: bookingForm.date.from,
-      bookingTo: bookingForm.date.to,
-      guest: bookingForm.guests
-    }" />
+    <DialogRequireLoggedIn
+      v-model="dialogRequireLoggedIn"
+      :enquire="enquire"
+      :formData="{
+        date_calendar: date_calendar,
+        bookingFrom: bookingForm.date.from,
+        bookingTo: bookingForm.date.to,
+        guest: bookingForm.guests,
+      }"
+    />
 
     <v-dialog v-model="showEnquireDialog" persistent max-width="600px">
       <v-card>
         <v-card-title>
           <span class="headline">Booking Enquiry</span>
         </v-card-title>
-        <v-form @submit.prevent ref="form" v-model="bookingFormValid" :key="`form-${step}`">
+        <v-form
+          @submit.prevent
+          ref="form"
+          v-model="bookingFormValid"
+          :key="`form-${step}`"
+        >
           <v-container>
             <!-- Booking Details -->
             <v-row>
               <v-col cols="12" v-if="step === 1">
                 <!-- Date Picker -->
                 <v-col cols="12" md="6">
-                  <v-menu v-model="dateInput" :close-on-content-click="false" :nudge-right="40"
-                    transition="scale-transition" offset-y min-width="290px">
+                  <v-menu
+                    v-model="dateInput"
+                    :close-on-content-click="false"
+                    :nudge-right="40"
+                    transition="scale-transition"
+                    offset-y
+                    min-width="290px"
+                  >
                     <template #activator="{ props }">
-                      <v-text-field dense v-model="formattedDate" readonly persistent-hint v-bind="props"
-                        placeholder="Select Date" prepend-icon="mdi-calendar-month" variant="underlined"
-                        :rules="[requiredInput]" label="Date" />
+                      <v-text-field
+                        dense
+                        v-model="formattedDate"
+                        readonly
+                        persistent-hint
+                        v-bind="props"
+                        placeholder="Select Date"
+                        prepend-icon="mdi-calendar-month"
+                        variant="underlined"
+                        :rules="[requiredInput]"
+                        label="Date"
+                      />
                     </template>
-                    <v-date-picker v-model="date_calendar" @input="dateInput = false" show-adjacent-months
-                      elevation="24" no-time @update:model-value="dateInput = false"
-                      :min="new Date().toISOString().substring(0, 10)" :allowed-dates="getAllowedDates" />
+                    <v-date-picker
+                      v-model="date_calendar"
+                      @input="dateInput = false"
+                      show-adjacent-months
+                      elevation="24"
+                      no-time
+                      @update:model-value="dateInput = false"
+                      :min="new Date().toISOString().substring(0, 10)"
+                      :allowed-dates="getAllowedDates"
+                    />
                   </v-menu>
                 </v-col>
 
                 <!-- Time Selection -->
                 <v-col cols="12" md="6">
-                  <v-select v-model="bookingForm.date.from" :items="checkAllowedTimeFrom" label="From"
-                    :rules="[requiredInput]" />
-                  <v-select v-model="bookingForm.date.to" :items="checkAllowedTimeTo" label="To"
-                    :rules="[requiredInput]" />
+                  <v-select
+                    v-model="bookingForm.date.from"
+                    :items="checkAllowedTimeFrom"
+                    label="From"
+                    :rules="[requiredInput]"
+                  />
+                  <v-select
+                    v-model="bookingForm.date.to"
+                    :items="checkAllowedTimeTo"
+                    label="To"
+                    :rules="[requiredInput]"
+                  />
                 </v-col>
 
                 <!-- Number of Guests -->
                 <v-col cols="12">
-                  <v-text-field v-model="bookingForm.guests" label="Number of Guests" type="number"
-                    :rules="[requiredInput]" />
+                  <v-text-field
+                    v-model="bookingForm.guests"
+                    label="Number of Guests"
+                    type="number"
+                    :rules="[requiredInput]"
+                  />
                 </v-col>
 
                 <!-- Catering Options -->
                 <v-col cols="12">
-                  <v-checkbox v-model="bookingForm.own_catering" label="Own Catering" />
-                  <v-checkbox v-model="bookingForm.require_catering" label="Require Catering" />
+                  <v-checkbox
+                    v-model="bookingForm.own_catering"
+                    label="Own Catering"
+                  />
+                  <v-checkbox
+                    v-model="bookingForm.require_catering"
+                    label="Require Catering"
+                  />
                 </v-col>
 
                 <!-- Catering Checkbox Group -->
                 <v-col cols="12">
-                  <v-checkbox-group v-model="bookingForm.catering_options" :items="[
-                    { name: 'Breakfast', value: 'Breakfast' },
-                    { name: 'Dinner', value: 'Dinner' },
-                    {
-                      name: 'Tea & Coffee Break',
-                      value: 'Tea & Coffee Break',
-                    },
-                    { name: 'Drinks reception', value: 'Drinks reception' },
-                    { name: 'Lunch', value: 'Lunch' },
-                    { name: 'Other', value: 'Other' },
-                  ]" />
+                  <v-checkbox-group
+                    v-model="bookingForm.catering_options"
+                    :items="[
+                      { name: 'Breakfast', value: 'Breakfast' },
+                      { name: 'Dinner', value: 'Dinner' },
+                      {
+                        name: 'Tea & Coffee Break',
+                        value: 'Tea & Coffee Break',
+                      },
+                      { name: 'Drinks reception', value: 'Drinks reception' },
+                      { name: 'Lunch', value: 'Lunch' },
+                      { name: 'Other', value: 'Other' },
+                    ]"
+                  />
                 </v-col>
 
                 <!-- Additional Message -->
                 <v-col cols="12">
-                  <v-textarea v-model="bookingForm.message" label="Additional Message" />
+                  <v-textarea
+                    v-model="bookingForm.message"
+                    label="Additional Message"
+                  />
                 </v-col>
               </v-col>
 
               <!-- Message to Host -->
               <v-col cols="12" v-if="step === 2">
-                <v-btn variant="text" @click="showInquireForm = false" prepend-icon="mdi-arrow-left">
+                <v-btn
+                  variant="text"
+                  @click="showInquireForm = false"
+                  prepend-icon="mdi-arrow-left"
+                >
                   Back
                 </v-btn>
                 <p class="font-weight-bold my-5">
                   Message to {{ specificSpace.venue.user.first_name }}
                   {{ specificSpace.venue.user.last_name }}
                 </p>
-                <v-textarea variant="outlined" v-model="inquireMessage" placeholder="Type your message..." rows="3"
-                  required no-resize />
+                <v-textarea
+                  variant="outlined"
+                  v-model="inquireMessage"
+                  placeholder="Type your message..."
+                  rows="3"
+                  required
+                  no-resize
+                />
               </v-col>
             </v-row>
           </v-container>
@@ -1036,19 +1684,39 @@
       </v-card>
     </v-dialog>
 
-    <FavoritesCreateFolderDialog :space_id="specificSpace._id" v-model="createFolderDialog"
-      @folderCreated="folderCreated" />
-    <FavoritesAddToFavorites :space_id="specificSpace._id" :favoriteObj="favoriteObj" v-model="addToFolderDialog"
-      @folderCreated="folderCreated" />
-
+    <FavoritesCreateFolderDialog
+      :space_id="specificSpace._id"
+      v-model="createFolderDialog"
+      @folderCreated="folderCreated"
+    />
+    <FavoritesAddToFavorites
+      :space_id="specificSpace._id"
+      :favoriteObj="favoriteObj"
+      v-model="addToFolderDialog"
+      @folderCreated="folderCreated"
+    />
   </v-row>
 
-  <CarouselImageViewer v-model:show="showImageViewer" v-model:images="imagesArray" :active-image-id="activeImageId"
-    show-extra-buttons :is-favorite="specificSpace?.marked_as_favorite?.isFavorite" @share="toggleShareButton"
-    @like="handleFavorite()" />
-  <DialogShareModal v-model:show-share-modal="showShareModal" :specificSpace="specificSpace"
-    :featuredImageSrc="featuredImageSrc" :copyLink="copyLink" :sendEmail="sendEmail" :shareViaSMS="shareViaSMS"
-    :shareOnWhatsApp="shareOnWhatsApp" :shareOnMessenger="shareOnMessenger" :shareOnFacebook="shareOnFacebook" />
+  <CarouselImageViewer
+    v-model:show="showImageViewer"
+    v-model:images="imagesArray"
+    :active-image-id="activeImageId"
+    show-extra-buttons
+    :is-favorite="specificSpace?.marked_as_favorite?.isFavorite"
+    @share="toggleShareButton"
+    @like="handleFavorite()"
+  />
+  <DialogShareModal
+    v-model:show-share-modal="showShareModal"
+    :specificSpace="specificSpace"
+    :featuredImageSrc="featuredImageSrc"
+    :copyLink="copyLink"
+    :sendEmail="sendEmail"
+    :shareViaSMS="shareViaSMS"
+    :shareOnWhatsApp="shareOnWhatsApp"
+    :shareOnMessenger="shareOnMessenger"
+    :shareOnFacebook="shareOnFacebook"
+  />
 </template>
 
 <script setup lang="ts">
@@ -1065,12 +1733,8 @@ const { formatAddress, requiredInput } = useUtils();
 const { getVenue } = useVenue();
 const { areaTypeOptions } = useSpaceData();
 const { computePayment } = useEnquiry();
-const {
-  allowedDatesChecker,
-  timesFrom,
-  allowedTime,
-  checkTimesToFunction,
-} = useSpace();
+const { allowedDatesChecker, timesFrom, allowedTime, checkTimesToFunction } =
+  useSpace();
 const { getEnquiryList } = useEnquiry();
 const { setSnackbar } = useLocal();
 const { getGroupOfFavorites } = useFavorites();
@@ -1105,7 +1769,7 @@ const addToFolderDialog = ref(false);
 const reviewDialog = ref(false);
 const favoriteObj = ref();
 const formDataCookie = useCookie<Object>("formData");
-const activeImageId = ref('')
+const activeImageId = ref("");
 const showImageViewer = ref(false);
 const loadingEnquiry = ref(false);
 const isInitialized = ref(false);
@@ -1296,7 +1960,7 @@ const toggleSharingColumn = () => {
 };
 
 const openModal = (imageId) => {
-  console.log('working');
+  console.log("working");
 
   if (!imageId) return;
   activeImageId.value = imageId;
@@ -1378,7 +2042,6 @@ async function loadVenueData() {
         ),
       });
       getSpaceDetails();
-
     }
     // get venue data
     // const { data: venueFetchData } = await getVenue(
@@ -1426,8 +2089,7 @@ const getInquiry = async () => {
     const enquiryList = data.value.data.data;
     existingEnquiry.value = enquiryList.filter(
       (enquiry) =>
-        enquiry.date.date === bookingForm.date.date
-        &&
+        enquiry.date.date === bookingForm.date.date &&
         enquiry.date.from === bookingForm.date.from &&
         enquiry.date.to === bookingForm.date.to
     );
@@ -1638,11 +2300,12 @@ const handleNext = async () => {
   if (!loggedIn.value) {
     dialogRequireLoggedIn.value = true;
     enquire.value = false;
-    return
+    return;
   }
-  bookingForm.type = (bookingForm.type
-    ? bookingForm.type
-    : specificSpace.value.keywords[0]?.keyword) || 'Other';
+  bookingForm.type =
+    (bookingForm.type
+      ? bookingForm.type
+      : specificSpace.value.keywords[0]?.keyword) || "Other";
   const {
     space,
     date,
@@ -1671,32 +2334,33 @@ const handleNext = async () => {
           require_catering,
           catering_options,
         }),
-      }).then((res) => {
-        if (res.data) {
-          const enquiry_id = res.data.value.data.insertedId;
-          if (!enquiry_id) {
-            setSnackbar({
-              color: "error",
-              text: "Something went wrong. Please try again later.",
-              modal: true,
-            })
-            return;
+      })
+        .then((res) => {
+          if (res.data) {
+            const enquiry_id = res.data.value.data.insertedId;
+            if (!enquiry_id) {
+              setSnackbar({
+                color: "error",
+                text: "Something went wrong. Please try again later.",
+                modal: true,
+              });
+              return;
+            }
+            navigateTo({
+              name: "country-enquiries-message-id",
+              params: { country, id: enquiry_id },
+            });
           }
-          navigateTo({
-            name: "country-enquiries-message-id",
-            params: { country, id: enquiry_id },
-          });
-        }
-      }).catch((err) => {
-        console.log(err);
-        setSnackbar({
-          color: "error",
-          text: "Something went wrong. Please try again later.",
-          modal: true,
         })
-        loadingEnquiry.value = false;
-      });
-
+        .catch((err) => {
+          console.log(err);
+          setSnackbar({
+            color: "error",
+            text: "Something went wrong. Please try again later.",
+            modal: true,
+          });
+          loadingEnquiry.value = false;
+        });
     }
     form.value.resetValidation();
     if (step.value == 1) {
@@ -1706,25 +2370,24 @@ const handleNext = async () => {
 };
 
 onMounted(() => {
-  const savedFormData = useCookie("formData")
-  const redirect = useCookie('redirect_booking')
+  const savedFormData = useCookie("formData");
+  const redirect = useCookie("redirect_booking");
   if (savedFormData.value && redirect.value) {
     isInitialized.value = true;
-    const formatedDate = new Date (savedFormData.value.date_calendar)
-    date_calendar.value = formatedDate
-    bookingForm.guests = savedFormData.value.guest
-    bookingForm.date.from = savedFormData.value.bookingFrom
-    bookingForm.date.to = savedFormData.value.bookingTo
+    const formatedDate = new Date(savedFormData.value.date_calendar);
+    date_calendar.value = formatedDate;
+    bookingForm.guests = savedFormData.value.guest;
+    bookingForm.date.from = savedFormData.value.bookingFrom;
+    bookingForm.date.to = savedFormData.value.bookingTo;
     setTimeout(() => {
       //bookingForm.date.from = savedFormData.value.bookingFrom
       //bookingForm.date.to = savedFormData.value.bookingTo
-      savedFormData.value = null
-      redirect.value = null
-    }, 1500)
-
+      savedFormData.value = null;
+      redirect.value = null;
+    }, 1500);
 
     // bookingForm.type = useCookie("event_type").value;
-    return
+    return;
   }
   bookingForm.type = useCookie("event_type").value;
   const eventDate = useCookie("eventDate").value;
@@ -1750,11 +2413,11 @@ onBeforeMount(async () => {
 
 const toggleShareButton = () => {
   if (smAndDown.value) {
-    showSharingColumn.value = !showSharingColumn.value
+    showSharingColumn.value = !showSharingColumn.value;
   } else {
-    showShareModal.value = !showShareModal.value
+    showShareModal.value = !showShareModal.value;
   }
-}
+};
 
 watch(date_calendar, (oldValue, newwVal) => {
   if (isInitialized.value) return;
@@ -1762,7 +2425,7 @@ watch(date_calendar, (oldValue, newwVal) => {
     bookingForm.date.from = null;
     bookingForm.date.to = null;
     showComputation.value = false;
-    computePricing()
+    computePricing();
   }
 });
 
@@ -1774,11 +2437,11 @@ watchEffect(() => {
     showSharingColumn.value = false;
     showShareModal.value = true;
   }
-})
+});
 
 const onClickOutsideShareModal = () => {
   showShareModal.value = false;
-}
+};
 
 // const isItTrue = computed(() => {
 //   switch (name.value) {
@@ -1798,7 +2461,7 @@ const onClickOutsideShareModal = () => {
 // });
 
 const isSmallScreen = computed(() => {
-  return name.value === 'xs' || name.value === 'sm' || name.value === 'md';
+  return name.value === "xs" || name.value === "sm" || name.value === "md";
 });
 
 const copyLink = () => {
@@ -1844,30 +2507,31 @@ const shareOnFacebook = () => {
   window.open(facebookShareUrl, "_blank");
 };
 
-
 function include() {
-  return [document.querySelector('.included')]
+  return [document.querySelector(".included")];
 }
 function preventNegative(event) {
-  if (event.key === '-' || event.key === 'e') {
+  if (event.key === "-" || event.key === "e") {
     event.preventDefault();
   }
 }
 
-
 const handleTimeFromChange = async () => {
-
   // clear checkout time if selected check-in time is past the preselected checkout
-  const checkInTimeVal = bookingForm?.date?.from
-  const checkOutTimeVal = bookingForm?.date?.to
+  const checkInTimeVal = bookingForm?.date?.from;
+  const checkOutTimeVal = bookingForm?.date?.to;
   if (checkOutTimeVal && checkInTimeVal) {
-    const checkInKey = timesFrom.find(x => x.value == checkInTimeVal)?.key
-    const checkoutKey = timesFrom.find(x => x.value == checkOutTimeVal)?.key
+    const checkInKey = timesFrom.find((x) => x.value == checkInTimeVal)?.key;
+    const checkoutKey = timesFrom.find((x) => x.value == checkOutTimeVal)?.key;
 
     if (checkInKey && checkoutKey && checkInKey >= checkoutKey) {
       let newCheckoutKey = checkInKey + 1;
-      const newCheckoutKeyObj = timesFrom.find(x => x.key == newCheckoutKey);
-      if (newCheckoutKeyObj && newCheckoutKeyObj?.value && newCheckoutKeyObj?.props?.disabled == false) {
+      const newCheckoutKeyObj = timesFrom.find((x) => x.key == newCheckoutKey);
+      if (
+        newCheckoutKeyObj &&
+        newCheckoutKeyObj?.value &&
+        newCheckoutKeyObj?.props?.disabled == false
+      ) {
         bookingForm.date.to = newCheckoutKeyObj?.value || null;
       } else {
         bookingForm.date.to = null;
@@ -1878,13 +2542,13 @@ const handleTimeFromChange = async () => {
 
   nextTick(async () => {
     await computePricing();
-  })
-}
+  });
+};
 const handleTimeToChange = async () => {
   nextTick(async () => {
-    await computePricing()
-  })
-}
+    await computePricing();
+  });
+};
 
 let timeoutId: ReturnType<typeof setTimeout>;
 
@@ -1894,12 +2558,10 @@ const handleGuestChange = async () => {
     timeoutId = setTimeout(async () => {
       await computePricing();
     }, 300); // Adjust the delay as needed (1000ms = 1s)
-  })
-}
+  });
+};
 
-
-
-const computedOffer = ref<TComputedOffer>(new MComputedOffer({}))
+const computedOffer = ref<TComputedOffer>(new MComputedOffer({}));
 const showComputation = ref(false);
 const loadingComputation = ref(false);
 
@@ -1910,18 +2572,10 @@ const loadingComputation = ref(false);
 //   }
 // })
 
-
-
 const computePricing = async () => {
-
-  const { date, guests } = bookingForm
-  const spaceId = specificSpace.value?._id
-  if (
-    !date.from ||
-    !date.to ||
-    !guests ||
-    !date.date || !spaceId
-  ) {
+  const { date, guests } = bookingForm;
+  const spaceId = specificSpace.value?._id;
+  if (!date.from || !date.to || !guests || !date.date || !spaceId) {
     showComputation.value = false;
     return;
   }
@@ -1944,8 +2598,7 @@ const computePricing = async () => {
   } catch (err) {
     console.log(err);
   }
-}
-
+};
 </script>
 
 <style scoped>

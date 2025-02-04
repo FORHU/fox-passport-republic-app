@@ -704,7 +704,7 @@
                   <v-carousel
                     hide-delimiter-background
                     cycle
-                    :show-arrows="false"
+                    :show-arrows="true"
                     height="200"
                     transition="fade-transition"
                     class="rounded-xl"
@@ -730,7 +730,7 @@
                     ><v-icon>mdi-close</v-icon></v-btn
                   >
                 </div>
-                <div class="px-4 py-1 pb-4" @click="navigateToVenue">
+                <div class="px-4 py-1 pb-4" @click="navigateToVenue()">
                   <h4>{{ selectedMarker?.title }}, {{ country }}</h4>
                   <p class="text-body-2 text-grey">
                     {{ selectedMarker?.location }}
@@ -1072,7 +1072,6 @@ const showMarkerDetails = (marker: MappedCoordinate) => {
 };
 
 const navigateToVenue = () => {
-  const router = useRouter();
   const url = router.resolve({
     name: "country-venues-venue",
     params: { country: country, venue: selectedMarker.value?.id },
