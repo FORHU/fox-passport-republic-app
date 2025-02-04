@@ -10,6 +10,9 @@ export function useChat() {
   let listenersAttached = false;
 
   const { currentUser } = useLocalAuth();
+  const config = useRuntimeConfig();
+  const tenantCode = config.public.TENANT_CODE
+  const tenantAPIKey = config.public.TENANT_API_KEY
 
   async function getMessages({ page = 1, limit = 10, room_id = "" } = {}) {
     // Example placeholder for useAPI function, replace with your actual API call
@@ -22,6 +25,8 @@ export function useChat() {
     socket.value = io(config.API, {
       extraHeaders: {
         Authorization: `Bearer ${accessToken}`,
+        Tenant: tenantCode,
+        "X-api-key": tenantAPIKey
       },
     });
 
@@ -62,7 +67,6 @@ export function useChat() {
       conversation.value.push(data);
       if(currentUser.value?._id == data?.sender?._id){
         chatKey.value++
-        console.log('chatKey-increased');
         
       }
       updateListKey.value++

@@ -5,6 +5,8 @@ export function useAPI<T>(url: string, options: UseFetchOptions<T> = {}) {
   const { loggedIn } = useLocalAuth();
   const config = useRuntimeConfig();
   const tenantCode = config.public.TENANT_CODE
+  const tenantAPIKey = config.public.TENANT_API_KEY
+
   const cookieOptions = {
     domain: config.public.DOMAIN,
     secure: true,
@@ -18,7 +20,8 @@ export function useAPI<T>(url: string, options: UseFetchOptions<T> = {}) {
     key: url,
     headers: {
       ...loggedIn.value ? { Authorization: `Bearer ${accessToken}` } : {},
-      TENANT: tenantCode
+      TENANT: tenantCode,
+      "X-api-key": tenantAPIKey
     },
     async onResponseError({ response }) {
       if (response.status === 401 && retry == 0) {
