@@ -62,7 +62,7 @@ interface UserReview {
   privateNote: string;
   publicNote: string;
   rating: number;
-  updatedAt: string;
+  updatedAt: string; 
 }
 
 const overallReviewDialog = defineModel({ required: true, default: false });

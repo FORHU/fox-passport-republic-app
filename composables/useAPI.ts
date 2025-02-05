@@ -2,16 +2,12 @@ import type { UseFetchOptions } from "nuxt/app";
 import { defu } from "defu";
 
 export function useAPI<T>(url: string, options: UseFetchOptions<T> = {}) {
-  const { loggedIn } = useLocalAuth();
+  const { loggedIn, cookieOptions } = useLocalAuth();
   const config = useRuntimeConfig();
   const tenantCode = config.public.TENANT_CODE
   const tenantAPIKey = config.public.TENANT_API_KEY
 
-  const cookieOptions = {
-    domain: config.public.DOMAIN,
-    secure: true,
-    maxAge: 30 * 24 * 60 * 60,
-  };
+
   const accessToken = useCookie("accessToken", cookieOptions).value;
   let retry = 0;
 

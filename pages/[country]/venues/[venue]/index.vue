@@ -5,24 +5,8 @@
     <v-row no-gutters class="pa-0" justify="center">
       <v-col cols="12" xxl="10" xl="10" lg="10" md="10">
         <v-row no-gutters class="">
-          <!-- <v-col cols="12" class="text-h5 font-weight-bold hidden-sm-and-down custom-padding pt-10">
-            <h2>
-              {{ specificSpace.name + " at " + specificSpace.venue.name }}
-            </h2>
-          </v-col> -->
-
           <v-row align="center" justify="space-between" class="px-2">
             <span class="d-flex align-items-center">
-              <!-- <v-rating
-              :model-value="spaceRatingOverall"
-              half-increments
-              active-color="rate"
-              size="x-small"
-              density="comfortable"
-              readonly
-              class="hidden-sm-and-down"
-            ></v-rating>
-            <p class="hidden-sm-and-down mb-0 ml-2">(584 reviews)</p> -->
               <p class="font-weight-bold hidden-sm-and-down py-7 text-42px">
                 {{ specificSpace.name + " at " + specificSpace.venue.name }}
               </p>
@@ -189,18 +173,6 @@
                   <h1 :class="mobile ? 'text-28px font-weight-bold' : ''">
                     {{ specificSpace.name }} at {{ specificSpace.venue.name }}
                   </h1>
-
-                  <div class="left d-flex hidden-sm-and-up">
-                    <!-- <v-rating
-                    :model-value="spaceRatingOverall"
-                    half-increments
-                    active-color="rate"
-                    size="x-small"
-                    density="comfortable"
-                    readonly
-                  ></v-rating>
-                  <p>(584 reviews)</p> -->
-                  </div>
                 </v-col>
               </v-col>
 
@@ -291,6 +263,26 @@
               <h2 :class="mobile ? 'text-22px font-weight-bold' : ''">
                 {{ formatAddress(specificSpace.venue.address) }}
               </h2>
+              <div class="d-flex align-center text-body-2">
+                <v-rating
+                  hover
+                  readonly
+                  :length="5"
+                  :size="24"
+                  :model-value="ratingAverage"
+                  color="warning"
+                  active-color="warning"
+                />
+                {{ ratingAverage }} |
+                <p
+                  class="mb-0 ml-2 text-body-2"
+                  :class="totalRatings > 0 ? 'text-decoration-underline' : ''"
+                  @click="handleShowAllReviews()"
+                >
+                  {{ totalRatings }}
+                  {{ totalRatings > 1 ? "reviews" : "review" }}
+                </p>
+              </div>
               <div class="d-flex mt-3">
                 <!-- Only display seating information if maxSeating is available -->
                 <p
@@ -395,26 +387,6 @@
               <v-divider class="mt-5"></v-divider>
 
               <v-col cols="12">
-                <!-- <v-card variant="text">
-                  <p class="my-5" style="word-break: break-word;">
-                    {{
-                      isExpanded
-                        ? specificSpace.description
-                        : truncateDescription(specificSpace.description)
-                    }}
-                  </p>
-                </v-card>
-                <v-row>
-                  <div @click.prevent="toggleDescription" class="text-black d-flex align-center my-3"
-                    style="cursor: pointer">
-                    <span class="ml-3 text-decoration-underline">{{
-                      isExpanded ? "Show Less" : "Read More"
-                    }}</span>
-                    <v-icon :icon="isExpanded ? 'mdi-arrow-up' : 'mdi-arrow-right'" class="ml-2" size="20">
-                    </v-icon>
-                  </div>
-                </v-row> -->
-
                 <v-row class="hidden-lg-and-up">
                   <SpacesDetailsPrices :specificSpace="specificSpace" />
                 </v-row>
@@ -442,9 +414,28 @@
               <h2 class="my-5">Cancellation Policy</h2>
               <SpacesDetailsRules :specificSpace="specificSpace" />
               <v-divider class="mt-5"></v-divider>
-            </v-col>
 
-            <!-- <div v-if="showBookingColumn" class="dim-overlay"></div> -->
+              <!-- Ratings -->
+              <RatingDetails
+                :ratingAverage="ratingAverage"
+                :totalRatings="totalRatings"
+                :isShowReviews="true"
+                @showReviewsClicked="handleShowAllReviews"
+              />
+              <v-divider class="mt-5"></v-divider>
+              <!-- Reviews -->
+              <h3 class="my-5 px-2">What they say</h3>
+              <v-col cols="12">
+                <RatingUserReviews :userReviews="userReviews" />
+                <v-btn
+                  class="my-2"
+                  @click="handleShowAllReviews()"
+                  v-if="userReviews.length > 5"
+                  >Show all ({{ userReviews.length }}) reviews</v-btn
+                >
+              </v-col>
+              <v-divider class="mt-5"></v-divider>
+            </v-col>
 
             <!-- RIGHT COLUMN -->
             <v-col
@@ -1695,6 +1686,12 @@
       v-model="addToFolderDialog"
       @folderCreated="folderCreated"
     />
+    <RatingOverallReviews
+      v-model="isShowAllReviewsDialog"
+      :userReviews="userReviews"
+      :ratingAverage="ratingAverage"
+      :totalRatings="totalRatings"
+    />
   </v-row>
 
   <CarouselImageViewer
@@ -1733,11 +1730,17 @@ const { formatAddress, requiredInput } = useUtils();
 const { getVenue } = useVenue();
 const { areaTypeOptions } = useSpaceData();
 const { computePayment } = useEnquiry();
-const { allowedDatesChecker, timesFrom, allowedTime, checkTimesToFunction } =
-  useSpace();
+const {
+  allowedDatesChecker,
+  timesFrom,
+  allowedTime,
+  checkTimesToFunction,
+  getSpace,
+} = useSpace();
 const { getEnquiryList } = useEnquiry();
 const { setSnackbar } = useLocal();
 const { getGroupOfFavorites } = useFavorites();
+const { getOverallSpaceRating } = useRatings();
 const showEnquireDialog = ref(false);
 const loader = ref(false);
 const enquire = ref(false);
@@ -1773,6 +1776,11 @@ const activeImageId = ref("");
 const showImageViewer = ref(false);
 const loadingEnquiry = ref(false);
 const isInitialized = ref(false);
+const ratingAverage = ref<number>(0);
+const totalRatings = ref<number>(0);
+const userReviews = ref([]);
+const isShowAllReviewsDialog = ref(false);
+
 const space = ref({
   representation: {
     name: "",
@@ -1813,25 +1821,56 @@ const isSpacePublished = computed(() => {
   return specificSpace.value.status == "PUBLISHED";
 });
 
-// const fetchOverallSpaceRating = async () => {
-//   const spaceId = specificSpace.value._id;
+/* Overall Average Ratings */
+const fetchOverallSpaceRating = async () => {
+  if (!specificSpace.value?._id) {
+    console.warn("No specific space ID available");
+    return;
+  }
 
-//   try {
-//     const { data } = await getOverallSpaceRating(spaceId);
-//     spaceRatingOverall.value = data.value.data;
-//   } catch (error) {
-//     console.error("Error fetching rating:", error);
-//   }
-// };
+  try {
+    const spaceId = specificSpace.value._id;
+    const ratingData = await getOverallSpaceRating(spaceId);
 
-// watch(
-//   () => specificSpace.value._id,
-//   (newSpaceId) => {
-//     if (newSpaceId) {
-//       fetchOverallSpaceRating();
-//     }
-//   }
-// );
+    if (!ratingData || ratingData.length === 0) {
+      userReviews.value = [];
+      return;
+    }
+
+    const spaceData = ratingData[0];
+
+    userReviews.value =
+      spaceData.details?.map((review: any) => ({
+        id: review._id,
+        userId: review.user?._id || "",
+        spaceId: review.space || "",
+        name: `${review.user?.first_name || ""} ${review.user?.last_name || ""}`,
+        createdAt: review.user?.createdAt || "",
+        privateNote: review.privateNote || "",
+        publicNote: review.publicNote || "",
+        rating: review.rating || 0,
+        updatedAt: review.updatedAt || "",
+        user: review.user || null,
+      })) || [];
+  } catch (error) {
+    console.error("Error fetching rating and reviews:", error);
+  }
+};
+
+watch(
+  () => specificSpace.value._id,
+  (newSpaceId) => {
+    if (newSpaceId) {
+      fetchOverallSpaceRating();
+    }
+  }
+);
+
+const handleShowAllReviews = () => {
+  if (totalRatings.value > 0) {
+    isShowAllReviewsDialog.value = true;
+  }
+};
 
 const hasOfferData = computed(() => {
   const foodAndBeveragesData =
@@ -2010,47 +2049,42 @@ const getSpaceDetails = () => {
     )[0]?.answer || "";
 };
 
-async function loadVenueData() {
+async function loadVenueData(): Promise<{ data: any; error: any }> {
   try {
-    const params = {
-      space_id: venue,
-    };
+    const params = { space_id: venue };
     const queryString = new URLSearchParams(params).toString();
-    const { data, error } = await useAPI(`v1/space/?${queryString}`, {
-      method: "GET",
-    });
-    if (data) {
-      specificSpace.value = data.value.data.data[0];
-      bookingForm.space = specificSpace.value._id;
-      if (specificSpace.value.space_photo.length > 0) {
-        const sortedImages = specificSpace.value.space_photo.sort(
-          (a, b) => new Date(a.createdAt) - new Date(b.createdAt)
-        );
+    const id = queryString.replace("space_id=", "");
 
-        imagesArray.push(...sortedImages);
+    const { data, error } = await getSpace(id);
+
+    if (data) {
+      const spaceData = data?.value?.data.data[0];
+      if (!spaceData) throw new Error("No space data found");
+
+      specificSpace.value = spaceData;
+      ratingAverage.value = spaceData.rating?.averageRating ?? 0;
+      totalRatings.value = spaceData.rating?.totalReviews ?? 0;
+      bookingForm.space = spaceData._id;
+
+      const allPhotos = [...spaceData.space_photo, ...spaceData.venue_photo];
+      const sortedImages = allPhotos.sort(
+        (a, b) =>
+          new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
+      );
+      imagesArray.push(...sortedImages);
+
+      const coordinatesData = spaceData.venue?.address?.coordinates;
+      if (coordinatesData) {
+        coordinates.value.push({
+          lat: parseFloat(coordinatesData.latitude),
+          lng: parseFloat(coordinatesData.longitude),
+        });
       }
-      if (specificSpace.value.venue_photo.length > 0) {
-        const sortedImages = specificSpace.value.venue_photo.sort(
-          (a, b) => new Date(a.createdAt) - new Date(b.createdAt)
-        );
-        imagesArray.push(...sortedImages);
-      }
-      coordinates.value.push({
-        lat: parseFloat(specificSpace.value.venue.address.coordinates.latitude),
-        lng: parseFloat(
-          specificSpace.value.venue.address.coordinates.longitude
-        ),
-      });
       getSpaceDetails();
     }
-    // get venue data
-    // const { data: venueFetchData } = await getVenue(
-    // specificSpace.value.venue._id
-    // );
-    // if (!venueFetchData) return;
-    // venueData.value = venueFetchData.value.data.data[0];
+    return { data, error: null };
   } catch (error) {
-    console.log(error);
+    console.error("Error fetching venue data:", error);
     return { data: null, error };
   }
 }
