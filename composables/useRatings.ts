@@ -1,7 +1,4 @@
 export const useRatings = () => {
-  const rates = useState("rates", (): number => 4);
-  const privateNote = useState("privateNote", (): string => "");
-  const publicNote = useState("publicNote", (): string => "");
 
   const getUserSpaceRating = async (spaceId: string) => {
     const { data, error } = await useAPI(`/v1/rating/${spaceId}`, {
@@ -32,14 +29,14 @@ export const useRatings = () => {
     }
   };
 
-  const submitRating = async (spaceId: string) => {
+  const submitRating = async ({spaceId, rating, privateNote, publicNote} : {spaceId: string, rating: number, privateNote: string, publicNote: string}) => {
     try {
       const response = await useAPI(`/v1/rating/${spaceId}`, {
         method: "POST",
         body: {
-          rating: rates.value,
-          privateNote: privateNote.value,
-          publicNote: publicNote.value,
+          rating,
+          privateNote,
+          publicNote,
         },
       });
       return response;
@@ -80,9 +77,6 @@ export const useRatings = () => {
   }
 
   return {
-    rates,
-    privateNote,
-    publicNote,
     getUserSpaceRating,
     getOverallSpaceRating,
     submitRating,
