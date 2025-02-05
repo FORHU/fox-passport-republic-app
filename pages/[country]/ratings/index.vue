@@ -15,7 +15,100 @@
     <v-col cols="12" class="w-100 font-600 text-22px h-100 mt-5 mt-2">
       <span>{{ totalItems }} {{ totalItems > 1 ? "reviews" : "review" }}</span>
     </v-col>
-    <v-col cols="12" style="width: 70%">
+    <v-col cols="12" v-if="xs">
+      <v-row no-gutters class="justify-space-between">
+        <v-col cols="6" class="pr-2 pb-2">
+          <span style="width: 45%">
+            <v-text-field
+              variant="outlined"
+              color="tertiary"
+              placeholder="Search space"
+              prepend-inner-icon="mdi-magnify"
+              rounded="lg"
+              hide-details
+              height="40"
+              clearable
+            ></v-text-field>
+          </span>
+        </v-col>
+        <v-col cols="6">
+          <span style="width: 20%">
+            <v-select
+              rounded="lg"
+              :items="itemsStatus"
+              item-value="value"
+              item-title="label"
+              placeholder="Filter by status"
+              hide-details
+              height="40"
+            ></v-select>
+          </span>
+        </v-col>
+        <v-col cols="6" class="pr-2 pb-2">
+          <span style="width: 20%">
+            <!-- <v-select
+              rounded="lg"
+              :items="itemsStatus"
+              item-value="value"
+              item-title="label"
+              placeholder="Filter by rating"
+              hide-details
+              height="40"
+            ></v-select> -->
+            <v-select
+              v-model="selectedRating"
+              rounded="lg"
+              :items="itemsRating"
+              item-value="value"
+              placeholder="Filter by rating"
+              hide-details
+              height="40"
+              return-object
+            >
+              <template v-slot:selection="{ item }">
+                <v-rating
+                  v-if="item && item.value != null"
+                  readonly
+                  :length="item.value"
+                  :size="16"
+                  :model-value="item.value ?? 0"
+                  color="amber"
+                  active-color="amber"
+                />
+              </template>
+
+              <template v-slot:item="{ item, props }">
+                <v-list-item v-bind="props">
+                  <v-rating
+                    v-if="item?.value != null"
+                    readonly
+                    :length="item.value"
+                    :size="16"
+                    :model-value="item.value ?? 0"
+                    color="amber"
+                    active-color="amber"
+                  />
+                </v-list-item>
+              </template>
+            </v-select>
+          </span>
+        </v-col>
+        <v-col cols="6">
+          <span style="width: 15%">
+            <v-select
+              rounded="lg"
+              :items="itemsSort"
+              item-value="value"
+              item-title="label"
+              placeholder="Sort by date"
+              hide-details
+              height="40"
+            ></v-select>
+          </span>
+        </v-col>
+      </v-row>
+    </v-col>
+    <v-col cols="12" style="width: 70%" v-else>
       <v-row no-gutters>
         <v-col cols="12" class="my-5 w-100 d-flex ga-3 align-center text-16px">
           <span style="width: 45%">
@@ -139,7 +232,12 @@
           <!-- Table Item Rows -->
           <template v-slot:item="{ item }: { item: any }">
             <tr class="text-16px text-secondary">
-              <td>
+              <td
+                @click="
+                  (showReviewRatingDialog = true), (specificRating = item)
+                "
+                class="cursor-pointer"
+              >
                 <div class="d-flex align-center ga-3 px-3 py-2 py-md-3">
                   <span>
                     <ProfileAvatar
@@ -153,16 +251,35 @@
                   }}</span>
                 </div>
               </td>
-              <td style="white-space: nowrap">
+              <td
+                style="white-space: nowrap"
+                @click="
+                  (showReviewRatingDialog = true), (specificRating = item)
+                "
+                class="cursor-pointer"
+              >
                 {{ new Date(item.createdAt).toLocaleString() }}
               </td>
-              <td>
+              <td
+                @click="navigate(), (specificRating = item)"
+                class="cursor-pointer"
+              >
                 <span>{{ item.space.name }}</span>
               </td>
-              <td>
-                <span>{{ item.publicNote }}</span>
+              <td
+                @click="
+                  (showReviewRatingDialog = true), (specificRating = item)
+                "
+                class="cursor-pointer"
+              >
+                <span class="font-italic">{{ item.publicNote }}</span>
               </td>
-              <td>
+              <td
+                @click="
+                  (showReviewRatingDialog = true), (specificRating = item)
+                "
+                class="cursor-pointer"
+              >
                 <v-rating
                   readonly
                   :length="item.rating"
@@ -172,7 +289,13 @@
                   :active-color="item.rating > 2 ? 'amber' : 'warning'"
                 />
               </td>
-              <td style="white-space: nowrap">
+              <td
+                style="white-space: nowrap"
+                @click="
+                  (showReviewRatingDialog = true), (specificRating = item)
+                "
+                class="cursor-pointer"
+              >
                 <v-chip :color="getStatusColor(item.status)" variant="text">
                   {{ capitalizeFirstLetter(item.status) }}
                 </v-chip>
@@ -182,18 +305,38 @@
                   no-gutters
                   class="d-flex ga-2 justify-center py-2 py-md-3 flex-row align-center"
                 >
-                  <v-col cols="12">
+                  <v-col cols="12" v-if="item.status === 'PENDING'">
                     <v-btn
                       class="mr-1"
-                      icon="mdi-check-circle"
+                      icon="mdi-check-circle-outline"
                       density="compact"
                       color="green"
+                      variant="text"
+                      @click="
+                        (showApproveRatingDialog = true),
+                          (specificRating = item)
+                      "
                     ></v-btn>
                     <v-btn
+                      variant="text"
                       icon="mdi-cancel"
                       density="compact"
                       color="red"
+                      @click="
+                        (showDenyRatingDialog = true), (specificRating = item)
+                      "
                     ></v-btn>
+                  </v-col>
+                  <v-col cols="12" v-else>
+                    <v-chip
+                      variant="text"
+                      color="grey"
+                      class="cursor-pointer"
+                      @click="
+                        (showReviewRatingDialog = true), (specificRating = item)
+                      "
+                      >Change</v-chip
+                    >
                   </v-col>
                 </v-row>
               </td>
@@ -203,12 +346,50 @@
       </div>
     </v-col>
   </v-row>
+  <DialogPromptNew
+    v-model="showDenyRatingDialog"
+    @agree="handleRatingAction('REJECTED', false)"
+    :loading="loadingApproveDeny"
+    :prompt-title="`Are you sure to reject this review?`"
+    disagree-button-text="CANCEL"
+    agree-button-text="REJECT"
+  />
+  <DialogPromptNew
+    v-model="showApproveRatingDialog"
+    @agree="handleRatingAction('APPROVED', false)"
+    :loading="loadingApproveDeny"
+    :prompt-title="`Approve this review?`"
+    disagree-button-text="CANCEL"
+    agree-button-text="APPROVE"
+  />
+  <DialogReviewRatingDialog
+    v-model="showReviewRatingDialog"
+    @agree="handleRatingAction('APPROVED', true)"
+    @disagree="handleRatingAction('REJECTED', true)"
+    :loading="loadingApproveDeny"
+    :prompt-title="`Review`"
+    :disagree-button-text="
+      specificRating?.status === 'REJECTED' ? 'REJECTED' : 'REJECT'
+    "
+    :specificRating="specificRating"
+    :agree-button-text="
+      specificRating?.status === 'APPROVED' ? 'APPROVED' : 'APPROVE'
+    "
+  />
 </template>
 <script setup lang="ts">
-const { getAdminRatingsList } = useRatings();
+import { useDisplay } from "vuetify";
+const { xs } = useDisplay();
+const { getAdminRatingsList, updateRatingStatus } = useRatings();
+const { country } = useLocal();
 const selectedRating = ref(null);
 const loading = ref<boolean>(true);
-const itemsStatus = ref<string[]>(["Approved", "Denied", "Pending"]);
+const specificRating = ref<any>(null);
+const loadingApproveDeny = ref<boolean>(false);
+const showDenyRatingDialog = ref<boolean>(false);
+const showApproveRatingDialog = ref<boolean>(false);
+const showReviewRatingDialog = ref<boolean>(false);
+const itemsStatus = ref<string[]>(["Approved", "Rejected", "Pending"]);
 const itemsSort = ref<string[]>(["Ascending", "Descending"]);
 const ratingsData = ref<object[]>();
 const totalItems = ref<number>(0);
@@ -240,12 +421,48 @@ const getStatusColor = (status: string) => {
   let color = "";
   if (status === "APPROVED") {
     color = "green";
-  } else if (status === "DENIED") {
+  } else if (status === "REJECTED") {
     color = "red";
   } else {
     color = "black";
   }
   return color;
+};
+
+const handleRatingAction = async (status: string, update: boolean) => {
+  loading.value = true;
+  try {
+    const { data } = await updateRatingStatus(specificRating.value._id, status);
+    if (data) {
+      loadRatingsDate({
+        page: currentPage.value,
+        itemsPerPage: itemsPerPage.value,
+      });
+
+      if (status === "REJECTED") {
+        showDenyRatingDialog.value = false;
+      } else if (status === "APPROVED") {
+        showApproveRatingDialog.value = false;
+      }
+
+      if (update) {
+        showReviewRatingDialog.value = false;
+      }
+    }
+  } catch (error) {
+    console.error(error);
+  }
+  loading.value = false;
+};
+
+const navigate = () => {
+  const router = useRouter();
+  const url = router.resolve({
+    name: "country-venues-venue",
+    params: { country: country, venue: specificRating.value?.space?._id },
+  }).href;
+
+  window.open(url, "_blank");
 };
 
 const loadRatingsDate = async (options: {

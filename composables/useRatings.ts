@@ -76,11 +76,26 @@ export const useRatings = () => {
     }
   }
 
+  const updateRatingStatus = async (ratingID: string, status: string) => {
+    try {
+      const response = await useAPI(`/v1/admin/rating/${ratingID}`, {
+        method: "PATCH",
+        body: {
+          status: status,
+        },
+      });
+      return response;
+    } catch (error) {
+      throw error;
+    }
+  };
+
   return {
     getUserSpaceRating,
     getOverallSpaceRating,
     submitRating,
     averageRatingValue,
-    getAdminRatingsList
+    getAdminRatingsList,
+    updateRatingStatus
   };
 };
