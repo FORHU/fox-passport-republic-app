@@ -89,8 +89,12 @@ const publishingReview = ref(false);
 const isFormValid = ref(false);
 const form = ref(null)
 
-const { rates, privateNote, publicNote, submitRating } = useRatings();
+const { submitRating } = useRatings();
 const { setSnackbar } = useLocal();
+
+const rates = ref(4);
+const privateNote = ref("");
+const publicNote = ref("");
 
 const privateNoteRules = [(v: string) => !!v || "This field is required"];
 const publicNoteRules = [(v: string) => !!v || "This field is required"];
@@ -117,7 +121,7 @@ const handleBack = () => {
 const handleUpdateReview = async () => {
   publishingReview.value = true;
   try {
-    const res = await submitRating(props.spaceId);
+    const res = await submitRating({spaceId: props.spaceId, rating: rates.value, privateNote: privateNote.value, publicNote: publicNote.value});
     if(!res) return;
     setSnackbar({text:'Success! Your review is forwarded for approval!', color: 'success', modal: true})
     reviewStayDialog.value = false;
@@ -134,7 +138,8 @@ const handleUpdateReview = async () => {
 }
 
 const ratingStatus = computed(() => {
-  const status = props.ratingDetails.status;
+  const status = props?.ratingDetails?.status;
+  if(!status) return;
   let desc = '';
   let color = '';
   if(status == 'APPROVED'){

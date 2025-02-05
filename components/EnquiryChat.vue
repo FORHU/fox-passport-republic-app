@@ -255,7 +255,6 @@
     :venueName="space?.name || ''"
     :owner-full-name="ownerFullName"
     :space-id="space?._id"
-    style="z-index: 99"
     @refetch-rating="fetchRatings"
   />
 </template>
@@ -1318,6 +1317,7 @@ const fetchRatings = async () => {
 } 
 
 const handleRate = () => {
+  showEventDetailsSmallScreen.value = false;
   reviewStayDialog.value = true;
 }
 
