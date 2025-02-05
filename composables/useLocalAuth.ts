@@ -4,7 +4,7 @@ import MUser from "~/models/user.model";
 export default function useLocalAuth() {
   const config = useRuntimeConfig().public;
   
-  const cookieOptions = {
+  const cookieOptions: any = {
     domain: config.DOMAIN,
     secure: true,
     maxAge: 30 * 24 * 60 * 60,
