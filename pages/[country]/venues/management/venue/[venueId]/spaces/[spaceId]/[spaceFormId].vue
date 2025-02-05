@@ -787,7 +787,7 @@ const handleNext = async () => {
         // prevent space name to duplicate
         if (activeSpacePage.value === 1 && formValid.value) {
             await getSpacesArray(); // 
-            const duplicateName = spaceListArr.some((x: TVenueSpace) => x.name == space.value?.name);
+            const duplicateName = spaceListArr.some((x: TVenueSpace) => x.name == space.value?.name && x._id !== spaceId);
             if(duplicateName){
                 setSnackbar({
                     text: "Space name already exists",
