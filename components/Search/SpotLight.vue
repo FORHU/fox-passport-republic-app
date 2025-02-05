@@ -27,8 +27,8 @@
     <v-col
       cols="12"
       xs="6"
-      sm="4"
-      md="3"
+      sm="6"
+      md="4"
       lg="3"
       v-for="space in slicedPopularArray"
       :key="space._id"
@@ -82,10 +82,10 @@
       <v-progress-circular indeterminate color="primary"></v-progress-circular>
     </v-col>
     <v-col
-      cols="12"
+    cols="12"
       xs="6"
-      sm="4"
-      md="3"
+      sm="6"
+      md="4"
       lg="3"
       v-for="space in slicedRecentArray"
       :key="space._id"

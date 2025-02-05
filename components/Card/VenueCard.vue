@@ -80,12 +80,18 @@
       >
         Elite Venue
       </v-chip>
-      <!-- <v-icon v-if="!editRecently" class="location-heart" :color="ifItsFavorite(space) ? 'red' :'black'" @click.stop="favoriteProcess(space)"
-        >mdi-heart</v-icon
-      > -->
-      <v-img v-if="!editRecently" :width="smAndDown?'10%':'15%'" :height="smAndDown?'10%':'15%'" class="location-heart" :src="ifItsFavorite(space) ? '/images/navigation/redheartwhite.svg' :'/images/navigation/blackheartwhite.svg'" @click.stop="favoriteProcess(space)"
-        ></v-img
-      >
+      <v-img
+        v-if="!editRecently"
+        width="15%"
+        height="11% "
+        class="location-heart"
+        :src="
+          ifItsFavorite(space)
+            ? '/images/navigation/redheartwhite.svg'
+            : '/images/navigation/blackheartwhite.svg'
+        "
+        @click.stop="favoriteProcess(space)"
+      ></v-img>
       <v-icon
         @click.stop="removeRecently(space)"
         v-else
@@ -94,57 +100,89 @@
         color="white"
         >mdi-close-circle</v-icon
       >
-      <FavoritesCreateFolderDialog 
-         :space_id="space._id" 
-         v-model="createFolderDialog"
-         @folderCreated="folderCreated"/>
-       <FavoritesAddToFavorites
-       :space_id="space._id" 
+      <FavoritesCreateFolderDialog
+        :space_id="space._id"
+        v-model="createFolderDialog"
+        @folderCreated="folderCreated"
+      />
+      <FavoritesAddToFavorites
+        :space_id="space._id"
         :favoriteObj="props.favoriteObj"
-         v-model="addToFolderDialog"
-         @folderCreated="folderCreated"
-         />
+        v-model="addToFolderDialog"
+        @folderCreated="folderCreated"
+      />
       <div class="location-card-content">
         <div class="d-flex justify-space-between align-center">
           <p class="location-card-title font-weight-bold text-truncate">
             {{ space.name }}
           </p>
-          <div class="d-flex align-center">
+          <div v-if="space.rating" class="d-flex align-center text-body-2">
             <v-icon small class="star-icon">mdi-star</v-icon>
-            <span class="ml-1">5.0</span>
+            <span class="ml-1">
+              {{ space.rating.averageRating || "N/A" }} ({{
+                space.rating.totalRating || 0
+              }})
+            </span>
+          </div>
+          <div v-else>
+            <span class="text-body-2 d-flex align-center">
+              <v-icon small class="star-icon">mdi-star-outline</v-icon>
+              No Ratings
+            </span>
           </div>
         </div>
-        <!-- <p class="location-card-type">{{ space.type }}</p> -->
-        <p class="location-card-description font-400 mt-n1 mb-n1">
-          <!-- Enchanting Garden Wedding -->
-          {{space.venue.name }}
+
+        <v-divider class="mt-1"></v-divider>
+        <v-row no-gutters class="mb-1">
+          <v-col
+            cols="auto"
+            class="d-flex align-center justify-center font-weight-medium py-2"
+          >
+            <v-icon color="grey" class="mr-1">mdi-cash-clock</v-icon>
+            <v-chip variant="tonal" color="charcoal" class="mr-2">
+              <span class="d-flex align-center text-16px font-600 ga-1">
+                {{ currencySymbol(space.pricing.currency) }}
+                {{ getRate(space, true) }}
+                <span class="text-12px font-400">
+                  {{ getRate(space, false) }}
+                </span>
+              </span>
+            </v-chip>
+          </v-col>
+        </v-row>
+
+        <p
+          class="location-card-description font-400 mt-n1 mb-1 d-flex align-center ga-2"
+        >
+          <v-icon color="grey">mdi-map-marker</v-icon>
+          {{ formatAddress(space?.venue.address) }}
         </p>
 
-        <div class="location-card-icons d-flex align-center ga-2 mb-n1">
-          <v-icon small>mdi-chair-rolling</v-icon>
-          <span>{{
-            space.guest_capacity.minimum ? space.guest_capacity.minimum : "0"
-          }}</span>
-          <v-icon small>mdi-human-handsdown</v-icon>
-          <span>{{
-            space.guest_capacity.maximum ? space.guest_capacity.maximum : "0"
-          }}</span>
+        <div class="location-card-description d-flex align-center ga-2 mb-1">
+          <v-icon>mdi-dots-grid</v-icon>
+          <span
+            >{{
+              space.guest_capacity.minimum ? space.guest_capacity.minimum : "0"
+            }}
+            seating</span
+          >
+          <div class="border-md"></div>
+          <span
+            >{{
+              space.guest_capacity.maximum ? space.guest_capacity.maximum : "0"
+            }}
+            standing</span
+          >
         </div>
-        <!-- <p class="location-card-price">
-          $10,000 <span class="font-weight-regular">per hour</span>
-        </p> -->
-        <p class="location-card-price">
-          {{ currencySymbol(space.pricing.currency) }}{{ getRate(space, true) }}
-          <span class="font-weight-regular">{{ getRate(space, false) }}</span>
-        </p>
       </div>
     </article>
   </v-col>
 </template>
 
 <script setup lang="ts">
-import { useDisplay } from 'vuetify'
-const {smAndDown} = useDisplay()
+import { useDisplay } from "vuetify";
+const { smAndDown } = useDisplay();
+const { formatAddress } = useUtils();
 const { getCurrencySymbol } = useLocal();
 const props = defineProps({
   space: {
@@ -179,7 +217,7 @@ const props = defineProps({
   computedVenues: {
     type: [Array, Object],
     required: true,
-  }
+  },
 });
 
 const navigate = () => {
@@ -231,7 +269,11 @@ const getRate = (venue: any, option: boolean) => {
     }
   }
 };
-const emit = defineEmits(["folderCreated", "removeRecentlyId",'deselectChosenFavorite']);
+const emit = defineEmits([
+  "folderCreated",
+  "removeRecentlyId",
+  "deselectChosenFavorite",
+]);
 
 function folderCreated() {
   emit("folderCreated", { message: '"sample"' });
@@ -247,26 +289,29 @@ function removeRecently(item) {
 
 function favoriteProcess(val) {
   if (props.computedVenues.length == 0) {
-    return createFolderDialog.value = true
+    return (createFolderDialog.value = true);
   }
-  const ifFavoriteIsPresent = props.computedVenues.filter((el) => el._id == val._id)
+  const ifFavoriteIsPresent = props.computedVenues.filter(
+    (el) => el._id == val._id
+  );
   if (ifFavoriteIsPresent.length) {
-     return emit('deselectChosenFavorite',ifFavoriteIsPresent[0].marked_as_favorite._id)
+    return emit(
+      "deselectChosenFavorite",
+      ifFavoriteIsPresent[0].marked_as_favorite._id
+    );
   }
   if (!ifFavoriteIsPresent.length) {
-    return addToFolderDialog.value=true
+    return (addToFolderDialog.value = true);
   }
 }
 const ifItsFavorite = (val) => {
- const ifFavoriteIsPresent = props.computedVenues.filter((el) => el._id == val._id)
+  const ifFavoriteIsPresent = props.computedVenues.filter(
+    (el) => el._id == val._id
+  );
   if (ifFavoriteIsPresent.length) {
-    return true
-  }
-  else false
-}
-
-
-
+    return true;
+  } else false;
+};
 </script>
 
 <style scoped>
@@ -306,9 +351,9 @@ const ifItsFavorite = (val) => {
 
 .location-card-title {
   font-size: 1.2rem;
-   margin: 8px 0;
+  margin: 8px 0;
   max-width: 100%; /* Ensure the element doesn't grow beyond its container */
-  display: block;  /* Change from flex to block to avoid flexbox issues */
+  display: block; /* Change from flex to block to avoid flexbox issues */
   text-overflow: ellipsis;
   white-space: nowrap;
   overflow: hidden;
