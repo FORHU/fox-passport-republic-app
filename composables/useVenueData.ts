@@ -8,6 +8,8 @@ export const useVenueData = () => {
     { name: "Singapore", countryCode: "SG" },
   ];
 
+  const { country } = useLocal();
+
   const tags = reactive({
     Business: [
       {
@@ -236,31 +238,39 @@ export const useVenueData = () => {
       },
       {
         category: "Building",
-        keywords: [
-          "Event Space",
-          "Function Room",
-          "Banqueting Hall",
-          "Kitchen",
-          "Gallery",
-          "Pop-Up Shop",
-          "Coworking Space",
-          "Apartment",
-          "Loft",
-          "Cinema",
-          "Penthouse",
-          "Barn",
-          "Theatre",
-          "Community Center",
-          "Conservatory",
-          "Field",
-          "Hall",
-          "Library",
-          "Railway Arch",
-          "Museum",
-          "Warehouse",
-          "Underground Space",
-          "Auditorium / Conference Room",
-        ],
+        keywords:  computed(() => {
+          const baseKeywords = [
+            "Event Space",
+            "Function Room",
+            "Banqueting Hall",
+            "Kitchen",
+            "Gallery",
+            "Pop-Up Shop",
+            "Coworking Space",
+            "Loft",
+            "Cinema",
+            "Penthouse",
+            "Barn",
+            "Theatre",
+            "Community Center",
+            "Conservatory",
+            "Field",
+            "Hall",
+            "Library",
+            "Railway Arch",
+            "Museum",
+            "Warehouse",
+            "Underground Space",
+            "Auditorium / Conference Room",
+          ];
+  
+          // Add "Apartment" only if the country is NOT Singapore
+          if (country?.toLowerCase() !== "sg") {
+            baseKeywords.push("Apartment");
+          }
+          return baseKeywords;
+        
+      }),
       },
       {
         category: "Studio / Production",
