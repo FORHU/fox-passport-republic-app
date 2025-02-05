@@ -69,7 +69,7 @@
               <v-list-item
                 v-for="navigationItem in navigation"
                 :key="navigationItem.title"
-                v-show="smAndDown"
+                v-show="!smAndDown"
                 :to="{ name: navigationItem.to, params: navigationItem.params }"
                 class="text-decoration-none"
               >

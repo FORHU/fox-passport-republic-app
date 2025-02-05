@@ -95,7 +95,7 @@
                 <v-list-item
                   v-for="navigationItem in navigation"
                   :key="navigationItem.title"
-                  v-show="mdAndDown"
+                  v-show="!mdAndDown"
                   :to="{
                     name: navigationItem.to,
                     params: { country: getCountry() },
