@@ -39,10 +39,10 @@ export default function useLocalAuth() {
       });
     } catch (error) {
       console.log(error);
+    } finally {
+      clearCookies();
+      navigateTo({ name: "index" });
     }
-
-    clearCookies();
-    navigateTo({ name: "index" });
   }
 
   async function getCurrentUser() {

@@ -169,12 +169,13 @@ const handleNext = async () => {
         payload.status = 'PENDING';
       }
 
-      const { data: newVenueData, error } = await addNewVenue(payload);
-      if (newVenueData) {
+      try {
+        const { data: newVenueData, error } = await addNewVenue(payload);
+      if (newVenueData.value) {
         const res = newVenueData.value as any;
         mode.value = "create";
 
-      // redirect to admin-venue page for created venue by admin member
+        // redirect to admin-venue page for created venue by admin member
         const route = "country-venues-management-venue-venueId-formId";
         const adminMemberRoute = "country-venues-management-admin-venue-venueId";
 
@@ -182,8 +183,27 @@ const handleNext = async () => {
           name: isAdminMember ? adminMemberRoute : route,
           params: { country: country, venueId: res.data._id, formId: 'address' },
         });
+        
+      }
+      if (error.value) {
+        const err = error.value as any;
+        const errorDesc = err.data?.description;
+        if (errorDesc) {
+          setSnackbar({
+            color: "error",
+            text: errorDesc,
+            modal: true,
+          });
+        }
+      }
+
+      } catch (error) {
+        console.log(error);
+        
+      } finally {
         processing.value = false;
       }
+
     }
   }
 };
