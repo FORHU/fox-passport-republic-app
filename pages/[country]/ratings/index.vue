@@ -15,11 +15,14 @@
     <v-col cols="12" class="w-100 font-600 text-22px h-100 mt-5 mt-2">
       <span>{{ totalItems }} {{ totalItems > 1 ? "reviews" : "review" }}</span>
     </v-col>
-    <v-col cols="12" v-if="xs">
+
+    <!-- mobile -->
+    <v-col cols="12" v-if="xs" class="mt-2">
       <v-row no-gutters class="justify-space-between">
         <v-col cols="6" class="pr-2 pb-2">
           <span style="width: 45%">
             <v-text-field
+              v-model="searchSpaceText"
               variant="outlined"
               color="tertiary"
               placeholder="Search space"
@@ -28,12 +31,14 @@
               hide-details
               height="40"
               clearable
+              @update:model-value="handleSearchSpace"
             ></v-text-field>
           </span>
         </v-col>
         <v-col cols="6">
           <span style="width: 20%">
             <v-select
+              v-model="selectedFilterStatus"
               rounded="lg"
               :items="itemsStatus"
               item-value="value"
@@ -41,20 +46,12 @@
               placeholder="Filter by status"
               hide-details
               height="40"
+              @update:model-value="handleChangeStatusFilter"
             ></v-select>
           </span>
         </v-col>
         <v-col cols="6" class="pr-2 pb-2">
           <span style="width: 20%">
-            <!-- <v-select
-              rounded="lg"
-              :items="itemsStatus"
-              item-value="value"
-              item-title="label"
-              placeholder="Filter by rating"
-              hide-details
-              height="40"
-            ></v-select> -->
             <v-select
               v-model="selectedRating"
               rounded="lg"
@@ -64,30 +61,33 @@
               hide-details
               height="40"
               return-object
+              @update:model-value="handleChangeRatingFilter"
             >
               <template v-slot:selection="{ item }">
                 <v-rating
-                  v-if="item && item.value != null"
+                  v-if="item?.value !== undefined"
                   readonly
                   :length="item.value"
                   :size="16"
-                  :model-value="item.value ?? 0"
+                  :model-value="item.value"
                   color="amber"
                   active-color="amber"
                 />
               </template>
 
               <template v-slot:item="{ item, props }">
-                <v-list-item v-bind="props">
-                  <v-rating
-                    v-if="item?.value != null"
-                    readonly
-                    :length="item.value"
-                    :size="16"
-                    :model-value="item.value ?? 0"
-                    color="amber"
-                    active-color="amber"
-                  />
+                <v-list-item v-bind="props" density="compact">
+                  <template v-slot:default>
+                    <v-rating
+                      v-if="item?.value !== undefined"
+                      readonly
+                      :length="item.value"
+                      :size="16"
+                      :model-value="item.value"
+                      color="amber"
+                      active-color="amber"
+                    />
+                  </template>
                 </v-list-item>
               </template>
             </v-select>
@@ -96,23 +96,46 @@
         <v-col cols="6">
           <span style="width: 15%">
             <v-select
+              v-model="selectedSort"
               rounded="lg"
               :items="itemsSort"
               item-value="value"
-              item-title="label"
+              item-title="title"
               placeholder="Sort by date"
               hide-details
               height="40"
+              @update:model-value="handleChangeSortFilter"
             ></v-select>
           </span>
         </v-col>
       </v-row>
+      <v-row no-gutters>
+        <v-col cols="12" class="pb-2 d-flex justify-center">
+          <span
+            v-if="
+              searchSpaceText !== null ||
+              selectedFilterStatus !== null ||
+              selectedRating !== null ||
+              selectedSort !== null
+            "
+          >
+            <v-btn
+              color="secondary"
+              rounded="pill"
+              size="large"
+              @click="handleClearFilter"
+              >Clear</v-btn
+            >
+          </span>
+        </v-col>
+      </v-row>
     </v-col>
-    <v-col cols="12" style="width: 70%" v-else>
+    <v-col cols="12" style="width: 75%" v-else>
       <v-row no-gutters>
         <v-col cols="12" class="my-5 w-100 d-flex ga-3 align-center text-16px">
           <span style="width: 45%">
             <v-text-field
+              v-model="searchSpaceText"
               variant="outlined"
               color="tertiary"
               placeholder="Search space"
@@ -121,10 +144,12 @@
               hide-details
               height="40"
               clearable
+              @update:model-value="handleSearchSpace"
             ></v-text-field>
           </span>
           <span style="width: 20%">
             <v-select
+              v-model="selectedFilterStatus"
               rounded="lg"
               :items="itemsStatus"
               item-value="value"
@@ -132,18 +157,10 @@
               placeholder="Filter by status"
               hide-details
               height="40"
+              @update:model-value="handleChangeStatusFilter"
             ></v-select>
           </span>
           <span style="width: 20%">
-            <!-- <v-select
-              rounded="lg"
-              :items="itemsStatus"
-              item-value="value"
-              item-title="label"
-              placeholder="Filter by rating"
-              hide-details
-              height="40"
-            ></v-select> -->
             <v-select
               v-model="selectedRating"
               rounded="lg"
@@ -153,44 +170,66 @@
               hide-details
               height="40"
               return-object
+              @update:model-value="handleChangeRatingFilter"
             >
               <template v-slot:selection="{ item }">
                 <v-rating
-                  v-if="item && item.value != null"
+                  v-if="item?.value !== undefined"
                   readonly
                   :length="item.value"
                   :size="16"
-                  :model-value="item.value ?? 0"
+                  :model-value="item.value"
                   color="amber"
                   active-color="amber"
                 />
               </template>
 
-              <template v-slot:item="{ item, props }">
-                <v-list-item v-bind="props">
-                  <v-rating
-                    v-if="item?.value != null"
-                    readonly
-                    :length="item.value"
-                    :size="16"
-                    :model-value="item.value ?? 0"
-                    color="amber"
-                    active-color="amber"
-                  />
+              <template v-slot:item="{ item, props }" class="">
+                <v-list-item v-bind="props" density="compact">
+                  <template v-slot:default>
+                    <v-rating
+                      v-if="item?.value !== undefined"
+                      readonly
+                      :length="item.value"
+                      :size="16"
+                      :model-value="item.value"
+                      color="amber"
+                      active-color="amber"
+                    />
+                  </template>
                 </v-list-item>
               </template>
             </v-select>
           </span>
           <span style="width: 15%">
             <v-select
+              v-model="selectedSort"
               rounded="lg"
               :items="itemsSort"
               item-value="value"
-              item-title="label"
+              item-title="title"
               placeholder="Sort by date"
               hide-details
               height="40"
+              @update:model-value="handleChangeSortFilter"
             ></v-select>
+          </span>
+          <span
+            style="width: 5%"
+            v-if="
+              searchSpaceText !== null ||
+              selectedFilterStatus !== null ||
+              selectedRating !== null ||
+              selectedSort !== null
+            "
+          >
+            <v-btn
+              color="secondary"
+              rounded="pill"
+              size="small"
+              @click="handleClearFilter"
+              >Clear</v-btn
+            >
           </span>
         </v-col>
       </v-row>
@@ -378,23 +417,36 @@
   />
 </template>
 <script setup lang="ts">
+definePageMeta({
+  middleware: ["auth", "admin-only"],
+});
 import { useDisplay } from "vuetify";
 const { xs } = useDisplay();
 const { getAdminRatingsList, updateRatingStatus } = useRatings();
 const { country } = useLocal();
-const selectedRating = ref(null);
+const selectedRating = ref<any | null>(null);
 const loading = ref<boolean>(true);
-const specificRating = ref<any>(null);
+const specificRating = ref<TRatingDetails>();
 const loadingApproveDeny = ref<boolean>(false);
 const showDenyRatingDialog = ref<boolean>(false);
 const showApproveRatingDialog = ref<boolean>(false);
 const showReviewRatingDialog = ref<boolean>(false);
-const itemsStatus = ref<string[]>(["Approved", "Rejected", "Pending"]);
-const itemsSort = ref<string[]>(["Ascending", "Descending"]);
-const ratingsData = ref<object[]>();
+const itemsStatus = ref<object[]>([
+  { label: "Approved", value: "APPROVED" },
+  { label: "Rejected", value: "REJECTED" },
+  { label: "Pending", value: "PENDING" },
+]);
+const itemsSort = ref<object[]>([
+  { title: "Ascending", value: "asc" },
+  { title: "Descending", value: "desc" },
+]);
+const ratingsData = ref<TRatingDetails[]>();
 const totalItems = ref<number>(0);
 const itemsPerPage = ref<number>(10);
 const currentPage = ref<number>(1);
+const searchSpaceText = ref<string | null>(null);
+const selectedSort = ref<string | null>(null);
+const selectedFilterStatus = ref<string | null>(null);
 const headers = ref<object[]>([
   { title: "Name", value: "name" },
   { title: "Date", value: "createdAt" },
@@ -406,11 +458,11 @@ const headers = ref<object[]>([
 ]);
 
 const itemsRating = ref([
-  { label: "1 Star", value: 1 },
-  { label: "2 Stars", value: 2 },
-  { label: "3 Stars", value: 3 },
-  { label: "4 Stars", value: 4 },
-  { label: "5 Stars", value: 5 },
+  { title: "", value: 1 },
+  { title: "", value: 2 },
+  { title: "", value: 3 },
+  { title: "", value: 4 },
+  { title: "", value: 5 },
 ]);
 
 const capitalizeFirstLetter = (status: any) => {
@@ -430,13 +482,19 @@ const getStatusColor = (status: string) => {
 };
 
 const handleRatingAction = async (status: string, update: boolean) => {
-  loading.value = true;
   try {
-    const { data } = await updateRatingStatus(specificRating.value._id, status);
+    const { data } = await updateRatingStatus(
+      specificRating?.value?._id as string,
+      status
+    );
     if (data) {
       loadRatingsDate({
         page: currentPage.value,
         itemsPerPage: itemsPerPage.value,
+        searchSpaceText: searchSpaceText.value,
+        status: selectedFilterStatus.value,
+        rating: selectedRating.value?.value,
+        sort: selectedSort.value,
       });
 
       if (status === "REJECTED") {
@@ -452,7 +510,6 @@ const handleRatingAction = async (status: string, update: boolean) => {
   } catch (error) {
     console.error(error);
   }
-  loading.value = false;
 };
 
 const navigate = () => {
@@ -465,15 +522,93 @@ const navigate = () => {
   window.open(url, "_blank");
 };
 
+let timeoutId: ReturnType<typeof setTimeout>;
+const handleSearchSpace = () => {
+  clearTimeout(timeoutId);
+  timeoutId = setTimeout(() => {
+    currentPage.value = 1;
+    loadRatingsDate({
+      page: currentPage.value,
+      itemsPerPage: itemsPerPage.value,
+      searchSpaceText: searchSpaceText.value,
+      status: selectedFilterStatus.value,
+      rating: selectedRating.value?.value,
+      sort: selectedSort.value,
+    });
+  }, 300);
+};
+
+const handleClearFilter = async () => {
+  currentPage.value = 1;
+  searchSpaceText.value = null;
+  selectedFilterStatus.value = null;
+  selectedRating.value = null;
+  selectedSort.value = null;
+  await loadRatingsDate({
+    page: currentPage.value,
+    itemsPerPage: itemsPerPage.value,
+    searchSpaceText: searchSpaceText.value,
+    status: selectedFilterStatus.value,
+    rating: selectedRating.value?.value,
+    sort: selectedSort.value,
+  });
+};
+
+const handleChangeStatusFilter = async () => {
+  currentPage.value = 1;
+  await loadRatingsDate({
+    page: currentPage.value,
+    itemsPerPage: itemsPerPage.value,
+    searchSpaceText: searchSpaceText.value,
+    status: selectedFilterStatus.value,
+    rating: selectedRating.value?.value,
+    sort: selectedSort.value,
+  });
+};
+
+const handleChangeSortFilter = async () => {
+  currentPage.value = 1;
+  await loadRatingsDate({
+    page: currentPage.value,
+    itemsPerPage: itemsPerPage.value,
+    searchSpaceText: searchSpaceText.value,
+    status: selectedFilterStatus.value,
+    rating: selectedRating.value?.value,
+    sort: selectedSort.value,
+  });
+};
+
+const handleChangeRatingFilter = async () => {
+  currentPage.value = 1;
+  await loadRatingsDate({
+    page: currentPage.value,
+    itemsPerPage: itemsPerPage.value,
+    searchSpaceText: searchSpaceText.value,
+    status: selectedFilterStatus.value,
+    rating: selectedRating.value?.value,
+    sort: selectedSort.value,
+  });
+};
+
 const loadRatingsDate = async (options: {
   page: number;
   itemsPerPage: number;
+  searchSpaceText: string | null;
+  status: string | null;
+  rating: number | null;
+  sort: string | null;
 }) => {
-  const { page, itemsPerPage } = options;
-  loading.value = true;
+  const { page, itemsPerPage, searchSpaceText, status, rating, sort } = options;
 
   try {
-    const responseData = (await getAdminRatingsList(page, itemsPerPage)) as any;
+    const responseData = (await getAdminRatingsList(
+      page,
+      itemsPerPage,
+      searchSpaceText,
+      status,
+      rating,
+      sort
+    )) as any;
     if (responseData.data) {
       ratingsData.value = responseData.data.data;
       totalItems.value = responseData.data.total_items || 0;
@@ -484,20 +619,43 @@ const loadRatingsDate = async (options: {
   } catch (error) {
     console.error(error);
   }
-  loading.value = false;
 };
 
 const onUpdatePageHandler = (page: number) => {
   currentPage.value = page;
+  loading.value = true;
   loadRatingsDate({
     page: currentPage.value,
     itemsPerPage: itemsPerPage.value,
+    searchSpaceText: searchSpaceText.value,
+    status: selectedFilterStatus.value,
+    rating: selectedRating.value?.value,
+    sort: selectedSort.value,
   });
+  loading.value = false;
 };
 
 const onUpdateItemsPerPageHandler = (itemsPerPage: number) => {
-  loadRatingsDate({ page: 1, itemsPerPage });
+  loading.value = true;
+  loadRatingsDate({
+    page: 1,
+    itemsPerPage,
+    searchSpaceText: searchSpaceText.value,
+    status: selectedFilterStatus.value,
+    rating: selectedRating.value?.value,
+    sort: selectedSort.value,
+  });
+  loading.value = false;
 };
 
-loadRatingsDate({ page: 1, itemsPerPage: itemsPerPage.value });
+loading.value = true;
+loadRatingsDate({
+  page: 1,
+  itemsPerPage: itemsPerPage.value,
+  searchSpaceText: searchSpaceText.value,
+  status: selectedFilterStatus.value,
+  rating: selectedRating.value?.value,
+  sort: selectedSort.value,
+});
+loading.value = false;
 </script>
