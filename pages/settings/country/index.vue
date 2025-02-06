@@ -150,6 +150,10 @@ const headers = ref([
   { title: "", align: "end", key: "action" },
 ]);
 
+definePageMeta({
+  middleware: ['auth', 'admin-only']
+});
+
 
 async function initCountrySetting() {
   loader.value  = true;

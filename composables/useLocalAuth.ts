@@ -29,6 +29,7 @@ export default function useLocalAuth() {
     useCookie("cookie_page").value = null;
     useCookie("mode").value = null;
     useCookie("event_type").value = null;
+    useCookie('role-type').value = null;
   }
 
   async function logout() {

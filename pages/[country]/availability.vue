@@ -218,6 +218,10 @@ const eventToEdit = ref(null);
 const space = ref(null);
 const { isVenueMember, isVenueAdmin, isVenueOwner } = useAccess();
 
+definePageMeta({
+  middleware: ['auth', 'owner-admin-access']
+});
+
 
 const canEdit = computed(() => {
   return isVenueAdmin || isVenueOwner;

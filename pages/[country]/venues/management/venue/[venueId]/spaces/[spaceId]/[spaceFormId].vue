@@ -191,7 +191,8 @@
 import MSpace from "~/models/space.model";
 
 definePageMeta({
-    layout: "bare"
+    layout: "bare",
+    middleware: ['auth', 'owner-admin-access']
 });
 
 import { useDisplay } from "vuetify";

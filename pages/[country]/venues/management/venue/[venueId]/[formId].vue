@@ -199,6 +199,7 @@
 <script setup lang="ts">
 definePageMeta({
     layout: "bare",
+    middleware: ['auth', 'owner-admin-access']
 });
 import MVenue from "~/models/venue.model";
 import MSpace from "~/models/space.model";

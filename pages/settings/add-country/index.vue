@@ -154,6 +154,7 @@ const selectedCountry = ref<any>({
 
 definePageMeta({
   layout: "bare",
+  middleware: ['auth', 'admin-only']
 });
 
 const countries = ref<TCountry[] | any>([]);
