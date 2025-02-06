@@ -19,12 +19,15 @@ export default defineNuxtRouteMiddleware((to) => {
     const isValidCookieValue =  countries.some(x => x.code && cookieCountryVal &&  x.code?.toLocaleLowerCase() == cookieCountryVal?.toLowerCase());
         
     if(!isValidCountry){
+      console.log('country.global.ts running' );
       return navigateTo({
         name: 'country', 
         params: {country: isValidCookieValue ? cookieCountryVal?.toLowerCase() : 'sg'}})
     }
     cookie.value = paramsCountry?.toLowerCase();
   }
+
+  
   
 });
 

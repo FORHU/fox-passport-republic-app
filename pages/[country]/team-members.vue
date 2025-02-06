@@ -156,7 +156,8 @@ const { currentUser } = useLocalAuth();
 
 
 definePageMeta({
-  layout: 'team-members'
+  layout: 'team-members',
+  middleware: ['auth', 'owner-admin-access']
 })
 
 const dialog = ref(false);

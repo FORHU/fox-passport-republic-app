@@ -11,6 +11,7 @@ const { smAndUp, mdAndUp } = useDisplay();
 
 definePageMeta({
   layout: 'enquiry-chat-new',
+  middleware: ['auth']
 })
 
 

@@ -330,6 +330,7 @@
 import MVenue from "~/models/venue.model";
 definePageMeta({
     layout: "venue-management-new",
+    middleware: ['auth', 'owner-admin-access']
 });
 
 import { useDisplay } from "vuetify";
