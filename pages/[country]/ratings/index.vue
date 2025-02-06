@@ -311,7 +311,7 @@
                 "
                 class="cursor-pointer"
               >
-                <span class="font-italic">{{ item.publicNote }}</span>
+                <span class="font-italic">{{  smAndUp ? sliceContent(item.publicNote, 150) : sliceContent(item.publicNote, 50) }}</span>
               </td>
               <td
                 @click="
@@ -421,8 +421,9 @@ definePageMeta({
   middleware: ["auth", "admin-only"],
 });
 import { useDisplay } from "vuetify";
-const { xs } = useDisplay();
+const { xs, smAndUp } = useDisplay();
 const { getAdminRatingsList, updateRatingStatus } = useRatings();
+const { sliceContent } = useUtils();
 const { country } = useLocal();
 const selectedRating = ref<any | null>(null);
 const loading = ref<boolean>(true);
