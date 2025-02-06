@@ -13,7 +13,11 @@ declare type TRatings = {
     privateNote: string;
     publicNote: string
     rating: number;
-    space: string;
+    space: {
+      name: string;
+      _id: string;
+      status: string;
+    };
     status: 'APPROVED' | 'PENDING' | 'REJECTED';
     updatedAt: string | null;
     user: TUser;

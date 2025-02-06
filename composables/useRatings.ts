@@ -59,11 +59,31 @@ export const useRatings = () => {
   const getAdminRatingsList = async (
     page: number,
     limit: number,
+    searchSpace: string | null,
+    status: string | null,
+    rating: number | null,
+    sort: string | null
   ) => {
     let params: any = {
       page,
       limit,
     };
+
+    if(searchSpace){
+      params.search = searchSpace;
+    }
+
+    if(status){
+      params.status = status;
+    }
+
+    if(rating){
+      params.rating = rating;
+    }
+
+    if(sort){
+      params.sort = sort;
+    }
 
     const { data, error } = await useAPI(`/v1/admin/ratings`, {
       params,
