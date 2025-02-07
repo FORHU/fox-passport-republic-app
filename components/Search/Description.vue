@@ -14,7 +14,8 @@
         v-for="(item, index) in items"
         :key="index"
         cols="12"
-        sm="4"
+        sm="6"
+        md="4"
         class="d-flex flex-column align-center align-sm-start text-center text-sm-left"
       >
         <div
