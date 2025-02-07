@@ -113,7 +113,7 @@
           class="location-card-title font-weight-medium text-20px w-100"
           :style="lgAndUp ? 'max-width: 70%' : 'max-width: 70%'"
         >
-          <span class="tooltip-container">
+          <span class="tooltip-container text-truncate">
             <span class="text-truncate hover-effect">
               {{ sliceContent(space.name, 55) }}
             </span>
