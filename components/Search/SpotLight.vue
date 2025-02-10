@@ -52,8 +52,15 @@
       <p>No popular venues available at the moment.</p>
     </v-col>
     <v-row no-gutters class="w-100">
-    <v-btn variant="text" :loading="loadingMorePopular" v-if="currentPagePopular < totalPopularPages || loadingMorePopular" class="text-decoration-underline" @click="showMorePopular">Show more popular venues</v-btn>
-  </v-row>
+      <v-btn
+        variant="text"
+        :loading="loadingMorePopular"
+        v-if="currentPagePopular < totalPopularPages || loadingMorePopular"
+        class="text-decoration-underline"
+        @click="showMorePopular"
+        >Show more popular venues</v-btn
+      >
+    </v-row>
   </v-row>
 
   <!-- Recently Listed Venues Section -->
@@ -82,7 +89,7 @@
       <v-progress-circular indeterminate color="primary"></v-progress-circular>
     </v-col>
     <v-col
-    cols="12"
+      cols="12"
       xs="6"
       sm="6"
       md="4"
@@ -108,8 +115,7 @@
     >
       <p>No recently listed venues available at the moment.</p>
     </v-col>
-    <v-row no-gutters class="w-100">
-  </v-row>
+    <v-row no-gutters class="w-100"> </v-row>
   </v-row>
 </template>
 
@@ -146,33 +152,40 @@ const assignSpaceDataPopular = async () => {
   //     location: useCookie("country").value?.toUpperCase() || "SG",
   //   },
   // });
-  const res: any = await getMostPopular({status: "PUBLISHED", location: useCookie("country").value?.toUpperCase() || "SG"})
+  const res: any = await getMostPopular({
+    status: "PUBLISHED",
+    location: useCookie("country").value?.toUpperCase() || "SG",
+  });
   spaceArrayPopular.value = res?.data || [];
-  totalPopularPages.value = res?.total_pages
+  totalPopularPages.value = res?.total_pages;
   loadingPopular.value = false;
 };
 
 const showMorePopular = async () => {
   morePopularShown.value = true;
-  if(currentPagePopular.value == totalPopularPages.value){
+  if (currentPagePopular.value == totalPopularPages.value) {
     return;
   }
   loadingMorePopular.value = true;
   currentPagePopular.value++;
   try {
-    const res: any = await getMostPopular({status: "PUBLISHED", location: useCookie("country").value?.toUpperCase() || "SG", page: currentPagePopular.value})
-    if(res?.data.length > 0){
-      spaceArrayPopular.value = [...spaceArrayPopular.value, ...res?.data]
-      slicedPopularArray.value = spaceArrayPopular.value
+    const res: any = await getMostPopular({
+      status: "PUBLISHED",
+      location: useCookie("country").value?.toUpperCase() || "SG",
+      page: currentPagePopular.value,
+    });
+    if (res?.data.length > 0) {
+      spaceArrayPopular.value = [...spaceArrayPopular.value, ...res?.data];
+      slicedPopularArray.value = spaceArrayPopular.value;
     }
-    
-    totalPopularPages.value = res?.total_pages
+
+    totalPopularPages.value = res?.total_pages;
   } catch (e) {
     console.error(e);
   } finally {
     loadingMorePopular.value = false;
   }
-}
+};
 
 // Fetch recently listed venues
 const assignSpaceDataRecent = async () => {
@@ -261,16 +274,24 @@ watchEffect(() => {
   const recent = spaceArrayRecent.value;
 
   if (lgAndUp.value) {
-    slicedPopularArray.value = !morePopularShown.value ? popular.slice(0, 4) : spaceArrayPopular.value
+    slicedPopularArray.value = !morePopularShown.value
+      ? popular.slice(0, 4)
+      : spaceArrayPopular.value;
     slicedRecentArray.value = recent.slice(0, 4);
   } else if (mdAndUp.value) {
-    slicedPopularArray.value = !morePopularShown.value ? popular.slice(0, 4) : spaceArrayPopular.value
+    slicedPopularArray.value = !morePopularShown.value
+      ? popular.slice(0, 4)
+      : spaceArrayPopular.value;
     slicedRecentArray.value = recent.slice(0, 4);
   } else if (smAndUp.value) {
-    slicedPopularArray.value = !morePopularShown.value ? popular.slice(0, 6) : spaceArrayPopular.value
+    slicedPopularArray.value = !morePopularShown.value
+      ? popular.slice(0, 6)
+      : spaceArrayPopular.value;
     slicedRecentArray.value = recent.slice(0, 6);
   } else {
-    slicedPopularArray.value = !morePopularShown.value ? popular.slice(0, 4) : spaceArrayPopular.value
+    slicedPopularArray.value = !morePopularShown.value
+      ? popular.slice(0, 4)
+      : spaceArrayPopular.value;
     slicedRecentArray.value = recent.slice(0, 4);
   }
 });

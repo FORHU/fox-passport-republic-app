@@ -118,13 +118,13 @@
 
       <v-col cols="12" v-intersect="onIntersect">
         <v-row no-gutters justify="center" class="pt-10 custom-padding">
-          <v-col cols="12" sm="10" md="10" lg="10" xl="10" :class="smAndDown ? 'py-5' : 'py-10'">
+          <v-col cols="12" sm="12" md="11" lg="10" xl="10" :class="smAndDown ? 'py-5' : 'py-10'">
             <SearchEliteVenue />
           </v-col>
-          <v-col cols="12" sm="10" md="10" lg="10" xl="10" :class="smAndDown ? '' : 'py-10'">
+          <v-col cols="12" sm="12" md="11" lg="10" xl="10" :class="smAndDown ? '' : 'py-10'">
             <SearchSpotLight />
           </v-col>
-          <v-col cols="12" sm="10" md="10" lg="10" xl="10" :class="smAndDown ? 'py-5' : 'py-10'">
+          <v-col cols="12" sm="12" md="11" lg="10" xl="10" :class="smAndDown ? 'py-5' : 'py-10'">
             <SearchDescription />
           </v-col>
         </v-row>

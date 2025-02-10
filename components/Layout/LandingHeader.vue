@@ -9,7 +9,7 @@
   >
     <v-row no-gutters align="center" justify="center" class="w-100">
       <v-col
-        sm="10"
+        sm="12"
         md="11"
         lg="11"
         class="w-100 d-flex align-center justify-space-between px-2 px-lg-11 px-xl-15"
