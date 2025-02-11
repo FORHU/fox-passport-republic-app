@@ -21,7 +21,7 @@
           <v-btn v-if="isForDeletion" color="rejected" variant="flat" text="Approve Delete" size="large" rounded="lg"
             class="mb-2" @click="emit('delete');" block></v-btn>
 
-          <v-btn :disabled="!isForApproval" block color="secondary" text="Approve" size="large" rounded="lg"
+          <v-btn :disabled="!isForApproval || !ownerVerified" block color="secondary" text="Approve" size="large" rounded="lg"
             @click="emit('publish'); showDialog = false"></v-btn>
 
         </v-col>
@@ -58,6 +58,11 @@ const props = defineProps({
     required: false
   },
   isForDeletion: {
+    type: Boolean,
+    default: false,
+    required: false
+  },
+  ownerVerified: {
     type: Boolean,
     default: false,
     required: false
