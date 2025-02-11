@@ -2066,7 +2066,7 @@ async function loadVenueData(): Promise<{ data: any; error: any }> {
       totalRatings.value = spaceData.rating?.totalReviews ?? 0;
       bookingForm.space = spaceData._id;
 
-      const allPhotos = [...spaceData.space_photo, ...spaceData.venue_photo];
+      const allPhotos = [...spaceData.space_photo];
       const sortedImages = allPhotos.sort(
         (a, b) =>
           new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
