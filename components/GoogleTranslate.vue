@@ -12,8 +12,8 @@
   </v-row>
 </template>
 
-<script setup lang="ts">
-  // @ts-nocheck 
+<script setup>
+  // @ts-ignore;
 const language = ref(localStorage.getItem("preferredLanguage") || "en");
 
 onMounted(async () => {
@@ -24,7 +24,7 @@ onMounted(async () => {
   script.async = true;
   await document.head.appendChild(script);
 });
-
+  // @ts-ignore;
 if (process.client) {
   setTimeout(() => {
     googleTranslateElementInit();
@@ -32,6 +32,7 @@ if (process.client) {
   }, 2000);
 }
 
+  // @ts-ignore;
 async function handleLanguageChange(event) {
   try {
     const selectElement = event.target;
@@ -48,9 +49,10 @@ async function handleLanguageChange(event) {
   }
 }
 
+// @ts-ignore;
 async function googleTranslateElementInit() {
   try {
-
+  // @ts-ignore;
     new google.translate.TranslateElement(
       { pageLanguage: "en", autoDisplay: true },
       "google_translate_element"
@@ -58,6 +60,7 @@ async function googleTranslateElementInit() {
 
     if (language?.value && language.value !== "en") {
       setTimeout(() => {
+        // @ts-ignore
         const select = document.querySelector("select.goog-te-combo");
         if (select) {
           select.value = language.value;
