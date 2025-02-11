@@ -59,6 +59,11 @@
             <LoadingDefault v-if="loading" />
             <v-row v-else no-gutters>
                 <v-row no-gutters class="w-100 h-100 px-5 px-md-0" justify="center">
+                    <v-col v-if="isAdmin" cols="12" md="10" lg="8" xl="7"
+                        class="d-flex ga-2 align-center px-2 pt-2 px-sm-5 px-md-0">
+                        <AlertAdminStatus v-if="!ownerVerified && !loading && isAdmin && status == 'FOR_APPROVAL'"
+                            :admin-status-message="{ color: 'error', message: 'This account is not yet fully verified!' }" />
+                    </v-col>
                     <v-col cols="12" md="10" lg="8" xl="7" class="py-10">
                         <v-row v-if="mode == 'update'" no-gutters
                             class="w-100 text-20px font-500 mb-10 d-flex align-center justify-space-between">
@@ -116,7 +121,7 @@
                                     <v-btn class="d-sm-none" icon="mdi-dots-horizontal"
                                         @click="showApproveButtons = true" />
                                     <DialogApproveMobile v-model="showApproveButtons" :updating-space="updatingSpace"
-                                        :is-allow-suspend="isAllowSuspend" :is-for-approval="isForApproval"
+                                        :is-allow-suspend="isAllowSuspend" :is-for-approval="isForApproval" :owner-verified="ownerVerified"
                                         :is-for-deletion="isForDeletion" @save="saveProgress"
                                         @reject="showRejectPrompt = true" @delete="showPermanentlyDeletePrompt = true"
                                         @publish="handleAdminAction('PUBLISHED')" />
@@ -135,7 +140,7 @@
                                             text="Approve Delete" size="large" rounded="lg" class="mr-2"
                                             @click="showDeletePrompt = true"></v-btn>
 
-                                        <v-btn :disabled="!isForApproval" variant="flat" color="secondary"
+                                        <v-btn :disabled="!isForApproval || !ownerVerified" variant="flat" color="secondary"
                                             text="Approve" size="large" rounded="lg"
                                             @click="handleAdminAction('PUBLISHED')"></v-btn>
                                     </div>
@@ -789,7 +794,7 @@ const handleNext = async () => {
         if (activeSpacePage.value === 1 && formValid.value) {
             await getSpacesArray(); // 
             const duplicateName = spaceListArr.some((x: TVenueSpace) => x.name == space.value?.name && x._id !== spaceId);
-            if(duplicateName){
+            if (duplicateName) {
                 setSnackbar({
                     text: "Space name already exists",
                     color: "error",
@@ -1172,16 +1177,49 @@ const checkMode = async () => {
     await ((isDRAFT.value || status == 'PENDING') && !isAdmin) ? mode.value = 'create' : mode.value = 'update'
 }
 
+
+// const fullyVerified = computed(() => {
+//     const venueOwnerObj = space.value.venue.user;
+
+//     let color = '';
+//     let message = '';
+
+//     if (venueStatus == 'FOR_APPROVAL') {
+//         color = 'red-darken-4';
+//         message = 'This venue account is not yet fully verified.'
+//     } 
+
+//     return {
+//         message, color
+//     }
+// })
+
+const { checkOwnerOnboardingStatus } = useVerified();
+const ownerVerified = ref(false);
+
+const fetchOnboardingStatus = async () => {
+    if (!isAdmin || status.value !== 'FOR_APPROVAL') return;
+    const userId = space.value?.venue?.user?._id
+
+    if (!userId) return;
+    try {
+        const res = await checkOwnerOnboardingStatus(userId)
+        if (res == true) {
+            ownerVerified.value = true;
+        }
+
+    } catch (e) {
+        console.log(e);
+
+    }
+}
+
 onMounted(async () => {
     loading.value = true;
     await refreshSpaceData();
     await checkMode();
     await getActivePage();
-
-
-
-
-
+    await fetchOnboardingStatus();
     loading.value = false;
 });
 </script>
