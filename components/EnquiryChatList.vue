@@ -89,7 +89,7 @@
         </v-data-iterator>
         <v-row v-if="totalPages > 1" no-gutters justify="center" class="w-100">
           <v-col>
-            <v-pagination v-model="currentPage" :length="totalPages" class="mb-5"
+            <v-pagination v-model="currentPage" :length="totalPages" class="mb-5" :total-visible="1" rounded="circle" size="small"
               @update:model-value="handleChangePage"></v-pagination>
           </v-col>
         </v-row>
