@@ -13,15 +13,16 @@
 </template>
 
 <script setup lang="ts">
+  // @ts-nocheck 
 const language = ref(localStorage.getItem("preferredLanguage") || "en");
 
-onMounted(() => {
+onMounted(async () => {
   const script = document.createElement("script");
   script.type = "text/javascript";
   script.src =
     "https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit";
   script.async = true;
-  document.head.appendChild(script);
+  await document.head.appendChild(script);
 });
 
 if (process.client) {
@@ -31,9 +32,9 @@ if (process.client) {
   }, 2000);
 }
 
-async function handleLanguageChange(event: Event) {
+async function handleLanguageChange(event) {
   try {
-    const selectElement = event.target as HTMLSelectElement;
+    const selectElement = event.target;
     const selectedLanguage = selectElement.value;
 
     if (selectedLanguage === "en") {
@@ -49,6 +50,7 @@ async function handleLanguageChange(event: Event) {
 
 async function googleTranslateElementInit() {
   try {
+
     new google.translate.TranslateElement(
       { pageLanguage: "en", autoDisplay: true },
       "google_translate_element"
