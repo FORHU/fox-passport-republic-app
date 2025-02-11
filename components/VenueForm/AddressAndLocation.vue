@@ -136,11 +136,15 @@ async function getCoordinates(address: string) {
     return;
   const formattedAddress = address.replace(/%20/g, "+");
 
-  const url = `https://maps.googleapis.com/maps/api/geocode/json?address=${formattedAddress}&key=${config.public.GOOGLE_API}`;
 
   try {
-    const response = await fetch(url);
-    const data = await response.json();
+    const { data: addressData, error } = await useFetch('/address-details', {
+      query: { address: formattedAddress }
+    })
+
+    const res = addressData.value as any;
+
+    const data = res?.data
 
     if (data?.results[0]?.geometry.location) {
       const { lat, lng } = data.results[0].geometry.location;

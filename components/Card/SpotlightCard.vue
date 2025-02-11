@@ -109,18 +109,28 @@
     <!-- Card Content -->
     <div class="location-card-content">
       <div class="d-flex justify-space-between align-center px-1">
-        <p class="location-card-title font-weight-bold word-break text-22px">
-          {{ sliceContent(space.name, 55) }}
+        <p
+          class="location-card-title font-weight-medium text-20px w-100"
+          :style="lgAndUp ? 'max-width: 70%' : 'max-width: 70%'"
+        >
+          <span class="tooltip-container text-truncate">
+            <span class="text-truncate hover-effect">
+              {{ sliceContent(space.name, 55) }}
+            </span>
+            <v-tooltip activator="parent" location="top">{{ space.name }}</v-tooltip>
+          </span>
         </p>
-        <div class="d-flex align-center text-body-2">
+        <div
+          class="d-flex align-end text-body-2 justify-end w-100"
+          :style="lgAndUp ? 'max-width: 30%' : 'max-width: 30%'"
+        >
           <v-icon small class="star-icon">mdi-star</v-icon>
-          <span class="ml-1"
-            >{{ space?.rating.averageRating }} ({{
-              space?.rating.totalRating
-            }})</span
-          >
+          <span class="ml-1">
+            {{ space?.rating.averageRating }} ({{ space?.rating.totalRating }})
+          </span>
         </div>
       </div>
+
       <v-divider class="mt-2"></v-divider>
       <v-row no-gutters class="my-3">
         <CardPricingChips
@@ -163,6 +173,8 @@
 </template>
 
 <script setup lang="ts">
+import { useDisplay } from "vuetify";
+const { lgAndUp } = useDisplay();
 const { setSnackbar, getCurrencySymbol, country } = useLocal();
 const { sliceContent, formatAddress } = useUtils();
 const { isUser } = useAccess();
@@ -325,7 +337,7 @@ async function favoriteProcess(val) {
 }
 
 .location-card-title {
-  font-size: 1.2rem;
+  font-size: 1.1rem;
   display: flex;
   align-items: center;
 }
@@ -378,5 +390,32 @@ async function favoriteProcess(val) {
 
 .word-break {
   word-break: break-word;
+}
+
+.tooltip-container {
+  position: relative;
+  display: inline-block;
+}
+
+.tooltip-container .tooltip-text {
+  visibility: hidden;
+  width: max-content;
+  background-color: black;
+  color: #fff;
+  text-align: center;
+  border-radius: 5px;
+  padding: 5px;
+  position: absolute;
+  z-index: 1000;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+.tooltip-container:hover .tooltip-text {
+  visibility: visible;
+  opacity: 1;
 }
 </style>
