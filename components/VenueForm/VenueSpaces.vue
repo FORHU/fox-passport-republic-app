@@ -119,7 +119,7 @@ const { venueId } = useRoute().params;
 const { countries } = useVenueData();
 const { type } = useRoute().query;
 const { mode, venue, isSubscriptionBased, isVenuePartOfVenueWithConsent } = useVenue();
-const { isVenueMember, isVenueOwner, isVenueAdmin, isAdmin, isUser, isAdminMember, } =
+const { isVenueMember, isVenueOwner, isVenueAdmin, isAdmin, isUser, isAdminMember,isAdminSales } =
   useAccess();
 const {
   spaces,
@@ -238,7 +238,7 @@ const loadItems = async () => {
 const handleAddNewSpace = async () => {
   addingNewLoading.value = true;
   let name = '';
-  let status: 'DRAFT' | 'PENDING' = isAdminMember ? 'PENDING' : 'DRAFT';
+  let status: 'DRAFT' | 'PENDING' = (isAdminMember || isAdminSales) ? 'PENDING' : 'DRAFT';
   const { data: spaceData, error } = await addNewSpace(venueId as string, name, status);
   if (spaceData) {
     const res = spaceData.value as any;
@@ -270,7 +270,7 @@ const handleManageSpace = async () => {
 };
 
 const canAdd = computed(() => {
-  return mode.value !== "view" && (isVenueOwner || isAdminMember || isVenueAdmin);
+  return mode.value !== "view" && (isVenueOwner || isAdminMember || isAdminSales || isVenueAdmin);
 });
 
 const hasActiveSubscription = computed(() => {

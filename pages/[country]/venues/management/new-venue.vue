@@ -73,7 +73,7 @@ const { venueId } = useRoute().params;
 const { addNewVenue, mode, venue } = useVenue();
 import { useDisplay } from "vuetify";
 const { smAndUp } = useDisplay();
-const { isAdminMember } = useAccess();
+const { isAdminMember, isAdminSales } = useAccess();
 
 const formValid = ref<boolean>(false);
 const loading = ref(true);
@@ -86,7 +86,7 @@ const cookiePage = useCookie<number>("cookie_page");
 const venueListerPageRoute = "country-venues-management";
 
 const totalPages = computed(() => {
-  if (isAdminMember) {
+  if (isAdminMember || isAdminSales) {
     return 3;
   } else {
     return 7;
@@ -165,7 +165,7 @@ const handleNext = async () => {
       };
 
       // add status pending for created venue by admin member
-      if (isAdminMember) {
+      if (isAdminMember || isAdminSales) {
         payload.status = 'PENDING';
       }
 
@@ -180,7 +180,7 @@ const handleNext = async () => {
         const adminMemberRoute = "country-venues-management-admin-venue-venueId";
 
         await navigateTo({
-          name: isAdminMember ? adminMemberRoute : route,
+          name: (isAdminMember || isAdminSales) ? adminMemberRoute : route,
           params: { country: country, venueId: res.data._id, formId: 'address' },
         });
         
