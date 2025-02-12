@@ -1,12 +1,12 @@
 <template>
 
   <!-- ADMIN MEMBER COUNTRY INPUT -->
-  <v-row v-if="isAdminMember || isAdmin" no-gutters class="w-100 mt-5">
+  <v-row v-if="isAdminMember || isAdminSales || isAdmin" no-gutters class="w-100 mt-5">
     <v-col cols="12">
       <span class="w-100 text-18px font-500">Country</span>
       <v-select v-model="venue.address.country" class="mt-1" item-value="cca2" item-title="country_name"
         :items="registeredCountries" name="country" rounded="lg" color="charcoal" base-color="charcoal"
-        :rules="countryRules" height="44" />
+        :rules="countryRules" height="44" @update:model-value="handleChangeCountry" />
     </v-col>
   </v-row>
   <!-- ADMIN MEMBER COUNTRY INPUT -->
@@ -86,7 +86,7 @@ const { mode } = useVenue();
 const { country, setSnackbar, loadCountries, registeredCountries } = useLocal();
 const { currentUser } = useLocalAuth();
 const showCountryInfo = ref(false);
-const { isAdminMember, isAdmin } = useAccess();
+const { isAdminMember, isAdmin, isAdminSales } = useAccess();
 
 const venue = defineModel<TVenue>({ required: true });
 const addressInvalid = ref(false);
@@ -123,6 +123,10 @@ watch(
   },
   { immediate: true },
 );
+
+const handleChangeCountry = () => {
+  getCoordinates(completeAddress.value)
+}
 
 async function getCoordinates(address: string) {
   const { address: InputAddress } = venue.value;

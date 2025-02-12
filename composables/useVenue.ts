@@ -320,6 +320,11 @@ export function useVenue() {
     return validStatuses.includes(status);
   };
 
+  const isVenuePartOfSalesViewOnly = (status: string) => {
+    const validStatuses = ['REQUIRES_CONSENT', 'REQUEST_TRANSFER_SENT'];
+    return validStatuses.includes(status);
+  };
+
   const approvalOwnerConsent = async ({ email, venueId }: { email: string, venueId: string }) => {
     const { data, error } = await useAPI(`/v1/admin/venue/transfer-ownership/invite/${venueId}`, {
       method: 'POST',
@@ -424,6 +429,7 @@ const batchUploadExcelFile = async (formData: FormData) => {
     approvalOwnerConsent,
     saveOwnerTransfer,
     isVenuePartOfVenueWithConsent,
+    isVenuePartOfSalesViewOnly,
     batchUploadExcelFile,
     resendOwnerTransferEmail,
     existingVenueOwnerTransfer
