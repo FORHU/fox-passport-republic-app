@@ -8,11 +8,11 @@
                     <ButtonToggleView v-model="viewMode" max-height="40px"
                         @update:model-value="handleButtonToggleChange" />
                 </span>
-                <span v-if="isAdmin || isAdminMember">
+                <!-- <span v-if="isAdmin || isAdminMember">
                     <v-btn icon="mdi-file-arrow-up-down-outline" variant="outlined" color="secondary"
                         text="Batch Upload" height="40" rounded="lg" @click="handleBatchUpload"></v-btn>
-                </span>
-                <span v-if="isVenueOwner || isVenueAdmin || isAdminMember">
+                </span> -->
+                <span v-if="isVenueOwner || isVenueAdmin || isAdminMember || isAdminSales">
                     <v-btn rounded="lg" variant="flat" border="secondary md" icon="mdi-plus" height="40"
                         color="secondary" @click="addNewVenue"></v-btn>
                 </span>
@@ -44,12 +44,12 @@
                     <v-btn rounded="lg" variant="outlined" border="secondary md" text="Drafts"
                         prepend-icon="mdi-archive-outline" height="40" @click="goToDrafts"></v-btn>
                 </span> -->
-                <span v-if="isAdmin || isAdminMember">
+                <!-- <span v-if="isAdmin || isAdminMember">
                     <v-btn prepend-icon="mdi-file-arrow-up-down-outline" variant="outlined" color="secondary"
                         text="Batch Upload" height="40" rounded="lg" @click="handleBatchUpload"></v-btn>
-                </span>
+                </span> -->
 
-                <span v-if="isVenueOwner || isVenueAdmin || isAdminMember">
+                <span v-if="isVenueOwner || isVenueAdmin || isAdminMember || isAdminSales">
                     <v-btn prepend-icon="mdi-plus" color="secondary" text="Add Venue" height="40" rounded="lg"
                         @click="addNewVenue"></v-btn>
                 </span>
@@ -106,15 +106,30 @@
                         </td>
                         <td>
                             <div no-gutters class="w-100 d-flex ga-2 justify-end py-2 py-md-3">
-                                <v-btn v-if="item.status !== 'DELETED'" border="secondary sm" flat
-                                    :icon="(isVenueMember || isAdminSales || (isAdminMember && item.status !== 'PENDING' && item.status !== 'REQUIRES_CONSENT')) ? 'mdi-eye-outline' : 'mdi-square-edit-outline'"
-                                    size="small" rounded="lg"
-                                    @click.stop="handleEditVenue(item._id as string, item?.status as string)"></v-btn>
+                                <template v-if="(isAdminSales || isAdminMember) && item?.status != 'DELETED' && isVenuePartOfSalesViewOnly(item?.status as string)">
+                                    <v-btn border="secondary sm" flat
+                                        icon="mdi-briefcase-eye"
+                                        size="small" rounded="lg"
+                                        @click.stop="handleViewSalesPage(item?._id as string)"></v-btn>
+                                </template>
+                                <template v-if="(isAdminSales || isAdminMember) && item?.status != 'DELETED' && isVenuePartOfVenueWithConsent(item?.status as string)">
+                                    <v-btn border="secondary sm" flat
+                                        icon="mdi-circle-edit-outline"
+                                        size="small" rounded="lg"
+                                        @click.stop="handleEditSalesPage(item?._id as string)"></v-btn>
+                                </template>
+                                
+                                <template v-else-if="!isAdminSales && !isAdminMember && item?.status != 'DELETED'">
+                                    <v-btn border="secondary sm" flat
+                                        :icon="showEditActionButton(item?.status as string) ? 'mdi-square-edit-outline' : 'mdi-eye-outline'"
+                                        size="small" rounded="lg"
+                                        @click.stop="handleEditVenue(item._id as string, item?.status as string)"></v-btn>
+                                </template>
                                 <v-btn border="secondary sm"
                                     v-if="isVenueOwner && item.status != 'DELETED' && item.status != 'FOR_DELETION' || (isVenuePartOfVenueWithConsent(item?.status as string) && (isAdmin || isAdminMember))"
                                     flat icon="mdi-trash-can-outline" size="small" rounded="lg"
                                     @click.stop="handleDeleteVenue(item)"></v-btn>
-                                <v-btn color="secondary" v-if="!isAdminSales"
+                                <v-btn color="secondary"
                                     :icon="isExpanded(internalItem) ? 'mdi-chevron-up' : 'mdi-chevron-down'"
                                     variant="text" @click.stop.prevent="handleExpanded(item)"></v-btn>
                             </div>
@@ -160,7 +175,7 @@
                             <td>
                                 <div class="w-100 d-flex ga-2 justify-end py-2 py-md-3">
                                     <v-btn v-if="spaceItem.status !== 'DELETED'" border="secondary sm" flat
-                                        :icon="(isVenueMember || isAdminSales || (isAdminMember && item.status !== 'PENDING' && item.status !== 'REQUIRES_CONSENT')) ? 'mdi-eye-outline' : 'mdi-square-edit-outline'"
+                                        :icon="(isVenueMember || ((isAdminMember || isAdminSales) && item.status !== 'PENDING' && item.status !== 'REQUIRES_CONSENT')) ? 'mdi-eye-outline' : 'mdi-square-edit-outline'"
                                         size="small" rounded="lg"
                                         @click.stop="handleViewSpace(spaceItem._id as string, item?._id as string, item?.status, item?.form_steps)"></v-btn>
                                     <v-btn border="secondary sm" v-if="
@@ -238,7 +253,24 @@
                                             </template>
 
                                             <v-list>
-                                                <v-list-item v-if="item.status !== 'DELETED'"
+                                                <template v-if="(isAdminSales || isAdminMember) && item?.status != 'DELETED' && isVenuePartOfSalesViewOnly(item?.status as string)">
+                                                    <v-list-item @click.stop="handleViewSalesPage(item?._id as string)">
+                                                        <template v-slot:prepend>
+                                                        <v-icon icon="mdi-briefcase-eye"></v-icon>
+                                                    </template>
+                                                    View Sales
+                                                    </v-list-item>
+                                                </template>
+                                                <template v-if="(isAdminSales || isAdminMember) && item?.status != 'DELETED' && isVenuePartOfVenueWithConsent(item?.status as string)">
+                                                    <v-list-item @click.stop="handleEditSalesPage(item?._id as string)">
+                                                        <template v-slot:prepend>
+                                                        <v-icon icon="mdi-circle-edit-outline"></v-icon>
+                                                    </template>
+                                                    Edit
+                                                    </v-list-item>
+                                                </template>
+
+                                                <v-list-item  v-else-if="!isAdminSales && !isAdminMember && item?.status != 'DELETED'"
                                                     @click="handleEditVenue(item._id as string)">
                                                     <template v-slot:prepend>
                                                         <v-icon icon="mdi-square-edit-outline"></v-icon>
@@ -358,6 +390,7 @@ const {
     deleteMultipleVenues,
     statusList,
     isVenuePartOfVenueWithConsent,
+    isVenuePartOfSalesViewOnly,
     batchUploadExcelFile
 } = useVenue();
 const { formatAddress, formatStatus, formatColor, sliceContent } = useUtils();
@@ -531,29 +564,46 @@ const addNewVenue = async () => {
 
 const handleEditVenue = async (id: string, status: string) => {
     if (!id) return;
-
-    if (isAdminSales && isVenuePartOfVenueWithConsent(status)) {
-        navigateTo({
-            name: "country-venues-management-sales-venueId",
-            params: { country: country, venueId: id },
-        });
-        return;
-    }
-
-    if (isVenuePartOfVenueWithConsent(status)) {
-        navigateTo({
-            name: "country-venues-management-admin-venue-venueId",
-            params: { country: country, venueId: id },
-        });
-
-    } else {
-        navigateTo({
+    navigateTo({
             name: "country-venues-management-venue-venueId-formId",
             params: { country: country, venueId: id, formId: 'overview' },
         });
-
-    }
 };
+
+// const handleEditSalesVenue = async (id: string, status: string) => {
+//     if (!id) return;
+//     if (isVenuePartOfSalesViewOnly(status)) {
+//         navigateTo({
+//         name: "country-venues-management-sales-venueId",
+//         params: { country: country, venueId: id },
+//     });
+//     return;
+
+//     } else {
+//         navigateTo({
+//             name: "country-venues-management-admin-venue-venueId",
+//             params: { country: country, venueId: id },
+//         });
+//     }
+// };
+
+const handleViewSalesPage = (id: string) => {
+    if(!id) return;
+    navigateTo({
+        name: "country-venues-management-sales-venueId",
+        params: { country: country, venueId: id },
+    });
+}
+
+const handleEditSalesPage = (id: string) => {
+    if(!id) return;
+    navigateTo({
+        name: "country-venues-management-admin-venue-venueId",
+        params: { country: country, venueId: id },
+    });
+}
+
+
 
 const handleViewSpace = async (spaceId: string, venueId: string, venueStatus: string, venueFormSteps: number) => {
 
@@ -596,9 +646,8 @@ const imageSrc = (venueId: string) => {
     const venueObj = venues.value.find((obj) => obj._id === venueId);
     if (
         !venueObj ||
-        (!venueObj.venue_photos && !venueObj?.space_photos) ||
-        (venueObj?.venue_photos?.length === 0 &&
-            venueObj?.space_photos?.length == 0)
+        (!venueObj?.space_photos) ||
+        (venueObj?.space_photos?.length == 0)
     )
         return null;
 
@@ -612,11 +661,8 @@ const imageSrc = (venueId: string) => {
         ".webp",
     ];
 
-    const sortedVenuePhotos =
-        (venueObj?.venue_photos?.length > 0
-            ? venueObj?.venue_photos
-            : venueObj?.space_photos)
-    
+    const sortedVenuePhotos = venueObj?.space_photos
+
     if (!Array.isArray(sortedVenuePhotos)) return;
 
     const imageObj = sortedVenuePhotos.find((image) => {
@@ -927,7 +973,7 @@ const handleFileChange = async (e: any) => {
         formData.append("file", excelFile);
 
         const res = await batchUploadExcelFile(formData);
-        if(res){
+        if (res) {
             setSnackbar({
                 modal: true,
                 color: "success",
@@ -935,7 +981,7 @@ const handleFileChange = async (e: any) => {
             })
         }
 
-    } catch (error:any) {
+    } catch (error: any) {
         if (error.code == 'DATA_VALIDATION_FAILED') {
             setSnackbar({
                 modal: true,
@@ -951,6 +997,19 @@ const handleFileChange = async (e: any) => {
         await loadItems();
     }
 }
+
+const showSalesEditActionButton = (status: string) => {
+   return isVenuePartOfSalesViewOnly(status) ? false : true;
+
+}
+
+
+// this button is for roles that can edit
+const showEditActionButton = (status: string) => {
+   return isVenueMember ? false : true;
+}
+
+
 
 
 onMounted(async () => {
