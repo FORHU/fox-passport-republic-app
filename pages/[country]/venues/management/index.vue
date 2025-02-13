@@ -646,9 +646,8 @@ const imageSrc = (venueId: string) => {
     const venueObj = venues.value.find((obj) => obj._id === venueId);
     if (
         !venueObj ||
-        (!venueObj.venue_photos && !venueObj?.space_photos) ||
-        (venueObj?.venue_photos?.length === 0 &&
-            venueObj?.space_photos?.length == 0)
+        (!venueObj?.space_photos) ||
+        (venueObj?.space_photos?.length == 0)
     )
         return null;
 
@@ -662,10 +661,7 @@ const imageSrc = (venueId: string) => {
         ".webp",
     ];
 
-    const sortedVenuePhotos =
-        (venueObj?.venue_photos?.length > 0
-            ? venueObj?.venue_photos
-            : venueObj?.space_photos)
+    const sortedVenuePhotos = venueObj?.space_photos
 
     if (!Array.isArray(sortedVenuePhotos)) return;
 
