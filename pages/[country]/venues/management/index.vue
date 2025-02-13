@@ -253,7 +253,24 @@
                                             </template>
 
                                             <v-list>
-                                                <v-list-item v-if="item.status !== 'DELETED'"
+                                                <template v-if="(isAdminSales || isAdminMember) && item?.status != 'DELETED' && isVenuePartOfSalesViewOnly(item?.status as string)">
+                                                    <v-list-item @click.stop="handleViewSalesPage(item?._id as string)">
+                                                        <template v-slot:prepend>
+                                                        <v-icon icon="mdi-briefcase-eye"></v-icon>
+                                                    </template>
+                                                    View Sales
+                                                    </v-list-item>
+                                                </template>
+                                                <template v-if="(isAdminSales || isAdminMember) && item?.status != 'DELETED' && isVenuePartOfVenueWithConsent(item?.status as string)">
+                                                    <v-list-item @click.stop="handleEditSalesPage(item?._id as string)">
+                                                        <template v-slot:prepend>
+                                                        <v-icon icon="mdi-circle-edit-outline"></v-icon>
+                                                    </template>
+                                                    Edit
+                                                    </v-list-item>
+                                                </template>
+
+                                                <v-list-item  v-else-if="!isAdminSales && !isAdminMember && item?.status != 'DELETED'"
                                                     @click="handleEditVenue(item._id as string)">
                                                     <template v-slot:prepend>
                                                         <v-icon icon="mdi-square-edit-outline"></v-icon>
