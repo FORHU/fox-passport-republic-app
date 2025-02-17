@@ -716,6 +716,10 @@ const handleChangeStatusFilter = async () => {
     loadItems();
 }
 
+watch(page, async () => {
+    await onUpdatePageHandler(page.value)
+});
+
 
 const handleButtonToggleChange = () => {
     if (viewMode.value == 'table') {
