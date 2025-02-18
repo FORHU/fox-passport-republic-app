@@ -415,23 +415,29 @@
               <SpacesDetailsRules :specificSpace="specificSpace" />
               <v-divider class="mt-5"></v-divider>
               <!-- Floor Plan -->
-              <template v-if="
-                  specificSpace?.floor_plan &&
-                  specificSpace?.floor_plan?.length > 0
-                ">
-                <h3
+              <h3
                 class="my-5 px-2"
+                v-if="
+                  specificSpace.floor_plan &&
+                  specificSpace.floor_plan.length > 0
+                "
               >
                 Floor Plan
               </h3>
               <SpacesDetailsFloorPlan
                 :specificSpace="specificSpace"
-                :max-image-num="4"
+                v-if="
+                  specificSpace.floor_plan &&
+                  specificSpace.floor_plan.length > 0
+                "
               />
               <v-divider
                 class="mt-5"
+                v-if="
+                  specificSpace.floor_plan &&
+                  specificSpace.floor_plan.length > 0
+                "
               ></v-divider>
-              </template>
               <!-- Ratings -->
               <RatingDetails
                 :ratingAverage="ratingAverage"

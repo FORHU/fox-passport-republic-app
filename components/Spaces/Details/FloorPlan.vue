@@ -30,7 +30,7 @@
       </v-row>
   
       <v-btn
-        v-if="images.length > (maxImageNum || 3)"
+        v-if="images.length > 3"
         block
         class="mt-2"
         variant="outlined"
@@ -84,7 +84,6 @@
     specificSpace?: {
       floor_plan?: string[] | FloorPlanImage[];
     };
-    maxImageNum?: number
   }>();
   
   const images = computed<FloorPlanImage[]>(() => {
@@ -96,7 +95,7 @@
   });
   
   const primaryImage = computed(() => images.value[0] || null);
-  const otherImages = computed(() => images.value.slice(1, props.maxImageNum || 3));
+  const otherImages = computed(() => images.value.slice(1, 3));
   
   const showCarousel = ref(false);
   const selectedIndex = ref(0);
