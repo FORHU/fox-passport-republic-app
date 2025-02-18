@@ -1,7 +1,7 @@
 <template>
     <v-container v-if="primaryImage">
       <v-row>
-        <v-col cols="12" md="6">
+        <v-col cols="12">
           <v-img
             :src="primaryImage.path"
             :alt="primaryImage.description"
