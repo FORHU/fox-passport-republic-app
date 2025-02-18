@@ -414,7 +414,30 @@
               <h2 class="my-5">Cancellation Policy</h2>
               <SpacesDetailsRules :specificSpace="specificSpace" />
               <v-divider class="mt-5"></v-divider>
-
+              <!-- Floor Plan -->
+              <h3
+                class="my-5 px-2"
+                v-if="
+                  specificSpace.floor_plan &&
+                  specificSpace.floor_plan.length > 0
+                "
+              >
+                Floor Plan
+              </h3>
+              <SpacesDetailsFloorPlan
+                :specificSpace="specificSpace"
+                v-if="
+                  specificSpace.floor_plan &&
+                  specificSpace.floor_plan.length > 0
+                "
+              />
+              <v-divider
+                class="mt-5"
+                v-if="
+                  specificSpace.floor_plan &&
+                  specificSpace.floor_plan.length > 0
+                "
+              ></v-divider>
               <!-- Ratings -->
               <RatingDetails
                 :ratingAverage="ratingAverage"
