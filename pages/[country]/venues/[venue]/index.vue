@@ -415,22 +415,15 @@
               <SpacesDetailsRules :specificSpace="specificSpace" />
               <v-divider class="mt-5"></v-divider>
               <!-- Floor Plan -->
-              <template v-if="
+              <template
+                v-if="
                   specificSpace?.floor_plan &&
                   specificSpace?.floor_plan?.length > 0
-                ">
-                <h3
-                class="my-5 px-2"
-                
+                "
               >
-                Floor Plan
-              </h3>
-              <SpacesDetailsFloorPlan
-                :specificSpace="specificSpace"
-              />
-              <v-divider
-                class="mt-5"
-              ></v-divider>
+                <h3 class="my-5 px-2">Floor Plan</h3>
+                <SpacesDetailsFloorPlan :specificSpace="specificSpace" />
+                <v-divider class="mt-5"></v-divider>
               </template>
               <!-- Ratings -->
               <RatingDetails
@@ -441,17 +434,20 @@
               />
               <v-divider class="mt-5"></v-divider>
               <!-- Reviews -->
-              <h3 class="my-5 px-2">What they say</h3>
-              <v-col cols="12">
-                <RatingUserReviews :userReviews="userReviews" />
-                <v-btn
-                  class="my-2"
-                  @click="handleShowAllReviews()"
-                  v-if="userReviews.length > 5"
-                  >Show all ({{ userReviews.length }}) reviews</v-btn
-                >
-              </v-col>
-              <v-divider class="mt-5"></v-divider>
+              <template v-if="userReviews.length">
+                <v-col cols="12">
+                  <h3 class="my-5 px-2">What they say</h3>
+                  <RatingUserReviews :userReviews="userReviews" />
+                  <v-btn
+                    class="my-2"
+                    @click="handleShowAllReviews()"
+                    v-if="userReviews.length > 5"
+                  >
+                    Show all ({{ userReviews.length }}) reviews
+                  </v-btn>
+                  <v-divider class="mt-5"></v-divider>
+                </v-col>
+              </template>
             </v-col>
 
             <!-- RIGHT COLUMN -->

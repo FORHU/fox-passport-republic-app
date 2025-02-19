@@ -1,5 +1,10 @@
 <template>
-  <v-row no-gutters v-for="review in userReviews" :key="review._id">
+  <v-row
+    no-gutters
+    v-for="review in userReviews"
+    :key="review._id"
+    class="mb-10"
+  >
     <v-col cols="12">
       <div class="d-flex align-center ga-3">
         <ProfileAvatar
@@ -9,8 +14,12 @@
           :last_name="review?.user?.last_name"
         />
         <div class="d-flex align-start flex-column">
-          <span class="font-weight-medium">{{ formattedName(review?.user?.first_name, review?.user?.last_name) }}</span>
-          <span class="text-body-2">{{ timeAgo(review.user?.createdAt, false) }} on Venue4use</span>
+          <span class="font-weight-medium">{{
+            formattedName(review?.user?.first_name, review?.user?.last_name)
+          }}</span>
+          <span class="text-body-2"
+            >{{ timeAgo(review.user?.createdAt, false) }} on Venue4use</span
+          >
         </div>
       </div>
     </v-col>
@@ -55,10 +64,10 @@ defineProps({
 });
 
 const formattedName = (first: string, last: string) => {
-  const slicedLastName = last.slice(0,1) + '.'
-  const parts = [first,slicedLastName].filter(Boolean); // Filter out null or undefined parts
+  const slicedLastName = last.slice(0, 1) + ".";
+  const parts = [first, slicedLastName].filter(Boolean); // Filter out null or undefined parts
   return parts.join(" "); // Join non-empty parts with a space
-}
+};
 
 const { timeAgo } = useUtils();
 </script>
