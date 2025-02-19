@@ -324,7 +324,7 @@
 
             <v-row v-if="totalPages > 1" no-gutters class="w-100 mt-4">
                 <v-col align="center">
-                    <v-pagination v-model="page" :length="totalPages"></v-pagination>
+                    <v-pagination v-model="page" :length="totalPages" :total-visible="5"></v-pagination>
                 </v-col>
             </v-row>
         </v-col>
