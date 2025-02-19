@@ -694,60 +694,10 @@
               :country="venueLocation"
               :coordinates="coordinates"
               :showDetails="true"
+              :selectedSpace="selectedSpace"
               @marker-selected="showMarkerDetails"
               :mobile="false"
             />
-            <v-dialog v-model="dialogVisible" max-width="400px">
-              <div class="bg-white rounded-xl">
-                <div class="position-relative">
-                  <v-carousel
-                    hide-delimiter-background
-                    cycle
-                    :show-arrows="true"
-                    height="200"
-                    transition="fade-transition"
-                    class="rounded-xl"
-                  >
-                    <v-carousel-item
-                      v-for="(photo, index) in selectedMarker?.photo || []"
-                      :key="index"
-                    >
-                      <img
-                        :src="photo.path"
-                        alt="Marker Photo"
-                        style="width: 100%; height: auto; object-fit: cover"
-                        class="rounded-xl"
-                      />
-                    </v-carousel-item>
-                  </v-carousel>
-                  <v-btn
-                    icon
-                    size="small"
-                    @click="dialogVisible = false"
-                    class="position-absolute"
-                    style="right: 10px; top: 10px"
-                    ><v-icon>mdi-close</v-icon></v-btn
-                  >
-                </div>
-                <div class="px-4 py-1 pb-4" @click="navigateToVenue()">
-                  <h4>{{ selectedMarker?.title }}, {{ country }}</h4>
-                  <p class="text-body-2 text-grey">
-                    {{ selectedMarker?.location }}
-                  </p>
-                  <div class="d-flex align-center justify-space-between pt-2">
-                    <span
-                      class="bg-primary px-2 py-1 d-flex align-center justify-center rounded-lg text-caption"
-                    >
-                      <v-icon size="small" class="mr-1">mdi-star</v-icon
-                      >{{ selectedMarker?.rating }}
-                    </span>
-                    <span class="d-flex align-center">
-                      <CardPricingChips :space="selectedSpace as TVenueSpace" />
-                    </span>
-                  </div>
-                </div>
-              </div>
-            </v-dialog>
           </v-col>
         </v-row>
       </v-col>
@@ -1068,15 +1018,6 @@ const selectedMarker = ref<MappedCoordinate | null>(null);
 const showMarkerDetails = (marker: MappedCoordinate) => {
   selectedMarker.value = marker;
   dialogVisible.value = true;
-};
-
-const navigateToVenue = () => {
-  const url = router.resolve({
-    name: "country-venues-venue",
-    params: { country: country, venue: selectedMarker.value?.id },
-  }).href;
-
-  router.push(url);
 };
 
 const selectedSpace = computed(() => {
