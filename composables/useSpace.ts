@@ -170,14 +170,15 @@ export function useSpace() {
     pricing: TPricing,
     date: any,
     booking: any = [],
-    showSecond6AM?: boolean,
+    showSecond6AM?: boolean
   ) => {
     if (date === null) return timesFrom;
 
+  
     // in YYYY-MM-DD
     function formatLocalDate(date: any) {
       const formatDate = new Date(date)
-      const timezoneOffset = formatDate.getTimezoneOffset() * 60 * 1000;
+      const timezoneOffset = formatDate?.getTimezoneOffset() * 60 * 1000;
       const localDate = new Date(formatDate.getTime() - timezoneOffset);
       return localDate.toISOString().split("T")[0];
     }
@@ -220,26 +221,24 @@ export function useSpace() {
 
     if (pricing.selected_pricing === "HIRE_FEE") {
       const dayPricing = pricing.hire_fee?.days.find(
-        (day) => day.name === dayOfWeek,
+        (day) => day.name === dayOfWeek
       );
 
       let hourlyStartKey: number | null = null;
       let hourlyEndKey: number | null = null;
       let fullDayStartKey: number | null = null;
       let fullDayEndKey: number | null = null;
-      
-      if(!dayPricing || !dayPricing?.slots ) return;
+
+      if (!dayPricing || !dayPricing?.slots) return;
 
       const { start, end } = dayPricing.slots;
       const startKey = getTimeKey(start) || null;
-        const endKey = end == "06:00" ? 49 : getTimeKey(end) || null;
-     
-      
+      const endKey = end == "06:00" ? 49 : getTimeKey(end) || null;
+
       // if(dayPricing && dayPricing?.fullRateCheckkBox && dayPricing?.full_day_start && dayPricing?.full_day_end){
       //   fullDayStartKey = getTimeKey(dayPricing?.full_day_start) || null;
       //   fullDayEndKey = dayPricing?.full_day_end == "06:00" ? 49 : getTimeKey(dayPricing?.full_day_end) || null;
       // }
-        
 
       // // Determine the smallest start key and largest end key
       //   const startKey = Math.min(hourlyStartKey ?? Infinity, fullDayStartKey ?? Infinity);
@@ -252,14 +251,14 @@ export function useSpace() {
 
       allowedTimesArray = timesFrom.map((time: any) => {
         const isBooked = checkIfBooked(time.key);
-
+        time.booked = isBooked;
         time.props.disabled =
           isTimeInRange(time.key, startKey, endKey) || isBooked;
         return time;
       });
     } else {
       const dayPricings = pricing.custom_price?.prices.filter((item) =>
-        item.weekdays.includes(dayOfWeek),
+        item.weekdays.includes(dayOfWeek)
       );
 
       if (!dayPricings || dayPricings.length === 0) {
@@ -281,39 +280,37 @@ export function useSpace() {
         });
 
         time.props.disabled = isDisabled || isBooked;
+        time.booked = isBooked;
         return time;
       });
 
       allowedTimesArray = disabledTimes;
     }
 
+    // Check if the selected date is today and the time is in the past
+    // Get current time in hours and minutes
+    const now = new Date();
+    const currentHour = now.getHours();
+    const currentMinute = now.getMinutes();
 
+    // Format current date as YYYY-MM-DD
+    const selectedDate = formatLocalDate(date); // in YYYY-MM-DD
+    const currentDate = now.toISOString().split("T")[0];
 
-          // Check if the selected date is today and the time is in the past
-          // Get current time in hours and minutes
-          const now = new Date();
-          const currentHour = now.getHours();
-          const currentMinute = now.getMinutes();
+    // Loop through the allowed times and disable lapsed ones
+    allowedTimesArray = allowedTimesArray.map((timeItem) => {
+      const [hours, minutes] = timeItem.value.split(":").map(Number);
 
-          // Format current date as YYYY-MM-DD
-          const selectedDate = formatLocalDate(date); // in YYYY-MM-DD
-          const currentDate = now.toISOString().split('T')[0];
+      if (
+        selectedDate === currentDate &&
+        (hours < currentHour ||
+          (hours === currentHour && minutes < currentMinute))
+      ) {
+        timeItem.props.disabled = true;
+      }
 
-          // Loop through the allowed times and disable lapsed ones
-          allowedTimesArray = allowedTimesArray.map((timeItem) => {
-            const [hours, minutes] = timeItem.value.split(':').map(Number);
-
-            if (selectedDate === currentDate && (hours < currentHour || (hours === currentHour && minutes < currentMinute))) {
-              timeItem.props.disabled = true;
-            }
-
-            return timeItem;
-          });
-
-    
-
-    
-
+      return timeItem;
+    });
 
     // disable time if before/after times are disabled
     const finalArray = allowedTimesArray.map((time, index) => {
@@ -336,59 +333,59 @@ export function useSpace() {
       }
     });
 
-    return showSecond6AM ? finalArray : finalArray.filter((x) => x.key !== 49);
+    return showSecond6AM ? finalArray : finalArray.filter((x) => x.key !== 49) as bookingTimeArray[];
   };
 
-  const timesFrom = [
-    { key: 1, label: "06:00am", value: "06:00", props: { disabled: false } },
-    { key: 2, label: "06:30am", value: "06:30", props: { disabled: false } },
-    { key: 3, label: "07:00am", value: "07:00", props: { disabled: false } },
-    { key: 4, label: "07:30am", value: "07:30", props: { disabled: false } },
-    { key: 5, label: "08:00am", value: "08:00", props: { disabled: false } },
-    { key: 6, label: "08:30am", value: "08:30", props: { disabled: false } },
-    { key: 7, label: "09:00am", value: "09:00", props: { disabled: false } },
-    { key: 8, label: "09:30am", value: "09:30", props: { disabled: false } },
-    { key: 9, label: "10:00am", value: "10:00", props: { disabled: false } },
-    { key: 10, label: "10:30am", value: "10:30", props: { disabled: false } },
-    { key: 11, label: "11:00am", value: "11:00", props: { disabled: false } },
-    { key: 12, label: "11:30am", value: "11:30", props: { disabled: false } },
-    { key: 13, label: "12:00pm", value: "12:00", props: { disabled: false } },
-    { key: 14, label: "12:30pm", value: "12:30", props: { disabled: false } },
-    { key: 15, label: "01:00pm", value: "13:00", props: { disabled: false } },
-    { key: 16, label: "01:30pm", value: "13:30", props: { disabled: false } },
-    { key: 17, label: "02:00pm", value: "14:00", props: { disabled: false } },
-    { key: 18, label: "02:30pm", value: "14:30", props: { disabled: false } },
-    { key: 19, label: "03:00pm", value: "15:00", props: { disabled: false } },
-    { key: 20, label: "03:30pm", value: "15:30", props: { disabled: false } },
-    { key: 21, label: "04:00pm", value: "16:00", props: { disabled: false } },
-    { key: 22, label: "04:30pm", value: "16:30", props: { disabled: false } },
-    { key: 23, label: "05:00pm", value: "17:00", props: { disabled: false } },
-    { key: 24, label: "05:30pm", value: "17:30", props: { disabled: false } },
-    { key: 25, label: "06:00pm", value: "18:00", props: { disabled: false } },
-    { key: 26, label: "06:30pm", value: "18:30", props: { disabled: false } },
-    { key: 27, label: "07:00pm", value: "19:00", props: { disabled: false } },
-    { key: 28, label: "07:30pm", value: "19:30", props: { disabled: false } },
-    { key: 29, label: "08:00pm", value: "20:00", props: { disabled: false } },
-    { key: 30, label: "08:30pm", value: "20:30", props: { disabled: false } },
-    { key: 31, label: "09:00pm", value: "21:00", props: { disabled: false } },
-    { key: 32, label: "09:30pm", value: "21:30", props: { disabled: false } },
-    { key: 33, label: "10:00pm", value: "22:00", props: { disabled: false } },
-    { key: 34, label: "10:30pm", value: "22:30", props: { disabled: false } },
-    { key: 35, label: "11:00pm", value: "23:00", props: { disabled: false } },
-    { key: 36, label: "11:30pm", value: "23:30", props: { disabled: false } },
-    { key: 37, label: "12:00am", value: "00:00", props: { disabled: false } },
-    { key: 38, label: "12:30am", value: "00:30", props: { disabled: false } },
-    { key: 39, label: "01:00am", value: "01:00", props: { disabled: false } },
-    { key: 40, label: "01:30am", value: "01:30", props: { disabled: false } },
-    { key: 41, label: "02:00am", value: "02:00", props: { disabled: false } },
-    { key: 42, label: "02:30am", value: "02:30", props: { disabled: false } },
-    { key: 43, label: "03:00am", value: "03:00", props: { disabled: false } },
-    { key: 44, label: "03:30am", value: "03:30", props: { disabled: false } },
-    { key: 45, label: "04:00am", value: "04:00", props: { disabled: false } },
-    { key: 46, label: "04:30am", value: "04:30", props: { disabled: false } },
-    { key: 47, label: "05:00am", value: "05:00", props: { disabled: false } },
-    { key: 48, label: "05:30am", value: "05:30", props: { disabled: false } },
-    { key: 49, label: "06:00am", value: "06:00", props: { disabled: false } },
+  const timesFrom: bookingTimeArray[] = [
+    { key: 1, label: "06:00am", value: "06:00", props: { disabled: false }, booked: false },
+    { key: 2, label: "06:30am", value: "06:30", props: { disabled: false }, booked: false },
+    { key: 3, label: "07:00am", value: "07:00", props: { disabled: false }, booked: false },
+    { key: 4, label: "07:30am", value: "07:30", props: { disabled: false }, booked: false },
+    { key: 5, label: "08:00am", value: "08:00", props: { disabled: false }, booked: false },
+    { key: 6, label: "08:30am", value: "08:30", props: { disabled: false }, booked: false },
+    { key: 7, label: "09:00am", value: "09:00", props: { disabled: false }, booked: false },
+    { key: 8, label: "09:30am", value: "09:30", props: { disabled: false }, booked: false },
+    { key: 9, label: "10:00am", value: "10:00", props: { disabled: false }, booked: false },
+    { key: 10, label: "10:30am", value: "10:30", props: { disabled: false }, booked: false },
+    { key: 11, label: "11:00am", value: "11:00", props: { disabled: false }, booked: false },
+    { key: 12, label: "11:30am", value: "11:30", props: { disabled: false }, booked: false },
+    { key: 13, label: "12:00pm", value: "12:00", props: { disabled: false }, booked: false },
+    { key: 14, label: "12:30pm", value: "12:30", props: { disabled: false }, booked: false },
+    { key: 15, label: "01:00pm", value: "13:00", props: { disabled: false }, booked: false },
+    { key: 16, label: "01:30pm", value: "13:30", props: { disabled: false }, booked: false },
+    { key: 17, label: "02:00pm", value: "14:00", props: { disabled: false }, booked: false },
+    { key: 18, label: "02:30pm", value: "14:30", props: { disabled: false }, booked: false },
+    { key: 19, label: "03:00pm", value: "15:00", props: { disabled: false }, booked: false },
+    { key: 20, label: "03:30pm", value: "15:30", props: { disabled: false }, booked: false },
+    { key: 21, label: "04:00pm", value: "16:00", props: { disabled: false }, booked: false },
+    { key: 22, label: "04:30pm", value: "16:30", props: { disabled: false }, booked: false },
+    { key: 23, label: "05:00pm", value: "17:00", props: { disabled: false }, booked: false },
+    { key: 24, label: "05:30pm", value: "17:30", props: { disabled: false }, booked: false },
+    { key: 25, label: "06:00pm", value: "18:00", props: { disabled: false }, booked: false },
+    { key: 26, label: "06:30pm", value: "18:30", props: { disabled: false }, booked: false },
+    { key: 27, label: "07:00pm", value: "19:00", props: { disabled: false }, booked: false },
+    { key: 28, label: "07:30pm", value: "19:30", props: { disabled: false }, booked: false },
+    { key: 29, label: "08:00pm", value: "20:00", props: { disabled: false }, booked: false },
+    { key: 30, label: "08:30pm", value: "20:30", props: { disabled: false }, booked: false },
+    { key: 31, label: "09:00pm", value: "21:00", props: { disabled: false }, booked: false },
+    { key: 32, label: "09:30pm", value: "21:30", props: { disabled: false }, booked: false },
+    { key: 33, label: "10:00pm", value: "22:00", props: { disabled: false }, booked: false },
+    { key: 34, label: "10:30pm", value: "22:30", props: { disabled: false }, booked: false },
+    { key: 35, label: "11:00pm", value: "23:00", props: { disabled: false }, booked: false },
+    { key: 36, label: "11:30pm", value: "23:30", props: { disabled: false }, booked: false },
+    { key: 37, label: "12:00am", value: "00:00", props: { disabled: false }, booked: false },
+    { key: 38, label: "12:30am", value: "00:30", props: { disabled: false }, booked: false },
+    { key: 39, label: "01:00am", value: "01:00", props: { disabled: false }, booked: false },
+    { key: 40, label: "01:30am", value: "01:30", props: { disabled: false }, booked: false },
+    { key: 41, label: "02:00am", value: "02:00", props: { disabled: false }, booked: false },
+    { key: 42, label: "02:30am", value: "02:30", props: { disabled: false }, booked: false },
+    { key: 43, label: "03:00am", value: "03:00", props: { disabled: false }, booked: false },
+    { key: 44, label: "03:30am", value: "03:30", props: { disabled: false }, booked: false },
+    { key: 45, label: "04:00am", value: "04:00", props: { disabled: false }, booked: false },
+    { key: 46, label: "04:30am", value: "04:30", props: { disabled: false }, booked: false },
+    { key: 47, label: "05:00am", value: "05:00", props: { disabled: false }, booked: false },
+    { key: 48, label: "05:30am", value: "05:30", props: { disabled: false }, booked: false },
+    { key: 49, label: "06:00am", value: "06:00", props: { disabled: false }, booked: false },
   ];
   const timesTo = ref<any[]>([]);
 
@@ -396,7 +393,7 @@ export function useSpace() {
     pricing: TPricing,
     date: any,
     timeFrom: string,
-    booking: any,
+    booking: any
   ) => {
     const startIndex = timesFrom.findIndex((time) => time.value === timeFrom);
 
@@ -416,14 +413,16 @@ export function useSpace() {
       pricing,
       date,
       booking,
-      showSecond6AM,
+      showSecond6AM
     );
 
     for (let i = startIndex + 1; i < allowedTimes.length; i++) {
       newTimes.push({
-        label: `${allowedTimes[i].label} (${counter} hours)`,
+        key: allowedTimes[i].key,
+        label: `${allowedTimes[i].label} (${counter} hrs)`,
         value: allowedTimes[i].value,
         props: allowedTimes[i].props,
+        booked: allowedTimes[i].booked,
       });
       counter += 0.5;
     }
@@ -432,15 +431,16 @@ export function useSpace() {
       const previousState = newTimes[index - 1]?.props?.disabled;
       const nextState = newTimes[index + 1]?.props?.disabled;
 
-    if (previousState == true && currentState == false) {
+      if (previousState == true && currentState == false) {
         time.props.disabled = true;
         return time;
       } else {
         return time;
       }
     });
-
-    return (timesTo.value = finalArray);
+    return (timesTo.value = finalArray) as bookingTimeArray[]
+   
+    
   };
 
   const featuredImage = (space: TVenueSpace) => {
