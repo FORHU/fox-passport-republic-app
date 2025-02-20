@@ -1062,8 +1062,8 @@
                   class="py-1 px-3"
                   style="border-right: 1px solid #e0e0e0"
                 >
-                  <span class="text-body-2 font-weight-medium">CHECK IN</span>
-                  <v-select
+                  <span class="text-body-2 font-weight-medium" :class="!bookingForm.date.date ? 'opacity-20' : ''">CHECK IN</span>
+                  <FormSelectCustom
                     v-model="bookingForm.date.from"
                     :items="checkAllowedTimeFrom"
                     item-title="label"
@@ -1077,13 +1077,13 @@
                     :disabled="!bookingForm.date.date"
                     @update:model-value="handleTimeFromChange"
                     class="text-body-2"
-                  ></v-select>
+                  ></FormSelectCustom>
                 </v-col>
 
                 <!-- Check Out -->
                 <v-col class="py-1 px-3">
-                  <span class="text-body-2 font-weight-medium">CHECK OUT</span>
-                  <v-select
+                  <span class="text-body-2 font-weight-medium" :class="!bookingForm.date.from ? 'opacity-20' : ''">CHECK OUT</span>
+                  <FormSelectCustom
                     v-model="bookingForm.date.to"
                     :items="checkAllowedTimeTo"
                     item-title="label"
@@ -1097,7 +1097,7 @@
                     :disabled="!bookingForm.date.from"
                     class="text-body-2"
                     @update:model-value="handleTimeToChange"
-                  ></v-select>
+                  ></FormSelectCustom>
                 </v-col>
                 <v-col cols="12" v-if="isBelowMinimumHours">
                   <v-card
