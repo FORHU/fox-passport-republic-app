@@ -1,10 +1,10 @@
 <template>
   <ClientOnly>
     <NuxtLayout>
-      <Head>
+      <!-- <Head> -->
         <!-- Apple Smart App Banner -->
-        <meta name="apple-itunes-app" content="app-id=6736890246" />
-      </Head>
+        <Meta name="apple-itunes-app" content="app-id=6736890246" />
+      <!-- </Head> -->
 
       <v-snackbar v-model="showBanner" color="primary" timeout="-1" v-if="isMobileOrTablet">
         Get the best experience! Download our app.
@@ -16,7 +16,7 @@
           >
             Download
           </v-btn>
-          <v-btn variant="text" @click="showBanner = false">Close</v-btn>
+          <v-btn variant="text" @click="handleClose">Close</v-btn>
         </template>
       </v-snackbar>
 
@@ -51,10 +51,18 @@ const { defaultSnackbar, defaultSnackbarText, defaultSnackbarColor } =
 const { xs, sm, mdAndDown } = useDisplay();
 const showBanner = ref(false);
 
+
 const isMobileOrTablet = xs.value || sm.value || mdAndDown.value;
 
+const handleClose = () => {
+  showBanner.value = false;
+  const showBannerCookie = useCookie("showBannerCookie", { default: () => "true" });
+  showBannerCookie.value = "false";
+};
+
 onMounted(() => {
-  if (isMobileOrTablet) {
+  const showBannerFromCookie = useCookie("showBannerCookie", { default: () => "true" });
+  if (showBannerFromCookie.value === "true" && isMobileOrTablet) {
     showBanner.value = true;
   }
 });

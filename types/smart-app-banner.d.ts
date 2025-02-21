@@ -1,1 +1,1 @@
-declare module "smart-app-banner";
+// declare module "smart-app-banner";
