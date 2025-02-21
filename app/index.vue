@@ -6,7 +6,7 @@
         <Meta name="apple-itunes-app" content="app-id=6736890246" />
       <!-- </Head> -->
 
-      <v-snackbar v-model="showBanner" color="primary" timeout="-1" v-if="isMobileOrTablet">
+      <!-- <v-snackbar v-model="showBanner" color="primary" timeout="-1" v-if="isMobileOrTablet">
         Get the best experience! Download our app.
         <template v-slot:actions>
           <v-btn
@@ -18,7 +18,7 @@
           </v-btn>
           <v-btn variant="text" @click="handleClose">Close</v-btn>
         </template>
-      </v-snackbar>
+      </v-snackbar> -->
 
       <v-snackbar v-model="defaultSnackbar" :color="defaultSnackbarColor">
         {{ defaultSnackbarText }}
@@ -44,28 +44,28 @@
 </template>
 
 <script setup lang="ts">
-import { useDisplay } from "vuetify";
+// import { useDisplay } from "vuetify";
 const { defaultSnackbar, defaultSnackbarText, defaultSnackbarColor } =
   useLocal();
 
-const { xs, sm, mdAndDown } = useDisplay();
-const showBanner = ref(false);
+// const { xs, sm, mdAndDown } = useDisplay();
+// const showBanner = ref(false);
 
 
-const isMobileOrTablet = xs.value || sm.value || mdAndDown.value;
+// const isMobileOrTablet = xs.value || sm.value || mdAndDown.value;
 
-const handleClose = () => {
-  showBanner.value = false;
-  const showBannerCookie = useCookie("showBannerCookie", { default: () => "true" });
-  showBannerCookie.value = "false";
-};
+// const handleClose = () => {
+//   showBanner.value = false;
+//   const showBannerCookie = useCookie("showBannerCookie", { default: () => "true" });
+//   showBannerCookie.value = "false";
+// };
 
-onMounted(() => {
-  const showBannerFromCookie = useCookie("showBannerCookie", { default: () => "true" });
-  if (showBannerFromCookie.value === "true" && isMobileOrTablet) {
-    showBanner.value = true;
-  }
-});
+// onMounted(() => {
+//   const showBannerFromCookie = useCookie("showBannerCookie", { default: () => "true" });
+//   if (showBannerFromCookie.value === "true" && isMobileOrTablet) {
+//     showBanner.value = true;
+//   }
+// });
 </script>
 
 <style>
