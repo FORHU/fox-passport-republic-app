@@ -55,14 +55,15 @@ const { isVenueOwner } = useAccess();
 const showVerifyEmailPrompt = ref(false);
 
 
-
 const handleSetupStripeAccount = async () => {
+  
   try {
     processing_stripe.value = true;
     const res = await useAPI("/v1/payment/create-account", {
       method: "POST",
       body: JSON.stringify({
         user_id: currentUser.value._id,
+        return_url: window.location.href
       }),
     });
     const url = res.data.value?.data.results.url;
