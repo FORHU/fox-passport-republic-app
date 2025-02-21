@@ -66,6 +66,7 @@
                       :first_name="currentUser?.first_name"
                       :last_name="currentUser?.last_name"
                       :img-src="currentUser?.profile_picture"
+                      :withBorder="true"
                     />
                   </template>
                   <v-icon
@@ -81,6 +82,7 @@
                     :last_name="currentUser?.last_name"
                     :img-src="currentUser?.profile_picture"
                     @click="menuOpen = true"
+                    :withBorder="true"
                   />
                   <v-icon
                     class="ml-1 mt-1"

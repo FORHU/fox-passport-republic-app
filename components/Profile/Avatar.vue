@@ -1,5 +1,5 @@
 <template>
-  <v-avatar :size="size" class="custom-avatar">
+  <v-avatar :size="size" class="custom-avatar" :class="withBorder ? 'withBorderCss' : ''">
     <v-img
       class="rounded-pill"
       :src="
@@ -17,6 +17,7 @@ const props = defineProps<{
   imgSrc?: string;
   first_name?: string;
   last_name?: string;
+  withBorder?: boolean;
 }>();
 
 const computedName = computed(() => {
@@ -27,5 +28,9 @@ const computedName = computed(() => {
 <style scoped>
 .custom-avatar {
   background-color: #373941;
+}
+
+.withBorderCss {
+  border: 3px solid #8091AF
 }
 </style>
