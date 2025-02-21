@@ -5,8 +5,8 @@ export default function useLocalAuth() {
   const config = useRuntimeConfig().public;
   
   const cookieOptions: any = {
-    domain: config.DOMAIN,
-    secure: true,
+    // domain: config.DOMAIN, 
+    secure: process.env.NODE_ENV === "PRODUCTION" ? true : false,
     maxAge: 30 * 24 * 60 * 60,
   };
 
