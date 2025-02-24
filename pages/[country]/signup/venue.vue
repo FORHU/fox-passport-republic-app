@@ -176,7 +176,7 @@
             density="comfortable"
             rounded="lg"
             class="mt-1"
-            :error-messages="rePasswordRules"
+            :rules="rePasswordRules"
           />
         </v-col>
       </v-row>
@@ -232,7 +232,6 @@
             class="mt-1 w-100 font-500"
             @click="handleSubmit"
             :loading="processing"
-            :disabled="!formValid || signupForm.rePassword == ''"
             >Create Account</v-btn
           >
         </v-col>
@@ -252,7 +251,8 @@ definePageMeta({
   layout: "auth-layout",
 });
 
-const { validEmail, minPasswordLength, requiredInputForName, capitalizeNames } = useUtils();
+const { validEmail, minPasswordLength, requiredInputForName, capitalizeNames, requiredInput } =
+  useUtils();
 const { signup, cookieOptions } = useLocalAuth();
 const { signupForm } = useSignup();
 const { countries } = useVenueData();
@@ -284,16 +284,12 @@ let passwordRules = [
 //     "Passwords do not match. Please enter matching passwords in both fields.",
 // ];
 
-const rePasswordRule = [
-  (v) => requiredInput(v),
-];
+const rePasswordRule = [(v) => requiredInput(v)];
 
-const rePasswordRules = computed(() => {
-  if (!signupForm.value.rePassword) {
-    return ''; 
-  }
-  return signupForm.value.rePassword !== signupForm.value.password ? 'Passwords do not match.' : '';
-});
+const rePasswordRules = computed(() => [
+  (v: string) => !!v || "Confirm password is required.",
+  (v: string) => v === signupForm.value.password || "Passwords do not match.",
+]);
 
 let textFieldValid = [
   (v) => v.length > 0 || "This field is required.",
@@ -321,7 +317,8 @@ function next() {
 
 const socialLinkRules = computed(() => {
   return [
-    (v) =>!v ||
+    (v) =>
+      !v ||
       /^(https?:\/\/)?([a-zA-Z0-9.-]+\.[a-zA-Z]{2,4})+(\/[^\s]*)?$/i.test(v) ||
       "Please enter a valid website e.g https://example.com",
   ];
@@ -388,25 +385,24 @@ async function handleSubmit() {
             },
           });
           mode.value = "create";
-           await nextTick();
+          await nextTick();
           setTimeout(() => {
-          // Object.keys(signupForm.value).forEach(key => {
-          //     signupForm.value[key] = '';
+            // Object.keys(signupForm.value).forEach(key => {
+            //     signupForm.value[key] = '';
             //     });
-          signupForm.value.reset()
-              }, 1500)
-        processing.value = false;
-          
+            signupForm.value.reset();
+          }, 1500);
+          processing.value = false;
         } else {
           emits("registerSucess");
-           await nextTick();
+          await nextTick();
           setTimeout(() => {
-          // Object.keys(signupForm.value).forEach(key => {
-          //     signupForm.value[key] = '';
+            // Object.keys(signupForm.value).forEach(key => {
+            //     signupForm.value[key] = '';
             //     });
-          signupForm.value.reset()
-            }, 1500)
-        processing.value = false;
+            signupForm.value.reset();
+          }, 1500);
+          processing.value = false;
         }
       }
 
@@ -439,7 +435,6 @@ async function handleSubmit() {
     //       signupForm.value[key] = '';
     //       });
     // },1500)
-    
   }
 }
 function back() {
