@@ -251,7 +251,7 @@ definePageMeta({
   layout: "auth-layout",
 });
 
-const { validEmail, minPasswordLength, requiredInputForName, capitalizeNames } =
+const { validEmail, minPasswordLength, requiredInputForName, capitalizeNames, requiredInput } =
   useUtils();
 const { signup, cookieOptions } = useLocalAuth();
 const { signupForm } = useSignup();
