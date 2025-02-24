@@ -383,16 +383,19 @@
                   </v-col>
                 </v-row>
               </v-col>
-
               <v-divider class="mt-5"></v-divider>
-
+              <ExpandableDescription :description="specificSpace.description" />
+              <v-divider class="mt-5" /> 
               <v-col cols="12">
-                <v-row class="hidden-lg-and-up">
+                <v-row class="">
+                  <h2 class="my-5">Pricing Details</h2>
                   <SpacesDetailsPrices :specificSpace="specificSpace" />
+                 
                 </v-row>
+                
               </v-col>
 
-              <ExpandableDescription :description="specificSpace.description" />
+              
 
               <v-divider class="mt-5"></v-divider>
 
@@ -414,7 +417,17 @@
               <h2 class="my-5">Cancellation Policy</h2>
               <SpacesDetailsRules :specificSpace="specificSpace" />
               <v-divider class="mt-5"></v-divider>
-
+              <!-- Floor Plan -->
+              <template
+                v-if="
+                  specificSpace?.floor_plan &&
+                  specificSpace?.floor_plan?.length > 0
+                "
+              >
+                <h3 class="my-5 px-2">Floor Plan</h3>
+                <SpacesDetailsFloorPlan :specificSpace="specificSpace" />
+                <v-divider class="mt-5"></v-divider>
+              </template>
               <!-- Ratings -->
               <RatingDetails
                 :ratingAverage="ratingAverage"
@@ -424,17 +437,20 @@
               />
               <v-divider class="mt-5"></v-divider>
               <!-- Reviews -->
-              <h3 class="my-5 px-2">What they say</h3>
-              <v-col cols="12">
-                <RatingUserReviews :userReviews="userReviews" />
-                <v-btn
-                  class="my-2"
-                  @click="handleShowAllReviews()"
-                  v-if="userReviews.length > 5"
-                  >Show all ({{ userReviews.length }}) reviews</v-btn
-                >
-              </v-col>
-              <v-divider class="mt-5"></v-divider>
+              <template v-if="userReviews.length">
+                <v-col cols="12">
+                  <h3 class="my-5 px-2">What they say</h3>
+                  <RatingUserReviews :userReviews="userReviews" />
+                  <v-btn
+                    class="my-2"
+                    @click="handleShowAllReviews()"
+                    v-if="userReviews.length > 5"
+                  >
+                    Show all ({{ userReviews.length }}) reviews
+                  </v-btn>
+                  <v-divider class="mt-5"></v-divider>
+                </v-col>
+              </template>
             </v-col>
 
             <!-- RIGHT COLUMN -->
@@ -458,7 +474,7 @@
                   <v-card class="pa-sm-5 rounded-lg custom-card">
                     <!-- Prices and Booking Details -->
                     <div v-if="!showInquireForm">
-                      <SpacesDetailsPrices :specificSpace="specificSpace" />
+                      <!-- <SpacesDetailsPrices :specificSpace="specificSpace" /> -->
 
                       <v-card class="pa-2 rounded-lg mt-5 custom-card">
                         <!-- Date and Guests -->
@@ -558,48 +574,22 @@
                             class="py-1 px-3"
                             style="border-right: 1px solid #e0e0e0"
                           >
-                            <span class="text-body-2 font-weight-medium"
-                              >CHECK IN</span
-                            >
-                            <v-select
-                              v-model="bookingForm.date.from"
-                              :items="checkAllowedTimeFrom"
-                              item-title="label"
-                              item-value="value"
-                              item-disabled="disabled"
-                              dense
-                              persistent-hint
-                              placeholder="From"
-                              variant="plain"
-                              :rules="[requiredInput]"
-                              :disabled="!bookingForm.date.date"
-                              class="text-body-2"
-                              @update:model-value="handleTimeFromChange"
-                            >
-                            </v-select>
+                          <span class="text-body-2 font-weight-medium" :class="!bookingForm.date.date ? 'opacity-20' : ''">CHECK IN</span>
+                          <FormSelectCustom v-model="bookingForm.date.from" id="time-from" :items="checkAllowedTimeFrom || []"  dense persistent-hint placeholder="From" variant="plain"
+                            :rules="[requiredInput]" :disabled="!bookingForm.date.date"
+                             @update:model-value="handleTimeFromChange"
+                            class="text-body-2" />
                           </v-col>
 
                           <!-- Check Out -->
                           <v-col class="py-1 px-3">
-                            <span class="text-body-2 font-weight-medium"
+                            <span class="text-body-2 font-weight-medium" :class="!bookingForm.date.from ? 'opacity-20' : ''"
                               >CHECK OUT</span
                             >
-                            <v-select
-                              v-model="bookingForm.date.to"
-                              :items="checkAllowedTimeTo"
-                              item-title="label"
-                              item-value="value"
-                              item-disabled="disabled"
-                              dense
-                              persistent-hint
-                              placeholder="To"
-                              variant="plain"
-                              :rules="[requiredInput]"
-                              :disabled="!bookingForm.date.from"
-                              class="text-body-2"
-                              @update:model-value="handleTimeToChange"
-                            >
-                            </v-select>
+                            <FormSelectCustom v-model="bookingForm.date.to" id="time-to" :items="checkAllowedTimeTo || []"
+                                dense persistent-hint placeholder="To" variant="plain" :rules="[requiredInput]"
+                                :disabled="!bookingForm.date.from" class="text-body-2"
+                                @update:model-value="handleTimeToChange" />
                           </v-col>
                           <v-col cols="12" v-if="isBelowMinimumHours">
                             <v-card
@@ -1072,8 +1062,8 @@
                   class="py-1 px-3"
                   style="border-right: 1px solid #e0e0e0"
                 >
-                  <span class="text-body-2 font-weight-medium">CHECK IN</span>
-                  <v-select
+                  <span class="text-body-2 font-weight-medium" :class="!bookingForm.date.date ? 'opacity-20' : ''">CHECK IN</span>
+                  <FormSelectCustom
                     v-model="bookingForm.date.from"
                     :items="checkAllowedTimeFrom"
                     item-title="label"
@@ -1087,13 +1077,13 @@
                     :disabled="!bookingForm.date.date"
                     @update:model-value="handleTimeFromChange"
                     class="text-body-2"
-                  ></v-select>
+                  ></FormSelectCustom>
                 </v-col>
 
                 <!-- Check Out -->
                 <v-col class="py-1 px-3">
-                  <span class="text-body-2 font-weight-medium">CHECK OUT</span>
-                  <v-select
+                  <span class="text-body-2 font-weight-medium" :class="!bookingForm.date.from ? 'opacity-20' : ''">CHECK OUT</span>
+                  <FormSelectCustom
                     v-model="bookingForm.date.to"
                     :items="checkAllowedTimeTo"
                     item-title="label"
@@ -1107,7 +1097,7 @@
                     :disabled="!bookingForm.date.from"
                     class="text-body-2"
                     @update:model-value="handleTimeToChange"
-                  ></v-select>
+                  ></FormSelectCustom>
                 </v-col>
                 <v-col cols="12" v-if="isBelowMinimumHours">
                   <v-card

@@ -45,18 +45,18 @@
                           </v-menu>
                         </v-row>
                         <v-row no-gutters>
-                          <v-select v-model="newData.from" append-inner-icon="mdi-clock-time-three-outline" rounded="lg"
+                          <FormSelectCustom v-model="newData.from" append-inner-icon="mdi-clock-time-three-outline" rounded="lg"
                             variant="outlined" dense hide-details :items="checkAllowedTimeFrom" item-title="label"
                             item-value="value" :rules="[requiredInput]" @update:model-value="handleTimeFromChange"
                             placeholder="Select time">
-                          </v-select>
+                          </FormSelectCustom>
                         </v-row>
                         <v-row no-gutters>
-                          <v-select :disabled="!newData.from" v-model="newData.to" rounded="lg"
+                          <FormSelectCustom :disabled="!newData.from" v-model="newData.to" rounded="lg"
                             append-inner-icon="mdi-clock-time-three-outline" variant="outlined" dense hide-details
                             :items="checkAllowedTimeTo" item-title="label" item-value="value" :rules="[requiredInput]"
                             @update:model-value="emit('recompute')" placeholder="Select time">
-                          </v-select>
+                          </FormSelectCustom>
                         </v-row>
                       </v-col>
                     </v-row>
@@ -160,6 +160,8 @@
 </template>
 
 <script setup lang="ts">
+
+
 
 const { requiredInput } = useUtils();
 const { country, getCurrencySymbol, setSnackbar } = useLocal();
