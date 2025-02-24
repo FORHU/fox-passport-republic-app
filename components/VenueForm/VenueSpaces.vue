@@ -183,7 +183,13 @@ const mappedSpacesList = computed(() => {
     }));
 });
 
+const fetchingSpaceList = ref(false);
+
 const fetchSpaceList = async (venueId: string) => {
+
+  if(fetchingSpaceList.value) return; // avoid double fetching
+
+  fetchingSpaceList.value = true;
   loading.value = true;
   const statusFilter = computed(() => {
     // if (isAdmin) {
@@ -222,6 +228,7 @@ const fetchSpaceList = async (venueId: string) => {
     spaces.value = [];
   } finally {
     loading.value = false;
+    fetchingSpaceList.value = false;
   }
 };
 
