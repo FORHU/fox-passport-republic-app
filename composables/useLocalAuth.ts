@@ -21,10 +21,10 @@ export default function useLocalAuth() {
   }
 
   function clearCookies() {
-    useCookie("accessToken", cookieOptions).value = null;
-    useCookie("refreshToken", cookieOptions).value = null;
-    useCookie("user", cookieOptions).value = null;
-    useCookie("organization", cookieOptions).value = null;
+    useCookie("accessToken").value = null;
+    useCookie("refreshToken").value = null;
+    useCookie("user").value = null;
+    useCookie("organization").value = null;
     useCookie("space_page").value = null;
     useCookie("cookie_page").value = null;
     useCookie("mode").value = null;
