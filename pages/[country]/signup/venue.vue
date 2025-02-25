@@ -107,7 +107,8 @@
             density="comfortable"
             rounded="lg"
             class="mt-1"
-            :rules="[requiredInput]"
+            :rules="[(v: string) => requiredInput(v)]"
+            required
           ></v-text-field>
         </v-col>
         <v-col>
@@ -127,25 +128,27 @@
         <v-col>
           <span class="w-100 text-16px text-secondary">Venue Name</span>
           <v-text-field
+            required
             v-model="signupForm.venueName"
             variant="outlined"
             placeholder=""
             density="comfortable"
             rounded="lg"
             class="mt-1"
-            :rules="[requiredInput]"
+            :rules="[(v: string) => requiredInput(v)]"
           ></v-text-field>
         </v-col>
         <v-col>
           <span class="w-100 text-16px text-secondary">Postal Code</span>
           <v-text-field
             v-model="signupForm.postalCode"
+            required
             variant="outlined"
             placeholder=""
             density="comfortable"
             rounded="lg"
             class="mt-1"
-            :rules="[requiredInput]"
+           :rules="[(v: string) => requiredInput(v)]"
           ></v-text-field>
         </v-col>
       </v-row>
@@ -254,7 +257,7 @@ definePageMeta({
 const { validEmail, minPasswordLength, requiredInputForName, capitalizeNames, requiredInput } =
   useUtils();
 const { signup, cookieOptions } = useLocalAuth();
-const { signupForm } = useSignup();
+const { signupForm, resetSignupForm } = useSignup();
 const { countries } = useVenueData();
 const { mode } = useVenue();
 const { country, loadCountries, registeredCountries } = useLocal();
@@ -390,7 +393,7 @@ async function handleSubmit() {
             // Object.keys(signupForm.value).forEach(key => {
             //     signupForm.value[key] = '';
             //     });
-            signupForm.value.reset();
+            resetSignupForm()
           }, 1500);
           processing.value = false;
         } else {
@@ -400,7 +403,7 @@ async function handleSubmit() {
             // Object.keys(signupForm.value).forEach(key => {
             //     signupForm.value[key] = '';
             //     });
-            signupForm.value.reset();
+            resetSignupForm()
           }, 1500);
           processing.value = false;
         }
