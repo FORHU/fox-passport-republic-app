@@ -42,7 +42,7 @@
                     </v-col>
                     <v-col v-else class="d-flex align-center">
                         <v-select :model-value="activeSpacePage" :items="pageItems.filter(x => x.title !== '')"
-                            item-title="title" item-value="page" hide-details rounded="lg"
+                            item-title="title" item-value="page" hide-details rounded="lg" :disabled="false"
                             @update:model-value="handlePageChange"></v-select>
                     </v-col>
                     <span>
