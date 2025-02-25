@@ -10,7 +10,7 @@
       <v-card-text>{{ dialogContent.message }}</v-card-text>
       <v-card-actions class="justify-center">
         <v-btn :color="dialogContent.color" @click="redirectToLogin">
-          Back to {{ role === "VENUE_OWNER" ? "Lister" : "User" }} Login
+          {{ roleCondition?.label }}
         </v-btn>
       </v-card-actions>
     </v-card>
@@ -21,6 +21,7 @@
 definePageMeta({
   layout: "venue-management-new",
 });
+
 
 const dialog = ref(true);
 const dialogContent = ref({
@@ -36,9 +37,33 @@ const { role } = useRoute().query;
 const { token } = useRoute().params;
 const { verifyEmailToken } = useVerify();
 
+const roleCondition = computed(() => {
+  let label = "";
+  let nameRoute = "";
+  if(role == "ADMIN"){
+    return {
+      label: "Back to Admin Login",
+      nameRoute: "login-admin",
+    };
+  } else if( role == "VENUE_OWNER" || role == "VENUE_LISTER"){
+    return {
+      label: "Back to Lister Login",
+      nameRoute: "login-venue",
+    };
+  } else if ( role == "USER"){
+    return {
+      label: "Back to User Login",
+      nameRoute: "login-user",
+    };
+  } else {
+    label = "Back to Login";
+    nameRoute = "login";
+  }
+})
+
 const redirectToLogin = () => {
   navigateTo({
-    name: role === "VENUE_OWNER" ? "country-login-venue" : "country-login-user",
+    name: `country-${roleCondition.value?.nameRoute}`,
     params: { country: country || "sg" },
   });
 };
