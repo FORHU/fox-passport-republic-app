@@ -3,6 +3,7 @@
     v-model="showDialog"
     max-width="1000"
     style="position: absolute; top: -70%"
+    persistent
   >
     <v-card class="pa-5 w-100 py-10">
       <v-row>

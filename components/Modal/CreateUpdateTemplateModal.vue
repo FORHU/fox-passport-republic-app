@@ -58,7 +58,7 @@
       </v-container>
 
       <template v-slot:actions>
-        <v-row>
+        <v-row no-gutters>
           <v-col cols="12" align="end">
             <v-btn variant="outlined" @click="handleCancel" color="secondary"
               >Cancel</v-btn
@@ -67,6 +67,7 @@
               color="secondary"
               @click="emitEvent()"
               variant="flat"
+              class="ml-2"
               :loading="creating"
               >Save Changes</v-btn
             >
