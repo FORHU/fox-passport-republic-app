@@ -1,11 +1,11 @@
 <template>
   <v-container fluid class="d-flex justify-center align-center fill-height">
-    <v-card class="text-center pa-6" elevation="0">
+    <v-card class="text-center" elevation="0">
       <v-avatar color="success" size="80" class="mb-4">
         <v-icon size="50" color="white">mdi-check</v-icon>
       </v-avatar>
       <v-card-title class="text-h6 font-weight-bold">
-        Your Stripe Onboarding is Completed
+        Your Stripe Onboarding is Complete
       </v-card-title>
       <v-card-text>
         <p>You're all set up and ready to start processing payments!</p>
