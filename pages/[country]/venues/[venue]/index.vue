@@ -134,7 +134,7 @@
                     <v-btn
                       class="ma-2 rounded-pill"
                       icon
-                      @click="$router.go(-1)"
+                      @click="handleBackClick"
                     >
                       <v-icon>mdi-arrow-left</v-icon>
                     </v-btn>
@@ -2078,6 +2078,16 @@ async function loadVenueData(): Promise<{ data: any; error: any }> {
     return { data: null, error };
   }
 }
+
+const handleBackClick = () => {
+  const previousRoute = router.options.history.state.back as string;
+
+  if (!previousRoute || previousRoute.match(/login|signup/) || !loggedIn.value) {
+    router.push("/");
+  } else {
+    router.go(-1);
+  }
+};
 
 // const isExpanded = ref(false);
 
