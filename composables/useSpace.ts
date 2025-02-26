@@ -165,176 +165,190 @@ export function useSpace() {
   };
 
 
-  // function checker for allowed time slots
-  const allowedTime = (
-    pricing: TPricing,
-    date: any,
-    booking: any = [],
-    showSecond6AM?: boolean
-  ) => {
-    if (date === null) return timesFrom;
-
+    // function checker for allowed time slots
+    const allowedTime = (
+      pricing: TPricing,
+      date: any,
+      booking: any = [],
+      showSecond6AM?: boolean
+    ) => {
+      if (date === null) return timesFrom;
   
-    // in YYYY-MM-DD
-    function formatLocalDate(date: any) {
-      const formatDate = new Date(date)
-      const timezoneOffset = formatDate?.getTimezoneOffset() * 60 * 1000;
-      const localDate = new Date(formatDate.getTime() - timezoneOffset);
-      return localDate.toISOString().split("T")[0];
-    }
-
-    function getTimeOnly(isoString: any) {
-      const date = new Date(isoString);
-      const hours = date.getUTCHours().toString().padStart(2, "0");
-      const minutes = date.getUTCMinutes().toString().padStart(2, "0");
-      return `${hours}:${minutes}`;
-    }
-    const dateObj = new Date(date);
-    const dayOfWeek = dateObj
-      .toLocaleString("en-US", { weekday: "long" })
-      .toUpperCase();
-
-    let allowedTimesArray = [];
-
-    const getTimeKey = (timeValue: string) => {
-      return timesFrom.find((t) => t.value == timeValue)?.key;
-    };
-
-    // map through all booked durations
-    const checkIfBooked = (timeKey: number): boolean => {
-      return booking.some((item: any) => {
-        if (
-          item.status == "CONFIRMED" &&
-          new Date(item.start_date).toISOString().split("T")[0] ==
-            formatLocalDate(date)
-        ) {
-          // const bookStartTime = parseInt(getTimeOnly(item?.start_date).replace(":", ""));
-          // const bookEndTime = parseInt(getTimeOnly(item?.end_date).replace(":", ""));
-          const bookedStartKey = getTimeKey(getTimeOnly(item?.start_date));
-          const bookedEndKey = getTimeKey(getTimeOnly(item?.end_date));
-
-          if (!bookedStartKey || !timeKey || !bookedEndKey) return false;
-          return timeKey >= bookedStartKey && timeKey <= bookedEndKey;
-        } else return false;
-      });
-    };
-
-    if (pricing.selected_pricing === "HIRE_FEE") {
-      const dayPricing = pricing.hire_fee?.days.find(
-        (day) => day.name === dayOfWeek
-      );
-
-      let hourlyStartKey: number | null = null;
-      let hourlyEndKey: number | null = null;
-      let fullDayStartKey: number | null = null;
-      let fullDayEndKey: number | null = null;
-
-      if (!dayPricing || !dayPricing?.slots) return;
-
-      const { start, end } = dayPricing.slots;
-      const startKey = getTimeKey(start) || null;
-      const endKey = end == "06:00" ? 49 : getTimeKey(end) || null;
-
-      // if(dayPricing && dayPricing?.fullRateCheckkBox && dayPricing?.full_day_start && dayPricing?.full_day_end){
-      //   fullDayStartKey = getTimeKey(dayPricing?.full_day_start) || null;
-      //   fullDayEndKey = dayPricing?.full_day_end == "06:00" ? 49 : getTimeKey(dayPricing?.full_day_end) || null;
-      // }
-
-      // // Determine the smallest start key and largest end key
-      //   const startKey = Math.min(hourlyStartKey ?? Infinity, fullDayStartKey ?? Infinity);
-      //   const endKey = Math.max(hourlyEndKey ?? -Infinity, fullDayEndKey ?? -Infinity );
-
-      const isTimeInRange = (time: any, start: any, end: any) => {
-        if (time == -1) return false;
-        return !(time >= start && time <= end);
+    
+      // in YYYY-MM-DD
+      function formatLocalDate(date: any) {
+        const formatDate = new Date(date)
+        const timezoneOffset = formatDate?.getTimezoneOffset() * 60 * 1000;
+        const localDate = new Date(formatDate.getTime() - timezoneOffset);
+        return localDate.toISOString().split("T")[0];
+      }
+  
+      function getTimeOnly(isoString: any) {
+        const date = new Date(isoString);
+        const hours = date.getUTCHours().toString().padStart(2, "0");
+        const minutes = date.getUTCMinutes().toString().padStart(2, "0");
+        return `${hours}:${minutes}`;
+      }
+      const dateObj = new Date(date);
+      const dayOfWeek = dateObj
+        .toLocaleString("en-US", { weekday: "long" })
+        .toUpperCase();
+  
+      let allowedTimesArray = [];
+  
+      const getTimeKey = (timeValue: string) => {
+        return timesFrom.find((t) => t.value == timeValue)?.key;
       };
-
-      allowedTimesArray = timesFrom.map((time: any) => {
-        const isBooked = checkIfBooked(time.key);
-        time.booked = isBooked;
-        time.props.disabled =
-          isTimeInRange(time.key, startKey, endKey) || isBooked;
-        return time;
+  
+      // map through all booked durations
+      const checkIfBooked = (timeKey: number): boolean => {
+        return booking.some((item: any) => {
+          if (
+            item.status == "CONFIRMED" &&
+            new Date(item.start_date).toISOString().split("T")[0] ==
+              formatLocalDate(date)
+          ) {
+            // const bookStartTime = parseInt(getTimeOnly(item?.start_date).replace(":", ""));
+            // const bookEndTime = parseInt(getTimeOnly(item?.end_date).replace(":", ""));
+            const bookedStartKey = getTimeKey(getTimeOnly(item?.start_date));
+            const bookedEndKey = getTimeKey(getTimeOnly(item?.end_date));
+  
+            if (!bookedStartKey || !timeKey || !bookedEndKey) return false;
+            return timeKey >= bookedStartKey && timeKey <= bookedEndKey;
+          } else return false;
+        });
+      };
+  
+      if (pricing.selected_pricing === "HIRE_FEE") {
+        const dayPricing = pricing.hire_fee?.days.find(
+          (day) => day.name === dayOfWeek
+        );
+  
+        let hourlyStartKey: number | null = null;
+        let hourlyEndKey: number | null = null;
+        let fullDayStartKey: number | null = null;
+        let fullDayEndKey: number | null = null;
+  
+        if (!dayPricing || !dayPricing?.slots) return;
+  
+        const { start, end } = dayPricing.slots;
+        const startKey = getTimeKey(start) || null;
+        const endKey = end == "06:00" ? 49 : getTimeKey(end) || null;
+  
+        // if(dayPricing && dayPricing?.fullRateCheckkBox && dayPricing?.full_day_start && dayPricing?.full_day_end){
+        //   fullDayStartKey = getTimeKey(dayPricing?.full_day_start) || null;
+        //   fullDayEndKey = dayPricing?.full_day_end == "06:00" ? 49 : getTimeKey(dayPricing?.full_day_end) || null;
+        // }
+  
+        // // Determine the smallest start key and largest end key
+        //   const startKey = Math.min(hourlyStartKey ?? Infinity, fullDayStartKey ?? Infinity);
+        //   const endKey = Math.max(hourlyEndKey ?? -Infinity, fullDayEndKey ?? -Infinity );
+  
+        const isTimeInRange = (time: any, start: any, end: any) => {
+          if (time == -1) return false;
+          return !(time >= start && time <= end);
+        };
+  
+        allowedTimesArray = timesFrom.map((time: any) => {
+          const isBooked = checkIfBooked(time.key);
+            return {
+              ...time,
+              props: {
+                ...time.props,
+                disabled: isTimeInRange(time.key, startKey, endKey) || isBooked,
+              },
+              booked: isBooked,
+            };
+        });
+      } else {
+        const dayPricings = pricing.custom_price?.prices.filter((item) =>
+          item.weekdays.includes(dayOfWeek)
+        );
+  
+        if (!dayPricings || dayPricings.length === 0) {
+          return timesFrom.map((time) => {   
+          return {
+            ...time,
+            props: {
+              ...time.props,
+              disabled: true,
+            },
+          };
+          });
+        }
+  
+        const disabledTimes = timesFrom.map((time) => {
+          const isBooked = checkIfBooked(time.key);
+  
+          const isDisabled = !dayPricings.some((dayPricing) => {
+            const { from, to } = dayPricing.time;
+            const startKey = getTimeKey(from);
+            const endKey = to == "06:00" ? 49 : getTimeKey(to);
+            if (!time.key || !startKey || !endKey) return false;
+            return time.key >= startKey && time.key <= endKey;
+          });
+  
+          return {
+            ...time,
+            props: {
+              ...time.props,
+              disabled: isDisabled || isBooked,
+            },
+            booked: isBooked,
+          };
+        });
+  
+        allowedTimesArray = disabledTimes;
+      }
+  
+      // Check if the selected date is today and the time is in the past
+      // Get current time in hours and minutes
+      const now = new Date();
+      const currentHour = now.getHours();
+      const currentMinute = now.getMinutes();
+  
+      // Format current date as YYYY-MM-DD
+      const selectedDate = formatLocalDate(date); // in YYYY-MM-DD
+      const currentDate = now.toISOString().split("T")[0];
+  
+      // Loop through the allowed times and disable lapsed ones
+      allowedTimesArray = allowedTimesArray.map((timeItem) => {
+        const [hours, minutes] = timeItem.value.split(":").map(Number);
+  
+        if (
+          selectedDate === currentDate &&
+          (hours < currentHour ||
+            (hours === currentHour && minutes < currentMinute))
+        ) {
+          timeItem.props.disabled = true;
+        }
+  
+        return timeItem;
       });
-    } else {
-      const dayPricings = pricing.custom_price?.prices.filter((item) =>
-        item.weekdays.includes(dayOfWeek)
-      );
-
-      if (!dayPricings || dayPricings.length === 0) {
-        return timesFrom.map((time) => {
+  
+      // disable time if before/after times are disabled
+      const finalArray = allowedTimesArray.map((time, index) => {
+        const currentState = allowedTimesArray[index]?.props?.disabled;
+        const previousState = allowedTimesArray[index - 1]?.props?.disabled;
+        const nextState = allowedTimesArray[index + 1]?.props?.disabled;
+  
+        if (index == 0 && nextState == true && currentState == false) {
           time.props.disabled = true;
           return time;
-        });
-      }
-
-      const disabledTimes = timesFrom.map((time) => {
-        const isBooked = checkIfBooked(time.key);
-
-        const isDisabled = !dayPricings.some((dayPricing) => {
-          const { from, to } = dayPricing.time;
-          const startKey = getTimeKey(from);
-          const endKey = to == "06:00" ? 49 : getTimeKey(to);
-          if (!time.key || !startKey || !endKey) return false;
-          return time.key >= startKey && time.key <= endKey;
-        });
-
-        time.props.disabled = isDisabled || isBooked;
-        time.booked = isBooked;
-        return time;
+        } else if (
+          nextState == true &&
+          previousState == true &&
+          currentState == false
+        ) {
+          time.props.disabled = true;
+          return time;
+        } else {
+          return time;
+        }
       });
-
-      allowedTimesArray = disabledTimes;
-    }
-
-    // Check if the selected date is today and the time is in the past
-    // Get current time in hours and minutes
-    const now = new Date();
-    const currentHour = now.getHours();
-    const currentMinute = now.getMinutes();
-
-    // Format current date as YYYY-MM-DD
-    const selectedDate = formatLocalDate(date); // in YYYY-MM-DD
-    const currentDate = now.toISOString().split("T")[0];
-
-    // Loop through the allowed times and disable lapsed ones
-    allowedTimesArray = allowedTimesArray.map((timeItem) => {
-      const [hours, minutes] = timeItem.value.split(":").map(Number);
-
-      if (
-        selectedDate === currentDate &&
-        (hours < currentHour ||
-          (hours === currentHour && minutes < currentMinute))
-      ) {
-        timeItem.props.disabled = true;
-      }
-
-      return timeItem;
-    });
-
-    // disable time if before/after times are disabled
-    const finalArray = allowedTimesArray.map((time, index) => {
-      const currentState = allowedTimesArray[index]?.props?.disabled;
-      const previousState = allowedTimesArray[index - 1]?.props?.disabled;
-      const nextState = allowedTimesArray[index + 1]?.props?.disabled;
-
-      if (index == 0 && nextState == true && currentState == false) {
-        time.props.disabled = true;
-        return time;
-      } else if (
-        nextState == true &&
-        previousState == true &&
-        currentState == false
-      ) {
-        time.props.disabled = true;
-        return time;
-      } else {
-        return time;
-      }
-    });
-
-    return showSecond6AM ? finalArray : finalArray.filter((x) => x.key !== 49) as bookingTimeArray[];
-  };
+  
+      return showSecond6AM ? finalArray : finalArray.filter((x) => x.key !== 49) as bookingTimeArray[];
+    };
 
   const timesFrom: bookingTimeArray[] = [
     { key: 1, label: "06:00am", value: "06:00", props: { disabled: false }, booked: false },
