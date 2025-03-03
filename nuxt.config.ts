@@ -10,12 +10,12 @@ export default defineNuxtConfig({
   // },
   app: {
     head: {
-      title: "Venue Booking and Event Spaces | Venue4use",
+      title: "Venue4Use | Book Top Event Venues & Meeting Spaces",
       meta: [
         {
           name: "description",
           content:
-            "Find and book event spaces, meeting venues, conference rooms, and more.",
+            "Find the perfect venue for any occasion in meetings, parties, or corporate events. Venue4use makes venue booking quick and easy.",
         },
         {
           name: "keywords",

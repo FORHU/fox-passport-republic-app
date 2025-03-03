@@ -1,25 +1,7 @@
 <template>
   <ClientOnly>
     <NuxtLayout>
-      <!-- <Head> -->
-        <!-- Apple Smart App Banner -->
         <Meta name="apple-itunes-app" content="app-id=6736890246" />
-      <!-- </Head> -->
-
-      <!-- <v-snackbar v-model="showBanner" color="primary" timeout="-1" v-if="isMobileOrTablet">
-        Get the best experience! Download our app.
-        <template v-slot:actions>
-          <v-btn
-            variant="text"
-            href="https://play.google.com/store/apps/details?id=com.venue4use"
-            target="_blank"
-          >
-            Download
-          </v-btn>
-          <v-btn variant="text" @click="handleClose">Close</v-btn>
-        </template>
-      </v-snackbar> -->
-
       <v-snackbar v-model="defaultSnackbar" :color="defaultSnackbarColor">
         {{ defaultSnackbarText }}
 
@@ -45,27 +27,20 @@
 
 <script setup lang="ts">
 // import { useDisplay } from "vuetify";
-const { defaultSnackbar, defaultSnackbarText, defaultSnackbarColor } =
+const { defaultSnackbar, defaultSnackbarText, defaultSnackbarColor, country, defaultCountryImage } =
   useLocal();
 
-// const { xs, sm, mdAndDown } = useDisplay();
-// const showBanner = ref(false);
 
+useSeoMeta({
+  title: 'Venue4Use | Book Top Event Venues & Meeting Spaces',
+  ogTitle: 'Venue4Use | Book Top Event Venues & Meeting Spaces',
+  description: `Find the perfect venue for any occasion in ${country} - meetings, parties, or corporate events. Venue4use makes venue booking quick and easy.`,
+  ogDescription: `Find the perfect venue for any occasion in ${country} - meetings, parties, or corporate events. Venue4use makes venue booking quick and easy.`,
+  ogImage: defaultCountryImage.value,
+  twitterCard: 'summary_large_image',
+  keywords: 'Singapore, singapore, venue, restaurant, elite venue, elite venues, restaurant, meetings, events, party, corporate events, birthday, space, bookings, booking'
+})
 
-// const isMobileOrTablet = xs.value || sm.value || mdAndDown.value;
-
-// const handleClose = () => {
-//   showBanner.value = false;
-//   const showBannerCookie = useCookie("showBannerCookie", { default: () => "true" });
-//   showBannerCookie.value = "false";
-// };
-
-// onMounted(() => {
-//   const showBannerFromCookie = useCookie("showBannerCookie", { default: () => "true" });
-//   if (showBannerFromCookie.value === "true" && isMobileOrTablet) {
-//     showBanner.value = true;
-//   }
-// });
 </script>
 
 <style>
