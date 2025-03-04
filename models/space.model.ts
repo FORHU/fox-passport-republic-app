@@ -4,7 +4,7 @@ export default class MSpace implements TVenueSpace {
   _id?: string;
   name: string;
   space_photo: string[] | [] | TFile[];
-  menu_photo: string[] | [] | TFile[];
+  menu_photo?: string[] | [] | TFile[];
   capacity_layout: TCapacityLayout[];
   guest_capacity: TGuestCapacity;
   floor_plan: string[] | [] | TFile[];
