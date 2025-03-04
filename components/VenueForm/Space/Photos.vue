@@ -107,59 +107,17 @@ const space = defineModel<TVenueSpace>({ required: true });
 
 const emit = defineEmits(["delete-photo", "save-draft", "refresh-space-data"]);
 
-// const filteredExteriorVenuePhotos = computed(() => {
-//   return space.value.venue_photo.filter(
-//     (x: any) => x.description === "exterior_venue_photo",
-//   );
-// });
-
-// const filteredInteriorVenuePhotos = computed(() => {
-//   return space.value.venue_photo.filter(
-//     (x: any) => x.description === "interior_venue_photo",
-//   );
-// });
-
-// const payloadSpacePhoto = computed(() => {
-//   if (space.value.space_photo.length > 0) {
-//     return space.value.space_photo.map((x: any) => x._id);
-//   } else {
-//     return [];
-//   }
-// });
-
-// const payloadVenuePhoto = computed(() => {
-//   if (space.value.venue_photo.length > 0) {
-//     return space.value.venue_photo.map((x: any) => x._id);
-//   } else {
-//     return [];
-//   }
-// });
 
 const handleDeletePhoto = async (object: { id: string; type: string }) => {
   if (object.type === "space") {
     space.value.space_photo = space.value.space_photo.filter(
       (x: any) => x._id !== object.id,
     ) as TFile[];
-    // await updateSpace(spaceId as string, {
-    //   space_photo: payloadSpacePhoto.value,
-    // });
-    // setSnackbar({
-    //   text: "Photo deleted successfully",
-    //   color: "success",
-    //   modal: true,
-    // });
   } else if (object.type == 'floor_plan') {
     space.value.floor_plan = space.value.floor_plan.filter(
       (x: any) => x._id !== object.id,
     ) as TFile[];
-    // await updateSpace(spaceId as string, {
-    //   floor_plan: payloadFloorPlan.value,
-    // });
-    // setSnackbar({
-    //   text: "Photo deleted successfully",
-    //   color: "success",
-    //   modal: true,
-    // });
+
 
   }  else if (object.type == 'menu_photo') {
     space.value.menu_photo = space.value.menu_photo?.filter(
@@ -168,19 +126,6 @@ const handleDeletePhoto = async (object: { id: string; type: string }) => {
 
   }
 
-  // } else {
-  //   space.value.venue_photo = space.value.venue_photo.filter(
-  //     (x: any) => x._id !== object.id,
-  //   ) as TFile[];
-  //   // await updateSpace(spaceId as string, {
-  //   //   venue_photo: payloadVenuePhoto.value,
-  //   // });
-  //   // setSnackbar({
-  //   //   text: "Photo deleted successfully",
-  //   //   color: "success",
-  //   //   modal: true,
-  //   // });
-  // }
 };
 
 const handleUploadSpacePhotos = async () => {
@@ -191,14 +136,6 @@ const handleUploadSpacePhotos = async () => {
     ];
     spacePhotoArr.value = []; // clear data
 
-    // const photoStringArr = spacePhotoArr.value.map((x: TFile) => x._id);
-    // if (photoStringArr) {
-    //   // await updateSpace(spaceId as string, {
-    //   //   space_photo: [...payloadSpacePhoto.value, ...photoStringArr],
-    //   // });
-
-    //   // emit("refresh-space-data");
-    // }
   }
   uploading.value = false;
 };
@@ -211,13 +148,6 @@ const handleUploadFloorPlanPhotos = async () => {
     ];
     floorPlanPhotoArr.value = [];
 
-    // const photoStringArr = venuePhotoArrInterior.value.map((x: TFile) => x._id);
-    // if (photoStringArr) {
-    //   // await updateSpace(spaceId as string, {
-    //   //   venue_photo: [...payloadVenuePhoto.value, ...photoStringArr],
-    //   // });
-    //   // emit("refresh-space-data");
-    // }
   }
   uploading.value = false;
 };
@@ -231,73 +161,17 @@ const handleUploadMenuPhotos = async () => {
     ];
     menuPhotoArr.value = [];
 
-    // const photoStringArr = venuePhotoArrInterior.value.map((x: TFile) => x._id);
-    // if (photoStringArr) {
-    //   // await updateSpace(spaceId as string, {
-    //   //   venue_photo: [...payloadVenuePhoto.value, ...photoStringArr],
-    //   // });
-    //   // emit("refresh-space-data");
-    // }
   }
   uploading.value = false;
 };
 
-// const handleUploadVenueExterior = async () => {
-//   if (venuePhotoArrExterior.value.length > 0) {
-//     space.value.venue_photo = [
-//       ...space.value.venue_photo,
-//       ...venuePhotoArrExterior.value,
-//     ];
-//     venuePhotoArrExterior.value = [];
 
-//     // const photoStringArr = venuePhotoArrExterior.value.map((x: TFile) => x._id);
-//     // if (photoStringArr) {
-//     //   // await updateSpace(spaceId as string, {
-//     //   //   venue_photo: [...payloadVenuePhoto.value, ...photoStringArr],
-//     //   // });
-
-//     //   // emit("refresh-space-data");
-//     // }
-//   }
-//   uploading.value = false;
-// };
-
-const handleUploadVenueInterior = async () => {
-  if (venuePhotoArrInterior.value.length > 0) {
-    space.value.venue_photo = [
-      ...space.value.venue_photo,
-      ...venuePhotoArrInterior.value,
-    ];
-    venuePhotoArrInterior.value = [];
-
-    // const photoStringArr = venuePhotoArrInterior.value.map((x: TFile) => x._id);
-    // if (photoStringArr) {
-    //   // await updateSpace(spaceId as string, {
-    //   //   venue_photo: [...payloadVenuePhoto.value, ...photoStringArr],
-    //   // });
-    //   // emit("refresh-space-data");
-    // }
-  }
-  uploading.value = false;
-};
 
 const handleFullScreen = (imageId: string) => {
   if (!imageId) return;
   showFullScreen.value = true;
   const spacePhotos = space.value.space_photo as TFile[];
-  // // const venuePhotos = space.value.venue_photo as TFile[];
-  // if (spacePhotoArr && spacePhotos.length > 0) {
-  //   const filteredSpacePhotoArr = spacePhotos.filter((item: TFile) => {
-  //     return !carouselImageArray.value.some((x: TFile) => x._id == item._id); //
-  //   });
-  //   carouselImageArray.value.push(...filteredSpacePhotoArr);
-  // }
-  // if (venuePhotos.length > 0) {
-  //   const filteredVenuePhotoArr = venuePhotos.filter((item: TFile) => {
-  //     return !carouselImageArray.value.some((x: TFile) => x._id == item._id); //
-  //   });
-  //   carouselImageArray.value.push(...filteredVenuePhotoArr);
-  // }
+
   carouselImageArray.value = spacePhotos
   activeImageId.value = imageId;
 };
