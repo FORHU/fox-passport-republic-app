@@ -20,12 +20,13 @@
           height="338"
           class="align-end text-white"
           cover
+          alt="Event Listing Image"
         >
           <v-card-title>{{ data.name }}</v-card-title>
           <v-row class="ml-1">
             <v-col cols="2">
               <v-avatar size="40">
-                <v-img :src="data.avatar" aspect-ratio="1"></v-img>
+                <v-img :src="data.avatar" aspect-ratio="1" alt="Avatar Image"></v-img>
               </v-avatar>
             </v-col>
             <v-col cols="10">

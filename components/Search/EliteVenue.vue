@@ -35,7 +35,7 @@
                   >
                     <span>{{ venue.country }}</span>
                     <v-responsive class="ml-2"
-                      ><v-img :src="venue.flag" height="20" :width="20"></v-img
+                      ><v-img :src="venue.flag" height="20" :width="20" alt="Flag Icon"></v-img
                     ></v-responsive>
                   </v-col>
                 </v-row>

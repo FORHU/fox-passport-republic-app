@@ -10,28 +10,28 @@
                   <a href="https://x.com/venue4use" target="_blank"
                     ><v-img
                       src="/images/login/twitter.svg"
-                      alt="Logo 2"
                       class="logo-image"
+                      alt="Twitter Logo"
                   /></a>
                   <a href="https://www.facebook.com/venue4use" target="_blank"
                     ><v-img
                       src="/images/login/fb.svg"
-                      alt="Logo 1"
                       class="logo-image"
+                      alt="Facebook Logo"
                   /></a>
                   <a href="https://www.instagram.com/venue4use" target="_blank"
                     ><v-img
                       src="/images/login/instagram.svg"
-                      alt="Logo 3"
                       class="logo-image"
+                      alt="Instagram Logo"
                   /></a>
                   <a
                     href="https://linkedin.com/company/venue4use"
                     target="_blank"
                     ><v-img
                       src="/images/login/linked.svg"
-                      alt="Logo 4"
                       class="logo-image"
+                      alt="LinkedIn Logo"
                   /></a>
                 </div>
               </div>

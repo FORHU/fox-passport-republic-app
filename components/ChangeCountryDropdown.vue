@@ -3,7 +3,7 @@
         item-value="cca2" hide-details placeholder="Select Country" menu-icon="" item-title="country_name" rounded="lg"
         style="min-width: 170px" @update:model-value="handleChangeCountry" :base-color="showDisplay ? '#373941' : 'white'" :class="showDisplay ? 'dark' : 'white text-white'">
         <template v-slot:append-inner>
-            <v-img v-if="flag" :src="flag" width="20px"></v-img>
+            <v-img v-if="flag" :src="flag" width="20px" alt="flag-image"></v-img>
             <v-icon v-else icon="mdi-map-marker-outline"></v-icon>
         </template>
     </v-select>

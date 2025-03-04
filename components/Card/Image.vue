@@ -2,7 +2,7 @@
   <v-card :class="deleteIcon ? 'image-card' : ''" :height="height || '100%'" :width="width || '100%'" flat rounded="lg" position="relative"
     style="position: relative">
     <template v-slot:image>
-      <v-img :src="urlFormat == 'image' ? src : ''" :lazy-src="urlFormat == 'image' ? src : ''" cover>
+      <v-img :src="urlFormat == 'image' ? src : ''" :lazy-src="urlFormat == 'image' ? src : ''" cover :alt=" 'src-image'">
         <template v-slot:placeholder>
           <div class="d-flex align-center justify-center fill-height">
             <v-progress-circular color="grey-lighten-4" indeterminate></v-progress-circular>

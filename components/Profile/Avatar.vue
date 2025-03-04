@@ -2,6 +2,7 @@
   <v-avatar :size="size" class="custom-avatar" :class="withBorder ? 'withBorderCss' : ''">
     <v-img
       class="rounded-pill"
+      alt="Avatar Image"
       :src="
         imgSrc && imgSrc !== ''
           ? imgSrc

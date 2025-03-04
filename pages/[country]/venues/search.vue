@@ -202,6 +202,7 @@
                       src="/public/svg/people.svg"
                       height="18px"
                       width="30px"
+                      alt="guest count icon"
                     ></v-img>
                   </v-row>
                 </v-btn>
@@ -308,6 +309,7 @@
                                       max-width="60"
                                       height="60"
                                       contain
+                                      alt="guest icon"
                                     ></v-img
                                   ></v-col>
                                 </v-row>
@@ -362,6 +364,7 @@
                       src="/public/svg/calendar.svg"
                       height="18px"
                       width="30px"
+                      alt="date icon"
                     ></v-img>
                   </v-row>
                 </v-btn>
@@ -718,6 +721,7 @@
                 src="/public/svg/map.svg"
                 height="20px"
                 width="20px"
+                alt="map icon"
               ></v-img>
               <span class="text-14px">Map</span>
             </v-col>
@@ -727,6 +731,7 @@
                 src="/public/svg/list.svg"
                 height="20px"
                 width="20px"
+                alt="list icon"
               ></v-img>
               <span class="text-14px">List</span>
             </v-col>

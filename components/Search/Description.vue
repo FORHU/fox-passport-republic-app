@@ -39,6 +39,7 @@
           width="100%"
           gradient="to bottom, rgba(0,0,0,.1), rgba(0,0,0,.5)"
           cover
+          alt="Background cta Image"
         >
           <v-container class="fill-height pa-0">
             <v-row align="center" justify="center" no-gutters>

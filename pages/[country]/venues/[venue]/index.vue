@@ -64,6 +64,7 @@
                         height="470"
                         cover
                         class="cursor-pointer"
+                        alt="venue space image placeholder"
                       ></v-img>
                     </v-carousel-item>
                     <v-carousel-item
@@ -149,6 +150,7 @@
                           height="25px"
                           width="25px"
                           style="filter: invert(1)"
+                          alt="share icon"
                         ></v-img>
                       </v-btn>
 
@@ -186,6 +188,7 @@
                   height="413"
                   cover
                   class="cursor-pointer"
+                  alt="open modal icon"
                   @click="openModal(featuredImageSrc()?._id)"
                 ></v-img>
               </v-col>
@@ -203,6 +206,7 @@
                         height="198"
                         cover
                         class="cursor-pointer"
+                        alt="open modal icon"
                       >
                         <template v-if="index === 3">
                           <v-row
@@ -217,6 +221,7 @@
                                 src="/public/dot.svg"
                                 height="20px"
                                 width="20px"
+                                alt="dot icon"
                               />
                               see all {{ imagesArray.length || 0 }} photos
                             </v-btn>
@@ -358,6 +363,7 @@
                       src="/public/svg/private.svg"
                       height="30px"
                       width="30px"
+                      alt="private icon"
                     />
                   </v-col>
                   <v-col>
@@ -1367,6 +1373,7 @@
               cover
               rounded="lg"
               height="140px"
+              alt="Space Featured Image"
             ></v-img>
           </v-col>
 

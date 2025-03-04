@@ -52,7 +52,7 @@
             <div class="d-flex align-center ga-3 px-3 py-2 py-md-3">
               <span>
                 <v-img :src="featuredImage(item as any) || '/svg/default-draft-image.svg'
-                  " height="54px" width="54px" cover rounded="lg"></v-img>
+                  " height="54px" width="54px" cover rounded="lg" alt="draft image icon"></v-img>
               </span>
               <span>{{ sliceContent(item?.space as string, 30) || '(New Draft)' }}</span>
             </div>

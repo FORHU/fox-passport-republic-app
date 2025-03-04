@@ -18,6 +18,7 @@
           class="rounded-lg ml-4"
           height="130"
           width="70"
+          alt="Space featured Image"
         ></v-img>
 
         <v-card-text>
@@ -44,6 +45,7 @@
                     height="20px"
                     width="20px"
                     src="/public/copyicon.svg"
+                    alt="Copy icon"
                   ></v-img>
                 </v-col>
                 <v-col>
@@ -67,6 +69,7 @@
                     height="20px"
                     width="20px"
                     src="/public/email.svg"
+                    alt="Email icon"
                   ></v-img>
                 </v-col>
                 <v-col>
@@ -92,6 +95,7 @@
                     height="20px"
                     width="20px"
                     src="/public/msgs.svg"
+                    alt="SMS icon"
                   ></v-img>
                 </v-col>
                 <v-col>
@@ -115,6 +119,7 @@
                     height="20px"
                     width="20px"
                     src="/public/whatsapp.svg"
+                    alt="WhatsApp icon"
                   ></v-img>
                 </v-col>
                 <v-col>
@@ -140,6 +145,7 @@
                     height="20px"
                     width="20px"
                     src="/public/messenger.svg"
+                    alt="Messenger icon"
                   ></v-img>
                 </v-col>
                 <v-col>
@@ -163,6 +169,7 @@
                     height="20px"
                     width="20px"
                     src="/public/svg/fb.svg"
+                    alt="Facebook icon"
                   ></v-img>
                 </v-col>
                 <v-col>

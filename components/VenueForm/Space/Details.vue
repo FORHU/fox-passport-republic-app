@@ -38,7 +38,7 @@
             <v-card flat  width="100%" min-height="67px" rounded="lg" class="cursor-pointer" @click="selectType(x.key)" :style="{border: x.key == space.representation ? '1px solid rgba(var(--v-theme-secondary)' : '1px solid #DEDFE3'}">
               <v-row no-gutters class="pa-3" align="center">
                 <v-col class="d-flex ga-2 align-center">
-                  <span><v-img :src="x.imagePath" height="30" width="auto" class="icon"></v-img></span>
+                  <span><v-img :src="x.imagePath" height="30" width="auto" class="icon" alt="Space Details Image"></v-img></span>
                   <div class="d-flex flex-column">
                     <span class="w-100 font-500 text-16px">{{ x.name }}</span>
                     <span class="w-100 text-14px">{{ x.subtitle }}</span>

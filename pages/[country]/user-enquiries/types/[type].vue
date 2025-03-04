@@ -50,6 +50,7 @@
                         height="150"
                         width="150"
                         cover
+                        alt="image type"
                       ></v-img>
                     </v-card>
                     <v-col class="pl-4">

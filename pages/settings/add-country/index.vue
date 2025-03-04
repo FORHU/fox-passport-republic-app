@@ -37,7 +37,7 @@
                   <v-col cols="12" xs="3" sm="6" md="3">
                     <span class="text-16px font-500">Flag</span>
                     <v-img v-if="country_name" :src="selectedCountry.flag" max-width="45" height="30" contain
-                      class="mt-2"></v-img>
+                      class="mt-2" alt="country flag"></v-img>
                   </v-col>
                   <v-col cols="12" xs="3" sm="6" md="3">
                     <span class="text-16px font-500">Country Code</span>

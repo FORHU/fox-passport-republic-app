@@ -35,6 +35,7 @@
             max-width="20"
             height="20"
             contain
+            alt="Navigation Icon"
           ></v-img>
           <p class="ml-2">Account Overview</p>
         </v-list-item-title>
@@ -47,6 +48,7 @@
             max-width="20"
             height="20"
             contain
+            alt="Settings Icon"
           ></v-img>
           <p class="ml-2">Analytics Performance</p>
         </v-list-item-title>
@@ -62,6 +64,7 @@
             max-width="20"
             height="20"
             contain
+            alt="Country Icon"
           ></v-img>
           <p class="ml-2">Enquiries</p>
         </v-list-item-title>
@@ -74,6 +77,7 @@
             max-width="20"
             height="20"
             contain
+            alt="Messages Icon"
           ></v-img>
           <p class="ml-2">Messages</p>
         </v-list-item-title>
@@ -86,6 +90,7 @@
             max-width="20"
             height="20"
             contain
+            alt="Logout Icon"
           ></v-img>
           <p class="ml-2">Logout</p>
         </v-list-item-title>
@@ -98,6 +103,7 @@
             max-width="20"
             height="20"
             contain
+            alt="Support Icon"
           ></v-img>
           <p class="ml-2">Support/Help</p>
         </v-list-item-title>
@@ -112,6 +118,7 @@
             max-width="20"
             height="20"
             contain
+            alt="Country Icon"
           ></v-img>
           <p class="ml-2">Manage My Venues</p>
         </v-list-item-title>
@@ -124,6 +131,7 @@
             max-width="20"
             height="20"
             contain
+            alt="Favorites Icon"
           ></v-img>
           <p class="ml-2">Favorites</p>
         </v-list-item-title>
@@ -136,6 +144,7 @@
             max-width="20"
             height="20"
             contain
+            alt="Bookings Icon"
           ></v-img>
           <p class="ml-2">My Enquries (0)</p>
         </v-list-item-title>
@@ -148,6 +157,7 @@
             max-width="20"
             height="20"
             contain
+            alt="Boost Icon"
           ></v-img>
           <p class="ml-2">Boost - Ads</p>
           <v-chip class="ml-2 pl-1" color="#A7F8D2" variant="flat">
@@ -157,6 +167,7 @@
                 max-width="20"
                 height="15"
                 contain
+                alt="Diamond Icon"
               ></v-img>
             </v-avatar>
             Upgrade
@@ -171,6 +182,7 @@
             max-width="20"
             height="20"
             contain
+            alt="Support Icon"
           ></v-img>
           <p class="ml-2">Support/Help</p>
         </v-list-item-title>
@@ -186,6 +198,7 @@
             max-width="20"
             height="20"
             contain
+            alt="Event Icon"
           ></v-img>
           <p class="ml-2">Event Tracker</p>
         </v-list-item-title>
@@ -198,6 +211,7 @@
             max-width="20"
             height="20"
             contain
+            alt="Notes Icon"
           ></v-img>
           <p class="ml-2">Post Additional Listing</p>
         </v-list-item-title>
@@ -210,6 +224,7 @@
             max-width="20"
             height="20"
             contain
+            alt="Payment Icon"
           ></v-img>
           <p class="ml-2">Payments</p>
         </v-list-item-title>
@@ -222,6 +237,7 @@
             max-width="20"
             height="20"
             contain
+            alt="Messages Icon"
           ></v-img>
           <p class="ml-2">Feedback</p>
         </v-list-item-title>

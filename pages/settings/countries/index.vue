@@ -1,5 +1,5 @@
 <template>
-  <v-img height="400" src="/about-us-hero.jpeg" cover>
+  <v-img height="400" src="/about-us-hero.jpeg" cover alt="about us hero">
     <v-row
       no-gutters
       class="fill-height third-gradient"
@@ -32,7 +32,7 @@
       >
         <v-row no-gutters class="mt-2 align-center">
           <v-col cols="12" md="2">
-            <v-img :src="country.flag" width="50"></v-img>
+            <v-img :src="country.flag" width="50" :alt="'country flag -' + index "></v-img>
           </v-col>
 
           <v-col cols="12" md="2">
