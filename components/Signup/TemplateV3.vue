@@ -6,6 +6,7 @@
         cover
         width="auto"
         height="100%"
+        alt="Dashboard Default Image"
       >
         <v-overlay :value="true" absolute>
           <template v-slot:activator="{ on, attrs }">

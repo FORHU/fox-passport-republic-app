@@ -24,6 +24,7 @@
                 :src="specificVenue.space_photo[i].path"
                 width="100%"
                 cover
+                :alt="'Space Photos - ' + i"
               ></v-img>
               <br />
             </div>
@@ -39,6 +40,7 @@
                   :src="specificVenue.venue_photo[i].path"
                   width="100%"
                   cover
+                  :alt="'Space Photos - ' + i"
                 ></v-img>
                 <br />
               </div>

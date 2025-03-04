@@ -3,10 +3,10 @@
     <v-row align="center" justify="center" class="fill-height" style="position: relative;">
       <v-carousel hide-delimiters width="100%" height="100%" :show-arrows="images.length > 1 ? 'hover' : false"
         v-model="activeIndex">
-        <template v-for="x in images" :key="x._id">
+        <template v-for="x, index in images" :key="x._id">
           <v-carousel-item v-if="x.contentType.includes('image')" height="100%" width="100%" rounded="lg">
             <v-row no-gutters class="w-100 h-100" align="center">
-              <v-img :lazy-src="x.path" :src="x.path" width="70%" height="70%"></v-img>
+              <v-img :lazy-src="x.path" :src="x.path" width="70%" height="70%" :alt="'Image Viewer Card -' + index"></v-img>
             </v-row>
             <template v-slot:placeholder>
               <div class="d-flex align-center justify-center fill-height">

@@ -8,7 +8,7 @@
       style="position: relative"
     >
       <v-col v-if="urlFormat === 'image'" cols="auto" style="z-index: 1">
-        <v-img width="auto" height="auto" :src="src"></v-img>
+        <v-img width="auto" height="auto" :src="src" alt="Full Screen Image"></v-img>
       </v-col>
       <v-col
         v-else-if="urlFormat === 'video'"

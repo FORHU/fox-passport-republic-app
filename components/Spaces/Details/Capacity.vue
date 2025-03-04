@@ -11,6 +11,7 @@
         max-width="60"
         height="60"
         contain
+        :alt="'Capacity Icon for ' + capacity?.question"
       ></v-img>
       <span class="ml-2"
         >{{ capacity.question }} up to

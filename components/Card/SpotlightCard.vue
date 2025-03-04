@@ -21,7 +21,7 @@
         >
           <v-img
             :src="photo.path"
-            :alt="`Space photo ${index + 1}`"
+            :alt="`${space?.name} - Image ${index + 1}`"
             class="location-image cursor-pointer"
             width="100%"
             height="auto"
@@ -90,6 +90,7 @@
       "
       @click.stop="favoriteProcess(space?.marked_as_favorite)"
       class="location-heart"
+      alt="favorite icon"
     >
     </v-img>
 

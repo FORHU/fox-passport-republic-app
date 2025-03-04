@@ -105,7 +105,7 @@
   >
     <v-row no-gutters justify="center" align="center">
       <v-col cols="2">
-        <v-img src="/public/svg/info.svg" height="30px" width="30px"></v-img>
+        <v-img src="/public/svg/info.svg" height="30px" width="30px" alt="login venue info icon"></v-img>
       </v-col>
 
       <v-col>

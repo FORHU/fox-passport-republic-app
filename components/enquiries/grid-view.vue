@@ -20,6 +20,7 @@
           <v-img
             height="150px"
             src="https://cdn.vuetifyjs.com/images/cards/sunshine.jpg"
+            alt="Grid View Image"
             cover
           ></v-img>
 

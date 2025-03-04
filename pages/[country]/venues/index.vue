@@ -57,6 +57,7 @@
                         height="150"
                         width="150"
                         cover
+                        alt="space default image"
                       ></v-img>
                     </v-card>
                     <v-col class="pl-4">

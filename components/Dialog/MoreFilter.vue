@@ -433,6 +433,7 @@
                       :src="option.imagePath"
                       height="30"
                       width="30"
+                      alt="More Filter Dialog Image"
                     ></v-img>
                   </v-col>
                   <v-col

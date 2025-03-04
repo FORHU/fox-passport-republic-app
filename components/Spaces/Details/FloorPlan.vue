@@ -20,7 +20,7 @@
       >
         <v-img
           :src="image.path"
-          :alt="image.description"
+          :alt="'Floor Plan Image -' + image.description"
           height="200"
           cover
           @click="openCarousel(index + 1)"

@@ -23,7 +23,7 @@
           <v-col class="text-caption text-white mt-2 text-center">{{
             data.description
           }}</v-col>
-          <v-img :src="data.image" cover width="auto" height="270"></v-img>
+          <v-img :src="data.image" cover width="auto" height="270" alt="Page Template Image"></v-img>
           <v-row no-gutters class="w-100 text-white">
             <v-col cols="12" class="text-subtitle-2 mt-2 text-center">{{
               data.addnalQuestion

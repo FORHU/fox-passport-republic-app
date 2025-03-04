@@ -4,7 +4,7 @@
       <v-row no-gutters style="height: 100dvh; overflow-y: hidden;">
         <v-col cols="8" class="d-none d-lg-block">
           <v-img :lazy-src="defaultCountryImage" :src="defaultCountryImage" height="100%" cover
-            style="position: relative;">
+            style="position: relative;" alt="auth layout image">
             <v-row no-gutters class="w-100 h-100"
               style="position: absolute; top:0; left:0; opacity: 40%; background-color: black; z-index:1"></v-row>
             <v-row no-gutters class="h-100 pa-5 pb-md-10 px-md-10 d-flex flex-column justify-space-between">

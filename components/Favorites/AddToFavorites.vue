@@ -27,7 +27,7 @@
                     cover
                     :height="sm ? '100%' : '212'"
                     class="rounded-lg"
-                    :src="getImage(item.cover_photo)"></v-img>
+                    :src="getImage(item.cover_photo)" alt="Favorite Icon"></v-img>
                 </v-card>
                 <v-row class="pl-3 pt-4 font-weight-bold">
                     {{ item._id.folder_name?item._id.folder_name:'' }}
@@ -50,7 +50,7 @@
                     cover
                     :height="sm ? '100%' : '212'"
                     class="rounded-lg"
-                    :src="getImage(item.cover_photo)"></v-img>
+                    :src="getImage(item.cover_photo)" alt="Favorite Icon"></v-img>
                 </v-card>
                 <v-row class="pl-3 pt-4 font-weight-bold">
                     {{ item._id.folder_name?item._id.folder_name:'' }}
@@ -81,7 +81,7 @@
     <v-snackbar rounded="lg" min-width="330px" min-height="20px" location="bottom left" v-model="snackbarFavorite" :timeout="5000" color="white" >
             <v-row class="pa-1" justify="center" align="center">
                 <v-col cols="3">
-                    <v-img min-height="40px" min-width="40px" rounded="lg" class=" pa-n5 rounded-lg"  :src="getImage(folderPhoto)"/>
+                    <v-img min-height="40px" min-width="40px" rounded="lg" class=" pa-n5 rounded-lg"  :src="getImage(folderPhoto)" alt="folder image"/>
                 </v-col>
                 <v-col cols="6">
                     <span>

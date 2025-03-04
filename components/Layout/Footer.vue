@@ -73,6 +73,7 @@
                   height="24"
                   contain
                   class="d-flex align-center justify-center"
+                  alt="Twitter Logo"
                 ></v-img>
               </v-btn>
             </nuxt-link>
@@ -95,6 +96,7 @@
                   height="24"
                   contain
                   class="d-flex align-center justify-center"
+                  alt="LinkedIn Logo"
                 ></v-img>
               </v-btn>
             </nuxt-link>
@@ -117,6 +119,7 @@
                   height="24"
                   contain
                   class="d-flex align-center justify-center"
+                  alt="Instagram Logo"
                 ></v-img>
               </v-btn>
             </nuxt-link>
@@ -139,6 +142,7 @@
                   height="24"
                   contain
                   class="d-flex align-center justify-center"
+                  alt="Facebook Logo"
                 ></v-img>
               </v-btn>
             </nuxt-link>

@@ -1,7 +1,7 @@
 <template>
   <v-row no-gutters>
     <v-col cols="12">
-      <v-img height="400" src="/public/images/about-us/background-cta.png" cover>
+      <v-img height="400" src="/public/images/about-us/background-cta.png" cover alt="Venue4use About Us Header Image">
         <v-row no-gutters class="fill-height third-gradient" align="center" justify="center">
           <v-col cols="12" class="pa-4 text-center">
             <h1 class="font-700 text-60px text-white">About Us</h1>
@@ -22,7 +22,7 @@
             <v-col cols="12" sm="6" md="6" lg="6" class="mb-4 mb-md-0">
               <v-lazy>
                 <v-img height="325px" width="520px" src="/public/images/about-us/premier-img.png" cover
-                  class="rounded-lg elevation-2"></v-img>
+                  class="rounded-lg elevation-2" alt="Venue4use About Us Header Image 2"></v-img>
               </v-lazy>
             </v-col>
             <v-col cols="12" sm="6" md="6" lg="5" class="text-center text-md-left d-flex flex-column justify-center">
@@ -58,7 +58,7 @@
             </v-col>
             <v-col cols="12" sm="6" md="6" lg="4" class="d-flex justify-center justify-md-end mb-4 mb-md-0">
               <v-img height="325px" width="520px" src="/public/images/about-us/mission-img.png" cover
-                class="rounded-lg elevation-2"></v-img>
+                class="rounded-lg elevation-2" alt="Venue4use About Us Missions Image"></v-img>
             </v-col>
           </v-row>
         </v-col>
@@ -137,7 +137,7 @@
             <v-col cols="12" sm="6" md="3" lg="2" class="d-flex flex-column align-center text-center">
               <div class="rounded-lg" style="padding: 20px">
                 <v-img src="/svg/app-box.svg" width="30" height="30" contain
-                  class="d-flex align-center justify-center"></v-img>
+                  class="d-flex align-center justify-center" alt="Venue4use About Us Offers Image"></v-img>
               </div>
               <h2 class="font-700 text-25px mt-4">A user-friendly interface</h2>
             </v-col>
@@ -145,7 +145,7 @@
             <v-col cols="12" sm="6" md="3" lg="2" class="d-flex flex-column align-center text-center">
               <div class="rounded-lg" style="padding: 20px">
                 <v-img src="/svg/setting-circular.svg" width="30" height="30" contain
-                  class="d-flex align-center justify-center"></v-img>
+                  class="d-flex align-center justify-center" alt="Venue4use About Us Options Image"></v-img>
               </div>
               <h2 class="font-700 text-25px mt-4">
                 A wider variety of venue options
@@ -155,7 +155,7 @@
             <v-col cols="12" sm="6" md="3" lg="2" class="d-flex flex-column align-center text-center">
               <div class="rounded-lg" style="padding: 20px">
                 <v-img src="/svg/app-box.svg" width="30" height="30" contain
-                  class="d-flex align-center justify-center"></v-img>
+                  class="d-flex align-center justify-center" alt="Venue4use About Us Customer Support Image"></v-img>
               </div>
               <h2 class="font-700 text-25px mt-4">
                 Dedicated customer support
@@ -216,7 +216,7 @@
                   <v-lazy>
                     <div style="width: 130px; height: 130px">
                       <v-img src="/public/images/about-us/join-img-1.png" cover class="rounded-lg elevation-2"
-                        style="aspect-ratio: 1 / 1"></v-img>
+                        style="aspect-ratio: 1 / 1" alt="Venue4use About Us Join Us Image"></v-img>
                     </div>
                   </v-lazy>
                 </v-col>
@@ -225,7 +225,7 @@
                 <v-col cols="6" sm="6" md="6" lg="6" class="d-flex justify-center align-center pa-2">
                   <v-lazy>
                     <v-img height="184px" width="184px" src="/public/images/about-us/join-img-2.png" cover
-                      class="rounded-lg" style="width: 184px; height: 164px; object-fit: cover"></v-img>
+                      class="rounded-lg" style="width: 184px; height: 164px; object-fit: cover" alt="Venue4use About Us Join Us 2 Image"></v-img>
                   </v-lazy>
                 </v-col>
               </v-row>
@@ -236,7 +236,7 @@
                 <v-col cols="6" sm="6" md="6" lg="6" class="d-flex justify-center align-center pa-2">
                   <v-lazy>
                     <v-img height="184px" width="184px" src="/public/images/about-us/join-img-3.png" cover
-                      class="rounded-lg" style="width: 184px; height: 164px; object-fit: cover"></v-img>
+                      class="rounded-lg" style="width: 184px; height: 164px; object-fit: cover" alt="Venue4use About Us Join us 3 Image"></v-img>
                   </v-lazy>
                 </v-col>
 
@@ -245,7 +245,7 @@
                   <v-lazy>
                     <div style="width: 130px; height: 130px">
                       <v-img src="/public/images/about-us/join-img-4.png" cover class="rounded-lg elevation-2"
-                        style="aspect-ratio: 1 / 1"></v-img>
+                        style="aspect-ratio: 1 / 1" alt="Venue4use About Us Join Us 4 Image"></v-img>
                     </div>
                   </v-lazy>
                 </v-col>

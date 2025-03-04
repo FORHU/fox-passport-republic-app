@@ -111,7 +111,7 @@
                       }}{{ activeGuest !== "" ? "," : "" }}
                       {{ activeGuest }}
                     </span>
-                    <v-img src="/public/svg/people.svg" height="20px" width="30px"></v-img>
+                    <v-img src="/public/svg/people.svg" height="20px" width="30px" alt="People Icon"></v-img>
                   </v-row>
                 </v-btn>
               </template>
@@ -170,7 +170,7 @@
                                   <v-col cols="8" class="mt-4">{{
                                     item.name
                                   }}</v-col>
-                                  <v-col cols="2"><v-img class="ml-1" :src="item.svgSource" max-width="60" height="60"
+                                  <v-col cols="2"><v-img class="ml-1" :src="item.svgSource" max-width="60" height="60" alt="Guest Icon"
                                       contain></v-img></v-col>
                                 </v-row>
                               </v-col>
@@ -203,7 +203,7 @@
                     <span class="font-400">
                       {{ formattedButtonDate }}
                     </span>
-                    <v-img src="/public/svg/calendar.svg" height="20px" width="30px"></v-img>
+                    <v-img src="/public/svg/calendar.svg" height="20px" width="30px" alt="Calendar Icon"></v-img>
                   </v-row>
                 </v-btn>
               </template>

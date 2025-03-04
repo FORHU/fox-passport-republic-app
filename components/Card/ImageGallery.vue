@@ -4,7 +4,7 @@
             <div class="picture-grid w-100 h-100 cursor-pointer" style="position: relative;"
                 @click="handleFullScreen(x._id)">
                 <v-img v-if="x.contentType.includes('image')" :src="x.path" :lazy-src="'/images/placeholder.png'" cover width="100%"
-                    height="200">
+                    height="200" :alt="'space-card-image-' + index">
                     <template v-slot:placeholder>
                         <v-row align="center" class="fill-height ma-0" justify="center">
                             <v-progress-circular color="grey-lighten-5" indeterminate></v-progress-circular>
@@ -20,7 +20,7 @@
                 <span v-if="photosArr.length > sliceCount" class="h-100 w-100 d-flex justify-end align-end pa-1"
                     style="position: absolute">
                     <v-btn v-if="photosArrCount - 1 == index" @click.stop="showAll">
-                        <v-img class="mr-2" src="/public/dot.svg" height="20px" width="20px" />
+                        <v-img class="mr-2" src="/public/dot.svg" height="20px" width="20px"  :alt="'space-card-image-' + index"/>
                         see all {{ photosArr.length || 0 }} photos
                     </v-btn>
                 </span>

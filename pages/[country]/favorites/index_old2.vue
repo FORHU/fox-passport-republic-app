@@ -34,6 +34,7 @@
                                          cover
                                          :height="smAndDown ? '100%' : '104'"
                                          :src="getImage(item)"
+                                         alt="favorites featured image"
                                         />
                                     </v-card>
                                 </v-col>

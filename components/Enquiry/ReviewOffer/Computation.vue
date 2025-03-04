@@ -10,7 +10,7 @@
         @click="emit('close-dialog')"></v-icon></v-row>
     <v-row v-if="!showComputationOnly" no-gutters class="d-flex align-center ga-3 flex-nowrap">
       <div>
-        <v-img :src="featuredImage(space)" height="81px" width="81px" cover rounded="lg"></v-img>
+        <v-img :src="featuredImage(space)" height="81px" width="81px" cover rounded="lg" :alt="space?.name + '-featured-image'"></v-img>
       </div>
       <div class="pl-3">
         <v-row class="font-500 text-16px text-hover hover-underlined text-secondary" @click="emit('go-to-space')">{{
