@@ -67,13 +67,13 @@
             <!-- Account Details -->
             <div class="account-details ml-3">
               <div class="user d-flex align-center">
-                <h3 class="user-info text-grey-darken-4 font-weight-bold">
+                <h3 class="user-info font-weight-bold">
                   {{ name }} <span style="color: #dedfe3">/</span>
                   {{ activeTabDetails?.title }}
                 </h3>
               </div>
 
-              <p class="text-grey-darken-4">
+              <p>
                 {{ activeTabDetails?.desc }}
               </p>
             </div>
@@ -91,11 +91,13 @@
 </template>
 
 <script setup lang="ts">
+import { useTheme } from "vuetify";
 import { useDisplay } from "vuetify";
 const { lgAndUp, smAndUp } = useDisplay();
 const { country } = useLocal();
 const { currentUser } = useLocalAuth();
-
+const { isDarkMode } = useLocal();
+const theme = useTheme()
 const { data, error } = await useFetch("/version");
 const path = useRoute().path
 
@@ -157,6 +159,7 @@ const handleChangeTab = (val: string) => {
 
 // get the current tab
 watchEffect(() => {
+  theme.global.name.value = isDarkMode.value ? "dark" : "light";
   const urlPath = useRoute().path;
   const lastValue = urlPath?.split("/").pop();
   if (lastValue) {

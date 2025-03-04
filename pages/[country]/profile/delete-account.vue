@@ -13,7 +13,7 @@
               rounded="lg"
               color="grey-lighten-1"
             >
-              <v-card-text class="text-black">
+              <v-card-text class="text-base_color">
                 <p class="font-weight-bold">
                   Would you like to delete your Venue4use account:
                   <span class="text-indigo-accent-4">{{ name }}</span
@@ -45,7 +45,7 @@
                   @click="showDeleteConfirmationDialog = true"
                   rounded="lg"
                 >
-                  <span class="text-black">Delete Account</span>
+                  <span class="text-base_color">Delete Account</span>
                 </v-btn>
               </v-col>
             </v-row>
