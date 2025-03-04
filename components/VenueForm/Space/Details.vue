@@ -98,6 +98,8 @@ const selectType = (key: string) => {
     space.value.representation = key;
   }
 };
+
+
 </script>
 
 <style scoped>

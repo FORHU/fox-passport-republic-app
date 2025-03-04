@@ -1023,16 +1023,16 @@ const handleUpdateSpace = async (type?: "save") => {
       }
     });
 
-    // const payloadVenuePhoto = computed(() => {
-    //     if (space.value.venue_photo.length > 0) {
-    //         return space.value.venue_photo.map((x: any) => x._id);
-    //     } else {
-    //         return [];
-    //     }
-    // });
+    const payloadMenuPhoto = computed(() => {
+        if (space.value.menu_photo && space.value.menu_photo.length > 0) {
+            return space.value.menu_photo.map((x: any) => x._id);
+        } else {
+            return [];
+        }
+    });
     payload.space_photo = payloadSpacePhoto.value;
     payload.floor_plan = payloadFloorPlanPhoto.value;
-    // payload.venue_photo = payloadVenuePhoto.value;
+    payload.menu_photo = payloadMenuPhoto.value;
   } else if (activeSpacePage.value === 3) {
     payload.capacity_layout = space.value.capacity_layout;
     payload.guest_capacity = space.value.guest_capacity;

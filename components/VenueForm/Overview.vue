@@ -150,6 +150,7 @@ watch(
   },
 );
 
+
 const textCountRules = computed(() => [
   (v: string) => v?.length >= 300 || "Minimum of 300 characters",
   (v: string) => v?.length <= 2000 || "Maximum of 2000 characters",
