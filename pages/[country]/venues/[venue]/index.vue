@@ -422,7 +422,24 @@
               <!-- Cancellation Policy section -->
               <h2 class="my-5">Cancellation Policy</h2>
               <SpacesDetailsRules :specificSpace="specificSpace" />
+              
               <v-divider class="mt-5"></v-divider>
+
+
+               <!-- MENU -->
+               <template
+                v-if="
+                  specificSpace?.menu_photo &&
+                  specificSpace?.menu_photo?.length > 0
+                "
+              >
+                <h3 class="my-5 px-2">Menu</h3>
+                <SpacesDetailsMenu :specificSpace="specificSpace" />
+                <v-divider class="mt-5"></v-divider>
+              </template>
+              <!-- MENU -->
+
+              
               <!-- Floor Plan -->
               <template
                 v-if="
@@ -434,6 +451,8 @@
                 <SpacesDetailsFloorPlan :specificSpace="specificSpace" />
                 <v-divider class="mt-5"></v-divider>
               </template>
+
+             
               <!-- Ratings -->
               <RatingDetails
                 :ratingAverage="ratingAverage"
