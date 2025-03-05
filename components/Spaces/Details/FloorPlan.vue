@@ -1,7 +1,7 @@
 <template>
-  <v-container v-if="primaryImage">
+  <v-container >
     <v-row>
-      <v-col cols="12" md="6">
+      <v-col v-if="primaryImage" cols="12" md="6">
         <v-img
           :src="primaryImage.path"
           :alt="primaryImage.description"
@@ -41,9 +41,6 @@
     </v-btn>
   </v-container>
 
-  <v-container v-else>
-    <v-alert type="warning">No floor plans available for this space.</v-alert>
-  </v-container>
 
   <CarouselImageViewer
     v-model:show="showCarousel"
@@ -76,8 +73,10 @@ const images = computed<FloorPlanImage[]>(() => {
   );
 });
 
-const primaryImage = computed(() => images.value[0] || null);
-const otherImages = computed(() => images.value.slice(1, 3));
+const primaryImage = computed(() => images.value.length >= 3 ? images.value[0] : null);
+const otherImages = computed(() => {
+ return images.value.length >= 3 ? images.value.slice(1, 3) : images.value
+});
 
 const showCarousel = ref(false);
 const selectedIndex = ref(0);
