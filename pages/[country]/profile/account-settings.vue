@@ -17,14 +17,14 @@
               </v-btn>
             </v-col>
           </v-row>
-          <v-row no-gutters>
+          <!-- <v-row no-gutters>
             <v-row no-gutters class="w-100">
               <v-col cols="6" class="font-500 d-flex align-center">Dark Mode:</v-col>
               <v-col cols="6" class="font-500 d-flex align-center">
                 <v-switch v-model="isDarkMode" hide-details></v-switch>
               </v-col>
             </v-row>
-          </v-row>
+          </v-row> -->
           <v-row v-if="isVenueOwner" no-gutters class="w-100">
             <v-divider class="my-2"></v-divider>
             <v-col cols="12" class="font-500 d-flex align-center">Stripe Setup:
