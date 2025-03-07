@@ -5,6 +5,7 @@
         height="80vh"
         src="/images/list-your-venue/lister-background.jpg"
         cover
+        alt="List Your Venue Image"
       >
         <v-row
           no-gutters

@@ -7,6 +7,7 @@
             :height="smAndDown && mdAndDown ? '400px' : '380px'"
             src="/images/landingpage/background-cta.png"
             cover
+            alt="Venue4use contact us page header image"
           >
             <v-row class="pa-10"> </v-row>
             <!-- <v-row :class="smAndDown ? '' : 'pa-10'"> </v-row> -->

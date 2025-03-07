@@ -25,6 +25,7 @@
                   height="180px"
                   src="https://cdn.vuetifyjs.com/images/cards/sunshine.jpg"
                   cover
+                  alt="Space default Card Image"
                 ></v-img>
                 <p class="plus-icon">+</p>
               </div>
@@ -44,6 +45,7 @@
                 height="180px"
                 :src="item.space_photo[0].path"
                 cover
+                :alt="'History List - ' + index"
               ></v-img>
 
               <v-card-title class="text-left"

@@ -29,7 +29,8 @@ export default defineNuxtPlugin((nuxtApp) => {
             for_deletion: "#42B3F4",
             charcoal: '#555763',
             light_gray: '#F4F4F5',
-            light_gray_secondary: "#DEDFE3"
+            light_gray_secondary: "#DEDFE3",
+            base_color: "#FFFFFF"
           },
           variables: {
             // 'border-color': '#38854F',
@@ -60,7 +61,8 @@ export default defineNuxtPlugin((nuxtApp) => {
             for_deletion: "#42B3F4",
             charcoal: '#555763',
             light_gray: '#F4F4F5',
-            light_gray_secondary: "#DEDFE3"
+            light_gray_secondary: "#DEDFE3",
+            base_color: "#000000"
           },
           variables: {
             "disabled-opacity": "0.7",

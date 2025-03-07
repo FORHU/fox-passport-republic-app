@@ -4,7 +4,7 @@ export default class MSpace implements TVenueSpace {
   _id?: string;
   name: string;
   space_photo: string[] | [] | TFile[];
-  venue_photo: string[] | [] | TFile[];
+  menu_photo?: string[] | [] | TFile[];
   capacity_layout: TCapacityLayout[];
   guest_capacity: TGuestCapacity;
   floor_plan: string[] | [] | TFile[];
@@ -26,7 +26,7 @@ export default class MSpace implements TVenueSpace {
     this._id = space._id || "";
     this.name = space.name || "";
     this.space_photo = space.space_photo || [];
-    this.venue_photo = space.venue_photo || [];
+    this.menu_photo = space.menu_photo || [];
     this.capacity_layout =
       space?.capacity_layout?.map(({ _id, space_id, ...rest }) => rest) || [];
     this.guest_capacity = space.guest_capacity || {

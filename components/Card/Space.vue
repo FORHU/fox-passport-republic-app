@@ -15,6 +15,7 @@
               height="50"
               width="50"
               cover
+              alt="Space Card"
             ></v-img>
           </v-col>
           <v-col cols="8">

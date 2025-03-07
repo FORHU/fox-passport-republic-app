@@ -3,7 +3,7 @@
     <v-col cols="12" style="overflow-x: hidden">
       <v-row align="left">
         <v-col cols="12">
-          <v-img :height="smAndDown ? '440px' : '380px'" src="/images/landingpage/background-cta.png" cover>
+          <v-img :height="smAndDown ? '440px' : '380px'" src="/images/landingpage/background-cta.png" cover alt="Terms and condition header image">
             <v-row class="pa-10"> </v-row>
             <v-row class="pb-15"></v-row>
             <!-- <v-row class="pa-10">

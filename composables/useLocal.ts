@@ -7,6 +7,13 @@ export default function useLocal() {
   const defaultSnackbarColor = useState("defaultSnackbarColor", () => "");
   const registeredCountries = useState("registeredCountries", () => [{country_name: 'Singapore', cca2: "SG"}]);
 
+  const cookieDarkMode = useCookie("isDarkMode", { default: () => "false" });
+  const isDarkMode = useState("isDarkMode", () => cookieDarkMode.value as any);
+
+  watch(isDarkMode, (newValue) => {
+    cookieDarkMode.value = newValue.toString();
+  });
+
   function setSnackbar({ text = "", modal = false, color = "" } = {}) {
     defaultSnackbar.value = modal;
     defaultSnackbarText.value = text;
@@ -115,6 +122,7 @@ export default function useLocal() {
     registeredCountries,
     loadCountries,
     getDefaultCountryImage,
-    defaultCountryImage
+    defaultCountryImage,
+    isDarkMode
   };
 }

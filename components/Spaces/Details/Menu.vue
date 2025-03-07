@@ -1,5 +1,5 @@
 <template>
-  <v-container >
+  <v-container>
     <v-row>
       <v-col v-if="primaryImage" cols="12" md="6">
         <v-img
@@ -37,10 +37,9 @@
       @click="openCarousel(0)"
     >
       <v-icon left>mdi-grid</v-icon>
-      See All Floor Plans
+      See All Menu
     </v-btn>
   </v-container>
-
 
   <CarouselImageViewer
     v-model:show="showCarousel"
@@ -66,9 +65,9 @@ const props = defineProps<{
 }>();
 
 const images = computed<FloorPlanImage[]>(() => {
-  if (!props.specificSpace?.floor_plan) return [];
-  if (!Array.isArray(props.specificSpace.floor_plan)) return [];
-  return (props.specificSpace.floor_plan as FloorPlanImage[]).filter(
+  if (!props.specificSpace?.menu_photo) return [];
+  if (!Array.isArray(props.specificSpace.menu_photo)) return [];
+  return (props.specificSpace.menu_photo as FloorPlanImage[]).filter(
     (img) => img.path
   );
 });

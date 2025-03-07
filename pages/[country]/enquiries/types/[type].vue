@@ -35,6 +35,7 @@
                   height="70"
                   width="178"
                   cover
+                  alt="Inquiry Type image alt"
                 ></v-img>
               </v-col>
               <v-col cols="8">

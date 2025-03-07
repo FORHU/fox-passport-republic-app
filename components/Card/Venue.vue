@@ -15,6 +15,7 @@
         :height="mdAndUp ? 184 : 130"
         :src="venueData?.imageUrl || '/images/venue/add-function.png'"
         cover
+        alt="Venue Card"
       >
       </v-img>
       <v-card-text class="mx-md-1">

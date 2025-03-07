@@ -32,7 +32,7 @@
       <v-col cols="12" sm="10" md="8" lg="10" xl="10">
         <v-card class="venue-card rounded-lg overflow-hidden">
           <v-img src="/images/landingpage/background-cta.png" height="500" width="100%"
-            gradient="to bottom, rgba(0,0,0,.1), rgba(0,0,0,.5)" cover>
+            gradient="to bottom, rgba(0,0,0,.1), rgba(0,0,0,.5)" cover alt="why venue4use page header">
             <v-container class="fill-height pa-0">
               <v-row align="center" justify="center" class="fill-height">
                 <v-col cols="12" sm="10" md="10" lg="10"

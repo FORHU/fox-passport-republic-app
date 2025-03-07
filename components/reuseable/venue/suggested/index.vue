@@ -19,6 +19,7 @@
           max-width="50"
           height="50"
           contain
+          alt="Suggested Left Arrow Icon"
         >
           <v-btn class="ms-2" variant="text"></v-btn>
         </v-img>
@@ -28,6 +29,7 @@
           max-width="50"
           height="50"
           contain
+           alt="Suggested Right Arrow Icon"
         >
           <v-btn class="ms-2" variant="text"></v-btn>
         </v-img>
@@ -41,6 +43,7 @@
             min-width="250"
             height="165"
             contain
+            alt="Image of a dummy"
           ></v-img>
           <p class="text-h7">Alaska: Westminster to Greenwich River Thames</p>
           <div class="d-flex flex-column ga-1 mb-2">

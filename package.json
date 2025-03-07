@@ -2,7 +2,7 @@
   "name": "venue4use",
   "private": true,
   "type": "module",
-  "version": "1.5.4",
+  "version": "1.6.0",
   "engines": {
     "node": "^18.0.0"
   },
@@ -36,6 +36,8 @@
   },
   "dependencies": {
     "@mdi/font": "^7.4.47",
+    "@nuxtjs/robots": "^5.2.4",
+    "@nuxtjs/sitemap": "^7.2.6",
     "@pinia/nuxt": "^0.5.1",
     "@stripe/stripe-js": "^3.5.0",
     "axios": "^1.6.8",

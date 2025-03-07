@@ -43,6 +43,7 @@
                   
                                         rounded="lg"
                                          :src="getImage(item)"
+                                         alt="recently viewed image "
                                          
                                         />
                                         </v-card>
@@ -74,7 +75,7 @@
                             cover
                             :height="sm ? '100%' : '212'"
                              class="rounded-lg"
-                             :src="getImage(space.cover_photo)"></v-img>
+                             :src="getImage(space.cover_photo)" alt="favorite space image"></v-img>
                              <!-- <v-img
                             cover
                             :height="sm ? '100%' : '212'"

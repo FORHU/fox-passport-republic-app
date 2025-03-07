@@ -1,5 +1,5 @@
 <template>
-  <v-img height="400" src="/about-us-hero.jpeg" cover>
+  <v-img height="400" src="/about-us-hero.jpeg" cover alt="country page hero">
     <v-row
       no-gutters
       class="fill-height third-gradient"

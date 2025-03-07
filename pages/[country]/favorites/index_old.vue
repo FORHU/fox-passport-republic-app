@@ -53,6 +53,7 @@
                     cover
                     :height="sm ? '100%' : '212'"
                     class="rounded-lg"
+                    alt="Space featured image"
                   ></v-img>
                 </NuxtLink>
               </v-col>

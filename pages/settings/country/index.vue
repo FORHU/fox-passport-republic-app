@@ -53,7 +53,7 @@
               <div class="d-flex align-center ga-3 px-3 py-2 py-md-3">
                 <v-img :lazy-src="imageSrc(item.photo) || '/svg/default-draft-image.svg'
                   " :src="imageSrc(item.photo) || '/svg/default-draft-image.svg'" height="54px" max-width="54px" cover
-                  rounded="lg"></v-img>
+                  rounded="lg" alt="Featured Image"></v-img>
                 <div class="d-flex align-center ga-3 px-3 py-2 py-md-3">
                   <span>{{ item.country_name }}</span>
                 </div>
@@ -61,7 +61,7 @@
             </td>
             <td>
               <div class="d-flex align-center ga-3 px-2 py-2 py-md-3">
-                <v-img class="ml-1 border-sm rounded" :src="item.flag_url" max-width="45" height="30" contain></v-img>
+                <v-img class="ml-1 border-sm rounded" :src="item.flag_url" max-width="45" height="30" contain alt="flag url image"></v-img>
               </div>
             </td>
             <td>

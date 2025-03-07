@@ -78,6 +78,7 @@
                     max-width="45"
                     height="30"
                     contain
+                    alt="flat url"
                     class="border-sm rounded mt-2"
                   ></v-img>
                 </v-col>

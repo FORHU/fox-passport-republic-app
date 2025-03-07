@@ -90,7 +90,7 @@
                                 <span>
                                     <v-img :lazy-src="imageSrc(item._id as string) || '/svg/default-draft-image.svg'"
                                         :src="imageSrc(item._id as string) || '/svg/default-draft-image.svg'"
-                                        height="54px" width="54px" cover rounded="lg"></v-img>
+                                        height="54px" width="54px" cover rounded="lg" alt="venue default image"></v-img>
                                 </span>
                                 <span>{{ sliceContent(item.venue, 30) }}</span>
                             </div>
@@ -158,7 +158,7 @@
                                         <v-img
                                             :lazy-src="featuredImage(spaceItem as TVenueSpace) || '/svg/default-draft-image.svg'"
                                             :src="featuredImage(spaceItem as TVenueSpace) || '/svg/default-draft-image.svg'"
-                                            height="54px" width="54px" cover rounded="lg"></v-img>
+                                            height="54px" width="54px" cover rounded="lg" alt="venue featured image"></v-img>
                                     </span>
                                     <span>{{ sliceContent(spaceItem?.name, 30) }}</span>
                                 </div>

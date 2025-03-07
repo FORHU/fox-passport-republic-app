@@ -1,7 +1,7 @@
 <template>
     <v-row no-gutters class="d-flex align-center ga-3 flex-nowrap">
         <div>
-            <v-img :src="featuredImage(space)" :height="mdAndUp ? '80px' : '60px'" :width="mdAndUp ? '80px' : '60px'" cover rounded="lg"></v-img>
+            <v-img :src="featuredImage(space)" :height="mdAndUp ? '80px' : '60px'" :width="mdAndUp ? '80px' : '60px'" cover rounded="lg" :alt="space?.name + '-featured-image'"></v-img>
         </div>
         <div class="pl-3">
             <v-row class="font-500 text-16px text-hover text-secondary">{{

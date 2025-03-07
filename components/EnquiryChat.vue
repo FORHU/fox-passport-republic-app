@@ -38,14 +38,14 @@
           </v-col>
           <!-- CHAT BOX -->
 
-          <v-col cols="12" flat :rounded="false" style="height: 92dvh;">
+          <v-row no-gutters class="w-100" cols="12" flat :rounded="false" align-content="end" :style="{minHeight: InfiniteScrollHeight + 'px' }">
             <v-card v-if="loading" elevation="0" rounded="lg" width="100%" flat>
               <LoadingChat :lines="15" />
             </v-card>
             <!-- CHAT BOX -->
-            <v-card flat no-gutters v-else :key="chatKey + 'key'">
-              <v-infinite-scroll :height="InfiniteScrollHeight" width="100%" side="start"
-                class="px-4 px-sm-7 py-16 d-flex ga-2 ga-sm-5" @load="loadMoreConversations"
+            <v-card flat no-gutters v-else :key="chatKey + 'key'" class="w-100 bg-transparent">
+              <v-infinite-scroll :max-height="InfiniteScrollHeight" width="100%" side="start"
+                class="px-4 px-sm-7 py-5 d-flex ga-2 scroller" @load="loadMoreConversations"
                 transition="fade-transition">
                 <template v-for="(item, index) in filteredConversation" :key="`${item.createdAt}-${index}`">
                   <template v-if="item.admin_generated">
@@ -63,7 +63,7 @@
                         first_name: item.sender.first_name || '',
                         last_name: item.sender.last_name || '',
                         _id: item.sender._id || '',
-                      }" :created-at="item.createdAt || ''" class="my-2" />
+                      }" :created-at="item.createdAt || ''" class="my-1" />
                   </template>
 
                   <template v-if="item.key == 'REQUEST_PHONE_NUMBER'">
@@ -71,7 +71,7 @@
                       first_name: item.sender.first_name || '',
                       last_name: item.sender.last_name || '',
                       _id: item.sender._id || '',
-                    }" :created-at="item.createdAt || ''" class="my-2" />
+                    }" :created-at="item.createdAt || ''" class="my-1" />
                   </template>
 
                   <template v-else-if="
@@ -82,7 +82,7 @@
                       last_name: item.sender.last_name || '',
                       _id: item.sender._id || '',
                     }" :time-stamp="timeStampDate(item.createdAt as string)" :attachments="item.attachments || []"
-                      class="my-2" @show-image="handleShowImage" />
+                      class="my-1" @show-image="handleShowImage" />
                   </template>
 
                   <template v-else-if="
@@ -93,7 +93,7 @@
                       last_name: item.sender.last_name || '',
                       _id: item.sender._id || '',
                     }" :attachments="item.attachments || []" :time-stamp="timeStampDate(item.createdAt as string)"
-                      class="my-2" @show-image="handleShowImage" />
+                      class="my-1" @show-image="handleShowImage" />
                   </template>
                 </template>
 
@@ -104,7 +104,7 @@
 
 
 
-          </v-col>
+          </v-row>
 
 
 
@@ -1371,5 +1371,14 @@ const handleArchiveInquiry = async () => {
 
 .sent-by-other-user {
   background-color: #f0f0f0;
+}
+
+.scroller {
+  overflow-y: auto;
+  -ms-overflow-style: none; /* Internet Explorer 10+ */
+  scrollbar-width: none; /* Firefox */
+}
+.scroller::-webkit-scrollbar {
+  display: none; /* Safari and Chrome */
 }
 </style>

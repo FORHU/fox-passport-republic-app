@@ -3,7 +3,7 @@
   <v-row no-gutters class="w-100" style="max-width: 1024px">
     <v-row no-gutters class="w-100">
       <v-col cols="12" md="9">
-        <v-row no-gutters class="my-3 w-100 d-flex ga-2">
+        <v-row no-gutters class="my-3 w-100 d-flex ga-2" :class="xs ? 'mx-2' : ''">
           <v-row no-gutters class="w-100">
             <v-col cols="12" class="font-500 d-flex align-center">Email Verification:
               <ChipVerify :is-verified="isEmailVerified" class="ml-2" />
@@ -17,6 +17,14 @@
               </v-btn>
             </v-col>
           </v-row>
+          <!-- <v-row no-gutters>
+            <v-row no-gutters class="w-100">
+              <v-col cols="6" class="font-500 d-flex align-center">Dark Mode:</v-col>
+              <v-col cols="6" class="font-500 d-flex align-center">
+                <v-switch v-model="isDarkMode" hide-details></v-switch>
+              </v-col>
+            </v-row>
+          </v-row> -->
           <v-row v-if="isVenueOwner" no-gutters class="w-100">
             <v-divider class="my-2"></v-divider>
             <v-col cols="12" class="font-500 d-flex align-center">Stripe Setup:
@@ -40,6 +48,8 @@
 </template>
 
 <script setup lang="ts">
+import { useDisplay } from "vuetify";
+const { xs } = useDisplay();
 const { currentUser } = useLocalAuth();
 const { countries } = useVenueData();
 const { verifyEmail } = useVerify();
@@ -50,7 +60,7 @@ definePageMeta({
 
 const processing_stripe = ref(false);
 const verifying_email = ref(false);
-const { setSnackbar } = useLocal();
+const { setSnackbar, isDarkMode } = useLocal();
 const { isVenueOwner } = useAccess();
 const showVerifyEmailPrompt = ref(false);
 

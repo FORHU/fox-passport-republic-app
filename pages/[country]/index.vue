@@ -3,7 +3,7 @@
     <v-row no-gutters>
       <v-col cols="12">
         <v-img height="60rem" contain :src="defaultCountryImage" :lazy-src="defaultCountryImage" cover xxl="8" xl="10"
-          lg="9">
+          lg="9" alt="Default Country Image">
           <v-row no-gutters class="fill-height third-gradient" align-content="center" justify="center">
             <v-col cols="12" sm="10" md="10" lg="10" xl="10">
               <v-row class="custom-padding mt-12">
