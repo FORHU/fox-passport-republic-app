@@ -2,9 +2,9 @@
   <v-dialog v-model="showPromoteDialog" max-width="700" persistent>
     <v-card min-height="450">
       <v-row no-gutters>
-        <v-col cols="7" class="bg-primary pa-8">
+        <v-col cols="12" sm="7" class="bg-primary pa-8">
           <v-row no-gutters>
-            <v-col cols="12" class="d-flex flex-column text-35px font-500">
+            <v-col cols="12" class="d-flex flex-column font-500" :class="xs ? 'text-30px' : 'text-35px'">
               <span style="line-height: 1.1">Venue4Use is</span>
               <span style="line-height: 1.1">Now Available on</span>
               <span style="line-height: 1.1" class="font-600 font-weight-bold">
@@ -40,7 +40,7 @@
             </v-col>
             <v-col cols="12">
               <v-row no-gutters class="py-3">
-                <v-col cols="6">
+                <v-col cols="6" :class="xs ? 'd-flex justify-center' : ''">
                   <a
                     href="https://play.google.com/store/apps/details?id=com.venue4use"
                     target="_blank"
@@ -54,7 +54,7 @@
                     />
                   </a>
                 </v-col>
-                <v-col cols="6">
+                <v-col cols="6" :class="xs ? 'd-flex justify-center' : ''">
                   <a
                     href="https://apps.apple.com/us/app/venue4use/id6736890246"
                     target="_blank"
@@ -70,7 +70,7 @@
                 </v-col>
               </v-row>
             </v-col>
-            <v-col cols="12" class="text-caption">
+            <v-col cols="12" :class="xs ? 'text-10px' : 'text-caption'">
               <span class="font-weight-bold"
                 >Start discovering the perfect venue anytime, anywhere!</span
               >
@@ -78,7 +78,7 @@
             </v-col>
           </v-row>
         </v-col>
-        <v-col cols="5">
+        <v-col cols="12" sm="5" class="d-none d-sm-block">
           <v-img
             src="/images/promote-mobile/graphic.png"
             cover
@@ -93,6 +93,8 @@
   </v-dialog>
 </template>
 <script setup>
+import { useDisplay } from "vuetify";
+const { xs } = useDisplay();
 const emit = defineEmits(["closeDialog"]);
 const showPromoteDialog = defineModel({ default: false });
 const features = [
