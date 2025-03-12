@@ -124,6 +124,10 @@ a {
   font-size: 14px !important;
 }
 
+.text-10px {
+  font-size: 10px !important;
+}
+
 .prevent-select {
   -webkit-user-select: none;
   /* Safari */
