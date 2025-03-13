@@ -25,9 +25,18 @@
             <nuxt-link
               :to="{ name: navigationItem.to, params: navigationItem.params }"
               class="d-flex align-center font-400 mx-3"
-              style="text-decoration: unset; color: unset"
+              style="text-decoration: unset"
+              :class="
+                isActiveRoute(navigationItem)
+                  ? 'text-primary font-weight-bold'
+                  : ''
+              "
             >
-              <v-icon size="small" class="custom-padding">
+              <v-icon
+                size="small"
+                class="custom-padding"
+                :color="isActiveRoute(navigationItem) ? 'primary' : ''"
+              >
                 {{ navigationItem.icon }}
               </v-icon>
               {{ navigationItem.title }}
@@ -72,45 +81,90 @@
                 :to="{ name: navigationItem.to, params: navigationItem.params }"
                 class="text-decoration-none"
               >
-                <v-list-item-title>{{
-                  navigationItem.title
-                }}</v-list-item-title>
+                <v-list-item-title
+                  :class="{
+                    'text-primary font-weight-bold':
+                      isActiveRoute(navigationItem),
+                  }"
+                  >{{ navigationItem.title }}</v-list-item-title
+                >
               </v-list-item>
               <v-list-item
                 :to="`/settings/country`"
                 class="text-decoration-none"
                 v-if="isAdmin"
               >
-                <v-list-item-title>Countries</v-list-item-title>
+                <v-list-item-title
+                  :class="{
+                    'text-primary font-weight-bold': isActiveRoute({
+                      name: 'settings-country',
+                      params: { country },
+                    }),
+                  }"
+                >
+                  Countries
+                </v-list-item-title>
               </v-list-item>
               <v-list-item
                 :to="`/${country}/ratings`"
                 class="text-decoration-none"
                 v-if="isAdmin"
               >
-                <v-list-item-title>Manage Review</v-list-item-title>
+                <v-list-item-title
+                  :class="{
+                    'text-primary font-weight-bold': isActiveRoute({
+                      name: 'country-ratings',
+                      params: { country },
+                    }),
+                  }"
+                  >Manage Review</v-list-item-title
+                >
               </v-list-item>
               <v-list-item
                 :to="`/${country}/sales`"
                 class="text-decoration-none"
                 v-if="isAdmin || isAdminMember || isAdminSales"
               >
-                <v-list-item-title>{{
-                  isAdminSales ? "My Sales Transaction" : "Sales Transaction"
-                }}</v-list-item-title>
+                <v-list-item-title
+                  :class="{
+                    'text-primary font-weight-bold': isActiveRoute({
+                      name: 'country-sales',
+                      params: { country },
+                    }),
+                  }"
+                  >{{
+                    isAdminSales ? "My Sales Transaction" : "Sales Transaction"
+                  }}</v-list-item-title
+                >
               </v-list-item>
               <v-list-item
                 :to="`/${country}/team-members`"
                 class="text-decoration-none"
                 v-if="isVenueOwner || isVenueLister || isAdmin"
               >
-                <v-list-item-title>Team Members</v-list-item-title>
+                <v-list-item-title
+                  :class="{
+                    'text-primary font-weight-bold': isActiveRoute({
+                      name: 'country-team-members',
+                      params: { country },
+                    }),
+                  }"
+                  >Team Members</v-list-item-title
+                >
               </v-list-item>
               <v-list-item
                 :to="`/${country}/profile/general-information`"
                 class="text-decoration-none"
               >
-                <v-list-item-title>Settings</v-list-item-title>
+                <v-list-item-title
+                  :class="{
+                    'text-primary font-weight-bold': isActiveRoute({
+                      name: 'country-profile-general-information',
+                      params: { country },
+                    }),
+                  }"
+                  >Settings</v-list-item-title
+                >
               </v-list-item>
               <v-list-item @click="logout" class="text-decoration-none">
                 <v-list-item-title>Logout</v-list-item-title>
@@ -155,12 +209,13 @@
 
 <script setup>
 import { useDisplay } from "vuetify";
-import { ref, computed } from "vue";
 
 const { smAndDown, mdAndDown } = useDisplay();
 const { loggedIn, currentUser, logout } = useLocalAuth();
 const { isAdminMember, isAdminSales } = useAccess();
 const { country } = useLocal();
+const router = useRouter();
+const route = useRoute();
 const baseUrl = "country";
 
 // State to track if the menu is open or closed
@@ -170,6 +225,14 @@ const isAdmin = currentUser.value.role == "ADMIN";
 const isUser = currentUser.value.role == "USER";
 const isVenueOwner = currentUser.value.role == "VENUE_OWNER";
 const isVenueLister = currentUser.value.role == "VENUE_LISTER";
+
+const isActiveRoute = (navItem) => {
+  const resolved = router.resolve({
+    name: navItem.to ?? navItem.name,
+    params: navItem.params,
+  });
+  return route.path.startsWith(resolved.path);
+};
 
 const navigation = computed(() => {
   const items = [];
