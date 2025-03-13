@@ -19,6 +19,9 @@
                   <LoadingChat :lines="10" />
                 </v-card>
                 <v-card v-else flat rounded="lg" height="100%" width="100%" class="pa-4 pa-md-7">
+                  <v-row no-gutters class="mb-3 w-100">
+                    <v-alert v-if="isNotAvailable"  type="info">Your selected time/date is either already booked or unavailable. Please update the event details to proceed.</v-alert>
+                  </v-row>
 
                   <v-row no-gutters class="mt-5 font-weight-bold text-subtitle-1 text-sm-h6">
                     <v-col class="text-18px font-500">Your Event</v-col>
@@ -120,7 +123,7 @@
                     Refund Policy, and I authorize Venue4use to charge my
                     payment method if I am liable for any damages.</v-row>
                   <v-row no-gutters class="my-5"><v-btn type="submit" id="submit" color="primary" :loading="processing"
-                      :disabled="isBooked" rounded="lg" size="large" @click="handleRequestToBookSubmit">Book
+                      :disabled="isNotAvailable || !options.amount" rounded="lg" size="large" @click="handleRequestToBookSubmit">Book
                       Now</v-btn></v-row>
                 </v-card>
               </v-col>
@@ -138,7 +141,7 @@
     </v-col>
   </v-row>
   <EnquiryBookingDialogEditBookingDetails v-model:show="showEditEventDetailsDialog" v-model:eventDetails="computedOffer"
-    v-model:eventType="eventType" v-model:bookings="bookings" v-model:is-booked="isBooked"
+    v-model:eventType="eventType" v-model:bookings="bookings" v-model:is-booked="isNotAvailable"
     @check-booking="checkIfBookedInit" @recompute="handleSaveNewEventDetails" :with-custom-offer="withCustomOffer"
     :enquiry="enquiry" :space="space" />
   <!-- <pre>{{ activeCustomOfferData }}</pre> -->
@@ -169,7 +172,7 @@ const props = defineProps<{
 }>();
 const { getBooking } = useBookingAPI();
 const { enquiry, getEnquiry } = useEnquiry();
-const { getSpace, timesFrom, space } = useSpace();
+const { getSpace, timesFrom, space,  allowedDatesChecker, allowedTime, checkTimeAvailability } = useSpace();
 const { id } = useRoute().params;
 const { country, currentCurrency, getCurrencySymbol, setSnackbar } = useLocal();
 const { cookieOptions } = useLocalAuth();
@@ -189,7 +192,7 @@ const errorMessage = {
   text: "Something went wrong. Please try again later.",
 };
 const bookings = ref([]);
-const isBooked = ref(false);
+const isNotAvailable = ref(false);
 
 const activePage = ref(2);
 const form = ref(null);
@@ -237,6 +240,9 @@ const recompute = async () => {
     const res = await computePayment(payload);
     if (res) {
       computedOffer.value = new MComputedOffer(res);
+      const { payment_computation, currency, from, to } = computedOffer.value;
+      options.currency = currency.toLowerCase();
+      options.amount = convertCentsToDollars(parseFloat(payment_computation.user.grand_total as string));
     }
     processing.value = false;
   } catch (err) {
@@ -255,10 +261,6 @@ const fetchSpaceData = async () => {
   if (!spaceData) return;
   const res = spaceData.value as any;
   space.value = new MSpace(res.data.data[0]);
-
-  const { payment_computation, currency, from, to } = computedOffer.value;
-  options.currency = currency.toLowerCase();
-  options.amount = convertCentsToDollars(parseFloat(payment_computation.user.grand_total as string));
 };
 
 const goBackToChat = () => {
@@ -288,6 +290,8 @@ const options: StripeElementsOptions = reactive({
 const runtime = useRuntimeConfig();
 
 const mountStripe = async () => {
+  if (!options.amount || +options.amount <= 0) return;
+
   stripe = await loadStripe(runtime.public.STRIPE_PUBLISHABLE_KEY);
 
   if (!stripe) return;
@@ -305,6 +309,7 @@ const handleRequestToBookSubmit = async () => {
 const handleRequestToBook = async (event: Event) => {
   event.preventDefault();
 
+  if(isNotAvailable.value) return;
   processing.value = true;
   // Trigger form validation and wallet collection
   const { error: submitError } = await elements!.submit();
@@ -495,14 +500,19 @@ const fetchCustomOffer = async () => {
         computedOffer.value.payment_computation.venue =
           activeCustomOfferData.value.venue_computation;
         computedOffer.value.currency = activeCustomOfferData.value.currency;
+
+        options.currency = computedOffer.value.currency.toLowerCase();
+        options.amount = convertCentsToDollars(parseFloat(computedOffer.value.payment_computation.user.grand_total as string));
       }
     }
   }
 };
 
 const handleSaveNewEventDetails = async () => {
-  recompute();
+  await recompute();
   loadBookings();
+  checkIfBookedInit();
+  mountStripe();
 };
 
 const loadBookings = async () => {
@@ -573,24 +583,37 @@ const dateConverter = (dateString: string) => {
   return `${yyyy}-${mm}-${dd}`;
 };
 
+// convert DD/MM/YYYY to "2025-04-15T16:00:00.000Z"
+const convertDateToISO = (dateString: string) => {
+  const parts = dateString.split('/'); // Split the input date by '/'
+  const day = +parts[0];
+  const month = +parts[1] - 1; // Month is 0-indexed in JavaScript (0 = January, 11 = December)
+  const year = +parts[2]; // Full year (YYYY)
+
+  return new Date(year, month, day); // Create and return the Date object
+}
+
 const checkIfBookedInit = () => {
-  if (
-    checkIfSelectedTimeIsBooked(
-      bookings.value,
-      new Date(dateConverter(computedOffer.value?.date)),
-      computedOffer.value?.from,
-      computedOffer.value?.to,
-    )
-  ) {
-    // setSnackbar({
-    //   modal: true,
-    //   color: "info",
-    //   text: "Your selected time/date is already booked, please update the event details to proceed.",
-    // });
-    isBooked.value = true;
+  const date = convertDateToISO(computedOffer.value?.date as string);
+  const from = computedOffer.value?.from as string
+  const to = computedOffer.value?.to as string
+
+  const dateAvailable = allowedDatesChecker(space.value.pricing, date) //checker if date is available
+
+  const arr = allowedTime(space.value.pricing, date, bookings.value) as bookingTimeArray[]
+  const isTimeSAvailable = checkTimeAvailability({ from, to, arrayToCheck: arr }) as boolean
+
+  const isEventBooked = checkIfSelectedTimeIsBooked(bookings.value,
+    new Date(dateConverter(computedOffer.value?.date)),
+    computedOffer.value?.from,
+    computedOffer.value?.to,
+  )
+
+  if (isEventBooked || !dateAvailable || !isTimeSAvailable) {
+    isNotAvailable.value = true;
     showEditEventDetailsDialog.value = true;
   } else {
-    isBooked.value = false;
+    isNotAvailable.value = false;
   }
 }
 
