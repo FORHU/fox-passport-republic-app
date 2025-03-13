@@ -2,7 +2,7 @@
   "name": "venue4use",
   "private": true,
   "type": "module",
-  "version": "1.6.0",
+  "version": "1.6.1",
   "engines": {
     "node": "^18.0.0"
   },

@@ -2,8 +2,9 @@
   <v-dialog v-model="showDialog" max-width="600">
     <v-form @submit.prevent ref="form" v-model="formValid">
       <v-card class="pa-5 pa-md-7" rounded="lg" :key="showDialog">
-        <v-alert v-model="isBooked" class="mb-2" type="info">Your selected time/date is already booked, please update
-          the event details to proceed.</v-alert>
+        <v-row no-gutters class="mb-3">
+        <v-alert v-if="isBooked"  type="info">Your selected time/date is either already booked or unavailable. Please update the event details to proceed.</v-alert>
+       </v-row>
         <v-row no-gutters class="text-subtitle-1 text-md-h6 font-500 mb-2 d-flex justify-space-between">
           <span>Edit event details</span>
           <span>
