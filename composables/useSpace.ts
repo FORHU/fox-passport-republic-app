@@ -128,6 +128,8 @@ export function useSpace() {
     });
   };
 
+  
+  // val is ISO8601 --> Fri Mar 28 2025 00:00:00 GMT+0800 (Philippine Standard Time)
   const allowedDatesChecker = (pricing: TPricing, val: any) => {
     if (!pricing || !val) return true;
     if (pricing && pricing.selected_pricing == "HIRE_FEE") {
@@ -430,7 +432,7 @@ export function useSpace() {
       showSecond6AM
     );
 
-    for (let i = startIndex + 1; i < allowedTimes.length; i++) {
+    for (let i = startIndex + 1; i < allowedTimes?.length; i++) {
       newTimes.push({
         key: allowedTimes[i].key,
         label: `${allowedTimes[i].label} (${counter} hrs)`,
@@ -606,6 +608,27 @@ export function useSpace() {
     // return priceArray;
   };
 
+
+  // from and to are in format 07:00 && 12:00 check if the available time is available
+  const checkTimeAvailability = ({from, to, arrayToCheck} : {from: string, to: string, arrayToCheck: bookingTimeArray[]}) => {
+    let fromKEY = arrayToCheck?.find(x => x.value == from)?.key
+    let toKEY = arrayToCheck?.find(x => x.value == to)?.key
+    if(!fromKEY || !toKEY) return false;
+    
+    const start = Math.min(fromKEY, toKEY);
+    const end = Math.max(fromKEY, toKEY);
+
+    for (let i = start; i <= end; i++) {
+      const timeSlot = arrayToCheck[(i - 1)];
+      if (timeSlot.props.disabled) {
+        return false; // If any slot is disabled, return false
+      }
+    }
+  
+    return true;
+    
+  }
+
   return {
     spaces,
     space,
@@ -626,6 +649,7 @@ export function useSpace() {
     getAllSpacesWithoutPagination,
     getListSpaceManagement,
     deleteSpaceWithValidation,
-    getRate
+    getRate,
+    checkTimeAvailability
   };
 }

@@ -10,15 +10,7 @@
         </template>
       </v-snackbar>
 
-      <Script
-        async
-        src="https://www.googletagmanager.com/gtag/js?id=AW-16691460580"
-      ></Script>
-      <Script>
-        window.dataLayer = window.dataLayer || []; function
-        gtag(){dataLayer.push(arguments);} gtag('js', new Date());
-        gtag('config', 'AW-16691460580');
-      </Script>
+      <ModalPromoteMobileApp v-model="showPromoteDialog" @closeDialog="closeDialog"/>
       <NuxtPage />
     </NuxtLayout>
     <NuxtLoadingIndicator color="#8091AF" :height="4" />
@@ -32,6 +24,14 @@ const { defaultSnackbar, defaultSnackbarText, defaultSnackbarColor, country, def
 
 const MAIN_URL = useRuntimeConfig().public.MAIN_URL
 const route = useRoute()
+
+const showPromoteDialog = ref(true)
+const promoteDialogCookie = useCookie('hidePromoteDialog') as any
+
+const closeDialog = () => {
+  showPromoteDialog.value = false
+  promoteDialogCookie.value = false 
+}
 
 const keywords = "Venue booking, Event spaces for rent, Meeting venues near me, Conference rooms for hire, Webinar location rentals, Event venues, Party spaces, Team gathering places, Meeting rooms, Conference locations, Venue rentals for workshops and seminars, Training room rentals, Trade show venues, Summit locations, Wedding venues, Exhibition spaces, Networking venues, Corporate retreat locations, Team building venues, Convention centers, Boardroom rentals, Town hall locations, Product launch venues, Lecture halls and training centers, Webinar spaces, Seminar rooms, Meeting hubs, Event halls, Event planning, Venue management, Venue solutions, Venue finder, Event space marketplace, Venue booking platform, Venue rental services, Event venue selection, Venue discovery, Event venue options, Venue booking app, Venue reservation system, Venue availability, Venue search engine, Venue booking portal, Online venue management software, Remote venue rental marketplace, Online venue booking website, Virtual venue directory, Digital venue reviews, Remote venue booking platform, Virtual event space finder, Digital venue booking system, Remote venue booking service, Online venue reservation platform, Virtual event venue marketplace, Digital venue availability checker, Online venue booking directory, Virtual venue booking app, Digital event venue search, Online virtual event venues, Virtual meeting space rentals, Remote conference venue rentals, Online webinar venue options, Workshop venue rentals, Party venue rentals, Singapore, singapore, venue, restaurant, elite venue, elite venues, restaurant, meetings, events, party, corporate events, birthday, space, bookings, booking"
 
@@ -70,6 +70,14 @@ useSeoMeta({
 
 })
 
+onMounted(() => {
+  const hidePromote = promoteDialogCookie.value
+  if (hidePromote === undefined) {
+    showPromoteDialog.value = true
+  }else if(!hidePromote){
+    showPromoteDialog.value = false
+  }
+})
 </script>
 
 <style>

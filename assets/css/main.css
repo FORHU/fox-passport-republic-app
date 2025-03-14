@@ -72,6 +72,10 @@ a {
   font-size: 42px !important;
 }
 
+.text-35px {
+  font-size: 35px !important;
+}
+
 .text-30px {
   font-size: 30px !important;
 }
@@ -118,6 +122,10 @@ a {
 
 .text-12px {
   font-size: 14px !important;
+}
+
+.text-10px {
+  font-size: 10px !important;
 }
 
 .prevent-select {

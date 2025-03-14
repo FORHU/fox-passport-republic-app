@@ -2,7 +2,7 @@
   "name": "venue4use",
   "private": true,
   "type": "module",
-  "version": "1.6.0",
+  "version": "1.6.1",
   "engines": {
     "node": "^18.0.0"
   },
@@ -41,6 +41,7 @@
     "@pinia/nuxt": "^0.5.1",
     "@stripe/stripe-js": "^3.5.0",
     "axios": "^1.6.8",
+    "nuxt-gtag": "^3.0.2",
     "nuxt-proxy": "^0.4.1",
     "pinia": "^2.1.7",
     "qalendar": "^3.8.1",
