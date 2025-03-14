@@ -146,8 +146,6 @@
     :enquiry="enquiry" :space="space" />
   <!-- <pre>{{ activeCustomOfferData }}</pre> -->
 
-  <!-- // google conversion -->
-  <Script> gtag('event', 'conversion', {'send_to': 'AW-16691460580/zL6UCMaO5M8ZEOTzjZc-'}); </Script>
 </template>
 
 <script setup lang="ts">

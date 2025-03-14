@@ -11,16 +11,6 @@
       </v-snackbar>
 
       <ModalPromoteMobileApp v-model="showPromoteDialog" @closeDialog="closeDialog"/>
-
-      <Script
-        async
-        src="https://www.googletagmanager.com/gtag/js?id=AW-16691460580"
-      ></Script>
-      <Script>
-        window.dataLayer = window.dataLayer || []; function
-        gtag(){dataLayer.push(arguments);} gtag('js', new Date());
-        gtag('config', 'AW-16691460580');
-      </Script>
       <NuxtPage />
     </NuxtLayout>
     <NuxtLoadingIndicator color="#8091AF" :height="4" />
