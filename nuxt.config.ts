@@ -12,7 +12,6 @@ export default defineNuxtConfig({
   build: {
     transpile: ["vuetify"],
   },
-  plugins: [{ src: "~/plugins/axios.ts", mode: "client" }],
   modules: [
     (_options, nuxt) => {
       nuxt.hooks.hook("vite:extendConfig", (config) => {
@@ -23,8 +22,7 @@ export default defineNuxtConfig({
     "nuxt-proxy",
     "@pinia/nuxt",
     "@nuxtjs/sitemap",
-    "@nuxtjs/robots",
-    "nuxt-gtag"
+    "@nuxtjs/robots"
   ],
   vite: {
     vue: {
@@ -32,11 +30,6 @@ export default defineNuxtConfig({
         transformAssetUrls,
       },
     },
-  },
-
-  gtag: {
-    enabled: process.env.NODE_ENV === 'production',
-    id: 'G-JW0RX8V7CP'
   },
 
   runtimeConfig: {
