@@ -22,7 +22,8 @@ export default defineNuxtConfig({
     "nuxt-proxy",
     "@pinia/nuxt",
     "@nuxtjs/sitemap",
-    "@nuxtjs/robots"
+    "@nuxtjs/robots",
+    "nuxt-gtag"
   ],
   vite: {
     vue: {
@@ -30,6 +31,11 @@ export default defineNuxtConfig({
         transformAssetUrls,
       },
     },
+  },
+
+  gtag: {
+    enabled: process.env.NUXT_APP_ENV === 'production',
+    id: 'G-JW0RX8V7CP'
   },
 
   runtimeConfig: {
