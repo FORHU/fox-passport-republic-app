@@ -46,6 +46,7 @@
     "pinia": "^2.1.7",
     "qalendar": "^3.8.1",
     "socket.io-client": "^4.7.5",
+    "vite": "^6.2.1",
     "vue3-google-map": "^0.20.0"
   }
 }
