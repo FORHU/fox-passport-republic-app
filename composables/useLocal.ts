@@ -7,7 +7,7 @@ export default function useLocal() {
   const defaultSnackbarColor = useState("defaultSnackbarColor", () => "");
   const registeredCountries = useState("registeredCountries", () => [{country_name: 'Singapore', cca2: "SG"}]);
 
-  const cookieDarkMode = useCookie("isDarkMode", { default: () => "false" });
+  const cookieDarkMode = useCookie("venue4useDarkmode", { default: () => "false" });
   const isDarkMode = useState("isDarkMode", () => cookieDarkMode.value as any);
 
   watch(isDarkMode, (newValue) => {
