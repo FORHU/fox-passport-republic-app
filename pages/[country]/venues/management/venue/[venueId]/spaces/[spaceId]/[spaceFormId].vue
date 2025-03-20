@@ -152,7 +152,7 @@
             xl="7"
             class="d-flex ga-2 align-center px-2 pt-2 px-sm-5 px-md-0"
           >
-            <AlertAdminStatus
+            <!-- <AlertAdminStatus
               v-if="
                 !ownerVerified &&
                 !loading &&
@@ -163,7 +163,7 @@
                 color: 'error',
                 message: 'This account is not yet fully verified!',
               }"
-            />
+            /> -->
           </v-col>
           <v-col cols="12" md="10" lg="8" xl="7" class="py-10">
             <v-row
@@ -362,7 +362,6 @@
                     :updating-space="updatingSpace"
                     :is-allow-suspend="isAllowSuspend"
                     :is-for-approval="isForApproval"
-                    :owner-verified="ownerVerified"
                     :is-for-deletion="isForDeletion"
                     @save="saveProgress"
                     @reject="showRejectPrompt = true"
@@ -416,7 +415,7 @@
                     ></v-btn>
 
                     <v-btn
-                      :disabled="!isForApproval || !ownerVerified"
+                      :disabled="!isForApproval"
                       variant="flat"
                       color="secondary"
                       text="Approve"
@@ -1560,14 +1559,14 @@ const fetchOnboardingStatus = async () => {
   const userId = space.value?.venue?.user?._id;
 
   if (!userId) return;
-  try {
-    const res = await checkOwnerOnboardingStatus(userId);
-    if (res == true) {
-      ownerVerified.value = true;
-    }
-  } catch (e) {
-    console.log(e);
-  }
+  // try {
+  //   const res = await checkOwnerOnboardingStatus(userId);
+  //   if (res == true) {
+  //     ownerVerified.value = true;
+  //   }
+  // } catch (e) {
+  //   console.log(e);
+  // }
 };
 
 onMounted(async () => {
@@ -1575,7 +1574,6 @@ onMounted(async () => {
   await refreshSpaceData();
   await checkMode();
   await getActivePage();
-  await fetchOnboardingStatus();
   loading.value = false;
 });
 </script>

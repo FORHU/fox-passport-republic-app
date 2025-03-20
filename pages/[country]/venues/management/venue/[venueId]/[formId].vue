@@ -150,7 +150,7 @@
             xl="7"
             class="d-flex ga-2 align-center px-2 px-sm-5 pt-2 px-md-0"
           >
-            <AlertAdminStatus
+            <!-- <AlertAdminStatus
               v-if="
                 !ownerVerified &&
                 !loading &&
@@ -161,7 +161,7 @@
                 color: 'error',
                 message: 'This account is not yet fully verified!',
               }"
-            />
+            /> -->
           </v-col>
 
           <v-col cols="12" md="10" lg="8" xl="7" class="py-5">
@@ -1327,21 +1327,20 @@ const fetchOnboardingStatus = async () => {
   const userId = venue.value?.user?._id;
 
   if (!userId) return;
-  try {
-    const res = await checkOwnerOnboardingStatus(userId);
-    if (res == true) {
-      ownerVerified.value = true;
-    }
-  } catch (e) {
-    console.log(e);
-  }
+  // try {
+  //   const res = await checkOwnerOnboardingStatus(userId);
+  //   if (res == true) {
+  //     ownerVerified.value = true;
+  //   }
+  // } catch (e) {
+  //   console.log(e);
+  // }
 };
 
 onMounted(async () => {
   await handleRefreshVenue();
   await checkMode();
   await getActivePage();
-  await fetchOnboardingStatus();
   loading.value = false;
   space.value = new MSpace({});
 });
