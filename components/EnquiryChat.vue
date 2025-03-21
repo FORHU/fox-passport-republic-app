@@ -1368,15 +1368,21 @@ const handleArchiveInquiry = async () => {
     showArchiveInquiryPrompt.value = false;
   }
 }
+const checkScrollPosition = () => {
+  const scroll = infiniteScrollDiv.value.$el.scrollHeight
+  const height = infiniteScrollDiv.value.$el.clientHeight;
+  const scrollTop = infiniteScrollDiv.value.$el.scrollTop
+  if (scroll > (height + scrollTop)) {
+    showJumpToPresent.value = true;
+  }
+}
 
 watch(conversation, () => {
- const scroll =  infiniteScrollDiv.value.$el.scrollHeight
- const height = infiniteScrollDiv.value.$el.clientHeight;
- const scrollTop = infiniteScrollDiv.value.$el.scrollTop
- if(scroll > ( height + scrollTop)){
-  showJumpToPresent.value = true;
- }
-}, {deep: true})
+  setTimeout(() => {
+    checkScrollPosition()
+  }, 1000)
+}, { deep: true })
+
 const handleScroll = (event: Event) => {
   const target = event.target as HTMLElement;
   if (target.scrollTop < target.scrollHeight - target.clientHeight - 50) {
