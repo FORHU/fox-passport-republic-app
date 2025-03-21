@@ -10,6 +10,7 @@
       <EnquiryChatList />
     </v-col>
   </v-row>
+  <DialogCompleteAccountDetails />
 </template>
 
 <script setup lang="ts">
