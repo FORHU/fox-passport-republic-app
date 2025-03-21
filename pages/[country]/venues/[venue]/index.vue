@@ -747,7 +747,7 @@
                       :style="{ fontSize: '14px' }"
                       :disabled="
                         (loggedIn && currentUser?.role !== 'USER') ||
-                        !isSpacePublished
+                        !isSpacePublished || !isSpaceVerified
                       "
                     >
                       Inquire Now
@@ -968,7 +968,7 @@
           density="comfortable"
           @click.stop="toggleNavigation"
           :disabled="
-            (loggedIn && currentUser?.role !== 'USER') || !isSpacePublished
+            (loggedIn && currentUser?.role !== 'USER') || !isSpacePublished || !isSpaceVerified
           "
         >
           BOOK
@@ -978,6 +978,7 @@
           class="d-flex text-warning text-14px d-flex justify-center mt-2"
           >This space is not published.</span
         >
+        <span v-if="!isSpaceVerified" class="text-orange-darken-2 text-14px d-flex justify-center py-2">This space has not been fully verified.</span>
       </v-card>
 
       <v-card v-if="isVisible" class="w-100" :elevation="0" flat>
