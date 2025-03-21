@@ -757,6 +757,11 @@
                       class="text-warning text-14px d-flex justify-center mt-2"
                       >This space is not published.</span
                     >
+                    <span
+                      v-if="!isSpaceVerified"
+                      class="text-orange-darken-2 text-14px d-flex justify-center mt-2"
+                      >This space has not been fully verified.</span
+                    >
                   </v-card>
                 </template>
 
@@ -1835,6 +1840,10 @@ const msg = `Here’s a venue that might be perfect for your next event: ${windo
 
 const isSpacePublished = computed(() => {
   return specificSpace.value.status == "PUBLISHED";
+});
+
+const isSpaceVerified = computed(() => {
+  return specificSpace.value.venue.user?.fully_verified 
 });
 
 /* Overall Average Ratings */
