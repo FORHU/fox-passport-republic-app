@@ -9,6 +9,7 @@ export const useMostPopular = () => {
                 location,
                 page,
                 limit,
+                fully_verified: true,
               },
         })
         if(data.value){

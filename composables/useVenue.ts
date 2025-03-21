@@ -138,7 +138,7 @@ export function useVenue() {
   };
 
   const fetchVenues = async (params: any) => {
-    const queryString = new URLSearchParams(params).toString();
+    const queryString = new URLSearchParams({...params, fully_verified: true}).toString();
     return await useAPI(`v1/space/?${queryString}`, {
       method: "GET",
     });
