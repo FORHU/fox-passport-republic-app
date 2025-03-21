@@ -191,7 +191,7 @@ const showMorePopular = async () => {
 const assignSpaceDataRecent = async () => {
   loadingRecent.value = true;
   const { data: recentData } = await useAPI(
-    `/v1/space/recently-listed/?location=${useCookie("country").value?.toUpperCase() || "SG"}&status=PUBLISHED`,
+    `/v1/space/recently-listed/?location=${useCookie("country").value?.toUpperCase() || "SG"}&status=PUBLISHED&fully_verified=true`,
     {
       query: {
         status: "PUBLISHED",
