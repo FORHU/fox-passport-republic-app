@@ -18,9 +18,7 @@
         </v-row>
         <v-row no-gutters class="w-100">
           <v-col cols="12" class="text-center text-error text-16px" style="line-height: 1.2;">
-            Please note that this pop-up notification will only disappear once you have completed all the necessary
-            setup in
-            the My Account Settings page. Thank you.
+            Please note that your space(s) will only be publicly listed once you have completed all the required setup in the 'My Account Settings' page. This pop-up notification will disappear once the verification is done.
           </v-col>
         </v-row>
       </v-row>

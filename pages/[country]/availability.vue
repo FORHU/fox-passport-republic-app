@@ -188,6 +188,7 @@
   <DialogSuccessWithButton v-model="showSucessDialog"
     :text="isUpdate ? 'Event updated successfully' : 'Event added successfully'" button-text="Got it!"
     @click="updateCalendar" v-if="canEdit" />
+    <DialogCompleteAccountDetails />
 </template>
 
 <script setup>

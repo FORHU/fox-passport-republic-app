@@ -46,7 +46,7 @@
             <v-card flat no-gutters v-else :key="chatKey + 'key'" class="w-100 bg-transparent">
               <v-infinite-scroll :max-height="InfiniteScrollHeight" width="100%" side="start"
                 class="px-4 px-sm-7 py-5 d-flex ga-2 scroller" @load="loadMoreConversations"
-                transition="fade-transition">
+                transition="fade-transition" @scroll.passive="handleScroll" ref="infiniteScrollDiv">
                 <template v-for="(item, index) in filteredConversation" :key="`${item.createdAt}-${index}`">
                   <template v-if="item.admin_generated">
                     <EnquiryDetailsBox :admin-key="item?.key" :content="item?.generated_content"
@@ -157,6 +157,10 @@
                 </v-col>
               </v-row>
             </v-card>
+            <v-btn v-if="showJumpToPresent" @click="scrollToPresent" class="position-absolute"
+              style="bottom: 100%; right: 16px; transform: translateY(-16px); z-index: 999;" color="primary" size="small"
+              append-icon="mdi-arrow-down" text="Jump to newer messages">
+            </v-btn>
           </v-col>
           <!-- INPUT SECTION -->
 
@@ -271,6 +275,8 @@ import { errorMessages } from "vue/compiler-sfc";
 import MOffer from "~/models/offer.model";
 const { isVenueMember, isVenueOwner, isVenueAdmin, isAdmin, isUser } = useAccess();
 const showRemoveMemberPrompt = ref(false)
+const showJumpToPresent = ref(false);
+const infiniteScrollDiv = ref();
 
 definePageMeta({
   layout: "enquiry-chat-new",
@@ -1362,6 +1368,39 @@ const handleArchiveInquiry = async () => {
     showArchiveInquiryPrompt.value = false;
   }
 }
+const checkScrollPosition = () => {
+  const scroll = infiniteScrollDiv.value.$el.scrollHeight
+  const height = infiniteScrollDiv.value.$el.clientHeight;
+  const scrollTop = infiniteScrollDiv.value.$el.scrollTop
+  if (scroll > (height + scrollTop)) {
+    showJumpToPresent.value = true;
+  }
+}
+
+watch(conversation, () => {
+  setTimeout(() => {
+    checkScrollPosition()
+  }, 1000)
+}, { deep: true })
+
+const handleScroll = (event: Event) => {
+  const target = event.target as HTMLElement;
+  if (target.scrollTop < target.scrollHeight - target.clientHeight - 50) {
+    showJumpToPresent.value = true;
+  } else {
+    showJumpToPresent.value = false;
+  }
+};
+const scrollToPresent = () => {
+  const container = document.querySelector('.scroller');
+  if (container) {
+    container.scrollTo({
+      top: container.scrollHeight,
+      behavior: 'smooth'
+    });
+  }
+  showJumpToPresent.value = false;
+};
 </script>
 
 <style>

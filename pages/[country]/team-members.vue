@@ -20,12 +20,12 @@
         </span>
         <span>
           <v-btn v-if="isVenueOwner || isVenueAdmin || isAdmin" class="hidden-md-and-up" rounded="lg" variant="flat"
-            color="secondary" icon="mdi-plus" height="40" @click="handleInviteButtonClick"></v-btn>
+            color="secondary" icon="mdi-plus" height="40" @click="handleInviteButtonClick" :disabled="venueOwnerUnverified"></v-btn>
         </span>
       </v-col>
       <v-col class="d-none d-md-flex align-center justify-end ga-2 w-100">
         <span v-if="isVenueOwner || isVenueAdmin || isAdmin">
-          <v-btn color="secondary" @click="handleInviteButtonClick" prepend-icon="mdi-plus" rounded="lg" class="">Invite
+          <v-btn color="secondary" @click="handleInviteButtonClick" prepend-icon="mdi-plus" rounded="lg" class="" :disabled="venueOwnerUnverified">Invite
             Team
             Member</v-btn>
         </span>
@@ -144,6 +144,7 @@
     @refresh-data="loadItems" :adminResponse="adminResponse"/>
   <DialogSuspendAdminTeamMember @suspending="suspending" :suspendData="suspendData" v-model="adminSuspendDialog" />
   <!-- ADMIN -->
+  <DialogCompleteAccountDetails />
 </template>
 
 <script setup lang="ts">
@@ -152,7 +153,7 @@ const { sliceContent } = useUtils();
 const { getTeamMembers, getAdminTeamMembers, selectedRoleFilter, searchText, deleteTeamMember, rolesOptions, adminRolesOptions, getVenueDetails, deleteAdminTeamMember, getVenueDetailsForAdmin } = useTeamMembers();
 const { setSnackbar } = useLocal();
 const { isVenueMember, isVenueOwner, isVenueAdmin, isAdmin, isAdminMember, isAdminSales } = useAccess();
-const { currentUser } = useLocalAuth();
+const { currentUser, loggedIn } = useLocalAuth();
 
 
 definePageMeta({
@@ -390,6 +391,23 @@ const isSuspendedHigh = computed(() => {
     }
   );
 });
+
+const isAccountCompleted = computed(() => {
+  return currentUser.value.stripe_account == "COMPLETED";
+});
+
+const isEmailVerified = computed(() => {
+  return currentUser.value.status == 'ACTIVE';
+});
+
+const venueOwnerUnverified = computed(() => {
+  if (loggedIn.value && (!isAccountCompleted.value || !isEmailVerified.value) && isVenueOwner) {
+   return true;
+  } else {
+    return false;
+  }
+  
+})
 
 </script>
 

@@ -127,7 +127,7 @@
         >
           <v-icon small class="star-icon">mdi-star</v-icon>
           <span class="ml-1">
-            {{ space?.rating.averageRating }} ({{ space?.rating.totalRating }})
+            {{ space?.rating?.averageRating }} ({{ space?.rating?.totalRating }})
           </span>
         </div>
       </div>
