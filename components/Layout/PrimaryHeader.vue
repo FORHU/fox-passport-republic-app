@@ -90,6 +90,21 @@
                 >
               </v-list-item>
               <v-list-item
+                :to="`/${country}/announcements/list`"
+                class="text-decoration-none"
+                v-if="isAdmin"
+              >
+                <v-list-item-title
+                  :class="{
+                    'text-primary font-weight-bold': isActiveRoute({
+                      name: 'country-announcements-list',
+                      params: { country },
+                    }),
+                  }"
+                  >Announcements</v-list-item-title
+                >
+              </v-list-item>
+              <v-list-item
                 :to="`/settings/country`"
                 class="text-decoration-none"
                 v-if="isAdmin"
