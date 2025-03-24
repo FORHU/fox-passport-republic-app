@@ -55,7 +55,7 @@
       <v-btn
         variant="text"
         :loading="loadingMorePopular"
-        v-if="currentPagePopular < totalPopularPages || loadingMorePopular"
+        v-if=" ((currentPagePopular < totalPopularPages)) || loadingMorePopular || (totalPopularItems < 10 && !morePopularShown)"
         class="text-decoration-underline"
         @click="showMorePopular"
         >Show more popular venues</v-btn
@@ -140,6 +140,7 @@ const loadingPopular = ref(true);
 const loadingRecent = ref(true);
 const currentPagePopular = ref(1);
 const totalPopularPages = ref(1);
+const totalPopularItems = ref(0);
 const loadingMorePopular = ref(false);
 const morePopularShown = ref(false);
 
@@ -158,6 +159,7 @@ const assignSpaceDataPopular = async () => {
   });
   spaceArrayPopular.value = res?.data || [];
   totalPopularPages.value = res?.total_pages;
+  totalPopularItems.value = res?.total_items
   loadingPopular.value = false;
 };
 
@@ -173,6 +175,7 @@ const showMorePopular = async () => {
       status: "PUBLISHED",
       location: useCookie("country").value?.toUpperCase() || "SG",
       page: currentPagePopular.value,
+      limit: 10,
     });
     if (res?.data.length > 0) {
       spaceArrayPopular.value = [...spaceArrayPopular.value, ...res?.data];
