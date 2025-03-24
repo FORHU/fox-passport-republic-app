@@ -14,19 +14,18 @@
   >
     <v-col cols="12" class="w-100 font-600 text-22px h-100 mt-5 mt-2">
       <v-row no-gutters class="d-flex flex-row justify-between align-center">
-        <v-col cols="6"
-          ><span
-            >Announcements (12)</span
-          ></v-col
-        >
+        <v-col cols="6"><span>Announcements (12)</span></v-col>
         <v-col cols="6" class="d-flex justify-end">
           <v-btn color="primary">
-            <NuxtLink class="text-decoration-none" :to="{
-              path: `/${country}/announcements/add`,
-            }">
+            <NuxtLink
+              class="text-decoration-none"
+              :to="{
+                path: `/${country}/announcements/add`,
+              }"
+            >
               Create New
             </NuxtLink>
-            </v-btn>
+          </v-btn>
         </v-col>
       </v-row>
     </v-col>
@@ -100,10 +99,8 @@
           <!-- Table Item Rows -->
           <template v-slot:item="{ item }: { item: any }">
             <tr class="text-16px text-secondary">
-              <td
-                class="cursor-pointer"
-              >
-                <div class="d-flex align-center ga-3 px-3 py-2 py-md-3">
+              <td class="cursor-pointer" @click="showAnnouncementDialog = true">
+                <div class="d-flex align-center ga-3 pr-3 py-2 py-md-3">
                   <span>
                     <v-icon color="primary">mdi-bullhorn-outline</v-icon>
                   </span>
@@ -114,26 +111,50 @@
               </td>
               <td
                 style="white-space: nowrap"
-
                 class="cursor-pointer font-italic"
               >
                 {{ item.description }}
               </td>
-              <td
-                class="cursor-pointer"
-              >
+              <td class="cursor-pointer">
                 <span>{{ formatAnnouncementDate(item.date) }}</span>
               </td>
-              <td style="white-space: nowrap">
+              <td style="white-space: nowrap; width: 170px">
                 <v-row
                   no-gutters
                   class="d-flex ga-2 justify-start align-center"
                 >
-                  <v-col class="d-flex justify-center align-center" cols="auto">
-                    <v-icon>mdi-pencil</v-icon>
+                  <v-col
+                    @click="showAnnouncementDialog = true"
+                    class="d-flex justify-center align-center"
+                    cols="auto"
+                  >
+                    <v-btn
+                      border="secondary sm"
+                      flat
+                      icon="mdi-eye"
+                      size="small"
+                      rounded="lg"
+                    ></v-btn>
                   </v-col>
                   <v-col class="d-flex justify-center align-center" cols="auto">
-                    <v-icon color="primary">mdi-eye</v-icon>
+                    <v-btn
+                      @click="handleEditAnnouncement('1')"
+                      border="secondary sm"
+                      flat
+                      icon="mdi-pencil"
+                      size="small"
+                      rounded="lg"
+                    ></v-btn>
+                  </v-col>
+                  <v-col class="d-flex justify-center align-center" cols="auto">
+                    <v-btn
+                      @click="showDeleteAnnouncementDialog = true"
+                      border="secondary sm"
+                      flat
+                      icon="mdi-trash-can-outline"
+                      size="small"
+                      rounded="lg"
+                    ></v-btn>
                   </v-col>
                 </v-row>
               </td>
@@ -143,8 +164,19 @@
       </div>
     </v-col>
   </v-row>
+  <ModalAnnouncement
+    v-model="showAnnouncementDialog"
+    @closeAnnouncementDialog="closeAnnouncementDialog"
+  />
+  <DialogPromptNew v-model="showDeleteAnnouncementDialog" :promptTitle="promptTitle"
+    :promptText="`Once you delete it, you can't get it back`" :disagreeButtonText="'Cancel'"
+    :agreeButtonText="'Delete'" @disagree="disagreeButton" @agree="agreeButton" />
 </template>
 <script setup lang="ts">
+definePageMeta({
+  middleware: ["auth", "admin-only"],
+});
+
 type Announcement = {
   title: string;
   description: string;
@@ -152,9 +184,11 @@ type Announcement = {
 };
 const { country } = useLocal();
 const loading = ref<boolean>(false);
-const totalItems = ref<number>(12);
+const showAnnouncementDialog = ref<boolean>(false);
+const showDeleteAnnouncementDialog = ref<boolean>(false);
+const totalItems = ref<number>(10);
 const itemsPerPage = ref<number>(10);
-    const currentPage = ref<number>(1);
+const currentPage = ref<number>(1);
 const searchAnnouncement = ref<string | null>(null);
 const selectedSort = ref<string | null>(null);
 const announcementData = ref<Announcement[]>([
@@ -276,25 +310,37 @@ const formatAnnouncementDate = (input: string): string => {
   const isoString = input.replace(
     /(\d{4}-\d{2}-\d{2}) (\d{2}):(\d{2}) ([AP]M)/i,
     (_, date, hour, minute, meridian) => {
-      let h = parseInt(hour)
-      const m = minute
-      if (meridian.toLowerCase() === 'pm' && h < 12) h += 12
-      if (meridian.toLowerCase() === 'am' && h === 12) h = 0
-      return `${date}T${h.toString().padStart(2, '0')}:${m}:00`
+      let h = parseInt(hour);
+      const m = minute;
+      if (meridian.toLowerCase() === "pm" && h < 12) h += 12;
+      if (meridian.toLowerCase() === "am" && h === 12) h = 0;
+      return `${date}T${h.toString().padStart(2, "0")}:${m}:00`;
     }
-  )
+  );
 
-  const date = new Date(isoString)
+  const date = new Date(isoString);
 
-  return date.toLocaleString('en-US', {
-    month: 'short',
-    day: '2-digit',
-    year: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-    hour12: true,
-  }).replace(',', '')
-}
+  return date
+    .toLocaleString("en-US", {
+      month: "short",
+      day: "2-digit",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: true,
+    })
+    .replace(",", "");
+};
+
+const handleEditAnnouncement = (id: string) => {
+  navigateTo({
+    name: 'country-announcements-announcement-announcementId',
+    params: {
+      country: country,
+      announcementId: id
+    }
+  });
+};
 
 let timeoutId: ReturnType<typeof setTimeout>;
 const handleSearchAnnouncement = () => {
@@ -327,28 +373,36 @@ const handleChangeSort = async () => {
 const onUpdatePageHandler = (page: number) => {
   currentPage.value = page;
   loading.value = true;
-//   loadRatingsDate({
-//     page: currentPage.value,
-//     itemsPerPage: itemsPerPage.value,
-//     searchSpaceText: searchSpaceText.value,
-//     status: selectedFilterStatus.value,
-//     rating: selectedRating.value?.value,
-//     sort: selectedSort.value,
-//   });
+  //   loadRatingsDate({
+  //     page: currentPage.value,
+  //     itemsPerPage: itemsPerPage.value,
+  //     searchSpaceText: searchSpaceText.value,
+  //     status: selectedFilterStatus.value,
+  //     rating: selectedRating.value?.value,
+  //     sort: selectedSort.value,
+  //   });
   loading.value = false;
 };
 
 const onUpdateItemsPerPageHandler = (itemsPerPage: number) => {
   loading.value = true;
-//   loadRatingsDate({
-//     page: 1,
-//     itemsPerPage,
-//     searchSpaceText: searchSpaceText.value,
-//     status: selectedFilterStatus.value,
-//     rating: selectedRating.value?.value,
-//     sort: selectedSort.value,
-//   });
+  //   loadRatingsDate({
+  //     page: 1,
+  //     itemsPerPage,
+  //     searchSpaceText: searchSpaceText.value,
+  //     status: selectedFilterStatus.value,
+  //     rating: selectedRating.value?.value,
+  //     sort: selectedSort.value,
+  //   });
   loading.value = false;
+};
+
+const closeAnnouncementDialog = () => {
+  showAnnouncementDialog.value = false;
+};
+
+const disagreeButton = () => {
+  showDeleteAnnouncementDialog.value = false;
 };
 </script>
 <style scoped></style>
