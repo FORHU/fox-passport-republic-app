@@ -37,18 +37,14 @@
                   ></span>
                 </v-col>
                 <span>
-                  <NuxtLink
-                    :to="`/${country}-announcements-list`"
-                    class="text-decoration-none text-black"
-                  >
                     <v-btn
+                      @click="$router.go(-1)"
                       variant="outlined"
                       border="secondary md"
                       size="large"
                       text="Exit"
                       rounded="lg"
                     ></v-btn>
-                  </NuxtLink>
                 </span>
               </v-col>
             </v-row>
