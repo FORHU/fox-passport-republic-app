@@ -135,6 +135,7 @@
 // const { enquiry, getEnquiry } = useEnquiry();
 import { useDisplay } from "vuetify";
 const { smAndUp, mdAndUp } = useDisplay();
+const { computeBadgeCount } = useNotification();
 
 const { withGST } = useTax();
 definePageMeta({
@@ -359,6 +360,7 @@ onMounted(async () => {
   await fetchOffer();
   await fetchSpaceData();
   loading.value = false;
+  computeBadgeCount();
 });
 </script>
 

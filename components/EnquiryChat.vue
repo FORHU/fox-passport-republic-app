@@ -274,6 +274,7 @@ import { loadStripe, type Stripe } from "@stripe/stripe-js";
 import { errorMessages } from "vue/compiler-sfc";
 import MOffer from "~/models/offer.model";
 const { isVenueMember, isVenueOwner, isVenueAdmin, isAdmin, isUser } = useAccess();
+const { computeBadgeCount } = useNotification();
 const showRemoveMemberPrompt = ref(false)
 const showJumpToPresent = ref(false);
 const infiniteScrollDiv = ref();
@@ -1335,6 +1336,7 @@ onMounted(async () => {
   await fetchRatings();
   useCookie("offer_mode").value = null;
   loading.value = false;
+  computeBadgeCount();
 });
 
 

@@ -43,13 +43,29 @@
                   name: navigationItem.to,
                   params: { country: getCountry() },
                 }"
-                class="d-flex align-center mx-3"
+                class="d-flex align-center mx-5"
                 style="text-decoration: unset; color: unset"
               >
-                <v-icon size="small" class="custom-padding">
-                  {{ navigationItem.icon }}
-                </v-icon>
-                {{ navigationItem.title }}
+              <template v-if="navigationItem?.key == 'inquiries' && inquiryBadgeCount">
+              <v-badge color="error" :content="inquiryBadgeCount" offset-x="-10">
+              <v-icon
+                size="small"
+                class="custom-padding"
+              >
+                {{ navigationItem.icon }}
+              </v-icon>
+              {{ navigationItem.title }}
+              </v-badge>
+            </template>
+            <template v-else>
+              <v-icon
+                size="small"
+                class="custom-padding"
+              >
+                {{ navigationItem.icon }}
+              </v-icon>
+              {{ navigationItem.title }}
+            </template>
               </nuxt-link>
             </template>
 
@@ -106,6 +122,13 @@
                   <v-list-item-title>{{
                     navigationItem.title
                   }}</v-list-item-title>
+                  <template v-if="navigationItem?.key == 'inquiries' && inquiryBadgeCount" v-slot:append>
+                  <v-badge
+                    color="error"
+                    :content="inquiryBadgeCount"
+                    inline
+                  ></v-badge>
+                </template>
                 </v-list-item>
                 <!-- <v-list-item
                   :to="`/${country}/announcements/list`"
@@ -198,6 +221,7 @@ import { useDisplay } from "vuetify";
 
 const { displayHeader } = useUtils();
 const { isAdminMember, isAdminSales } = useAccess();
+const { inquiryBadgeCount } = useNotification();
 const { smAndDown, mdAndDown } = useDisplay();
 const { loggedIn, currentUser, logout } = useLocalAuth();
 const { country } = useLocal();
@@ -243,6 +267,7 @@ const navigation = computed(() => {
       icon: "mdi-message-text-outline",
       to: `${baseUrl}-enquiries`,
       params: { country, status: "all" },
+      key: "inquiries"
     });
   }
 
@@ -252,6 +277,7 @@ const navigation = computed(() => {
       icon: "mdi-message-text-outline",
       to: `${baseUrl}-enquiries`,
       params: { country },
+      key: "inquiries"
     });
   }
 
