@@ -55,7 +55,7 @@
       <v-btn
         variant="text"
         :loading="loadingMorePopular"
-        v-if=" ((currentPagePopular < totalPopularPages)) || loadingMorePopular || (totalPopularItems < 10 && !morePopularShown)"
+        v-if=" ((currentPagePopular < totalPopularPages)) || loadingMorePopular || (totalPopularItems <= 10 && !morePopularShown)"
         class="text-decoration-underline"
         @click="showMorePopular"
         >Show more popular venues</v-btn
