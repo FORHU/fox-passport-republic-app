@@ -44,6 +44,7 @@ declare type TEnquiry = {
     role: "USER" | "VENUE_OWNER" | null;
     _id: string | null;
   };
+  read?: boolean;
 };
 
 declare type TCateringOptions = {

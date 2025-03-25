@@ -44,6 +44,7 @@ export default class MEnquiry implements TEnquiry {
   };
   latest_message: string;
   cancelledBy: { role: "USER" | "VENUE_OWNER" | null; _id: string | null };
+  read?: boolean;
 
   constructor(enquiry: Partial<TEnquiry> = {}) {
     this._id = enquiry._id || "";
@@ -84,5 +85,6 @@ export default class MEnquiry implements TEnquiry {
     };
     this.latest_message = enquiry.latest_message || "";
     this.cancelledBy = enquiry.cancelledBy || { role: null, _id: null };
+    this.read = enquiry.read || true;
   }
 }

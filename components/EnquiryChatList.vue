@@ -64,7 +64,7 @@
                         :last_name="item.raw?.user?.last_name" :img-src="item.raw?.user?.profile_picture"
                         style="position: absolute; bottom: -3%; right: -3%; border: 2px solid white" />
                     </div>
-                    <div class="text-charcoal w-100" :class="xlAndUp ? 'text-16px' : 'text-14px'">
+                    <div class="text-charcoal w-100" :class="[xlAndUp ? 'text-16px' : 'text-14px', item?.raw?.read ? '' : 'font-weight-bold']">
                       <v-row no-gutters class="w-100 d-flex flex-wrap gx-2 justify-space-between">
                         <span>{{ (width > 1280 && width < 1457) ? sliceContent(`${item.raw?.space.name} at
                             ${item.raw?.venue.name}`, 15) : sliceContent(`${item.raw?.space.name} at

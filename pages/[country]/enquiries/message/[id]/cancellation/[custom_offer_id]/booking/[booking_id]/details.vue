@@ -63,6 +63,7 @@ const { enquiry, getEnquiry, offer } = useEnquiry();
 const { id, custom_offer_id, booking_id } = useRoute().params;
 const { currentUser } = useLocalAuth();
 const { country, getCurrencySymbol, setSnackbar } = useLocal();
+const { computeBadgeCount } = useNotification();
 import { useDisplay } from "vuetify";
 import MSpace from "~/models/space.model";
 const { mdAndUp, smAndUp } = useDisplay();
@@ -242,6 +243,7 @@ onMounted(async () => {
   await fetchEnquiryData();
   await fetchSpaceData();
   loading.value = false;
+  computeBadgeCount();
 });
 </script>
 
