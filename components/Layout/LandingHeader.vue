@@ -21,6 +21,7 @@
           >
             <img
               src="./../../public/images/navigation/dp3-removebg.webp"
+              alt="Venue4use brand logo"
               role="link"
               @click="navigate"
               style="max-width: 120px"

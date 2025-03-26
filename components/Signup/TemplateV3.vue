@@ -28,6 +28,7 @@
                   >
                     <img
                       src="public/images/navigation/dp3-removebg.webp"
+                      alt="Venue4use brand logo"
                       style="max-width: 120px"
                     />
                   </NuxtLink>
