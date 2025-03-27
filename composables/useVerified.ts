@@ -6,12 +6,10 @@ export const useVerified = () => {
         if(data.value){
             const res = data.value as any;
 
-            const objectData = res?.data
-            const isEmailVerified = objectData?.is_email_verified
-            const isStripeAccountVerified = objectData?.is_stripe_account_verified
-            console.log(isEmailVerified, isStripeAccountVerified);
-            
-            return isEmailVerified && isStripeAccountVerified  // Return true if both conditions are met. Otherwise, return false.
+            const objectData = res?.data as {is_email_verified: boolean, is_stripe_account_verified: boolean}
+            // const isEmailVerified = objectData?.is_email_verified
+            // const isStripeAccountVerified = objectData?.is_stripe_account_verified       
+            return objectData  // Return true if both conditions are met. Otherwise, return false.
             
         }
 

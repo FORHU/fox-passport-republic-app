@@ -102,6 +102,26 @@
                                         dot></v-badge>
                                 </span>
                                 <span class="text-16px">{{ formatStatus(item.status as string) }}</span>
+                                <span v-if="isAdmin" class="d-flex align-center text-secondary">
+                                    <v-btn density="compact" variant="text" icon size="small" flat @mouseover="activeOwnerVerificationStatus(item?.user?._id as string, (item?.user?.first_name +  ' ' + item?.user?.last_name))">
+                                        <v-icon>mdi-information-variant-circle-outline</v-icon>
+                                        <v-tooltip
+                                        activator="parent"
+                                        :location="lgAndUp ? 'right': 'top'"
+                                        open-on-click
+
+                                        >
+                                        <template v-if="verifyingOwner">
+                                        <p>Checking...</p>
+                                        </template>
+                                        <template v-else>
+                                        <div v-html="ownerTooltipDiv">
+                                        </div> 
+                                        </template>
+                                    
+                                    </v-tooltip>
+                                    </v-btn>
+                                    </span>
                             </div>
                         </td>
                         <td>
@@ -367,7 +387,7 @@ definePageMeta({
 
 import { useDisplay } from "vuetify";
 import type SpaceFormId from "./venue/[venueId]/spaces/[spaceId]/[spaceFormId].vue";
-const { smAndUp, mdAndUp } = useDisplay();
+const { smAndUp, mdAndUp, lgAndUp } = useDisplay();
 const { loggedIn, currentUser } = useLocalAuth();
 const { country, setSnackbar } = useLocal();
 const { isVenueMember, isVenueOwner, isVenueAdmin, isAdmin, isUser, isAdminMember, isAdminSales, teamAdmin } = useAccess();
@@ -394,6 +414,7 @@ const {
     batchUploadExcelFile
 } = useVenue();
 const { formatAddress, formatStatus, formatColor, sliceContent } = useUtils();
+const { checkOwnerOnboardingStatus } = useVerified();
 
 interface ISpaceList {
     name: string;
@@ -440,7 +461,8 @@ const mappedVenueList = computed(() => {
         venue: x.name,
         status: x.status,
         _id: x?._id,
-        form_steps: x?.form_steps
+        form_steps: x?.form_steps,
+        user: x?.user
     }))
 });
 
@@ -1014,7 +1036,45 @@ const showEditActionButton = (status: string) => {
 }
 
 
+const verifyingOwner = ref(false);
+const ownerStatusObject = ref({
+  is_email_verified: null as null | boolean,
+  is_stripe_account_verified: null as null | boolean,
+  owner_full_name: null as null | string,
+})
 
+const ownerTooltipDiv = computed(() => {
+  const { is_email_verified, is_stripe_account_verified, owner_full_name } = ownerStatusObject.value;
+
+  if (is_email_verified == null || is_stripe_account_verified == null) {
+    return `<p>Verification Error</p>`;
+  } else {
+    return `
+      <p>Owner Name: ${owner_full_name}</p>
+      <p>Email Verification: <span class="${is_email_verified ? 'text-success' : 'text-error'}">${is_email_verified ? 'Completed' : 'Pending'}</span></p>
+      <p>Stripe Onboarding: <span class="${is_stripe_account_verified ? 'text-success' : 'text-error'}">${is_stripe_account_verified ? 'Completed' : 'Pending'}</span></p>
+    `;
+  }
+});
+
+const activeOwnerVerificationStatus = async (userId: string, venueOwnerName: string) => {
+  if(!userId) return 'No Owner user id'
+  ownerStatusObject.value.is_email_verified = null;
+  ownerStatusObject.value.is_stripe_account_verified = null;
+  verifyingOwner.value = true;
+  try {
+    const res = await checkOwnerOnboardingStatus(userId)
+    if(res){
+      ownerStatusObject.value.is_email_verified = res?.is_email_verified
+      ownerStatusObject.value.is_stripe_account_verified = res?.is_stripe_account_verified
+      ownerStatusObject.value.owner_full_name = venueOwnerName
+    }
+  } catch (e) {
+    console.error("Error in activeOwnerVerificationStatus:", e);
+  } finally {
+    verifyingOwner.value = false;
+  }
+}
 
 onMounted(async () => {
     isUser && navigateTo('/')
