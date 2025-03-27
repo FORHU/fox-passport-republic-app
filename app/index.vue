@@ -38,7 +38,7 @@ const keywords = "Venue booking, Event spaces for rent, Meeting venues near me, 
 
 
 useHead(() => ({
-  title: "Venue4Use | Book Top Event Venues & Meeting Spaces",
+  title: "Venue4use | Book Top Event Venues & Meeting Spaces",
   meta: [
     {
       name: "description",
@@ -60,8 +60,8 @@ useHead(() => ({
 
 
 useSeoMeta({
-  title: 'Venue4Use | Book Top Event Venues & Meeting Spaces',
-  ogTitle: 'Venue4Use | Book Top Event Venues & Meeting Spaces',
+  title: 'Venue4use | Book Top Event Venues & Meeting Spaces',
+  ogTitle: 'Venue4use | Book Top Event Venues & Meeting Spaces',
   description: `Find the perfect venue for any occasion in ${country} - meetings, parties, or corporate events. Venue4use makes venue booking quick and easy.`,
   ogDescription: `Find the perfect venue for any occasion in ${country} - meetings, parties, or corporate events. Venue4use makes venue booking quick and easy.`,
   ogImage: defaultCountryImage.value || '/background.jpeg',
