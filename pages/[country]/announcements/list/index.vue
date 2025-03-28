@@ -1,5 +1,5 @@
 <template>
-  <v-row justify="center" align="center" v-if="loading">
+  <v-row justify="center" align="center" v-if="pageLoader">
     <v-progress-circular
       indeterminate
       color="primary"
@@ -14,7 +14,13 @@
   >
     <v-col cols="12" class="w-100 font-600 text-22px h-100 mt-5 mt-2">
       <v-row no-gutters class="d-flex flex-row justify-between align-center">
-        <v-col cols="6"><span>Announcements (12)</span></v-col>
+        <v-col cols="6"
+          ><span
+            >{{ totalItems > 1 ? "Announcements" : "Announcement" }} ({{
+              totalItems
+            }})</span
+          ></v-col
+        >
         <v-col cols="6" class="d-flex justify-end">
           <v-btn color="primary">
             <NuxtLink
@@ -115,8 +121,16 @@
               >
                 {{ item.description }}
               </td>
+              <td
+                style="white-space: nowrap"
+                class="cursor-pointer"
+              >
+                {{ getRecipientLabel(item.target) }}
+              </td>
               <td class="cursor-pointer">
-                <span>{{ formatAnnouncementDate(item.date) }}</span>
+                <span :class="item.active ? 'text-green' : 'text-red'">{{
+                  item.active ? "ACTIVE" : "INACTIVE"
+                }}</span>
               </td>
               <td style="white-space: nowrap; width: 170px">
                 <v-row
@@ -168,136 +182,40 @@
     v-model="showAnnouncementDialog"
     @closeAnnouncementDialog="closeAnnouncementDialog"
   />
-  <DialogPromptNew v-model="showDeleteAnnouncementDialog" :promptTitle="promptTitle"
-    :promptText="`Once you delete it, you can't get it back`" :disagreeButtonText="'Cancel'"
-    :agreeButtonText="'Delete'" @disagree="disagreeButton" @agree="agreeButton" />
+  <DialogPromptNew
+    v-model="showDeleteAnnouncementDialog"
+    :promptTitle="promptTitle"
+    :promptText="`Once you delete it, you can't get it back`"
+    :disagreeButtonText="'Cancel'"
+    :agreeButtonText="'Delete'"
+    @disagree="disagreeButton"
+    @agree="agreeButton"
+  />
 </template>
 <script setup lang="ts">
 definePageMeta({
   middleware: ["auth", "admin-only"],
 });
 
-type Announcement = {
-  title: string;
-  description: string;
-  date: string;
-};
+const { fetchAnnouncementList } = useAnnouncementAPI();
 const { country } = useLocal();
+const pageLoader = ref<boolean>(false);
 const loading = ref<boolean>(false);
 const showAnnouncementDialog = ref<boolean>(false);
 const showDeleteAnnouncementDialog = ref<boolean>(false);
-const totalItems = ref<number>(10);
+const totalItems = ref<number>(0);
 const itemsPerPage = ref<number>(10);
 const currentPage = ref<number>(1);
 const searchAnnouncement = ref<string | null>(null);
 const selectedSort = ref<string | null>(null);
-const announcementData = ref<Announcement[]>([
-  {
-    title: "System Maintenance",
-    description: "Scheduled maintenance on servers will occur.",
-    date: "2025-03-22 10:00 AM",
-  },
-  {
-    title: "New Feature Release",
-    description: "We are rolling out new features this week.",
-    date: "2025-03-23 02:30 PM",
-  },
-  {
-    title: "Holiday Schedule",
-    description: "Office will be closed on upcoming public holidays.",
-    date: "2025-03-24 09:00 AM",
-  },
-  {
-    title: "Team Meeting",
-    description: "Monthly team meeting in Conference Room A.",
-    date: "2025-03-25 03:00 PM",
-  },
-  {
-    title: "Product Demo",
-    description: "Live product demo for potential clients.",
-    date: "2025-03-26 11:00 AM",
-  },
-  {
-    title: "Policy Update",
-    description: "Please review the updated company policies.",
-    date: "2025-03-27 01:00 PM",
-  },
-  {
-    title: "Onboarding Session",
-    description: "Orientation for new employees.",
-    date: "2025-03-28 09:30 AM",
-  },
-  {
-    title: "Quarterly Report",
-    description: "Q1 financial report is now available.",
-    date: "2025-03-29 04:00 PM",
-  },
-  {
-    title: "Server Upgrade",
-    description: "Upgrading backend servers to improve performance.",
-    date: "2025-03-30 12:00 PM",
-  },
-  {
-    title: "Client Visit",
-    description: "VIP client visiting the office today.",
-    date: "2025-03-31 10:15 AM",
-  },
-  {
-    title: "Security Training",
-    description: "Mandatory security training for all staff.",
-    date: "2025-04-01 02:00 PM",
-  },
-  {
-    title: "New Hire Introduction",
-    description: "Meet our new team members!",
-    date: "2025-04-02 11:45 AM",
-  },
-  {
-    title: "Office Cleaning",
-    description: "Deep cleaning scheduled this weekend.",
-    date: "2025-04-03 08:00 AM",
-  },
-  {
-    title: "Sales Update",
-    description: "Latest updates from the sales team.",
-    date: "2025-04-04 03:45 PM",
-  },
-  {
-    title: "System Outage Notice",
-    description: "Brief downtime expected for system updates.",
-    date: "2025-04-05 07:00 PM",
-  },
-  {
-    title: "Marketing Campaign Launch",
-    description: "Launching our new digital campaign.",
-    date: "2025-04-06 01:30 PM",
-  },
-  {
-    title: "Health & Wellness Workshop",
-    description: "Join us for a wellness workshop.",
-    date: "2025-04-07 10:00 AM",
-  },
-  {
-    title: "CSR Activity",
-    description: "Corporate social responsibility activity this Friday.",
-    date: "2025-04-08 09:00 AM",
-  },
-  {
-    title: "Internship Program",
-    description: "New internship program starts next month.",
-    date: "2025-04-09 10:30 AM",
-  },
-  {
-    title: "Annual Townhall",
-    description: "Company-wide annual townhall event.",
-    date: "2025-04-10 04:30 PM",
-  },
-]);
+const announcementData = ref<TAnnouncement[]>([]);
+const promptTitle = ref("");
 
 const headers = ref<object[]>([
   { title: "Title", value: "title" },
   { title: "Description", value: "description" },
-  { title: "Date", value: "date" },
+  { title: "Recipients", value: "recipients" },
+  { title: "Status", value: "active" },
   { title: "Actions", value: "actions" },
 ]);
 
@@ -306,39 +224,15 @@ const itemsSort = ref<object[]>([
   { label: "Oldest", value: "Oldest" },
 ]);
 
-const formatAnnouncementDate = (input: string): string => {
-  const isoString = input.replace(
-    /(\d{4}-\d{2}-\d{2}) (\d{2}):(\d{2}) ([AP]M)/i,
-    (_, date, hour, minute, meridian) => {
-      let h = parseInt(hour);
-      const m = minute;
-      if (meridian.toLowerCase() === "pm" && h < 12) h += 12;
-      if (meridian.toLowerCase() === "am" && h === 12) h = 0;
-      return `${date}T${h.toString().padStart(2, "0")}:${m}:00`;
-    }
-  );
-
-  const date = new Date(isoString);
-
-  return date
-    .toLocaleString("en-US", {
-      month: "short",
-      day: "2-digit",
-      year: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-      hour12: true,
-    })
-    .replace(",", "");
-};
+const agreeButton = () => {};
 
 const handleEditAnnouncement = (id: string) => {
   navigateTo({
-    name: 'country-announcements-announcement-announcementId',
+    name: "country-announcements-announcement-announcementId",
     params: {
       country: country,
-      announcementId: id
-    }
+      announcementId: id,
+    },
   });
 };
 
@@ -370,17 +264,10 @@ const handleChangeSort = async () => {
   //   });
 };
 
-const onUpdatePageHandler = (page: number) => {
+const onUpdatePageHandler = async (page: number) => {
   currentPage.value = page;
   loading.value = true;
-  //   loadRatingsDate({
-  //     page: currentPage.value,
-  //     itemsPerPage: itemsPerPage.value,
-  //     searchSpaceText: searchSpaceText.value,
-  //     status: selectedFilterStatus.value,
-  //     rating: selectedRating.value?.value,
-  //     sort: selectedSort.value,
-  //   });
+  await fetchAnnouncement();
   loading.value = false;
 };
 
@@ -404,5 +291,35 @@ const closeAnnouncementDialog = () => {
 const disagreeButton = () => {
   showDeleteAnnouncementDialog.value = false;
 };
+
+const getRecipientLabel = (value: "ALL" | "VENUE_OWNERS_ONLY" | "USERS_ONLY"): string => {
+  const mapping: Record<string, string> = {
+    ALL: "All",
+    VENUE_OWNERS_ONLY: "Venue Owners",
+    USERS_ONLY: "Users",
+  };
+
+  return mapping[value] || "Unknown"; 
+};
+
+const fetchAnnouncement = async (): Promise<void> => {
+  try {
+    const res = await fetchAnnouncementList(
+      currentPage.value,
+      itemsPerPage.value
+    );
+
+    if (res.data) {
+      announcementData.value = res.data;
+      totalItems.value = res.total_documents;
+    }
+  } catch (error) {
+  }
+};
+onMounted(async () => {
+  pageLoader.value = true;
+  await fetchAnnouncement();
+  pageLoader.value = false;
+});
 </script>
 <style scoped></style>
