@@ -1,5 +1,3 @@
-import { useAPI } from "./useAPI";
-
 export const useAnnouncementAPI = () => {
   const addAnnouncement = async (payload: any) => {
     return await useAPI(`/v1/admin/announcements`, {
