@@ -129,7 +129,7 @@
           </v-row>
         </v-col>
         <v-col cols="12" class="footer-bottom">
-          <p class="copyright">&copy; 2024 Venue4use. All rights reserved.</p>
+          <p class="copyright">&copy; 2025 Venue4use. All rights reserved.</p>
         </v-col>
       </v-row>
     </v-container>
