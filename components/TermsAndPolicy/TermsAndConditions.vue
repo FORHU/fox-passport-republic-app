@@ -1,5 +1,5 @@
 <template>
-  <v-row>
+  <v-row class="pb-16">
     <v-col cols="0" sm="0" md="1" lg="1"> </v-col>
     <v-col cols="12" sm="12" md="10" lg="10">
       <v-row no-gutters class="font-weight-bold text-h6">

@@ -5,7 +5,7 @@
         <!-- Footer Text Section -->
         <div class="d-flex flex-column flex-md-row align-center mb-md-0">
           <p :class="smAndDown ? 'mb-4 text-center' : 'mr-2'">
-            &copy; 2024 All rights reserved by <b>Venue4use</b>
+            &copy; 2025 All rights reserved by <b>Venue4use</b>
           </p>
           <p class="mr-2 text-grey hidden-md-and-down">•</p>
           <NuxtLink
