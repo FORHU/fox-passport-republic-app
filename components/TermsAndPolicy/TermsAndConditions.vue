@@ -365,6 +365,21 @@
         ratings will be published on our website after being checked for
         obscenities by a Venue4use Representative.
       </v-row>
+
+      <v-row no-gutters class="font-weight-bold text-h6">
+        4. Stripe Verification and Identity Requirements for Singapore
+      </v-row>
+      <v-row no-gutters class="pa-5">
+        4.1. For users based in Singapore, the following resources outline important updates and enhanced verification processes related to Stripe’s services. Please review the information to ensure compliance with the latest guidelines.
+      </v-row>
+      <ul class="pa-5 pl-16 w-100">
+        <li class="pb-5">
+          <NuxtLink class="text-primary text-decoration-underline cursor-pointer" target="_blank" to="https://support.stripe.com/questions/2025-updates-to-singapore-verification-requirements">Updates to Singapore Verification Requirements</NuxtLink>: This link provides details on the recent updates to the verification requirements for Stripe accounts in Singapore.
+        </li>
+        <li>
+          <NuxtLink class="text-primary text-decoration-underline cursor-pointer" target="_blank" to="https://support.stripe.com/questions/enhanced-identity-verification-for-singapore-based-accounts">Enhanced Identity Verification for Singapore-Based Accounts</NuxtLink>: This link offers information on enhanced identity verification measures required for Singapore-based Stripe accounts.
+        </li>
+      </ul>
     </v-col>
     <v-col cols="0" sm="0" md="1" lg="1"> </v-col>
   </v-row>
