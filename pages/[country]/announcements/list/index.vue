@@ -152,7 +152,7 @@
                   </v-col>
                   <v-col class="d-flex justify-center align-center" cols="auto">
                     <v-btn
-                      @click="handleEditAnnouncement('1')"
+                      @click="handleEditAnnouncement(item)"
                       border="secondary sm"
                       flat
                       icon="mdi-pencil"
@@ -162,7 +162,7 @@
                   </v-col>
                   <v-col class="d-flex justify-center align-center" cols="auto">
                     <v-btn
-                      @click="showDeleteAnnouncementDialog = true"
+                      @click="handleDeleteAnnouncement(item._id)"
                       border="secondary sm"
                       flat
                       icon="mdi-trash-can-outline"
@@ -197,7 +197,7 @@ definePageMeta({
   middleware: ["auth", "admin-only"],
 });
 
-const { fetchAnnouncementList } = useAnnouncementAPI();
+const { fetchAnnouncementList, deleteAnnouncement } = useAnnouncementAPI();
 const { country } = useLocal();
 const pageLoader = ref<boolean>(false);
 const loading = ref<boolean>(false);
@@ -207,9 +207,10 @@ const totalItems = ref<number>(0);
 const itemsPerPage = ref<number>(10);
 const currentPage = ref<number>(1);
 const searchAnnouncement = ref<string | null>(null);
-const selectedSort = ref<string | null>(null);
+const selectedSort = ref<number | null>(null);
 const announcementData = ref<TAnnouncement[]>([]);
 const promptTitle = ref("");
+const selectedAnnouncementId = ref<string>("");
 
 const headers = ref<object[]>([
   { title: "Title", value: "title" },
@@ -220,48 +221,54 @@ const headers = ref<object[]>([
 ]);
 
 const itemsSort = ref<object[]>([
-  { label: "Latest", value: "Latest" },
-  { label: "Oldest", value: "Oldest" },
+  { label: "Latest", value: 1 },
+  { label: "Oldest", value: -1 },
 ]);
 
-const agreeButton = () => {};
+const agreeButton = async () => {
+  loading.value = true;
+  try {
+    await deleteAnnouncement(selectedAnnouncementId.value);
+    await fetchAnnouncement();
+  } catch (error) {
+    console.error(error);
+  }
+  showDeleteAnnouncementDialog.value = false;
+  loading.value = false;
+};
 
-const handleEditAnnouncement = (id: string) => {
+const handleEditAnnouncement = (announcement: any) => {
   navigateTo({
     name: "country-announcements-announcement-announcementId",
     params: {
       country: country,
-      announcementId: id,
+      announcementId: announcement._id,
     },
   });
 };
 
+const handleDeleteAnnouncement = (id: string) => {
+  selectedAnnouncementId.value = id;
+  showDeleteAnnouncementDialog.value = true
+}
+
 let timeoutId: ReturnType<typeof setTimeout>;
+
 const handleSearchAnnouncement = () => {
   clearTimeout(timeoutId);
-  timeoutId = setTimeout(() => {
-    // currentPage.value = 1;
-    // loadRatingsDate({
-    //   page: currentPage.value,
-    //   itemsPerPage: itemsPerPage.value,
-    //   searchSpaceText: searchSpaceText.value,
-    //   status: selectedSort.value,
-    //   rating: selectedRating.value?.value,
-    //   sort: selectedSort.value,
-    // });
+  timeoutId = setTimeout(async () => {
+    currentPage.value = 1;
+    loading.value = true;
+    await fetchAnnouncement();
+    loading.value = false;
   }, 300);
 };
 
 const handleChangeSort = async () => {
-  //   currentPage.value = 1;
-  //   await loadRatingsDate({
-  //     page: currentPage.value,
-  //     itemsPerPage: itemsPerPage.value,
-  //     searchSpaceText: searchSpaceText.value,
-  //     status: selectedFilterStatus.value,
-  //     rating: selectedRating.value?.value,
-  //     sort: selectedSort.value,
-  //   });
+    currentPage.value = 1;
+    loading.value = true;
+    await fetchAnnouncement();
+    loading.value = false;
 };
 
 const onUpdatePageHandler = async (page: number) => {
@@ -306,7 +313,9 @@ const fetchAnnouncement = async (): Promise<void> => {
   try {
     const res = await fetchAnnouncementList(
       currentPage.value,
-      itemsPerPage.value
+      itemsPerPage.value,
+      searchAnnouncement.value,
+      selectedSort.value
     );
 
     if (res.data) {
