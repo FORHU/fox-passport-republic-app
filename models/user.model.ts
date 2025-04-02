@@ -19,6 +19,7 @@ export default class MUser implements TUser {
   phone_number: string;
   stripe_account: string;
   assigned_roles?: null | string;
+  room_id?: string;
 
   constructor(user: Partial<TUser> = {}) {
     this._id = user._id || "";
@@ -42,5 +43,9 @@ export default class MUser implements TUser {
     this.phone_number = user.phone_number || "";
     this.stripe_account = user.stripe_account || "";
     this.assigned_roles = user.assigned_roles || null;
+    // Only assign room_id if it exists
+    if (user.room_id) {
+      this.room_id = user.room_id;
+    }
   }
 }

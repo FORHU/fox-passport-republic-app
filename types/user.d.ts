@@ -28,6 +28,7 @@ declare type TUser = {
   phone_number: string;
   stripe_account: string;
   assigned_roles?: string | null
+  room_id?: string
 };
 
 declare type TGetUsersByPageSearchResponse = {
