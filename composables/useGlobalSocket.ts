@@ -11,11 +11,13 @@ export function useGlobalSocket() {
   const tenantCode = config.public.TENANT_CODE
   const tenantAPIKey = config.public.TENANT_API_KEY
   const accessToken = useCookie("accessToken", cookieOptions).value;
+  const userRoomId = currentUser.value?.room_id
 
 
 
   async function connect() {
-    socket.value = io(config.public.API, {
+    if(!userRoomId) return;
+    socket.value = io(`${config.public.API}/notifications`, {
       extraHeaders: {
         Authorization: `Bearer ${accessToken}`,
         Tenant: tenantCode,
@@ -26,14 +28,20 @@ export function useGlobalSocket() {
     if (socket.value && !listenersAttached) {
       // Handle socket events
       socket.value.on("connect", () => {
-        console.log('socket connected!', socket.value);
-        // socket.value.emit("join_room", { room_id: currentUser.value._id });
+        joinGlobalSocketRoom();
       });
       addSocketListeners();
       listenersAttached = true;
       socket.value.on("disconnect", () => {
         // location.reload(); // Reload the page on disconnect
       });
+    }
+  }
+
+  function joinGlobalSocketRoom () {
+    if(!userRoomId) return;
+    if(socket.value){
+      socket.value.emit(SOCKET_EVENTS.JOIN_NOTIFICATIONS_ROOM, { room_id: userRoomId });
     }
   }
 
@@ -46,9 +54,7 @@ export function useGlobalSocket() {
 
 
   function handleNotificationCount (data: any) {
-    console.log('handleNotificationCount ran!!')
     console.log('notification data', data);
-    
   }
 
 
