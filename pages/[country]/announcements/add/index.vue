@@ -18,7 +18,8 @@
           <v-app-bar
             flat
             color="white"
-            class="px-5 px-md-0"
+            class="px-md-0"
+            :class="xs ? 'px-1 pr-4' : 'px-5'"
             width="100%"
             style="border-bottom: 2px solid #dedfe3"
           >
@@ -54,9 +55,9 @@
               </v-col>
             </v-row>
           </v-app-bar>
-          <v-main style="margin-top: 100px">
-            <v-row class="my-2">
-              <v-col cols="6">
+          <v-main :style="xs ? 'padding-top: 40px' : 'margin-top: 100px'">
+            <v-row class="my-2" :class="xs ? 'px-4' : ''">
+              <v-col :cols="xs ? '12' : ' 6'">
                 <v-row no-gutters>
                   <v-col cols="12" class="d-flex flex-column">
                     <span class="font-weight-bold">Choose banner image</span>
@@ -74,7 +75,7 @@
                       label="Upload banner image"
                       uploader-id="space"
                       @done-uploading="handleUploadBannerPhotos"
-                      height="285"
+                      :height="mdAndDown ? '330' : '285'"
                       width="100%"
                       single-file-only
                     />
@@ -83,7 +84,7 @@
                     <CardImage
                       v-if="formAnnouncement.photo !== ''"
                       :src="formAnnouncement.bannerPhotos.path"
-                      height="285"
+                      :height="mdAndDown ? '330' : '285'"
                       width="100%"
                       :delete-icon="true"
                       @delete="
@@ -99,7 +100,7 @@
                   </v-col>
                 </v-row>
               </v-col>
-              <v-col cols="6">
+              <v-col :cols="xs ? '12' : ' 6'">
                 <v-row no-gutters class="d-flex justify-space-between">
                   <v-col cols="12" class="d-flex flex-column">
                     <span class="font-weight-bold">Fill out infromation</span>
@@ -111,9 +112,9 @@
                 <v-row class="mt-3" no-gutters>
                   <v-col cols="12" class="text-center my-3">
                     <v-row no-gutters class="d-flex justify-space-between">
-                      <v-cols cols="8">
+                      <v-cols :cols="mdAndDown ? '12' : '8'">
                         <v-select
-                          style="width: 170px;"
+                          style="width: 170px"
                           placeholder="Select recipients"
                           :items="recipients"
                           item-title="label"
@@ -125,8 +126,9 @@
                         ></v-select>
                       </v-cols>
                       <v-col
-                        cols="4"
-                        class="d-flex flex-column align-end justify-center"
+                        :cols="mdAndDown ? '12' : '4'"
+                        class="d-flex flex-column justify-center"
+                        :class="mdAndDown ? 'align-start mt-2' : 'align-end'"
                       >
                         <v-checkbox
                           v-model="formAnnouncement.isActive"
@@ -230,10 +232,12 @@
   />
 </template>
 <script setup lang="ts">
+import { useDisplay } from "vuetify";
 definePageMeta({
   layout: "bare",
   middleware: ["auth", "admin-only"],
 });
+const { xs, mdAndDown, md } = useDisplay();
 const { addAnnouncement } = useAnnouncementAPI();
 const formAnnouncement = ref(<any>{
   bannerPhotos: <any>{},
@@ -325,7 +329,7 @@ const handleSave = async () => {
       title: formAnnouncement.value.title,
       description: formAnnouncement.value.description,
       active: formAnnouncement.value.isActive,
-      target: formAnnouncement.value.recipients
+      target: formAnnouncement.value.recipients,
     };
     const { data, error }: { data: any; error: any } =
       await addAnnouncement(payload);
