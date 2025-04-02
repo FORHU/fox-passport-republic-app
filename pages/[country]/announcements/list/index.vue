@@ -38,7 +38,7 @@
     <v-col cols="12" style="width: 100%">
       <v-row no-gutters>
         <v-col cols="12" class="my-5 w-100 d-flex ga-3 align-center text-16px">
-          <span style="width: 40%">
+          <span :style="xs ? 'width: 50%' : 'width: 40%'">
             <v-text-field
               v-model="searchAnnouncement"
               variant="outlined"
@@ -52,7 +52,7 @@
               @update:model-value="handleSearchAnnouncement"
             ></v-text-field>
           </span>
-          <span style="width: 15%">
+          <span :style="xs ? 'width: 30%' : 'width: 15%'">
             <v-select
               v-model="selectedSort"
               rounded="lg"
@@ -105,7 +105,7 @@
           <!-- Table Item Rows -->
           <template v-slot:item="{ item }: { item: any }">
             <tr class="text-16px text-secondary">
-              <td class="cursor-pointer" @click="showAnnouncementDialog = true">
+              <td class="cursor-pointer" @click="handleShowAnnouncementDialog(item)">
                 <div class="d-flex align-center ga-3 pr-3 py-2 py-md-3">
                   <span>
                     <v-icon color="primary">mdi-bullhorn-outline</v-icon>
@@ -136,9 +136,10 @@
                 <v-row
                   no-gutters
                   class="d-flex ga-2 justify-start align-center"
+                  :class="mdAndDown ? 'py-1' : ''"
                 >
                   <v-col
-                    @click="showAnnouncementDialog = true"
+                    @click="handleShowAnnouncementDialog(item)"
                     class="d-flex justify-center align-center"
                     cols="auto"
                   >
@@ -181,6 +182,7 @@
   <ModalAnnouncement
     v-model="showAnnouncementDialog"
     @closeAnnouncementDialog="closeAnnouncementDialog"
+    :announcement="selectedAnnouncement"
   />
   <DialogPromptNew
     v-model="showDeleteAnnouncementDialog"
@@ -193,10 +195,11 @@
   />
 </template>
 <script setup lang="ts">
+import { useDisplay } from "vuetify";
 definePageMeta({
   middleware: ["auth", "admin-only"],
 });
-
+const { xs, mdAndDown } = useDisplay();
 const { fetchAnnouncementList, deleteAnnouncement } = useAnnouncementAPI();
 const { country } = useLocal();
 const pageLoader = ref<boolean>(false);
@@ -211,6 +214,7 @@ const selectedSort = ref<number | null>(null);
 const announcementData = ref<TAnnouncement[]>([]);
 const promptTitle = ref("");
 const selectedAnnouncementId = ref<string>("");
+const selectedAnnouncement = ref<TAnnouncement>();
 
 const headers = ref<object[]>([
   { title: "Title", value: "title" },
@@ -245,6 +249,11 @@ const handleEditAnnouncement = (announcement: any) => {
       announcementId: announcement._id,
     },
   });
+};
+
+const handleShowAnnouncementDialog = (announcement: TAnnouncement) => {
+  selectedAnnouncement.value = announcement;
+  showAnnouncementDialog.value = true;
 };
 
 const handleDeleteAnnouncement = (id: string) => {
