@@ -5,7 +5,6 @@ export const SOCKET_EVENTS = {
   CUSTOM_OFFER_STATUS: "custom_offer_status",
   REQUEST_PHONE_NUMBER: "request_phone_number",
   NOTIFICATION_COUNT: "notification_count",
-  JOIN_NOTIFICATIONS_ROOM: "join_notifications"
 };
 
 export const ENQUIRY_STATUSES = {

@@ -7,6 +7,7 @@ export function useGlobalSocket() {
   let listenersAttached = false;
 
   const { currentUser, cookieOptions } = useLocalAuth();
+  const { inquiryBadgeCount } = useNotification();
   const config = useRuntimeConfig();
   const tenantCode = config.public.TENANT_CODE
   const tenantAPIKey = config.public.TENANT_API_KEY
@@ -17,7 +18,7 @@ export function useGlobalSocket() {
 
   async function connect() {
     if(!userRoomId) return;
-    socket.value = io(`${config.public.API}/notifications`, {
+    socket.value = io(config.public.API, {
       extraHeaders: {
         Authorization: `Bearer ${accessToken}`,
         Tenant: tenantCode,
@@ -28,8 +29,8 @@ export function useGlobalSocket() {
     if (socket.value && !listenersAttached) {
       // Handle socket events
       socket.value.on("connect", () => {
-        joinGlobalSocketRoom();
       });
+      joinGlobalSocketRoom();
       addSocketListeners();
       listenersAttached = true;
       socket.value.on("disconnect", () => {
@@ -40,27 +41,27 @@ export function useGlobalSocket() {
 
   function joinGlobalSocketRoom () {
     if(!userRoomId) return;
-    if(socket.value){
-      socket.value.emit(SOCKET_EVENTS.JOIN_NOTIFICATIONS_ROOM, { room_id: userRoomId });
+    if(socket.value){   
+      socket.value.emit(SOCKET_EVENTS.JOIN_ROOM, { room_id: userRoomId });
     }
   }
 
   function addSocketListeners() {
-    if (socket.value) {
       console.log('notification socket on executed!');
       socket.value.on(SOCKET_EVENTS.NOTIFICATION_COUNT, handleNotificationCount);
-    }
   }
 
 
   function handleNotificationCount (data: any) {
-    console.log('notification data', data);
+    console.log('notification data total count', data?.data?.totalUnreadCount);
+    const totalUnreadCount = data?.data?.totalUnreadCount || 0;
+    inquiryBadgeCount.value = totalUnreadCount;
   }
 
 
-  function removeListener(event: any) {
+  function removeAllListener() {
     if (socket.value) {
-      socket.value.removeListener(event);
+      socket.value.removeAllListeners();
     }
   }
 
@@ -68,6 +69,7 @@ export function useGlobalSocket() {
 
   return {
     socket,
-    connect
+    connect,
+    removeAllListener
   };
 }
