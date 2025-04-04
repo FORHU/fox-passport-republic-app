@@ -10,6 +10,7 @@
         </template>
       </v-snackbar>
 
+
       <ModalPromoteMobileApp
         v-model="showPromoteDialog"
         @closeDialog="closeDialog"

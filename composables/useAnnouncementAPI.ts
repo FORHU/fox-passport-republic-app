@@ -26,29 +26,35 @@ export const useAnnouncementAPI = () => {
     });
   };
 
-  const fetchAnnouncementList = async (
-    page: number = 1,
-    limit: number = 10,
-    search?: string | null,
-    sort?: number | null
-  ) => {
-    let query: any = {
+
+  const fetchAnnouncementList = async ({
+    page = 1,
+    limit = 10,
+    search,
+    sort,
+    active_only,
+  }: {page: number, limit: number, search: string | null, sort: number | null, active_only?: boolean}) => {
+    const query: any = {
       page,
       limit,
     };
-
+  
     if (search) {
       query.search = search;
     }
-
+  
     if (sort) {
       query.sort = sort;
     }
-
+  
+    // if (active_only !== undefined) {
+    //   query.active_only = active_only;
+    // }
+  
     const { data, error } = await useAPI(`/v1/admin/announcements`, {
       query,
     });
-
+  
     if (data.value) {
       const res = data.value as any;
       return res.data;
