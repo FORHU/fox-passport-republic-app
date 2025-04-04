@@ -21,7 +21,7 @@
             }})</span
           ></v-col
         >
-        <v-col cols="6" class="d-flex justify-end">
+        <v-col cols="6" class="d-flex justify-end" v-if="isAdmin">
           <v-btn color="primary">
             <NuxtLink
               class="text-decoration-none"
@@ -105,34 +105,33 @@
           <!-- Table Item Rows -->
           <template v-slot:item="{ item }: { item: any }">
             <tr class="text-16px text-secondary">
-              <td class="cursor-pointer" @click="handleShowAnnouncementDialog(item)">
+              <td class="cursor-pointer" @click="handleShowAnnouncementDialog(item)" style="width: 350px">
                 <div class="d-flex align-center ga-3 pr-3 py-2 py-md-3">
                   <span>
                     <v-icon color="primary">mdi-bullhorn-outline</v-icon>
                   </span>
-                  <span class="text-primary text-decoration-underline">{{
-                    item.title
+                  <span class="text-primary text-decoration-underline">{{sliceContent(item.title, 30)
                   }}</span>
                 </div>
               </td>
               <td
-                style="white-space: nowrap"
+                style="white-space: nowrap; width: 350px"
                 class="cursor-pointer font-italic"
               >
                 {{ item.description }}
               </td>
               <td
-                style="white-space: nowrap"
+                style="white-space: nowrap; width: 200px"
                 class="cursor-pointer"
               >
                 {{ getRecipientLabel(item.target) }}
               </td>
-              <td class="cursor-pointer">
+              <td class="cursor-pointer" style="width: 200px">
                 <span :class="item.active ? 'text-green' : 'text-red'">{{
                   item.active ? "ACTIVE" : "INACTIVE"
                 }}</span>
               </td>
-              <td style="white-space: nowrap; width: 170px">
+              <td style="white-space: nowrap; width: 170px" v-if="isAdmin">
                 <v-row
                   no-gutters
                   class="d-flex ga-2 justify-start align-center"
@@ -197,10 +196,11 @@
 <script setup lang="ts">
 import { useDisplay } from "vuetify";
 definePageMeta({
-  middleware: ["auth", "admin-only"],
+  middleware: ["auth"],
 });
 const { xs, mdAndDown } = useDisplay();
 const { fetchAnnouncementList, deleteAnnouncement } = useAnnouncementAPI();
+const { isAdmin } = useAccess();
 const { country } = useLocal();
 const pageLoader = ref<boolean>(false);
 const loading = ref<boolean>(false);
@@ -216,13 +216,23 @@ const promptTitle = ref("");
 const selectedAnnouncementId = ref<string>("");
 const selectedAnnouncement = ref<TAnnouncement>();
 
-const headers = ref<object[]>([
+const headers = computed(() => {
+  const arr = [
   { title: "Title", value: "title" },
   { title: "Description", value: "description" },
   { title: "Recipients", value: "recipients" },
   { title: "Status", value: "active" },
-  { title: "Actions", value: "actions" },
-]);
+  // isAdmin ? { title: "Actions", value: "actions" } : {},
+]
+
+if (isAdmin) {
+  arr.push({ title: "Actions", value: "actions" });
+} 
+
+return arr;
+}
+  
+)
 
 const itemsSort = ref<object[]>([
   { label: "Latest", value: 1 },
@@ -320,12 +330,17 @@ const getRecipientLabel = (value: "ALL" | "VENUE_OWNERS_ONLY" | "USERS_ONLY"): s
 
 const fetchAnnouncement = async (): Promise<void> => {
   try {
-    const res = await fetchAnnouncementList(
-      currentPage.value,
-      itemsPerPage.value,
-      searchAnnouncement.value,
-      selectedSort.value
-    );
+    const res = await fetchAnnouncementList({
+      // currentPage.value,
+      // itemsPerPage.value,
+      // searchAnnouncement.value,
+      // selectedSort.value
+      page: currentPage.value,
+      limit: itemsPerPage.value,
+      search: searchAnnouncement.value,
+      sort: selectedSort.value,
+      active_only: isAdmin ? false : true,
+    });
 
     if (res.data) {
       announcementData.value = res.data;

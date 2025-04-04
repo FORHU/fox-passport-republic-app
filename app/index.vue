@@ -10,7 +10,29 @@
         </template>
       </v-snackbar>
 
+<<<<<<< Updated upstream
       <ModalPromoteMobileApp v-model="showPromoteDialog" @closeDialog="closeDialog"/>
+=======
+      <!-- <ModalPromoteMobileApp
+        v-model="showPromoteDialog"
+        @closeDialog="closeDialog"
+      /> -->
+      <template>
+        <template
+          v-for="announcement in announcementData"
+          :key="announcement._id"
+        >
+          <ModalAnnouncement
+            v-model="announcementVisibility[announcement._id]"
+            @closeAnnouncementDialog="
+              (dontShowAgain) =>
+                closeAnnouncementDialog(announcement._id, dontShowAgain)
+            "
+            :announcement="announcement"
+          />
+        </template>
+      </template>
+>>>>>>> Stashed changes
       <NuxtPage />
     </NuxtLayout>
     <NuxtLoadingIndicator color="#8091AF" :height="4" />
