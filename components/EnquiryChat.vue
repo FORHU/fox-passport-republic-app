@@ -1374,7 +1374,7 @@ const checkScrollPosition = () => {
   const scroll = infiniteScrollDiv.value.$el.scrollHeight
   const height = infiniteScrollDiv.value.$el.clientHeight;
   const scrollTop = infiniteScrollDiv.value.$el.scrollTop
-  if (scroll > (height + scrollTop)) {
+  if (scroll > (height + scrollTop + 50)) {
     showJumpToPresent.value = true;
   }
 }

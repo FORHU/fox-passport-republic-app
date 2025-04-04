@@ -7,7 +7,7 @@ export function useGlobalSocket() {
   let listenersAttached = false;
 
   const { currentUser, cookieOptions } = useLocalAuth();
-  const { inquiryBadgeCount } = useNotification();
+  const { inquiryBadgeCount, inquiryTypesArr } = useNotification();
   const config = useRuntimeConfig();
   const tenantCode = config.public.TENANT_CODE
   const tenantAPIKey = config.public.TENANT_API_KEY
@@ -53,9 +53,15 @@ export function useGlobalSocket() {
 
 
   function handleNotificationCount (data: any) {
-    console.log('notification data total count', data?.data?.totalUnreadCount);
-    const totalUnreadCount = data?.data?.totalUnreadCount || 0;
-    inquiryBadgeCount.value = totalUnreadCount;
+    const totalUnreadCount = data?.data?.totalUnreadCount || 0;    
+    const totalInquiryUnreadCount = data?.data?.unreadCountsByType?.reduce((accumulator: any, currentItem: any) => {
+      // Add condition before adding the count
+        if (inquiryTypesArr.includes(currentItem?.type)) {
+          return accumulator + (currentItem?.count || 0);
+        }
+        return accumulator;
+    }, 0);
+    inquiryBadgeCount.value = totalInquiryUnreadCount;
   }
 
 
