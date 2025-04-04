@@ -192,7 +192,7 @@ const previewMessage = (message: any) => {
       else if (key == 'BOOKING_REQUESTED') content = 'The client requested to book your venue'
       else if (key == 'BOOKING_REQUEST_WITHDRAWN') content = 'The client has withdrawn this booking request'
       else if (key == 'DECLINED') content = 'The client has declined the custom offer'
-      else if (key == 'BOOKING_CONFIRMED') content = 'Venue owner Confirmed your booking'
+      else if (key == 'BOOKING_CONFIRMED') content = 'This booking is confirmed and paid'
       else if (key == 'BOOKING_REQUEST_DECLINED') content = 'Venue owner declined your booking request'
       else if (key == 'CANCELLED') content = 'This booking has been cancelled'
       else if (key == 'CUSTOM_OFFER_SENT') content = 'A custom offer has been sent'

@@ -177,6 +177,8 @@ const { cookieOptions } = useLocalAuth();
 const { socket, getMessages, connect, emitChat, conversation } = useChat();
 const { longDateFormat, convertTimeToAMPM } = useUtils();
 const { computePayment } = useEnquiry();
+const { emitGlobalSocket } = useGlobalSocket();
+
 const chatRoute = "country-enquiries-message-id";
 
 const showModal = ref(false);
@@ -432,6 +434,8 @@ const handleRequestToBook = async (event: Event) => {
           message: "null",
           key: "BOOKING_CONFIRMED",
         });
+
+        await emitGlobalSocket(SOCKET_EVENTS.NOTIFICATION_COUNT, {custom_offer_id: customOfferId,})
         navigateTo({ name: chatRoute, params: { country, id } });
       }
 

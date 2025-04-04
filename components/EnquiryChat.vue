@@ -275,6 +275,7 @@ import { errorMessages } from "vue/compiler-sfc";
 import MOffer from "~/models/offer.model";
 const { isVenueMember, isVenueOwner, isVenueAdmin, isAdmin, isUser } = useAccess();
 const { computeBadgeCount } = useNotification();
+const { emitGlobalSocket } = useGlobalSocket();
 const showRemoveMemberPrompt = ref(false)
 const showJumpToPresent = ref(false);
 const infiniteScrollDiv = ref();
@@ -1263,6 +1264,8 @@ const handleDeclineOffer = async () => {
         message: "null",
         key: "DECLINED",
       });
+
+      await emitGlobalSocket(SOCKET_EVENTS.NOTIFICATION_COUNT, {custom_offer_id})
     }
 
     try {

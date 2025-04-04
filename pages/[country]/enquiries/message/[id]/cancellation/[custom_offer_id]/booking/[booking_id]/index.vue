@@ -105,6 +105,9 @@ const { socket, getMessages, connect, emitChat, conversation } = useChat();
 const { requiredInput, longDateFormat } = useUtils();
 const { id, custom_offer_id, booking_id } = useRoute().params;
 const { space, getSpace } = useSpace();
+const { emitGlobalSocket } = useGlobalSocket();
+
+
 const formValid = ref(false);
 const formRef = ref();
 let showCancelBookingDialog = ref(false);
@@ -277,7 +280,8 @@ const handleCancellation = async () => {
       });
       return;
     }
-    await updateEnquiry(id as string, { status: "CANCELLED" });
+    // await updateEnquiry(id as string, { status: "CANCELLED" });
+    await emitGlobalSocket(SOCKET_EVENTS.NOTIFICATION_COUNT, {custom_offer_id})
 
     showCancelBookingDialog.value = false;
     setSnackbar({
@@ -294,6 +298,8 @@ const handleCancellation = async () => {
       key: "CANCELLED",
     });
 
+    
+
     navigateTo({
       name: "country-enquiries-message-id",
       params: { country, id },
@@ -303,11 +309,6 @@ const handleCancellation = async () => {
     console.log(err);
     showCancelBookingDialog.value = false;
     cancellationInProgress.value = false;
-    setSnackbar({
-      color: "error",
-      text: "Something went wrong. Please try again later.",
-      modal: true,
-    });
   }
 };
 

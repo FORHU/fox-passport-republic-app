@@ -2,7 +2,7 @@ import { io, Socket } from "socket.io-client";
 import { ref } from "vue";
 
 export function useGlobalSocket() {
-  const socket = useState("socket", (): Socket => {});
+  const socket = useState("global_socket", (): Socket => {});
   const socketData = useState("socketData", () => []);
   let listenersAttached = false;
 
@@ -47,7 +47,7 @@ export function useGlobalSocket() {
   }
 
   function addSocketListeners() {
-      console.log('notification socket on executed!');
+      // console.log('notification socket on executed!');
       socket.value.on(SOCKET_EVENTS.NOTIFICATION_COUNT, handleNotificationCount);
   }
 
@@ -71,11 +71,26 @@ export function useGlobalSocket() {
     }
   }
 
+  async function emitGlobalSocket(event: string, data?: any) {
+    if (socket.value) {
+      switch (event) {
+        case SOCKET_EVENTS.NOTIFICATION_COUNT:
+          const { custom_offer_id } = data;
+          if(!custom_offer_id) return;
+          socket.value.emit(SOCKET_EVENTS.NOTIFICATION_COUNT, { custom_offer_id });
+          break;
+        default:
+        // Handle other cases as needed
+      }
+    }
+  }
+
   
 
   return {
     socket,
     connect,
-    removeAllListener
+    removeAllListener,
+    emitGlobalSocket
   };
 }
