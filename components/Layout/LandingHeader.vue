@@ -131,13 +131,13 @@
                   ></v-badge>
                 </template>
                 </v-list-item>
-                <!-- <v-list-item
+                <v-list-item
                   :to="`/${country}/announcements/list`"
                   class="text-decoration-none"
                   v-if="isAdmin"
                 >
                   <v-list-item-title>Announcements</v-list-item-title>
-                </v-list-item> -->
+                </v-list-item>
                 <v-list-item
                   :to="`/settings/country`"
                   class="text-decoration-none"

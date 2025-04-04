@@ -6,35 +6,42 @@ export const useAnnouncementAPI = () => {
     });
   };
 
-  const updateAnnouncement = async (payload: any, id: string ) => {
+  const addAnnouncementLog = async (payload: any) => {
+    return await useAPI(`/v1/admin/announcement-logs`, {
+      method: "POST",
+      body: JSON.stringify(payload),
+    });
+  };
+
+  const updateAnnouncement = async (payload: any, id: string) => {
     return await useAPI(`/v1/admin/announcements/${id}`, {
       method: "PATCH",
       body: JSON.stringify(payload),
     });
   };
 
-    const deleteAnnouncement = async (id: any) => {
-      return await useAPI(`/v1/admin/announcements/${id}`, {
-        method: "DELETE",
-      });
-    };
+  const deleteAnnouncement = async (id: any) => {
+    return await useAPI(`/v1/admin/announcements/${id}`, {
+      method: "DELETE",
+    });
+  };
 
   const fetchAnnouncementList = async (
     page: number = 1,
     limit: number = 10,
     search?: string | null,
-    sort? : number | null
+    sort?: number | null
   ) => {
     let query: any = {
       page,
       limit,
     };
 
-    if(search){
+    if (search) {
       query.search = search;
     }
 
-    if(sort){
+    if (sort) {
       query.sort = sort;
     }
 
@@ -67,13 +74,14 @@ export const useAnnouncementAPI = () => {
     if (error.value) {
       return error.value;
     }
-  }
+  };
 
   return {
     addAnnouncement,
     fetchAnnouncementList,
     fetchAnnouncementById,
     updateAnnouncement,
-    deleteAnnouncement
+    deleteAnnouncement,
+    addAnnouncementLog,
   };
 };

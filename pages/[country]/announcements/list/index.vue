@@ -119,7 +119,7 @@
                 style="white-space: nowrap"
                 class="cursor-pointer font-italic"
               >
-                {{ item.description }}
+                {{ sliceContent(item.description, 60) }}
               </td>
               <td
                 style="white-space: nowrap"
@@ -202,6 +202,7 @@ definePageMeta({
 const { xs, mdAndDown } = useDisplay();
 const { fetchAnnouncementList, deleteAnnouncement } = useAnnouncementAPI();
 const { country } = useLocal();
+const { sliceContent } = useUtils();
 const pageLoader = ref<boolean>(false);
 const loading = ref<boolean>(false);
 const showAnnouncementDialog = ref<boolean>(false);

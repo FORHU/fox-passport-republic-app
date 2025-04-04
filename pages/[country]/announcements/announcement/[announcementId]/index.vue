@@ -372,7 +372,7 @@ const handleSave = async () => {
 
   try {
     const payload = {
-      attachment: formAnnouncement.value.photo,
+      attachment: formAnnouncement.value.bannerPhotos?._id,
       title: formAnnouncement.value.title,
       description: formAnnouncement.value.description,
       active: formAnnouncement.value.isActive,
