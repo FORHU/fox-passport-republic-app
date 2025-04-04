@@ -6,37 +6,27 @@ export const useAnnouncementAPI = () => {
     });
   };
 
-  const updateAnnouncement = async (payload: any, id: string ) => {
+  const addAnnouncementLog = async (payload: any) => {
+    return await useAPI(`/v1/admin/announcement-logs`, {
+      method: "POST",
+      body: JSON.stringify(payload),
+    });
+  };
+
+  const updateAnnouncement = async (payload: any, id: string) => {
     return await useAPI(`/v1/admin/announcements/${id}`, {
       method: "PATCH",
       body: JSON.stringify(payload),
     });
   };
 
-    const deleteAnnouncement = async (id: any) => {
-      return await useAPI(`/v1/admin/announcements/${id}`, {
-        method: "DELETE",
-      });
-    };
+  const deleteAnnouncement = async (id: any) => {
+    return await useAPI(`/v1/admin/announcements/${id}`, {
+      method: "DELETE",
+    });
+  };
 
-<<<<<<< Updated upstream
-  const fetchAnnouncementList = async (
-    page: number = 1,
-    limit: number = 10,
-    search?: string | null,
-    sort? : number | null
-  ) => {
-    let query: any = {
-      page,
-      limit,
-    };
 
-    if(search){
-      query.search = search;
-    }
-
-    if(sort){
-=======
   const fetchAnnouncementList = async ({
     page = 1,
     limit = 10,
@@ -54,7 +44,6 @@ export const useAnnouncementAPI = () => {
     }
   
     if (sort) {
->>>>>>> Stashed changes
       query.sort = sort;
     }
   
@@ -91,13 +80,14 @@ export const useAnnouncementAPI = () => {
     if (error.value) {
       return error.value;
     }
-  }
+  };
 
   return {
     addAnnouncement,
     fetchAnnouncementList,
     fetchAnnouncementById,
     updateAnnouncement,
-    deleteAnnouncement
+    deleteAnnouncement,
+    addAnnouncementLog,
   };
 };
