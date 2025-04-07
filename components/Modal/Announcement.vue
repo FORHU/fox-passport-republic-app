@@ -33,7 +33,7 @@
               <!-- <span>Description</span> -->
             </v-col>
             <v-col cols="12">
-              <span>"{{ props.announcement.description }}"</span>
+              <span style="font-style: italic;">{{ props.announcement?.description }}</span>
             </v-col>
           </v-row>
         </v-col>
