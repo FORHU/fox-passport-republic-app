@@ -270,17 +270,18 @@ const handleDeleteAnnouncement = (id: string) => {
   showDeleteAnnouncementDialog.value = true
 }
 
-let timeoutId: ReturnType<typeof setTimeout>;
 
-const handleSearchAnnouncement = () => {
-  clearTimeout(timeoutId);
-  timeoutId = setTimeout(async () => {
-    currentPage.value = 1;
+  let timeoutId: ReturnType<typeof setTimeout>;
+
+  const handleSearchAnnouncement = (val) => {
     loading.value = true;
-    await fetchAnnouncement();
-    loading.value = false;
-  }, 300);
-};
+    clearTimeout(timeoutId);
+    timeoutId = setTimeout(async () => {
+      currentPage.value = 1;
+      await fetchAnnouncement();
+      loading.value = false;
+    }, 500);
+  };
 
 const handleChangeSort = async () => {
     currentPage.value = 1;
@@ -330,10 +331,6 @@ const getRecipientLabel = (value: "ALL" | "VENUE_OWNERS_ONLY" | "USERS_ONLY"): s
 const fetchAnnouncement = async (): Promise<void> => {
   try {
     const res = await fetchAnnouncementList({
-      // currentPage.value,
-      // itemsPerPage.value,
-      // searchAnnouncement.value,
-      // selectedSort.value
       page: currentPage.value,
       limit: itemsPerPage.value,
       search: searchAnnouncement.value,
