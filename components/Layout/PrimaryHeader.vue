@@ -115,7 +115,7 @@
               <v-list-item
                 :to="`/${country}/announcements/list`"
                 class="text-decoration-none"
-                v-if="isAdmin"
+                
               >
                 <v-list-item-title
                   :class="{

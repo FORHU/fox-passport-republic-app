@@ -10,11 +10,6 @@
         </template>
       </v-snackbar>
 
-
-      <ModalPromoteMobileApp
-        v-model="showPromoteDialog"
-        @closeDialog="closeDialog"
-      />
       <template>
         <template
           v-for="announcement in announcementData"
@@ -79,7 +74,7 @@ const closeAnnouncementDialog = async (id: any, dontShowAgain: boolean) => {
 
 const fetchAnnouncement = async () => {
   if (!loggedIn.value) return;
-  if (isAdmin) return;
+  if (isAdmin || route.path.includes('/announcements/list')) return;
 
   try {
     const res = await fetchAnnouncementList(1, 20, null, null);
