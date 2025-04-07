@@ -78,7 +78,7 @@ export const useAnnouncementAPI = () => {
       return res.data;
     }
     if (error.value) {
-      return error.value;
+      return Promise.reject(error.value);
     }
   };
 
