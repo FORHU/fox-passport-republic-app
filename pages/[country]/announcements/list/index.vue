@@ -234,8 +234,8 @@ return arr;
 )
 
 const itemsSort = ref<object[]>([
-  { label: "Latest", value: 1 },
-  { label: "Oldest", value: -1 },
+  { label: "Latest", value: -1 },
+  { label: "Oldest", value: 1 },
 ]);
 
 const agreeButton = async () => {
