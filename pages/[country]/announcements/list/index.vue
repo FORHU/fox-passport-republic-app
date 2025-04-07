@@ -116,7 +116,7 @@
                 style="white-space: nowrap; width: 350px"
                 class="cursor-pointer font-italic"
               >
-                {{ sliceContent(item.description, 60) }}
+                {{item.description ? sliceContent(item.description, 60) : '' }}
               </td>
               <td
                 style="white-space: nowrap; min-width: 200px"
