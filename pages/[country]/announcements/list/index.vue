@@ -16,9 +16,7 @@
       <v-row no-gutters class="d-flex flex-row justify-between align-center">
         <v-col cols="6"
           ><span
-            >{{ totalItems > 1 ? "Announcements" : "Announcement" }} ({{
-              totalItems
-            }})</span
+            >Announcements {{totalItems > 0 ? `(${totalItems})` : ''}}</span
           ></v-col
         >
         <v-col cols="6" class="d-flex justify-end" v-if="isAdmin">

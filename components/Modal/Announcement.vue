@@ -21,6 +21,8 @@
               height="auto"
               class="w-100"
               contain
+              cover
+              max-height="650px"
               style="border-color: black !important"
             ></v-img>
           </v-col>
@@ -42,7 +44,7 @@
         <!-- Checkbox (Fixed) -->
         <v-row no-gutters class="w-100 d-flex align-center">
           <v-checkbox
-            v-if="!route.path.includes('/announcements/list') || !isAdmin"
+            v-if="!route.path.includes('/announcements/list')"
             v-model="dontShowAgain"
             label="Don't show me this again"
             density="compact"

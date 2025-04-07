@@ -47,9 +47,9 @@ export const useAnnouncementAPI = () => {
       query.sort = sort;
     }
   
-    // if (active_only !== undefined) {
-    //   query.active_only = active_only;
-    // }
+    if (active_only !== undefined) {
+      query.active_only = active_only;
+    }
   
     const { data, error } = await useAPI(`/v1/admin/announcements`, {
       query,
