@@ -33,7 +33,7 @@ export const useAnnouncementAPI = () => {
     search,
     sort,
     active_only,
-  }: {page: number, limit: number, search: string | null, sort: number | null, active_only?: boolean}) => {
+  }: {page: number, limit: number, search?: string | null, sort: number | null, active_only?: boolean}) => {
     const query: any = {
       page,
       limit,

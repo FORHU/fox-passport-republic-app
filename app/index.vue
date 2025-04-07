@@ -77,7 +77,7 @@ const fetchAnnouncement = async () => {
   if (isAdmin || route.path.includes('/announcements/list')) return;
 
   try {
-    const res = await fetchAnnouncementList(1, 20, null, null);
+    const res = await fetchAnnouncementList({page: 1, limit: 20, sort: -1, active_only: true});
 
     if (res.data) {
       announcementData.value = res.data.filter((announcement: any) => {
