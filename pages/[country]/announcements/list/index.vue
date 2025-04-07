@@ -103,7 +103,7 @@
           <!-- Table Item Rows -->
           <template v-slot:item="{ item }: { item: any }">
             <tr class="text-16px text-secondary">
-              <td class="cursor-pointer" @click="handleShowAnnouncementDialog(item)" style="width: 350px">
+              <td class="cursor-pointer" @click="handleShowAnnouncementDialog(item)" style="min-width: 350px">
                 <div class="d-flex align-center ga-3 pr-3 py-2 py-md-3">
                   <span>
                     <v-icon color="primary">mdi-bullhorn-outline</v-icon>
@@ -119,17 +119,17 @@
                 {{ sliceContent(item.description, 60) }}
               </td>
               <td
-                style="white-space: nowrap; width: 200px"
+                style="white-space: nowrap; min-width: 200px"
                 class="cursor-pointer"
               >
                 {{ getRecipientLabel(item.target) }}
               </td>
-              <td class="cursor-pointer" style="width: 200px">
+              <td class="cursor-pointer" style="min-width: 200px">
                 <span :class="item.active ? 'text-green' : 'text-red'">{{
                   item.active ? "ACTIVE" : "INACTIVE"
                 }}</span>
               </td>
-              <td style="white-space: nowrap; width: 170px" v-if="isAdmin">
+              <td style="white-space: nowrap; min-width: 200px" v-if="isAdmin">
                 <v-row
                   no-gutters
                   class="d-flex ga-2 justify-start align-center"
@@ -334,7 +334,7 @@ const fetchAnnouncement = async (): Promise<void> => {
       page: currentPage.value,
       limit: itemsPerPage.value,
       search: searchAnnouncement.value,
-      sort: selectedSort.value,
+      sort: selectedSort.value || -1,
       active_only: isAdmin ? false : true,
     });
 

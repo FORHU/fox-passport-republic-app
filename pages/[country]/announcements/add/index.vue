@@ -154,7 +154,6 @@
                   <v-col cols="12" class="text-center">
                     <v-textarea
                       v-model="formAnnouncement.description"
-                      :rules="descRule"
                       placeholder="Enter description"
                       row-height="10"
                       rounded="lg"
