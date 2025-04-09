@@ -102,19 +102,37 @@
               </v-col>
               <v-col :cols="xs ? '12' : ' 6'">
                 <v-row no-gutters class="d-flex justify-space-between">
-                  <v-col cols="12" class="d-flex flex-column">
+                  <v-col
+                    :cols="mdAndDown ? '12' : '8'"
+                    class="d-flex flex-column"
+                  >
                     <span class="font-weight-bold">Fill out infromation</span>
                     <span class="text-caption"
                       >Enter information about the announcement</span
                     >
                   </v-col>
+                  <v-col
+                    :cols="mdAndDown ? '12' : '4'"
+                    class="d-flex flex-column justify-center"
+                    :class="mdAndDown ? 'align-start mt-2' : 'align-end'"
+                  >
+                    <v-checkbox
+                      v-model="formAnnouncement.isActive"
+                      label="Mark as Active"
+                      density="compact"
+                      :hide-details="true"
+                    ></v-checkbox>
+                  </v-col>
                 </v-row>
                 <v-row class="mt-3" no-gutters>
                   <v-col cols="12" class="text-center my-3">
                     <v-row no-gutters class="d-flex justify-space-between">
-                      <v-cols :cols="mdAndDown ? '12' : '8'">
+                      <v-cols
+                        :cols="mdAndDown ? '12' : '6'"
+                        :class="mdAndDown ? 'w-100' : ''"
+                      >
                         <v-select
-                          style="width: 170px"
+                          :style="mdAndDown ? 'width: 100%' : 'width: 170px'"
                           placeholder="Select recipients"
                           :items="recipients"
                           item-title="label"
@@ -125,18 +143,22 @@
                           rounded="lg"
                         ></v-select>
                       </v-cols>
-                      <v-col
-                        :cols="mdAndDown ? '12' : '4'"
-                        class="d-flex flex-column justify-center"
-                        :class="mdAndDown ? 'align-start mt-2' : 'align-end'"
+                      <v-cols
+                        :cols="mdAndDown ? '12' : '6'"
+                        :class="mdAndDown ? 'mt-4 w-100' : ''"
                       >
-                        <v-checkbox
-                          v-model="formAnnouncement.isActive"
-                          label="Mark as Active"
-                          density="compact"
+                        <v-select
+                          :style="mdAndDown ? 'width: 100%' : 'width: 170px'"
+                          placeholder="Target device"
+                          :items="targetDevice"
+                          item-title="label"
+                          item-value="value"
+                          v-model="formAnnouncement.device"
+                          :rules="deviceRule"
                           :hide-details="true"
-                        ></v-checkbox>
-                      </v-col>
+                          rounded="lg"
+                        ></v-select>
+                      </v-cols>
                     </v-row>
                   </v-col>
                   <v-col cols="12" class="text-center">
@@ -244,6 +266,7 @@ const formAnnouncement = ref(<any>{
   title: "",
   description: "",
   recipients: null,
+  device: "ALL",
   isActive: false,
 });
 const recipients = ref([
@@ -251,6 +274,13 @@ const recipients = ref([
   { label: "Venue Owners", value: "VENUE_OWNERS_ONLY" },
   { label: "Users", value: "USERS_ONLY" },
 ]);
+
+const targetDevice = ref([
+  { label: "All", value: "ALL" },
+  { label: "Mobile", value: "MOBILE_ONLY" },
+  { label: "Web", value: "WEB_ONLY" },
+]);
+
 const formValid = ref();
 const uploading = ref(false);
 const showFullScreen = ref(false);
@@ -266,6 +296,9 @@ const titleRule = [(value: string) => !!value || "Please enter title"];
 const descRule = [(value: string) => !!value || "Please enter description"];
 const recipientsRule = [
   (value: string) => !!value || "Please select recipients",
+];
+const deviceRule = [
+  (value: string) => !!value || "Please select target device",
 ];
 const somethingWentWrongMessage = {
   modal: true,
@@ -329,6 +362,7 @@ const handleSave = async () => {
       description: formAnnouncement.value.description,
       active: formAnnouncement.value.isActive,
       target: formAnnouncement.value.recipients,
+      target_device: formAnnouncement.value.device,
     };
     const { data, error }: { data: any; error: any } =
       await addAnnouncement(payload);

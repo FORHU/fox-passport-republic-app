@@ -73,28 +73,30 @@ const closeAnnouncementDialog = async (id: any, dontShowAgain: boolean) => {
 };
 
 const fetchAnnouncement = async () => {
-  if (!loggedIn.value) return;
-  if (isAdmin || route.path.includes('/announcements/list')) return;
+  if (!loggedIn.value || isAdmin || route.path.includes('/announcements/list')) return;
 
   try {
-    const res = await fetchAnnouncementList({page: 1, limit: 20, sort: -1, active_only: true});
+    const res = await fetchAnnouncementList({ page: 1, limit: 20, sort: -1, active_only: true });
 
-    if (res.data) {
-      announcementData.value = res.data.filter((announcement: any) => {
-        if (!announcement.active || announcement.viewed) return false;
+    if (!res?.data) return;
 
-        if (announcement.target === "ALL") return true;
-        if (announcement.target === "VENUE_OWNERS_ONLY" && isVenueOwner)
-          return true;
-        if (announcement.target === "USERS_ONLY" && isUser) return true;
+    const isWebOnlyOrAll = (target_device: string) => target_device === 'ALL' || target_device === 'WEB_ONLY';
 
-        return false;
-      });
+    announcementData.value = res.data.filter((announcement: any) => {
+      const { active, viewed, target, target_device } = announcement;
+      if (!active || viewed) return false;
 
-      announcementVisibility.value = Object.fromEntries(
-        announcementData.value.map((announcement) => [announcement._id, true])
-      );
-    }
+      const isTargetMatch =
+        target === 'ALL' && isWebOnlyOrAll(target_device) ||
+        target === 'VENUE_OWNERS_ONLY' && isVenueOwner && isWebOnlyOrAll(target_device) ||
+        target === 'USERS_ONLY' && isUser && isWebOnlyOrAll(target_device);
+
+      return isTargetMatch;
+    });
+
+    announcementVisibility.value = Object.fromEntries(
+      announcementData.value.map((announcement) => [announcement._id, true])
+    );
   } catch (error) {
     console.error(error);
   }

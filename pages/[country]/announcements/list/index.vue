@@ -16,7 +16,7 @@
       <v-row no-gutters class="d-flex flex-row justify-between align-center">
         <v-col cols="6"
           ><span
-            >Announcements {{totalItems > 0 ? `(${totalItems})` : ''}}</span
+            >Announcements {{ totalItems > 0 ? `(${totalItems})` : "" }}</span
           ></v-col
         >
         <v-col cols="6" class="d-flex justify-end" v-if="isAdmin">
@@ -103,12 +103,17 @@
           <!-- Table Item Rows -->
           <template v-slot:item="{ item }: { item: any }">
             <tr class="text-16px text-secondary">
-              <td class="cursor-pointer" @click="handleShowAnnouncementDialog(item)" style="min-width: 350px">
+              <td
+                class="cursor-pointer"
+                @click="handleShowAnnouncementDialog(item)"
+                style="min-width: 350px"
+              >
                 <div class="d-flex align-center ga-3 pr-3 py-2 py-md-3">
                   <span>
                     <v-icon color="primary">mdi-bullhorn-outline</v-icon>
                   </span>
-                  <span class="text-primary text-decoration-underline">{{sliceContent(item.title, 30)
+                  <span class="text-primary text-decoration-underline">{{
+                    sliceContent(item.title, 30)
                   }}</span>
                 </div>
               </td>
@@ -116,13 +121,19 @@
                 style="white-space: nowrap; width: 350px"
                 class="cursor-pointer font-italic"
               >
-                {{item.description ? sliceContent(item.description, 60) : '' }}
+                {{ item.description ? sliceContent(item.description, 60) : "" }}
               </td>
               <td
                 style="white-space: nowrap; min-width: 200px"
                 class="cursor-pointer"
               >
                 {{ getRecipientLabel(item.target) }}
+              </td>
+              <td
+                style="white-space: nowrap; min-width: 200px"
+                class="cursor-pointer"
+              >
+                {{ getTagetDeviceLabel(item.target_device) }}
               </td>
               <td class="cursor-pointer" style="min-width: 200px">
                 <span :class="item.active ? 'text-green' : 'text-red'">{{
@@ -217,21 +228,20 @@ const selectedAnnouncement = ref<TAnnouncement>();
 
 const headers = computed(() => {
   const arr = [
-  { title: "Title", value: "title" },
-  { title: "Description", value: "description" },
-  { title: "Recipients", value: "recipients" },
-  { title: "Status", value: "active" },
-  // isAdmin ? { title: "Actions", value: "actions" } : {},
-]
+    { title: "Title", value: "title" },
+    { title: "Description", value: "description" },
+    { title: "Recipients", value: "recipients" },
+    { title: "Device", value: "device" },
+    { title: "Status", value: "active" },
+    // isAdmin ? { title: "Actions", value: "actions" } : {},
+  ];
 
-if (isAdmin) {
-  arr.push({ title: "Actions", value: "actions" });
-} 
+  if (isAdmin) {
+    arr.push({ title: "Actions", value: "actions" });
+  }
 
-return arr;
-}
-  
-)
+  return arr;
+});
 
 const itemsSort = ref<object[]>([
   { label: "Latest", value: -1 },
@@ -267,27 +277,26 @@ const handleShowAnnouncementDialog = (announcement: TAnnouncement) => {
 
 const handleDeleteAnnouncement = (id: string) => {
   selectedAnnouncementId.value = id;
-  showDeleteAnnouncementDialog.value = true
-}
+  showDeleteAnnouncementDialog.value = true;
+};
 
+let timeoutId: ReturnType<typeof setTimeout>;
 
-  let timeoutId: ReturnType<typeof setTimeout>;
-
-  const handleSearchAnnouncement = (val) => {
-    loading.value = true;
-    clearTimeout(timeoutId);
-    timeoutId = setTimeout(async () => {
-      currentPage.value = 1;
-      await fetchAnnouncement();
-      loading.value = false;
-    }, 500);
-  };
-
-const handleChangeSort = async () => {
+const handleSearchAnnouncement = () => {
+  loading.value = true;
+  clearTimeout(timeoutId);
+  timeoutId = setTimeout(async () => {
     currentPage.value = 1;
-    loading.value = true;
     await fetchAnnouncement();
     loading.value = false;
+  }, 500);
+};
+
+const handleChangeSort = async () => {
+  currentPage.value = 1;
+  loading.value = true;
+  await fetchAnnouncement();
+  loading.value = false;
 };
 
 const onUpdatePageHandler = async (page: number) => {
@@ -318,14 +327,28 @@ const disagreeButton = () => {
   showDeleteAnnouncementDialog.value = false;
 };
 
-const getRecipientLabel = (value: "ALL" | "VENUE_OWNERS_ONLY" | "USERS_ONLY"): string => {
+const getRecipientLabel = (
+  value: "ALL" | "VENUE_OWNERS_ONLY" | "USERS_ONLY"
+): string => {
   const mapping: Record<string, string> = {
     ALL: "All",
     VENUE_OWNERS_ONLY: "Venue Owners",
     USERS_ONLY: "Users",
   };
 
-  return mapping[value] || "Unknown"; 
+  return mapping[value] || "Unknown";
+};
+
+const getTagetDeviceLabel = (
+  value: "ALL" | "MOBILE_ONLY" | "WEB_ONLY"
+): string => {
+  const mapping: Record<string, string> = {
+    ALL: "All",
+    MOBILE_ONLY: "Mobile",
+    WEB_ONLY: "Web",
+  };
+
+  return mapping[value] || "Unknown";
 };
 
 const fetchAnnouncement = async (): Promise<void> => {
@@ -342,8 +365,7 @@ const fetchAnnouncement = async (): Promise<void> => {
       announcementData.value = res.data;
       totalItems.value = res.total_documents;
     }
-  } catch (error) {
-  }
+  } catch (error) {}
 };
 onMounted(async () => {
   pageLoader.value = true;
