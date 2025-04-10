@@ -76,7 +76,7 @@ const fetchAnnouncement = async () => {
   if (!loggedIn.value || isAdmin || route.path.includes('/announcements/list')) return;
 
   try {
-    const res = await fetchAnnouncementList({ page: 1, limit: 20, sort: -1, active_only: true });
+    const res = await fetchAnnouncementList({ page: 1, limit: 20, sort: 1, active_only: true });
 
     if (!res?.data) return;
 
