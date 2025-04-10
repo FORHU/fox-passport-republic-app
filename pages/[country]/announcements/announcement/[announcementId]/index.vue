@@ -9,7 +9,12 @@
     <v-row no-gutters justify="center" class="my-5">
       <v-col cols="12" md="10" lg="8" xl="6" sm="10">
         <v-skeleton-loader type="card" v-if="loader"></v-skeleton-loader>
-        <v-form @submit.prevent="handleSubmit" ref="formValid" class="w-100" v-else>
+        <v-form
+          @submit.prevent="handleSubmit"
+          ref="formValid"
+          class="w-100"
+          v-else
+        >
           <v-app-bar
             flat
             color="white"
@@ -26,10 +31,7 @@
                 xl="6"
                 class="d-flex ga-2 align-center"
               >
-                <v-col
-                  class="d-flex align-center pr-3"
-                  style="width: 100%;"
-                >
+                <v-col class="d-flex align-center pr-3" style="width: 100%">
                   <span class="text-22px font-600">Edit Announcement</span>
                   <span
                     ><v-progress-linear
@@ -100,19 +102,37 @@
               </v-col>
               <v-col :cols="xs ? '12' : ' 6'">
                 <v-row no-gutters>
-                  <v-col cols="12" class="d-flex flex-column">
+                  <v-col
+                    :cols="mdAndDown ? '12' : '8'"
+                    class="d-flex flex-column"
+                  >
                     <span class="font-weight-bold">Fill out infromation</span>
                     <span class="text-caption"
                       >Enter information about the announcement</span
                     >
                   </v-col>
+                  <v-col
+                    :cols="mdAndDown ? '12' : '4'"
+                    class="d-flex flex-column justify-center"
+                    :class="mdAndDown ? 'align-start mt-2' : 'align-end'"
+                  >
+                    <v-checkbox
+                      v-model="formAnnouncement.isActive"
+                      label="Mark as Active"
+                      density="compact"
+                      :hide-details="true"
+                    ></v-checkbox>
+                  </v-col>
                 </v-row>
                 <v-row class="mt-3" no-gutters>
                   <v-col cols="12" class="text-center my-2">
                     <v-row no-gutters class="d-flex justify-space-between">
-                      <v-cols :cols="mdAndDown ? '12' : '8'">
+                      <v-cols
+                        :cols="mdAndDown ? '12' : '6'"
+                        :class="mdAndDown ? 'w-100' : ''"
+                      >
                         <v-select
-                          style="width: 170px"
+                          :style="mdAndDown ? 'width: 100%' : 'width: 170px'"
                           placeholder="Select recipients"
                           :items="recipients"
                           item-title="label"
@@ -123,18 +143,22 @@
                           rounded="lg"
                         ></v-select>
                       </v-cols>
-                      <v-col
-                        :cols="mdAndDown ? '12' : '4'"
-                        class="d-flex flex-column justify-center"
-                        :class="mdAndDown ? 'align-start mt-2' : 'align-end'"
+                      <v-cols
+                        :cols="mdAndDown ? '12' : '6'"
+                        :class="mdAndDown ? 'mt-4 w-100' : ''"
                       >
-                        <v-checkbox
-                          v-model="formAnnouncement.isActive"
-                          label="Mark as Active"
-                          density="compact"
+                        <v-select
+                          :style="mdAndDown ? 'width: 100%' : 'width: 170px'"
+                          placeholder="Target device"
+                          :items="targetDevice"
+                          item-title="label"
+                          item-value="value"
+                          v-model="formAnnouncement.device"
+                          :rules="deviceRule"
                           :hide-details="true"
-                        ></v-checkbox>
-                      </v-col>
+                          rounded="lg"
+                        ></v-select>
+                      </v-cols>
                     </v-row>
                   </v-col>
                   <v-col cols="12" class="text-center mt-1">
@@ -258,6 +282,7 @@ const formAnnouncement = ref(<any>{
   title: "",
   description: "",
   recipients: null,
+  device: null,
   isActive: false,
 });
 const formValid = ref();
@@ -280,6 +305,9 @@ const { announcementId } = useRoute().params as { announcementId: string };
 const recipientsRule = [
   (value: string) => !!value || "Please select recipients",
 ];
+const deviceRule = [
+  (value: string) => !!value || "Please select target device",
+];
 const somethingWentWrongMessage = {
   modal: true,
   text: "Something went wrong. Please contact the administrator.",
@@ -290,6 +318,13 @@ const recipients = ref([
   { label: "Venue Owners", value: "VENUE_OWNERS_ONLY" },
   { label: "Users", value: "USERS_ONLY" },
 ]);
+
+const targetDevice = ref([
+  { label: "All", value: "ALL" },
+  { label: "Mobile", value: "MOBILE_ONLY" },
+  { label: "Web", value: "WEB_ONLY" },
+]);
+
 const disagreeButton = () => {
   showDeleteAnnouncementDialog.value = false;
 };
@@ -354,6 +389,7 @@ const fetchAnnouncement = async () => {
       formAnnouncement.value.photo = announcementData?.value?.attachment.path;
       formAnnouncement.value.isActive = announcementData?.value?.active;
       formAnnouncement.value.recipients = announcementData?.value?.target;
+      formAnnouncement.value.device = announcementData?.value?.target_device;
     }
   } catch (error) {}
 };
@@ -377,6 +413,7 @@ const handleSave = async () => {
       description: formAnnouncement.value.description,
       active: formAnnouncement.value.isActive,
       target: formAnnouncement.value.recipients,
+      target_device: formAnnouncement.value.device,
     };
     const { data, error }: { data: any; error: any } = await updateAnnouncement(
       payload,
