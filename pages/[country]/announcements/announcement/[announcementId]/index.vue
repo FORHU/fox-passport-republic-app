@@ -127,13 +127,14 @@
                 <v-row class="mt-3" no-gutters>
                   <v-col cols="12" class="text-center my-2">
                     <v-row no-gutters class="d-flex justify-space-between">
-                      <v-cols
+                      <v-col
                         :cols="mdAndDown ? '12' : '6'"
                         :class="mdAndDown ? 'w-100' : ''"
                       >
                         <v-select
-                          :style="mdAndDown ? 'width: 100%' : 'width: 170px'"
+                          :style="mdAndDown ? 'width: 100%' : 'width: 90%'"
                           placeholder="Select recipients"
+                          label="Select recipients"
                           :items="recipients"
                           item-title="label"
                           item-value="value"
@@ -142,14 +143,14 @@
                           :hide-details="true"
                           rounded="lg"
                         ></v-select>
-                      </v-cols>
-                      <v-cols
+                      </v-col>
+                      <v-col
                         :cols="mdAndDown ? '12' : '6'"
                         :class="mdAndDown ? 'mt-4 w-100' : ''"
                       >
                         <v-select
-                          :style="mdAndDown ? 'width: 100%' : 'width: 170px'"
                           placeholder="Target device"
+                          label="Target Device"
                           :items="targetDevice"
                           item-title="label"
                           item-value="value"
@@ -158,13 +159,14 @@
                           :hide-details="true"
                           rounded="lg"
                         ></v-select>
-                      </v-cols>
+                      </v-col>
                     </v-row>
                   </v-col>
                   <v-col cols="12" class="text-center mt-1">
                     <v-textarea
                       v-model="formAnnouncement.title"
                       placeholder="Enter title here"
+                      label="Announcement title"
                       row-height="10"
                       rounded="lg"
                       rows="1"
@@ -254,7 +256,7 @@
   <DialogPromptNew
     v-model="showSaveModal"
     @agree="handleSave"
-    :loading="showSaveModalLoading"
+    :loading="submitting"
     :prompt-title="`Save changes to announcement`"
     disagree-button-text="CANCEL"
     agree-button-text="SAVE"
@@ -265,6 +267,7 @@
     :promptText="`Once you delete it, you can't get it back`"
     :disagreeButtonText="'Cancel'"
     :agreeButtonText="'Delete'"
+    :loading="deleting"
     @disagree="disagreeButton"
     @agree="agreeButton"
   />
@@ -291,6 +294,7 @@ const { fetchAnnouncementById, updateAnnouncement, deleteAnnouncement } =
 const { country, setSnackbar } = useLocal();
 const uploading = ref(false);
 const submitting = ref(false);
+const deleting = ref(false);
 const loader = ref(false);
 const carouselImageArray = ref<TFile[] | any[]>([]);
 const bannerPhotoArr = ref([]);
@@ -347,11 +351,14 @@ const handleSubmit = async () => {
 };
 
 const agreeButton = async () => {
+  deleting.value = true
   try {
     await deleteAnnouncement(announcementData?.value?._id);
     handleGoToList();
   } catch (error) {
     console.error(error);
+  } finally {
+    deleting.value = false;
   }
 };
 
