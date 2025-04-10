@@ -101,7 +101,7 @@
                 </v-row>
               </v-col>
               <v-col :cols="xs ? '12' : ' 6'">
-                <v-row no-gutters class="d-flex justify-space-between">
+                <v-row no-gutters>
                   <v-col
                     :cols="mdAndDown ? '12' : '8'"
                     class="d-flex flex-column"
@@ -127,13 +127,14 @@
                 <v-row class="mt-3" no-gutters>
                   <v-col cols="12" class="text-center my-3">
                     <v-row no-gutters class="d-flex justify-space-between">
-                      <v-cols
+                      <v-col
                         :cols="mdAndDown ? '12' : '6'"
                         :class="mdAndDown ? 'w-100' : ''"
                       >
                         <v-select
-                          :style="mdAndDown ? 'width: 100%' : 'width: 170px'"
+                          :style="mdAndDown ? 'width: 100%' : 'width: 90%'"
                           placeholder="Select recipients"
+                          label="Select recipients"
                           :items="recipients"
                           item-title="label"
                           item-value="value"
@@ -142,14 +143,14 @@
                           :hide-details="true"
                           rounded="lg"
                         ></v-select>
-                      </v-cols>
-                      <v-cols
+                      </v-col>
+                      <v-col
                         :cols="mdAndDown ? '12' : '6'"
                         :class="mdAndDown ? 'mt-4 w-100' : ''"
                       >
                         <v-select
-                          :style="mdAndDown ? 'width: 100%' : 'width: 170px'"
                           placeholder="Target device"
+                          label="Target Device"
                           :items="targetDevice"
                           item-title="label"
                           item-value="value"
@@ -158,7 +159,7 @@
                           :hide-details="true"
                           rounded="lg"
                         ></v-select>
-                      </v-cols>
+                      </v-col>
                     </v-row>
                   </v-col>
                   <v-col cols="12" class="text-center">
@@ -170,7 +171,8 @@
                       rounded="lg"
                       rows="1"
                       auto-grow
-                      class="pt-1"
+                      class="pt-1 pb-3"
+                      hide-details
                     ></v-textarea>
                   </v-col>
                   <v-col cols="12" class="text-center">
@@ -246,7 +248,7 @@
   <DialogPromptNew
     v-model="showSaveModal"
     @agree="handleSave"
-    :loading="showSaveModalLoading"
+    :loading="submitting"
     :prompt-title="`Save changes to announcement`"
     disagree-button-text="CANCEL"
     agree-button-text="SAVE"
@@ -266,8 +268,8 @@ const formAnnouncement = ref(<any>{
   title: "",
   description: "",
   recipients: null,
-  device: "ALL",
   isActive: false,
+  device: null,
 });
 const recipients = ref([
   { label: "All", value: "ALL" },
