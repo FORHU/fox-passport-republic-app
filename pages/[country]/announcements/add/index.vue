@@ -183,6 +183,7 @@
                       rounded="lg"
                       rows="5"
                       auto-grow
+                      max-rows="10"
                     ></v-textarea>
                   </v-col>
                 </v-row>

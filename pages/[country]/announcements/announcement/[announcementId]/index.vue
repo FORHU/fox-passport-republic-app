@@ -181,6 +181,7 @@
                       row-height="10"
                       rounded="lg"
                       rows="5"
+                      max-rows="10"
                       auto-grow
                     ></v-textarea>
                   </v-col>

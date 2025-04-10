@@ -118,7 +118,7 @@
                 </div>
               </td>
               <td
-                style="white-space: nowrap; width: 350px"
+                style="white-space: nowrap; min-width: 150px"
                 class="cursor-pointer font-italic"
               >
                 {{ item.description ? sliceContent(item.description, 60) : "" }}

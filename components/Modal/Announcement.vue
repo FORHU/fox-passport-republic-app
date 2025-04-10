@@ -1,5 +1,5 @@
 <template>
-  <v-dialog v-model="showPromoteDialog" max-width="800" persistent rounded="md" scrollable="false">
+  <v-dialog v-model="showPromoteDialog" max-width="800" persistent rounded="md" scrollable="false" opacity="80%">
     <v-card max-height="90dvh" class="px-5 py-3 py-sm-5 ga-5 ga-sm-5" >        
         <v-row no-gutters class="w-100">
           <!-- Title (Fixed) -->
