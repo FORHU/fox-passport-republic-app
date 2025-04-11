@@ -32,6 +32,9 @@ const isAdmin = role == 'ADMIN' && (!assigned_roles || assigned_roles == null ||
 // PART OF ADMIN ORGANIZATION isAdmin, isAdminSales, isAdminMember
 const teamAdmin = role == 'ADMIN';
 
+// PART OF VENUE OWNER ROLE isVenueOwner, isVenueAdmin, isVenueMember
+const teamLister = role == 'VENUE_OWNER' || role == 'VENUE_LISTER';
+
 return {
     isVenueMember,
     isVenueAdmin,
@@ -41,7 +44,8 @@ return {
     isOWNER,
     isAdminMember,
     isAdminSales,
-    teamAdmin
+    teamAdmin,
+    teamLister
     } 
 }
 

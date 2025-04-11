@@ -1,4 +1,6 @@
 export const useAnnouncementAPI = () => {
+  const { teamAdmin, teamLister, isUser } = useAccess();
+  
   const addAnnouncement = async (payload: any) => {
     return await useAPI(`/v1/admin/announcements`, {
       method: "POST",
@@ -26,6 +28,17 @@ export const useAnnouncementAPI = () => {
     });
   };
 
+  const computedTargetRecipients = () => {
+    if(isUser){
+      return "ALL,USERS_ONLY";
+    } else if (teamLister) {
+      return "ALL,VENUE_OWNERS_ONLY";
+    } else if (teamAdmin) {
+      return null
+    } else {
+      return null;
+    }
+  }
 
   const fetchAnnouncementList = async ({
     page = 1,
@@ -33,28 +46,31 @@ export const useAnnouncementAPI = () => {
     search,
     sort,
     active_only,
-  }: {page: number, limit: number, search?: string | null, sort: number | null, active_only?: boolean}) => {
-    const query: any = {
-      page,
-      limit,
-    };
-  
-    if (search) {
-      query.search = search;
+    target_device,
+    target
+  }: {
+    page: number;
+    limit: number;
+    search?: string | null;
+    sort?: number;
+    active_only?: boolean;
+    target_device?: string | null;
+    target?: string | null;
+  }) => {
+
+    const query = {
+      page, limit,
+      ...(search && {search}),
+      ...(sort && {sort}),
+      ...(active_only && {active_only}),
+      ...(target_device && {target_device}),
+      ...(target && {target}),
     }
-  
-    if (sort) {
-      query.sort = sort;
-    }
-  
-    if (active_only !== undefined) {
-      query.active_only = active_only;
-    }
-  
+
     const { data, error } = await useAPI(`/v1/admin/announcements`, {
       query,
     });
-  
+
     if (data.value) {
       const res = data.value as any;
       return res.data;
@@ -78,7 +94,7 @@ export const useAnnouncementAPI = () => {
       return res.data;
     }
     if (error.value) {
-      return Promise.reject(error.value);
+      return error.value;
     }
   };
 
@@ -89,5 +105,6 @@ export const useAnnouncementAPI = () => {
     updateAnnouncement,
     deleteAnnouncement,
     addAnnouncementLog,
+    computedTargetRecipients
   };
 };

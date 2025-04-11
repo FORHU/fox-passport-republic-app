@@ -19,7 +19,7 @@
             >Announcements {{ totalItems > 0 ? `(${totalItems})` : "" }}</span
           ></v-col
         >
-        <v-col cols="6" class="d-flex justify-end" v-if="isAdmin">
+        <v-col cols="6" class="d-flex justify-end" v-if="teamAdmin">
           <v-btn color="primary">
             <NuxtLink
               class="text-decoration-none"
@@ -140,7 +140,7 @@
                   item.active ? "ACTIVE" : "INACTIVE"
                 }}</span>
               </td>
-              <td style="white-space: nowrap; min-width: 200px" v-if="isAdmin">
+              <td style="white-space: nowrap; min-width: 200px" v-if="teamAdmin">
                 <v-row
                   no-gutters
                   class="d-flex ga-2 justify-start align-center"
@@ -208,8 +208,8 @@ definePageMeta({
   middleware: ["auth"],
 });
 const { xs, mdAndDown } = useDisplay();
-const { fetchAnnouncementList, deleteAnnouncement } = useAnnouncementAPI();
-const { isAdmin } = useAccess();
+const { fetchAnnouncementList, deleteAnnouncement, computedTargetRecipients } = useAnnouncementAPI();
+const { teamAdmin, teamLister, isUser } = useAccess();
 const { country } = useLocal();
 const { sliceContent } = useUtils();
 const pageLoader = ref<boolean>(false);
@@ -233,10 +233,10 @@ const headers = computed(() => {
     { title: "Recipients", value: "recipients" },
     { title: "Device", value: "device" },
     { title: "Status", value: "active" },
-    // isAdmin ? { title: "Actions", value: "actions" } : {},
+    // teamAdmin ? { title: "Actions", value: "actions" } : {},
   ];
 
-  if (isAdmin) {
+  if (teamAdmin) {
     arr.push({ title: "Actions", value: "actions" });
   }
 
@@ -358,7 +358,9 @@ const fetchAnnouncement = async (): Promise<void> => {
       limit: itemsPerPage.value,
       search: searchAnnouncement.value,
       sort: selectedSort.value || -1,
-      active_only: isAdmin ? false : true,
+      active_only: teamAdmin ? false : true,
+      target: computedTargetRecipients(),
+      target_device: !teamAdmin ? "ALL,WEB_ONLY" : null
     });
 
     if (res.data) {
