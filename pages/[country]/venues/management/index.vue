@@ -102,43 +102,39 @@
                                         dot></v-badge>
                                 </span>
                                 <span class="text-16px">{{ formatStatus(item.status as string) }}</span>
-                                <span v-if="teamAdmin && !isVenuePartOfVenueWithConsent(item.status as string)" class="d-flex align-center text-secondary">
-                                    <v-btn density="compact" variant="text" icon size="small" flat @mouseover="activeOwnerVerificationStatus(item?.user?._id as string, (item?.user?.first_name +  ' ' + item?.user?.last_name))">
+                                <span v-if="teamAdmin && !isVenuePartOfVenueWithConsent(item.status as string)"
+                                    class="d-flex align-center text-secondary">
+                                    <v-btn density="compact" variant="text" icon size="small" flat
+                                        @mouseover="activeOwnerVerificationStatus(item?.user?._id as string, (item?.user?.first_name + ' ' + item?.user?.last_name))">
                                         <v-icon>mdi-information-variant-circle-outline</v-icon>
-                                        <v-tooltip
-                                        activator="parent"
-                                        :location="lgAndUp ? 'right': 'top'"
-                                        open-on-click
+                                        <v-tooltip activator="parent" :location="lgAndUp ? 'right' : 'top'"
+                                            open-on-click>
+                                            <template v-if="verifyingOwner">
+                                                <p>Checking...</p>
+                                            </template>
+                                            <template v-else>
+                                                <div v-html="ownerTooltipDiv">
+                                                </div>
+                                            </template>
 
-                                        >
-                                        <template v-if="verifyingOwner">
-                                        <p>Checking...</p>
-                                        </template>
-                                        <template v-else>
-                                        <div v-html="ownerTooltipDiv">
-                                        </div> 
-                                        </template>
-                                    
-                                    </v-tooltip>
+                                        </v-tooltip>
                                     </v-btn>
-                                    </span>
+                                </span>
                             </div>
                         </td>
                         <td>
                             <div no-gutters class="w-100 d-flex ga-2 justify-end py-2 py-md-3">
-                                <template v-if="(isAdminSales || isAdminMember) && item?.status != 'DELETED' && isVenuePartOfSalesViewOnly(item?.status as string)">
-                                    <v-btn border="secondary sm" flat
-                                        icon="mdi-briefcase-eye"
-                                        size="small" rounded="lg"
+                                <template
+                                    v-if="(isAdminSales || isAdminMember) && item?.status != 'DELETED' && isVenuePartOfSalesViewOnly(item?.status as string)">
+                                    <v-btn border="secondary sm" flat icon="mdi-briefcase-eye" size="small" rounded="lg"
                                         @click.stop="handleViewSalesPage(item?._id as string)"></v-btn>
                                 </template>
-                                <template v-if="(isAdminSales || isAdminMember) && item?.status != 'DELETED' && isVenuePartOfVenueWithConsent(item?.status as string)">
-                                    <v-btn border="secondary sm" flat
-                                        icon="mdi-circle-edit-outline"
-                                        size="small" rounded="lg"
-                                        @click.stop="handleEditSalesPage(item?._id as string)"></v-btn>
+                                <template
+                                    v-if="(isAdminSales || isAdminMember) && item?.status != 'DELETED' && isVenuePartOfVenueWithConsent(item?.status as string)">
+                                    <v-btn border="secondary sm" flat icon="mdi-circle-edit-outline" size="small"
+                                        rounded="lg" @click.stop="handleEditSalesPage(item?._id as string)"></v-btn>
                                 </template>
-                                
+
                                 <template v-else-if="!isAdminSales && !isAdminMember && item?.status != 'DELETED'">
                                     <v-btn border="secondary sm" flat
                                         :icon="showEditActionButton(item?.status as string) ? 'mdi-square-edit-outline' : 'mdi-eye-outline'"
@@ -178,7 +174,8 @@
                                         <v-img
                                             :lazy-src="featuredImage(spaceItem as TVenueSpace) || '/svg/default-draft-image.svg'"
                                             :src="featuredImage(spaceItem as TVenueSpace) || '/svg/default-draft-image.svg'"
-                                            height="54px" width="54px" cover rounded="lg" alt="venue featured image"></v-img>
+                                            height="54px" width="54px" cover rounded="lg"
+                                            alt="venue featured image"></v-img>
                                     </span>
                                     <span>{{ sliceContent(spaceItem?.name, 30) }}</span>
                                 </div>
@@ -261,7 +258,7 @@
                                                 </span>
                                                 <span class="text-16px text-charcoal">{{ formatStatus(item.status as
                                                     string)
-                                                    }}</span>
+                                                }}</span>
                                             </div>
 
                                         </v-chip>
@@ -273,24 +270,27 @@
                                             </template>
 
                                             <v-list>
-                                                <template v-if="(isAdminSales || isAdminMember) && item?.status != 'DELETED' && isVenuePartOfSalesViewOnly(item?.status as string)">
+                                                <template
+                                                    v-if="(isAdminSales || isAdminMember) && item?.status != 'DELETED' && isVenuePartOfSalesViewOnly(item?.status as string)">
                                                     <v-list-item @click.stop="handleViewSalesPage(item?._id as string)">
                                                         <template v-slot:prepend>
-                                                        <v-icon icon="mdi-briefcase-eye"></v-icon>
-                                                    </template>
-                                                    View Sales
+                                                            <v-icon icon="mdi-briefcase-eye"></v-icon>
+                                                        </template>
+                                                        View Sales
                                                     </v-list-item>
                                                 </template>
-                                                <template v-if="(isAdminSales || isAdminMember) && item?.status != 'DELETED' && isVenuePartOfVenueWithConsent(item?.status as string)">
+                                                <template
+                                                    v-if="(isAdminSales || isAdminMember) && item?.status != 'DELETED' && isVenuePartOfVenueWithConsent(item?.status as string)">
                                                     <v-list-item @click.stop="handleEditSalesPage(item?._id as string)">
                                                         <template v-slot:prepend>
-                                                        <v-icon icon="mdi-circle-edit-outline"></v-icon>
-                                                    </template>
-                                                    Edit
+                                                            <v-icon icon="mdi-circle-edit-outline"></v-icon>
+                                                        </template>
+                                                        Edit
                                                     </v-list-item>
                                                 </template>
 
-                                                <v-list-item  v-else-if="!isAdminSales && !isAdminMember && item?.status != 'DELETED'"
+                                                <v-list-item
+                                                    v-else-if="!isAdminSales && !isAdminMember && item?.status != 'DELETED'"
                                                     @click="handleEditVenue(item._id as string)">
                                                     <template v-slot:prepend>
                                                         <v-icon icon="mdi-square-edit-outline"></v-icon>
@@ -586,10 +586,15 @@ const addNewVenue = async () => {
 
 const handleEditVenue = async (id: string, status: string) => {
     if (!id) return;
+
+    if (isVenuePartOfVenueWithConsent(status) && isAdminSales) {
+        handleEditSalesPage(id)
+        return;
+    }
     navigateTo({
-            name: "country-venues-management-venue-venueId-formId",
-            params: { country: country, venueId: id, formId: 'overview' },
-        });
+        name: "country-venues-management-venue-venueId-formId",
+        params: { country: country, venueId: id, formId: 'overview' },
+    });
 };
 
 // const handleEditSalesVenue = async (id: string, status: string) => {
@@ -610,7 +615,7 @@ const handleEditVenue = async (id: string, status: string) => {
 // };
 
 const handleViewSalesPage = (id: string) => {
-    if(!id) return;
+    if (!id) return;
     navigateTo({
         name: "country-venues-management-sales-venueId",
         params: { country: country, venueId: id },
@@ -618,7 +623,7 @@ const handleViewSalesPage = (id: string) => {
 }
 
 const handleEditSalesPage = (id: string) => {
-    if(!id) return;
+    if (!id) return;
     navigateTo({
         name: "country-venues-management-admin-venue-venueId",
         params: { country: country, venueId: id },
@@ -1025,55 +1030,55 @@ const handleFileChange = async (e: any) => {
 }
 
 const showSalesEditActionButton = (status: string) => {
-   return isVenuePartOfSalesViewOnly(status) ? false : true;
+    return isVenuePartOfSalesViewOnly(status) ? false : true;
 
 }
 
 
 // this button is for roles that can edit
 const showEditActionButton = (status: string) => {
-   return isVenueMember ? false : true;
+    return isVenueMember ? false : true;
 }
 
 
 const verifyingOwner = ref(false);
 const ownerStatusObject = ref({
-  is_email_verified: null as null | boolean,
-  is_stripe_account_verified: null as null | boolean,
-  owner_full_name: null as null | string,
+    is_email_verified: null as null | boolean,
+    is_stripe_account_verified: null as null | boolean,
+    owner_full_name: null as null | string,
 })
 
 const ownerTooltipDiv = computed(() => {
-  const { is_email_verified, is_stripe_account_verified, owner_full_name } = ownerStatusObject.value;
+    const { is_email_verified, is_stripe_account_verified, owner_full_name } = ownerStatusObject.value;
 
-  if (is_email_verified == null || is_stripe_account_verified == null) {
-    return `<p>Verification Error</p>`;
-  } else {
-    return `
+    if (is_email_verified == null || is_stripe_account_verified == null) {
+        return `<p>Verification Error</p>`;
+    } else {
+        return `
       <p>Owner Name: ${owner_full_name}</p>
       <p>Email Verification: <span class="${is_email_verified ? 'text-success' : 'text-error'}">${is_email_verified ? 'Completed' : 'Pending'}</span></p>
       <p>Stripe Onboarding: <span class="${is_stripe_account_verified ? 'text-success' : 'text-error'}">${is_stripe_account_verified ? 'Completed' : 'Pending'}</span></p>
     `;
-  }
+    }
 });
 
 const activeOwnerVerificationStatus = async (userId: string, venueOwnerName: string) => {
-  if(!userId) return 'No Owner user id'
-  ownerStatusObject.value.is_email_verified = null;
-  ownerStatusObject.value.is_stripe_account_verified = null;
-  verifyingOwner.value = true;
-  try {
-    const res = await checkOwnerOnboardingStatus(userId)
-    if(res){
-      ownerStatusObject.value.is_email_verified = res?.is_email_verified
-      ownerStatusObject.value.is_stripe_account_verified = res?.is_stripe_account_verified
-      ownerStatusObject.value.owner_full_name = venueOwnerName
+    if (!userId) return 'No Owner user id'
+    ownerStatusObject.value.is_email_verified = null;
+    ownerStatusObject.value.is_stripe_account_verified = null;
+    verifyingOwner.value = true;
+    try {
+        const res = await checkOwnerOnboardingStatus(userId)
+        if (res) {
+            ownerStatusObject.value.is_email_verified = res?.is_email_verified
+            ownerStatusObject.value.is_stripe_account_verified = res?.is_stripe_account_verified
+            ownerStatusObject.value.owner_full_name = venueOwnerName
+        }
+    } catch (e) {
+        console.error("Error in activeOwnerVerificationStatus:", e);
+    } finally {
+        verifyingOwner.value = false;
     }
-  } catch (e) {
-    console.error("Error in activeOwnerVerificationStatus:", e);
-  } finally {
-    verifyingOwner.value = false;
-  }
 }
 
 onMounted(async () => {
