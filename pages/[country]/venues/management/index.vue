@@ -102,7 +102,7 @@
                                         dot></v-badge>
                                 </span>
                                 <span class="text-16px">{{ formatStatus(item.status as string) }}</span>
-                                <span v-if="isAdmin" class="d-flex align-center text-secondary">
+                                <span v-if="teamAdmin && !isVenuePartOfVenueWithConsent(item.status as string)" class="d-flex align-center text-secondary">
                                     <v-btn density="compact" variant="text" icon size="small" flat @mouseover="activeOwnerVerificationStatus(item?.user?._id as string, (item?.user?.first_name +  ' ' + item?.user?.last_name))">
                                         <v-icon>mdi-information-variant-circle-outline</v-icon>
                                         <v-tooltip
