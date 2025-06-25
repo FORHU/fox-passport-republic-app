@@ -245,14 +245,13 @@
               </v-col>
               <v-col cols="6" class="d-flex justify-end">
                 <!-- ADMIN MEMBER/SALES BUTTONS -->
-                <template v-if="isAdminMember || isAdminSales">
+                <template v-if="(isAdminMember || isAdminSales)">
                   <v-btn
                     type="submit"
                     v-if="
                       activeSpacePage === 6 &&
                       (isAdminMember || isAdminSales) &&
-                      status !== 'REQUIRES_CONSENT' &&
-                      status != 'REQUEST_TRANSFER_SENT'
+                      status == 'PENDING'
                     "
                     rounded="lg"
                     size="large"
@@ -1437,6 +1436,12 @@ const handlePublishValidation = async () => {
 };
 
 const handlePublish = async () => {
+
+  if(status.value == 'FOR_APPROVAL' && isAdminSales){
+    setSnackbar({text: "Sales Account cannot Re-publish 'For Approval' spaces", modal: true, color: 'error'})
+    return
+  }
+
   const payload: Partial<TVenueSpace> = {
     name: space.value.name,
     status: isAdminMember || isAdminSales ? "REQUIRES_CONSENT" : "FOR_APPROVAL",
