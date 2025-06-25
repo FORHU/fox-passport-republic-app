@@ -159,9 +159,12 @@ export function useVenue() {
   const showCustomValidationRates = ref(false);
 
   watchEffect(() => {
-    const policyObj = venue.value.cancellation_policy.policy;
+    const policyObj = venue.value?.cancellation_policy?.policy;
     const daysAtLeast = policyObj?.custom.days_at_least?.number_of_days || null;
     const priceAtLeast = policyObj?.custom.days_at_least?.total_price == 0 ? 0 : policyObj?.custom.days_at_least?.total_price || null;
+
+    if(!policyObj) return;
+    
     const arr =
       venue.value.cancellation_policy.policy?.custom
         ?.days_less_than_but_at_least || [];
