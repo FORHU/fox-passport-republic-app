@@ -105,7 +105,7 @@
                                 <span v-if="teamAdmin && !isVenuePartOfVenueWithConsent(item.status as string)"
                                     class="d-flex align-center text-secondary">
                                     <v-btn density="compact" variant="text" icon size="small" flat
-                                        @mouseover="activeOwnerVerificationStatus(item?.user?._id as string, (item?.user?.first_name + ' ' + item?.user?.last_name))">
+                                        @mouseover="activeOwnerVerificationStatus(item?.user?._id as string, (item?.user?.first_name as string), (item?.user?.email  as string))">
                                         <v-icon>mdi-information-variant-circle-outline</v-icon>
                                         <v-tooltip activator="parent" :location="lgAndUp ? 'right' : 'top'"
                                             open-on-click>
@@ -1045,24 +1045,25 @@ const verifyingOwner = ref(false);
 const ownerStatusObject = ref({
     is_email_verified: null as null | boolean,
     is_stripe_account_verified: null as null | boolean,
-    owner_full_name: null as null | string,
+    owner_first_name: null as null | string,
+    email: null as null | string
 })
 
 const ownerTooltipDiv = computed(() => {
-    const { is_email_verified, is_stripe_account_verified, owner_full_name } = ownerStatusObject.value;
+    const { is_email_verified, is_stripe_account_verified, owner_first_name, email } = ownerStatusObject.value;
 
     if (is_email_verified == null || is_stripe_account_verified == null) {
         return `<p>Verification Error</p>`;
     } else {
         return `
-      <p>Owner Name: ${owner_full_name}</p>
+      <p>Owner: ${owner_first_name} (${email})</p>
       <p>Email Verification: <span class="${is_email_verified ? 'text-success' : 'text-error'}">${is_email_verified ? 'Completed' : 'Pending'}</span></p>
       <p>Stripe Onboarding: <span class="${is_stripe_account_verified ? 'text-success' : 'text-error'}">${is_stripe_account_verified ? 'Completed' : 'Pending'}</span></p>
     `;
     }
 });
 
-const activeOwnerVerificationStatus = async (userId: string, venueOwnerName: string) => {
+const activeOwnerVerificationStatus = async (userId: string, venueOwnerFirstName: string, venueOwnerEmail: string) => {
     if (!userId) return 'No Owner user id'
     ownerStatusObject.value.is_email_verified = null;
     ownerStatusObject.value.is_stripe_account_verified = null;
@@ -1072,7 +1073,8 @@ const activeOwnerVerificationStatus = async (userId: string, venueOwnerName: str
         if (res) {
             ownerStatusObject.value.is_email_verified = res?.is_email_verified
             ownerStatusObject.value.is_stripe_account_verified = res?.is_stripe_account_verified
-            ownerStatusObject.value.owner_full_name = venueOwnerName
+            ownerStatusObject.value.owner_first_name = venueOwnerFirstName
+            ownerStatusObject.value.email = venueOwnerEmail
         }
     } catch (e) {
         console.error("Error in activeOwnerVerificationStatus:", e);
