@@ -1,0 +1,18 @@
+import { defineSitemapEventHandler } from '#imports';
+
+export default defineSitemapEventHandler(async () => {
+  const config = useRuntimeConfig();
+  const MAIN_URL = config?.public?.MAIN_URL || 'http://localhost:3000';
+  
+  const urls = [
+    { _path: "/sg/login/user" },
+    { _path: "/sg/login/venue" },
+    { _path: "/sg/signup/user" },
+    { _path: "/sg" }
+  ];
+
+  return urls.map((url) => ({
+    loc: url._path,
+    lastmod: new Date()
+  }));
+});
