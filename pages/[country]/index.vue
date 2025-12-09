@@ -30,26 +30,12 @@
                         <v-col cols="12" sm="6" md="3" lg="3" xl="3" class="pb-0">
                           <v-row no-gutters>
                             <v-col cols="11">
-                              <p class="text-14px font-600">EVENT TYPE</p>
-                              <v-autocomplete density="compact" persistent-placeholder placeholder="Any Event"
-                                variant="plain" :items="tagsItems" v-model="eventType" :rules="eventTypeRules" required
-                                @keydown.enter="onSubmit"/>
-                            </v-col>
-                            <v-col class="py-1 pb-5 d-flex justify-center align-end" v-if="!xs">
-                              <v-divider vertical thickness="2"></v-divider>
-                            </v-col>
-                          </v-row>
-                        </v-col>
-                        <v-divider v-if="xs"></v-divider>
-                        <v-col cols="12" sm="6" md="3" lg="3" xl="2" class="pb-0">
-                          <v-row no-gutters>
-                            <v-col cols="11">
                               <p class="text-14px font-600">WHERE</p>
                               <v-autocomplete density="compact" persistent-placeholder placeholder="Anywhere"
-                                variant="plain" menu-icon="mdi-map-marker-outline" :items="registeredCountries" v-model="location"
-                                :rules="countryRules" required item-title="country_name" item-value="cca2"
+                                variant="plain" menu-icon="mdi-map-marker-outline" :items="municipalities" v-model="location"
+                                :rules="locationRules" required item-title="name" item-value="name"
                                  @keydown.enter="onSubmit"
-                                @update:model-value="handleChangeCountry" @click:append-inner="" :active="true"/>
+                                @click:append-inner="" :active="true"/>
                             </v-col>
                             <v-col class="py-1 pb-5 d-flex justify-center align-end" v-if="mdAndUp">
                               <v-divider vertical thickness="2"></v-divider>
@@ -60,33 +46,27 @@
                         <v-col cols="12" sm="6" md="2" lg="2" xl="2" class="pb-0">
                           <v-row no-gutters>
                             <v-col cols="11">
-                              <p class="text-14px font-600">WHEN</p>
-                              <div class="d-flex">
-                                <v-menu v-model="dateInput" :close-on-content-click="false" :nudge-right="40"
+                              <p class="text-14px font-600">CHECK IN</p>
+                              <div class="d-flex gap-2">
+                                <v-menu v-model="checkInDateMenu" :close-on-content-click="false" :nudge-right="40"
                                   transition="scale-transition" offset-y min-width="290px">
                                   <template #activator="{ props }">
-                                    <v-text-field v-model="formattedDate" readonly persistent-hint v-bind="props"
+                                    <v-text-field v-model="formattedCheckInDate" readonly persistent-hint v-bind="props"
                                       density="compact" persistent-placeholder placeholder="DD/MM/YYYY" variant="plain"
-                                      append-icon="mdi-calendar" @keydown.enter="onSubmit" @click:append-inner="dateInput = true">
+                                      append-icon="mdi-calendar" @keydown.enter="onSubmit" @click:append-inner="checkInDateMenu = true"
+                                      style="flex: 1;">
                                     </v-text-field>
                                   </template>
-                                  <v-date-picker v-model="date_calendar" @input="dateInput = false" no-title
-                                    show-adjacent-months scrollable :min="new Date().toISOString().substring(0, 10)
-                                      ">
-                                    <template #title>
-                                      <p>Select a Date</p>
-                                    </template>
-
-                                    <template #header>
-                                      <p class="ml-5" style="font-size: 30px">
-                                        Enter Date
-                                      </p>
-                                    </template>
+                                  <v-date-picker v-model="checkInDate" @input="checkInDateMenu = false" no-title
+                                    show-adjacent-months scrollable :min="new Date().toISOString().substring(0, 10)">
                                     <template #actions>
-                                      <v-btn color="primary" @click="dateInput = false">OK</v-btn>
+                                      <v-btn color="primary" @click="checkInDateMenu = false">OK</v-btn>
                                     </template>
                                   </v-date-picker>
                                 </v-menu>
+                                <v-select density="compact" variant="plain" :items="timeOptions" v-model="checkInTime"
+                                  persistent-placeholder placeholder="Time" style="flex: 0.8; max-width: 80px;">
+                                </v-select>
                               </div>
                             </v-col>
                             <v-col class="py-1 pb-5 d-flex justify-center align-end" v-if="!xs">
@@ -96,10 +76,49 @@
                         </v-col>
                         <v-divider v-if="xs"></v-divider>
                         <v-col cols="12" sm="6" md="2" lg="2" xl="2" class="pb-0">
-                          <p class="text-14px font-600">GUESTS</p>
-                          <v-text-field density="compact" persistent-placeholder placeholder="Number of Guests"
-                            type="number" variant="plain" min="0" step="5" v-model="numberOfGuests"
-                            @keydown.enter="onSubmit" @keydown="preventNegative"/>
+                          <v-row no-gutters>
+                            <v-col cols="11">
+                              <p class="text-14px font-600">CHECK OUT</p>
+                              <div class="d-flex gap-2">
+                                <v-menu v-model="checkOutDateMenu" :close-on-content-click="false" :nudge-right="40"
+                                  transition="scale-transition" offset-y min-width="290px">
+                                  <template #activator="{ props }">
+                                    <v-text-field v-model="formattedCheckOutDate" readonly persistent-hint v-bind="props"
+                                      density="compact" persistent-placeholder placeholder="DD/MM/YYYY" variant="plain"
+                                      append-icon="mdi-calendar" @keydown.enter="onSubmit" @click:append-inner="checkOutDateMenu = true"
+                                      style="flex: 1;">
+                                    </v-text-field>
+                                  </template>
+                                  <v-date-picker v-model="checkOutDate" @input="checkOutDateMenu = false" no-title
+                                    show-adjacent-months scrollable :min="checkInDate || new Date().toISOString().substring(0, 10)">
+                                    <template #actions>
+                                      <v-btn color="primary" @click="checkOutDateMenu = false">OK</v-btn>
+                                    </template>
+                                  </v-date-picker>
+                                </v-menu>
+                                <v-select density="compact" variant="plain" :items="timeOptions" v-model="checkOutTime"
+                                  persistent-placeholder placeholder="Time" style="flex: 0.8; max-width: 80px;">
+                                </v-select>
+                              </div>
+                            </v-col>
+                            <v-col class="py-1 pb-5 d-flex justify-center align-end" v-if="!xs">
+                              <v-divider vertical thickness="2"></v-divider>
+                            </v-col>
+                          </v-row>
+                        </v-col>
+                        <v-divider v-if="xs"></v-divider>
+                        <v-col cols="12" sm="6" md="2" lg="2" xl="2" class="pb-0">
+                          <v-row no-gutters>
+                            <v-col cols="11">
+                              <p class="text-14px font-600">GUESTS & WEDDING</p>
+                              <v-autocomplete density="compact" persistent-placeholder placeholder="Select type..."
+                                variant="plain" :items="guestAndWeddingOptions" v-model="selectedGuestOption"
+                                @keydown.enter="onSubmit"/>
+                            </v-col>
+                            <v-col class="py-1 pb-5 d-flex justify-center align-end" v-if="!xs">
+                              <v-divider vertical thickness="2"></v-divider>
+                            </v-col>
+                          </v-row>
                         </v-col>
 
                         <v-col cols="12" sm="12" md="2" lg="2" xl="3" class="d-flex align-start pb-0">
@@ -136,15 +155,60 @@
 
 <script setup lang="ts">
 import { useDisplay } from "vuetify";
+import philippineMunicipalities from "~/data/philippine-municipalities.json";
 
 definePageMeta({
   layout: "landing",
 });
 
 const { xs, smAndDown, mdAndDown, mdAndUp } = useDisplay();
-const { tags } = useVenueData();
-const { loadCountries, registeredCountries, getDefaultCountryImage, defaultCountryImage, country } = useLocal();
-const { venueLocation: location, eventType, date_calendar, numGuest: numberOfGuests } = useVenueSearch();
+const { getDefaultCountryImage, defaultCountryImage, country } = useLocal();
+const { venueLocation: location, date_calendar, numGuest: numberOfGuests } = useVenueSearch();
+
+const municipalities = ref(philippineMunicipalities);
+
+// Check In / Check Out date and time
+const checkInDate = ref(null);
+const checkOutDate = ref(null);
+const checkInTime = ref("10:00");
+const checkOutTime = ref("11:00");
+const checkInDateMenu = ref(false);
+const checkOutDateMenu = ref(false);
+
+// Time options (24-hour format with 30-minute intervals)
+const timeOptions = Array.from({ length: 48 }, (_, i) => {
+  const hours = Math.floor(i / 2);
+  const minutes = (i % 2) * 30;
+  return `${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}`;
+});
+
+// Wedding-related options
+const weddingOptions = [
+  "Wedding",
+  "Asian Wedding",
+  "Outdoor Wedding",
+  "Unusual Wedding",
+  "Wedding Ceremony",
+  "Wedding Reception",
+  "Civil Ceremony",
+  "Civil Partnership",
+  "Marquee Wedding",
+  "Unique Wedding",
+  "Garden Wedding",
+  "Dry Hire Wedding",
+];
+
+// Guest count options (1-500+)
+const guestCountOptions = Array.from({ length: 100 }, (_, i) => `${(i + 1) * 5} Guests`);
+guestCountOptions.unshift("1-5 Guests", "5-10 Guests", "10-25 Guests", "25-50 Guests", "50-100 Guests", "100-250 Guests", "250-500 Guests", "500+ Guests");
+
+// Combine wedding and guest options
+const guestAndWeddingOptions = computed(() => {
+  const combined = [...weddingOptions, ...guestCountOptions];
+  return combined.sort();
+});
+
+const selectedGuestOption = ref("");
 
 // const date_calendar = ref(null);
 const dateInput = ref(false);
@@ -167,11 +231,6 @@ function onScroll(e: any) {
   isScrolled.value = offsetTop.value > 20;
 }
 
-function handleChangeCountry(countryCode: string) {
-  if (!countryCode) return;
-  navigateTo({ name: 'country', params: { country: countryCode.toLocaleLowerCase() } })
-}
-
 onMounted(async () => {
   await nextTick();
   const scrollTarget = document.getElementById("scroll-target");
@@ -188,11 +247,7 @@ onUnmounted(() => {
   }
 });
 
-const eventTypeRules = [
-  (value: string) => !!value || "Please enter an event type",
-];
-
-const countryRules = [(value: string) => !!value || "Please enter a country"];
+const locationRules = [(value: string) => !!value || "Please select a municipality"];
 
 const onSubmit = () => {
   if (
@@ -206,17 +261,29 @@ const onSubmit = () => {
 };
 
 const searchVenue = () => {
-  if (!numberOfGuests.value || isNaN(numberOfGuests.value)) {
-    numberOfGuests.value = 0;
+  // Extract guest count from selectedGuestOption
+  let guestCount = 0;
+  if (selectedGuestOption.value) {
+    // If it's a guest count option like "50 Guests"
+    const guestMatch = selectedGuestOption.value.match(/^(\d+)\s+Guests$/);
+    if (guestMatch) {
+      guestCount = parseInt(guestMatch[1]);
+    }
+    // If it's a range like "10-25 Guests"
+    const rangeMatch = selectedGuestOption.value.match(/^(\d+)-(\d+)\s+Guests$/);
+    if (rangeMatch) {
+      guestCount = parseInt(rangeMatch[1]); // Use lower bound
+    }
   }
+
   navigateTo({
     name: "country-venues-search",
     params: { country: location.value.toLowerCase() },
     query: {
       location: location.value,
       date: formattedDateToQuery(),
-      total_guest: numberOfGuests.value,
-      categories: eventType.value,
+      total_guest: guestCount,
+      weddingType: weddingOptions.includes(selectedGuestOption.value) ? selectedGuestOption.value : null,
     },
   });
 };
@@ -224,6 +291,24 @@ const searchVenue = () => {
 const formattedDate = computed(() => {
   if (!date_calendar.value) return "";
   const date = new Date(date_calendar.value);
+  const month = (date.getMonth() + 1).toString().padStart(2, "0");
+  const day = date.getDate().toString().padStart(2, "0");
+  const year = date.getFullYear();
+  return `${day}/${month}/${year}`;
+});
+
+const formattedCheckInDate = computed(() => {
+  if (!checkInDate.value) return "";
+  const date = new Date(checkInDate.value);
+  const month = (date.getMonth() + 1).toString().padStart(2, "0");
+  const day = date.getDate().toString().padStart(2, "0");
+  const year = date.getFullYear();
+  return `${day}/${month}/${year}`;
+});
+
+const formattedCheckOutDate = computed(() => {
+  if (!checkOutDate.value) return "";
+  const date = new Date(checkOutDate.value);
   const month = (date.getMonth() + 1).toString().padStart(2, "0");
   const day = date.getDate().toString().padStart(2, "0");
   const year = date.getFullYear();
@@ -239,36 +324,8 @@ const formattedDateToQuery = () => {
   return `${year}-${month}-${day}`;
 };
 
-
-
-const tagsItems = computed(() => {
-  const flattenedKeywords = Object.values(tags).flatMap((category) =>
-    category.flatMap((item) => item.keywords)
-  );
-
-  const sortedKeywords = flattenedKeywords
-    .slice()
-    .sort((a, b) => a.localeCompare(b));
-
-  return sortedKeywords;
-});
-
-// set pre-selected country based on url
-const setCurrentCountry = () => {
-  if (!country) return;
-
-  const isCountryListed = registeredCountries.value.find(x => x.cca2?.toUpperCase() == country?.toUpperCase())
-  if (isCountryListed) {
-    location.value = country?.toUpperCase();
-  }
-
-
-}
-
 onBeforeMount(async () => {
-  await loadCountries();
   await getDefaultCountryImage()
-  setCurrentCountry()
 })
 
 
