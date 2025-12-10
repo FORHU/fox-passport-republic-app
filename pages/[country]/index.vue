@@ -440,11 +440,10 @@
                       ref="mapboxRef"
                       :location="searchedLocation"
                       :venues="venueList"
-                      :height="mdAndDown ? '650px' : '800px'"
-                      :zoom="13"
+                      :height="mdAndDown ? '550px' : '650px'"
+                      :zoom="15"
                       marker-color="#2193b0"
                       :show-legend="true"
-                      :enable-3d="true"
                       @location-found="onLocationFound"
                       @venue-selected="onVenueSelected"
                       @venue-details-click="onVenueDetailsClick"
@@ -908,18 +907,22 @@ const onSubmit = () => {
 };
 
 // Generate sample venues near the search location
-const generateSampleVenues = (lat: number, lng: number, locationName: string): Venue[] => {
+// FIXED: Uses Mapbox POI search to find actual buildings/establishments, not road centerlines
+const generateSampleVenues = async (lat: number, lng: number, locationName: string): Promise<Venue[]> => {
+  const config = useRuntimeConfig();
+  const token = config.public.MAPBOX_TOKEN;
+  
   const venueTypes = [
     'Grand Ballroom', 
     'Garden Venue', 
     'Conference Hall',
     'Rooftop Terrace', 
-    'Beach Resort', 
     'Function Room',
     'Event Space',
     'Private Estate',
     'Convention Center',
-    'Pavilion'
+    'Pavilion',
+    'Hotel Ballroom'
   ];
   
   const amenities = [
@@ -956,28 +959,127 @@ const generateSampleVenues = (lat: number, lng: number, locationName: string): V
     'Ivory Hall',
     'Platinum Plaza'
   ];
+
+  // Search for real POIs (hotels, restaurants, buildings) near the location
+  // These have accurate building coordinates, not road centerlines
+  const searchPOIs = async (): Promise<Array<{lat: number, lng: number, address: string}>> => {
+    const poiCategories = [
+      'hotel',
+      'restaurant', 
+      'convention center',
+      'banquet hall',
+      'event venue',
+      'resort',
+      'function hall',
+      'church',
+      'community center',
+      'mall',
+      'building'
+    ];
+    
+    const validLocations: Array<{lat: number, lng: number, address: string}> = [];
+    
+    // Search for different types of POIs
+    for (const category of poiCategories.slice(0, 5)) {
+      if (validLocations.length >= 15) break;
+      
+      try {
+        const response = await fetch(
+          `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(category)}.json?` +
+          `access_token=${token}&` +
+          `proximity=${lng},${lat}&` +
+          `limit=5&` +
+          `types=poi`
+        );
+        const data = await response.json();
+        
+        if (data.features) {
+          for (const feature of data.features) {
+            const [poiLng, poiLat] = feature.center;
+            
+            // Only include POIs within ~2km of search center
+            const distance = Math.sqrt(
+              Math.pow(poiLat - lat, 2) + Math.pow(poiLng - lng, 2)
+            );
+            
+            if (distance < 0.02) { // Approximately 2km
+              validLocations.push({
+                lat: poiLat,
+                lng: poiLng,
+                address: feature.place_name || `${locationName}, Philippines`
+              });
+            }
+          }
+        }
+      } catch (error) {
+        console.warn(`POI search failed for ${category}:`, error);
+      }
+    }
+    
+    return validLocations;
+  };
+
+  // Get real POI locations
+  let poiLocations = await searchPOIs();
   
+  // If not enough POIs found, add some with small random offsets from found POIs
+  // This ensures venues are near buildings, not on roads
+  if (poiLocations.length < 8 && poiLocations.length > 0) {
+    const originalCount = poiLocations.length;
+    for (let i = 0; i < 8 - originalCount; i++) {
+      const basePoi = poiLocations[i % originalCount];
+      // Very small offset (about 20-50 meters) to stay near the building
+      const tinyOffset = 0.0003 + (Math.random() * 0.0002);
+      const angle = Math.random() * 2 * Math.PI;
+      
+      poiLocations.push({
+        lat: basePoi.lat + (tinyOffset * Math.cos(angle)),
+        lng: basePoi.lng + (tinyOffset * Math.sin(angle)),
+        address: basePoi.address
+      });
+    }
+  }
+  
+  // Fallback: if still no POIs, use building-biased positions
+  if (poiLocations.length === 0) {
+    console.warn('No POIs found, using fallback positions');
+    for (let i = 0; i < 10; i++) {
+      // Create positions in a grid pattern (more likely to hit buildings)
+      const gridX = (i % 3) - 1; // -1, 0, 1
+      const gridY = Math.floor(i / 3) - 1; // -1, 0, 1
+      const jitter = 0.001 * Math.random();
+      
+      poiLocations.push({
+        lat: lat + (gridY * 0.003) + jitter,
+        lng: lng + (gridX * 0.003) + jitter,
+        address: `${Math.floor(Math.random() * 999) + 1} ${locationName} Street, ${locationName}, Philippines`
+      });
+    }
+  }
+
   const sampleVenues: Venue[] = [];
-  const numVenues = Math.floor(Math.random() * 8) + 8;
+  const numVenues = Math.min(poiLocations.length, Math.floor(Math.random() * 4) + 8); // 8-12 venues
+  
+  // Shuffle POI locations to get variety
+  const shuffledLocations = [...poiLocations].sort(() => Math.random() - 0.5);
   
   for (let i = 0; i < numVenues; i++) {
-    const latOffset = (Math.random() - 0.5) * 0.045;
-    const lngOffset = (Math.random() - 0.5) * 0.045;
+    const location = shuffledLocations[i];
     
-    const randomAmenities = amenities
+    const randomAmenities = [...amenities]
       .sort(() => Math.random() - 0.5)
       .slice(0, Math.floor(Math.random() * 6) + 4);
     
     const venueName = venueNames[i % venueNames.length];
     const venueType = venueTypes[i % venueTypes.length];
-    const imageId = Math.floor(Math.random() * 1000);
+    const imageId = Math.floor(Math.random() * 1000) + i + Date.now() % 1000;
     
     sampleVenues.push({
-      id: `venue-${Date.now()}-${i}`,
+      id: `venue-${Date.now()}-${i}-${Math.random().toString(36).substr(2, 9)}`,
       name: `${venueName} ${locationName}`,
-      address: `${Math.floor(Math.random() * 999) + 1} ${locationName} Avenue, ${locationName}, Philippines`,
-      latitude: lat + latOffset,
-      longitude: lng + lngOffset,
+      address: location.address,
+      latitude: location.lat,
+      longitude: location.lng,
       image: `https://picsum.photos/seed/venue${imageId}/600/400`,
       images: [
         `https://picsum.photos/seed/venue${imageId}a/600/400`,
@@ -1001,11 +1103,12 @@ const generateSampleVenues = (lat: number, lng: number, locationName: string): V
 // Fetch venues
 const fetchVenues = async (lat: number, lng: number, locationName: string) => {
   try {
-    await new Promise(resolve => setTimeout(resolve, 800));
-    return generateSampleVenues(lat, lng, locationName);
+    // generateSampleVenues is now async
+    return await generateSampleVenues(lat, lng, locationName);
   } catch (error) {
     console.error('Error fetching venues:', error);
-    return generateSampleVenues(lat, lng, locationName);
+    // Return empty array on error
+    return [];
   }
 };
 
