@@ -19,13 +19,8 @@
             v-slot="{ navigate }"
             :to="{ name: 'country', params: { country } }"
           >
-            <img
-              src="./../../public/images/navigation/dp3-removebg.webp"
-              alt="Venue4use brand logo"
-              role="link"
-              @click="navigate"
-              style="max-width: 120px"
-            />
+           
+            
           </nuxt-link>
           <span :class="smAndDown ? 'ml-n2' : ''">
             <ChangeCountryDropdown v-model:display="displayHeader" />
