@@ -111,11 +111,11 @@ const fetchAnnouncement = async () => {
 };
 
 useHead(() => ({
-  title: "Venue4use | Book Top Event Venues & Meeting Spaces",
+  title: "FoxPassport | Let's make life an event",
   meta: [
     {
       name: "description",
-      content: `Find the perfect venue for any occasion in ${country} - meetings, parties, or corporate events. Venue4use makes venue booking quick and easy.`,
+      content: `Just as Youtube empowered individuals with the power of media, FoxPassport returns the power of Happiness & Experience to You `,
     },
     {
       name: "keywords",
@@ -132,11 +132,11 @@ useHead(() => ({
 }));
 
 useSeoMeta({
-  title: "Venue4use | Book Top Event Venues & Meeting Spaces",
-  ogTitle: "Venue4use | Book Top Event Venues & Meeting Spaces",
-  description: `Find the perfect venue for any occasion in ${country} - meetings, parties, or corporate events. Venue4use makes venue booking quick and easy.`,
-  ogDescription: `Find the perfect venue for any occasion in ${country} - meetings, parties, or corporate events. Venue4use makes venue booking quick and easy.`,
-  ogImage: defaultCountryImage.value || "/background.jpeg",
+  title: "FoxPassport | Let's make life an event",
+  ogTitle: "FoxPassport | Let's make life an event",
+  description: `Just as Youtube empowered individuals with the power of media, FoxPassport returns the power of Happiness & Experience to You`,
+  ogDescription: `Just as Youtube empowered individuals with the power of media, FoxPassport returns the power of Happiness & Experience to You`,
+  ogImage: defaultCountryImage.value || "/FoxLogo.png",
   twitterCard: "summary_large_image",
   keywords,
 });
