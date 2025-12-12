@@ -50,7 +50,7 @@ function HomeContent() {
   return (
     <main className="min-h-screen font-sans bg-gray-50">
       {/* HERO SECTION */}
-      <div className="relative w-full h-[650px] md:h-[850px] bg-black overflow-hidden flex items-center justify-center">
+      <div className="relative w-full h-[650px] md:h-[850px] bg-black z-20 flex items-center justify-center">
         <img 
           src="https://images.unsplash.com/photo-1504674900247-0877df9cc836" 
           alt="Hero Background"
