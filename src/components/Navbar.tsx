@@ -1,10 +1,9 @@
 import Link from "next/link";
 import Image from "next/image";
-import SearchBar from "@/src/components/SearchBar";
 
 export default function Navbar() {
   return (
-    <nav className="sticky top-0 z-50 w-full bg-transparent p-4 md:px-10 flex flex-col md:flex-row items-center text-white gap-4">
+    <nav className="fixed top-0 z-50 w-full bg-transparent p-4 md:px-10 flex flex-col md:flex-row items-center text-white gap-4">
       
       {/* Left: Logo (flex-1 to take equal space) */}
       <div className="w-full md:w-auto md:flex-1 flex justify-between md:justify-start items-center">
@@ -38,13 +37,9 @@ export default function Navbar() {
         </div>
       </div>
 
-      {/* Middle: Search Bar (Centered) */}
-      <div className="w-full md:w-auto md:min-w-[700px] md:max-w-4xl flex justify-center">
-        <SearchBar isHero={false} />
-      </div>
-
       {/* Right: Actions (Desktop) - flex-1 to balance with left */}
       <div className="hidden md:flex md:flex-1 justify-end gap-4 items-center text-sm font-semibold">
+        <Link href="/become-a-foxer" className="hover:underline">Become a Foxer</Link>
         <Link href="#" className="hover:underline">Write a Review</Link>
         <Link href="#" className="hover:underline">For Businesses</Link>
         

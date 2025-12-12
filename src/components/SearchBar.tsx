@@ -14,7 +14,7 @@ interface Props {
 }
 
 export default function SearchBar({ isHero = false, onSearchClick }: Props) {
-  const router = useRouter(); // Initialize router
+  const router = useRouter();
   const {
     where,
     selectedLocation,
@@ -35,16 +35,11 @@ export default function SearchBar({ isHero = false, onSearchClick }: Props) {
     handleLocationSelect
   } = useSearchForm();
 
-  // Unified Search Handler
   const handleSearchAction = (e: React.MouseEvent) => {
     e.stopPropagation();
-
-    // 1. If a parent provided a handler (like in the old Hero), use it.
     if (onSearchClick) {
       onSearchClick(selectedLocation);
-    } 
-    // 2. OTHERWISE (like in Navbar), push to URL so the Home page detects it.
-    else if (selectedLocation) {
+    } else if (selectedLocation) {
       const params = new URLSearchParams();
       params.set("location", selectedLocation.name);
       if (selectedLocation.province) params.set("province", selectedLocation.province);
@@ -57,9 +52,9 @@ export default function SearchBar({ isHero = false, onSearchClick }: Props) {
       ref={searchBarRef} 
       className={`relative flex w-full ${isHero ? "shadow-xl" : "shadow-lg"} rounded-full bg-white border border-gray-200 z-40 h-[50px] md:h-[66px]`}
     >
-      {/* 1. WHERE */}
+      {/* 1. WHERE - CHANGED flex-[1.5] TO flex-1 */}
       <div 
-        className={`relative flex-[1.5] min-w-0 flex flex-col justify-center px-4 md:px-6 py-2 md:py-3 cursor-pointer transition-all rounded-l-full hover:bg-gray-100 ${activeSection === 'where' ? 'bg-gray-100' : ''}`}
+        className={`relative flex-1 min-w-0 flex flex-col justify-center px-4 md:px-6 py-2 md:py-3 cursor-pointer transition-all rounded-l-full hover:bg-gray-100 ${activeSection === 'where' ? 'bg-gray-100' : ''}`}
         onClick={() => openSection('where')}
       >
         <span className="text-[10px] md:text-xs font-bold text-gray-800 tracking-wide">Where</span>
@@ -74,7 +69,7 @@ export default function SearchBar({ isHero = false, onSearchClick }: Props) {
 
       <div className="w-px bg-gray-200 my-2 md:my-3"></div>
 
-      {/* 2. WHEN */}
+      {/* 2. WHEN - KEPT flex-1 */}
       <div 
         className={`relative flex-1 min-w-0 flex flex-col justify-center px-4 md:px-6 py-2 md:py-3 cursor-pointer transition-all hover:bg-gray-100 ${activeSection === 'when' ? 'bg-gray-100' : ''}`}
         onClick={() => openSection('when')}
@@ -87,7 +82,7 @@ export default function SearchBar({ isHero = false, onSearchClick }: Props) {
 
       <div className="w-px bg-gray-200 my-2 md:my-3"></div>
 
-      {/* 3. WHO */}
+      {/* 3. WHO - KEPT flex-1 */}
       <div 
         className={`relative flex-1 min-w-0 flex items-center justify-between pl-4 md:pl-6 pr-2 py-2 cursor-pointer transition-all rounded-r-full hover:bg-gray-100 ${activeSection === 'who' ? 'bg-gray-100' : ''}`}
         onClick={() => openSection('who')}

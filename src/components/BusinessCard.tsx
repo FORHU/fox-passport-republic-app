@@ -7,80 +7,72 @@ interface ActivityData {
 }
 
 export default function BusinessCard({ data }: { data: ActivityData }) {
+  // Use the first image from content, or fallback to business image
+  const displayImage = data.content.images?.[0] || data.business.image || "/placeholder.jpg";
+
   return (
-    <div className="border border-gray-200 rounded-lg bg-white overflow-hidden flex flex-col shadow-sm hover:shadow-md transition-shadow h-full">
+    <div className="group cursor-pointer flex flex-col gap-2 bg-transparent w-full">
       
-      {/* 1. Header: Ultra Compact (Smaller padding & avatar) */}
-      <div className="p-2 flex items-center gap-2 border-b border-gray-50">
+      {/* 1. IMAGE AREA (Relative for overlays) */}
+      <div className="relative aspect-square w-full overflow-hidden rounded-xl bg-gray-200">
+        
+        {/* Main Image */}
         <img 
-          src={data.user.image} 
-          alt={data.user.name} 
-          className="w-6 h-6 rounded-full object-cover" 
+          src={displayImage} 
+          alt={data.business.name} 
+          className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105" 
         />
-        <div className="flex flex-col leading-none">
-          <div className="text-[11px] font-bold text-[#0073bb]">
-            {data.user.name} <span className="text-gray-500 font-normal">{data.user.action}</span>
-          </div>
-          <span className="text-[9px] text-gray-400 mt-0.5">{data.user.time}</span>
+
+        {/* OVERLAY: Top Left Badge (User Info) */}
+        {/* Mimics the white 'Guest favorite' badge style */}
+        <div className="absolute top-3 left-3 bg-white/95 backdrop-blur-md pl-1 pr-3 py-1 rounded-full shadow-sm z-10 flex items-center gap-2 transition-transform hover:scale-105">
+           <img src={data.user.image} className="w-5 h-5 rounded-full object-cover" alt="User" />
+           <span className="text-[10px] font-bold text-gray-800 tracking-wide uppercase">
+             {data.user.action}
+           </span>
         </div>
+
+        {/* OVERLAY: Top Right Heart Icon */}
+        <button className="absolute top-3 right-3 p-1 transition-transform hover:scale-110 active:scale-95">
+          <svg 
+            viewBox="0 0 32 32" 
+            xmlns="http://www.w3.org/2000/svg" 
+            className="w-6 h-6 fill-black/50 stroke-white stroke-[2px]"
+            style={{ overflow: 'visible' }}
+          >
+            <path d="M16 28c7-4.73 14-10 14-17a6.98 6.98 0 0 0-7-7c-1.8 0-3.58.68-4.95 2.05L16 8.1l-2.05-2.05a6.98 6.98 0 0 0-9.9 0A6.98 6.98 0 0 0 2 11c0 7 7 12.27 14 17z"></path>
+          </svg>
+        </button>
+
       </div>
 
-      {/* 2. Media Area: Short Height (h-24 / 96px) */}
-      <div className="w-full h-24 relative bg-gray-100">
-        {data.content.images ? (
-          <div className="grid grid-cols-2 h-full w-full gap-0.5">
-            {data.content.images.slice(0, 2).map((img, idx) => (
-              <img key={idx} src={img} className="w-full h-full object-cover" alt="activity" />
-            ))}
-          </div>
-        ) : (
-          <img 
-            src={data.business.image || "/placeholder.jpg"} 
-            alt={data.business.name} 
-            className="w-full h-full object-cover" 
-          />
-        )}
-      </div>
-
-      {/* 3. Content: Minimal Padding & Text */}
-      <div className="p-2 flex flex-col flex-grow">
-        <div className="flex justify-between items-start mb-1">
-          <h3 className="text-xs font-bold text-[#0073bb] truncate max-w-[70%]">
+      {/* 2. TEXT CONTENT */}
+      <div className="flex justify-between items-start mt-1 px-1">
+        
+        <div className="flex flex-col gap-0.5">
+          {/* Title */}
+          <h3 className="font-semibold text-gray-900 text-[15px] leading-tight group-hover:underline">
             {data.business.name}
           </h3>
-          {/* Rating Stars */}
-          <div className="flex text-orange-400 text-[9px]">
-             {[...Array(5)].map((_, i) => (
-               <span key={i} className={i < data.business.rating ? "opacity-100" : "opacity-30"}>★</span>
-             ))}
-          </div>
-        </div>
-
-        {/* Category */}
-        <div className="text-[10px] text-gray-400 mb-1.5 -mt-1">
-          {data.business.category}
-        </div>
-
-        {/* Text Description: Max 2 lines, very small text */}
-        {data.content.text && (
-          <p className="text-[11px] text-gray-600 line-clamp-2 leading-snug">
-            {data.content.text}
+          {/* Category */}
+          <p className="text-gray-500 text-[13px]">
+            {data.business.category}
           </p>
-        )}
+          {/* Time / Status */}
+          <p className="text-gray-900 font-medium text-[13px] mt-0.5">
+            {data.user.time}
+          </p>
+        </div>
+
+        {/* Rating Star */}
+        <div className="flex items-center gap-1 text-[13px]">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-3.5 h-3.5 text-black">
+            <path fillRule="evenodd" d="M10.788 3.21c.448-1.077 1.976-1.077 2.424 0l2.082 5.007 5.404.433c1.164.093 1.636 1.545.749 2.305l-4.117 3.527 1.257 5.273c.271 1.136-.964 2.033-1.96 1.425L12 18.354 7.373 21.18c-.996.608-2.231-.29-1.96-1.425l1.257-5.273-4.117-3.527c-.887-.76-.415-2.212.749-2.305l5.404-.433 2.082-5.006z" clipRule="evenodd" />
+          </svg>
+          <span className="font-light text-gray-900">{data.business.rating.toFixed(1)}</span>
+        </div>
       </div>
 
-      {/* 4. Footer: Tiny Icons */}
-      <div className="px-2 py-1.5 border-t border-gray-100 flex gap-3 text-gray-400 text-[10px] mt-auto bg-gray-50/50">
-        <span className="cursor-pointer hover:text-gray-600 flex items-center gap-1">
-          💡 Useful
-        </span>
-        <span className="cursor-pointer hover:text-gray-600 flex items-center gap-1">
-          🙂 Funny
-        </span>
-        <span className="cursor-pointer hover:text-gray-600 flex items-center gap-1">
-          ❤️ Love
-        </span>
-      </div>
     </div>
   );
 }
