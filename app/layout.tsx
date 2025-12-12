@@ -4,8 +4,8 @@ import Navbar from "@/src/components/Navbar";
 import Footer from "@/src/components/Footer";
 
 export const metadata: Metadata = {
-  title: "FoxPassport - Yelp Clone",
-  description: "Find the best businesses in town",
+  title: "FoxPassport - Let's Make Life an Event",
+  description: "FoxPassport returns the power of Happiness & Experience to You",
 };
 
 export default function RootLayout({

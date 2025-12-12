@@ -1,54 +1,116 @@
+"use client";
+import { useState, useEffect, Suspense } from "react";
+import { useSearchParams, useRouter } from "next/navigation";
+import VenueMap from "@/src/components/VenueMap";
 import SearchBar from "@/src/components/SearchBar";
-import BusinessCard from "@/src/components/BusinessCard";
+import Categories from "@/src/components/Categories";
+import RecentActivity from "@/src/components/RecentActivity"; 
+import { useVenueMapLogic } from "@/src/hooks/useVenueMapLogic";
+import { config } from "@/src/config";
+import { X } from "lucide-react";
 
-export default function Home() {
-  // Dummy data for example
-  const businesses = [
-    { name: "Joe's Pizza", image: "https://images.unsplash.com/photo-1513104890138-7c749659a591", rating: 4.5, reviewCount: 230, tags: ["Pizza", "Italian"], price: "$$" },
-    { name: "Sushi Zen", image: "https://images.unsplash.com/photo-1579871494447-9811cf80d66c", rating: 5, reviewCount: 120, tags: ["Sushi", "Japanese"], price: "$$$" },
-    { name: "Burger King", image: "https://images.unsplash.com/photo-1568901346375-23c9450c58cd", rating: 3.5, reviewCount: 50, tags: ["Burgers", "Fast Food"], price: "$" },
-    { name: "Pasta House", image: "https://images.unsplash.com/photo-1551183053-bf91b1dca034", rating: 4, reviewCount: 85, tags: ["Italian", "Pasta"], price: "$$" },
-  ];
+function HomeContent() {
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const { loading, venues, searchCoordinates, searchForVenues } = useVenueMapLogic();
+  const [showMapModal, setShowMapModal] = useState(false);
+
+  useEffect(() => {
+    const locationName = searchParams.get("location");
+    if (locationName) {
+      handleUrlSearch(locationName);
+    } else {
+      setShowMapModal(false);
+    }
+  }, [searchParams]);
+
+  const handleUrlSearch = async (locationName: string) => {
+    setShowMapModal(true);
+    if (!config.mapboxToken) return;
+
+    try {
+      const res = await fetch(
+        `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(locationName + ", Philippines")}.json?access_token=${config.mapboxToken}&limit=1`
+      );
+      const data = await res.json();
+      if (data.features && data.features.length > 0) {
+        const [lng, lat] = data.features[0].center;
+        await searchForVenues(locationName, lat, lng);
+      }
+    } catch (e) {
+      console.error("Geocoding failed", e);
+    }
+  };
+
+  const closeMapModal = () => {
+    setShowMapModal(false);
+    router.push('/', { scroll: false });
+  };
 
   return (
-    <main className="min-h-screen">
+    <main className="min-h-screen font-sans bg-gray-50">
       {/* HERO SECTION */}
-      <div className="relative w-full h-[500px] md:h-[600px] bg-black">
-        {/* Background Image */}
-        <div 
-          className="absolute inset-0 opacity-60 bg-[url('https://images.unsplash.com/photo-1504674900247-0877df9cc836')] bg-cover bg-center"
-        ></div>
-        {/* Content Container */}
-        <div className="relative z-10 flex flex-col items-center h-full">
-          <div className="mt-20 md:mt-32 flex flex-col items-center text-center px-4 w-full max-w-4xl">
-             {/* Logo / Brand Icon can go here */}
-             <h1 className="text-4xl md:text-5xl font-bold text-white mb-8 tracking-tight">
-               Burritos in San Francisco
+      <div className="relative w-full h-[650px] md:h-[850px] bg-black overflow-hidden flex items-center justify-center">
+        <img 
+          src="https://images.unsplash.com/photo-1504674900247-0877df9cc836" 
+          alt="Hero Background"
+          className="absolute inset-0 w-full h-full object-cover opacity-60" 
+        />
+        <div className="absolute inset-0 bg-black/30" />
+        <div className="relative z-10 px-4 w-full max-w-5xl">
+          <div className="flex flex-col items-center text-center">
+             <h1 className="text-4xl md:text-6xl font-black text-white mb-8 tracking-tight drop-shadow-lg">
+               Let's Make Life An Event
              </h1>
-             {/* Big Search Bar */}
-             <div className="w-full">
+             <div className="w-full max-w-4xl shadow-2xl rounded-full">
                <SearchBar isHero={true} />
              </div>
-             
-             <div className="mt-4 flex gap-4 text-white text-sm font-medium">
-               <span className="hover:underline cursor-pointer">Restaurants</span>
-               <span className="hover:underline cursor-pointer">Home Services</span>
-               <span className="hover:underline cursor-pointer">Auto Services</span>
-               <span className="hover:underline cursor-pointer">More</span>
+             <div className="mt-8 flex flex-wrap justify-center gap-6 md:gap-8 text-white text-sm md:text-base font-semibold drop-shadow-md">
+               <span className="hover:text-pink-400 transition-colors cursor-pointer">Venues</span>
+               <span className="hover:text-pink-400 transition-colors cursor-pointer">Catering</span>
+               <span className="hover:text-pink-400 transition-colors cursor-pointer">Photography</span>
+               <span className="hover:text-pink-400 transition-colors cursor-pointer">More</span>
              </div>
           </div>
         </div>
       </div>
 
-      {/* RECENT ACTIVITY / CARDS SECTION */}
-      <div className="py-16 px-6 md:px-20 bg-white">
-        <h2 className="text-2xl font-bold text-red-600 mb-6 text-center">Recent Activity</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {businesses.map((biz, i) => (
-            <BusinessCard key={i} data={biz} />
-          ))}
+      {/* MODAL MAP SECTION */}
+      {showMapModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-300">
+          <div className="relative w-full max-w-6xl bg-white rounded-3xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300">
+            <div className="flex items-center justify-between p-4 md:p-6 border-b border-gray-100">
+              <div>
+                <h2 className="text-xl md:text-2xl font-bold text-gray-900">
+                  Venues near {searchParams.get("location")}
+                </h2>
+                <p className="text-sm text-gray-500">Found {venues.length} results</p>
+              </div>
+              <button onClick={closeMapModal} className="p-2 text-gray-500 hover:text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-full transition-colors focus:outline-none">
+                <X size={24} />
+              </button>
+            </div>
+            <div className="h-[60vh] md:h-[70vh] w-full relative">
+              <VenueMap venues={venues} loading={loading} center={searchCoordinates} />
+            </div>
+          </div>
         </div>
-      </div>
+      )}
+
+      {/* RECENT ACTIVITY COMPONENT */}
+      <RecentActivity />
+
+      {/* CATEGORIES SECTION */}
+      <Categories />
+      
     </main>
+  );
+}
+
+export default function Home() {
+  return (
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center">Loading...</div>}>
+      <HomeContent />
+    </Suspense>
   );
 }
