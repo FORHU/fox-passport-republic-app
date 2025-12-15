@@ -1,11 +1,8 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
-import { useRouter } from "next/navigation"; // Hook for navigation
-import mapboxgl from "mapbox-gl";
-import "mapbox-gl/dist/mapbox-gl.css";
+import Script from "next/script";
 import { Venue } from "@/src/types/venue";
-import { config } from "@/src/config";
-import { X, Star, MapPin, Users, Banknote, Navigation, ArrowRight } from "lucide-react";
+import { MapPin, ArrowRight } from "lucide-react";
 
 interface Props {
   venues: Venue[];
@@ -14,165 +11,149 @@ interface Props {
 }
 
 export default function VenueMap({ venues, center, loading }: Props) {
-  // --- HOOKS ---
-  const router = useRouter(); // The navigation hook
   const mapContainer = useRef<HTMLDivElement>(null);
-  const map = useRef<mapboxgl.Map | null>(null);
-  const markers = useRef<mapboxgl.Marker[]>([]);
-  
-  // State Hooks
-  const [selectedVenue, setSelectedVenue] = useState<Venue | null>(null); // For the sidebar
-  const [hoveredVenue, setHoveredVenue] = useState<Venue | null>(null);   // For the hover popup
-  const [hoverPos, setHoverPos] = useState<{ x: number; y: number } | null>(null);
+  const viewerRef = useRef<any>(null);
+  const [isCesiumLoaded, setIsCesiumLoaded] = useState(false);
+  const [selectedVenue, setSelectedVenue] = useState<Venue | null>(null);
 
-  // --- 1. Initialize Map Hook ---
   useEffect(() => {
-    if (!mapContainer.current) return;
-    
-    if (!config.mapboxToken) {
-      console.error("Mapbox token missing");
-      return;
-    }
-    mapboxgl.accessToken = config.mapboxToken;
+    if (!isCesiumLoaded || !mapContainer.current || viewerRef.current) return;
 
-    map.current = new mapboxgl.Map({
-      container: mapContainer.current,
-      style: "mapbox://styles/mapbox/streets-v12",
-      center: center ? [center.lng, center.lat] : [120.9842, 14.5995], 
-      zoom: 14,
-      pitch: 45, 
-      bearing: -10,
-    });
+    const Cesium = (window as any).Cesium;
+    (window as any).CESIUM_BASE_URL = 'https://cesium.com/downloads/cesiumjs/releases/1.114/Build/Cesium/';
 
-    map.current.addControl(new mapboxgl.NavigationControl(), "top-right");
+    const initMap = async () => {
+      try {
+        console.log("🚀 Initializing Cesium with fromAssetId(3954)...");
 
-    map.current.on("load", () => {
-      add3DBuildings();
-    });
+        // 1. AUTHENTICATE
+        const token = process.env.NEXT_PUBLIC_CESIUM_ION_TOKEN;
+        if (token) Cesium.Ion.defaultAccessToken = token;
 
-    // Clear hover state when map moves to prevent floating ghosts
-    map.current.on("move", () => {
-      setHoveredVenue(null);
-    });
+        // 2. LOAD IMAGERY (The Modern Way - ASYNC)
+        // We use 'await' because fetching the asset metadata takes time.
+        // This matches the code snippet you provided.
+        const imageryProvider = await Cesium.IonImageryProvider.fromAssetId(3954);
 
-    return () => map.current?.remove();
-  }, []);
+        // 3. CREATE VIEWER
+        const viewer = new Cesium.Viewer(mapContainer.current, {
+          imageryProvider: imageryProvider, // Pass the awaited provider here
+          baseLayerPicker: false, 
+          geocoder: false,        
+          timeline: false,        
+          animation: false,       
+          sceneModePicker: false, 
+          homeButton: false,      
+          navigationHelpButton: false,
+          fullscreenButton: false,
+          scene3DOnly: true,
+          requestRenderMode: false,
+        });
 
-  // --- Helper: 3D Buildings ---
-  const add3DBuildings = () => {
-    const m = map.current;
-    if (!m || m.getLayer('3d-buildings')) return;
-    
-    const layers = m.getStyle().layers;
-    let labelLayerId;
-    for (const layer of layers || []) {
-      if (layer.type === 'symbol' && layer.layout?.['text-field']) {
-        labelLayerId = layer.id;
-        break;
-      }
-    }
-    m.addLayer({
-        'id': '3d-buildings',
-        'source': 'composite',
-        'source-layer': 'building',
-        'filter': ['==', 'extrude', 'true'],
-        'type': 'fill-extrusion',
-        'minzoom': 14,
-        'paint': {
-          'fill-extrusion-color': '#aaa',
-          'fill-extrusion-height': ['get', 'height'],
-          'fill-extrusion-base': ['get', 'min_height'],
-          'fill-extrusion-opacity': 0.6
+        // 4. LOAD TERRAIN (Optional, also async recommended)
+        try {
+            const terrainProvider = await Cesium.CesiumTerrainProvider.fromUrl(
+                Cesium.IonResource.fromAssetId(1)
+            );
+            viewer.terrainProvider = terrainProvider;
+        } catch (e) {
+            console.warn("Terrain failed to load, continuing flat.");
         }
-      },
-      labelLayerId
-    );
+
+        // UI Cleanup
+        const credit = viewer.cesiumWidget.creditContainer as HTMLElement;
+        if (credit) credit.style.display = "none";
+        
+        // Visibility
+        viewer.scene.skyAtmosphere.show = true;
+        viewer.scene.globe.enableLighting = true; 
+
+        viewerRef.current = viewer;
+        updateMarkers(viewer, Cesium);
+        console.log("✅ Cesium Initialized!");
+
+      } catch (error) {
+        console.error("❌ Error initializing Cesium:", error);
+      }
+    };
+
+    initMap();
+
+    return () => {
+      if (viewerRef.current) {
+        viewerRef.current.destroy();
+        viewerRef.current = null;
+      }
+    };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isCesiumLoaded]);
+
+  // --- MARKER LOGIC ---
+  const updateMarkers = (v: any, Cesium: any) => {
+    v.entities.removeAll();
+    venues.forEach((venue) => {
+      const priceK = venue.price ? Math.round(venue.price / 1000) : 0;
+      v.entities.add({
+        position: Cesium.Cartesian3.fromDegrees(venue.longitude, venue.latitude),
+        point: {
+          pixelSize: 12,
+          color: Cesium.Color.fromCssColorString('#8b5cf6'),
+          outlineColor: Cesium.Color.WHITE,
+          outlineWidth: 2,
+          heightReference: Cesium.HeightReference.CLAMP_TO_GROUND,
+        },
+        label: {
+          text: `₱${priceK}k`,
+          font: 'bold 14px sans-serif',
+          style: Cesium.LabelStyle.FILL_AND_OUTLINE,
+          fillColor: Cesium.Color.WHITE,
+          outlineColor: Cesium.Color.fromCssColorString('#8b5cf6'),
+          outlineWidth: 4,
+          verticalOrigin: Cesium.VerticalOrigin.BOTTOM,
+          pixelOffset: new Cesium.Cartesian2(0, -15),
+          heightReference: Cesium.HeightReference.CLAMP_TO_GROUND,
+          disableDepthTestDistance: 500000, 
+        },
+        properties: { venueId: venue.id },
+      });
+    });
+
+    if (venues.length > 0) {
+      const positions = venues.map((v: Venue) => Cesium.Cartesian3.fromDegrees(v.longitude, v.latitude));
+      const boundingSphere = Cesium.BoundingSphere.fromPoints(positions);
+      v.camera.flyToBoundingSphere(boundingSphere, {
+         offset: new Cesium.HeadingPitchRange(0, Cesium.Math.toRadians(-45), boundingSphere.radius * 2.5)
+      });
+    }
+    
+    const handler = new Cesium.ScreenSpaceEventHandler(v.scene.canvas);
+    handler.setInputAction((click: any) => {
+      const pickedObject = v.scene.pick(click.position);
+      if (Cesium.defined(pickedObject) && pickedObject.id) {
+        const venueId = pickedObject.id.properties?.venueId?.getValue();
+        const venue = venues.find((x) => x.id === venueId);
+        if (venue) setSelectedVenue(venue);
+      } else {
+        setSelectedVenue(null);
+      }
+    }, Cesium.ScreenSpaceEventType.LEFT_CLICK);
   };
 
-  // --- 2. Markers Logic Hook ---
-  useEffect(() => {
-    if (!map.current) return;
-    
-    // Cleanup old markers
-    markers.current.forEach(m => m.remove());
-    markers.current = [];
-
-    venues.forEach((venue) => {
-      // Create DOM element for the marker
-      const el = document.createElement("div");
-      el.className = "venue-marker group cursor-pointer transition-all duration-300";
-      const priceK = venue.price ? Math.round(venue.price / 1000) : 0;
-
-      // Violet Marker Styling
-      el.innerHTML = `
-        <div class="transform transition-transform duration-200 hover:scale-110">
-          <div class="bg-violet-600 text-white px-3 py-1.5 rounded-full text-xs font-bold shadow-lg border-2 border-white flex items-center gap-1">
-            <span>₱${priceK}k</span>
-          </div>
-          <div class="w-0 h-0 border-l-[6px] border-l-transparent border-r-[6px] border-r-transparent border-t-[8px] border-t-violet-600 mx-auto -mt-0.5"></div>
-        </div>
-      `;
-
-      // --- EVENT LISTENERS (The Interactive Part) ---
-
-      // CLICK: Select Venue
-      el.addEventListener("click", (e) => {
-        e.stopPropagation();
-        setSelectedVenue(venue);
-        setHoveredVenue(null); // Hide hover tooltip immediately
-        
-        map.current?.flyTo({
-          center: [venue.longitude, venue.latitude],
-          zoom: 16,
-          pitch: 50,
-          essential: true,
-          offset: [0, 100] // Shift map so card doesn't cover marker
-        });
-      });
-
-      // HOVER START: Show Preview
-      el.addEventListener("mouseenter", () => {
-        if (map.current) {
-          // Calculate screen position for the tooltip
-          const point = map.current.project([venue.longitude, venue.latitude]);
-          setHoverPos({ x: point.x, y: point.y });
-          setHoveredVenue(venue);
-        }
-      });
-
-      // HOVER END: Hide Preview
-      el.addEventListener("mouseleave", () => {
-        setHoveredVenue(null);
-      });
-
-      const marker = new mapboxgl.Marker({ element: el, anchor: "bottom" })
-        .setLngLat([venue.longitude, venue.latitude])
-        .addTo(map.current!);
-        
-      markers.current.push(marker);
-    });
-
-    // Fit bounds to venues
-    if (venues.length > 0) {
-      const bounds = new mapboxgl.LngLatBounds();
-      venues.forEach(v => bounds.extend([v.longitude, v.latitude]));
-      map.current.fitBounds(bounds, { padding: 100, maxZoom: 16 });
-    } else if (center) {
-      map.current.flyTo({ center: [center.lng, center.lat], zoom: 14 });
-    }
-  }, [venues, center]);
-
-  // --- NAVIGATION HANDLER ---
   const handleNavigateToVenue = (id: string) => {
-    // This pushes the user to /venue/[id]
     router.push(`/venue/${id}`);
   };
 
   return (
-    <div className="relative w-full h-full rounded-2xl overflow-hidden bg-gray-100 shadow-xl border border-gray-200">
-      <div ref={mapContainer} className="w-full h-full" />
+    <div className="relative w-full h-full min-h-[600px] rounded-2xl overflow-hidden bg-gray-900 shadow-xl border border-gray-800">
+      <link rel="stylesheet" href="https://cesium.com/downloads/cesiumjs/releases/1.114/Build/Cesium/Widgets/widgets.css" />
+      <Script 
+        src="https://cesium.com/downloads/cesiumjs/releases/1.114/Build/Cesium/Cesium.js" 
+        strategy="afterInteractive"
+        onLoad={() => setIsCesiumLoaded(true)}
+      />
+
+      <div ref={mapContainer} className="w-full h-full" id="cesiumContainer" />
       
-      {/* Loading Overlay */}
       {loading && (
         <div className="absolute inset-0 bg-white/80 backdrop-blur-sm z-50 flex flex-col items-center justify-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600 mb-4"></div>
@@ -180,90 +161,16 @@ export default function VenueMap({ venues, center, loading }: Props) {
         </div>
       )}
 
-      {/* --- 1. HOVER PREVIEW (Floating Tooltip) --- */}
-      {hoveredVenue && hoverPos && !selectedVenue && (
-        <div 
-          className="absolute z-50 pointer-events-none flex flex-col items-center animate-in zoom-in-95 duration-200"
-          style={{ 
-            left: hoverPos.x, 
-            top: hoverPos.y - 50, // Position above the marker
-            transform: 'translate(-50%, -100%)' 
-          }}
-        >
-          <div className="bg-white p-2 rounded-xl shadow-2xl w-48 border border-gray-100">
-            <div className="relative h-28 w-full rounded-lg overflow-hidden mb-2 bg-gray-100">
-              <img 
-                src={hoveredVenue.image} 
-                alt={hoveredVenue.name} 
-                className="w-full h-full object-cover"
-              />
-            </div>
-            <h4 className="font-bold text-gray-900 text-sm truncate px-1">{hoveredVenue.name}</h4>
-            <p className="text-xs text-gray-500 truncate px-1 mb-1">{hoveredVenue.type}</p>
-          </div>
-          {/* Triangle pointing down */}
-          <div className="w-4 h-4 bg-white transform rotate-45 -mt-2 shadow-sm border-r border-b border-gray-100"></div>
-        </div>
-      )}
-
-      {/* --- 2. CLICKED DETAIL CARD (Sidebar) --- */}
       {selectedVenue && (
-        <div className="absolute top-4 right-4 w-80 bg-white rounded-xl shadow-2xl z-40 overflow-hidden animate-in slide-in-from-right-10 duration-300 flex flex-col max-h-[calc(100%-2rem)]">
-          
-          <div className="relative h-48 shrink-0 bg-gray-200">
-            <img src={selectedVenue.image} alt={selectedVenue.name} className="w-full h-full object-cover"/>
-            <button 
-              onClick={() => setSelectedVenue(null)} 
-              className="absolute top-3 right-3 bg-black/40 hover:bg-black/60 text-white p-1.5 rounded-full transition-colors backdrop-blur-sm"
-            >
-              <X size={16} />
+        <div className="absolute top-4 right-4 w-80 bg-white rounded-xl shadow-2xl z-40 p-5">
+            <h3 className="font-bold text-xl mb-2 text-gray-900">{selectedVenue.name}</h3>
+            <div className="flex items-center text-gray-500 text-xs mb-4">
+               <MapPin size={14} className="mr-2" />
+               <span>{selectedVenue.address}</span>
+            </div>
+            <button onClick={() => handleNavigateToVenue(selectedVenue.id)} className="w-full bg-violet-600 text-white py-2 rounded-lg">
+              View Details <ArrowRight size={16} className="inline ml-1"/>
             </button>
-            <div className="absolute bottom-3 left-3 bg-white/90 px-2.5 py-1 rounded-md text-xs font-bold text-violet-700 shadow-sm">
-              {selectedVenue.type || 'Venue'}
-            </div>
-          </div>
-
-          <div className="p-5 overflow-y-auto">
-            <div className="flex justify-between items-start mb-3">
-              <h3 className="font-bold text-xl text-gray-900 leading-tight flex-1 mr-2">{selectedVenue.name}</h3>
-              <div className="flex items-center text-amber-500 text-sm font-bold bg-amber-50 px-2 py-1 rounded-md">
-                <Star size={14} className="mr-1 fill-current" />
-                {selectedVenue.rating?.toFixed(1)}
-              </div>
-            </div>
-
-            <div className="flex items-start text-gray-500 text-xs mb-4 leading-relaxed">
-              <MapPin size={14} className="mr-2 mt-0.5 shrink-0" />
-              <span>{selectedVenue.address}</span>
-            </div>
-
-            <div className="grid grid-cols-2 gap-3 mb-6">
-              <div className="flex items-center text-xs font-medium text-gray-600 bg-gray-50 p-2.5 rounded-lg border border-gray-100">
-                <Users size={16} className="mr-2 text-violet-500" />
-                {selectedVenue.capacity} guests
-              </div>
-              <div className="flex items-center text-xs font-medium text-gray-600 bg-gray-50 p-2.5 rounded-lg border border-gray-100">
-                <Banknote size={16} className="mr-2 text-emerald-500" />
-                ₱{(selectedVenue.price || 0).toLocaleString()}
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              {/* Navigate Button */}
-              <button 
-                onClick={() => handleNavigateToVenue(selectedVenue.id)}
-                className="w-full bg-violet-600 hover:bg-violet-700 text-white py-3 rounded-xl font-bold text-sm transition-all shadow-md shadow-violet-200 flex items-center justify-center gap-2"
-              >
-                View Full Details
-                <ArrowRight size={16} />
-              </button>
-              
-              <button className="w-full border border-gray-200 text-gray-700 py-2.5 rounded-xl font-semibold text-sm hover:bg-gray-50 transition-colors flex items-center justify-center gap-2">
-                <Navigation size={16} className="text-gray-400" />
-                Get Directions
-              </button>
-            </div>
-          </div>
         </div>
       )}
     </div>
