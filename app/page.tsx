@@ -1,108 +1,114 @@
 "use client";
-import { useState, useEffect, Suspense } from "react";
-import { useSearchParams, useRouter } from "next/navigation";
-import VenueMap from "@/src/components/VenueMap";
-import SearchBar from "@/src/components/SearchBar";
+
+import { Suspense } from "react";
+import { useSearchParams } from "next/navigation";
+
+// --- Components Imports ---
+import Navbar from "@/src/components/Navbar";
+import HeroSection from "@/src/components/HeroSection";
+import RecentActivity from "@/src/components/RecentActivity";
 import Categories from "@/src/components/Categories";
-import RecentActivity from "@/src/components/RecentActivity"; 
-import { useVenueMapLogic } from "@/src/hooks/useVenueMapLogic";
-import { config } from "@/src/config";
-import { X } from "lucide-react";
+
+// --- Search Logic Components ---
+import ListingCard from "@/src/components/ListingCard";
+import { HARDCODED_VENUES } from "@/src/data/hardcodedVenues";
 
 function HomeContent() {
   const searchParams = useSearchParams();
-  const router = useRouter();
-  const { loading, venues, searchCoordinates, searchForVenues } = useVenueMapLogic();
-  const [showMapModal, setShowMapModal] = useState(false);
+  const locationQuery = searchParams.get("location");
+  const categoryQuery = searchParams.get("category"); // Get category from URL
 
-  useEffect(() => {
-    const locationName = searchParams.get("location");
-    if (locationName) {
-      handleUrlSearch(locationName);
-    } else {
-      setShowMapModal(false);
-    }
-  }, [searchParams]);
+  // --- FILTERING LOGIC ---
+  let filteredVenues = HARDCODED_VENUES;
 
-  const handleUrlSearch = async (locationName: string) => {
-    setShowMapModal(true);
-    if (!config.mapboxToken) return;
+  // 1. Filter by Location (if exists)
+  if (locationQuery) {
+    filteredVenues = filteredVenues.filter(
+      (v) =>
+        v.location.toLowerCase().includes(locationQuery.toLowerCase()) ||
+        v.province.toLowerCase().includes(locationQuery.toLowerCase())
+    );
+  }
 
-    try {
-      const res = await fetch(
-        `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(locationName + ", Philippines")}.json?access_token=${config.mapboxToken}&limit=1`
-      );
-      const data = await res.json();
-      if (data.features && data.features.length > 0) {
-        const [lng, lat] = data.features[0].center;
-        await searchForVenues(locationName, lat, lng);
-      }
-    } catch (e) {
-      console.error("Geocoding failed", e);
-    }
-  };
+  // 2. Filter by Category (if exists)
+  if (categoryQuery) {
+    filteredVenues = filteredVenues.filter((v) => {
+      const cat = v.category.toLowerCase();
+      const q = categoryQuery.toLowerCase();
 
-  const closeMapModal = () => {
-    setShowMapModal(false);
-    router.push('/', { scroll: false });
-  };
+      // Map Broad Categories to Specific Data Types
+      if (q === "hotels & travel") return ["hotel", "resort", "villa", "condo", "apartment", "suite", "inn", "lodge", "room", "cabin", "glamping"].some(t => cat.includes(t));
+      if (q === "event planning & services") return ["garden", "function", "events", "historic"].some(t => cat.includes(t));
+      if (q === "restaurants" || q === "food") return ["dining", "restaurant"].some(t => cat.includes(t));
+      if (q === "arts & entertainment") return ["art", "gallery", "museum", "historic"].some(t => cat.includes(t));
+      if (q === "nightlife") return ["bar", "club", "lounge"].some(t => cat.includes(t));
+      if (q === "real estate") return ["house", "condo", "apartment", "loft"].some(t => cat.includes(t));
 
+      // Default: Direct text match
+      return cat.includes(q);
+    });
+  }
+
+  // Determine if we are in "Search Mode" (Location OR Category selected)
+  const isSearchMode = locationQuery || categoryQuery;
+
+  // --- 1. SEARCH/FILTER RESULTS VIEW ---
+  if (isSearchMode) {
+    return (
+      <main className="min-h-screen bg-white pt-[80px] md:pt-[100px] pb-20">
+        <Navbar />
+        
+        <div className="max-w-[1600px] mx-auto px-2 md:px-6 grid grid-cols-1 lg:grid-cols-[1.2fr_0.8fr] gap-8 h-[calc(100vh-140px)]">
+          
+          {/* LEFT: Results Grid */}
+          <div className="overflow-y-auto pr-1 md:pr-2 custom-scrollbar">
+            <div className="mb-4 md:mb-6 px-1">
+                <h2 className="text-lg md:text-xl font-bold mb-1">
+                  {locationQuery ? `Stays in ${locationQuery}` : `${categoryQuery} Venues`}
+                </h2>
+                <p className="text-gray-500 text-xs md:text-sm">{filteredVenues.length} results found</p>
+            </div>
+
+            {filteredVenues.length > 0 ? (
+              <div className="grid grid-cols-3 sm:grid-cols-2 gap-x-2 gap-y-6 md:gap-x-6 md:gap-y-10">
+                {filteredVenues.map((venue) => (
+                  <ListingCard key={venue.id} venue={venue} />
+                ))}
+              </div>
+            ) : (
+              <div className="flex flex-col items-center justify-center py-20 text-center">
+                 <div className="text-4xl mb-4">🔍</div>
+                 <h3 className="text-lg font-bold text-gray-900">No results found</h3>
+                 <p className="text-gray-500 max-w-xs mt-2 text-sm">Try a different category or location.</p>
+              </div>
+            )}
+          </div>
+
+          {/* RIGHT: Map Placeholder */}
+          <div className="hidden lg:block h-full sticky top-0 rounded-xl overflow-hidden bg-gray-100 border border-gray-200 relative">
+            <img 
+               src="https://images.unsplash.com/photo-1524661135-423995f22d0b?auto=format&fit=crop&w=1000&q=80" 
+               className="w-full h-full object-cover opacity-50 grayscale hover:grayscale-0 transition-all duration-700"
+               alt="Map"
+            />
+            <div className="absolute inset-0 flex items-center justify-center">
+               <button className="bg-white text-gray-900 px-6 py-3 rounded-full shadow-lg font-bold text-sm hover:scale-105 transition-transform flex items-center gap-2">
+                 Map View <span className="text-xs font-normal text-gray-500">(Placeholder)</span>
+               </button>
+            </div>
+          </div>
+        </div>
+      </main>
+    );
+  }
+
+  // --- 2. LANDING PAGE VIEW (Default) ---
   return (
     <main className="min-h-screen font-sans bg-gray-50">
-      {/* HERO SECTION */}
-      <div className="relative w-full h-[650px] md:h-[850px] bg-black z-20 flex items-center justify-center">
-        <img 
-          src="https://images.unsplash.com/photo-1504674900247-0877df9cc836" 
-          alt="Hero Background"
-          className="absolute inset-0 w-full h-full object-cover opacity-60" 
-        />
-        <div className="absolute inset-0 bg-black/30" />
-        <div className="relative z-10 px-4 w-full max-w-5xl">
-          <div className="flex flex-col items-center text-center">
-             <h1 className="text-4xl md:text-6xl font-black text-white mb-8 tracking-tight drop-shadow-lg">
-               Let's Make Life An Event
-             </h1>
-             <div className="w-full max-w-4xl shadow-2xl rounded-full">
-               <SearchBar isHero={true} />
-             </div>
-             <div className="mt-8 flex flex-wrap justify-center gap-6 md:gap-8 text-white text-sm md:text-base font-semibold drop-shadow-md">
-               <span className="hover:text-pink-400 transition-colors cursor-pointer">Venues</span>
-               <span className="hover:text-pink-400 transition-colors cursor-pointer">Catering</span>
-               <span className="hover:text-pink-400 transition-colors cursor-pointer">Photography</span>
-               <span className="hover:text-pink-400 transition-colors cursor-pointer">More</span>
-             </div>
-          </div>
-        </div>
-      </div>
-
-      {/* MODAL MAP SECTION */}
-      {showMapModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-300">
-          <div className="relative w-full max-w-6xl bg-white rounded-3xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300">
-            <div className="flex items-center justify-between p-4 md:p-6 border-b border-gray-100">
-              <div>
-                <h2 className="text-xl md:text-2xl font-bold text-gray-900">
-                  Venues near {searchParams.get("location")}
-                </h2>
-                <p className="text-sm text-gray-500">Found {venues.length} results</p>
-              </div>
-              <button onClick={closeMapModal} className="p-2 text-gray-500 hover:text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-full transition-colors focus:outline-none">
-                <X size={24} />
-              </button>
-            </div>
-            <div className="h-[60vh] md:h-[70vh] w-full relative">
-              <VenueMap venues={venues} loading={loading} center={searchCoordinates} />
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* RECENT ACTIVITY COMPONENT */}
+      <Navbar />
+      <HeroSection />
       <RecentActivity />
-
-      {/* CATEGORIES SECTION */}
       <Categories />
-      
     </main>
   );
 }

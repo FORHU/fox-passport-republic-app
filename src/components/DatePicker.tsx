@@ -14,7 +14,6 @@ export default function DatePicker({ onSelectDates, onClose, inline = false }: D
   const [startDate, setStartDate] = useState<Date | null>(null);
   const [endDate, setEndDate] = useState<Date | null>(null);
 
-  // Get "Today" with time stripped to ensure accurate comparison
   const today = new Date();
   today.setHours(0, 0, 0, 0);
 
@@ -23,9 +22,7 @@ export default function DatePicker({ onSelectDates, onClose, inline = false }: D
   const getFirstDayOfMonth = (year: number, month: number) => new Date(year, month, 1).getDay();
 
   const handleDayClick = (date: Date) => {
-    // Prevent clicking if date is in the past
     if (date < today) return;
-
     if (!startDate || (startDate && endDate)) {
       setStartDate(date);
       setEndDate(null);
@@ -41,12 +38,7 @@ export default function DatePicker({ onSelectDates, onClose, inline = false }: D
   };
 
   const changeMonth = (offset: number) => {
-    const newDate = new Date(viewDate.getFullYear(), viewDate.getMonth() + offset, 1);
-    
-    // Optional: Prevent going back past the current month
-    // if (offset < 0 && newDate.getMonth() < today.getMonth() && newDate.getFullYear() <= today.getFullYear()) return;
-    
-    setViewDate(newDate);
+    setViewDate(new Date(viewDate.getFullYear(), viewDate.getMonth() + offset, 1));
   };
 
   const isSelected = (date: Date) => {
@@ -61,7 +53,6 @@ export default function DatePicker({ onSelectDates, onClose, inline = false }: D
     return date > startDate && date < endDate;
   };
 
-  // --- RENDER A SINGLE MONTH GRID ---
   const renderMonthGrid = (baseDate: Date) => {
     const year = baseDate.getFullYear();
     const month = baseDate.getMonth();
@@ -71,21 +62,20 @@ export default function DatePicker({ onSelectDates, onClose, inline = false }: D
     const emptyDays = [...Array(firstDay).keys()];
 
     return (
-      <div className="w-[320px]">
-        <h3 className="font-bold text-gray-800 text-base text-center mb-4">
+      // Changed width to auto/full to fit mobile container
+      <div className="w-[280px] md:w-[320px] shrink-0">
+        <h3 className="font-bold text-gray-800 text-sm md:text-base text-center mb-4">
           {baseDate.toLocaleDateString("en-US", { month: "long", year: "numeric" })}
         </h3>
 
-        {/* Weekday Labels */}
         <div className="grid grid-cols-7 mb-2">
           {["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"].map((day) => (
-            <span key={day} className="text-center text-xs font-semibold text-gray-400">
+            <span key={day} className="text-center text-[10px] md:text-xs font-semibold text-gray-400">
               {day}
             </span>
           ))}
         </div>
 
-        {/* Days Grid */}
         <div className="grid grid-cols-7 gap-y-1 gap-x-0">
           {emptyDays.map((_, i) => <div key={`empty-${i}`} />)}
           
@@ -93,17 +83,12 @@ export default function DatePicker({ onSelectDates, onClose, inline = false }: D
             const current = new Date(year, month, day);
             const selected = isSelected(current);
             const inRange = isInRange(current);
-            
-            // Check if date is in the past
             const isDisabled = current < today;
-
-            // Styling logic for range connectors
             const isStart = startDate && current.getTime() === startDate.getTime();
             const isEnd = endDate && current.getTime() === endDate.getTime();
 
             return (
               <div key={day} className="relative w-full aspect-square flex items-center justify-center py-0.5">
-                 {/* Range Backgrounds (Only show if not disabled) */}
                  {!isDisabled && inRange && <div className="absolute inset-y-1 w-full bg-gray-100" />}
                  {!isDisabled && isStart && endDate && <div className="absolute inset-y-1 right-0 w-1/2 bg-gray-100" />}
                  {!isDisabled && isEnd && startDate && <div className="absolute inset-y-1 left-0 w-1/2 bg-gray-100" />}
@@ -111,15 +96,15 @@ export default function DatePicker({ onSelectDates, onClose, inline = false }: D
                 <button
                   onClick={() => handleDayClick(current)}
                   disabled={isDisabled}
-                  className={`relative z-10 w-10 h-10 rounded-full text-sm font-semibold flex items-center justify-center transition-all
+                  className={`relative z-10 w-8 h-8 md:w-10 md:h-10 rounded-full text-xs font-semibold flex items-center justify-center transition-all
                     ${
                       isDisabled
-                        ? "text-gray-300 cursor-not-allowed hover:bg-transparent" // Disabled Style
+                        ? "text-gray-300 cursor-not-allowed hover:bg-transparent"
                         : selected 
                           ? "bg-black text-white hover:bg-gray-800 shadow-md" 
                           : inRange 
                             ? "text-gray-900 bg-gray-100 hover:bg-gray-200" 
-                            : "text-gray-700 hover:bg-gray-100 hover:border-gray-200 border border-transparent"
+                            : "text-gray-700 hover:bg-gray-100 border border-transparent"
                     }
                   `}
                 >
@@ -133,43 +118,37 @@ export default function DatePicker({ onSelectDates, onClose, inline = false }: D
     );
   };
 
-  // --- MAIN RENDER ---
   const nextMonthDate = new Date(viewDate.getFullYear(), viewDate.getMonth() + 1, 1);
 
+  // Responsive container logic
   const containerClasses = inline
     ? "w-full bg-white flex flex-col items-center" 
-    : "absolute top-16 left-0 bg-white rounded-3xl shadow-2xl border border-gray-100 p-6 z-50";
+    : "absolute top-full left-0 md:-left-24 mt-3 w-[calc(100vw-2rem)] md:w-auto max-w-[850px] bg-white rounded-3xl shadow-2xl border border-gray-100 p-4 md:p-6 z-50 overflow-hidden";
 
   return (
     <div className={containerClasses} onClick={(e) => e.stopPropagation()}>
       
-      {/* Navigation Header */}
-      <div className="w-full flex justify-between items-center px-4 absolute top-6 z-20 pointer-events-none">
-        <button 
-          onClick={() => changeMonth(-1)} 
-          // Optional: Disable back button if checking previous month (requires more logic), 
-          // but clicking previous days is already disabled so this is fine.
-          className="p-2 bg-white hover:bg-gray-100 rounded-full shadow-sm border border-gray-100 pointer-events-auto transition-transform hover:scale-105"
-        >
-          <ChevronLeft className="w-5 h-5 text-gray-600" />
+      {/* Navigation */}
+      <div className="w-full flex justify-between items-center px-2 md:px-4 absolute top-4 md:top-6 z-20 pointer-events-none">
+        <button onClick={() => changeMonth(-1)} className="p-1.5 md:p-2 bg-white hover:bg-gray-100 rounded-full shadow-sm border border-gray-100 pointer-events-auto">
+          <ChevronLeft className="w-4 h-4 text-gray-600" />
         </button>
-        <button 
-          onClick={() => changeMonth(1)} 
-          className="p-2 bg-white hover:bg-gray-100 rounded-full shadow-sm border border-gray-100 pointer-events-auto transition-transform hover:scale-105"
-        >
-          <ChevronRight className="w-5 h-5 text-gray-600" />
+        <button onClick={() => changeMonth(1)} className="p-1.5 md:p-2 bg-white hover:bg-gray-100 rounded-full shadow-sm border border-gray-100 pointer-events-auto">
+          <ChevronRight className="w-4 h-4 text-gray-600" />
         </button>
       </div>
 
-      {/* Dual Calendar Container */}
-      <div className="flex flex-col md:flex-row gap-8 pt-2 pb-4">
+      {/* Grid Container */}
+      <div className="flex flex-col md:flex-row gap-8 pt-2 pb-4 justify-center items-center">
         {renderMonthGrid(viewDate)}
-        <div className="hidden md:block w-px bg-gray-100" />
-        {renderMonthGrid(nextMonthDate)}
+        <div className="hidden md:block w-px bg-gray-100 self-stretch" />
+        <div className="hidden md:block">
+           {renderMonthGrid(nextMonthDate)}
+        </div>
       </div>
 
       {!inline && (
-        <div className="mt-4 flex justify-end border-t border-gray-100 pt-4 w-full">
+        <div className="mt-2 flex justify-end border-t border-gray-100 pt-3 w-full">
           <button onClick={onClose} className="text-sm font-semibold underline text-gray-500 hover:text-gray-800">
             Close
           </button>
