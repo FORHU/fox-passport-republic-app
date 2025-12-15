@@ -30,14 +30,11 @@ export default function VenueMap({ venues, center, loading }: Props) {
         const token = process.env.NEXT_PUBLIC_CESIUM_ION_TOKEN;
         if (token) Cesium.Ion.defaultAccessToken = token;
 
-        // 2. LOAD IMAGERY (The Modern Way - ASYNC)
-        // We use 'await' because fetching the asset metadata takes time.
-        // This matches the code snippet you provided.
         const imageryProvider = await Cesium.IonImageryProvider.fromAssetId(3954);
 
         // 3. CREATE VIEWER
         const viewer = new Cesium.Viewer(mapContainer.current, {
-          imageryProvider: imageryProvider, // Pass the awaited provider here
+          imageryProvider: imageryProvider,
           baseLayerPicker: false, 
           geocoder: false,        
           timeline: false,        

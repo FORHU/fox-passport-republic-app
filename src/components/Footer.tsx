@@ -3,9 +3,6 @@ export default function Footer() {
     <footer className="bg-gray-100 py-8 md:py-12 px-4 md:px-20 mt-10 border-t border-gray-200">
       <div className="max-w-7xl mx-auto">
         
-        {/* Main Footer Content */}
-        {/* Grid: 2 columns on mobile (side-by-side), 4 columns on desktop */}
-        {/* Text: text-xs (Extra Small) on mobile, text-sm on desktop */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-x-2 gap-y-8 text-xs md:text-sm text-gray-700">
           
           {/* About Section */}
