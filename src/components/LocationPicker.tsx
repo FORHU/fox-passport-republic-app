@@ -45,7 +45,7 @@ export default function LocationPicker({ onSelectLocation, onClose }: Props) {
         {!query && (
           <div className="p-8 text-center">
             <div className="text-sm font-semibold text-gray-700 mb-1">Where to?</div>
-            <div className="text-xs text-gray-500">Search for municipalities or provinces across the Philippines.</div>
+            <div className="text-xs text-gray-500">Search for municipalities or cities across the Philippines.</div>
           </div>
         )}
 

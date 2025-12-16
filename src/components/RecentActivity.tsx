@@ -63,7 +63,7 @@ const transformToPropertyData = (activity: any) => ({
 const transformToReviewData = (review: any) => ({
   id: review.id,
   user: review.user,
-  title: review.dish || review.title, // Handle backup data structure
+  title: review.dish || review.title,
   status: review.status,
   price: review.price,
   description: review.description,
@@ -83,7 +83,6 @@ export default function RecentActivity() {
 
   const getActivity = (index: number) => activities[index] || null;
 
-  // UPDATED: Automatically fills gaps with fake reviews if real ones are missing
   const getReviews = (index: number, count: number) => {
     const realReviews = activities[index]?.reviews || [];
     const needed = count - realReviews.length;
@@ -92,10 +91,9 @@ export default function RecentActivity() {
       return realReviews.slice(0, count);
     }
 
-    // Fill the gap with backup reviews, cycling through them if we need many
     const fakes = Array(needed).fill(null).map((_, i) => ({
       ...backupReviews[i % backupReviews.length],
-      id: `fake-${index}-${i}` // Unique ID to prevent React key errors
+      id: `fake-${index}-${i}`
     }));
 
     return [...realReviews, ...fakes];
@@ -109,13 +107,13 @@ export default function RecentActivity() {
         </h2>
         
         {isLoading && activities.length === 0 ? (
-          <div className="h-[800px] bg-gray-200 rounded-xl animate-pulse" />
+          <div className="h-[400px] md:h-[800px] bg-gray-200 rounded-xl animate-pulse" />
         ) : (
-          <div className="space-y-6">
+          <div className="space-y-12 md:space-y-6">
             
             {/* ========== BLOCK 1: IMG1 (Tall) | Reviews | IMG2 (Tall) | Reviews ========== */}
             <div 
-              className="grid gap-4 md:gap-6"
+              className="flex flex-col md:grid gap-4 md:gap-6" 
               style={{
                 gridTemplateColumns: '2fr 1fr 3fr',
                 gridTemplateRows: 'repeat(3, 260px)', 
@@ -123,27 +121,36 @@ export default function RecentActivity() {
             >
               {/* IMAGE 1: Tall (3 rows) */}
               {getActivity(0) && (
-                <div style={{ gridColumn: '1', gridRow: '1 / 4' }}>
+                <div 
+                  className="w-full h-[400px] md:h-auto"
+                  style={{ gridColumn: '1', gridRow: '1 / 4' }}
+                >
                   <PropertyCard data={transformToPropertyData(getActivity(0))} />
                 </div>
               )}
               
-              {/* Reviews Col 2 (Needs 3 reviews) */}
+              {/* Reviews Col 2 */}
               {getReviews(0, 3).map((review, idx) => (
-                <div key={review.id} style={{ gridColumn: '2', gridRow: `${idx + 1}` }}>
+                <div key={review.id} className="w-full" style={{ gridColumn: '2', gridRow: `${idx + 1}` }}>
                   <ReviewCard review={transformToReviewData(review)} />
                 </div>
               ))}
               
               {/* IMAGE 2: Tall (2 rows) */}
               {getActivity(1) && (
-                <div style={{ gridColumn: '3', gridRow: '1 / 3' }}>
+                <div 
+                  className="w-full h-[300px] md:h-auto" 
+                  style={{ gridColumn: '3', gridRow: '1 / 3' }}
+                >
                   <PropertyCard data={transformToPropertyData(getActivity(1))} />
                 </div>
               )}
               
-              {/* Reviews Col 3 Row 3 (Needs 2 reviews) */}
-              <div style={{ gridColumn: '3', gridRow: '3' }} className="grid grid-cols-2 gap-4 md:gap-6">
+              {/* Reviews Col 3 Row 3 */}
+              <div 
+                className="w-full grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6"
+                style={{ gridColumn: '3', gridRow: '3' }}
+              >
                 {getReviews(1, 2).map((review) => (
                    <ReviewCard key={review.id} review={transformToReviewData(review)} />
                 ))}
@@ -152,7 +159,7 @@ export default function RecentActivity() {
 
             {/* ========== BLOCK 2: IMG3 (Tall) + 2x2 Reviews ========== */}
             <div 
-              className="grid gap-4 md:gap-6"
+              className="flex flex-col md:grid gap-4 md:gap-6"
               style={{
                 gridTemplateColumns: '3fr 1fr 1fr',
                 gridTemplateRows: 'repeat(2, 260px)',
@@ -160,43 +167,54 @@ export default function RecentActivity() {
             >
               {/* IMAGE 3: Tall (2 rows) */}
               {getActivity(2) && (
-                <div style={{ gridColumn: '1', gridRow: '1 / 3' }}>
+                <div 
+                  className="w-full h-[400px] md:h-auto"
+                  style={{ gridColumn: '1', gridRow: '1 / 3' }}
+                >
                   <PropertyCard data={transformToPropertyData(getActivity(2))} />
                 </div>
               )}
               
-              {/* 2x2 Reviews (Needs 4 reviews) */}
-              {getReviews(2, 4)[0] && <div style={{ gridColumn: '2', gridRow: '1' }}><ReviewCard review={transformToReviewData(getReviews(2, 4)[0])} /></div>}
-              {getReviews(2, 4)[1] && <div style={{ gridColumn: '3', gridRow: '1' }}><ReviewCard review={transformToReviewData(getReviews(2, 4)[1])} /></div>}
-              {getReviews(2, 4)[2] && <div style={{ gridColumn: '2', gridRow: '2' }}><ReviewCard review={transformToReviewData(getReviews(2, 4)[2])} /></div>}
-              {getReviews(2, 4)[3] && <div style={{ gridColumn: '3', gridRow: '2' }}><ReviewCard review={transformToReviewData(getReviews(2, 4)[3])} /></div>}
+              {/* 2x2 Reviews */}
+              {getReviews(2, 4)[0] && <div className="w-full" style={{ gridColumn: '2', gridRow: '1' }}><ReviewCard review={transformToReviewData(getReviews(2, 4)[0])} /></div>}
+              {getReviews(2, 4)[1] && <div className="w-full" style={{ gridColumn: '3', gridRow: '1' }}><ReviewCard review={transformToReviewData(getReviews(2, 4)[1])} /></div>}
+              {getReviews(2, 4)[2] && <div className="w-full" style={{ gridColumn: '2', gridRow: '2' }}><ReviewCard review={transformToReviewData(getReviews(2, 4)[2])} /></div>}
+              {getReviews(2, 4)[3] && <div className="w-full" style={{ gridColumn: '3', gridRow: '2' }}><ReviewCard review={transformToReviewData(getReviews(2, 4)[3])} /></div>}
             </div>
 
-            {/* ========== BLOCK 3: Reviews | IMG4 | IMG5 (WIDE) | Reviews ========== */}
+            {/* ========== BLOCK 3: IMG4 | Reviews | IMG5 (WIDE) | Reviews ========== */}
+            {/* UPDATE: Swapped Columns 1 and 2 here */}
             <div 
-              className="grid gap-4 md:gap-6"
+              className="flex flex-col md:grid gap-4 md:gap-6"
               style={{
-                gridTemplateColumns: '1fr 2fr 1fr 1fr',
+                // CHANGED: 2fr for Image first, 1fr for Reviews second
+                gridTemplateColumns: '2fr 1fr 1fr 1fr',
                 gridTemplateRows: 'repeat(2, 260px)',
               }}
             >
-               {/* Col 1 Reviews (Left Side) (Needs 2 reviews) */}
+              {/* IMAGE 4: Tall (2 rows) - MOVED TO COL 1 */}
+              {getActivity(3) && (
+                <div 
+                  className="w-full h-[400px] md:h-auto"
+                  style={{ gridColumn: '1', gridRow: '1 / 3' }}
+                >
+                  <PropertyCard data={transformToPropertyData(getActivity(3))} />
+                </div>
+              )}
+
+               {/* Col 2 Reviews - MOVED TO COL 2 */}
                {getReviews(3, 2).map((review, idx) => (
-                <div key={review.id} style={{ gridColumn: '1', gridRow: `${idx + 1}` }}>
+                <div key={review.id} className="w-full" style={{ gridColumn: '2', gridRow: `${idx + 1}` }}>
                   <ReviewCard review={transformToReviewData(review)} />
                 </div>
               ))}
               
-              {/* IMAGE 4: Tall (2 rows) */}
-              {getActivity(3) && (
-                <div style={{ gridColumn: '2', gridRow: '1 / 3' }}>
-                  <PropertyCard data={transformToPropertyData(getActivity(3))} />
-                </div>
-              )}
-              
-              {/* IMAGE 5: WIDE (1 row, 2 cols) */}
+              {/* IMAGE 5: WIDE (Remains in Col 3-4) */}
               {getActivity(4) && (
-                <div style={{ gridColumn: '3 / 5', gridRow: '1 / 2' }}>
+                <div 
+                  className="w-full h-[300px] md:h-auto"
+                  style={{ gridColumn: '3 / 5', gridRow: '1 / 2' }}
+                >
                   <PropertyCard 
                     data={transformToPropertyData(getActivity(4))} 
                     variant="horizontal" 
@@ -204,8 +222,11 @@ export default function RecentActivity() {
                 </div>
               )}
               
-              {/* Bottom Right Reviews (Under Wide Card) (Needs 2 reviews) */}
-              <div style={{ gridColumn: '3 / 5', gridRow: '2' }} className="grid grid-cols-2 gap-4 md:gap-6">
+              {/* Bottom Right Reviews (Remains in Col 3-4) */}
+              <div 
+                 className="w-full grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6"
+                 style={{ gridColumn: '3 / 5', gridRow: '2' }}
+              >
                 {getReviews(4, 2).map((review) => (
                     <ReviewCard key={review.id} review={transformToReviewData(review)} />
                 ))}
@@ -214,7 +235,7 @@ export default function RecentActivity() {
 
             {/* ========== BLOCK 4: IMG6 (Tall) | Reviews | IMG7 (Tall) | Reviews ========== */}
             <div 
-              className="grid gap-4 md:gap-6"
+              className="flex flex-col md:grid gap-4 md:gap-6"
               style={{
                 gridTemplateColumns: '2fr 1fr 3fr',
                 gridTemplateRows: 'repeat(3, 260px)',
@@ -222,27 +243,36 @@ export default function RecentActivity() {
             >
               {/* IMAGE 6: Tall (3 rows) */}
               {getActivity(5) && (
-                <div style={{ gridColumn: '1', gridRow: '1 / 4' }}>
+                <div 
+                  className="w-full h-[400px] md:h-auto"
+                  style={{ gridColumn: '1', gridRow: '1 / 4' }}
+                >
                   <PropertyCard data={transformToPropertyData(getActivity(5))} />
                 </div>
               )}
               
-              {/* Col 2 Reviews (Needs 3 reviews) */}
+              {/* Col 2 Reviews */}
               {getReviews(5, 3).map((review, idx) => (
-                <div key={review.id} style={{ gridColumn: '2', gridRow: `${idx + 1}` }}>
+                <div key={review.id} className="w-full" style={{ gridColumn: '2', gridRow: `${idx + 1}` }}>
                   <ReviewCard review={transformToReviewData(review)} />
                 </div>
               ))}
               
               {/* IMAGE 7: Tall (2 rows) */}
               {getActivity(6) && (
-                <div style={{ gridColumn: '3', gridRow: '1 / 3' }}>
+                <div 
+                  className="w-full h-[300px] md:h-auto"
+                  style={{ gridColumn: '3', gridRow: '1 / 3' }}
+                >
                   <PropertyCard data={transformToPropertyData(getActivity(6))} />
                 </div>
               )}
               
-              {/* Split Reviews Col 3 Row 3 (Needs 2 reviews) */}
-              <div style={{ gridColumn: '3', gridRow: '3' }} className="grid grid-cols-2 gap-4 md:gap-6">
+              {/* Split Reviews Col 3 Row 3 */}
+              <div 
+                className="w-full grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6"
+                style={{ gridColumn: '3', gridRow: '3' }}
+              >
                 {getReviews(6, 2).map((review) => (
                    <ReviewCard key={review.id} review={transformToReviewData(review)} />
                 ))}
