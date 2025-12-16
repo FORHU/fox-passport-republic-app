@@ -37,22 +37,22 @@ export default function SearchBar({ isHero = false, onSearchClick }: Props) {
   return (
     <div 
       ref={searchBarRef} 
-      className={`relative flex w-full ${isHero ? "shadow-lg" : "shadow-md"} rounded-full bg-white border border-gray-200 z-40 h-[48px] md:h-[66px]`}
+      className={`relative flex w-full ${isHero ? "shadow-lg" : "shadow-md"} rounded-full bg-white border border-gray-200 ${isHero ? "z-[100]" : "z-40"} h-[48px] md:h-[66px]`}
     >
       {/* 1. WHERE */}
       <div 
-        className={`relative flex-1 min-w-0 flex flex-col justify-center px-5 py-1.5 cursor-pointer transition-all rounded-full md:rounded-l-full md:rounded-r-none hover:bg-gray-100 ${activeSection === 'where' ? 'bg-gray-100' : ''}`}
+        className={`relative flex-1 min-w-0 flex flex-col justify-center px-6 py-2 cursor-pointer transition-all rounded-full md:rounded-l-full md:rounded-r-none hover:bg-gray-100 ${activeSection === 'where' ? 'bg-gray-100' : ''}`}
         onClick={() => openSection('where')}
       >
         <span className="hidden md:block text-xs font-bold text-gray-800 tracking-wide uppercase">Where</span>
-        <div className="text-xs md:text-sm font-semibold text-gray-700 truncate pr-8 md:pr-4 flex items-center h-full">
+        <div className={`text-sm font-semibold truncate ${selectedLocation ? 'text-gray-900' : 'text-gray-400 font-normal'}`}>
           {selectedLocation ? (
             <span className="text-gray-900">{selectedLocation.name}</span>
           ) : (
-            <span className="text-gray-900 md:text-gray-400 font-medium md:font-normal text-sm md:text-sm">
-               <span className="md:hidden">Where to?</span>
-               <span className="hidden md:inline">Search destinations</span>
-            </span>
+            <>
+              <span className="md:hidden text-gray-900 font-medium">Where to?</span>
+              <span className="hidden md:inline">Search destinations</span>
+            </>
           )}
         </div>
       </div>
@@ -99,11 +99,7 @@ export default function SearchBar({ isHero = false, onSearchClick }: Props) {
       )}
       
       {showDatePicker && (
-        // MOBILE OPTIMIZED CONTAINER
-        // max-h-[85vh] and overflow-y-auto ensure scrolling on small screens
-        <div className="absolute top-16 left-0 w-full md:w-[850px] bg-white rounded-3xl shadow-xl border border-gray-100 overflow-hidden z-50 flex flex-col max-h-[85vh] overflow-y-auto custom-scrollbar">
-           
-           {/* 1. CALENDAR */}
+        <div className="absolute top-16 left-0 w-full md:w-[850px] bg-white rounded-3xl shadow-xl border border-gray-100 overflow-hidden z-[9999] flex flex-col max-h-[85vh] overflow-y-auto custom-scrollbar">
            <div className="p-4 md:p-6">
               <DatePicker 
                 onSelectDates={handleDateSelect} 
@@ -111,15 +107,11 @@ export default function SearchBar({ isHero = false, onSearchClick }: Props) {
                 inline={true} 
               />
            </div>
-
-           {/* 2. TIME SELECTOR (Now explicitly included below calendar) */}
            <TimeSelector 
               startTime={startTime} 
               endTime={endTime} 
               onChange={handleTimeSelect} 
            />
-
-           {/* 3. FOOTER ACTIONS */}
            <div className="p-4 border-t border-gray-100 flex justify-between items-center bg-gray-50/50 sticky bottom-0 z-10">
              <button 
                className="text-xs md:text-sm font-semibold text-gray-500 hover:underline px-2"

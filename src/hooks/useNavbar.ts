@@ -15,14 +15,15 @@ export function useNavbar() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  // Derived styles based on state
+  // Derived styles based on state - white tinted blur
   const navBgClass = isScrolled || mobileMenuOpen
-    ? "bg-white shadow-md border-b border-gray-100"
+    ? "bg-white/30 backdrop-blur-xl border-b border-white/40 shadow-lg"
     : "bg-transparent bg-gradient-to-b from-black/50 to-transparent";
 
-  const textColorClass = isScrolled || mobileMenuOpen ? "text-gray-600 hover:text-black" : "text-gray-200 hover:text-white";
-  const logoTextClass = isScrolled || mobileMenuOpen ? "text-gray-900" : "text-white";
-  const mainLinkClass = isScrolled || mobileMenuOpen ? "text-gray-900 hover:text-gray-600" : "text-white hover:text-gray-200";
+  // Keep text white in both states since blur is light/transparent
+  const textColorClass = "text-gray-200 hover:text-white";
+  const logoTextClass = "text-white";
+  const mainLinkClass = "text-white hover:text-gray-200";
 
   return {
     isScrolled,
