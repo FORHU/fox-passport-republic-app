@@ -1,4 +1,4 @@
-// src/hooks/useSearchForm.ts
+// this hook is for SearchBar.tsx
 import { useState, useEffect, useRef, useMemo } from "react";
 import { LocationItem } from "@/src/data/location";
 

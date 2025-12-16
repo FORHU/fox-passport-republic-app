@@ -1,3 +1,4 @@
+// src/components/SearchBar.tsx
 "use client";
 import { Search } from "lucide-react";
 import { useRouter } from "next/navigation";
@@ -19,10 +20,19 @@ export default function SearchBar({ isHero = false, onSearchClick }: Props) {
   const {
     where, selectedLocation, checkIn, checkOut, startTime, endTime, guestCounts,
     guestLabel, updateGuestCount, activeSection, handleTimeSelect,
-    showDatePicker, setShowDatePicker, showLocationPicker, setShowLocationPicker,
-    showGuestPicker, setShowGuestPicker, searchBarRef, formattedDates,
+    showDatePicker, setShowDatePicker, 
+    showLocationPicker, setShowLocationPicker, // Ensure these are exposed from your hook
+    showGuestPicker, setShowGuestPicker, 
+    searchBarRef, formattedDates,
     openSection, handleDateSelect, handleLocationSelect
   } = useSearchForm();
+
+  // Wrapper for selecting location to ensure picker closes
+  const onLocationSelect = (loc: LocationItem) => {
+    handleLocationSelect(loc);
+    setShowLocationPicker(false); // Close picker
+    openSection('when'); // Auto-open dates for better UX
+  };
 
   const handleSearchAction = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -42,7 +52,13 @@ export default function SearchBar({ isHero = false, onSearchClick }: Props) {
       {/* 1. WHERE */}
       <div 
         className={`relative flex-1 min-w-0 flex flex-col justify-center px-6 py-2 cursor-pointer transition-all rounded-full md:rounded-l-full md:rounded-r-none hover:bg-gray-100 ${activeSection === 'where' ? 'bg-gray-100' : ''}`}
-        onClick={() => openSection('where')}
+        onClick={(e) => {
+           e.stopPropagation();
+           openSection('where');
+           setShowLocationPicker(true); // <--- OPEN PICKER
+           setShowDatePicker(false);
+           setShowGuestPicker(false);
+        }}
       >
         <span className="hidden md:block text-xs font-bold text-gray-800 tracking-wide uppercase">Where</span>
         <div className={`text-sm font-semibold truncate ${selectedLocation ? 'text-gray-900' : 'text-gray-400 font-normal'}`}>
@@ -62,7 +78,11 @@ export default function SearchBar({ isHero = false, onSearchClick }: Props) {
       {/* 2. WHEN (Desktop) */}
       <div 
         className={`hidden md:flex relative flex-1 min-w-0 flex-col justify-center px-6 py-2 cursor-pointer transition-all hover:bg-gray-100 ${activeSection === 'when' ? 'bg-gray-100' : ''}`}
-        onClick={() => openSection('when')}
+        onClick={() => {
+            openSection('when');
+            setShowDatePicker(true); // Explicitly open date picker
+            setShowLocationPicker(false);
+        }}
       >
         <span className="text-xs font-bold text-gray-800 tracking-wide uppercase">When</span>
         <div className={`text-sm font-semibold truncate ${formattedDates ? 'text-gray-900' : 'text-gray-400 font-normal'}`}>
@@ -75,7 +95,11 @@ export default function SearchBar({ isHero = false, onSearchClick }: Props) {
       {/* 3. WHO (Desktop) */}
       <div 
         className={`hidden md:flex relative flex-1 min-w-0 flex-col justify-center pl-6 pr-12 py-2 cursor-pointer transition-all rounded-r-full hover:bg-gray-100 ${activeSection === 'who' ? 'bg-gray-100' : ''}`}
-        onClick={() => openSection('who')}
+        onClick={() => {
+            openSection('who');
+            setShowGuestPicker(true);
+            setShowLocationPicker(false);
+        }}
       >
         <span className="text-xs font-bold text-gray-800 tracking-wide uppercase">Who</span>
         <div className={`text-sm font-semibold truncate ${guestLabel ? 'text-gray-900' : 'text-gray-400 font-normal'}`}>
@@ -95,11 +119,14 @@ export default function SearchBar({ isHero = false, onSearchClick }: Props) {
 
       {/* --- POPUPS --- */}
       {showLocationPicker && (
-        <LocationPicker onSelectLocation={handleLocationSelect} onClose={() => setShowLocationPicker(false)} />
+        <LocationPicker 
+            onSelectLocation={onLocationSelect} 
+            onClose={() => setShowLocationPicker(false)} 
+        />
       )}
       
       {showDatePicker && (
-        <div className="absolute top-16 left-0 w-full md:w-[850px] bg-white rounded-3xl shadow-xl border border-gray-100 overflow-hidden z-[9999] flex flex-col max-h-[85vh] overflow-y-auto custom-scrollbar">
+        <div className="absolute top-full left-0 mt-4 w-full md:w-[850px] bg-white rounded-3xl shadow-xl border border-gray-100 overflow-hidden z-[9999] flex flex-col max-h-[85vh] overflow-y-auto custom-scrollbar">
            <div className="p-4 md:p-6">
               <DatePicker 
                 onSelectDates={handleDateSelect} 
@@ -120,7 +147,7 @@ export default function SearchBar({ isHero = false, onSearchClick }: Props) {
                Clear
              </button>
              <button 
-               onClick={() => { setShowDatePicker(false); openSection('who'); }} 
+               onClick={() => { setShowDatePicker(false); openSection('who'); setShowGuestPicker(true); }} 
                className="bg-black hover:bg-gray-800 text-white px-6 py-2.5 rounded-full text-sm font-bold shadow-md"
              >
                Apply

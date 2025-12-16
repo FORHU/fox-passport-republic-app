@@ -4,6 +4,7 @@ import { ALL_LOCATIONS, LocationItem } from "@/src/data/location";
 
 export function usePhilippineLocations() {
   const [query, setQuery] = useState("");
+
   const filteredList = useMemo(() => {
     if (!query) return [];
 
