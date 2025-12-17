@@ -51,7 +51,7 @@ export default function LocationPicker({ onSelectLocation, onClose }: Props) {
 
         {isEmpty && (
           <div className="p-8 text-center text-gray-500 text-sm">
-            No locations found for "{query}"
+            No locations found for &quot;{query}&quot;
           </div>
         )}
 
@@ -67,7 +67,11 @@ export default function LocationPicker({ onSelectLocation, onClose }: Props) {
               {items.map((loc) => (
                 <button
                   key={loc.id}
-                  onClick={() => onSelectLocation(loc)}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    onSelectLocation(loc);
+                  }}
                   className="w-full text-left px-6 py-3 hover:bg-gray-50 flex items-center gap-4 group transition-colors"
                 >
                   <div className="bg-gray-100 text-gray-400 p-2 rounded-lg group-hover:bg-white group-hover:text-pink-500 group-hover:shadow-sm transition-all">

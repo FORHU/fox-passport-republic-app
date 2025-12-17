@@ -27,11 +27,10 @@ export default function SearchBar({ isHero = false, onSearchClick }: Props) {
     openSection, handleDateSelect, handleLocationSelect
   } = useSearchForm();
 
-  // Wrapper for selecting location to ensure picker closes
+  // Wrapper for selecting location - explicit close for safety
   const onLocationSelect = (loc: LocationItem) => {
     handleLocationSelect(loc);
-    setShowLocationPicker(false); // Close picker
-    openSection('when'); // Auto-open dates for better UX
+    setShowLocationPicker(false);
   };
 
   const handleSearchAction = (e: React.MouseEvent) => {

@@ -127,7 +127,7 @@ export default function HeroSection() {
           </p>
 
           {/* SEARCH BAR - z-0 relative to stay below navbar */}
-          <div className="w-full max-w-[850px] mb-4 md:mb-6 relative z-0">
+          <div className="w-full max-w-[850px] mb-4 md:mb-6 relative z-40">
             <SearchBar isHero={true} />
           </div>
 
