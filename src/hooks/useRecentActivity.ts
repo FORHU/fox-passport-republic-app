@@ -2,9 +2,60 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { ActivityData, ACTIVITY_DATA } from "@/src/data/recentActivity";
+// Import the REAL data source
+import { HARDCODED_VENUES, Venue } from "@/src/data/hardcodedVenues";
+
+// Define the shape your UI expects
+export interface ActivityData {
+  id: string;
+  user: {
+    name: string;
+    image: string; // avatar
+    action: string;
+    time: string;
+  };
+  business: {
+    name: string;
+    image?: string;
+    rating: number;
+    category: string;
+    location: string;
+    details: string;
+  };
+  content: {
+    text?: string;
+    images?: string[];
+  };
+  reviews: any[]; 
+}
 
 const ITEMS_PER_PAGE = 8;
+
+// Helper to convert a Real Venue to Activity Data format
+const mapVenueToActivity = (venue: Venue): ActivityData => {
+  return {
+    id: venue.id, // CRITICAL: Uses the real ID (e.g. "tagaytay-0")
+    user: {
+      name: venue.host.name,
+      image: venue.host.avatar,
+      action: "Recently booked",
+      time: "2 hours ago", // Mock time
+    },
+    business: {
+      name: venue.title,
+      image: venue.images[0],
+      rating: venue.rating,
+      category: venue.category,
+      location: venue.location,
+      details: `${venue.guestCount} guests · ${venue.bedroomCount} bedrooms`,
+    },
+    content: {
+      text: venue.description.substring(0, 100) + "...",
+      images: venue.images.slice(0, 1),
+    },
+    reviews: [] 
+  };
+};
 
 export function useRecentActivity() {
   const [activities, setActivities] = useState<ActivityData[]>([]);
@@ -13,76 +64,51 @@ export function useRecentActivity() {
   const [hasMore, setHasMore] = useState(true);
   const [page, setPage] = useState(1);
 
-  // Initialize activities (simulates API call)
   useEffect(() => {
     const loadInitialData = async () => {
       setIsLoading(true);
       // Simulate network delay
       await new Promise((resolve) => setTimeout(resolve, 500));
       
-      // In production, replace with: const data = await fetch('/api/activities').then(r => r.json());
-      setActivities(ACTIVITY_DATA);
-      setDisplayedActivities(ACTIVITY_DATA.slice(0, ITEMS_PER_PAGE));
-      setHasMore(ACTIVITY_DATA.length > ITEMS_PER_PAGE);
+      // --- CHANGE: Shuffle and slice real venues ---
+      // We shuffle to get random "recent" activities every refresh
+      const shuffled = [...HARDCODED_VENUES].sort(() => 0.5 - Math.random());
+      const selectedVenues = shuffled.slice(0, 30); // Pick 30 random venues
+      
+      const mappedActivities = selectedVenues.map(mapVenueToActivity);
+      
+      setActivities(mappedActivities);
+      setDisplayedActivities(mappedActivities.slice(0, ITEMS_PER_PAGE));
+      setHasMore(mappedActivities.length > ITEMS_PER_PAGE);
       setIsLoading(false);
     };
 
     loadInitialData();
   }, []);
 
-  // Load more activities
   const loadMore = useCallback(async () => {
     setIsLoading(true);
-    
-    // Simulate API call
     await new Promise((resolve) => setTimeout(resolve, 500));
     
     const nextPage = page + 1;
-    const startIndex = 0;
+    const startIndex = 0; // We keep showing previous items
     const endIndex = nextPage * ITEMS_PER_PAGE;
     
-    const newDisplayed = activities.slice(startIndex, endIndex);
+    // Check if we actually have more items
+    if (endIndex > activities.length) {
+        setHasMore(false);
+    }
+    
+    const newDisplayed = activities.slice(0, endIndex);
     setDisplayedActivities(newDisplayed);
     setPage(nextPage);
-    setHasMore(endIndex < activities.length);
     setIsLoading(false);
   }, [activities, page]);
 
-  // Filter by category
-  const filterByCategory = useCallback((category: string | null) => {
-    if (!category) {
-      setDisplayedActivities(activities.slice(0, ITEMS_PER_PAGE));
-      setPage(1);
-      setHasMore(activities.length > ITEMS_PER_PAGE);
-      return;
-    }
-
-    const filtered = activities.filter(
-      (activity) => activity.business.category.toLowerCase() === category.toLowerCase()
-    );
-    setDisplayedActivities(filtered.slice(0, ITEMS_PER_PAGE));
-    setPage(1);
-    setHasMore(filtered.length > ITEMS_PER_PAGE);
-  }, [activities]);
-
-  // Sort activities
-  const sortActivities = useCallback((sortBy: "recent" | "rating") => {
-    const sorted = [...activities];
-    
-    if (sortBy === "rating") {
-      sorted.sort((a, b) => b.business.rating - a.business.rating);
-    }
-    // "recent" is already the default order
-    
-    setActivities(sorted);
-    setDisplayedActivities(sorted.slice(0, page * ITEMS_PER_PAGE));
-  }, [activities, page]);
-
-  // Toggle favorite (mock function - in production, call API)
-  const toggleFavorite = useCallback((activityId: string) => {
-    // In production: await fetch(`/api/favorites/${activityId}`, { method: 'POST' });
-    console.log(`Toggled favorite for activity: ${activityId}`);
-  }, []);
+  // Placeholder functions to satisfy interface if needed
+  const filterByCategory = useCallback(() => {}, []); 
+  const sortActivities = useCallback(() => {}, []);
+  const toggleFavorite = useCallback(() => {}, []);
 
   return {
     activities: displayedActivities,

@@ -1,17 +1,17 @@
 "use client";
 
+import React from "react";
 import Navbar from "@/src/components/Navbar";
 import { 
   Star, MapPin, Share, Heart, CheckCircle, 
   Wifi, Car, Utensils, Monitor, Wind, 
-  Tv, Waves, Coffee, Medal, ShieldCheck,
+  Tv, Waves, Coffee, Medal,
   Camera, ShoppingBag, X, ChevronLeft, ChevronRight
 } from "lucide-react";
 import DatePicker from "@/src/components/DatePicker";
-import { useVenuePage } from "@/src/hooks/useVenuePage"; // Import your new hook
+import { useVenuePage } from "@/src/hooks/useVenuePage"; 
 
 // --- Helper Components ---
-// (Keep your helper functions here or move them to a utils file)
 const getAmenityIcon = (offer: string) => {
   const lower = offer.toLowerCase();
   if (lower.includes("wifi")) return <Wifi className="w-6 h-6" />;
@@ -31,11 +31,20 @@ const getActivityIcon = (index: number) => {
 };
 
 export default function VenueDetailsPage() {
-  // Use the hook
+  // The hook now automatically grabs params.id
   const { venue, booking, gallery, details, loading } = useVenuePage();
 
-  if (loading || !venue) {
-    return <div className="min-h-screen flex items-center justify-center">Venue not found</div>;
+  if (loading) {
+    return <div className="min-h-screen flex items-center justify-center animate-pulse">Loading venue...</div>;
+  }
+
+  if (!venue) {
+    return (
+        <div className="min-h-screen flex flex-col items-center justify-center gap-4">
+            <h1 className="text-2xl font-bold">Venue not found</h1>
+            <a href="/" className="text-blue-600 underline">Go back home</a>
+        </div>
+    );
   }
 
   return (
