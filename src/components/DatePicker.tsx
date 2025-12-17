@@ -122,7 +122,7 @@ export default function DatePicker({ onSelectDates, onClose, inline = false }: D
 
   // Responsive container logic
   const containerClasses = inline
-    ? "w-full bg-white flex flex-col items-center" 
+    ? "w-full bg-white flex flex-col items-center relative" 
     : "absolute top-full left-0 md:-left-24 mt-3 w-[calc(100vw-2rem)] md:w-auto max-w-[850px] bg-white rounded-3xl shadow-2xl border border-gray-100 p-4 md:p-6 z-50 overflow-hidden";
 
   return (
