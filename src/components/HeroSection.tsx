@@ -57,7 +57,7 @@ export default function HeroSection() {
       </button>
 
       {/* DROPDOWN MENU */}
-      <div className={`absolute top-full left-0 pt-4 w-64 transition-all duration-200 z-50 ${activeDropdown === id ? "opacity-100 visible translate-y-0" : "opacity-0 invisible -translate-y-2"}`}>
+      <div className={`absolute top-full left-0 pt-4 w-64 transition-all duration-200 z-40 ${activeDropdown === id ? "opacity-100 visible translate-y-0" : "opacity-0 invisible -translate-y-2"}`}>
         <div className="bg-white rounded-xl shadow-xl border border-gray-100 overflow-hidden py-2">
           {items.map((item, idx) => {
             const Icon = item.icon; 
@@ -97,8 +97,8 @@ export default function HeroSection() {
       {/* Dark Overlay */}
       <div className="absolute inset-0 bg-black/40 z-10" />
 
-      {/* CONTENT */}
-      <div className="relative z-[90] w-full px-4 md:px-10">
+      {/* CONTENT - z-30 to stay below navbar (z-50) */}
+      <div className="relative z-30 w-full px-4 md:px-10">
         <div className="max-w-[1400px] mx-auto flex flex-col items-center">
           
           {/* TITLE */}
@@ -113,8 +113,8 @@ export default function HeroSection() {
             <HoverText text="Plan your next event with FoxPassport" />
           </p>
 
-          {/* SEARCH BAR */}
-          <div className="w-full max-w-[850px] mb-4 md:mb-6">
+          {/* SEARCH BAR - z-0 relative to stay below navbar */}
+          <div className="w-full max-w-[850px] mb-4 md:mb-6 relative z-0">
             <SearchBar isHero={true} />
           </div>
 

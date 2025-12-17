@@ -30,1015 +30,844 @@ export interface Venue {
   };
 }
 
-export const HARDCODED_VENUES: Venue[] = [
-  // ================= METRO MANILA =================
+// --- Image Collections by Category ---
+const IMAGES = {
+  hotel: [
+    "https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=800&q=80",
+    "https://images.unsplash.com/photo-1582719508461-905c673771fd?auto=format&fit=crop&w=800&q=80",
+    "https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?auto=format&fit=crop&w=800&q=80",
+    "https://images.unsplash.com/photo-1571003123894-1f0594d2b5d9?auto=format&fit=crop&w=800&q=80",
+    "https://images.unsplash.com/photo-1551882547-ff40c63fe5fa?auto=format&fit=crop&w=800&q=80"
+  ],
+  resort: [
+    "https://images.unsplash.com/photo-1540541338287-41700207dee6?auto=format&fit=crop&w=800&q=80",
+    "https://images.unsplash.com/photo-1499793983690-e29da59ef1c2?auto=format&fit=crop&w=800&q=80",
+    "https://images.unsplash.com/photo-1439066615861-d1fb8bc3adc5?auto=format&fit=crop&w=800&q=80",
+    "https://images.unsplash.com/photo-1573843981267-be1999ff37cd?auto=format&fit=crop&w=800&q=80",
+    "https://images.unsplash.com/photo-1602002418082-a4443e081dd1?auto=format&fit=crop&w=800&q=80"
+  ],
+  beach: [
+    "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80",
+    "https://images.unsplash.com/photo-1519046904884-53103b34b206?auto=format&fit=crop&w=800&q=80",
+    "https://images.unsplash.com/photo-1473116763249-2faaef81ccda?auto=format&fit=crop&w=800&q=80",
+    "https://images.unsplash.com/photo-1506929562872-bb421503ef21?auto=format&fit=crop&w=800&q=80",
+    "https://images.unsplash.com/photo-1510414842594-a61c69b5ae57?auto=format&fit=crop&w=800&q=80"
+  ],
+  garden: [
+    "https://images.unsplash.com/photo-1585320806297-9794b3e4eeae?auto=format&fit=crop&w=800&q=80",
+    "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?auto=format&fit=crop&w=800&q=80",
+    "https://images.unsplash.com/photo-1588392382834-a891154bca4d?auto=format&fit=crop&w=800&q=80",
+    "https://images.unsplash.com/photo-1416879595882-3373a0480b5b?auto=format&fit=crop&w=800&q=80",
+    "https://images.unsplash.com/photo-1598902108854-10e335adac99?auto=format&fit=crop&w=800&q=80"
+  ],
+  forest: [
+    "https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&w=800&q=80",
+    "https://images.unsplash.com/photo-1476362555312-ab9e108a0b7e?auto=format&fit=crop&w=800&q=80",
+    "https://images.unsplash.com/photo-1542273917363-3b1817f69a2d?auto=format&fit=crop&w=800&q=80",
+    "https://images.unsplash.com/photo-1473448912268-2022ce9509d8?auto=format&fit=crop&w=800&q=80",
+    "https://images.unsplash.com/photo-1425913397330-cf8af2ff40a1?auto=format&fit=crop&w=800&q=80"
+  ],
+  villa: [
+    "https://images.unsplash.com/photo-1613977257363-707ba9348227?auto=format&fit=crop&w=800&q=80",
+    "https://images.unsplash.com/photo-1564013799919-ab600027ffc6?auto=format&fit=crop&w=800&q=80",
+    "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=800&q=80",
+    "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?auto=format&fit=crop&w=800&q=80",
+    "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&w=800&q=80"
+  ],
+  cabin: [
+    "https://images.unsplash.com/photo-1510798831971-661eb04b3739?auto=format&fit=crop&w=800&q=80",
+    "https://images.unsplash.com/photo-1542718610-a1d656d1884c?auto=format&fit=crop&w=800&q=80",
+    "https://images.unsplash.com/photo-1449158743715-0a90ebb6d2d8?auto=format&fit=crop&w=800&q=80",
+    "https://images.unsplash.com/photo-1587061949409-02df41d5e562?auto=format&fit=crop&w=800&q=80",
+    "https://images.unsplash.com/photo-1618767689160-da3fb810aad7?auto=format&fit=crop&w=800&q=80"
+  ],
+  farmhouse: [
+    "https://images.unsplash.com/photo-1500076656116-558758c991c1?auto=format&fit=crop&w=800&q=80",
+    "https://images.unsplash.com/photo-1416331108676-a22ccb276e35?auto=format&fit=crop&w=800&q=80",
+    "https://images.unsplash.com/photo-1595521624992-48a59aef95e3?auto=format&fit=crop&w=800&q=80",
+    "https://images.unsplash.com/photo-1605283176568-9b41fde3672e?auto=format&fit=crop&w=800&q=80",
+    "https://images.unsplash.com/photo-1559767949-0faa5c7e9992?auto=format&fit=crop&w=800&q=80"
+  ],
+  eventspace: [
+    "https://images.unsplash.com/photo-1519167758481-83f550bb49b3?auto=format&fit=crop&w=800&q=80",
+    "https://images.unsplash.com/photo-1464366400600-7168b8af9bc3?auto=format&fit=crop&w=800&q=80",
+    "https://images.unsplash.com/photo-1478146896981-b80fe463b330?auto=format&fit=crop&w=800&q=80",
+    "https://images.unsplash.com/photo-1505236858219-8359eb29e329?auto=format&fit=crop&w=800&q=80",
+    "https://images.unsplash.com/photo-1540575467063-178a50c2df87?auto=format&fit=crop&w=800&q=80"
+  ],
+  condo: [
+    "https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?auto=format&fit=crop&w=800&q=80",
+    "https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?auto=format&fit=crop&w=800&q=80",
+    "https://images.unsplash.com/photo-1554995207-c18c203602cb?auto=format&fit=crop&w=800&q=80",
+    "https://images.unsplash.com/photo-1493809842364-78817add7ffb?auto=format&fit=crop&w=800&q=80",
+    "https://images.unsplash.com/photo-1505691938895-1758d7feb511?auto=format&fit=crop&w=800&q=80"
+  ],
+  lake: [
+    "https://images.unsplash.com/photo-1439066615861-d1fb8bc3adc5?auto=format&fit=crop&w=800&q=80",
+    "https://images.unsplash.com/photo-1501785888041-af3ef285b470?auto=format&fit=crop&w=800&q=80",
+    "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?auto=format&fit=crop&w=800&q=80",
+    "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=800&q=80",
+    "https://images.unsplash.com/photo-1433838552652-f9a46b332c40?auto=format&fit=crop&w=800&q=80"
+  ],
+  mountain: [
+    "https://images.unsplash.com/photo-1454496522488-7a8e488e8606?auto=format&fit=crop&w=800&q=80",
+    "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=800&q=80",
+    "https://images.unsplash.com/photo-1483728642387-6c3bdd6c93e5?auto=format&fit=crop&w=800&q=80",
+    "https://images.unsplash.com/photo-1486870591958-9b9d0d1dda99?auto=format&fit=crop&w=800&q=80",
+    "https://images.unsplash.com/photo-1491002052546-bf38f186af56?auto=format&fit=crop&w=800&q=80"
+  ]
+};
 
-  // --- MAKATI ---
-  {
-    id: "makati-1",
-    title: "Skyline Loft in Poblacion",
-    location: "Makati",
-    province: "Metro Manila",
-    price: 3500,
-    rating: 4.85,
-    reviews: 120,
-    images: [
-      "https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?auto=format&fit=crop&w=800&q=80",
-      "https://images.unsplash.com/photo-1505691938895-1758d7feb511?auto=format&fit=crop&w=800&q=80",
-      "https://images.unsplash.com/photo-1554995207-c18c203602cb?auto=format&fit=crop&w=800&q=80",
-      "https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?auto=format&fit=crop&w=800&q=80",
-      "https://images.unsplash.com/photo-1512918760513-95f1fde64203?auto=format&fit=crop&w=800&q=80"
-    ],
-    description: "Experience the vibrant nightlife of Poblacion from this modern industrial loft.",
-    category: "Apartment",
-    guestCount: 2,
-    bedroomCount: 1,
-    bathroomCount: 1,
-    host: { name: "Miguel", avatar: "https://i.pravatar.cc/150?u=miguel", isSuperhost: true, joined: "Joined 2019" },
-    offers: ["City View", "Wifi", "Smart TV", "Gym", "Kitchen", "AC"],
-    activities: ["Bar Hopping in Poblacion", "Rockwell Center Shopping", "Ayala Museum", "Salcedo Market"],
-    ratingCategories: { cleanliness: 4.8, accuracy: 4.9, checkIn: 5.0, communication: 4.8, location: 4.7, value: 4.8 }
-  },
-  {
-    id: "makati-2",
-    title: "Greenbelt Garden Studio",
-    location: "Makati",
-    province: "Metro Manila",
-    price: 4200,
-    rating: 4.92,
-    reviews: 85,
-    images: [
-      "https://images.unsplash.com/photo-1493809842364-78817add7ffb?auto=format&fit=crop&w=800&q=80",
-      "https://images.unsplash.com/photo-1502005229762-cf1b2da7c5d6?auto=format&fit=crop&w=800&q=80",
-      "https://images.unsplash.com/photo-1484154218962-a1c002085d2f?auto=format&fit=crop&w=800&q=80",
-      "https://images.unsplash.com/photo-1507089947368-19c1da9775ae?auto=format&fit=crop&w=800&q=80",
-      "https://images.unsplash.com/photo-1513694203232-719a280e022f?auto=format&fit=crop&w=800&q=80"
-    ],
-    description: "A quiet oasis right across Greenbelt mall. Perfect for business travelers.",
-    category: "Condo",
-    guestCount: 2,
-    bedroomCount: 0,
-    bathroomCount: 1,
-    host: { name: "Anna", avatar: "https://i.pravatar.cc/150?u=anna", isSuperhost: false, joined: "Joined 2021" },
-    offers: ["Pool", "Workspace", "Kitchen", "Wifi", "Self check-in"],
-    activities: ["Greenbelt Mall", "Ayala Triangle Gardens", "Legazpi Sunday Market", "Yuchengco Museum"],
-    ratingCategories: { cleanliness: 5.0, accuracy: 4.8, checkIn: 4.9, communication: 5.0, location: 5.0, value: 4.8 }
-  },
-  {
-    id: "makati-3",
-    title: "Salcedo Village Executive Suite",
-    location: "Makati",
-    province: "Metro Manila",
-    price: 5100,
-    rating: 4.8,
-    reviews: 64,
-    images: [
-      "https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?auto=format&fit=crop&w=800&q=80",
-      "https://images.unsplash.com/photo-1554995207-c18c203602cb?auto=format&fit=crop&w=800&q=80",
-      "https://images.unsplash.com/photo-1505691938895-1758d7feb511?auto=format&fit=crop&w=800&q=80",
-      "https://images.unsplash.com/photo-1616594039964-40891a904d08?auto=format&fit=crop&w=800&q=80",
-      "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?auto=format&fit=crop&w=800&q=80"
-    ],
-    description: "Walk to the Saturday market from this luxurious suite.",
-    category: "Suite",
-    guestCount: 3,
-    bedroomCount: 1,
-    bathroomCount: 1,
-    host: { name: "Robert", avatar: "https://i.pravatar.cc/150?u=robert", isSuperhost: true, joined: "Joined 2020" },
-    offers: ["Balcony", "Washer", "Security", "Pool", "Gym"],
-    activities: ["Salcedo Market", "Ayala Triangle", "Poblacion Nightlife", "Power Plant Mall"],
-    ratingCategories: { cleanliness: 4.9, accuracy: 4.8, checkIn: 4.7, communication: 4.9, location: 4.9, value: 4.6 }
-  },
+// --- Host Names Pool ---
+const HOST_NAMES = [
+  "Maria", "Juan", "Jose", "Ana", "Pedro", "Carmen", "Miguel", "Rosa", "Antonio", "Elena",
+  "Carlos", "Lucia", "Fernando", "Isabel", "Roberto", "Teresa", "Manuel", "Patricia", "Luis", "Gloria",
+  "Ricardo", "Angela", "Eduardo", "Cristina", "Francisco", "Beatriz", "Rafael", "Dolores", "Jorge", "Pilar",
+  "Alejandro", "Rosario", "Diego", "Esperanza", "Alberto", "Margarita", "Sergio", "Consuelo", "Pablo", "Amparo",
+  "Andres", "Victoria", "Ramon", "Josefa", "Enrique", "Mercedes", "Oscar", "Remedios", "Felix", "Asuncion"
+];
 
-  // --- TAGUIG (BGC) ---
-  {
-    id: "taguig-1",
-    title: "BGC High Street Condo",
-    location: "Taguig",
-    province: "Metro Manila",
-    price: 4500,
-    rating: 4.9,
-    reviews: 210,
-    images: [
-      "https://images.unsplash.com/photo-1554995207-c18c203602cb?auto=format&fit=crop&w=800&q=80",
-      "https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?auto=format&fit=crop&w=800&q=80",
-      "https://images.unsplash.com/photo-1493809842364-78817add7ffb?auto=format&fit=crop&w=800&q=80",
-      "https://images.unsplash.com/photo-1522771753035-10a637d5d4a1?auto=format&fit=crop&w=800&q=80",
-      "https://images.unsplash.com/photo-1505693416388-b0346efee53e?auto=format&fit=crop&w=800&q=80"
-    ],
-    description: "Heart of BGC. Steps away from High Street and Mind Museum.",
-    category: "Condo",
-    guestCount: 4,
-    bedroomCount: 2,
-    bathroomCount: 2,
-    host: { name: "Sarah", avatar: "https://i.pravatar.cc/150?u=sarah", isSuperhost: true, joined: "Joined 2018" },
-    offers: ["Pool", "Gym", "Wifi", "Kitchen", "Elevator"],
-    activities: ["Bonifacio High Street", "Mind Museum", "Forbes Town Center", "Venice Grand Canal"],
-    ratingCategories: { cleanliness: 4.9, accuracy: 4.9, checkIn: 4.9, communication: 5.0, location: 5.0, value: 4.7 }
-  },
-  {
-    id: "taguig-2",
-    title: "Modern Loft Near Venice Mall",
-    location: "Taguig",
-    province: "Metro Manila",
-    price: 3200,
-    rating: 4.7,
-    reviews: 140,
-    images: [
-      "https://images.unsplash.com/photo-1505693416388-b0346efee53e?auto=format&fit=crop&w=800&q=80",
-      "https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?auto=format&fit=crop&w=800&q=80",
-      "https://images.unsplash.com/photo-1493809842364-78817add7ffb?auto=format&fit=crop&w=800&q=80",
-      "https://images.unsplash.com/photo-1512918760513-95f1fde64203?auto=format&fit=crop&w=800&q=80",
-      "https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?auto=format&fit=crop&w=800&q=80"
-    ],
-    description: "Cozy loft perfect for couples visiting the Grand Canal Mall.",
-    category: "Loft",
-    guestCount: 2,
-    bedroomCount: 1,
-    bathroomCount: 1,
-    host: { name: "Luis", avatar: "https://i.pravatar.cc/150?u=luis", isSuperhost: false, joined: "Joined 2022" },
-    offers: ["Netflix", "Kitchen", "AC", "Wifi", "Hot water"],
-    activities: ["Venice Grand Canal Gondola", "SM Aura Premier", "Market! Market!", "BGC Arts Center"],
-    ratingCategories: { cleanliness: 4.6, accuracy: 4.7, checkIn: 4.8, communication: 4.9, location: 4.8, value: 4.6 }
-  },
-  {
-    id: "taguig-3",
-    title: "Uptown Parksuites Lux",
-    location: "Taguig",
-    province: "Metro Manila",
-    price: 6000,
-    rating: 4.95,
-    reviews: 55,
-    images: [
-      "https://images.unsplash.com/photo-1512918760513-95f1fde64203?auto=format&fit=crop&w=800&q=80",
-      "https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?auto=format&fit=crop&w=800&q=80",
-      "https://images.unsplash.com/photo-1493809842364-78817add7ffb?auto=format&fit=crop&w=800&q=80",
-      "https://images.unsplash.com/photo-1554995207-c18c203602cb?auto=format&fit=crop&w=800&q=80",
-      "https://images.unsplash.com/photo-1505691938895-1758d7feb511?auto=format&fit=crop&w=800&q=80"
-    ],
-    description: "Luxury living near Uptown Mall and Palace Pool Club.",
-    category: "Apartment",
-    guestCount: 4,
-    bedroomCount: 2,
-    bathroomCount: 2,
-    host: { name: "Premium Stays", avatar: "https://i.pravatar.cc/150?u=premium", isSuperhost: true, joined: "Joined 2020" },
-    offers: ["Concierge", "Pool", "City View", "Gym", "Smart Home"],
-    activities: ["Uptown Mall", "The Palace", "Landers Superstore", "Mitsukoshi BGC"],
-    ratingCategories: { cleanliness: 5.0, accuracy: 4.9, checkIn: 5.0, communication: 4.9, location: 5.0, value: 4.8 }
-  },
+// --- Venue Templates ---
+interface VenueTemplate {
+  titlePrefix: string;
+  category: string;
+  images: string[];
+  descriptionTemplate: string;
+  offers: string[];
+  activitiesTemplate: string[];
+  priceRange: [number, number];
+  guestRange: [number, number];
+  bedroomRange: [number, number];
+  bathroomRange: [number, number];
+}
 
-  // --- QUEZON CITY ---
+const VENUE_TEMPLATES: VenueTemplate[] = [
   {
-    id: "qc-1",
-    title: "Eastwood City View Unit",
-    location: "Quezon City",
-    province: "Metro Manila",
-    price: 2500,
-    rating: 4.6,
-    reviews: 88,
-    images: [
-      "https://images.unsplash.com/photo-1522771753035-10a637d5d4a1?auto=format&fit=crop&w=800&q=80",
-      "https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?auto=format&fit=crop&w=800&q=80",
-      "https://images.unsplash.com/photo-1493809842364-78817add7ffb?auto=format&fit=crop&w=800&q=80",
-      "https://images.unsplash.com/photo-1554995207-c18c203602cb?auto=format&fit=crop&w=800&q=80",
-      "https://images.unsplash.com/photo-1512918760513-95f1fde64203?auto=format&fit=crop&w=800&q=80"
-    ],
-    description: "Affordable staycation in Eastwood City. Pet friendly.",
-    category: "Condo",
-    guestCount: 3,
-    bedroomCount: 1,
-    bathroomCount: 1,
-    host: { name: "Jenny", avatar: "https://i.pravatar.cc/150?u=jenny", isSuperhost: false, joined: "Joined 2021" },
-    offers: ["Pet Friendly", "Wifi", "Mall Access", "Pool", "Kitchen"],
-    activities: ["Eastwood Mall", "City of Stars Walk", "Art in Island", "Cubao Expo"],
-    ratingCategories: { cleanliness: 4.7, accuracy: 4.8, checkIn: 4.9, communication: 4.8, location: 5.0, value: 4.8 }
+    titlePrefix: "Grand Hotel",
+    category: "Hotel",
+    images: IMAGES.hotel,
+    descriptionTemplate: "Luxurious hotel experience with world-class amenities in the heart of {location}.",
+    offers: ["Pool", "Wifi", "Restaurant", "Gym", "Spa", "Room Service", "Parking", "AC"],
+    activitiesTemplate: ["City Tour", "Local Dining", "Shopping", "Cultural Sites"],
+    priceRange: [3500, 8000],
+    guestRange: [2, 4],
+    bedroomRange: [1, 2],
+    bathroomRange: [1, 2]
   },
   {
-    id: "qc-2",
-    title: "Katipunan Studio near Ateneo",
-    location: "Quezon City",
-    province: "Metro Manila",
-    price: 2200,
-    rating: 4.8,
-    reviews: 112,
-    images: [
-      "https://images.unsplash.com/photo-1536376072261-38c75010e6c9?auto=format&fit=crop&w=800&q=80",
-      "https://images.unsplash.com/photo-1554995207-c18c203602cb?auto=format&fit=crop&w=800&q=80",
-      "https://images.unsplash.com/photo-1505691938895-1758d7feb511?auto=format&fit=crop&w=800&q=80",
-      "https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?auto=format&fit=crop&w=800&q=80",
-      "https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?auto=format&fit=crop&w=800&q=80"
-    ],
-    description: "Perfect for students or visiting parents.",
-    category: "Studio",
-    guestCount: 2,
-    bedroomCount: 0,
-    bathroomCount: 1,
-    host: { name: "Marco", avatar: "https://i.pravatar.cc/150?u=marco", isSuperhost: true, joined: "Joined 2019" },
-    offers: ["Workspace", "Wifi", "Cafe Nearby", "Security", "AC"],
-    activities: ["UP Diliman Campus", "Maginhawa Food Street", "Ateneo Art Gallery", "UP Town Center"],
-    ratingCategories: { cleanliness: 4.8, accuracy: 4.9, checkIn: 4.8, communication: 4.9, location: 4.9, value: 4.7 }
-  },
-  {
-    id: "qc-3",
-    title: "Tomas Morato Chic Place",
-    location: "Quezon City",
-    province: "Metro Manila",
-    price: 3000,
-    rating: 4.75,
-    reviews: 45,
-    images: [
-      "https://images.unsplash.com/photo-1556020685-ae41abfc9365?auto=format&fit=crop&w=800&q=80",
-      "https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?auto=format&fit=crop&w=800&q=80",
-      "https://images.unsplash.com/photo-1493809842364-78817add7ffb?auto=format&fit=crop&w=800&q=80",
-      "https://images.unsplash.com/photo-1522771753035-10a637d5d4a1?auto=format&fit=crop&w=800&q=80",
-      "https://images.unsplash.com/photo-1505693416388-b0346efee53e?auto=format&fit=crop&w=800&q=80"
-    ],
-    description: "Food trip haven! Surrounded by the best restaurants.",
-    category: "Apartment",
-    guestCount: 4,
-    bedroomCount: 1,
-    bathroomCount: 1,
-    host: { name: "Chef Tony", avatar: "https://i.pravatar.cc/150?u=tony", isSuperhost: false, joined: "Joined 2022" },
-    offers: ["Netflix", "Kitchen", "Parking", "Wifi", "Smart TV"],
-    activities: ["Tomas Morato Food Trip", "Timog Nightlife", "Quezon Memorial Circle", "Ninoy Aquino Parks"],
-    ratingCategories: { cleanliness: 4.8, accuracy: 4.8, checkIn: 4.8, communication: 4.9, location: 5.0, value: 4.7 }
-  },
-
-  // --- CEBU CITY ---
-  {
-    id: "cebu-1",
-    title: "IT Park Modern Condo",
-    location: "Cebu City",
-    province: "Cebu",
-    price: 2800,
-    rating: 4.8,
-    reviews: 156,
-    images: [
-      "https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?auto=format&fit=crop&w=800&q=80",
-      "https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?auto=format&fit=crop&w=800&q=80",
-      "https://images.unsplash.com/photo-1493809842364-78817add7ffb?auto=format&fit=crop&w=800&q=80",
-      "https://images.unsplash.com/photo-1554995207-c18c203602cb?auto=format&fit=crop&w=800&q=80",
-      "https://images.unsplash.com/photo-1512918760513-95f1fde64203?auto=format&fit=crop&w=800&q=80"
-    ],
-    description: "Modern unit right inside IT Park.",
-    category: "Condo",
-    guestCount: 3,
-    bedroomCount: 1,
-    bathroomCount: 1,
-    host: { name: "Cebu Stays", avatar: "https://i.pravatar.cc/150?u=cebustays", isSuperhost: true, joined: "Joined 2019" },
-    offers: ["Pool", "Wifi", "Netflix", "Kitchen", "Security"],
-    activities: ["Sugbo Mercado", "Ayala Center Cebu", "Taoist Temple", "Magellan's Cross"],
-    ratingCategories: { cleanliness: 4.8, accuracy: 4.8, checkIn: 4.9, communication: 4.9, location: 5.0, value: 4.7 }
-  },
-  {
-    id: "cebu-2",
-    title: "Ayala Center Luxury Suite",
-    location: "Cebu City",
-    province: "Cebu",
-    price: 4500,
-    rating: 4.9,
-    reviews: 80,
-    images: [
-      "https://images.unsplash.com/photo-1560185007-c5ca9d2c014d?auto=format&fit=crop&w=800&q=80",
-      "https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?auto=format&fit=crop&w=800&q=80",
-      "https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?auto=format&fit=crop&w=800&q=80",
-      "https://images.unsplash.com/photo-1554995207-c18c203602cb?auto=format&fit=crop&w=800&q=80",
-      "https://images.unsplash.com/photo-1512918760513-95f1fde64203?auto=format&fit=crop&w=800&q=80"
-    ],
-    description: "Direct access to Ayala Mall. Premium furnishings.",
-    category: "Suite",
-    guestCount: 2,
-    bedroomCount: 1,
-    bathroomCount: 1,
-    host: { name: "Elite Hosts", avatar: "https://i.pravatar.cc/150?u=elite", isSuperhost: true, joined: "Joined 2020" },
-    offers: ["Gym", "Pool", "Mall Access", "Wifi", "Concierge"],
-    activities: ["Shopping at Ayala", "Casa Gorordo Museum", "Fort San Pedro", "Carbon Market"],
-    ratingCategories: { cleanliness: 5.0, accuracy: 4.9, checkIn: 5.0, communication: 4.9, location: 5.0, value: 4.8 }
-  },
-  {
-    id: "cebu-3",
-    title: "Busay Mountain View Home",
-    location: "Cebu City",
-    province: "Cebu",
-    price: 7500,
-    rating: 4.95,
-    reviews: 45,
-    images: [
-      "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=800&q=80",
-      "https://images.unsplash.com/photo-1613977257363-707ba9348227?auto=format&fit=crop&w=800&q=80",
-      "https://images.unsplash.com/photo-1564013799919-ab600027ffc6?auto=format&fit=crop&w=800&q=80",
-      "https://images.unsplash.com/photo-1505691938895-1758d7feb511?auto=format&fit=crop&w=800&q=80",
-      "https://images.unsplash.com/photo-1540541338287-41700207dee6?auto=format&fit=crop&w=800&q=80"
-    ],
-    description: "Stunning night view of the city.",
-    category: "House",
-    guestCount: 8,
-    bedroomCount: 4,
-    bathroomCount: 3,
-    host: { name: "Mountain Retreats", avatar: "https://i.pravatar.cc/150?u=mountain", isSuperhost: true, joined: "Joined 2017" },
-    offers: ["View Deck", "Parking", "Kitchen", "BBQ Grill", "Garden"],
-    activities: ["Temple of Leah", "Sirao Garden", "Tops Lookout", "La Vie in the Sky"],
-    ratingCategories: { cleanliness: 4.9, accuracy: 5.0, checkIn: 4.9, communication: 5.0, location: 4.8, value: 5.0 }
-  },
-
-  // --- DAVAO ---
-  {
-    id: "davao-1",
-    title: "Marco Polo Residences",
-    location: "Davao City",
-    province: "Davao del Sur",
-    price: 4000,
-    rating: 4.8,
-    reviews: 110,
-    images: [
-      "https://images.unsplash.com/photo-1560448205-4d9b3e6bb6db?auto=format&fit=crop&w=800&q=80",
-      "https://images.unsplash.com/photo-1522771753035-10a637d5d4a1?auto=format&fit=crop&w=800&q=80",
-      "https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?auto=format&fit=crop&w=800&q=80",
-      "https://images.unsplash.com/photo-1493809842364-78817add7ffb?auto=format&fit=crop&w=800&q=80",
-      "https://images.unsplash.com/photo-1554995207-c18c203602cb?auto=format&fit=crop&w=800&q=80"
-    ],
-    description: "High-end living in the heart of Davao.",
-    category: "Apartment",
-    guestCount: 3,
-    bedroomCount: 2,
-    bathroomCount: 2,
-    host: { name: "Davao Elite", avatar: "https://i.pravatar.cc/150?u=davao", isSuperhost: false, joined: "Joined 2021" },
-    offers: ["Pool", "Gym", "Concierge", "Wifi", "Parking"],
-    activities: ["Philippine Eagle Center", "Mount Apo Trek", "People's Park", "Davao Crocodile Park"],
-    ratingCategories: { cleanliness: 4.9, accuracy: 4.8, checkIn: 4.8, communication: 4.7, location: 4.9, value: 4.6 }
-  },
-  {
-    id: "davao-2",
-    title: "Abreeza Place Condo",
-    location: "Davao City",
-    province: "Davao del Sur",
-    price: 3200,
-    rating: 4.7,
-    reviews: 140,
-    images: [
-      "https://images.unsplash.com/photo-1522771753035-10a637d5d4a1?auto=format&fit=crop&w=800&q=80",
-      "https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?auto=format&fit=crop&w=800&q=80",
-      "https://images.unsplash.com/photo-1493809842364-78817add7ffb?auto=format&fit=crop&w=800&q=80",
-      "https://images.unsplash.com/photo-1554995207-c18c203602cb?auto=format&fit=crop&w=800&q=80",
-      "https://images.unsplash.com/photo-1512918760513-95f1fde64203?auto=format&fit=crop&w=800&q=80"
-    ],
-    description: "Directly across Abreeza Mall. Very convenient.",
-    category: "Condo",
-    guestCount: 2,
-    bedroomCount: 1,
-    bathroomCount: 1,
-    host: { name: "Grace", avatar: "https://i.pravatar.cc/150?u=grace", isSuperhost: true, joined: "Joined 2019" },
-    offers: ["Mall Access", "Wifi", "Pool", "Gym", "Security"],
-    activities: ["Abreeza Mall", "Roxas Night Market", "Samal Island Hop", "Jack's Ridge Dining"],
-    ratingCategories: { cleanliness: 4.8, accuracy: 4.7, checkIn: 4.9, communication: 4.8, location: 5.0, value: 4.7 }
-  },
-  {
-    id: "davao-3",
-    title: "Jack's Ridge Hilltop Home",
-    location: "Davao City",
-    province: "Davao del Sur",
-    price: 6000,
-    rating: 4.9,
-    reviews: 55,
-    images: [
-      "https://images.unsplash.com/photo-1613977257363-707ba9348227?auto=format&fit=crop&w=800&q=80",
-      "https://images.unsplash.com/photo-1564013799919-ab600027ffc6?auto=format&fit=crop&w=800&q=80",
-      "https://images.unsplash.com/photo-1582719508461-905c673771fd?auto=format&fit=crop&w=800&q=80",
-      "https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=800&q=80",
-      "https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?auto=format&fit=crop&w=800&q=80"
-    ],
-    description: "Best view of Davao City lights at night.",
-    category: "House",
-    guestCount: 6,
-    bedroomCount: 3,
-    bathroomCount: 2,
-    host: { name: "Jack", avatar: "https://i.pravatar.cc/150?u=jack", isSuperhost: true, joined: "Joined 2015" },
-    offers: ["View Deck", "Garden", "Parking", "Restaurant Nearby", "Wifi"],
-    activities: ["Jack's Ridge Resort", "Shrine of the Holy Infant", "Zip City", "Japanese Tunnel"],
-    ratingCategories: { cleanliness: 4.9, accuracy: 4.9, checkIn: 4.8, communication: 4.8, location: 5.0, value: 4.8 }
-  },
-
-  // --- PALAWAN (EL NIDO & CORON) ---
-  {
-    id: "elnido-1",
-    title: "Beachfront Bamboo Villa",
-    location: "El Nido",
-    province: "Palawan",
-    price: 12000,
-    rating: 4.95,
-    reviews: 200,
-    images: [
-      "https://images.unsplash.com/photo-1499793983690-e29da59ef1c2?auto=format&fit=crop&w=800&q=80",
-      "https://images.unsplash.com/photo-1540541338287-41700207dee6?auto=format&fit=crop&w=800&q=80",
-      "https://images.unsplash.com/photo-1582719508461-905c673771fd?auto=format&fit=crop&w=800&q=80",
-      "https://images.unsplash.com/photo-1571003123894-1f0594d2b5d9?auto=format&fit=crop&w=800&q=80",
-      "https://images.unsplash.com/photo-1439066615861-d1fb8bc3adc5?auto=format&fit=crop&w=800&q=80"
-    ],
-    description: "Wake up to the sound of waves. Private beach access in a secluded cove.",
-    category: "Villa",
-    guestCount: 4,
-    bedroomCount: 2,
-    bathroomCount: 2,
-    host: { name: "Island Tours", avatar: "https://i.pravatar.cc/150?u=island", isSuperhost: true, joined: "Joined 2016" },
-    offers: ["Beach Access", "Breakfast", "Kayak", "Hammock", "Wifi"],
-    activities: ["Island Hopping Tour A", "Nacpan Beach", "Big Lagoon", "Taraw Cliff"],
-    ratingCategories: { cleanliness: 4.9, accuracy: 5.0, checkIn: 4.8, communication: 5.0, location: 5.0, value: 4.9 }
-  },
-  {
-    id: "coron-1",
-    title: "Sunset Bay Resort",
-    location: "Coron",
-    province: "Palawan",
-    price: 6000,
-    rating: 4.7,
-    reviews: 110,
-    images: [
-      "https://images.unsplash.com/photo-1582719508461-905c673771fd?auto=format&fit=crop&w=800&q=80",
-      "https://images.unsplash.com/photo-1540541338287-41700207dee6?auto=format&fit=crop&w=800&q=80",
-      "https://images.unsplash.com/photo-1499793983690-e29da59ef1c2?auto=format&fit=crop&w=800&q=80",
-      "https://images.unsplash.com/photo-1571003123894-1f0594d2b5d9?auto=format&fit=crop&w=800&q=80",
-      "https://images.unsplash.com/photo-1439066615861-d1fb8bc3adc5?auto=format&fit=crop&w=800&q=80"
-    ],
-    description: "Best sunset view in Coron.",
+    titlePrefix: "Seaside Resort",
     category: "Resort",
-    guestCount: 2,
-    bedroomCount: 1,
-    bathroomCount: 1,
-    host: { name: "Resort Mgr", avatar: "https://i.pravatar.cc/150?u=resortmgr", isSuperhost: true, joined: "Joined 2017" },
-    offers: ["Pool", "Restaurant", "Dive Shop", "Wifi", "Breakfast"],
-    activities: ["Kayangan Lake", "Twin Lagoon", "Maquinit Hot Spring", "Mt. Tapyas"],
-    ratingCategories: { cleanliness: 4.8, accuracy: 4.7, checkIn: 4.8, communication: 4.8, location: 4.9, value: 4.6 }
-  },
-
-  // --- BAGUIO ---
-  {
-    id: "baguio-1",
-    title: "The Pine Cabin: Cozy Mountain Retreat",
-    location: "Baguio",
-    province: "Benguet",
-    price: 3800,
-    rating: 4.95,
-    reviews: 340,
-    images: [
-      "https://images.unsplash.com/photo-1510798831971-661eb04b3739?auto=format&fit=crop&w=800&q=80",
-      "https://images.unsplash.com/photo-1542718610-a1d656d1884c?auto=format&fit=crop&w=800&q=80",
-      "https://images.unsplash.com/photo-1516455590571-18256e5bb9ff?auto=format&fit=crop&w=800&q=80",
-      "https://images.unsplash.com/photo-1513694203232-719a280e022f?auto=format&fit=crop&w=800&q=80",
-      "https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?auto=format&fit=crop&w=800&q=80"
-    ],
-    description: "Cozy cabin vibe with real fireplace.",
-    category: "Cabin",
-    guestCount: 6,
-    bedroomCount: 2,
-    bathroomCount: 2,
-    host: { name: "Benjie", avatar: "https://i.pravatar.cc/150?u=benjie", isSuperhost: true, joined: "Joined 2020" },
-    offers: ["Fireplace", "Hot Shower", "Mountain View", "Wifi", "Kitchen", "Parking"],
-    activities: ["Burnham Park", "Night Market", "Camp John Hay", "Mines View Park"],
-    ratingCategories: { cleanliness: 4.9, accuracy: 5.0, checkIn: 4.9, communication: 5.0, location: 4.8, value: 4.9 }
+    images: IMAGES.resort,
+    descriptionTemplate: "Escape to paradise at this stunning resort with breathtaking views in {location}.",
+    offers: ["Beach Access", "Pool", "Restaurant", "Spa", "Wifi", "Water Sports", "Bar"],
+    activitiesTemplate: ["Beach Activities", "Island Hopping", "Snorkeling", "Sunset Cruise"],
+    priceRange: [5000, 15000],
+    guestRange: [2, 6],
+    bedroomRange: [1, 3],
+    bathroomRange: [1, 2]
   },
   {
-    id: "baguio-2",
-    title: "Hilltop Transient Home",
-    location: "Baguio",
-    province: "Benguet",
-    price: 5500,
-    rating: 4.6,
-    reviews: 50,
-    images: [
-      "https://images.unsplash.com/photo-1583608205776-bfd35f0d9f83?auto=format&fit=crop&w=800&q=80",
-      "https://images.unsplash.com/photo-1564013799919-ab600027ffc6?auto=format&fit=crop&w=800&q=80",
-      "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=800&q=80",
-      "https://images.unsplash.com/photo-1493809842364-78817add7ffb?auto=format&fit=crop&w=800&q=80",
-      "https://images.unsplash.com/photo-1502005229762-cf1b2da7c5d6?auto=format&fit=crop&w=800&q=80"
-    ],
-    description: "Spacious home good for large groups.",
-    category: "House",
-    guestCount: 10,
-    bedroomCount: 4,
-    bathroomCount: 3,
-    host: { name: "Elena", avatar: "https://i.pravatar.cc/150?u=elena", isSuperhost: false, joined: "Joined 2021" },
-    offers: ["Parking", "Kitchen", "Balcony", "Wifi", "Hot Shower"],
-    activities: ["Strawberry Farm", "Tam-awan Village", "Botanical Garden", "Diplomat Hotel"],
-    ratingCategories: { cleanliness: 4.6, accuracy: 4.7, checkIn: 4.8, communication: 4.9, location: 4.5, value: 4.7 }
+    titlePrefix: "Beachfront Paradise",
+    category: "Beach House",
+    images: IMAGES.beach,
+    descriptionTemplate: "Wake up to the sound of waves at this beautiful beachfront property in {location}.",
+    offers: ["Beach Access", "Wifi", "Kitchen", "BBQ", "Parking", "Outdoor Shower"],
+    activitiesTemplate: ["Swimming", "Beach Volleyball", "Fishing", "Kayaking"],
+    priceRange: [4000, 12000],
+    guestRange: [4, 10],
+    bedroomRange: [2, 4],
+    bathroomRange: [1, 3]
   },
   {
-    id: "baguio-3",
-    title: "Session Road Studio",
-    location: "Baguio",
-    province: "Benguet",
-    price: 2500,
-    rating: 4.7,
-    reviews: 200,
-    images: [
-      "https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?auto=format&fit=crop&w=800&q=80",
-      "https://images.unsplash.com/photo-1554995207-c18c203602cb?auto=format&fit=crop&w=800&q=80",
-      "https://images.unsplash.com/photo-1505691938895-1758d7feb511?auto=format&fit=crop&w=800&q=80",
-      "https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?auto=format&fit=crop&w=800&q=80",
-      "https://images.unsplash.com/photo-1512918760513-95f1fde64203?auto=format&fit=crop&w=800&q=80"
-    ],
-    description: "Right in the center of town. Walk everywhere.",
-    category: "Studio",
-    guestCount: 2,
-    bedroomCount: 0,
-    bathroomCount: 1,
-    host: { name: "City Host", avatar: "https://i.pravatar.cc/150?u=city", isSuperhost: true, joined: "Joined 2019" },
-    offers: ["Location", "Wifi", "TV", "Security", "Hot Shower"],
-    activities: ["Session Road Dining", "Burnham Park Boating", "Baguio Cathedral", "SM Baguio"],
-    ratingCategories: { cleanliness: 4.7, accuracy: 4.8, checkIn: 4.9, communication: 4.9, location: 5.0, value: 4.8 }
+    titlePrefix: "Secret Garden",
+    category: "Garden Venue",
+    images: IMAGES.garden,
+    descriptionTemplate: "A magical garden oasis perfect for events and relaxation in {location}.",
+    offers: ["Garden", "Event Space", "Parking", "Catering Available", "Photo Area", "Wifi"],
+    activitiesTemplate: ["Garden Strolls", "Photography", "Bird Watching", "Picnics"],
+    priceRange: [8000, 25000],
+    guestRange: [20, 100],
+    bedroomRange: [0, 2],
+    bathroomRange: [2, 4]
   },
-
-  // --- TAGAYTAY ---
   {
-    id: "tagaytay-1",
-    title: "Serene Lakeview Villa",
-    location: "Tagaytay",
-    province: "Cavite",
-    price: 8500,
-    rating: 4.9,
-    reviews: 124,
-    images: [
-      "https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=800&q=80",
-      "https://images.unsplash.com/photo-1510798831971-661eb04b3739?auto=format&fit=crop&w=800&q=80",
-      "https://images.unsplash.com/photo-1542718610-a1d656d1884c?auto=format&fit=crop&w=800&q=80",
-      "https://images.unsplash.com/photo-1513694203232-719a280e022f?auto=format&fit=crop&w=800&q=80",
-      "https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?auto=format&fit=crop&w=800&q=80"
-    ],
-    description: "Breathtaking view of Taal Volcano.",
+    titlePrefix: "Forest Retreat",
+    category: "Forest Lodge",
+    images: IMAGES.forest,
+    descriptionTemplate: "Reconnect with nature at this serene forest hideaway in {location}.",
+    offers: ["Nature Trails", "Wifi", "Kitchen", "Fireplace", "Parking", "Hammocks"],
+    activitiesTemplate: ["Hiking", "Bird Watching", "Stargazing", "Nature Photography"],
+    priceRange: [2500, 6000],
+    guestRange: [2, 8],
+    bedroomRange: [1, 3],
+    bathroomRange: [1, 2]
+  },
+  {
+    titlePrefix: "Luxury Villa",
     category: "Villa",
-    guestCount: 8,
-    bedroomCount: 3,
-    bathroomCount: 3,
-    host: { name: "Maria", avatar: "https://i.pravatar.cc/150?u=maria", isSuperhost: true, joined: "Joined 2018" },
-    offers: ["Lake View", "Garden", "Parking", "Hot water", "Wifi"],
-    activities: ["Sky Ranch", "Picnic Grove", "People's Park", "Taal Volcano Trek"],
-    ratingCategories: { cleanliness: 4.9, accuracy: 4.8, checkIn: 4.9, communication: 4.9, location: 5.0, value: 4.8 }
+    images: IMAGES.villa,
+    descriptionTemplate: "Experience the ultimate in comfort at this stunning villa in {location}.",
+    offers: ["Private Pool", "Chef Available", "Wifi", "Garden", "Parking", "AC", "Smart Home"],
+    activitiesTemplate: ["Private Dining", "Pool Parties", "Local Tours", "Spa Services"],
+    priceRange: [8000, 25000],
+    guestRange: [6, 15],
+    bedroomRange: [3, 6],
+    bathroomRange: [2, 5]
   },
   {
-    id: "tagaytay-2",
-    title: "Wind Residences Tower 1",
-    location: "Tagaytay",
-    province: "Cavite",
-    price: 3000,
-    rating: 4.6,
-    reviews: 250,
-    images: [
-      "https://images.unsplash.com/photo-1554995207-c18c203602cb?auto=format&fit=crop&w=800&q=80",
-      "https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?auto=format&fit=crop&w=800&q=80",
-      "https://images.unsplash.com/photo-1493809842364-78817add7ffb?auto=format&fit=crop&w=800&q=80",
-      "https://images.unsplash.com/photo-1522771753035-10a637d5d4a1?auto=format&fit=crop&w=800&q=80",
-      "https://images.unsplash.com/photo-1505693416388-b0346efee53e?auto=format&fit=crop&w=800&q=80"
-    ],
-    description: "Amenities galore. Indoor and outdoor pools.",
-    category: "Condo",
-    guestCount: 4,
-    bedroomCount: 1,
-    bathroomCount: 1,
-    host: { name: "SM Host", avatar: "https://i.pravatar.cc/150?u=sm", isSuperhost: false, joined: "Joined 2019" },
-    offers: ["Pool", "Badminton", "Lounge", "Wifi", "Parking"],
-    activities: ["Sky Ranch", "Mahogany Market", "Puzzle Mansion", "Paradizoo"],
-    ratingCategories: { cleanliness: 4.6, accuracy: 4.7, checkIn: 4.5, communication: 4.8, location: 4.9, value: 4.7 }
-  },
-  {
-    id: "tagaytay-3",
-    title: "Crosswinds Swiss Cabin",
-    location: "Tagaytay",
-    province: "Cavite",
-    price: 7000,
-    rating: 4.8,
-    reviews: 80,
-    images: [
-      "https://images.unsplash.com/photo-1510798831971-661eb04b3739?auto=format&fit=crop&w=800&q=80",
-      "https://images.unsplash.com/photo-1542718610-a1d656d1884c?auto=format&fit=crop&w=800&q=80",
-      "https://images.unsplash.com/photo-1516455590571-18256e5bb9ff?auto=format&fit=crop&w=800&q=80",
-      "https://images.unsplash.com/photo-1513694203232-719a280e022f?auto=format&fit=crop&w=800&q=80",
-      "https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?auto=format&fit=crop&w=800&q=80"
-    ],
-    description: "Feel like you are in Switzerland. Surrounded by pine trees.",
+    titlePrefix: "Mountain Cabin",
     category: "Cabin",
-    guestCount: 6,
-    bedroomCount: 2,
-    bathroomCount: 2,
-    host: { name: "Brittany", avatar: "https://i.pravatar.cc/150?u=brit", isSuperhost: true, joined: "Joined 2020" },
-    offers: ["Forest View", "Cold Breeze", "Cafe", "Wifi", "Parking"],
-    activities: ["Crosswinds Tagaytay", "Museo Orlina", "Ming's Garden", "Sonya's Garden"],
-    ratingCategories: { cleanliness: 4.9, accuracy: 4.9, checkIn: 4.8, communication: 4.9, location: 4.7, value: 4.8 }
-  },
-
-  // --- DASMARINAS ---
-  {
-    id: "dasma-1",
-    title: "Orchard Golf Villa",
-    location: "Dasmarinas",
-    province: "Cavite",
-    price: 6000,
-    rating: 4.7,
-    reviews: 40,
-    images: [
-      "https://images.unsplash.com/photo-1564013799919-ab600027ffc6?auto=format&fit=crop&w=800&q=80",
-      "https://images.unsplash.com/photo-1583608205776-bfd35f0d9f83?auto=format&fit=crop&w=800&q=80",
-      "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=800&q=80",
-      "https://images.unsplash.com/photo-1493809842364-78817add7ffb?auto=format&fit=crop&w=800&q=80",
-      "https://images.unsplash.com/photo-1502005229762-cf1b2da7c5d6?auto=format&fit=crop&w=800&q=80"
-    ],
-    description: "Inside exclusive golf community. Quiet and secure.",
-    category: "House",
-    guestCount: 5,
-    bedroomCount: 3,
-    bathroomCount: 2,
-    host: { name: "Golfer", avatar: "https://i.pravatar.cc/150?u=golf", isSuperhost: true, joined: "Joined 2018" },
-    offers: ["Golf Access", "Quiet", "Security", "Garden", "Parking"],
-    activities: ["The Orchard Golf & Country Club", "Dasmarinas Technopark", "SM Dasma Shopping"],
-    ratingCategories: { cleanliness: 4.8, accuracy: 4.8, checkIn: 4.9, communication: 4.9, location: 4.6, value: 4.7 }
+    images: IMAGES.cabin,
+    descriptionTemplate: "Cozy mountain cabin with stunning views and fresh air in {location}.",
+    offers: ["Mountain View", "Fireplace", "Kitchen", "Wifi", "Parking", "Hot Water"],
+    activitiesTemplate: ["Mountain Trekking", "Coffee Farm Tours", "Sunrise Viewing", "Camping"],
+    priceRange: [2000, 5000],
+    guestRange: [2, 6],
+    bedroomRange: [1, 2],
+    bathroomRange: [1, 1]
   },
   {
-    id: "dasma-2",
-    title: "University Student Pod",
-    location: "Dasmarinas",
-    province: "Cavite",
-    price: 1500,
-    rating: 4.4,
-    reviews: 60,
-    images: [
-      "https://images.unsplash.com/photo-1555854877-bab0e564b8d5?auto=format&fit=crop&w=800&q=80",
-      "https://images.unsplash.com/photo-1554995207-c18c203602cb?auto=format&fit=crop&w=800&q=80",
-      "https://images.unsplash.com/photo-1505691938895-1758d7feb511?auto=format&fit=crop&w=800&q=80",
-      "https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?auto=format&fit=crop&w=800&q=80",
-      "https://images.unsplash.com/photo-1512918760513-95f1fde64203?auto=format&fit=crop&w=800&q=80"
-    ],
-    description: "Near La Salle Dasma. Perfect for students needing a quiet place to study or overnight stays.",
-    category: "Pod",
-    guestCount: 1,
-    bedroomCount: 1,
-    bathroomCount: 1,
-    host: { name: "Student Host", avatar: "https://i.pravatar.cc/150?u=student", isSuperhost: false, joined: "Joined 2021" },
-    offers: ["Wifi", "Study Area", "Security", "AC", "Shared Bath"],
-    activities: ["DLSU Dasma Campus", "Kadiwa Park", "Museo De La Salle", "SM Dasmarinas"],
-    ratingCategories: { cleanliness: 4.5, accuracy: 4.6, checkIn: 4.8, communication: 4.7, location: 5.0, value: 4.9 }
+    titlePrefix: "Countryside Farm",
+    category: "Farm Stay",
+    images: IMAGES.farmhouse,
+    descriptionTemplate: "Experience authentic farm life at this charming countryside retreat in {location}.",
+    offers: ["Farm Tour", "Fresh Produce", "Kitchen", "Wifi", "Parking", "Pet Friendly"],
+    activitiesTemplate: ["Farm Activities", "Fruit Picking", "Animal Feeding", "Cooking Classes"],
+    priceRange: [1500, 4000],
+    guestRange: [4, 12],
+    bedroomRange: [2, 4],
+    bathroomRange: [1, 2]
   },
   {
-    id: "dasma-3",
-    title: "Events Place Guesthouse",
-    location: "Dasmarinas",
-    province: "Cavite",
-    price: 12000,
-    rating: 4.8,
-    reviews: 20,
-    images: [
-      "https://images.unsplash.com/photo-1519167758481-83f550bb49b3?auto=format&fit=crop&w=800&q=80",
-      "https://images.unsplash.com/photo-1564013799919-ab600027ffc6?auto=format&fit=crop&w=800&q=80",
-      "https://images.unsplash.com/photo-1583608205776-bfd35f0d9f83?auto=format&fit=crop&w=800&q=80",
-      "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=800&q=80",
-      "https://images.unsplash.com/photo-1613977257363-707ba9348227?auto=format&fit=crop&w=800&q=80"
-    ],
-    description: "Big house optimized for wedding preparations and family reunions. Large garden for photoshoots.",
-    category: "House",
-    guestCount: 15,
-    bedroomCount: 5,
-    bathroomCount: 4,
-    host: { name: "Events Mgr", avatar: "https://i.pravatar.cc/150?u=events", isSuperhost: true, joined: "Joined 2019" },
-    offers: ["Large Garden", "Parking", "5 Bedrooms", "Kitchen", "Wifi"],
-    activities: ["Wedding Prep", "Photo Shoots", "Family Reunion", "Catering Setup"],
-    ratingCategories: { cleanliness: 4.9, accuracy: 4.8, checkIn: 4.8, communication: 4.9, location: 4.7, value: 4.8 }
-  },
-
-  // ================= CHURCHES =================
-  {
-    id: "church-1",
-    title: "Caleruega Church",
-    location: "Nasugbu",
-    province: "Batangas",
-    price: 15000,
-    rating: 4.9,
-    reviews: 850,
-    images: [
-      "https://images.unsplash.com/photo-1548625361-e88c694b4cb7?auto=format&fit=crop&w=1000&q=80",
-      "https://images.unsplash.com/photo-1577046848358-4623c085f0ea?auto=format&fit=crop&w=1000&q=80",
-      "https://images.unsplash.com/photo-1478131143081-80f7f84ca84d?auto=format&fit=crop&w=1000&q=80",
-      "https://images.unsplash.com/photo-1519167758481-83f550bb49b3?auto=format&fit=crop&w=1000&q=80",
-      "https://images.unsplash.com/photo-1465847899078-b14fe118028f?auto=format&fit=crop&w=1000&q=80"
-    ],
-    description: "The famous 'Church on the Hill'. A spiritual and scenic sanctuary perfect for weddings. Lush gardens and brick pathways.",
-    category: "Religious Organizations",
-    guestCount: 200,
-    bedroomCount: 0,
-    bathroomCount: 4,
-    host: { name: "Dominican Fathers", avatar: "https://i.pravatar.cc/150?u=church", isSuperhost: true, joined: "Joined 1995" },
-    offers: ["Chapel", "Retreat House", "Gardens", "Parking", "Security"],
-    activities: ["Wedding Ceremony", "Retreat", "Via Crucis", "Nature Walk"],
-    ratingCategories: { cleanliness: 5.0, accuracy: 5.0, checkIn: 5.0, communication: 4.8, location: 4.7, value: 4.9 }
+    titlePrefix: "Events Pavilion",
+    category: "Event Space",
+    images: IMAGES.eventspace,
+    descriptionTemplate: "Perfect venue for weddings, parties, and corporate events in {location}.",
+    offers: ["Event Space", "Catering", "Sound System", "Parking", "AC", "Tables & Chairs"],
+    activitiesTemplate: ["Weddings", "Corporate Events", "Birthday Parties", "Reunions"],
+    priceRange: [15000, 50000],
+    guestRange: [50, 300],
+    bedroomRange: [0, 2],
+    bathroomRange: [4, 8]
   },
   {
-    id: "church-2",
-    title: "San Agustin Church",
-    location: "Intramuros",
-    province: "Manila",
-    price: 25000,
-    rating: 4.8,
-    reviews: 1200,
-    images: [
-      "https://images.unsplash.com/photo-1577046848358-4623c085f0ea?auto=format&fit=crop&w=1000&q=80",
-      "https://images.unsplash.com/photo-1548625361-e88c694b4cb7?auto=format&fit=crop&w=1000&q=80",
-      "https://images.unsplash.com/photo-1595526114035-0d45ed16cfbf?auto=format&fit=crop&w=1000&q=80",
-      "https://images.unsplash.com/photo-1518998053901-5348d3969105?auto=format&fit=crop&w=1000&q=80",
-      "https://images.unsplash.com/photo-1555529733-0e670560f7e1?auto=format&fit=crop&w=1000&q=80"
-    ],
-    description: "A UNESCO World Heritage site and a favorite for classic Manila weddings. Baroque architecture at its finest.",
-    category: "Religious Organizations",
-    guestCount: 300,
-    bedroomCount: 0,
-    bathroomCount: 2,
-    host: { name: "Augustinian Order", avatar: "https://i.pravatar.cc/150?u=agustin", isSuperhost: true, joined: "Joined 1607" },
-    offers: ["Heritage Site", "Museum", "Choir Loft", "AC", "Parking"],
-    activities: ["Historical Tour", "Wedding Mass", "Museum Visit", "Intramuros Walk"],
-    ratingCategories: { cleanliness: 4.8, accuracy: 4.9, checkIn: 4.7, communication: 4.5, location: 5.0, value: 4.9 }
-  },
-
-  // --- PETS ---
-  {
-    id: "pet-1",
-    title: "Bark Central Pet Hotel",
-    location: "Mandaluyong",
-    province: "Metro Manila",
-    price: 1500,
-    rating: 4.7,
-    reviews: 88,
-    images: [
-      "https://images.unsplash.com/photo-1548199973-03cce0bbc87b?auto=format&fit=crop&w=1000&q=80",
-      "https://images.unsplash.com/photo-1596461404969-9ae70f2830c1?auto=format&fit=crop&w=1000&q=80",
-      "https://images.unsplash.com/photo-1516734212186-a967f81ad0d7?auto=format&fit=crop&w=1000&q=80",
-      "https://images.unsplash.com/photo-1535930749574-1399327ce78f?auto=format&fit=crop&w=1000&q=80",
-      "https://images.unsplash.com/photo-1583337130417-3346a1be7dee?auto=format&fit=crop&w=1000&q=80"
-    ],
-    description: "Indoor dog park and hotel. We take care of your pets while you attend events.",
-    category: "Pets",
-    guestCount: 1,
-    bedroomCount: 1,
-    bathroomCount: 1,
-    host: { name: "Bark Team", avatar: "https://i.pravatar.cc/150?u=bark", isSuperhost: true, joined: "Joined 2019" },
-    offers: ["Grooming", "Boarding", "Play Area", "AC", "CCTV"],
-    activities: ["Dog Agility", "Pet Boarding", "Socialization", "Grooming Day"],
-    ratingCategories: { cleanliness: 5.0, accuracy: 4.8, checkIn: 4.9, communication: 4.9, location: 4.8, value: 4.6 }
+    titlePrefix: "Urban Condo",
+    category: "Condo",
+    images: IMAGES.condo,
+    descriptionTemplate: "Modern and convenient condo unit in the bustling center of {location}.",
+    offers: ["Pool", "Gym", "Wifi", "Kitchen", "Security", "Parking"],
+    activitiesTemplate: ["Shopping", "Dining", "Nightlife", "City Tour"],
+    priceRange: [2000, 5000],
+    guestRange: [2, 4],
+    bedroomRange: [1, 2],
+    bathroomRange: [1, 1]
   },
   {
-    id: "pet-2",
-    title: "The Cabin Dog Resort",
-    location: "Subic",
-    province: "Zambales",
-    price: 4500,
-    rating: 4.9,
-    reviews: 45,
-    images: [
-      "https://images.unsplash.com/photo-1596461404969-9ae70f2830c1?auto=format&fit=crop&w=1000&q=80",
-      "https://images.unsplash.com/photo-1532323544230-7191fd510c59?auto=format&fit=crop&w=1000&q=80",
-      "https://images.unsplash.com/photo-1510798831971-661eb04b3739?auto=format&fit=crop&w=1000&q=80",
-      "https://images.unsplash.com/photo-1544568100-847a94813693?auto=format&fit=crop&w=1000&q=80",
-      "https://images.unsplash.com/photo-1522276498395-f4f68f7f8a9d?auto=format&fit=crop&w=1000&q=80"
-    ],
-    description: "A vacation for you and your dog. Huge swimming pool specifically for pets.",
-    category: "Pets",
-    guestCount: 4,
-    bedroomCount: 2,
-    bathroomCount: 2,
-    host: { name: "Dog Lover", avatar: "https://i.pravatar.cc/150?u=doglover", isSuperhost: true, joined: "Joined 2020" },
-    offers: ["Pet Pool", "Agility Course", "Villa", "Garden", "Parking"],
-    activities: ["Dog Swimming", "Off-leash Running", "Nature Hike", "Beach Trip"],
-    ratingCategories: { cleanliness: 4.9, accuracy: 4.9, checkIn: 5.0, communication: 5.0, location: 4.7, value: 4.8 }
-  },
-
-  // --- HEALTH & MEDICAL ---
-  {
-    id: "health-1",
-    title: "The Farm at San Benito",
-    location: "Lipa",
-    province: "Batangas",
-    price: 18000,
-    rating: 4.9,
-    reviews: 320,
-    images: [
-      "https://images.unsplash.com/photo-1544161515-4ab6ce6db874?auto=format&fit=crop&w=1000&q=80",
-      "https://images.unsplash.com/photo-1540555700478-4be289fbecef?auto=format&fit=crop&w=1000&q=80",
-      "https://images.unsplash.com/photo-1571003123894-1f0594d2b5d9?auto=format&fit=crop&w=1000&q=80",
-      "https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=1000&q=80",
-      "https://images.unsplash.com/photo-1600334089648-b0d9d3028eb2?auto=format&fit=crop&w=1000&q=80"
-    ],
-    description: "Holistic medical wellness resort. Detox and rejuvenate with our world-class treatments and vegan cuisine.",
-    category: "Health & Medical",
-    guestCount: 2,
-    bedroomCount: 1,
-    bathroomCount: 1,
-    host: { name: "The Farm Admin", avatar: "https://i.pravatar.cc/150?u=farm", isSuperhost: true, joined: "Joined 2010" },
-    offers: ["Medical Spa", "Vegan Food", "Yoga", "Pool", "Gardens"],
-    activities: ["Yoga Class", "Medical Detox", "Spa Treatment", "Nature Walk"],
-    ratingCategories: { cleanliness: 5.0, accuracy: 4.9, checkIn: 5.0, communication: 5.0, location: 4.8, value: 4.7 }
+    titlePrefix: "Lakeside Haven",
+    category: "Lake House",
+    images: IMAGES.lake,
+    descriptionTemplate: "Peaceful lakeside retreat with stunning water views in {location}.",
+    offers: ["Lake View", "Kayak", "Fishing", "Kitchen", "Wifi", "Parking"],
+    activitiesTemplate: ["Kayaking", "Fishing", "Swimming", "Lakeside Dining"],
+    priceRange: [3000, 8000],
+    guestRange: [4, 10],
+    bedroomRange: [2, 4],
+    bathroomRange: [1, 2]
   },
   {
-    id: "health-2",
-    title: "Luljetta's Hanging Gardens",
-    location: "Antipolo",
-    province: "Rizal",
-    price: 2500,
-    rating: 4.6,
-    reviews: 500,
-    images: [
-      "https://images.unsplash.com/photo-1540555700478-4be289fbecef?auto=format&fit=crop&w=1000&q=80",
-      "https://images.unsplash.com/photo-1571003123894-1f0594d2b5d9?auto=format&fit=crop&w=1000&q=80",
-      "https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=1000&q=80",
-      "https://images.unsplash.com/photo-1544161515-4ab6ce6db874?auto=format&fit=crop&w=1000&q=80",
-      "https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?auto=format&fit=crop&w=1000&q=80"
-    ],
-    description: "The first and only hanging gardens spa in the Philippines. Relax with a view of Laguna de Bay.",
-    category: "Health & Medical",
-    guestCount: 2,
-    bedroomCount: 0,
-    bathroomCount: 2,
-    host: { name: "Luljetta", avatar: "https://i.pravatar.cc/150?u=luljetta", isSuperhost: false, joined: "Joined 2015" },
-    offers: ["Spa", "Infinity Pool", "Massage", "Sauna", "Cafe"],
-    activities: ["Full Body Massage", "Infinity Pool Dip", "Sunset Viewing", "Sauna Session"],
-    ratingCategories: { cleanliness: 4.7, accuracy: 4.6, checkIn: 4.8, communication: 4.7, location: 4.9, value: 4.8 }
-  },
-
-  // --- COFFEE & TEA ---
-  {
-    id: "coffee-1",
-    title: "Burrow Cafe",
-    location: "Taytay",
-    province: "Rizal",
-    price: 15000,
-    rating: 4.8,
-    reviews: 210,
-    images: [
-      "https://images.unsplash.com/photo-1554118811-1e0d58224f24?auto=format&fit=crop&w=1000&q=80",
-      "https://images.unsplash.com/photo-1509042239860-f550ce710b93?auto=format&fit=crop&w=1000&q=80",
-      "https://images.unsplash.com/photo-1463797221720-6b07e6426c24?auto=format&fit=crop&w=1000&q=80",
-      "https://images.unsplash.com/photo-1507133750069-419571604855?auto=format&fit=crop&w=1000&q=80",
-      "https://images.unsplash.com/photo-1521017432531-fbd92d768814?auto=format&fit=crop&w=1000&q=80"
-    ],
-    description: "An underground cafe hidden in a forest. Perfect for intimate gatherings and rustic weddings.",
-    category: "Coffee & Tea",
-    guestCount: 50,
-    bedroomCount: 0,
-    bathroomCount: 2,
-    host: { name: "Vitty", avatar: "https://i.pravatar.cc/150?u=vitty", isSuperhost: true, joined: "Joined 2018" },
-    offers: ["Private Dining", "Forest View", "Coffee", "Event Space", "Parking"],
-    activities: ["Breakfast Wedding", "Private Brunch", "Nature Photography", "Coffee Tasting"],
-    ratingCategories: { cleanliness: 4.8, accuracy: 4.7, checkIn: 4.8, communication: 4.8, location: 4.6, value: 4.8 }
-  },
-  {
-    id: "coffee-2",
-    title: "Wildflour Cafe BGC",
-    location: "Taguig",
-    province: "Metro Manila",
-    price: 5000,
-    rating: 4.7,
-    reviews: 1500,
-    images: [
-      "https://images.unsplash.com/photo-1509042239860-f550ce710b93?auto=format&fit=crop&w=1000&q=80",
-      "https://images.unsplash.com/photo-1554118811-1e0d58224f24?auto=format&fit=crop&w=1000&q=80",
-      "https://images.unsplash.com/photo-1463797221720-6b07e6426c24?auto=format&fit=crop&w=1000&q=80",
-      "https://images.unsplash.com/photo-1507133750069-419571604855?auto=format&fit=crop&w=1000&q=80",
-      "https://images.unsplash.com/photo-1521017432531-fbd92d768814?auto=format&fit=crop&w=1000&q=80"
-    ],
-    description: "Famous for brunch and pastries. Available for private evening functions.",
-    category: "Coffee & Tea",
-    guestCount: 30,
-    bedroomCount: 0,
-    bathroomCount: 2,
-    host: { name: "Wildflour Grp", avatar: "https://i.pravatar.cc/150?u=wildflour", isSuperhost: true, joined: "Joined 2013" },
-    offers: ["Pastries", "Cocktails", "Function Room", "Wifi", "AC"],
-    activities: ["Brunch Meeting", "Private Dinner", "Cocktail Party", "Pastry Tasting"],
-    ratingCategories: { cleanliness: 4.7, accuracy: 4.8, checkIn: 4.6, communication: 4.7, location: 5.0, value: 4.5 }
-  },
-
-  // --- ARTS & ENTERTAINMENT ---
-  {
-    id: "art-1",
-    title: "Pinto Art Museum",
-    location: "Antipolo",
-    province: "Rizal",
-    price: 600,
-    rating: 4.8,
-    reviews: 2000,
-    images: [
-      "https://images.unsplash.com/photo-1518998053901-5348d3969105?auto=format&fit=crop&w=1000&q=80",
-      "https://images.unsplash.com/photo-1544161515-4ab6ce6db874?auto=format&fit=crop&w=1000&q=80",
-      "https://images.unsplash.com/photo-1577046848358-4623c085f0ea?auto=format&fit=crop&w=1000&q=80",
-      "https://images.unsplash.com/photo-1595526114035-0d45ed16cfbf?auto=format&fit=crop&w=1000&q=80",
-      "https://images.unsplash.com/photo-1519167758481-83f550bb49b3?auto=format&fit=crop&w=1000&q=80"
-    ],
-    description: "Mission-style buildings filled with contemporary art amidst lush gardens. A popular pre-nup shoot location.",
-    category: "Arts & Entertainment",
-    guestCount: 100,
-    bedroomCount: 0,
-    bathroomCount: 4,
-    host: { name: "Dr. Cuanang", avatar: "https://i.pravatar.cc/150?u=pinto", isSuperhost: true, joined: "Joined 2010" },
-    offers: ["Pre-nup Shoot", "Gallery", "Cafe", "Gardens", "Parking"],
-    activities: ["Art Appreciation", "Photography", "Garden Walk", "Dining at Cafe Rizal"],
-    ratingCategories: { cleanliness: 4.8, accuracy: 4.9, checkIn: 4.8, communication: 4.7, location: 4.7, value: 4.9 }
-  },
-  {
-    id: "art-2",
-    title: "National Museum of Natural History",
-    location: "Manila",
-    province: "Metro Manila",
-    price: 0,
-    rating: 4.9,
-    reviews: 5000,
-    images: [
-      "https://images.unsplash.com/photo-1566127444979-b3d2b654e3d7?auto=format&fit=crop&w=1000&q=80",
-      "https://images.unsplash.com/photo-1595526114035-0d45ed16cfbf?auto=format&fit=crop&w=1000&q=80",
-      "https://images.unsplash.com/photo-1518998053901-5348d3969105?auto=format&fit=crop&w=1000&q=80",
-      "https://images.unsplash.com/photo-1555529733-0e670560f7e1?auto=format&fit=crop&w=1000&q=80",
-      "https://images.unsplash.com/photo-1548625361-e88c694b4cb7?auto=format&fit=crop&w=1000&q=80"
-    ],
-    description: "Iconic 'Tree of Life' architecture. Great for educational tours and appreciation of Philippine biodiversity.",
-    category: "Arts & Entertainment",
-    guestCount: 500,
-    bedroomCount: 0,
-    bathroomCount: 10,
-    host: { name: "Gov", avatar: "https://i.pravatar.cc/150?u=museum", isSuperhost: true, joined: "Joined 1901" },
-    offers: ["Exhibits", "Tours", "Architecture", "AC", "Elevator"],
-    activities: ["Museum Tour", "Educational Trip", "Photography", "History Lesson"],
-    ratingCategories: { cleanliness: 5.0, accuracy: 5.0, checkIn: 4.9, communication: 4.8, location: 5.0, value: 5.0 }
-  },
-
-  // --- FINANCIAL SERVICES ---
-  {
-    id: "finance-1",
-    title: "BDO Corporate Center",
-    location: "Makati",
-    province: "Metro Manila",
-    price: 0,
-    rating: 4.2,
-    reviews: 50,
-    images: [
-      "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=1000&q=80",
-      "https://images.unsplash.com/photo-1554995207-c18c203602cb?auto=format&fit=crop&w=1000&q=80",
-      "https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?auto=format&fit=crop&w=1000&q=80",
-      "https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?auto=format&fit=crop&w=1000&q=80",
-      "https://images.unsplash.com/photo-1512918760513-95f1fde64203?auto=format&fit=crop&w=1000&q=80"
-    ],
-    description: "Main branch for corporate banking needs. Secure and accessible.",
-    category: "Financial Services",
-    guestCount: 0,
-    bedroomCount: 0,
-    bathroomCount: 2,
-    host: { name: "BDO", avatar: "https://i.pravatar.cc/150?u=bdo", isSuperhost: false, joined: "Joined 1970" },
-    offers: ["ATM", "Loans", "Investment", "AC", "Security"],
-    activities: ["Banking", "Consultation", "ATM Withdrawal"],
-    ratingCategories: { cleanliness: 4.5, accuracy: 4.2, checkIn: 4.0, communication: 4.1, location: 5.0, value: 4.0 }
-  },
-
-  // --- PUBLIC SERVICES ---
-  {
-    id: "gov-1",
-    title: "Quezon City Hall",
-    location: "Quezon City",
-    province: "Metro Manila",
-    price: 0,
-    rating: 3.5,
-    reviews: 200,
-    images: [
-      "https://images.unsplash.com/photo-1558448835-132d782df82e?auto=format&fit=crop&w=1000&q=80",
-      "https://images.unsplash.com/photo-1522771753035-10a637d5d4a1?auto=format&fit=crop&w=1000&q=80",
-      "https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?auto=format&fit=crop&w=1000&q=80",
-      "https://images.unsplash.com/photo-1554995207-c18c203602cb?auto=format&fit=crop&w=1000&q=80",
-      "https://images.unsplash.com/photo-1512918760513-95f1fde64203?auto=format&fit=crop&w=1000&q=80"
-    ],
-    description: "Government center for civil weddings, permits, and clearances. Iconic pyramid monument.",
-    category: "Public Services & Government",
-    guestCount: 0,
-    bedroomCount: 0,
-    bathroomCount: 5,
-    host: { name: "LGU", avatar: "https://i.pravatar.cc/150?u=lgu", isSuperhost: false, joined: "Joined 1939" },
-    offers: ["Civil Wedding", "Permits", "Park", "Security"],
-    activities: ["Civil Wedding", "Business Permit", "NBI Clearance", "Park Stroll"],
-    ratingCategories: { cleanliness: 3.5, accuracy: 3.8, checkIn: 3.0, communication: 3.5, location: 4.5, value: 3.5 }
-  },
-
-  // --- REAL ESTATE ---
-  {
-    id: "realestate-1",
-    title: "Rockwell Center Showroom",
-    location: "Makati",
-    province: "Metro Manila",
-    price: 0,
-    rating: 4.8,
-    reviews: 20,
-    images: [
-      "https://images.unsplash.com/photo-1449844908441-8829872d2607?auto=format&fit=crop&w=1000&q=80",
-      "https://images.unsplash.com/photo-1554995207-c18c203602cb?auto=format&fit=crop&w=1000&q=80",
-      "https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?auto=format&fit=crop&w=1000&q=80",
-      "https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?auto=format&fit=crop&w=1000&q=80",
-      "https://images.unsplash.com/photo-1512918760513-95f1fde64203?auto=format&fit=crop&w=1000&q=80"
-    ],
-    description: "Premium condominium showroom demonstrating the Rockwell lifestyle.",
-    category: "Real Estate",
-    guestCount: 0,
-    bedroomCount: 0,
-    bathroomCount: 1,
-    host: { name: "Rockwell Land", avatar: "https://i.pravatar.cc/150?u=rockwell", isSuperhost: true, joined: "Joined 1995" },
-    offers: ["Model Unit", "Inquiries", "Coffee", "Valet"],
-    activities: ["View Model Unit", "Investment Inquiry", "Lifestyle Tour"],
-    ratingCategories: { cleanliness: 5.0, accuracy: 5.0, checkIn: 5.0, communication: 5.0, location: 5.0, value: 4.5 }
+    titlePrefix: "Highland Lodge",
+    category: "Mountain Lodge",
+    images: IMAGES.mountain,
+    descriptionTemplate: "Breathtaking highland escape with panoramic mountain views in {location}.",
+    offers: ["View Deck", "Fireplace", "Kitchen", "Wifi", "Parking", "BBQ"],
+    activitiesTemplate: ["Mountain Climbing", "Trekking", "Photography", "Stargazing"],
+    priceRange: [2500, 6000],
+    guestRange: [4, 8],
+    bedroomRange: [2, 3],
+    bathroomRange: [1, 2]
   }
 ];
+
+// --- Helper Functions ---
+const generateId = (location: string, index: number): string => {
+  return `${location.toLowerCase().replace(/[^a-z0-9]/g, '-')}-${index}`;
+};
+
+const getRandomRating = (): number => {
+  return Number((4.5 + Math.random() * 0.5).toFixed(2));
+};
+
+const getRandomReviews = (): number => {
+  return Math.floor(20 + Math.random() * 300);
+};
+
+const getRandomPrice = (range: [number, number]): number => {
+  return Math.floor(range[0] + Math.random() * (range[1] - range[0]));
+};
+
+const getRandomInRange = (range: [number, number]): number => {
+  return Math.floor(range[0] + Math.random() * (range[1] - range[0] + 1));
+};
+
+const getRandomHost = (index: number): { name: string; avatar: string; isSuperhost: boolean; joined: string } => {
+  const name = HOST_NAMES[index % HOST_NAMES.length];
+  const year = 2015 + Math.floor(Math.random() * 9);
+  return {
+    name,
+    avatar: `https://i.pravatar.cc/150?u=${name.toLowerCase()}${index}`,
+    isSuperhost: Math.random() > 0.4,
+    joined: `Joined ${year}`
+  };
+};
+
+const generateRatingCategories = (baseRating: number) => ({
+  cleanliness: Number((baseRating + (Math.random() * 0.3 - 0.15)).toFixed(1)),
+  accuracy: Number((baseRating + (Math.random() * 0.3 - 0.15)).toFixed(1)),
+  checkIn: Number((baseRating + (Math.random() * 0.3 - 0.15)).toFixed(1)),
+  communication: Number((baseRating + (Math.random() * 0.3 - 0.15)).toFixed(1)),
+  location: Number((baseRating + (Math.random() * 0.3 - 0.15)).toFixed(1)),
+  value: Number((baseRating + (Math.random() * 0.3 - 0.15)).toFixed(1))
+});
+
+// --- Municipality Data by Region ---
+const MUNICIPALITIES: Record<string, Record<string, string[]>> = {
+  "NCR": {
+    "Metro Manila": [
+      "Manila", "Caloocan", "Las Piñas", "Makati", "Malabon", "Mandaluyong", "Marikina",
+      "Muntinlupa", "Navotas", "Parañaque", "Pasay", "Pasig", "Pateros", "Quezon City",
+      "San Juan", "Taguig", "Valenzuela"
+    ]
+  },
+  "CAR": {
+    "Abra": [
+      "Bangued", "Boliney", "Bucay", "Bucloc", "Daguioman", "Danglas", "Dolores", "La Paz",
+      "Lacub", "Lagangilang", "Lagayan", "Langiden", "Licuan-Baay", "Luba", "Malibcong",
+      "Manabo", "Peñarrubia", "Pidigan", "Pilar", "Sallapadan", "San Isidro", "San Juan",
+      "San Quintin", "Tayum", "Tineg", "Tubo", "Villaviciosa"
+    ],
+    "Apayao": ["Calanasan", "Conner", "Flora", "Kabugao", "Luna", "Pudtol", "Santa Marcela"],
+    "Benguet": [
+      "Atok", "Baguio", "Bakun", "Bokod", "Buguias", "Itogon", "Kabayan", "Kapangan",
+      "Kibungan", "La Trinidad", "Mankayan", "Sablan", "Tuba", "Tublay"
+    ],
+    "Ifugao": [
+      "Aguinaldo", "Alfonso Lista", "Asipulo", "Banaue", "Hingyon", "Hungduan", "Kiangan",
+      "Lagawe", "Lamut", "Mayoyao", "Tinoc"
+    ],
+    "Kalinga": ["Balbalan", "Lubuagan", "Pasil", "Pinukpuk", "Rizal", "Tabuk", "Tanudan", "Tinglayan"],
+    "Mountain Province": [
+      "Barlig", "Bauko", "Besao", "Bontoc", "Natonin", "Paracelis", "Sabangan", "Sadanga",
+      "Sagada", "Tadian"
+    ]
+  },
+  "Region I": {
+    "Ilocos Norte": [
+      "Adams", "Bacarra", "Badoc", "Bangui", "Banna", "Batac", "Burgos", "Carasi",
+      "Currimao", "Dingras", "Dumalneg", "Laoag", "Marcos", "Nueva Era", "Pagudpud",
+      "Paoay", "Pasuquin", "Piddig", "Pinili", "San Nicolas", "Sarrat", "Solsona", "Vintar"
+    ],
+    "Ilocos Sur": [
+      "Alilem", "Banayoyo", "Bantay", "Burgos", "Cabugao", "Candon", "Caoayan",
+      "Cervantes", "Galimuyod", "Gregorio del Pilar", "Lidlidda", "Magsingal", "Nagbukel",
+      "Narvacan", "Quirino", "Salcedo", "San Emilio", "San Esteban", "San Ildefonso",
+      "San Juan", "San Vicente", "Santa", "Santa Catalina", "Santa Cruz", "Santa Lucia",
+      "Santa Maria", "Santiago", "Santo Domingo", "Sigay", "Sinait", "Sugpon", "Suyo",
+      "Tagudin", "Vigan"
+    ],
+    "La Union": [
+      "Agoo", "Aringay", "Bacnotan", "Bagulin", "Balaoan", "Bangar", "Bauang", "Burgos",
+      "Caba", "Luna", "Naguilian", "Pugo", "Rosario", "San Fernando", "San Gabriel",
+      "San Juan", "Santo Tomas", "Santol", "Sudipen", "Tubao"
+    ],
+    "Pangasinan": [
+      "Agno", "Aguilar", "Alaminos", "Alcala", "Anda", "Asingan", "Balungao", "Bani",
+      "Basista", "Bautista", "Bayambang", "Binalonan", "Binmaley", "Bolinao", "Bugallon",
+      "Burgos", "Calasiao", "Dagupan", "Dasol", "Infanta", "Labrador", "Laoac", "Lingayen",
+      "Mabini", "Malasiqui", "Manaoag", "Mangaldan", "Mangatarem", "Mapandan", "Natividad",
+      "Pozorrubio", "Rosales", "San Carlos", "San Fabian", "San Jacinto", "San Manuel",
+      "San Nicolas", "San Quintin", "Santa Barbara", "Santa Maria", "Santo Tomas", "Sison",
+      "Sual", "Tayug", "Umingan", "Urbiztondo", "Urdaneta", "Villasis"
+    ]
+  },
+  "Region II": {
+    "Batanes": ["Basco", "Itbayat", "Ivana", "Mahatao", "Sabtang", "Uyugan"],
+    "Cagayan": [
+      "Abulug", "Alcala", "Allacapan", "Amulung", "Aparri", "Baggao", "Ballesteros",
+      "Buguey", "Calayan", "Camalaniugan", "Claveria", "Enrile", "Gattaran", "Gonzaga",
+      "Iguig", "Lal-lo", "Lasam", "Pamplona", "Peñablanca", "Piat", "Rizal", "Sanchez-Mira",
+      "Santa Ana", "Santa Praxedes", "Santa Teresita", "Santo Niño", "Solana", "Tuao",
+      "Tuguegarao"
+    ],
+    "Isabela": [
+      "Alicia", "Angadanan", "Aurora", "Benito Soliven", "Burgos", "Cabagan", "Cabatuan",
+      "Cauayan", "Cordon", "Delfin Albano", "Dinapigue", "Divilacan", "Echague", "Gamu",
+      "Ilagan", "Jones", "Luna", "Maconacon", "Mallig", "Naguilian", "Palanan", "Quezon",
+      "Quirino", "Ramon", "Reina Mercedes", "Roxas", "San Agustin", "San Guillermo",
+      "San Isidro", "San Manuel", "San Mariano", "San Mateo", "San Pablo", "Santa Maria",
+      "Santiago", "Santo Tomas", "Tumauini"
+    ],
+    "Nueva Vizcaya": [
+      "Alfonso Castañeda", "Ambaguio", "Aritao", "Bagabag", "Bambang", "Bayombong",
+      "Diadi", "Dupax del Norte", "Dupax del Sur", "Kasibu", "Kayapa", "Quezon",
+      "Santa Fe", "Solano", "Villaverde"
+    ],
+    "Quirino": ["Aglipay", "Cabarroguis", "Diffun", "Maddela", "Nagtipunan", "Saguday"]
+  },
+  "Region III": {
+    "Aurora": [
+      "Baler", "Casiguran", "Dilasag", "Dinalungan", "Dingalan", "Dipaculao",
+      "Maria Aurora", "San Luis"
+    ],
+    "Bataan": [
+      "Abucay", "Bagac", "Balanga", "Dinalupihan", "Hermosa", "Limay", "Mariveles",
+      "Morong", "Orani", "Orion", "Pilar", "Samal"
+    ],
+    "Bulacan": [
+      "Angat", "Balagtas", "Baliwag", "Bocaue", "Bulakan", "Bustos", "Calumpit",
+      "Doña Remedios Trinidad", "Guiguinto", "Hagonoy", "Malolos", "Marilao", "Meycauayan",
+      "Norzagaray", "Obando", "Pandi", "Paombong", "Plaridel", "Pulilan", "San Ildefonso",
+      "San Jose del Monte", "San Miguel", "San Rafael", "Santa Maria"
+    ],
+    "Nueva Ecija": [
+      "Aliaga", "Bongabon", "Cabanatuan", "Cabiao", "Carranglan", "Cuyapo", "Gabaldon",
+      "Gapan", "General Mamerto Natividad", "General Tinio", "Guimba", "Jaen", "Laur",
+      "Licab", "Llanera", "Lupao", "Muñoz", "Nampicuan", "Palayan", "Pantabangan",
+      "Peñaranda", "Quezon", "Rizal", "San Antonio", "San Isidro", "San Jose",
+      "San Leonardo", "Santa Rosa", "Santo Domingo", "Talavera", "Talugtug", "Zaragoza"
+    ],
+    "Pampanga": [
+      "Angeles", "Apalit", "Arayat", "Bacolor", "Candaba", "Floridablanca", "Guagua",
+      "Lubao", "Mabalacat", "Macabebe", "Magalang", "Masantol", "Mexico", "Minalin",
+      "Porac", "San Fernando", "San Luis", "San Simon", "Santa Ana", "Santa Rita",
+      "Santo Tomas", "Sasmuan"
+    ],
+    "Tarlac": [
+      "Anao", "Bamban", "Camiling", "Capas", "Concepcion", "Gerona", "La Paz", "Mayantoc",
+      "Moncada", "Paniqui", "Pura", "Ramos", "San Clemente", "San Jose", "San Manuel",
+      "Santa Ignacia", "Tarlac City", "Victoria"
+    ],
+    "Zambales": [
+      "Botolan", "Cabangan", "Candelaria", "Castillejos", "Iba", "Masinloc", "Olongapo",
+      "Palauig", "San Antonio", "San Felipe", "San Marcelino", "San Narciso", "Santa Cruz",
+      "Subic"
+    ]
+  },
+  "Region IV-A": {
+    "Batangas": [
+      "Agoncillo", "Alitagtag", "Balayan", "Balete", "Batangas City", "Bauan", "Calaca",
+      "Calatagan", "Cuenca", "Ibaan", "Laurel", "Lemery", "Lian", "Lipa", "Lobo", "Mabini",
+      "Malvar", "Mataasnakahoy", "Nasugbu", "Padre Garcia", "Rosario", "San Jose",
+      "San Juan", "San Luis", "San Nicolas", "San Pascual", "Santa Teresita", "Santo Tomas",
+      "Taal", "Talisay", "Tanauan", "Taysan", "Tingloy", "Tuy"
+    ],
+    "Cavite": [
+      "Alfonso", "Amadeo", "Bacoor", "Carmona", "Cavite City", "Dasmarinas",
+      "General Emilio Aguinaldo", "General Mariano Alvarez", "General Trias", "Imus",
+      "Indang", "Kawit", "Magallanes", "Maragondon", "Mendez", "Naic", "Noveleta",
+      "Rosario", "Silang", "Tagaytay", "Tanza", "Ternate", "Trece Martires"
+    ],
+    "Laguna": [
+      "Alaminos", "Bay", "Biñan", "Cabuyao", "Calamba", "Calauan", "Cavinti", "Famy",
+      "Kalayaan", "Liliw", "Los Baños", "Luisiana", "Lumban", "Mabitac", "Magdalena",
+      "Majayjay", "Nagcarlan", "Paete", "Pagsanjan", "Pakil", "Pangil", "Pila", "Rizal",
+      "San Pablo", "San Pedro", "Santa Cruz", "Santa Maria", "Santa Rosa", "Siniloan",
+      "Victoria"
+    ],
+    "Quezon": [
+      "Agdangan", "Alabat", "Atimonan", "Buenavista", "Burdeos", "Calauag", "Candelaria",
+      "Catanauan", "Dolores", "General Luna", "General Nakar", "Guinayangan", "Gumaca",
+      "Infanta", "Jomalig", "Lopez", "Lucban", "Lucena", "Macalelon", "Mauban", "Mulanay",
+      "Padre Burgos", "Pagbilao", "Panukulan", "Patnanungan", "Perez", "Pitogo", "Plaridel",
+      "Polillo", "Quezon", "Real", "Sampaloc", "San Andres", "San Antonio", "San Francisco",
+      "San Narciso", "Sariaya", "Tagkawayan", "Tayabas", "Tiaong", "Unisan"
+    ],
+    "Rizal": [
+      "Angono", "Antipolo", "Baras", "Binangonan", "Cainta", "Cardona", "Jala-jala",
+      "Morong", "Pililla", "Rodriguez", "San Mateo", "Tanay", "Taytay", "Teresa"
+    ]
+  },
+  "MIMAROPA": {
+    "Marinduque": ["Boac", "Buenavista", "Gasan", "Mogpog", "Santa Cruz", "Torrijos"],
+    "Occidental Mindoro": [
+      "Abra de Ilog", "Calintaan", "Looc", "Lubang", "Magsaysay", "Mamburao", "Paluan",
+      "Rizal", "Sablayan", "San Jose", "Santa Cruz"
+    ],
+    "Oriental Mindoro": [
+      "Baco", "Bansud", "Bongabong", "Bulalacao", "Calapan", "Gloria", "Mansalay", "Naujan",
+      "Pinamalayan", "Pola", "Puerto Galera", "Roxas", "San Teodoro", "Socorro", "Victoria"
+    ],
+    "Palawan": [
+      "Aborlan", "Agutaya", "Araceli", "Balabac", "Bataraza", "Brooke's Point", "Busuanga",
+      "Cagayancillo", "Coron", "Culion", "Cuyo", "Dumaran", "El Nido", "Kalayaan",
+      "Linapacan", "Magsaysay", "Narra", "Puerto Princesa", "Quezon", "Rizal", "Roxas",
+      "San Vicente", "Sofronio Española", "Taytay"
+    ],
+    "Romblon": [
+      "Alcantara", "Banton", "Cajidiocan", "Calatrava", "Concepcion", "Corcuera", "Ferrol",
+      "Looc", "Magdiwang", "Odiongan", "Romblon", "San Agustin", "San Andres", "San Fernando",
+      "San Jose", "Santa Fe", "Santa Maria"
+    ]
+  },
+  "Region V": {
+    "Albay": [
+      "Bacacay", "Camalig", "Daraga", "Guinobatan", "Jovellar", "Legazpi", "Libon",
+      "Ligao", "Malilipot", "Malinao", "Manito", "Oas", "Pio Duran", "Polangui",
+      "Rapu-Rapu", "Santo Domingo", "Tabaco", "Tiwi"
+    ],
+    "Camarines Norte": [
+      "Basud", "Capalonga", "Daet", "Jose Panganiban", "Labo", "Mercedes", "Paracale",
+      "San Lorenzo Ruiz", "San Vicente", "Santa Elena", "Talisay", "Vinzons"
+    ],
+    "Camarines Sur": [
+      "Baao", "Balatan", "Bato", "Bombon", "Buhi", "Bula", "Cabusao", "Calabanga",
+      "Camaligan", "Canaman", "Caramoan", "Del Gallego", "Gainza", "Garchitorena", "Goa",
+      "Iriga", "Lagonoy", "Libmanan", "Lupi", "Magarao", "Milaor", "Minalabac", "Nabua",
+      "Naga", "Ocampo", "Pamplona", "Pasacao", "Pili", "Presentacion", "Ragay", "Sagñay",
+      "San Fernando", "San Jose", "Sipocot", "Siruma", "Tigaon", "Tinambac"
+    ],
+    "Catanduanes": [
+      "Bagamanoc", "Baras", "Bato", "Caramoran", "Gigmoto", "Pandan", "Panganiban",
+      "San Andres", "San Miguel", "Viga", "Virac"
+    ],
+    "Masbate": [
+      "Aroroy", "Baleno", "Balud", "Batuan", "Cataingan", "Cawayan", "Claveria",
+      "Dimasalang", "Esperanza", "Mandaon", "Masbate City", "Milagros", "Mobo",
+      "Monreal", "Palanas", "Pio V. Corpuz", "Placer", "San Fernando", "San Jacinto",
+      "San Pascual", "Uson"
+    ],
+    "Sorsogon": [
+      "Barcelona", "Bulan", "Bulusan", "Casiguran", "Castilla", "Donsol", "Gubat",
+      "Irosin", "Juban", "Magallanes", "Matnog", "Pilar", "Prieto Diaz", "Santa Magdalena",
+      "Sorsogon City"
+    ]
+  },
+  "Region VI": {
+    "Aklan": [
+      "Altavas", "Balete", "Banga", "Batan", "Buruanga", "Ibajay", "Kalibo", "Lezo",
+      "Libacao", "Madalag", "Makato", "Malay", "Malinao", "Nabas", "New Washington",
+      "Numancia", "Tangalan"
+    ],
+    "Antique": [
+      "Anini-y", "Barbaza", "Belison", "Bugasong", "Caluya", "Culasi", "Hamtic",
+      "Laua-an", "Libertad", "Pandan", "Patnongon", "San Jose de Buenavista", "San Remigio",
+      "Sebaste", "Sibalom", "Tibiao", "Tobias Fornier", "Valderrama"
+    ],
+    "Capiz": [
+      "Cuartero", "Dao", "Dumalag", "Dumarao", "Ivisan", "Jamindan", "Ma-ayon",
+      "Mambusao", "Panay", "Panitan", "Pilar", "Pontevedra", "President Roxas",
+      "Roxas City", "Sapian", "Sigma", "Tapaz"
+    ],
+    "Guimaras": ["Buenavista", "Jordan", "Nueva Valencia", "San Lorenzo", "Sibunag"],
+    "Iloilo": [
+      "Ajuy", "Alimodian", "Anilao", "Badiangan", "Balasan", "Banate", "Barotac Nuevo",
+      "Barotac Viejo", "Batad", "Bingawan", "Cabatuan", "Calinog", "Carles", "Concepcion",
+      "Dingle", "Dueñas", "Dumangas", "Estancia", "Guimbal", "Igbaras", "Iloilo City",
+      "Janiuay", "Lambunao", "Leganes", "Lemery", "Leon", "Maasin", "Miagao", "Mina",
+      "New Lucena", "Oton", "Passi", "Pavia", "Pototan", "San Dionisio", "San Enrique",
+      "San Joaquin", "San Miguel", "San Rafael", "Santa Barbara", "Sara", "Tigbauan",
+      "Tubungan", "Zarraga"
+    ],
+    "Negros Occidental": [
+      "Bacolod", "Bago", "Binalbagan", "Cadiz", "Calatrava", "Candoni", "Cauayan",
+      "Don Salvador Benedicto", "Enrique B. Magalona", "Escalante", "Himamaylan", "Hinigaran",
+      "Hinoba-an", "Ilog", "Isabela", "Kabankalan", "La Carlota", "La Castellana",
+      "Manapla", "Moises Padilla", "Murcia", "Pontevedra", "Pulupandan", "Sagay",
+      "San Carlos", "San Enrique", "Silay", "Sipalay", "Talisay", "Toboso", "Valladolid",
+      "Victorias"
+    ]
+  },
+  "Region VII": {
+    "Bohol": [
+      "Alburquerque", "Alicia", "Anda", "Antequera", "Baclayon", "Balilihan", "Batuan",
+      "Bien Unido", "Bilar", "Buenavista", "Calape", "Candijay", "Carmen", "Catigbian",
+      "Clarin", "Corella", "Cortes", "Dagohoy", "Danao", "Dauis", "Dimiao", "Duero",
+      "Garcia Hernandez", "Guindulman", "Inabanga", "Jagna", "Getafe", "Lila", "Loay",
+      "Loboc", "Loon", "Mabini", "Maribojoc", "Panglao", "Pilar", "President Carlos P. Garcia",
+      "Sagbayan", "San Isidro", "San Miguel", "Sevilla", "Sierra Bullones", "Sikatuna",
+      "Tagbilaran", "Talibon", "Trinidad", "Tubigon", "Ubay", "Valencia"
+    ],
+    "Cebu": [
+      "Alcantara", "Alcoy", "Alegria", "Aloguinsan", "Argao", "Asturias", "Badian",
+      "Balamban", "Bantayan", "Barili", "Bogo", "Boljoon", "Borbon", "Carcar", "Carmen",
+      "Catmon", "Cebu City", "Compostela", "Consolacion", "Cordova", "Daanbantayan",
+      "Dalaguete", "Danao", "Dumanjug", "Ginatilan", "Lapu-Lapu", "Liloan", "Madridejos",
+      "Malabuyoc", "Mandaue", "Medellin", "Minglanilla", "Moalboal", "Naga", "Oslob",
+      "Pilar", "Pinamungajan", "Poro", "Ronda", "Samboan", "San Fernando", "San Francisco",
+      "San Remigio", "Santa Fe", "Santander", "Sibonga", "Sogod", "Tabogon", "Tabuelan",
+      "Talisay", "Toledo", "Tuburan", "Tudela"
+    ],
+    "Negros Oriental": [
+      "Amlan", "Ayungon", "Bacong", "Bais", "Basay", "Bayawan", "Bindoy", "Canlaon",
+      "Dauin", "Dumaguete", "Guihulngan", "Jimalalud", "La Libertad", "Mabinay",
+      "Manjuyod", "Pamplona", "San Jose", "Santa Catalina", "Siaton", "Sibulan",
+      "Tanjay", "Tayasan", "Valencia", "Vallehermoso", "Zamboanguita"
+    ],
+    "Siquijor": ["Enrique Villanueva", "Larena", "Lazi", "Maria", "San Juan", "Siquijor"]
+  },
+  "Region VIII": {
+    "Biliran": ["Almeria", "Biliran", "Cabucgayan", "Caibiran", "Culaba", "Kawayan", "Maripipi", "Naval"],
+    "Eastern Samar": [
+      "Arteche", "Balangiga", "Balangkayan", "Borongan", "Can-avid", "Dolores",
+      "General MacArthur", "Giporlos", "Guiuan", "Hernani", "Jipapad", "Lawaan", "Llorente",
+      "Maslog", "Maydolong", "Mercedes", "Oras", "Quinapondan", "Salcedo", "San Julian",
+      "San Policarpo", "Sulat", "Taft"
+    ],
+    "Leyte": [
+      "Abuyog", "Alangalang", "Albuera", "Babatngon", "Barugo", "Bato", "Baybay",
+      "Burauen", "Calubian", "Capoocan", "Carigara", "Dagami", "Dulag", "Hilongos",
+      "Hindang", "Inopacan", "Isabel", "Jaro", "Javier", "Julita", "Kananga", "La Paz",
+      "Leyte", "MacArthur", "Mahaplag", "Matag-ob", "Matalom", "Mayorga", "Merida",
+      "Ormoc", "Palo", "Palompon", "Pastrana", "San Isidro", "San Miguel", "Santa Fe",
+      "Tabango", "Tabontabon", "Tacloban", "Tanauan", "Tolosa", "Tunga", "Villaba"
+    ],
+    "Northern Samar": [
+      "Allen", "Biri", "Bobon", "Capul", "Catarman", "Catubig", "Gamay", "Laoang",
+      "Lapinig", "Las Navas", "Lavezares", "Lope de Vega", "Mapanas", "Mondragon",
+      "Palapag", "Pambujan", "Rosario", "San Antonio", "San Isidro", "San Jose",
+      "San Roque", "San Vicente", "Silvino Lobos", "Victoria"
+    ],
+    "Samar": [
+      "Almagro", "Basey", "Calbayog", "Calbiga", "Catbalogan", "Daram", "Gandara",
+      "Hinabangan", "Jiabong", "Marabut", "Matuguinao", "Motiong", "Pagsanghan",
+      "Paranas", "Pinabacdao", "San Jorge", "San Jose de Buan", "San Sebastian",
+      "Santa Margarita", "Santa Rita", "Santo Niño", "Tagapul-an", "Talalora",
+      "Tarangnan", "Villareal", "Zumarraga"
+    ],
+    "Southern Leyte": [
+      "Anahawan", "Bontoc", "Hinunangan", "Hinundayan", "Libagon", "Liloan", "Limasawa",
+      "Maasin", "Macrohon", "Malitbog", "Padre Burgos", "Pintuyan", "Saint Bernard",
+      "San Francisco", "San Juan", "San Ricardo", "Silago", "Sogod", "Tomas Oppus"
+    ]
+  },
+  "Region IX": {
+    "Zamboanga del Norte": [
+      "Bacungan", "Baliguian", "Dapitan", "Dipolog", "Godod", "Gutalac", "Jose Dalman",
+      "Kalawit", "Katipunan", "La Libertad", "Labason", "Liloy", "Manukan", "Mutia",
+      "Piñan", "Polanco", "President Manuel A. Roxas", "Rizal", "Salug", "Sergio Osmeña Sr.",
+      "Siayan", "Sibuco", "Sibutad", "Sindangan", "Siocon", "Sirawai", "Tampilisan"
+    ],
+    "Zamboanga del Sur": [
+      "Aurora", "Bayog", "Dimataling", "Dinas", "Dumalinao", "Dumingag", "Guipos",
+      "Josefina", "Kumalarang", "Labangan", "Lakewood", "Lapuyan", "Mahayag", "Margosatubig",
+      "Midsalip", "Molave", "Pagadian", "Pitogo", "Ramon Magsaysay", "San Miguel",
+      "San Pablo", "Sominot", "Tabina", "Tambulig", "Tigbao", "Tucuran", "Vincenzo A. Sagun",
+      "Zamboanga City"
+    ],
+    "Zamboanga Sibugay": [
+      "Alicia", "Buug", "Diplahan", "Imelda", "Ipil", "Kabasalan", "Mabuhay", "Malangas",
+      "Naga", "Olutanga", "Payao", "Roseller Lim", "Siay", "Talusan", "Titay", "Tungawan"
+    ]
+  },
+  "Region X": {
+    "Bukidnon": [
+      "Baungon", "Cabanglasan", "Damulog", "Dangcagan", "Don Carlos", "Impasugong",
+      "Kadingilan", "Kalilangan", "Kibawe", "Kitaotao", "Lantapan", "Libona",
+      "Malaybalay", "Malitbog", "Manolo Fortich", "Maramag", "Pangantucan", "Quezon",
+      "San Fernando", "Sumilao", "Talakag", "Valencia"
+    ],
+    "Camiguin": ["Catarman", "Guinsiliban", "Mahinog", "Mambajao", "Sagay"],
+    "Lanao del Norte": [
+      "Bacolod", "Baloi", "Baroy", "Iligan", "Kapatagan", "Kauswagan", "Kolambugan",
+      "Lala", "Linamon", "Magsaysay", "Maigo", "Matungao", "Munai", "Nunungan",
+      "Pantao Ragat", "Pantar", "Poona Piagapo", "Salvador", "Sapad", "Sultan Naga Dimaporo",
+      "Tagoloan", "Tangcal", "Tubod"
+    ],
+    "Misamis Occidental": [
+      "Aloran", "Baliangao", "Bonifacio", "Calamba", "Clarin", "Concepcion",
+      "Don Victoriano Chiongbian", "Jimenez", "Lopez Jaena", "Oroquieta", "Ozamiz",
+      "Panaon", "Plaridel", "Sapang Dalaga", "Sinacaban", "Tangub", "Tudela"
+    ],
+    "Misamis Oriental": [
+      "Alubijid", "Balingasag", "Balingoan", "Binuangan", "Cagayan de Oro", "Claveria",
+      "El Salvador", "Gingoog", "Gitagum", "Initao", "Jasaan", "Kinoguitan", "Lagonglong",
+      "Laguindingan", "Libertad", "Lugait", "Magsaysay", "Manticao", "Medina", "Naawan",
+      "Opol", "Salay", "Sugbongcogon", "Tagoloan", "Talisayan", "Villanueva"
+    ]
+  },
+  "Region XI": {
+    "Davao de Oro": [
+      "Compostela", "Laak", "Mabini", "Maco", "Maragusan", "Mawab", "Monkayo",
+      "Montevista", "Nabunturan", "New Bataan", "Pantukan"
+    ],
+    "Davao del Norte": [
+      "Asuncion", "Braulio E. Dujali", "Carmen", "Kapalong", "New Corella", "Panabo",
+      "Samal", "San Isidro", "Santo Tomas", "Tagum", "Talaingod"
+    ],
+    "Davao del Sur": [
+      "Bansalan", "Davao City", "Digos", "Hagonoy", "Kiblawan", "Magsaysay", "Malalag",
+      "Matanao", "Padada", "Santa Cruz", "Sulop"
+    ],
+    "Davao Occidental": ["Don Marcelino", "Jose Abad Santos", "Malita", "Santa Maria", "Sarangani"],
+    "Davao Oriental": [
+      "Baganga", "Banaybanay", "Boston", "Caraga", "Cateel", "Governor Generoso",
+      "Lupon", "Manay", "Mati", "San Isidro", "Tarragona"
+    ]
+  },
+  "Region XII": {
+    "Cotabato": [
+      "Alamada", "Aleosan", "Antipas", "Arakan", "Banisilan", "Carmen", "Kabacan",
+      "Kidapawan", "Libungan", "M'lang", "Magpet", "Makilala", "Matalam", "Midsayap",
+      "Pigcawayan", "Pikit", "President Roxas", "Tulunan"
+    ],
+    "Sarangani": ["Alabel", "Glan", "Kiamba", "Maasim", "Maitum", "Malapatan", "Malunggon"],
+    "South Cotabato": [
+      "Banga", "General Santos", "Koronadal", "Lake Sebu", "Norala", "Polomolok",
+      "Santo Niño", "Surallah", "T'Boli", "Tampakan", "Tantangan", "Tupi"
+    ],
+    "Sultan Kudarat": [
+      "Bagumbayan", "Columbio", "Esperanza", "Isulan", "Kalamansig", "Lambayong",
+      "Lebak", "Lutayan", "Palimbang", "President Quirino", "Senator Ninoy Aquino",
+      "Tacurong"
+    ]
+  },
+  "Region XIII": {
+    "Agusan del Norte": [
+      "Buenavista", "Butuan", "Cabadbaran", "Carmen", "Jabonga", "Kitcharao",
+      "Las Nieves", "Magallanes", "Nasipit", "Remedios T. Romualdez", "Santiago", "Tubay"
+    ],
+    "Agusan del Sur": [
+      "Bayugan", "Bunawan", "Esperanza", "La Paz", "Loreto", "Prosperidad", "Rosario",
+      "San Francisco", "San Luis", "Santa Josefa", "Sibagat", "Talacogon", "Trento",
+      "Veruela"
+    ],
+    "Dinagat Islands": ["Basilisa", "Cagdianao", "Dinagat", "Libjo", "Loreto", "San Jose", "Tubajon"],
+    "Surigao del Norte": [
+      "Alegria", "Bacuag", "Burgos", "Claver", "Dapa", "Del Carmen", "General Luna",
+      "Gigaquit", "Mainit", "Malimono", "Pilar", "Placer", "San Benito", "San Francisco",
+      "San Isidro", "Santa Monica", "Sison", "Socorro", "Surigao City", "Tagana-an",
+      "Tubod"
+    ],
+    "Surigao del Sur": [
+      "Barobo", "Bayabas", "Bislig", "Cagwait", "Cantilan", "Carmen", "Carrascal",
+      "Cortes", "Hinatuan", "Lanuza", "Lianga", "Lingig", "Madrid", "Marihatag",
+      "San Agustin", "San Miguel", "Tagbina", "Tago", "Tandag"
+    ]
+  },
+  "BARMM": {
+    "Basilan": [
+      "Akbar", "Al-Barka", "Hadji Mohammad Ajul", "Hadji Muhtamad", "Isabela City",
+      "Lamitan", "Lantawan", "Maluso", "Sumisip", "Tabuan-Lasa", "Tipo-Tipo",
+      "Tuburan", "Ungkaya Pukan"
+    ],
+    "Lanao del Sur": [
+      "Amai Manabilang", "Bacolod-Kalawi", "Balabagan", "Balindong", "Bayang",
+      "Binidayan", "Buadiposo-Buntong", "Bubong", "Butig", "Calanogas", "Ditsaan-Ramain",
+      "Ganassi", "Kapai", "Kapatagan", "Lumba-Bayabao", "Lumbaca-Unayan", "Lumbatan",
+      "Lumbayanague", "Madalum", "Madamba", "Maguing", "Malabang", "Marantao", "Marawi",
+      "Marogong", "Masiu", "Mulondo", "Pagayawan", "Piagapo", "Picong", "Poona Bayabao",
+      "Pualas", "Saguiaran", "Sultan Dumalondong", "Tagoloan II", "Tamparan", "Taraka",
+      "Tubaran", "Tugaya", "Wao"
+    ],
+    "Maguindanao": [
+      "Ampatuan", "Barira", "Buldon", "Buluan", "Cotabato City", "Datu Abdullah Sangki",
+      "Datu Anggal Midtimbang", "Datu Blah T. Sinsuat", "Datu Hoffer Ampatuan",
+      "Datu Montawal", "Datu Odin Sinsuat", "Datu Paglas", "Datu Piang", "Datu Salibo",
+      "Datu Saudi-Ampatuan", "Datu Unsay", "General Salipada K. Pendatun", "Guindulungan",
+      "Kabuntalan", "Mamasapano", "Mangudadatu", "Matanog", "Northern Kabuntalan",
+      "Pagalungan", "Paglat", "Pandag", "Parang", "Rajah Buayan", "Shariff Aguak",
+      "Shariff Saydona Mustapha", "South Upi", "Sultan Kudarat", "Sultan Mastura",
+      "Sultan sa Barongis", "Talayan", "Talitay", "Upi"
+    ],
+    "Sulu": [
+      "Banguingui", "Hadji Panglima Tahil", "Indanan", "Jolo", "Kalingalan Caluang",
+      "Lugus", "Luuk", "Maimbung", "Old Panamao", "Omar", "Pandami", "Panglima Estino",
+      "Pangutaran", "Parang", "Pata", "Patikul", "Siasi", "Talipao", "Tapul"
+    ],
+    "Tawi-Tawi": [
+      "Bongao", "Languyan", "Mapun", "Panglima Sugala", "Sapa-Sapa", "Sibutu",
+      "Simunul", "Sitangkai", "South Ubian", "Tandubas", "Turtle Islands"
+    ]
+  }
+};
+
+// --- Generate Venues Function ---
+function generateVenuesForLocation(
+  location: string,
+  province: string,
+  baseIndex: number
+): Venue[] {
+  const venues: Venue[] = [];
+  const numVenues = 3 + Math.floor(Math.random() * 2); // 3-4 venues per location
+  
+  // Select random templates ensuring variety
+  const shuffledTemplates = [...VENUE_TEMPLATES].sort(() => Math.random() - 0.5);
+  
+  for (let i = 0; i < numVenues; i++) {
+    const template = shuffledTemplates[i % shuffledTemplates.length];
+    const venueIndex = baseIndex + i;
+    const rating = getRandomRating();
+    
+    venues.push({
+      id: generateId(location, venueIndex),
+      title: `${template.titlePrefix} ${location}`,
+      location,
+      province,
+      price: getRandomPrice(template.priceRange),
+      rating,
+      reviews: getRandomReviews(),
+      images: [...template.images],
+      description: template.descriptionTemplate.replace('{location}', location),
+      category: template.category,
+      guestCount: getRandomInRange(template.guestRange),
+      bedroomCount: getRandomInRange(template.bedroomRange),
+      bathroomCount: getRandomInRange(template.bathroomRange),
+      host: getRandomHost(venueIndex),
+      offers: [...template.offers],
+      activities: template.activitiesTemplate.map(a => `${a} in ${location}`),
+      ratingCategories: generateRatingCategories(rating)
+    });
+  }
+  
+  return venues;
+}
+
+// --- Generate All Venues ---
+function generateAllVenues(): Venue[] {
+  const allVenues: Venue[] = [];
+  let globalIndex = 0;
+  
+  for (const [region, provinces] of Object.entries(MUNICIPALITIES)) {
+    for (const [province, locations] of Object.entries(provinces)) {
+      for (const location of locations) {
+        const venues = generateVenuesForLocation(location, province, globalIndex);
+        allVenues.push(...venues);
+        globalIndex += venues.length;
+      }
+    }
+  }
+  
+  return allVenues;
+}
+
+export const HARDCODED_VENUES: Venue[] = generateAllVenues();
+
+// --- Helper function to get venues by location ---
+export function getVenuesByLocation(locationName: string): Venue[] {
+  return HARDCODED_VENUES.filter(
+    venue => venue.location.toLowerCase() === locationName.toLowerCase()
+  );
+}
+
+// --- Helper function to get venues by province ---
+export function getVenuesByProvince(provinceName: string): Venue[] {
+  return HARDCODED_VENUES.filter(
+    venue => venue.province.toLowerCase() === provinceName.toLowerCase()
+  );
+}
+
+// --- Helper function to get venue by ID ---
+export function getVenueById(id: string): Venue | undefined {
+  return HARDCODED_VENUES.find(venue => venue.id === id);
+}
+
+// --- Helper function to search venues ---
+export function searchVenues(query: string): Venue[] {
+  const lowerQuery = query.toLowerCase();
+  return HARDCODED_VENUES.filter(
+    venue =>
+      venue.title.toLowerCase().includes(lowerQuery) ||
+      venue.location.toLowerCase().includes(lowerQuery) ||
+      venue.province.toLowerCase().includes(lowerQuery) ||
+      venue.category.toLowerCase().includes(lowerQuery)
+  );
+}
