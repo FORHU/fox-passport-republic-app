@@ -1,50 +1,137 @@
 "use client";
 
-import { Suspense } from "react";
+import { Suspense, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { Menu, X, ChevronDown } from "lucide-react"; 
+import { useRouter } from "next/navigation"; 
+import { 
+  Menu, X, ChevronDown, 
+  Home, Tent, ConciergeBell,
+  ArrowRight 
+} from "lucide-react"; 
+
 import AuthModal from "./AuthModal";
-import { useNavbar } from "../hooks/useNavbar";
-import { NAV_MENU } from "../config/navMenuData"; 
+import { useNavbar } from "@/src/hooks/useNavbar"; 
+import { useAuthStore } from "@/src/store/useAuthStore"; 
 
-function NavbarContent() {
-  const { 
-    isScrolled, mobileMenuOpen, setMobileMenuOpen, 
-    activeDropdown, setActiveDropdown, 
-    openLogin, openSignup, styles 
-  } = useNavbar();
+// --- HOST MODAL (Internal Component) ---
+interface HostModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  onOptionClick: () => void;
+}
 
-  // Helper Component (Internal)
-  const NavItemWithDropdown = ({ title, id, items, alignRight = false }: { title: string, id: string, items: any[], alignRight?: boolean }) => (
-    <div 
-      className="relative group h-full flex items-center"
-      onMouseEnter={() => setActiveDropdown(id)}
-      onMouseLeave={() => setActiveDropdown(null)}
-    >
-      <button className={`flex items-center gap-1 hover:underline decoration-2 underline-offset-8 outline-none ${styles.textColorClass}`}>
-        {title}
-        <ChevronDown className={`w-4 h-4 transition-transform duration-200 ${activeDropdown === id ? "rotate-180" : ""}`} />
-      </button>
+const HostModal = ({ isOpen, onClose, onOptionClick }: HostModalProps) => {
+  // ✅ NEW STATE: Track which option is selected
+  const [selectedOption, setSelectedOption] = useState<string | null>(null);
 
-      {/* DROPDOWN MENU */}
-      <div className={`absolute top-full ${alignRight ? "right-0 origin-top-right" : "left-0 origin-top-left"} pt-4 w-64 transition-all duration-200 ${activeDropdown === id ? "opacity-100 visible translate-y-0" : "opacity-0 invisible -translate-y-2"}`}>
-        <div className="bg-white rounded-xl shadow-xl border border-gray-100 overflow-hidden py-2">
-          {items.map((item, idx) => {
-            const Icon = item.icon; 
+  if (!isOpen) return null;
+
+  const options = [
+    { label: "Home", icon: Home, color: "text-blue-500" },
+    { label: "Experience", icon: Tent, color: "text-orange-500" }, 
+    { label: "Service", icon: ConciergeBell, color: "text-gray-700" }, 
+  ];
+
+  const handleNext = () => {
+    if (selectedOption) {
+      onOptionClick(); // Only proceed if an option is selected
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/40 backdrop-blur-sm p-4 animate-in fade-in duration-200">
+      
+      <div className="relative w-full max-w-3xl bg-white rounded-2xl shadow-2xl p-8 pb-24 flex flex-col">
+        
+        {/* Close Button */}
+        <button 
+          onClick={onClose}
+          className="absolute top-4 right-4 p-2 hover:bg-gray-100 rounded-full transition text-gray-500"
+        >
+          <X size={24} />
+        </button>
+
+        <h2 className="text-2xl font-bold text-center text-gray-800 mb-10">
+          What would you like to host?
+        </h2>
+
+        {/* Options Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {options.map((opt, idx) => {
+            const Icon = opt.icon;
+            const isSelected = selectedOption === opt.label;
+
             return (
-              <Link key={idx} href={item.href} className="flex items-center gap-3 px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 hover:text-pink-600 font-medium transition-colors">
-                <div className="p-2 bg-gray-100 rounded-full text-gray-500 group-hover:text-pink-600 group-hover:bg-pink-50 transition-colors">
-                   <Icon className="w-4 h-4" />
+              <button 
+                key={idx}
+                onClick={() => setSelectedOption(opt.label)} 
+                className={`group flex flex-col items-center justify-center p-8 border-2 rounded-2xl transition-all duration-300 bg-white
+                  ${isSelected 
+                    ? "border-pink-600 bg-pink-50 shadow-lg scale-105" 
+                    : "border-gray-100 hover:border-gray-300 hover:shadow-xl"
+                  }
+                `}
+              >
+                <div className="mb-6 transform transition-transform duration-300 group-hover:scale-110">
+                  <Icon size={64} className={opt.color} strokeWidth={1} /> 
                 </div>
-                {item.label}
-              </Link>
-            );
+                <span className={`text-lg font-bold ${isSelected ? "text-pink-600" : "text-gray-800"}`}>
+                  {opt.label}
+                </span>
+              </button>
+            )
           })}
         </div>
+
+        {/* ✅ THE NEXT BUTTON (Now Logic-Aware) */}
+        <button 
+          onClick={handleNext} 
+          disabled={!selectedOption} 
+          className={`absolute bottom-8 right-8 px-8 py-3 rounded-lg font-bold transition-all flex items-center gap-2
+            ${selectedOption 
+              ? "bg-pink-600 text-white hover:bg-pink-700 hover:scale-105 shadow-md cursor-pointer" 
+              : "bg-gray-200 text-gray-400 cursor-not-allowed"
+            }
+          `}
+        >
+          Next
+          <ArrowRight size={18} />
+        </button>
+
       </div>
     </div>
   );
+};
+
+// --- MAIN NAVBAR CONTENT ---
+
+function NavbarContent() {
+  const router = useRouter();
+  const [isHostModalOpen, setHostModalOpen] = useState(false);
+
+  const { user } = useAuthStore(); 
+  const isAuthenticated = !!user;
+
+  const { 
+    isScrolled, mobileMenuOpen, setMobileMenuOpen, 
+    openLogin, openSignup, styles 
+  } = useNavbar();
+
+  // --- LOGIC: HOST MODAL NEXT CLICK ---
+  const handleHostOptionClick = () => {
+    setHostModalOpen(false);
+    
+    if (isAuthenticated) {
+      router.push("/foxerDashboard"); 
+    } else {
+      openLogin(); 
+    }
+  };
+
+  const handleUserDashboardClick = () => {
+     router.push("/authenticatedUser");
+  };
 
   return (
     <>
@@ -71,27 +158,44 @@ function NavbarContent() {
           {/* DESKTOP RIGHT */}
           <div className="hidden md:flex flex-shrink-0 h-[80px] items-center gap-6">
             <div className={`flex items-center gap-6 text-sm font-bold transition-colors duration-300 ${styles.mainLinkClass}`}>
-              <NavItemWithDropdown title="Become a Foxer" id="business" items={NAV_MENU.business} alignRight={true} />
+              <button 
+                onClick={() => setHostModalOpen(true)}
+                className={`hover:underline decoration-2 underline-offset-8 outline-none ${styles.textColorClass}`}
+              >
+                Become a Foxer
+              </button>
               <Link href="#">Write a Review</Link>
               <Link href="#">For Businesses</Link>
             </div>
+            
             <div className="flex items-center gap-3">
-              <button 
-                onClick={openLogin} 
-                className={`px-5 py-2.5 text-sm font-bold rounded-full border-2 transition-all duration-300 ${
-                  isScrolled 
-                    ? "border-gray-800 text-gray-800 hover:bg-gray-100" 
-                    : "border-white/80 text-white hover:bg-white/20"
-                }`}
-              >
-                Log In
-              </button>
-              <button 
-                onClick={openSignup} 
-                className="px-5 py-2.5 text-sm font-bold bg-[#E31C79] border-2 border-[#E31C79] text-white rounded-full hover:bg-pink-700 shadow-md transition-all duration-300"
-              >
-                Sign Up
-              </button>
+              {!isAuthenticated ? (
+                <>
+                  <button 
+                    onClick={openLogin} 
+                    className={`px-5 py-2.5 text-sm font-bold rounded-full border-2 transition-all duration-300 ${
+                      isScrolled 
+                        ? "border-gray-800 text-gray-800 hover:bg-gray-100" 
+                        : "border-white/80 text-white hover:bg-white/20"
+                    }`}
+                  >
+                    Log In
+                  </button>
+                  <button 
+                    onClick={openSignup} 
+                    className="px-5 py-2.5 text-sm font-bold bg-[#E31C79] border-2 border-[#E31C79] text-white rounded-full hover:bg-pink-700 shadow-md transition-all duration-300"
+                  >
+                    Sign Up
+                  </button>
+                </>
+              ) : (
+                <button 
+                  onClick={handleUserDashboardClick}
+                  className="px-5 py-2.5 text-sm font-bold bg-[#E31C79] text-white rounded-full hover:bg-pink-700 shadow-md transition-all duration-300 flex items-center gap-2"
+                >
+                  Dashboard
+                </button>
+              )}
             </div>
           </div>
 
@@ -113,52 +217,42 @@ function NavbarContent() {
         {/* MOBILE MENU */}
         {mobileMenuOpen && (
           <div className="absolute top-[100%] left-0 w-full bg-pink-950/80 backdrop-blur-xl shadow-xl border-t border-pink-500/20 flex flex-col p-5 animate-in slide-in-from-top-2 md:hidden max-h-[80vh] overflow-y-auto">
-            <MobileSection title="Venues" items={NAV_MENU.venues} />
-            <MobileSection title="Catering" items={NAV_MENU.catering} />
-            <MobileSection title="Photography" items={NAV_MENU.photography} />
-            <MobileSection title="Become a Foxer" items={NAV_MENU.business} />
-    
-            <hr className="border-pink-500/20 my-4" />
-            <div className="flex flex-col gap-3 py-2 text-sm font-semibold text-gray-300">
-               <Link href="#" onClick={() => setMobileMenuOpen(false)}>Write a Review</Link>
-               <Link href="#" onClick={() => setMobileMenuOpen(false)}>For Businesses</Link>
+            <div className="mb-4">
+              <button 
+                onClick={() => { setMobileMenuOpen(false); setHostModalOpen(true); }}
+                className="flex items-center gap-2 mb-2 text-pink-500 font-bold"
+              >
+                  Become a Foxer
+              </button>
             </div>
             <hr className="border-pink-500/20 my-4" />
-            <div className="grid grid-cols-2 gap-3">
-               <button onClick={() => { openLogin(); setMobileMenuOpen(false); }} className="w-full py-3 rounded-lg border border-pink-500/30 text-white text-xs font-bold hover:bg-pink-500/10">Log In</button>
-               <button onClick={() => { openSignup(); setMobileMenuOpen(false); }} className="w-full py-3 rounded-lg bg-[#E31C79] text-white text-xs font-bold hover:bg-pink-700">Sign Up</button>
-            </div>
+            {!isAuthenticated ? (
+              <div className="grid grid-cols-2 gap-3">
+                <button onClick={() => { openLogin(); setMobileMenuOpen(false); }} className="w-full py-3 rounded-lg border border-pink-500/30 text-white text-xs font-bold hover:bg-pink-500/10">Log In</button>
+                <button onClick={() => { openSignup(); setMobileMenuOpen(false); }} className="w-full py-3 rounded-lg bg-[#E31C79] text-white text-xs font-bold hover:bg-pink-700">Sign Up</button>
+              </div>
+            ) : (
+               <button 
+                 onClick={() => { setMobileMenuOpen(false); handleUserDashboardClick(); }} 
+                 className="w-full py-3 rounded-lg bg-[#E31C79] text-white text-xs font-bold hover:bg-pink-700"
+               >
+                 Go to Dashboard
+               </button>
+            )}
           </div>
         )}
       </nav>
+
+      {/* --- MODALS --- */}
       <AuthModal />
+      <HostModal 
+        isOpen={isHostModalOpen} 
+        onClose={() => setHostModalOpen(false)} 
+        onOptionClick={handleHostOptionClick} 
+      />
     </>
   );
 }
-
-// Mobile Section for dark theme
-const MobileSection = ({ title, items }: any) => {
-  const SectionIcon = items[0].icon; 
-
-  return (
-    <div className="mb-4">
-      <div className="flex items-center gap-2 mb-2 text-pink-500 font-bold">
-          <SectionIcon className="w-5 h-5" /> {title}
-      </div>
-      <div className="pl-7 flex flex-col gap-2">
-          {items.map((i: any, idx: number) => {
-             const ItemIcon = i.icon;
-             return (
-               <Link key={idx} href={i.href} className="flex items-center gap-2 text-white/70 text-sm font-medium hover:text-pink-500">
-                 <ItemIcon className="w-4 h-4 text-white/50" />
-                 {i.label}
-               </Link>
-             )
-          })}
-      </div>
-    </div>
-  );
-};
 
 export default function Navbar() {
   return <Suspense fallback={<div className="h-[80px]" />}><NavbarContent /></Suspense>;

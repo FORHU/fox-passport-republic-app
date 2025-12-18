@@ -10,7 +10,6 @@ export default function AuthenticatedLayout({
   return (
     <RequireAuth>
       <div className="min-h-screen bg-gray-50">
-        {/* You can add a Sidebar or TopNav specific to logged in users here */}
         <main className="w-full">
             {children}
         </main>

@@ -12,6 +12,7 @@ interface AuthInputProps extends React.InputHTMLAttributes<HTMLInputElement> {
 export const AuthInput = ({ label, error, register, name, type = "text", required = true, ...props }: AuthInputProps) => (
   <div className="flex flex-col gap-0.5">
     <div className="flex justify-between">
+      {/* LABEL: Gray-500 for standard light theme text */}
       <label className="text-[10px] font-bold uppercase text-gray-500 tracking-wide">
         {label} {!required && <span className="text-gray-400 font-normal normal-case">(Optional)</span>}
       </label>
@@ -20,7 +21,7 @@ export const AuthInput = ({ label, error, register, name, type = "text", require
       type={type}
       {...register(name)}
       {...props}
-      className={`w-full p-2 text-sm bg-gray-50 border rounded-md focus:ring-1 focus:ring-pink-500 focus:outline-none transition ${
+      className={`w-full p-2 text-sm bg-gray-50 text-gray-900 border rounded-md focus:ring-1 focus:ring-pink-500 focus:outline-none transition ${
         error ? 'border-red-500 focus:ring-red-200' : 'border-gray-200'
       }`}
     />

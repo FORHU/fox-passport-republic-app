@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import "cesium/Build/Cesium/Widgets/widgets.css";
 import "./globals.css";
-import Navbar from "@/src/components/Navbar"; 
 import Footer from "@/src/components/Footer";
 import { Toaster } from 'sonner';
 
@@ -30,8 +29,6 @@ export default function RootLayout({
 
           {/* 3. Your Auth Modal sits here */}
           <AuthModal />
-
-          <Navbar />
           <main className="min-h-screen">
             {children}
           </main>
