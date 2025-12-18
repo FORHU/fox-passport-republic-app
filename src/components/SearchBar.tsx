@@ -1,4 +1,3 @@
-// src/components/SearchBar.tsx
 "use client";
 import { Search } from "lucide-react";
 import { useRouter } from "next/navigation";
@@ -20,8 +19,8 @@ export default function SearchBar({ isHero = false, onSearchClick }: Props) {
   const {
     where, selectedLocation, checkIn, checkOut, startTime, endTime, guestCounts,
     guestLabel, updateGuestCount, activeSection, handleTimeSelect,
+    showLocationPicker, setShowLocationPicker, 
     showDatePicker, setShowDatePicker, 
-    showLocationPicker, setShowLocationPicker, // Ensure these are exposed from your hook
     showGuestPicker, setShowGuestPicker, 
     searchBarRef, formattedDates,
     openSection, handleDateSelect, handleLocationSelect
@@ -54,7 +53,7 @@ export default function SearchBar({ isHero = false, onSearchClick }: Props) {
         onClick={(e) => {
            e.stopPropagation();
            openSection('where');
-           setShowLocationPicker(true); // <--- OPEN PICKER
+           setShowLocationPicker(true); 
            setShowDatePicker(false);
            setShowGuestPicker(false);
         }}
@@ -125,7 +124,7 @@ export default function SearchBar({ isHero = false, onSearchClick }: Props) {
       )}
       
       {showDatePicker && (
-        <div className="absolute top-full left-0 mt-4 w-full md:w-[850px] bg-white rounded-3xl shadow-xl border border-gray-100 overflow-hidden z-[9999] flex flex-col max-h-[85vh] overflow-y-auto custom-scrollbar">
+        <div className="absolute top-full left-0 mt-4 w-full md:w-[850px] bg-white rounded-3xl shadow-xl border border-gray-100 overflow-hidden z-9999 flex flex-col max-h-[85vh] overflow-y-auto custom-scrollbar">
            <div className="p-4 md:p-6">
               <DatePicker 
                 onSelectDates={handleDateSelect} 

@@ -11,7 +11,6 @@ export function AuthStoreProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     const checkSession = () => {
-      // 1. Check local storage
       const storedUser = localStorage.getItem('fox_user');
       
       if (storedUser) {
@@ -23,7 +22,6 @@ export function AuthStoreProvider({ children }: { children: React.ReactNode }) {
         }
       } 
       
-      // 2. CRITICAL: This MUST run to stop the spinner
       setLoading(false);
     };
 

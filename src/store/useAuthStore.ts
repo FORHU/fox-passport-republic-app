@@ -6,7 +6,6 @@ interface AuthState {
   // State
   isAuthenticated: boolean;
   isLoading: boolean;
-  user: any | null; // Replace 'any' with your User type if you have one
   isOpen: boolean;
   view: AuthView;
 
@@ -22,7 +21,7 @@ interface AuthState {
 
 export const useAuthStore = create<AuthState>((set) => ({
   isAuthenticated: false,
-  isLoading: true, // Default to true to check session on load
+  isLoading: true, 
   user: null,
   isOpen: false,
   view: 'login',

@@ -55,7 +55,7 @@ export default function VenueDetailsPage() {
       
       {/* --- DIALOG/LIGHTBOX GALLERY MODAL --- */}
       {gallery.isOpen && (
-        <div className="fixed inset-0 z-[60] bg-black/95 backdrop-blur-sm flex flex-col animate-in fade-in duration-200 h-screen max-h-screen overflow-hidden">
+        <div className="fixed inset-0 z-60 bg-black/95 backdrop-blur-sm flex flex-col animate-in fade-in duration-200 h-screen max-h-screen overflow-hidden">
           
           {/* Top Bar - Title & Close */}
           <div className="flex justify-between items-center px-6 py-4 bg-black/50 text-white shrink-0 z-20 absolute top-0 left-0 right-0 border-b border-white/10">
@@ -342,8 +342,6 @@ export default function VenueDetailsPage() {
         </div>
 
         {/* Reviews */}
-        {/* Reviews (Yelp Style - Single Column + Elite Badge look) */}
-        {/* Reviews (Yelp Style - Card + Single Column) */}
         <div className="mt-8 bg-white p-6 rounded-md shadow-sm border border-gray-200">
            <h2 className="text-2xl font-bold mb-8 text-gray-900">Recommended Reviews</h2>
            
