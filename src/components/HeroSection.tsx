@@ -30,7 +30,59 @@ const HoverText = ({ text, className }: { text: string; className?: string }) =>
   );
 };
 
-// Helper Component for Dropdowns
+// Mobile Dropdown Component
+const MobileNavDropdown = ({ 
+  title, 
+  id, 
+  items, 
+  activeDropdown, 
+  setActiveDropdown 
+}: { 
+  title: string; 
+  id: string; 
+  items: any[]; 
+  activeDropdown: string | null; 
+  setActiveDropdown: (id: string | null) => void; 
+}) => {
+  const isOpen = activeDropdown === id;
+  
+  return (
+    <div className="relative">
+      <button 
+        onClick={() => setActiveDropdown(isOpen ? null : id)}
+        className="flex items-center gap-1 text-white text-sm font-semibold hover:text-pink-300 transition-colors"
+      >
+        {title}
+        <ChevronDown className={`w-3 h-3 transition-transform duration-200 ${isOpen ? "rotate-180" : ""}`} />
+      </button>
+
+      {/* Mobile Dropdown Menu */}
+      {isOpen && (
+        <div className="absolute top-full left-1/2 -translate-x-1/2 pt-2 w-48 z-50">
+          <div className="bg-white rounded-xl shadow-xl border border-gray-100 overflow-hidden py-1">
+            {items.map((item, idx) => {
+              const Icon = item.icon; 
+              return (
+                <a 
+                  key={idx} 
+                  href={item.href} 
+                  className="flex items-center gap-2 px-3 py-2 text-xs text-gray-700 hover:bg-gray-50 hover:text-pink-600 font-medium transition-colors"
+                >
+                  <div className="p-1.5 bg-gray-100 rounded-full text-gray-500">
+                    <Icon className="w-3 h-3" />
+                  </div>
+                  {item.label}
+                </a>
+              );
+            })}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+// Desktop Dropdown Component
 const NavItemWithDropdown = ({ 
   title, 
   id, 
@@ -76,6 +128,7 @@ const NavItemWithDropdown = ({
 export default function HeroSection() {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
+  const [mobileActiveDropdown, setMobileActiveDropdown] = useState<string | null>(null);
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -87,6 +140,14 @@ export default function HeroSection() {
     return () => clearInterval(interval);
   }, []);
 
+  // Close mobile dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = () => setMobileActiveDropdown(null);
+    if (mobileActiveDropdown) {
+      document.addEventListener('click', handleClickOutside);
+      return () => document.removeEventListener('click', handleClickOutside);
+    }
+  }, [mobileActiveDropdown]);
 
   return (
     <section className="relative w-full h-[400px] md:h-[850px] bg-black flex items-center overflow-visible transition-all duration-300">
@@ -126,13 +187,41 @@ export default function HeroSection() {
             <HoverText text="Plan your next event with FoxPassport" />
           </p>
 
-          {/* SEARCH BAR - z-0 relative to stay below navbar */}
+          {/* SEARCH BAR */}
           <div className="w-full max-w-[850px] mb-4 md:mb-6 relative z-40">
             <SearchBar isHero={true} />
           </div>
 
-          {/* NAVIGATION DROPDOWNS */}
-          <div className="w-full max-w-[850px] hidden md:flex justify-start gap-8 text-sm px-6">
+          {/* MOBILE NAVIGATION DROPDOWNS */}
+          <div 
+            className="md:hidden w-full max-w-[850px] flex justify-center gap-6 text-sm px-2 mb-4"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <MobileNavDropdown 
+              title="Venues" 
+              id="venues-mobile" 
+              items={NAV_MENU.venues} 
+              activeDropdown={mobileActiveDropdown} 
+              setActiveDropdown={setMobileActiveDropdown} 
+            />
+            <MobileNavDropdown 
+              title="Catering" 
+              id="catering-mobile" 
+              items={NAV_MENU.catering} 
+              activeDropdown={mobileActiveDropdown} 
+              setActiveDropdown={setMobileActiveDropdown} 
+            />
+            <MobileNavDropdown 
+              title="Photography" 
+              id="photography-mobile" 
+              items={NAV_MENU.photography} 
+              activeDropdown={mobileActiveDropdown} 
+              setActiveDropdown={setMobileActiveDropdown} 
+            />
+          </div>
+
+          {/* DESKTOP NAVIGATION DROPDOWNS */}
+          <div className="hidden md:flex w-full max-w-[850px] flex-wrap justify-start gap-8 text-sm px-6">
             <NavItemWithDropdown title="Venues" id="venues" items={NAV_MENU.venues} activeDropdown={activeDropdown} setActiveDropdown={setActiveDropdown} />
             <NavItemWithDropdown title="Catering" id="catering" items={NAV_MENU.catering} activeDropdown={activeDropdown} setActiveDropdown={setActiveDropdown} />
             <NavItemWithDropdown title="Photography" id="photography" items={NAV_MENU.photography} activeDropdown={activeDropdown} setActiveDropdown={setActiveDropdown} />

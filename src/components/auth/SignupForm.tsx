@@ -2,14 +2,39 @@
 
 import React from 'react';
 import Image from 'next/image'; 
-import { useForm, SubmitHandler } from 'react-hook-form';
+import { useForm, SubmitHandler, UseFormRegister, FieldError } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Loader2, Mail, X } from 'lucide-react'; 
 
 import { useSignup } from '@/src/hooks/useAuth';
 import { signupSchema, SignupFormData } from '@/src/lib/schema';
-import { AuthInput } from './AuthInput';
 import { useAuthStore } from '@/src/store/useAuthStore';
+
+// Responsive Input - compact on mobile, matching social buttons on desktop
+interface CompactInputProps extends React.InputHTMLAttributes<HTMLInputElement> {
+  label: string;
+  name: string;
+  register: UseFormRegister<any>;
+  error?: FieldError;
+  required?: boolean;
+}
+
+const CompactInput = ({ label, error, register, name, type = "text", required = true, ...props }: CompactInputProps) => (
+  <div className="flex flex-col gap-0.5">
+    <label className="text-[8px] md:text-[10px] font-bold uppercase text-gray-500 tracking-wide">
+      {label} {!required && <span className="text-gray-400 font-normal normal-case">(Optional)</span>}
+    </label>
+    <input
+      type={type}
+      {...register(name)}
+      {...props}
+      className={`w-full px-2 md:px-3 text-xs md:text-sm bg-gray-50 text-gray-900 border rounded md:rounded-lg focus:ring-1 focus:ring-pink-500 focus:outline-none focus:bg-white transition h-6 md:h-8 ${
+        error ? 'border-red-500' : 'border-gray-200'
+      }`}
+    />
+    {error && <span className="text-[8px] md:text-[10px] text-red-500">{error.message}</span>}
+  </div>
+);
 
 export default function SignupForm() {
   const signupMutation = useSignup();
@@ -22,21 +47,18 @@ export default function SignupForm() {
   const onSignup: SubmitHandler<SignupFormData> = (data) => signupMutation.mutate(data);
 
   return (
-    // ROOT: Flex column to stack Header -> Middle -> Footer
     <div className="flex flex-col h-full w-full bg-white">
       
-      {/* --- 1. COMPACT HEADER --- */}
-      <div className="relative px-5 pt-5 pb-2 text-center flex-shrink-0 z-10 bg-white">
+      {/* --- HEADER --- */}
+      <div className="relative px-3 md:px-5 pt-2 md:pt-4 pb-1 md:pb-2 text-center flex-shrink-0 bg-white">
         <button 
           onClick={close} 
-          className="absolute top-3 right-3 p-1.5 hover:bg-gray-100 rounded-full transition text-gray-500"
+          className="absolute top-1 md:top-3 right-1.5 md:right-3 p-1 md:p-1.5 hover:bg-gray-100 rounded-full transition text-gray-500"
         >
-          <X size={18} />
+          <X className="w-3.5 h-3.5 md:w-[18px] md:h-[18px]" />
         </button>
         <div className="flex flex-col items-center">
-            
-            {/* Smaller Logo (w-12) */}
-            <div className="relative w-12 h-12 mb-2">
+            <div className="relative w-7 h-7 md:w-10 md:h-10 mb-0.5 md:mb-1">
                <Image 
                  src="/logofoxpassport.png" 
                  alt="FoxPassport Logo" 
@@ -45,12 +67,11 @@ export default function SignupForm() {
                  priority
                />
             </div>
-
-            <h2 className="text-lg font-bold text-gray-800 tracking-tight">
-              Sign in to FoxPassport
+            <h2 className="text-xs md:text-base font-bold text-gray-800">
+              Sign up for FoxPassport
             </h2>
-            <p className="text-[10px] text-gray-500 mt-1 max-w-xs mx-auto leading-tight">
-              By continuing, you agree to FoxPassport’s{' '}
+            <p className="text-[7px] md:text-[9px] text-gray-500 mt-0.5 max-w-[160px] md:max-w-[220px] mx-auto leading-tight">
+              By continuing, you agree to FoxPassport's{' '}
               <a href="#" className="text-blue-600 hover:underline">Terms of Service</a>
               {' '}and{' '}
               <a href="#" className="text-blue-600 hover:underline">Privacy Policy</a>.
@@ -58,91 +79,56 @@ export default function SignupForm() {
         </div>
       </div>
 
-      {/* --- 2. COMPACT MIDDLE (Scrolls) --- */}
-      {/* flex-1 + min-h-0 is the magic combo that allows scrolling without breaking flexbox */}
-      <div className="flex-1 min-h-0 overflow-y-auto px-5 py-2 custom-scrollbar">
-        <form onSubmit={handleSubmit(onSignup)} className="space-y-2 mt-1">
-            <AuthInput 
-              label="Email" 
-              name="email" 
-              type="email" 
-              register={register} 
-              error={errors.email} 
-            />
-            <AuthInput 
-              label="Username" 
-              name="username" 
-              register={register} 
-              error={errors.username} 
-            />
-            <AuthInput 
-              label="Password" 
-              name="password" 
-              type="password" 
-              register={register} 
-              error={errors.password} 
-            />
+      {/* --- SCROLLABLE CONTENT --- */}
+      <div className="flex-1 min-h-0 overflow-y-auto px-3 md:px-5 py-1 md:py-2 custom-scrollbar">
+        <form onSubmit={handleSubmit(onSignup)} className="space-y-1 md:space-y-1.5">
+            <CompactInput label="Email" name="email" type="email" register={register} error={errors.email} />
+            <CompactInput label="Username" name="username" register={register} error={errors.username} />
+            <CompactInput label="Password" name="password" type="password" register={register} error={errors.password} />
             
-            {/* Compact Optional Section */}
-            <div className="pt-2 border-t border-gray-100 mt-2">
-                <p className="text-[9px] font-bold text-gray-400 uppercase mb-1">Optional Details</p>
-                <div className="space-y-2">
-                    <AuthInput 
-                        label="Full Name" 
-                        name="name" 
-                        required={false}
-                        register={register} 
-                        error={errors.name} 
-                    />
-                    <AuthInput 
-                        label="Mobile Number" 
-                        name="mobileNumber" 
-                        type="tel"
-                        required={false}
-                        register={register} 
-                        error={errors.mobileNumber} 
-                    />
+            {/* Optional Section */}
+            <div className="pt-1 md:pt-1.5 border-t border-gray-100 mt-0.5 md:mt-1">
+                <p className="text-[7px] md:text-[8px] font-bold text-gray-400 uppercase mb-0.5">Optional Details</p>
+                <div className="space-y-1 md:space-y-1.5">
+                    <CompactInput label="Full Name" name="name" required={false} register={register} error={errors.name} />
+                    <CompactInput label="Mobile Number" name="mobileNumber" type="tel" required={false} register={register} error={errors.mobileNumber} />
                 </div>
             </div>
 
             <button 
               type="submit" 
               disabled={signupMutation.isPending} 
-              className="w-full bg-pink-600 hover:bg-pink-700 text-white py-2 rounded-md text-sm font-bold transition flex justify-center items-center gap-2 mt-3 shadow-sm"
+              className="w-full bg-pink-600 hover:bg-pink-700 text-white rounded md:rounded-lg text-[10px] md:text-xs font-bold transition flex justify-center items-center gap-1 md:gap-2 mt-1.5 md:mt-2 shadow-sm h-7 md:h-9"
             >
-              {signupMutation.isPending && <Loader2 className="animate-spin" size={16} />} 
+              {signupMutation.isPending && <Loader2 className="animate-spin w-3 h-3 md:w-4 md:h-4" />} 
               Create Account
             </button>
         </form>
 
         {/* Separator */}
-        <div className="relative my-4">
+        <div className="relative my-1.5 md:my-3">
             <div className="absolute inset-0 flex items-center">
                <div className="w-full border-t border-gray-200"></div>
             </div>
-            <div className="relative flex justify-center text-[10px] uppercase">
+            <div className="relative flex justify-center text-[7px] md:text-[9px] uppercase">
                <span className="bg-white px-2 text-gray-500">or</span>
             </div>
         </div>
 
-        {/* Smaller Social Buttons Grid */}
-        <div className="grid grid-cols-2 gap-2 pb-4">
+        {/* Social Buttons - same height as inputs */}
+        <div className="grid grid-cols-2 gap-1 md:gap-1.5 pb-1 md:pb-2">
             <SocialButton icon={<GoogleIcon />} text="Google" />
             <SocialButton icon={<AppleIcon />} text="Apple" />
             <SocialButton icon={<FacebookIcon />} text="Facebook" />
-            <SocialButton icon={<Mail size={16} />} text="Email" />
+            <SocialButton icon={<Mail className="w-2.5 h-2.5 md:w-3.5 md:h-3.5" />} text="Email" />
         </div>
       </div>
 
-      {/* --- 3. FIXED FOOTER --- */}
-      {/* flex-shrink-0 guarantees this never disappears */}
-      <div className="p-3 bg-white border-t border-gray-100 text-center text-xs text-gray-600 flex-shrink-0 z-20">
+      {/* --- FOOTER --- */}
+      <div className="py-1.5 md:py-2 px-3 md:px-5 bg-white border-t border-gray-100 text-center text-[10px] md:text-xs text-gray-600 flex-shrink-0">
         <p>
             Already have an account?{" "}
-            <span 
-                onClick={toggleView} 
-                className="text-pink-600 font-bold cursor-pointer hover:underline"
-            >
+            <span onClick={toggleView} className="text-pink-600 font-bold cursor-pointer hover:underline">
                 Log In
             </span>
         </p>
@@ -155,18 +141,18 @@ export default function SignupForm() {
 
 function SocialButton({ icon, text }: { icon: React.ReactNode, text: string }) {
   return (
-    <button type="button" className="w-full flex items-center justify-center gap-2 border border-gray-400 py-2 rounded-lg hover:bg-gray-50 hover:border-gray-900 transition group px-2">
-      <div className="w-4 h-4 flex-shrink-0 text-gray-900 group-hover:text-black">
+    <button type="button" className="w-full flex items-center justify-center gap-1 md:gap-2 border border-gray-300 rounded md:rounded-lg hover:bg-gray-50 hover:border-gray-400 transition group px-1.5 md:px-2 h-6 md:h-8">
+      <div className="w-3 h-3 md:w-3.5 md:h-3.5 flex-shrink-0 text-gray-900">
         {icon}
       </div>
-      <span className="text-xs font-semibold text-gray-700 group-hover:text-black truncate">
+      <span className="text-[9px] md:text-xs font-semibold text-gray-700">
         {text}
       </span>
     </button>
   );
 }
 
-// --- ICONS (Same as before) ---
+// --- ICONS ---
 const GoogleIcon = () => (
   <svg className="w-full h-full" viewBox="0 0 24 24">
     <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4" />
