@@ -16,22 +16,26 @@ export function useNavbar() {
   }, []);
 
   // Derived styles based on state - keep blurry white background, just change text
-  const navBgClass = isScrolled || mobileMenuOpen
+  const isActive = isScrolled || mobileMenuOpen;
+
+  const navBgClass = isActive
     ? "bg-white/30 backdrop-blur-xl border-b border-white/40 shadow-lg"
     : "bg-transparent bg-gradient-to-b from-black/50 to-transparent";
 
-  // Dark text when scrolled, white text when at top
-  const textColorClass = isScrolled 
-    ? "text-gray-800 hover:text-pink-600" 
-    : "text-gray-200 hover:text-white";
-  
-  const logoTextClass = isScrolled 
-    ? "text-gray-800" 
-    : "text-white";
-  
-  const mainLinkClass = isScrolled 
-    ? "text-gray-800 hover:text-pink-600" 
-    : "text-white hover:text-gray-200";
+  // Dark text when active (scrolled or menu open), white text when at top
+  const textColorClass = isActive
+    ? "!text-gray-800 hover:!text-pink-600"
+    : "!text-white hover:!text-gray-200";
+
+  const logoTextClass = isActive ? "!text-gray-800" : "!text-white";
+
+  const mainLinkClass = isActive
+    ? "!text-gray-800 hover:!text-pink-600"
+    : "!text-white hover:!text-gray-200";
+
+  const loginButtonClass = isActive
+    ? "!border-gray-800 !text-gray-800 hover:bg-gray-100"
+    : "!border-white/80 !text-white hover:bg-white/20";
 
   return {
     isScrolled,
@@ -45,7 +49,8 @@ export function useNavbar() {
       navBgClass,
       textColorClass,
       logoTextClass,
-      mainLinkClass
-    }
+      mainLinkClass,
+      loginButtonClass,
+    },
   };
 }

@@ -12,15 +12,10 @@ export default function AuthModal() {
   return (
     <div className="fixed inset-0 z-[999] flex items-center justify-center bg-black/20 p-4 animate-in fade-in duration-200">
       
-      {/* FRAME:
-          - max-h-[85vh]: Slightly shorter to ensure it fits on laptops.
-          - overflow-hidden: Keeps rounded corners clean.
-          - flex: Essential for child layout.
-      */}
-      <div className="relative w-full max-w-[420px] bg-white rounded-xl shadow-2xl flex max-h-[85vh] overflow-hidden">
+      <div className="relative w-full max-w-[520px] bg-white rounded-xl shadow-2xl flex flex-col max-h-[95vh] overflow-hidden">
         
-        {/* Child fills this container */}
-        <div className="w-full h-full">
+        {/* Scrollable container (hidden scrollbar) */}
+        <div className="w-full overflow-y-auto hide-scrollbar">
            {view === 'login' ? <LoginForm /> : <SignupForm />}
         </div>
         

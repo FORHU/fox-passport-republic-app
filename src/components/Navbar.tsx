@@ -134,7 +134,7 @@ function NavbarContent() {
 
   return (
     <>
-      <nav className={`fixed top-0 left-0 w-full z-[100] transition-all duration-300 ${styles.navBgClass}`}>
+      <nav className={`fixed top-0 left-0 w-full z-[100] transition-all duration-500 ease-in-out ${styles.navBgClass}`}>
         
         {/* Container for content alignment */}
         <div className="max-w-[2520px] mx-auto xl:px-20 md:px-10 sm:px-2 px-4">
@@ -152,7 +152,7 @@ function NavbarContent() {
                   className="h-10 md:h-20 w-auto object-contain" 
                   priority 
                 />
-                <span className={`hidden md:block text-2xl font-bold tracking-tight transition-colors duration-300 ${styles.logoTextClass}`}>
+                <span className={`hidden md:block text-2xl font-bold tracking-tight transition-all duration-500 ease-in-out ${styles.logoTextClass}`}>
                   Fox<span className="text-pink-500">Passport</span>
                 </span>
               </Link>
@@ -160,15 +160,19 @@ function NavbarContent() {
 
             {/* DESKTOP MENU */}
             <div className="hidden md:flex flex-row items-center gap-6">
-              <div className={`flex items-center gap-6 text-sm font-bold transition-colors duration-300 ${styles.mainLinkClass}`}>
+              <div className="flex items-center gap-8 text-[15px] font-bold tracking-tight">
                 <button 
                   onClick={() => setHostModalOpen(true)}
-                  className={`hover:underline decoration-2 underline-offset-8 outline-none ${styles.textColorClass}`}
+                  className={`hover:underline decoration-2 underline-offset-8 outline-none transition-all duration-500 ease-in-out ${styles.mainLinkClass}`}
                 >
                   Become a Foxer
                 </button>
-                <Link href="#">Write a Review</Link>
-                <Link href="#">For Businesses</Link>
+                <Link href="#" className={`hover:underline decoration-2 underline-offset-8 transition-all duration-500 ease-in-out ${styles.mainLinkClass}`}>
+                  Write a Review
+                </Link>
+                <Link href="#" className={`hover:underline decoration-2 underline-offset-8 transition-all duration-500 ease-in-out ${styles.mainLinkClass}`}>
+                  For Businesses
+                </Link>
               </div>
               
               <div className="flex items-center gap-3">
@@ -176,17 +180,13 @@ function NavbarContent() {
                   <>
                     <button 
                       onClick={openLogin} 
-                      className={`px-5 py-2.5 text-sm font-bold rounded-full border-2 transition-all duration-300 ${
-                        isScrolled 
-                          ? "border-gray-800 text-gray-800 hover:bg-gray-100" 
-                          : "border-white/80 text-white hover:bg-white/20"
-                      }`}
+                      className={`px-5 py-2.5 text-[15px] font-bold tracking-tight rounded-full border-2 transition-all duration-500 ease-in-out ${styles.loginButtonClass}`}
                     >
                       Log In
                     </button>
                     <button 
                       onClick={openSignup} 
-                      className="px-5 py-2.5 text-sm font-bold bg-[#E31C79] border-2 border-[#E31C79] text-white rounded-full hover:bg-pink-700 shadow-md transition-all duration-300"
+                      className="px-5 py-2.5 text-[15px] font-bold tracking-tight bg-[#E31C79] border-2 border-[#E31C79] text-white rounded-full hover:bg-pink-700 shadow-md transition-all duration-500 ease-in-out"
                     >
                       Sign Up
                     </button>
@@ -194,7 +194,7 @@ function NavbarContent() {
                 ) : (
                   <button 
                     onClick={handleUserDashboardClick}
-                    className="px-5 py-2.5 text-sm font-bold bg-[#E31C79] text-white rounded-full hover:bg-pink-700 shadow-md transition-all duration-300 flex items-center gap-2"
+                    className="px-5 py-2.5 text-[15px] font-bold tracking-tight bg-[#E31C79] text-white rounded-full hover:bg-pink-700 shadow-md transition-all duration-500 ease-in-out flex items-center gap-2"
                   >
                     Dashboard
                   </button>

@@ -10,7 +10,7 @@ import { useLogin } from '@/src/hooks/useAuth';
 import { loginSchema, LoginFormData } from '@/src/lib/schema';
 import { useAuthStore } from '@/src/store/useAuthStore';
 
-// Responsive Input - compact on mobile, matching social buttons on desktop
+// Responsive Input with hairline border
 interface CompactInputProps extends React.InputHTMLAttributes<HTMLInputElement> {
   label: string;
   name: string;
@@ -20,18 +20,18 @@ interface CompactInputProps extends React.InputHTMLAttributes<HTMLInputElement> 
 
 const CompactInput = ({ label, error, register, name, type = "text", ...props }: CompactInputProps) => (
   <div className="flex flex-col gap-0.5">
-    <label className="text-[8px] md:text-[10px] font-bold uppercase text-gray-500 tracking-wide">
+    <label className="text-[8px] md:text-xs font-bold uppercase text-gray-500 tracking-wide">
       {label}
     </label>
     <input
       type={type}
       {...register(name)}
       {...props}
-      className={`w-full px-2 md:px-3 text-xs md:text-sm bg-gray-50 text-gray-900 border rounded md:rounded-lg focus:ring-1 focus:ring-pink-500 focus:outline-none focus:bg-white transition h-6 md:h-8 ${
-        error ? 'border-red-500' : 'border-gray-200'
+      className={`w-full px-2 md:px-4 text-xs md:text-sm bg-gray-50 text-gray-900 border-[0.5px] rounded md:rounded-lg focus:ring-1 focus:ring-pink-500 focus:outline-none focus:bg-white transition h-6 md:h-9 ${
+        error ? 'border-red-400' : 'border-gray-200/80'
       }`}
     />
-    {error && <span className="text-[8px] md:text-[10px] text-red-500">{error.message}</span>}
+    {error && <span className="text-[8px] md:text-xs text-red-500">{error.message}</span>}
   </div>
 );
 
@@ -46,18 +46,18 @@ export default function LoginForm() {
   const onLogin: SubmitHandler<LoginFormData> = (data) => loginMutation.mutate(data);
 
   return (
-    <div className="flex flex-col h-full w-full bg-white">
+    <div className="w-full bg-white">
       
       {/* --- HEADER --- */}
-      <div className="relative px-3 md:px-5 pt-2 md:pt-4 pb-1 md:pb-2 text-center flex-shrink-0 bg-white">
+      <div className="relative px-3 md:px-8 pt-2 md:pt-4 pb-1 md:pb-2 text-center bg-white border-b-[0.5px] border-gray-100">
         <button 
           onClick={close} 
-          className="absolute top-1 md:top-3 right-1.5 md:right-3 p-1 md:p-1.5 hover:bg-gray-100 rounded-full transition text-gray-500"
+          className="absolute top-1 md:top-4 right-1.5 md:right-4 p-1 md:p-2 hover:bg-gray-100 rounded-full transition text-gray-400 hover:text-gray-600"
         >
-          <X className="w-3.5 h-3.5 md:w-[18px] md:h-[18px]" />
+          <X className="w-3.5 h-3.5 md:w-5 md:h-5" />
         </button>
         <div className="flex flex-col items-center">
-            <div className="relative w-7 h-7 md:w-10 md:h-10 mb-0.5 md:mb-1">
+            <div className="relative w-7 h-7 md:w-14 md:h-14 mb-0.5 md:mb-2">
                <Image 
                  src="/logofoxpassport.png" 
                  alt="FoxPassport Logo" 
@@ -66,10 +66,10 @@ export default function LoginForm() {
                  priority
                />
             </div>
-            <h2 className="text-xs md:text-base font-bold text-gray-800">
+            <h2 className="text-xs md:text-lg font-bold text-gray-800">
               Welcome to FoxPassport
             </h2>
-            <p className="text-[7px] md:text-[9px] text-gray-500 mt-0.5 max-w-[160px] md:max-w-[220px] mx-auto leading-tight">
+            <p className="text-[7px] md:text-[13px] text-gray-500 mt-0.5 md:mt-1 max-w-[160px] md:max-w-sm mx-auto leading-tight">
               By continuing, you agree to FoxPassport's{' '}
               <a href="#" className="text-blue-600 hover:underline">Terms of Service</a>
               {' '}and{' '}
@@ -78,43 +78,43 @@ export default function LoginForm() {
         </div>
       </div>
 
-      {/* --- SCROLLABLE CONTENT --- */}
-      <div className="flex-1 min-h-0 overflow-y-auto px-3 md:px-5 py-1 md:py-2 custom-scrollbar">
-        <form onSubmit={handleSubmit(onLogin)} className="space-y-1 md:space-y-2">
+      {/* --- CONTENT (Parent handles scrolling) --- */}
+      <div className="px-3 md:px-8 py-2 md:py-3">
+        <form onSubmit={handleSubmit(onLogin)} className="space-y-1 md:space-y-3">
           <CompactInput label="Username" name="username" type="text" register={register} error={errors.username} />
           <CompactInput label="Password" name="password" type="password" register={register} error={errors.password} />
 
           <button 
             type="submit" 
             disabled={loginMutation.isPending} 
-            className="w-full bg-pink-600 hover:bg-pink-700 text-white rounded md:rounded-lg text-[10px] md:text-xs font-bold transition flex justify-center items-center gap-1 md:gap-2 mt-1.5 md:mt-2 shadow-sm h-7 md:h-9"
+            className="w-full bg-pink-600 hover:bg-pink-700 text-white rounded md:rounded-lg text-[10px] md:text-base font-bold transition flex justify-center items-center gap-1 md:gap-2 mt-1.5 md:mt-2 shadow-sm h-7 md:h-10"
           >
-            {loginMutation.isPending && <Loader2 className="animate-spin w-3 h-3 md:w-4 md:h-4" />} 
+            {loginMutation.isPending && <Loader2 className="animate-spin w-3 h-3 md:w-5 md:h-5" />} 
             Log In
           </button>
         </form>
 
-        {/* Separator */}
-        <div className="relative my-1.5 md:my-3">
+        {/* Hairline Separator */}
+        <div className="relative my-2 md:my-3">
             <div className="absolute inset-0 flex items-center">
-               <div className="w-full border-t border-gray-200"></div>
+               <div className="w-full border-t-[0.5px] border-gray-200/80"></div>
             </div>
-            <div className="relative flex justify-center text-[7px] md:text-[9px] uppercase">
-               <span className="bg-white px-2 text-gray-500">or</span>
+            <div className="relative flex justify-center text-[7px] md:text-xs uppercase">
+               <span className="bg-white px-2 md:px-4 text-gray-400">or</span>
             </div>
         </div>
 
-        {/* Social Buttons - same height as inputs */}
-        <div className="grid grid-cols-2 gap-1 md:gap-1.5 pb-1 md:pb-2">
+        {/* Social Buttons with micro-borders */}
+        <div className="grid grid-cols-2 gap-1 md:gap-2 pb-1 md:pb-2">
             <SocialButton icon={<GoogleIcon />} text="Google" />
             <SocialButton icon={<AppleIcon />} text="Apple" />
             <SocialButton icon={<FacebookIcon />} text="Facebook" />
-            <SocialButton icon={<Mail className="w-2.5 h-2.5 md:w-3.5 md:h-3.5" />} text="Email" />
+            <SocialButton icon={<Mail className="w-2.5 h-2.5 md:w-5 md:h-5" />} text="Email" />
         </div>
       </div>
 
       {/* --- FOOTER --- */}
-      <div className="py-1.5 md:py-2 px-3 md:px-5 bg-white border-t border-gray-100 text-center text-[10px] md:text-xs text-gray-600 flex-shrink-0">
+      <div className="py-1.5 md:py-3 px-3 md:px-8 bg-white border-t-[0.5px] border-gray-100 text-center text-[10px] md:text-sm text-gray-600">
         <p>
            New to FoxPassport?{" "}
            <span onClick={toggleView} className="text-pink-600 font-bold cursor-pointer hover:underline">
@@ -130,11 +130,11 @@ export default function LoginForm() {
 
 function SocialButton({ icon, text }: { icon: React.ReactNode, text: string }) {
   return (
-    <button type="button" className="w-full flex items-center justify-center gap-1 md:gap-2 border border-gray-300 rounded md:rounded-lg hover:bg-gray-50 hover:border-gray-400 transition group px-1.5 md:px-2 h-6 md:h-8">
-      <div className="w-3 h-3 md:w-3.5 md:h-3.5 flex-shrink-0 text-gray-900">
+    <button type="button" className="w-full flex items-center justify-center gap-1 md:gap-3 border-[0.5px] border-gray-200/80 rounded md:rounded-lg hover:bg-gray-50 hover:border-gray-300 transition group px-1.5 md:px-4 h-6 md:h-9">
+      <div className="w-3 h-3 md:w-5 md:h-5 flex-shrink-0 text-gray-900">
         {icon}
       </div>
-      <span className="text-[9px] md:text-xs font-semibold text-gray-700">
+      <span className="text-[9px] md:text-sm font-semibold text-gray-600 group-hover:text-gray-800">
         {text}
       </span>
     </button>

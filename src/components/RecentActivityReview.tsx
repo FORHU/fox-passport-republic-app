@@ -26,21 +26,21 @@ export default function ReviewCard({ review }: ReviewCardProps) {
     <div className="bg-white rounded-xl border border-gray-100 hover:shadow-md transition-all duration-300 overflow-hidden flex flex-col h-full p-3 md:p-4">
       
       {/* User Header - Compacted for 260px */}
-      <div className="flex items-center gap-2 mb-2 flex-shrink-0">
+      <div className="flex items-center gap-2 mb-2 shrink-0">
         <img 
           src={review.user.avatar} 
           alt={review.user.name}
           className="w-7 h-7 rounded-full object-cover border border-gray-100"
         />
         <div className="flex-1 min-w-0">
-          <p className="font-semibold text-gray-900 text-sm truncate">{review.user.name}</p>
+          <p className="font-semibold text-gray-700 text-sm truncate">{review.user.name}</p>
           <p className="text-[11px] text-gray-400 leading-none">wrote a review</p>
         </div>
       </div>
 
       {/* Title & Rating */}
-      <div className="mb-2 flex-shrink-0">
-        <h4 className="font-bold text-sm text-gray-900 leading-tight mb-1 line-clamp-1">{review.title}</h4>
+      <div className="mb-2 shrink-0">
+        <h4 className="font-bold text-sm text-gray-700 leading-tight mb-1 line-clamp-1">{review.title}</h4>
         <div className="flex gap-1">
             {[...Array(5)].map((_, i) => (
             <div key={i} className="w-2.5 h-2.5 rounded-full bg-pink-500" />
@@ -56,12 +56,12 @@ export default function ReviewCard({ review }: ReviewCardProps) {
       </div>
       
       {/* Read more link */}
-      <button className="text-xs text-blue-500 hover:underline text-left mb-2 block flex-shrink-0">
+      <button className="text-xs text-blue-500 hover:underline text-left mb-2 block shrink-0">
         Read more
       </button>
       
       {/* Actions Footer - Compact & Pinned */}
-      <div className="flex items-center gap-3 pt-2 border-t border-gray-100 mt-auto flex-shrink-0">
+      <div className="flex items-center gap-3 pt-2 border-t border-gray-100 mt-auto shrink-0">
         <div className="flex items-center gap-3 text-xs text-gray-400">
           <span className="flex items-center gap-1 hover:text-gray-600 cursor-pointer transition-colors">
             <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
