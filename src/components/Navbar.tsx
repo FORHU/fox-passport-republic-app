@@ -13,6 +13,7 @@ import {
 import AuthModal from "./AuthModal";
 import { useNavbar } from "@/src/hooks/useNavbar"; 
 import { useAuthStore } from "@/src/store/useAuthStore";
+import UserMenuButton from "@/src/components/Users/UserMenuButton";
 
 // --- HOST MODAL (Internal Component) ---
 interface HostModalProps {
@@ -128,10 +129,6 @@ function NavbarContent() {
     }
   };
 
-  const handleUserDashboardClick = () => {
-     router.push("/authenticatedUser");
-  };
-
   return (
     <>
       <nav className={`fixed top-0 left-0 w-full z-[100] transition-all duration-500 ease-in-out ${styles.navBgClass}`}>
@@ -167,10 +164,10 @@ function NavbarContent() {
                 >
                   Become a Foxer
                 </button>
-                <Link href="#" className={`hover:underline decoration-2 underline-offset-8 transition-all duration-500 ease-in-out ${styles.mainLinkClass}`}>
+                <Link href="/reviews" className={`hover:underline decoration-2 underline-offset-8 transition-all duration-500 ease-in-out ${styles.mainLinkClass}`}>
                   Write a Review
                 </Link>
-                <Link href="#" className={`hover:underline decoration-2 underline-offset-8 transition-all duration-500 ease-in-out ${styles.mainLinkClass}`}>
+                <Link href="/business" className={`hover:underline decoration-2 underline-offset-8 transition-all duration-500 ease-in-out ${styles.mainLinkClass}`}>
                   For Businesses
                 </Link>
               </div>
@@ -192,18 +189,16 @@ function NavbarContent() {
                     </button>
                   </>
                 ) : (
-                  <button 
-                    onClick={handleUserDashboardClick}
-                    className="px-5 py-2.5 text-[15px] font-bold tracking-tight bg-[#E31C79] text-white rounded-full hover:bg-pink-700 shadow-md transition-all duration-500 ease-in-out flex items-center gap-2"
-                  >
-                    Dashboard
-                  </button>
+                  <UserMenuButton onBecomeHost={() => setHostModalOpen(true)} />
                 )}
               </div>
             </div>
 
             {/* MOBILE TOGGLE */}
-            <div className="flex md:hidden">
+            <div className="flex md:hidden items-center gap-2">
+              {isAuthenticated && (
+                <UserMenuButton onBecomeHost={() => setHostModalOpen(true)} />
+              )}
               <button 
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)} 
                 className={`p-2 transition-colors duration-300 bg-transparent border-none outline-none ${
@@ -234,7 +229,7 @@ function NavbarContent() {
                 </button>
                 
                 <Link 
-                  href="#" 
+                  href="/reviews" 
                   className="block text-gray-600 font-medium text-sm hover:text-pink-600 hover:bg-pink-50 transition-colors py-3 px-3 rounded-lg"
                   onClick={() => setMobileMenuOpen(false)}
                 >
@@ -242,7 +237,7 @@ function NavbarContent() {
                 </Link>
                 
                 <Link 
-                  href="#" 
+                  href="/business" 
                   className="block text-gray-600 font-medium text-sm hover:text-pink-600 hover:bg-pink-50 transition-colors py-3 px-3 rounded-lg"
                   onClick={() => setMobileMenuOpen(false)}
                 >
@@ -272,7 +267,7 @@ function NavbarContent() {
               ) : (
                 <div className="flex gap-2">
                   <button 
-                    onClick={() => { setMobileMenuOpen(false); handleUserDashboardClick(); }} 
+                    onClick={() => { setMobileMenuOpen(false); router.push("/authenticatedUser"); }} 
                     className="flex-1 py-2.5 rounded-lg bg-[#E31C79] text-white font-semibold hover:bg-pink-700 shadow-sm transition-all text-sm"
                   >
                     Dashboard

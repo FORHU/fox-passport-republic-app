@@ -15,7 +15,7 @@ export interface Venue {
   host: {
     name: string;
     avatar: string;
-    isSuperhost: boolean;
+    isCertifiedFoxer: boolean;
     joined: string;
     description?: string;
     responseRate?: number;
@@ -492,7 +492,7 @@ const getRandomHost = (index: number): Venue["host"] => {
   const name = HOST_NAMES[index % HOST_NAMES.length];
   const year = 2015 + Math.floor(Math.random() * 9);
   const yearsHosting = 2024 - year;
-  const isSuperhost = Math.random() > 0.4;
+  const isCertifiedFoxer = Math.random() > 0.4;
 
   // Dummy Co-hosts
   const coHostName = HOST_NAMES[(index + 5) % HOST_NAMES.length];
@@ -503,7 +503,7 @@ const getRandomHost = (index: number): Venue["host"] => {
   return {
     name,
     avatar: `https://i.pravatar.cc/150?u=${name.toLowerCase()}${index}`,
-    isSuperhost,
+    isCertifiedFoxer,
     joined: `Joined ${year}`,
     description: `Hi! I'm ${name}. I love hosting travelers in our beautiful city. I've been running this guesthouse for ${yearsHosting} years and I make sure every guest feels at home.`,
     responseRate: 100,

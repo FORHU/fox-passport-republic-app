@@ -201,7 +201,7 @@ export default function VenueDetailsPage() {
                <div className="border-t border-gray-100 pt-6 space-y-4">
                  <div className="flex gap-4">
                    <Medal className="w-6 h-6 text-[#E0073B] shrink-0" />
-                   <div><h3 className="font-bold text-gray-700">Superhost</h3><p className="text-gray-500 text-sm">Experienced, highly rated host.</p></div>
+                   <div><h3 className="font-bold text-gray-700">Certified Foxer</h3><p className="text-gray-500 text-sm">Experienced, highly rated host.</p></div>
                  </div>
                  <div className="flex gap-4">
                    <MapPin className="w-6 h-6 text-[#E0073B] shrink-0" />
@@ -391,10 +391,10 @@ export default function VenueDetailsPage() {
                    <div className="flex flex-col items-center justify-center w-[40%] text-center">
                       <div className="relative w-24 h-24 mb-2">
                         <Image src={details.host.avatar} width={96} height={96} className="w-full h-full rounded-full object-cover border border-gray-200" alt="Host" />
-                        {details.host.isSuperhost && <div className="absolute bottom-0 right-0 bg-[#E0073B] text-white rounded-full p-1 border-2 border-white"><Medal className="w-3 h-3" /></div>}
+                        {details.host.isCertifiedFoxer && <div className="absolute bottom-0 right-0 bg-[#E0073B] text-white rounded-full p-1 border-2 border-white"><Medal className="w-3 h-3" /></div>}
                       </div>
                       <h3 className="text-xl font-bold text-gray-700 leading-tight mb-1">{details.host.name}</h3>
-                      {details.host.isSuperhost && <div className="flex items-center gap-1 text-xs font-bold text-gray-600 uppercase tracking-wide">Superhost</div>}
+                      {details.host.isCertifiedFoxer && <div className="flex items-center gap-1 text-xs font-bold text-gray-600 uppercase tracking-wide">Certified Foxer</div>}
                    </div>
                    
                    {/* Stats Side */}
@@ -446,10 +446,10 @@ export default function VenueDetailsPage() {
 
              {/* RIGHT COLUMN - CTA & Details */}
              <div className="flex flex-col gap-3">
-               {/* Superhost / Intro */}
+               {/* Certified Foxer / Intro */}
                 <div className="border-b border-gray-200 pb-2">
-                   <h3 className="text-lg font-bold mb-1 text-gray-700">{details.host.isSuperhost ? `${details.host.name} is a Superhost` : `Hosted by ${details.host.name}`}</h3>
-                   <p className="text-gray-600 text-sm leading-relaxed">Superhosts are experienced, highly rated hosts who are committed to providing great stays for guests.</p>
+                   <h3 className="text-lg font-bold mb-1 text-gray-700">{details.host.isCertifiedFoxer ? `${details.host.name} is a Certified Foxer` : `Hosted by ${details.host.name}`}</h3>
+                   <p className="text-gray-600 text-sm leading-relaxed">Certified Foxers are experienced, highly rated hosts who are committed to providing great stays for guests.</p>
                </div>
 
                {/* Co-hosts */}

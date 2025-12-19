@@ -188,7 +188,7 @@ export default function HeroSection() {
           </p>
 
           {/* SEARCH BAR */}
-          <div className="w-full max-w-[850px] mb-4 md:mb-6 relative z-40">
+          <div className="w-full max-w-[850px] mb-1 md:mb-2 relative z-40">
             <SearchBar isHero={true} />
           </div>
 

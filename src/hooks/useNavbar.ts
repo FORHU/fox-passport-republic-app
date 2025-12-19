@@ -22,21 +22,6 @@ export function useNavbar() {
     ? "bg-white/30 backdrop-blur-xl"
     : "bg-transparent bg-gradient-to-b from-black/50 to-transparent";
 
-  // Dark text when active (scrolled or menu open), white text when at top
-  const textColorClass = isActive
-    ? "!text-gray-800 hover:!text-pink-600"
-    : "!text-white hover:!text-gray-200";
-
-  const logoTextClass = isActive ? "!text-gray-800" : "!text-white";
-
-  const mainLinkClass = isActive
-    ? "!text-gray-800 hover:!text-pink-600"
-    : "!text-white hover:!text-gray-200";
-
-  const loginButtonClass = isActive
-    ? "!border-gray-800 !text-gray-800 hover:bg-gray-100"
-    : "!border-white/80 !text-white hover:bg-white/20";
-
   return {
     isScrolled,
     mobileMenuOpen,
@@ -47,10 +32,14 @@ export function useNavbar() {
     openSignup,
     styles: {
       navBgClass,
-      textColorClass,
-      logoTextClass,
-      mainLinkClass,
-      loginButtonClass,
+      logoTextClass: isActive ? "!text-gray-800" : "!text-white",
+      mainLinkClass: isActive
+        ? "!text-gray-800 hover:!text-pink-600"
+        : "!text-white hover:!text-gray-200",
+      loginButtonClass: isActive
+        ? "border-gray-800 text-gray-800 hover:bg-gray-100"
+        : "border-white/80 text-white hover:bg-white/20",
+      signupBtnClass: "bg-[#E31C79] text-white hover:bg-pink-700 shadow-md",
     },
   };
 }

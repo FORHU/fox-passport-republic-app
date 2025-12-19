@@ -12,16 +12,21 @@ export function useVenuePage() {
   const id = Array.isArray(params?.id) ? params.id[0] : params?.id;
 
   // --- 1. Fetch Data ---
-  const venue = useMemo(() => 
-    HARDCODED_VENUES.find((v) => v.id === id), 
-  [id]);
+  const venue = useMemo(() => HARDCODED_VENUES.find((v) => v.id === id), [id]);
 
   // --- 2. Booking Logic ---
-  const initialCheckIn = searchParams.get("checkIn") ? new Date(searchParams.get("checkIn")!) : null;
-  const initialCheckOut = searchParams.get("checkOut") ? new Date(searchParams.get("checkOut")!) : null;
+  const initialCheckIn = searchParams.get("checkIn")
+    ? new Date(searchParams.get("checkIn")!)
+    : null;
+  const initialCheckOut = searchParams.get("checkOut")
+    ? new Date(searchParams.get("checkOut")!)
+    : null;
   const guestsParam = searchParams.get("guests");
 
-  const [dateRange, setDateRange] = useState<{ start: Date | null; end: Date | null }>({
+  const [dateRange, setDateRange] = useState<{
+    start: Date | null;
+    end: Date | null;
+  }>({
     start: initialCheckIn,
     end: initialCheckOut,
   });
@@ -29,7 +34,9 @@ export function useVenuePage() {
   // Calculate nights
   const nights = useMemo(() => {
     if (dateRange.start && dateRange.end) {
-      const diffTime = Math.abs(dateRange.end.getTime() - dateRange.start.getTime());
+      const diffTime = Math.abs(
+        dateRange.end.getTime() - dateRange.start.getTime()
+      );
       const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
       return diffDays > 0 ? diffDays : 0;
     }
@@ -53,21 +60,32 @@ export function useVenuePage() {
   }, [venue]);
 
   // Mock Rich Data for Sidebar
-  const imageRichData = useMemo(() => images.map((img, idx) => ({
-    src: img,
-    caption: idx === 0 
-      ? `Welcome to ${venue?.title}. This is the main view showing the spacious living area.`
-      : `A detailed look at the property amenities. Every corner is designed with comfort in mind.`,
-    photographer: idx % 2 === 0 ? "Verified Host Photo" : "Professional Photographer"
-  })), [images, venue]);
+  const imageRichData = useMemo(
+    () =>
+      images.map((img, idx) => ({
+        src: img,
+        caption:
+          idx === 0
+            ? `Welcome to ${venue?.title}. This is the main view showing the spacious living area.`
+            : `A detailed look at the property amenities. Every corner is designed with comfort in mind.`,
+        photographer:
+          idx % 2 === 0 ? "Verified Host Photo" : "Professional Photographer",
+      })),
+    [images, venue]
+  );
 
   // Keyboard navigation
-  const handleKeyDown = useCallback((e: KeyboardEvent) => {
-    if (!isGalleryOpen) return;
-    if (e.key === "Escape") setIsGalleryOpen(false);
-    if (e.key === "ArrowRight") setPhotoIndex((prev) => (prev + 1) % images.length);
-    if (e.key === "ArrowLeft") setPhotoIndex((prev) => (prev - 1 + images.length) % images.length);
-  }, [isGalleryOpen, images.length]);
+  const handleKeyDown = useCallback(
+    (e: KeyboardEvent) => {
+      if (!isGalleryOpen) return;
+      if (e.key === "Escape") setIsGalleryOpen(false);
+      if (e.key === "ArrowRight")
+        setPhotoIndex((prev) => (prev + 1) % images.length);
+      if (e.key === "ArrowLeft")
+        setPhotoIndex((prev) => (prev - 1 + images.length) % images.length);
+    },
+    [isGalleryOpen, images.length]
+  );
 
   useEffect(() => {
     window.addEventListener("keydown", handleKeyDown);
@@ -81,7 +99,9 @@ export function useVenuePage() {
     } else {
       document.body.style.overflow = "auto";
     }
-    return () => { document.body.style.overflow = "auto"; };
+    return () => {
+      document.body.style.overflow = "auto";
+    };
   }, [isGalleryOpen]);
 
   const openGallery = (index: number) => {
@@ -102,15 +122,30 @@ export function useVenuePage() {
   };
 
   // --- 4. Calculations & Derived Data ---
-  const host = venue?.host || { name: "Host", avatar: "", isSuperhost: false, joined: "Joined 2023" };
-  const ratingCats = venue?.ratingCategories || { 
-    cleanliness: 4.8, accuracy: 4.8, checkIn: 4.9, 
-    communication: 4.9, location: 4.8, value: 4.8 
+  const host = venue?.host || {
+    name: "Host",
+    avatar: "",
+    isCertifiedFoxer: false,
+    joined: "Joined 2023",
   };
-  
-  const displayActivities = (venue?.activities && venue.activities.length > 0) 
-    ? venue.activities 
-    : [ "Explore local landmarks", "Visit nearby cafes", "Walk around the city center", "Discover hidden gems" ];
+  const ratingCats = venue?.ratingCategories || {
+    cleanliness: 4.8,
+    accuracy: 4.8,
+    checkIn: 4.9,
+    communication: 4.9,
+    location: 4.8,
+    value: 4.8,
+  };
+
+  const displayActivities =
+    venue?.activities && venue.activities.length > 0
+      ? venue.activities
+      : [
+          "Explore local landmarks",
+          "Visit nearby cafes",
+          "Walk around the city center",
+          "Discover hidden gems",
+        ];
 
   const price = venue?.price || 0;
   const stayTotal = price * (nights > 0 ? nights : 1);
@@ -143,12 +178,12 @@ export function useVenuePage() {
       next: nextPhoto,
       prev: prevPhoto,
       richData: imageRichData,
-      images, 
+      images,
     },
     details: {
       host,
       ratingCats,
       displayActivities,
-    }
+    },
   };
 }
