@@ -1,6 +1,6 @@
 export default function Footer() {
   return (
-    <footer className="bg-gray-100 py-8 md:py-12 px-4 md:px-20 mt-10 border-t border-gray-200">
+    <footer className="bg-gray-100 py-8 md:py-12 px-4 md:px-20 border-t border-gray-200">
       <div className="max-w-7xl mx-auto">
         
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-x-2 gap-y-8 text-xs md:text-sm text-gray-700">
@@ -9,7 +9,6 @@ export default function Footer() {
           <div className="flex flex-col">
             <h4 className="font-bold text-gray-900 mb-3 md:mb-4">About</h4>
             <ul className="space-y-2">
-              <li><a href="#" className="hover:underline hover:text-gray-900">About Us</a></li>
               <li><a href="#" className="hover:underline hover:text-gray-900">Newsroom</a></li>
               <li><a href="#" className="hover:underline hover:text-gray-900">Careers</a></li>
               <li><a href="#" className="hover:underline hover:text-gray-900">Investors</a></li>

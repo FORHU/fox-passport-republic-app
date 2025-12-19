@@ -25,7 +25,7 @@ export default function ReviewCard({ review }: ReviewCardProps) {
   return (
     <div className="bg-white rounded-xl border border-gray-100 hover:shadow-md transition-all duration-300 overflow-hidden flex flex-col h-full p-3 md:p-4">
       
-      {/* User Header - Compacted for 260px */}
+      {/* User Header */}
       <div className="flex items-center gap-2 mb-2 shrink-0">
         <img 
           src={review.user.avatar} 
@@ -42,26 +42,21 @@ export default function ReviewCard({ review }: ReviewCardProps) {
       <div className="mb-2 shrink-0">
         <h4 className="font-bold text-sm text-gray-700 leading-tight mb-1 line-clamp-1">{review.title}</h4>
         <div className="flex gap-1">
-            {[...Array(5)].map((_, i) => (
+          {[...Array(5)].map((_, i) => (
             <div key={i} className="w-2.5 h-2.5 rounded-full bg-pink-500" />
-            ))}
+          ))}
         </div>
       </div>
       
-      {/* Description - Optimized for 260px height (approx 5-6 lines) */}
-      <div className="flex-1 min-h-0 mb-2 relative">
-          <p className="text-xs md:text-[13px] text-gray-600 leading-relaxed line-clamp-5 md:line-clamp-6 text-ellipsis">
-            {review.description}
-          </p>
+      {/* Description - Scrollable with subtle scrollbar */}
+      <div className="flex-1 overflow-y-auto mb-2 min-h-0 pr-1 [&::-webkit-scrollbar]:w-1 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-gray-200/50 [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-gray-300/50">
+        <p className="text-xs md:text-[13px] text-gray-600 leading-relaxed">
+          {review.description}
+        </p>
       </div>
       
-      {/* Read more link */}
-      <button className="text-xs text-blue-500 hover:underline text-left mb-2 block shrink-0">
-        Read more
-      </button>
-      
-      {/* Actions Footer - Compact & Pinned */}
-      <div className="flex items-center gap-3 pt-2 border-t border-gray-100 mt-auto shrink-0">
+      {/* Actions Footer */}
+      <div className="flex items-center gap-3 pt-2 border-t border-gray-100 shrink-0">
         <div className="flex items-center gap-3 text-xs text-gray-400">
           <span className="flex items-center gap-1 hover:text-gray-600 cursor-pointer transition-colors">
             <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">

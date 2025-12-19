@@ -1,7 +1,7 @@
 // src/components/DatePicker.tsx
 "use client";
 import { useState } from "react";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight, Keyboard } from "lucide-react";
 
 interface DatePickerProps {
   onSelectDates: (start: Date | null, end: Date | null) => void;
@@ -37,6 +37,12 @@ export default function DatePicker({ onSelectDates, onClose, inline = false }: D
     }
   };
 
+  const handleClear = () => {
+    setStartDate(null);
+    setEndDate(null);
+    onSelectDates(null, null);
+  };
+
   const changeMonth = (offset: number) => {
     setViewDate(new Date(viewDate.getFullYear(), viewDate.getMonth() + offset, 1));
   };
@@ -62,21 +68,20 @@ export default function DatePicker({ onSelectDates, onClose, inline = false }: D
     const emptyDays = [...Array(firstDay).keys()];
 
     return (
-      // Changed width to auto/full to fit mobile container
-      <div className="w-[280px] md:w-[320px] shrink-0">
-        <h3 className="font-bold text-gray-800 text-sm md:text-base text-center mb-4">
+      <div className="w-[300px] md:w-[340px] shrink-0">
+        <h3 className="font-bold text-gray-800 text-base md:text-lg text-center mb-6">
           {baseDate.toLocaleDateString("en-US", { month: "long", year: "numeric" })}
         </h3>
 
-        <div className="grid grid-cols-7 mb-2">
-          {["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"].map((day) => (
-            <span key={day} className="text-center text-[10px] md:text-xs font-semibold text-gray-400">
+        <div className="grid grid-cols-7 mb-4">
+          {["S", "M", "T", "W", "T", "F", "S"].map((day, idx) => (
+            <span key={idx} className="text-center text-xs font-bold text-gray-500">
               {day}
             </span>
           ))}
         </div>
 
-        <div className="grid grid-cols-7 gap-y-1 gap-x-0">
+        <div className="grid grid-cols-7 gap-y-1">
           {emptyDays.map((_, i) => <div key={`empty-${i}`} />)}
           
           {daysArray.map((day) => {
@@ -88,23 +93,23 @@ export default function DatePicker({ onSelectDates, onClose, inline = false }: D
             const isEnd = endDate && current.getTime() === endDate.getTime();
 
             return (
-              <div key={day} className="relative w-full aspect-square flex items-center justify-center py-0.5">
-                 {!isDisabled && inRange && <div className="absolute inset-y-1 w-full bg-gray-100" />}
-                 {!isDisabled && isStart && endDate && <div className="absolute inset-y-1 right-0 w-1/2 bg-gray-100" />}
-                 {!isDisabled && isEnd && startDate && <div className="absolute inset-y-1 left-0 w-1/2 bg-gray-100" />}
+              <div key={day} className="relative w-full aspect-square flex items-center justify-center">
+                 {!isDisabled && inRange && <div className="absolute inset-y-1 w-full bg-gray-50" />}
+                 {!isDisabled && isStart && endDate && <div className="absolute inset-y-1 right-0 w-1/2 bg-gray-50" />}
+                 {!isDisabled && isEnd && startDate && <div className="absolute inset-y-1 left-0 w-1/2 bg-gray-50" />}
 
                 <button
                   onClick={() => handleDayClick(current)}
                   disabled={isDisabled}
-                  className={`relative z-10 w-8 h-8 md:w-10 md:h-10 rounded-full text-xs font-semibold flex items-center justify-center transition-all
+                  className={`relative z-10 w-9 h-9 md:w-11 md:h-11 rounded-full text-sm font-semibold flex items-center justify-center transition-all
                     ${
                       isDisabled
-                        ? "text-gray-300 cursor-not-allowed hover:bg-transparent"
+                        ? "text-gray-300 cursor-not-allowed"
                         : selected 
-                          ? "bg-black text-white hover:bg-gray-800 shadow-md" 
+                          ? "bg-black text-white shadow-sm" 
                           : inRange 
-                            ? "text-gray-900 bg-gray-100 hover:bg-gray-200" 
-                            : "text-gray-700 hover:bg-gray-100 border border-transparent"
+                            ? "text-gray-900 bg-gray-50 hover:bg-gray-100" 
+                            : "text-gray-700 hover:bg-gray-50"
                     }
                   `}
                 >
@@ -120,40 +125,54 @@ export default function DatePicker({ onSelectDates, onClose, inline = false }: D
 
   const nextMonthDate = new Date(viewDate.getFullYear(), viewDate.getMonth() + 1, 1);
 
-  // Responsive container logic
   const containerClasses = inline
-    ? "w-full bg-white flex flex-col items-center relative" 
-    : "absolute top-full left-0 md:-left-24 mt-3 w-[calc(100vw-2rem)] md:w-auto max-w-[850px] bg-white rounded-3xl shadow-2xl border border-gray-100 p-4 md:p-6 z-50 overflow-hidden";
+    ? "w-full bg-white flex flex-col items-start px-2 py-4" 
+    : "absolute top-full left-0 md:-left-24 mt-3 w-full md:w-auto bg-white rounded-2xl shadow-2xl border border-gray-100 p-6 z-50 transition-all";
 
   return (
     <div className={containerClasses} onClick={(e) => e.stopPropagation()}>
       
-      {/* Navigation */}
-      <div className="w-full flex justify-between items-center px-2 md:px-4 absolute top-4 md:top-6 z-20 pointer-events-none">
-        <button onClick={() => changeMonth(-1)} className="p-1.5 md:p-2 bg-white hover:bg-gray-100 rounded-full shadow-sm border border-gray-100 pointer-events-auto">
-          <ChevronLeft className="w-4 h-4 text-gray-600" />
-        </button>
-        <button onClick={() => changeMonth(1)} className="p-1.5 md:p-2 bg-white hover:bg-gray-100 rounded-full shadow-sm border border-gray-100 pointer-events-auto">
-          <ChevronRight className="w-4 h-4 text-gray-600" />
-        </button>
+      {/* HEADER SECTION (Agoda Style) */}
+      <div className="mb-8 w-full">
+         <h2 className="text-xl md:text-2xl font-bold text-gray-800 mb-1">Select check-in date</h2>
+         <p className="text-gray-500 text-sm md:text-base">Add your travel dates for exact pricing</p>
       </div>
 
-      {/* Grid Container */}
-      <div className="flex flex-col md:flex-row gap-8 pt-2 pb-4 justify-center items-center">
-        {renderMonthGrid(viewDate)}
-        <div className="hidden md:block w-px bg-gray-100 self-stretch" />
-        <div className="hidden md:block">
-           {renderMonthGrid(nextMonthDate)}
-        </div>
-      </div>
-
-      {!inline && (
-        <div className="mt-2 flex justify-end border-t border-gray-100 pt-3 w-full">
-          <button onClick={onClose} className="text-sm font-semibold underline text-gray-500 hover:text-gray-800">
-            Close
+      <div className="relative w-full">
+        {/* Navigation Arrows - Far left and far right */}
+        <div className="absolute top-1 md:top-2 w-full flex justify-between items-center z-20 pointer-events-none">
+          <button onClick={() => changeMonth(-1)} className="p-2 text-gray-400 hover:text-gray-800 pointer-events-auto transition">
+            <ChevronLeft className="w-5 h-5" />
+          </button>
+          <button onClick={() => changeMonth(1)} className="p-2 text-gray-400 hover:text-gray-800 pointer-events-auto transition">
+            <ChevronRight className="w-5 h-5" />
           </button>
         </div>
-      )}
+
+        {/* Grid Container */}
+        <div className="flex flex-col md:flex-row gap-12 justify-center">
+          {renderMonthGrid(viewDate)}
+          <div className="hidden md:block w-px bg-gray-100 self-stretch" />
+          <div className="hidden md:block">
+             {renderMonthGrid(nextMonthDate)}
+          </div>
+        </div>
+      </div>
+
+      {/* FOOTER SECTION (Agoda Style) */}
+      <div className="mt-8 flex items-center justify-between w-full border-t border-gray-100 pt-6">
+         <Keyboard className="w-6 h-6 text-gray-800 cursor-pointer" />
+         <div className="flex items-center gap-6">
+            <button onClick={handleClear} className="text-sm font-bold underline text-gray-800 hover:text-black">
+              Clear dates
+            </button>
+            {!inline && (
+              <button onClick={onClose} className="bg-black text-white px-6 py-2 rounded-full text-sm font-bold shadow-sm hover:bg-gray-800">
+                Close
+              </button>
+            )}
+         </div>
+      </div>
     </div>
   );
 }

@@ -8,7 +8,8 @@ import {
   Star, MapPin, Share, Heart, CheckCircle, 
   Wifi, Car, Utensils, Monitor, Wind, 
   Tv, Waves, Coffee, Medal, ShieldCheck,
-  Camera, ShoppingBag, X, ChevronLeft, ChevronRight, ChevronDown
+  Camera, ShoppingBag, X, ChevronLeft, ChevronRight, ChevronDown,
+  Calendar, Clock, Shield // Added these icons
 } from "lucide-react";
 import DatePicker from "@/src/components/DatePicker";
 import { useVenuePage } from "@/src/hooks/useVenuePage"; 
@@ -50,7 +51,7 @@ export default function VenueDetailsPage() {
   }
 
   return (
-    <main className="min-h-screen bg-gray-50 pb-20 font-sans">
+    <div className="bg-gray-50 font-sans">
       <Navbar />
       
       {/* --- DIALOG/LIGHTBOX GALLERY MODAL --- */}
@@ -127,10 +128,10 @@ export default function VenueDetailsPage() {
         </div>
       )}
 
-      <div className="pt-24 md:pt-28 max-w-6xl mx-auto px-4 md:px-6">
+      <div className="pt-20 md:pt-24 pb-4 max-w-6xl mx-auto px-4 md:px-6">
         
         {/* --- HEADER --- */}
-        <div className="mb-6">
+        <div className="mb-4">
           <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-gray-700 mb-2">{venue.title}</h1>
           <div className="flex justify-between items-center">
             <div className="flex items-center gap-2 text-sm font-medium underline cursor-pointer text-gray-700">
@@ -161,8 +162,7 @@ export default function VenueDetailsPage() {
         </div>
 
         {/* --- IMAGE GRID --- */}
-        {/* --- IMAGE GRID (Yelp Style - tighter gap, less rounding) --- */}
-        <div className="relative rounded-md overflow-hidden grid grid-cols-4 grid-rows-2 gap-1 h-[300px] md:h-[450px] mb-8 md:mb-12">
+        <div className="relative rounded-md overflow-hidden grid grid-cols-4 grid-rows-2 gap-1 h-[300px] md:h-[450px] mb-3 md:mb-4">
           {/* Main Image */}
           <div className="col-span-2 row-span-2 relative group cursor-pointer" onClick={() => gallery.open(0)}>
             <Image src={gallery.images[0]} fill className="object-cover hover:brightness-90 transition duration-300" alt="Main" />
@@ -182,13 +182,13 @@ export default function VenueDetailsPage() {
         </div>
 
         {/* --- MAIN CONTENT --- */}
-        <div className="grid grid-cols-1 md:grid-cols-[1.8fr_1fr] gap-12 relative">
+        <div className="grid grid-cols-1 md:grid-cols-[1.8fr_1fr] gap-6 relative">
           
           {/* Left Column - Card Style for Yelp Look */}
-          <div className="space-y-6">
+          <div className="space-y-3">
             
             {/* Host Section Card */}
-            <div className="bg-white p-6 rounded-md shadow-sm border border-gray-200">
+            <div className="bg-white p-3 md:p-4 rounded-md shadow-sm border border-gray-200">
                <div className="flex justify-between items-center mb-4">
                  <div>
                    <h2 className="text-xl md:text-2xl font-bold text-gray-700 mb-1">Entire {venue.category} hosted by {details.host.name}</h2>
@@ -211,14 +211,14 @@ export default function VenueDetailsPage() {
             </div>
 
             {/* Description Card */}
-            <div className="bg-white p-6 rounded-md shadow-sm border border-gray-200">
+            <div className="bg-white p-3 md:p-4 rounded-md shadow-sm border border-gray-200">
                <h3 className="font-bold text-lg mb-4 text-gray-700">About this place</h3>
                <p className="text-gray-700 leading-relaxed whitespace-pre-line text-base">{venue.description}</p>
                <button className="mt-4 font-bold text-[#E0073B] hover:underline flex items-center gap-1">Show more ›</button>
             </div>
 
             {/* Sleeping Card */}
-            <div className="bg-white p-6 rounded-md shadow-sm border border-gray-200">
+            <div className="bg-white p-3 md:p-4 rounded-md shadow-sm border border-gray-200">
                <h3 className="font-bold text-xl mb-4 text-gray-700">Where you&apos;ll sleep</h3>
                <div className="border border-gray-200 rounded-lg p-6 w-full md:w-1/2 bg-gray-50">
                   <div className="mb-4 text-2xl">🛏️</div>
@@ -228,7 +228,7 @@ export default function VenueDetailsPage() {
             </div>
 
             {/* Amenities Card */}
-            <div className="bg-white p-6 rounded-md shadow-sm border border-gray-200">
+            <div className="bg-white p-3 md:p-4 rounded-md shadow-sm border border-gray-200">
                <h3 className="font-bold text-xl mb-4 text-gray-700">What this place offers</h3>
                <div className="grid grid-cols-2 gap-4">
                  {venue.offers.map((offer, i) => (
@@ -243,7 +243,7 @@ export default function VenueDetailsPage() {
             </div>
 
             {/* Activities Card */}
-            <div className="bg-white p-6 rounded-md shadow-sm border border-gray-200">
+            <div className="bg-white p-3 md:p-4 rounded-md shadow-sm border border-gray-200">
               <h3 className="font-bold text-xl mb-4 text-gray-700">Things to do nearby</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {details.displayActivities.map((activity, i) => (
@@ -256,7 +256,7 @@ export default function VenueDetailsPage() {
             </div>
 
             {/* Calendar Card */}
-            <div className="bg-white p-6 rounded-md shadow-sm border border-gray-200">
+            <div className="bg-white p-3 md:p-4 rounded-md shadow-sm border border-gray-200">
               <h3 className="font-bold text-xl mb-1 text-gray-700">{booking.nights > 0 ? `${booking.nights} nights` : "Select dates"} in {venue.location}</h3>
               <p className="text-gray-500 text-sm mb-6">{booking.formatDate(booking.dateRange.start)} - {booking.formatDate(booking.dateRange.end)}</p>
               <div className="bg-gray-50 rounded-xl p-4 md:p-6 flex justify-center border border-gray-100">
@@ -266,9 +266,8 @@ export default function VenueDetailsPage() {
           </div>
 
           {/* Sticky Booking Card */}
-          {/* Sticky Booking Card (Yelp Style) */}
           <div className="relative">
-            <div className="sticky top-28 bg-white border border-gray-300 shadow-sm rounded-md p-6">
+            <div className="sticky top-32 bg-white border border-gray-300 shadow-sm rounded-md p-3 md:p-4">
               <h3 className="text-xl font-bold text-gray-700 mb-4">Make a reservation</h3>
               
               <div className="border border-gray-300 rounded-md overflow-hidden mb-4">
@@ -318,7 +317,7 @@ export default function VenueDetailsPage() {
         </div>
 
         {/* Location / Map Placeholder - Card Style */}
-        <div className="mt-8 bg-white p-6 rounded-md shadow-sm border border-gray-200">
+        <div className="mt-4 bg-white p-3 md:p-4 rounded-md shadow-sm border border-gray-200">
             <h2 className="text-2xl font-bold mb-6 text-gray-700">Where you&apos;ll be</h2>
             <div className="w-full h-[400px] bg-gray-100 rounded-md border border-gray-200 flex items-center justify-center relative overflow-hidden group">
                 {/* Placeholder Pattern */}
@@ -334,21 +333,21 @@ export default function VenueDetailsPage() {
                 </div>
                 
                 <div className="absolute bottom-4 right-4 z-10">
-                     <button className="bg-white text-gray-700 border border-gray-300 font-bold px-4 py-2 rounded-md shadow-sm text-sm hover:bg-gray-50 flex items-center gap-2">
-                         Open in Google Maps
-                     </button>
+                      <button className="bg-white text-gray-700 border border-gray-300 font-bold px-4 py-2 rounded-md shadow-sm text-sm hover:bg-gray-50 flex items-center gap-2">
+                          Open in Google Maps
+                      </button>
                 </div>
             </div>
         </div>
 
         {/* Reviews */}
-        <div className="mt-8 bg-white p-6 rounded-md shadow-sm border border-gray-200">
+        <div className="mt-4 bg-white p-3 md:p-4 rounded-md shadow-sm border border-gray-200">
            <h2 className="text-2xl font-bold mb-8 text-gray-700">Recommended Reviews</h2>
            
            <div className="grid grid-cols-1 md:grid-cols-[2fr_1fr] gap-12">
               <div className="space-y-8">
                  {/* Rating Summary */}
-                 <div className="flex items-center gap-4 mb-8 bg-gray-50 p-4 rounded-md border border-gray-200">
+                 <div className="flex items-center gap-4 mb-4 bg-gray-50 p-4 rounded-md border border-gray-200">
                     <div className="flex gap-1">
                         {[...Array(5)].map((_, i) => (
                             <Star key={i} className={`w-6 h-6 ${i < Math.floor(venue.rating) ? "fill-[#E0073B] text-[#E0073B]" : "fill-gray-300 text-gray-300"}`} />
@@ -360,12 +359,12 @@ export default function VenueDetailsPage() {
 
                  {/* Review List */}
                  <div className="space-y-8">
-                     <ReviewCard name="Sarah K." date="January 4, 2024" location="Manila, Philippines" comment="So cozy! The real fireplace was the highlight. Perfect for cold Baguio nights. The host was amazing and the place was spotless." images={[]} />
-                     <ReviewCard name="Mike T." date=" December 12, 2023" location="Cebu City, Philippines" comment="Great location, very quiet. The host Benjie was extremely helpful with directions. Will definitely book again next time I'm in town!" images={[]} />
+                     <ReviewCard name="Sarah K." date="January 4, 2024" location="Manila, Philippines" comment="So cozy! The real fireplace was the highlight. Perfect for cold Baguio nights. The host was amazing and the place was spotless." />
+                     <ReviewCard name="Mike T." date=" December 12, 2023" location="Cebu City, Philippines" comment="Great location, very quiet. The host Benjie was extremely helpful with directions. Will definitely book again next time I'm in town!" />
                  </div>
               </div>
               
-              {/* Sidebar for Rating Bars (Yelp moves this to side or top usually, keeping it side for balance) */}
+              {/* Sidebar for Rating Bars */}
               <div className="hidden md:block">
                  <h4 className="font-bold text-gray-700 mb-4">Rating Breakdown</h4>
                  <div className="space-y-2">
@@ -381,13 +380,13 @@ export default function VenueDetailsPage() {
         </div>
 
         {/* Host (Bottom) */}
-        <div className="py-12 border-t border-gray-200">
-          <h2 className="text-2xl font-bold mb-6 text-gray-700 leading-tight">Meet your Host</h2>
-          <div className="grid grid-cols-1 md:grid-cols-[400px_1fr] gap-12 md:gap-24">
+        <div className="pt-4 pb-4 border-t border-gray-200 mt-4 bg-white p-3 md:p-4 rounded-md shadow-sm border-b border-gray-200">
+          <h2 className="text-2xl font-bold mb-4 text-gray-700 leading-tight">Meet your Host</h2>
+          <div className="grid grid-cols-1 md:grid-cols-[400px_1fr] gap-6 md:gap-8">
              {/* LEFT COLUMN - Host Card & Bio */}
              <div>
-                {/* Host Card - Yelp Style: Boxy, Bordered, Shadow-sm */}
-                <div className="bg-white rounded-md border border-gray-300 shadow-sm p-6 flex items-center justify-between mb-8">
+                {/* Host Card */}
+                <div className="bg-white rounded-md border border-gray-300 shadow-sm p-3 md:p-4 flex items-center justify-between mb-4">
                    {/* Avatar Side */}
                    <div className="flex flex-col items-center justify-center w-[40%] text-center">
                       <div className="relative w-24 h-24 mb-2">
@@ -398,7 +397,7 @@ export default function VenueDetailsPage() {
                       {details.host.isSuperhost && <div className="flex items-center gap-1 text-xs font-bold text-gray-600 uppercase tracking-wide">Superhost</div>}
                    </div>
                    
-                   {/* Stats Side - Yelp Style: Clean layout */}
+                   {/* Stats Side */}
                    <div className="flex-1 flex flex-col gap-3 pl-6 border-l border-gray-200">
                       <div className="flex flex-col">
                          <span className="font-bold text-xl text-gray-700 leading-none">{details.host.reviewCount || venue.reviews}</span>
@@ -420,8 +419,8 @@ export default function VenueDetailsPage() {
                    </div>
                 </div>
 
-                {/* Personal Info - Yelp Style: List */}
-                <div className="space-y-3 mb-6 text-gray-800 text-sm font-medium">
+                {/* Personal Info */}
+                <div className="space-y-3 mb-4 text-gray-800 text-sm font-medium">
                    {details.host.work && (
                       <div className="flex gap-3 items-center">
                          <ShoppingBag className="w-4 h-4 text-gray-500" /> 
@@ -438,7 +437,7 @@ export default function VenueDetailsPage() {
 
                 {/* Bio */}
                 <div>
-                  <p className="text-gray-800 leading-relaxed text-sm mb-4 line-clamp-4">{details.host.description}</p>
+                  <p className="text-gray-800 leading-relaxed text-sm mb-1 line-clamp-4">{details.host.description}</p>
                   <button className="font-bold text-[#E0073B] text-sm hover:underline flex items-center gap-1">
                     Show more <ChevronDown className="w-3 h-3" />
                   </button>
@@ -446,50 +445,96 @@ export default function VenueDetailsPage() {
              </div>
 
              {/* RIGHT COLUMN - CTA & Details */}
-             <div className="flex flex-col gap-6">
-                {/* Superhost / Intro */}
-                <div className="border-b border-gray-200 pb-6">
-                    <h3 className="text-lg font-bold mb-2 text-gray-700">{details.host.isSuperhost ? `${details.host.name} is a Superhost` : `Hosted by ${details.host.name}`}</h3>
-                    <p className="text-gray-600 text-sm leading-relaxed">Superhosts are experienced, highly rated hosts who are committed to providing great stays for guests.</p>
-                </div>
+             <div className="flex flex-col gap-3">
+               {/* Superhost / Intro */}
+                <div className="border-b border-gray-200 pb-2">
+                   <h3 className="text-lg font-bold mb-1 text-gray-700">{details.host.isSuperhost ? `${details.host.name} is a Superhost` : `Hosted by ${details.host.name}`}</h3>
+                   <p className="text-gray-600 text-sm leading-relaxed">Superhosts are experienced, highly rated hosts who are committed to providing great stays for guests.</p>
+               </div>
 
-                {/* Co-hosts */}
-                {details.host.coHosts && details.host.coHosts.length > 0 && (
-                  <div className="border-b border-gray-200 pb-6">
-                    <h4 className="text-gray-700 font-bold mb-3 text-sm">Co-hosts</h4>
-                    <div className="flex gap-3">
-                       {details.host.coHosts.map((ch, idx) => (
-                         <div key={idx} className="flex items-center gap-2">
-                           <Image src={ch.avatar} width={32} height={32} className="w-8 h-8 rounded-full object-cover border border-gray-200" alt={ch.name} />
-                           <span className="font-semibold text-gray-800 text-sm">{ch.name}</span>
-                         </div>
-                       ))}
-                    </div>
+               {/* Co-hosts */}
+               {details.host.coHosts && details.host.coHosts.length > 0 && (
+                  <div className="border-b border-gray-200 pb-2">
+                   <h4 className="text-gray-700 font-bold mb-2 text-sm">Co-hosts</h4>
+                   <div className="flex gap-3">
+                      {details.host.coHosts.map((ch, idx) => (
+                        <div key={idx} className="flex items-center gap-2">
+                          <Image src={ch.avatar} width={32} height={32} className="w-8 h-8 rounded-full object-cover border border-gray-200" alt={ch.name} />
+                          <span className="font-semibold text-gray-800 text-sm">{ch.name}</span>
+                        </div>
+                      ))}
+                   </div>
                   </div>
-                )}
+               )}
 
-                {/* Host Details Stats */}
-                <div className="space-y-1 mb-2">
-                   <h4 className="font-bold text-gray-700 text-sm mb-2">Host details</h4>
-                   <p className="text-gray-700 text-sm">Response rate: {details.host.responseRate}%</p>
-                   <p className="text-gray-700 text-sm">Responds {details.host.responseTime}</p>
-                </div>
+               {/* Host Details Stats */}
+                <div className="space-y-0.5 mb-1.5">
+                  <h4 className="font-bold text-gray-700 text-sm mb-1.5">Host details</h4>
+                  <p className="text-gray-700 text-sm">Response rate: {details.host.responseRate}%</p>
+                  <p className="text-gray-700 text-sm">Responds {details.host.responseTime}</p>
+               </div>
 
-                {/* Yelp Style Button: Brand color, bold, rounded-md */}
-                <button className="bg-[#E0073B] text-white px-6 py-2.5 rounded-md font-bold text-base shadow-sm hover:bg-[#b0052e] transition self-start">
+               {/* Button */}
+               <button className="bg-[#E0073B] text-white px-6 py-2.5 rounded-md font-bold text-base shadow-sm hover:bg-[#b0052e] transition self-start">
                    Message Host
-                </button>
+               </button>
 
-                <div className="flex items-start gap-3 text-xs text-gray-500 border-t border-gray-200 pt-6 mt-2">
-                   <ShieldCheck className="w-5 h-5 text-gray-400 shrink-0" />
-                   <p>To help protect your payment, always use FoxPassport to send money and communicate with hosts.</p>
-                </div>
+                <div className="flex items-start gap-3 text-xs text-gray-500 border-t border-gray-200 pt-3 mt-1.5">
+                  <ShieldCheck className="w-5 h-5 text-gray-400 shrink-0" />
+                  <p>To help protect your payment, always use FoxPassport to send money and communicate with hosts.</p>
+               </div>
              </div>
           </div>
         </div>
 
+        {/* --- THINGS TO KNOW SECTION (New Addition) --- */}
+        <div className="py-8 border-t border-gray-200 mt-4 bg-white p-3 md:p-4 rounded-md shadow-sm">
+           <h2 className="text-2xl font-bold mb-6 text-gray-700">Things to know</h2>
+           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+
+             {/* Column 1: Cancellation */}
+             <div className="space-y-3">
+               <div className="font-bold text-gray-700 text-base flex items-center gap-2">
+                 <Calendar className="w-5 h-5" /> Cancellation policy
+               </div>
+               <p className="text-gray-600 text-sm leading-relaxed">
+                 Free cancellation before February 5. Cancel before check-in on February 6 for a partial refund.
+               </p>
+               <p className="text-gray-600 text-sm leading-relaxed">Review this host&apos;s full policy for details.</p>
+               <button className="font-bold underline text-gray-800 text-sm flex items-center gap-1">Show more <ChevronRight className="w-3 h-3" /></button>
+             </div>
+
+             {/* Column 2: House Rules */}
+             <div className="space-y-3">
+               <div className="font-bold text-gray-700 text-base flex items-center gap-2">
+                 <Clock className="w-5 h-5" /> House rules
+               </div>
+               <div className="text-gray-600 text-sm space-y-1">
+                 <p>Check-in after 2:00 PM</p>
+                 <p>Checkout before 12:00 PM</p>
+                 <p>3 guests maximum</p>
+               </div>
+               <button className="font-bold underline text-gray-800 text-sm flex items-center gap-1">Show more <ChevronRight className="w-3 h-3" /></button>
+             </div>
+
+             {/* Column 3: Safety */}
+             <div className="space-y-3">
+               <div className="font-bold text-gray-700 text-base flex items-center gap-2">
+                 <Shield className="w-5 h-5" /> Safety & property
+               </div>
+               <div className="text-gray-600 text-sm space-y-1">
+                 <p>Carbon monoxide alarm</p>
+                 <p>Smoke alarm</p>
+                 <p>Security camera/recording device</p>
+               </div>
+               <button className="font-bold underline text-gray-800 text-sm flex items-center gap-1">Show more <ChevronRight className="w-3 h-3" /></button>
+             </div>
+
+           </div>
+        </div>
+
       </div>
-    </main>
+    </div>
   );
 }
 
@@ -506,7 +551,7 @@ function RatingBar({ label, score }: { label: string, score: number }) {
   );
 }
 
-function ReviewCard({ name, date, location, comment, images }: { name: string, date: string, location?: string, comment: string, images?: string[] }) {
+function ReviewCard({ name, date, location, comment }: { name: string, date: string, location?: string, comment: string }) {
   return (
     <div className="border-b border-gray-200 pb-8 last:border-0">
       <div className="flex gap-4 mb-3">

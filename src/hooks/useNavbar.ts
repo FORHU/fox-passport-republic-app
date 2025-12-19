@@ -19,7 +19,7 @@ export function useNavbar() {
   const isActive = isScrolled || mobileMenuOpen;
 
   const navBgClass = isActive
-    ? "bg-white/30 backdrop-blur-xl border-b border-white/40 shadow-lg"
+    ? "bg-white/30 backdrop-blur-xl"
     : "bg-transparent bg-gradient-to-b from-black/50 to-transparent";
 
   // Dark text when active (scrolled or menu open), white text when at top
