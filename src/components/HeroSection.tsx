@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { ChevronDown } from "lucide-react";
 import SearchBar from "./SearchBar";
 import { NAV_MENU } from "../config/navMenuData";
+import HeroPromptBar from "./PromptBar"; 
 
 const HERO_IMAGES = [
   "/herosec1.jpg", 
@@ -56,7 +57,6 @@ const MobileNavDropdown = ({
         <ChevronDown className={`w-3 h-3 transition-transform duration-200 ${isOpen ? "rotate-180" : ""}`} />
       </button>
 
-      {/* Mobile Dropdown Menu */}
       {isOpen && (
         <div className="absolute top-full left-1/2 -translate-x-1/2 pt-2 w-48 z-50">
           <div className="bg-white rounded-xl shadow-xl border border-gray-100 overflow-hidden py-1">
@@ -106,8 +106,7 @@ const NavItemWithDropdown = ({
       <ChevronDown className={`w-4 h-4 transition-transform duration-200 ${activeDropdown === id ? "rotate-180" : ""}`} />
     </button>
 
-    {/* DROPDOWN MENU */}
-    <div className={`absolute top-full left-0 pt-4 w-64 transition-all duration-200 z-40 ${activeDropdown === id ? "opacity-100 visible translate-y-0" : "opacity-0 invisible -translate-y-2"}`}>
+    <div className={`absolute top-full left-0 pt-4 w-64 transition-all duration-200 z-50 ${activeDropdown === id ? "opacity-100 visible translate-y-0" : "opacity-0 invisible -translate-y-2"}`}>
       <div className="bg-white rounded-xl shadow-xl border border-gray-100 overflow-hidden py-2">
         {items.map((item, idx) => {
           const Icon = item.icon; 
@@ -140,7 +139,6 @@ export default function HeroSection() {
     return () => clearInterval(interval);
   }, []);
 
-  // Close mobile dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = () => setMobileActiveDropdown(null);
     if (mobileActiveDropdown) {
@@ -168,11 +166,14 @@ export default function HeroSection() {
         </div>
       ))}
 
-      {/* Dark Overlay */}
+      {/* Dark Overlay (z-10) */}
       <div className="absolute inset-0 bg-black/40 z-10" />
 
-      {/* CONTENT - z-30 to stay below navbar (z-50) */}
-      <div className="relative z-30 w-full px-4 md:px-10">
+      {/* !!! THE FIX IS HERE !!! 
+        Changed z-30 to z-[60]. 
+        This makes the container (and its dropdown children) higher than the prompt bar (z-40).
+      */}
+      <div className="relative z-[60] w-full px-4 md:px-10">
         <div className="max-w-[1400px] mx-auto flex flex-col items-center">
           
           {/* TITLE */}
@@ -197,27 +198,9 @@ export default function HeroSection() {
             className="md:hidden w-full max-w-[850px] flex justify-center gap-6 text-sm px-2 mb-4"
             onClick={(e) => e.stopPropagation()}
           >
-            <MobileNavDropdown 
-              title="Venues" 
-              id="venues-mobile" 
-              items={NAV_MENU.venues} 
-              activeDropdown={mobileActiveDropdown} 
-              setActiveDropdown={setMobileActiveDropdown} 
-            />
-            <MobileNavDropdown 
-              title="Catering" 
-              id="catering-mobile" 
-              items={NAV_MENU.catering} 
-              activeDropdown={mobileActiveDropdown} 
-              setActiveDropdown={setMobileActiveDropdown} 
-            />
-            <MobileNavDropdown 
-              title="Photography" 
-              id="photography-mobile" 
-              items={NAV_MENU.photography} 
-              activeDropdown={mobileActiveDropdown} 
-              setActiveDropdown={setMobileActiveDropdown} 
-            />
+            <MobileNavDropdown title="Venues" id="venues-mobile" items={NAV_MENU.venues} activeDropdown={mobileActiveDropdown} setActiveDropdown={setMobileActiveDropdown} />
+            <MobileNavDropdown title="Catering" id="catering-mobile" items={NAV_MENU.catering} activeDropdown={mobileActiveDropdown} setActiveDropdown={setMobileActiveDropdown} />
+            <MobileNavDropdown title="Photography" id="photography-mobile" items={NAV_MENU.photography} activeDropdown={mobileActiveDropdown} setActiveDropdown={setMobileActiveDropdown} />
           </div>
 
           {/* DESKTOP NAVIGATION DROPDOWNS */}
@@ -229,6 +212,8 @@ export default function HeroSection() {
 
         </div>
       </div>
+      <HeroPromptBar />
+
     </section>
   );
 }

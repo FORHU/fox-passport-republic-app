@@ -9,7 +9,7 @@ import {
   Wifi, Car, Utensils, Monitor, Wind, 
   Tv, Waves, Coffee, Medal, ShieldCheck,
   Camera, ShoppingBag, X, ChevronLeft, ChevronRight, ChevronDown,
-  Calendar, Clock, Shield // Added these icons
+  Calendar, Clock, Shield 
 } from "lucide-react";
 import DatePicker from "@/src/components/DatePicker";
 import { useVenuePage } from "@/src/hooks/useVenuePage"; 
@@ -34,7 +34,6 @@ const getActivityIcon = (index: number) => {
 };
 
 export default function VenueDetailsPage() {
-  // The hook now automatically grabs params.id
   const { venue, booking, gallery, details, loading } = useVenuePage();
 
   if (loading) {
@@ -52,7 +51,7 @@ export default function VenueDetailsPage() {
 
   return (
     <div className="bg-gray-50 font-sans">
-      <Navbar />
+      {!gallery.isOpen && <Navbar />}
       
       {/* --- DIALOG/LIGHTBOX GALLERY MODAL --- */}
       {gallery.isOpen && (
@@ -128,7 +127,8 @@ export default function VenueDetailsPage() {
         </div>
       )}
 
-      <div className="pt-20 md:pt-24 pb-4 max-w-6xl mx-auto px-4 md:px-6">
+      {/* CHANGED: Increased max-w-6xl to max-w-7xl for a wider layout overall */}
+      <div className="pt-20 md:pt-24 pb-4 max-w-7xl mx-auto px-4 md:px-6">
         
         {/* --- HEADER --- */}
         <div className="mb-4">
@@ -182,7 +182,8 @@ export default function VenueDetailsPage() {
         </div>
 
         {/* --- MAIN CONTENT --- */}
-        <div className="grid grid-cols-1 md:grid-cols-[1.8fr_1fr] gap-6 relative">
+        {/* CHANGED: Decreased gap from gap-12 to gap-4 to make the space between columns smaller */}
+        <div className="grid grid-cols-1 md:grid-cols-[1.2fr_1fr] gap-4 relative">
           
           {/* Left Column - Card Style for Yelp Look */}
           <div className="space-y-3">

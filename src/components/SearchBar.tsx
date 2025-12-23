@@ -1,5 +1,6 @@
 "use client";
-import { Search } from "lucide-react";
+
+import { Search, Mic } from "lucide-react"; // Added Mic import
 import { useRouter } from "next/navigation";
 import DatePicker from "@/src/components/DatePicker";
 import LocationPicker from "@/src/components/LocationPicker";
@@ -42,6 +43,13 @@ export default function SearchBar({ isHero = false, onSearchClick }: Props) {
     }
   };
 
+  // Logic for Voice Search Click
+  const handleVoiceSearch = (e: React.MouseEvent) => {
+    e.stopPropagation(); // Prevent opening the location picker
+    console.log("Voice search activated");
+    // You can add your voice-to-text logic here
+  };
+
   return (
     <div 
       ref={searchBarRef} 
@@ -59,7 +67,7 @@ export default function SearchBar({ isHero = false, onSearchClick }: Props) {
         }}
       >
         <span className="hidden md:block text-xs font-bold text-gray-800 tracking-wide uppercase">Where</span>
-        <div className={`text-sm font-semibold truncate ${selectedLocation ? 'text-gray-900' : 'text-gray-400 font-normal'}`}>
+        <div className={`text-sm font-semibold truncate pr-6 ${selectedLocation ? 'text-gray-900' : 'text-gray-400 font-normal'}`}>
           {selectedLocation ? (
             <span className="text-gray-900">{selectedLocation.name}</span>
           ) : (
@@ -69,6 +77,15 @@ export default function SearchBar({ isHero = false, onSearchClick }: Props) {
             </>
           )}
         </div>
+
+        {/* --- ADDED VOICE ICON HERE --- */}
+        <button
+           onClick={handleVoiceSearch}
+           className="absolute right-2 top-1/2 -translate-y-1/2 p-2 rounded-full text-gray-400 hover:text-pink-600 hover:bg-gray-200 transition-colors z-10 hidden md:block"
+           aria-label="Voice search"
+        >
+           <Mic className="w-4 h-4 md:w-5 md:h-5" />
+        </button>
       </div>
 
       <div className="hidden md:block w-px bg-gray-200 my-3"></div>
@@ -124,7 +141,7 @@ export default function SearchBar({ isHero = false, onSearchClick }: Props) {
       )}
       
       {showDatePicker && (
-        <div className="absolute top-full left-0 mt-4 w-full md:w-[850px] bg-white rounded-3xl shadow-xl border border-gray-100 overflow-hidden z-9999 flex flex-col max-h-[85vh] overflow-y-auto custom-scrollbar">
+        <div className="absolute top-full left-0 mt-4 w-full md:w-[850px] bg-white rounded-3xl shadow-xl border border-gray-100 overflow-hidden z-[9999] flex flex-col max-h-[85vh] overflow-y-auto custom-scrollbar">
            <div className="p-4 md:p-6">
               <DatePicker 
                 onSelectDates={handleDateSelect} 
