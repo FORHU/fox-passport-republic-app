@@ -1,6 +1,6 @@
 "use client";
 
-import RequireAuth from "@/src/components/auth/RequireAuth";
+import RequireAuth from "@/components/authentication/RequireAuth";
 
 export default function AuthenticatedLayout({
   children,

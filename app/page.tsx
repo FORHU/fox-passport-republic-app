@@ -4,14 +4,14 @@ import { Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 
 // --- Components Imports ---
-import Navbar from "@/src/components/Navbar";
-import HeroSection from "@/src/components/HeroSection";
-import RecentActivity from "@/src/components/RecentActivity";
-import Categories from "@/src/components/Categories";
+import Navbar from "@/components/shared/Navbar";
+import HeroSection from "@/components/home/HeroSection";
+import RecentActivity from "@/components/venue/RecentActivity";
+import Categories from "@/components/home/Categories";
 
 // --- Search Logic Components ---
-import ListingCard from "@/src/components/ListingCard";
-import { HARDCODED_VENUES } from "@/src/data/hardcodedVenues";
+import ListingCard from "@/components/home/ListingCard";
+import { HARDCODED_VENUES } from "@/data/hardcodedVenues";
 
 function HomeContent() {
   const searchParams = useSearchParams();

@@ -4,8 +4,8 @@ import React, { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { Search, MapPin } from "lucide-react";
-import { HARDCODED_VENUES } from "@/src/data/hardcodedVenues";
-import RequireAuth from "@/src/components/auth/RequireAuth";
+import { HARDCODED_VENUES } from "@/data/hardcodedVenues";
+import RequireAuth from "@/components/authentication/RequireAuth";
 
 export default function ReviewSelectPage() {
   const [searchQuery, setSearchQuery] = useState("");
@@ -33,7 +33,7 @@ export default function ReviewSelectPage() {
                 <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
                 <input
                   type="text"
-                  placeholder="Try lunch, yoga studio, plumber"
+                  placeholder="Try restaurants, coffee shops, resorts..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="w-full pl-12 pr-4 py-3.5 border-2 border-gray-200 rounded-lg focus:border-pink-500 focus:outline-none text-gray-700 placeholder:text-gray-400"
@@ -43,7 +43,7 @@ export default function ReviewSelectPage() {
                 <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
                 <input
                   type="text"
-                  placeholder="San Francisco, CA"
+                  placeholder="Philippines"
                   value={locationQuery}
                   onChange={(e) => setLocationQuery(e.target.value)}
                   className="w-full pl-12 pr-4 py-3.5 border-2 border-gray-200 rounded-lg focus:border-pink-500 focus:outline-none text-gray-700 placeholder:text-gray-400"

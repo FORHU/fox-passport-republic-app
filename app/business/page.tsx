@@ -3,7 +3,7 @@
 import React from "react";
 import Link from "next/link";
 import { Building2, TrendingUp, Users, Award, Check } from "lucide-react";
-import { useAuthStore } from "@/src/store/useAuthStore";
+import { useAuthStore } from "@/store/useAuthStore";
 
 export default function BusinessPage() {
   const { openLogin } = useAuthStore();

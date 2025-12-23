@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import Navbar from "@/src/components/Navbar";
+import Navbar from "@/components/shared/Navbar";
 import Link from "next/link";
 import Image from "next/image";
 import { 
@@ -11,8 +11,8 @@ import {
   Camera, ShoppingBag, X, ChevronLeft, ChevronRight, ChevronDown,
   Calendar, Clock, Shield 
 } from "lucide-react";
-import DatePicker from "@/src/components/DatePicker";
-import { useVenuePage } from "@/src/hooks/useVenuePage"; 
+import DatePicker from "@/components/shared/DatePicker";
+import { useVenuePage } from "@/hooks/useVenuePage"; 
 
 // --- Helper Components ---
 const getAmenityIcon = (offer: string) => {

@@ -1,14 +1,14 @@
 import type { Metadata } from "next";
 import "cesium/Build/Cesium/Widgets/widgets.css";
 import "./globals.css";
-import Footer from "@/src/components/Footer";
+import Footer from "@/components/shared/Footer";
 import { Toaster } from 'sonner';
 
 // Import the Modal Component
-import AuthModal from "@/src/components/AuthModal"; 
+import AuthModal from "@/components/home/AuthModal"; 
 
 // Import the Master Provider
-import Providers from "@/src/providers"; 
+import Providers from "@/providers"; 
 
 export const metadata: Metadata = {
   title: "FoxPassport - Let's Make Life an Event",

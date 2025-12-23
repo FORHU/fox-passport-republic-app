@@ -1,9 +1,10 @@
 "use client";
 
 import React, { useState } from "react";
+import { toast } from "sonner";
 import { useParams, useRouter } from "next/navigation";
 import { MapPin, Star, ArrowLeft } from "lucide-react";
-import { getVenueById } from "@/src/data/hardcodedVenues";
+import { getVenueById } from "@/data/hardcodedVenues";
 import Image from "next/image";
 
 export default function WriteReviewPage() {
@@ -46,7 +47,7 @@ export default function WriteReviewPage() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     // UI demonstration only - show success message
-    alert("Review submitted successfully! (UI demonstration only)");
+    toast.success("Thank you for your review!");
     router.push("/reviews/select");
   };
 

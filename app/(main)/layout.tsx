@@ -1,4 +1,4 @@
-import Navbar from "@/src/components/Navbar"; // Check your import path
+import Navbar from "@/components/shared/Navbar"; // Check your import path
 
 export default function MainLayout({
   children,
