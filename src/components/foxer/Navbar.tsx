@@ -1,8 +1,8 @@
 "use client";
 
-import React from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
-import Image from "next/image"; // Added next/image import
+import Image from "next/image";
 import { Search, Bell, Plus } from "lucide-react";
 import { Button } from "@/src/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/src/components/ui/avatar";
@@ -21,6 +21,8 @@ import { toast } from "sonner";
 export default function Navbar() {
   const { user, logout } = useAuthStore();
   const router = useRouter();
+  // State to track if the page has scrolled
+  const [isScrolled, setIsScrolled] = useState(false);
 
   const handleLogout = () => {
     logout();
@@ -28,12 +30,42 @@ export default function Navbar() {
     router.push("/");
   };
 
+  // Effect to handle scroll event
+  useEffect(() => {
+    const handleScroll = () => {
+      // If scrolled more than 10px, set state to true
+      if (window.scrollY > 10) {
+        setIsScrolled(true);
+      } else {
+        setIsScrolled(false);
+      }
+    };
+
+    // Add event listener
+    window.addEventListener("scroll", handleScroll);
+
+    // Clean up event listener on component unmount
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+    };
+  }, []);
+
+  // Define conditional classes based on scroll state
+  const navbarClasses = isScrolled
+    // Scrolled state: Blurry, semi-transparent background, lighter border
+    ? "bg-white/70 dark:bg-card-dark/70 backdrop-blur-md border-pink-100/50 dark:border-pink-900/30 shadow-sm"
+    // Top state: Solid background (your previous style)
+    : "bg-white dark:bg-card-dark border-pink-100 dark:border-pink-900/30 shadow-sm shadow-pink-50/50";
+
   return (
-    <header className="sticky top-0 z-50 w-full bg-white dark:bg-card-dark border-b border-pink-100 dark:border-pink-900/30 shadow-sm shadow-pink-50/50 font-sans">
+    <header 
+      // Combine base style (sticky, z-index, transition) with the conditional styles above
+      className={`sticky top-0 z-50 w-full border-b transition-all duration-300 font-sans ${navbarClasses}`}
+    >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex h-16 items-center justify-between gap-4">
           
-          {/* 1. LOGO (Updated with your custom code) */}
+          {/* 1. LOGO */}
           <div className="flex-shrink-0 cursor-pointer">
             <Link href="/" className="flex items-center gap-2">
               <Image 
@@ -41,7 +73,7 @@ export default function Navbar() {
                 alt="Logo" 
                 width={80} 
                 height={80} 
-                className="h-10 md:h-12 w-auto object-contain" // Adjusted slightly for navbar height
+                className="h-10 md:h-12 w-auto object-contain"
                 priority 
               />
               <span className="hidden md:block text-2xl font-bold tracking-tight transition-all duration-500 ease-in-out text-gray-900 dark:text-white">
@@ -56,8 +88,9 @@ export default function Navbar() {
               <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-gray-500 dark:text-gray-400">
                 <Search className="h-4 w-4" />
               </div>
+              {/* Changed bg-pink-50/80 to bg-pink-50/50 so it blends better when blurry */}
               <input 
-                className="block w-full rounded-full border-none bg-pink-50/80 dark:bg-background-dark py-2 pl-10 pr-3 text-sm placeholder:text-gray-500 focus:ring-2 focus:ring-pink-500/50 transition-all outline-none" 
+                className="block w-full rounded-full border-none bg-pink-50/50 dark:bg-background-dark/50 py-2 pl-10 pr-3 text-sm placeholder:text-gray-500 focus:ring-2 focus:ring-pink-500/50 transition-all outline-none" 
                 placeholder="Search events, locations, hosts..." 
                 type="text" 
               />
@@ -70,7 +103,7 @@ export default function Navbar() {
             {/* Desktop Nav Links */}
             <nav className="hidden lg:flex items-center gap-8">
               <Link href="#" className="text-sm font-bold text-gray-600 hover:text-pink-500 transition-colors dark:text-gray-200">Events</Link>
-              <Link href="#" className="text-sm font-bold text-gray-600 hover:text-pink-500 transition-colors dark:text-gray-200">Foxers</Link>
+              <Link href="#" className="text-sm font-bold text-gray-600 hover:text-pink-500 transition-colors dark:text-gray-200">Foxxers</Link>
               <Link href="#" className="text-sm font-bold text-gray-600 hover:text-pink-500 transition-colors dark:text-gray-200">Community</Link>
             </nav>
 

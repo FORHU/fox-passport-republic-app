@@ -129,6 +129,14 @@ function NavbarContent() {
     }
   };
 
+  const handleWriteReview = () => {
+    if (isAuthenticated) {
+      router.push("/reviews/select");
+    } else {
+      openLogin();
+    }
+  };
+
   return (
     <>
       <nav className={`fixed top-0 left-0 w-full z-[100] transition-all duration-500 ease-in-out ${styles.navBgClass}`}>
@@ -164,9 +172,12 @@ function NavbarContent() {
                 >
                   Become a Foxer
                 </button>
-                <Link href="/reviews" className={`hover:underline decoration-2 underline-offset-8 transition-all duration-500 ease-in-out ${styles.mainLinkClass}`}>
+                <button
+                  onClick={handleWriteReview}
+                  className={`hover:underline decoration-2 underline-offset-8 outline-none transition-all duration-500 ease-in-out ${styles.mainLinkClass}`}
+                >
                   Write a Review
-                </Link>
+                </button>
                 <Link href="/business" className={`hover:underline decoration-2 underline-offset-8 transition-all duration-500 ease-in-out ${styles.mainLinkClass}`}>
                   For Businesses
                 </Link>
@@ -228,13 +239,12 @@ function NavbarContent() {
                   Become a Foxer
                 </button>
                 
-                <Link 
-                  href="/reviews" 
-                  className="block text-gray-600 font-medium text-sm hover:text-pink-600 hover:bg-pink-50 transition-colors py-3 px-3 rounded-lg"
-                  onClick={() => setMobileMenuOpen(false)}
+                <button
+                  onClick={() => { handleWriteReview(); setMobileMenuOpen(false); }}
+                  className="w-full text-left text-gray-600 font-medium text-sm hover:text-pink-600 hover:bg-pink-50 transition-colors py-3 px-3 rounded-lg"
                 >
                   Write a Review
-                </Link>
+                </button>
                 
                 <Link 
                   href="/business" 
