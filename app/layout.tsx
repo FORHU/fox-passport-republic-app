@@ -5,7 +5,7 @@ import Footer from "@/components/shared/Footer";
 import { Toaster } from 'sonner';
 
 // Import the Modal Component
-import AuthModal from "@/components/home/AuthModal"; 
+import AuthModal from "@/components/landing/AuthModal"; 
 
 // Import the Master Provider
 import Providers from "@/providers"; 
