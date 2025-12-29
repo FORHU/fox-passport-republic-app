@@ -4,15 +4,6 @@ import { Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 
 // --- Shared Components ---
-// --- New Landing Components ---
-import Header from "@/components/landing/Header";
-import Hero from "@/components/landing/Hero";
-import CategoryGrid from "@/components/landing/CategoryGrid";
-import WhyChooseUs from "@/components/landing/WhyChooseUs";
-import TrendingSection from "@/components/landing/TrendingSection";
-import Newsletter from "@/components/landing/Newsletter";
-
-// --- Search Results Components ---
 import Navbar from "@/components/shared/Navbar";
 import AuthModal from "@/components/landing/AuthModal";
 
@@ -25,8 +16,6 @@ import Newsletter from "@/components/landing/Newsletter";
 
 // --- Search Results Components ---
 import ListingCard from "@/components/landing/ListingCard";
-import ListingCard from "@/components/home/ListingCard";
-import AuthModal from "@/components/home/AuthModal";
 import { HARDCODED_VENUES } from "@/data/hardcodedVenues";
 
 function HomeContent() {
