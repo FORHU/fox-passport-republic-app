@@ -10,7 +10,7 @@ import {
   ArrowRight 
 } from "lucide-react"; 
 
-import AuthModal from "@/components/home/AuthModal";
+import AuthModal from "@/components/landing/AuthModal";
 import { useNavbar } from "@/hooks/useNavbar";
 import { useAuthStore } from "@/store/useAuthStore";
 import UserMenuButton from "@/components/users/UserMenuButton";
@@ -144,28 +144,28 @@ function NavbarContent() {
         {/* Container for content alignment */}
         <div className="max-w-[2520px] mx-auto xl:px-20 md:px-10 sm:px-2 px-4">
           
-          <div className="flex flex-row items-center justify-between gap-3 md:gap-0 py-3 md:py-4">
-            
+          <div className="flex flex-row items-center justify-between gap-3 md:gap-0 py-2 md:py-2.5">
+
             {/* LOGO */}
             <div className="flex-shrink-0 cursor-pointer">
               <Link href="/" className="flex items-center gap-2">
-                <Image 
-                  src="/logofoxpassport.png" 
-                  alt="Logo" 
-                  width={80} 
-                  height={80} 
-                  className="h-10 md:h-20 w-auto object-contain" 
-                  priority 
+                <Image
+                  src="/logofoxpassport.png"
+                  alt="Logo"
+                  width={56}
+                  height={56}
+                  className="h-8 md:h-14 w-auto object-contain"
+                  priority
                 />
-                <span className={`hidden md:block text-2xl font-bold tracking-tight transition-all duration-500 ease-in-out ${styles.logoTextClass}`}>
+                <span className={`hidden md:block text-xl font-bold tracking-tight transition-all duration-500 ease-in-out ${styles.logoTextClass}`}>
                   Fox<span className="text-pink-500">Passport</span>
                 </span>
               </Link>
             </div>
 
             {/* DESKTOP MENU */}
-            <div className="hidden md:flex flex-row items-center gap-6">
-              <div className="flex items-center gap-8 text-[15px] font-bold tracking-tight">
+            <div className="hidden md:flex flex-row items-center gap-4">
+              <div className="flex items-center gap-6 text-[13px] font-bold tracking-tight">
                 <button 
                   onClick={() => setHostModalOpen(true)}
                   className={`hover:underline decoration-2 underline-offset-8 outline-none transition-all duration-500 ease-in-out ${styles.mainLinkClass}`}
@@ -183,18 +183,18 @@ function NavbarContent() {
                 </Link>
               </div>
               
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2">
                 {!isAuthenticated ? (
                   <>
-                    <button 
-                      onClick={openLogin} 
-                      className={`px-5 py-2.5 text-[15px] font-bold tracking-tight rounded-full border-2 transition-all duration-500 ease-in-out ${styles.loginButtonClass}`}
+                    <button
+                      onClick={openLogin}
+                      className={`px-4 py-1.5 text-[13px] font-bold tracking-tight rounded-full border-2 transition-all duration-500 ease-in-out ${styles.loginButtonClass}`}
                     >
                       Log In
                     </button>
-                    <button 
-                      onClick={openSignup} 
-                      className="px-5 py-2.5 text-[15px] font-bold tracking-tight bg-[#E31C79] border-2 border-[#E31C79] text-white rounded-full hover:bg-pink-700 shadow-md transition-all duration-500 ease-in-out"
+                    <button
+                      onClick={openSignup}
+                      className="px-4 py-1.5 text-[13px] font-bold tracking-tight bg-[#E31C79] border-2 border-[#E31C79] text-white rounded-full hover:bg-pink-700 shadow-md transition-all duration-500 ease-in-out"
                     >
                       Sign Up
                     </button>

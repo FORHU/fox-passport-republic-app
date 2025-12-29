@@ -11,7 +11,7 @@ import {
   Camera, ShoppingBag, X, ChevronLeft, ChevronRight, ChevronDown,
   Calendar, Clock, Shield 
 } from "lucide-react";
-import DatePicker from "@/components/shared/DatePicker";
+import DatePicker from "@/components/landing/DatePicker";
 import { useVenuePage } from "@/hooks/useVenuePage"; 
 
 // --- Helper Components ---
