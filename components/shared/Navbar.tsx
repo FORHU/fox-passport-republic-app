@@ -277,10 +277,10 @@ function NavbarContent() {
               ) : (
                 <div className="flex gap-2">
                   <button 
-                    onClick={() => { setMobileMenuOpen(false); router.push("/authenticatedUser"); }} 
+                    onClick={() => { setMobileMenuOpen(false); router.push("/profile"); }} 
                     className="flex-1 py-2.5 rounded-lg bg-[#E31C79] text-white font-semibold hover:bg-pink-700 shadow-sm transition-all text-sm"
                   >
-                    Dashboard
+                    Profile
                   </button>
                   <button 
                     onClick={() => { setMobileMenuOpen(false); useAuthStore.getState().logout(); }} 

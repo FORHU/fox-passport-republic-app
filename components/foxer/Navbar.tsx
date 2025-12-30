@@ -106,7 +106,7 @@ export default function Navbar() {
             {/* Desktop Nav Links */}
             <nav className="hidden lg:flex items-center gap-8">
               <Link href="#" className="text-sm font-bold text-gray-600 hover:text-pink-500 transition-colors dark:text-gray-200">Events</Link>
-              <Link href="#" className="text-sm font-bold text-gray-600 hover:text-pink-500 transition-colors dark:text-gray-200">Foxxers</Link>
+              <Link href="#" className="text-sm font-bold text-gray-600 hover:text-pink-500 transition-colors dark:text-gray-200">Foxers</Link>
               <Link href="#" className="text-sm font-bold text-gray-600 hover:text-pink-500 transition-colors dark:text-gray-200">Community</Link>
             </nav>
 

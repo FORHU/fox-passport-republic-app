@@ -70,7 +70,7 @@ export default function Footer() {
             </div>
 
             {/* Right Side - Icons */}
-            <div className="flex items-center gap-4 md:gap-6">
+            <div className="flex items-center gap-4 md:gap-6 text-gray-600">
               {/* Language Selector */}
               <button className="flex items-center gap-1 md:gap-2 text-xs md:text-sm font-semibold hover:underline">
                 <span>🌐</span> English (US)
