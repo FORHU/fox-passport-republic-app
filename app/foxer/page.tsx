@@ -1,8 +1,18 @@
 "use client";
 
-import React from 'react';
+import React, { useState } from 'react';
+import HowItWorksModal from '@/components/foxer/HowItWorksModal';
 
 export default function DashboardPage() {
+  const [isHowItWorksOpen, setIsHowItWorksOpen] = useState(false);
+
+  const handleExplore = () => {
+    const element = document.getElementById('events-grid');
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
+
   return (
     <div className="w-full pb-10 font-sans">
       
@@ -25,11 +35,16 @@ export default function DashboardPage() {
               Join thousands of foxers exploring the city. Find your next adventure today.
             </p>
             <div className="flex gap-5 mt-4">
-              {/* FIXED: Explicit Pink Color */}
-              <button className="bg-pink-500 hover:bg-pink-600 text-white font-bold py-4 px-10 rounded-full shadow-xl shadow-pink-500/30 transition-all hover:scale-105 active:scale-95">
+              <button 
+                onClick={handleExplore}
+                className="bg-pink-500 hover:bg-pink-600 text-white font-bold py-4 px-10 rounded-full shadow-xl shadow-pink-500/30 transition-all hover:scale-105 active:scale-95"
+              >
                 Explore Events
               </button>
-              <button className="bg-white/10 hover:bg-white/20 backdrop-blur-md border-2 border-white/50 text-white font-bold py-4 px-10 rounded-full transition-all hover:scale-105 active:scale-95">
+              <button 
+                onClick={() => setIsHowItWorksOpen(true)}
+                className="bg-white/10 hover:bg-white/20 backdrop-blur-md border-2 border-white/50 text-white font-bold py-4 px-10 rounded-full transition-all hover:scale-105 active:scale-95"
+              >
                 How it works
               </button>
             </div>
@@ -77,7 +92,7 @@ export default function DashboardPage() {
         </section>
 
         {/* 3. MAIN CONTENT: SIDEBAR + EVENTS GRID */}
-        <div className="flex flex-col md:flex-row gap-10">
+        <div id="events-grid" className="flex flex-col md:flex-row gap-10 scroll-mt-24">
           
           {/* --- LEFT SIDEBAR FILTERS --- */}
           <aside className="hidden md:block w-72 flex-shrink-0 space-y-10 sticky top-24 self-start">
@@ -129,7 +144,6 @@ export default function DashboardPage() {
               <p className="text-sm font-medium text-gray-600 dark:text-gray-300 mb-6 leading-relaxed">
                 Create your own events and build a vibrant community around your passion.
               </p>
-              {/* FIXED: Explicit Pink Color */}
               <button className="w-full bg-pink-500 text-white font-bold text-sm py-3.5 rounded-xl hover:bg-pink-600 transition-all shadow-md shadow-pink-500/30 hover:shadow-lg hover:scale-[1.02] active:scale-[0.98]">
                 Start Creating
               </button>
@@ -201,6 +215,12 @@ export default function DashboardPage() {
         </div>
 
       </div>
+
+      {/* How It Works Modal */}
+      <HowItWorksModal 
+        isOpen={isHowItWorksOpen} 
+        onClose={() => setIsHowItWorksOpen(false)} 
+      />
     </div>
   )
 }
