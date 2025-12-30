@@ -2,10 +2,10 @@
 module.exports = {
   darkMode: ["class"],
   content: [
-    './pages/**/*.{ts,tsx}',
-    './components/**/*.{ts,tsx}',
-    './app/**/*.{ts,tsx}',
-    './src/**/*.{ts,tsx}',
+    "./pages/**/*.{ts,tsx}",
+    "./components/**/*.{ts,tsx}",
+    "./app/**/*.{ts,tsx}",
+    "./src/**/*.{ts,tsx}",
   ],
   theme: {
     container: {
@@ -50,14 +50,15 @@ module.exports = {
         },
         // Custom Dashboard Colors
         "primary-dark": "#be185d",
-        "background-light": "#fdf2f8", 
-        "background-dark": "#1f1016", 
+        "background-light": "#fdf2f8",
+        "background-dark": "#1f1016",
         "card-light": "#ffffff",
         "card-dark": "#29151d",
         "text-main-light": "#1f1719",
         "text-main-dark": "#fce7f3",
         "text-sub-light": "#836a75",
-        "text-sub-dark": "#ccb0bd"
+        "text-sub-dark": "#ccb0bd",
+        "bg-light": "#f6f8f8",
       },
       borderRadius: {
         lg: "var(--radius)",
@@ -66,5 +67,5 @@ module.exports = {
       },
     },
   },
-  plugins: [require("tailwindcss-animate"), require('@tailwindcss/forms')],
-}
+  plugins: [require("tailwindcss-animate"), require("@tailwindcss/forms")],
+};
