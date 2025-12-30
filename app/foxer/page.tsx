@@ -59,7 +59,7 @@ export default function DashboardPage() {
         <section className="bg-white dark:bg-card-dark rounded-3xl border border-pink-100 dark:border-pink-900/30 p-8 mb-12 shadow-sm">
           <div className="flex items-center justify-between mb-8">
             <div>
-              <h2 className="text-2xl font-bold text-gray-800 dark:text-white">Popular Foxxers</h2>
+              <h2 className="text-2xl font-bold text-gray-800 dark:text-white">Popular Foxers</h2>
               <p className="text-sm text-gray-500 mt-1">Connect with top event hosts and community leaders</p>
             </div>
             <a href="#" className="text-sm font-bold text-pink-500 hover:text-pink-600 flex items-center gap-2 transition-colors group">

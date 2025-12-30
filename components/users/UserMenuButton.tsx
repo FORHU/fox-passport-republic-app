@@ -76,7 +76,7 @@ export default function UserMenuButton({ onBecomeHost }: UserMenuButtonProps) {
   const handleAvatarClick = (e: React.MouseEvent) => {
     e.stopPropagation();
     close();
-    router.push("/authenticatedUser");
+    router.push("/profile");
   };
 
   // Click on hamburger → toggle menu

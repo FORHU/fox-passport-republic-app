@@ -243,7 +243,7 @@ const TrendingSection: React.FC = () => {
   }, []);
 
   return (
-    <section className="pt-8 pb-4 bg-white">
+    <section className="pt-12 md:pt-16 pb-4 bg-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex flex-col md:flex-row md:items-end justify-between mb-6 gap-4">
           <div>

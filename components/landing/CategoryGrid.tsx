@@ -29,10 +29,9 @@ const CategoryGrid: React.FC = () => {
 
   const handleCategoryClick = (categoryName: string) => {
     if (categoryName === "More") {
-      // Could open a modal or navigate to all categories
-      router.push("/?category=Hotels%20%26%20Travel");
+      router.push("/categories");
     } else {
-      router.push(`/?category=${encodeURIComponent(categoryName)}`);
+      router.push(`/categories?type=${encodeURIComponent(categoryName)}`);
     }
   };
 

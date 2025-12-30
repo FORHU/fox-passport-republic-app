@@ -26,12 +26,12 @@ const FEATURES = [
 
 const WhyChooseUs: React.FC = () => {
   return (
-    <section className="py-8 bg-gray-50/50">
+    <section className="py-12 md:py-16 bg-gray-50/50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-        <h2 className="text-3xl font-extrabold text-gray-700 mb-2">
+        <h2 className="text-3xl font-extrabold text-gray-700 mb-4">
           Why Choose FoxPassport?
         </h2>
-        <p className="text-gray-500 mb-6 max-w-2xl mx-auto">
+        <p className="text-gray-500 mb-10 max-w-2xl mx-auto">
           We simplify discovery across the Philippines so you can focus on the
           experience.
         </p>
