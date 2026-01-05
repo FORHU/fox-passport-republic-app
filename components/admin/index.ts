@@ -5,5 +5,7 @@ export { RevenueChart, CategoryChart } from "./Charts";
 export { default as BookingsTable } from "./BookingsTable";
 export { default as AdminAuthGuard } from "./AdminAuthGuard";
 export { default as Dashboard } from "./Dashboard";
+export { default as EventForm } from "./EventForm";
+export { default as EventsManagement } from "./EventsManagement";
 export * from "./constants";
 export * from "./types";
