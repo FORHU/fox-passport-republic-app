@@ -3,7 +3,7 @@
 import React from 'react';
 import RequireAuth from "@/components/authentication/RequireAuth";
 import Navbar from "@/components/foxer/Navbar";
-import CreateEventModal from "@/components/foxer/CreateEventModal";
+import CreateEventWizard from "@/components/foxer/CreateEventWizard";
 
 export default function FoxerDashboardLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -22,7 +22,7 @@ export default function FoxerDashboardLayout({ children }: { children: React.Rea
         </main>
         
       </div>
-      <CreateEventModal />
+      <CreateEventWizard />
     </RequireAuth>
   );
 }
