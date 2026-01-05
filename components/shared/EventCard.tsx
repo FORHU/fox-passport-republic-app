@@ -2,6 +2,7 @@
 
 import React from "react";
 import Image from "next/image";
+import Link from "next/link";
 import { Heart, Star, MapPin } from "lucide-react";
 import { Event } from "@/types/event";
 
@@ -34,7 +35,7 @@ const EventCard: React.FC<EventCardProps> = ({ event }) => {
     : "Location TBD";
 
   return (
-    <div className="group cursor-pointer">
+    <Link href={`/venues/${event.id}`} className="group cursor-pointer block">
       {/* Image Container */}
       <div className="relative aspect-square rounded-xl overflow-hidden mb-3">
         <Image
@@ -92,7 +93,7 @@ const EventCard: React.FC<EventCardProps> = ({ event }) => {
           </p>
         )}
       </div>
-    </div>
+    </Link>
   );
 };
 
