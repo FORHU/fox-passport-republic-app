@@ -12,12 +12,13 @@ interface UseEventsByCategoryReturn {
 }
 
 // Helper function to convert category name to slug
+// Matches backend slug format: "Food & Dining" -> "food-dining"
 function categoryNameToSlug(name: string): string {
   return name
     .toLowerCase()
-    .replace(/&/g, "and")
     .replace(/\s+/g, "-")
-    .replace(/[^a-z0-9-]/g, "");
+    .replace(/[^a-z0-9-]/g, "")
+    .replace(/-+/g, "-"); // Collapse multiple hyphens into one
 }
 
 export function useEventsByCategory(

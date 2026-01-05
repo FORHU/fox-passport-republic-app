@@ -31,7 +31,7 @@ const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab }) => {
       <div className="p-6">
         <Link href="/" className="flex items-center gap-3">
           <Image
-            src="/images/foxpassport-logo.png"
+            src="/logofoxpassport.png"
             alt="FoxPassport"
             width={40}
             height={40}
