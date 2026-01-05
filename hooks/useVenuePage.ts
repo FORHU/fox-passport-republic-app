@@ -3,7 +3,50 @@
 
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { useParams, useSearchParams } from "next/navigation";
-import { HARDCODED_VENUES } from "@/data/hardcodedVenues";
+import api from "@/lib/axios";
+
+// Define interface matching the component's expectations
+interface Venue {
+  id: string;
+  title: string;
+  location: string;
+  province: string;
+  price: number;
+  rating: number;
+  reviews: number;
+  images: string[];
+  description: string;
+  category: string;
+  guestCount: number;
+  bedroomCount: number;
+  bathroomCount: number;
+  host: {
+    name: string;
+    avatar: string;
+    isCertifiedFoxer: boolean;
+    joined: string;
+    description?: string;
+    responseRate?: number;
+    responseTime?: string;
+    coHosts?: { name: string; avatar: string }[];
+    work?: string;
+    funFact?: string;
+    details?: string[];
+    reviewCount?: number;
+    rating?: number;
+    yearsHosting?: number;
+  };
+  offers: string[];
+  activities: string[];
+  ratingCategories?: {
+    cleanliness: number;
+    accuracy: number;
+    checkIn: number;
+    communication: number;
+    location: number;
+    value: number;
+  };
+}
 
 export function useVenuePage() {
   const params = useParams();
@@ -11,8 +54,140 @@ export function useVenuePage() {
   // Safe access to ID (handling edge case where ID might be an array)
   const id = Array.isArray(params?.id) ? params.id[0] : params?.id;
 
+  const [venue, setVenue] = useState<Venue | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
   // --- 1. Fetch Data ---
-  const venue = useMemo(() => HARDCODED_VENUES.find((v) => v.id === id), [id]);
+  useEffect(() => {
+    if (!id) return;
+
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+
+        // STRATEGY: Try fetching as EVENT first (most likely from Category page),
+        // then fallback to VENUE if not found (404).
+
+        let data: any = null;
+        let isEvent = false;
+
+        try {
+          // Try fetching as Event
+          // Note: /api/v1/events/:id
+          const response = await api.get(`/v1/events/${id}`);
+          if (response.data?.success) {
+            data = response.data.data;
+            isEvent = true;
+          }
+        } catch (eventErr: any) {
+          // If 404, it might be a Venue ID, so try that next.
+          // If other error, we might still want to try Venue or fail.
+          if (eventErr.response && eventErr.response.status === 404) {
+            console.log("Not an event, trying venue...");
+          } else {
+            // Log but continue to try venue just in case (optional, but safer to try)
+            console.warn("Error fetching event:", eventErr);
+          }
+        }
+
+        if (!data) {
+          try {
+            // Fallback: Try fetching as Venue
+            // Note: /api/v1/venues/:id
+            const response = await api.get(`/v1/venues/${id}`);
+            if (response.data?.success) {
+              data = response.data.data;
+              isEvent = false;
+            }
+          } catch (venueErr: any) {
+            console.error("Error fetching venue:", venueErr);
+            throw new Error("Could not find event or venue");
+          }
+        }
+
+        if (!data) {
+          throw new Error("No data found");
+        }
+
+        // --- MAP TRANSFORM ---
+        // Normalize both Event or Venue data to the UI 'Venue' interface
+
+        const hostData = isEvent ? data.foxer : data.host;
+        const details = isEvent ? data.details : data; // Event has 'details' relation, Venue IS the details (mostly)
+        const pricing = isEvent
+          ? data.pricing?.[0] || {}
+          : data.pricing?.[0] || {};
+
+        // Images
+        const rawImages = data.images?.map((img: any) => img.imageUrl) || [];
+
+        // Host Image
+        const hostAvatar =
+          hostData?.profileImage ||
+          `https://ui-avatars.com/api/?name=${
+            hostData?.name || "User"
+          }&background=random`;
+
+        const mappedVenue: Venue = {
+          id: data.id,
+          title: isEvent ? data.title : data.name,
+          location: isEvent ? details?.city || "Location TBD" : data.city,
+          province: isEvent
+            ? details?.state || details?.country || ""
+            : data.state || data.country,
+          price: Number(pricing.basePrice || pricing.pricePerDay || 0),
+          rating: 4.8, // Placeholder until reviews are aggregated
+          reviews: data._count?.reviews || 0,
+          images:
+            rawImages.length > 0
+              ? rawImages
+              : [
+                  "https://images.unsplash.com/photo-1540575467063-178a50c2df87",
+                ], // Fallback image
+          description: data.description || "No description available.",
+          category: data.category?.name || (isEvent ? "Event" : "Venue"),
+          guestCount: isEvent ? data.maxAttendees || 20 : data.capacity || 2,
+          bedroomCount: 1, // Not really applicable for events, default to 1
+          bathroomCount: 1,
+          host: {
+            name: hostData?.name || "Host",
+            avatar: hostAvatar,
+            isCertifiedFoxer: hostData?.isFoxer || false,
+            joined: hostData?.createdAt
+              ? `Joined ${new Date(hostData.createdAt).getFullYear()}`
+              : "Joined 2024",
+            description:
+              hostData?.bio || `Hosted by ${hostData?.name || "Foxer"}`,
+            responseRate: 100,
+            responseTime: "within an hour",
+          },
+          offers: isEvent
+            ? data.venue?.amenities?.map((a: any) => a.name) || [] // If event has venue, use its amenities
+            : data.amenities?.map((a: any) => a.name) || [],
+          activities: [], // Can map if backend has this
+          ratingCategories: {
+            cleanliness: 5.0,
+            accuracy: 5.0,
+            checkIn: 5.0,
+            communication: 5.0,
+            location: 5.0,
+            value: 5.0,
+          },
+        };
+
+        setVenue(mappedVenue);
+      } catch (err) {
+        console.error("Failed to load page data:", err);
+        setError("Failed to load details");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, [id]);
 
   // --- 2. Booking Logic ---
   const initialCheckIn = searchParams.get("checkIn")
@@ -47,29 +222,27 @@ export function useVenuePage() {
   const [isGalleryOpen, setIsGalleryOpen] = useState(false);
   const [photoIndex, setPhotoIndex] = useState(0);
 
-  // Fallback Logic: Ensure we have at least 5 images for the grid
+  // Ensure we have images (fallback logic)
   const images = useMemo(() => {
     if (!venue) return [];
     const rawImages = venue.images || [];
-    if (rawImages.length < 5) {
+    // If fewer than 5 images, repeat them to fill the grid (UI requirement)
+    if (rawImages.length > 0 && rawImages.length < 5) {
       const needed = 5 - rawImages.length;
-      const filler = rawImages[0] || "/placeholder.jpg";
+      const filler = rawImages[0];
       return [...rawImages, ...Array(needed).fill(filler)];
     }
     return rawImages;
   }, [venue]);
 
-  // Mock Rich Data for Sidebar
+  // Sidebar Data for Gallery
   const imageRichData = useMemo(
     () =>
       images.map((img, idx) => ({
         src: img,
         caption:
-          idx === 0
-            ? `Welcome to ${venue?.title}. This is the main view showing the spacious living area.`
-            : `A detailed look at the property amenities. Every corner is designed with comfort in mind.`,
-        photographer:
-          idx % 2 === 0 ? "Verified Host Photo" : "Professional Photographer",
+          idx === 0 ? `Welcome to ${venue?.title}.` : `Experience the vibe.`,
+        photographer: "Foxer Republic",
       })),
     [images, venue]
   );
@@ -128,6 +301,8 @@ export function useVenuePage() {
     isCertifiedFoxer: false,
     joined: "Joined 2023",
   };
+
+  // Default rating categories if fetch fails or incomplete
   const ratingCats = venue?.ratingCategories || {
     cleanliness: 4.8,
     accuracy: 4.8,
@@ -159,7 +334,8 @@ export function useVenuePage() {
 
   return {
     venue,
-    loading: !venue,
+    loading,
+    error,
     booking: {
       dateRange,
       setDateRange,
