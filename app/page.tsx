@@ -10,6 +10,7 @@ import AuthModal from "@/components/landing/AuthModal";
 // --- New Landing Components ---
 import Hero from "@/components/landing/Hero";
 import CategoryGrid from "@/components/landing/CategoryGrid";
+import FoxersSection from "@/components/landing/FoxersSection";
 import WhyChooseUs from "@/components/landing/WhyChooseUs";
 import TrendingSection from "@/components/landing/TrendingSection";
 import Newsletter from "@/components/landing/Newsletter";
@@ -168,6 +169,7 @@ function HomeContent() {
       <Navbar />
       <main className="pt-[60px] md:pt-[70px]">
         <Hero />
+        <FoxersSection />
         <CategoryGrid />
         <WhyChooseUs />
         <TrendingSection />
