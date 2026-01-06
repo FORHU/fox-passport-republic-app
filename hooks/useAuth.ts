@@ -49,7 +49,9 @@ export const useLogin = () => {
       console.log("Login Success:", data);
 
       // Save user to store
-      login(data.user || data);
+      // Save user to store
+      // We pass 'data' because it contains { user, accessToken, refreshToken }
+      login(data);
 
       toast.success("Welcome back!");
 
