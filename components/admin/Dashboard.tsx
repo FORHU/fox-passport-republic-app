@@ -25,26 +25,26 @@ const revenueData = [
 
 // Category Data
 const categoryData = [
-  { name: 'Adventure', value: 85, color: 'bg-pink-500' },
-  { name: 'Cultural', value: 72, color: 'bg-emerald-500' },
-  { name: 'Culinary', value: 68, color: 'bg-violet-500' },
-  { name: 'Wellness', value: 54, color: 'bg-amber-500' },
+  { name: 'Festivals & Fairs', value: 85, color: 'bg-pink-500' },
+  { name: 'Live Performances', value: 72, color: 'bg-emerald-500' },
+  { name: 'Classes & Workshops', value: 68, color: 'bg-violet-500' },
+  { name: 'Tours & Excursions', value: 54, color: 'bg-amber-500' },
 ];
 
 // Event Moderation Data
 const moderationEvents: ModerationEvent[] = [
-  { id: '1', name: 'Sunset Beach Yoga Retreat', location: 'Malibu, CA', organizer: 'Sarah Chen', organizerAvatar: 'https://i.pravatar.cc/100?u=sarah', category: 'Wellness', submittedAt: '2 hours ago', status: 'Reviewing', icon: 'spa', iconColor: 'text-emerald-500', iconBg: 'bg-emerald-100' },
-  { id: '2', name: 'Underground Street Art Tour', location: 'Brooklyn, NY', organizer: 'Marcus Rivera', organizerAvatar: 'https://i.pravatar.cc/100?u=marcus', category: 'Cultural', submittedAt: '4 hours ago', status: 'Pending', icon: 'palette', iconColor: 'text-violet-500', iconBg: 'bg-violet-100' },
-  { id: '3', name: 'Farm-to-Table Cooking Class', location: 'Napa Valley, CA', organizer: 'Chef Antonio', organizerAvatar: 'https://i.pravatar.cc/100?u=antonio', category: 'Culinary', submittedAt: '6 hours ago', status: 'Approved', icon: 'restaurant', iconColor: 'text-amber-500', iconBg: 'bg-amber-100' },
-  { id: '4', name: 'Midnight Kayak Adventure', location: 'Seattle, WA', organizer: 'Jake Thompson', organizerAvatar: 'https://i.pravatar.cc/100?u=jake', category: 'Adventure', submittedAt: '8 hours ago', status: 'Reviewing', icon: 'kayaking', iconColor: 'text-pink-500', iconBg: 'bg-pink-100' },
+  { id: '1', name: 'Wanderland Music Festival', location: 'Manila, PH', organizer: 'Sarah Chen', organizerAvatar: 'https://i.pravatar.cc/100?u=sarah', category: 'Festivals & Fairs', submittedAt: '2 hours ago', status: 'Reviewing', icon: 'celebration', iconColor: 'text-emerald-500', iconBg: 'bg-emerald-100' },
+  { id: '2', name: 'Manila Symphony Concert', location: 'CCP, Manila', organizer: 'Marcus Rivera', organizerAvatar: 'https://i.pravatar.cc/100?u=marcus', category: 'Live Performances', submittedAt: '4 hours ago', status: 'Pending', icon: 'music_note', iconColor: 'text-violet-500', iconBg: 'bg-violet-100' },
+  { id: '3', name: 'Cooking Masterclass', location: 'Makati, PH', organizer: 'Chef Antonio', organizerAvatar: 'https://i.pravatar.cc/100?u=antonio', category: 'Classes & Workshops', submittedAt: '6 hours ago', status: 'Approved', icon: 'school', iconColor: 'text-amber-500', iconBg: 'bg-amber-100' },
+  { id: '4', name: 'Intramuros Heritage Walk', location: 'Manila, PH', organizer: 'Jake Thompson', organizerAvatar: 'https://i.pravatar.cc/100?u=jake', category: 'Tours & Excursions', submittedAt: '8 hours ago', status: 'Reviewing', icon: 'hiking', iconColor: 'text-pink-500', iconBg: 'bg-pink-100' },
 ];
 
 // Recent Bookings Data
 const recentBookings: Booking[] = [
-  { id: 'BK001', customer: 'Emma Wilson', experience: 'Mountain Hiking Tour', category: 'Adventure', date: 'Dec 28, 2024', amount: '$189', status: 'Confirmed', avatar: 'https://i.pravatar.cc/100?u=emma' },
-  { id: 'BK002', customer: 'James Liu', experience: 'Wine Tasting Experience', category: 'Culinary', date: 'Dec 27, 2024', amount: '$245', status: 'Pending', avatar: 'https://i.pravatar.cc/100?u=james' },
-  { id: 'BK003', customer: 'Sofia Martinez', experience: 'Historic City Walk', category: 'Cultural', date: 'Dec 27, 2024', amount: '$75', status: 'Confirmed', avatar: 'https://i.pravatar.cc/100?u=sofia' },
-  { id: 'BK004', customer: 'David Kim', experience: 'Sunrise Meditation', category: 'Wellness', date: 'Dec 26, 2024', amount: '$120', status: 'Cancelled', avatar: 'https://i.pravatar.cc/100?u=david' },
+  { id: 'BK001', customer: 'Emma Wilson', experience: 'Wanderland Music Festival', category: 'Festivals & Fairs', date: 'Dec 28, 2024', amount: '$189', status: 'Confirmed', avatar: 'https://i.pravatar.cc/100?u=emma' },
+  { id: 'BK002', customer: 'James Liu', experience: 'Broadway Musical Night', category: 'Live Performances', date: 'Dec 27, 2024', amount: '$245', status: 'Pending', avatar: 'https://i.pravatar.cc/100?u=james' },
+  { id: 'BK003', customer: 'Sofia Martinez', experience: 'Pottery Workshop', category: 'Classes & Workshops', date: 'Dec 27, 2024', amount: '$75', status: 'Confirmed', avatar: 'https://i.pravatar.cc/100?u=sofia' },
+  { id: 'BK004', customer: 'David Kim', experience: 'Heritage City Tour', category: 'Tours & Excursions', date: 'Dec 26, 2024', amount: '$120', status: 'Cancelled', avatar: 'https://i.pravatar.cc/100?u=david' },
 ];
 
 // Stat Card Component

@@ -70,7 +70,7 @@ export default function DashboardPage() {
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8">
             {[
               { name: "Sarah Jenkins", role: "Tech Organizer", img: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=200", events: 15, followers: "2.4k" },
-              { name: "Mike Thompson", role: "Music & Nightlife", img: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?q=80&w=200", events: 42, followers: "8.1k" },
+              { name: "Mike Thompson", role: "Music & Performances", img: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?q=80&w=200", events: 42, followers: "8.1k" },
               { name: "Elena Rodriguez", role: "Art & Culture", img: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?q=80&w=200", events: 8, followers: "1.2k" },
               { name: "Davide Russo", role: "Food & Drink", img: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=200", events: 22, followers: "5.6k" },
             ].map((foxxer, i) => (
@@ -168,12 +168,12 @@ export default function DashboardPage() {
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
               {[
-                { title: "Neon Night Run 5K", loc: "Downtown Central Park", price: "$25", tag: "Running", color: "bg-pink-500", img: "https://images.unsplash.com/photo-1552674605-46d536d2e609?q=80&w=600", date: "12", month: "NOV" },
-                { title: "Tech Founders Mixer & Panel", loc: "The Hive Co-working Space", price: "Free", tag: "Networking", color: "bg-indigo-500", img: "https://images.unsplash.com/photo-1515187029135-18ee286d815b?q=80&w=600", date: "14", month: "NOV" },
-                { title: "Rooftop Jazz & Cocktails", loc: "SkyBar at The Pinnacle", price: "$15", tag: "Nightlife", color: "bg-rose-500", img: "https://images.unsplash.com/photo-1514525253440-b393452e3383?q=80&w=600", date: "15", month: "NOV" },
-                { title: "Clay & Sip: Pottery Workshop", loc: "Artisan Studio, East End", price: "$45", tag: "Workshop", color: "bg-orange-500", img: "https://images.unsplash.com/photo-1504279577054-acfeccf8fc52?q=80&w=600", date: "18", month: "NOV" },
-                { title: "Cinema in the Park: Classic Sci-Fi", loc: "Riverside Park Amphitheater", price: "Free", tag: "Community", color: "bg-purple-500", img: "https://images.unsplash.com/photo-1536440136628-849c177e76a1?q=80&w=600", date: "20", month: "NOV" },
-                { title: "Sunrise Yoga & Meditation", loc: "Harbor Point Deck", price: "$12", tag: "Wellness", color: "bg-teal-500", img: "https://images.unsplash.com/photo-1544367563-12123d8965cd?q=80&w=600", date: "22", month: "NOV" },
+                { title: "Neon Night Run 5K", loc: "Downtown Central Park", price: "$25", tag: "Competitions", color: "bg-pink-500", img: "https://images.unsplash.com/photo-1552674605-46d536d2e609?q=80&w=600", date: "12", month: "NOV" },
+                { title: "Tech Founders Mixer & Panel", loc: "The Hive Co-working Space", price: "Free", tag: "Parties", color: "bg-indigo-500", img: "https://images.unsplash.com/photo-1515187029135-18ee286d815b?q=80&w=600", date: "14", month: "NOV" },
+                { title: "Rooftop Jazz & Cocktails", loc: "SkyBar at The Pinnacle", price: "$15", tag: "Performances", color: "bg-rose-500", img: "https://images.unsplash.com/photo-1514525253440-b393452e3383?q=80&w=600", date: "15", month: "NOV" },
+                { title: "Clay & Sip: Pottery Workshop", loc: "Artisan Studio, East End", price: "$45", tag: "Classes", color: "bg-orange-500", img: "https://images.unsplash.com/photo-1504279577054-acfeccf8fc52?q=80&w=600", date: "18", month: "NOV" },
+                { title: "Cinema in the Park: Classic Sci-Fi", loc: "Riverside Park Amphitheater", price: "Free", tag: "Festivals", color: "bg-purple-500", img: "https://images.unsplash.com/photo-1536440136628-849c177e76a1?q=80&w=600", date: "20", month: "NOV" },
+                { title: "Sunday Farmers Market", loc: "Harbor Point Deck", price: "$12", tag: "Markets", color: "bg-teal-500", img: "https://images.unsplash.com/photo-1488646953014-85cb44e25828?q=80&w=600", date: "22", month: "NOV" },
               ].map((event, i) => (
                 <div key={i} className="group bg-white dark:bg-card-dark rounded-3xl overflow-hidden border border-pink-100 dark:border-pink-900/30 hover:shadow-2xl hover:shadow-pink-200/40 dark:hover:shadow-none hover:-translate-y-2 transition-all duration-300 flex flex-col h-full">
                   <div className="relative h-56 overflow-hidden">

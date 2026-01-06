@@ -21,32 +21,32 @@ interface ReviewCardProps {
 
 const ReviewCard: React.FC<ReviewCardProps> = ({ review }) => {
   return (
-    <div className="bg-white border border-gray-100 rounded-[1.5rem] p-5 shadow-sm hover:shadow-md transition-shadow h-full flex flex-col">
+    <div className="bg-white border border-gray-100 rounded-[1.5rem] p-4 shadow-sm hover:shadow-md transition-shadow h-full flex flex-col">
       {/* User Header */}
-      <div className="flex items-center gap-3 mb-4">
+      <div className="flex items-center gap-2.5 mb-3">
         <img
           src={review.avatar}
           alt={review.author}
-          className="w-10 h-10 rounded-full object-cover border border-gray-100"
+          className="w-9 h-9 rounded-full object-cover border border-gray-100"
         />
         <div>
-          <h4 className="text-sm font-bold text-gray-700 leading-tight">
+          <h4 className="text-xs font-bold text-gray-700 leading-tight">
             {review.author}
           </h4>
-          <p className="text-[10px] text-gray-500 font-medium">wrote a review</p>
+          <p className="text-[9px] text-gray-500 font-medium">wrote a review</p>
         </div>
       </div>
 
       {/* Category & Rating */}
-      <div className="mb-3">
-        <h5 className="text-[11px] font-extrabold text-gray-700 mb-1 uppercase tracking-tight">
+      <div className="mb-2.5">
+        <h5 className="text-[10px] font-extrabold text-gray-700 mb-1 uppercase tracking-tight">
           {review.category}
         </h5>
         <div className="flex gap-0.5">
           {[...Array(5)].map((_, i) => (
             <span
               key={i}
-              className={`w-2.5 h-2.5 rounded-full ${
+              className={`w-2 h-2 rounded-full ${
                 i < review.stars ? "bg-pink-500" : "bg-gray-200"
               }`}
             />
@@ -55,23 +55,23 @@ const ReviewCard: React.FC<ReviewCardProps> = ({ review }) => {
       </div>
 
       {/* Comment */}
-      <p className="text-[12px] text-gray-500 leading-relaxed mb-4 line-clamp-3 font-medium flex-1">
+      <p className="text-[11px] text-gray-500 leading-relaxed mb-3 line-clamp-2 font-medium flex-1">
         {review.comment}
       </p>
 
       {/* Actions */}
-      <div className="flex items-center gap-4 text-gray-500 pt-2 border-t border-gray-100">
-        <div className="flex items-center gap-1.5 cursor-pointer hover:text-pink-500 transition-colors">
-          <ThumbsUp className="w-4 h-4" />
-          <span className="text-[11px] font-bold">{review.likes}</span>
+      <div className="flex items-center gap-3 text-gray-500 pt-2 border-t border-gray-100">
+        <div className="flex items-center gap-1 cursor-pointer hover:text-pink-500 transition-colors">
+          <ThumbsUp className="w-3.5 h-3.5" />
+          <span className="text-[10px] font-bold">{review.likes}</span>
         </div>
-        <div className="flex items-center gap-1.5 cursor-pointer hover:text-pink-500 transition-colors">
-          <MessageCircle className="w-4 h-4" />
-          <span className="text-[11px] font-bold">{review.comments}</span>
+        <div className="flex items-center gap-1 cursor-pointer hover:text-pink-500 transition-colors">
+          <MessageCircle className="w-3.5 h-3.5" />
+          <span className="text-[10px] font-bold">{review.comments}</span>
         </div>
-        <div className="flex items-center gap-1.5 cursor-pointer hover:text-pink-500 transition-colors">
-          <Share2 className="w-4 h-4" />
-          <span className="text-[11px] font-bold">{review.shares}</span>
+        <div className="flex items-center gap-1 cursor-pointer hover:text-pink-500 transition-colors">
+          <Share2 className="w-3.5 h-3.5" />
+          <span className="text-[10px] font-bold">{review.shares}</span>
         </div>
       </div>
     </div>
