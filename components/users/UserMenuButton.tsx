@@ -16,46 +16,13 @@ import {
   Gift,
   LogOut,
   Menu,
+  Building2,
 } from "lucide-react";
 import { useUserMenu } from "@/hooks/useUserMenu";
 import { useAuthStore } from "@/store/useAuthStore";
+import { useBecomeHost } from "@/hooks/useBecomeHost";
 
-// Menu item configuration - customize hrefs as needed
-const menuSections = [
-  {
-    items: [
-      { label: "Wishlists", icon: Heart, href: "/wishlists" },
-      { label: "Trips", icon: Briefcase, href: "/trips" },
-      { label: "Messages", icon: MessageSquare, href: "/messages" },
-      { label: "Profile", icon: User, href: "/profile" },
-    ],
-  },
-  {
-    items: [
-      { label: "Account settings", icon: Settings, href: "/settings" },
-      { label: "Languages & currency", icon: Globe, href: "/settings/language" },
-      { label: "Help Center", icon: HelpCircle, href: "/help" },
-    ],
-  },
-  {
-    items: [
-      {
-        label: "Become a host",
-        description: "It's easy to start hosting and earn extra income.",
-        icon: Home,
-        href: "/become-host",
-        hasImage: true,
-      },
-    ],
-  },
-  {
-    items: [
-      { label: "Refer a Host", icon: UserPlus, href: "/refer" },
-      { label: "Find a co-host", icon: Users, href: "/co-host" },
-      { label: "Gift cards", icon: Gift, href: "/gift-cards" },
-    ],
-  },
-];
+// Menu item configuration will be generated dynamically based on user role
 
 interface UserMenuButtonProps {
   onBecomeHost?: () => void;
@@ -65,12 +32,62 @@ export default function UserMenuButton({ onBecomeHost }: UserMenuButtonProps) {
   const router = useRouter();
   const { user, logout } = useAuthStore();
   const { isOpen, toggle, close, menuRef } = useUserMenu();
+  const { mutate: becomeHost, isPending } = useBecomeHost();
+
+  // Check if user is already a host
+  const isHost = (user as any)?.isHost || (user as any)?.role === "host";
 
   // Get user initial for avatar
   const userInitial =
     user?.name?.charAt(0).toUpperCase() ||
     user?.email?.charAt(0).toUpperCase() ||
     "U";
+
+  // Generate menu sections dynamically based on user role
+  const menuSections = [
+    {
+      items: [
+        { label: "Wishlists", icon: Heart, href: "/wishlists" },
+        { label: "Trips", icon: Briefcase, href: "/trips" },
+        { label: "Messages", icon: MessageSquare, href: "/messages" },
+        { label: "Profile", icon: User, href: "/profile" },
+      ],
+    },
+    {
+      items: [
+        { label: "Account settings", icon: Settings, href: "/settings" },
+        { label: "Languages & currency", icon: Globe, href: "/settings/language" },
+        { label: "Help Center", icon: HelpCircle, href: "/help" },
+      ],
+    },
+    {
+      items: [
+        isHost
+          ? {
+              label: "Host Dashboard",
+              description: "Manage your venues and listings.",
+              icon: Building2,
+              href: "/host",
+              hasImage: true,
+            }
+          : {
+              label: "Become a host",
+              description: "It's easy to start hosting and earn extra income.",
+              icon: Home,
+              href: "#become-host",
+              hasImage: true,
+              isAction: true, // Flag to handle as action instead of navigation
+            },
+      ],
+    },
+    {
+      items: [
+        { label: "Refer a Host", icon: UserPlus, href: "/refer" },
+        { label: "Find a co-host", icon: Users, href: "/co-host" },
+        { label: "Gift cards", icon: Gift, href: "/gift-cards" },
+      ],
+    },
+  ];
 
   // Click on avatar → go to profile
   const handleAvatarClick = (e: React.MouseEvent) => {
@@ -85,15 +102,23 @@ export default function UserMenuButton({ onBecomeHost }: UserMenuButtonProps) {
     toggle();
   };
 
-  const handleItemClick = (href: string, label: string) => {
+  const handleItemClick = (item: any) => {
     close();
 
-    if (label === "Become a host" && onBecomeHost) {
+    // If it's the "Become a host" action (not navigation)
+    if (item.isAction && item.label === "Become a host") {
+      becomeHost();
+      return;
+    }
+
+    // If there's a custom callback (legacy support)
+    if (item.label === "Become a host" && onBecomeHost) {
       onBecomeHost();
       return;
     }
 
-    router.push(href);
+    // Normal navigation
+    router.push(item.href);
   };
 
   const handleLogout = () => {
@@ -139,8 +164,9 @@ export default function UserMenuButton({ onBecomeHost }: UserMenuButtonProps) {
               {section.items.map((item) => (
                 <button
                   key={item.label}
-                  onClick={() => handleItemClick(item.href, item.label)}
-                  className="w-full text-left px-4 py-3 hover:bg-gray-50 transition-colors flex items-start gap-3 group"
+                  onClick={() => handleItemClick(item)}
+                  disabled={isPending && item.isAction}
+                  className="w-full text-left px-4 py-3 hover:bg-gray-50 transition-colors flex items-start gap-3 group disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <item.icon className="w-5 h-5 text-gray-600 mt-0.5 flex-shrink-0" />
 

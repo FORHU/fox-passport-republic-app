@@ -5,7 +5,9 @@ import { useSearchParams, useRouter } from "next/navigation";
 import Navbar from "@/components/shared/Navbar";
 import { useCategories } from "@/hooks/useCategories";
 import { useEventsByCategory } from "@/hooks/useEventsByCategory";
+import { useVenuesByCategory } from "@/hooks/useVenuesByCategory";
 import EventCard from "@/components/shared/EventCard";
+import VenueCard from "@/components/shared/VenueCard";
 import { 
   Utensils, Mountain, Tent, Music, Building2, 
   PartyPopper, Sparkles, MoreHorizontal, ArrowLeft, Search,
@@ -41,7 +43,8 @@ function CategoriesContent() {
   const type = searchParams.get("type");
   const { categories, loading: categoriesLoading, error: categoriesError } = useCategories();
   const { events, loading: eventsLoading, error: eventsError } = useEventsByCategory(type);
-  
+  const { venues, loading: venuesLoading, error: venuesError } = useVenuesByCategory(type);
+
   // State for search within categories
   const [searchQuery, setSearchQuery] = useState("");
   
@@ -87,34 +90,55 @@ function CategoriesContent() {
             </div>
           </div>
 
-          {/* Events Grid */}
-          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 min-h-[500px]">
-            {eventsLoading ? (
-              <div className="flex items-center justify-center py-20">
-                <Loader2 className="w-8 h-8 text-pink-500 animate-spin" />
-              </div>
-            ) : eventsError ? (
-              <div className="flex flex-col items-center justify-center py-20 text-center">
-                <AlertCircle className="w-12 h-12 text-red-500 mb-4" />
-                <h3 className="text-lg font-bold text-gray-900">Error loading events</h3>
-                <p className="text-gray-500 max-w-xs mt-2 text-sm">{eventsError}</p>
-              </div>
-            ) : events.length > 0 ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-10">
-                {events.map((event) => (
-                  <EventCard key={event.id} event={event} />
-                ))}
-              </div>
-            ) : (
-              <div className="flex flex-col items-center justify-center py-20 text-center">
-                <div className="text-4xl mb-4">📭</div>
-                <h3 className="text-lg font-bold text-gray-900">No events yet</h3>
-                <p className="text-gray-500 max-w-xs mt-2 text-sm">
-                  No events found for {type}. Add events via the backend API with this category.
-                </p>
-              </div>
-            )}
-          </div>
+          {/* Loading State */}
+          {(eventsLoading || venuesLoading) ? (
+            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 min-h-[500px] flex items-center justify-center">
+              <Loader2 className="w-8 h-8 text-pink-500 animate-spin" />
+            </div>
+          ) : (
+            <>
+              {/* Venues Section */}
+              {venues.length > 0 && (
+                <div className="mb-8">
+                  <h2 className="text-2xl font-bold text-gray-900 mb-4">Venues</h2>
+                  <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-10">
+                      {venues.map((venue) => (
+                        <VenueCard key={venue.id} venue={venue} />
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Events Section */}
+              {events.length > 0 && (
+                <div className="mb-8">
+                  <h2 className="text-2xl font-bold text-gray-900 mb-4">Events</h2>
+                  <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-10">
+                      {events.map((event) => (
+                        <EventCard key={event.id} event={event} />
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Empty State */}
+              {events.length === 0 && venues.length === 0 && (
+                <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 min-h-[500px]">
+                  <div className="flex flex-col items-center justify-center py-20 text-center">
+                    <div className="text-4xl mb-4">📭</div>
+                    <h3 className="text-lg font-bold text-gray-900">No content yet</h3>
+                    <p className="text-gray-500 max-w-xs mt-2 text-sm">
+                      No events or venues found for {type}. Create some via the host dashboard or admin panel!
+                    </p>
+                  </div>
+                </div>
+              )}
+            </>
+          )}
         </div>
       </div>
     );

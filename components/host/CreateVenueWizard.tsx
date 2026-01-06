@@ -4,12 +4,17 @@ import React, { useState } from "react";
 import { X, ChevronRight, ChevronLeft, Check, Building2, MapPin, DollarSign, Image as ImageIcon, Sparkles } from "lucide-react";
 import { useCreateVenueModal } from "@/hooks/useCreateVenueModal";
 import { useCategories } from "@/hooks/useCategories";
+import { useAuthStore } from "@/store/useAuthStore";
+import { useHostVenues } from "@/hooks/useHostVenues";
 import axios from "axios";
 import { toast } from "sonner";
 
 export default function CreateVenueWizard() {
   const { closeModal } = useCreateVenueModal();
   const { categories } = useCategories();
+  const user = useAuthStore((state) => state.user);
+  const accessToken = useAuthStore((state) => state.accessToken);
+  const { refetch } = useHostVenues();
   const [currentStep, setCurrentStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -116,6 +121,12 @@ export default function CreateVenueWizard() {
       return;
     }
 
+    // Check if user is authenticated
+    if (!user?.id) {
+      toast.error("You must be logged in to create a venue");
+      return;
+    }
+
     setIsSubmitting(true);
 
     try {
@@ -128,6 +139,7 @@ export default function CreateVenueWizard() {
 
       // Prepare payload
       const payload = {
+        userId: user.id, // Add userId/hostId to the payload
         categoryId: formData.categoryId,
         name: formData.name,
         description: formData.description,
@@ -159,14 +171,22 @@ export default function CreateVenueWizard() {
           : undefined,
       };
 
-      // Make API call
+      // Make API call with Authorization header
       const response = await axios.post(
         `${process.env.NEXT_PUBLIC_API_URL}/v1/venues`,
-        payload
+        payload,
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+        }
       );
 
       if (response.data.success) {
         toast.success("Venue created successfully!");
+
+        // Refetch venues to update the dashboard
+        refetch();
 
         // Reset form
         setFormData({
