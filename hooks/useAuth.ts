@@ -50,7 +50,9 @@ export const useLogin = () => {
     onSuccess: (data) => {
       console.log("Login Success:", data);
 
-      // Pass the entire data object which includes accessToken, refreshToken, and user
+      // Save user to store
+      // Save user to store
+      // We pass 'data' because it contains { user, accessToken, refreshToken }
       login(data);
 
       toast.success("Welcome back!");
