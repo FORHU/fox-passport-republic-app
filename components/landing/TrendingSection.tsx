@@ -5,17 +5,17 @@ import ExperienceListing, { Experience } from "./ExperienceListing";
 import { Review } from "./ReviewCard";
 import { HARDCODED_VENUES } from "@/data/hardcodedVenues";
 
-// Extended mock reviews data - 16 unique reviewers for variety
+// Mock reviews data - aligned with new category system
 const ALL_REVIEWS: Review[] = [
-  // Set 1 - For first venue
+  // Set 1 - For first experience
   {
     id: "r1",
     author: "Sarah K.",
     avatar: "https://i.pravatar.cc/150?u=sarah101",
-    category: "Cozy Retreat",
+    category: "Festivals & Fairs",
     stars: 5,
     comment:
-      "So cozy! The real fireplace was the highlight. Perfect for cold Baguio nights with hot chocolate and good books.",
+      "The music festival was incredible! Amazing lineup and the venue atmosphere was electric. Best weekend ever!",
     likes: 38,
     comments: 6,
     shares: 18,
@@ -24,10 +24,10 @@ const ALL_REVIEWS: Review[] = [
     id: "r2",
     author: "Miguel T.",
     avatar: "https://i.pravatar.cc/150?u=miguel202",
-    category: "Nightlife Experience",
+    category: "Live Performances",
     stars: 5,
     comment:
-      "The nightlife here is amazing. Great food! Walking distance to all the local bars and restaurants in Poblacion.",
+      "The acoustic night was magical. Intimate venue, talented artists, and perfect sound quality throughout.",
     likes: 42,
     comments: 8,
     shares: 20,
@@ -36,35 +36,35 @@ const ALL_REVIEWS: Review[] = [
     id: "r3",
     author: "Anna R.",
     avatar: "https://i.pravatar.cc/150?u=anna303",
-    category: "Urban Living",
+    category: "Classes & Workshops",
     stars: 4,
     comment:
-      "Modern and stylish loft. Can get noisy on weekends but that's part of the Poblacion experience! Still loved it.",
+      "Learned so much in the cooking class! Hands-on experience with professional chefs. Will definitely come back.",
     likes: 18,
     comments: 3,
     shares: 12,
   },
+  // Set 2 - For second experience
   {
     id: "r4",
     author: "Chris D.",
     avatar: "https://i.pravatar.cc/150?u=chris404",
-    category: "Island Paradise",
+    category: "Tours & Excursions",
     stars: 5,
     comment:
-      "Eco-friendly bamboo construction with modern comforts. The host's island hopping recommendations were spot on!",
+      "The hiking tour was well-organized and breathtaking. Our guide was knowledgeable and made it fun for everyone!",
     likes: 30,
     comments: 7,
     shares: 18,
   },
-  // Set 2 - For second venue
   {
     id: "r5",
     author: "Liza M.",
     avatar: "https://i.pravatar.cc/150?u=liza505",
-    category: "Beach Vibes",
+    category: "Parties & Socials",
     stars: 5,
     comment:
-      "Woke up to stunning ocean views every morning. The private beach access made this trip unforgettable!",
+      "Best networking event I've attended! Met amazing people and the venue vibe was perfect for socializing.",
     likes: 56,
     comments: 12,
     shares: 24,
@@ -73,23 +73,23 @@ const ALL_REVIEWS: Review[] = [
     id: "r6",
     author: "Daniel P.",
     avatar: "https://i.pravatar.cc/150?u=daniel606",
-    category: "Adventure Ready",
+    category: "Competitions & Games",
     stars: 4,
     comment:
-      "Perfect base camp for island hopping. The kayaks and snorkeling gear provided were a great bonus!",
+      "The trivia night was competitive and fun! Great prizes and the host kept the energy high all night.",
     likes: 29,
     comments: 5,
     shares: 15,
   },
-  // Set 3 - For third venue
+  // Set 3 - For third experience
   {
     id: "r7",
     author: "Jessica L.",
     avatar: "https://i.pravatar.cc/150?u=jessica707",
-    category: "Mountain Escape",
+    category: "Markets & Pop-Ups",
     stars: 5,
     comment:
-      "The fog rolling through the pine trees in the morning was magical. Best coffee I've ever had up there!",
+      "Found unique handmade items at the craft fair. Supporting local artists while shopping was so fulfilling!",
     likes: 47,
     comments: 9,
     shares: 21,
@@ -98,111 +98,25 @@ const ALL_REVIEWS: Review[] = [
     id: "r8",
     author: "Marco S.",
     avatar: "https://i.pravatar.cc/150?u=marco808",
-    category: "Peaceful Stay",
+    category: "Classes & Workshops",
     stars: 5,
     comment:
-      "Finally found a place where I could disconnect. No WiFi was actually a blessing in disguise.",
+      "The painting workshop exceeded expectations. Great instructor and left with a piece I'm proud of!",
     likes: 33,
     comments: 4,
     shares: 16,
   },
-  // Set 4 - For fourth venue
   {
     id: "r9",
     author: "Kim C.",
     avatar: "https://i.pravatar.cc/150?u=kim909",
-    category: "Luxury Experience",
+    category: "Live Performances",
     stars: 5,
     comment:
-      "The infinity pool overlooking the rice terraces was breathtaking. Worth every peso!",
+      "The theater production was world-class! Stunning performances and beautiful stage design throughout.",
     likes: 64,
     comments: 14,
     shares: 32,
-  },
-  {
-    id: "r10",
-    author: "Paolo G.",
-    avatar: "https://i.pravatar.cc/150?u=paolo010",
-    category: "Cultural Immersion",
-    stars: 5,
-    comment:
-      "The host arranged a traditional cooking class with locals. Such an authentic experience!",
-    likes: 51,
-    comments: 11,
-    shares: 27,
-  },
-  {
-    id: "r11",
-    author: "Mia V.",
-    avatar: "https://i.pravatar.cc/150?u=mia111",
-    category: "Family Friendly",
-    stars: 4,
-    comment:
-      "Kids loved the treehouse! Safe area for children to explore. Will definitely come back.",
-    likes: 39,
-    comments: 7,
-    shares: 19,
-  },
-  {
-    id: "r12",
-    author: "Bryan A.",
-    avatar: "https://i.pravatar.cc/150?u=bryan212",
-    category: "Romantic Getaway",
-    stars: 5,
-    comment:
-      "Proposed to my girlfriend here during sunset. She said yes! The ambiance was perfect.",
-    likes: 88,
-    comments: 23,
-    shares: 45,
-  },
-  // Extra reviews for more variety
-  {
-    id: "r13",
-    author: "Carla J.",
-    avatar: "https://i.pravatar.cc/150?u=carla313",
-    category: "Solo Travel",
-    stars: 5,
-    comment:
-      "As a solo traveler, I felt completely safe here. Met amazing people at the communal breakfast!",
-    likes: 44,
-    comments: 8,
-    shares: 22,
-  },
-  {
-    id: "r14",
-    author: "Renz B.",
-    avatar: "https://i.pravatar.cc/150?u=renz414",
-    category: "Work Remote",
-    stars: 4,
-    comment:
-      "Fast WiFi and quiet workspace. Perfect for digital nomads. The coffee shop downstairs is a bonus!",
-    likes: 36,
-    comments: 6,
-    shares: 17,
-  },
-  {
-    id: "r15",
-    author: "Nina F.",
-    avatar: "https://i.pravatar.cc/150?u=nina515",
-    category: "Wellness Retreat",
-    stars: 5,
-    comment:
-      "The in-house spa and yoga sessions were incredible. Left feeling completely rejuvenated.",
-    likes: 52,
-    comments: 10,
-    shares: 26,
-  },
-  {
-    id: "r16",
-    author: "Jake H.",
-    avatar: "https://i.pravatar.cc/150?u=jake616",
-    category: "Group Trip",
-    stars: 5,
-    comment:
-      "Brought 8 friends for a birthday celebration. The space was perfect and the host was so accommodating!",
-    likes: 61,
-    comments: 15,
-    shares: 30,
   },
 ];
 
@@ -213,12 +127,11 @@ const TrendingSection: React.FC = () => {
     const selected = shuffled.slice(0, 4);
 
     return selected.map((venue, index): Experience => {
-      // Each venue gets a unique set of reviews (no duplicates across venues)
-      const reviewStartIndex = index * 4;
-      const reviewCount = index === 0 || index === 3 ? 4 : 2;
+      // Each experience gets exactly 3 reviews (maximum)
+      const reviewStartIndex = (index * 3) % ALL_REVIEWS.length;
       const venueReviews = ALL_REVIEWS.slice(
         reviewStartIndex,
-        reviewStartIndex + reviewCount
+        reviewStartIndex + 3
       ).map((r, i) => ({
         ...r,
         id: `${venue.id}-review-${i}`,
@@ -260,13 +173,13 @@ const TrendingSection: React.FC = () => {
         </div>
 
         <div className="grid grid-cols-1 gap-6">
-          {/* First experience - vertical layout (large image + 4 reviews) */}
+          {/* First experience - vertical layout (large image + 3 reviews) */}
           <ExperienceListing
             experience={trendingExperiences[0]}
             orientation="vertical"
           />
 
-          {/* Two experiences side by side - horizontal layout */}
+          {/* Two experiences side by side - horizontal layout (3 reviews each) */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             <ExperienceListing
               experience={trendingExperiences[1]}
@@ -278,7 +191,7 @@ const TrendingSection: React.FC = () => {
             />
           </div>
 
-          {/* Fourth experience - vertical layout */}
+          {/* Fourth experience - vertical layout (3 reviews) */}
           <ExperienceListing
             experience={trendingExperiences[3]}
             orientation="vertical"

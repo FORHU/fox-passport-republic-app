@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import CreateVenueWizard from "@/components/host/CreateVenueWizard";
 import { useCreateVenueModal } from "@/hooks/useCreateVenueModal";
 import RequireAuth from "@/components/authentication/RequireAuth";
+import { useAuthStore } from "@/store/useAuthStore";
 
 export default function HostLayout({
   children,
