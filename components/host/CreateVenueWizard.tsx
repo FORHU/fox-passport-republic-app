@@ -4,9 +4,7 @@ import React, { useState } from "react";
 import { X, ChevronRight, ChevronLeft, Check, Building2, MapPin, DollarSign, Image as ImageIcon, Sparkles } from "lucide-react";
 import { useCreateVenueModal } from "@/hooks/useCreateVenueModal";
 import { useCategories } from "@/hooks/useCategories";
-import { useAuthStore } from "@/store/useAuthStore";
-import { useHostVenues } from "@/hooks/useHostVenues";
-import axios from "axios";
+import api from "@/lib/axios";
 import { toast } from "sonner";
 
 export default function CreateVenueWizard() {
@@ -171,15 +169,10 @@ export default function CreateVenueWizard() {
           : undefined,
       };
 
-      // Make API call with Authorization header
-      const response = await axios.post(
-        `${process.env.NEXT_PUBLIC_API_URL}/v1/venues`,
-        payload,
-        {
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-          },
-        }
+      // Make API call
+      const response = await api.post(
+        "/v1/venues",
+        payload
       );
 
       if (response.data.success) {

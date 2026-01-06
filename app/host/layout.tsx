@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import CreateVenueWizard from "@/components/host/CreateVenueWizard";
 import { useCreateVenueModal } from "@/hooks/useCreateVenueModal";
-import { useAuthStore } from "@/store/useAuthStore";
+import RequireAuth from "@/components/authentication/RequireAuth";
 
 export default function HostLayout({
   children,
@@ -63,9 +63,9 @@ export default function HostLayout({
   }
 
   return (
-    <>
+    <RequireAuth>
       {children}
       {isOpen && <CreateVenueWizard />}
-    </>
+    </RequireAuth>
   );
 }
