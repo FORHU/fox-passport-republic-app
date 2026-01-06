@@ -12,11 +12,11 @@ export interface SearchSuggestion {
 export const SEARCH_TABS = [
   "All",
   "Events",
-  "Adventures",
-  "Music",
-  "Food",
-  "Camping",
-  "Venues",
+  "Festivals",
+  "Classes",
+  "Performances",
+  "Tours",
+  "Parties",
 ];
 
 export const useHeroSearch = () => {

@@ -8,10 +8,11 @@ import { useEventsByCategory } from "@/hooks/useEventsByCategory";
 import { useVenuesByCategory } from "@/hooks/useVenuesByCategory";
 import EventCard from "@/components/shared/EventCard";
 import VenueCard from "@/components/shared/VenueCard";
-import { 
-  Utensils, Mountain, Tent, Music, Building2, 
+import {
+  Utensils, Mountain, Tent, Music, Building2,
   PartyPopper, Sparkles, MoreHorizontal, ArrowLeft, Search,
-  Loader2, AlertCircle, LucideIcon, Grid3X3
+  Loader2, AlertCircle, LucideIcon, Grid3X3, GraduationCap,
+  Trophy, MapPin, Users, ShoppingBag
 } from "lucide-react";
 import { Category } from "@/types/category";
 
@@ -26,6 +27,11 @@ const ICON_MAP: Record<string, LucideIcon> = {
   Sparkles: Sparkles,
   MoreHorizontal: MoreHorizontal,
   Grid3X3: Grid3X3,
+  GraduationCap: GraduationCap,
+  Trophy: Trophy,
+  MapPin: MapPin,
+  Users: Users,
+  ShoppingBag: ShoppingBag,
 };
 
 // Default icon if the icon name is not found in the map
@@ -36,6 +42,17 @@ function getIconComponent(iconName: string | null): LucideIcon {
   if (!iconName) return DEFAULT_ICON;
   return ICON_MAP[iconName] || DEFAULT_ICON;
 }
+
+// Category images mapping
+const CATEGORY_IMAGES: Record<string, string> = {
+  "Classes & Workshops": "https://images.unsplash.com/photo-1524178232363-1fb2b075b655?auto=format&fit=crop&q=80&w=800",
+  "Competitions & Games": "https://images.unsplash.com/photo-1552674605-db6ffd4facb5?auto=format&fit=crop&q=80&w=800",
+  "Festivals & Fairs": "https://images.unsplash.com/photo-1492684223066-81342ee5ff30?auto=format&fit=crop&q=80&w=800",
+  "Live Performances": "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?auto=format&fit=crop&q=80&w=800",
+  "Markets & Pop-Ups": "https://images.unsplash.com/photo-1488646953014-85cb44e25828?auto=format&fit=crop&q=80&w=800",
+  "Parties & Socials": "https://images.unsplash.com/photo-1511578314322-379afb476865?auto=format&fit=crop&q=80&w=800",
+  "Tours & Excursions": "https://images.unsplash.com/photo-1551632811-561732d1e306?auto=format&fit=crop&q=80&w=800",
+};
 
 function CategoriesContent() {
   const searchParams = useSearchParams();
@@ -176,63 +193,95 @@ function CategoriesContent() {
 
   // --- VIEW: ALL CATEGORIES LIST ---
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-[#f6f8f8] flex flex-col">
       <Navbar />
-      
-      <main className="pt-24 pb-16 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center mb-12">
-          <h1 className="text-4xl font-extrabold text-gray-800 mb-4">
-            Explore All Categories
-          </h1>
-          <p className="text-lg text-gray-500 max-w-2xl mx-auto mb-8">
-            Browse through our curated collection of experiences, from dining to adventures.
-          </p>
-          
-          {/* Search Box */}
-          <div className="max-w-md mx-auto relative">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
-            <input 
+
+      <main className="flex-grow container mx-auto px-6 lg:px-20 py-10">
+        {/* Breadcrumbs */}
+        <nav className="flex items-center gap-2 text-sm font-semibold text-slate-400 mb-10">
+          <a href="/" className="hover:text-pink-500 transition-colors">Home</a>
+          <span className="text-slate-300">/</span>
+          <span className="text-slate-900">Select Category</span>
+        </nav>
+
+        {/* Hero Area */}
+        <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-8 mb-12">
+          <div className="max-w-xl">
+            <h2 className="text-5xl lg:text-6xl font-black tracking-tight text-slate-900 mb-4 leading-tight">
+              What's the <span className="text-pink-500 italic">vibe</span> today?
+            </h2>
+            <p className="text-xl text-slate-500 font-medium">
+              Let's find your next core memory. Select a category to get started.
+            </p>
+          </div>
+
+          <div className="relative w-full lg:w-96 group">
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-pink-500 transition-colors w-5 h-5" />
+            <input
               type="text"
-              placeholder="Find a category..."
+              placeholder="Search categories..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-12 pr-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-pink-500/20 focus:border-pink-500 transition-all"
+              className="w-full pl-12 pr-6 py-4 rounded-2xl border-none ring-1 ring-slate-200 bg-white shadow-sm focus:ring-2 focus:ring-pink-500 focus:shadow-lg transition-all outline-none"
             />
           </div>
         </div>
 
+        {/* Bento Grid */}
         {filteredCategories.length > 0 ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-            {filteredCategories.map((cat: Category) => {
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 pb-24 auto-rows-[240px]">
+            {filteredCategories.map((cat: Category, index) => {
               const Icon = getIconComponent(cat.icon);
+              const imageUrl = CATEGORY_IMAGES[cat.name] || "https://images.unsplash.com/photo-1492684223066-81342ee5ff30?auto=format&fit=crop&q=80&w=800";
+
+              // Create varied grid spans for bento layout
+              const gridSpan = index === 0 ? 'lg:col-span-2 lg:row-span-2' :
+                             index === 3 ? 'lg:col-span-2' : '';
+              const isLarge = gridSpan.includes('lg:col-span-2');
+
               return (
-                <button
+                <div
                   key={cat.id}
                   onClick={() => handleCategoryClick(cat.name)}
-                  className="group flex items-center gap-4 p-6 bg-white border border-gray-100 rounded-2xl hover:shadow-xl hover:shadow-pink-500/5 hover:border-pink-100 transition-all duration-300 text-left"
+                  className={`group relative rounded-[2rem] overflow-hidden cursor-pointer shadow-lg transition-transform duration-500 hover:-translate-y-1 ${gridSpan}`}
                 >
-                  <div className="w-16 h-16 rounded-2xl bg-pink-50 text-pink-500 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
-                    <Icon className="w-8 h-8" strokeWidth={1.5} />
+                  {/* Category background image */}
+                  <img
+                    src={imageUrl}
+                    alt={cat.name}
+                    className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                  />
+
+                  {/* Overlay gradient */}
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent transition-opacity group-hover:from-black/80" />
+
+                  <div className="absolute bottom-0 left-0 p-8 w-full flex justify-between items-end">
+                    <div className="flex-1">
+                      <h3 className={`${isLarge ? 'text-3xl' : 'text-xl'} font-bold text-white mb-1 group-hover:text-pink-200 transition-colors`}>
+                        {cat.name}
+                      </h3>
+                      <p className="text-white/80 text-sm font-medium line-clamp-2">
+                        {cat.description || "Explore experiences"}
+                      </p>
+                    </div>
+                    {isLarge && (
+                      <div className="w-12 h-12 rounded-full bg-pink-500 flex items-center justify-center text-white shadow-[0_0_20px_rgba(236,72,153,0.4)] opacity-0 group-hover:opacity-100 transform translate-x-4 group-hover:translate-x-0 transition-all">
+                        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                        </svg>
+                      </div>
+                    )}
                   </div>
-                  <div>
-                    <h3 className="font-bold text-gray-800 text-lg group-hover:text-pink-600 transition-colors">
-                      {cat.name}
-                    </h3>
-                    <p className="text-sm text-gray-400 mt-1 group-hover:text-gray-500">
-                      {cat.description || "Explore"}
-                    </p>
-                  </div>
-                </button>
+                </div>
               );
             })}
           </div>
         ) : (
-          <div className="col-span-full text-center py-12 text-gray-400">
-            {searchQuery ? (
-              <>No categories found matching &quot;{searchQuery}&quot;</>
-            ) : (
-              <>No categories available. Add categories via the backend API.</>
-            )}
+          <div className="col-span-full py-20 text-center">
+            <div className="text-6xl text-slate-200 mb-4">🔍</div>
+            <p className="text-slate-500 font-medium">
+              {searchQuery ? `No vibes found matching "${searchQuery}"` : "No categories available"}
+            </p>
           </div>
         )}
       </main>

@@ -3,42 +3,22 @@
 import React from "react";
 import { useRouter } from "next/navigation";
 import {
-  Utensils,
-  Mountain,
-  Tent,
-  Music,
-  Building2,
-  PartyPopper,
-  Sparkles,
-  MoreHorizontal,
-  Grid3X3,
   Loader2,
-  LucideIcon,
+  ArrowRight,
 } from "lucide-react";
 import { useCategories } from "@/hooks/useCategories";
 import { Category } from "@/types/category";
 
-// Icon mapping - maps icon name strings from the backend to Lucide icon components
-const ICON_MAP: Record<string, LucideIcon> = {
-  Utensils: Utensils,
-  Mountain: Mountain,
-  Tent: Tent,
-  Music: Music,
-  Building2: Building2,
-  PartyPopper: PartyPopper,
-  Sparkles: Sparkles,
-  MoreHorizontal: MoreHorizontal,
-  Grid3X3: Grid3X3,
+// Category images mapping
+const CATEGORY_IMAGES: Record<string, string> = {
+  "Classes & Workshops": "https://images.unsplash.com/photo-1524178232363-1fb2b075b655?auto=format&fit=crop&q=80&w=800",
+  "Competitions & Games": "https://images.unsplash.com/photo-1552674605-db6ffd4facb5?auto=format&fit=crop&q=80&w=800",
+  "Festivals & Fairs": "https://images.unsplash.com/photo-1492684223066-81342ee5ff30?auto=format&fit=crop&q=80&w=800",
+  "Live Performances": "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?auto=format&fit=crop&q=80&w=800",
+  "Markets & Pop-Ups": "https://images.unsplash.com/photo-1488646953014-85cb44e25828?auto=format&fit=crop&q=80&w=800",
+  "Parties & Socials": "https://images.unsplash.com/photo-1511578314322-379afb476865?auto=format&fit=crop&q=80&w=800",
+  "Tours & Excursions": "https://images.unsplash.com/photo-1551632811-561732d1e306?auto=format&fit=crop&q=80&w=800",
 };
-
-// Default icon if the icon name is not found
-const DEFAULT_ICON = Grid3X3;
-
-// Helper function to get icon component from icon name
-function getIconComponent(iconName: string | null): LucideIcon {
-  if (!iconName) return DEFAULT_ICON;
-  return ICON_MAP[iconName] || DEFAULT_ICON;
-}
 
 const CategoryGrid: React.FC = () => {
   const router = useRouter();
@@ -76,49 +56,84 @@ const CategoryGrid: React.FC = () => {
     return null; // Hide the section if there are no categories or an error
   }
 
-  // Filter out "More" category from API and add it manually at the end
+  // Filter out "More" category from API
   const displayCategories = categories.filter(cat => cat.slug !== 'more');
 
   return (
-    <section className="py-8 bg-white">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-        <h2 className="text-3xl font-extrabold text-gray-700 mb-2">
-          Explore by Category
-        </h2>
-        <p className="text-gray-500 mb-6">
-          Whatever you&apos;re in the mood for, we&apos;ve got you covered.
-        </p>
+    <section className="py-16 bg-white">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="text-center mb-12">
+          <h2 className="text-4xl font-extrabold text-gray-900 mb-3">
+            Explore by Category
+          </h2>
+          <p className="text-lg text-gray-600">
+            Whatever you&apos;re in the mood for, we&apos;ve got you covered.
+          </p>
+        </div>
 
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-          {displayCategories.map((cat: Category) => {
-            const Icon = getIconComponent(cat.icon);
+        {/* Bento Grid Layout */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 auto-rows-[200px] grid-flow-dense">
+          {displayCategories.map((cat: Category, index) => {
+            const imageUrl = CATEGORY_IMAGES[cat.name] || "https://images.unsplash.com/photo-1492684223066-81342ee5ff30?auto=format&fit=crop&q=80&w=800";
+
+            // Create varied grid spans for bento layout
+            // Index 0: Large 2x2 (Classes & Workshops)
+            // Index 1-2: Regular 1x1 (Competitions, Festivals)
+            // Index 3: Wide 2x1 (Live Performances)
+            // Index 4-6: Regular 1x1 (Markets, Parties, Tours)
+            const gridSpan = index === 0 ? 'sm:col-span-2 sm:row-span-2 lg:col-span-2 lg:row-span-2' :
+                           index === 3 ? 'sm:col-span-2 lg:col-span-2' : '';
+            const isLarge = index === 0;
+
             return (
-              <button
+              <div
                 key={cat.id}
                 onClick={() => handleCategoryClick(cat.name)}
-                className="group cursor-pointer p-8 rounded-2xl border border-gray-100 bg-white hover:border-pink-300 hover:shadow-xl hover:shadow-pink-100 transition-all flex flex-col items-center gap-4"
+                className={`group relative rounded-3xl overflow-hidden cursor-pointer shadow-md hover:shadow-2xl transition-all duration-300 hover:-translate-y-1 ${gridSpan}`}
               >
-                <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-pink-50 text-pink-500 transition-all group-hover:scale-110">
-                  <Icon className="w-9 h-9" strokeWidth={1.5} />
+                {/* Background Image */}
+                <img
+                  src={imageUrl}
+                  alt={cat.name}
+                  className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                />
+
+                {/* Overlay gradient */}
+                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
+
+                {/* Content */}
+                <div className="absolute bottom-0 left-0 p-5 w-full flex justify-between items-end">
+                  <div className="flex-1">
+                    <h3 className={`${isLarge ? 'text-2xl md:text-3xl' : 'text-lg md:text-xl'} font-bold text-white mb-1 group-hover:text-pink-200 transition-colors`}>
+                      {cat.name}
+                    </h3>
+                    {isLarge && (
+                      <p className="text-white/80 text-xs md:text-sm font-normal line-clamp-2 mt-2 max-w-md">
+                        {cat.description || "Explore experiences"}
+                      </p>
+                    )}
+                  </div>
+
+                  {/* Arrow icon for large card */}
+                  {isLarge && (
+                    <div className="w-12 h-12 rounded-full bg-pink-500 flex items-center justify-center text-white shadow-lg opacity-0 group-hover:opacity-100 transform translate-x-4 group-hover:translate-x-0 transition-all">
+                      <ArrowRight className="w-6 h-6" />
+                    </div>
+                  )}
                 </div>
-                <span className="text-sm font-bold text-gray-700 transition-colors group-hover:text-pink-500">
-                  {cat.name}
-                </span>
-              </button>
+              </div>
             );
           })}
-          
-          {/* Always show "More" button at the end */}
+        </div>
+
+        {/* View All Categories Button */}
+        <div className="text-center mt-10">
           <button
             onClick={() => router.push("/categories")}
-            className="group cursor-pointer p-8 rounded-2xl border border-gray-100 bg-white hover:border-pink-300 hover:shadow-xl hover:shadow-pink-100 transition-all flex flex-col items-center gap-4"
+            className="inline-flex items-center gap-2 px-8 py-3 bg-pink-500 text-white font-semibold rounded-full hover:bg-pink-600 transition-colors shadow-lg hover:shadow-xl"
           >
-            <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-pink-50 text-pink-500 transition-all group-hover:scale-110">
-              <MoreHorizontal className="w-9 h-9" strokeWidth={1.5} />
-            </div>
-            <span className="text-sm font-bold text-gray-700 transition-colors group-hover:text-pink-500">
-              More
-            </span>
+            View All Categories
+            <ArrowRight className="w-5 h-5" />
           </button>
         </div>
       </div>

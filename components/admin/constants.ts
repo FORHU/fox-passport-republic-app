@@ -8,11 +8,13 @@ export const STATS: StatData[] = [
 ];
 
 export const CATEGORIES: CategoryData[] = [
-  { name: 'Adventures', percentage: 35, color: 'bg-orange-400' },
-  { name: 'Music & Events', percentage: 25, color: 'bg-blue-400' },
-  { name: 'Camping', percentage: 20, color: 'bg-green-400' },
-  { name: 'Food', percentage: 15, color: 'bg-red-400' },
-  { name: 'Venues', percentage: 5, color: 'bg-purple-400' },
+  { name: 'Festivals & Fairs', percentage: 25, color: 'bg-orange-400' },
+  { name: 'Live Performances', percentage: 20, color: 'bg-blue-400' },
+  { name: 'Classes & Workshops', percentage: 18, color: 'bg-green-400' },
+  { name: 'Tours & Excursions', percentage: 15, color: 'bg-purple-400' },
+  { name: 'Parties & Socials', percentage: 12, color: 'bg-pink-400' },
+  { name: 'Markets & Pop-Ups', percentage: 6, color: 'bg-yellow-400' },
+  { name: 'Competitions & Games', percentage: 4, color: 'bg-red-400' },
 ];
 
 export const RECENT_BOOKINGS: Booking[] = [
@@ -20,8 +22,8 @@ export const RECENT_BOOKINGS: Booking[] = [
     id: '#BK-9821',
     customerName: 'Maria Santos',
     customerAvatar: 'https://i.pravatar.cc/100?u=maria',
-    experience: 'Mt. Pulag Trek',
-    category: 'Adventures',
+    experience: 'Wanderland Music Festival',
+    category: 'Festivals & Fairs',
     date: 'Dec 12, 2023',
     amount: 4500,
     status: BookingStatus.CONFIRMED
@@ -30,8 +32,8 @@ export const RECENT_BOOKINGS: Booking[] = [
     id: '#BK-9820',
     customerName: 'John Cruz',
     customerAvatar: 'https://i.pravatar.cc/100?u=john',
-    experience: 'Wanderland Festival',
-    category: 'Music',
+    experience: 'Manila Symphony Orchestra',
+    category: 'Live Performances',
     date: 'Dec 12, 2023',
     amount: 8000,
     status: BookingStatus.PENDING
@@ -40,8 +42,8 @@ export const RECENT_BOOKINGS: Booking[] = [
     id: '#BK-9819',
     customerName: 'Sarah Lee',
     customerAvatar: 'https://i.pravatar.cc/100?u=sarahlee',
-    experience: 'Glamping by the Sea',
-    category: 'Camping',
+    experience: 'Cooking Masterclass',
+    category: 'Classes & Workshops',
     date: 'Dec 11, 2023',
     amount: 6200,
     status: BookingStatus.CONFIRMED
@@ -50,8 +52,8 @@ export const RECENT_BOOKINGS: Booking[] = [
     id: '#BK-9818',
     customerName: 'Mark Reyes',
     customerAvatar: 'https://i.pravatar.cc/100?u=markreyes',
-    experience: 'Intramuros Food Walk',
-    category: 'Food',
+    experience: 'Intramuros Heritage Tour',
+    category: 'Tours & Excursions',
     date: 'Dec 11, 2023',
     amount: 1500,
     status: BookingStatus.CANCELLED
@@ -60,8 +62,8 @@ export const RECENT_BOOKINGS: Booking[] = [
     id: '#BK-9817',
     customerName: 'Ana Garcia',
     customerAvatar: 'https://i.pravatar.cc/100?u=anagarcia',
-    experience: 'Siargao Surf Camp',
-    category: 'Adventures',
+    experience: 'Networking Mixer',
+    category: 'Parties & Socials',
     date: 'Dec 10, 2023',
     amount: 12000,
     status: BookingStatus.CONFIRMED
@@ -70,8 +72,8 @@ export const RECENT_BOOKINGS: Booking[] = [
     id: '#BK-9816',
     customerName: 'Rico Fernandez',
     customerAvatar: 'https://i.pravatar.cc/100?u=rico',
-    experience: 'Baguio Pine Cabin',
-    category: 'Camping',
+    experience: 'Farmers Market Weekend',
+    category: 'Markets & Pop-Ups',
     date: 'Dec 10, 2023',
     amount: 5500,
     status: BookingStatus.PENDING

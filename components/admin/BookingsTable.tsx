@@ -102,12 +102,18 @@ const BookingsTable: React.FC = () => {
                 <td className="px-6 py-4">
                   <span
                     className={`px-2 py-0.5 rounded text-[11px] font-bold uppercase tracking-wider ${
-                      booking.category === 'Adventures'
+                      booking.category === 'Festivals & Fairs'
                         ? 'bg-orange-50 text-orange-600'
-                        : booking.category === 'Music'
+                        : booking.category === 'Live Performances'
                         ? 'bg-blue-50 text-blue-600'
-                        : booking.category === 'Camping'
+                        : booking.category === 'Classes & Workshops'
                         ? 'bg-green-50 text-green-600'
+                        : booking.category === 'Tours & Excursions'
+                        ? 'bg-purple-50 text-purple-600'
+                        : booking.category === 'Parties & Socials'
+                        ? 'bg-pink-50 text-pink-600'
+                        : booking.category === 'Markets & Pop-Ups'
+                        ? 'bg-yellow-50 text-yellow-600'
                         : 'bg-red-50 text-red-600'
                     }`}
                   >
