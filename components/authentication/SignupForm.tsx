@@ -39,10 +39,16 @@ const CompactInput = ({ label, error, register, name, type = "text", required = 
 export default function SignupForm() {
   const signupMutation = useSignup();
   const { toggleView, close } = useAuthStore();
-  
-  const { register, handleSubmit, formState: { errors } } = useForm<SignupFormData>({
-    resolver: zodResolver(signupSchema)
+
+  const { register, handleSubmit, formState: { errors }, reset } = useForm<SignupFormData>({
+    resolver: zodResolver(signupSchema),
+    mode: "onChange"
   });
+
+  // Reset form when component mounts to ensure fresh state
+  React.useEffect(() => {
+    reset();
+  }, [reset]);
 
   const onSignup: SubmitHandler<SignupFormData> = (data) => signupMutation.mutate(data);
 
@@ -84,13 +90,13 @@ export default function SignupForm() {
         <form onSubmit={handleSubmit(onSignup)} className="space-y-1 md:space-y-2">
             <CompactInput label="Email" name="email" type="email" register={register} error={errors.email} />
             <CompactInput label="Username" name="username" register={register} error={errors.username} />
+            <CompactInput label="Full Name" name="name" register={register} error={errors.name} />
             <CompactInput label="Password" name="password" type="password" register={register} error={errors.password} />
-            
+
             {/* Optional Section with hairline divider */}
             <div className="pt-1 md:pt-3 mt-1 md:mt-1 border-t-[0.5px] border-gray-100">
                 <p className="text-[7px] md:text-[11px] font-bold text-gray-400 uppercase mb-0.5 md:mb-1">Optional Details</p>
                 <div className="space-y-1 md:space-y-2">
-                    <CompactInput label="Full Name" name="name" required={false} register={register} error={errors.name} />
                     <CompactInput label="Mobile Number" name="mobileNumber" type="tel" required={false} register={register} error={errors.mobileNumber} />
                 </div>
             </div>

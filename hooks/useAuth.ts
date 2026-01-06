@@ -6,10 +6,12 @@ import axios from "axios";
 import { toast } from "sonner";
 import { useAuthStore } from "../store/useAuthStore";
 import { LoginFormData, SignupFormData } from "../lib/schema";
+import { LoginResponse } from "../types/auth";
+import { config } from "../lib/config";
 
 // --- AXIOS SETUP ---
 const api = axios.create({
-  baseURL: "http://localhost:3002/api",
+  baseURL: config.apiUrl,
   withCredentials: true,
   headers: {
     "Content-Type": "application/json",
@@ -18,12 +20,12 @@ const api = axios.create({
 
 // --- API FUNCTIONS ---
 
-const realLogin = async (data: LoginFormData) => {
+const realLogin = async (data: LoginFormData): Promise<LoginResponse> => {
   const payload = {
     username: data.username,
     password: data.password,
   };
-  const response = await api.post("/v1/auth/login", payload);
+  const response = await api.post<LoginResponse>("/v1/auth/login", payload);
   return response.data;
 };
 

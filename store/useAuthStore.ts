@@ -1,11 +1,14 @@
 import { create } from "zustand";
+import { User, LoginResponse } from "@/types/auth";
 
 type AuthView = "login" | "signup";
 
 interface AuthState {
   // State
   isAuthenticated: boolean;
-  user: Record<string, unknown> | null;
+  user: User | null;
+  accessToken: string | null;
+  refreshToken: string | null;
   isLoading: boolean;
   isOpen: boolean;
   view: AuthView;
@@ -16,7 +19,7 @@ interface AuthState {
   close: () => void;
   toggleView: () => void;
   setLoading: (loading: boolean) => void;
-  login: (userData: Record<string, unknown>) => void;
+  login: (loginResponse: LoginResponse) => void;
   logout: () => void;
 }
 
@@ -24,6 +27,8 @@ export const useAuthStore = create<AuthState>((set) => ({
   isAuthenticated: false,
   isLoading: true,
   user: null,
+  accessToken: null,
+  refreshToken: null,
   isOpen: false,
   view: "login",
 
@@ -37,15 +42,28 @@ export const useAuthStore = create<AuthState>((set) => ({
 
   setLoading: (loading) => set({ isLoading: loading }),
 
-  login: (userData) => {
-    // Save to local storage if needed
-    localStorage.setItem("fox_user", JSON.stringify(userData));
-    set({ isAuthenticated: true, user: userData, isOpen: false });
+  login: (loginResponse) => {
+    const { accessToken, refreshToken, user } = loginResponse;
+
+    // Save both user and tokens to local storage
+    localStorage.setItem("fox_user", JSON.stringify(user));
+    localStorage.setItem("fox_token", accessToken);
+    localStorage.setItem("fox_refresh_token", refreshToken);
+
+    set({
+      isAuthenticated: true,
+      user,
+      accessToken,
+      refreshToken,
+      isOpen: false
+    });
   },
 
   logout: () => {
     localStorage.removeItem("fox_user");
-    set({ isAuthenticated: false, user: null });
+    localStorage.removeItem("fox_token");
+    localStorage.removeItem("fox_refresh_token");
+    set({ isAuthenticated: false, user: null, accessToken: null, refreshToken: null });
   },
 }));
 

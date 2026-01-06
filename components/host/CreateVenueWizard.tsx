@@ -10,6 +10,9 @@ import { toast } from "sonner";
 export default function CreateVenueWizard() {
   const { closeModal } = useCreateVenueModal();
   const { categories } = useCategories();
+  const user = useAuthStore((state) => state.user);
+  const accessToken = useAuthStore((state) => state.accessToken);
+  const { refetch } = useHostVenues();
   const [currentStep, setCurrentStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -116,6 +119,12 @@ export default function CreateVenueWizard() {
       return;
     }
 
+    // Check if user is authenticated
+    if (!user?.id) {
+      toast.error("You must be logged in to create a venue");
+      return;
+    }
+
     setIsSubmitting(true);
 
     try {
@@ -128,6 +137,7 @@ export default function CreateVenueWizard() {
 
       // Prepare payload
       const payload = {
+        userId: user.id, // Add userId/hostId to the payload
         categoryId: formData.categoryId,
         name: formData.name,
         description: formData.description,
@@ -167,6 +177,9 @@ export default function CreateVenueWizard() {
 
       if (response.data.success) {
         toast.success("Venue created successfully!");
+
+        // Refetch venues to update the dashboard
+        refetch();
 
         // Reset form
         setFormData({

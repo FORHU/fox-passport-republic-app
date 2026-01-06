@@ -12,16 +12,23 @@ export function AuthStoreProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     const checkSession = () => {
       const storedUser = localStorage.getItem('fox_user');
-      
-      if (storedUser) {
+      const storedToken = localStorage.getItem('fox_token');
+      const storedRefreshToken = localStorage.getItem('fox_refresh_token');
+
+      if (storedUser && storedToken) {
         try {
-            // If user exists, log them in
-            login(JSON.parse(storedUser));
+            // If user and tokens exist, restore the session
+            const user = JSON.parse(storedUser);
+            login({
+              user,
+              accessToken: storedToken,
+              refreshToken: storedRefreshToken || ""
+            });
         } catch (e) {
             console.error("Failed to parse user", e);
         }
-      } 
-      
+      }
+
       setLoading(false);
     };
 
