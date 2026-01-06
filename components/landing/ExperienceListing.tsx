@@ -99,12 +99,12 @@ const ExperienceListing: React.FC<ExperienceListingProps> = ({
       <div
         className={`${
           isVertical ? "md:col-span-2" : "md:col-span-1"
-        } flex flex-col`}
+        } flex flex-col justify-between`}
       >
         <div
           className={`grid ${
-            isVertical ? "grid-cols-1 lg:grid-cols-2" : "grid-cols-1"
-          } gap-4 h-full auto-rows-fr`}
+            isVertical ? "grid-cols-1" : "grid-cols-1"
+          } gap-4 content-start`}
         >
           {experience.reviews.map((review) => (
             <ReviewCard key={review.id} review={review} />
