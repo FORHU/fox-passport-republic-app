@@ -38,10 +38,16 @@ const CompactInput = ({ label, error, register, name, type = "text", ...props }:
 export default function LoginForm() {
   const loginMutation = useLogin();
   const { toggleView, close } = useAuthStore();
-  
-  const { register, handleSubmit, formState: { errors } } = useForm<LoginFormData>({
-    resolver: zodResolver(loginSchema)
+
+  const { register, handleSubmit, formState: { errors }, reset } = useForm<LoginFormData>({
+    resolver: zodResolver(loginSchema),
+    mode: "onChange"
   });
+
+  // Reset form when component mounts to ensure fresh state
+  React.useEffect(() => {
+    reset();
+  }, [reset]);
 
   const onLogin: SubmitHandler<LoginFormData> = (data) => loginMutation.mutate(data);
 

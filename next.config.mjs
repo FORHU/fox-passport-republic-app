@@ -9,6 +9,9 @@ const nextConfig = {
       { protocol: 'https', hostname: 'images.unsplash.com' },
       { protocol: 'https', hostname: 'picsum.photos' },
       { protocol: 'https', hostname: 'i.pravatar.cc' },
+      { protocol: 'https', hostname: 'ui-avatars.com' },
+      { protocol: 'https', hostname: '**' }, // Allow all HTTPS images
+      { protocol: 'http', hostname: '**' }, // Allow all HTTP images (for development)
     ],
   },
 
