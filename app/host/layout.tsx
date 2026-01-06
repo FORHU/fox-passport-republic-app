@@ -3,6 +3,7 @@
 import React from "react";
 import CreateVenueWizard from "@/components/host/CreateVenueWizard";
 import { useCreateVenueModal } from "@/hooks/useCreateVenueModal";
+import RequireAuth from "@/components/authentication/RequireAuth";
 
 export default function HostLayout({
   children,
@@ -12,9 +13,9 @@ export default function HostLayout({
   const { isOpen } = useCreateVenueModal();
 
   return (
-    <>
+    <RequireAuth>
       {children}
       {isOpen && <CreateVenueWizard />}
-    </>
+    </RequireAuth>
   );
 }
