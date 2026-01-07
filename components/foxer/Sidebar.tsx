@@ -12,7 +12,8 @@ import {
   ChevronDown, 
   ChevronRight,
   ChevronsUpDown,
-  LogOut
+  LogOut,
+  ListPlus
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuthStore } from "@/store/useAuthStore";
@@ -92,6 +93,7 @@ export default function Sidebar({ className }: { className?: string }) {
             {openGroup === "platform" && (
               <div className="mt-1 space-y-1 pl-6">
                 <NavItem href="/foxer" icon={<LayoutDashboard className="h-4 w-4" />} label="Dashboard" />
+                <NavItem href="/foxer/listings" icon={<ListPlus className="h-4 w-4" />} label="Listings" />
                 <NavItem href="/foxer/bookings" icon={<CalendarDays className="h-4 w-4" />} label="Bookings" />
                 <NavItem href="/foxer/settings" icon={<Settings className="h-4 w-4" />} label="Settings" />
               </div>

@@ -170,3 +170,112 @@ body {
     @apply bg-background text-foreground;
   }
 }
+
+/* Gamification Theme Styles */
+
+/* Glass-morphism effects */
+.glass-card {
+  background: rgba(255, 255, 255, 0.03);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.glass-panel {
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(30px);
+  -webkit-backdrop-filter: blur(30px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Glow effects */
+.shadow-glow {
+  box-shadow: 0 0 20px rgba(204, 255, 0, 0.15);
+}
+
+.shadow-glow-accent {
+  box-shadow: 0 0 20px rgba(204, 255, 0, 0.3);
+}
+
+.shadow-neon {
+  box-shadow: 0 0 30px rgba(204, 255, 0, 0.5);
+}
+
+/* Text gradient */
+.text-gradient {
+  background: linear-gradient(135deg, #ccff00 0%, #00ff88 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Animations */
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-20px);
+  }
+}
+
+@keyframes pulse-slow {
+  0%, 100% {
+    opacity: 0.3;
+  }
+  50% {
+    opacity: 0.6;
+  }
+}
+
+.animate-float {
+  animation: float 6s ease-in-out infinite;
+}
+
+.animate-pulse-slow {
+  animation: pulse-slow 4s ease-in-out infinite;
+}
+
+/* Surface colors for gamification */
+.surface-highlight {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.text-text-muted {
+  color: rgba(255, 255, 255, 0.6);
+}
+
+/* Badge rarity colors */
+.badge-common {
+  background: linear-gradient(135deg, #94a3b8 0%, #64748b 100%);
+}
+
+.badge-uncommon {
+  background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+}
+
+.badge-rare {
+  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+}
+
+.badge-epic {
+  background: linear-gradient(135deg, #a855f7 0%, #9333ea 100%);
+}
+
+.badge-legendary {
+  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+}
+
+/* Progress indicators */
+.progress-ring-bg {
+  stroke: rgba(255, 255, 255, 0.05);
+}
+
+/* Custom transitions */
+.transition-glow {
+  transition: box-shadow 0.3s ease-in-out;
+}
+
+.hover-glow:hover {
+  box-shadow: 0 0 30px rgba(204, 255, 0, 0.4);
+}
