@@ -37,8 +37,8 @@ module.exports = {
           foreground: "hsl(var(--muted-foreground))",
         },
         accent: {
-          DEFAULT: "hsl(var(--accent))",
-          foreground: "hsl(var(--accent-foreground))",
+          DEFAULT: "#ccff00", // Neon yellow-green
+          foreground: "#000000",
         },
         popover: {
           DEFAULT: "hsl(var(--popover))",
@@ -59,6 +59,9 @@ module.exports = {
         "text-sub-light": "#836a75",
         "text-sub-dark": "#ccb0bd",
         "bg-light": "#f6f8f8",
+        // Gamification colors
+        "surface-highlight": "rgba(255, 255, 255, 0.08)",
+        "text-muted": "rgba(255, 255, 255, 0.6)",
       },
       borderRadius: {
         lg: "var(--radius)",

@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { Search, Bell, Plus } from "lucide-react";
+import { Search, Bell } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
@@ -18,11 +18,8 @@ import { useAuthStore } from "@/store/useAuthStore";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 
-import { useCreateEventModal } from "@/hooks/useCreateEventModal";
-
 export default function Navbar() {
   const { user, logout } = useAuthStore();
-  const { onOpen } = useCreateEventModal();
   const router = useRouter();
   // State to track if the page has scrolled
   const [isScrolled, setIsScrolled] = useState(false);
@@ -112,11 +109,6 @@ export default function Navbar() {
 
             {/* Actions */}
             <div className="flex items-center gap-3">
-              <Button onClick={onOpen} size="sm" className="hidden sm:flex bg-pink-500 hover:bg-pink-600 text-white font-bold px-6 rounded-full shadow-md shadow-pink-500/20 transition-transform hover:scale-105">
-                <Plus className="h-4 w-4 mr-1" />
-                Create Event
-              </Button>
-              
               <Button variant="ghost" size="icon" className="text-gray-600 hover:text-pink-500 hover:bg-pink-50 rounded-full dark:text-gray-200">
                 <Bell className="h-5 w-5" />
               </Button>

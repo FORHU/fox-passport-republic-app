@@ -1,0 +1,223 @@
+// Mock gamification data - to be replaced with API calls
+
+import { Badge, Achievement, PassportStamp } from '@/types/gamification';
+
+export const MOCK_BADGES: Badge[] = [
+  {
+    id: 'b1',
+    name: 'Early Adopter',
+    description: 'Joined during the beta phase',
+    rarity: 'Common',
+    icon: 'verified',
+    color: '#ccff00',
+  },
+  {
+    id: 'b2',
+    name: 'Squad Goals',
+    description: 'Attended 10+ events with friends',
+    rarity: 'Rare',
+    icon: 'groups',
+    color: '#f97316',
+  },
+  {
+    id: 'b3',
+    name: 'Nature Lover',
+    description: 'Booked 5 outdoor adventure events',
+    rarity: 'Uncommon',
+    icon: 'forest',
+    color: '#22c55e',
+  },
+  {
+    id: 'b4',
+    name: 'Night Owl',
+    description: 'Attended 15+ nightlife events',
+    rarity: 'Epic',
+    icon: 'nightlife',
+    color: '#8b5cf6',
+  },
+  {
+    id: 'b5',
+    name: 'First Review',
+    description: 'Left your first event review',
+    rarity: 'Common',
+    icon: 'reviews',
+    color: '#3b82f6',
+  },
+  {
+    id: 'b6',
+    name: 'Trendsetter',
+    description: 'Your event went viral',
+    rarity: 'Legendary',
+    icon: 'trending_up',
+    color: '#f59e0b',
+  },
+  {
+    id: 'b7',
+    name: 'Culture Vulture',
+    description: 'Attended 20+ cultural events',
+    rarity: 'Epic',
+    icon: 'palette',
+    color: '#ec4899',
+  },
+  {
+    id: 'b8',
+    name: 'Host Master',
+    description: 'Hosted 50+ successful events',
+    rarity: 'Legendary',
+    icon: 'workspace_premium',
+    color: '#f59e0b',
+  },
+  {
+    id: 'b9',
+    name: 'Social Butterfly',
+    description: 'Connected with 100+ users',
+    rarity: 'Rare',
+    icon: 'diversity_3',
+    color: '#3b82f6',
+  },
+  {
+    id: 'b10',
+    name: 'Foodie Explorer',
+    description: 'Tried 25+ food events',
+    rarity: 'Uncommon',
+    icon: 'restaurant',
+    color: '#22c55e',
+  },
+  {
+    id: 'b11',
+    name: 'VIP Foxxer',
+    description: 'Reached VIP status',
+    rarity: 'Legendary',
+    icon: 'hotel_class',
+    color: '#f59e0b',
+  },
+  {
+    id: 'b12',
+    name: 'Marathon Runner',
+    description: 'Attended events 7 days in a row',
+    rarity: 'Epic',
+    icon: 'local_fire_department',
+    color: '#ef4444',
+  },
+];
+
+export const MOCK_ACHIEVEMENTS: Achievement[] = [
+  {
+    id: 'a1',
+    title: 'First Steps',
+    description: 'Book your first event',
+    xpReward: 50,
+    path: 'user',
+    icon: 'footprints',
+  },
+  {
+    id: 'a2',
+    title: 'Event Enthusiast',
+    description: 'Attend 10 events',
+    xpReward: 500,
+    path: 'user',
+    icon: 'celebration',
+  },
+  {
+    id: 'a3',
+    title: 'Listing Pro',
+    description: 'Create 5 event listings',
+    xpReward: 500,
+    path: 'foxer',
+    icon: 'event_available',
+  },
+  {
+    id: 'a4',
+    title: 'Venue Curator',
+    description: 'Upload 3 venues',
+    xpReward: 300,
+    path: 'host',
+    icon: 'location_city',
+  },
+  {
+    id: 'a5',
+    title: 'Angel Investor',
+    description: 'Make your first investment',
+    xpReward: 300,
+    path: 'investor',
+    icon: 'attach_money',
+  },
+];
+
+export const MOCK_PASSPORT_STAMPS: PassportStamp[] = [
+  {
+    id: 'ps1',
+    eventId: 'e1',
+    eventTitle: 'Neon Nights: Retro Wave Party',
+    eventDate: new Date('2024-08-15'),
+    location: 'Makati City',
+    xpEarned: 100,
+    imageUrl: 'https://picsum.photos/seed/neon/800/600',
+  },
+  {
+    id: 'ps2',
+    eventId: 'e2',
+    eventTitle: 'Bean & Leaf Pop-up Cafe',
+    eventDate: new Date('2024-08-20'),
+    location: 'Quezon City',
+    xpEarned: 75,
+    imageUrl: 'https://picsum.photos/seed/coffee/800/600',
+  },
+  {
+    id: 'ps3',
+    eventId: 'e3',
+    eventTitle: 'Abstract Gallery Opening',
+    eventDate: new Date('2024-08-25'),
+    location: 'BGC, Taguig',
+    xpEarned: 150,
+    badgesEarned: [MOCK_BADGES[6]], // Culture Vulture
+    imageUrl: 'https://picsum.photos/seed/art/800/600',
+  },
+  {
+    id: 'ps4',
+    eventId: 'e4',
+    eventTitle: 'Mountain Peak Hike & Camp',
+    eventDate: new Date('2024-09-01'),
+    location: 'Rizal',
+    xpEarned: 200,
+    badgesEarned: [MOCK_BADGES[2]], // Nature Lover
+    imageUrl: 'https://picsum.photos/seed/mountain/800/600',
+  },
+];
+
+// Badge unlock criteria
+export const BADGE_CRITERIA = {
+  'Squad Goals': { type: 'events_with_friends', count: 10 },
+  'Nature Lover': { type: 'outdoor_events', count: 5 },
+  'Night Owl': { type: 'nightlife_events', count: 15 },
+  'Culture Vulture': { type: 'cultural_events', count: 20 },
+  'Host Master': { type: 'hosted_events', count: 50 },
+  'Social Butterfly': { type: 'connections', count: 100 },
+  'Foodie Explorer': { type: 'food_events', count: 25 },
+  'Marathon Runner': { type: 'consecutive_days', count: 7 },
+};
+
+// Level-up rewards by path
+export const LEVEL_REWARDS = {
+  user: {
+    5: { badges: ['Early Adopter'], perks: ['5% discount on bookings'] },
+    10: { badges: ['Social Butterfly'], perks: ['Bronze VIP status'] },
+    15: { badges: [], perks: ['Silver VIP status', 'Priority support'] },
+    20: { badges: ['VIP Foxxer'], perks: ['Gold VIP status', 'Exclusive events'] },
+  },
+  foxer: {
+    5: { badges: [], perks: ['Featured listing slot'] },
+    10: { badges: [], perks: ['Premium analytics dashboard'] },
+    15: { badges: [], perks: ['Elite Foxer badge', 'Custom branding'] },
+  },
+  host: {
+    5: { badges: [], perks: ['Verified host badge'] },
+    10: { badges: [], perks: ['Priority venue placement'] },
+    18: { badges: ['Host Master'], perks: ['Super Host status', 'Dedicated support'] },
+  },
+  investor: {
+    3: { badges: [], perks: ['Investment analytics'] },
+    6: { badges: [], perks: ['Early access to opportunities'] },
+    10: { badges: [], perks: ['VIP investor events'] },
+  },
+};

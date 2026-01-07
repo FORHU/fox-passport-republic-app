@@ -2,12 +2,14 @@
 
 import { useState } from "react";
 import { useAuthStore } from "@/store/useAuthStore";
-import { User, Briefcase, Edit2, MessageSquare } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { User, Briefcase, Edit2, MessageSquare, Trophy } from "lucide-react";
 
-type TabType = "about" | "trips";
+type TabType = "about" | "trips" | "progress";
 
 export default function ProfilePage() {
   const { user } = useAuthStore();
+  const router = useRouter();
   const [activeTab, setActiveTab] = useState<TabType>("about");
 
   // Get user info
@@ -18,7 +20,16 @@ export default function ProfilePage() {
   const tabs = [
     { id: "about" as TabType, label: "About me", icon: User },
     { id: "trips" as TabType, label: "Past trips", icon: Briefcase },
+    { id: "progress" as TabType, label: "Progress", icon: Trophy },
   ];
+
+  const handleTabClick = (tabId: TabType) => {
+    if (tabId === "progress") {
+      router.push("/progress");
+    } else {
+      setActiveTab(tabId);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-white">
@@ -38,7 +49,7 @@ export default function ProfilePage() {
                 return (
                   <button
                     key={tab.id}
-                    onClick={() => setActiveTab(tab.id)}
+                    onClick={() => handleTabClick(tab.id)}
                     className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left transition-all duration-200 ${
                       isActive
                         ? "bg-gray-100 font-semibold text-gray-900"
