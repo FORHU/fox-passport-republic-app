@@ -3,18 +3,12 @@
 import { Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 
+// --- New FoxerNew Landing Page ---
+import FoxerLandingPage from "@/components/landing/FoxerLandingPage";
+
 // --- Shared Components ---
 import Navbar from "@/components/shared/Navbar";
 import AuthModal from "@/components/landing/AuthModal";
-
-// --- New Landing Components ---
-import Hero from "@/components/landing/Hero";
-import CategoryGrid from "@/components/landing/CategoryGrid";
-import FoxersSection from "@/components/landing/FoxersSection";
-import WhyChooseUs from "@/components/landing/WhyChooseUs";
-import TrendingSection from "@/components/landing/TrendingSection";
-import Newsletter from "@/components/landing/Newsletter";
-import Footer from "@/components/landing/Footer";
 
 // --- Search Results Components ---
 import ListingCard from "@/components/landing/ListingCard";
@@ -28,7 +22,6 @@ function HomeContent() {
   // --- FILTERING LOGIC ---
   let filteredVenues = HARDCODED_VENUES;
 
-  // 1. Filter by Location (if exists)
   if (locationQuery) {
     filteredVenues = filteredVenues.filter(
       (v) =>
@@ -37,73 +30,31 @@ function HomeContent() {
     );
   }
 
-  // 2. Filter by Category (if exists)
   if (categoryQuery) {
     filteredVenues = filteredVenues.filter((v) => {
       const cat = v.category.toLowerCase();
       const q = categoryQuery.toLowerCase();
 
-      // Map Broad Categories to Specific Data Types
-      if (q === "hotels & travel")
-        return [
-          "hotel",
-          "resort",
-          "villa",
-          "condo",
-          "apartment",
-          "suite",
-          "inn",
-          "lodge",
-          "room",
-          "cabin",
-          "glamping",
-        ].some((t) => cat.includes(t));
-      if (q === "event planning & services")
-        return ["garden", "function", "events", "historic", "event"].some((t) =>
-          cat.includes(t)
-        );
-      if (q === "restaurants" || q === "food")
-        return ["dining", "restaurant"].some((t) => cat.includes(t));
-      if (q === "arts & entertainment")
-        return ["art", "gallery", "museum", "historic"].some((t) =>
-          cat.includes(t)
-        );
-      if (q === "nightlife")
-        return ["bar", "club", "lounge"].some((t) => cat.includes(t));
-      if (q === "real estate")
-        return ["house", "condo", "apartment", "loft"].some((t) =>
-          cat.includes(t)
-        );
-      if (q === "adventures")
-        return ["hiking", "paragliding", "diving", "surfing", "zip"].some((t) =>
-          cat.includes(t)
-        );
-      if (q === "camping")
-        return ["cabin", "glamping", "camp", "forest", "mountain"].some((t) =>
-          cat.includes(t)
-        );
-      if (q === "music & arts")
-        return ["art", "music", "gallery", "museum"].some((t) =>
-          cat.includes(t)
-        );
-      if (q === "venues")
-        return ["venue", "event", "garden", "hall"].some((t) =>
-          cat.includes(t)
-        );
-      if (q === "wellness")
-        return ["spa", "wellness", "resort"].some((t) => cat.includes(t));
-      if (q === "food & dining")
-        return ["restaurant", "dining", "food"].some((t) => cat.includes(t));
+      if (q === "hotels & travel") return ["hotel", "resort", "villa", "condo", "apartment", "suite", "inn", "lodge", "room", "cabin", "glamping"].some((t) => cat.includes(t));
+      if (q === "event planning & services") return ["garden", "function", "events", "historic", "event"].some((t) => cat.includes(t));
+      if (q === "restaurants" || q === "food") return ["dining", "restaurant"].some((t) => cat.includes(t));
+      if (q === "arts & entertainment") return ["art", "gallery", "museum", "historic"].some((t) => cat.includes(t));
+      if (q === "nightlife") return ["bar", "club", "lounge"].some((t) => cat.includes(t));
+      if (q === "real estate") return ["house", "condo", "apartment", "loft"].some((t) => cat.includes(t));
+      if (q === "adventures") return ["hiking", "paragliding", "diving", "surfing", "zip"].some((t) => cat.includes(t));
+      if (q === "camping") return ["cabin", "glamping", "camp", "forest", "mountain"].some((t) => cat.includes(t));
+      if (q === "music & arts") return ["art", "music", "gallery", "museum"].some((t) => cat.includes(t));
+      if (q === "venues") return ["venue", "event", "garden", "hall"].some((t) => cat.includes(t));
+      if (q === "wellness") return ["spa", "wellness", "resort"].some((t) => cat.includes(t));
+      if (q === "food & dining") return ["restaurant", "dining", "food"].some((t) => cat.includes(t));
 
-      // Default: Direct text match
       return cat.includes(q);
     });
   }
 
-  // Determine if we are in "Search Mode" (Location OR Category selected)
   const isSearchMode = locationQuery || categoryQuery;
 
-  // --- 1. SEARCH/FILTER RESULTS VIEW ---
+  // --- SEARCH/FILTER RESULTS VIEW ---
   if (isSearchMode) {
     return (
       <main className="min-h-screen bg-white pt-[60px] md:pt-[70px] pb-20">
@@ -111,17 +62,12 @@ function HomeContent() {
         <AuthModal />
 
         <div className="max-w-[1600px] mx-auto px-2 md:px-6 grid grid-cols-1 lg:grid-cols-[1.2fr_0.8fr] gap-8 h-[calc(100vh-140px)]">
-          {/* LEFT: Results Grid */}
           <div className="overflow-y-auto pr-1 md:pr-2 custom-scrollbar">
             <div className="mb-4 md:mb-6 px-1">
               <h2 className="text-lg md:text-xl font-bold mb-1">
-                {locationQuery
-                  ? `Stays in ${locationQuery}`
-                  : `${categoryQuery} Venues`}
+                {locationQuery ? `Stays in ${locationQuery}` : `${categoryQuery} Venues`}
               </h2>
-              <p className="text-gray-500 text-xs md:text-sm">
-                {filteredVenues.length} results found
-              </p>
+              <p className="text-gray-500 text-xs md:text-sm">{filteredVenues.length} results found</p>
             </div>
 
             {filteredVenues.length > 0 ? (
@@ -133,17 +79,12 @@ function HomeContent() {
             ) : (
               <div className="flex flex-col items-center justify-center py-20 text-center">
                 <div className="text-4xl mb-4">🔍</div>
-                <h3 className="text-lg font-bold text-gray-900">
-                  No results found
-                </h3>
-                <p className="text-gray-500 max-w-xs mt-2 text-sm">
-                  Try a different category or location.
-                </p>
+                <h3 className="text-lg font-bold text-gray-900">No results found</h3>
+                <p className="text-gray-500 max-w-xs mt-2 text-sm">Try a different category or location.</p>
               </div>
             )}
           </div>
 
-          {/* RIGHT: Map Placeholder */}
           <div className="hidden lg:block h-full sticky top-0 rounded-xl overflow-hidden bg-gray-100 border border-gray-200 relative">
             <img
               src="https://images.unsplash.com/photo-1524661135-423995f22d0b?auto=format&fit=crop&w=1000&q=80"
@@ -151,11 +92,8 @@ function HomeContent() {
               alt="Map"
             />
             <div className="absolute inset-0 flex items-center justify-center">
-              <button className="bg-white text-gray-900 px-6 py-3 rounded-full shadow-lg font-bold text-sm hover:scale-105 transition-transform flex items-center gap-2">
-                Map View{" "}
-                <span className="text-xs font-normal text-gray-500">
-                  (Placeholder)
-                </span>
+              <button className="bg-white text-gray-900 px-6 py-3 rounded-full shadow-lg font-bold text-sm">
+                Map View <span className="text-xs font-normal text-gray-500">(Placeholder)</span>
               </button>
             </div>
           </div>
@@ -164,32 +102,13 @@ function HomeContent() {
     );
   }
 
-  // --- 2. NEW LANDING PAGE VIEW (Default) ---
-  return (
-    <div className="bg-background bg-gradient-dark text-text-main antialiased min-h-screen flex flex-col selection:bg-accent selection:text-black">
-      <Navbar />
-      <main className="flex-grow pt-32">
-        <Hero />
-        <FoxersSection />
-        <CategoryGrid />
-        <WhyChooseUs />
-        <TrendingSection />
-        <Newsletter />
-      </main>
-      <Footer />
-    </div>
-  );
+  // --- NEW FOXERNEW LANDING PAGE (Default) ---
+  return <FoxerLandingPage />;
 }
 
 export default function Home() {
   return (
-    <Suspense
-      fallback={
-        <div className="min-h-screen flex items-center justify-center">
-          Loading...
-        </div>
-      }
-    >
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center">Loading...</div>}>
       <HomeContent />
     </Suspense>
   );
