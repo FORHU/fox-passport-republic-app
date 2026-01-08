@@ -142,63 +142,64 @@ const FOXERS_DATA: Foxer[] = [
 // Foxer Card Component
 const FoxerCard: React.FC<{ foxer: Foxer }> = ({ foxer }) => {
   const statusColor = {
-    online: 'bg-green-500',
-    offline: 'bg-gray-400',
-    away: 'bg-orange-400'
+    online: 'bg-success',
+    offline: 'bg-text-muted',
+    away: 'bg-warning'
   }[foxer.status];
 
   return (
-    <div className="group relative flex flex-col gap-5 rounded-3xl border border-gray-200 bg-white p-6 transition-all hover:border-pink-300 hover:shadow-xl hover:-translate-y-1">
-      <div className="flex items-start justify-between">
+    <div className="group glass-card rounded-3xl p-6 card-hover-effect border border-white/5">
+      <div className="flex items-start justify-between mb-5">
         <div className="flex items-center gap-4">
           <div className="relative size-16 shrink-0">
             <img
-              className="size-full rounded-full object-cover ring-2 ring-gray-100"
+              className="size-full rounded-full object-cover ring-2 ring-primary/30"
               src={foxer.avatar}
               alt={foxer.name}
             />
-            <div className={`absolute bottom-0 right-0 size-4 rounded-full border-4 border-white ${statusColor}`}></div>
+            <div className={`absolute bottom-0 right-0 size-4 rounded-full border-4 border-surface ${statusColor} shadow-[0_0_10px_currentColor]`}></div>
           </div>
           <div>
             <div className="flex items-center gap-1">
-              <h3 className="text-xl font-bold text-gray-900 group-hover:text-pink-500 transition-colors">{foxer.name}</h3>
+              <h3 className="text-xl font-display font-bold text-white group-hover:text-accent transition-colors">{foxer.name}</h3>
               {foxer.verified && (
-                <CheckCircle2 className="w-5 h-5 text-pink-500 fill-pink-500" />
+                <span className="material-symbols-outlined text-accent fill-current text-[20px]">verified</span>
               )}
             </div>
-            <p className="text-sm font-medium text-gray-600">{foxer.role}</p>
+            <p className="text-sm font-medium text-text-muted">{foxer.role}</p>
           </div>
         </div>
         <div className="flex flex-col items-end">
           <div className="flex items-center gap-1">
-            <span className="text-base font-bold text-gray-900">{foxer.rating.toFixed(1)}</span>
-            <Star className="w-4 h-4 text-yellow-400 fill-yellow-400" />
+            <span className="text-base font-bold text-white">{foxer.rating.toFixed(1)}</span>
+            <span className="material-symbols-outlined text-accent fill-current text-[18px]">star</span>
           </div>
-          <span className="text-xs text-gray-500">{foxer.reviews} reviews</span>
+          <span className="text-xs text-text-muted">{foxer.reviews} reviews</span>
         </div>
       </div>
 
-      <p className="text-sm text-gray-600 line-clamp-2 leading-relaxed h-10">
+      <p className="text-sm text-text-muted line-clamp-2 leading-relaxed mb-5 h-10">
         {foxer.bio}
       </p>
 
-      <div className="flex flex-wrap gap-2">
+      <div className="flex flex-wrap gap-2 mb-5">
         {foxer.tags.map(tag => (
-          <span key={tag} className="rounded-full bg-gray-100 px-3 py-1 text-xs font-semibold text-gray-700">
+          <span key={tag} className="rounded-full bg-accent/10 border border-accent/30 px-3 py-1 text-xs font-bold text-accent">
             #{tag}
           </span>
         ))}
       </div>
 
-      <div className="grid grid-cols-3 gap-2">
+      <div className="grid grid-cols-3 gap-2 mb-5">
         {foxer.gallery.map((img, idx) => (
           <div
             key={idx}
-            className="aspect-square rounded-xl bg-cover bg-center relative overflow-hidden"
+            className="aspect-square rounded-xl bg-cover bg-center relative overflow-hidden group/img"
             style={{ backgroundImage: `url(${img})` }}
           >
+            <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover/img:opacity-100 transition-opacity"></div>
             {idx === 2 && (
-              <div className="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity cursor-pointer">
+              <div className="absolute inset-0 bg-black/70 flex items-center justify-center hover:bg-black/50 transition-colors cursor-pointer">
                 <span className="text-white text-xs font-bold">+24</span>
               </div>
             )}
@@ -206,11 +207,11 @@ const FoxerCard: React.FC<{ foxer: Foxer }> = ({ foxer }) => {
         ))}
       </div>
 
-      <div className="mt-auto pt-2 flex gap-3">
-        <button className="flex-1 rounded-full bg-pink-500 py-3 text-sm font-bold text-white shadow-lg transition-all hover:scale-105 hover:bg-pink-600 active:scale-95">
+      <div className="flex gap-3">
+        <button className="flex-1 btn-neon rounded-full bg-accent py-3 text-sm font-bold text-black shadow-[0_0_15px_rgba(204,255,0,0.3)] hover:scale-105 transition-transform">
           Match Me
         </button>
-        <button className="size-11 flex shrink-0 items-center justify-center rounded-full border border-gray-200 text-gray-400 hover:bg-pink-50 hover:text-pink-500 hover:border-pink-300 transition-all active:scale-90">
+        <button className="size-11 flex shrink-0 items-center justify-center rounded-full border border-white/10 text-text-muted hover:bg-secondary/20 hover:text-secondary hover:border-secondary/50 transition-all hover:scale-110">
           <Heart className="w-5 h-5" />
         </button>
       </div>
@@ -224,30 +225,36 @@ const FoxersSection: React.FC = () => {
   const [viewMode, setViewMode] = useState<ViewMode>(ViewMode.GRID);
 
   return (
-    <section className="py-16 bg-gradient-to-b from-white to-gray-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <section className="py-16 lg:py-24 relative overflow-hidden">
+      {/* Background gradient accent */}
+      <div className="absolute bottom-0 left-1/4 w-96 h-96 bg-primary/5 rounded-full blur-[100px] pointer-events-none"></div>
+
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 relative z-10">
         {/* Header */}
-        <div className="mb-12">
-          <h2 className="text-4xl md:text-5xl font-black text-gray-900 mb-3">
-            Who&apos;s vibe matches yours?
+        <div className="text-center mb-16 reveal-on-scroll">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 border border-white/10 mb-4">
+            <span className="text-xs font-bold uppercase tracking-widest text-primary">Featured Foxers</span>
+          </div>
+          <h2 className="text-4xl lg:text-5xl font-display font-bold text-white mb-4">
+            Who's <span className="text-gradient">vibe</span> matches yours?
           </h2>
-          <p className="text-lg text-gray-600 max-w-2xl">
+          <p className="text-lg text-text-muted max-w-2xl mx-auto">
             Browse Certified Foxers available for your event. These pros bring expertise and energy to make your experience unforgettable.
           </p>
         </div>
 
         {/* Action Panel */}
-        <div className="mb-8 space-y-6">
+        <div className="mb-8 space-y-6 reveal-on-scroll">
           {/* Current Venue/Location Card */}
-          <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4 rounded-3xl border border-gray-200 bg-white p-6 shadow-sm">
+          <div className="glass-panel flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4 rounded-3xl p-6">
             <div className="flex flex-col gap-1">
               <div className="flex items-center gap-2">
-                <MapPin className="w-5 h-5 text-pink-500" />
-                <p className="text-base font-bold text-gray-900">Browse Foxers Nationwide</p>
+                <span className="material-symbols-outlined text-accent">location_on</span>
+                <p className="text-base font-bold text-white">Browse Foxers Nationwide</p>
               </div>
-              <p className="text-sm text-gray-600 pl-7">Find certified professionals in your area</p>
+              <p className="text-sm text-text-muted pl-7">Find certified professionals in your area</p>
             </div>
-            <button className="flex items-center justify-center rounded-full h-10 px-6 bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm font-medium transition-colors">
+            <button className="flex items-center justify-center rounded-full h-10 px-6 bg-white/10 hover:bg-white/20 text-white text-sm font-bold border border-white/10 transition-all">
               Filter Location
             </button>
           </div>
@@ -256,30 +263,30 @@ const FoxersSection: React.FC = () => {
           <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4">
             {/* Filter Buttons */}
             <div className="flex flex-wrap gap-3">
-              <button className="flex items-center gap-2 rounded-full border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:border-pink-500 hover:text-pink-500 transition-all">
+              <button className="flex items-center gap-2 rounded-full border border-white/10 glass-panel px-4 py-2 text-sm font-bold text-white hover:border-accent/50 hover:text-accent transition-all">
                 <LayoutGrid className="w-4 h-4" />
                 Filters
               </button>
               {['Skills', 'Date', 'Price'].map(filter => (
-                <button key={filter} className="flex items-center gap-2 rounded-full bg-white border border-gray-200 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors">
+                <button key={filter} className="flex items-center gap-2 rounded-full glass-panel border border-white/10 px-4 py-2 text-sm font-medium text-white hover:bg-white/10 transition-all">
                   {filter}
-                  <ChevronDown className="w-4 h-4 text-gray-400" />
+                  <ChevronDown className="w-4 h-4 text-text-muted" />
                 </button>
               ))}
             </div>
 
             {/* View Mode Toggle */}
-            <div className="flex h-11 items-center justify-center rounded-full bg-gray-100 p-1 border border-gray-200">
+            <div className="flex h-11 items-center justify-center rounded-full glass-panel p-1 border border-white/10">
               <button
                 onClick={() => setViewMode(ViewMode.GRID)}
-                className={`flex items-center gap-2 rounded-full px-4 h-full text-sm font-bold transition-all ${viewMode === ViewMode.GRID ? 'bg-pink-500 text-white shadow-lg' : 'text-gray-600 hover:text-gray-900'}`}
+                className={`flex items-center gap-2 rounded-full px-4 h-full text-sm font-bold transition-all ${viewMode === ViewMode.GRID ? 'bg-accent text-black shadow-glow-accent' : 'text-white/70 hover:text-white'}`}
               >
                 <LayoutGrid className="w-4 h-4" />
                 Grid
               </button>
               <button
                 onClick={() => setViewMode(ViewMode.SWIPE)}
-                className={`flex items-center gap-2 rounded-full px-4 h-full text-sm font-bold transition-all ${viewMode === ViewMode.SWIPE ? 'bg-pink-500 text-white shadow-lg' : 'text-gray-600 hover:text-gray-900'}`}
+                className={`flex items-center gap-2 rounded-full px-4 h-full text-sm font-bold transition-all ${viewMode === ViewMode.SWIPE ? 'bg-accent text-black shadow-glow-accent' : 'text-white/70 hover:text-white'}`}
               >
                 <Layers className="w-4 h-4" />
                 Vibe Swipe
@@ -330,13 +337,13 @@ const FoxersSection: React.FC = () => {
         )}
 
         {/* Load More / View All */}
-        <div className="flex justify-center mt-12">
+        <div className="flex justify-center mt-12 reveal-on-scroll">
           <button
             onClick={() => router.push('/foxers')}
-            className="inline-flex items-center gap-2 px-8 py-3 bg-pink-500 text-white font-semibold rounded-full hover:bg-pink-600 transition-colors shadow-lg hover:shadow-xl"
+            className="btn-neon inline-flex items-center gap-2 px-8 py-4 bg-accent text-black font-bold rounded-full hover:scale-105 transition-transform shadow-[0_0_20px_rgba(204,255,0,0.3)]"
           >
             {viewMode === ViewMode.GRID ? 'Load More Foxers' : 'View All Foxers'}
-            <ArrowRight className="w-5 h-5" />
+            <span className="material-symbols-outlined">arrow_forward</span>
           </button>
         </div>
       </div>

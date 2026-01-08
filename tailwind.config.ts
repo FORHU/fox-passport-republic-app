@@ -18,14 +18,24 @@ module.exports = {
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
         ring: "hsl(var(--ring))",
-        background: "hsl(var(--background))",
+        background: {
+          DEFAULT: "#02040a", // Deep navy/black
+          light: "#fdf2f8",
+          dark: "#1f1016",
+        },
         foreground: "hsl(var(--foreground))",
+        surface: {
+          DEFAULT: "#0f111a", // Dark blue-gray
+          highlight: "#1e2130", // Slightly lighter surface
+        },
         primary: {
-          DEFAULT: "#ec4899", // Pink-500
+          DEFAULT: "#7c3aed", // Purple
+          glow: "#8b5cf6", // Lighter purple
           foreground: "#ffffff",
+          dark: "#be185d",
         },
         secondary: {
-          DEFAULT: "hsl(var(--secondary))",
+          DEFAULT: "#db2777", // Hot pink
           foreground: "hsl(var(--secondary-foreground))",
         },
         destructive: {
@@ -37,7 +47,7 @@ module.exports = {
           foreground: "hsl(var(--muted-foreground))",
         },
         accent: {
-          DEFAULT: "#ccff00", // Neon yellow-green
+          DEFAULT: "#ccff00", // Neon lime green - Primary CTA color
           foreground: "#000000",
         },
         popover: {
@@ -47,21 +57,67 @@ module.exports = {
         card: {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
+          light: "#ffffff",
+          dark: "#29151d",
         },
-        // Custom Dashboard Colors
-        "primary-dark": "#be185d",
-        "background-light": "#fdf2f8",
-        "background-dark": "#1f1016",
-        "card-light": "#ffffff",
-        "card-dark": "#29151d",
-        "text-main-light": "#1f1719",
-        "text-main-dark": "#fce7f3",
-        "text-sub-light": "#836a75",
-        "text-sub-dark": "#ccb0bd",
-        "bg-light": "#f6f8f8",
+        text: {
+          main: {
+            DEFAULT: "#ffffff", // White
+            light: "#1f1719",
+            dark: "#fce7f3",
+          },
+          muted: {
+            DEFAULT: "#94a3b8", // Light gray
+            alpha: "rgba(255, 255, 255, 0.6)",
+          },
+          sub: {
+            light: "#836a75",
+            dark: "#ccb0bd",
+          },
+        },
+        success: "#22c55e", // Green
+        warning: "#eab308", // Yellow
         // Gamification colors
         "surface-highlight": "rgba(255, 255, 255, 0.08)",
-        "text-muted": "rgba(255, 255, 255, 0.6)",
+      },
+      fontFamily: {
+        display: ["Space Grotesk", "sans-serif"],
+        body: ["Plus Jakarta Sans", "sans-serif"],
+        sans: ["Plus Jakarta Sans", "Helvetica Neue", "Helvetica", "Arial", "sans-serif"],
+      },
+      animation: {
+        float: "float 6s ease-in-out infinite",
+        "float-delayed": "float 6s ease-in-out 3s infinite",
+        "pulse-slow": "pulse-slow 4s cubic-bezier(0.4, 0, 0.6, 1) infinite",
+        wiggle: "wiggle 0.5s ease-in-out infinite",
+        glitch: "glitch 2s infinite",
+        "spin-slow": "spin 12s linear infinite",
+      },
+      keyframes: {
+        float: {
+          "0%, 100%": { transform: "translateY(0)" },
+          "50%": { transform: "translateY(-20px)" },
+        },
+        wiggle: {
+          "0%, 100%": { transform: "rotate(-3deg)" },
+          "50%": { transform: "rotate(3deg)" },
+        },
+        glitch: {
+          "0%": { transform: "translate(0)" },
+          "20%": { transform: "translate(-2px, 2px)" },
+          "40%": { transform: "translate(-2px, -2px)" },
+          "60%": { transform: "translate(2px, 2px)" },
+          "80%": { transform: "translate(2px, -2px)" },
+          "100%": { transform: "translate(0)" },
+        },
+        "pulse-slow": {
+          "0%, 100%": { opacity: "0.3" },
+          "50%": { opacity: "0.6" },
+        },
+      },
+      boxShadow: {
+        glow: "0 0 40px -10px rgba(124, 58, 237, 0.5)",
+        "glow-accent": "0 0 30px -5px rgba(204, 255, 0, 0.3)",
       },
       borderRadius: {
         lg: "var(--radius)",

@@ -139,90 +139,58 @@ function NavbarContent() {
 
   return (
     <>
-      <nav className={`fixed top-0 left-0 w-full z-[100] transition-all duration-500 ease-in-out ${styles.navBgClass}`}>
-        
-        {/* Container for content alignment */}
-        <div className="max-w-[2520px] mx-auto xl:px-20 md:px-10 sm:px-2 px-4">
-          
-          <div className="flex flex-row items-center justify-between gap-3 md:gap-0 py-2 md:py-2.5">
+      <nav className="fixed top-6 left-0 right-0 z-[100] transition-all duration-300">
+        <div className="mx-auto max-w-7xl px-4">
+          <div className="glass-panel rounded-full px-6 h-20 flex items-center justify-between shadow-2xl hover:bg-black/40 transition-colors duration-500">
 
             {/* LOGO */}
-            <div className="flex-shrink-0 cursor-pointer">
-              <Link href="/" className="flex items-center gap-2">
-                <Image
-                  src="/logofoxpassport.png"
-                  alt="Logo"
-                  width={56}
-                  height={56}
-                  className="h-8 md:h-14 w-auto object-contain"
-                  priority
-                />
-                <span className={`hidden md:block text-xl font-bold tracking-tight transition-all duration-500 ease-in-out ${styles.logoTextClass}`}>
-                  Fox<span className="text-pink-500">Passport</span>
-                </span>
-              </Link>
-            </div>
+            <Link href="/" className="flex items-center gap-3 group cursor-pointer">
+              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-white text-black font-bold shadow-[0_0_15px_rgba(255,255,255,0.3)] group-hover:rotate-180 transition-transform duration-700">
+                <span className="material-symbols-outlined text-[24px]">explore</span>
+              </div>
+              <h2 className="text-2xl font-display font-bold tracking-tight text-white group-hover:text-accent transition-colors">
+                Fox<span className="text-gradient-lime">Passport</span>
+              </h2>
+            </Link>
 
             {/* DESKTOP MENU */}
-            <div className="hidden md:flex flex-row items-center gap-4">
-              <div className="flex items-center gap-6 text-[13px] font-bold tracking-tight">
-                <button 
-                  onClick={() => setHostModalOpen(true)}
-                  className={`hover:underline decoration-2 underline-offset-8 outline-none transition-all duration-500 ease-in-out ${styles.mainLinkClass}`}
-                >
-                  Become a Foxer
-                </button>
-                <button
-                  onClick={handleWriteReview}
-                  className={`hover:underline decoration-2 underline-offset-8 outline-none transition-all duration-500 ease-in-out ${styles.mainLinkClass}`}
-                >
-                  Write a Review
-                </button>
-                <Link href="/business" className={`hover:underline decoration-2 underline-offset-8 transition-all duration-500 ease-in-out ${styles.mainLinkClass}`}>
-                  For Businesses
-                </Link>
-              </div>
-              
-              <div className="flex items-center gap-2">
-                {!isAuthenticated ? (
-                  <>
-                    <button
-                      onClick={openLogin}
-                      className={`px-4 py-1.5 text-[13px] font-bold tracking-tight rounded-full border-2 transition-all duration-500 ease-in-out ${styles.loginButtonClass}`}
-                    >
-                      Log In
-                    </button>
-                    <button
-                      onClick={openSignup}
-                      className="px-4 py-1.5 text-[13px] font-bold tracking-tight bg-[#E31C79] border-2 border-[#E31C79] text-white rounded-full hover:bg-pink-700 shadow-md transition-all duration-500 ease-in-out"
-                    >
-                      Sign Up
-                    </button>
-                  </>
-                ) : (
-                  <UserMenuButton onBecomeHost={() => setHostModalOpen(true)} />
-                )}
-              </div>
-            </div>
+            <nav className="hidden md:flex items-center gap-2 bg-black/20 p-1.5 rounded-full border border-white/5">
+              <Link href="/" className="px-6 py-2.5 rounded-full text-sm font-bold text-black bg-accent hover:bg-accent/90 hover:shadow-[0_0_15px_rgba(204,255,0,0.5)] transition-all transform hover:-translate-y-0.5">
+                Explore
+              </Link>
+              <button
+                onClick={() => setHostModalOpen(true)}
+                className="px-6 py-2.5 rounded-full text-sm font-medium text-white/70 hover:text-white hover:bg-white/10 transition-all hover:scale-105"
+              >
+                Foxers
+              </button>
+              <Link href="/profile/progress" className="px-6 py-2.5 rounded-full text-sm font-medium text-white/70 hover:text-white hover:bg-white/10 transition-all hover:scale-105">
+                Community
+              </Link>
+            </nav>
 
-            {/* MOBILE TOGGLE */}
-            <div className="flex md:hidden items-center gap-2">
-              {isAuthenticated && (
+            <div className="flex items-center gap-4">
+              <button className="hidden sm:flex h-10 w-10 items-center justify-center rounded-full border border-white/10 text-white hover:bg-white hover:text-black transition-all hover:rotate-12">
+                <span className="material-symbols-outlined text-[20px]">search</span>
+              </button>
+              {!isAuthenticated ? (
+                <button
+                  onClick={openLogin}
+                  className="hidden sm:flex items-center gap-2 rounded-full bg-white/5 border border-white/10 px-6 py-2.5 text-sm font-bold text-white hover:bg-white hover:text-black hover:shadow-[0_0_20px_rgba(255,255,255,0.3)] transition-all duration-300 group overflow-hidden relative"
+                >
+                  <span className="relative z-10">Sign In</span>
+                  <div className="absolute inset-0 bg-white translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-out z-0"></div>
+                </button>
+              ) : (
                 <UserMenuButton onBecomeHost={() => setHostModalOpen(true)} />
               )}
-              <button 
-                onClick={() => setMobileMenuOpen(!mobileMenuOpen)} 
-                className={`p-2 transition-colors duration-300 bg-transparent border-none outline-none ${
-                  isScrolled || mobileMenuOpen
-                    ? "text-gray-800"  
-                    : "text-white drop-shadow-md"      
-                }`}
-                aria-label="Toggle Menu"
+              <button
+                onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                className="flex sm:hidden h-10 w-10 items-center justify-center rounded-full bg-white text-black"
               >
-                 {mobileMenuOpen ? <X className="w-7 h-7" /> : <Menu className="w-7 h-7" />}
+                <span className="material-symbols-outlined">{mobileMenuOpen ? "close" : "menu"}</span>
               </button>
             </div>
-
           </div>
         </div>
 

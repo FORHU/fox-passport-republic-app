@@ -60,80 +60,83 @@ const CategoryGrid: React.FC = () => {
   const displayCategories = categories.filter(cat => cat.slug !== 'more');
 
   return (
-    <section className="py-16 bg-white">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center mb-12">
-          <h2 className="text-4xl font-extrabold text-gray-900 mb-3">
-            Explore by Category
+    <section className="py-16 lg:py-24 relative overflow-hidden">
+      {/* Background gradient accent */}
+      <div className="absolute top-0 right-1/4 w-96 h-96 bg-accent/5 rounded-full blur-[100px] pointer-events-none"></div>
+
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 relative z-10">
+        <div className="text-center mb-16 reveal-on-scroll">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 border border-white/10 mb-4">
+            <span className="text-xs font-bold uppercase tracking-widest text-accent">Categories</span>
+          </div>
+          <h2 className="text-4xl lg:text-5xl font-display font-bold text-white mb-4">
+            What's your <span className="text-gradient">vibe</span>?
           </h2>
-          <p className="text-lg text-gray-600">
-            Whatever you&apos;re in the mood for, we&apos;ve got you covered.
+          <p className="text-lg text-text-muted max-w-2xl mx-auto">
+            From underground gigs to mountain escapes. Find experiences that match your energy.
           </p>
         </div>
 
-        {/* Bento Grid Layout */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 auto-rows-[200px] grid-flow-dense">
-          {displayCategories.map((cat: Category, index) => {
-            const imageUrl = CATEGORY_IMAGES[cat.name] || "https://images.unsplash.com/photo-1492684223066-81342ee5ff30?auto=format&fit=crop&q=80&w=800";
+        {/* Category Grid */}
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 lg:gap-6 reveal-on-scroll">
+          {displayCategories.slice(0, 8).map((cat: Category, index) => {
+            // Icon mapping for categories
+            const iconMap: Record<string, string> = {
+              "Festivals & Fairs": "festival",
+              "Classes & Workshops": "palette",
+              "Live Performances": "mic_external_on",
+              "Tours & Excursions": "map",
+              "Parties & Socials": "celebration",
+              "Markets & Pop-Ups": "storefront",
+              "Competitions & Games": "trophy",
+              "Celebrations & Milestones": "cake",
+            };
 
-            // Create varied grid spans for bento layout
-            // Index 0: Large 2x2 (Classes & Workshops)
-            // Index 1-2: Regular 1x1 (Competitions, Festivals)
-            // Index 3: Wide 2x1 (Live Performances)
-            // Index 4-6: Regular 1x1 (Markets, Parties, Tours)
-            const gridSpan = index === 0 ? 'sm:col-span-2 sm:row-span-2 lg:col-span-2 lg:row-span-2' :
-                           index === 3 ? 'sm:col-span-2 lg:col-span-2' : '';
-            const isLarge = index === 0;
+            const colorMap: Record<string, string> = {
+              "Festivals & Fairs": "from-orange-400 to-red-500",
+              "Classes & Workshops": "from-blue-400 to-cyan-500",
+              "Live Performances": "from-purple-500 to-indigo-600",
+              "Tours & Excursions": "from-green-400 to-emerald-600",
+              "Parties & Socials": "from-pink-400 to-rose-500",
+              "Markets & Pop-Ups": "from-yellow-400 to-amber-600",
+              "Competitions & Games": "from-red-500 to-rose-600",
+              "Celebrations & Milestones": "from-teal-400 to-cyan-600",
+            };
+
+            const icon = iconMap[cat.name] || "star";
+            const gradient = colorMap[cat.name] || "from-primary to-secondary";
 
             return (
               <div
                 key={cat.id}
                 onClick={() => handleCategoryClick(cat.name)}
-                className={`group relative rounded-3xl overflow-hidden cursor-pointer shadow-md hover:shadow-2xl transition-all duration-300 hover:-translate-y-1 ${gridSpan}`}
+                className="category-item glass-card rounded-2xl p-6 border border-white/5 cursor-pointer group"
+                style={{ animationDelay: `${index * 100}ms` }}
               >
-                {/* Background Image */}
-                <img
-                  src={imageUrl}
-                  alt={cat.name}
-                  className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-                />
-
-                {/* Overlay gradient */}
-                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
-
-                {/* Content */}
-                <div className="absolute bottom-0 left-0 p-5 w-full flex justify-between items-end">
-                  <div className="flex-1">
-                    <h3 className={`${isLarge ? 'text-2xl md:text-3xl' : 'text-lg md:text-xl'} font-bold text-white mb-1 group-hover:text-pink-200 transition-colors`}>
-                      {cat.name}
-                    </h3>
-                    {isLarge && (
-                      <p className="text-white/80 text-xs md:text-sm font-normal line-clamp-2 mt-2 max-w-md">
-                        {cat.description || "Explore experiences"}
-                      </p>
-                    )}
-                  </div>
-
-                  {/* Arrow icon for large card */}
-                  {isLarge && (
-                    <div className="w-12 h-12 rounded-full bg-pink-500 flex items-center justify-center text-white shadow-lg opacity-0 group-hover:opacity-100 transform translate-x-4 group-hover:translate-x-0 transition-all">
-                      <ArrowRight className="w-6 h-6" />
-                    </div>
-                  )}
+                <div className={`icon-wrapper w-14 h-14 rounded-2xl bg-gradient-to-br ${gradient} flex items-center justify-center mb-4 shadow-lg`}>
+                  <span className="material-symbols-outlined text-white text-3xl">
+                    {icon}
+                  </span>
                 </div>
+                <h3 className="font-display font-bold text-white text-lg mb-2 group-hover:text-accent transition-colors">
+                  {cat.name}
+                </h3>
+                <p className="text-text-muted text-sm line-clamp-2">
+                  {cat.description || "Discover amazing experiences"}
+                </p>
               </div>
             );
           })}
         </div>
 
         {/* View All Categories Button */}
-        <div className="text-center mt-10">
+        <div className="text-center mt-12 reveal-on-scroll">
           <button
             onClick={() => router.push("/categories")}
-            className="inline-flex items-center gap-2 px-8 py-3 bg-pink-500 text-white font-semibold rounded-full hover:bg-pink-600 transition-colors shadow-lg hover:shadow-xl"
+            className="btn-neon px-8 py-4 rounded-full bg-accent text-black font-bold inline-flex items-center gap-2 hover:scale-105 transition-transform"
           >
             View All Categories
-            <ArrowRight className="w-5 h-5" />
+            <span className="material-symbols-outlined">arrow_forward</span>
           </button>
         </div>
       </div>
