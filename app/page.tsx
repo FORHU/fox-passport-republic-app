@@ -165,9 +165,9 @@ function HomeContent() {
 
   // --- 2. NEW LANDING PAGE VIEW (Default) ---
   return (
-    <div className="min-h-screen bg-white font-sans text-gray-900">
+    <div className="bg-background bg-gradient-dark text-text-main antialiased min-h-screen flex flex-col selection:bg-accent selection:text-black">
       <Navbar />
-      <main className="pt-[60px] md:pt-[70px]">
+      <main className="flex-grow pt-32">
         <Hero />
         <FoxersSection />
         <CategoryGrid />
