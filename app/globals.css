@@ -398,6 +398,11 @@ body {
   color: #ccff00;
 }
 
+/* Material Symbols Configuration */
+.material-symbols-outlined {
+  font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+}
+
 /* Chart animations */
 .chart-bar {
   transition: height 1s ease-out, background-color 0.3s ease;
