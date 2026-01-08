@@ -13,7 +13,7 @@ const AdminDashboardContent: React.FC = () => {
   const [activeTab, setActiveTab] = useState('Dashboard');
 
   return (
-    <div className="flex h-screen w-full overflow-hidden bg-bg-light">
+    <div className="flex h-screen w-full overflow-hidden bg-background">
       <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} />
 
       <main className="flex-1 flex flex-col h-full overflow-hidden">
@@ -24,9 +24,9 @@ const AdminDashboardContent: React.FC = () => {
             {activeTab === 'Dashboard' && <Dashboard />}
             {activeTab === 'Experiences' && <EventsManagement />}
             {activeTab !== 'Dashboard' && activeTab !== 'Experiences' && (
-              <div className="flex flex-col items-center justify-center h-full text-slate-400">
+              <div className="flex flex-col items-center justify-center h-full text-text-muted">
                 <span className="material-symbols-outlined text-6xl mb-4">construction</span>
-                <h2 className="text-2xl font-bold">{activeTab} screen is coming soon</h2>
+                <h2 className="text-2xl font-display font-bold text-white">{activeTab} screen is coming soon</h2>
               </div>
             )}
           </div>
