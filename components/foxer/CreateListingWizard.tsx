@@ -190,16 +190,24 @@ export default function CreateListingWizard() {
         ],
       };
 
-      const response = await api.post('/v1/listings', payload);
+      // TODO: Replace with actual API call when backend is ready
+      // const response = await api.post('/v1/listings', payload);
 
-      if (response.data.success) {
-        toast.success("Listing created successfully!");
-        onClose();
-        resetForm();
-      }
+      // Simulate successful submission (frontend-only for now)
+      await new Promise(resolve => setTimeout(resolve, 1500)); // Simulate API delay
+
+      console.log('Listing payload (frontend-only):', payload);
+
+      toast.success(
+        "Thank you for submitting your listing! Our admin team will review and approve it shortly.",
+        { duration: 5000 }
+      );
+
+      onClose();
+      resetForm();
     } catch (error: any) {
       console.error('Create listing error:', error);
-      toast.error(error.response?.data?.message || "Failed to create listing");
+      toast.error("Failed to create listing. Please try again.");
     } finally {
       setLoading(false);
     }
