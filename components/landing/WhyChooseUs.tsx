@@ -1,61 +1,70 @@
 "use client";
 
 import React from "react";
-import { Map, BadgeCheck, Users } from "lucide-react";
 
 const FEATURES = [
   {
-    icon: Map,
+    icon: "location_on",
     title: "Diverse Locations",
     description:
       "From hidden beaches to city rooftops, explore venues across the archipelago.",
+    gradient: "from-orange-400 to-red-500",
   },
   {
-    icon: BadgeCheck,
+    icon: "verified",
     title: "Verified Experiences",
     description:
       "We personally verify every adventure, restaurant, and venue for quality assurance.",
+    gradient: "from-blue-400 to-cyan-500",
   },
   {
-    icon: Users,
+    icon: "group",
     title: "Community Connect",
     description:
       "Join local groups for hiking, dining, or jamming sessions.",
+    gradient: "from-purple-500 to-indigo-600",
   },
 ];
 
 const WhyChooseUs: React.FC = () => {
   return (
-    <section className="py-12 md:py-16 bg-gray-50/50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-        <h2 className="text-3xl font-extrabold text-gray-700 mb-4">
-          Why Choose FoxPassport?
-        </h2>
-        <p className="text-gray-500 mb-10 max-w-2xl mx-auto">
-          We simplify discovery across the Philippines so you can focus on the
-          experience.
-        </p>
+    <section className="py-16 lg:py-24 relative overflow-hidden">
+      {/* Background gradient accent */}
+      <div className="absolute top-1/2 right-0 w-96 h-96 bg-secondary/5 rounded-full blur-[100px] pointer-events-none"></div>
 
-        <div className="grid md:grid-cols-3 gap-8">
-          {FEATURES.map((feature, idx) => {
-            const Icon = feature.icon;
-            return (
-              <div
-                key={idx}
-                className="bg-white p-10 rounded-[2.5rem] text-left shadow-sm hover:shadow-md transition-all border border-gray-50"
-              >
-                <div className="h-12 w-12 rounded-xl bg-pink-100 text-pink-500 flex items-center justify-center mb-6">
-                  <Icon className="w-6 h-6" strokeWidth={1.5} />
-                </div>
-                <h3 className="text-xl font-bold text-gray-700 mb-3">
-                  {feature.title}
-                </h3>
-                <p className="text-gray-500 leading-relaxed text-sm">
-                  {feature.description}
-                </p>
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 relative z-10">
+        <div className="text-center mb-16 reveal-on-scroll">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 border border-white/10 mb-4">
+            <span className="text-xs font-bold uppercase tracking-widest text-secondary">Why Us</span>
+          </div>
+          <h2 className="text-4xl lg:text-5xl font-display font-bold text-white mb-4">
+            Why Choose <span className="text-gradient">FoxPassport</span>?
+          </h2>
+          <p className="text-lg text-text-muted max-w-2xl mx-auto">
+            We simplify discovery across the Philippines so you can focus on the experience.
+          </p>
+        </div>
+
+        <div className="grid md:grid-cols-3 gap-6 lg:gap-8 reveal-on-scroll">
+          {FEATURES.map((feature, idx) => (
+            <div
+              key={idx}
+              className="glass-card rounded-3xl p-8 text-left card-hover-effect border border-white/5 group"
+              style={{ animationDelay: `${idx * 100}ms` }}
+            >
+              <div className={`h-14 w-14 rounded-2xl bg-gradient-to-br ${feature.gradient} flex items-center justify-center mb-6 shadow-lg group-hover:scale-110 transition-transform`}>
+                <span className="material-symbols-outlined text-white text-3xl">
+                  {feature.icon}
+                </span>
               </div>
-            );
-          })}
+              <h3 className="text-xl font-display font-bold text-white mb-3 group-hover:text-accent transition-colors">
+                {feature.title}
+              </h3>
+              <p className="text-text-muted leading-relaxed">
+                {feature.description}
+              </p>
+            </div>
+          ))}
         </div>
       </div>
     </section>
