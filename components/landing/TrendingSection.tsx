@@ -156,20 +156,21 @@ const TrendingSection: React.FC = () => {
   }, []);
 
   return (
-    <section className="pt-12 md:pt-16 pb-4 bg-white">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex flex-col md:flex-row md:items-end justify-between mb-6 gap-4">
-          <div>
-            <span className="text-pink-500 font-extrabold text-xs uppercase tracking-[0.2em] mb-2 block">
-              Top Picks
-            </span>
-            <h2 className="text-4xl font-extrabold text-gray-700 mb-2">
-              Trending Experiences
-            </h2>
-            <p className="text-gray-500 text-lg">
-              Curated selections with real feedback from our community.
-            </p>
+    <section className="py-16 lg:py-24 relative overflow-hidden">
+      {/* Background gradient accent */}
+      <div className="absolute top-0 left-1/3 w-96 h-96 bg-accent/5 rounded-full blur-[100px] pointer-events-none"></div>
+
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 relative z-10">
+        <div className="text-center mb-16 reveal-on-scroll">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 border border-white/10 mb-4">
+            <span className="text-xs font-bold uppercase tracking-widest text-accent">Top Picks</span>
           </div>
+          <h2 className="text-4xl lg:text-5xl font-display font-bold text-white mb-4">
+            Trending <span className="text-gradient">Experiences</span>
+          </h2>
+          <p className="text-lg text-text-muted max-w-2xl mx-auto">
+            Curated selections with real feedback from our community.
+          </p>
         </div>
 
         <div className="grid grid-cols-1 gap-6">

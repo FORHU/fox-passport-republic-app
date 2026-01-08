@@ -1,6 +1,8 @@
 "use client";
 
 import React, { useState } from "react";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 
 const Newsletter: React.FC = () => {
   const [email, setEmail] = useState("");
@@ -13,44 +15,62 @@ const Newsletter: React.FC = () => {
   };
 
   return (
-    <section className="px-4 pt-4 pb-8 max-w-7xl mx-auto">
-      <div className="relative rounded-[3rem] bg-pink-500 overflow-hidden px-8 py-10 md:px-16 md:py-12 text-center">
-        {/* Background blobs */}
-        <div className="absolute top-0 left-0 w-64 h-64 bg-white/10 rounded-full -translate-x-1/2 -translate-y-1/2 blur-3xl"></div>
-        <div className="absolute bottom-0 right-0 w-80 h-80 bg-white/10 rounded-full translate-x-1/3 translate-y-1/3 blur-3xl"></div>
+    <section className="py-16 lg:py-24 relative overflow-hidden">
+      {/* Background gradient accent */}
+      <div className="absolute bottom-0 right-1/3 w-96 h-96 bg-primary/10 rounded-full blur-[120px] pointer-events-none"></div>
 
-        <div className="relative z-10 max-w-2xl mx-auto">
-          <h2 className="text-3xl md:text-5xl font-extrabold text-white mb-6">
-            Never miss a new experience.
-          </h2>
-          <p className="text-lg text-white/80 mb-10">
-            Sign up for our weekly digest of the best upcoming adventures and
-            events.
-          </p>
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div className="relative rounded-[3rem] glass-card border border-white/10 overflow-hidden px-8 py-12 md:px-16 md:py-16 text-center reveal-on-scroll">
+          {/* Gradient blobs */}
+          <div className="absolute top-0 left-0 w-64 h-64 bg-accent/10 rounded-full -translate-x-1/2 -translate-y-1/2 blur-[100px]"></div>
+          <div className="absolute bottom-0 right-0 w-80 h-80 bg-primary/10 rounded-full translate-x-1/3 translate-y-1/3 blur-[100px]"></div>
 
-          <form
-            onSubmit={handleSubmit}
-            className="flex flex-col sm:flex-row gap-4 max-w-md mx-auto"
-          >
-            <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="Enter your email"
-              required
-              className="flex-1 px-6 py-4 rounded-2xl bg-white/10 border-none backdrop-blur-md placeholder:text-white/60 text-white focus:ring-2 focus:ring-white transition-all outline-none"
-            />
-            <button
-              type="submit"
-              className="bg-white text-pink-500 font-bold px-8 py-4 rounded-2xl shadow-xl hover:bg-gray-50 transition-all active:scale-95"
+          <div className="relative z-10 max-w-2xl mx-auto">
+            {/* Badge */}
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 border border-white/10 mb-6">
+              <span className="flex h-2 w-2 rounded-full bg-accent shadow-[0_0_10px_#ccff00] animate-pulse"></span>
+              <span className="text-xs font-bold uppercase tracking-widest text-white/90">
+                Stay Connected
+              </span>
+            </div>
+
+            <h2 className="text-4xl md:text-5xl lg:text-6xl font-display font-bold text-white mb-6 leading-tight">
+              Never miss a new <span className="text-gradient">experience</span>.
+            </h2>
+            <p className="text-lg text-text-muted mb-10 max-w-xl mx-auto">
+              Sign up for our weekly digest of the best upcoming adventures, exclusive events, and curated experiences.
+            </p>
+
+            <form
+              onSubmit={handleSubmit}
+              className="flex flex-col sm:flex-row gap-4 max-w-lg mx-auto mb-6"
             >
-              Subscribe
-            </button>
-          </form>
+              <Input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="Enter your email"
+                required
+                icon="mail"
+                iconPosition="left"
+                className="flex-1 h-14 text-base"
+              />
+              <Button
+                type="submit"
+                variant="neon"
+                size="lg"
+                className="sm:px-8 h-14 rounded-2xl shadow-[0_0_20px_rgba(204,255,0,0.3)] hover:shadow-[0_0_30px_rgba(204,255,0,0.5)] hover:scale-105 transition-all"
+              >
+                <span className="material-symbols-outlined">send</span>
+                Subscribe
+              </Button>
+            </form>
 
-          <p className="mt-6 text-sm text-white/50">
-            No spam, just good vibes. Unsubscribe anytime.
-          </p>
+            <p className="text-sm text-text-muted flex items-center justify-center gap-2">
+              <span className="material-symbols-outlined text-accent text-[16px]">verified_user</span>
+              No spam, just good vibes. Unsubscribe anytime.
+            </p>
+          </div>
         </div>
       </div>
     </section>

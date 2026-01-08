@@ -2,7 +2,6 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
-import { Heart, Star } from "lucide-react";
 import ReviewCard, { Review } from "./ReviewCard";
 
 export interface Experience {
@@ -36,59 +35,67 @@ const ExperienceListing: React.FC<ExperienceListingProps> = ({
   return (
     <div
       className={`grid ${
-        isVertical ? "grid-cols-1 md:grid-cols-3" : "grid-cols-1 md:grid-cols-2"
-      } gap-4 items-stretch p-4 bg-gray-50/30 border border-gray-100 rounded-[2.5rem]`}
+        isVertical ? "grid-cols-1 lg:grid-cols-3" : "grid-cols-1 lg:grid-cols-2"
+      } gap-6 items-stretch p-6 glass-card rounded-[2.5rem] border border-white/5 hover:border-white/10 transition-all reveal-on-scroll`}
     >
       {/* Main Image Block */}
       <div
         className={`relative ${
-          isVertical ? "md:col-span-1" : "md:col-span-1"
-        } min-h-[400px] md:min-h-[500px] rounded-[2rem] overflow-hidden shadow-lg group`}
+          isVertical ? "lg:col-span-1" : "lg:col-span-1"
+        } min-h-[400px] lg:min-h-[500px] rounded-3xl overflow-hidden shadow-2xl group`}
       >
         <Link href={`/venues/${experience.id}`} className="absolute inset-0">
           <img
             src={experience.imageUrl}
-            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+            className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
             alt={experience.title}
           />
+          {/* Gradient overlay */}
+          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent"></div>
         </Link>
 
         {/* Favorite Button */}
         <button
           onClick={() => setIsFavorite(!isFavorite)}
-          className="absolute top-5 right-5 w-10 h-10 rounded-full bg-black/10 backdrop-blur-md flex items-center justify-center text-white hover:bg-black/20 transition-all"
+          className="absolute top-6 right-6 w-12 h-12 rounded-full glass-panel flex items-center justify-center text-white hover:bg-white/20 transition-all group/fav z-10"
         >
-          <Heart
-            className={`w-5 h-5 ${
-              isFavorite ? "fill-pink-500 text-pink-500" : ""
-            }`}
-          />
+          <span
+            className={`material-symbols-outlined text-[24px] transition-all ${
+              isFavorite ? "fill-current text-secondary" : ""
+            } group-hover/fav:scale-110`}
+          >
+            favorite
+          </span>
         </button>
 
         {/* Floating Info Card */}
-        <div className="absolute bottom-5 left-5 right-5 bg-white/95 backdrop-blur-md p-5 rounded-[1.5rem] shadow-xl">
-          <div className="flex justify-between items-start mb-2">
-            <h3 className="text-sm font-extrabold text-gray-700 line-clamp-1">
+        <div className="absolute bottom-6 left-6 right-6 glass-panel p-6 rounded-2xl shadow-2xl backdrop-blur-xl">
+          <div className="flex justify-between items-start mb-3">
+            <h3 className="text-base font-display font-bold text-white line-clamp-1 flex-1">
               {experience.title}
             </h3>
-            <div className="flex items-center gap-1 text-[11px] font-bold">
-              <Star className="w-3.5 h-3.5 fill-pink-500 text-pink-500" />
-              {experience.rating.toFixed(1)}
+            <div className="flex items-center gap-1.5 text-sm font-bold text-white bg-accent/20 px-2.5 py-1 rounded-full ml-2">
+              <span className="material-symbols-outlined text-accent text-[18px] fill-current">star</span>
+              <span className="text-white">{experience.rating.toFixed(1)}</span>
             </div>
           </div>
-          <div className="text-[11px] text-gray-500 font-semibold mb-3">
-            {experience.guests} guests &bull; {experience.bedrooms} bedrooms
-            <br />
-            {experience.type} &mdash; {experience.location}
+          <div className="text-xs text-text-muted font-medium mb-3 space-y-1">
+            <div>
+              <span className="text-white font-semibold">{experience.guests}</span> guests · <span className="text-white font-semibold">{experience.bedrooms}</span> bedrooms
+            </div>
+            <div>
+              {experience.type} · {experience.location}
+            </div>
           </div>
-          <div className="text-[11px] font-bold text-gray-700 mb-1">
+          <div className="flex items-center gap-2 text-xs font-bold text-text-muted mb-3">
+            <span className="material-symbols-outlined text-accent text-[16px]">calendar_month</span>
             {experience.dateRange}
           </div>
-          <div className="flex items-baseline gap-1">
-            <span className="text-sm font-extrabold text-gray-700">
+          <div className="flex items-baseline gap-2 pt-3 border-t border-white/10">
+            <span className="text-xl font-display font-bold text-white">
               {experience.pricePerStay}
             </span>
-            <span className="text-[10px] text-gray-500 font-bold">
+            <span className="text-xs text-text-muted font-medium">
               for {experience.totalNights} nights
             </span>
           </div>
@@ -98,7 +105,7 @@ const ExperienceListing: React.FC<ExperienceListingProps> = ({
       {/* Reviews Section */}
       <div
         className={`${
-          isVertical ? "md:col-span-2" : "md:col-span-1"
+          isVertical ? "lg:col-span-2" : "lg:col-span-1"
         } flex flex-col justify-between`}
       >
         <div
