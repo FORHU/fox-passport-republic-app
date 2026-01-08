@@ -14,6 +14,7 @@ import FoxersSection from "@/components/landing/FoxersSection";
 import WhyChooseUs from "@/components/landing/WhyChooseUs";
 import TrendingSection from "@/components/landing/TrendingSection";
 import Newsletter from "@/components/landing/Newsletter";
+import Footer from "@/components/landing/Footer";
 
 // --- Search Results Components ---
 import ListingCard from "@/components/landing/ListingCard";
@@ -175,6 +176,7 @@ function HomeContent() {
         <TrendingSection />
         <Newsletter />
       </main>
+      <Footer />
     </div>
   );
 }

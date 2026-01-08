@@ -35,10 +35,10 @@ const WhyChooseUs: React.FC = () => {
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 relative z-10">
         <div className="text-center mb-16 reveal-on-scroll">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 border border-white/10 mb-4">
-            <span className="text-xs font-bold uppercase tracking-widest text-secondary">Why Us</span>
+            <span className="text-xs font-bold uppercase tracking-widest text-accent">Why Us</span>
           </div>
           <h2 className="text-4xl lg:text-5xl font-display font-bold text-white mb-4">
-            Why Choose <span className="text-gradient">FoxPassport</span>?
+            Why Choose <span className="text-gradient">Foxxing</span>?
           </h2>
           <p className="text-lg text-text-muted max-w-2xl mx-auto">
             We simplify discovery across the Philippines so you can focus on the experience.
