@@ -81,17 +81,17 @@ const Hero: React.FC = () => {
                 <img
                   alt="User"
                   className="h-12 w-12 rounded-full border-2 border-background object-cover hover:scale-110 hover:z-10 transition-transform"
-                  src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=200&auto=format&fit=crop"
+                  src="https://lh3.googleusercontent.com/aida-public/AB6AXuD-A0KmDrOi8KQZt5YVraaoL54kpKL4sLPhBoZj6kgs089hsWPz2qJfdMww3r4NpGGBYTSIrptbwjoMo0ZmnZFpuLCt3lExTQAv1QauCbCl6k3vscDYH5z0t7EqZ-NulKXiQjy8VxqCwlvvy4h_vf5j2Lf7cN1haDT24rR_FzF8rO9swBYh5KVGtV09ogFZmVJAcrnGZCXHQEkJR8TzFmrSMkK0jRaOzO43L1j7KQZ0WraTBcdonNTmEh2phQsvKrYuVv6P1wDPPAM"
                 />
                 <img
                   alt="User"
                   className="h-12 w-12 rounded-full border-2 border-background object-cover hover:scale-110 hover:z-10 transition-transform"
-                  src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&auto=format&fit=crop"
+                  src="https://lh3.googleusercontent.com/aida-public/AB6AXuAawAmjQLUXCUHrFlbDS_ydJnuUpm_WUNW9I5alXTGfJCNDU8_Gnn4cey4Tt_fcRefnkP3AK4S1C13YiOGOnCLmz3aSgwJP_JwChCJBNSCeFugn97n0lpqg6JVBy926WV4xcXgfaLeBW6GNWknG__nTJeUYtmKctJxCDA5ODZq2ZxpowxJKzUXEpcS9W1ThdbCuR0rXQTeqeW2URDNRYLxCNmXPoWUlxq_9LdMzamdZIYkwK2XK3b0k_kVV4njSFnmyGojp2293vrU"
                 />
                 <img
                   alt="User"
                   className="h-12 w-12 rounded-full border-2 border-background object-cover hover:scale-110 hover:z-10 transition-transform"
-                  src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=200&auto=format&fit=crop"
+                  src="https://lh3.googleusercontent.com/aida-public/AB6AXuDgd--zxF5w1ZztnRmVlmV-feUqN_qBWaBYUT5CujXc0w-0AUuWAmHt_hqnGMMe6m_fRhEWkVx4s-GPtdMKYzlfSOQqHXDOj1gZA2nyUJx9g-k_T2GXeIiYRFWE4OhzISNwTdKHnUtx3za3LKNh05jbmOS4npA_2XzCQ6-b0jqwzXF4Zy5LKfBRtJpHKvZknn8VWcB24VzWfO5VUZJ4zVgdHD766vR4O1OP3A6j3meIxBZLNL5KDybSUXLKzRdPbfxAQ2NIKRBRKsA"
                 />
                 <div className="flex h-12 w-12 items-center justify-center rounded-full bg-surface-highlight text-white border-2 border-background text-xs font-bold hover:bg-accent hover:text-black transition-colors cursor-pointer">
                   +2k
@@ -105,37 +105,69 @@ const Hero: React.FC = () => {
                     </span>
                   ))}
                 </div>
-                <span className="text-white/60">2,000+ happy explorers</span>
+                Verified by Citizens
               </div>
             </div>
           </div>
 
           {/* Right Side - Image Grid */}
-          <div className="lg:col-span-5 relative reveal-on-scroll delay-200">
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-4 animate-float">
-                <img
-                  src="https://images.unsplash.com/photo-1533174072545-7a4b6ad7a6c3?w=400&auto=format&fit=crop"
-                  alt="Experience 1"
-                  className="rounded-3xl shadow-2xl w-full aspect-square object-cover card-hover-effect"
-                />
-                <img
-                  src="https://images.unsplash.com/photo-1501281668745-f7f57925c3b4?w=400&auto=format&fit=crop"
-                  alt="Experience 2"
-                  className="rounded-3xl shadow-2xl w-full aspect-[3/4] object-cover card-hover-effect"
-                />
+          <div className="lg:col-span-5 relative mt-16 lg:mt-0 perspective-1000">
+            <div className="relative grid grid-cols-2 gap-4">
+              <div className="space-y-4 translate-y-12 animate-float">
+                <div className="relative group rounded-[2rem] overflow-hidden border border-white/10 shadow-2xl rotate-[-3deg] hover:rotate-0 hover:scale-105 transition-all duration-500 z-10 cursor-pointer">
+                  <img
+                    alt="Hiking"
+                    className="w-full h-56 object-cover filter brightness-90 group-hover:brightness-110 transition-all duration-700 scale-100 group-hover:scale-110"
+                    src="https://lh3.googleusercontent.com/aida-public/AB6AXuAmgc1ziaofMi_-lTKcjpZEv7VTfF2giPd9g4dk7Tp2nV4zGq8Q5IRga5YTfRI_Jn_Ify-Tosw9kUkDF66j16bJhuxcA142KSgPbVJ-Up9pS9F7PNz63ifWmP4U5JaVM9HYqNd8sktuxLqRWOY1Pj2jFRyYN95x7r5JTsz3oLrbAf-TOEO8mNeF45A-pH7tTbULW3TTpFuhwLwvTaBtcULpdKffMLjcLe9RgSE8PXf3NRi_xZqMstDkVF5U8JcLaCYz1TqBPvadL4I"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-80 group-hover:opacity-100 transition-opacity"></div>
+                  <span className="absolute bottom-4 left-4 text-white font-display font-bold text-lg tracking-wide group-hover:translate-x-2 transition-transform">
+                    Adventure
+                  </span>
+                  <div className="absolute top-4 right-4 bg-white/20 backdrop-blur-md rounded-full p-2 opacity-0 group-hover:opacity-100 transition-all duration-300 translate-y-4 group-hover:translate-y-0">
+                    <span className="material-symbols-outlined text-white text-[16px]">arrow_outward</span>
+                  </div>
+                </div>
+                <div className="relative group rounded-[2rem] overflow-hidden border border-white/10 shadow-2xl rotate-[2deg] hover:rotate-0 hover:scale-105 transition-all duration-500 cursor-pointer">
+                  <img
+                    alt="Party"
+                    className="w-full h-72 object-cover filter brightness-90 group-hover:brightness-110 transition-all duration-700 scale-100 group-hover:scale-110"
+                    src="https://lh3.googleusercontent.com/aida-public/AB6AXuAmLMhfBavcKVkOWHaS4TPPk-NHIcut_ZhBBEe8lYdYR3H4t2yqSZKN4kaK-4daM6PVExafzgFu6-ETEkTvY3iOkNq3VyaKMs5jeDTMhhkOITtl93afJOgej_LM-nwJ4slOZvjY9jUaO0XJczNgnvj21yuB3eVwQrWu2qU4kFoFm9oertAy6N8vnz-DcYaCFbk-2wqIYps1HbNWSCB5TBISWObKfniMTbMOzf964UcanLKD2UIOD2M5IRj5kXf1kvppEdNzUJY4S3U"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-80 group-hover:opacity-100 transition-opacity"></div>
+                  <span className="absolute bottom-4 left-4 text-white font-display font-bold text-lg tracking-wide group-hover:translate-x-2 transition-transform">
+                    Nightlife
+                  </span>
+                </div>
               </div>
-              <div className="space-y-4 pt-12 animate-float-delayed">
-                <img
-                  src="https://images.unsplash.com/photo-1493246507139-91e8fad9978e?w=400&auto=format&fit=crop"
-                  alt="Experience 3"
-                  className="rounded-3xl shadow-2xl w-full aspect-[3/4] object-cover card-hover-effect"
-                />
-                <img
-                  src="https://images.unsplash.com/photo-1478131143081-80f7f84ca84d?w=400&auto=format&fit=crop"
-                  alt="Experience 4"
-                  className="rounded-3xl shadow-2xl w-full aspect-square object-cover card-hover-effect"
-                />
+              <div className="space-y-4 animate-float-delayed">
+                <div className="relative group rounded-[2rem] overflow-hidden border border-white/10 shadow-2xl rotate-[3deg] hover:rotate-0 hover:scale-105 transition-all duration-500 cursor-pointer">
+                  <img
+                    alt="Coffee"
+                    className="w-full h-72 object-cover filter brightness-90 group-hover:brightness-110 transition-all duration-700 scale-100 group-hover:scale-110"
+                    src="https://lh3.googleusercontent.com/aida-public/AB6AXuB_LY_Y9MjrpTWy_NJTJIRwk76sZnsaIdsxuUIfYq_pNLi5QstkgJmV2mZg_qFfJnhOtNJ9OWN1f9482wc5qJ1VX2x7t932Q2CfhUv4qoGznn5mNqoNlggeX46L5F8wFGk46ZivWa7VCxRqJRCs_EkknPCF6QDvTdpuAwdLudXP-kP13gUd5Bw6nonOKZfwI199-TukQ0_hWH2KVljytpXdvlFEk3Q_GnkMqwagAAuvX3PvUOTmbUOWnt7P-40VvqyHkoe_HuyhMQg"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-80 group-hover:opacity-100 transition-opacity"></div>
+                  <span className="absolute bottom-4 left-4 text-white font-display font-bold text-lg tracking-wide group-hover:translate-x-2 transition-transform">
+                    Hangouts
+                  </span>
+                </div>
+                <div className="relative group rounded-[2rem] overflow-hidden border border-white/10 shadow-2xl rotate-[-2deg] hover:rotate-0 hover:scale-105 transition-all duration-500 z-10 cursor-pointer">
+                  <img
+                    alt="Social"
+                    className="w-full h-56 object-cover filter brightness-90 group-hover:brightness-110 transition-all duration-700 scale-100 group-hover:scale-110"
+                    src="https://lh3.googleusercontent.com/aida-public/AB6AXuD2XA52iqn3OYq_ek6lF7a5RrGBaIYiCLbhKptRxzzgr1w5g1rVfS3IAKovFFayv15ZLnHMWWtTtje9S1U71VWK-1PDExtYW9y_5Oc7EJYEc-Vp6RaZu68x7vepjoN0dNDpWVyuLMXRVxTjOkvIR2k6uhg2oNLwgTJW4xkjDC8zPazWFcViSboKtLViluxCMf4YcJ9dzEEJfo7uyHlmHBLpo9riL-1nhYHM0v-SRB-c1l6Ao0PMoBTYz1u7rbHmJiROH-b3NkvgseE"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-80 group-hover:opacity-100 transition-opacity"></div>
+                  <span className="absolute bottom-4 left-4 text-white font-display font-bold text-lg tracking-wide group-hover:translate-x-2 transition-transform">
+                    Social
+                  </span>
+                </div>
+              </div>
+              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-30 pointer-events-none">
+                <div className="bg-accent text-black px-6 py-3 rounded-full font-display font-bold uppercase tracking-widest shadow-[0_0_30px_#ccff00] transform animate-pulse border border-white/20 pointer-events-auto hover:scale-110 transition-transform cursor-pointer">
+                  Trending
+                </div>
               </div>
             </div>
           </div>

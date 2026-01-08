@@ -23,6 +23,7 @@ const CATEGORY_IMAGES: Record<string, string> = {
 const CategoryGrid: React.FC = () => {
   const router = useRouter();
   const { categories, loading, error } = useCategories();
+  const [showAllCategories, setShowAllCategories] = React.useState(false);
 
   const handleCategoryClick = (categoryName: string) => {
     if (categoryName === "More") {
@@ -58,28 +59,83 @@ const CategoryGrid: React.FC = () => {
 
   // Filter out "More" category from API
   const displayCategories = categories.filter(cat => cat.slug !== 'more');
+  const categoriesToShow = showAllCategories ? displayCategories : displayCategories.slice(0, 4);
+
+  // Category children mapping
+  const categoryChildren: Record<string, string[]> = {
+    "Festivals & Fairs": [
+      'Food & Drink Fests',
+      'Music & Art Festivals',
+      'Wellness & Lifestyle Expos',
+      'Seasonal Fairs',
+      'Cultural & Heritage Days'
+    ],
+    "Classes & Workshops": [
+      'Hands-on Maker Sessions',
+      'Culinary & Mixology',
+      'Fitness & Movement',
+      'Nature & Survival',
+      'Photography & Content'
+    ],
+    "Live Performances": [
+      'Concerts & Live Gigs',
+      'Comedy & Open Mics',
+      'Stage & Theater',
+      'Specialty Acts',
+      'Live Talks & Podcasts'
+    ],
+    "Tours & Excursions": [
+      'Nature & Adventure',
+      'Food & Bar Crawls',
+      'Heritage & City Walks',
+      'Wellness Retreats',
+      '"Tourist in Your Own Town"'
+    ],
+    "Parties & Socials": [
+      'Themed Nights',
+      'Club & Dance Events',
+      'Networking Mixers',
+      'Activity-Based Socials',
+      'Intimate Soirées'
+    ],
+    "Markets & Pop-Ups": [
+      'Artisan & Craft Markets',
+      'Farmers Markets',
+      'Vintage & Thrift Fairs',
+      'Brand Pop-Ups',
+      'Food Truck Rallies'
+    ],
+    "Competitions & Games": [
+      'Races & Fun Runs',
+      'Interactive Gaming',
+      'Trivia & Pub Quizzes',
+      'Community Sports',
+      'Performance Contests'
+    ],
+    "Celebrations & Milestones": [
+      'Weddings & Engagements',
+      'Birthdays & Anniversaries',
+      'Baby & Bridal Showers',
+      'Graduations & Proms',
+      'Religious & Cultural Rites'
+    ]
+  };
 
   return (
-    <section className="py-16 lg:py-24 relative overflow-hidden">
-      {/* Background gradient accent */}
-      <div className="absolute top-0 right-1/4 w-96 h-96 bg-accent/5 rounded-full blur-[100px] pointer-events-none"></div>
-
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 relative z-10">
-        <div className="text-center mb-16 reveal-on-scroll">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 border border-white/10 mb-4">
-            <span className="text-xs font-bold uppercase tracking-widest text-accent">Categories</span>
-          </div>
-          <h2 className="text-4xl lg:text-5xl font-display font-bold text-white mb-4">
-            What's your <span className="text-gradient">vibe</span>?
+    <section className="py-10 border-y border-white/5 bg-black/20 backdrop-blur-sm relative overflow-hidden">
+      <div className="absolute inset-0 bg-gradient-to-r from-background via-transparent to-background z-10 pointer-events-none"></div>
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 mb-8 flex justify-between items-end relative z-20 reveal-on-scroll">
+        <div>
+          <h2 className="text-3xl font-display font-bold text-white group cursor-default">
+            <span className="inline-block hover:animate-wiggle">Vibe</span>{" "}
+            <span className="inline-block hover:text-accent transition-colors">Check</span>
           </h2>
-          <p className="text-lg text-text-muted max-w-2xl mx-auto">
-            From underground gigs to mountain escapes. Find experiences that match your energy.
-          </p>
+          <p className="text-text-muted mt-1">Browse by category</p>
         </div>
-
-        {/* Category Grid */}
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 lg:gap-6 reveal-on-scroll">
-          {displayCategories.slice(0, 8).map((cat: Category, index) => {
+      </div>
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 relative z-20 reveal-on-scroll" style={{ transitionDelay: '100ms' }}>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          {categoriesToShow.map((cat: Category, idx) => {
             // Icon mapping for categories
             const iconMap: Record<string, string> = {
               "Festivals & Fairs": "festival",
@@ -105,38 +161,53 @@ const CategoryGrid: React.FC = () => {
 
             const icon = iconMap[cat.name] || "star";
             const gradient = colorMap[cat.name] || "from-primary to-secondary";
+            const children = categoryChildren[cat.name] || [];
 
             return (
-              <div
-                key={cat.id}
-                onClick={() => handleCategoryClick(cat.name)}
-                className="category-item glass-card rounded-2xl p-6 border border-white/5 cursor-pointer group"
-                style={{ animationDelay: `${index * 100}ms` }}
+              <a
+                key={idx}
+                href="#"
+                onClick={(e) => {
+                  e.preventDefault();
+                  handleCategoryClick(cat.name);
+                }}
+                className="group relative flex flex-col justify-between p-5 bg-surface-highlight/50 rounded-3xl border border-white/5 h-[280px] overflow-hidden hover:border-white/20 transition-all duration-300 hover:-translate-y-1"
               >
-                <div className={`icon-wrapper w-14 h-14 rounded-2xl bg-gradient-to-br ${gradient} flex items-center justify-center mb-4 shadow-lg`}>
-                  <span className="material-symbols-outlined text-white text-3xl">
-                    {icon}
-                  </span>
+                {/* Default Content */}
+                <div className="relative z-10 transition-all duration-300 group-hover:-translate-y-2">
+                  <div className={`h-14 w-14 rounded-2xl bg-gradient-to-br ${gradient} flex items-center justify-center text-white shadow-lg mb-4`}>
+                    <span className="material-symbols-outlined text-[28px]">{icon}</span>
+                  </div>
+                  <h3 className="text-xl font-bold text-white mb-1 leading-tight font-display">{cat.name}</h3>
+                  <p className="text-sm text-text-muted">{cat.description || "Discover amazing experiences"}</p>
                 </div>
-                <h3 className="font-display font-bold text-white text-lg mb-2 group-hover:text-accent transition-colors">
-                  {cat.name}
-                </h3>
-                <p className="text-text-muted text-sm line-clamp-2">
-                  {cat.description || "Discover amazing experiences"}
-                </p>
-              </div>
+
+                {/* Child Categories Overlay (Slides up) */}
+                <div className="absolute inset-0 bg-surface-highlight/95 backdrop-blur-xl p-5 flex flex-col justify-center translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-out z-20">
+                  <h4 className="text-xs font-bold text-text-muted uppercase tracking-wider mb-3">Explore</h4>
+                  <ul className="space-y-2">
+                    {children.map(child => (
+                      <li key={child} className="flex items-center gap-2 text-sm text-white/80 hover:text-accent transition-colors cursor-pointer">
+                        <span className="w-1.5 h-1.5 rounded-full bg-white/20"></span>
+                        {child}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+
+                {/* Background Gradient Blob */}
+                <div className={`absolute -bottom-10 -right-10 w-32 h-32 bg-gradient-to-br ${gradient} blur-[60px] opacity-20 group-hover:opacity-40 transition-opacity`}></div>
+              </a>
             );
           })}
         </div>
 
-        {/* View All Categories Button */}
-        <div className="text-center mt-12 reveal-on-scroll">
+        <div className="mt-8 flex justify-center">
           <button
-            onClick={() => router.push("/categories")}
-            className="btn-neon px-8 py-4 rounded-full bg-accent text-black font-bold inline-flex items-center gap-2 hover:scale-105 transition-transform"
+            onClick={() => setShowAllCategories(!showAllCategories)}
+            className="px-6 py-2 rounded-full border border-white/10 text-white text-sm font-medium hover:bg-white hover:text-black transition-all hover:scale-105"
           >
-            View All Categories
-            <span className="material-symbols-outlined">arrow_forward</span>
+            {showAllCategories ? 'Show Less' : 'View All Categories'}
           </button>
         </div>
       </div>

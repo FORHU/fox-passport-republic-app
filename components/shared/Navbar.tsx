@@ -149,22 +149,19 @@ function NavbarContent() {
                 <span className="material-symbols-outlined text-[24px]">explore</span>
               </div>
               <h2 className="text-2xl font-display font-bold tracking-tight text-white group-hover:text-accent transition-colors">
-                Fox<span className="text-gradient-lime">Passport</span>
+                Foxxing
               </h2>
             </Link>
 
             {/* DESKTOP MENU */}
             <nav className="hidden md:flex items-center gap-2 bg-black/20 p-1.5 rounded-full border border-white/5">
-              <Link href="/" className="px-6 py-2.5 rounded-full text-sm font-bold text-black bg-accent hover:bg-accent/90 hover:shadow-[0_0_15px_rgba(204,255,0,0.5)] transition-all transform hover:-translate-y-0.5">
+              <a href="#" className="px-6 py-2.5 rounded-full text-sm font-bold text-black bg-accent hover:bg-accent/90 hover:shadow-[0_0_15px_rgba(204,255,0,0.5)] transition-all transform hover:-translate-y-0.5">
                 Explore
-              </Link>
-              <button
-                onClick={() => setHostModalOpen(true)}
-                className="px-6 py-2.5 rounded-full text-sm font-medium text-white/70 hover:text-white hover:bg-white/10 transition-all hover:scale-105"
-              >
+              </a>
+              <Link href="/foxer/dashboard" className="px-6 py-2.5 rounded-full text-sm font-medium text-white/70 hover:text-white hover:bg-white/10 transition-all hover:scale-105">
                 Foxers
-              </button>
-              <Link href="/profile/progress" className="px-6 py-2.5 rounded-full text-sm font-medium text-white/70 hover:text-white hover:bg-white/10 transition-all hover:scale-105">
+              </Link>
+              <Link href="/passport" className="px-6 py-2.5 rounded-full text-sm font-medium text-white/70 hover:text-white hover:bg-white/10 transition-all hover:scale-105">
                 Community
               </Link>
             </nav>
