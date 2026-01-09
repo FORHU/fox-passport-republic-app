@@ -2,7 +2,7 @@
 
 import { useQuery } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
-import { useCreateVenueModal } from "@/hooks/useCreateVenueModal";
+import { useCreateVenueModal } from "@/hooks/venues/useCreateVenueModal";
 import { useAuthActions, useAuthStore } from "@/store/useAuthStore";
 import api from "@/lib/axios";
 
@@ -25,7 +25,7 @@ export const useHostDashboard = () => {
   // We need to cast or access property safely.
   // Assuming user object has 'id' or 'userId' property.
   // Let's check how it's stored. Usually it's userData.
-  const userId = user?.id || user?.userId;
+  const userId = (user as any)?.id || (user as any)?.userId;
 
   const handleLogout = () => {
     logout();

@@ -12,7 +12,7 @@ import {
   Calendar, Clock, Shield 
 } from "lucide-react";
 import DatePicker from "@/components/landing/DatePicker";
-import { useVenuePage } from "@/hooks/useVenuePage"; 
+import { useVenuePage } from "@/hooks/venues/useVenuePage"; 
 
 // --- Helper Components ---
 const getAmenityIcon = (offer: string) => {

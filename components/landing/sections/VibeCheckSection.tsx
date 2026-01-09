@@ -54,7 +54,7 @@ function CategoryCard({ category, index }: { category: Category; index: number }
           alt={category.title}
           className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-transparent"></div>
+        <div className="absolute inset-0 bg-linear-to-t from-background via-background/80 to-transparent"></div>
       </div>
 
       {/* Default Content */}

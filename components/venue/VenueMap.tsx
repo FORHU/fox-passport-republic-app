@@ -2,6 +2,7 @@
 import { useEffect, useRef, useState } from "react";
 import Script from "next/script";
 import { Venue } from "@/types/venue";
+import { useRouter } from "next/navigation";
 import { MapPin, ArrowRight } from "lucide-react";
 
 interface Props {
@@ -11,6 +12,7 @@ interface Props {
 }
 
 export default function VenueMap({ venues, center, loading }: Props) {
+  const router = useRouter();
   const mapContainer = useRef<HTMLDivElement>(null);
   const viewerRef = useRef<any>(null);
   const [isCesiumLoaded, setIsCesiumLoaded] = useState(false);

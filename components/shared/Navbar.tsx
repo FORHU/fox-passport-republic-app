@@ -5,13 +5,13 @@ import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation"; 
 import { 
-  Menu, X, 
+  X, 
   Home, Tent, ConciergeBell,
   ArrowRight 
 } from "lucide-react"; 
 
 import AuthModal from "@/components/landing/AuthModal";
-import { useNavbar } from "@/hooks/useNavbar";
+import { useNavbar } from "@/hooks/ui/useNavbar";
 import { useAuthStore } from "@/store/useAuthStore";
 import UserMenuButton from "@/components/users/UserMenuButton";
 
@@ -40,7 +40,7 @@ const HostModal = ({ isOpen, onClose, onOptionClick }: HostModalProps) => {
   };
 
   return (
-    <div className="fixed inset-0 z-[110] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-200">
+    <div className="fixed inset-0 z-100 bg-black/95 backdrop-blur-xl md:hidden flex flex-col items-center justify-center p-8 space-y-8 animate-in fade-in slide-in-from-top-10 duration-300">
       <div className="relative w-full max-w-sm md:max-w-lg bg-white rounded-2xl shadow-2xl flex flex-col overflow-hidden">
         
         {/* Header with X button properly positioned */}
@@ -116,8 +116,8 @@ function NavbarContent() {
   const isAuthenticated = !!user;
 
   const { 
-    isScrolled, mobileMenuOpen, setMobileMenuOpen, 
-    openLogin, openSignup, styles 
+    mobileMenuOpen, setMobileMenuOpen, 
+    openLogin, openSignup 
   } = useNavbar();
 
   const handleHostOptionClick = () => {
@@ -139,7 +139,7 @@ function NavbarContent() {
 
   return (
     <>
-      <nav className="fixed top-6 left-0 right-0 z-[100] transition-all duration-300">
+      <nav className="fixed top-0 left-0 right-0 z-110 transition-all duration-300">
         <div className="mx-auto max-w-7xl px-4">
           <div className="glass-panel rounded-full px-6 h-20 flex items-center justify-between shadow-2xl hover:bg-black/40 transition-colors duration-500">
 
@@ -202,7 +202,7 @@ function NavbarContent() {
 
         {/* --- MOBILE MENU CONTENT (Compact Dropdown Style) --- */}
         {mobileMenuOpen && (
-          <div className="absolute top-full left-0 w-full bg-white shadow-lg border-t border-gray-100 md:hidden z-[99] animate-in slide-in-from-top-1 duration-200">
+          <div className="absolute top-full left-0 w-full bg-white shadow-lg border-t border-gray-100 md:hidden z-99 animate-in slide-in-from-top-1 duration-200">
             <div className="px-4 py-3">
               {/* Navigation Links */}
               <div className="space-y-1">
@@ -249,6 +249,9 @@ function NavbarContent() {
                   </button>
                 </div>
               ) : (
+                <div className="fixed inset-0 z-99 backdrop-blur-sm bg-black/50 md:hidden animate-in fade-in duration-300" onClick={() => setMobileMenuOpen(false)}></div>
+              )}
+              {isAuthenticated && (
                 <div className="flex gap-2">
                   <button 
                     onClick={() => { setMobileMenuOpen(false); router.push("/user"); }} 

@@ -1,6 +1,6 @@
 "use client";
 
-import { useLandingPage } from "@/hooks/useLandingPage";
+import { useLandingPage } from "@/hooks/ui/useLandingPage";
 
 // Section Components
 import LandingHeader from "./sections/LandingHeader";

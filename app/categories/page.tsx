@@ -3,9 +3,9 @@
 import { Suspense, useState, useMemo } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import Navbar from "@/components/shared/Navbar";
-import { useCategories } from "@/hooks/useCategories";
-import { useEventsByCategory } from "@/hooks/useEventsByCategory";
-import { useVenuesByCategory } from "@/hooks/useVenuesByCategory";
+import { useCategories } from "@/hooks/data/useCategories";
+import { useEventsByCategory } from "@/hooks/events/useEventsByCategory";
+import { useVenuesByCategory } from "@/hooks/venues/useVenuesByCategory";
 import EventCard from "@/components/shared/EventCard";
 import VenueCard from "@/components/shared/VenueCard";
 import {

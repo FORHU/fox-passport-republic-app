@@ -5,7 +5,7 @@ import { useForm, SubmitHandler } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Loader2 } from 'lucide-react'; 
 
-import { useSignup } from '@/hooks/useAuth';
+import { useSignup } from '@/hooks/auth/useAuth';
 import { signupSchema, SignupFormData } from '@/lib/schema';
 import { useAuthStore } from '@/store/useAuthStore';
 

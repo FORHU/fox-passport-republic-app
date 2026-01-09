@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from 'react';
-import { useCategories } from '@/hooks/useCategories';
+import { useCategories } from '@/hooks/data/useCategories';
 
 interface EventFormData {
   hostId: string;

@@ -5,7 +5,7 @@ import { useForm, SubmitHandler } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Loader2 } from 'lucide-react'; 
 
-import { useLogin } from '@/hooks/useAuth';
+import { useLogin } from '@/hooks/auth/useAuth';
 import { loginSchema, LoginFormData } from '@/lib/schema';
 import { useAuthStore } from '@/store/useAuthStore';
 
@@ -83,7 +83,7 @@ export default function LoginForm() {
               {...register('username')}
               className="block w-full rounded-2xl bg-black/30 border border-white/10 pl-11 pr-4 py-3.5 text-white placeholder-white/30 focus:border-[#ccff00] focus:ring-1 focus:ring-[#ccff00] sm:text-sm transition-all hover:border-white/20 outline-none" 
               id="email" 
-              placeholder="foxxer@example.com" 
+              placeholder="foxer@example.com" 
               type="text" // Using text to allow username or email
             />
           </div>
