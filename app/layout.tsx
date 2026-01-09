@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import "cesium/Build/Cesium/Widgets/widgets.css";
 import "./globals.css";
-import Footer from "@/components/shared/Footer";
 import { Toaster } from 'sonner';
 
 // Import the Modal Component
@@ -44,7 +43,6 @@ export default function RootLayout({
           <main className="grow">
             {children}
           </main>
-          <Footer />
         </Providers>
       </body>
     </html>

@@ -3,11 +3,16 @@
 import React from "react";
 import { useHostDashboard } from "@/hooks/useHostDashboard";
 import { useScrollReveal } from "@/hooks/useScrollReveal";
+import { useAuthStore } from "@/store/useAuthStore";
 import Link from "next/link";
+import Image from "next/image";
 import { Button } from "@/components/ui/button";
+import RequireAuth from "@/components/authentication/RequireAuth";
 
-export default function HostDashboard() {
+function HostDashboardContent() {
   const { handleLogout, openModal, stats } = useHostDashboard();
+  const { user } = useAuthStore();
+  const userName = user?.name || user?.username || 'Mayor';
   useScrollReveal();
 
   return (
@@ -16,17 +21,24 @@ export default function HostDashboard() {
       <header className="fixed top-6 left-0 right-0 z-50 transition-all duration-300">
         <div className="mx-auto max-w-7xl px-4">
           <div className="glass-panel rounded-full px-6 h-20 flex items-center justify-between shadow-2xl hover:bg-black/40 transition-colors duration-500">
-            <Link href="/" className="flex items-center gap-3 group cursor-pointer">
-              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-white text-black font-bold shadow-[0_0_15px_rgba(255,255,255,0.3)] group-hover:rotate-180 transition-transform duration-700">
-                <span className="material-symbols-outlined text-[24px]">explore</span>
+            <Link href="/" className="flex items-center gap-3 group cursor-pointer relative">
+              <div className="flex h-12 w-12 items-center justify-center group-hover:scale-110 transition-transform duration-300 overflow-hidden">
+                <Image 
+                  src="/foxonlylogo.png" 
+                  alt="FoxPassport Logo" 
+                  width={48} 
+                  height={48} 
+                  className="object-contain"
+                />
               </div>
-              <div className="flex flex-col">
+              <div className="flex flex-col relative">
                 <h2 className="text-xl font-display font-bold tracking-tight text-white group-hover:text-accent transition-colors">
-                  Foxxing
+                  FoxPassport
                 </h2>
                 <span className="text-[10px] text-text-muted uppercase tracking-widest font-bold">
                   Mayor Studio
                 </span>
+                <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-accent group-hover:w-full transition-all duration-300"></span>
               </div>
             </Link>
             <nav className="hidden md:flex items-center gap-2 bg-black/20 p-1.5 rounded-full border border-white/5">
@@ -62,7 +74,7 @@ export default function HostDashboard() {
               </button>
               <div className="flex items-center gap-3 pl-2 border-l border-white/10">
                 <div className="text-right hidden sm:block">
-                  <div className="text-sm font-bold text-white">Host</div>
+                  <div className="text-sm font-bold text-white">{userName}</div>
                   <div className="text-xs text-text-muted">Venue Mayor</div>
                 </div>
                 <img
@@ -352,5 +364,13 @@ export default function HostDashboard() {
         </div>
       </main>
     </div>
+  );
+}
+
+export default function HostDashboard() {
+  return (
+    <RequireAuth>
+      <HostDashboardContent />
+    </RequireAuth>
   );
 }

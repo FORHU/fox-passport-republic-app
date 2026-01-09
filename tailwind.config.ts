@@ -83,7 +83,13 @@ module.exports = {
       fontFamily: {
         display: ["Space Grotesk", "sans-serif"],
         body: ["Plus Jakarta Sans", "sans-serif"],
-        sans: ["Plus Jakarta Sans", "Helvetica Neue", "Helvetica", "Arial", "sans-serif"],
+        sans: [
+          "Plus Jakarta Sans",
+          "Helvetica Neue",
+          "Helvetica",
+          "Arial",
+          "sans-serif",
+        ],
       },
       animation: {
         float: "float 6s ease-in-out infinite",

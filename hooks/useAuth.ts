@@ -18,7 +18,7 @@ const api = axios.create({
   },
 });
 
-// --- API FUNCTIONS ---
+// --- REAL API FUNCTIONS ---
 
 const realLogin = async (data: LoginFormData): Promise<LoginResponse> => {
   const payload = {
@@ -43,7 +43,7 @@ const realSignup = async (data: SignupFormData) => {
 
 export const useLogin = () => {
   const router = useRouter();
-  const { login } = useAuthStore();
+  const { login, close } = useAuthStore();
 
   return useMutation({
     mutationFn: realLogin,
@@ -51,24 +51,26 @@ export const useLogin = () => {
       console.log("Login Success:", data);
 
       // Save user to store
-      // Save user to store
-      // We pass 'data' because it contains { user, accessToken, refreshToken }
       login(data);
 
       toast.success("Welcome back!");
 
+      // Close modal and redirect
+      close();
       router.push("/");
     },
     onError: (error: any) => {
       console.error("Login Error:", error);
-      const msg = error.response?.data?.message || "Login Failed";
+      const msg =
+        error.response?.data?.message ||
+        "Login Failed. Please check your credentials.";
       toast.error(msg);
     },
   });
 };
 
 export const useSignup = () => {
-  const router = useRouter();
+  const { toggleView, close } = useAuthStore();
 
   return useMutation({
     mutationFn: realSignup,
@@ -77,13 +79,13 @@ export const useSignup = () => {
 
       toast.success("Thanks for signing up! You can now Log In.");
 
-      setTimeout(() => {
-        window.location.reload();
-      }, 2000);
+      // Switch to login view after successful signup
+      toggleView();
     },
     onError: (error: any) => {
       console.error("Signup Error:", error);
-      const msg = error.response?.data?.message || "Signup Failed";
+      const msg =
+        error.response?.data?.message || "Signup Failed. Please try again.";
       toast.error(msg);
     },
   });

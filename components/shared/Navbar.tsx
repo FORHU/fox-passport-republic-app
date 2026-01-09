@@ -144,13 +144,22 @@ function NavbarContent() {
           <div className="glass-panel rounded-full px-6 h-20 flex items-center justify-between shadow-2xl hover:bg-black/40 transition-colors duration-500">
 
             {/* LOGO */}
-            <Link href="/" className="flex items-center gap-3 group cursor-pointer">
-              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-white text-black font-bold shadow-[0_0_15px_rgba(255,255,255,0.3)] group-hover:rotate-180 transition-transform duration-700">
-                <span className="material-symbols-outlined text-[24px]">explore</span>
+            <Link href="/" className="flex items-center gap-3 group cursor-pointer relative">
+              <div className="flex h-12 w-12 items-center justify-center group-hover:scale-110 transition-transform duration-300 overflow-hidden">
+                <Image 
+                  src="/foxonlylogo.png" 
+                  alt="FoxPassport Logo" 
+                  width={48} 
+                  height={48} 
+                  className="object-contain"
+                />
               </div>
-              <h2 className="text-2xl font-display font-bold tracking-tight text-white group-hover:text-accent transition-colors">
-                Foxxing
-              </h2>
+              <div className="relative">
+                <h2 className="text-2xl font-display font-bold tracking-tight text-white group-hover:text-accent transition-colors">
+                  FoxPassport
+                </h2>
+                <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-accent group-hover:w-full transition-all duration-300"></span>
+              </div>
             </Link>
 
             {/* DESKTOP MENU */}
@@ -242,7 +251,7 @@ function NavbarContent() {
               ) : (
                 <div className="flex gap-2">
                   <button 
-                    onClick={() => { setMobileMenuOpen(false); router.push("/profile"); }} 
+                    onClick={() => { setMobileMenuOpen(false); router.push("/user"); }} 
                     className="flex-1 py-2.5 rounded-lg bg-[#E31C79] text-white font-semibold hover:bg-pink-700 shadow-sm transition-all text-sm"
                   >
                     Profile
