@@ -3,6 +3,7 @@
 import { Suspense, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import { BrandLogo } from "@/components/shared/BrandLogo";
 import { useRouter } from "next/navigation"; 
 import { 
   X, 
@@ -144,23 +145,7 @@ function NavbarContent() {
           <div className="glass-panel rounded-full px-6 h-20 flex items-center justify-between shadow-2xl hover:bg-black/40 transition-colors duration-500">
 
             {/* LOGO */}
-            <Link href="/" className="flex items-center gap-3 group cursor-pointer relative">
-              <div className="flex h-12 w-12 items-center justify-center group-hover:scale-110 transition-transform duration-300 overflow-hidden">
-                <Image 
-                  src="/foxonlylogo.png" 
-                  alt="FoxPassport Logo" 
-                  width={48} 
-                  height={48} 
-                  className="object-contain"
-                />
-              </div>
-              <div className="relative">
-                <h2 className="text-2xl font-display font-bold tracking-tight text-white group-hover:text-accent transition-colors">
-                  FoxPassport
-                </h2>
-                <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-accent group-hover:w-full transition-all duration-300"></span>
-              </div>
-            </Link>
+            <BrandLogo />
 
             {/* DESKTOP MENU */}
             <nav className="hidden md:flex items-center gap-2 bg-black/20 p-1.5 rounded-full border border-white/5">

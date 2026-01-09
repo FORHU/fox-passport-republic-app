@@ -19,7 +19,7 @@ export const UserWallet: React.FC<UserWalletProps> = ({ walletBalance, recentTra
                 <div className="relative z-10">
                   <div className="flex justify-between items-start mb-8">
                     <div>
-                      <p className="text-indigo-200 text-sm font-medium mb-1">Foxx Wallet</p>
+                      <p className="text-indigo-200 text-sm font-medium mb-1">Fox Wallet</p>
                       <h3 className="text-4xl font-display font-bold text-white tracking-tight">₱{walletBalance.toLocaleString()}<span className="text-lg text-indigo-300"></span></h3>
                     </div>
                     <div className="h-10 w-10 bg-white/10 rounded-full flex items-center justify-center">

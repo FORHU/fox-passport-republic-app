@@ -1,7 +1,6 @@
 import React from 'react';
-import Link from 'next/link';
-import Image from 'next/image';
 import { useUIStore } from '@/store/useUIStore';
+import { BrandLogo } from '@/components/shared/BrandLogo';
 
 const NAV_ITEMS = [
   { label: 'Dashboard', icon: 'dashboard', id: 'dashboard', badge: null },
@@ -20,18 +19,7 @@ export const AdminSidebar: React.FC = () => {
   return (
     <aside className={`fixed top-0 left-0 bottom-0 w-64 bg-surface/40 backdrop-blur-xl border-r border-white/5 z-50 flex flex-col transition-transform duration-300 transform lg:translate-x-0 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
       <div className="h-24 flex items-center px-8 border-b border-white/5">
-        <Link href="/" className="flex items-center gap-3 group cursor-pointer">
-          <div className="flex h-10 w-10 items-center justify-center group-hover:scale-110 transition-transform duration-300 overflow-hidden">
-            <Image 
-              src="/foxonlylogo.png" 
-              alt="FoxPassport Logo" 
-              width={40} 
-              height={40} 
-              className="object-contain"
-            />
-          </div>
-          <h2 className="text-2xl font-display font-bold tracking-tight text-white group-hover:text-accent transition-colors">FoxPassport</h2>
-        </Link>
+        <BrandLogo />
       </div>
       <nav className="flex-1 py-8 px-4 space-y-2 overflow-y-auto hide-scrollbar">
         <div className="px-4 pb-2 text-xs font-bold text-gray-500 uppercase tracking-widest font-display">Main</div>

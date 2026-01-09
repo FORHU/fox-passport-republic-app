@@ -1,4 +1,4 @@
-// Categories data for FoxPassport - Based on categories.pdf
+// Categories data for FoxPassport - Restored Original Order
 export interface SubCategory {
   id: string;
   name: string;
@@ -22,7 +22,7 @@ export const CATEGORIES: Category[] = [
     id: "weddings-commitments",
     title: "Weddings & Commitments",
     tagline: "Life-defining moments, staged where no one expects them",
-    icon: "favorite",
+    icon: "favorite", // Will map to a Lucide icon in the page component
     image:
       "https://images.unsplash.com/photo-1519741497674-611481863552?w=800&auto=format&fit=crop",
     color: "from-pink-400 to-rose-500",
@@ -33,75 +33,131 @@ export const CATEGORIES: Category[] = [
         name: "Garden",
         icon: "local_florist",
         image:
-          "https://images.unsplash.com/photo-1585320806297-9794b3e4eeae?w=400",
+          "https://images.unsplash.com/photo-1585320806297-9794b3e4eeae?w=800",
       },
       {
         id: "rooftop",
         name: "Rooftop",
         icon: "deck",
         image:
-          "https://images.unsplash.com/photo-1519671482502-9759101d4561?w=400",
+          "https://images.unsplash.com/photo-1533105079780-92b9be482077?w=800",
       },
       {
         id: "beach",
         name: "Beach",
         icon: "beach_access",
         image:
-          "https://images.unsplash.com/photo-1519046904884-53103b34b206?w=400",
+          "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=800",
       },
       {
         id: "reception",
         name: "Reception",
         icon: "room_service",
         image:
-          "https://images.unsplash.com/photo-1519225421980-715cb0202128?w=400",
+          "https://images.unsplash.com/photo-1511795409834-ef04bbd61622?w=800",
       },
       {
         id: "church",
         name: "Church",
         icon: "church",
         image:
-          "https://images.unsplash.com/photo-1437603568260-1950d3ca6eab?w=400",
+          "https://images.unsplash.com/photo-1515934751635-c81c6bc9a2d8?w=800",
       },
     ],
   },
   {
     id: "celebrations",
-    title: "Celebrations",
-    tagline: "Moments that say: We're alive, together.",
-    icon: "celebration",
+    title: "Celebrations & Milestones",
+    tagline: 'Moments that say: "We\'re alive, together."',
+    icon: "cake",
     image:
       "https://images.unsplash.com/photo-1530103862676-de8c9debad1d?w=800&auto=format&fit=crop",
-    color: "from-purple-500 to-indigo-600",
-    spots: "Life Milestones",
+    color: "from-teal-400 to-cyan-600",
+    spots: "Milestones",
     children: [
       {
-        id: "birthdays",
-        name: "Birthdays",
+        id: "birthday_party",
+        name: "Birthday Party",
         icon: "cake",
         image:
-          "https://images.unsplash.com/photo-1558636508-e0db3814bd1d?w=400",
+          "https://images.unsplash.com/photo-1530103862676-de8c9debad1d?w=800",
       },
       {
-        id: "anniversaries",
-        name: "Anniversaries",
-        icon: "event",
+        id: "baby_shower",
+        name: "Baby Shower",
+        icon: "child_care",
         image:
-          "https://images.unsplash.com/photo-1529543544599-a7cfa8abe07f?w=400",
+          "https://images.unsplash.com/photo-1519689680058-324335c77eba?w=800",
       },
       {
-        id: "couple-celebrations",
-        name: "Couple Celebrations",
-        icon: "favorite_border",
+        id: "bachelor_party",
+        name: "Bachelor Party",
+        icon: "local_bar",
         image:
-          "https://images.unsplash.com/photo-1522673607200-164d1b6ce486?w=400",
+          "https://images.unsplash.com/photo-1566737236500-c8ac43014a67?w=800",
       },
       {
-        id: "private-parties",
-        name: "Private Parties with Friends",
-        icon: "groups",
+        id: "engagement_party",
+        name: "Engagement Party",
+        icon: "diamond",
         image:
-          "https://images.unsplash.com/photo-1528495612343-9ca9f4a4de28?w=400",
+          "https://images.unsplash.com/photo-1515934751635-c81c6bc9a2d8?w=800",
+      },
+      {
+        id: "graduation_party",
+        name: "Graduation Party",
+        icon: "school",
+        image:
+          "https://images.unsplash.com/photo-1525921429624-479b6a26d84d?w=800",
+      },
+      {
+        id: "family_reunion",
+        name: "Family Reunion",
+        icon: "diversity_3",
+        image:
+          "https://images.unsplash.com/photo-1511895426328-dc8714191300?w=800",
+      },
+      {
+        id: "holiday_party",
+        name: "Holiday Party",
+        icon: "celebration",
+        image:
+          "https://images.unsplash.com/photo-1513201099705-a9746e1e201f?w=800",
+      },
+      {
+        id: "house_party",
+        name: "House Party",
+        icon: "home",
+        image:
+          "https://images.unsplash.com/photo-1492684223066-81342ee5ff30?w=800",
+      },
+      {
+        id: "pool_party",
+        name: "Pool Party",
+        icon: "pool",
+        image:
+          "https://images.unsplash.com/photo-1576610616656-d3aa5d1f4534?w=800",
+      },
+      {
+        id: "garden_party",
+        name: "Garden Party",
+        icon: "local_florist",
+        image:
+          "https://images.unsplash.com/photo-1558636508-e0db3814bd1d?w=800",
+      },
+      {
+        id: "beach_party",
+        name: "Beach Party",
+        icon: "beach_access",
+        image:
+          "https://images.unsplash.com/photo-1533777857889-4be7c70b33f7?w=800",
+      },
+      {
+        id: "rooftop_party",
+        name: "Rooftop Party",
+        icon: "deck",
+        image:
+          "https://images.unsplash.com/photo-1506152983158-b4a74a01c721?w=800",
       },
     ],
   },
@@ -116,33 +172,32 @@ export const CATEGORIES: Category[] = [
     spots: "Exclusive",
     children: [
       {
-        id: "private-dining",
-        name: "Private Dining",
-        icon: "restaurant",
-        image:
-          "https://images.unsplash.com/photo-1550966871-3ed3cdb5ed0c?w=400",
+        id: "team-building",
+        name: "Team Building (Small Group)",
+        icon: "groups",
       },
+      { id: "family-gathering", name: "Family Gathering", icon: "diversity_1" },
+      { id: "private-dj-party", name: "Private DJ Party", icon: "music_note" },
+      { id: "karaoke", name: "Videoke / Karaoke Night", icon: "mic" },
+      { id: "game-night", name: "Game Night (Cards)", icon: "style" },
+      {
+        id: "mountain-nature-stay",
+        name: "Private Mountain / Nature Stay",
+        icon: "landscape",
+      },
+      {
+        id: "private-island",
+        name: "Private Island Day Tour",
+        icon: "beach_access",
+      },
+      { id: "private-dining", name: "Private Dining", icon: "restaurant" },
       {
         id: "chefs-table",
         name: "Chef's Table Experiences",
         icon: "soup_kitchen",
-        image:
-          "https://images.unsplash.com/photo-1556910103-1c02745aae4d?w=400",
       },
-      {
-        id: "luxury-picnics",
-        name: "Luxury Picnics",
-        icon: "outdoor_grill",
-        image:
-          "https://images.unsplash.com/photo-1526484631-cb7c9e4ed3dc?w=400",
-      },
-      {
-        id: "vip-gatherings",
-        name: "Small VIP Gatherings",
-        icon: "verified",
-        image:
-          "https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=400",
-      },
+      { id: "luxury-picnics", name: "Luxury Picnics", icon: "outdoor_grill" },
+      { id: "vip-gatherings", name: "Small VIP Gatherings", icon: "verified" },
     ],
   },
   {
@@ -155,74 +210,33 @@ export const CATEGORIES: Category[] = [
     color: "from-teal-400 to-emerald-600",
     spots: "Romantic Destinations",
     children: [
-      {
-        id: "night-coffee",
-        name: "Night Coffee Spots",
-        icon: "local_cafe",
-        image:
-          "https://images.unsplash.com/photo-1445116572660-236099ec97a0?w=400",
-      },
-      {
-        id: "outdoor-lounges",
-        name: "Romantic Outdoor Lounges",
-        icon: "deck",
-        image:
-          "https://images.unsplash.com/photo-1600093463592-8e36ae95ef56?w=400",
-      },
-      {
-        id: "hidden-date-places",
-        name: "Hidden Date Places",
-        icon: "explore",
-        image:
-          "https://images.unsplash.com/photo-1560624052-449f5ddf0c31?w=400",
-      },
-      {
-        id: "scenic-venues",
-        name: "Scenic Venues",
-        icon: "landscape",
-        image:
-          "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=400",
-      },
+      { id: "night-coffee", name: "Night Coffee Spots", icon: "local_cafe" },
+      { id: "outdoor-lounges", name: "Romantic Outdoor Lounges", icon: "deck" },
+      { id: "hidden-date-places", name: "Hidden Date Places", icon: "explore" },
+      { id: "scenic-venues", name: "Scenic Venues", icon: "landscape" },
     ],
   },
   {
     id: "popup-seasonal",
     title: "Pop-up & Seasonal Moments",
     tagline: "Here today. Gone tomorrow.",
-    icon: "schedule",
+    icon: "event", // Maps to Calendar
     image:
-      "https://images.unsplash.com/photo-1533174072545-7a4b6ad7a6c3?w=800&auto=format&fit=crop",
-    color: "from-cyan-400 to-blue-500",
+      "https://images.unsplash.com/photo-1513151233558-d860c5398176?w=800&auto=format&fit=crop",
+    color: "from-purple-400 to-indigo-600",
     spots: "Limited Time",
     children: [
       {
-        id: "popup-dining",
+        id: "seasonal-dining",
         name: "Seasonal Pop-up Dining",
-        icon: "ramen_dining",
-        image:
-          "https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=400",
+        icon: "restaurant",
       },
       {
-        id: "art-music-events",
-        name: "Art, Music & Cultural Events",
-        icon: "palette",
-        image:
-          "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=400",
+        id: "art-music-cultural",
+        name: "Art, Music, Cultural Events",
+        icon: "music_note",
       },
-      {
-        id: "limited-concepts",
-        name: "Limited-Time Concepts",
-        icon: "new_releases",
-        image:
-          "https://images.unsplash.com/photo-1492684223066-81342ee5ff30?w=400",
-      },
-      {
-        id: "night-markets",
-        name: "Night Markets & Fairs",
-        icon: "storefront",
-        image:
-          "https://images.unsplash.com/photo-1555939594-58d7cb561ad1?w=400",
-      },
+      { id: "limited-time", name: "Limited-Time Concepts", icon: "schedule" },
     ],
   },
 ];

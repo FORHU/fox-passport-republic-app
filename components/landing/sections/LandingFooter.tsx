@@ -1,6 +1,4 @@
-"use client";
-
-import Link from "next/link";
+import { BrandLogo } from "@/components/shared/BrandLogo";
 
 export default function LandingFooter() {
   return (
@@ -9,14 +7,7 @@ export default function LandingFooter() {
         <div className="grid grid-cols-1 md:grid-cols-12 gap-12 mb-16">
           {/* Brand */}
           <div className="md:col-span-5">
-            <div className="flex items-center gap-3 mb-8 group">
-              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-white text-black transition-transform group-hover:rotate-12">
-                <span className="material-symbols-outlined text-[24px]">explore</span>
-              </div>
-              <span className="text-2xl font-display font-bold text-white group-hover:text-[#ccff00] transition-colors">
-                FoxPassport
-              </span>
-            </div>
+            <BrandLogo className="mb-8 w-fit" />
             <p className="text-gray-400 leading-relaxed mb-8 max-w-sm text-lg">
               The ultimate platform for the next generation of explorers. We make discovering and
               booking experiences in the Philippines seamless and exciting.

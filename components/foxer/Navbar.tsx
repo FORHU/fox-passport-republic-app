@@ -4,6 +4,7 @@ import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { Search, Bell } from "lucide-react";
+import { BrandLogo } from "@/components/shared/BrandLogo";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
@@ -66,21 +67,7 @@ export default function Navbar() {
         <div className="flex h-16 items-center justify-between gap-4">
           
           {/* 1. LOGO */}
-          <div className="flex-shrink-0 cursor-pointer">
-            <Link href="/" className="flex items-center gap-2">
-              <Image 
-                src="/logofoxpassport.png" 
-                alt="Logo" 
-                width={80} 
-                height={80} 
-                className="h-10 md:h-12 w-auto object-contain"
-                priority 
-              />
-              <span className="hidden md:block text-2xl font-bold tracking-tight transition-all duration-500 ease-in-out text-gray-900 dark:text-white">
-                Fox<span className="text-pink-500">Passport</span>
-              </span>
-            </Link>
-          </div>
+            <BrandLogo variant="adaptive" />
 
           {/* 2. SEARCH BAR */}
           <div className="hidden md:flex flex-1 max-w-md mx-4">
@@ -109,8 +96,9 @@ export default function Navbar() {
 
             {/* Actions */}
             <div className="flex items-center gap-3">
-              <Button variant="ghost" size="icon" className="text-gray-600 hover:text-pink-500 hover:bg-pink-50 rounded-full dark:text-gray-200">
+              <Button variant="ghost" size="icon" className="text-gray-600 hover:text-pink-500 hover:bg-pink-50 rounded-full dark:text-gray-200 relative">
                 <Bell className="h-5 w-5" />
+                <span className="absolute top-2 right-2.5 block h-2.5 w-2.5 rounded-full ring-2 ring-white transform translate-x-1/2 -translate-y-1/2 !bg-[#ec4899]"></span>
               </Button>
 
               {/* User Menu */}
