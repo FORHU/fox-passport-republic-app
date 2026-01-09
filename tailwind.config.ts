@@ -97,7 +97,7 @@ module.exports = {
         "pulse-slow": "pulse-slow 4s cubic-bezier(0.4, 0, 0.6, 1) infinite",
         wiggle: "wiggle 0.5s ease-in-out infinite",
         glitch: "glitch 2s infinite",
-        "spin-slow": "spin 12s linear infinite",
+        "spin-slow": "spin 3s linear infinite",
       },
       keyframes: {
         float: {
