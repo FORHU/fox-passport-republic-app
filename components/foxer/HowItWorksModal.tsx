@@ -44,7 +44,7 @@ const HowItWorksModal: React.FC<HowItWorksModalProps> = ({ isOpen, onClose }) =>
         
         <div className="p-8 sm:p-12">
           <div className="text-center mb-12">
-            <h2 className="text-3xl sm:text-4xl font-black text-gray-900 mb-4">How Foxxing Works</h2>
+            <h2 className="text-3xl sm:text-4xl font-black text-gray-900 mb-4">How FoxPassport Works</h2>
             <p className="text-gray-500 font-medium max-w-sm mx-auto">Your journey to discovering the best local experiences starts here.</p>
           </div>
           

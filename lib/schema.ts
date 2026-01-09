@@ -2,7 +2,7 @@ import { z } from "zod";
 
 // --- LOGIN SCHEMA ---
 export const loginSchema = z.object({
-  username: z.string().min(1, "Username is required"), 
+  username: z.string().min(1, "Username is required"),
   password: z.string().min(6, "Password must be at least 6 characters"),
 });
 
@@ -16,9 +16,7 @@ export const signupSchema = z.object({
   name: z.string().min(1, "Name is required"),
 
   // Optional field
-  mobileNumber: z.union([z.string(), z.undefined()])
-    .optional()
-    .transform(e => e === "" ? undefined : e),
+  mobileNumber: z.string().optional(),
 });
 
 export type SignupFormData = z.infer<typeof signupSchema>;

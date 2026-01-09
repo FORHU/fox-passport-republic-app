@@ -1,51 +1,44 @@
 "use client";
 
 import React from 'react';
-import Image from 'next/image'; 
-import { useForm, SubmitHandler, UseFormRegister, FieldError } from 'react-hook-form';
+import { useForm, SubmitHandler } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Loader2, Mail, X } from 'lucide-react'; 
+import { Loader2 } from 'lucide-react'; 
 
 import { useSignup } from '@/hooks/useAuth';
 import { signupSchema, SignupFormData } from '@/lib/schema';
 import { useAuthStore } from '@/store/useAuthStore';
 
-// Responsive Input with hairline border
-interface CompactInputProps extends React.InputHTMLAttributes<HTMLInputElement> {
-  label: string;
-  name: string;
-  register: UseFormRegister<any>;
-  error?: FieldError;
-  required?: boolean;
-}
-
-const CompactInput = ({ label, error, register, name, type = "text", required = true, ...props }: CompactInputProps) => (
-  <div className="flex flex-col gap-0.5">
-    <label className="text-[8px] md:text-xs font-bold uppercase text-gray-500 tracking-wide">
-      {label} {!required && <span className="text-gray-400 font-normal normal-case">(Optional)</span>}
-    </label>
-    <input
-      type={type}
-      {...register(name)}
-      {...props}
-      className={`w-full px-2 md:px-4 text-xs md:text-sm bg-gray-50 text-gray-900 border-[0.5px] rounded md:rounded-lg focus:ring-1 focus:ring-pink-500 focus:outline-none focus:bg-white transition h-6 md:h-9 ${
-        error ? 'border-red-400' : 'border-gray-200/80'
-      }`}
-    />
-    {error && <span className="text-[8px] md:text-xs text-red-500">{error.message}</span>}
+// Social buttons component
+const SocialButtons = () => (
+  <div className="grid grid-cols-2 gap-4 mb-6">
+    <button type="button" className="group flex items-center justify-center gap-3 py-3 px-4 rounded-xl bg-white/5 border border-white/10 hover:bg-white hover:text-black hover:border-white transition-all duration-300">
+      <svg className="w-5 h-5 group-hover:scale-110 transition-transform" fill="none" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <path d="M23.766 12.2764C23.766 11.4607 23.6999 10.6406 23.5588 9.83807H12.24V14.4591H18.7217C18.4528 15.9494 17.5885 17.2678 16.323 18.1056V21.1039H20.19C22.4608 19.0139 23.766 15.9274 23.766 12.2764Z" fill="#4285F4"></path>
+        <path d="M12.24 24.0008C15.4765 24.0008 18.2058 22.9382 20.1945 21.1039L16.3275 18.1055C15.2517 18.8375 13.8627 19.252 12.2445 19.252C9.11388 19.252 6.45946 17.1399 5.50705 14.3003H1.5166V17.3912C3.55371 21.4434 7.7029 24.0008 12.24 24.0008Z" fill="#34A853"></path>
+        <path d="M5.50255 14.3003C5.00236 12.8099 5.00236 11.1961 5.50255 9.70575V6.61481H1.5166C-0.18551 10.0056 -0.18551 14.0004 1.5166 17.3912L5.50255 14.3003Z" fill="#FBBC05"></path>
+        <path d="M12.24 4.74966C13.9509 4.7232 15.6044 5.36697 16.8434 6.54867L20.2695 3.12262C18.1001 1.0855 15.2208 -0.034466 12.24 0.000808666C7.7029 0.000808666 3.55371 2.55822 1.5166 6.61049L5.50255 9.70143C6.45046 6.86181 9.10938 4.74966 12.24 4.74966Z" fill="#EA4335"></path>
+      </svg>
+      <span className="font-bold text-sm">Google</span>
+    </button>
+    <button type="button" className="group flex items-center justify-center gap-3 py-3 px-4 rounded-xl bg-white/5 border border-white/10 hover:bg-[#1877F2] hover:text-white hover:border-[#1877F2] transition-all duration-300">
+      <svg className="w-5 h-5 group-hover:scale-110 transition-transform" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <path className="group-hover:fill-white transition-colors" d="M24 12.073C24 5.405 18.627 0 12 0S0 5.405 0 12.073C0 18.1 4.388 23.094 10.125 24V15.563H7.078V12.073H10.125V9.429C10.125 6.423 11.916 4.761 14.656 4.761C15.968 4.761 17.344 4.995 17.344 4.995V7.948H15.83C14.34 7.948 13.875 8.873 13.875 9.822V12.073H17.203L16.671 15.563H13.875V24C19.612 23.094 24 18.1 24 12.073Z" fill="#1877F2"></path>
+      </svg>
+      <span className="font-bold text-sm">Facebook</span>
+    </button>
   </div>
 );
 
 export default function SignupForm() {
   const signupMutation = useSignup();
-  const { toggleView, close } = useAuthStore();
+  const { toggleView } = useAuthStore();
 
   const { register, handleSubmit, formState: { errors }, reset } = useForm<SignupFormData>({
     resolver: zodResolver(signupSchema),
     mode: "onChange"
   });
 
-  // Reset form when component mounts to ensure fresh state
   React.useEffect(() => {
     reset();
   }, [reset]);
@@ -53,129 +46,118 @@ export default function SignupForm() {
   const onSignup: SubmitHandler<SignupFormData> = (data) => signupMutation.mutate(data);
 
   return (
-    <div className="w-full bg-white">
-      
-      {/* --- HEADER --- */}
-      <div className="relative px-3 md:px-8 pt-2 md:pt-4 pb-1 md:pb-2 text-center bg-white border-b-[0.5px] border-gray-100">
-        <button 
-          onClick={close} 
-          className="absolute top-1 md:top-4 right-1.5 md:right-4 p-1 md:p-2 hover:bg-gray-100 rounded-full transition text-gray-400 hover:text-gray-600"
-        >
-          <X className="w-3.5 h-3.5 md:w-5 md:h-5" />
-        </button>
-        <div className="flex flex-col items-center">
-            <div className="relative w-7 h-7 md:w-14 md:h-14 mb-0.5 md:mb-2">
-               <Image 
-                 src="/logofoxpassport.png" 
-                 alt="FoxPassport Logo" 
-                 fill
-                 className="object-contain"
-                 priority
-               />
-            </div>
-            <h2 className="text-xs md:text-lg font-bold text-gray-800">
-              Sign up for FoxPassport
-            </h2>
-            <p className="text-[7px] md:text-[13px] text-gray-500 mt-0.5 md:mt-1 max-w-[160px] md:max-w-sm mx-auto leading-tight">
-              By continuing, you agree to FoxPassport's{' '}
-              <a href="#" className="text-blue-600 hover:underline">Terms of Service</a>
-              {' '}and{' '}
-              <a href="#" className="text-blue-600 hover:underline">Privacy Policy</a>.
-            </p>
-        </div>
+    <div className="animate-in fade-in slide-in-from-left-8 duration-300">
+      <div className="text-center mb-8">
+        <h2 className="text-3xl font-display font-bold text-white mb-2">Join the <span className="text-gradient-lime">Hype</span></h2>
+        <p className="text-gray-400 text-sm">Unlock exclusive events and meet your crew.</p>
       </div>
 
-      {/* --- CONTENT (Parent handles scrolling) --- */}
-      <div className="px-3 md:px-8 py-2 md:py-3">
-        <form onSubmit={handleSubmit(onSignup)} className="space-y-1 md:space-y-2">
-            <CompactInput label="Email" name="email" type="email" register={register} error={errors.email} />
-            <CompactInput label="Username" name="username" register={register} error={errors.username} />
-            <CompactInput label="Full Name" name="name" register={register} error={errors.name} />
-            <CompactInput label="Password" name="password" type="password" register={register} error={errors.password} />
+      <SocialButtons />
 
-            {/* Optional Section with hairline divider */}
-            <div className="pt-1 md:pt-3 mt-1 md:mt-1 border-t-[0.5px] border-gray-100">
-                <p className="text-[7px] md:text-[11px] font-bold text-gray-400 uppercase mb-0.5 md:mb-1">Optional Details</p>
-                <div className="space-y-1 md:space-y-2">
-                    <CompactInput label="Mobile Number" name="mobileNumber" type="tel" required={false} register={register} error={errors.mobileNumber} />
-                </div>
-            </div>
-
-            <button 
-              type="submit" 
-              disabled={signupMutation.isPending} 
-              className="w-full bg-pink-600 hover:bg-pink-700 text-white rounded md:rounded-lg text-[10px] md:text-base font-bold transition flex justify-center items-center gap-1 md:gap-2 mt-1.5 md:mt-3 shadow-sm h-7 md:h-10"
-            >
-              {signupMutation.isPending && <Loader2 className="animate-spin w-3 h-3 md:w-5 md:h-5" />} 
-              Create Account
-            </button>
-        </form>
-
-        {/* Hairline Separator */}
-        <div className="relative my-2 md:my-3">
-            <div className="absolute inset-0 flex items-center">
-               <div className="w-full border-t-[0.5px] border-gray-200/80"></div>
-            </div>
-            <div className="relative flex justify-center text-[7px] md:text-xs uppercase">
-               <span className="bg-white px-2 md:px-4 text-gray-400">or</span>
-            </div>
-        </div>
-
-        {/* Social Buttons with micro-borders */}
-        <div className="grid grid-cols-2 gap-1 md:gap-2 pb-1 md:pb-2">
-            <SocialButton icon={<GoogleIcon />} text="Google" />
-            <SocialButton icon={<AppleIcon />} text="Apple" />
-            <SocialButton icon={<FacebookIcon />} text="Facebook" />
-            <SocialButton icon={<Mail className="w-2.5 h-2.5 md:w-5 md:h-5" />} text="Email" />
-        </div>
+      <div className="relative flex py-2 items-center mb-6">
+        <div className="grow border-t border-white/10"></div>
+        <span className="shrink-0 mx-4 text-xs font-medium text-white/30 uppercase tracking-widest">Or sign up with email</span>
+        <div className="grow border-t border-white/10"></div>
       </div>
 
-      {/* --- FOOTER --- */}
-      <div className="py-1.5 md:py-3 px-3 md:px-8 bg-white border-t-[0.5px] border-gray-100 text-center text-[10px] md:text-sm text-gray-600">
-        <p>
-            Already have an account?{" "}
-            <span onClick={toggleView} className="text-pink-600 font-bold cursor-pointer hover:underline">
-                Log In
+      <form className="space-y-4" onSubmit={handleSubmit(onSignup)}>
+        {/* Full Name */}
+        <div className="group">
+          <label className="block text-xs font-bold text-white/70 mb-1.5 ml-1 group-focus-within:text-[#ccff00] transition-colors">FULL NAME</label>
+          <input 
+            {...register('name')}
+            className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3.5 text-white placeholder-white/20 focus:outline-none focus:ring-1 focus:ring-[#ccff00] focus:border-[#ccff00]/50 focus:bg-white/10 transition-all font-medium" 
+            placeholder="e.g. Fox Mulder" 
+            type="text" 
+          />
+          {errors.name && <span className="text-xs text-red-500 ml-1">{errors.name.message}</span>}
+        </div>
+
+        {/* Email Address */}
+        <div className="group">
+          <label className="block text-xs font-bold text-white/70 mb-1.5 ml-1 group-focus-within:text-[#ccff00] transition-colors">EMAIL ADDRESS</label>
+          <input 
+            {...register('email')}
+            className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3.5 text-white placeholder-white/20 focus:outline-none focus:ring-1 focus:ring-[#ccff00] focus:border-[#ccff00]/50 focus:bg-white/10 transition-all font-medium" 
+            placeholder="name@example.com" 
+            type="email" 
+          />
+          {errors.email && <span className="text-xs text-red-500 ml-1">{errors.email.message}</span>}
+        </div>
+
+        {/* Username */}
+        <div className="group">
+          <label className="block text-xs font-bold text-white/70 mb-1.5 ml-1 group-focus-within:text-[#ccff00] transition-colors">USERNAME</label>
+          <input 
+            {...register('username')}
+            className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3.5 text-white placeholder-white/20 focus:outline-none focus:ring-1 focus:ring-[#ccff00] focus:border-[#ccff00]/50 focus:bg-white/10 transition-all font-medium" 
+            placeholder="fox_mulder" 
+            type="text" 
+          />
+           {errors.username && <span className="text-xs text-red-500 ml-1">{errors.username.message}</span>}
+        </div>
+
+        {/* Password */}
+        <div className="group">
+          <label className="block text-xs font-bold text-white/70 mb-1.5 ml-1 group-focus-within:text-[#ccff00] transition-colors">PASSWORD</label>
+          <input 
+            {...register('password')}
+            className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3.5 text-white placeholder-white/20 focus:outline-none focus:ring-1 focus:ring-[#ccff00] focus:border-[#ccff00]/50 focus:bg-white/10 transition-all font-medium" 
+            placeholder="••••••••" 
+            type="password" 
+          />
+          {errors.password && <span className="text-xs text-red-500 ml-1">{errors.password.message}</span>}
+        </div>
+
+        {/* Terms */}
+        <div className="flex items-center gap-3 pt-2">
+          <div className="relative flex items-center">
+            <input 
+              className="peer h-5 w-5 cursor-pointer appearance-none rounded-md border border-white/20 bg-white/5 checked:border-[#ccff00] checked:bg-[#ccff00] transition-all hover:border-[#ccff00]/50" 
+              id="terms" 
+              type="checkbox" 
+              required
+            />
+            <span className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-black opacity-0 peer-checked:opacity-100 transition-opacity pointer-events-none">
+              <span className="material-symbols-outlined text-[16px] font-bold">check</span>
             </span>
+          </div>
+          <label className="text-xs text-gray-400 cursor-pointer select-none" htmlFor="terms">
+            I agree to the <a className="text-white hover:text-[#ccff00] underline decoration-[#ccff00]/30 underline-offset-2 transition-colors" href="#">Terms of Service</a> & <a className="text-white hover:text-[#ccff00] underline decoration-[#ccff00]/30 underline-offset-2 transition-colors" href="#">Privacy Policy</a>
+          </label>
+        </div>
+
+        {/* Submit Button */}
+        {/* Submit Button */}
+        <button 
+          type="submit" 
+          disabled={signupMutation.isPending}
+          className="btn-neon w-full py-4 mt-2 rounded-xl bg-[#ccff00] text-black font-bold text-lg hover:shadow-[0_0_20px_rgba(204,255,0,0.4)] hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-2 group disabled:opacity-70 disabled:cursor-not-allowed text-center relative overflow-hidden"
+        >
+          {signupMutation.isPending ? (
+             <Loader2 className="animate-spin w-5 h-5" />
+          ) : (
+            <>
+              <span className="relative z-10 flex items-center justify-center gap-2">
+                Sign Up
+                <span className="material-symbols-outlined text-[20px] group-hover:translate-x-1 transition-transform">arrow_forward</span>
+              </span>
+              <div className="absolute inset-0 -translate-x-full group-hover:translate-x-0 bg-white/30 transition-transform duration-300 ease-out skew-x-12"></div>
+            </>
+          )}
+        </button>
+      </form>
+
+      {/* Footer Switch */}
+      <div className="text-center mt-6">
+        <p className="text-sm text-gray-400">
+          Already have an account?{' '}
+          <button onClick={toggleView} className="font-bold text-white hover:text-[#ccff00] transition-colors relative inline-block group">
+            Log in
+            <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-[#ccff00] transition-all group-hover:w-full"></span>
+          </button>
         </p>
       </div>
     </div>
   );
 }
-
-// --- HELPER COMPONENTS ---
-
-function SocialButton({ icon, text }: { icon: React.ReactNode, text: string }) {
-  return (
-    <button type="button" className="w-full flex items-center justify-center gap-1 md:gap-3 border-[0.5px] border-gray-200/80 rounded md:rounded-lg hover:bg-gray-50 hover:border-gray-300 transition group px-1.5 md:px-4 h-6 md:h-9">
-      <div className="w-3 h-3 md:w-5 md:h-5 flex-shrink-0 text-gray-900">
-        {icon}
-      </div>
-      <span className="text-[9px] md:text-sm font-semibold text-gray-600 group-hover:text-gray-800">
-        {text}
-      </span>
-    </button>
-  );
-}
-
-// --- ICONS ---
-const GoogleIcon = () => (
-  <svg className="w-full h-full" viewBox="0 0 24 24">
-    <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4" />
-    <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853" />
-    <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05" />
-    <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335" />
-  </svg>
-);
-
-const AppleIcon = () => (
-  <svg className="w-full h-full fill-current" viewBox="0 0 24 24">
-    <path d="M17.05 20.28c-.98.95-2.05.8-3.08.35-1.09-.46-2.09-.48-3.24 0-1.44.62-2.2.44-3.06-.35C2.79 15.25 3.51 7.59 9.05 7.31c1.35.07 2.29.74 3.08.74s2.57-1.29 4.36-.65c.61.22 1.15.55 1.6.96-3.6 1.76-2.99 6.27.65 7.64-.67 1.62-1.23 2.92-1.69 4.28zm-2.22-14.8c.84-1.33.62-2.73.57-2.92-1.39.06-2.9.96-3.69 2.05-.72.96-.86 2.37-.58 2.88 1.54.12 2.87-.71 3.7-2.01z" />
-  </svg>
-);
-
-const FacebookIcon = () => (
-  <svg className="w-full h-full" fill="#1877F2" viewBox="0 0 24 24">
-    <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
-  </svg>
-);

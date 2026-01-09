@@ -21,7 +21,7 @@ const stamps: Stamp[] = [
 
 const PassportPage: React.FC = () => {
   useScrollReveal();
-  const router = useRouter();
+  // const router = useRouter();
   const [activeFilter, setActiveFilter] = useState<"all" | "events">("all");
 
   return (
@@ -37,7 +37,7 @@ const PassportPage: React.FC = () => {
       {/* Navigation Buttons */}
       <div className="absolute top-6 left-6 z-50">
         <Link
-          href="/profile"
+          href="/user"
           className="flex items-center gap-2 px-4 py-2 rounded-full bg-black/20 backdrop-blur-md border border-white/10 text-white/80 hover:text-white hover:bg-black/40 transition-all font-medium text-sm"
         >
           <span className="material-symbols-outlined text-[18px]">arrow_back</span>
@@ -224,7 +224,7 @@ const PassportPage: React.FC = () => {
 
             <div className="mt-auto pt-8 relative z-20">
               <Link
-                href="/profile/progress"
+                href="/user"
                 className="flex items-center justify-center gap-2 px-6 py-3 rounded-2xl bg-[#022c22] text-white hover:bg-[#0f392b] transition-all font-bold text-sm shadow-lg"
               >
                 <span className="material-symbols-outlined text-[20px]">analytics</span>
