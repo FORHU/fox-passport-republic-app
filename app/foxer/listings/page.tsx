@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { Building2, Package, ChefHat, Plus, Edit, Trash2, Eye } from 'lucide-react';
-import { useCreateListingModal } from '@/hooks/useCreateListingModal';
+import { useCreateListingModal } from '@/hooks/events/useCreateListingModal';
 
 export default function ListingsPage() {
   const { onOpen } = useCreateListingModal();

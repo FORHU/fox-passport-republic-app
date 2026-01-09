@@ -4,10 +4,10 @@ import { useMutation } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import axios from "axios";
 import { toast } from "sonner";
-import { useAuthStore } from "../store/useAuthStore";
-import { LoginFormData, SignupFormData } from "../lib/schema";
-import { LoginResponse } from "../types/auth";
-import { config } from "../lib/config";
+import { useAuthStore } from "@/store/useAuthStore";
+import { LoginFormData, SignupFormData } from "@/lib/schema";
+import { LoginResponse } from "@/types/auth";
+import { config } from "@/lib/config";
 
 // --- AXIOS SETUP ---
 const api = axios.create({

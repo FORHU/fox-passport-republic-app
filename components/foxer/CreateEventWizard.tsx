@@ -1,10 +1,10 @@
 "use client";
 
-import { useCreateEventModal } from "@/hooks/useCreateEventModal";
+import { useCreateEventModal } from "@/hooks/events/useCreateEventModal";
 import { X, Calendar, Clock, MapPin, Users, ChevronDown, DollarSign, Image as ImageIcon, FileText, ChevronRight, ChevronLeft } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
-import { useCategories } from "@/hooks/useCategories";
+import { useCategories } from "@/hooks/data/useCategories";
 import api from "@/lib/axios";
 import { useAuthStore } from "@/store/useAuthStore";
 

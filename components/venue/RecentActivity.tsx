@@ -3,7 +3,7 @@
 import React from "react";
 import PropertyCard from "@/components/venue/RecentActivityProperty";
 import ReviewCard from "@/components/venue/RecentActivityReview";
-import { useRecentActivity } from "@/hooks/useRecentActivity";
+import { useRecentActivity } from "@/hooks/ui/useRecentActivity";
 
 // --- Fake Data Generator for Empty Slots ---
 const backupReviews = [

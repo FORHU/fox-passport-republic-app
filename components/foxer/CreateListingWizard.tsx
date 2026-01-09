@@ -1,6 +1,6 @@
 "use client";
 
-import { useCreateListingModal } from "@/hooks/useCreateListingModal";
+import { useCreateListingModal } from "@/hooks/events/useCreateListingModal";
 import { X, Building2, Package, ChefHat, ChevronRight, ChevronLeft, MapPin, DollarSign, Image as ImageIcon, FileText, Calendar } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";

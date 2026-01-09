@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { usePathname } from "next/navigation";
-import { useAuthStore } from "../store/useAuthStore";
+import { useAuthStore } from "@/store/useAuthStore";
 
 export function useNavbar() {
   const [isScrolled, setIsScrolled] = useState(false);

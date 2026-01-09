@@ -2,7 +2,7 @@
 
 import React from "react";
 import { Building2 } from "lucide-react";
-import { useBecomeHost } from "@/hooks/useBecomeHost";
+import { useBecomeHost } from "@/hooks/features/useBecomeHost";
 import { useAuthStore } from "@/store/useAuthStore";
 
 export default function BecomeHostButton() {

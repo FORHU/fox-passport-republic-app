@@ -29,7 +29,7 @@ const HowItWorksModal: React.FC<HowItWorksModalProps> = ({ isOpen, onClose }) =>
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
+    <div className="fixed inset-0 z-60 flex items-center justify-center p-4 sm:p-6">
       {/* Backdrop */}
       <div className="absolute inset-0 bg-gray-900/80 backdrop-blur-md animate-in fade-in duration-300" onClick={onClose} />
       
@@ -52,7 +52,7 @@ const HowItWorksModal: React.FC<HowItWorksModalProps> = ({ isOpen, onClose }) =>
             {STEPS.map((step, idx) => (
               <div key={step.title} className="flex gap-6 group">
                 <div className="flex-shrink-0">
-                  <div className="size-14 bg-pink-100 rounded-2xl flex items-center justify-center text-pink-500 group-hover:bg-pink-500 group-hover:text-white transition-all duration-300 transform group-hover:rotate-6">
+                  <div className="w-12 h-12 rounded-full bg-pink-100 flex items-center justify-center shrink-0 mt-1 text-pink-500 group-hover:bg-pink-500 group-hover:text-white transition-all duration-300 transform group-hover:rotate-6">
                     <span className="material-symbols-outlined text-3xl font-bold">{step.icon}</span>
                   </div>
                 </div>

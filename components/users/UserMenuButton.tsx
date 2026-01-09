@@ -18,9 +18,9 @@ import {
   Menu,
   Building2,
 } from "lucide-react";
-import { useUserMenu } from "@/hooks/useUserMenu";
+import { useUserMenu } from "@/hooks/auth/useUserMenu";
 import { useAuthStore } from "@/store/useAuthStore";
-import { useBecomeHost } from "@/hooks/useBecomeHost";
+import { useBecomeHost } from "@/hooks/features/useBecomeHost";
 
 // Menu item configuration will be generated dynamically based on user role
 
@@ -168,7 +168,7 @@ export default function UserMenuButton({ onBecomeHost }: UserMenuButtonProps) {
                   disabled={isPending && item.isAction}
                   className="w-full text-left px-4 py-3 hover:bg-white/5 transition-colors flex items-start gap-3 group disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  <item.icon className="w-5 h-5 text-white/60 group-hover:text-[#ccff00] mt-0.5 flex-shrink-0 transition-colors" />
+                  <item.icon className="w-5 h-5 text-white/60 group-hover:text-[#ccff00] mt-0.5 shrink-0 transition-colors" />
 
                   <div className="flex-1 min-w-0">
                     <span className="text-white text-sm font-medium block group-hover:text-[#ccff00] transition-colors">

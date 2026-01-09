@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useScrollReveal } from "@/hooks/useScrollReveal";
+import { useScrollReveal } from "@/hooks/ui/useScrollReveal";
 
 interface Stamp {
   id: string;

@@ -2,10 +2,10 @@
 
 import React, { useState } from "react";
 import { X, ChevronRight, ChevronLeft, Check, Building2, MapPin, DollarSign, Image as ImageIcon, Sparkles } from "lucide-react";
-import { useCreateVenueModal } from "@/hooks/useCreateVenueModal";
-import { useCategories } from "@/hooks/useCategories";
+import { useCreateVenueModal } from "@/hooks/venues/useCreateVenueModal";
+import { useCategories } from "@/hooks/data/useCategories";
 import { useAuthStore } from "@/store/useAuthStore";
-import { useHostVenues } from "@/hooks/useHostVenues";
+import { useHostVenues } from "@/hooks/venues/useHostVenues";
 import api from "@/lib/axios";
 import { toast } from "sonner";
 
