@@ -11,15 +11,22 @@ interface SavedVibe {
 
 interface UserSavedVibesProps {
     savedVibes: SavedVibe[];
+    className?: string;
 }
 
-export const UserSavedVibes: React.FC<UserSavedVibesProps> = ({ savedVibes }) => {
+export const UserSavedVibes: React.FC<UserSavedVibesProps> = ({ savedVibes, className = '' }) => {
   return (
-    <div className="glass-panel rounded-[2.5rem] p-6 reveal-on-scroll" style={{ transitionDelay: '300ms' }}>
-                <div className="flex items-center justify-between mb-4">
-                  <h3 className="font-display font-bold text-white">Saved Vibes</h3>
-                  <span className="text-xs text-text-muted">{savedVibes.length} Items</span>
-                </div>
+    <section className={`reveal-on-scroll flex flex-col ${className}`} style={{ transitionDelay: '300ms' }}>
+      <div className="flex items-center justify-between mb-6">
+        <h3 className="text-xl font-display font-bold text-white flex items-center gap-2">
+            <span className="material-symbols-outlined text-pink-400">favorite</span>
+            Saved Vibes
+        </h3>
+        <span className="text-xs text-text-muted">{savedVibes.length} Items</span>
+      </div>
+
+      <div className="glass-panel rounded-[2.5rem] p-6 flex flex-col flex-1 h-full">
+                {/* Header removed from here */}
                 <div className="space-y-4">
                   {savedVibes.map((item) => (
                     <div key={item.id} className="flex gap-4 p-2 hover:bg-white/5 rounded-2xl transition-colors cursor-pointer group">
@@ -49,9 +56,10 @@ export const UserSavedVibes: React.FC<UserSavedVibesProps> = ({ savedVibes }) =>
                     </div>
                   ))}
                 </div>
-                <button className="w-full mt-6 py-3 rounded-xl border border-white/10 text-sm font-bold text-white hover:bg-white hover:text-black transition-colors">
+                <button className="w-full mt-auto py-3 rounded-xl border border-white/10 text-sm font-bold text-white hover:bg-white hover:text-black transition-colors pt-6">
                   View All Favorites
                 </button>
               </div>
+    </section>
   );
 };

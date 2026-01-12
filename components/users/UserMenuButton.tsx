@@ -71,7 +71,7 @@ export default function UserMenuButton({ onBecomeHost }: UserMenuButtonProps) {
               hasImage: true,
             }
           : {
-              label: "Become a host",
+              label: "Become a mayor",
               description: "It's easy to start hosting and earn extra income.",
               icon: Home,
               href: "#become-host",
@@ -105,14 +105,14 @@ export default function UserMenuButton({ onBecomeHost }: UserMenuButtonProps) {
   const handleItemClick = (item: any) => {
     close();
 
-    // If it's the "Become a host" action (not navigation)
-    if (item.isAction && item.label === "Become a host") {
+    // If it's the "Become a mayor" action (not navigation)
+    if (item.isAction && item.label === "Become a mayor") {
       becomeHost();
       return;
     }
 
     // If there's a custom callback (legacy support)
-    if (item.label === "Become a host" && onBecomeHost) {
+    if (item.label === "Become a mayor" && onBecomeHost) {
       onBecomeHost();
       return;
     }

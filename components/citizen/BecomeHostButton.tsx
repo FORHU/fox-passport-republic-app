@@ -15,7 +15,7 @@ export default function BecomeHostButton() {
   }
 
   const handleBecomeHost = () => {
-    if (window.confirm("Are you sure you want to become a host? You'll be able to list venues and create events.")) {
+    if (window.confirm("Are you sure you want to become a mayor? You'll be able to list venues and create events.")) {
       becomeHost();
     }
   };
@@ -27,7 +27,7 @@ export default function BecomeHostButton() {
       className="inline-flex items-center gap-2 px-6 py-3 bg-pink-600 text-white font-semibold rounded-xl hover:bg-pink-700 transition-colors shadow-lg shadow-pink-500/30 disabled:opacity-50 disabled:cursor-not-allowed"
     >
       <Building2 className="w-5 h-5" />
-      {isPending ? "Processing..." : "Become a Host"}
+      {isPending ? "Processing..." : "Become a Mayor"}
     </button>
   );
 }

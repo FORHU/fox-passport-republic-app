@@ -1,9 +1,13 @@
 import React from 'react';
 import Image from 'next/image';
 
-export const UserNextUp: React.FC = () => {
+interface UserNextUpProps {
+  className?: string;
+}
+
+export const UserNextUp: React.FC<UserNextUpProps> = ({ className = '' }) => {
   return (
-    <section className="reveal-on-scroll">
+    <section className={`reveal-on-scroll flex flex-col ${className}`}>
                 <div className="flex items-center justify-between mb-6">
                   <h3 className="text-xl font-display font-bold text-white flex items-center gap-2">
                     <span className="material-symbols-outlined text-accent animate-pulse">airplane_ticket</span>
@@ -11,7 +15,7 @@ export const UserNextUp: React.FC = () => {
                   </h3>
                   <a className="text-sm text-gray-400 hover:text-white transition-colors" href="#">View all tickets</a>
                 </div>
-                <div className="glass-ticket rounded-3xl p-0 flex flex-col md:flex-row overflow-hidden group hover:shadow-[0_0_40px_rgba(124,58,237,0.2)] transition-all duration-500">
+                <div className="glass-ticket rounded-3xl p-0 flex flex-col md:flex-row overflow-hidden group hover:shadow-[0_0_40px_rgba(124,58,237,0.2)] transition-all duration-500 flex-1">
                   <div className="relative w-full md:w-2/5 h-64 md:h-auto overflow-hidden">
                     <Image 
                       alt="Event" 

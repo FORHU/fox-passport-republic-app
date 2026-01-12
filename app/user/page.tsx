@@ -9,7 +9,6 @@ import { UserNextUp } from '@/components/citizen/UserNextUp';
 import { UserForYou } from '@/components/citizen/UserForYou';
 import { UserJourney } from '@/components/citizen/UserJourney';
 import { UserWallet } from '@/components/citizen/UserWallet';
-import { UserQuickLinks } from '@/components/citizen/UserQuickLinks';
 import { UserSavedVibes } from '@/components/citizen/UserSavedVibes';
 import { UserFooter } from '@/components/citizen/UserFooter';
 
@@ -40,22 +39,31 @@ function UserDashboardContent() {
             weather={dashboardData.weather}
           />
           
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-            <div className="lg:col-span-8 space-y-12">
-              <UserNextUp />
-              <UserForYou />
+          {/* Row 1: Next Up & Journey */}
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 mb-8">
+            <div className="lg:col-span-8 flex flex-col">
+              <UserNextUp className="flex-1" />
             </div>
-            <div className="lg:col-span-4 space-y-6">
+            <div className="lg:col-span-4 flex flex-col">
               <UserJourney 
                 userName={userName} 
                 navigateToPassport={navigateToPassport} 
+                className="flex-1"
               />
+            </div>
+          </div>
+
+          {/* Row 2: For You & Wallet/Saved Vibes */}
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+            <div className="lg:col-span-8">
+              <UserForYou />
+            </div>
+            <div className="lg:col-span-4 flex flex-col gap-6 h-full">
               <UserWallet 
                 walletBalance={walletBalance} 
                 recentTransactions={recentTransactions} 
               />
-              <UserQuickLinks />
-              <UserSavedVibes savedVibes={savedVibes} />
+              <UserSavedVibes savedVibes={savedVibes} className="flex-1" />
             </div>
           </div>
         </div>
