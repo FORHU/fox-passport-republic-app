@@ -1,9 +1,9 @@
 import React from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { X, Grid3X3 } from "lucide-react";
+import { X } from "lucide-react";
 import { BrandLogo } from "@/components/shared/BrandLogo";
-import { getIconComponent } from "@/components/categories/icon-utils";
+import { DynamicIcon } from "@/components/ui/DynamicIcon";
 import { Category } from "@/data/categories"; // Assuming this exists, catch if error
 
 interface CategoryHeaderProps {
@@ -12,7 +12,6 @@ interface CategoryHeaderProps {
 
 export const CategoryHeader: React.FC<CategoryHeaderProps> = ({ category }) => {
   const router = useRouter();
-  const CategoryIcon = category ? getIconComponent(category.icon) : Grid3X3;
 
   return (
     <header className="fixed top-6 left-0 right-0 z-50 transition-all duration-300">
@@ -29,8 +28,8 @@ export const CategoryHeader: React.FC<CategoryHeaderProps> = ({ category }) => {
             </Link>
             <div className="h-4 w-px bg-white/10"></div>
             <span className="px-6 py-2.5 rounded-full text-sm font-bold text-black bg-[#ccff00] shadow-[0_0_15px_rgba(204,255,0,0.3)] flex items-center gap-2">
-              <CategoryIcon className="w-4 h-4" />
-              {category.title}
+              <DynamicIcon name={category.icon || "Grid3X3"} className="w-4 h-4" />
+              {category.name}
             </span>
           </nav>
 

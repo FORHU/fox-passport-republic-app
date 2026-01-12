@@ -11,7 +11,7 @@ export const TrendingSection: React.FC<TrendingSectionProps> = ({ category }) =>
   return (
     <section className="animate-in fade-in slide-in-from-bottom-8 duration-700 delay-200">
       <div className="flex items-center justify-between mb-10">
-        <h2 className="text-4xl font-bold text-white tracking-tight">Trending in {category.title}</h2>
+        <h2 className="text-4xl font-bold text-white tracking-tight">Trending in {category.name}</h2>
         <button className="text-sm font-bold text-white hover:text-[#ccff00] transition-colors flex items-center gap-2 group">
           View all <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
         </button>

@@ -10,6 +10,13 @@ export interface Category {
   updatedAt: string;
   subCategories?: Category[];
   parentCategory?: Category;
+
+  // Design / Presentation
+  image?: string | null;
+  tagline?: string | null;
+  gradient?: string | null;
+  spotLabel?: string | null;
+  spotColor?: string | null;
 }
 
 // API response types

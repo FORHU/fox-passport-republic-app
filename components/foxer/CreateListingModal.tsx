@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { CATEGORIES } from '@/data/categories';
+import { useCategories } from '@/hooks/data/useCategories';
 
 interface CreateListingModalProps {
   isOpen: boolean;
@@ -20,6 +20,7 @@ const AMENITIES = [
 ];
 
 const CreateListingModal: React.FC<CreateListingModalProps> = ({ isOpen, onClose }) => {
+  const { categories } = useCategories();
   const [currentStep, setCurrentStep] = useState(1);
   const [showSuccessToast, setShowSuccessToast] = useState(false);
   const [listingType, setListingType] = useState<'Venue' | 'Equipment' | 'Catering' | ''>('');
@@ -49,9 +50,9 @@ const CreateListingModal: React.FC<CreateListingModalProps> = ({ isOpen, onClose
 
   // Derived subcategories based on selected parent category
   const activeSubcategories = useMemo(() => {
-    const parent = CATEGORIES.find(c => c.title === formData.parentCategory);
-    return parent ? parent.children : [];
-  }, [formData.parentCategory]);
+    const parent = categories.find(c => c.name === formData.parentCategory);
+    return parent?.subCategories || [];
+  }, [formData.parentCategory, categories]);
 
   if (!isOpen) return null;
 
@@ -235,8 +236,8 @@ const CreateListingModal: React.FC<CreateListingModalProps> = ({ isOpen, onClose
                       className="w-full rounded-xl border border-white/10 bg-white/5 py-4 px-4 text-sm text-white focus:border-accent focus:ring-1 focus:ring-accent outline-none transition-all appearance-none cursor-pointer hover:bg-white/10"
                     >
                       <option value="" className="bg-[#0f111a] text-gray-400">Select a parent category...</option>
-                      {CATEGORIES.map(cat => (
-                        <option key={cat.id} value={cat.title} className="bg-[#0f111a] text-white">{cat.title}</option>
+                      {categories.map(cat => (
+                        <option key={cat.id} value={cat.name} className="bg-[#0f111a] text-white">{cat.name}</option>
                       ))}
                     </select>
                     <span className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none material-symbols-outlined">expand_more</span>
