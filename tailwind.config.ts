@@ -97,7 +97,8 @@ module.exports = {
         "pulse-slow": "pulse-slow 4s cubic-bezier(0.4, 0, 0.6, 1) infinite",
         wiggle: "wiggle 0.5s ease-in-out infinite",
         glitch: "glitch 2s infinite",
-        "spin-slow": "spin 3s linear infinite",
+        "spin-slow": "spin 12s linear infinite",
+        fly: "fly 3s ease-in-out infinite",
       },
       keyframes: {
         float: {
@@ -119,6 +120,10 @@ module.exports = {
         "pulse-slow": {
           "0%, 100%": { opacity: "0.3" },
           "50%": { opacity: "0.6" },
+        },
+        fly: {
+          "0%, 100%": { transform: "translateY(0)" },
+          "50%": { transform: "translateY(-6px)" },
         },
       },
       boxShadow: {

@@ -38,7 +38,7 @@ export default function HostLayout({
     // If authenticated but not a host, redirect to home with toast
     if (user && user.role !== "host" && user.role !== "admin" && user.role !== "super_admin") {
       if (!hasShownToast.current) {
-        toast.error("Only hosts can access this page. Become a host to continue!");
+        toast.error("Only hosts can access this page. Become a mayor to continue!");
         hasShownToast.current = true;
       }
       router.push("/");

@@ -36,7 +36,7 @@ export const useUserDashboard = () => {
 
   // Navigate to passport
   const navigateToPassport = () => {
-    router.push("/passport");
+    router.push("/user/passport");
   };
 
   // Scroll reveal effect

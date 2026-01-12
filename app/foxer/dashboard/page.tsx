@@ -3,6 +3,8 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import CreateListingModal from '@/components/foxer/CreateListingModal';
+import CalendarWidget from '@/components/foxer/CalendarWidget';
+import { UserQuickLinks } from '@/components/citizen/UserQuickLinks';
 import Image from 'next/image';
 
 import { useAuthStore } from '@/store/useAuthStore';
@@ -69,10 +71,8 @@ export default function FoxerDashboard() {
               </h1>
               <p className="text-text-muted">Here's what's happening with your events today.</p>
             </div>
-            <div className="flex gap-4">
-              <button className="px-6 py-3 rounded-full border border-white/10 text-white font-medium hover:bg-white/5 transition-all flex items-center gap-2">
-                <span className="material-symbols-outlined">calendar_month</span> Calendar
-              </button>
+            <div className="flex gap-4 items-end">
+              <UserQuickLinks />
               <button 
                 onClick={() => setIsListingModalOpen(true)}
                 className="btn-neon px-8 py-3 rounded-full bg-accent text-black font-bold flex items-center gap-2 shadow-[0_0_20px_rgba(204,255,0,0.3)] hover:scale-105 transition-transform"
@@ -152,17 +152,18 @@ export default function FoxerDashboard() {
             </div>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-            <div className="lg:col-span-8 space-y-8">
-              <section>
+          {/* Row 1: Active Events & Profile */}
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 mb-8">
+            <div className="lg:col-span-8 flex flex-col">
+              <section className="flex flex-col h-full">
                 <div className="flex justify-between items-center mb-6">
                   <h2 className="text-2xl font-display font-bold text-white flex items-center gap-2">
                     <span className="material-symbols-outlined text-accent animate-[spin_3s_linear_infinite]">hub</span> My Active Events
                   </h2>
                   <a className="text-sm text-text-muted hover:text-white transition-colors flex items-center gap-1" href="#">View all <span className="material-symbols-outlined text-[16px]">arrow_forward</span></a>
                 </div>
-                {/* Events list can remain similar, just ensuring no "Host" text leakage */}
-                <div className="space-y-4">
+                {/* Events list */}
+                <div className="space-y-4 flex-1">
                   <div className="glass-panel p-4 rounded-3xl hover:bg-white/5 transition-all group border border-white/5 relative overflow-hidden">
                     <div className="absolute left-0 top-0 bottom-0 w-1 bg-[#4ade80] shadow-[0_0_15px_#4ade80] rounded-l-3xl"></div>
                     <div className="absolute top-0 right-0 w-32 h-32 bg-[#4ade80]/10 rounded-full blur-[40px] pointer-events-none"></div>
@@ -254,6 +255,51 @@ export default function FoxerDashboard() {
                   </div>
                 </div>
               </section>
+            </div>
+            
+            <div className="lg:col-span-4 flex flex-col">
+              <section className="flex flex-col h-full">
+                <div className="flex items-center justify-between mb-6">
+                  <h3 className="font-display font-bold text-white text-2xl">Your Profile</h3>
+                  <span className="text-xs font-bold bg-primary/20 text-primary-glow px-2 py-1 rounded">85% Complete</span>
+                </div>
+                <div className="glass-card rounded-[2rem] p-5 relative overflow-hidden flex-1 flex flex-col">
+                  <div className="absolute inset-0 bg-gradient-to-br from-primary/10 to-transparent"></div>
+                  
+                  <div className="relative z-10 space-y-1 flex-1">
+                    <button className="w-full flex items-center gap-3 p-2.5 rounded-xl bg-white/5 hover:bg-white/10 transition-colors text-left group">
+                      <div className="h-8 w-8 rounded-full bg-surface border border-white/10 flex items-center justify-center group-hover:border-accent group-hover:text-accent transition-colors">
+                        <span className="material-symbols-outlined text-[16px]">folder_shared</span>
+                      </div>
+                      <span className="text-sm font-medium text-white group-hover:translate-x-1 transition-transform">Portfolio</span>
+                    </button>
+                    <button className="w-full flex items-center gap-3 p-2.5 rounded-xl bg-white/5 hover:bg-white/10 transition-colors text-left group">
+                      <div className="h-8 w-8 rounded-full bg-surface border border-white/10 flex items-center justify-center group-hover:border-accent group-hover:text-accent transition-colors">
+                        <span className="material-symbols-outlined text-[16px]">settings</span>
+                      </div>
+                      <span className="text-sm font-medium text-white group-hover:translate-x-1 transition-transform">Settings</span>
+                    </button>
+                  <button className="w-full flex items-center gap-3 p-2.5 rounded-xl bg-white/5 hover:bg-white/10 transition-colors text-left group">
+                    <div className="h-8 w-8 rounded-full bg-surface border border-white/10 flex items-center justify-center group-hover:border-accent group-hover:text-accent transition-colors">
+                      <span className="material-symbols-outlined text-[16px]">support_agent</span>
+                    </div>
+                    <span className="text-sm font-medium text-white group-hover:translate-x-1 transition-transform">Foxer Support</span>
+                  </button>
+                  
+                  <div className="pt-2 border-t border-white/5 mt-1">
+                    <CalendarWidget />
+                  </div>
+                </div>
+                  {/* Fill remaining space if needed */}
+                  <div className="mt-auto"></div> 
+                </div>
+              </section>
+            </div>
+          </div>
+
+          {/* Row 2: Charts & Requests/Calendar */}
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+            <div className="lg:col-span-8">
               <section>
                 <div className="glass-card rounded-[2rem] p-8 border border-white/5">
                   <div className="flex flex-wrap justify-between items-start mb-8">
@@ -300,36 +346,8 @@ export default function FoxerDashboard() {
                 </div>
               </section>
             </div>
+            
             <div className="lg:col-span-4 space-y-8">
-              <div className="glass-card rounded-[2rem] p-6 relative overflow-hidden">
-                <div className="absolute inset-0 bg-gradient-to-br from-primary/10 to-transparent"></div>
-                <div className="relative z-10 flex items-center justify-between mb-6">
-                  <h3 className="font-display font-bold text-white">Your Profile</h3>
-                  <span className="text-xs font-bold bg-primary/20 text-primary-glow px-2 py-1 rounded">85% Complete</span>
-                </div>
-                
-                <div className="relative z-10 space-y-3">
-                  <button className="w-full flex items-center gap-3 p-3 rounded-xl bg-white/5 hover:bg-white/10 transition-colors text-left group">
-                    <div className="h-8 w-8 rounded-full bg-surface border border-white/10 flex items-center justify-center group-hover:border-accent group-hover:text-accent transition-colors">
-                      <span className="material-symbols-outlined text-[16px]">folder_shared</span>
-                    </div>
-                    <span className="text-sm font-medium text-white group-hover:translate-x-1 transition-transform">Portfolio</span>
-                  </button>
-                  <button className="w-full flex items-center gap-3 p-3 rounded-xl bg-white/5 hover:bg-white/10 transition-colors text-left group">
-                    <div className="h-8 w-8 rounded-full bg-surface border border-white/10 flex items-center justify-center group-hover:border-accent group-hover:text-accent transition-colors">
-                      <span className="material-symbols-outlined text-[16px]">settings</span>
-                    </div>
-                    <span className="text-sm font-medium text-white group-hover:translate-x-1 transition-transform">Settings</span>
-                  </button>
-                  <button className="w-full flex items-center gap-3 p-3 rounded-xl bg-white/5 hover:bg-white/10 transition-colors text-left group">
-                    <div className="h-8 w-8 rounded-full bg-surface border border-white/10 flex items-center justify-center group-hover:border-accent group-hover:text-accent transition-colors">
-                      <span className="material-symbols-outlined text-[16px]">support_agent</span>
-                    </div>
-                    <span className="text-sm font-medium text-white group-hover:translate-x-1 transition-transform">Foxer Support</span>
-                  </button>
-                </div>
-              </div>
-              
               <div className="glass-panel rounded-[2rem] p-6 border border-white/5">
                 <div className="flex justify-between items-center mb-6">
                   <h3 className="font-display font-bold text-white">Upcoming Bookings</h3>
@@ -372,37 +390,6 @@ export default function FoxerDashboard() {
                 <button className="w-full mt-6 py-3 rounded-xl border border-white/10 text-xs font-bold text-white hover:bg-white hover:text-black transition-all uppercase tracking-widest">
                   View All Activity
                 </button>
-              </div>
-              <div className="bg-surface rounded-[2rem] p-6 border border-white/5">
-                <h3 className="font-display font-bold text-white mb-4 flex items-center gap-2">
-                  <span className="material-symbols-outlined text-accent text-[20px]">event</span>
-                  October
-                </h3>
-                <div className="grid grid-cols-7 gap-1 text-center text-xs mb-2">
-                  <span className="text-text-muted">M</span>
-                  <span className="text-text-muted">T</span>
-                  <span className="text-text-muted">W</span>
-                  <span className="text-text-muted">T</span>
-                  <span className="text-text-muted">F</span>
-                  <span className="text-text-muted">S</span>
-                  <span className="text-text-muted">S</span>
-                </div>
-                <div className="grid grid-cols-7 gap-1 text-center text-xs font-medium">
-                  <span className="text-white/20 py-2">29</span>
-                  <span className="text-white/20 py-2">30</span>
-                  <span className="text-white py-2 hover:bg-white/10 rounded-lg cursor-pointer">1</span>
-                  <span className="text-white py-2 hover:bg-white/10 rounded-lg cursor-pointer">2</span>
-                  <span className="bg-accent text-black font-bold py-2 rounded-lg cursor-pointer shadow-[0_0_10px_#ccff00]">3</span>
-                  <span className="text-white py-2 hover:bg-white/10 rounded-lg cursor-pointer">4</span>
-                  <span className="text-white py-2 hover:bg-white/10 rounded-lg cursor-pointer">5</span>
-                  <span className="text-white py-2 hover:bg-white/10 rounded-lg cursor-pointer">6</span>
-                  <span className="text-white py-2 hover:bg-white/10 rounded-lg cursor-pointer">7</span>
-                  <span className="text-white py-2 hover:bg-white/10 rounded-lg cursor-pointer relative">8 <span className="absolute bottom-1 left-1/2 -translate-x-1/2 w-1 h-1 bg-secondary rounded-full"></span></span>
-                  <span className="text-white py-2 hover:bg-white/10 rounded-lg cursor-pointer">9</span>
-                  <span className="text-white py-2 hover:bg-white/10 rounded-lg cursor-pointer">10</span>
-                  <span className="text-white py-2 hover:bg-white/10 rounded-lg cursor-pointer">11</span>
-                  <span className="text-white py-2 hover:bg-white/10 rounded-lg cursor-pointer">12</span>
-                </div>
               </div>
             </div>
           </div>

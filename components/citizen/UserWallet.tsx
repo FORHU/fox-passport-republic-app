@@ -14,12 +14,23 @@ interface UserWalletProps {
 
 export const UserWallet: React.FC<UserWalletProps> = ({ walletBalance, recentTransactions }) => {
   return (
-    <div className="relative overflow-hidden rounded-[2.5rem] bg-linear-to-br from-indigo-900 to-purple-900 border border-white/10 p-8 shadow-glow hover:scale-[1.02] transition-transform duration-300 reveal-on-scroll" style={{ transitionDelay: '100ms' }}>
+    <section className="reveal-on-scroll" style={{ transitionDelay: '100ms' }}>
+      <div className="flex items-center justify-between mb-6">
+        <h3 className="text-xl font-display font-bold text-white flex items-center gap-2">
+            <span className="material-symbols-outlined text-indigo-400">account_balance_wallet</span>
+            Fox Wallet
+        </h3>
+        <span className="bg-indigo-500/20 text-indigo-300 text-xs font-bold px-3 py-1 rounded-full border border-indigo-500/30">
+            Active
+        </span>
+      </div>
+
+      <div className="relative overflow-hidden rounded-[2.5rem] bg-linear-to-br from-indigo-900 to-purple-900 border border-white/10 p-6 shadow-glow hover:scale-[1.02] transition-transform duration-300">
                 <div className="absolute top-0 right-0 p-32 bg-accent opacity-10 blur-[80px] rounded-full"></div>
                 <div className="relative z-10">
                   <div className="flex justify-between items-start mb-8">
                     <div>
-                      <p className="text-indigo-200 text-sm font-medium mb-1">Fox Wallet</p>
+                      {/* Internal title removed */}
                       <h3 className="text-4xl font-display font-bold text-white tracking-tight">₱{walletBalance.toLocaleString()}<span className="text-lg text-indigo-300"></span></h3>
                     </div>
                     <div className="h-10 w-10 bg-white/10 rounded-full flex items-center justify-center">
@@ -54,5 +65,6 @@ export const UserWallet: React.FC<UserWalletProps> = ({ walletBalance, recentTra
                   </div>
                 </div>
               </div>
+    </section>
   );
 };

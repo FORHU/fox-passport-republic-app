@@ -85,7 +85,7 @@ export const MOCK_BADGES: Badge[] = [
   },
   {
     id: 'b11',
-    name: 'VIP Foxxer',
+    name: 'VIP Foxer',
     description: 'Reached VIP status',
     rarity: 'Legendary',
     icon: 'hotel_class',
@@ -203,7 +203,7 @@ export const LEVEL_REWARDS = {
     5: { badges: ['Early Adopter'], perks: ['5% discount on bookings'] },
     10: { badges: ['Social Butterfly'], perks: ['Bronze VIP status'] },
     15: { badges: [], perks: ['Silver VIP status', 'Priority support'] },
-    20: { badges: ['VIP Foxxer'], perks: ['Gold VIP status', 'Exclusive events'] },
+    20: { badges: ['VIP Foxer'], perks: ['Gold VIP status', 'Exclusive events'] },
   },
   foxer: {
     5: { badges: [], perks: ['Featured listing slot'] },
