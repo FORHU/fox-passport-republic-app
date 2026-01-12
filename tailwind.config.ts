@@ -7,6 +7,15 @@ module.exports = {
     "./app/**/*.{ts,tsx}",
     "./src/**/*.{ts,tsx}",
   ],
+  safelist: [
+    {
+      pattern: /^(from|to|via)-.+/,
+      variants: ["hover", "focus"],
+    },
+    {
+      pattern: /^bg-gradient-to-.+/,
+    },
+  ],
   theme: {
     container: {
       center: true,

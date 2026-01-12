@@ -23,7 +23,29 @@ export function useCategories(): UseCategoriesReturn {
       const response = await api.get<CategoriesApiResponse>("/v1/categories");
 
       if (response.data.success) {
-        setCategories(response.data.data);
+        const allCategories = response.data.data;
+
+        // Transform user's flat list into nested tree structure
+        // 1. Identify parents (no parentCategoryId)
+        const parents = allCategories.filter((c) => !c.parentCategoryId);
+        // 2. Identify children (have parentCategoryId)
+        const children = allCategories.filter((c) => c.parentCategoryId);
+
+        // 3. Nest children under parents
+        const nestedCategories = parents
+          .map((parent) => ({
+            ...parent,
+            subCategories: children
+              .filter((child) => child.parentCategoryId === parent.id)
+              .sort((a, b) => a.name.localeCompare(b.name)), // Sort subcategories alphabetically
+          }))
+          .sort((a, b) => {
+            // Optional: Sort parents in a specific order if needed, or alphabetical
+            // For now, let's do alphabetical by name
+            return a.name.localeCompare(b.name);
+          });
+
+        setCategories(nestedCategories);
       } else {
         setError("Failed to fetch categories");
       }

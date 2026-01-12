@@ -42,7 +42,7 @@ function CategoriesContent() {
   // --- VIEW: SPECIFIC CATEGORY (Legacy/Type Filter) ---
   if (type) {
     return (
-      <div className="min-h-screen bg-gray-50 flex flex-col">
+      <div className="min-h-screen bg-[#0a0a0a] flex flex-col">
         <Navbar />
         
         <div className="flex-1 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 pt-24">
@@ -52,13 +52,13 @@ function CategoriesContent() {
             <div className="flex items-center gap-4">
               <button 
                 onClick={handleBack}
-                className="p-2 hover:bg-white rounded-full transition-colors border border-transparent hover:border-gray-200"
+                className="p-2 hover:bg-white/10 rounded-full transition-colors border border-transparent hover:border-white/20"
               >
-                <ArrowLeft className="w-5 h-5 text-gray-600" />
+                <ArrowLeft className="w-5 h-5 text-gray-300" />
               </button>
               <div>
-                <h1 className="text-3xl font-bold text-gray-900">{type}</h1>
-                <p className="text-gray-500 text-sm mt-1">
+                <h1 className="text-3xl font-bold text-white">{type}</h1>
+                <p className="text-gray-400 text-sm mt-1">
                   Explore the best {type.toLowerCase()} experiences
                 </p>
               </div>
@@ -66,16 +66,16 @@ function CategoriesContent() {
           </div>
 
           {(eventsLoading || venuesLoading) ? (
-            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 min-h-[500px] flex items-center justify-center">
-              <Loader2 className="w-8 h-8 text-pink-500 animate-spin" />
+            <div className="bg-white/5 rounded-2xl shadow-sm border border-white/10 p-6 min-h-[500px] flex items-center justify-center">
+              <Loader2 className="w-8 h-8 text-[#ccff00] animate-spin" />
             </div>
           ) : (
             <>
               {/* Venues Section */}
               {venues.length > 0 && (
                 <div className="mb-8">
-                  <h2 className="text-2xl font-bold text-gray-900 mb-4">Venues</h2>
-                  <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+                  <h2 className="text-2xl font-bold text-white mb-4">Venues</h2>
+                  <div className="bg-white/5 rounded-2xl shadow-sm border border-white/10 p-6">
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-10">
                       {venues.map((venue) => (
                         <VenueCard key={venue.id} venue={venue} />
@@ -88,8 +88,8 @@ function CategoriesContent() {
               {/* Events Section */}
               {events.length > 0 && (
                 <div className="mb-8">
-                  <h2 className="text-2xl font-bold text-gray-900 mb-4">Events</h2>
-                  <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+                  <h2 className="text-2xl font-bold text-white mb-4">Events</h2>
+                  <div className="bg-white/5 rounded-2xl shadow-sm border border-white/10 p-6">
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-10">
                       {events.map((event) => (
                         <EventCard key={event.id} event={event} />
@@ -101,14 +101,12 @@ function CategoriesContent() {
 
               {/* Empty State */}
               {events.length === 0 && venues.length === 0 && (
-                <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 min-h-[500px]">
-                  <div className="flex flex-col items-center justify-center py-20 text-center">
-                    <div className="text-4xl mb-4">📭</div>
-                    <h3 className="text-lg font-bold text-gray-900">No content yet</h3>
-                    <p className="text-gray-500 max-w-xs mt-2 text-sm">
-                      No events or venues found for {type}. Create some via the host dashboard or admin panel!
-                    </p>
-                  </div>
+                <div className="bg-white/5 rounded-2xl shadow-sm border border-white/10 p-6 min-h-[500px] flex flex-col items-center justify-center text-center">
+                  <div className="text-4xl mb-4">📭</div>
+                  <h3 className="text-lg font-bold text-white">No content yet</h3>
+                  <p className="text-gray-400 max-w-xs mt-2 text-sm">
+                    No events or venues found for {type}. Create some via the host dashboard or admin panel!
+                  </p>
                 </div>
               )}
             </>
@@ -121,11 +119,11 @@ function CategoriesContent() {
   // --- LOADING STATE ---
   if (categoriesLoading) {
     return (
-      <div className="min-h-screen bg-white">
+      <div className="min-h-screen bg-[#0a0a0a]">
         <Navbar />
         <div className="pt-24 pb-16 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col items-center justify-center min-h-[60vh]">
-          <Loader2 className="w-10 h-10 text-pink-500 animate-spin mb-4" />
-          <p className="text-gray-500">Loading categories...</p>
+          <Loader2 className="w-10 h-10 text-[#ccff00] animate-spin mb-4" />
+          <p className="text-gray-400">Loading categories...</p>
         </div>
       </div>
     );
@@ -134,15 +132,15 @@ function CategoriesContent() {
   // --- ERROR STATE ---
   if (categoriesError || categories.length === 0) {
     return (
-      <div className="min-h-screen bg-white">
+      <div className="min-h-screen bg-[#0a0a0a]">
         <Navbar />
         <div className="pt-24 pb-16 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col items-center justify-center min-h-[60vh]">
           <AlertCircle className="w-12 h-12 text-red-500 mb-4" />
-          <h2 className="text-xl font-bold text-gray-800 mb-2">
+          <h2 className="text-xl font-bold text-white mb-2">
             {categoriesError ? "Failed to load categories" : "No categories available"}
           </h2>
-          <p className="text-gray-500 mb-4">{categoriesError}</p>
-          <p className="text-gray-400 text-sm">Please make sure the backend server is running.</p>
+          <p className="text-gray-400 mb-4">{categoriesError}</p>
+          <p className="text-gray-500 text-sm">Please make sure the backend server is running.</p>
         </div>
       </div>
     );
@@ -150,7 +148,7 @@ function CategoriesContent() {
 
   // --- VIEW: ALL CATEGORIES LIST ---
   return (
-    <div className="min-h-screen bg-[#f6f8f8] flex flex-col">
+    <div className="min-h-screen bg-[#0a0a0a] flex flex-col">
       <Navbar />
 
       <main className="flex-grow container mx-auto px-6 lg:px-20 py-10">

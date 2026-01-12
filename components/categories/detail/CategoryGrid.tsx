@@ -3,7 +3,7 @@ import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { ArrowRight } from "lucide-react";
 import { Category } from "@/data/categories";
-import { getIconComponent } from "@/components/categories/icon-utils";
+import { DynamicIcon } from "@/components/ui/DynamicIcon";
 
 interface CategoryGridProps {
   category: Category;
@@ -11,12 +11,11 @@ interface CategoryGridProps {
 
 export const CategoryGrid: React.FC<CategoryGridProps> = ({ category }) => {
   const router = useRouter();
-  const gradientColors = category?.color || "from-gray-700 to-black";
+  const gradientColors = category?.gradient || "from-gray-700 to-black";
 
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-24">
-      {category.children.map((sub) => {
-        const SubIcon = getIconComponent(sub.icon);
+      {(category.subCategories || []).map((sub) => {
         return (
           <div 
             key={sub.id} 
@@ -41,7 +40,7 @@ export const CategoryGrid: React.FC<CategoryGridProps> = ({ category }) => {
             
             <div className="relative z-10 mb-8 flex items-start justify-between">
               <div className="h-16 w-16 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center text-white group-hover:scale-110 transition-transform duration-300 group-hover:bg-white/10 backdrop-blur-md">
-                <SubIcon className="w-8 h-8" />
+                <DynamicIcon name={sub.icon || "Grid3X3"} className="w-8 h-8" />
               </div>
               {/* Mock Count Badge */}
               <div className="h-8 px-4 rounded-full bg-black/40 border border-white/5 flex items-center justify-center text-xs font-bold text-gray-400 backdrop-blur-md">

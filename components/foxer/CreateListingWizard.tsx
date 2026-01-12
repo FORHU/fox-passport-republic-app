@@ -6,7 +6,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 import api from "@/lib/axios";
 import { useAuthStore } from "@/store/useAuthStore";
-import { PARENT_CATEGORIES } from "@/lib/categories";
+import { useCategories } from "@/hooks/data/useCategories";
 
 type ListingType = 'venue' | 'equipment' | 'catering';
 
@@ -66,10 +66,10 @@ interface ListingFormData {
 export default function CreateListingWizard() {
   const { isOpen, onClose } = useCreateListingModal();
   const { user } = useAuthStore();
+  const { categories } = useCategories();
 
   const [currentStep, setCurrentStep] = useState(1);
   const [loading, setLoading] = useState(false);
-  const [selectedParent, setSelectedParent] = useState<string>('');
 
   const [formData, setFormData] = useState<ListingFormData>({
     listingType: '',
@@ -235,7 +235,6 @@ export default function CreateListingWizard() {
       imageAltText: '',
       additionalImages: [],
     });
-    setSelectedParent('');
     setCurrentStep(1);
   };
 
@@ -495,13 +494,12 @@ export default function CreateListingWizard() {
                   onChange={(e) => {
                     const parentId = e.target.value;
                     setFormData(prev => ({ ...prev, parentCategory: parentId, childCategory: '' }));
-                    setSelectedParent(parentId);
                   }}
                   className="w-full px-4 py-3 border border-gray-300 dark:border-gray-700 rounded-xl bg-gray-50 dark:bg-zinc-800 focus:outline-none focus:ring-2 focus:ring-pink-500"
                 >
                   <option value="">Select a parent category...</option>
-                  {PARENT_CATEGORIES.map((cat) => (
-                    <option key={cat.id} value={cat.id}>{cat.name}</option>
+                  {categories.map((cat) => (
+                    <option key={cat.id} value={cat.slug}>{cat.name}</option>
                   ))}
                 </select>
               </div>
@@ -510,20 +508,20 @@ export default function CreateListingWizard() {
                 <div className="animate-in slide-in-from-top duration-300">
                   <label className="block text-sm font-semibold mb-3">Subcategory *</label>
                   <div className="grid grid-cols-2 gap-3">
-                    {PARENT_CATEGORIES
-                      .find(c => c.id === formData.parentCategory)
-                      ?.subcategories.map((sub) => (
+                    {categories
+                      .find(c => c.slug === formData.parentCategory)
+                      ?.subCategories?.map((sub) => (
                         <button
-                          key={sub}
+                          key={sub.id}
                           type="button"
-                          onClick={() => setFormData(prev => ({ ...prev, childCategory: sub }))}
+                          onClick={() => setFormData(prev => ({ ...prev, childCategory: sub.name }))}
                           className={`px-4 py-3 rounded-lg border-2 text-sm font-medium transition-all ${
-                            formData.childCategory === sub
+                            formData.childCategory === sub.name
                               ? 'border-pink-500 bg-pink-50 dark:bg-pink-900/20 text-pink-600 dark:text-pink-400'
                               : 'border-gray-200 dark:border-gray-700 hover:border-pink-300'
                           }`}
                         >
-                          {sub}
+                          {sub.name}
                         </button>
                       ))}
                   </div>
