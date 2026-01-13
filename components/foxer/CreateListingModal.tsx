@@ -1,558 +1,627 @@
-import React, { useState, useMemo } from 'react';
-import { useCategories } from '@/hooks/data/useCategories';
+"use client";
+
+import React, { useState } from 'react';
+import { useRouter } from 'next/navigation';
 
 interface CreateListingModalProps {
   isOpen: boolean;
   onClose: () => void;
 }
 
-const STEPS = [
-  { id: 1, label: 'Type' },
-  { id: 2, label: 'Category' },
-  { id: 3, label: 'Basic Info' },
-  { id: 4, label: 'Location' },
-  { id: 5, label: 'Pricing' },
-  { id: 6, label: 'Final Details' },
+// --- Mock Data for Creator Assets ---
+const RESOURCE_CATEGORIES = [
+  { id: 'venue', label: 'Venues', icon: 'apartment' },
+  { id: 'talent', label: 'Talent', icon: 'groups' },
+  { id: 'service', label: 'Services', icon: 'room_service' },
+  { id: 'equipment', label: 'Equipment', icon: 'speaker' },
+  { id: 'vibe', label: 'Vibe Elements', icon: 'shutter_speed' },
 ];
 
-const AMENITIES = [
-  'WiFi', 'Air Conditioning', 'Parking', 'Kitchen', 'Audio System', 'Projector', 'Tables & Chairs', 'Stage', 'Dance Floor', 'Bar Area'
+const AVAILABLE_RESOURCES = {
+  venue: [
+    { id: 'v1', name: 'Skyline Loft', cost: 15000, icon: 'location_city', desc: 'Modern rooftop with city views. 50pax capacity.' },
+    { id: 'v2', name: 'The Bunker', cost: 25000, icon: 'warehouse', desc: 'Underground industrial space. 200pax capacity.' },
+    { id: 'v3', name: 'Secret Garden', cost: 18000, icon: 'forest', desc: 'Lush outdoor setting in the city. 80pax.' },
+    { id: 'v4', name: 'Neon Studio', cost: 12000, icon: 'palette', desc: 'Cyberpunk themed photo studio. 30pax.' },
+  ],
+  talent: [
+    { id: 't1', name: 'DJ K-OS', cost: 8000, icon: 'music_note', desc: 'Techno & House specialist. 4 hour set.' },
+    { id: 't2', name: 'Mixologist Marco', cost: 5000, icon: 'local_bar', desc: 'Custom cocktail menu creation + service.' },
+    { id: 't3', name: 'Visuals by Sarah', cost: 6000, icon: 'movie_filter', desc: 'Projection mapping and live visuals.' },
+    { id: 't4', name: 'Host/Emcee', cost: 3500, icon: 'mic', desc: 'Engaging host to keep the energy up.' },
+  ],
+  service: [
+    { id: 's1', name: 'Full Catering', cost: 20000, icon: 'restaurant', desc: 'Buffet style dinner for 50 pax.' },
+    { id: 's2', name: 'Security Detail', cost: 4000, icon: 'security', desc: '2 bouncers for 4 hours.' },
+    { id: 's3', name: 'Valet Service', cost: 3000, icon: 'local_parking', desc: 'Professional parking management.' },
+    { id: 's4', name: 'Cleanup Crew', cost: 2500, icon: 'cleaning_services', desc: 'Post-event cleaning service.' },
+  ],
+  equipment: [
+    { id: 'e1', name: 'Funktion-One System', cost: 15000, icon: 'speaker_group', desc: 'Club standard audio setup.' },
+    { id: 'e2', name: 'Laser Rig', cost: 5000, icon: 'light_mode', desc: '3-point laser setup with controller.' },
+    { id: 'e3', name: 'Fog Machines', cost: 2000, icon: 'cloud', desc: 'Heavy fog for atmosphere.' },
+    { id: 'e4', name: 'Photo Booth', cost: 4500, icon: 'camera_alt', desc: 'Digital booth with instant sharing.' },
+  ],
+  vibe: [
+    { id: 'vb1', name: 'Neon Signage', cost: 1500, icon: 'bolt', desc: 'Custom neon signs for photo ops.' },
+    { id: 'vb2', name: 'Bean Bags', cost: 1000, icon: 'chair', desc: 'Chill zone seating.' },
+    { id: 'vb3', name: 'Art Installation', cost: 5000, icon: 'palette', desc: 'Centerpiece art structure.' },
+  ]
+};
+
+// Landing Page Categories
+const EVENT_CATEGORIES = [
+  'Festivals & Fairs',
+  'Classes & Workshops',
+  'Live Performances',
+  'Tours & Excursions',
+  'Parties & Socials',
+  'Markets & Pop-Ups',
+  'Competitions & Games',
+  'Celebrations & Milestones'
 ];
+
+const PRESET_IMAGES = [
+  'https://images.unsplash.com/photo-1492684223066-81342ee5ff30?q=80&w=1000&auto=format&fit=crop',
+  'https://images.unsplash.com/photo-1514525253440-b393452e8d26?q=80&w=1000&auto=format&fit=crop',
+  'https://images.unsplash.com/photo-1533174072545-e8d4aa97edf9?q=80&w=1000&auto=format&fit=crop',
+  'https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?q=80&w=1000&auto=format&fit=crop',
+  'https://images.unsplash.com/photo-1545128485-c400e7702796?q=80&w=1000&auto=format&fit=crop',
+  'https://images.unsplash.com/photo-1501281668745-f7f57925c3b4?q=80&w=1000&auto=format&fit=crop'
+];
+
+interface GalleryItem {
+  id: string;
+  url: string;
+  caption: string;
+}
 
 const CreateListingModal: React.FC<CreateListingModalProps> = ({ isOpen, onClose }) => {
-  const { categories } = useCategories();
-  const [currentStep, setCurrentStep] = useState(1);
-  const [showSuccessToast, setShowSuccessToast] = useState(false);
-  const [listingType, setListingType] = useState<'Venue' | 'Equipment' | 'Catering' | ''>('');
+  const router = useRouter();
+  const [activeCategory, setActiveCategory] = useState('venue');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [isDragOver, setIsDragOver] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showGuide, setShowGuide] = useState(true);
   
-  // Form State
-  const [formData, setFormData] = useState({
-    parentCategory: '',
-    subcategory: '',
-    title: '',
-    description: '',
-    address: '',
-    city: '',
-    state: '',
-    capacity: '',
-    amenities: [] as string[],
-    basePrice: '',
-    currency: 'PHP (₱)',
-    priceUnit: 'Per Hour',
-    availableDays: [] as string[],
-    minBooking: '',
-    maxBooking: '',
-    imageUrl: '',
-    imageAlt: '',
-    requirements: '',
-    cancellationPolicy: ''
-  });
+  // Builder State
+  const [eventTitle, setEventTitle] = useState('');
+  const [description, setDescription] = useState('');
+  const [category, setCategory] = useState('');
+  const [date, setDate] = useState('');
+  const [location, setLocation] = useState('');
+  
+  // Gallery State (Cover + 4 images)
+  const [gallery, setGallery] = useState<GalleryItem[]>([
+    { id: '1', url: PRESET_IMAGES[0], caption: 'Main Event View' }
+  ]);
+  
+  const [baseItems, setBaseItems] = useState<any[]>([]);
+  const [upsellItems, setUpsellItems] = useState<any[]>([]);
+  const [targetMargin, setTargetMargin] = useState(20); // Percentage
 
-  // Derived subcategories based on selected parent category
-  const activeSubcategories = useMemo(() => {
-    const parent = categories.find(c => c.name === formData.parentCategory);
-    return parent?.subCategories || [];
-  }, [formData.parentCategory, categories]);
-
+  // Drag State
+  const [draggedItem, setDraggedItem] = useState<any>(null);
+  
   if (!isOpen) return null;
 
-  const handleNext = () => {
-    if (currentStep < 6) {
-      setCurrentStep(prev => prev + 1);
-    } else {
-      handleSubmit();
-    }
+  const getFilteredResources = () => {
+    const resources = AVAILABLE_RESOURCES[activeCategory as keyof typeof AVAILABLE_RESOURCES] || [];
+    if (!searchQuery) return resources;
+    return resources.filter(r => r.name.toLowerCase().includes(searchQuery.toLowerCase()));
   };
 
-  const handleBack = () => {
-    if (currentStep > 1) {
-      setCurrentStep(prev => prev - 1);
-    } else {
-      // Logic for saving as draft could go here
-      const confirm = window.confirm("Save this listing as a draft?");
-      if (confirm) {
-        // Simulating save draft API call
-        console.log("Saved as draft:", { ...formData, type: listingType, status: 'Draft' });
-        onClose();
+  const handleDragStart = (e: React.DragEvent, item: any) => {
+    setDraggedItem(item);
+    e.dataTransfer.effectAllowed = 'copy';
+  };
+
+  const handleDragOver = (e: React.DragEvent, zone: 'base' | 'upsell') => {
+    e.preventDefault();
+    setIsDragOver(true);
+  };
+
+  const handleDrop = (e: React.DragEvent, zone: 'base' | 'upsell') => {
+    e.preventDefault();
+    setIsDragOver(false);
+    
+    if (draggedItem) {
+      if (zone === 'base') {
+        if (!baseItems.find(i => i.id === draggedItem.id)) {
+          setBaseItems(prev => [...prev, draggedItem]);
+        }
       } else {
-        onClose();
+        if (!upsellItems.find(i => i.id === draggedItem.id)) {
+          setUpsellItems(prev => [...prev, draggedItem]);
+        }
       }
     }
+    setDraggedItem(null);
   };
 
-  const handleSubmit = () => {
-    // Simulating API submission
-    // Status is set to 'Inactive' pending admin approval
-    const finalPayload = {
-      ...formData,
-      type: listingType,
-      status: 'Inactive', // Pending Admin Approval
-      submittedAt: new Date().toISOString()
-    };
-    console.log("Submitted for approval:", finalPayload);
-    
-    setShowSuccessToast(true);
+  const removeItem = (id: string, zone: 'base' | 'upsell') => {
+    if (zone === 'base') {
+      setBaseItems(prev => prev.filter(i => i.id !== id));
+    } else {
+      setUpsellItems(prev => prev.filter(i => i.id !== id));
+    }
+  };
+
+  const addImageToGallery = () => {
+    // Simulating upload by cycling presets
+    const nextImgUrl = PRESET_IMAGES[gallery.length % PRESET_IMAGES.length];
+    const newItem = { id: Date.now().toString(), url: nextImgUrl, caption: '' };
+    setGallery([...gallery, newItem]);
+  };
+
+  const removeImage = (id: string) => {
+    if (gallery.length <= 1) return; // Keep at least one
+    setGallery(gallery.filter(i => i.id !== id));
+  };
+
+  const updateImageCaption = (id: string, newCaption: string) => {
+    setGallery(prev => prev.map(img => img.id === id ? { ...img, caption: newCaption } : img));
+  };
+
+  const calculateFinancials = () => {
+    const baseCost = baseItems.reduce((acc, item) => acc + item.cost, 0);
+    const suggestedPrice = baseCost * (1 + targetMargin / 100);
+    return { baseCost, suggestedPrice };
+  };
+
+  const { baseCost, suggestedPrice } = calculateFinancials();
+
+  const handlePublish = () => {
+    setIsSubmitting(true);
     setTimeout(() => {
-      setShowSuccessToast(false);
-      onClose();
-      setCurrentStep(1); // Reset
-    }, 3000);
-  };
-
-  const toggleAmenity = (amenity: string) => {
-    setFormData(prev => ({
-      ...prev,
-      amenities: prev.amenities.includes(amenity)
-        ? prev.amenities.filter(a => a !== amenity)
-        : [...prev.amenities, amenity]
-    }));
-  };
-
-  const toggleDay = (day: string) => {
-    setFormData(prev => ({
-      ...prev,
-      availableDays: prev.availableDays.includes(day)
-        ? prev.availableDays.filter(d => d !== day)
-        : [...prev.availableDays, day]
-    }));
-  };
-
-  const updateField = (field: string, value: string | string[]) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
+      onClose(); // In modal context, we close rather than navigate away
+      // router.push('/foxer'); // Optional: redirect if desired by user, but Close is safer for modal
+    }, 2000);
   };
 
   return (
-    <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/90 backdrop-blur-md overflow-y-auto">
-      {/* Success Toast */}
-      {showSuccessToast && (
-        <div className="fixed top-24 left-1/2 -translate-x-1/2 bg-surface/90 border border-accent/30 shadow-[0_0_30px_rgba(204,255,0,0.3)] rounded-2xl p-4 flex items-center gap-4 z-[70] animate-in fade-in slide-in-from-top-4 max-w-lg backdrop-blur-xl">
-          <div className="h-10 w-10 rounded-full bg-accent flex items-center justify-center text-black shrink-0">
-            <span className="material-symbols-outlined">check</span>
-          </div>
+    <div className="fixed inset-0 z-[60] bg-[#02040a] text-white flex flex-col font-body">
+      {/* Header */}
+      <header className="h-20 border-b border-white/5 flex items-center justify-between px-6 bg-[#0f111a]/80 backdrop-blur-md sticky top-0 z-20">
+        <div className="flex items-center gap-4">
+          <button onClick={onClose} className="h-10 w-10 flex items-center justify-center rounded-full hover:bg-white/10 transition-colors">
+            <span className="material-symbols-outlined">arrow_back</span>
+          </button>
           <div>
-            <h4 className="font-bold text-white text-sm">Thank you for submitting your listing!</h4>
-            <p className="text-xs text-gray-300">Our admin team will review and approve it shortly.</p>
+            <h2 className="font-display font-bold text-xl leading-none flex items-center gap-2">
+              Event Studio <span className="px-2 py-0.5 rounded bg-accent/20 text-accent text-[10px] uppercase tracking-wider">Beta</span>
+            </h2>
+            <div className="flex items-center gap-2 text-xs text-text-muted mt-1">
+               <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
+               {eventTitle || 'Untitled Event'} (Draft)
+            </div>
           </div>
         </div>
-      )}
-
-      <div className="bg-[#0f111a] border border-white/10 text-white w-full max-w-3xl rounded-[2rem] shadow-2xl overflow-hidden flex flex-col max-h-[90vh] relative">
-        {/* Background Gradients */}
-        <div className="absolute top-0 right-0 w-64 h-64 bg-accent/5 rounded-full blur-[80px] pointer-events-none"></div>
-        <div className="absolute bottom-0 left-0 w-64 h-64 bg-primary/10 rounded-full blur-[80px] pointer-events-none"></div>
-
-        {/* Header */}
-        <div className="p-6 border-b border-white/10 flex justify-between items-center bg-[#0f111a]/80 backdrop-blur-md sticky top-0 z-10">
-          <h2 className="text-xl font-bold font-display tracking-tight">Create Listing</h2>
-          <button onClick={handleBack} className="text-gray-400 hover:text-white transition-colors h-8 w-8 flex items-center justify-center rounded-full hover:bg-white/10">
-            <span className="material-symbols-outlined text-[20px]">close</span>
+        <div className="flex items-center gap-4">
+          <button className="px-6 py-2.5 rounded-full border border-white/10 text-sm font-bold hover:bg-white/5 transition-colors">
+            Save Draft
           </button>
-        </div>
-
-        {/* Progress Bar */}
-        <div className="px-8 pt-8 pb-4 relative z-10">
-          <div className="flex justify-between items-center relative">
-            {/* Connecting Lines */}
-            <div className="absolute top-1/2 left-0 w-full h-0.5 bg-white/10 -z-10 rounded-full"></div>
-            <div 
-              className="absolute top-1/2 left-0 h-0.5 bg-accent -z-10 rounded-full transition-all duration-500 ease-out shadow-[0_0_10px_#ccff00]"
-              style={{ width: `${((currentStep - 1) / (STEPS.length - 1)) * 100}%` }}
-            ></div>
-
-            {STEPS.map((step) => {
-              const isActive = currentStep >= step.id;
-              const isCurrent = currentStep === step.id;
-              
-              return (
-                <div key={step.id} className="flex flex-col items-center gap-2 px-2">
-                  <div 
-                    className={`h-8 w-8 rounded-full flex items-center justify-center text-xs font-bold transition-all duration-300 border-2 ${
-                      isActive 
-                        ? 'bg-accent border-accent text-black shadow-[0_0_15px_rgba(204,255,0,0.5)]' 
-                        : 'bg-[#0f111a] border-white/20 text-gray-500'
-                    }`}
-                  >
-                    {isActive ? <span className="material-symbols-outlined text-[16px]">check</span> : step.id}
-                  </div>
-                  <span className={`text-[10px] font-bold uppercase tracking-wider transition-colors ${isCurrent ? 'text-white' : 'text-gray-600'}`}>
-                    {step.label}
-                  </span>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-
-        {/* Content */}
-        <div className="flex-1 overflow-y-auto p-6 md:p-8 relative z-10 custom-scrollbar">
-          
-          {/* Step 1: Type */}
-          {currentStep === 1 && (
-            <div className="animate-in fade-in slide-in-from-right-4 duration-300">
-              <h3 className="text-accent font-bold text-lg mb-2">What would you like to list?</h3>
-              <p className="text-gray-400 text-sm mb-8">Choose the type of listing you want to create</p>
-              
-              <div className="grid md:grid-cols-3 gap-4">
-                {[
-                  { id: 'Venue', icon: 'apartment', desc: 'List your space for events, meetings, or gatherings' },
-                  { id: 'Equipment', icon: 'inventory_2', desc: 'Rent out event equipment, tools, or supplies' },
-                  { id: 'Catering', icon: 'restaurant_menu', desc: 'Offer catering services for events and occasions' }
-                ].map((type) => (
-                  <div 
-                    key={type.id}
-                    onClick={() => setListingType(type.id as 'Venue' | 'Equipment' | 'Catering')}
-                    className={`cursor-pointer rounded-2xl border p-6 flex flex-col items-center text-center transition-all hover:scale-[1.02] ${
-                      listingType === type.id 
-                        ? 'border-accent bg-accent/10 shadow-[0_0_20px_rgba(204,255,0,0.15)]' 
-                        : 'border-white/10 bg-white/5 hover:border-white/20 hover:bg-white/10'
-                    }`}
-                  >
-                    <div className={`h-16 w-16 rounded-full flex items-center justify-center mb-4 transition-colors ${
-                      listingType === type.id ? 'bg-accent text-black shadow-lg' : 'bg-white/10 text-gray-400'
-                    }`}>
-                      <span className="material-symbols-outlined text-3xl">{type.icon}</span>
-                    </div>
-                    <h4 className="font-bold text-lg mb-2 text-white">{type.id}</h4>
-                    <p className="text-xs text-gray-400 leading-relaxed">{type.desc}</p>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Step 2: Category */}
-          {currentStep === 2 && (
-            <div className="animate-in fade-in slide-in-from-right-4 duration-300">
-              <h3 className="text-accent font-bold text-lg mb-2">Choose Event Category</h3>
-              <p className="text-gray-400 text-sm mb-6">Select the category that best describes your venue</p>
-
-              <div className="space-y-6">
-                <div>
-                  <label className="block text-xs font-bold text-gray-400 uppercase mb-2 ml-1">Parent Category *</label>
-                  <div className="relative">
-                    <select 
-                      value={formData.parentCategory}
-                      onChange={(e) => updateField('parentCategory', e.target.value)}
-                      className="w-full rounded-xl border border-white/10 bg-white/5 py-4 px-4 text-sm text-white focus:border-accent focus:ring-1 focus:ring-accent outline-none transition-all appearance-none cursor-pointer hover:bg-white/10"
-                    >
-                      <option value="" className="bg-[#0f111a] text-gray-400">Select a parent category...</option>
-                      {categories.map(cat => (
-                        <option key={cat.id} value={cat.name} className="bg-[#0f111a] text-white">{cat.name}</option>
-                      ))}
-                    </select>
-                    <span className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none material-symbols-outlined">expand_more</span>
-                  </div>
-                </div>
-
-                {formData.parentCategory && (
-                  <div className="animate-in fade-in slide-in-from-top-2">
-                    <label className="block text-xs font-bold text-gray-400 uppercase mb-2 ml-1">Subcategory *</label>
-                    <div className="grid grid-cols-2 gap-3">
-                      {activeSubcategories.length > 0 ? (
-                        activeSubcategories.map(sub => (
-                          <button
-                            key={sub.id}
-                            onClick={() => updateField('subcategory', sub.name)}
-                            className={`py-3 px-4 rounded-xl border text-sm font-medium transition-all ${
-                              formData.subcategory === sub.name 
-                                ? 'border-accent bg-accent/10 text-accent shadow-[0_0_15px_rgba(204,255,0,0.15)]' 
-                                : 'border-white/10 bg-white/5 text-gray-400 hover:bg-white/10 hover:text-white'
-                            }`}
-                          >
-                            {sub.name}
-                          </button>
-                        ))
-                      ) : (
-                        <p className="text-gray-500 text-sm col-span-2">No subcategories available.</p>
-                      )}
-                    </div>
-                  </div>
-                )}
-              </div>
-            </div>
-          )}
-
-          {/* Step 3: Basic Info */}
-          {currentStep === 3 && (
-            <div className="animate-in fade-in slide-in-from-right-4 duration-300">
-              <h3 className="text-accent font-bold text-lg mb-6">Basic Information</h3>
-              
-              <div className="space-y-6">
-                <div>
-                  <label className="block text-xs font-bold text-gray-400 uppercase mb-2 ml-1">Listing Title *</label>
-                  <input 
-                    type="text" 
-                    value={formData.title}
-                    onChange={(e) => updateField('title', e.target.value)}
-                    placeholder="Give your venue a catchy title"
-                    className="w-full rounded-xl border border-white/10 bg-white/5 py-3 px-4 text-sm text-white focus:border-accent focus:ring-1 focus:ring-accent outline-none transition-all placeholder:text-white/20"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-xs font-bold text-gray-400 uppercase mb-2 ml-1">Description *</label>
-                  <textarea 
-                    value={formData.description}
-                    onChange={(e) => updateField('description', e.target.value)}
-                    placeholder="Describe your listing in detail. What makes it special?"
-                    className="w-full h-40 rounded-xl border border-white/10 bg-white/5 py-3 px-4 text-sm text-white focus:border-accent focus:ring-1 focus:ring-accent outline-none transition-all placeholder:text-white/20 resize-none"
-                  ></textarea>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Step 4: Location */}
-          {currentStep === 4 && (
-            <div className="animate-in fade-in slide-in-from-right-4 duration-300">
-              <h3 className="text-accent font-bold text-lg mb-6">Venue Location & Details</h3>
-              
-              <div className="space-y-6">
-                <div>
-                  <label className="block text-xs font-bold text-gray-400 uppercase mb-2 ml-1">Street Address *</label>
-                  <input 
-                    type="text" 
-                    value={formData.address}
-                    onChange={(e) => updateField('address', e.target.value)}
-                    placeholder="123 Main Street"
-                    className="w-full rounded-xl border border-white/10 bg-white/5 py-3 px-4 text-sm text-white focus:border-accent focus:ring-1 focus:ring-accent outline-none transition-all placeholder:text-white/20"
-                  />
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-xs font-bold text-gray-400 uppercase mb-2 ml-1">City *</label>
-                    <input 
-                      type="text" 
-                      value={formData.city}
-                      onChange={(e) => updateField('city', e.target.value)}
-                      placeholder="Manila"
-                      className="w-full rounded-xl border border-white/10 bg-white/5 py-3 px-4 text-sm text-white focus:border-accent focus:ring-1 focus:ring-accent outline-none transition-all placeholder:text-white/20"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-bold text-gray-400 uppercase mb-2 ml-1">State/Province *</label>
-                    <input 
-                      type="text" 
-                      value={formData.state}
-                      onChange={(e) => updateField('state', e.target.value)}
-                      placeholder="Metro Manila"
-                      className="w-full rounded-xl border border-white/10 bg-white/5 py-3 px-4 text-sm text-white focus:border-accent focus:ring-1 focus:ring-accent outline-none transition-all placeholder:text-white/20"
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-xs font-bold text-gray-400 uppercase mb-2 ml-1">Capacity (people)</label>
-                  <input 
-                    type="number" 
-                    value={formData.capacity}
-                    onChange={(e) => updateField('capacity', e.target.value)}
-                    placeholder="How many people can this venue accommodate?"
-                    className="w-full rounded-xl border border-white/10 bg-white/5 py-3 px-4 text-sm text-white focus:border-accent focus:ring-1 focus:ring-accent outline-none transition-all placeholder:text-white/20"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-xs font-bold text-gray-400 uppercase mb-2 ml-1">Amenities & Features</label>
-                  <div className="grid grid-cols-2 gap-3">
-                    {AMENITIES.map(amenity => (
-                      <button 
-                        key={amenity}
-                        onClick={() => toggleAmenity(amenity)}
-                        className={`py-2 px-3 rounded-lg border text-xs font-medium transition-all ${
-                          formData.amenities.includes(amenity)
-                            ? 'border-accent bg-accent/10 text-accent'
-                            : 'border-white/10 bg-white/5 text-gray-400 hover:bg-white/10 hover:text-white'
-                        }`}
-                      >
-                        {amenity}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Step 5: Pricing */}
-          {currentStep === 5 && (
-            <div className="animate-in fade-in slide-in-from-right-4 duration-300">
-              <h3 className="text-accent font-bold text-lg mb-6">Pricing & Availability</h3>
-              
-              <div className="space-y-6">
-                <div>
-                  <label className="block text-xs font-bold text-gray-400 uppercase mb-2 ml-1">Base Price *</label>
-                  <input 
-                    type="number" 
-                    value={formData.basePrice}
-                    onChange={(e) => updateField('basePrice', e.target.value)}
-                    placeholder="0.00"
-                    className="w-full rounded-xl border border-white/10 bg-white/5 py-3 px-4 text-sm text-white focus:border-accent focus:ring-1 focus:ring-accent outline-none transition-all placeholder:text-white/20"
-                  />
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-xs font-bold text-gray-400 uppercase mb-2 ml-1">Currency</label>
-                    <div className="relative">
-                      <select 
-                        value={formData.currency}
-                        onChange={(e) => updateField('currency', e.target.value)}
-                        className="w-full rounded-xl border border-white/10 bg-white/5 py-3 px-4 text-sm text-white focus:border-accent focus:ring-1 focus:ring-accent outline-none appearance-none cursor-pointer hover:bg-white/10"
-                      >
-                        <option className="bg-[#0f111a]">PHP (₱)</option>
-                        <option className="bg-[#0f111a]">USD ($)</option>
-                      </select>
-                      <span className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none material-symbols-outlined">expand_more</span>
-                    </div>
-                  </div>
-                  <div>
-                    <label className="block text-xs font-bold text-gray-400 uppercase mb-2 ml-1">Price Unit</label>
-                    <div className="relative">
-                      <select 
-                        value={formData.priceUnit}
-                        onChange={(e) => updateField('priceUnit', e.target.value)}
-                        className="w-full rounded-xl border border-white/10 bg-white/5 py-3 px-4 text-sm text-white focus:border-accent focus:ring-1 focus:ring-accent outline-none appearance-none cursor-pointer hover:bg-white/10"
-                      >
-                        <option className="bg-[#0f111a]">Per Hour</option>
-                        <option className="bg-[#0f111a]">Per Day</option>
-                        <option className="bg-[#0f111a]">Per Event</option>
-                      </select>
-                      <span className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none material-symbols-outlined">expand_more</span>
-                    </div>
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-xs font-bold text-gray-400 uppercase mb-2 ml-1">Available Days</label>
-                  <div className="flex flex-wrap gap-2">
-                    {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map(day => (
-                      <button 
-                        key={day}
-                        onClick={() => toggleDay(day)}
-                        className={`flex-1 min-w-[60px] py-2 rounded-lg border text-xs font-bold transition-all ${
-                          formData.availableDays.includes(day)
-                            ? 'border-accent bg-accent/10 text-accent'
-                            : 'border-white/10 bg-white/5 text-gray-400 hover:bg-white/10 hover:text-white'
-                        }`}
-                      >
-                        {day}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-xs font-bold text-gray-400 uppercase mb-2 ml-1">Min Booking (hours)</label>
-                    <input 
-                      type="number" 
-                      value={formData.minBooking}
-                      onChange={(e) => updateField('minBooking', e.target.value)}
-                      placeholder="e.g., 2"
-                      className="w-full rounded-xl border border-white/10 bg-white/5 py-3 px-4 text-sm text-white focus:border-accent focus:ring-1 focus:ring-accent outline-none transition-all placeholder:text-white/20"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-bold text-gray-400 uppercase mb-2 ml-1">Max Booking (hours)</label>
-                    <input 
-                      type="number" 
-                      value={formData.maxBooking}
-                      onChange={(e) => updateField('maxBooking', e.target.value)}
-                      placeholder="e.g., 24"
-                      className="w-full rounded-xl border border-white/10 bg-white/5 py-3 px-4 text-sm text-white focus:border-accent focus:ring-1 focus:ring-accent outline-none transition-all placeholder:text-white/20"
-                    />
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Step 6: Final Details */}
-          {currentStep === 6 && (
-            <div className="animate-in fade-in slide-in-from-right-4 duration-300">
-              <h3 className="text-accent font-bold text-lg mb-6">Final Details</h3>
-              
-              <div className="space-y-6">
-                <div>
-                  <label className="block text-xs font-bold text-gray-400 uppercase mb-2 ml-1">Primary Image URL</label>
-                  <input 
-                    type="text" 
-                    value={formData.imageUrl}
-                    onChange={(e) => updateField('imageUrl', e.target.value)}
-                    placeholder="https://example.com/image.jpg"
-                    className="w-full rounded-xl border border-white/10 bg-white/5 py-3 px-4 text-sm text-white focus:border-accent focus:ring-1 focus:ring-accent outline-none transition-all placeholder:text-white/20"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-xs font-bold text-gray-400 uppercase mb-2 ml-1">Image Alt Text</label>
-                  <input 
-                    type="text" 
-                    value={formData.imageAlt}
-                    onChange={(e) => updateField('imageAlt', e.target.value)}
-                    placeholder="Description of the image"
-                    className="w-full rounded-xl border border-white/10 bg-white/5 py-3 px-4 text-sm text-white focus:border-accent focus:ring-1 focus:ring-accent outline-none transition-all placeholder:text-white/20"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-xs font-bold text-gray-400 uppercase mb-2 ml-1">Requirements</label>
-                  <textarea 
-                    value={formData.requirements}
-                    onChange={(e) => updateField('requirements', e.target.value)}
-                    placeholder="What requirements or conditions apply to this listing?"
-                    className="w-full h-24 rounded-xl border border-white/10 bg-white/5 py-3 px-4 text-sm text-white focus:border-accent focus:ring-1 focus:ring-accent outline-none transition-all placeholder:text-white/20 resize-none"
-                  ></textarea>
-                </div>
-
-                <div>
-                  <label className="block text-xs font-bold text-gray-400 uppercase mb-2 ml-1">Cancellation Policy</label>
-                  <textarea 
-                    value={formData.cancellationPolicy}
-                    onChange={(e) => updateField('cancellationPolicy', e.target.value)}
-                    placeholder="Describe your cancellation and refund policy"
-                    className="w-full h-24 rounded-xl border border-white/10 bg-white/5 py-3 px-4 text-sm text-white focus:border-accent focus:ring-1 focus:ring-accent outline-none transition-all placeholder:text-white/20 resize-none"
-                  ></textarea>
-                </div>
-              </div>
-            </div>
-          )}
-        </div>
-
-        {/* Footer */}
-        <div className="p-6 border-t border-white/10 flex justify-between items-center bg-[#0f111a]/80 backdrop-blur-md sticky bottom-0 z-10">
-          <div className="flex gap-3">
-            <button 
-              onClick={handleBack}
-              className="px-6 py-3 rounded-xl border border-white/10 text-white font-bold text-sm hover:bg-white/5 transition-colors flex items-center gap-2"
-            >
-              <span className="material-symbols-outlined text-[18px]">chevron_left</span> Back
-            </button>
-            {currentStep > 1 && currentStep < 6 && (
-              <button 
-                onClick={onClose}
-                className="hidden sm:block px-6 py-3 rounded-xl border border-white/10 text-gray-400 font-bold text-sm hover:bg-white/5 hover:text-white transition-colors"
-              >
-                Save Draft
-              </button>
-            )}
-          </div>
-          
-          <span className="text-xs text-gray-500 font-medium hidden sm:block">Step {currentStep} of 6</span>
-
           <button 
-            onClick={handleNext}
-            className={`px-8 py-3 rounded-xl bg-accent text-black font-bold text-sm hover:bg-white transition-all shadow-[0_0_15px_rgba(204,255,0,0.4)] flex items-center gap-2 ${
-              (currentStep === 1 && !listingType) ? 'opacity-50 cursor-not-allowed shadow-none' : ''
-            }`}
-            disabled={currentStep === 1 && !listingType}
+            onClick={handlePublish}
+            disabled={isSubmitting}
+            className="btn-neon px-6 py-2.5 rounded-full bg-accent text-black text-sm font-bold hover:shadow-[0_0_15px_rgba(204,255,0,0.4)] transition-all flex items-center gap-2"
           >
-            {currentStep === 6 ? 'Create Listing' : 'Next'}
-            <span className="material-symbols-outlined text-[18px]">chevron_right</span>
+            {isSubmitting ? <span className="material-symbols-outlined animate-spin text-[18px]">progress_activity</span> : 'Publish Event'}
           </button>
         </div>
+      </header>
+
+      <div className="flex-1 flex overflow-hidden">
+        {/* Left Sidebar 1: Categories Strip */}
+        <nav className="w-24 flex-shrink-0 bg-[#0f111a] border-r border-white/5 flex flex-col items-center py-6 gap-4 overflow-y-auto hide-scrollbar z-20">
+          {RESOURCE_CATEGORIES.map(cat => (
+            <button
+              key={cat.id}
+              onClick={() => { setActiveCategory(cat.id); setSearchQuery(''); }}
+              className={`flex flex-col items-center justify-center w-16 h-16 rounded-2xl transition-all duration-300 group relative ${
+                activeCategory === cat.id 
+                  ? 'bg-accent text-black shadow-[0_0_15px_rgba(204,255,0,0.3)]' 
+                  : 'text-text-muted hover:bg-white/10 hover:text-white'
+              }`}
+            >
+              <span className="material-symbols-outlined text-2xl mb-1">{cat.icon}</span>
+              <span className="text-[9px] font-bold uppercase tracking-wider">{cat.label.split(' ')[0]}</span>
+              {activeCategory === cat.id && (
+                <div className="absolute right-[-18px] top-1/2 -translate-y-1/2 w-1 h-8 bg-accent rounded-l-full"></div>
+              )}
+            </button>
+          ))}
+        </nav>
+
+        {/* Left Sidebar 2: Asset List Drawer */}
+        <aside className="w-72 flex-shrink-0 border-r border-white/5 bg-[#0f111a]/50 flex flex-col relative z-10">
+          <div className="p-6 border-b border-white/5">
+            <h3 className="font-display font-bold text-lg text-white mb-1">
+              {RESOURCE_CATEGORIES.find(c => c.id === activeCategory)?.label}
+            </h3>
+            <p className="text-xs text-text-muted">Drag items to the canvas</p>
+          </div>
+
+          <div className="p-4">
+            <div className="relative">
+              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted material-symbols-outlined text-[18px]">search</span>
+              <input 
+                type="text" 
+                placeholder="Search assets..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full bg-white/5 border border-white/10 rounded-xl py-2.5 pl-10 pr-4 text-sm text-white focus:border-accent focus:ring-1 focus:ring-accent outline-none transition-all placeholder:text-white/20"
+              />
+            </div>
+          </div>
+
+          <div className="flex-1 overflow-y-auto p-4 space-y-3 custom-scrollbar">
+            {getFilteredResources().map(item => (
+              <div 
+                key={item.id}
+                draggable
+                onDragStart={(e) => handleDragStart(e, item)}
+                className="group bg-surface hover:bg-surface-highlight border border-white/5 hover:border-white/20 rounded-xl p-4 cursor-grab active:cursor-grabbing transition-all hover:-translate-y-1 relative shadow-sm hover:shadow-lg"
+              >
+                <div className="flex justify-between items-start mb-2">
+                  <div className="flex items-center gap-3 overflow-hidden">
+                    <div className="h-10 w-10 rounded-lg bg-white/5 flex items-center justify-center text-white/70 group-hover:text-white group-hover:bg-white/10 transition-colors shrink-0 overflow-hidden">
+                      <span className="material-symbols-outlined text-[24px]">{item.icon}</span>
+                    </div>
+                    <div className="min-w-0">
+                      <h4 className="font-bold text-white text-sm truncate">{item.name}</h4>
+                      <span className="text-xs text-accent font-mono block">₱{item.cost.toLocaleString()}</span>
+                    </div>
+                  </div>
+                  <span className="material-symbols-outlined text-white/20 text-[18px] opacity-0 group-hover:opacity-100 transition-opacity shrink-0 ml-2">drag_indicator</span>
+                </div>
+                <p className="text-[10px] text-text-muted line-clamp-2 leading-relaxed">{item.desc}</p>
+              </div>
+            ))}
+          </div>
+        </aside>
+
+        {/* Center: Canvas / Drop Zones */}
+        <main className="flex-1 overflow-y-auto p-8 relative bg-gradient-to-br from-[#02040a] to-[#0f111a] flex gap-8 custom-scrollbar">
+          
+          <div className="flex-1 max-w-4xl mx-auto space-y-8">
+            
+            {/* Guide Banner */}
+            {showGuide && (
+               <div className="bg-accent/10 border border-accent/20 rounded-2xl p-4 flex items-start gap-4 relative">
+                  <div className="h-8 w-8 rounded-full bg-accent text-black flex items-center justify-center font-bold shrink-0">i</div>
+                  <div>
+                     <h4 className="font-bold text-white text-sm mb-1">Welcome to the Studio</h4>
+                     <p className="text-xs text-text-muted leading-relaxed">
+                        Start by filling out your <strong>Event Header</strong> below. Upload at least <strong>5 images</strong> to show off the vibe and add descriptions for each. Select the correct category to appear on the Explore page.
+                     </p>
+                  </div>
+                  <button onClick={() => setShowGuide(false)} className="absolute top-2 right-2 text-white/30 hover:text-white transition-colors">
+                     <span className="material-symbols-outlined text-[18px]">close</span>
+                  </button>
+               </div>
+            )}
+
+            {/* Event Header Editor Card */}
+            <div className="relative rounded-[2.5rem] overflow-hidden group border border-white/10 shrink-0 shadow-2xl transition-all hover:border-white/20 bg-surface">
+                {/* Form Content */}
+                <div className="p-8">
+                   <div className="bg-black/60 backdrop-blur-xl border border-white/10 rounded-3xl p-6 shadow-2xl">
+                      <div className="flex flex-col md:flex-row gap-6 mb-6">
+                          <div className="flex-1">
+                             <label className="text-[10px] uppercase font-bold text-accent tracking-widest mb-1 block">Event Title</label>
+                             <input 
+                                type="text"
+                                value={eventTitle}
+                                onChange={(e) => setEventTitle(e.target.value)}
+                                placeholder="Enter your event title..."
+                                className="bg-transparent border-b border-white/20 p-0 pb-2 text-3xl md:text-4xl font-display font-bold text-white placeholder-white/20 focus:ring-0 focus:border-accent w-full leading-tight transition-colors"
+                             />
+                          </div>
+                          
+                          {/* Category Selector */}
+                          <div className="w-full md:w-64 shrink-0">
+                             <label className="text-[10px] uppercase font-bold text-white/50 tracking-widest mb-1 block">Landing Page Category</label>
+                             <div className="relative">
+                                <select 
+                                    value={category} 
+                                    onChange={(e) => setCategory(e.target.value)}
+                                    className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:border-accent outline-none appearance-none cursor-pointer hover:bg-white/10 transition-colors"
+                                >
+                                    <option value="" className="bg-[#0f111a] text-gray-500">Select Category...</option>
+                                    {EVENT_CATEGORIES.map(cat => (
+                                        <option key={cat} value={cat} className="bg-[#0f111a] text-white">{cat}</option>
+                                    ))}
+                                </select>
+                                <span className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none material-symbols-outlined text-white/50">expand_more</span>
+                             </div>
+                          </div>
+                      </div>
+                      
+                      <div className="flex flex-wrap gap-4 mb-6">
+                         <div className="flex-1 min-w-[200px]">
+                            <label className="text-[10px] uppercase font-bold text-white/50 tracking-widest mb-1 block">When</label>
+                            <div className="flex items-center gap-2 bg-white/5 hover:bg-white/10 px-3 py-2 rounded-lg border border-white/10 focus-within:border-accent transition-colors">
+                               <span className="material-symbols-outlined text-white/70 text-[18px]">calendar_today</span>
+                               <input 
+                                  value={date}
+                                  onChange={(e) => setDate(e.target.value)}
+                                  placeholder="e.g. Oct 24, 9PM"
+                                  className="bg-transparent border-none p-0 text-sm font-bold text-white placeholder-white/30 focus:ring-0 w-full"
+                               />
+                            </div>
+                         </div>
+                         <div className="flex-1 min-w-[200px]">
+                            <label className="text-[10px] uppercase font-bold text-white/50 tracking-widest mb-1 block">Where</label>
+                            <div className="flex items-center gap-2 bg-white/5 hover:bg-white/10 px-3 py-2 rounded-lg border border-white/10 focus-within:border-accent transition-colors">
+                               <span className="material-symbols-outlined text-white/70 text-[18px]">location_on</span>
+                               <input 
+                                  value={location}
+                                  onChange={(e) => setLocation(e.target.value)}
+                                  placeholder="e.g. BGC, Taguig"
+                                  className="bg-transparent border-none p-0 text-sm font-bold text-white placeholder-white/30 focus:ring-0 w-full"
+                               />
+                            </div>
+                         </div>
+                      </div>
+
+                      <div className="mb-6">
+                         <label className="text-[10px] uppercase font-bold text-white/50 tracking-widest mb-1 block">Description</label>
+                         <textarea 
+                            value={description}
+                            onChange={(e) => setDescription(e.target.value)}
+                            placeholder="Describe the vibe... What can guests expect?"
+                            className="bg-transparent border border-white/10 rounded-lg p-3 text-sm text-white placeholder-white/30 focus:ring-1 focus:ring-accent focus:border-accent w-full resize-none h-20 leading-relaxed hover:bg-white/5 transition-colors"
+                         />
+                      </div>
+
+                      {/* Image Gallery Grid - BENTO LAYOUT */}
+                      <div>
+                        <label className="text-[10px] uppercase font-bold text-white/50 tracking-widest mb-2 block flex justify-between">
+                            <span>Event Gallery (Min 5)</span>
+                            <span className={gallery.length < 5 ? "text-red-400" : "text-green-400"}>{gallery.length} / 5 Uploaded</span>
+                        </label>
+                        
+                        <div className="grid grid-cols-4 gap-3 auto-rows-[minmax(180px,auto)]">
+                            {gallery.map((img, idx) => (
+                                <div key={img.id} className={`relative group rounded-2xl overflow-hidden border border-white/10 ${idx === 0 ? 'col-span-2 row-span-2' : 'col-span-1'}`}>
+                                    <img src={img.url} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" alt={`Gallery ${idx}`} />
+                                    
+                                    {/* Gradient Overlay for Text Visibility */}
+                                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-60 group-hover:opacity-40 transition-opacity pointer-events-none"></div>
+                                    
+                                    {/* Cover Badge */}
+                                    {idx === 0 && (
+                                        <div className="absolute top-3 left-3 bg-accent text-black text-[10px] font-bold px-2 py-1 rounded shadow-lg z-10">Cover</div>
+                                    )}
+                                    
+                                    {/* Delete Button */}
+                                    <button 
+                                        onClick={() => removeImage(img.id)}
+                                        className="absolute top-2 right-2 p-1.5 bg-black/50 text-white rounded-full opacity-0 group-hover:opacity-100 hover:bg-red-500 transition-all z-20"
+                                    >
+                                        <span className="material-symbols-outlined text-[14px]">close</span>
+                                    </button>
+
+                                    {/* Caption Input Overlay */}
+                                    <div className="absolute bottom-0 left-0 right-0 p-3 z-10">
+                                        <input 
+                                            type="text" 
+                                            placeholder={idx === 0 ? "Cover image caption..." : "Add description..."}
+                                            value={img.caption}
+                                            onChange={(e) => updateImageCaption(img.id, e.target.value)}
+                                            className="w-full bg-white/10 backdrop-blur-md border border-white/20 rounded-lg px-3 py-2 text-xs text-white placeholder-white/50 focus:border-accent focus:bg-black/60 outline-none transition-all"
+                                        />
+                                    </div>
+                                </div>
+                            ))}
+                            
+                            {/* Add Button Logic - Takes next available slot */}
+                            {gallery.length < 5 && (
+                                <button 
+                                    onClick={addImageToGallery}
+                                    className="col-span-1 border-2 border-dashed border-white/20 rounded-2xl flex flex-col items-center justify-center text-white/30 hover:text-white hover:border-white hover:bg-white/5 transition-all aspect-square min-h-[180px]"
+                                >
+                                    <span className="material-symbols-outlined text-3xl mb-2">add_photo_alternate</span>
+                                    <span className="text-[10px] font-bold uppercase tracking-widest">Add Photo</span>
+                                </button>
+                            )}
+                        </div>
+                      </div>
+                   </div>
+                </div>
+            </div>
+
+            {/* Drop Zone: Core Package */}
+            <div 
+              onDragOver={(e) => handleDragOver(e, 'base')}
+              onDrop={(e) => handleDrop(e, 'base')}
+              className={`min-h-[200px] rounded-[2rem] border-2 border-dashed transition-all p-8 relative ${
+                isDragOver ? 'border-accent bg-accent/5' : 'border-white/10 bg-surface/30'
+              }`}
+            >
+              <div className="flex justify-between items-center mb-6">
+                <div>
+                  <h3 className="text-xl font-bold text-white flex items-center gap-2">
+                    <span className="material-symbols-outlined text-accent">package_2</span> 
+                    Core Package
+                  </h3>
+                  <p className="text-sm text-text-muted">Included in the base ticket price.</p>
+                </div>
+                <span className="bg-white/10 text-white px-3 py-1 rounded-full text-xs font-bold">{baseItems.length} Items</span>
+              </div>
+
+              {baseItems.length === 0 ? (
+                <div className="flex flex-col items-center justify-center h-40 text-text-muted pointer-events-none">
+                  <span className="material-symbols-outlined text-4xl mb-2 opacity-50">add_circle_outline</span>
+                  <p>Drop venues, talent, and core services here</p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {baseItems.map((item, idx) => (
+                    <div key={`${item.id}-${idx}`} className="bg-surface-highlight border border-white/5 rounded-2xl p-4 flex items-center justify-between group animate-in fade-in zoom-in duration-300">
+                      <div className="flex items-center gap-3">
+                        <div className="h-10 w-10 rounded-full bg-accent/10 text-accent flex items-center justify-center">
+                          <span className="material-symbols-outlined">{item.icon}</span>
+                        </div>
+                        <div>
+                          <p className="font-bold text-white text-sm">{item.name}</p>
+                          <p className="text-xs text-text-muted">Cost: ₱{item.cost.toLocaleString()}</p>
+                        </div>
+                      </div>
+                      <button onClick={() => removeItem(item.id, 'base')} className="text-red-400 opacity-0 group-hover:opacity-100 hover:bg-red-400/10 p-2 rounded-full transition-all">
+                        <span className="material-symbols-outlined text-[18px]">delete</span>
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Drop Zone: Upsells */}
+            <div 
+              onDragOver={(e) => handleDragOver(e, 'upsell')}
+              onDrop={(e) => handleDrop(e, 'upsell')}
+              className={`min-h-[150px] rounded-[2rem] border-2 border-dashed transition-all p-8 relative ${
+                isDragOver ? 'border-secondary bg-secondary/5' : 'border-white/10 bg-surface/30'
+              }`}
+            >
+              <div className="flex justify-between items-center mb-6">
+                <div>
+                  <h3 className="text-xl font-bold text-white flex items-center gap-2">
+                    <span className="material-symbols-outlined text-secondary">extension</span> 
+                    Optional Add-ons
+                  </h3>
+                  <p className="text-sm text-text-muted">Available as paid upgrades for guests.</p>
+                </div>
+                <span className="bg-white/10 text-white px-3 py-1 rounded-full text-xs font-bold">{upsellItems.length} Items</span>
+              </div>
+
+              {upsellItems.length === 0 ? (
+                <div className="flex flex-col items-center justify-center h-32 text-text-muted pointer-events-none">
+                  <span className="material-symbols-outlined text-4xl mb-2 opacity-50">monetization_on</span>
+                  <p>Drop upsells and extra amenities here</p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {upsellItems.map((item, idx) => (
+                    <div key={`${item.id}-${idx}`} className="bg-surface-highlight border border-white/5 rounded-2xl p-4 flex items-center justify-between group animate-in fade-in zoom-in duration-300">
+                      <div className="flex items-center gap-3">
+                        <div className="h-10 w-10 rounded-full bg-secondary/10 text-secondary flex items-center justify-center">
+                          <span className="material-symbols-outlined">{item.icon}</span>
+                        </div>
+                        <div>
+                          <p className="font-bold text-white text-sm">{item.name}</p>
+                          <p className="text-xs text-text-muted">Cost: ₱{item.cost.toLocaleString()}</p>
+                        </div>
+                      </div>
+                      <button onClick={() => removeItem(item.id, 'upsell')} className="text-red-400 opacity-0 group-hover:opacity-100 hover:bg-red-400/10 p-2 rounded-full transition-all">
+                        <span className="material-symbols-outlined text-[18px]">delete</span>
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        </main>
+
+        {/* Right Sidebar: Blueprint Summary */}
+        <aside className="w-96 flex-shrink-0 border-l border-white/5 bg-[#0f111a] flex flex-col shadow-2xl z-10">
+          <div className="p-6 border-b border-white/5">
+            <h3 className="font-display font-bold text-white text-lg">Event Blueprint</h3>
+            <p className="text-xs text-text-muted">Financial Overview</p>
+          </div>
+
+          <div className="flex-1 overflow-y-auto p-6 custom-scrollbar" style={{ transform: 'rotateY(180deg)' }}>
+            <div className="space-y-8" style={{ transform: 'rotateY(180deg)' }} dir="ltr">
+            {/* Cost Breakdown */}
+            <div>
+              <h4 className="text-xs font-bold text-white uppercase tracking-wider mb-4">Cost Breakdown</h4>
+              <div className="space-y-3">
+                <div className="flex justify-between text-sm">
+                  <span className="text-text-muted">Venue & Infrastructure</span>
+                  <span className="text-white font-mono">₱{baseItems.filter(i => i.icon === 'location_city' || i.icon === 'warehouse' || i.icon === 'forest').reduce((a, b) => a + b.cost, 0).toLocaleString()}</span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span className="text-text-muted">Talent & Entertainment</span>
+                  <span className="text-white font-mono">₱{baseItems.filter(i => ['music_note', 'local_bar', 'movie_filter', 'mic'].includes(i.icon)).reduce((a, b) => a + b.cost, 0).toLocaleString()}</span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span className="text-text-muted">Services & Ops</span>
+                  <span className="text-white font-mono">₱{baseItems.filter(i => ['restaurant', 'security', 'local_parking', 'cleaning_services'].includes(i.icon)).reduce((a, b) => a + b.cost, 0).toLocaleString()}</span>
+                </div>
+                <div className="h-px bg-white/10 my-2"></div>
+                <div className="flex justify-between text-sm font-bold">
+                  <span className="text-white">Total Base Cost</span>
+                  <span className="text-white font-mono">₱{baseCost.toLocaleString()}</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Pricing Strategy */}
+            <div className="bg-surface-highlight rounded-2xl p-5 border border-white/5">
+              <h4 className="text-xs font-bold text-white uppercase tracking-wider mb-4 flex items-center gap-2">
+                <span className="material-symbols-outlined text-accent text-[16px]">price_check</span> Pricing Strategy
+              </h4>
+              
+              <div className="mb-4">
+                <label className="text-xs text-text-muted block mb-2">Target Margin (%)</label>
+                <div className="flex items-center gap-3">
+                  <input 
+                    type="range" 
+                    min="0" 
+                    max="100" 
+                    value={targetMargin} 
+                    onChange={(e) => setTargetMargin(Number(e.target.value))}
+                    className="flex-1 h-2 bg-black rounded-lg appearance-none cursor-pointer accent-accent"
+                  />
+                  <span className="text-accent font-bold font-mono w-10 text-right">{targetMargin}%</span>
+                </div>
+              </div>
+
+              <div className="space-y-2 pt-2 border-t border-white/5">
+                <div className="flex justify-between items-center">
+                  <span className="text-sm text-text-muted">Suggested Price</span>
+                  <span className="text-lg font-bold text-white font-mono">₱{suggestedPrice.toLocaleString()}</span>
+                </div>
+                <p className="text-[10px] text-text-muted italic">Per guest break-even at 1 pax (Simulated)</p>
+              </div>
+            </div>
+
+            {/* Add-ons Potential */}
+            {upsellItems.length > 0 && (
+              <div>
+                <h4 className="text-xs font-bold text-secondary uppercase tracking-wider mb-3">Upsell Potential</h4>
+                <div className="flex flex-wrap gap-2">
+                  {upsellItems.map((item, idx) => (
+                    <span key={idx} className="px-2 py-1 rounded bg-secondary/10 border border-secondary/20 text-secondary text-xs">
+                      {item.name}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
+            </div>
+          </div>
+
+          <div className="p-6 border-t border-white/5 bg-[#0f111a]">
+            <div className="flex items-center gap-3 mb-4">
+               <div className="h-10 w-10 rounded-full bg-accent flex items-center justify-center text-black font-bold">
+                  {Math.round(baseCost > 0 ? 85 : 10)}%
+               </div>
+               <div>
+                  <p className="text-xs text-text-muted uppercase font-bold">Blueprint Health</p>
+                  <div className="h-1.5 w-32 bg-white/10 rounded-full mt-1 overflow-hidden">
+                     <div className={`h-full bg-accent rounded-full transition-all duration-500`} style={{ width: `${baseCost > 0 ? 85 : 10}%` }}></div>
+                  </div>
+               </div>
+            </div>
+            <button className="w-full py-3 rounded-xl border border-white/10 hover:bg-white hover:text-black transition-all text-sm font-bold text-white">
+               Preview Listing
+            </button>
+          </div>
+        </aside>
       </div>
     </div>
   );
