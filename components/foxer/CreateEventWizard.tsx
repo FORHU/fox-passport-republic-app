@@ -1,679 +1,518 @@
 "use client";
 
-import { useCreateEventModal } from "@/hooks/events/useCreateEventModal";
-import { X, Calendar, Clock, MapPin, Users, ChevronDown, DollarSign, Image as ImageIcon, FileText, ChevronRight, ChevronLeft } from "lucide-react";
-import { useState } from "react";
-import { toast } from "sonner";
-import { useCategories } from "@/hooks/data/useCategories";
-import api from "@/lib/axios";
-import { useAuthStore } from "@/store/useAuthStore";
+import React, { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 
-interface EventFormData {
-  // Basic Info
-  title: string;
-  description: string;
-  categoryId: string;
-  status: 'draft' | 'active';
-  maxAttendees: string;
-  isPublished: boolean;
+// --- Mock Data for Creator Assets ---
+const RESOURCE_CATEGORIES = [
+  { id: 'venue', label: 'Venues', icon: 'apartment' },
+  { id: 'talent', label: 'Talent', icon: 'groups' },
+  { id: 'service', label: 'Services', icon: 'room_service' },
+  { id: 'equipment', label: 'Equipment', icon: 'speaker' },
+  { id: 'vibe', label: 'Vibe Elements', icon: 'shutter_speed' },
+];
 
-  // Location
-  locationType: "in-person" | "virtual";
-  locationAddress: string;
-  city: string;
-  state: string;
-  country: string;
-  latitude: string;
-  longitude: string;
+const AVAILABLE_RESOURCES = {
+  venue: [
+    { id: 'v1', name: 'Skyline Loft', cost: 15000, icon: 'location_city', desc: 'Modern rooftop with city views. 50pax capacity.' },
+    { id: 'v2', name: 'The Bunker', cost: 25000, icon: 'warehouse', desc: 'Underground industrial space. 200pax capacity.' },
+    { id: 'v3', name: 'Secret Garden', cost: 18000, icon: 'forest', desc: 'Lush outdoor setting in the city. 80pax.' },
+    { id: 'v4', name: 'Neon Studio', cost: 12000, icon: 'palette', desc: 'Cyberpunk themed photo studio. 30pax.' },
+  ],
+  talent: [
+    { id: 't1', name: 'DJ K-OS', cost: 8000, icon: 'music_note', desc: 'Techno & House specialist. 4 hour set.' },
+    { id: 't2', name: 'Mixologist Marco', cost: 5000, icon: 'local_bar', desc: 'Custom cocktail menu creation + service.' },
+    { id: 't3', name: 'Visuals by Sarah', cost: 6000, icon: 'movie_filter', desc: 'Projection mapping and live visuals.' },
+    { id: 't4', name: 'Host/Emcee', cost: 3500, icon: 'mic', desc: 'Engaging host to keep the energy up.' },
+  ],
+  service: [
+    { id: 's1', name: 'Full Catering', cost: 20000, icon: 'restaurant', desc: 'Buffet style dinner for 50 pax.' },
+    { id: 's2', name: 'Security Detail', cost: 4000, icon: 'security', desc: '2 bouncers for 4 hours.' },
+    { id: 's3', name: 'Valet Service', cost: 3000, icon: 'local_parking', desc: 'Professional parking management.' },
+    { id: 's4', name: 'Cleanup Crew', cost: 2500, icon: 'cleaning_services', desc: 'Post-event cleaning service.' },
+  ],
+  equipment: [
+    { id: 'e1', name: 'Funktion-One System', cost: 15000, icon: 'speaker_group', desc: 'Club standard audio setup.' },
+    { id: 'e2', name: 'Laser Rig', cost: 5000, icon: 'light_mode', desc: '3-point laser setup with controller.' },
+    { id: 'e3', name: 'Fog Machines', cost: 2000, icon: 'cloud', desc: 'Heavy fog for atmosphere.' },
+    { id: 'e4', name: 'Photo Booth', cost: 4500, icon: 'camera_alt', desc: 'Digital booth with instant sharing.' },
+  ],
+  vibe: [
+    { id: 'vb1', name: 'Neon Signage', cost: 1500, icon: 'bolt', desc: 'Custom neon signs for photo ops.' },
+    { id: 'vb2', name: 'Bean Bags', cost: 1000, icon: 'chair', desc: 'Chill zone seating.' },
+    { id: 'vb3', name: 'Art Installation', cost: 5000, icon: 'palette', desc: 'Centerpiece art structure.' },
+  ]
+};
 
-  // Schedule
-  startDatetime: string;
-  endDatetime: string;
-  durationMinutes: string;
+const COVER_PRESETS = [
+  'https://images.unsplash.com/photo-1492684223066-81342ee5ff30?q=80&w=1000&auto=format&fit=crop',
+  'https://images.unsplash.com/photo-1514525253440-b393452e8d26?q=80&w=1000&auto=format&fit=crop',
+  'https://images.unsplash.com/photo-1533174072545-e8d4aa97edf9?q=80&w=1000&auto=format&fit=crop',
+  'https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?q=80&w=1000&auto=format&fit=crop'
+];
 
-  // Pricing
-  basePrice: string;
-  currency: string;
-  serviceFeePercent: string;
-  taxPercent: string;
+const EventCreationBuilder: React.FC = () => {
+  const router = useRouter();
+  const [activeCategory, setActiveCategory] = useState('venue');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [isDragOver, setIsDragOver] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showGuide, setShowGuide] = useState(true);
+  
+  // Builder State
+  const [eventTitle, setEventTitle] = useState('');
+  const [description, setDescription] = useState('');
+  const [date, setDate] = useState('');
+  const [location, setLocation] = useState('');
+  const [coverImage, setCoverImage] = useState(COVER_PRESETS[0]);
+  
+  const [baseItems, setBaseItems] = useState<any[]>([]);
+  const [upsellItems, setUpsellItems] = useState<any[]>([]);
+  const [targetMargin, setTargetMargin] = useState(20); // Percentage
 
-  // Details
-  requirements: string;
-  cancellationPolicy: string;
+  // Drag State
+  const [draggedItem, setDraggedItem] = useState<any>(null);
 
-  // Image
-  imageUrl: string;
-  imageAltText: string;
-}
-
-export default function CreateEventWizard() {
-  const { isOpen, onClose } = useCreateEventModal();
-  const { categories, loading: categoriesLoading } = useCategories();
-  const { user } = useAuthStore();
-
-  const [currentStep, setCurrentStep] = useState(1);
-  const [loading, setLoading] = useState(false);
-
-  const [formData, setFormData] = useState<EventFormData>({
-    title: '',
-    description: '',
-    categoryId: '',
-    status: 'draft',
-    maxAttendees: '',
-    isPublished: false,
-    locationType: 'in-person',
-    locationAddress: '',
-    city: '',
-    state: '',
-    country: 'Philippines',
-    latitude: '',
-    longitude: '',
-    startDatetime: '',
-    endDatetime: '',
-    durationMinutes: '',
-    basePrice: '',
-    currency: 'PHP',
-    serviceFeePercent: '10',
-    taxPercent: '0',
-    requirements: '',
-    cancellationPolicy: '',
-    imageUrl: '',
-    imageAltText: '',
-  });
-
-  const handleInputChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
-  ) => {
-    const { name, value, type } = e.target;
-
-    if (type === 'checkbox') {
-      const checked = (e.target as HTMLInputElement).checked;
-      setFormData((prev) => ({ ...prev, [name]: checked }));
-    } else {
-      setFormData((prev) => ({ ...prev, [name]: value }));
-    }
+  const getFilteredResources = () => {
+    const resources = AVAILABLE_RESOURCES[activeCategory as keyof typeof AVAILABLE_RESOURCES] || [];
+    if (!searchQuery) return resources;
+    return resources.filter(r => r.name.toLowerCase().includes(searchQuery.toLowerCase()));
   };
 
-  const handleSubmit = async () => {
-    if (!user?.id) {
-      toast.error("You must be logged in to create an event");
-      return;
-    }
+  const handleDragStart = (e: React.DragEvent, item: any) => {
+    setDraggedItem(item);
+    e.dataTransfer.effectAllowed = 'copy';
+    // Transparent drag image or default
+  };
 
-    setLoading(true);
+  const handleDragOver = (e: React.DragEvent, zone: 'base' | 'upsell') => {
+    e.preventDefault();
+    setIsDragOver(true);
+  };
 
-    try {
-      const payload = {
-        hostId: user.id,
-        categoryId: formData.categoryId || undefined,
-        title: formData.title,
-        description: formData.description,
-        status: formData.status,
-        maxAttendees: formData.maxAttendees ? parseInt(formData.maxAttendees) : undefined,
-        isPublished: formData.isPublished,
-        details: {
-          locationAddress: formData.locationAddress,
-          city: formData.city,
-          state: formData.state,
-          country: formData.country,
-          latitude: formData.latitude ? parseFloat(formData.latitude) : undefined,
-          longitude: formData.longitude ? parseFloat(formData.longitude) : undefined,
-          startDatetime: new Date(formData.startDatetime).toISOString(),
-          endDatetime: new Date(formData.endDatetime).toISOString(),
-          durationMinutes: formData.durationMinutes ? parseInt(formData.durationMinutes) : undefined,
-          requirements: formData.requirements || undefined,
-          cancellationPolicy: formData.cancellationPolicy || undefined,
-        },
-        pricing: {
-          basePrice: parseFloat(formData.basePrice),
-          currency: formData.currency,
-          serviceFeePercent: parseFloat(formData.serviceFeePercent),
-          taxPercent: parseFloat(formData.taxPercent),
-        },
-        images: formData.imageUrl ? [{
-          imageUrl: formData.imageUrl,
-          altText: formData.imageAltText || formData.title,
-          isPrimary: true,
-        }] : undefined,
-      };
-
-      const response = await api.post('/v1/events/complete', payload);
-
-      if (response.data.success) {
-        toast.success("Event created successfully!");
-        onClose();
-        // Reset form
-        setFormData({
-          title: '',
-          description: '',
-          categoryId: '',
-          status: 'draft',
-          maxAttendees: '',
-          isPublished: false,
-          locationType: 'in-person',
-          locationAddress: '',
-          city: '',
-          state: '',
-          country: 'Philippines',
-          latitude: '',
-          longitude: '',
-          startDatetime: '',
-          endDatetime: '',
-          durationMinutes: '',
-          basePrice: '',
-          currency: 'PHP',
-          serviceFeePercent: '10',
-          taxPercent: '0',
-          requirements: '',
-          cancellationPolicy: '',
-          imageUrl: '',
-          imageAltText: '',
-        });
-        setCurrentStep(1);
+  const handleDrop = (e: React.DragEvent, zone: 'base' | 'upsell') => {
+    e.preventDefault();
+    setIsDragOver(false);
+    
+    if (draggedItem) {
+      if (zone === 'base') {
+        if (!baseItems.find(i => i.id === draggedItem.id)) {
+          setBaseItems(prev => [...prev, draggedItem]);
+        }
+      } else {
+        if (!upsellItems.find(i => i.id === draggedItem.id)) {
+          setUpsellItems(prev => [...prev, draggedItem]);
+        }
       }
-    } catch (error: any) {
-      console.error('Create event error:', error);
-      toast.error(error.response?.data?.message || "Failed to create event");
-    } finally {
-      setLoading(false);
+    }
+    setDraggedItem(null);
+  };
+
+  const removeItem = (id: string, zone: 'base' | 'upsell') => {
+    if (zone === 'base') {
+      setBaseItems(prev => prev.filter(i => i.id !== id));
+    } else {
+      setUpsellItems(prev => prev.filter(i => i.id !== id));
     }
   };
 
-  const nextStep = () => {
-    if (currentStep < 5) setCurrentStep(currentStep + 1);
+  const rotateCover = () => {
+    const currentIdx = COVER_PRESETS.indexOf(coverImage);
+    setCoverImage(COVER_PRESETS[(currentIdx + 1) % COVER_PRESETS.length]);
   };
 
-  const prevStep = () => {
-    if (currentStep > 1) setCurrentStep(currentStep - 1);
+  const calculateFinancials = () => {
+    const baseCost = baseItems.reduce((acc, item) => acc + item.cost, 0);
+    const suggestedPrice = baseCost * (1 + targetMargin / 100);
+    return { baseCost, suggestedPrice };
   };
 
-  const canProceed = () => {
-    switch (currentStep) {
-      case 1:
-        return formData.title && formData.description && formData.categoryId;
-      case 2:
-        return formData.locationAddress && formData.city && formData.state;
-      case 3:
-        return formData.startDatetime && formData.endDatetime;
-      case 4:
-        return formData.basePrice;
-      case 5:
-        return true;
-      default:
-        return false;
-    }
+  const { baseCost, suggestedPrice } = calculateFinancials();
+
+  const handlePublish = () => {
+    setIsSubmitting(true);
+    setTimeout(() => {
+      router.push('/foxer');
+    }, 2000);
   };
-
-  if (!isOpen) return null;
-
-  const steps = [
-    { number: 1, title: "Basic Info", icon: <FileText className="w-4 h-4" /> },
-    { number: 2, title: "Location", icon: <MapPin className="w-4 h-4" /> },
-    { number: 3, title: "Schedule", icon: <Calendar className="w-4 h-4" /> },
-    { number: 4, title: "Pricing", icon: <DollarSign className="w-4 h-4" /> },
-    { number: 5, title: "Final Details", icon: <ImageIcon className="w-4 h-4" /> },
-  ];
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 animate-in fade-in duration-200">
-      <div className="w-full max-w-3xl bg-white dark:bg-zinc-900 text-gray-900 dark:text-white rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
+    <div className="fixed inset-0 z-[60] bg-[#02040a] text-white flex flex-col font-body">
+      {/* Header */}
+      <header className="h-20 border-b border-white/5 flex items-center justify-between px-6 bg-[#0f111a]/80 backdrop-blur-md sticky top-0 z-20">
+        <div className="flex items-center gap-4">
+          <button onClick={() => router.push('/foxer')} className="h-10 w-10 flex items-center justify-center rounded-full hover:bg-white/10 transition-colors">
+            <span className="material-symbols-outlined">arrow_back</span>
+          </button>
+          <div>
+            <h2 className="font-display font-bold text-xl leading-none flex items-center gap-2">
+              Event Studio <span className="px-2 py-0.5 rounded bg-accent/20 text-accent text-[10px] uppercase tracking-wider">Beta</span>
+            </h2>
+            <div className="flex items-center gap-2 text-xs text-text-muted mt-1">
+               <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
+               {eventTitle || 'Untitled Event'} (Draft)
+            </div>
+          </div>
+        </div>
+        <div className="flex items-center gap-4">
+          <button className="px-6 py-2.5 rounded-full border border-white/10 text-sm font-bold hover:bg-white/5 transition-colors">
+            Save Draft
+          </button>
+          <button 
+            onClick={handlePublish}
+            disabled={isSubmitting}
+            className="btn-neon px-6 py-2.5 rounded-full bg-accent text-black text-sm font-bold hover:shadow-[0_0_15px_rgba(204,255,0,0.4)] transition-all flex items-center gap-2"
+          >
+            {isSubmitting ? <span className="material-symbols-outlined animate-spin text-[18px]">progress_activity</span> : 'Publish Event'}
+          </button>
+        </div>
+      </header>
 
-        {/* Header with Steps */}
-        <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-800">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-bold">Create Event</h2>
+      <div className="flex-1 flex overflow-hidden">
+        {/* Left Sidebar 1: Categories Strip */}
+        <nav className="w-24 flex-shrink-0 bg-[#0f111a] border-r border-white/5 flex flex-col items-center py-6 gap-4 overflow-y-auto hide-scrollbar z-20">
+          {RESOURCE_CATEGORIES.map(cat => (
             <button
-              onClick={onClose}
-              className="p-1.5 rounded-full hover:bg-gray-100 dark:hover:bg-zinc-800 transition-colors"
+              key={cat.id}
+              onClick={() => { setActiveCategory(cat.id); setSearchQuery(''); }}
+              className={`flex flex-col items-center justify-center w-16 h-16 rounded-2xl transition-all duration-300 group relative ${
+                activeCategory === cat.id 
+                  ? 'bg-accent text-black shadow-[0_0_15px_rgba(204,255,0,0.3)]' 
+                  : 'text-text-muted hover:bg-white/10 hover:text-white'
+              }`}
             >
-              <X className="w-5 h-5 text-gray-500 dark:text-gray-400" />
+              <span className="material-symbols-outlined text-2xl mb-1">{cat.icon}</span>
+              <span className="text-[9px] font-bold uppercase tracking-wider">{cat.label.split(' ')[0]}</span>
+              {activeCategory === cat.id && (
+                <div className="absolute right-[-18px] top-1/2 -translate-y-1/2 w-1 h-8 bg-accent rounded-l-full"></div>
+              )}
             </button>
+          ))}
+        </nav>
+
+        {/* Left Sidebar 2: Asset List Drawer */}
+        <aside className="w-72 flex-shrink-0 border-r border-white/5 bg-[#0f111a]/50 flex flex-col relative z-10">
+          <div className="p-6 border-b border-white/5">
+            <h3 className="font-display font-bold text-lg text-white mb-1">
+              {RESOURCE_CATEGORIES.find(c => c.id === activeCategory)?.label}
+            </h3>
+            <p className="text-xs text-text-muted">Drag items to the canvas</p>
           </div>
 
-          {/* Progress Steps */}
-          <div className="flex items-center justify-between">
-            {steps.map((step, idx) => (
-              <div key={step.number} className="flex items-center flex-1">
-                <div className="flex flex-col items-center">
-                  <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm transition-all ${
-                    currentStep >= step.number
-                      ? 'bg-pink-500 text-white'
-                      : 'bg-gray-200 dark:bg-zinc-700 text-gray-500'
-                  }`}>
-                    {currentStep > step.number ? '✓' : step.number}
+          <div className="p-4">
+            <div className="relative">
+              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted material-symbols-outlined text-[18px]">search</span>
+              <input 
+                type="text" 
+                placeholder="Search assets..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full bg-white/5 border border-white/10 rounded-xl py-2.5 pl-10 pr-4 text-sm text-white focus:border-accent focus:ring-1 focus:ring-accent outline-none transition-all placeholder:text-white/20"
+              />
+            </div>
+          </div>
+
+          <div className="flex-1 overflow-y-auto p-4 space-y-3 custom-scrollbar">
+            {getFilteredResources().map(item => (
+              <div 
+                key={item.id}
+                draggable
+                onDragStart={(e) => handleDragStart(e, item)}
+                className="group bg-surface hover:bg-surface-highlight border border-white/5 hover:border-white/20 rounded-xl p-4 cursor-grab active:cursor-grabbing transition-all hover:-translate-y-1 relative shadow-sm hover:shadow-lg"
+              >
+                <div className="flex justify-between items-start mb-2">
+                  <div className="flex items-center gap-3 overflow-hidden">
+                    <div className="h-10 w-10 rounded-lg bg-white/5 flex items-center justify-center text-white/70 group-hover:text-white group-hover:bg-white/10 transition-colors shrink-0 overflow-hidden">
+                      <span className="material-symbols-outlined text-[24px]">{item.icon}</span>
+                    </div>
+                    <div className="min-w-0">
+                      <h4 className="font-bold text-white text-sm truncate">{item.name}</h4>
+                      <span className="text-xs text-accent font-mono block">₱{item.cost.toLocaleString()}</span>
+                    </div>
                   </div>
-                  <span className="text-xs mt-1 font-medium text-gray-600 dark:text-gray-400 hidden sm:block">
-                    {step.title}
-                  </span>
+                  <span className="material-symbols-outlined text-white/20 text-[18px] opacity-0 group-hover:opacity-100 transition-opacity shrink-0 ml-2">drag_indicator</span>
                 </div>
-                {idx < steps.length - 1 && (
-                  <div className={`h-1 flex-1 mx-2 rounded ${
-                    currentStep > step.number ? 'bg-pink-500' : 'bg-gray-200 dark:bg-zinc-700'
-                  }`} />
-                )}
+                <p className="text-[10px] text-text-muted line-clamp-2 leading-relaxed">{item.desc}</p>
               </div>
             ))}
           </div>
-        </div>
+        </aside>
 
-        {/* Scrollable Content */}
-        <div className="flex-1 overflow-y-auto px-6 py-6 custom-scrollbar">
+        {/* Center: Canvas / Drop Zones */}
+        <main className="flex-1 overflow-y-auto p-8 relative bg-gradient-to-br from-[#02040a] to-[#0f111a] flex gap-8">
+          
+          <div className="flex-1 max-w-4xl mx-auto space-y-8">
+            
+            {/* Guide Banner */}
+            {showGuide && (
+               <div className="bg-accent/10 border border-accent/20 rounded-2xl p-4 flex items-start gap-4 relative">
+                  <div className="h-8 w-8 rounded-full bg-accent text-black flex items-center justify-center font-bold shrink-0">i</div>
+                  <div>
+                     <h4 className="font-bold text-white text-sm mb-1">Welcome to the Studio</h4>
+                     <p className="text-xs text-text-muted leading-relaxed">
+                        Start by filling out your <strong>Event Header</strong> below (Title, Date, Location). Then, <strong>drag and drop</strong> resources from the left sidebar into the "Core Package" or "Optional Add-ons" boxes to build your offer.
+                     </p>
+                  </div>
+                  <button onClick={() => setShowGuide(false)} className="absolute top-2 right-2 text-white/30 hover:text-white transition-colors">
+                     <span className="material-symbols-outlined text-[18px]">close</span>
+                  </button>
+               </div>
+            )}
 
-          {/* Step 1: Basic Info */}
-          {currentStep === 1 && (
-            <div className="space-y-5 animate-in slide-in-from-right duration-300">
-              <div>
-                <h3 className="text-lg font-bold mb-4 text-pink-500">Step 1: Basic Information</h3>
+            {/* Event Header Editor Card */}
+            <div className="relative h-[380px] rounded-[2.5rem] overflow-hidden group border border-white/10 shrink-0 shadow-2xl transition-all hover:border-white/20">
+                <img src={coverImage} className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105 opacity-60 group-hover:opacity-80" alt="Event Cover" />
+                <div className="absolute inset-0 bg-gradient-to-t from-[#02040a] via-black/40 to-transparent"></div>
+                
+                <button onClick={rotateCover} className="absolute top-6 right-6 bg-black/50 backdrop-blur-md text-white px-4 py-2 rounded-full hover:bg-white hover:text-black transition-all z-20 border border-white/10 group/btn shadow-lg flex items-center gap-2">
+                   <span className="material-symbols-outlined text-[18px]">image</span>
+                   <span className="text-xs font-bold">Change Cover</span>
+                </button>
+
+                <div className="absolute bottom-0 left-0 right-0 p-8 z-10 flex flex-col gap-4">
+                   <div className="bg-black/40 backdrop-blur-xl border border-white/10 rounded-2xl p-6">
+                      <div className="mb-4">
+                         <label className="text-[10px] uppercase font-bold text-accent tracking-widest mb-1 block">Event Title</label>
+                         <input 
+                            type="text"
+                            value={eventTitle}
+                            onChange={(e) => setEventTitle(e.target.value)}
+                            placeholder="Enter your event title..."
+                            className="bg-transparent border-b border-white/20 p-0 pb-2 text-3xl md:text-4xl font-display font-bold text-white placeholder-white/20 focus:ring-0 focus:border-accent w-full leading-tight transition-colors"
+                         />
+                      </div>
+                      
+                      <div className="flex flex-wrap gap-4 mb-4">
+                         <div className="flex-1 min-w-[200px]">
+                            <label className="text-[10px] uppercase font-bold text-white/50 tracking-widest mb-1 block">When</label>
+                            <div className="flex items-center gap-2 bg-white/5 hover:bg-white/10 px-3 py-2 rounded-lg border border-white/10 focus-within:border-accent transition-colors">
+                               <span className="material-symbols-outlined text-white/70 text-[18px]">calendar_today</span>
+                               <input 
+                                  value={date}
+                                  onChange={(e) => setDate(e.target.value)}
+                                  placeholder="e.g. Oct 24, 9PM"
+                                  className="bg-transparent border-none p-0 text-sm font-bold text-white placeholder-white/30 focus:ring-0 w-full"
+                               />
+                            </div>
+                         </div>
+                         <div className="flex-1 min-w-[200px]">
+                            <label className="text-[10px] uppercase font-bold text-white/50 tracking-widest mb-1 block">Where</label>
+                            <div className="flex items-center gap-2 bg-white/5 hover:bg-white/10 px-3 py-2 rounded-lg border border-white/10 focus-within:border-accent transition-colors">
+                               <span className="material-symbols-outlined text-white/70 text-[18px]">location_on</span>
+                               <input 
+                                  value={location}
+                                  onChange={(e) => setLocation(e.target.value)}
+                                  placeholder="e.g. BGC, Taguig"
+                                  className="bg-transparent border-none p-0 text-sm font-bold text-white placeholder-white/30 focus:ring-0 w-full"
+                               />
+                            </div>
+                         </div>
+                      </div>
+
+                      <div>
+                         <label className="text-[10px] uppercase font-bold text-white/50 tracking-widest mb-1 block">Description</label>
+                         <textarea 
+                            value={description}
+                            onChange={(e) => setDescription(e.target.value)}
+                            placeholder="Describe the vibe..."
+                            className="bg-transparent border border-white/10 rounded-lg p-3 text-sm text-white placeholder-white/30 focus:ring-1 focus:ring-accent focus:border-accent w-full resize-none h-20 leading-relaxed hover:bg-white/5 transition-colors"
+                         />
+                      </div>
+                   </div>
+                </div>
+            </div>
+
+            {/* Drop Zone: Core Package */}
+            <div 
+              onDragOver={(e) => handleDragOver(e, 'base')}
+              onDrop={(e) => handleDrop(e, 'base')}
+              className={`min-h-[200px] rounded-[2rem] border-2 border-dashed transition-all p-8 relative ${
+                isDragOver ? 'border-accent bg-accent/5' : 'border-white/10 bg-surface/30'
+              }`}
+            >
+              <div className="flex justify-between items-center mb-6">
+                <div>
+                  <h3 className="text-xl font-bold text-white flex items-center gap-2">
+                    <span className="material-symbols-outlined text-accent">package_2</span> 
+                    Core Package
+                  </h3>
+                  <p className="text-sm text-text-muted">Included in the base ticket price.</p>
+                </div>
+                <span className="bg-white/10 text-white px-3 py-1 rounded-full text-xs font-bold">{baseItems.length} Items</span>
               </div>
 
-              <div>
-                <label className="block text-sm font-semibold mb-2">Event Title *</label>
-                <input
-                  type="text"
-                  name="title"
-                  value={formData.title}
-                  onChange={handleInputChange}
-                  placeholder="Give your event a catchy title"
-                  className="w-full px-4 py-3 border border-gray-300 dark:border-gray-700 rounded-xl bg-gray-50 dark:bg-zinc-800 focus:outline-none focus:ring-2 focus:ring-pink-500"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-semibold mb-2">Category *</label>
-                <select
-                  name="categoryId"
-                  value={formData.categoryId}
-                  onChange={handleInputChange}
-                  disabled={categoriesLoading}
-                  className="w-full px-4 py-3 border border-gray-300 dark:border-gray-700 rounded-xl bg-gray-50 dark:bg-zinc-800 focus:outline-none focus:ring-2 focus:ring-pink-500"
-                >
-                  <option value="">Select a category</option>
-                  {categories.map((cat) => (
-                    <option key={cat.id} value={cat.id}>
-                      {cat.name}
-                    </option>
+              {baseItems.length === 0 ? (
+                <div className="flex flex-col items-center justify-center h-40 text-text-muted pointer-events-none">
+                  <span className="material-symbols-outlined text-4xl mb-2 opacity-50">add_circle_outline</span>
+                  <p>Drop venues, talent, and core services here</p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {baseItems.map((item, idx) => (
+                    <div key={`${item.id}-${idx}`} className="bg-surface-highlight border border-white/5 rounded-2xl p-4 flex items-center justify-between group animate-in fade-in zoom-in duration-300">
+                      <div className="flex items-center gap-3">
+                        <div className="h-10 w-10 rounded-full bg-accent/10 text-accent flex items-center justify-center">
+                          <span className="material-symbols-outlined">{item.icon}</span>
+                        </div>
+                        <div>
+                          <p className="font-bold text-white text-sm">{item.name}</p>
+                          <p className="text-xs text-text-muted">Cost: ₱{item.cost.toLocaleString()}</p>
+                        </div>
+                      </div>
+                      <button onClick={() => removeItem(item.id, 'base')} className="text-red-400 opacity-0 group-hover:opacity-100 hover:bg-red-400/10 p-2 rounded-full transition-all">
+                        <span className="material-symbols-outlined text-[18px]">delete</span>
+                      </button>
+                    </div>
                   ))}
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-sm font-semibold mb-2">Description *</label>
-                <textarea
-                  name="description"
-                  value={formData.description}
-                  onChange={handleInputChange}
-                  placeholder="Describe your event in detail. What makes it special?"
-                  rows={5}
-                  className="w-full px-4 py-3 border border-gray-300 dark:border-gray-700 rounded-xl bg-gray-50 dark:bg-zinc-800 focus:outline-none focus:ring-2 focus:ring-pink-500 resize-none"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-semibold mb-2">Max Attendees</label>
-                <input
-                  type="number"
-                  name="maxAttendees"
-                  value={formData.maxAttendees}
-                  onChange={handleInputChange}
-                  min="1"
-                  placeholder="Leave empty for unlimited"
-                  className="w-full px-4 py-3 border border-gray-300 dark:border-gray-700 rounded-xl bg-gray-50 dark:bg-zinc-800 focus:outline-none focus:ring-2 focus:ring-pink-500"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-semibold mb-2">Event Status</label>
-                <select
-                  name="status"
-                  value={formData.status}
-                  onChange={handleInputChange}
-                  className="w-full px-4 py-3 border border-gray-300 dark:border-gray-700 rounded-xl bg-gray-50 dark:bg-zinc-800 focus:outline-none focus:ring-2 focus:ring-pink-500"
-                >
-                  <option value="draft">Draft (Save for later)</option>
-                  <option value="active">Active (Ready to go)</option>
-                </select>
-              </div>
-            </div>
-          )}
-
-          {/* Step 2: Location */}
-          {currentStep === 2 && (
-            <div className="space-y-5 animate-in slide-in-from-right duration-300">
-              <div>
-                <h3 className="text-lg font-bold mb-4 text-pink-500">Step 2: Location Details</h3>
-              </div>
-
-              <div>
-                <label className="block text-sm font-semibold mb-2">Location Type</label>
-                <select
-                  name="locationType"
-                  value={formData.locationType}
-                  onChange={handleInputChange}
-                  className="w-full px-4 py-3 border border-gray-300 dark:border-gray-700 rounded-xl bg-gray-50 dark:bg-zinc-800 focus:outline-none focus:ring-2 focus:ring-pink-500"
-                >
-                  <option value="in-person">In Person</option>
-                  <option value="virtual">Virtual</option>
-                </select>
-              </div>
-
-              {formData.locationType === "in-person" && (
-                <>
-                  <div>
-                    <label className="block text-sm font-semibold mb-2">Street Address *</label>
-                    <input
-                      type="text"
-                      name="locationAddress"
-                      value={formData.locationAddress}
-                      onChange={handleInputChange}
-                      placeholder="123 Main Street"
-                      className="w-full px-4 py-3 border border-gray-300 dark:border-gray-700 rounded-xl bg-gray-50 dark:bg-zinc-800 focus:outline-none focus:ring-2 focus:ring-pink-500"
-                    />
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-sm font-semibold mb-2">City *</label>
-                      <input
-                        type="text"
-                        name="city"
-                        value={formData.city}
-                        onChange={handleInputChange}
-                        placeholder="Manila"
-                        className="w-full px-4 py-3 border border-gray-300 dark:border-gray-700 rounded-xl bg-gray-50 dark:bg-zinc-800 focus:outline-none focus:ring-2 focus:ring-pink-500"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-semibold mb-2">State/Province *</label>
-                      <input
-                        type="text"
-                        name="state"
-                        value={formData.state}
-                        onChange={handleInputChange}
-                        placeholder="Metro Manila"
-                        className="w-full px-4 py-3 border border-gray-300 dark:border-gray-700 rounded-xl bg-gray-50 dark:bg-zinc-800 focus:outline-none focus:ring-2 focus:ring-pink-500"
-                      />
-                    </div>
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-semibold mb-2">Country</label>
-                    <input
-                      type="text"
-                      name="country"
-                      value={formData.country}
-                      onChange={handleInputChange}
-                      className="w-full px-4 py-3 border border-gray-300 dark:border-gray-700 rounded-xl bg-gray-50 dark:bg-zinc-800 focus:outline-none focus:ring-2 focus:ring-pink-500"
-                    />
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-sm font-semibold mb-2">Latitude (optional)</label>
-                      <input
-                        type="text"
-                        name="latitude"
-                        value={formData.latitude}
-                        onChange={handleInputChange}
-                        placeholder="14.5995"
-                        className="w-full px-4 py-3 border border-gray-300 dark:border-gray-700 rounded-xl bg-gray-50 dark:bg-zinc-800 focus:outline-none focus:ring-2 focus:ring-pink-500"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-semibold mb-2">Longitude (optional)</label>
-                      <input
-                        type="text"
-                        name="longitude"
-                        value={formData.longitude}
-                        onChange={handleInputChange}
-                        placeholder="120.9842"
-                        className="w-full px-4 py-3 border border-gray-300 dark:border-gray-700 rounded-xl bg-gray-50 dark:bg-zinc-800 focus:outline-none focus:ring-2 focus:ring-pink-500"
-                      />
-                    </div>
-                  </div>
-                </>
-              )}
-            </div>
-          )}
-
-          {/* Step 3: Schedule */}
-          {currentStep === 3 && (
-            <div className="space-y-5 animate-in slide-in-from-right duration-300">
-              <div>
-                <h3 className="text-lg font-bold mb-4 text-pink-500">Step 3: Schedule</h3>
-              </div>
-
-              <div>
-                <label className="block text-sm font-semibold mb-2">Start Date & Time *</label>
-                <input
-                  type="datetime-local"
-                  name="startDatetime"
-                  value={formData.startDatetime}
-                  onChange={handleInputChange}
-                  className="w-full px-4 py-3 border border-gray-300 dark:border-gray-700 rounded-xl bg-gray-50 dark:bg-zinc-800 focus:outline-none focus:ring-2 focus:ring-pink-500"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-semibold mb-2">End Date & Time *</label>
-                <input
-                  type="datetime-local"
-                  name="endDatetime"
-                  value={formData.endDatetime}
-                  onChange={handleInputChange}
-                  className="w-full px-4 py-3 border border-gray-300 dark:border-gray-700 rounded-xl bg-gray-50 dark:bg-zinc-800 focus:outline-none focus:ring-2 focus:ring-pink-500"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-semibold mb-2">Duration (minutes)</label>
-                <input
-                  type="number"
-                  name="durationMinutes"
-                  value={formData.durationMinutes}
-                  onChange={handleInputChange}
-                  min="1"
-                  placeholder="e.g., 120"
-                  className="w-full px-4 py-3 border border-gray-300 dark:border-gray-700 rounded-xl bg-gray-50 dark:bg-zinc-800 focus:outline-none focus:ring-2 focus:ring-pink-500"
-                />
-              </div>
-            </div>
-          )}
-
-          {/* Step 4: Pricing */}
-          {currentStep === 4 && (
-            <div className="space-y-5 animate-in slide-in-from-right duration-300">
-              <div>
-                <h3 className="text-lg font-bold mb-4 text-pink-500">Step 4: Pricing</h3>
-              </div>
-
-              <div>
-                <label className="block text-sm font-semibold mb-2">Base Price *</label>
-                <input
-                  type="number"
-                  name="basePrice"
-                  value={formData.basePrice}
-                  onChange={handleInputChange}
-                  min="0"
-                  step="0.01"
-                  placeholder="0.00"
-                  className="w-full px-4 py-3 border border-gray-300 dark:border-gray-700 rounded-xl bg-gray-50 dark:bg-zinc-800 focus:outline-none focus:ring-2 focus:ring-pink-500"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-semibold mb-2">Currency</label>
-                <select
-                  name="currency"
-                  value={formData.currency}
-                  onChange={handleInputChange}
-                  className="w-full px-4 py-3 border border-gray-300 dark:border-gray-700 rounded-xl bg-gray-50 dark:bg-zinc-800 focus:outline-none focus:ring-2 focus:ring-pink-500"
-                >
-                  <option value="PHP">PHP (₱)</option>
-                  <option value="USD">USD ($)</option>
-                  <option value="EUR">EUR (€)</option>
-                  <option value="GBP">GBP (£)</option>
-                </select>
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-semibold mb-2">Service Fee (%)</label>
-                  <input
-                    type="number"
-                    name="serviceFeePercent"
-                    value={formData.serviceFeePercent}
-                    onChange={handleInputChange}
-                    min="0"
-                    max="100"
-                    step="0.1"
-                    className="w-full px-4 py-3 border border-gray-300 dark:border-gray-700 rounded-xl bg-gray-50 dark:bg-zinc-800 focus:outline-none focus:ring-2 focus:ring-pink-500"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-semibold mb-2">Tax (%)</label>
-                  <input
-                    type="number"
-                    name="taxPercent"
-                    value={formData.taxPercent}
-                    onChange={handleInputChange}
-                    min="0"
-                    max="100"
-                    step="0.1"
-                    className="w-full px-4 py-3 border border-gray-300 dark:border-gray-700 rounded-xl bg-gray-50 dark:bg-zinc-800 focus:outline-none focus:ring-2 focus:ring-pink-500"
-                  />
-                </div>
-              </div>
-
-              {formData.basePrice && (
-                <div className="p-4 bg-pink-50 dark:bg-pink-900/20 rounded-xl border border-pink-200 dark:border-pink-800">
-                  <p className="text-sm font-semibold text-pink-900 dark:text-pink-100">
-                    Total per ticket: {formData.currency} {(
-                      parseFloat(formData.basePrice || '0') *
-                      (1 + parseFloat(formData.serviceFeePercent || '0') / 100) *
-                      (1 + parseFloat(formData.taxPercent || '0') / 100)
-                    ).toFixed(2)}
-                  </p>
                 </div>
               )}
             </div>
-          )}
 
-          {/* Step 5: Final Details */}
-          {currentStep === 5 && (
-            <div className="space-y-5 animate-in slide-in-from-right duration-300">
-              <div>
-                <h3 className="text-lg font-bold mb-4 text-pink-500">Step 5: Final Details</h3>
+            {/* Drop Zone: Upsells */}
+            <div 
+              onDragOver={(e) => handleDragOver(e, 'upsell')}
+              onDrop={(e) => handleDrop(e, 'upsell')}
+              className={`min-h-[150px] rounded-[2rem] border-2 border-dashed transition-all p-8 relative ${
+                isDragOver ? 'border-secondary bg-secondary/5' : 'border-white/10 bg-surface/30'
+              }`}
+            >
+              <div className="flex justify-between items-center mb-6">
+                <div>
+                  <h3 className="text-xl font-bold text-white flex items-center gap-2">
+                    <span className="material-symbols-outlined text-secondary">extension</span> 
+                    Optional Add-ons
+                  </h3>
+                  <p className="text-sm text-text-muted">Available as paid upgrades for guests.</p>
+                </div>
+                <span className="bg-white/10 text-white px-3 py-1 rounded-full text-xs font-bold">{upsellItems.length} Items</span>
               </div>
 
-              <div>
-                <label className="block text-sm font-semibold mb-2">Event Image URL</label>
-                <input
-                  type="url"
-                  name="imageUrl"
-                  value={formData.imageUrl}
-                  onChange={handleInputChange}
-                  placeholder="https://example.com/image.jpg"
-                  className="w-full px-4 py-3 border border-gray-300 dark:border-gray-700 rounded-xl bg-gray-50 dark:bg-zinc-800 focus:outline-none focus:ring-2 focus:ring-pink-500"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-semibold mb-2">Image Alt Text</label>
-                <input
-                  type="text"
-                  name="imageAltText"
-                  value={formData.imageAltText}
-                  onChange={handleInputChange}
-                  placeholder="Description of the image"
-                  className="w-full px-4 py-3 border border-gray-300 dark:border-gray-700 rounded-xl bg-gray-50 dark:bg-zinc-800 focus:outline-none focus:ring-2 focus:ring-pink-500"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-semibold mb-2">Requirements</label>
-                <textarea
-                  name="requirements"
-                  value={formData.requirements}
-                  onChange={handleInputChange}
-                  placeholder="What should attendees bring or prepare?"
-                  rows={3}
-                  className="w-full px-4 py-3 border border-gray-300 dark:border-gray-700 rounded-xl bg-gray-50 dark:bg-zinc-800 focus:outline-none focus:ring-2 focus:ring-pink-500 resize-none"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-semibold mb-2">Cancellation Policy</label>
-                <textarea
-                  name="cancellationPolicy"
-                  value={formData.cancellationPolicy}
-                  onChange={handleInputChange}
-                  placeholder="Describe your cancellation and refund policy"
-                  rows={3}
-                  className="w-full px-4 py-3 border border-gray-300 dark:border-gray-700 rounded-xl bg-gray-50 dark:bg-zinc-800 focus:outline-none focus:ring-2 focus:ring-pink-500 resize-none"
-                />
-              </div>
-
-              <div className="flex items-center gap-3 p-4 bg-gray-50 dark:bg-zinc-800 rounded-xl">
-                <input
-                  type="checkbox"
-                  name="isPublished"
-                  checked={formData.isPublished}
-                  onChange={handleInputChange}
-                  className="w-5 h-5 text-pink-500 rounded focus:ring-2 focus:ring-pink-500"
-                />
-                <label className="text-sm font-semibold">Publish event immediately</label>
-              </div>
+              {upsellItems.length === 0 ? (
+                <div className="flex flex-col items-center justify-center h-32 text-text-muted pointer-events-none">
+                  <span className="material-symbols-outlined text-4xl mb-2 opacity-50">monetization_on</span>
+                  <p>Drop upsells and extra amenities here</p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {upsellItems.map((item, idx) => (
+                    <div key={`${item.id}-${idx}`} className="bg-surface-highlight border border-white/5 rounded-2xl p-4 flex items-center justify-between group animate-in fade-in zoom-in duration-300">
+                      <div className="flex items-center gap-3">
+                        <div className="h-10 w-10 rounded-full bg-secondary/10 text-secondary flex items-center justify-center">
+                          <span className="material-symbols-outlined">{item.icon}</span>
+                        </div>
+                        <div>
+                          <p className="font-bold text-white text-sm">{item.name}</p>
+                          <p className="text-xs text-text-muted">Cost: ₱{item.cost.toLocaleString()}</p>
+                        </div>
+                      </div>
+                      <button onClick={() => removeItem(item.id, 'upsell')} className="text-red-400 opacity-0 group-hover:opacity-100 hover:bg-red-400/10 p-2 rounded-full transition-all">
+                        <span className="material-symbols-outlined text-[18px]">delete</span>
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
-          )}
+          </div>
+        </main>
 
-        </div>
-
-        {/* Footer Navigation */}
-        <div className="p-4 border-t border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-zinc-900 flex items-center justify-between gap-4">
-          <button
-            onClick={prevStep}
-            disabled={currentStep === 1}
-            className="px-6 py-3 bg-white dark:bg-zinc-800 border border-gray-300 dark:border-gray-700 text-gray-700 dark:text-white font-semibold rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
-          >
-            <ChevronLeft className="w-4 h-4" />
-            Back
-          </button>
-
-          <div className="text-sm text-gray-500">
-            Step {currentStep} of {steps.length}
+        {/* Right Sidebar: Blueprint Summary */}
+        <aside className="w-96 flex-shrink-0 border-l border-white/5 bg-[#0f111a] flex flex-col shadow-2xl z-10">
+          <div className="p-6 border-b border-white/5">
+            <h3 className="font-display font-bold text-white text-lg">Event Blueprint</h3>
+            <p className="text-xs text-text-muted">Financial Overview</p>
           </div>
 
-          {currentStep < steps.length ? (
-            <button
-              onClick={nextStep}
-              disabled={!canProceed()}
-              className="px-6 py-3 bg-pink-500 hover:bg-pink-600 text-white font-semibold rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
-            >
-              Next
-              <ChevronRight className="w-4 h-4" />
-            </button>
-          ) : (
-            <button
-              onClick={handleSubmit}
-              disabled={loading || !canProceed()}
-              className="px-8 py-3 bg-pink-500 hover:bg-pink-600 text-white font-bold rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
-            >
-              {loading ? (
-                <>
-                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                  Creating...
-                </>
-              ) : (
-                <>Create Event</>
-              )}
-            </button>
-          )}
-        </div>
+          <div className="flex-1 overflow-y-auto p-6 space-y-8">
+            {/* Cost Breakdown */}
+            <div>
+              <h4 className="text-xs font-bold text-white uppercase tracking-wider mb-4">Cost Breakdown</h4>
+              <div className="space-y-3">
+                <div className="flex justify-between text-sm">
+                  <span className="text-text-muted">Venue & Infrastructure</span>
+                  <span className="text-white font-mono">₱{baseItems.filter(i => i.icon === 'location_city' || i.icon === 'warehouse' || i.icon === 'forest').reduce((a, b) => a + b.cost, 0).toLocaleString()}</span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span className="text-text-muted">Talent & Entertainment</span>
+                  <span className="text-white font-mono">₱{baseItems.filter(i => ['music_note', 'local_bar', 'movie_filter', 'mic'].includes(i.icon)).reduce((a, b) => a + b.cost, 0).toLocaleString()}</span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span className="text-text-muted">Services & Ops</span>
+                  <span className="text-white font-mono">₱{baseItems.filter(i => ['restaurant', 'security', 'local_parking', 'cleaning_services'].includes(i.icon)).reduce((a, b) => a + b.cost, 0).toLocaleString()}</span>
+                </div>
+                <div className="h-px bg-white/10 my-2"></div>
+                <div className="flex justify-between text-sm font-bold">
+                  <span className="text-white">Total Base Cost</span>
+                  <span className="text-white font-mono">₱{baseCost.toLocaleString()}</span>
+                </div>
+              </div>
+            </div>
 
+            {/* Pricing Strategy */}
+            <div className="bg-surface-highlight rounded-2xl p-5 border border-white/5">
+              <h4 className="text-xs font-bold text-white uppercase tracking-wider mb-4 flex items-center gap-2">
+                <span className="material-symbols-outlined text-accent text-[16px]">price_check</span> Pricing Strategy
+              </h4>
+              
+              <div className="mb-4">
+                <label className="text-xs text-text-muted block mb-2">Target Margin (%)</label>
+                <div className="flex items-center gap-3">
+                  <input 
+                    type="range" 
+                    min="0" 
+                    max="100" 
+                    value={targetMargin} 
+                    onChange={(e) => setTargetMargin(Number(e.target.value))}
+                    className="flex-1 h-2 bg-black rounded-lg appearance-none cursor-pointer accent-accent"
+                  />
+                  <span className="text-accent font-bold font-mono w-10 text-right">{targetMargin}%</span>
+                </div>
+              </div>
+
+              <div className="space-y-2 pt-2 border-t border-white/5">
+                <div className="flex justify-between items-center">
+                  <span className="text-sm text-text-muted">Suggested Price</span>
+                  <span className="text-lg font-bold text-white font-mono">₱{suggestedPrice.toLocaleString()}</span>
+                </div>
+                <p className="text-[10px] text-text-muted italic">Per guest break-even at 1 pax (Simulated)</p>
+              </div>
+            </div>
+
+            {/* Add-ons Potential */}
+            {upsellItems.length > 0 && (
+              <div>
+                <h4 className="text-xs font-bold text-secondary uppercase tracking-wider mb-3">Upsell Potential</h4>
+                <div className="flex flex-wrap gap-2">
+                  {upsellItems.map((item, idx) => (
+                    <span key={idx} className="px-2 py-1 rounded bg-secondary/10 border border-secondary/20 text-secondary text-xs">
+                      {item.name}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+
+          <div className="p-6 border-t border-white/5 bg-[#0f111a]">
+            <div className="flex items-center gap-3 mb-4">
+               <div className="h-10 w-10 rounded-full bg-accent flex items-center justify-center text-black font-bold">
+                  {Math.round(baseCost > 0 ? 85 : 10)}%
+               </div>
+               <div>
+                  <p className="text-xs text-text-muted uppercase font-bold">Blueprint Health</p>
+                  <div className="h-1.5 w-32 bg-white/10 rounded-full mt-1 overflow-hidden">
+                     <div className={`h-full bg-accent rounded-full transition-all duration-500`} style={{ width: `${baseCost > 0 ? 85 : 10}%` }}></div>
+                  </div>
+               </div>
+            </div>
+            <button className="w-full py-3 rounded-xl border border-white/10 hover:bg-white hover:text-black transition-all text-sm font-bold text-white">
+               Preview Listing
+            </button>
+          </div>
+        </aside>
       </div>
     </div>
   );
-}
+};
+
+export default EventCreationBuilder;

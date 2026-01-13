@@ -139,7 +139,7 @@ function CategoriesContent() {
           <h2 className="text-xl font-bold text-white mb-2">
             {categoriesError ? "Failed to load categories" : "No categories available"}
           </h2>
-          <p className="text-gray-400 mb-4">{categoriesError}</p>
+          <p className="text-gray-400 mb-4">{categoriesError?.message}</p>
           <p className="text-gray-500 text-sm">Please make sure the backend server is running.</p>
         </div>
       </div>
