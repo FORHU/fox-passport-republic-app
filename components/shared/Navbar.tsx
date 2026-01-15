@@ -2,7 +2,6 @@
 
 import { Suspense, useState } from "react";
 import Link from "next/link";
-import Image from "next/image";
 import { BrandLogo } from "@/components/shared/BrandLogo";
 import { useRouter } from "next/navigation"; 
 import { 
@@ -124,7 +123,7 @@ function NavbarContent() {
   const handleHostOptionClick = () => {
     setHostModalOpen(false);
     if (isAuthenticated) {
-      router.push("/foxer"); 
+      router.push("/host"); 
     } else {
       openLogin(); 
     }
@@ -152,8 +151,8 @@ function NavbarContent() {
               <a href="#" className="px-6 py-2.5 rounded-full text-sm font-bold text-black bg-accent hover:bg-accent/90 hover:shadow-[0_0_15px_rgba(204,255,0,0.5)] transition-all transform hover:-translate-y-0.5">
                 Explore
               </a>
-              <Link href="/foxer/dashboard" className="px-6 py-2.5 rounded-full text-sm font-medium text-white/70 hover:text-white hover:bg-white/10 transition-all hover:scale-105">
-                Foxers
+              <Link href="/host" className="px-6 py-2.5 rounded-full text-sm font-medium text-white/70 hover:text-white hover:bg-white/10 transition-all hover:scale-105">
+                Host
               </Link>
               <Link href="/passport" className="px-6 py-2.5 rounded-full text-sm font-medium text-white/70 hover:text-white hover:bg-white/10 transition-all hover:scale-105">
                 Community
