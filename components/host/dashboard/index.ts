@@ -11,4 +11,3 @@ export {
   CreatorProfile,
   RecentActivity,
 } from "./SidebarWidgets";
-export { CalendarModal } from "./CalendarModal";
