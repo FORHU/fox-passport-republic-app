@@ -185,7 +185,7 @@ export const useUserDashboard = () => {
 
   // Wallet data (Mock)
   const walletBalance = 4250.0;
-  const recentTransactions = [
+  const recentTransactions: { type: "purchase" | "topup"; label: string; amount: number }[] = [
     { type: "purchase", label: "Ticket Purchase", amount: -1500 },
     { type: "topup", label: "Top Up", amount: 5000 },
   ];

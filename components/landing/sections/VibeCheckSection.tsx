@@ -1,7 +1,10 @@
 "use client";
 
-import { Category } from "@/data/categories";
+import { Category } from "@/types/category";
 import Link from "next/link";
+
+// Default image for categories without images
+const DEFAULT_CATEGORY_IMAGE = "https://images.unsplash.com/photo-1492684223066-81342ee5ff30?auto=format&fit=crop&q=80&w=800";
 
 interface VibeCheckSectionProps {
   categories: Category[];
@@ -49,14 +52,14 @@ function CategoryCard({ category, index }: { category: Category; index: number }
     >
       {/* Main Link for the entire card */}
       <Link href={`/categories/${category.id}`} className="absolute inset-0 z-20">
-        <span className="sr-only">View {category.title}</span>
+        <span className="sr-only">View {category.name}</span>
       </Link>
-      
+
       {/* Background Image */}
       <div className="absolute inset-0 pointer-events-none">
-        <img 
-          src={category.image} 
-          alt={category.title}
+        <img
+          src={category.image || DEFAULT_CATEGORY_IMAGE}
+          alt={category.name}
           className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
         />
         <div className="absolute inset-0 bg-linear-to-t from-background via-background/80 to-transparent"></div>
@@ -65,10 +68,12 @@ function CategoryCard({ category, index }: { category: Category; index: number }
       {/* Content */}
       <div className="relative z-10 p-5 transition-all duration-300 group-hover:-translate-y-2 pointer-events-none">
         <h3 className="text-xl font-bold text-white mb-1 leading-tight font-display">
-          {category.title}
+          {category.name}
         </h3>
-        <p className="text-sm text-white/70">{category.tagline}</p>
-        <p className="text-xs text-[#ccff00] mt-2 font-bold">{category.spots}</p>
+        <p className="text-sm text-white/70">{category.tagline || category.description || "Explore experiences"}</p>
+        {category.spotLabel && (
+          <p className="text-xs text-[#ccff00] mt-2 font-bold">{category.spotLabel}</p>
+        )}
       </div>
     </div>
   );
