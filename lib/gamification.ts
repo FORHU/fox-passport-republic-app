@@ -64,7 +64,7 @@ export function getProgressPercentage(currentXP: number, requiredXP: number): nu
  * Get the label for a path based on level
  */
 export function getPathLabel(path: UserPath, level: number): string {
-  const labels = PATH_LABELS[path];
+  const labels = PATH_LABELS[path] as Record<number, string>;
   const levelThresholds = Object.keys(labels)
     .map(Number)
     .sort((a, b) => b - a);

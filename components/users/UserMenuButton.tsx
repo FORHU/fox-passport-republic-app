@@ -22,7 +22,21 @@ import { useUserMenu } from "@/hooks/auth/useUserMenu";
 import { useAuthStore } from "@/store/useAuthStore";
 import { useBecomeHost } from "@/hooks/features/useBecomeHost";
 
-// Menu item configuration will be generated dynamically based on user role
+// Menu item type definition
+import { LucideIcon } from "lucide-react";
+
+interface MenuItem {
+  label: string;
+  icon: LucideIcon;
+  href: string;
+  description?: string;
+  hasImage?: boolean;
+  isAction?: boolean;
+}
+
+interface MenuSection {
+  items: MenuItem[];
+}
 
 interface UserMenuButtonProps {
   onBecomeHost?: () => void;
@@ -44,7 +58,7 @@ export default function UserMenuButton({ onBecomeHost }: UserMenuButtonProps) {
     "U";
 
   // Generate menu sections dynamically based on user role
-  const menuSections = [
+  const menuSections: MenuSection[] = [
     {
       items: [
         { label: "Wishlists", icon: Heart, href: "/wishlists" },

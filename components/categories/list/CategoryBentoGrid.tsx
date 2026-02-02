@@ -1,7 +1,6 @@
 import React from "react";
 import Image from "next/image";
 import { Category } from "@/types/category";
-import { Category } from "@/types/category";
 
 interface CategoryBentoGridProps {
   categories: Category[];
