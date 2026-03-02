@@ -37,7 +37,8 @@ export interface VenueItem {
 export interface InventoryItem {
   id: number;
   name: string;
-  cat: string;
+  // category may be string (label or slug) or a structured response from API
+  category: string | { name?: string };
   status: string;
   img: string;
 }
@@ -174,28 +175,28 @@ export const INITIAL_INVENTORY: InventoryItem[] = [
   {
     id: 1,
     name: "Pioneer CDJ-3000",
-    cat: "AUDIO",
+    category: "AUDIO",
     status: "Rented",
     img: "https://images.unsplash.com/photo-1598488035139-bdbb2231ce04?q=80&w=400",
   },
   {
     id: 2,
     name: "Neon Sign Set",
-    cat: "DECOR",
+    category: "DECOR",
     status: "Available",
     img: "https://images.unsplash.com/photo-1563245372-f21724e3856d?q=80&w=400",
   },
   {
     id: 3,
     name: "Fog Machine",
-    cat: "FX",
+    category: "FX",
     status: "Available",
     img: "https://images.unsplash.com/photo-1492684223066-81342ee5ff30?q=80&w=400",
   },
   {
     id: 4,
     name: "4K Projector",
-    cat: "VISUALS",
+    category: "VISUALS",
     status: "Maintenance",
     img: "https://images.unsplash.com/photo-1517694712202-14dd9538aa97?q=80&w=400",
   },

@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useRef } from 'react';
 import { ListingType } from '@/data/listingBuilderData';
 
 interface ListingPreviewCardProps {
@@ -16,8 +16,9 @@ interface ListingPreviewCardProps {
   onCloseGuide: () => void;
   onTitleChange: (title: string) => void;
   onDescriptionChange: (desc: string) => void;
-  onImageUpload: () => void;
-}
+  onImageUpload: (url: string) => void;
+}  
+
 
 export function ListingPreviewCard({
   activeType,
@@ -34,8 +35,33 @@ export function ListingPreviewCard({
   onDescriptionChange,
   onImageUpload,
 }: ListingPreviewCardProps) {
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      // limit to 5MB
+      if (file.size > 5 * 1024 * 1024) {
+        alert("Image too large (max 5MB)");
+        return;
+      }
+      const reader = new FileReader();
+      reader.onload = () => {
+        if (reader.result) onImageUpload(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
   return (
     <main className="flex-1 overflow-y-auto p-8 bg-[#02040a] flex flex-col items-center">
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept="image/*"
+        className="hidden"
+        onChange={handleFileChange}
+      />
       <div className="w-full max-w-2xl space-y-8">
         {/* Guide */}
         {showGuide && (
@@ -106,7 +132,7 @@ export function ListingPreviewCard({
                   />
                   <div className="absolute inset-0 bg-black/40 opacity-0 group-hover/img:opacity-100 transition-opacity flex items-center justify-center">
                     <button
-                      onClick={onImageUpload}
+                      onClick={() => fileInputRef.current?.click()}
                       className="px-4 py-2 rounded-full bg-white/20 backdrop-blur-md border border-white/20 text-white text-xs font-bold hover:bg-white hover:text-black"
                     >
                       Change
@@ -126,7 +152,7 @@ export function ListingPreviewCard({
                 </>
               ) : (
                 <button
-                  onClick={onImageUpload}
+                  onClick={() => fileInputRef.current?.click()}
                   className="flex flex-col items-center justify-center gap-3 text-white/30 hover:text-white transition-all group/upload w-full h-full hover:bg-white/5"
                 >
                   <div className="h-16 w-16 rounded-full border-2 border-dashed border-white/20 flex items-center justify-center group-hover/upload:border-accent group-hover/upload:text-accent">
@@ -140,7 +166,15 @@ export function ListingPreviewCard({
             {/* Card Content */}
             <div className={`p-5 transition-opacity duration-300 ${!image ? 'opacity-50 grayscale' : 'opacity-100'}`}>
               <div className="flex justify-between items-start mb-2">
-                <h4 className="font-bold text-white text-lg line-clamp-1">{title || 'Untitled'}</h4>
+                <div className="flex-1">
+                  <input
+                    type="text"
+                    value={title}
+                    onChange={(e) => onTitleChange(e.target.value)}
+                    placeholder="Untitled"
+                    className="w-full bg-transparent border-none px-2 py-1 text-white text-lg font-bold focus:outline-none focus:ring-2 focus:ring-accent placeholder-white/50"
+                  />
+                </div>
                 <div
                   className={`h-6 w-6 rounded-full flex items-center justify-center ${
                     activeType === 'inventory' ? 'bg-primary/20 text-primary' : 'bg-warning/20 text-warning'
@@ -151,9 +185,12 @@ export function ListingPreviewCard({
                   </span>
                 </div>
               </div>
-              <p className="text-xs text-text-muted mb-4 line-clamp-2">
-                {description || 'No description provided.'}
-              </p>
+              <textarea
+                value={description}
+                onChange={(e) => onDescriptionChange(e.target.value)}
+                placeholder="No description provided."
+                className="w-full bg-transparent border-none p-0 text-xs text-text-muted placeholder-white/50 focus:ring-0 resize-none h-12"
+              />
               <div className="flex items-center justify-between pt-4 border-t border-white/5">
                 <div>
                   <p className="text-[10px] text-text-muted uppercase tracking-wider">{unit}</p>

@@ -58,11 +58,11 @@ export function StatusBadge({ currentStatus, type, onStatusChange, className = '
       >
         <span className={`w-1.5 h-1.5 rounded-full ${getDotColor(currentStatus)} ${shouldPulse ? 'animate-pulse' : ''}`} />
         {currentStatus}
-        <span className="material-symbols-outlined text-[14px] opacity-70">expand_more</span>
+        <span className={`material-symbols-outlined text-[14px] opacity-70 transition-transform ${isOpen ? 'rotate-180' : ''}`}>expand_more</span>
       </button>
       
       {isOpen && (
-        <div className="absolute right-0 top-full mt-2 w-40 bg-[#1a1d2d] border border-white/10 rounded-xl shadow-2xl z-[100]">
+        <div className="absolute right-0 top-full mt-2 w-40 bg-[#1a1d2d] border border-white/10 rounded-xl shadow-2xl z-[200]">
           <div className="py-1">
             {options.map((option) => (
               <button

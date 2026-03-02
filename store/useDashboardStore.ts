@@ -1,4 +1,5 @@
 import { create } from "zustand";
+import api from "@/lib/axios";
 import {
   EventItem,
   VenueItem,
@@ -16,6 +17,7 @@ interface DashboardState {
   venues: VenueItem[];
   inventory: InventoryItem[];
   services: ServiceItem[];
+  isLoadingInventory: boolean;
 
   // UI State
   isCalendarOpen: boolean;
@@ -26,6 +28,10 @@ interface DashboardState {
   updateVenueStatus: (id: number, status: string) => void;
   updateInventoryStatus: (id: number, status: string) => void;
   updateServiceStatus: (id: number, status: string) => void;
+  setInventory: (inventory: InventoryItem[]) => void;
+  addInventoryItem: (item: InventoryItem) => void;
+  setIsLoadingInventory: (loading: boolean) => void;
+  refetchInventory: () => Promise<void>;
 
   // Actions - UI State
   setCalendarOpen: (open: boolean) => void;
@@ -41,6 +47,7 @@ export const useDashboardStore = create<DashboardState>((set) => ({
   venues: INITIAL_VENUES,
   inventory: INITIAL_INVENTORY,
   services: INITIAL_SERVICES,
+  isLoadingInventory: false,
 
   // Initial UI State
   isCalendarOpen: false,
@@ -69,7 +76,67 @@ export const useDashboardStore = create<DashboardState>((set) => ({
       services: state.services.map((s) => (s.id === id ? { ...s, status } : s)),
     })),
 
-  // UI State Actions
+  // Set inventory from API
+  setInventory: (inventory) => set({ inventory }),
+
+  // Add a single inventory item
+  addInventoryItem: (item) =>
+    set((state) => ({
+      inventory: [item, ...state.inventory],
+    })),
+
+  // Set loading state
+  setIsLoadingInventory: (loading) => set({ isLoadingInventory: loading }),
+
+  // Refetch inventory from API
+  refetchInventory: async () => {
+    try {
+      const state = useDashboardStore.getState();
+      state.setIsLoadingInventory(true);
+
+      const storedUser = localStorage.getItem("fox_user");
+      if (!storedUser) {
+        state.setIsLoadingInventory(false);
+        return;
+      }
+
+      const user = JSON.parse(storedUser);
+      const userId = user.id || user.userId;
+
+      if (!userId) {
+        state.setIsLoadingInventory(false);
+        return;
+      }
+
+      const response = await api.get("/v1/assets", {
+        params: { ownerId: userId },
+      });
+
+      if (response.data?.assets) {
+        const inventoryItems: InventoryItem[] = response.data.assets.map(
+          (asset: any) => ({
+            id: asset.id,
+            name: asset.name,
+            category:
+              asset.category?.name || asset.category?.slug ||
+              (asset.categoryId != null ? String(asset.categoryId) : null) ||
+              "Uncategorized",
+            status: "active",
+            img: asset.assetImages?.[0]?.url || "/placeholder-inventory.jpg",
+          })
+        );
+
+        state.setInventory(inventoryItems);
+      }
+
+      state.setIsLoadingInventory(false);
+    } catch (error) {
+      console.error("[Dashboard] Error refetching inventory:", error);
+      useDashboardStore.getState().setIsLoadingInventory(false);
+    }
+  },
+
+
   setCalendarOpen: (open) => set({ isCalendarOpen: open }),
   setCreateMenuOpen: (open) => set({ isCreateMenuOpen: open }),
 
@@ -80,6 +147,7 @@ export const useDashboardStore = create<DashboardState>((set) => ({
       venues: INITIAL_VENUES,
       inventory: INITIAL_INVENTORY,
       services: INITIAL_SERVICES,
+      isLoadingInventory: false,
       isCalendarOpen: false,
       isCreateMenuOpen: false,
     }),
