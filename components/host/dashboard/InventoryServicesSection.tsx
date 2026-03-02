@@ -26,25 +26,33 @@ export function InventorySection({ inventory, onStatusChange }: InventorySection
         {inventory.map((it) => (
           <div
             key={it.id}
-            className="relative bg-[#0f111a]/60 border border-white/5 rounded-2xl group hover:border-purple-500/50 transition-all overflow-hidden"
+            className="relative bg-[#0f111a]/60 border border-white/5 rounded-lg group hover:border-purple-500/50 transition-all"
           >
-            <div className="aspect-square overflow-hidden">
+            {/* overflow-hidden applied only to image wrapper to preserve border radius */}
+            <div className="aspect-square overflow-hidden rounded-lg">
               <img
                 src={it.img}
                 className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
                 alt=""
               />
             </div>
-            <div className="absolute top-3 left-3 z-10">
+
+            {/* StatusBadge outside image wrapper so dropdown is never clipped */}
+            <div className="absolute top-3 left-3 z-50">
               <StatusBadge
                 currentStatus={it.status}
                 type="inventory"
                 onStatusChange={(s) => onStatusChange(it.id, s)}
               />
             </div>
-            <div className="p-4 bg-gradient-to-t from-black/80 to-transparent absolute bottom-0 left-0 right-0">
+
+            <div className="p-4 bg-gradient-to-t from-black/80 to-transparent absolute bottom-0 left-0 right-0 rounded-b-lg">
               <h4 className="font-bold text-sm">{it.name}</h4>
-              <p className="text-[10px] text-white/50 uppercase">{it.cat}</p>
+              <p className="text-[10px] text-white/50 uppercase">
+                {typeof it.category === 'string'
+                  ? it.category
+                  : it.category?.name ?? 'Uncategorized'}
+              </p>
             </div>
           </div>
         ))}
