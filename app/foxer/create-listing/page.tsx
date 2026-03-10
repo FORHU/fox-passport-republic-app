@@ -30,6 +30,8 @@ function ListingBuilderContent() {
     completionPercentage,
     isReadyToPublish,
     displayCategory,
+    error,
+    isNotification,
     
     // Actions
     setTitle,
@@ -55,6 +57,8 @@ function ListingBuilderContent() {
         activeType={activeType}
         title={title}
         isSubmitting={isSubmitting}
+        error={error}
+        isNotification={isNotification}
         onBack={handleBack}
         onSaveDraft={handleSaveDraft}
         onPublish={handlePublish}
