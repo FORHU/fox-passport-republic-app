@@ -3,6 +3,7 @@
 import React from 'react';
 import RequireAuth from '@/components/authentication/RequireAuth';
 import { useDashboard } from '@/hooks/dashboards/useDashboard';
+import { useInventoryFetch } from '@/hooks/dashboards/useInventoryFetch';
 import {
   DashboardHeader,
   WelcomeBanner,
@@ -41,6 +42,9 @@ export default function Dashboard() {
     handleNavigateToCreateInventory,
     handleNavigateToCreateService,
   } = useDashboard();
+
+  // Fetch user's inventory from API
+  useInventoryFetch();
 
   return (
     <RequireAuth>
