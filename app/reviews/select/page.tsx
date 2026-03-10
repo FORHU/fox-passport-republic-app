@@ -1,15 +1,15 @@
 "use client";
 
-import React, { useState } from "react";
-import Link from "next/link";
-import Image from "next/image";
+import React from "react";
 import { Search, MapPin } from "lucide-react";
 import { HARDCODED_VENUES } from "@/data/hardcodedVenues";
 import RequireAuth from "@/components/authentication/RequireAuth";
+import { useReviewSelectStore } from "@/store/useReviewsStore";
+import { ReviewVenueCard } from "@/components/reviews";
 
 export default function ReviewSelectPage() {
-  const [searchQuery, setSearchQuery] = useState("");
-  const [locationQuery, setLocationQuery] = useState("");
+  const { searchQuery, locationQuery, setSearchQuery, setLocationQuery } =
+    useReviewSelectStore();
 
   // Get first 4 venues for "recently visited" section
   const recentVenues = HARDCODED_VENUES.slice(0, 4);
@@ -61,70 +61,12 @@ export default function ReviewSelectPage() {
           <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-2">
             Visited one of these places recently?
           </h2>
-          <p className="text-gray-600 mb-8">
-            Share your experience with the community
-          </p>
+          <p className="text-gray-600 mb-8">Share your experience with the community</p>
 
           {/* Venue Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {recentVenues.map((venue) => (
-              <Link
-                key={venue.id}
-                href={`/reviews/write/${venue.id}`}
-                className="group bg-white rounded-xl border-2 border-gray-200 hover:border-pink-500 hover:shadow-xl transition-all duration-300 overflow-hidden"
-              >
-                {/* Venue Image */}
-                <div className="relative h-48 md:h-56 overflow-hidden">
-                  <Image
-                    src={venue.images[0]}
-                    alt={venue.title}
-                    fill
-                    className="object-cover group-hover:scale-105 transition-transform duration-500"
-                  />
-                </div>
-
-                {/* Venue Info */}
-                <div className="p-5">
-                  <h3 className="text-xl font-bold text-gray-900 mb-2 group-hover:text-pink-600 transition-colors">
-                    {venue.title}
-                  </h3>
-                  <div className="flex items-center gap-2 text-sm text-gray-600 mb-3">
-                    <span className="px-2 py-1 bg-gray-100 rounded-md font-medium">
-                      {venue.category}
-                    </span>
-                    <span className="flex items-center gap-1">
-                      <MapPin className="w-4 h-4" />
-                      {venue.location}
-                    </span>
-                  </div>
-
-                  {/* Rating */}
-                  <div className="flex items-center gap-2 mb-4">
-                    <div className="flex gap-1">
-                      {[...Array(5)].map((_, i) => (
-                        <div
-                          key={i}
-                          className={`w-4 h-4 rounded-full ${
-                            i < Math.floor(venue.rating)
-                              ? "bg-pink-500"
-                              : "bg-gray-200"
-                          }`}
-                        />
-                      ))}
-                    </div>
-                    <span className="text-sm text-gray-600">
-                      {venue.rating} ({venue.reviews} reviews)
-                    </span>
-                  </div>
-
-                  {/* CTA */}
-                  <div className="pt-4 border-t border-gray-100">
-                    <p className="text-gray-700 font-semibold">
-                      Do you recommend this business?
-                    </p>
-                  </div>
-                </div>
-              </Link>
+              <ReviewVenueCard key={venue.id} venue={venue} />
             ))}
           </div>
         </div>

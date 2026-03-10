@@ -2,7 +2,6 @@
 
 import React, { useEffect, useState } from 'react';
 import { useAuthStore, useAuthActions, useAuthStatus, useAuthLoading } from '@/store/useAuthStore';
-import { Loader2 } from 'lucide-react';
 
 interface AdminAuthGuardProps {
   children: React.ReactNode;
@@ -18,12 +17,21 @@ const AdminAuthGuard: React.FC<AdminAuthGuardProps> = ({ children }) => {
   useEffect(() => {
     setIsClient(true);
     const storedUser = localStorage.getItem('fox_user');
-    if (storedUser) {
+    const storedToken = localStorage.getItem('fox_token');
+    const storedRefreshToken = localStorage.getItem('fox_refresh_token');
+
+    if (storedUser && storedToken) {
       try {
         const userData = JSON.parse(storedUser);
-        useAuthStore.getState().login(userData);
+        useAuthStore.getState().login({
+          user: userData,
+          accessToken: storedToken,
+          refreshToken: storedRefreshToken || ""
+        });
       } catch {
         localStorage.removeItem('fox_user');
+        localStorage.removeItem('fox_token');
+        localStorage.removeItem('fox_refresh_token');
       }
     }
     setLoading(false);
@@ -32,8 +40,11 @@ const AdminAuthGuard: React.FC<AdminAuthGuardProps> = ({ children }) => {
   // Show loading state
   if (!isClient || isLoading) {
     return (
-      <div className="min-h-screen bg-[#f6f8f8] flex items-center justify-center">
-        <Loader2 className="w-10 h-10 text-pink-500 animate-spin" />
+      <div className="min-h-screen bg-background bg-gradient-dark flex items-center justify-center">
+        <div className="flex flex-col items-center gap-4">
+          <div className="w-12 h-12 border-4 border-accent/30 border-t-accent rounded-full animate-spin"></div>
+          <span className="text-white/60 text-sm font-medium">Loading...</span>
+        </div>
       </div>
     );
   }
@@ -41,40 +52,40 @@ const AdminAuthGuard: React.FC<AdminAuthGuardProps> = ({ children }) => {
   // Show login prompt if not authenticated
   if (!isAuthenticated) {
     return (
-      <div className="min-h-screen bg-[#f6f8f8] flex items-center justify-center p-4">
-        <div className="bg-white rounded-2xl shadow-xl p-8 max-w-md w-full text-center">
-          <div className="w-16 h-16 bg-pink-100 rounded-full flex items-center justify-center mx-auto mb-6">
-            <svg
-              className="w-8 h-8 text-pink-500"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
-              />
-            </svg>
+      <div className="min-h-screen bg-background bg-gradient-dark flex items-center justify-center p-4">
+        <div className="glass-card rounded-[2rem] p-10 max-w-md w-full text-center border border-white/10 relative overflow-hidden">
+          {/* Background glow effect */}
+          <div className="absolute -top-20 -right-20 w-40 h-40 bg-secondary/20 rounded-full blur-[60px] pointer-events-none"></div>
+          <div className="absolute -bottom-20 -left-20 w-40 h-40 bg-accent/10 rounded-full blur-[60px] pointer-events-none"></div>
+
+          {/* Lock Icon */}
+          <div className="relative z-10 w-24 h-24 bg-[#ccff00]/30 rounded-full flex items-center justify-center mx-auto mb-8 border-2 border-[#ccff00] shadow-[0_0_60px_#ccff00,0_0_100px_rgba(204,255,0,0.5)]">
+            <span className="material-symbols-outlined text-[48px] text-black drop-shadow-[0_0_15px_#ccff00]">lock</span>
           </div>
-          <h1 className="text-2xl font-bold text-slate-900 mb-2">
+
+          {/* Title */}
+          <h1 className="relative z-10 text-3xl font-display font-bold text-white mb-3">
             Admin Access Required
           </h1>
-          <p className="text-slate-500 mb-8">
+          <p className="relative z-10 text-white/60 mb-10">
             Please log in to access the admin dashboard.
           </p>
+
+          {/* Login Button */}
           <button
             onClick={openLogin}
-            className="w-full bg-pink-500 hover:bg-pink-600 text-white font-semibold py-3 px-6 rounded-xl transition-colors shadow-lg shadow-pink-500/20"
+            className="relative z-10 w-full btn-neon bg-accent hover:shadow-[0_0_30px_rgba(204,255,0,0.4)] text-black font-bold py-4 px-8 rounded-full transition-all hover:scale-[1.02]"
           >
             Log In to Continue
           </button>
+
+          {/* Back Link */}
           <a
             href="/"
-            className="inline-block mt-4 text-sm text-slate-500 hover:text-pink-500 transition-colors"
+            className="relative z-10 inline-flex items-center gap-2 mt-6 text-sm text-white/50 hover:text-accent transition-colors"
           >
-            &larr; Back to Home
+            <span className="material-symbols-outlined text-[16px]">arrow_back</span>
+            Back to Home
           </a>
         </div>
       </div>

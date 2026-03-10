@@ -1,0 +1,64 @@
+import React from 'react';
+import Link from 'next/link';
+import Image from 'next/image';
+import UserMenuButton from '@/components/users/UserMenuButton';
+
+interface UserHeaderProps {
+  isAuthenticated: boolean;
+  userName?: string;
+  citizenLevel?: number;
+}
+
+export const UserHeader: React.FC<UserHeaderProps> = ({ isAuthenticated, userName, citizenLevel }) => {
+  return (
+    <header className="fixed top-6 left-0 right-0 z-50 transition-all duration-300">
+        <div className="mx-auto max-w-7xl px-4">
+          <div className="glass-panel rounded-full px-6 h-20 flex items-center justify-between shadow-2xl hover:bg-black/40 transition-colors duration-500">
+            <Link href="/" className="flex items-center gap-3 group cursor-pointer relative">
+              <div className="flex h-12 w-12 items-center justify-center group-hover:scale-110 transition-transform duration-300 overflow-hidden">
+                <Image 
+                  src="/foxonlylogo.png" 
+                  alt="FoxPassport Logo" 
+                  width={48} 
+                  height={48} 
+                  className="object-contain"
+                />
+              </div>
+              <div className="relative">
+                <h2 className="text-2xl font-display font-bold tracking-tight text-white group-hover:text-[#ccff00] transition-colors">FoxPassport</h2>
+                <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-[#ccff00] group-hover:w-full transition-all duration-300"></span>
+              </div>
+            </Link>
+            <nav className="hidden md:flex items-center gap-2 bg-black/20 p-1.5 rounded-full border border-white/5">
+              <Link href="/user" className="px-6 py-2.5 rounded-full text-sm font-bold text-black bg-[#ccff00] hover:bg-[#b8e600] hover:shadow-[0_0_15px_rgba(204,255,0,0.5)] transition-all transform hover:-translate-y-0.5">Dashboard</Link>
+              <Link href="/passport" className="px-6 py-2.5 rounded-full text-sm font-medium text-white/70 hover:text-white hover:bg-white/10 transition-all hover:scale-105">Passport</Link>
+              <Link href="/" className="px-6 py-2.5 rounded-full text-sm font-medium text-white/70 hover:text-white hover:bg-white/10 transition-all hover:scale-105">Explore</Link>
+            </nav>
+            <div className="flex items-center gap-4">
+              <button className="hidden sm:flex h-10 w-10 items-center justify-center rounded-full border border-white/10 text-white hover:bg-white hover:text-black transition-all hover:rotate-12 relative group">
+                <span className="material-symbols-outlined text-[20px]">notifications</span>
+                <span className="absolute top-2 right-2 h-2.5 w-2.5 rounded-full bg-[#db2777] border border-black group-hover:animate-ping"></span>
+                <span className="absolute top-2 right-2 h-2.5 w-2.5 rounded-full bg-[#db2777] border border-black"></span>
+              </button>
+              {isAuthenticated ? (
+                <div className="hidden sm:flex items-center gap-3 pl-2">
+                  <div className="text-right hidden lg:block">
+                    <p className="text-xs text-[#ccff00] font-bold uppercase tracking-wide">Hey, {userName}</p>
+                    <p className="text-sm font-bold text-white">Lvl {citizenLevel} Citizen</p>
+                  </div>
+                  <UserMenuButton />
+                </div>
+              ) : (
+                <Link href="/" className="hidden sm:flex items-center gap-2 rounded-full bg-[#ccff00] px-6 py-2.5 text-sm font-bold text-black hover:bg-[#b8e600] transition-all">
+                  Sign In
+                </Link>
+              )}
+              <button className="flex sm:hidden h-10 w-10 items-center justify-center rounded-full bg-white text-black">
+                <span className="material-symbols-outlined">menu</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </header>
+  );
+};
