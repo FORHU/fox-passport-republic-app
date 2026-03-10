@@ -1,4 +1,5 @@
 import { create } from "zustand";
+import api from "@/lib/axios";
 import {
   EventItem,
   VenueItem,
@@ -16,6 +17,7 @@ interface DashboardState {
   venues: VenueItem[];
   inventory: InventoryItem[];
   services: ServiceItem[];
+  isLoadingInventory: boolean;
 
   // UI State
   isCalendarOpen: boolean;
@@ -45,6 +47,7 @@ export const useDashboardStore = create<DashboardState>((set) => ({
   venues: INITIAL_VENUES,
   inventory: INITIAL_INVENTORY,
   services: INITIAL_SERVICES,
+  isLoadingInventory: false,
 
   // Initial UI State
   isCalendarOpen: false,
@@ -88,6 +91,7 @@ export const useDashboardStore = create<DashboardState>((set) => ({
       venues: INITIAL_VENUES,
       inventory: INITIAL_INVENTORY,
       services: INITIAL_SERVICES,
+      isLoadingInventory: false,
       isCalendarOpen: false,
       isCreateMenuOpen: false,
     }),

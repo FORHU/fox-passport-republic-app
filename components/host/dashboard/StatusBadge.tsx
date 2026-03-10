@@ -68,7 +68,7 @@ export function StatusBadge({ currentStatus, type, onStatusChange, className = '
       </button>
 
       {isOpen && (
-        <div className="absolute right-0 top-full mt-2 w-40 bg-[#1a1d2d] border border-white/10 rounded-xl shadow-2xl z-[100]">
+        <div className="absolute right-0 top-full mt-2 w-40 bg-[#1a1d2d] border border-white/10 rounded-xl shadow-2xl z-[200]">
           <div className="py-1">
             {options.map((option) => (
               <button
