@@ -1,0 +1,13 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: fox_app
+    ports:
+      - "3001:3000"
+    environment:
+      - DATABASE_URL=postgresql://admin:admin123@local_postgres:5432/foxpassportrepublic
+    env_file:
+      - .env
+    restart: unless-stopped

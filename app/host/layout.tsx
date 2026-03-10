@@ -3,8 +3,8 @@
 import React, { useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import CreateVenueWizard from "@/components/host/CreateVenueWizard";
-import { useCreateVenueModal } from "@/hooks/useCreateVenueModal";
+import CreateVenueWizard from "@/components/mayor/CreateVenueWizard";
+import { useCreateVenueModal } from "@/hooks/venues/useCreateVenueModal";
 import RequireAuth from "@/components/authentication/RequireAuth";
 import { useAuthStore } from "@/store/useAuthStore";
 
@@ -36,9 +36,11 @@ export default function HostLayout({
     }
 
     // If authenticated but not a host, redirect to home with toast
-    if (user && user.role !== "host" && user.role !== "admin" && user.role !== "super_admin") {
+    // Check both isHost boolean and role field for host access
+    const isHostUser = user?.isHost || user?.role === "host" || user?.role === "admin" || user?.role === "super_admin";
+    if (user && !isHostUser) {
       if (!hasShownToast.current) {
-        toast.error("Only hosts can access this page. Become a host to continue!");
+        toast.error("Only hosts can access this page. Become a mayor to continue!");
         hasShownToast.current = true;
       }
       router.push("/");
@@ -59,7 +61,9 @@ export default function HostLayout({
   }
 
   // Don't render anything if not authenticated or not a host
-  if (!isAuthenticated || !user || (user.role !== "host" && user.role !== "admin" && user.role !== "super_admin")) {
+  // Check both isHost boolean and role field for host access
+  const canAccessHost = user?.isHost || user?.role === "host" || user?.role === "admin" || user?.role === "super_admin";
+  if (!isAuthenticated || !user || !canAccessHost) {
     return null;
   }
 

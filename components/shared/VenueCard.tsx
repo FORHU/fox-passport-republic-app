@@ -3,7 +3,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { MapPin, Users, Star } from "lucide-react";
-import { Venue } from "@/hooks/useVenuesByCategory";
+import { Venue } from "@/hooks/venues/useVenuesByCategory";
 
 interface VenueCardProps {
   venue: Venue;

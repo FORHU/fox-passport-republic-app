@@ -1,45 +1,41 @@
 "use client";
 
-import React, { useState } from 'react';
-import {
-  Sidebar,
-  Header,
-  Dashboard,
-  AdminAuthGuard,
-  EventsManagement,
-} from '@/components/admin';
-
-const AdminDashboardContent: React.FC = () => {
-  const [activeTab, setActiveTab] = useState('Dashboard');
-
-  return (
-    <div className="flex h-screen w-full overflow-hidden bg-bg-light">
-      <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} />
-
-      <main className="flex-1 flex flex-col h-full overflow-hidden">
-        <Header />
-
-        <div className="flex-1 overflow-y-auto p-4 md:p-8">
-          <div className="max-w-7xl mx-auto space-y-8">
-            {activeTab === 'Dashboard' && <Dashboard />}
-            {activeTab === 'Experiences' && <EventsManagement />}
-            {activeTab !== 'Dashboard' && activeTab !== 'Experiences' && (
-              <div className="flex flex-col items-center justify-center h-full text-slate-400">
-                <span className="material-symbols-outlined text-6xl mb-4">construction</span>
-                <h2 className="text-2xl font-bold">{activeTab} screen is coming soon</h2>
-              </div>
-            )}
-          </div>
-        </div>
-      </main>
-    </div>
-  );
-};
+import React from 'react';
+import { useAdminDashboard } from '@/hooks/dashboards/useAdminDashboard';
+import { AdminSidebar } from '@/components/admin/AdminSidebar';
+import { AdminHeader } from '@/components/admin/AdminHeader';
+import { AdminKPISection } from '@/components/admin/AdminKPISection';
+import { AdminChartsSection } from '@/components/admin/AdminChartsSection';
+import { AdminSubmissionsTable } from '@/components/admin/AdminSubmissionsTable';
+import AdminAuthGuard from '@/components/admin/AdminAuthGuard';
 
 const AdminDashboard: React.FC = () => {
+  const { loading } = useAdminDashboard();
+
+  if (loading) {
+    return <div className="text-white">Loading...</div>; // Or a proper spinner
+  }
+
   return (
     <AdminAuthGuard>
-      <AdminDashboardContent />
+      <div className="bg-background bg-gradient-dark text-text-main antialiased min-h-screen flex selection:bg-accent selection:text-black font-body">
+        <AdminSidebar />
+        
+        {/* Main Content */}
+        <main className="flex-1 lg:pl-64 min-h-screen flex flex-col">
+          <AdminHeader />
+
+          <div className="p-8 space-y-8">
+            <AdminKPISection />
+            <AdminChartsSection />
+            <AdminSubmissionsTable />
+          </div>
+
+          <footer className="mt-auto border-t border-white/5 py-8 px-8 text-center text-xs text-gray-600">
+            <p>&copy; 2024 FoxPassport Admin Dashboard. All rights reserved.</p>
+          </footer>
+        </main>
+      </div>
     </AdminAuthGuard>
   );
 };
