@@ -35,11 +35,8 @@ const fetchHostVenues = async (hostId: string, token?: string | null): Promise<V
     { headers }
   );
 
-  if (response.data.success) {
-    return response.data.data;
-  }
-
-  return [];
+  // Backend now returns { venues } instead of { success, data }
+  return response.data.venues || [];
 };
 
 // Calculate stats from venues

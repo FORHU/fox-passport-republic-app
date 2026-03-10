@@ -5,7 +5,7 @@ export interface User {
   email: string;
   username: string;
   name: string;
-  role: "user" | "host" | "admin" | "super_admin";
+  role: "user" | "host" | "admin" | "super_admin" | "mayor";
   isHost: boolean;
   mobileNumber?: string;
   isEmailVerified?: boolean;

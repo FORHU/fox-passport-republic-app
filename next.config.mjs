@@ -1,8 +1,9 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  turbopack: {},
   // 1. CRITICAL: Disable Strict Mode. Cesium crashes if initialized twice.
   reactStrictMode: false,
-  
+
   // 2. Allow image domains (for venue images)
   images: {
     remotePatterns: [
@@ -21,6 +22,11 @@ const nextConfig = {
       cesium: 'Cesium',
     });
     return config;
+  },
+
+  // 4. Resolve Turbopack vs Webpack conflict in Next.js 16
+  experimental: {
+    turbo: {},
   },
 };
 
