@@ -97,8 +97,9 @@ export function useVenuePage() {
             // Fallback: Try fetching as Venue
             // Note: /api/v1/venues/:id
             const response = await api.get(`/v1/venues/${id}`);
-            if (response.data?.success) {
-              data = response.data.data;
+            // Backend now returns { venue } for single venues
+            if (response.data?.venue) {
+              data = response.data.venue;
               isEvent = false;
             }
           } catch (venueErr: any) {
@@ -126,8 +127,7 @@ export function useVenuePage() {
         // Host Image
         const hostAvatar =
           hostData?.profileImage ||
-          `https://ui-avatars.com/api/?name=${
-            hostData?.name || "User"
+          `https://ui-avatars.com/api/?name=${hostData?.name || "User"
           }&background=random`;
 
         const mappedVenue: Venue = {
@@ -144,8 +144,8 @@ export function useVenuePage() {
             rawImages.length > 0
               ? rawImages
               : [
-                  "https://images.unsplash.com/photo-1540575467063-178a50c2df87",
-                ], // Fallback image
+                "https://images.unsplash.com/photo-1540575467063-178a50c2df87",
+              ], // Fallback image
           description: data.description || "No description available.",
           category: data.category?.name || (isEvent ? "Event" : "Venue"),
           guestCount: isEvent ? data.maxAttendees || 20 : data.capacity || 2,
@@ -316,11 +316,11 @@ export function useVenuePage() {
     venue?.activities && venue.activities.length > 0
       ? venue.activities
       : [
-          "Explore local landmarks",
-          "Visit nearby cafes",
-          "Walk around the city center",
-          "Discover hidden gems",
-        ];
+        "Explore local landmarks",
+        "Visit nearby cafes",
+        "Walk around the city center",
+        "Discover hidden gems",
+      ];
 
   const price = venue?.price || 0;
   const stayTotal = price * (nights > 0 ? nights : 1);

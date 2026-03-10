@@ -56,82 +56,31 @@ export function EventDetailsForm({
         </div>
       )}
 
-      <div className="flex flex-col md:flex-row gap-8 mb-8">
-        <div className="flex-1 space-y-6">
-          {/* Title */}
-          <div>
-            <label className="text-[10px] uppercase font-bold text-accent tracking-widest mb-2 block">
-              Event Title
-            </label>
-            <input
-              type="text"
-              value={eventTitle}
-              onChange={(e) => onTitleChange(e.target.value)}
-              placeholder="Enter your event title..."
-              className="bg-transparent border-none p-0 text-4xl font-display font-bold text-white placeholder-white/10 focus:ring-0 w-full leading-tight"
-            />
-          </div>
-
-          {/* Date & Location */}
-          <div className="flex gap-4">
-            <div className="flex-1">
-              <label className="text-[10px] uppercase font-bold text-white/40 tracking-widest mb-2 block">
-                When
-              </label>
-              <div className="flex items-center gap-2 bg-white/5 px-4 py-3 rounded-xl border border-white/5">
-                <span className="material-symbols-outlined text-white/50 text-[18px]">
-                  calendar_today
-                </span>
-                <input
-                  value={date}
-                  onChange={(e) => onDateChange(e.target.value)}
-                  placeholder="e.g. Oct 24, 9PM"
-                  className="bg-transparent border-none p-0 text-sm text-white placeholder-white/30 focus:ring-0 w-full"
-                />
-              </div>
-            </div>
-            <div className="flex-1">
-              <label className="text-[10px] uppercase font-bold text-white/40 tracking-widest mb-2 block">
-                Where
-              </label>
-              <div className="flex items-center gap-2 bg-white/5 px-4 py-3 rounded-xl border border-white/5">
-                <span className="material-symbols-outlined text-white/50 text-[18px]">
-                  location_on
-                </span>
-                <input
-                  value={location}
-                  onChange={(e) => onLocationChange(e.target.value)}
-                  placeholder="e.g. BGC, Taguig"
-                  className="bg-transparent border-none p-0 text-sm text-white placeholder-white/30 focus:ring-0 w-full"
-                />
-              </div>
-            </div>
-          </div>
-
-          {/* Description */}
-          <div>
-            <label className="text-[10px] uppercase font-bold text-white/40 tracking-widest mb-2 block">
-              Description
-            </label>
-            <textarea
-              value={description}
-              onChange={(e) => onDescriptionChange(e.target.value)}
-              placeholder="Describe the vibe..."
-              className="w-full bg-white/5 border border-white/5 rounded-xl p-4 text-sm text-white placeholder-white/30 resize-none h-32"
-            />
-          </div>
+      <div className="space-y-8">
+        {/* Title */}
+        <div>
+          <label className="text-[10px] uppercase font-bold text-white/40 tracking-widest mb-2 block text-justify">
+            Event Title
+          </label>
+          <input
+            type="text"
+            value={eventTitle}
+            onChange={(e) => onTitleChange(e.target.value)}
+            placeholder="Enter your event title..."
+            className="w-full bg-white/5 border border-white/5 rounded-xl p-4 text-sm text-white placeholder-white/30 resize-none h-10 focus:border-accent/30 outline-none transition-colors"
+          />
         </div>
 
-        {/* Category */}
-        <div className="w-full md:w-72 shrink-0 space-y-6">
-          <div>
-            <label className="text-[10px] uppercase font-bold text-white/40 tracking-widest mb-2 block">
-              Landing Page Category
-            </label>
+        {/* Category - Moved below Title */}
+        <div>
+          <label className="text-[10px] uppercase font-bold text-white/40 tracking-widest mb-2 block text-justify">
+            Landing Page Category
+          </label>
+          <div className="relative max-w-md">
             <select
               value={category}
               onChange={(e) => onCategoryChange(e.target.value)}
-              className="w-full bg-white/5 border border-white/5 rounded-xl px-4 py-3 text-sm text-white appearance-none cursor-pointer"
+              className="w-full bg-white/5 border border-white/5 rounded-xl px-4 py-3 text-sm text-white appearance-none cursor-pointer focus:border-accent/30 outline-none"
             >
               <option value="" className="bg-[#0f111a] text-gray-500">
                 Select Category...
@@ -142,7 +91,59 @@ export function EventDetailsForm({
                 </option>
               ))}
             </select>
+            <span className="material-symbols-outlined absolute right-4 top-1/2 -translate-y-1/2 text-white/30 pointer-events-none">
+              expand_more
+            </span>
           </div>
+        </div>
+
+        {/* Date & Location */}
+        <div className="flex flex-col md:flex-row gap-4">
+          <div className="flex-1">
+            <label className="text-[10px] uppercase font-bold text-white/40 tracking-widest mb-2 block">
+              When
+            </label>
+            <div className="flex items-center gap-2 bg-white/5 px-4 py-3 rounded-xl border border-white/5 focus-within:border-accent/30 transition-colors">
+              <span className="material-symbols-outlined text-white/50 text-[18px]">
+                calendar_today
+              </span>
+              <input
+                type="datetime-local"
+                value={date}
+                onChange={(e) => onDateChange(e.target.value)}
+                className="bg-transparent border-none p-0 text-sm text-white placeholder-white/30 focus:ring-0 w-full [color-scheme:dark]"
+              />
+            </div>
+          </div>
+          <div className="flex-1">
+            <label className="text-[10px] uppercase font-bold text-white/40 tracking-widest mb-2 block">
+              Where
+            </label>
+            <div className="flex items-center gap-2 bg-white/5 px-4 py-3 rounded-xl border border-white/5 focus-within:border-accent/30 transition-colors">
+              <span className="material-symbols-outlined text-white/50 text-[18px]">
+                location_on
+              </span>
+              <input
+                value={location}
+                onChange={(e) => onLocationChange(e.target.value)}
+                placeholder="e.g. BGC, Taguig"
+                className="bg-transparent border-none p-0 text-sm text-white placeholder-white/30 focus:ring-0 w-full"
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* Description */}
+        <div>
+          <label className="text-[10px] uppercase font-bold text-white/40 tracking-widest mb-2 block">
+            Description
+          </label>
+          <textarea
+            value={description}
+            onChange={(e) => onDescriptionChange(e.target.value)}
+            placeholder="Describe the vibe, the music, the crowd..."
+            className="w-full bg-white/5 border border-white/5 rounded-xl p-4 text-sm text-white placeholder-white/30 resize-none h-40 focus:border-accent/30 outline-none transition-colors"
+          />
         </div>
       </div>
     </div>

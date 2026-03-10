@@ -17,12 +17,21 @@ const AdminAuthGuard: React.FC<AdminAuthGuardProps> = ({ children }) => {
   useEffect(() => {
     setIsClient(true);
     const storedUser = localStorage.getItem('fox_user');
-    if (storedUser) {
+    const storedToken = localStorage.getItem('fox_token');
+    const storedRefreshToken = localStorage.getItem('fox_refresh_token');
+
+    if (storedUser && storedToken) {
       try {
         const userData = JSON.parse(storedUser);
-        useAuthStore.getState().login(userData);
+        useAuthStore.getState().login({
+          user: userData,
+          accessToken: storedToken,
+          refreshToken: storedRefreshToken || ""
+        });
       } catch {
         localStorage.removeItem('fox_user');
+        localStorage.removeItem('fox_token');
+        localStorage.removeItem('fox_refresh_token');
       }
     }
     setLoading(false);
@@ -48,12 +57,12 @@ const AdminAuthGuard: React.FC<AdminAuthGuardProps> = ({ children }) => {
           {/* Background glow effect */}
           <div className="absolute -top-20 -right-20 w-40 h-40 bg-secondary/20 rounded-full blur-[60px] pointer-events-none"></div>
           <div className="absolute -bottom-20 -left-20 w-40 h-40 bg-accent/10 rounded-full blur-[60px] pointer-events-none"></div>
-          
+
           {/* Lock Icon */}
           <div className="relative z-10 w-24 h-24 bg-[#ccff00]/30 rounded-full flex items-center justify-center mx-auto mb-8 border-2 border-[#ccff00] shadow-[0_0_60px_#ccff00,0_0_100px_rgba(204,255,0,0.5)]">
             <span className="material-symbols-outlined text-[48px] text-black drop-shadow-[0_0_15px_#ccff00]">lock</span>
           </div>
-          
+
           {/* Title */}
           <h1 className="relative z-10 text-3xl font-display font-bold text-white mb-3">
             Admin Access Required
@@ -61,7 +70,7 @@ const AdminAuthGuard: React.FC<AdminAuthGuardProps> = ({ children }) => {
           <p className="relative z-10 text-white/60 mb-10">
             Please log in to access the admin dashboard.
           </p>
-          
+
           {/* Login Button */}
           <button
             onClick={openLogin}
@@ -69,7 +78,7 @@ const AdminAuthGuard: React.FC<AdminAuthGuardProps> = ({ children }) => {
           >
             Log In to Continue
           </button>
-          
+
           {/* Back Link */}
           <a
             href="/"

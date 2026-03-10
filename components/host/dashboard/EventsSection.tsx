@@ -6,7 +6,7 @@ import { StatusBadge } from './StatusBadge';
 
 interface EventsSectionProps {
   events: EventItem[];
-  onStatusChange: (id: number, status: string) => void;
+  onStatusChange: (id: number | string, status: string) => void;
 }
 
 export function EventsSection({ events, onStatusChange }: EventsSectionProps) {
@@ -29,9 +29,8 @@ export function EventsSection({ events, onStatusChange }: EventsSectionProps) {
         {events.map((ev) => (
           <div
             key={ev.id}
-            className={`bg-[#0f111a]/60 backdrop-blur border border-white/5 p-5 rounded-3xl hover:bg-white/5 transition-all group border-l-4 ${
-              ev.status === 'Ongoing' ? 'border-l-green-500' : 'border-l-yellow-500'
-            }`}
+            className={`bg-[#0f111a]/60 backdrop-blur border border-white/5 p-5 rounded-3xl hover:bg-white/5 transition-all group border-l-4 ${ev.status === 'Ongoing' ? 'border-l-green-500' : 'border-l-yellow-500'
+              }`}
           >
             <div className="flex flex-col sm:flex-row gap-5">
               <div className="relative w-full sm:w-36 aspect-video sm:aspect-square rounded-2xl overflow-hidden shrink-0">

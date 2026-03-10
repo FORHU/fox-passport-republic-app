@@ -65,11 +65,11 @@ const fetchVenuesByCategory = async (categoryName: string | null): Promise<Venue
   // Convert category name to slug (lowercase, replace spaces with hyphens)
   const categorySlug = categoryName.toLowerCase().replace(/\s+/g, "-").replace(/&/g, "");
 
-  const response = await axios.get<VenuesResponse>(
+  const response = await axios.get(
     `${config.apiUrl}/v1/venues/category/${categorySlug}`
   );
 
-  return response.data.success ? response.data.data : [];
+  return response.data.venues || response.data.data || [];
 };
 
 export function useVenuesByCategory(categoryName: string | null) {

@@ -6,7 +6,7 @@ import { StatusBadge } from './StatusBadge';
 
 interface VenuesSectionProps {
   venues: VenueItem[];
-  onStatusChange: (id: number, status: string) => void;
+  onStatusChange: (id: number | string, status: string) => void;
 }
 
 export function VenuesSection({ venues, onStatusChange }: VenuesSectionProps) {
@@ -29,16 +29,14 @@ export function VenuesSection({ venues, onStatusChange }: VenuesSectionProps) {
         {venues.map((vn) => (
           <div
             key={vn.id}
-            className={`bg-[#0f111a]/60 backdrop-blur border border-white/5 p-5 rounded-3xl hover:bg-white/5 transition-all group border-l-4 ${
-              vn.status === 'Published' ? 'border-l-green-500' : 'border-l-yellow-500'
-            }`}
+            className={`bg-[#0f111a]/60 backdrop-blur border border-white/5 p-5 rounded-3xl hover:bg-white/5 transition-all group border-l-4 ${(vn.status || "").toLowerCase() === "published" ? 'border-l-green-500' : 'border-l-yellow-500'
+              }`}
           >
             <div className="flex flex-col sm:flex-row gap-5">
               <div className="relative w-full sm:w-36 aspect-video sm:aspect-square rounded-2xl overflow-hidden shrink-0">
                 <img
-                  className={`w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 ${
-                    vn.status !== 'Published' ? 'grayscale group-hover:grayscale-0' : ''
-                  }`}
+                  className={`w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 ${(vn.status || "").toLowerCase() !== "published" ? 'grayscale group-hover:grayscale-0' : ''
+                    }`}
                   src={vn.img}
                   alt=""
                 />
@@ -67,7 +65,7 @@ export function VenuesSection({ venues, onStatusChange }: VenuesSectionProps) {
                     onStatusChange={(s) => onStatusChange(vn.id, s)}
                   />
                 </div>
-                {vn.status === 'Published' ? (
+                {(vn.status || "").toLowerCase() === "published" ? (
                   <div className="mt-4 grid grid-cols-3 gap-4 border-t border-white/5 pt-4">
                     <div>
                       <div className="text-[10px] text-white/40 uppercase">Bookings</div>
@@ -88,12 +86,18 @@ export function VenuesSection({ venues, onStatusChange }: VenuesSectionProps) {
                   </div>
                 ) : (
                   <div className="mt-4 flex justify-between items-center border-t border-white/5 pt-4">
-                    <div className="flex items-center gap-2 text-pink-400">
-                      <span className="material-symbols-outlined text-[18px]">engineering</span>
-                      <span className="text-xs">Renovation in progress</span>
+                    <div className="flex items-center gap-2 text-yellow-400">
+                      <span className="material-symbols-outlined text-[18px]">
+                        {(vn.status || "").toLowerCase() === "pending_review" ? "policy" : "edit_square"}
+                      </span>
+                      <span className="text-xs">
+                        {(vn.status || "").toLowerCase() === "pending_review"
+                          ? "Pending Admin Review"
+                          : "Draft / Work in Progress"}
+                      </span>
                     </div>
                     <button className="px-4 py-2 rounded-full bg-white/10 text-xs font-bold hover:bg-white hover:text-black">
-                      Manage Status
+                      {(vn.status || "").toLowerCase() === "pending_review" ? "Contact Support" : "Continue Editing"}
                     </button>
                   </div>
                 )}
