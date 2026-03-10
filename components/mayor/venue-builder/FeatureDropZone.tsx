@@ -67,22 +67,31 @@ export function FeatureDropZone({
               className="bg-[#1a1d2d] border border-white/5 rounded-xl p-3 flex items-center justify-between"
             >
               <div className="flex items-center gap-3">
-                <div className={`h-8 w-8 rounded-lg ${itemBgColor} flex items-center justify-center`}>
-                  <span className="material-symbols-outlined text-[18px]">{item.icon}</span>
+                <div className={`h-8 w-8 rounded-lg overflow-hidden flex items-center justify-center shrink-0 border border-white/5 ${itemBgColor}`}>
+                  {item.image ? (
+                    <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
+                  ) : (
+                    <span className="material-symbols-outlined text-[18px]">{item.icon}</span>
+                  )}
                 </div>
                 <div>
                   <p className="font-bold text-white text-sm">{item.name}</p>
-                  <p className="text-[10px] text-text-muted">
-                    {isIncluded ? `₱${item.value.toLocaleString()}` : `Upsell: ₱${item.value.toLocaleString()}`}
-                  </p>
                 </div>
               </div>
-              <button
-                onClick={() => onRemoveItem(item.id)}
-                className="text-white/20 hover:text-red-400 p-1.5 rounded-full"
-              >
-                <span className="material-symbols-outlined text-[16px]">delete</span>
-              </button>
+              <div className="flex flex-row items-center gap-2">
+
+                {item.category !== 'rules' && (
+                  <p className="text-[10px] text-text-muted font-mono">
+                    {isIncluded ? `₱${item.value.toLocaleString()}` : `Upsell: ₱${item.value.toLocaleString()}`}
+                  </p>
+                )}
+                <button
+                  onClick={() => onRemoveItem(item.id)}
+                  className="text-white/20 hover:text-red-400 p-1.5 rounded-full transition-all"
+                >
+                  <span className="material-symbols-outlined text-[16px]">delete</span>
+                </button>
+              </div>
             </div>
           ))}
         </div>

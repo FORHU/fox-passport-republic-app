@@ -1,11 +1,13 @@
 import { useCallback, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { useVenueBuilderStore } from "@/store/useVenueBuilderStore";
+import api from "@/lib/axios";
+import { toast } from "sonner";
 import {
   RESOURCE_CATEGORIES,
-  SAMPLE_GALLERY_URLS,
   ResourceItem,
 } from "@/data/venueBuilderData";
+
 
 export function useVenueBuilder() {
   const router = useRouter();
@@ -87,6 +89,7 @@ export function useVenueBuilder() {
         RESOURCE_CATEGORIES.find((c) => c.id === store.activeCategory)?.icon ||
         "star",
       desc: store.newItem.desc || "Custom item added by host.",
+      category: store.activeCategory,
     };
     store.addCustomResource(store.activeCategory, newResource);
     store.setNewItem({ name: "", value: "", desc: "" });
@@ -94,14 +97,20 @@ export function useVenueBuilder() {
   }, [store]);
 
   // Gallery handlers
-  const addImageToGallery = useCallback(() => {
-    store.addGalleryItem({
-      id: Date.now().toString(),
-      url: SAMPLE_GALLERY_URLS[
-        store.gallery.length % SAMPLE_GALLERY_URLS.length
-      ],
-      caption: "",
+  const addImageToGallery = useCallback((files: File[]) => {
+    files.forEach(file => {
+      const url = URL.createObjectURL(file);
+      store.addGalleryItem({
+        id: Math.random().toString(36).substr(2, 9),
+        url,
+        caption: file.name,
+        file
+      });
     });
+  }, [store]);
+
+  const removeImageFromGallery = useCallback((id: string) => {
+    store.removeGalleryItem(id);
   }, [store]);
 
   // Navigation handlers
@@ -121,11 +130,111 @@ export function useVenueBuilder() {
     });
   }, [store]);
 
-  const handlePublish = useCallback(() => {
+  const handlePublish = useCallback(async () => {
+    if (!store.venueName || !store.venueType) {
+      toast.error("Please fill in the required fields (Name and Type)");
+      return;
+    }
+
+    const capacityNum = parseInt(store.capacity);
+    if (isNaN(capacityNum) || capacityNum < 1) {
+      toast.error("Capacity must be at least 1");
+      return;
+    }
+
     store.setIsSubmitting(true);
-    setTimeout(() => {
-      router.push("/host");
-    }, 2000);
+    try {
+      const allItems = [...store.includedItems, ...store.addonItems];
+
+      const payload = {
+        name: store.venueName,
+        description: store.description,
+        type: store.venueType.toLowerCase(),
+        capacity: parseInt(store.capacity) || 0,
+        address: store.location,
+        city: store.city,
+        state: store.state,
+        country: store.country,
+        spaceType: allItems.filter(i => i.category === 'spaces').map(i => i.name),
+        amenities: allItems.filter(i => i.category === 'amenities').map(i => i.name),
+        techAv: allItems.filter(i => i.category === 'tech').map(i => i.name),
+        staffing: allItems.filter(i => i.category === 'staff').map(i => i.name),
+        policies: allItems.filter(i => i.category === 'rules').map(i => i.name),
+        status: 'pending_review'
+      };
+
+      console.log("Publishing venue...", payload);
+      const response = await api.post("/v1/venues", payload);
+
+      // Backend now returns { message, venue } instead of { success, data }
+      const createdVenue = response.data.venue;
+
+      if (createdVenue && createdVenue.id) {
+        const venueId = createdVenue.id;
+        console.log("Venue created successfully with ID:", venueId);
+
+        // Handle Image Uploads
+        const galleryFiles = store.gallery.map(item => item.file).filter(file => file !== undefined) as File[];
+
+        if (galleryFiles.length > 0) {
+          console.log("🔍 Upload Debug:", {
+            venueId,
+            imageCount: galleryFiles.length,
+            firstImageType: galleryFiles[0]?.constructor?.name,
+            firstImageSize: galleryFiles[0]?.size,
+            endpoint: `/v1/venues/${venueId}/images`
+          });
+
+          if (!venueId) {
+            console.error("❌ Venue ID is missing - cannot upload images");
+            toast.error("Venue created, but image upload failed: Venue ID missing");
+            return;
+          }
+
+          console.log(`Uploading ${galleryFiles.length} images for venue ${venueId}...`);
+          const formData = new FormData();
+          galleryFiles.forEach(file => {
+            formData.append("images", file);
+          });
+
+          try {
+            const uploadUrl = `/v1/venues/${venueId}/images`;
+            console.log("📤 Image Upload Attempt:", {
+              url: uploadUrl,
+              fullUrl: `${api.defaults.baseURL}${uploadUrl}`,
+              filesCount: galleryFiles.length
+            });
+
+            const uploadResponse = await api.post(uploadUrl, formData);
+            console.log("✅ Images uploaded successfully:", uploadResponse.data);
+          } catch (uploadError: any) {
+            console.error("❌ Image upload failed:", {
+              name: uploadError.name,
+              message: uploadError.message,
+              status: uploadError.response?.status,
+              statusText: uploadError.response?.statusText,
+              data: uploadError.response?.data,
+              url: uploadError.config?.url,
+              code: uploadError.code
+            });
+            toast.error(`Venue created, but image upload failed: ${uploadError.message}`);
+          }
+
+        }
+
+        toast.success("Venue submitted for review!");
+
+        setTimeout(() => {
+          router.push("/host");
+          store.reset();
+        }, 1500);
+      }
+    } catch (error: any) {
+      console.error("Publishing error:", error);
+      toast.error(error.response?.data?.message || "Failed to publish venue");
+    } finally {
+      store.setIsSubmitting(false);
+    }
   }, [store, router]);
 
   return {
@@ -141,7 +250,9 @@ export function useVenueBuilder() {
     handleDragLeave,
     handleDrop,
     handleAddCustomItem,
+    handleRemoveCustomResource: store.removeCustomResource,
     addImageToGallery,
+    removeImageFromGallery,
     handleBack,
     handleSaveDraft,
     handlePublish,

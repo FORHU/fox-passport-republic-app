@@ -19,6 +19,9 @@ export default function VenueCreationBuilder() {
     venueType,
     capacity,
     location,
+    city,
+    state,
+    country,
     gallery,
     includedItems,
     addonItems,
@@ -27,20 +30,22 @@ export default function VenueCreationBuilder() {
     activeCategory,
     searchQuery,
     showGuide,
-    showCustomForm,
     isSubmitting,
     isDragOver,
     newItem,
     filteredResources,
     revenue,
     currentCategoryLabel,
-    
+
     // Actions
     setVenueName,
     setDescription,
     setVenueType,
     setCapacity,
     setLocation,
+    setCity,
+    setState,
+    setCountry,
     removeGalleryItem,
     removeIncludedItem,
     removeAddonItem,
@@ -49,16 +54,17 @@ export default function VenueCreationBuilder() {
     setActiveCategory,
     setSearchQuery,
     setShowGuide,
-    setShowCustomForm,
     setNewItem,
-    
+
     // Handlers
     handleDragStart,
     handleDragOver,
     handleDragLeave,
     handleDrop,
     handleAddCustomItem,
+    handleRemoveCustomResource,
     addImageToGallery,
+    removeImageFromGallery,
     handleBack,
     handleSaveDraft,
     handlePublish,
@@ -80,14 +86,13 @@ export default function VenueCreationBuilder() {
             activeCategory={activeCategory}
             searchQuery={searchQuery}
             filteredResources={filteredResources}
-            showCustomForm={showCustomForm}
             newItem={newItem}
             currentCategoryLabel={currentCategoryLabel}
             onCategoryChange={setActiveCategory}
             onSearchChange={setSearchQuery}
-            onShowCustomForm={setShowCustomForm}
             onNewItemChange={setNewItem}
             onAddCustomItem={handleAddCustomItem}
+            onRemoveResource={handleRemoveCustomResource}
             onDragStart={handleDragStart}
           />
 
@@ -99,6 +104,9 @@ export default function VenueCreationBuilder() {
                 venueType={venueType}
                 capacity={capacity}
                 location={location}
+                city={city}
+                state={state}
+                country={country}
                 gallery={gallery}
                 showGuide={showGuide}
                 onNameChange={setVenueName}
@@ -106,8 +114,11 @@ export default function VenueCreationBuilder() {
                 onTypeChange={setVenueType}
                 onCapacityChange={setCapacity}
                 onLocationChange={setLocation}
+                onCityChange={setCity}
+                onStateChange={setState}
+                onCountryChange={setCountry}
                 onAddImage={addImageToGallery}
-                onRemoveImage={removeGalleryItem}
+                onRemoveImage={removeImageFromGallery}
                 onCloseGuide={() => setShowGuide(false)}
               />
 

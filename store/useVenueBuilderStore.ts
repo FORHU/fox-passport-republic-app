@@ -1,9 +1,5 @@
 import { create } from "zustand";
-import {
-  ResourceItem,
-  GalleryItem,
-  INITIAL_RESOURCES,
-} from "@/data/venueBuilderData";
+import { ResourceItem, GalleryItem, INITIAL_RESOURCES } from "@/data/venueBuilderData";
 
 interface VenueBuilderState {
   // Resources
@@ -15,6 +11,9 @@ interface VenueBuilderState {
   venueType: string;
   capacity: string;
   location: string;
+  country: string;
+  city: string;
+  state: string;
   gallery: GalleryItem[];
 
   // Package Items
@@ -39,6 +38,11 @@ interface VenueBuilderState {
   setVenueType: (type: string) => void;
   setCapacity: (cap: string) => void;
   setLocation: (loc: string) => void;
+  setCountry: (c: string) => void;
+  setCity: (c: string) => void;
+  setState: (s: string) => void;
+  setLatitude: (lat: number | null) => void;
+  setLongitude: (lng: number | null) => void;
 
   // Actions - Gallery
   addGalleryItem: (item: GalleryItem) => void;
@@ -46,6 +50,7 @@ interface VenueBuilderState {
 
   // Actions - Resources
   addCustomResource: (category: string, item: ResourceItem) => void;
+  removeCustomResource: (category: string, id: string) => void;
 
   // Actions - Package Items
   addIncludedItem: (item: ResourceItem) => void;
@@ -65,17 +70,22 @@ interface VenueBuilderState {
   setDraggedItem: (item: ResourceItem | null) => void;
   setNewItem: (item: { name: string; value: string; desc: string }) => void;
 
-  // Actions - Reset
+  // Reset
   reset: () => void;
 }
 
-const initialState = {
+const initialState: VenueBuilderState = {
   resources: INITIAL_RESOURCES,
   venueName: "",
   description: "",
   venueType: "",
   capacity: "",
   location: "",
+  country: "",
+  city: "",
+  state: "",
+  //latitude: null,
+  //longitude: null,
   gallery: [],
   includedItems: [],
   addonItems: [],
@@ -89,6 +99,36 @@ const initialState = {
   isDragOver: false,
   draggedItem: null,
   newItem: { name: "", value: "", desc: "" },
+  // placeholder functions will be overridden by zustand
+  setVenueName: () => { },
+  setDescription: () => { },
+  setVenueType: () => { },
+  setCapacity: () => { },
+  setLocation: () => { },
+  setCountry: () => { },
+  setCity: () => { },
+  setState: () => { },
+  setLatitude: () => { },
+  setLongitude: () => { },
+  addGalleryItem: () => { },
+  removeGalleryItem: () => { },
+  addCustomResource: () => { },
+  removeCustomResource: () => { },
+  addIncludedItem: () => { },
+  removeIncludedItem: () => { },
+  addAddonItem: () => { },
+  removeAddonItem: () => { },
+  setBaseRate: () => { },
+  setOccupancyRate: () => { },
+  setActiveCategory: () => { },
+  setSearchQuery: () => { },
+  setShowGuide: () => { },
+  setShowCustomForm: () => { },
+  setIsSubmitting: () => { },
+  setIsDragOver: () => { },
+  setDraggedItem: () => { },
+  setNewItem: () => { },
+  reset: () => { },
 };
 
 export const useVenueBuilderStore = create<VenueBuilderState>((set) => ({
@@ -100,12 +140,15 @@ export const useVenueBuilderStore = create<VenueBuilderState>((set) => ({
   setVenueType: (type) => set({ venueType: type }),
   setCapacity: (cap) => set({ capacity: cap }),
   setLocation: (loc) => set({ location: loc }),
+  setCountry: (c) => set({ country: c }),
+  setCity: (c) => set({ city: c }),
+  setState: (s) => set({ state: s }),
+  // setLatitude: (lat) => set({ latitude: lat }),
+  // setLongitude: (lng) => set({ longitude: lng }),
 
   // Gallery Actions
-  addGalleryItem: (item) =>
-    set((state) => ({ gallery: [...state.gallery, item] })),
-  removeGalleryItem: (id) =>
-    set((state) => ({ gallery: state.gallery.filter((g) => g.id !== id) })),
+  addGalleryItem: (item) => set((state) => ({ gallery: [...state.gallery, item] })),
+  removeGalleryItem: (id) => set((state) => ({ gallery: state.gallery.filter((g) => g.id !== id) })),
 
   // Resources Actions
   addCustomResource: (category, item) =>
@@ -115,6 +158,13 @@ export const useVenueBuilderStore = create<VenueBuilderState>((set) => ({
         [category]: [item, ...(state.resources[category] || [])],
       },
     })),
+  removeCustomResource: (category, id) =>
+    set((state) => ({
+      resources: {
+        ...state.resources,
+        [category]: (state.resources[category] || []).filter((r) => r.id !== id),
+      },
+    })),
 
   // Package Items Actions
   addIncludedItem: (item) =>
@@ -122,25 +172,18 @@ export const useVenueBuilderStore = create<VenueBuilderState>((set) => ({
       if (state.includedItems.find((i) => i.id === item.id)) return state;
       return { includedItems: [...state.includedItems, item] };
     }),
-  removeIncludedItem: (id) =>
-    set((state) => ({
-      includedItems: state.includedItems.filter((i) => i.id !== id),
-    })),
+  removeIncludedItem: (id) => set((state) => ({ includedItems: state.includedItems.filter((i) => i.id !== id) })),
   addAddonItem: (item) =>
     set((state) => {
       if (state.addonItems.find((i) => i.id === item.id)) return state;
       return { addonItems: [...state.addonItems, item] };
     }),
-  removeAddonItem: (id) =>
-    set((state) => ({
-      addonItems: state.addonItems.filter((i) => i.id !== id),
-    })),
+  removeAddonItem: (id) => set((state) => ({ addonItems: state.addonItems.filter((i) => i.id !== id) })),
   setBaseRate: (rate) => set({ baseRate: rate }),
   setOccupancyRate: (rate) => set({ occupancyRate: rate }),
 
   // UI State Actions
-  setActiveCategory: (cat) =>
-    set({ activeCategory: cat, searchQuery: "", showCustomForm: false }),
+  setActiveCategory: (cat) => set({ activeCategory: cat, searchQuery: "", showCustomForm: false }),
   setSearchQuery: (query) => set({ searchQuery: query }),
   setShowGuide: (show) => set({ showGuide: show }),
   setShowCustomForm: (show) => set({ showCustomForm: show }),
