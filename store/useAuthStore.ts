@@ -45,8 +45,12 @@ export const useAuthStore = create<AuthState>((set) => ({
   login: (loginResponse) => {
     const { accessToken, refreshToken, user } = loginResponse;
 
+    // store tokens separately (used by interceptor) and also embed into the
+    // serialized user so legacy code that inspects fox_user still picks them up
+    const storedUser = { ...user, accessToken };
+
     // Save both user and tokens to local storage
-    localStorage.setItem("fox_user", JSON.stringify(user));
+    localStorage.setItem("fox_user", JSON.stringify(storedUser));
     localStorage.setItem("fox_token", accessToken);
     localStorage.setItem("fox_refresh_token", refreshToken);
 
