@@ -5,21 +5,40 @@ import { GalleryItem } from '@/data/eventBuilderData';
 
 interface EventGalleryProps {
   gallery: GalleryItem[];
-  onAddImage: () => void;
+  onAddImage: (files: File[]) => void;
   onRemoveImage: (id: string) => void;
 }
 
 export function EventGallery({ gallery, onAddImage, onRemoveImage }: EventGalleryProps) {
+  const fileInputRef = React.useRef<HTMLInputElement>(null);
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files.length > 0) {
+      onAddImage(Array.from(e.target.files));
+    }
+  };
+
+  const triggerUpload = () => {
+    fileInputRef.current?.click();
+  };
+
   return (
     <div className="rounded-[2rem] overflow-hidden border border-white/10 bg-[#0f111a] p-8">
+      <input
+        type="file"
+        ref={fileInputRef}
+        onChange={handleFileChange}
+        multiple
+        accept="image/*"
+        className="hidden"
+      />
       <div className="flex justify-between items-end mb-3">
         <label className="text-[10px] uppercase font-bold text-white/40 tracking-widest">
           Event Gallery (Min 5)
         </label>
         <span
-          className={`text-[10px] font-bold ${
-            gallery.length < 5 ? 'text-red-400' : 'text-green-400'
-          }`}
+          className={`text-[10px] font-bold ${gallery.length < 5 ? 'text-red-400' : 'text-green-400'
+            }`}
         >
           {gallery.length}/5
         </span>
@@ -28,9 +47,8 @@ export function EventGallery({ gallery, onAddImage, onRemoveImage }: EventGaller
       <div className="grid grid-cols-4 gap-3 h-[240px]">
         {/* Cover Image (Large) */}
         <div
-          className={`col-span-2 row-span-2 h-full relative group rounded-xl overflow-hidden border border-white/10 ${
-            gallery.length === 0 ? 'border-dashed' : ''
-          }`}
+          className={`col-span-2 row-span-2 h-full relative group rounded-xl overflow-hidden border border-white/10 ${gallery.length === 0 ? 'border-dashed' : ''
+            }`}
         >
           {gallery.length > 0 ? (
             <>
@@ -51,7 +69,7 @@ export function EventGallery({ gallery, onAddImage, onRemoveImage }: EventGaller
             </>
           ) : (
             <button
-              onClick={onAddImage}
+              onClick={triggerUpload}
               className="w-full h-full flex flex-col items-center justify-center text-white/30 hover:text-white hover:bg-white/5"
             >
               <span className="material-symbols-outlined text-4xl mb-2">add_a_photo</span>
@@ -78,7 +96,7 @@ export function EventGallery({ gallery, onAddImage, onRemoveImage }: EventGaller
           ))}
           {gallery.length > 0 && gallery.length < 5 && (
             <button
-              onClick={onAddImage}
+              onClick={triggerUpload}
               className="border-2 border-dashed border-white/10 rounded-xl flex flex-col items-center justify-center text-white/20 hover:text-white hover:bg-white/5 h-full"
             >
               <span className="material-symbols-outlined text-2xl mb-1">add_photo_alternate</span>

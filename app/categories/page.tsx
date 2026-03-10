@@ -22,11 +22,11 @@ function CategoriesContent() {
 
   // State for search within categories
   const [searchQuery, setSearchQuery] = useState("");
-  
+
   // Filter categories based on search (excluding any "More" category)
   const filteredCategories = useMemo(() => {
-    return categories.filter(cat => 
-      cat.slug !== 'more' && 
+    return categories.filter(cat =>
+      cat.slug !== 'more' &&
       cat.name.toLowerCase().includes(searchQuery.toLowerCase())
     );
   }, [categories, searchQuery]);
@@ -39,27 +39,36 @@ function CategoriesContent() {
     router.push("/categories");
   };
 
+  // View logic for category display
+  const currentCategory = useMemo(() => {
+    if (!type || !categories.length) return null;
+    return categories.find(c => c.slug === type) ||
+      categories.flatMap(c => c.subCategories || []).find(sc => sc.slug === type);
+  }, [type, categories]);
+
+  const displayTitle = currentCategory ? currentCategory.name : type;
+
   // --- VIEW: SPECIFIC CATEGORY (Legacy/Type Filter) ---
   if (type) {
     return (
       <div className="min-h-screen bg-[#0a0a0a] flex flex-col">
         <Navbar />
-        
+
         <div className="flex-1 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 pt-24">
-          
+
           {/* Header */}
           <div className="mb-8 flex items-center justify-between">
             <div className="flex items-center gap-4">
-              <button 
+              <button
                 onClick={handleBack}
                 className="p-2 hover:bg-white/10 rounded-full transition-colors border border-transparent hover:border-white/20"
               >
                 <ArrowLeft className="w-5 h-5 text-gray-300" />
               </button>
               <div>
-                <h1 className="text-3xl font-bold text-white">{type}</h1>
+                <h1 className="text-3xl font-bold text-white">{displayTitle}</h1>
                 <p className="text-gray-400 text-sm mt-1">
-                  Explore the best {type.toLowerCase()} experiences
+                  Explore the best {displayTitle?.toLowerCase()} experiences
                 </p>
               </div>
             </div>
@@ -153,9 +162,9 @@ function CategoriesContent() {
 
       <main className="flex-grow container mx-auto px-6 lg:px-20 py-10">
         <CategoryListHero searchQuery={searchQuery} setSearchQuery={setSearchQuery} />
-        
-        <CategoryBentoGrid 
-          categories={filteredCategories} 
+
+        <CategoryBentoGrid
+          categories={filteredCategories}
           onCategoryClick={handleCategoryClick}
           searchQuery={searchQuery}
         />

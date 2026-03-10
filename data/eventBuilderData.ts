@@ -32,17 +32,24 @@ export const AVAILABLE_RESOURCES: Record<string, ResourceItem[]> = {
   venue: [
     {
       id: "v1",
-      name: "Skyline Loft",
-      cost: 15000,
+      name: "Grand Ballroom",
+      cost: 50000,
       icon: "location_city",
-      desc: "Modern rooftop with city views. 50pax.",
+      desc: "Elegant space for large gatherings. Includes basic lighting.",
     },
     {
       id: "v2",
-      name: "The Bunker",
-      cost: 25000,
+      name: "Industrial Warehouse",
+      cost: 35000,
       icon: "warehouse",
-      desc: "Underground industrial space. 200pax.",
+      desc: "Raw, versatile space perfect for underground vibes.",
+    },
+    {
+      id: "v3",
+      name: "Secret Garden",
+      cost: 25000,
+      icon: "forest",
+      desc: "Lush outdoor setting for intimate celebrations.",
     },
   ],
   talent: [

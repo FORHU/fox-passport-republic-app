@@ -21,11 +21,15 @@ interface DashboardState {
   isCalendarOpen: boolean;
   isCreateMenuOpen: boolean;
 
+  // Actions - Set Data
+  setEvents: (events: EventItem[]) => void;
+  setVenues: (venues: VenueItem[]) => void;
+
   // Actions - Data Updates
-  updateEventStatus: (id: number, status: string) => void;
-  updateVenueStatus: (id: number, status: string) => void;
-  updateInventoryStatus: (id: number, status: string) => void;
-  updateServiceStatus: (id: number, status: string) => void;
+  updateEventStatus: (id: number | string, status: string) => void;
+  updateVenueStatus: (id: number | string, status: string) => void;
+  updateInventoryStatus: (id: number | string, status: string) => void;
+  updateServiceStatus: (id: number | string, status: string) => void;
 
   // Actions - UI State
   setCalendarOpen: (open: boolean) => void;
@@ -68,6 +72,10 @@ export const useDashboardStore = create<DashboardState>((set) => ({
     set((state) => ({
       services: state.services.map((s) => (s.id === id ? { ...s, status } : s)),
     })),
+
+  // Data Set Actions
+  setEvents: (events) => set({ events }),
+  setVenues: (venues) => set({ venues }),
 
   // UI State Actions
   setCalendarOpen: (open) => set({ isCalendarOpen: open }),

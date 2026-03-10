@@ -1,7 +1,7 @@
 // Host Dashboard Data Constants
 
 export interface ScheduleItem {
-  id: number;
+  id: number | string;
   title: string;
   startDay: number;
   endDay: number;
@@ -10,7 +10,7 @@ export interface ScheduleItem {
 }
 
 export interface EventItem {
-  id: number;
+  id: number | string;
   title: string;
   date: string;
   loc: string;
@@ -23,7 +23,7 @@ export interface EventItem {
 }
 
 export interface VenueItem {
-  id: number;
+  id: number | string;
   title: string;
   type: string;
   loc: string;
@@ -35,7 +35,7 @@ export interface VenueItem {
 }
 
 export interface InventoryItem {
-  id: number;
+  id: number | string;
   name: string;
   cat: string;
   status: string;
@@ -43,7 +43,7 @@ export interface InventoryItem {
 }
 
 export interface ServiceItem {
-  id: number;
+  id: number | string;
   name: string;
   price: string;
   status: string;
@@ -52,7 +52,7 @@ export interface ServiceItem {
 }
 
 export interface PendingRequest {
-  id: number;
+  id: number | string;
   name: string;
   avatar: string;
   request: string;
@@ -60,7 +60,7 @@ export interface PendingRequest {
 }
 
 export interface ActivityItem {
-  id: number;
+  id: number | string;
   type: "booking" | "venue" | "inventory";
   title: string;
   description: string;
