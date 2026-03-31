@@ -155,6 +155,7 @@ export function useVenueBuilder() {
         city: store.city,
         state: store.state,
         country: store.country,
+        price: store.baseRate,
         spaceType: allItems.filter(i => i.category === 'spaces').map(i => i.name),
         amenities: allItems.filter(i => i.category === 'amenities').map(i => i.name),
         techAv: allItems.filter(i => i.category === 'tech').map(i => i.name),

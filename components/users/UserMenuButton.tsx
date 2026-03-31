@@ -17,6 +17,7 @@ import {
   LogOut,
   Menu,
   Building2,
+  ShieldCheck,
 } from "lucide-react";
 import { useUserMenu } from "@/hooks/auth/useUserMenu";
 import { useAuthStore } from "@/store/useAuthStore";
@@ -49,7 +50,9 @@ export default function UserMenuButton({ onBecomeHost }: UserMenuButtonProps) {
   const { mutate: becomeHost, isPending } = useBecomeHost();
 
   // Check if user is already a host
-  const isHost = (user as any)?.isHost || (user as any)?.role === "host";
+  const userRole = user?.role?.toLowerCase();
+  const isHost = user?.isHost || ["host", "mayor", "admin", "super_admin"].includes(userRole as string);
+  const isAdmin = ["admin", "super_admin"].includes(userRole as string);
 
   // Get user initial for avatar
   const userInitial =
@@ -90,9 +93,16 @@ export default function UserMenuButton({ onBecomeHost }: UserMenuButtonProps) {
               icon: Home,
               href: "#become-host",
               hasImage: true,
-              isAction: true, // Flag to handle as action instead of navigation
+              isAction: true,
             },
-      ],
+        isAdmin && {
+          label: "Admin Dashboard",
+          description: "Manage platform settings and users.",
+          icon: ShieldCheck,
+          href: "/admin",
+          hasImage: true,
+        },
+      ].filter(Boolean) as MenuItem[],
     },
     {
       items: [

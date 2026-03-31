@@ -20,6 +20,7 @@ export default function EventCreationBuilder() {
     category,
     date,
     location,
+    maxAttendees,
     gallery,
     baseItems,
     targetMargin,
@@ -38,6 +39,7 @@ export default function EventCreationBuilder() {
     setCategory,
     setDate,
     setLocation,
+    setMaxAttendees,
     setActiveCategory,
     setSearchQuery,
     setShowGuide,
@@ -85,12 +87,14 @@ export default function EventCreationBuilder() {
                 category={category}
                 date={date}
                 location={location}
+                maxAttendees={maxAttendees}
                 showGuide={showGuide}
                 onTitleChange={setEventTitle}
                 onDescriptionChange={setDescription}
                 onCategoryChange={setCategory}
                 onDateChange={setDate}
                 onLocationChange={setLocation}
+                onMaxAttendeesChange={setMaxAttendees}
                 onCloseGuide={() => setShowGuide(false)}
               />
 

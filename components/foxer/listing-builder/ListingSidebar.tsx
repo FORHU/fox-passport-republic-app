@@ -5,9 +5,9 @@ import {
   CategoryItem,
   CONDITIONS,
   INVENTORY_UNITS,
-  SERVICE_UNITS,
   ListingType,
 } from '@/data/listingBuilderData';
+import { SERVICE_UNITS } from '@/data/serviceBuilderData';
 
 interface ListingSidebarProps {
   activeType: ListingType;
@@ -86,7 +86,7 @@ export function ListingSidebar({
                 onChange={(e) => onCustomCategoryChange(e.target.value)}
                 placeholder={activeType === 'inventory' ? 'e.g. Vintage Camera' : 'e.g. Makeup Artist'}
                 autoFocus
-                className="w-full bg-[#1a1d2d] border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white focus:border-accent outline-none placeholder:text-white/20"
+                className="w-full bg-white/5 border border-white/5 rounded-xl p-4 text-sm text-white placeholder-white/30 focus:border-accent/30 outline-none transition-colors"
               />
             </div>
           )}
@@ -122,13 +122,13 @@ export function ListingSidebar({
           </label>
           <div className="space-y-3">
             <div className="relative flex items-center">
-              <span className="absolute left-4 text-white/50 text-sm">₱</span>
+              <span className="absolute left-4 text-white/30 text-sm">₱</span>
               <input
                 type="number"
                 value={price || ''}
                 onChange={(e) => onPriceChange(parseFloat(e.target.value) || 0)}
                 placeholder="0"
-                className="w-full bg-[#1a1d2d] border border-[#ccff00]/30 rounded-xl py-3 pl-8 pr-16 text-sm text-white focus:border-[#ccff00] outline-none font-mono [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                className="w-full bg-white/5 border border-white/5 rounded-xl py-4 pl-10 pr-16 text-sm text-white placeholder-white/30 focus:border-accent/30 outline-none font-mono transition-colors [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
               />
               <div className="absolute right-2 flex flex-col gap-0.5">
                 <button
@@ -151,17 +151,17 @@ export function ListingSidebar({
               <select
                 value={unit}
                 onChange={(e) => onUnitChange(e.target.value)}
-                className="w-full bg-[#1a1d2d] border border-[#ccff00]/30 rounded-xl px-4 py-3 text-sm text-white focus:border-[#ccff00] outline-none appearance-none cursor-pointer"
+                className="w-full bg-white/5 border border-white/5 rounded-xl px-4 py-4 text-sm text-white placeholder-white/30 focus:border-accent/30 outline-none appearance-none cursor-pointer transition-colors"
                 style={{ colorScheme: 'dark' }}
               >
-                {units.map((u) => (
-                  <option key={u} value={u} style={{ backgroundColor: '#1a1d2d', color: 'white' }}>
+                {(units as readonly string[]).map((u) => (
+                  <option key={u} value={u} className="bg-[#0f111a]">
                     {u}
                   </option>
                 ))}
               </select>
-              <span className="absolute right-4 top-1/2 -translate-y-1/2 text-white/50 pointer-events-none">
-                <span className="material-symbols-outlined text-[18px]">expand_more</span>
+              <span className="absolute right-4 top-1/2 -translate-y-1/2 text-white/30 pointer-events-none">
+                <span className="material-symbols-outlined text-[20px]">expand_more</span>
               </span>
             </div>
           </div>
