@@ -85,9 +85,9 @@ export function ListingPreviewCard({
         )}
 
         {/* Title & Description Inputs */}
-        <div className="space-y-6 w-full">
-          <div className="text-center">
-            <label className="text-[10px] uppercase font-bold text-accent tracking-widest mb-2 block">
+        <div className="rounded-[2rem] overflow-hidden border border-white/10 bg-[#0f111a] p-8 space-y-8 w-full">
+          <div>
+            <label className="text-[10px] uppercase font-bold text-white/40 tracking-widest mb-2 block">
               {activeType === 'inventory' ? 'Item Title' : 'Service Title'}
             </label>
             <input
@@ -95,10 +95,10 @@ export function ListingPreviewCard({
               value={title}
               onChange={(e) => onTitleChange(e.target.value)}
               placeholder={activeType === 'inventory' ? 'e.g. Pioneer CDJ-3000' : 'e.g. Event Photography'}
-              className="w-full bg-transparent border-none p-0 text-center text-4xl md:text-5xl font-display font-bold text-white placeholder-white/50 focus:ring-0"
+              className="w-full bg-white/5 border border-white/5 rounded-xl p-4 text-sm text-white placeholder-white/30 focus:border-accent/30 outline-none transition-colors"
             />
           </div>
-          <div className="text-center">
+          <div>
             <label className="text-[10px] uppercase font-bold text-white/40 tracking-widest mb-2 block">
               Description
             </label>
@@ -106,7 +106,7 @@ export function ListingPreviewCard({
               value={description}
               onChange={(e) => onDescriptionChange(e.target.value)}
               placeholder="Describe your item or service..."
-              className="w-full bg-transparent border-none p-0 text-center text-lg text-text-muted placeholder-white/50 focus:ring-0 resize-none h-24"
+              className="w-full bg-white/5 border border-white/5 rounded-xl p-4 text-sm text-white placeholder-white/30 resize-none h-40 focus:border-accent/30 outline-none transition-colors"
             />
           </div>
         </div>

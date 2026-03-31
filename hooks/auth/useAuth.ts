@@ -55,9 +55,14 @@ export const useLogin = () => {
 
       toast.success("Welcome back!");
 
-      // Close modal and redirect
+      // Close modal and redirect based on role
       close();
-      router.push("/");
+      const userRole = data.user?.role?.toLowerCase();
+      if (userRole === "admin" || userRole === "super_admin") {
+        router.push("/admin");
+      } else {
+        router.push("/");
+      }
     },
     onError: (error: any) => {
       console.error("Login Error:", error);

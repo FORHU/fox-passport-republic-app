@@ -1,6 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   turbopack: {},
+  output: 'standalone',
   // 1. CRITICAL: Disable Strict Mode. Cesium crashes if initialized twice.
   reactStrictMode: false,
 
@@ -24,10 +25,6 @@ const nextConfig = {
     return config;
   },
 
-  // 4. Resolve Turbopack vs Webpack conflict in Next.js 16
-  experimental: {
-    turbo: {},
-  },
 };
 
 export default nextConfig;

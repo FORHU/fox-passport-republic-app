@@ -3,10 +3,11 @@
 import React from 'react';
 import { InventoryItem, ServiceItem } from '@/data/dashboardData';
 import { StatusBadge } from './StatusBadge';
+import { EmptyState } from './EmptyState';
 
 interface InventorySectionProps {
   inventory: InventoryItem[];
-  onStatusChange: (id: number, status: string) => void;
+  onStatusChange: (id: number | string, status: string) => void;
 }
 
 export function InventorySection({ inventory, onStatusChange }: InventorySectionProps) {
@@ -22,40 +23,42 @@ export function InventorySection({ inventory, onStatusChange }: InventorySection
           <span className="material-symbols-outlined text-[16px]">arrow_forward</span>
         </button>
       </div>
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        {inventory.map((it) => (
-          <div
-            key={it.id}
-            className="relative bg-[#0f111a]/60 border border-white/5 rounded-lg group hover:border-purple-500/50 transition-all"
-          >
-            {/* overflow-hidden applied only to image wrapper to preserve border radius */}
-            <div className="aspect-square overflow-hidden rounded-lg">
-              <img
-                src={it.img}
-                className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-                alt=""
-              />
-            </div>
+      <div className={inventory.length > 0 ? "grid grid-cols-2 md:grid-cols-4 gap-4" : ""}>
+        {inventory.length > 0 ? (
+          inventory.map((it) => (
+            <div
+              key={it.id}
+              className="relative bg-[#0f111a]/60 border border-white/5 rounded-lg group hover:border-purple-500/50 transition-all"
+            >
+              <div className="aspect-square overflow-hidden rounded-lg">
+                <img
+                  src={it.img}
+                  className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                  alt=""
+                />
+              </div>
 
-            {/* StatusBadge outside image wrapper so dropdown is never clipped */}
-            <div className="absolute top-3 left-3 z-50">
-              <StatusBadge
-                currentStatus={it.status}
-                type="inventory"
-                onStatusChange={(s) => onStatusChange(it.id, s)}
-              />
-            </div>
+              <div className="absolute top-3 left-3 z-50">
+                <StatusBadge
+                  currentStatus={it.status}
+                  type="inventory"
+                  onStatusChange={(s) => onStatusChange(it.id, s)}
+                />
+              </div>
 
-            <div className="p-4 bg-gradient-to-t from-black/80 to-transparent absolute bottom-0 left-0 right-0 rounded-b-lg">
-              <h4 className="font-bold text-sm">{it.name}</h4>
-              <p className="text-[10px] text-white/50 uppercase">
-                {typeof it.category === 'string'
-                  ? it.category
-                  : it.category?.name ?? 'Uncategorized'}
-              </p>
+              <div className="p-4 bg-gradient-to-t from-black/80 to-transparent absolute bottom-0 left-0 right-0 rounded-b-lg">
+                <h4 className="font-bold text-sm">{it.name}</h4>
+                <p className="text-[10px] text-white/50 uppercase">
+                  {typeof it.category === 'string'
+                    ? it.category
+                    : it.category?.name ?? 'Uncategorized'}
+                </p>
+              </div>
             </div>
-          </div>
-        ))}
+          ))
+        ) : (
+          <EmptyState type="inventories" href="/foxer/create-listing?type=inventory" />
+        )}
       </div>
     </section>
   );
@@ -63,7 +66,7 @@ export function InventorySection({ inventory, onStatusChange }: InventorySection
 
 interface ServicesSectionProps {
   services: ServiceItem[];
-  onStatusChange: (id: number, status: string) => void;
+  onStatusChange: (id: number | string, status: string) => void;
 }
 
 export function ServicesSection({ services, onStatusChange }: ServicesSectionProps) {
@@ -80,29 +83,33 @@ export function ServicesSection({ services, onStatusChange }: ServicesSectionPro
         </button>
       </div>
       <div className="space-y-3">
-        {services.map((sv) => (
-          <div
-            key={sv.id}
-            className="flex items-center justify-between p-4 rounded-2xl bg-[#0f111a]/60 border border-white/5 hover:bg-white/5"
-          >
-            <div className="flex items-center gap-4">
-              <div className={`h-12 w-12 rounded-xl flex items-center justify-center ${sv.color}`}>
-                <span className="material-symbols-outlined">{sv.icon}</span>
+        {services.length > 0 ? (
+          services.map((sv) => (
+            <div
+              key={sv.id}
+              className="flex items-center justify-between p-4 rounded-2xl bg-[#0f111a]/60 border border-white/5 hover:bg-white/5"
+            >
+              <div className="flex items-center gap-4">
+                <div className={`h-12 w-12 rounded-xl flex items-center justify-center ${sv.color}`}>
+                  <span className="material-symbols-outlined">{sv.icon}</span>
+                </div>
+                <div>
+                  <h4 className={`font-bold ${sv.status === 'Active' ? 'text-white' : 'text-white/50'}`}>
+                    {sv.name}
+                  </h4>
+                  <p className="text-xs text-white/40">{sv.price}</p>
+                </div>
               </div>
-              <div>
-                <h4 className={`font-bold ${sv.status === 'Active' ? 'text-white' : 'text-white/50'}`}>
-                  {sv.name}
-                </h4>
-                <p className="text-xs text-white/40">{sv.price}</p>
-              </div>
+              <StatusBadge
+                currentStatus={sv.status}
+                type="service"
+                onStatusChange={(s) => onStatusChange(sv.id, s)}
+              />
             </div>
-            <StatusBadge
-              currentStatus={sv.status}
-              type="service"
-              onStatusChange={(s) => onStatusChange(sv.id, s)}
-            />
-          </div>
-        ))}
+          ))
+        ) : (
+          <EmptyState type="services" href="/foxer/create-listing?type=service" />
+        )}
       </div>
     </section>
   );

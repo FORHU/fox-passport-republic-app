@@ -37,7 +37,9 @@ export default function HostLayout({
 
     // If authenticated but not a host, redirect to home with toast
     // Check both isHost boolean and role field for host access
-    const isHostUser = user?.isHost || user?.role === "host" || user?.role === "admin" || user?.role === "super_admin";
+    const userRole = user?.role?.toLowerCase();
+    const isHostUser = user?.isHost || ["host", "mayor", "admin", "super_admin"].includes(userRole as string);
+
     if (user && !isHostUser) {
       if (!hasShownToast.current) {
         toast.error("Only hosts can access this page. Become a mayor to continue!");
@@ -62,7 +64,8 @@ export default function HostLayout({
 
   // Don't render anything if not authenticated or not a host
   // Check both isHost boolean and role field for host access
-  const canAccessHost = user?.isHost || user?.role === "host" || user?.role === "admin" || user?.role === "super_admin";
+  const userRole = user?.role?.toLowerCase();
+  const canAccessHost = user?.isHost || ["host", "mayor", "admin", "super_admin"].includes(userRole as string);
   if (!isAuthenticated || !user || !canAccessHost) {
     return null;
   }

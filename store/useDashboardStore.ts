@@ -10,6 +10,12 @@ import {
   INITIAL_INVENTORY,
   INITIAL_SERVICES,
 } from "@/data/dashboardData";
+import { fetchAssetsByHostId } from "@/lib/api/assets";
+import { fetchServicesByHostId } from "@/lib/api/services";
+import {
+  mapBackendAssetToInventoryItem,
+  mapBackendServiceToServiceItem,
+} from "@/lib/mappers/listings";
 
 interface DashboardState {
   // Data
@@ -26,12 +32,17 @@ interface DashboardState {
   // Actions - Set Data
   setEvents: (events: EventItem[]) => void;
   setVenues: (venues: VenueItem[]) => void;
+  setInventory: (inventory: InventoryItem[]) => void;
+  setIsLoadingInventory: (loading: boolean) => void;
 
   // Actions - Data Updates
   updateEventStatus: (id: number | string, status: string) => void;
   updateVenueStatus: (id: number | string, status: string) => void;
   updateInventoryStatus: (id: number | string, status: string) => void;
   updateServiceStatus: (id: number | string, status: string) => void;
+
+  // Actions - Fetching
+  refetchInventory: () => Promise<void>;
 
   // Actions - UI State
   setCalendarOpen: (open: boolean) => void;
@@ -79,6 +90,47 @@ export const useDashboardStore = create<DashboardState>((set) => ({
   // Data Set Actions
   setEvents: (events) => set({ events }),
   setVenues: (venues) => set({ venues }),
+  setInventory: (inventory) => set({ inventory }),
+  setIsLoadingInventory: (loading) => set({ isLoadingInventory: loading }),
+
+  // Fetching Actions
+  refetchInventory: async () => {
+    set({ isLoadingInventory: true });
+    try {
+      const stored = localStorage.getItem("fox_user");
+      if (!stored) {
+        set({ isLoadingInventory: false });
+        return;
+      }
+      const user = JSON.parse(stored);
+      const userId = user.userId || user.id;
+      if (!userId) {
+        set({ isLoadingInventory: false });
+        return;
+      }
+
+      console.log("[DashboardStore] Fetching listings for user:", userId);
+
+      const [assets, services] = await Promise.all([
+        fetchAssetsByHostId(userId),
+        fetchServicesByHostId(userId),
+      ]);
+
+      const inventoryItems: InventoryItem[] = assets.slice(0, 2).map(mapBackendAssetToInventoryItem);
+      const serviceItems: ServiceItem[] = services.slice(0, 2).map(mapBackendServiceToServiceItem);
+
+      console.log("[DashboardStore] Final count (limited to latest 2):", {
+        inventory: inventoryItems.length,
+        services: serviceItems.length,
+      });
+
+      set({ inventory: inventoryItems, services: serviceItems });
+    } catch (error) {
+      console.error("[DashboardStore] Error refetching inventory:", error);
+    } finally {
+      set({ isLoadingInventory: false });
+    }
+  },
 
   // UI State Actions
   setCalendarOpen: (open) => set({ isCalendarOpen: open }),
