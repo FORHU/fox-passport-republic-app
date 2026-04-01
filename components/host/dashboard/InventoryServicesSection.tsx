@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import Link from 'next/link';
 import { InventoryItem, ServiceItem } from '@/data/dashboardData';
 import { StatusBadge } from './StatusBadge';
 import { EmptyState } from './EmptyState';
@@ -8,9 +9,18 @@ import { EmptyState } from './EmptyState';
 interface InventorySectionProps {
   inventory: InventoryItem[];
   onStatusChange: (id: number | string, status: string) => void;
+  showViewAllLink?: boolean;
+  viewAllHref?: string;
+  onEdit?: (id: number | string) => void;
 }
 
-export function InventorySection({ inventory, onStatusChange }: InventorySectionProps) {
+export function InventorySection({
+  inventory,
+  onStatusChange,
+  showViewAllLink = true,
+  viewAllHref = "/host/assets",
+  onEdit,
+}: InventorySectionProps) {
   return (
     <section id="inventory">
       <div className="flex justify-between items-center mb-6">
@@ -18,17 +28,29 @@ export function InventorySection({ inventory, onStatusChange }: InventorySection
           <span className="material-symbols-outlined text-purple-500">inventory_2</span>
           Inventories
         </h2>
-        <button className="text-xs font-bold text-[#ccff00] border border-[#ccff00]/30 px-4 py-2 rounded-full hover:bg-[#ccff00] hover:text-black flex items-center gap-1">
-          View All
-          <span className="material-symbols-outlined text-[16px]">arrow_forward</span>
-        </button>
+        {showViewAllLink && (
+          <Link
+            className="text-xs font-bold text-[#ccff00] border border-[#ccff00]/30 px-4 py-2 rounded-full hover:bg-[#ccff00] hover:text-black flex items-center gap-1"
+            href={viewAllHref}
+          >
+            View All
+            <span className="material-symbols-outlined text-[16px]">arrow_forward</span>
+          </Link>
+        )}
       </div>
       <div className={inventory.length > 0 ? "grid grid-cols-2 md:grid-cols-4 gap-4" : ""}>
         {inventory.length > 0 ? (
           inventory.map((it) => (
             <div
               key={it.id}
-              className="relative bg-[#0f111a]/60 border border-white/5 rounded-lg group hover:border-purple-500/50 transition-all"
+              className={`relative bg-[#0f111a]/60 border border-white/5 rounded-lg group hover:border-purple-500/50 transition-all ${onEdit ? "cursor-pointer" : ""}`}
+              onClick={() => onEdit?.(it.id)}
+              role={onEdit ? "button" : undefined}
+              tabIndex={onEdit ? 0 : undefined}
+              onKeyDown={(e) => {
+                if (!onEdit) return;
+                if (e.key === "Enter" || e.key === " ") onEdit(it.id);
+              }}
             >
               <div className="aspect-square overflow-hidden rounded-lg">
                 <img
@@ -67,9 +89,18 @@ export function InventorySection({ inventory, onStatusChange }: InventorySection
 interface ServicesSectionProps {
   services: ServiceItem[];
   onStatusChange: (id: number | string, status: string) => void;
+  showViewAllLink?: boolean;
+  viewAllHref?: string;
+  onEdit?: (id: number | string) => void;
 }
 
-export function ServicesSection({ services, onStatusChange }: ServicesSectionProps) {
+export function ServicesSection({
+  services,
+  onStatusChange,
+  showViewAllLink = true,
+  viewAllHref = "/host/services",
+  onEdit,
+}: ServicesSectionProps) {
   return (
     <section>
       <div className="flex justify-between items-center mb-6">
@@ -77,17 +108,29 @@ export function ServicesSection({ services, onStatusChange }: ServicesSectionPro
           <span className="material-symbols-outlined text-yellow-400">handyman</span>
           Services
         </h2>
-        <button className="text-xs font-bold text-[#ccff00] border border-[#ccff00]/30 px-4 py-2 rounded-full hover:bg-[#ccff00] hover:text-black flex items-center gap-1">
-          View All
-          <span className="material-symbols-outlined text-[16px]">arrow_forward</span>
-        </button>
+        {showViewAllLink && (
+          <Link
+            className="text-xs font-bold text-[#ccff00] border border-[#ccff00]/30 px-4 py-2 rounded-full hover:bg-[#ccff00] hover:text-black flex items-center gap-1"
+            href={viewAllHref}
+          >
+            View All
+            <span className="material-symbols-outlined text-[16px]">arrow_forward</span>
+          </Link>
+        )}
       </div>
       <div className="space-y-3">
         {services.length > 0 ? (
           services.map((sv) => (
             <div
               key={sv.id}
-              className="flex items-center justify-between p-4 rounded-2xl bg-[#0f111a]/60 border border-white/5 hover:bg-white/5"
+              className={`flex items-center justify-between p-4 rounded-2xl bg-[#0f111a]/60 border border-white/5 hover:bg-white/5 ${onEdit ? "cursor-pointer" : ""}`}
+              onClick={() => onEdit?.(sv.id)}
+              role={onEdit ? "button" : undefined}
+              tabIndex={onEdit ? 0 : undefined}
+              onKeyDown={(e) => {
+                if (!onEdit) return;
+                if (e.key === "Enter" || e.key === " ") onEdit(sv.id);
+              }}
             >
               <div className="flex items-center gap-4">
                 <div className={`h-12 w-12 rounded-xl flex items-center justify-center ${sv.color}`}>

@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import Link from 'next/link';
 import { VenueItem } from '@/data/dashboardData';
 import { StatusBadge } from './StatusBadge';
 import { EmptyState } from './EmptyState';
@@ -8,9 +9,18 @@ import { EmptyState } from './EmptyState';
 interface VenuesSectionProps {
   venues: VenueItem[];
   onStatusChange: (id: number | string, status: string) => void;
+  showViewAllLink?: boolean;
+  viewAllHref?: string;
+  onEdit?: (id: number | string) => void;
 }
 
-export function VenuesSection({ venues, onStatusChange }: VenuesSectionProps) {
+export function VenuesSection({
+  venues,
+  onStatusChange,
+  showViewAllLink = true,
+  viewAllHref = "/host/venues",
+  onEdit,
+}: VenuesSectionProps) {
   return (
     <section id="venues">
       <div className="flex justify-between items-center mb-6">
@@ -18,13 +28,15 @@ export function VenuesSection({ venues, onStatusChange }: VenuesSectionProps) {
           <span className="material-symbols-outlined text-pink-500">apartment</span>
           My Venues
         </h2>
-        <a
-          className="text-xs font-bold text-[#ccff00] border border-[#ccff00]/30 px-4 py-2 rounded-full hover:bg-[#ccff00] hover:text-black transition-all flex items-center gap-1"
-          href="#"
-        >
-          View All
-          <span className="material-symbols-outlined text-[16px]">arrow_forward</span>
-        </a>
+        {showViewAllLink && (
+          <Link
+            className="text-xs font-bold text-[#ccff00] border border-[#ccff00]/30 px-4 py-2 rounded-full hover:bg-[#ccff00] hover:text-black transition-all flex items-center gap-1"
+            href={viewAllHref}
+          >
+            View All
+            <span className="material-symbols-outlined text-[16px]">arrow_forward</span>
+          </Link>
+        )}
       </div>
       <div className="space-y-4">
         {venues.length > 0 ? (
@@ -32,7 +44,14 @@ export function VenuesSection({ venues, onStatusChange }: VenuesSectionProps) {
             <div
               key={vn.id}
               className={`bg-[#0f111a]/60 backdrop-blur border border-white/5 p-5 rounded-3xl hover:bg-white/5 transition-all group border-l-4 ${(vn.status || "").toLowerCase() === "published" ? 'border-l-green-500' : 'border-l-yellow-500'
-                }`}
+                } ${onEdit ? "cursor-pointer" : ""}`}
+              onClick={() => onEdit?.(vn.id)}
+              role={onEdit ? "button" : undefined}
+              tabIndex={onEdit ? 0 : undefined}
+              onKeyDown={(e) => {
+                if (!onEdit) return;
+                if (e.key === "Enter" || e.key === " ") onEdit(vn.id);
+              }}
             >
               <div className="flex flex-col sm:flex-row gap-5">
                 <div className="relative w-full sm:w-36 aspect-video sm:aspect-square rounded-2xl overflow-hidden shrink-0">
@@ -78,10 +97,16 @@ export function VenuesSection({ venues, onStatusChange }: VenuesSectionProps) {
                         <div className="text-sm font-bold">{vn.revenue}</div>
                       </div>
                       <div className="flex justify-end gap-2">
-                        <button className="h-9 w-9 rounded-full bg-white/5 hover:bg-white hover:text-black flex items-center justify-center">
+                        <button
+                          className="h-9 w-9 rounded-full bg-white/5 hover:bg-white hover:text-black flex items-center justify-center"
+                          onClick={(e) => e.stopPropagation()}
+                        >
                           <span className="material-symbols-outlined text-[18px]">edit</span>
                         </button>
-                        <button className="h-9 w-9 rounded-full bg-white/5 hover:bg-[#ccff00] hover:text-black flex items-center justify-center">
+                        <button
+                          className="h-9 w-9 rounded-full bg-white/5 hover:bg-[#ccff00] hover:text-black flex items-center justify-center"
+                          onClick={(e) => e.stopPropagation()}
+                        >
                           <span className="material-symbols-outlined text-[18px]">bar_chart</span>
                         </button>
                       </div>
@@ -98,7 +123,10 @@ export function VenuesSection({ venues, onStatusChange }: VenuesSectionProps) {
                             : "Draft / Work in Progress"}
                         </span>
                       </div>
-                      <button className="px-4 py-2 rounded-full bg-white/10 text-xs font-bold hover:bg-white hover:text-black">
+                      <button
+                        className="px-4 py-2 rounded-full bg-white/10 text-xs font-bold hover:bg-white hover:text-black"
+                        onClick={(e) => e.stopPropagation()}
+                      >
                         {(vn.status || "").toLowerCase() === "pending_review" ? "Contact Support" : "Continue Editing"}
                       </button>
                     </div>

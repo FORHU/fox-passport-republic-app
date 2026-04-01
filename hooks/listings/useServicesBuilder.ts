@@ -211,6 +211,7 @@ export function useServicesBuilder() {
     displayCategory,
     error,
     isNotification,
+    setIsNotification,
     handleBack,
     handleSaveDraft,
     handlePublish,

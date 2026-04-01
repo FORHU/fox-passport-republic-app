@@ -40,3 +40,19 @@ export async function fetchAssetsByHostId(hostId: Id): Promise<BackendAsset[]> {
   throw lastErr;
 }
 
+function unwrapUpdateResponse(data: any): BackendAsset {
+  return (data?.asset ?? data?.data ?? data) as BackendAsset;
+}
+
+export type UpdateAssetPayload = Partial<CreateAssetPayload> & {
+  status?: string;
+};
+
+export async function updateAsset(
+  assetId: Id,
+  payload: UpdateAssetPayload
+): Promise<BackendAsset> {
+  const resp = await api.put(`/v1/assets/${assetId}`, payload);
+  return unwrapUpdateResponse(resp.data);
+}
+
