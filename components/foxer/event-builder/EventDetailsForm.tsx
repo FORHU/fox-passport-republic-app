@@ -9,12 +9,14 @@ interface EventDetailsFormProps {
   category: string;
   date: string;
   location: string;
+  maxAttendees: number;
   showGuide: boolean;
   onTitleChange: (title: string) => void;
   onDescriptionChange: (desc: string) => void;
   onCategoryChange: (cat: string) => void;
   onDateChange: (date: string) => void;
   onLocationChange: (loc: string) => void;
+  onMaxAttendeesChange: (count: number) => void;
   onCloseGuide: () => void;
 }
 
@@ -24,12 +26,14 @@ export function EventDetailsForm({
   category,
   date,
   location,
+  maxAttendees,
   showGuide,
   onTitleChange,
   onDescriptionChange,
   onCategoryChange,
   onDateChange,
   onLocationChange,
+  onMaxAttendeesChange,
   onCloseGuide,
 }: EventDetailsFormProps) {
   return (
@@ -127,6 +131,24 @@ export function EventDetailsForm({
                 value={location}
                 onChange={(e) => onLocationChange(e.target.value)}
                 placeholder="e.g. BGC, Taguig"
+                className="bg-transparent border-none p-0 text-sm text-white placeholder-white/30 focus:ring-0 w-full"
+              />
+            </div>
+          </div>
+          <div className="flex-1">
+            <label className="text-[10px] uppercase font-bold text-white/40 tracking-widest mb-2 block">
+              Max Attendees
+            </label>
+            <div className="flex items-center gap-2 bg-white/5 px-4 py-3 rounded-xl border border-white/5 focus-within:border-accent/30 transition-colors">
+              <span className="material-symbols-outlined text-white/50 text-[18px]">
+                groups
+              </span>
+              <input
+                type="number"
+                value={maxAttendees}
+                onChange={(e) => onMaxAttendeesChange(parseInt(e.target.value) || 0)}
+                placeholder="100"
+                min="1"
                 className="bg-transparent border-none p-0 text-sm text-white placeholder-white/30 focus:ring-0 w-full"
               />
             </div>
