@@ -15,44 +15,126 @@ export function useEventBuilder() {
   const router = useRouter();
   const store = useEventBuilderStore();
 
-  const [realVenues, setRealVenues] = useState<ResourceItem[]>([]);
+  const [realResources, setRealResources] = useState<Record<string, ResourceItem[]>>({
+    venue: [],
+    talent: [],
+    service: [],
+    equipment: [],
+    vibe: [],
+  });
 
-  // Fetch real venues on mount
+  // Fetch real data on mount
   useEffect(() => {
-    const fetchVenues = async () => {
+    const fetchData = async () => {
       try {
-        const response = await api.get("/v1/venues?status=published");
-        if (response.data.success) {
-          const venues = response.data.data.map((v: any) => ({
-            id: v.id,
-            name: v.name,
-            cost: v.baseRate || 10000, // Fallback cost
-            icon: "location_city",
-            desc: v.description || "Real venue from your gallery."
-          }));
-          setRealVenues(venues);
+        // Fetch Venues
+        const venueResp = await api.get("/v1/venues");
+        let venues: ResourceItem[] = [];
+        const rawVenues = venueResp.data.venues || venueResp.data.data || (Array.isArray(venueResp.data) ? venueResp.data : []);
+        
+        if (rawVenues && Array.isArray(rawVenues)) {
+          venues = rawVenues
+            .filter((v: any) => v.status?.toLowerCase() === "published")
+            .map((v: any) => ({
+              id: v.id,
+              name: v.name,
+              cost: v.baseRate || 10000,
+              icon: "location_city",
+              desc: v.description || "Real venue from your gallery."
+            }));
         }
+
+        // Fetch Assets/Services
+        const [assetResp, serviceResp] = await Promise.all([
+          api.get("/v1/assets"),
+          api.get("/v1/services")
+        ]);
+
+        const talent: ResourceItem[] = [];
+        const service: ResourceItem[] = [];
+        const equipment: ResourceItem[] = [];
+        const vibe: ResourceItem[] = [];
+
+        // Process Assets
+        if (assetResp.data.assets) {
+          assetResp.data.assets.forEach((a: any) => {
+            const item: ResourceItem = {
+              id: a.id,
+              name: a.name,
+              cost: a.price || 5000,
+              icon: a.category?.icon || "inventory_2",
+              desc: a.description || "Real asset from the database."
+            };
+
+            const slug = a.category?.slug?.toLowerCase();
+            if (slug === "entertainment") {
+              talent.push({ ...item, icon: "music_note" });
+            } else if (["planning", "catering", "photography"].includes(slug)) {
+              service.push({ ...item, icon: slug === "catering" ? "restaurant" : slug === "photography" ? "camera_alt" : "event_note" });
+            } else if (slug === "equipment") {
+              equipment.push({ ...item, icon: "speaker" });
+            } else if (["decoration", "furniture"].includes(slug)) {
+              vibe.push({ ...item, icon: slug === "furniture" ? "chair" : "brush" });
+            } else {
+              service.push(item);
+            }
+          });
+        }
+
+        // Process Services
+        const rawServices = serviceResp.data.services || serviceResp.data.data || [];
+        if (Array.isArray(rawServices)) {
+          rawServices.forEach((s: any) => {
+            const item: ResourceItem = {
+              id: s.id,
+              name: s.name,
+              cost: s.price || 7500,
+              icon: "work_outline",
+              desc: s.description || "Premium service for your event."
+            };
+
+            // Services have category as a string
+            const category = typeof s.category === 'string' ? s.category.toLowerCase() : s.category?.slug?.toLowerCase();
+            
+            if (category === "entertainment") {
+              talent.push({ ...item, icon: "music_note" });
+            } else if (["planning", "catering", "photography", "videography"].includes(category)) {
+              const iconMap: any = { 
+                catering: "restaurant", 
+                photography: "camera_alt", 
+                videography: "videocam",
+                planning: "event_note" 
+              };
+              service.push({ ...item, icon: iconMap[category] || "work_outline" });
+            } else {
+              service.push(item);
+            }
+          });
+        }
+
+        setRealResources({
+          venue: venues,
+          talent,
+          service,
+          equipment,
+          vibe,
+        });
       } catch (error) {
-        console.error("Error fetching venues:", error);
+        console.error("Error fetching event builder data:", error);
       }
     };
-    fetchVenues();
+    fetchData();
   }, []);
 
   // Get filtered resources based on active category and search
   const filteredResources = useMemo(() => {
-    let resources = AVAILABLE_RESOURCES[store.activeCategory] || [];
-
-    // Use real venues if in venue category
-    if (store.activeCategory === "venue" && realVenues.length > 0) {
-      resources = realVenues;
-    }
+    const resources = realResources[store.activeCategory] || [];
 
     if (!store.searchQuery) return resources;
     return resources.filter((r) =>
       r.name.toLowerCase().includes(store.searchQuery.toLowerCase())
     );
-  }, [store.activeCategory, store.searchQuery, realVenues]);
+  }, [store.activeCategory, store.searchQuery, realResources]);
 
   // Calculate financials
   const financials = useMemo(() => {
@@ -113,12 +195,17 @@ export function useEventBuilder() {
   // Gallery handlers
   const addImageToGallery = useCallback((files: File[]) => {
     files.forEach(file => {
-      const url = URL.createObjectURL(file);
-      store.addGalleryItem({
-        id: Math.random().toString(36).substr(2, 9),
-        url: url,
-        caption: file.name,
-      });
+      const reader = new FileReader();
+      reader.onload = () => {
+        if (reader.result) {
+          store.addGalleryItem({
+            id: Math.random().toString(36).substr(2, 9),
+            url: reader.result as string,
+            caption: file.name,
+          });
+        }
+      };
+      reader.readAsDataURL(file);
     });
   }, [store]);
 
@@ -147,7 +234,7 @@ export function useEventBuilder() {
       return;
     }
 
-    const venueItem = store.baseItems.find(i => VENUE_ICONS.includes(i.icon)) || realVenues[0];
+    const venueItem = store.baseItems.find(i => VENUE_ICONS.includes(i.icon)) || realResources.venue[0];
     if (!venueItem) {
       toast.error("Please select a venue for your event");
       return;
@@ -156,17 +243,37 @@ export function useEventBuilder() {
     store.setIsSubmitting(true);
     try {
       // 2. Prepare Payload
+      const safeEventTypeMapping: Record<string, string> = {
+        corporate: 'corporate',
+        fair: 'fair',
+        birthday: 'birthday',
+        wedding: 'wedding',
+        anniversary: 'anniversary',
+        graduation: 'graduation',
+        other: 'other',
+      };
+
+      const rawCategory = store.category.toLowerCase().replace(/\s+/g, '_');
+      const eventType = safeEventTypeMapping[rawCategory] || 'other';
+
       const payload = {
         name: store.eventTitle,
         description: store.description || "Epic event created via Studio.",
-        venueId: venueItem.id, // Use real UUID
-        eventType: store.category.toLowerCase().replace(" ", "_").replace("experience", "experience"), // Map to enum
+        venueId: venueItem.id, 
+        eventType,
         startDatetime: new Date(store.date || Date.now()),
-        endDatetime: new Date(Date.now() + 4 * 60 * 60 * 1000), // Default 4 hours later
-        maxAttendees: 100,
-        totalPrice: financials.suggestedPrice,
-        status: 'published'
+        endDatetime: new Date(Date.now() + 4 * 60 * 60 * 1000), 
+        maxAttendees: Math.max(1, Math.floor(store.maxAttendees || 100)),
+        totalPrice: Number(financials.suggestedPrice) || 0,
+        status: 'published',
+        images: store.gallery.map((g, index) => ({
+          imageUrl: g.url,
+          isPrimary: index === 0,
+          altText: g.caption
+        }))
       };
+
+      console.log("Publishing payload:", payload);
 
       // 3. Create Event
       const response = await api.post("/v1/events", payload);
@@ -188,7 +295,7 @@ export function useEventBuilder() {
     } finally {
       store.setIsSubmitting(false);
     }
-  }, [store, router, financials, realVenues]);
+  }, [store, router, financials, realResources]);
 
   return {
     // State

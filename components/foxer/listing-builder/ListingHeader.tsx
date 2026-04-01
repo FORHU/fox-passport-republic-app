@@ -9,6 +9,7 @@ interface ListingHeaderProps {
   isSubmitting: boolean;
   error?: string | null;
   isNotification?: boolean;
+  successMessage?: string;
   onBack: () => void;
   onSaveDraft: () => void;
   onPublish: () => void;
@@ -20,10 +21,15 @@ export function ListingHeader({
   isSubmitting,
   error,
   isNotification,
+  successMessage,
   onBack,
   onSaveDraft,
   onPublish,
 }: ListingHeaderProps) {
+  const defaultSuccessMessage =
+    activeType === "inventory"
+      ? "Asset created successfully! Redirecting..."
+      : "Service created successfully! Redirecting...";
   return (
     <>
       <header className="h-16 border-b border-white/5 flex items-center justify-between px-6 bg-[#0f111a] z-20">
@@ -86,7 +92,7 @@ export function ListingHeader({
       {isNotification && (
         <div className="bg-green-500/10 border-b border-green-500/20 text-green-400 px-4 py-2 text-xs flex items-center gap-2">
           <span className="material-symbols-outlined text-[16px]">check_circle</span>
-          Asset created successfully! Redirecting...
+          {successMessage ?? defaultSuccessMessage}
         </div>
       )}
     </>

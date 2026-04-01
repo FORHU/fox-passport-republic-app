@@ -8,6 +8,7 @@ interface EventBuilderState {
   category: string;
   date: string;
   location: string;
+  maxAttendees: number;
   gallery: GalleryItem[];
 
   // Package Items
@@ -28,6 +29,7 @@ interface EventBuilderState {
   setCategory: (cat: string) => void;
   setDate: (date: string) => void;
   setLocation: (loc: string) => void;
+  setMaxAttendees: (count: number) => void;
 
   // Actions - Gallery
   addGalleryItem: (item: GalleryItem) => void;
@@ -56,6 +58,7 @@ const initialState = {
   category: "",
   date: "",
   location: "",
+  maxAttendees: 100,
   gallery: [],
   baseItems: [],
   targetMargin: 20,
@@ -76,6 +79,7 @@ export const useEventBuilderStore = create<EventBuilderState>((set) => ({
   setCategory: (cat) => set({ category: cat }),
   setDate: (date) => set({ date: date }),
   setLocation: (loc) => set({ location: loc }),
+  setMaxAttendees: (count) => set({ maxAttendees: count }),
 
   // Gallery Actions
   addGalleryItem: (item) =>
@@ -119,6 +123,7 @@ export const useEventData = () =>
     category: state.category,
     date: state.date,
     location: state.location,
+    maxAttendees: state.maxAttendees,
     gallery: state.gallery,
   }));
 
