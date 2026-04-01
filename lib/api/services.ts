@@ -47,3 +47,19 @@ export async function fetchServicesByHostId(hostId: Id): Promise<BackendService[
   return all.filter((s) => String(s.hostId ?? "") === idStr);
 }
 
+function unwrapUpdateResponse(data: any): BackendService {
+  return (data?.service ?? data?.data ?? data) as BackendService;
+}
+
+export type UpdateServicePayload = CreateServicePayload & {
+  status?: string;
+};
+
+export async function updateService(
+  serviceId: Id,
+  payload: UpdateServicePayload
+): Promise<BackendService> {
+  const resp = await api.put(`/v1/services/${serviceId}`, payload);
+  return unwrapUpdateResponse(resp.data);
+}
+

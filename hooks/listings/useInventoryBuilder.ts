@@ -275,6 +275,7 @@ export function useInventoryBuilder() {
     displayCategory,
     error,
     isNotification,
+    setIsNotification,
 
     // Handlers
     handleBack,

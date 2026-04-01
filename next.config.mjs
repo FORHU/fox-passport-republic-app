@@ -1,7 +1,12 @@
 /** @type {import('next').NextConfig} */
+const isWindows = process.platform === "win32";
+
 const nextConfig = {
   turbopack: {},
-  output: 'standalone',
+  // `output: "standalone"` uses filesystem tracing and may require symlink
+  // permissions on Windows. We keep standalone for non-Windows builds
+  // (e.g. Docker/Linux) but disable it on Windows to avoid EPERM symlink errors.
+  ...(isWindows ? {} : { output: "standalone" }),
   // 1. CRITICAL: Disable Strict Mode. Cesium crashes if initialized twice.
   reactStrictMode: false,
 
