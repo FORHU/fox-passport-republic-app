@@ -1,13 +1,13 @@
+"use client";
+
 import { useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { useWriteReviewStore } from "@/store/useReviewsStore";
-import { getVenueById } from "@/data/hardcodedVenues";
 
 export function useWriteReview(venueId: string) {
   const router = useRouter();
   const store = useWriteReviewStore();
-  const venue = getVenueById(venueId);
 
   const handleBack = useCallback(() => {
     router.back();
@@ -26,7 +26,6 @@ export function useWriteReview(venueId: string) {
   const isValid = store.rating > 0 && store.reviewText.length >= 50;
 
   return {
-    venue,
     ...store,
     isValid,
     handleBack,

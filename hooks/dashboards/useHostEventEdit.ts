@@ -1,3 +1,5 @@
+"use client";
+
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
@@ -156,7 +158,7 @@ function eventServiceToResourceItem(s: any) {
 export function useHostEventEdit(eventId: string) {
   const router = useRouter();
   const user = useAuthStore((s) => s.user);
-  const hostId = (user as any)?.id || (user as any)?.userId;
+  const hostId = user?.id;
 
   const builder = useEventBuilder();
 

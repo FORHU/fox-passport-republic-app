@@ -1,4 +1,6 @@
 // src/hooks/usePhilippineLocations.ts
+"use client";
+
 import { useState, useMemo } from "react";
 import { ALL_LOCATIONS, LocationItem } from "@/data/location";
 

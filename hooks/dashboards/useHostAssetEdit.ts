@@ -1,3 +1,5 @@
+'use client';
+
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
@@ -6,7 +8,6 @@ import { useInventoryBuilder } from "@/hooks/listings/useInventoryBuilder";
 import { fetchAssetsByHostId, updateAsset } from "@/lib/api/assets";
 import type { Id } from "@/lib/api/types";
 import { ASSET_CATEGORIES, CONDITIONS, STATUSES, INVENTORY_UNITS } from "@/data/listingBuilderData";
-import { useDashboardStore } from "@/store/useDashboardStore";
 
 function belongsToHost(record: any, hostId: Id): boolean {
   const idStr = String(hostId);
@@ -78,10 +79,9 @@ function mapCategoryToInventory(category: any): { slug: string; customCategory: 
 export function useHostAssetEdit(assetId: string) {
   const router = useRouter();
   const user = useAuthStore((s) => s.user);
-  const hostId = (user as any)?.id || (user as any)?.userId;
+  const hostId = user?.id || user?.userId;
 
   const inventory = useInventoryBuilder();
-  const dashboardStore = useDashboardStore;
 
   const [isPrefilling, setIsPrefilling] = useState(true);
   const [prefillError, setPrefillError] = useState<string | null>(null);
@@ -210,8 +210,6 @@ export function useHostAssetEdit(assetId: string) {
 
       await updateAsset(assetId, payload as any);
 
-      await dashboardStore.getState().refetchInventory();
-
       inventory.setIsNotification(true);
       setTimeout(() => {
         inventory.reset();
@@ -226,7 +224,7 @@ export function useHostAssetEdit(assetId: string) {
       inventory.setError(backendMessage || err?.message || "Failed to update asset");
       inventory.setIsSubmitting(false);
     }
-  }, [assetId, backHref, dashboardStore, initialImageUrl, inventory, router]);
+  }, [assetId, backHref, initialImageUrl, inventory, router]);
 
   // Hide the builder’s default “create” back/publish handlers.
   return {

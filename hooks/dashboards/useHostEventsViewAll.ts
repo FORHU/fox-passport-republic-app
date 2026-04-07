@@ -35,7 +35,7 @@ function belongsToHost(record: any, hostId: Id): boolean {
 
 export function useHostEventsViewAll() {
   const user = useAuthStore((state) => state.user);
-  const hostId = (user as any)?.id || (user as any)?.userId;
+  const hostId = user?.id || user?.userId;
 
   const query = useQuery({
     queryKey: ["host-events-view-all", hostId],
