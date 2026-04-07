@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 import React, { Suspense } from 'react';
 import RequireAuth from '@/components/authentication/RequireAuth';

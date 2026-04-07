@@ -94,3 +94,39 @@ export async function getUserId(): Promise<string | null> {
   const user = await getCurrentUser();
   return user?.id || null;
 }
+
+/**
+ * Require authentication - throws if user is not authenticated
+ */
+export async function requireAuth(): Promise<StoredUser> {
+  const user = await getCurrentUser();
+  if (!user) {
+    throw new Error("Not authenticated");
+  }
+  return user;
+}
+
+/**
+ * Require host role - throws if user is not a host
+ */
+export async function requireHost(): Promise<StoredUser> {
+  const user = await requireAuth();
+  const hostCheck = await isHost();
+  if (!hostCheck) {
+    throw new Error("Host access required");
+  }
+  return user;
+}
+
+/**
+ * Require admin role - throws if user is not an admin
+ */
+export async function requireAdmin(): Promise<StoredUser> {
+  const user = await requireAuth();
+  const adminCheck = await isAdmin();
+  if (!adminCheck) {
+    throw new Error("Admin access required");
+  }
+  return user;
+}
+

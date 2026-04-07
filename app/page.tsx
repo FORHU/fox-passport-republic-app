@@ -1,7 +1,7 @@
-"use client";
-
 import { Suspense } from "react";
-import { useSearchParams } from "next/navigation";
+
+// Skip static generation for this page - it fetches dynamic data
+export const dynamic = 'force-dynamic';
 
 // --- New FoxerNew Landing Page ---
 import FoxerLandingPage from "@/components/landing/FoxerLandingPage";
@@ -12,45 +12,22 @@ import AuthModal from "@/components/landing/AuthModal";
 
 // --- Search Results Components ---
 import ListingCard from "@/components/landing/ListingCard";
-import { HARDCODED_VENUES } from "@/data/hardcodedVenues";
+import { getVenues } from "@/lib/server/data";
+import { filterVenues } from "@/lib/helpers/filterVenues";
 
-function HomeContent() {
-  const searchParams = useSearchParams();
-  const locationQuery = searchParams.get("location");
-  const categoryQuery = searchParams.get("category");
+interface HomePageProps {
+  searchParams: { [key: string]: string | string[] | undefined };
+}
+
+async function HomeContent({ searchParams }: HomePageProps) {
+  const locationQuery = typeof searchParams.location === 'string' ? searchParams.location : undefined;
+  const categoryQuery = typeof searchParams.category === 'string' ? searchParams.category : undefined;
+
+  // Fetch venues from API
+  const venues = await getVenues();
 
   // --- FILTERING LOGIC ---
-  let filteredVenues = HARDCODED_VENUES;
-
-  if (locationQuery) {
-    filteredVenues = filteredVenues.filter(
-      (v) =>
-        v.location.toLowerCase().includes(locationQuery.toLowerCase()) ||
-        v.province.toLowerCase().includes(locationQuery.toLowerCase())
-    );
-  }
-
-  if (categoryQuery) {
-    filteredVenues = filteredVenues.filter((v) => {
-      const cat = v.category.toLowerCase();
-      const q = categoryQuery.toLowerCase();
-
-      if (q === "hotels & travel") return ["hotel", "resort", "villa", "condo", "apartment", "suite", "inn", "lodge", "room", "cabin", "glamping"].some((t) => cat.includes(t));
-      if (q === "event planning & services") return ["garden", "function", "events", "historic", "event"].some((t) => cat.includes(t));
-      if (q === "restaurants" || q === "food") return ["dining", "restaurant"].some((t) => cat.includes(t));
-      if (q === "arts & entertainment") return ["art", "gallery", "museum", "historic"].some((t) => cat.includes(t));
-      if (q === "nightlife") return ["bar", "club", "lounge"].some((t) => cat.includes(t));
-      if (q === "real estate") return ["house", "condo", "apartment", "loft"].some((t) => cat.includes(t));
-      if (q === "adventures") return ["hiking", "paragliding", "diving", "surfing", "zip"].some((t) => cat.includes(t));
-      if (q === "camping") return ["cabin", "glamping", "camp", "forest", "mountain"].some((t) => cat.includes(t));
-      if (q === "music & arts") return ["art", "music", "gallery", "museum"].some((t) => cat.includes(t));
-      if (q === "venues") return ["venue", "event", "garden", "hall"].some((t) => cat.includes(t));
-      if (q === "wellness") return ["spa", "wellness", "resort"].some((t) => cat.includes(t));
-      if (q === "food & dining") return ["restaurant", "dining", "food"].some((t) => cat.includes(t));
-
-      return cat.includes(q);
-    });
-  }
+  const filteredVenues = filterVenues(venues, locationQuery, categoryQuery);
 
   const isSearchMode = locationQuery || categoryQuery;
 
@@ -106,10 +83,10 @@ function HomeContent() {
   return <FoxerLandingPage />;
 }
 
-export default function Home() {
+export default function Home({ searchParams }: HomePageProps) {
   return (
     <Suspense fallback={<div className="min-h-screen flex items-center justify-center">Loading...</div>}>
-      <HomeContent />
+      <HomeContent searchParams={searchParams} />
     </Suspense>
   );
 }

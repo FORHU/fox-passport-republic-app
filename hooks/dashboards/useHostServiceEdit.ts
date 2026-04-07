@@ -1,3 +1,5 @@
+"use client";
+
 import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
@@ -11,7 +13,6 @@ import {
   SERVICE_UNITS,
   BILLING_RATE_MAP,
 } from "@/data/serviceBuilderData";
-import { useDashboardStore } from "@/store/useDashboardStore";
 
 function belongsToHost(record: any, hostId: Id): boolean {
   const idStr = String(hostId);
@@ -71,10 +72,9 @@ function invertBillingRateToUnitLabel(billingRate: unknown): string {
 export function useHostServiceEdit(serviceId: string) {
   const router = useRouter();
   const user = useAuthStore((s) => s.user);
-  const hostId = (user as any)?.id || (user as any)?.userId;
+  const hostId = user?.id;
 
   const services = useServicesBuilder();
-  const dashboardStore = useDashboardStore;
 
   const [isPrefilling, setIsPrefilling] = useState(true);
   const [prefillError, setPrefillError] = useState<string | null>(null);
@@ -186,7 +186,6 @@ export function useHostServiceEdit(serviceId: string) {
       };
 
       await updateService(serviceId, payload as any);
-      await dashboardStore.getState().refetchInventory();
 
       services.setIsNotification(true);
       setTimeout(() => {
@@ -205,7 +204,7 @@ export function useHostServiceEdit(serviceId: string) {
     } finally {
       services.setIsSubmitting(false);
     }
-  }, [backHref, dashboardStore, initialImageUrl, serviceId, services, router]);
+  }, [backHref, initialImageUrl, serviceId, services, router]);
 
   return {
     ...services,
