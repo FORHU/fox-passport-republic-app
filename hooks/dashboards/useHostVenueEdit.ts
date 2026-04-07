@@ -1,3 +1,5 @@
+"use client";
+
 import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
@@ -81,7 +83,7 @@ function categoryToIcon(category: string) {
 export function useHostVenueEdit(venueId: string) {
   const router = useRouter();
   const user = useAuthStore((s) => s.user);
-  const hostId = (user as any)?.id || (user as any)?.userId;
+  const hostId = user?.id;
 
   const builder = useVenueBuilder();
 

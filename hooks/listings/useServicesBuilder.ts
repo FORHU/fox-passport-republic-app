@@ -1,7 +1,8 @@
+'use client';
+
 import { useCallback, useMemo, useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useListingBuilderStore } from "@/store/useListingBuilderStore";
-import { useDashboardStore } from "@/store/useDashboardStore";
 import api from "@/lib/axios";
 import { createService } from "@/lib/api/services";
 import type { CreateServicePayload } from "@/lib/api/types";
@@ -185,11 +186,7 @@ export function useServicesBuilder() {
 
       console.log("[ServicesBuilder] Publishing service:", serviceData);
       await createServiceWithAPI(serviceData);
-      
-      // Refetch dashboard data
-      const dashboardStore = useDashboardStore.getState();
-      await dashboardStore.refetchInventory();
-      
+
       setIsNotification(true);
       setTimeout(() => {
         router.push("/host");

@@ -1,6 +1,13 @@
 import React from 'react';
 
-export const AdminKPISection: React.FC = () => {
+interface AdminKPISectionProps {
+  stats: {
+    totalUsers: number;
+    activeEvents: number;
+  };
+}
+
+export const AdminKPISection: React.FC<AdminKPISectionProps> = ({ stats }) => {
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
       <div className="glass-card rounded-[2rem] p-6 relative overflow-hidden group hover:border-primary/50 transition-all">
@@ -12,7 +19,7 @@ export const AdminKPISection: React.FC = () => {
             <span className="material-symbols-outlined">groups</span>
           </div>
           <p className="text-text-muted font-medium text-sm">Total Citizens</p>
-          <h3 className="text-4xl font-display font-bold text-white mt-1 group-hover:scale-105 origin-left transition-transform">24.5k</h3>
+          <h3 className="text-4xl font-display font-bold text-white mt-1 group-hover:scale-105 origin-left transition-transform">{stats.totalUsers}</h3>
           <div className="flex items-center gap-1 mt-2 text-accent text-sm font-bold">
             <span className="material-symbols-outlined text-[16px]">trending_up</span>
             <span>+12%</span>
@@ -29,7 +36,7 @@ export const AdminKPISection: React.FC = () => {
             <span className="material-symbols-outlined">local_activity</span>
           </div>
           <p className="text-text-muted font-medium text-sm">Active Events</p>
-          <h3 className="text-4xl font-display font-bold text-white mt-1 group-hover:scale-105 origin-left transition-transform">1,204</h3>
+          <h3 className="text-4xl font-display font-bold text-white mt-1 group-hover:scale-105 origin-left transition-transform">{stats.activeEvents}</h3>
           <div className="flex items-center gap-1 mt-2 text-accent text-sm font-bold">
             <span className="material-symbols-outlined text-[16px]">trending_up</span>
             <span>+8.5%</span>

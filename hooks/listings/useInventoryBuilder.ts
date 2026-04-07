@@ -1,7 +1,8 @@
+'use client';
+
 import { useCallback, useMemo, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useListingBuilderStore } from "@/store/useListingBuilderStore";
-import { useDashboardStore } from "@/store/useDashboardStore";
 import api from "@/lib/axios";
 import { createAsset } from "@/lib/api/assets";
 import type { CreateAssetPayload } from "@/lib/api/types";
@@ -240,11 +241,7 @@ export function useInventoryBuilder() {
       
       console.log("[ListingBuilder] Publishing asset:", assetData);
       await createAssetWithAPI(assetData);
-      
-      // Refetch dashboard data
-      const dashboardStore = useDashboardStore.getState();
-      await dashboardStore.refetchInventory();
-      
+
       // Show success notification
       setIsNotification(true);
       setTimeout(() => {

@@ -25,7 +25,7 @@ export const useHostDashboard = () => {
   // We need to cast or access property safely.
   // Assuming user object has 'id' or 'userId' property.
   // Let's check how it's stored. Usually it's userData.
-  const userId = (user as any)?.id || (user as any)?.userId;
+  const userId = user?.id;
 
   const handleLogout = () => {
     logout();

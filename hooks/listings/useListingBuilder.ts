@@ -1,3 +1,5 @@
+'use client';
+
 import { useSearchParams } from "next/navigation";
 import { useInventoryBuilder } from "./useInventoryBuilder";
 import { useServicesBuilder } from "./useServicesBuilder";
