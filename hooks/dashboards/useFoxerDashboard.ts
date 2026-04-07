@@ -1,3 +1,5 @@
+"use client";
+
 import { useState } from "react";
 import { useScrollReveal } from "@/hooks/ui/useScrollReveal";
 import { useQuery } from "@tanstack/react-query";
@@ -9,21 +11,12 @@ export const useFoxerDashboard = () => {
   const {
     data: stats = { totalBookings: 0, totalRevenue: 0, rating: 5.0 },
     isLoading,
+    error,
   } = useQuery({
     queryKey: ["foxer-stats"],
     queryFn: async () => {
-      try {
-        const res = await api.get("/v1/foxers/me/stats");
-        return res.data.data;
-      } catch (error) {
-        console.warn("Failed to fetch foxer stats, using mock:", error);
-        return {
-          totalBookings: 12,
-          totalRevenue: 15400,
-          rating: 4.8,
-          activeGigs: 3,
-        };
-      }
+      const res = await api.get("/v1/foxers/me/stats");
+      return res.data.data;
     },
   });
   const [activeTab, setActiveTab] = useState("overview");
@@ -33,5 +26,6 @@ export const useFoxerDashboard = () => {
     setActiveTab,
     stats,
     isLoading,
+    error: error instanceof Error ? error.message : null,
   };
 };

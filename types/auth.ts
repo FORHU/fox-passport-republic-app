@@ -2,6 +2,7 @@
 
 export interface User {
   id: string;
+  userId?: string; // Fallback for legacy/inconsistent backend responses
   email: string;
   username: string;
   name: string;

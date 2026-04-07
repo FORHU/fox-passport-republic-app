@@ -1,3 +1,5 @@
+"use client";
+
 import { useState, useCallback } from "react";
 import { Venue, POIResult } from "@/types/venue";
 import { config } from "@/lib/config";
