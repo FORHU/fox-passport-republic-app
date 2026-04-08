@@ -16,12 +16,13 @@ import { getVenues } from "@/lib/server/data";
 import { filterVenues } from "@/lib/helpers/filterVenues";
 
 interface HomePageProps {
-  searchParams: { [key: string]: string | string[] | undefined };
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }
 
 async function HomeContent({ searchParams }: HomePageProps) {
-  const locationQuery = typeof searchParams.location === 'string' ? searchParams.location : undefined;
-  const categoryQuery = typeof searchParams.category === 'string' ? searchParams.category : undefined;
+  const params = await searchParams;
+  const locationQuery = typeof params.location === 'string' ? params.location : undefined;
+  const categoryQuery = typeof params.category === 'string' ? params.category : undefined;
 
   // Fetch venues from API
   const venues = await getVenues();

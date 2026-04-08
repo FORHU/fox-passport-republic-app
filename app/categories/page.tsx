@@ -7,9 +7,10 @@ export const dynamic = 'force-dynamic';
 export default async function CategoriesPage({
   searchParams,
 }: {
-  searchParams: { type?: string };
+  searchParams: Promise<{ type?: string }>;
 }) {
-  const type = searchParams.type;
+  const params = await searchParams;
+  const type = params.type;
   const categories = await getCategories();
   const events = type ? await getEventsByCategory(type) : [];
   const venues = type ? await getVenuesByCategory(type) : [];
