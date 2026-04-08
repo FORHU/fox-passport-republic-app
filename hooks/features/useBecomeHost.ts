@@ -4,6 +4,7 @@ import { useMutation } from "@tanstack/react-query";
 import axios from "axios";
 import { toast } from "sonner";
 import { useAuthStore } from "@/store/useAuthStore";
+import { clearAuthCookies } from "@/lib/server/auth-actions";
 
 interface BecomeHostResponse {
   success: boolean;
@@ -39,13 +40,16 @@ export const useBecomeHost = () => {
 
   return useMutation({
     mutationFn: () => becomeHost(accessToken!),
-    onSuccess: (data) => {
+    onSuccess: async (data) => {
       toast.success(data.message);
 
       // Log out the user so they can log in again with new role
-      setTimeout(() => {
+      setTimeout(async () => {
         toast.info("Logging you out... Please log in again to refresh your session.");
-        setTimeout(() => {
+        setTimeout(async () => {
+          // Clear cookies on server
+          await clearAuthCookies();
+          // Clear client store
           logout();
           // Open login modal after logout
           setTimeout(() => {
