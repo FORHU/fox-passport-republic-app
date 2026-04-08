@@ -4,6 +4,7 @@ const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3002/a
 
 async function apiFetch(endpoint: string, options: RequestInit = {}) {
   const url = `${API_BASE_URL}${endpoint}`
+  console.log(`[API] Fetching: ${url}`)
   const response = await fetch(url, {
     headers: {
       'Content-Type': 'application/json',
@@ -13,7 +14,9 @@ async function apiFetch(endpoint: string, options: RequestInit = {}) {
   })
 
   if (!response.ok) {
-    throw new Error(`API request failed: ${response.statusText}`)
+    const errorText = await response.text()
+    console.error(`[API] ${response.status} ${response.statusText}: ${errorText}`)
+    throw new Error(`API request failed: ${response.status} ${response.statusText}`)
   }
 
   return response.json()

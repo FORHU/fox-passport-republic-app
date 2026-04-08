@@ -11,12 +11,12 @@ function unwrapCreateResponse(data: any): BackendService {
 }
 
 export async function createService(payload: CreateServicePayload): Promise<BackendService> {
-  const resp = await api.post("/v1/services/create", payload);
+  const resp = await api.post("/services/create", payload);
   return unwrapCreateResponse(resp.data);
 }
 
 export async function fetchServices(): Promise<BackendService[]> {
-  const resp = await api.get("/v1/services");
+  const resp = await api.get("/services");
   return unwrapListResponse(resp.data);
 }
 
@@ -34,7 +34,7 @@ export async function fetchServicesByHostId(hostId: Id): Promise<BackendService[
   let lastErr: any = null;
   for (const params of paramAttempts) {
     try {
-      const resp = await api.get("/v1/services", { params });
+      const resp = await api.get("/services", { params });
       return unwrapListResponse(resp.data);
     } catch (e: any) {
       lastErr = e;
@@ -59,7 +59,7 @@ export async function updateService(
   serviceId: Id,
   payload: UpdateServicePayload
 ): Promise<BackendService> {
-  const resp = await api.put(`/v1/services/${serviceId}`, payload);
+  const resp = await api.put(`/services/${serviceId}`, payload);
   return unwrapUpdateResponse(resp.data);
 }
 

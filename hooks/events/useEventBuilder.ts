@@ -30,7 +30,7 @@ export function useEventBuilder() {
     const fetchData = async () => {
       try {
         // Fetch Venues
-        const venueResp = await api.get("/v1/venues");
+        const venueResp = await api.get("/venues");
         let venues: ResourceItem[] = [];
         const rawVenues = venueResp.data.venues || venueResp.data.data || (Array.isArray(venueResp.data) ? venueResp.data : []);
         
@@ -48,8 +48,8 @@ export function useEventBuilder() {
 
         // Fetch Assets/Services
         const [assetResp, serviceResp] = await Promise.all([
-          api.get("/v1/assets"),
-          api.get("/v1/services")
+          api.get("/assets"),
+          api.get("/services")
         ]);
 
         const talent: ResourceItem[] = [];
@@ -278,7 +278,7 @@ export function useEventBuilder() {
       console.log("Publishing payload:", payload);
 
       // 3. Create Event
-      const response = await api.post("/v1/events", payload);
+      const response = await api.post("/events", payload);
 
       if (response.data.success) {
         toast.success("Event blueprint published!");

@@ -24,7 +24,7 @@ export async function fetchEventsByHostId(hostId: Id): Promise<any[]> {
   let lastErr: any = null;
   for (const params of paramAttempts) {
     try {
-      const resp = await api.get("/v1/events", { params });
+      const resp = await api.get("/events", { params });
       return unwrapListResponse(resp.data);
     } catch (e: any) {
       lastErr = e;
@@ -40,7 +40,7 @@ export async function updateEvent(
   eventId: Id,
   payload: any
 ): Promise<any> {
-  const resp = await api.put(`/v1/events/${eventId}`, payload);
+  const resp = await api.put(`/events/${eventId}`, payload);
   return resp.data?.event ?? resp.data?.data ?? resp.data;
 }
 

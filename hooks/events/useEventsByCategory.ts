@@ -42,7 +42,7 @@ export function useEventsByCategory(
       const slug = categoryNameToSlug(categoryName);
 
       const response = await api.get<EventsApiResponse>(
-        `/v1/events/by-category/${slug}`
+        `/events/by-category/${slug}`
       );
 
       if (response.data.success) {

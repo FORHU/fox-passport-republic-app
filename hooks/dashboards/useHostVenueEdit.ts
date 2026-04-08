@@ -146,7 +146,7 @@ export function useHostVenueEdit(venueId: string) {
       if (galleryFiles.length > 0) {
         const formData = new FormData();
         galleryFiles.forEach((file) => formData.append("images", file));
-        await api.post(`/v1/venues/${venueId}/images`, formData);
+        await api.post(`/venues/${venueId}/images`, formData);
       }
 
       setExistingStatus(targetStatus);

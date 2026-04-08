@@ -167,7 +167,7 @@ export function useVenueBuilder() {
       };
 
       console.log("Publishing venue...", payload);
-      const response = await api.post("/v1/venues", payload);
+      const response = await api.post("/venues", payload);
 
       // Backend now returns { message, venue } instead of { success, data }
       const createdVenue = response.data.venue;
@@ -185,7 +185,7 @@ export function useVenueBuilder() {
             imageCount: galleryFiles.length,
             firstImageType: galleryFiles[0]?.constructor?.name,
             firstImageSize: galleryFiles[0]?.size,
-            endpoint: `/v1/venues/${venueId}/images`
+            endpoint: `/venues/${venueId}/images`
           });
 
           if (!venueId) {
@@ -201,7 +201,7 @@ export function useVenueBuilder() {
           });
 
           try {
-            const uploadUrl = `/v1/venues/${venueId}/images`;
+            const uploadUrl = `/venues/${venueId}/images`;
             console.log("📤 Image Upload Attempt:", {
               url: uploadUrl,
               fullUrl: `${api.defaults.baseURL}${uploadUrl}`,

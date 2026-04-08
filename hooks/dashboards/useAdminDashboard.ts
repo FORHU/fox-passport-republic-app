@@ -11,7 +11,7 @@ export const useAdminDashboard = () => {
   } = useQuery({
     queryKey: ["admin-stats"],
     queryFn: async () => {
-      const res = await api.get("/v1/admin/stats");
+      const res = await api.get("/admin/stats");
       return res.data.data;
     },
   });

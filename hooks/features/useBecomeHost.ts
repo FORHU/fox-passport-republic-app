@@ -20,7 +20,7 @@ interface BecomeHostResponse {
 
 const becomeHost = async (accessToken: string): Promise<BecomeHostResponse> => {
   const response = await axios.post(
-    `${process.env.NEXT_PUBLIC_API_URL}/v1/users/become-host`,
+    `${process.env.NEXT_PUBLIC_API_URL}/users/become-host`,
     {},
     {
       headers: {

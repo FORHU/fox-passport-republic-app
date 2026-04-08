@@ -32,7 +32,7 @@ export function useInventoryBuilder() {
   useEffect(() => {
     const fetchCategories = async () => {
       try {
-        const response = await api.get("/v1/categories");
+        const response = await api.get("/categories");
         if (response.data?.data) {
           const map: { [key: string]: string } = {};
           response.data.data.forEach((cat: any) => {

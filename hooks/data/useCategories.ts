@@ -12,7 +12,7 @@ interface UseCategoriesReturn {
 }
 
 const fetchCategories = async (): Promise<Category[]> => {
-  const response = await api.get<CategoriesApiResponse>("/v1/categories");
+  const response = await api.get<CategoriesApiResponse>("/categories");
 
   if (!response.data.success) {
     throw new Error("Failed to fetch categories");
