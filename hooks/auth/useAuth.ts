@@ -8,6 +8,7 @@ import { useAuthStore } from "@/store/useAuthStore";
 import { LoginFormData, SignupFormData } from "@/lib/schema";
 import { LoginResponse } from "@/types/auth";
 import { config } from "@/lib/config";
+import { setAuthCookies, clearAuthCookies } from "@/lib/server/auth-actions";
 
 // --- AXIOS SETUP ---
 const api = axios.create({
@@ -47,11 +48,14 @@ export const useLogin = () => {
 
   return useMutation({
     mutationFn: realLogin,
-    onSuccess: (data) => {
+    onSuccess: async (data) => {
       console.log("Login Success:", data);
 
       // Save user to store
       login(data);
+
+      // Set cookies on server so middleware can read them
+      await setAuthCookies(data);
 
       toast.success("Welcome back!");
 
@@ -94,4 +98,20 @@ export const useSignup = () => {
       toast.error(msg);
     },
   });
+};
+
+export const useLogout = () => {
+  const router = useRouter();
+  const { logout } = useAuthStore();
+
+  return async () => {
+    // Clear cookies on server
+    await clearAuthCookies();
+
+    // Clear client store
+    logout();
+
+    // Redirect to home
+    router.push("/");
+  };
 };
