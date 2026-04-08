@@ -7,9 +7,10 @@ import WriteReviewClient from '@/components/reviews/WriteReviewClient';
 export default async function WriteReviewPage({
   params,
 }: {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }) {
-  const venue = await getVenueById(params.id);
+  const { id } = await params;
+  const venue = await getVenueById(id);
 
   if (!venue) {
     notFound();

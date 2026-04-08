@@ -4,11 +4,12 @@ import { getCategoryBySlug, getEventsByCategory, getVenuesByCategory } from '@/l
 import CategoryDetailClient from '@/components/categories/CategoryDetailClient'
 
 interface CategoryDetailPageProps {
-  params: { id: string }
+  params: Promise<{ id: string }>
 }
 
 export default async function CategoryDetailPage({ params }: CategoryDetailPageProps) {
-  const category = await getCategoryBySlug(params.id)
+  const { id } = await params
+  const category = await getCategoryBySlug(id)
 
   if (!category) {
     return (
