@@ -33,8 +33,8 @@ export async function getDashboardStats() {
 
 export async function getUserDashboard(userId: string) {
   await requireAuth()
-  const bookings = await apiFetch(`/bookings?userId=${userId}`)
-  const recommendations = await apiFetch(`/favorites?userId=${userId}`)
+  const bookings = await apiFetch(`/bookings/user/${userId}`)
+  const recommendations = await apiFetch(`/favorites/user/${userId}`)
   // Mock weather
   const weather = { temp: '22°C', condition: 'Sunny' }
   const citizenLevel = 5 // calculate based on data
