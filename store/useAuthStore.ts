@@ -67,6 +67,7 @@ export const useAuthStore = create<AuthState>((set) => ({
     localStorage.removeItem("fox_user");
     localStorage.removeItem("fox_token");
     localStorage.removeItem("fox_refresh_token");
+    // Note: Server cookies are cleared by clearAuthCookies() server action
     set({ isAuthenticated: false, user: null, accessToken: null, refreshToken: null });
   },
 }));
