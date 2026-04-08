@@ -3,17 +3,18 @@
 import { Suspense, useState } from "react";
 import Link from "next/link";
 import { BrandLogo } from "@/components/shared/BrandLogo";
-import { useRouter } from "next/navigation"; 
-import { 
-  X, 
+import { useRouter } from "next/navigation";
+import {
+  X,
   Home, Tent, ConciergeBell,
-  ArrowRight 
-} from "lucide-react"; 
+  ArrowRight
+} from "lucide-react";
 
 import AuthModal from "@/components/landing/AuthModal";
 import { useNavbar } from "@/hooks/ui/useNavbar";
 import { useAuthStore } from "@/store/useAuthStore";
 import UserMenuButton from "@/components/users/UserMenuButton";
+import { clearAuthCookies } from "@/lib/server/auth-actions";
 
 // --- HOST MODAL (Internal Component) ---
 interface HostModalProps {
@@ -112,20 +113,20 @@ const HostModal = ({ isOpen, onClose, onOptionClick }: HostModalProps) => {
 function NavbarContent() {
   const router = useRouter();
   const [isHostModalOpen, setHostModalOpen] = useState(false);
-  const { user } = useAuthStore(); 
+  const { user } = useAuthStore();
   const isAuthenticated = !!user;
 
-  const { 
-    mobileMenuOpen, setMobileMenuOpen, 
-    openLogin, openSignup 
+  const {
+    mobileMenuOpen, setMobileMenuOpen,
+    openLogin, openSignup
   } = useNavbar();
 
   const handleHostOptionClick = () => {
     setHostModalOpen(false);
     if (isAuthenticated) {
-      router.push("/host"); 
+      router.push("/host");
     } else {
-      openLogin(); 
+      openLogin();
     }
   };
 
@@ -135,6 +136,16 @@ function NavbarContent() {
     } else {
       openLogin();
     }
+  };
+
+  const handleLogout = async () => {
+    // Clear cookies on server
+    await clearAuthCookies();
+    // Clear client store
+    useAuthStore.getState().logout();
+    // Close menu and redirect
+    setMobileMenuOpen(false);
+    router.push("/");
   };
 
   return (
@@ -243,8 +254,8 @@ function NavbarContent() {
                   >
                     Profile
                   </button>
-                  <button 
-                    onClick={() => { setMobileMenuOpen(false); useAuthStore.getState().logout(); }} 
+                  <button
+                    onClick={handleLogout}
                     className="flex-1 py-2.5 rounded-lg border border-gray-200 text-gray-700 font-semibold hover:bg-gray-50 transition-all text-sm"
                   >
                     Log Out
