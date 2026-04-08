@@ -1,5 +1,3 @@
-"use client";
-
 import { FOXERS, Foxer } from "@/data/foxers";
 
 export default function FoxersMatchSection() {

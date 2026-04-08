@@ -1,5 +1,3 @@
-"use client";
-
 import React from "react";
 import ListingCard from "@/components/landing/ListingCard";
 import { Venue } from "@/data/hardcodedVenues";

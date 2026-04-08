@@ -1,5 +1,3 @@
-"use client";
-
 export default function TrendingSection() {
   return (
     <section className="py-20">

@@ -1,5 +1,3 @@
-'use client';
-
 import React from 'react';
 import { RATING_BARS, MOCK_REVIEWS } from '@/data/venueDetailData';
 

@@ -1,5 +1,3 @@
-"use client";
-
 import React from "react";
 import { Search, MapPin } from "lucide-react";
 import { HARDCODED_VENUES } from "@/data/hardcodedVenues";

@@ -1,5 +1,3 @@
-'use client';
-
 import React from 'react';
 import { KPI_DATA } from '@/data/dashboardData';
 

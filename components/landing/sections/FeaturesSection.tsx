@@ -1,5 +1,3 @@
-"use client";
-
 export default function FeaturesSection() {
   return (
     <section className="py-16 border-t border-white/5 bg-surface/50">

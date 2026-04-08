@@ -1,5 +1,4 @@
 "use client";
-
 import React, { Suspense } from "react";
 import { useParams } from "next/navigation";
 import RequireAuth from "@/components/authentication/RequireAuth";

@@ -1,5 +1,3 @@
-"use client";
-
 import { useLandingPage } from "@/hooks/ui/useLandingPage";
 
 // Section Components

@@ -1,6 +1,6 @@
 import { useCallback, useMemo, useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { useListingBuilderStore } from "@/store/useListingBuilderStore";
+import { useServiceBuilderStore } from "@/store/useServiceBuilderStore";
 import { useDashboardStore } from "@/store/useDashboardStore";
 import api from "@/lib/axios";
 import { createService } from "@/lib/api/services";
@@ -12,14 +12,13 @@ import {
   ServiceUnit,
 } from "@/data/serviceBuilderData";
 
-export function useServicesBuilder() {
+export function useServiceBuilder() {
   const router = useRouter();
-  const store = useListingBuilderStore();
+  const store = useServiceBuilderStore();
   const [error, setError] = useState<string | null>(null);
   const [isNotification, setIsNotification] = useState(false);
   const [categoryMap, setCategoryMap] = useState<{ [key: string]: string }>({});
 
-  // Fetch categories from API to map slugs to IDs
   useEffect(() => {
     const fetchCategories = async () => {
       try {
@@ -27,41 +26,30 @@ export function useServicesBuilder() {
         if (response.data?.data) {
           const map: { [key: string]: string } = {};
           response.data.data.forEach((cat: any) => {
-            if (cat.slug) {
-              map[cat.slug] = String(cat.id);
-            }
+            if (cat.slug) map[cat.slug] = String(cat.id);
           });
           setCategoryMap(map);
         }
       } catch (err) {
-        console.warn("[useServicesBuilder] Failed to fetch categories:", err);
+        console.warn("[useServiceBuilder] Failed to fetch categories:", err);
       }
     };
     fetchCategories();
   }, []);
 
-  // Categories and statuses specifically for services
   const categories = SERVICE_CATEGORIES;
   const currentStatuses = SERVICE_STATUSES;
 
-  // Completion percentage
   const completionPercentage = useMemo(() => {
     const { title, description, category, price } = store;
-    // For services, image might be optional, but title/desc/cat/price are usually core
     return title && description && category && price > 0 ? 100 : 30;
   }, [store.title, store.description, store.category, store.price]);
 
-  const isReadyToPublish = useMemo(() => {
-    return completionPercentage === 100;
-  }, [completionPercentage]);
+  const isReadyToPublish = useMemo(() => completionPercentage === 100, [completionPercentage]);
 
   const displayCategory = useMemo(() => {
-    if (store.category === "other" && store.customCategory) {
-      return store.customCategory;
-    }
-    return (
-      categories.find((c) => c.id === store.category)?.label || "Uncategorized"
-    );
+    if (store.category === "other" && store.customCategory) return store.customCategory;
+    return categories.find((c) => c.id === store.category)?.label || "Uncategorized";
   }, [store.category, store.customCategory]);
 
   const getUserId = useCallback(() => {
@@ -72,10 +60,26 @@ export function useServicesBuilder() {
         return session.userId || session.id;
       }
     } catch (e) {
-      console.error("[useServicesBuilder] Error getting user ID", e);
+      console.error("[useServiceBuilder] Error getting user ID", e);
     }
     return null;
   }, []);
+
+  const handleBack = useCallback(() => router.push("/host"), [router]);
+
+  const handleSaveDraft = useCallback(() => {
+    console.log("Saving service draft...", store);
+  }, [store]);
+
+  const handleImageUpload = useCallback((url: string) => store.setImage(url), [store]);
+
+  const handleCategorySelect = useCallback(
+    (catId: string) => {
+      store.setCategory(catId);
+      if (catId !== "other") store.setCustomCategory("");
+    },
+    [store]
+  );
 
   const createServiceWithAPI = useCallback(
     async (serviceData: CreateServicePayload) => {
@@ -83,7 +87,7 @@ export function useServicesBuilder() {
         return await createService(serviceData);
       } catch (err: any) {
         const { status, data } = err?.response || {};
-        console.error("[useServicesBuilder] createService API error:", {
+        console.error("[useServiceBuilder] createService API error:", {
           status,
           message: err?.message,
           data,
@@ -126,34 +130,6 @@ export function useServicesBuilder() {
     []
   );
 
-  const handleBack = useCallback(() => {
-    router.push("/host");
-  }, [router]);
-
-  const handleSaveDraft = useCallback(() => {
-    console.log("Saving service draft...", {
-      title: store.title,
-      description: store.description,
-      category: store.category,
-      price: store.price,
-      unit: store.unit
-    });
-  }, [store]);
-
-  const handleImageUpload = useCallback((url: string) => {
-    store.setImage(url);
-  }, [store]);
-
-  const handleCategorySelect = useCallback(
-    (catId: string) => {
-      store.setCategory(catId);
-      if (catId !== "other") {
-        store.setCustomCategory("");
-      }
-    },
-    [store]
-  );
-
   const handlePublish = useCallback(async () => {
     if (!isReadyToPublish) {
       setError("Please complete all required fields before publishing");
@@ -164,29 +140,22 @@ export function useServicesBuilder() {
     setError(null);
 
     try {
-      // Verify user is logged in
       const userId = getUserId();
-      if (!userId) {
-        throw new Error("User not authenticated");
-      }
-      const stringHostId = String(userId);
+      if (!userId) throw new Error("User not authenticated");
 
       const serviceData: CreateServicePayload = {
         name: store.title,
         description: store.description,
         billingRate: BILLING_RATE_MAP[store.unit as ServiceUnit] || "hourly",
         category: store.category,
-        price:
-          typeof store.price === "string" ? parseFloat(store.price) : Number(store.price),
+        price: typeof store.price === "string" ? parseFloat(store.price) : Number(store.price),
         ...(store.image && {
           images: [{ url: store.image, isThumbnail: true, altText: store.title }],
         }),
       };
 
-      console.log("[ServicesBuilder] Publishing service:", serviceData);
       await createServiceWithAPI(serviceData);
       
-      // Refetch dashboard data
       const dashboardStore = useDashboardStore.getState();
       await dashboardStore.refetchInventory();
       
@@ -196,7 +165,6 @@ export function useServicesBuilder() {
         store.reset();
       }, 1500);
     } catch (err: any) {
-      console.error("Error publishing service", err);
       setError(err.message || "Failed to publish service");
       store.setIsSubmitting(false);
     }

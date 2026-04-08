@@ -1,5 +1,3 @@
-'use client';
-
 import React from 'react';
 import { OCCUPANCY_DATA, PENDING_REQUESTS } from '@/data/dashboardData';
 

@@ -1,5 +1,3 @@
-'use client';
-
 import React from 'react';
 import { Badge, BadgeRarity } from '@/types/gamification';
 import { BADGE_COLORS } from '@/types/gamification';

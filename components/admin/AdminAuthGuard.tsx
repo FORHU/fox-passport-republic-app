@@ -1,5 +1,3 @@
-"use client";
-
 import React, { useEffect, useState } from 'react';
 import { useAuthStore, useAuthActions, useAuthStatus, useAuthLoading } from '@/store/useAuthStore';
 

@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { useAuthStore } from "@/store/useAuthStore";
-import { useServicesBuilder } from "@/hooks/listings/useServicesBuilder";
+import { useServiceBuilder } from "@/hooks/services/useServiceBuilder";
 import { fetchServicesByHostId, updateService } from "@/lib/api/services";
 import type { Id } from "@/lib/api/types";
 import {
@@ -73,7 +73,7 @@ export function useHostServiceEdit(serviceId: string) {
   const user = useAuthStore((s) => s.user);
   const hostId = (user as any)?.id || (user as any)?.userId;
 
-  const services = useServicesBuilder();
+  const services = useServiceBuilder();
   const dashboardStore = useDashboardStore;
 
   const [isPrefilling, setIsPrefilling] = useState(true);

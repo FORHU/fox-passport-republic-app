@@ -1,6 +1,3 @@
-// File: src/components/user/UserMenuButton.tsx
-"use client";
-
 import { useRouter } from "next/navigation";
 import {
   Heart,

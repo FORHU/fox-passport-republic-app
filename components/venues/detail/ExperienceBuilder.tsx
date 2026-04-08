@@ -1,5 +1,3 @@
-'use client';
-
 import React from 'react';
 import { useExperienceBuilder } from '@/hooks/venues/useVenueDetail';
 import { SERVICE_CATEGORIES, AVAILABLE_FOXERS } from '@/data/venueDetailData';

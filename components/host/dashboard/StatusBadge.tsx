@@ -1,5 +1,3 @@
-'use client';
-
 import React, { useState, useRef, useEffect } from 'react';
 import { STATUS_OPTIONS, StatusType } from '@/data/dashboardData';
 

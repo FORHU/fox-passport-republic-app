@@ -1,5 +1,3 @@
-"use client";
-
 import { Suspense, useState } from "react";
 import Link from "next/link";
 import { BrandLogo } from "@/components/shared/BrandLogo";

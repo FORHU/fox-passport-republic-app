@@ -1,5 +1,3 @@
-'use client';
-
 import React from 'react';
 import { RESOURCE_CATEGORIES, ResourceItem } from '@/data/venueBuilderData';
 

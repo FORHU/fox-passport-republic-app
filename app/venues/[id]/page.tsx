@@ -1,5 +1,4 @@
 "use client";
-
 import React, { useEffect } from "react";
 import { useParams } from "next/navigation";
 import { useVenueDetail } from "@/hooks/venues/useVenueDetail";

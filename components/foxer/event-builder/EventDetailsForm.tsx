@@ -1,5 +1,3 @@
-'use client';
-
 import React from 'react';
 import { EVENT_CATEGORIES } from '@/data/eventBuilderData';
 

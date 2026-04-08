@@ -1,5 +1,4 @@
 'use client';
-
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { GalleryItem, VENUE_TYPES } from '@/data/venueBuilderData';
 import { config } from '@/lib/config';

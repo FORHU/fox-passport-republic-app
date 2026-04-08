@@ -1,5 +1,4 @@
-"use client";
-
+'use client';
 import React, { useEffect } from 'react';
 import { useAuthStore } from '@/store/useAuthStore';
 import LoginForm from '@/components/authentication/LoginForm';

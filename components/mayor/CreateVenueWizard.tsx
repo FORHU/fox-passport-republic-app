@@ -1,5 +1,3 @@
-"use client";
-
 import React from "react";
 import { useCreateVenueModal } from "@/hooks/venues/useCreateVenueModal";
 import { X } from "lucide-react";

@@ -1,5 +1,3 @@
-"use client";
-
 import { Category } from "@/types/category";
 import Link from "next/link";
 

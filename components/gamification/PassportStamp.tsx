@@ -1,5 +1,3 @@
-'use client';
-
 import React from 'react';
 import { PassportStamp } from '@/types/gamification';
 import { formatXP } from '@/lib/gamification';

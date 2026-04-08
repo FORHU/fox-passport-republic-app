@@ -1,5 +1,3 @@
-"use client";
-
 export default function HeroSection() {
   return (
     <section className="relative pt-10 pb-20 lg:pt-20 lg:pb-32 overflow-hidden">

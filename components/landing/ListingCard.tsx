@@ -1,4 +1,3 @@
-"use client";
 import { Heart, Star } from "lucide-react";
 import Link from "next/link";
 import { Venue } from "@/data/hardcodedVenues";

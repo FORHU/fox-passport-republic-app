@@ -1,5 +1,3 @@
-'use client';
-
 import React, { useState } from 'react';
 import Link from 'next/link';
 import RequireAuth from '@/components/authentication/RequireAuth';

@@ -1,5 +1,4 @@
 "use client";
-
 import React, { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { AlertTriangle, Loader2 } from "lucide-react";
@@ -37,8 +36,8 @@ export default function HostVenuesViewAllPage() {
       const searchOk = !q
         ? true
         : normalizeValue(vn.title).includes(q) ||
-          normalizeValue(vn.loc).includes(q) ||
-          normalizeValue(vn.type).includes(q);
+        normalizeValue(vn.loc).includes(q) ||
+        normalizeValue(vn.type).includes(q);
 
       return statusOk && searchOk;
     });
