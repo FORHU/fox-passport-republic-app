@@ -1,13 +1,16 @@
-import { requireAuth } from './auth'
+import { requireAuth, getAccessToken } from './auth'
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3002/api/v1'
 
 async function apiFetch(endpoint: string, options: RequestInit = {}) {
   const url = `${API_BASE_URL}${endpoint}`
+  const token = await getAccessToken()
+
   console.log(`[API] Fetching: ${url}`)
   const response = await fetch(url, {
     headers: {
       'Content-Type': 'application/json',
+      ...(token && { Authorization: `Bearer ${token}` }),
       ...options.headers,
     },
     ...options,
@@ -33,6 +36,7 @@ export async function getDashboardStats() {
 
 export async function getUserDashboard(userId: string) {
   await requireAuth()
+  // Backend endpoints use req.user.id from auth, so we don't need to pass userId
   const bookings = await apiFetch(`/bookings/user/${userId}`)
   const recommendations = await apiFetch(`/favorites/user/${userId}`)
   // Mock weather
