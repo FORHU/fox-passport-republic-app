@@ -14,16 +14,16 @@ export const useAdminData = (type: string) => {
         let endpoint = "";
         switch (type) {
           case "venues":
-            endpoint = "/v1/venues";
+            endpoint = "/venues";
             break;
           case "events":
-            endpoint = "/v1/events";
+            endpoint = "/events";
             break;
           case "categories":
-            endpoint = "/v1/categories";
+            endpoint = "/categories";
             break;
           case "citizens":
-            endpoint = "/v1/users";
+            endpoint = "/users";
             break;
           default:
             return [];

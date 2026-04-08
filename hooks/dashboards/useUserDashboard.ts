@@ -80,7 +80,7 @@ export const useUserDashboard = () => {
     queryFn: async () => {
       if (!userId) return [];
       try {
-        const res = await api.get(`/v1/bookings/upcoming`);
+        const res = await api.get(`/bookings/upcoming`);
         return res.data.data || [];
       } catch (error) {
         // Fallback to mock data if API fails
@@ -107,7 +107,7 @@ export const useUserDashboard = () => {
     queryFn: async () => {
       if (!userId) return [];
       try {
-        const res = await api.get(`/v1/users/${userId}/saved-events`);
+        const res = await api.get(`/users/${userId}/saved-events`);
         return res.data.data || [];
       } catch (error) {
         console.warn("Failed to fetch saved vibes, using mock:", error);
@@ -148,7 +148,7 @@ export const useUserDashboard = () => {
     queryFn: async () => {
       try {
         // Could be personalized based on user preferences
-        const res = await api.get("/v1/events/recommendations");
+        const res = await api.get("/events/recommendations");
         return res.data.data || [];
       } catch (error) {
         console.warn("Failed to fetch recommendations, using mock:", error);

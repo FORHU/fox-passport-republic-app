@@ -31,7 +31,7 @@ const fetchHostVenues = async (hostId: string, token?: string | null): Promise<V
   }
 
   const response = await axios.get(
-    `${process.env.NEXT_PUBLIC_API_URL}/v1/venues?hostId=${hostId}`,
+    `${process.env.NEXT_PUBLIC_API_URL}/venues?hostId=${hostId}`,
     { headers }
   );
 

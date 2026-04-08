@@ -11,7 +11,7 @@ function unwrapCreateResponse(data: any): BackendAsset {
 }
 
 export async function createAsset(payload: CreateAssetPayload): Promise<BackendAsset> {
-  const resp = await api.post("/v1/assets/create", payload);
+  const resp = await api.post("/assets/create", payload);
   return unwrapCreateResponse(resp.data);
 }
 
@@ -29,7 +29,7 @@ export async function fetchAssetsByHostId(hostId: Id): Promise<BackendAsset[]> {
   let lastErr: any = null;
   for (const params of paramAttempts) {
     try {
-      const resp = await api.get("/v1/assets", { params });
+      const resp = await api.get("/assets", { params });
       return unwrapListResponse(resp.data);
     } catch (e: any) {
       lastErr = e;
@@ -52,7 +52,7 @@ export async function updateAsset(
   assetId: Id,
   payload: UpdateAssetPayload
 ): Promise<BackendAsset> {
-  const resp = await api.put(`/v1/assets/${assetId}`, payload);
+  const resp = await api.put(`/assets/${assetId}`, payload);
   return unwrapUpdateResponse(resp.data);
 }
 

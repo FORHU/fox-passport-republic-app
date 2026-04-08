@@ -36,8 +36,8 @@ export const useHostDashboard = () => {
     queryKey: ["host-venues", userId],
     queryFn: async () => {
       if (!userId) return [];
-      // Calling GET /api/v1/venues?hostId=...
-      const response = await api.get(`/v1/venues?hostId=${userId}`);
+      // Calling GET /api/venues?hostId=...
+      const response = await api.get(`/venues?hostId=${userId}`);
       // Backend returns { success: true, data: [...] }
       return response.data.data;
     },

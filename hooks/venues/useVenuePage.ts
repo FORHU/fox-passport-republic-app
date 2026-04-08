@@ -75,8 +75,8 @@ export function useVenuePage() {
 
         try {
           // Try fetching as Event
-          // Note: /api/v1/events/:id
-          const response = await api.get(`/v1/events/${id}`);
+          // Note: /api/events/:id
+          const response = await api.get(`/events/${id}`);
           if (response.data?.success) {
             data = response.data.data;
             isEvent = true;
@@ -95,8 +95,8 @@ export function useVenuePage() {
         if (!data) {
           try {
             // Fallback: Try fetching as Venue
-            // Note: /api/v1/venues/:id
-            const response = await api.get(`/v1/venues/${id}`);
+            // Note: /api/venues/:id
+            const response = await api.get(`/venues/${id}`);
             // Backend now returns { venue } for single venues
             if (response.data?.venue) {
               data = response.data.venue;

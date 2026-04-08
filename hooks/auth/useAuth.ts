@@ -25,7 +25,7 @@ const realLogin = async (data: LoginFormData): Promise<LoginResponse> => {
     username: data.username,
     password: data.password,
   };
-  const response = await api.post<LoginResponse>("/v1/auth/login", payload);
+  const response = await api.post<LoginResponse>("/auth/login", payload);
   return response.data;
 };
 
@@ -35,7 +35,7 @@ const realSignup = async (data: SignupFormData) => {
     name: data.name || undefined,
     mobileNumber: data.mobileNumber || undefined,
   };
-  const response = await api.post("/v1/auth/register", payload);
+  const response = await api.post("/auth/register", payload);
   return response.data;
 };
 

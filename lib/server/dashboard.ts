@@ -20,7 +20,7 @@ interface DashboardDataFetch {
  */
 export async function fetchHostVenues(userId: Id): Promise<any[]> {
   try {
-    const response = await api.get("/v1/venues", {
+    const response = await api.get("/venues", {
       params: { hostId: userId },
     });
 
@@ -42,7 +42,7 @@ export async function fetchHostVenues(userId: Id): Promise<any[]> {
  */
 export async function fetchHostEvents(userId: Id): Promise<any[]> {
   try {
-    const response = await api.get("/v1/events", {
+    const response = await api.get("/events", {
       params: { organizerId: userId },
     });
 
@@ -63,7 +63,7 @@ export async function fetchHostEvents(userId: Id): Promise<any[]> {
  */
 export async function fetchAdminStats() {
   try {
-    const response = await api.get("/v1/admin/stats");
+    const response = await api.get("/admin/stats");
     return response.data.data;
   } catch (error) {
     console.error("Failed to fetch admin stats:", error);
@@ -79,16 +79,16 @@ export async function fetchAdminData(type: "venues" | "events" | "categories" | 
     let endpoint = "";
     switch (type) {
       case "venues":
-        endpoint = "/v1/venues";
+        endpoint = "/venues";
         break;
       case "events":
-        endpoint = "/v1/events";
+        endpoint = "/events";
         break;
       case "categories":
-        endpoint = "/v1/categories";
+        endpoint = "/categories";
         break;
       case "citizens":
-        endpoint = "/v1/users";
+        endpoint = "/users";
         break;
       default:
         throw new Error(`Unknown admin data type: ${type}`);
@@ -118,7 +118,7 @@ export async function fetchAdminData(type: "venues" | "events" | "categories" | 
  */
 export async function fetchFoxerStats() {
   try {
-    const response = await api.get("/v1/foxers/me/stats");
+    const response = await api.get("/foxers/me/stats");
     return response.data.data;
   } catch (error) {
     console.error("Failed to fetch foxer stats:", error);

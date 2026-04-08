@@ -23,7 +23,7 @@ export async function fetchVenuesByHostId(hostId: Id): Promise<any[]> {
   let lastErr: any = null;
   for (const params of paramAttempts) {
     try {
-      const resp = await api.get("/v1/venues", { params });
+      const resp = await api.get("/venues", { params });
       return unwrapListResponse(resp.data);
     } catch (e: any) {
       lastErr = e;
@@ -39,7 +39,7 @@ export async function updateVenue(
   venueId: Id,
   payload: any
 ): Promise<any> {
-  const resp = await api.put(`/v1/venues/${venueId}`, payload);
+  const resp = await api.put(`/venues/${venueId}`, payload);
   return resp.data?.venue ?? resp.data?.data ?? resp.data;
 }
 
