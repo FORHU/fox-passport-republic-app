@@ -7,9 +7,10 @@ import VenueDetailClient from '@/components/venues/VenueDetailClient';
 export default async function VenueDetailPage({
   params,
 }: {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }) {
-  const venue = await getVenueById(params.id);
+  const { id } = await params;
+  const venue = await getVenueById(id);
 
   if (!venue) {
     notFound();
