@@ -1,3 +1,5 @@
+"use client";
+
 import React from 'react';
 import { useUIStore } from '@/store/useUIStore';
 import { BrandLogo } from '@/components/shared/BrandLogo';
