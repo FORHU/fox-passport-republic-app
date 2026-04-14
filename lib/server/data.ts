@@ -1,3 +1,4 @@
+import { redirect } from 'next/navigation'
 import { requireAuth, getAccessToken } from './auth'
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3002/api/v1'
@@ -17,6 +18,11 @@ async function apiFetch(endpoint: string, options: RequestInit = {}) {
   })
 
   if (!response.ok) {
+    if (response.status === 401) {
+      console.warn(`[API] 401 Unauthorized at ${endpoint}. Redirecting to auth...`)
+      redirect('/?auth=expired')
+    }
+
     const errorText = await response.text()
     console.error(`[API] ${response.status} ${response.statusText}: ${errorText}`)
     throw new Error(`API request failed: ${response.status} ${response.statusText}`)
