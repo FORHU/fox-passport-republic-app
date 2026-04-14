@@ -7,10 +7,9 @@ import { toast } from 'sonner';
 interface CitizenTableProps {
   citizens: any[];
   isLoading: boolean;
-  refetch: () => void;
 }
 
-export const AdminCitizenTable: React.FC<CitizenTableProps> = ({ citizens, isLoading, refetch }) => {
+export const AdminCitizenTable: React.FC<CitizenTableProps> = ({ citizens, isLoading }) => {
   const [expandedRow, setExpandedRow] = useState<string | null>(null);
 
   if (isLoading) {

@@ -5,10 +5,9 @@ import React, { useState } from 'react';
 interface EventsTableProps {
   events: any[];
   isLoading: boolean;
-  refetch: () => void;
 }
 
-export const AdminEventsTable: React.FC<EventsTableProps> = ({ events, isLoading, refetch }) => {
+export const AdminEventsTable: React.FC<EventsTableProps> = ({ events, isLoading }) => {
   const [expandedRow, setExpandedRow] = useState<string | null>(null);
 
   if (isLoading) {

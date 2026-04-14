@@ -1,13 +1,13 @@
 'use client';
 
 import React, { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import api from '@/lib/axios';
 import { toast } from 'sonner';
 
 interface VenueTableProps {
   venues: any[];
   isLoading: boolean;
-  refetch: () => void;
 }
 
 const VENUE_STATUSES = [
@@ -18,7 +18,8 @@ const VENUE_STATUSES = [
   { value: 'archived', label: 'Archived', color: 'bg-gray-500/10 text-gray-400 border-gray-500/20' },
 ];
 
-export const AdminVenuesTable: React.FC<VenueTableProps> = ({ venues, isLoading, refetch }) => {
+export const AdminVenuesTable: React.FC<VenueTableProps> = ({ venues, isLoading }) => {
+  const router = useRouter();
   const [expandedRow, setExpandedRow] = useState<string | null>(null);
   const [updatingId, setUpdatingId] = useState<string | null>(null);
 
@@ -28,7 +29,7 @@ export const AdminVenuesTable: React.FC<VenueTableProps> = ({ venues, isLoading,
       const response = await api.put(`/venues/${id}`, { status: newStatus });
       if (response.status === 200) {
         toast.success(`Venue status updated to ${newStatus}`);
-        refetch();
+        router.refresh();
       }
     } catch (error) {
       console.error("Failed to update status:", error);
