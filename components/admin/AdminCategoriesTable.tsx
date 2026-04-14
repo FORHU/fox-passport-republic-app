@@ -3,10 +3,9 @@ import React from 'react';
 interface CategoriesTableProps {
   categories: any[];
   isLoading: boolean;
-  refetch: () => void;
 }
 
-export const AdminCategoriesTable: React.FC<CategoriesTableProps> = ({ categories, isLoading, refetch }) => {
+export const AdminCategoriesTable: React.FC<CategoriesTableProps> = ({ categories, isLoading }) => {
   if (isLoading) {
     return <div className="p-8 text-center text-white/50">Loading categories...</div>;
   }
