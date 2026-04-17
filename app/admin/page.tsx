@@ -1,5 +1,3 @@
-export const dynamic = 'force-dynamic';
-
 import React from 'react';
 import { getDashboardStats, getVenues, getEvents, getCategories, getUsers } from '@/lib/server/data';
 import { requireAdmin } from '@/lib/server/auth';
@@ -40,10 +38,10 @@ export default async function AdminDashboard() {
             <AdminKPISection stats={stats} />
             <AdminChartsSection />
             <AdminSubmissionsTable />
-            <AdminVenuesTable venues={venues} isLoading={false} />
-            <AdminEventsTable events={events} isLoading={false} />
-            <AdminCategoriesTable categories={categories} isLoading={false} />
-            <AdminCitizenTable citizens={citizens} isLoading={false} />
+            <AdminVenuesTable venues={venues} isLoading={false} refetch={() => {}} />
+            <AdminEventsTable events={events} isLoading={false} refetch={() => {}} />
+            <AdminCategoriesTable categories={categories} isLoading={false} refetch={() => {}} />
+            <AdminCitizenTable citizens={citizens} isLoading={false} refetch={() => {}} />
           </div>
 
           <footer className="mt-auto border-t border-white/5 py-8 px-8 text-center text-xs text-gray-600">
