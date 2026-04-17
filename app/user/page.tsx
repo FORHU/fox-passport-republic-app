@@ -1,9 +1,7 @@
-export const dynamic = 'force-dynamic';
-
 import React from 'react';
 import { requireAuth } from '@/lib/server/auth';
 import { getUserDashboard } from '@/lib/server/data';
-import UserDashboardClient from '@/components/users/UserDashboardClient';
+import UserDashboardClient from './UserDashboardClient';
 
 export default async function UserDashboard() {
   const user = await requireAuth();
