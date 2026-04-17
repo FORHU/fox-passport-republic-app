@@ -34,7 +34,7 @@ export function CustomExperienceBuilder({ isOpen, onClose, venuePrice }: Experie
     handleDrop,
     handleSubmit,
     handleClose,
-  } = useExperienceBuilder(venuePrice, onClose);
+  } = useExperienceBuilder(venuePrice, onClose, isOpen);
 
   if (!isOpen) return null;
 

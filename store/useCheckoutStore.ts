@@ -15,7 +15,9 @@ interface CheckoutState {
   // Booking details mapped from Venue config
   venueId: string | null;
   venueName: string;
+  venueImage: string | null;
   checkInDate: number | null;
+  checkInTime: string | null;
   nights: number;
   totalAmount: number;
   
@@ -32,7 +34,9 @@ interface CheckoutState {
   setConfig: (config: {
     venueId: string;
     venueName: string;
+    venueImage: string | null;
     checkInDate: number | null;
+    checkInTime: string | null;
     nights: number;
     totalAmount: number;
     guestCount: number;
@@ -52,7 +56,9 @@ export const useCheckoutStore = create<CheckoutState>((set) => ({
 
   venueId: null,
   venueName: "",
+  venueImage: null,
   checkInDate: null,
+  checkInTime: "09:00 PM",
   nights: 0,
   totalAmount: 0,
   guestCount: 1,
@@ -75,7 +81,9 @@ export const useCheckoutStore = create<CheckoutState>((set) => ({
     step: 1,
     venueId: null,
     venueName: "",
+    venueImage: null,
     checkInDate: null,
+    checkInTime: "09:00 PM",
     nights: 0,
     totalAmount: 0,
     guestCount: 1,

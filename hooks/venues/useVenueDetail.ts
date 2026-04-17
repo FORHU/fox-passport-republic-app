@@ -28,7 +28,8 @@ export function useVenueDetail(venueData?: any) {
     const checkoutStore = useCheckoutStore.getState();
     checkoutStore.setConfig({
       venueId: venueData?.id || null,
-      venueName: venueData?.name || "Fox Passport Republic Venue",
+      venueName: venueData?.title || "Fox Passport Republic Venue",
+      venueImage: venueData?.images?.[0] || null,
       checkInDate: store.checkInDate,
       nights: nights > 0 ? nights : 1,
       totalAmount: venueData?.price ? venueData.price * (nights > 0 ? nights : 1) : 0,
@@ -51,17 +52,21 @@ export function useVenueDetail(venueData?: any) {
   };
 }
 
-export function useExperienceBuilder(venuePrice: number, onClose: () => void) {
+export function useExperienceBuilder(venuePrice: number, onClose: () => void, isOpen: boolean) {
   const router = useRouter();
   const store = useExperienceBuilderStore();
 
   // Prevent background scroll when open
   useEffect(() => {
-    document.body.style.overflow = "hidden";
+    if (isOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "unset";
+    }
     return () => {
       document.body.style.overflow = "unset";
     };
-  }, []);
+  }, [isOpen]);
 
   const filteredServices = useMemo(() => {
     const categoryServices =

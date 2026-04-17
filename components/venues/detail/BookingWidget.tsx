@@ -24,9 +24,11 @@ export function BookingWidget({
   onOpenCustomBuilder,
 }: BookingWidgetProps) {
   return (
-    <div className="sticky top-24">
-      <div className="glass-card rounded-2xl border border-white/10 p-6 shadow-glow relative overflow-hidden">
-        <div className="absolute top-0 right-0 w-32 h-32 bg-accent/10 rounded-full blur-[40px] pointer-events-none" />
+    <div className="sticky top-24 relative">
+      <div className="absolute inset-0 bg-purple-500/10 blur-[50px] rounded-2xl pointer-events-none transform scale-105" />
+      <div className="glass-card rounded-2xl border border-white/10 p-6 shadow-[0_0_40px_rgba(128,90,213,0.15)] relative overflow-hidden">
+        <div className="absolute top-0 right-0 w-40 h-40 bg-accent/10 rounded-full blur-[50px] pointer-events-none" />
+        <div className="absolute bottom-0 left-0 w-40 h-40 bg-purple-500/10 rounded-full blur-[50px] pointer-events-none" />
 
         <div className="flex justify-between items-end mb-6 relative z-10">
           <div>
