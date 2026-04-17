@@ -1,10 +1,14 @@
-import { createClient } from './supabase'
 import { redirect } from 'next/navigation'
+import { getServerApi } from './data'
 
 export async function getUser() {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  return user
+  try {
+    const api = await getServerApi()
+    const { data } = await api.get('/profile')
+    return data?.data || null
+  } catch (error) {
+    return null
+  }
 }
 
 export async function requireAuth() {
@@ -16,22 +20,14 @@ export async function requireAuth() {
 }
 
 export async function checkRole(userId: string, role: string) {
-  // Implement role checking logic
-  // For example, check user_roles table
-  const supabase = await createClient()
-  const { data } = await supabase
-    .from('user_roles')
-    .select('role')
-    .eq('user_id', userId)
-    .single()
-
-  return data?.role === role
+  // If role checking requires fetching the user again or looking at the current user obj
+  const user = await getUser()
+  return user?.role === role
 }
 
 export async function requireAdmin() {
   const user = await requireAuth()
-  const isAdmin = await checkRole(user.id, 'admin')
-  if (!isAdmin) {
+  if (user?.role !== 'admin') {
     redirect('/')
   }
   return user
@@ -39,8 +35,7 @@ export async function requireAdmin() {
 
 export async function requireHost() {
   const user = await requireAuth()
-  const isHost = await checkRole(user.id, 'host')
-  if (!isHost) {
+  if (user?.role !== 'host') {
     redirect('/')
   }
   return user

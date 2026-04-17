@@ -35,7 +35,7 @@ export default function VibeCheckSection({
       >
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6">
           {categories.map((cat, idx) => (
-            <CategoryCard key={cat.id} category={cat} index={idx} />
+            <CategoryCard key={cat.name || idx} category={cat} index={idx} />
           ))}
         </div>
       </div>
@@ -51,7 +51,7 @@ function CategoryCard({ category, index }: { category: Category; index: number }
       style={{ transitionDelay: `${index * 50}ms` }}
     >
       {/* Main Link for the entire card */}
-      <Link href={`/categories/${category.id}`} className="absolute inset-0 z-20">
+      <Link href={`/categories/${category.name.toLowerCase()}`} className="absolute inset-0 z-20">
         <span className="sr-only">View {category.name}</span>
       </Link>
 

@@ -43,7 +43,7 @@ export default function VenueDetailClient({ venue, host }: VenueDetailClientProp
     clearDates,
     handleReserve,
     handleBack,
-  } = useVenueDetail();
+  } = useVenueDetail(venue);
 
   useEffect(() => {
     window.scrollTo(0, 0);

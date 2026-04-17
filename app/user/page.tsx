@@ -1,7 +1,7 @@
 import React from 'react';
 import { requireAuth } from '@/lib/server/auth';
 import { getUserDashboard } from '@/lib/server/data';
-import UserDashboardClient from './UserDashboardClient';
+import UserDashboardClient from '@/components/users/UserDashboardClient';
 
 export default async function UserDashboard() {
   const user = await requireAuth();
