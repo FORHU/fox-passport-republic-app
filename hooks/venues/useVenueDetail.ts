@@ -27,10 +27,11 @@ export function useVenueDetail(venueData?: any) {
     // 1. Setup checkout state before routing
     const checkoutStore = useCheckoutStore.getState();
     checkoutStore.setConfig({
-      venueId: venueData?.id || null,
+      venueId: venueData?.id || "",
       venueName: venueData?.title || "Fox Passport Republic Venue",
       venueImage: venueData?.images?.[0] || null,
       checkInDate: store.checkInDate,
+      checkInTime: "09:00 PM", // Default booking time
       nights: nights > 0 ? nights : 1,
       totalAmount: venueData?.price ? venueData.price * (nights > 0 ? nights : 1) : 0,
       guestCount: 1 // Default to 1 guest, can be expanded later
