@@ -60,6 +60,23 @@ export default function UserMenuButton({ onBecomeHost }: UserMenuButtonProps) {
     user?.email?.charAt(0).toUpperCase() ||
     "U";
 
+  // Determine dashboard path based on role
+  const getDashboardPath = () => {
+    switch (userRole) {
+      case "admin":
+      case "super_admin":
+        return "/admin";
+      case "host":
+      case "mayor":
+      case "foxer":
+        return "/host";
+      default:
+        return "/user";
+    }
+  };
+
+  const dashboardPath = getDashboardPath();
+
   // Generate menu sections dynamically based on user role
   const menuSections: MenuSection[] = [
     {
@@ -67,7 +84,7 @@ export default function UserMenuButton({ onBecomeHost }: UserMenuButtonProps) {
         { label: "Wishlists", icon: Heart, href: "/wishlists" },
         { label: "Trips", icon: Briefcase, href: "/trips" },
         { label: "Messages", icon: MessageSquare, href: "/messages" },
-        { label: "Dashboard", icon: User, href: "/user" },
+        { label: "Dashboard", icon: User, href: dashboardPath },
       ],
     },
     {
@@ -117,7 +134,7 @@ export default function UserMenuButton({ onBecomeHost }: UserMenuButtonProps) {
   const handleAvatarClick = (e: React.MouseEvent) => {
     e.stopPropagation();
     close();
-    router.push("/user");
+    router.push(dashboardPath);
   };
 
   // Click on hamburger → toggle menu

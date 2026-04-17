@@ -28,8 +28,8 @@ export const useVenueDetailStore = create<VenueDetailState>((set, get) => ({
   galleryOpen: false,
   activeImageIndex: 0,
   isCustomBookingOpen: false,
-  checkInDate: null,
-  checkOutDate: null,
+  checkInDate: 12,
+  checkOutDate: 14,
 
   setGalleryOpen: (open) => set({ galleryOpen: open }),
   setActiveImageIndex: (index) => set({ activeImageIndex: index }),

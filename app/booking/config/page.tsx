@@ -1,16 +1,16 @@
 import React from "react";
-import CheckoutClient from "@/components/booking/CheckoutClient";
+import BookingConfigurationClient from "@/components/booking/BookingConfigurationClient";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Secure Checkout | Fox Passport Republic",
-  description: "Complete your premium venue reservation securely.",
+  title: "Booking Configuration | Fox Passport Republic",
+  description: "Customize your premium venue reservation.",
 };
 
 export default function BookingConfigPage() {
   return (
     <div className="min-h-screen bg-background bg-gradient-dark text-text-main font-body selection:bg-accent selection:text-black">
-      <CheckoutClient />
+      <BookingConfigurationClient />
     </div>
   );
 }
