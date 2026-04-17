@@ -1,0 +1,87 @@
+import { create } from "zustand";
+
+export interface Attendee {
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone: string;
+}
+
+interface CheckoutState {
+  // Step Management
+  step: 1 | 2 | 3;
+  setStep: (step: 1 | 2 | 3) => void;
+
+  // Booking details mapped from Venue config
+  venueId: string | null;
+  venueName: string;
+  checkInDate: number | null;
+  nights: number;
+  totalAmount: number;
+  
+  // Attendee Form State
+  guestCount: number;
+  attendees: Attendee[];
+  
+  // Backend Draft IDs
+  draftEventId: string | null;
+  draftBookingId: string | null;
+  clientSecret: string | null; // Stripe
+  
+  // Setters
+  setConfig: (config: {
+    venueId: string;
+    venueName: string;
+    checkInDate: number | null;
+    nights: number;
+    totalAmount: number;
+    guestCount: number;
+  }) => void;
+  
+  setAttendees: (attendees: Attendee[]) => void;
+  setDraftIds: (eventId: string, bookingId: string) => void;
+  setClientSecret: (secret: string) => void;
+  resetCheckout: () => void;
+}
+
+const initialAttendees = [{ firstName: "", lastName: "", email: "", phone: "" }];
+
+export const useCheckoutStore = create<CheckoutState>((set) => ({
+  step: 1,
+  setStep: (step) => set({ step }),
+
+  venueId: null,
+  venueName: "",
+  checkInDate: null,
+  nights: 0,
+  totalAmount: 0,
+  guestCount: 1,
+  
+  attendees: initialAttendees,
+  draftEventId: null,
+  draftBookingId: null,
+  clientSecret: null,
+
+  setConfig: (config) => set((state) => ({ 
+    ...config, 
+    attendees: Array(config.guestCount).fill(null).map((_, i) => state.attendees[i] || { firstName: "", lastName: "", email: "", phone: "" }) 
+  })),
+
+  setAttendees: (attendees) => set({ attendees }),
+  setDraftIds: (draftEventId, draftBookingId) => set({ draftEventId, draftBookingId }),
+  setClientSecret: (clientSecret) => set({ clientSecret }),
+
+  resetCheckout: () => set({
+    step: 1,
+    venueId: null,
+    venueName: "",
+    checkInDate: null,
+    nights: 0,
+    totalAmount: 0,
+    guestCount: 1,
+    attendees: initialAttendees,
+    draftEventId: null,
+    draftBookingId: null,
+    clientSecret: null,
+  })
+}));

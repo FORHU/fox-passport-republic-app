@@ -11,8 +11,9 @@ import {
   CUSTOM_SERVICES,
   AVAILABLE_FOXERS,
 } from "@/data/venueDetailData";
+import { useCheckoutStore } from "@/store/useCheckoutStore";
 
-export function useVenueDetail() {
+export function useVenueDetail(venueData?: any) {
   const router = useRouter();
   const store = useVenueDetailStore();
 
@@ -23,8 +24,20 @@ export function useVenueDetail() {
   }, [store.checkInDate, store.checkOutDate]);
 
   const handleReserve = useCallback(() => {
+    // 1. Setup checkout state before routing
+    const checkoutStore = useCheckoutStore.getState();
+    checkoutStore.setConfig({
+      venueId: venueData?.id || null,
+      venueName: venueData?.name || "Fox Passport Republic Venue",
+      checkInDate: store.checkInDate,
+      nights: nights > 0 ? nights : 1,
+      totalAmount: venueData?.price ? venueData.price * (nights > 0 ? nights : 1) : 0,
+      guestCount: 1 // Default to 1 guest, can be expanded later
+    });
+    
+    // 2. Navigate to checkout config
     router.push("/booking/config");
-  }, [router]);
+  }, [router, store.checkInDate, nights, venueData]);
 
   const handleBack = useCallback(() => {
     router.back();
