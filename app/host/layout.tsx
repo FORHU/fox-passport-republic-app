@@ -8,7 +8,7 @@ import RequireAuth from "@/components/authentication/RequireAuth";
 /**
  * Host layout - wraps all host dashboard pages
  *
- * Auth & role checks are handled by middleware.ts
+ * Auth & role checks are handled by proxy.ts
  * This layout only manages UI state (create venue modal)
  */
 export default function HostLayout({
