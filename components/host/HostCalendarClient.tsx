@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import React, { useState } from 'react';
 import Link from 'next/link';
@@ -67,7 +67,7 @@ export default function HostCalendarClient() {
           <div className="mx-auto max-w-7xl px-4 h-20 flex items-center justify-between">
             <div className="flex items-center gap-4">
               <Link
-                href="/host"
+                href="/creator-dashboard"
                 className="h-10 w-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center hover:bg-white hover:text-black transition-all"
               >
                 <span className="material-symbols-outlined">arrow_back</span>

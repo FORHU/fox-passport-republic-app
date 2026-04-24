@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -87,7 +87,7 @@ export function useHostAssetEdit(assetId: string) {
   const [prefillError, setPrefillError] = useState<string | null>(null);
   const [initialImageUrl, setInitialImageUrl] = useState<string>("");
 
-  const backHref = "/host/assets";
+  const backHref = "/creator-dashboard/assets";
 
   useEffect(() => {
     if (!hostId || !assetId) return;

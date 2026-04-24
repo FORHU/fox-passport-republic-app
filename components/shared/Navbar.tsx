@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { Suspense, useState } from "react";
 import Link from "next/link";
@@ -124,7 +124,7 @@ function NavbarContent() {
   const handleHostOptionClick = () => {
     setHostModalOpen(false);
     if (isAuthenticated) {
-      router.push("/host");
+      router.push("/creator-dashboard");
     } else {
       openLogin();
     }
@@ -162,7 +162,7 @@ function NavbarContent() {
               <a href="#" className="px-6 py-2.5 rounded-full text-sm font-bold text-black bg-accent hover:bg-accent/90 hover:shadow-[0_0_15px_rgba(204,255,0,0.5)] transition-all transform hover:-translate-y-0.5">
                 Explore
               </a>
-              <Link href="/host" className="px-6 py-2.5 rounded-full text-sm font-medium text-white/70 hover:text-white hover:bg-white/10 transition-all hover:scale-105">
+              <Link href="/creator-dashboard" className="px-6 py-2.5 rounded-full text-sm font-medium text-white/70 hover:text-white hover:bg-white/10 transition-all hover:scale-105">
                 Host
               </Link>
               <Link href="/passport" className="px-6 py-2.5 rounded-full text-sm font-medium text-white/70 hover:text-white hover:bg-white/10 transition-all hover:scale-105">
@@ -183,7 +183,7 @@ function NavbarContent() {
                   <div className="absolute inset-0 bg-white translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-out z-0"></div>
                 </button>
               ) : (
-                <UserMenuButton onBecomeHost={() => setHostModalOpen(true)} />
+                <UserMenuButton />
               )}
               <button
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}

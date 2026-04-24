@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useCallback, useMemo } from "react";
 import { useRouter } from "next/navigation";
@@ -213,7 +213,7 @@ export function useEventBuilder() {
 
   // Navigation handlers
   const handleBack = useCallback(() => {
-    router.push("/host");
+    router.push("/creator-dashboard");
   }, [router]);
 
   const handleSaveDraft = useCallback(() => {
@@ -287,7 +287,7 @@ export function useEventBuilder() {
         // Here we would ideally call addAssetToEvent for each baseItem
 
         setTimeout(() => {
-          router.push("/host");
+          router.push("/creator-dashboard");
           store.reset();
         }, 1500);
       }

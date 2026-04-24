@@ -1,12 +1,5 @@
-import React from 'react';
-import HostApplicationClient from '@/components/host/HostApplicationClient';
-import { Metadata } from 'next';
+﻿import { redirect } from 'next/navigation';
 
-export const metadata: Metadata = {
-  title: 'Apply to be a Host | FoxPassport',
-  description: 'Apply to become an authorized Event Creator on FoxPassport.',
-};
-
-export default function HostApplicationPage() {
-  return <HostApplicationClient />;
+export default function Redirect() {
+  redirect('/creator-dashboard/apply');
 }

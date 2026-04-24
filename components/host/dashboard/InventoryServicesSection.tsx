@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import React from 'react';
 import Link from 'next/link';
@@ -18,7 +18,7 @@ export function InventorySection({
   inventory,
   onStatusChange,
   showViewAllLink = true,
-  viewAllHref = "/host/assets",
+  viewAllHref = "/creator-dashboard/assets",
   onEdit,
 }: InventorySectionProps) {
   return (
@@ -98,7 +98,7 @@ export function ServicesSection({
   services,
   onStatusChange,
   showViewAllLink = true,
-  viewAllHref = "/host/services",
+  viewAllHref = "/creator-dashboard/services",
   onEdit,
 }: ServicesSectionProps) {
   return (

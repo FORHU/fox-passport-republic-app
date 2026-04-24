@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -80,7 +80,7 @@ export function useHostServiceEdit(serviceId: string) {
   const [prefillError, setPrefillError] = useState<string | null>(null);
   const [initialImageUrl, setInitialImageUrl] = useState<string>("");
 
-  const backHref = "/host/services";
+  const backHref = "/creator-dashboard/services";
 
   useEffect(() => {
     if (!hostId || !serviceId) return;

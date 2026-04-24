@@ -1,73 +1,115 @@
+﻿'use client';
+
 import React from 'react';
 import { Lock } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 
 interface ProgressDashboardProps {
   user: any;
 }
 
+const ROLE_ITEMS = [
+  {
+    key: 'foxerAsset',
+    aliases: ['foxer', 'foxerService'],
+    label: 'Foxer',
+    sub: 'Social Butterfly',
+    color: '#f97316',
+    level: 12,
+    xpCurrent: 2400,
+    xpRequired: 3000,
+    applyHref: '/onboarding',
+  },
+  {
+    key: 'mayor',
+    aliases: [],
+    label: 'Mayor',
+    sub: 'Venue Curator',
+    color: '#3b82f6',
+    level: 5,
+    xpCurrent: 450,
+    xpRequired: 1000,
+    applyHref: '/onboarding',
+  },
+  {
+    key: 'host',
+    aliases: [],
+    label: 'Host',
+    sub: 'Trailblazer',
+    color: '#22c55e',
+    level: 18,
+    xpCurrent: 4500,
+    xpRequired: 5000,
+    applyHref: '/creator-dashboard/apply',
+  },
+  {
+    key: 'investor',
+    aliases: [],
+    label: 'Investor',
+    sub: 'Seed Funder',
+    color: '#eab308',
+    level: 2,
+    xpCurrent: 150,
+    xpRequired: 1000,
+    applyHref: '/onboarding',
+  },
+];
+
 export const ProgressDashboard: React.FC<ProgressDashboardProps> = ({ user }) => {
-  const currentRole = user?.role?.toLowerCase() || '';
-  const isHost = user?.isHost || ['host', 'mayor', 'admin', 'super_admin'].includes(currentRole);
-  const isAdmin = ['admin', 'super_admin'].includes(currentRole);
+  const router = useRouter();
 
-  const checkUnlocked = (itemRole: string) => {
+  const sysRole = (user?.systemRole || user?.role || '').toLowerCase();
+  const roleTypes: string[] = user?.roleType ?? [];
+  const isAdmin = sysRole === 'admin' || sysRole === 'super_admin';
+
+  const isUnlocked = (item: typeof ROLE_ITEMS[0]) => {
     if (isAdmin) return true;
-    const roleLower = itemRole.toLowerCase();
-    
-    if (roleLower === 'foxer' && currentRole.includes('foxer')) return true;
-    if (roleLower === 'mayor' && (currentRole === 'mayor' || isHost)) return true;
-    if (roleLower === 'host' && isHost) return true;
-    if (roleLower === 'investor' && currentRole === 'investor') return true;
-    
-    // For testing/fallback: if they are "user" and it's foxer, maybe we lock everything until they choose.
-    // The instructions: "if a user only has a role of a foxer, the other progress is locked"
-    return false;
+    return [item.key, ...item.aliases].some((r) => roleTypes.includes(r));
   };
-
-  const progressItems = [
-    { role: 'Foxer', level: 12, sub: 'Social Butterfly', color: '#f97316', xp: '2,400 / 3,000' },
-    { role: 'Mayor', level: 5, sub: 'Venue Curator', color: '#3b82f6', xp: '450 / 1,000' },
-    { role: 'Host', level: 18, sub: 'Trailblazer', color: '#22c55e', xp: '4,500 / 5,000' },
-    { role: 'Investor', level: 2, sub: 'Seed Funder', color: '#eab308', xp: '150 / 1,000' },
-  ];
 
   return (
     <div className="w-full py-8">
       <div className="max-w-7xl mx-auto mb-12 text-center">
         <h2 className="text-4xl font-display font-bold text-white mb-3">
-          Progress <span className="text-gradient-lime">Dashboard</span>
+          Progress <span className="text-[#ccff00]">Dashboard</span>
         </h2>
         <p className="text-white/50 text-lg">Track your journey across FoxPassport.</p>
       </div>
 
       <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        {progressItems.map((item, i) => {
-          const unlocked = checkUnlocked(item.role);
+        {ROLE_ITEMS.map((item) => {
+          const unlocked = isUnlocked(item);
+          const progressPct = item.xpCurrent / item.xpRequired;
+          const circumference = 440;
+          const dashOffset = circumference - circumference * ((item.level % 10) / 10);
 
           return (
-            <div 
-              key={i} 
-              className={`bg-[#1a1a24] rounded-[2.5rem] p-8 flex flex-col items-center transition-transform duration-300 border border-white/5 ${
-                unlocked ? 'hover:-translate-y-2 hover:border-white/20' : 'opacity-60 grayscale'
+            <div
+              key={item.key}
+              onClick={() => !unlocked && router.push(item.applyHref)}
+              className={`bg-[#1a1a24] rounded-[2.5rem] p-8 flex flex-col items-center border border-white/5 transition-all duration-300 ${
+                unlocked
+                  ? 'hover:-translate-y-2 hover:border-white/20 cursor-default'
+                  : 'opacity-60 grayscale hover:opacity-80 cursor-pointer group'
               }`}
             >
-              <div className="relative w-40 h-40 mb-6 group">
+              {/* Ring */}
+              <div className="relative w-40 h-40 mb-6">
                 <svg className="w-full h-full transform -rotate-90">
-                  <circle className="text-white/5" cx="80" cy="80" fill="transparent" r="70" stroke="currentColor" strokeWidth="8"></circle>
+                  <circle
+                    cx="80" cy="80" r="70" fill="transparent"
+                    stroke="currentColor" strokeWidth="8"
+                    className="text-white/5"
+                  />
                   {unlocked && (
-                    <circle 
-                      style={{ color: item.color }} 
-                      className="transition-all duration-1000 ease-out" 
-                      cx="80" 
-                      cy="80" 
-                      fill="transparent" 
-                      r="70" 
-                      stroke="currentColor" 
-                      strokeDasharray="440" 
-                      strokeDashoffset={440 - (440 * (item.level % 10) / 10)} 
-                      strokeLinecap="round" 
-                      strokeWidth="8"
-                    ></circle>
+                    <circle
+                      cx="80" cy="80" r="70" fill="transparent"
+                      stroke={item.color} strokeWidth="8"
+                      strokeDasharray={circumference}
+                      strokeDashoffset={dashOffset}
+                      strokeLinecap="round"
+                      className="transition-all duration-1000 ease-out"
+                    />
                   )}
                 </svg>
                 <div className="absolute inset-0 flex flex-col items-center justify-center text-center">
@@ -79,24 +121,41 @@ export const ProgressDashboard: React.FC<ProgressDashboardProps> = ({ user }) =>
                       <span className="text-[10px] uppercase font-bold tracking-widest text-white/50">Level</span>
                     </>
                   ) : (
-                    <Lock className="w-10 h-10 text-white/30" />
+                    <Lock className="w-10 h-10 text-white/30 group-hover:text-white/50 transition-colors" />
                   )}
                 </div>
               </div>
-              <h3 className="text-2xl font-display font-bold text-white mb-1">{item.role}</h3>
+
+              {/* Label */}
+              <h3 className="text-2xl font-display font-bold text-white mb-1">{item.label}</h3>
+
               {unlocked ? (
                 <>
-                  <p className="text-sm font-bold mb-4 uppercase tracking-wide" style={{ color: item.color }}>{item.sub}</p>
-                  <div className="bg-white/5 rounded-lg px-4 py-2 border border-white/5 text-xs font-mono text-gray-300">
-                    XP: {item.xp}
+                  <p className="text-sm font-bold mb-3 uppercase tracking-wide" style={{ color: item.color }}>
+                    {item.sub}
+                  </p>
+                  {/* XP bar */}
+                  <div className="w-full space-y-1.5">
+                    <div className="w-full h-1.5 rounded-full bg-white/10 overflow-hidden">
+                      <div
+                        className="h-full rounded-full transition-all duration-1000"
+                        style={{ width: `${progressPct * 100}%`, backgroundColor: item.color }}
+                      />
+                    </div>
+                    <div className="bg-white/5 rounded-lg px-4 py-2 border border-white/5 text-xs font-mono text-gray-300 text-center">
+                      XP: {item.xpCurrent.toLocaleString()} / {item.xpRequired.toLocaleString()}
+                    </div>
                   </div>
                 </>
               ) : (
                 <>
-                  <p className="text-sm font-bold mb-4 uppercase tracking-wide text-white/30">Locked</p>
-                  <div className="bg-white/5 rounded-lg px-4 py-2 border border-white/5 text-xs font-mono text-white/20">
+                  <p className="text-sm font-bold mb-3 uppercase tracking-wide text-white/30">Locked</p>
+                  <div className="bg-white/5 rounded-lg px-4 py-2 border border-white/5 text-xs font-mono text-white/20 text-center w-full">
                     XP: ??? / ???
                   </div>
+                  <p className="text-[10px] text-white/20 group-hover:text-[#ccff00]/60 transition-colors mt-2 uppercase tracking-widest">
+                    Click to apply
+                  </p>
                 </>
               )}
             </div>
