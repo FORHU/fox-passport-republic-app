@@ -28,7 +28,7 @@ export const AdminVenuesTable: React.FC<VenueTableProps> = ({ venues, isLoading,
       const response = await api.put(`/venues/${id}`, { status: newStatus });
       if (response.status === 200) {
         toast.success(`Venue status updated to ${newStatus}`);
-        refetch();
+        refetch?.();
       }
     } catch (error) {
       console.error("Failed to update status:", error);

@@ -1,6 +1,8 @@
 'use server';
 
 import { cookies } from 'next/headers';
+import axios from 'axios';
+import { config as appConfig } from '@/lib/config';
 import { LoginResponse } from '@/types/auth';
 
 /**
@@ -42,6 +44,43 @@ export async function setAuthCookies(loginResponse: LoginResponse) {
   });
 
   return true;
+}
+
+/**
+ * Server action to fetch the latest profile from the API and update fox_user cookie.
+ * Call this after a role is approved so the proxy and client see fresh roleType data.
+ * Returns the updated user object, or null if the token is missing/expired.
+ */
+export async function refreshUserSession(): Promise<Record<string, any> | null> {
+  const cookieStore = await cookies();
+
+  let token = cookieStore.get('fox_token')?.value;
+  if (!token) {
+    const userStr = cookieStore.get('fox_user')?.value;
+    if (userStr) {
+      try { token = JSON.parse(decodeURIComponent(userStr)).accessToken; } catch {}
+    }
+  }
+  if (!token) return null;
+
+  try {
+    const { data } = await axios.get(`${appConfig.apiUrl}/profile`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    const freshUser = data?.data || data;
+    if (!freshUser) return null;
+
+    const userWithToken = { ...freshUser, accessToken: token };
+    cookieStore.set('fox_user', JSON.stringify(userWithToken), {
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      maxAge: 7 * 24 * 60 * 60,
+      path: '/',
+    });
+    return userWithToken;
+  } catch {
+    return null;
+  }
 }
 
 /**

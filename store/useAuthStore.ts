@@ -21,6 +21,7 @@ interface AuthState {
   toggleView: () => void;
   setLoading: (loading: boolean) => void;
   login: (loginResponse: LoginResponse) => void;
+  setUser: (user: User) => void;
   logout: () => void;
 }
 
@@ -67,6 +68,13 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     })),
 
   setLoading: (loading) => set({ isLoading: loading }),
+
+  setUser: (user) => {
+    const token = get().accessToken;
+    const storedUser = { ...user, accessToken: token };
+    localStorage.setItem("fox_user", JSON.stringify(storedUser));
+    set({ user });
+  },
 
   login: (loginResponse) => {
     const { accessToken, refreshToken, user } = loginResponse;
