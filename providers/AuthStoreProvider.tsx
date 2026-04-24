@@ -5,41 +5,19 @@ import { useAuthStore } from "@/store/useAuthStore";
 import { Loader2 } from "lucide-react";
 
 export function AuthStoreProvider({ children }: { children: React.ReactNode }) {
-  const login = useAuthStore((state) => state.login);
-  const setLoading = useAuthStore((state) => state.setLoading);
+  const initialize = useAuthStore((state) => state.initialize);
   const isLoading = useAuthStore((state) => state.isLoading);
 
   useEffect(() => {
-    const checkSession = () => {
-      const storedUser = localStorage.getItem('fox_user');
-      const storedToken = localStorage.getItem('fox_token');
-      const storedRefreshToken = localStorage.getItem('fox_refresh_token');
+    // Single source of truth for session hydration
+    initialize();
+  }, [initialize]);
 
-      if (storedUser && storedToken) {
-        try {
-            // If user and tokens exist, restore the session
-            const user = JSON.parse(storedUser);
-            login({
-              user,
-              accessToken: storedToken,
-              refreshToken: storedRefreshToken || ""
-            });
-        } catch (e) {
-            console.error("Failed to parse user", e);
-        }
-      }
-
-      setLoading(false);
-    };
-
-    checkSession();
-  }, [login, setLoading]);
-
-  // While checking, show the loader
+  // While checking, show a theme-consistent loader
   if (isLoading) {
     return (
-        <div className="h-screen w-full flex items-center justify-center bg-white">
-            <Loader2 className="animate-spin text-pink-600" size={40} />
+        <div className="h-screen w-full flex items-center justify-center bg-[#0f111a]">
+            <Loader2 className="animate-spin text-[#ccff00]" size={40} />
         </div>
     );
   }

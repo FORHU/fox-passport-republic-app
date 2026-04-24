@@ -33,6 +33,7 @@ interface MenuItem {
   description?: string;
   hasImage?: boolean;
   isAction?: boolean;
+  isHighlight?: boolean;
 }
 
 interface MenuSection {
@@ -49,10 +50,15 @@ export default function UserMenuButton({ onBecomeHost }: UserMenuButtonProps) {
   const { isOpen, toggle, close, menuRef } = useUserMenu();
   const { mutate: becomeHost, isPending } = useBecomeHost();
 
-  // Check if user is already a host
-  const userRole = user?.role?.toLowerCase();
-  const isHost = user?.isHost || ["host", "mayor", "admin", "super_admin"].includes(userRole as string);
-  const isAdmin = ["admin", "super_admin"].includes(userRole as string);
+  // Unified Role Detection Logic
+  // Support both legacy 'role' and new 'systemRole'/'roleType'
+  const sysRole = user?.systemRole || user?.role;
+  const roleTypes = user?.roleType || [];
+  
+  const isAdmin = sysRole === "admin" || sysRole === "super_admin";
+  const isMayor = roleTypes.includes("mayor");
+  const isHost = user?.isHost || roleTypes.includes("host") || isMayor;
+  const isFoxer = roleTypes.includes("foxer") || roleTypes.includes("foxerAsset") || roleTypes.includes("foxerService");
 
   // Get user initial for avatar
   const userInitial =
@@ -62,17 +68,9 @@ export default function UserMenuButton({ onBecomeHost }: UserMenuButtonProps) {
 
   // Determine dashboard path based on role
   const getDashboardPath = () => {
-    switch (userRole) {
-      case "admin":
-      case "super_admin":
-        return "/admin";
-      case "host":
-      case "mayor":
-      case "foxer":
-        return "/host";
-      default:
-        return "/user";
-    }
+    if (isAdmin) return "/admin";
+    if (isMayor || isHost || isFoxer) return "/host";
+    return "/user";
   };
 
   const dashboardPath = getDashboardPath();
@@ -96,7 +94,7 @@ export default function UserMenuButton({ onBecomeHost }: UserMenuButtonProps) {
     },
     {
       items: [
-        isHost
+        (isHost || isMayor)
           ? {
               label: "Host Dashboard",
               description: "Manage your venues and listings.",
@@ -105,12 +103,12 @@ export default function UserMenuButton({ onBecomeHost }: UserMenuButtonProps) {
               hasImage: true,
             }
           : {
-              label: "Become a mayor",
-              description: "It's easy to start hosting and earn extra income.",
-              icon: Home,
-              href: "#become-host",
-              hasImage: true,
-              isAction: true,
+              label: "Join FoxPassport",
+              description: "Choose your identity in the ecosystem and start your journey.",
+              icon: UserPlus,
+              href: "/onboarding",
+              hasImage: false,
+              isHighlight: true,
             },
         isAdmin && {
           label: "Admin Dashboard",
@@ -130,35 +128,14 @@ export default function UserMenuButton({ onBecomeHost }: UserMenuButtonProps) {
     },
   ];
 
-  // Click on avatar → go to profile
-  const handleAvatarClick = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    close();
-    router.push(dashboardPath);
-  };
-
-  // Click on hamburger → toggle menu
-  const handleMenuToggle = (e: React.MouseEvent) => {
+  // Combined toggle (Airbnb style)
+  const handleToggle = (e: React.MouseEvent) => {
     e.stopPropagation();
     toggle();
   };
 
   const handleItemClick = (item: any) => {
     close();
-
-    // If it's the "Become a mayor" action (not navigation)
-    if (item.isAction && item.label === "Become a mayor") {
-      becomeHost();
-      return;
-    }
-
-    // If there's a custom callback (legacy support)
-    if (item.label === "Become a mayor" && onBecomeHost) {
-      onBecomeHost();
-      return;
-    }
-
-    // Normal navigation
     router.push(item.href);
   };
 
@@ -170,29 +147,21 @@ export default function UserMenuButton({ onBecomeHost }: UserMenuButtonProps) {
 
   return (
     <div ref={menuRef} className="relative">
-      {/* Trigger Button - Hamburger + Avatar */}
-    <div className="flex items-center gap-2">
-      {/* Avatar Circle - Goes to profile */}
+      {/* Unified Trigger Button - Airbnb Style */}
       <button
-        onClick={handleAvatarClick}
-        className="w-10 h-10 rounded-full border border-[#ccff00]/50 bg-[#ccff00] hover:shadow-[0_0_15px_rgba(204,255,0,0.4)] hover:brightness-110 transition-all duration-200 flex items-center justify-center p-0.5 shadow-sm"
-        aria-label="Go to profile"
-      >
-        <div className="w-full h-full rounded-full flex items-center justify-center">
-          <span className="text-black text-sm font-bold">{userInitial}</span>
-        </div>
-      </button>
-
-      {/* Hamburger Icon - Opens dropdown */}
-      <button
-        onClick={handleMenuToggle}
-        className={`w-10 h-10 flex items-center justify-center rounded-full border border-[#ccff00]/50 bg-[#ccff00] hover:shadow-[0_0_15px_rgba(204,255,0,0.4)] hover:brightness-110 transition-all duration-200 shadow-sm ${isOpen ? 'ring-2 ring-[#ccff00]/50 ring-offset-1 ring-offset-black shadow-md' : ''}`}
-        aria-label="Open menu"
+        onClick={handleToggle}
+        className={`flex items-center gap-3 pl-3 pr-1 py-1 rounded-full border border-white/10 bg-white/5 hover:bg-white/10 hover:shadow-[0_0_15px_rgba(204,255,0,0.2)] transition-all duration-300 backdrop-blur-md group ${
+          isOpen ? 'ring-2 ring-[#ccff00]/50 bg-white/10' : ''
+        }`}
+        aria-label="User menu"
         aria-expanded={isOpen}
       >
-        <Menu className="w-5 h-5 text-black" />
+        <Menu className="w-5 h-5 text-white/70 group-hover:text-white transition-colors" />
+        
+        <div className="w-8 h-8 rounded-full bg-[#ccff00] flex items-center justify-center border border-[#ccff00]/50 shadow-sm overflow-hidden">
+          <span className="text-black text-xs font-bold">{userInitial}</span>
+        </div>
       </button>
-    </div>
 
       {/* Dropdown Menu - Dark Theme */}
       {isOpen && (
@@ -202,25 +171,43 @@ export default function UserMenuButton({ onBecomeHost }: UserMenuButtonProps) {
               {/* Section divider (except for first section) */}
               {sectionIdx > 0 && <div className="border-t border-white/10 my-2" />}
 
-              {section.items.map((item) => (
-                <button
-                  key={item.label}
-                  onClick={() => handleItemClick(item)}
-                  disabled={isPending && item.isAction}
-                  className="w-full text-left px-4 py-3 hover:bg-white/5 transition-colors flex items-start gap-3 group disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  <item.icon className="w-5 h-5 text-white/60 group-hover:text-[#ccff00] mt-0.5 shrink-0 transition-colors" />
-
-                  <div className="flex-1 min-w-0">
-                    <span className="text-white text-sm font-medium block group-hover:text-[#ccff00] transition-colors">
-                      {item.label}
-                    </span>
-                    {item.description && (
-                      <span className="text-white/50 text-xs leading-tight block mt-0.5">
-                        {item.description}
-                      </span>
+              {section.items.map((item) => {
+                const isHighlight = item.isHighlight;
+                
+                return (
+                  <button
+                    key={item.label}
+                    onClick={() => handleItemClick(item)}
+                    disabled={isPending && item.isAction}
+                    className={`w-full text-left px-4 py-3 transition-all duration-300 flex items-start gap-3 group disabled:opacity-50 disabled:cursor-not-allowed ${
+                      isHighlight
+                        ? "relative bg-gradient-to-r from-[#ccff00]/10 to-[#00d2ff]/10 hover:from-[#ccff00]/20 hover:to-[#00d2ff]/20 overflow-hidden isolate"
+                        : "hover:bg-white/5"
+                    }`}
+                  >
+                    {/* Highlight Glow Border */}
+                    {isHighlight && (
+                      <div className="absolute inset-x-2 inset-y-1 pointer-events-none rounded-lg border border-[#ccff00]/30 group-hover:border-[#ccff00]/60 transition-colors" />
                     )}
-                  </div>
+
+                    <item.icon className={`w-5 h-5 mt-0.5 shrink-0 transition-colors ${
+                      isHighlight ? "text-[#ccff00] group-hover:animate-pulse" : "text-white/60 group-hover:text-[#ccff00]"
+                    }`} />
+
+                    <div className="flex-1 min-w-0 z-10 relative">
+                      <span className={`text-sm font-medium block transition-colors ${
+                        isHighlight ? "text-[#ccff00] font-bold" : "text-white group-hover:text-[#ccff00]"
+                      }`}>
+                        {item.label}
+                      </span>
+                      {item.description && (
+                        <span className={`text-xs leading-tight block mt-0.5 ${
+                          isHighlight ? "text-white/80" : "text-white/50"
+                        }`}>
+                          {item.description}
+                        </span>
+                      )}
+                    </div>
 
                   {/* Host illustration placeholder */}
                   {item.hasImage && (
@@ -230,8 +217,9 @@ export default function UserMenuButton({ onBecomeHost }: UserMenuButtonProps) {
                       </div>
                     </div>
                   )}
-                </button>
-              ))}
+                  </button>
+                );
+              })}
             </div>
           ))}
 

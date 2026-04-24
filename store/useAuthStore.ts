@@ -14,6 +14,7 @@ interface AuthState {
   view: AuthView;
 
   // Actions
+  initialize: () => void;
   openLogin: () => void;
   openSignup: () => void;
   close: () => void;
@@ -23,14 +24,39 @@ interface AuthState {
   logout: () => void;
 }
 
-export const useAuthStore = create<AuthState>((set) => ({
+export const useAuthStore = create<AuthState>((set, get) => ({
   isAuthenticated: false,
-  isLoading: true,
+  isLoading: true, // Start as true to prevent hydration mismatch
   user: null,
   accessToken: null,
   refreshToken: null,
   isOpen: false,
   view: "login",
+
+  initialize: () => {
+    if (typeof window === "undefined") return;
+
+    try {
+      const storedUser = localStorage.getItem("fox_user");
+      const initialToken = localStorage.getItem("fox_token");
+      const initialRefresh = localStorage.getItem("fox_refresh_token");
+      
+      if (storedUser && initialToken) {
+        set({
+          user: JSON.parse(storedUser),
+          accessToken: initialToken,
+          refreshToken: initialRefresh,
+          isAuthenticated: true,
+          isLoading: false,
+        });
+      } else {
+        set({ isLoading: false });
+      }
+    } catch (e) {
+      console.error("Failed to hydrate auth store:", e);
+      set({ isLoading: false });
+    }
+  },
 
   openLogin: () => set({ isOpen: true, view: "login" }),
   openSignup: () => set({ isOpen: true, view: "signup" }),
@@ -44,12 +70,8 @@ export const useAuthStore = create<AuthState>((set) => ({
 
   login: (loginResponse) => {
     const { accessToken, refreshToken, user } = loginResponse;
-
-    // store tokens separately (used by interceptor) and also embed into the
-    // serialized user so legacy code that inspects fox_user still picks them up
     const storedUser = { ...user, accessToken };
 
-    // Save both user and tokens to local storage
     localStorage.setItem("fox_user", JSON.stringify(storedUser));
     localStorage.setItem("fox_token", accessToken);
     localStorage.setItem("fox_refresh_token", refreshToken);
@@ -59,7 +81,8 @@ export const useAuthStore = create<AuthState>((set) => ({
       user,
       accessToken,
       refreshToken,
-      isOpen: false
+      isOpen: false,
+      isLoading: false
     });
   },
 
@@ -67,7 +90,6 @@ export const useAuthStore = create<AuthState>((set) => ({
     localStorage.removeItem("fox_user");
     localStorage.removeItem("fox_token");
     localStorage.removeItem("fox_refresh_token");
-    // Note: Server cookies are cleared by clearAuthCookies() server action
     set({ isAuthenticated: false, user: null, accessToken: null, refreshToken: null });
   },
 }));
@@ -77,6 +99,6 @@ export const useAuthStatus = () =>
   useAuthStore((state) => state.isAuthenticated);
 export const useAuthLoading = () => useAuthStore((state) => state.isLoading);
 export const useAuthActions = () => {
-  const { openLogin, openSignup, logout, setLoading, login } = useAuthStore();
-  return { openLogin, openSignup, logout, setLoading, login };
+  const { openLogin, openSignup, logout, setLoading, login, initialize } = useAuthStore();
+  return { openLogin, openSignup, logout, setLoading, login, initialize };
 };

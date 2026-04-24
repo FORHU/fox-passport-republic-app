@@ -5,8 +5,18 @@ export async function getUser() {
   try {
     const api = await getServerApi()
     const { data } = await api.get('/profile')
-    return data?.data || null
+    return data?.data || data || null
   } catch (error) {
+    // Fallback: If API is down or rejects, try to read user from cookies directly
+    // This prevents a redirect loop if the backend is temporarily slow
+    try {
+      const { cookies } = await import('next/headers');
+      const cookieStore = await cookies();
+      const userStr = cookieStore.get('fox_user')?.value;
+      if (userStr) return JSON.parse(decodeURIComponent(userStr));
+    } catch (e) {
+      return null;
+    }
     return null
   }
 }
@@ -20,7 +30,6 @@ export async function requireAuth() {
 }
 
 export async function checkRole(userId: string, role: string) {
-  // If role checking requires fetching the user again or looking at the current user obj
   const user = await getUser()
   return user?.role === role
 }
