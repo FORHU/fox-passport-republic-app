@@ -44,7 +44,8 @@ export async function getUserDashboard(userId: string) {
   await requireAuth();
   const api = await getServerApi();
   try {
-    const bookingsRes = await api.get('/bookings');
+    // Catch the 404 locally since this endpoint doesn't exist yet in the backend
+    const bookingsRes = await api.get('/bookings').catch(() => ({ data: { data: [] } }));
     const upcomingEvents = (bookingsRes.data?.data || []).length;
     
     // Mock weather

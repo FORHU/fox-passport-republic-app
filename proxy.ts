@@ -15,10 +15,13 @@ const PROTECTED_ROUTES = [
   "/user",
   "/host",
   "/admin",
-  "/mayor/create-venue",
-  "/foxer/create-event",
-  "/foxer/create-listing",
-  "/reviews/write",
+  "/onboarding",
+  "/progress",
+  "/booking",
+  "/checkout",
+  "/mayor",
+  "/foxer",
+  "/reviews",
 ];
 
 // Role-based route restrictions
@@ -28,7 +31,7 @@ const ROLE_ROUTES: Record<string, string[]> = {
   mayor: ["/mayor/create-venue"],
 };
 
-export function proxy(request: NextRequest) {
+export default function proxy(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
 
   // Get auth tokens from cookies (set by auth interceptor)
@@ -39,10 +42,16 @@ export function proxy(request: NextRequest) {
   let user = null;
   if (userStr) {
     try {
-      user = JSON.parse(userStr);
+      // Decode URI component in case it's encoded
+      const decodedUser = decodeURIComponent(userStr);
+      user = JSON.parse(decodedUser);
     } catch (e) {
-      // Invalid user data, treat as unauthenticated
-      console.warn("Failed to parse user cookie:", e);
+      try {
+        // Fallback to raw parse if decoding fails
+        user = JSON.parse(userStr);
+      } catch (e2) {
+        console.warn("[Proxy] Failed to parse user cookie:", e2);
+      }
     }
   }
 
@@ -52,26 +61,43 @@ export function proxy(request: NextRequest) {
   );
 
   if (isProtectedRoute) {
+    console.log(`[Proxy] Checking protected route: ${pathname}`);
+    
     // No token = redirect to home + show login
     if (!token || !user) {
+      console.log(`[Proxy] Redirecting to home: Missing token (${!!token}) or user (${!!user})`);
       const response = NextResponse.redirect(new URL("/", request.url));
       // Add header to signal client to open login modal
       response.headers.set("x-auth-required", "true");
       return response;
     }
 
+    console.log(`[Proxy] Authenticated user: ${user.email}, Role: ${user.systemRole}`);
+
     // Check role-based access
-    const userRole = user.role?.toLowerCase();
-    const isHostUser =
-      user.isHost ||
-      ["host", "mayor", "admin", "super_admin"].includes(userRole);
+    const sysRole = (user.systemRole || user.role || "").toLowerCase();
+    const roleTypes = user.roleType || [];
+    
+    const isAdmin = sysRole === "admin" || sysRole === "super_admin";
+    const isMayor = roleTypes.includes("mayor");
+    const isHostUser = 
+      user.isHost || 
+      ["host", "mayor", "admin", "super_admin"].includes(sysRole) ||
+      roleTypes.includes("host") ||
+      isMayor;
 
     // Route requires host role but user isn't one
+    // We EXCLUDE the application pages (/host/apply, /mayor/apply) from this check
+    const isAppPage = pathname.endsWith("/apply") || pathname === "/onboarding";
+
     if (
       (pathname.startsWith("/host") ||
-        pathname.startsWith("/mayor/create-venue")) &&
-      !isHostUser
+        pathname.startsWith("/mayor") ||
+        pathname.startsWith("/foxer")) &&
+      !isHostUser && 
+      !isAppPage
     ) {
+      console.log(`[Proxy] Redirecting: Host role required for ${pathname}`);
       const response = NextResponse.redirect(new URL("/", request.url));
       response.headers.set("x-auth-required", "true");
       response.headers.set("x-role-required", "host");
@@ -79,7 +105,8 @@ export function proxy(request: NextRequest) {
     }
 
     // Route requires admin role
-    if (pathname.startsWith("/admin") && userRole !== "admin") {
+    if (pathname.startsWith("/admin") && !isAdmin) {
+      console.log(`[Proxy] Redirecting: Admin role required for ${pathname}`);
       return NextResponse.redirect(new URL("/", request.url));
     }
   }

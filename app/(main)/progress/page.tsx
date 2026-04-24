@@ -92,7 +92,7 @@ export default function ProgressPage() {
             </h1>
 
             <p className="text-text-muted text-lg max-w-xl font-light">
-              Track your journey across the FoxVerse. Level up your paths to unlock exclusive perks
+              Track your journey across FoxPassport. Level up your paths to unlock exclusive perks
               and venue access.
             </p>
           </div>

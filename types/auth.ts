@@ -6,8 +6,10 @@ export interface User {
   email: string;
   username: string;
   name: string;
-  role: "user" | "host" | "admin" | "super_admin" | "mayor";
-  isHost: boolean;
+  role?: "user" | "host" | "admin" | "super_admin" | "mayor";
+  systemRole?: "user" | "admin";
+  roleType?: string[];
+  isHost?: boolean;
   mobileNumber?: string;
   isEmailVerified?: boolean;
 }
