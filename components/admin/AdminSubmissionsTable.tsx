@@ -272,7 +272,7 @@ export const AdminSubmissionsTable: React.FC = () => {
 
   const fetchApplications = async () => {
     try {
-      const { data } = await api.get('/v1/role-requests/list');
+      const { data } = await api.get('/role-requests/list');
       setApplications(data.data || []);
     } catch {
       toast.error('Failed to load role applications');
@@ -286,7 +286,7 @@ export const AdminSubmissionsTable: React.FC = () => {
   const handleApprove = async (id: string) => {
     setProcessingId(id);
     try {
-      await api.patch(`/v1/role-requests/review/${id}`, { status: 'approved' });
+      await api.patch(`/role-requests/review/${id}`, { status: 'approved' });
       toast.success('Application approved — user role updated');
       setApplications(prev => prev.map(a => a.id === id ? { ...a, status: 'approved' as RoleStatus } : a));
       setSelectedApp(prev => prev?.id === id ? { ...prev, status: 'approved' as RoleStatus } : prev);
@@ -302,7 +302,7 @@ export const AdminSubmissionsTable: React.FC = () => {
     const id = rejectModal.id;
     setProcessingId(id);
     try {
-      await api.patch(`/v1/role-requests/review/${id}`, { status: 'rejected', rejectionReason });
+      await api.patch(`/role-requests/review/${id}`, { status: 'rejected', rejectionReason });
       toast.success('Application rejected');
       setApplications(prev => prev.map(a => a.id === id ? { ...a, status: 'rejected' as RoleStatus, rejectionReason } : a));
       setSelectedApp(prev => prev?.id === id ? { ...prev, status: 'rejected' as RoleStatus, rejectionReason } : prev);

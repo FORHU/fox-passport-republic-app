@@ -6,8 +6,21 @@ import { requireAuth } from './auth';
 // Helper to create a server-side axios instance with the token from cookies
 export async function getServerApi() {
   const cookieStore = await cookies();
-  const token = cookieStore.get('fox_token')?.value;
-  
+  let token = cookieStore.get('fox_token')?.value;
+
+  // fox_token is httpOnly — if not found, fall back to the accessToken embedded in fox_user
+  if (!token) {
+    const userStr = cookieStore.get('fox_user')?.value;
+    if (userStr) {
+      try {
+        const user = JSON.parse(decodeURIComponent(userStr));
+        token = user.accessToken;
+      } catch {
+        // ignore malformed cookie
+      }
+    }
+  }
+
   return axios.create({
     baseURL: config.apiUrl,
     headers: {
@@ -111,6 +124,17 @@ export async function getUsers() {
     return extractData(response, true);
   } catch (error) {
     console.error("Failed to fetch users:", error);
+    return [];
+  }
+}
+
+export async function getServicesByHostId(hostId: string) {
+  const api = await getServerApi();
+  try {
+    const response = await api.get('/service', { params: { ownerId: hostId } });
+    return extractData(response, true);
+  } catch (error) {
+    console.error("Failed to fetch services:", error);
     return [];
   }
 }
