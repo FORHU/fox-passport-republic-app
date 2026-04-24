@@ -38,10 +38,10 @@ export default async function AdminDashboard() {
             <AdminKPISection stats={stats} />
             <AdminChartsSection />
             <AdminSubmissionsTable />
-            <AdminVenuesTable venues={venues} isLoading={false} refetch={() => {}} />
-            <AdminEventsTable events={events} isLoading={false} refetch={() => {}} />
-            <AdminCategoriesTable categories={categories} isLoading={false} refetch={() => {}} />
-            <AdminCitizenTable citizens={citizens} isLoading={false} refetch={() => {}} />
+            <AdminVenuesTable venues={venues} isLoading={false} />
+            <AdminEventsTable events={events} isLoading={false} />
+            <AdminCategoriesTable categories={categories} isLoading={false} />
+            <AdminCitizenTable citizens={citizens} isLoading={false} />
           </div>
 
           <footer className="mt-auto border-t border-white/5 py-8 px-8 text-center text-xs text-gray-600">

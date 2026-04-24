@@ -32,9 +32,10 @@ export default function KycDocumentSection({
           label="Primary Valid ID *" 
           onUploadComplete={(id) => onUpload("validId1FileId", id)} 
         />
-        <FileUploader 
-          label="NBI Clearance (PDF) *" 
-          onUploadComplete={(id) => onUpload("nbiFileId", id)} 
+        <FileUploader
+          label="NBI Clearance (PDF) *"
+          accept="application/pdf"
+          onUploadComplete={(id) => onUpload("nbiFileId", id)}
         />
       </div>
 

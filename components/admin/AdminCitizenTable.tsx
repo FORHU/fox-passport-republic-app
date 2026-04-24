@@ -7,7 +7,7 @@ import { toast } from 'sonner';
 interface CitizenTableProps {
   citizens: any[];
   isLoading: boolean;
-  refetch: () => void;
+  refetch?: () => void;
 }
 
 export const AdminCitizenTable: React.FC<CitizenTableProps> = ({ citizens, isLoading, refetch }) => {

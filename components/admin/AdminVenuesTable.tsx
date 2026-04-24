@@ -7,7 +7,7 @@ import { toast } from 'sonner';
 interface VenueTableProps {
   venues: any[];
   isLoading: boolean;
-  refetch: () => void;
+  refetch?: () => void;
 }
 
 const VENUE_STATUSES = [
