@@ -2,13 +2,13 @@
 
 export interface User {
   id: string;
-  userId?: string; // Fallback for legacy/inconsistent backend responses
+  userId?: string;
   email: string;
   username: string;
   name: string;
-  role?: "user" | "host" | "admin" | "super_admin" | "mayor";
-  systemRole?: "user" | "admin";
+  systemRole: "user" | "admin" | "super_admin" | "mayor";
   roleType?: string[];
+  role?: string; // legacy — prefer systemRole
   isHost?: boolean;
   mobileNumber?: string;
   isEmailVerified?: boolean;

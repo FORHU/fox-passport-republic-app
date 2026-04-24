@@ -5,7 +5,7 @@ import React, { useState } from 'react';
 interface EventsTableProps {
   events: any[];
   isLoading: boolean;
-  refetch: () => void;
+  refetch?: () => void;
 }
 
 export const AdminEventsTable: React.FC<EventsTableProps> = ({ events, isLoading, refetch }) => {

@@ -77,7 +77,7 @@ const AdminAuthGuard: React.FC<AdminAuthGuardProps> = ({ children }) => {
 
   // Check for admin role
   const user = useAuthStore.getState().user;
-  const userRole = user?.role?.toLowerCase();
+  const userRole = (user?.systemRole ?? user?.role)?.toLowerCase();
   const isAdmin = ["admin", "super_admin"].includes(userRole as string);
 
   if (!isAdmin) {

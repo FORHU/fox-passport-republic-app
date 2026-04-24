@@ -72,22 +72,22 @@ export default function LoginForm() {
       {/* Form */}
       <form className="space-y-5" onSubmit={handleSubmit(onLogin)}>
         
-        {/* Username/Email Field */}
+        {/* Email Field */}
         <div className="space-y-1">
           <label className="sr-only" htmlFor="email">Email</label>
           <div className="relative group">
             <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-white/50 group-focus-within:text-[#ccff00] transition-colors">
-              <span className="material-symbols-outlined text-[20px]">alternate_email</span>
+              <span className="material-symbols-outlined text-[20px]">mail</span>
             </div>
-            <input 
-              {...register('username')}
-              className="block w-full rounded-2xl bg-black/30 border border-white/10 pl-11 pr-4 py-3.5 text-white placeholder-white/30 focus:border-[#ccff00] focus:ring-1 focus:ring-[#ccff00] sm:text-sm transition-all hover:border-white/20 outline-none" 
-              id="email" 
-              placeholder="foxer@example.com" 
-              type="text" // Using text to allow username or email
+            <input
+              {...register('email')}
+              className="block w-full rounded-2xl bg-black/30 border border-white/10 pl-11 pr-4 py-3.5 text-white placeholder-white/30 focus:border-[#ccff00] focus:ring-1 focus:ring-[#ccff00] sm:text-sm transition-all hover:border-white/20 outline-none"
+              id="email"
+              placeholder="foxer@example.com"
+              type="email"
             />
           </div>
-          {errors.username && <span className="text-xs text-red-500 pl-1">{errors.username.message}</span>}
+          {errors.email && <span className="text-xs text-red-500 pl-1">{errors.email.message}</span>}
         </div>
 
         {/* Password Field */}

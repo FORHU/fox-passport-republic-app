@@ -7,8 +7,6 @@ export async function getUser() {
     const { data } = await api.get('/profile')
     return data?.data || data || null
   } catch (error) {
-    // Fallback: If API is down or rejects, try to read user from cookies directly
-    // This prevents a redirect loop if the backend is temporarily slow
     try {
       const { cookies } = await import('next/headers');
       const cookieStore = await cookies();
@@ -29,14 +27,15 @@ export async function requireAuth() {
   return user
 }
 
-export async function checkRole(userId: string, role: string) {
+export async function checkRole(_userId: string, role: string) {
   const user = await getUser()
-  return user?.role === role
+  return user?.systemRole === role
 }
 
 export async function requireAdmin() {
   const user = await requireAuth()
-  if (user?.role !== 'admin') {
+  const adminRoles = ['admin', 'super_admin'];
+  if (!adminRoles.includes(user?.systemRole)) {
     redirect('/')
   }
   return user
@@ -45,7 +44,8 @@ export async function requireAdmin() {
 export async function requireHost() {
   const user = await requireAuth()
   const hostRoles = ['host', 'mayor', 'foxer', 'admin', 'super_admin'];
-  if (!hostRoles.includes(user?.role?.toLowerCase())) {
+  const role = user?.systemRole ?? user?.role ?? '';
+  if (!hostRoles.includes(role.toLowerCase())) {
     redirect('/')
   }
   return user

@@ -26,6 +26,17 @@ export default function FileUploader({
     const file = e.target.files?.[0];
     if (!file) return;
 
+    // File type validation
+    const acceptedTypes = accept.split(",").map((t) => t.trim());
+    const matchesType = acceptedTypes.some((type) => {
+      if (type.endsWith("/*")) return file.type.startsWith(type.replace("/*", "/"));
+      return file.type === type;
+    });
+    if (!matchesType) {
+      alert(`Invalid file type. Accepted: ${accept}`);
+      return;
+    }
+
     // Basic size validation
     if (file.size > maxSizeMB * 1024 * 1024) {
       alert(`File too large. Maximum size is ${maxSizeMB}MB.`);
@@ -83,7 +94,7 @@ export default function FileUploader({
             </div>
             <p className="text-xs text-white/40 group-hover:text-white/60 text-center font-medium">
               Click or drag to upload <br />
-              <span className="text-[10px] opacity-60">PDF, JPG, or PNG (Max {maxSizeMB}MB)</span>
+              <span className="text-[10px] opacity-60">{accept === "application/pdf" ? "PDF only" : "PDF, JPG, or PNG"} (Max {maxSizeMB}MB)</span>
             </p>
           </>
         )}

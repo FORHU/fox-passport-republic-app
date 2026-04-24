@@ -40,7 +40,7 @@ export async function getDashboardStats() {
   }
 }
 
-export async function getUserDashboard(userId: string) {
+export async function getUserDashboard(_userId: string) {
   await requireAuth();
   const api = await getServerApi();
   try {
@@ -85,7 +85,7 @@ export async function getVenues() {
 export async function getEvents() {
   const api = await getServerApi();
   try {
-    const response = await api.get('/events');
+    const response = await api.get('/event-templates');
     return extractData(response, true);
   } catch (error) {
     console.error("Failed to fetch events:", error);

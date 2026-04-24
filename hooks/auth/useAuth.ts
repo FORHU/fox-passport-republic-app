@@ -23,7 +23,7 @@ const api = axios.create({
 
 const realLogin = async (data: LoginFormData): Promise<LoginResponse> => {
   const payload = {
-    username: data.username,
+    email: data.email,
     password: data.password,
   };
   const response = await api.post<LoginResponse>("/auth/login", payload);
@@ -61,7 +61,7 @@ export const useLogin = () => {
 
       // Close modal and redirect based on role
       close();
-      const userRole = data.user?.role?.toLowerCase();
+      const userRole = (data.user?.systemRole ?? data.user?.role)?.toLowerCase();
       if (userRole === "admin" || userRole === "super_admin") {
         router.push("/admin");
       } else {
