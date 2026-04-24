@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import React, { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -55,7 +55,7 @@ export default function HostAssetsClient({ initialInventory }: HostAssetsClientP
   };
 
   const handleEdit = (id: number | string) => {
-    router.push(`/host/assets/${id}/edit`);
+    router.push(`/creator-dashboard/assets/${id}/edit`);
   };
 
   return (

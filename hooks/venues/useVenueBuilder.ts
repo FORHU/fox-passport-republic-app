@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useCallback, useMemo } from "react";
 import { useRouter } from "next/navigation";
@@ -117,7 +117,7 @@ export function useVenueBuilder() {
 
   // Navigation handlers
   const handleBack = useCallback(() => {
-    router.push("/host");
+    router.push("/creator-dashboard");
   }, [router]);
 
   const handleSaveDraft = useCallback(() => {
@@ -228,7 +228,7 @@ export function useVenueBuilder() {
         toast.success("Venue submitted for review!");
 
         setTimeout(() => {
-          router.push("/host");
+          router.push("/creator-dashboard");
           store.reset();
         }, 1500);
       }

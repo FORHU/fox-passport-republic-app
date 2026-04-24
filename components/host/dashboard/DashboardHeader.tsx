@@ -1,9 +1,36 @@
-'use client';
+﻿'use client';
 
 import React from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { useRoleAccess, RoleAccess } from '@/hooks/auth/useRoleAccess';
+import { useAuthStore } from '@/store/useAuthStore';
 
 export function DashboardHeader() {
+  const user = useAuthStore((s) => s.user);
+  const access = useRoleAccess();
+
+  const userInitial =
+    user?.name?.charAt(0).toUpperCase() ||
+    user?.email?.charAt(0).toUpperCase() ||
+    'C';
+
+  const roleLabel = access.isMayor
+    ? 'Mayor'
+    : access.isFoxer
+    ? 'Foxer'
+    : access.isHost
+    ? 'Host'
+    : 'Creator';
+
+  const navLinks = [
+    { label: 'Overview', href: '/creator-dashboard', anchor: false },
+    access.canManageEvents  && { label: 'Events',    href: '#events',    anchor: true },
+    access.canManageVenues  && { label: 'Venues',    href: '#venues',    anchor: true },
+    access.canManageInventory && { label: 'Assets',  href: '#inventory', anchor: true },
+    access.canManageServices  && { label: 'Services',href: '#services',  anchor: true },
+  ].filter(Boolean) as { label: string; href: string; anchor: boolean }[];
+
   return (
     <header className="fixed top-6 left-0 right-0 z-50">
       <div className="mx-auto max-w-7xl px-4">
@@ -18,40 +45,35 @@ export function DashboardHeader() {
                 FoxPassport
               </h2>
               <span className="text-[10px] text-white/50 uppercase tracking-widest font-bold">
-                Creator Studio
+                Creator Dashboard
               </span>
             </div>
           </Link>
 
-          {/* Navigation */}
+          {/* Navigation — only shows sections the user has access to */}
           <nav className="hidden md:flex items-center gap-1 bg-black/30 p-1.5 rounded-full border border-white/5">
-            <Link
-              href="/host"
-              className="px-6 py-2.5 rounded-full text-sm font-bold text-black bg-[#ccff00] shadow-[0_0_15px_rgba(204,255,0,0.3)]"
-            >
-              Overview
-            </Link>
-            <a
-              className="px-6 py-2.5 rounded-full text-sm font-medium text-white/60 hover:text-white hover:bg-white/10"
-              href="#events"
-            >
-              Events
-            </a>
-            <a
-              className="px-6 py-2.5 rounded-full text-sm font-medium text-white/60 hover:text-white hover:bg-white/10"
-              href="#venues"
-            >
-              Venues
-            </a>
-            <a
-              className="px-6 py-2.5 rounded-full text-sm font-medium text-white/60 hover:text-white hover:bg-white/10"
-              href="#inventory"
-            >
-              Assets
-            </a>
+            {navLinks.map((link) =>
+              link.anchor ? (
+                <a
+                  key={link.label}
+                  href={link.href}
+                  className="px-5 py-2.5 rounded-full text-sm font-medium text-white/60 hover:text-white hover:bg-white/10 transition-colors"
+                >
+                  {link.label}
+                </a>
+              ) : (
+                <Link
+                  key={link.label}
+                  href={link.href}
+                  className="px-5 py-2.5 rounded-full text-sm font-bold text-black bg-[#ccff00] shadow-[0_0_15px_rgba(204,255,0,0.3)]"
+                >
+                  {link.label}
+                </Link>
+              )
+            )}
           </nav>
 
-          {/* Right Side */}
+          {/* Right Side — real user */}
           <div className="flex items-center gap-4">
             <button className="hidden sm:flex h-10 w-10 items-center justify-center rounded-full border border-white/10 text-white hover:bg-white/10 relative">
               <span className="material-symbols-outlined text-[20px]">notifications</span>
@@ -59,14 +81,12 @@ export function DashboardHeader() {
             </button>
             <div className="flex items-center gap-3 pl-3 border-l border-white/10">
               <div className="text-right hidden sm:block">
-                <div className="text-sm font-bold">Alex Chen</div>
-                <div className="text-xs text-white/50">Pro Creator</div>
+                <div className="text-sm font-bold">{user?.name || user?.email || 'Creator'}</div>
+                <div className="text-xs text-[#ccff00]/70 font-semibold capitalize">{roleLabel}</div>
               </div>
-              <img
-                className="h-10 w-10 rounded-full border-2 border-[#ccff00] object-cover"
-                src="https://lh3.googleusercontent.com/aida-public/AB6AXuD-A0KmDrOi8KQZt5YVraaoL54kpKL4sLPhBoZj6kgs089hsWPz2qJfdMww3r4NpGGBYTSIrptbwjoMo0ZmnZFpuLCt3lExTQAv1QauCbCl6k3vscDYH5z0t7EqZ-NulKXiQjy8VxqCwlvvy4h_vf5j2Lf7cN1haDT24rR_FzF8rO9swBYh5KVGtV09ogFZmVJAcrnGZCXHQEkJR8TzFmrSMkK0jRaOzO43L1j7KQZ0WraTBcdonNTmEh2phQsvKrYuVv6P1wDPPAM"
-                alt=""
-              />
+              <div className="h-10 w-10 rounded-full border-2 border-[#ccff00] bg-[#ccff00] flex items-center justify-center shadow-[0_0_10px_rgba(204,255,0,0.3)]">
+                <span className="text-black text-sm font-bold">{userInitial}</span>
+              </div>
             </div>
           </div>
         </div>
@@ -74,10 +94,6 @@ export function DashboardHeader() {
     </header>
   );
 }
-
-import { useRouter } from 'next/navigation';
-import { useRoleAccess, RoleAccess } from '@/hooks/auth/useRoleAccess';
-import { useAuthStore } from '@/store/useAuthStore';
 
 interface WelcomeBannerProps {
   isCreateMenuOpen: boolean;
@@ -129,7 +145,7 @@ export function WelcomeBanner({
       iconColor: 'text-pink-500',
       allowed: access.canManageVenues,
       requiredRole: 'Host',
-      applyHref: '/host/apply',
+      applyHref: '/creator-dashboard/apply',
       onClick: onNavigateToCreateVenue,
     },
     {
@@ -179,7 +195,7 @@ export function WelcomeBanner({
       </div>
       <div className="flex gap-4">
         <Link
-          href="/host/calendar"
+          href="/creator-dashboard/calendar"
           className="px-6 py-3 rounded-full border border-white/10 text-white font-medium hover:bg-white/5 flex items-center gap-2"
         >
           <span className="material-symbols-outlined">calendar_month</span>

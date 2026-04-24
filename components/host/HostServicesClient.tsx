@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import React, { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -58,7 +58,7 @@ export default function HostServicesClient({ initialServices }: HostServicesClie
   };
 
   const handleEdit = (id: number | string) => {
-    router.push(`/host/services/${id}/edit`);
+    router.push(`/creator-dashboard/services/${id}/edit`);
   };
 
   return (

@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import React from 'react';
 import Link from 'next/link';
@@ -52,7 +52,7 @@ export default function OnboardingClient({ user: serverUser }: { user: any }) {
                 desc: 'Create and organize events using venues provided by Mayors.', 
                 color: '#ff00aa', // Pink for Host
                 colorClass: 'pink-500',
-                link: '/host/apply'
+                link: '/creator-dashboard/apply'
               },
             ].map((card, i) => (
               <Link 

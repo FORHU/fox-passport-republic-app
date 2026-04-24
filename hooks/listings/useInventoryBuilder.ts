@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useCallback, useMemo, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -165,7 +165,7 @@ export function useInventoryBuilder() {
 
   // Handlers
   const handleBack = useCallback(() => {
-    router.push("/host");
+    router.push("/creator-dashboard");
   }, [router]);
 
   const handleSaveDraft = useCallback(() => {
@@ -245,7 +245,7 @@ export function useInventoryBuilder() {
       // Show success notification
       setIsNotification(true);
       setTimeout(() => {
-        router.push("/host");
+        router.push("/creator-dashboard");
         store.reset();
       }, 1500);
     } catch (err: any) {

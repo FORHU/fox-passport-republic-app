@@ -1,11 +1,11 @@
-'use client';
+﻿'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import {
   Heart, Briefcase, MessageSquare, User, Settings, Globe,
   HelpCircle, UserPlus, Gift, LogOut, Menu, Lock, RefreshCw,
-  LayoutDashboard, Building2, MapPin, Cpu, ShieldCheck,
+  LayoutDashboard, Building2, ShieldCheck,
 } from 'lucide-react';
 import { useUserMenu } from '@/hooks/auth/useUserMenu';
 import { useAuthStore } from '@/store/useAuthStore';
@@ -40,33 +40,13 @@ const ROLE_DEFS: RoleDef[] = [
   },
   {
     key: 'host',
-    label: 'Host Dashboard',
-    href: '/host',
-    applyHref: '/host/apply',
+    label: 'Creator Dashboard',
+    href: '/creator-dashboard',
+    applyHref: '/creator-dashboard/apply',
     description: 'Manage your venues & events',
     icon: Building2,
     emoji: '🏠',
-    roleTypes: ['host', 'mayor'],
-  },
-  {
-    key: 'mayor',
-    label: 'Mayor Dashboard',
-    href: '/mayor',
-    applyHref: '/onboarding',
-    description: 'Lead your district',
-    icon: MapPin,
-    emoji: '🏛️',
-    roleTypes: ['mayor'],
-  },
-  {
-    key: 'foxer',
-    label: 'Foxer Dashboard',
-    href: '/foxer',
-    applyHref: '/onboarding',
-    description: 'Build & manage services / assets',
-    icon: Cpu,
-    emoji: '🦊',
-    roleTypes: ['foxerAsset', 'foxerService', 'foxer'],
+    roleTypes: ['host', 'mayor', 'foxerAsset', 'foxerService', 'foxer'],
   },
 ];
 
@@ -135,9 +115,25 @@ export default function UserMenuButton() {
   const roleTypes: string[] = user?.roleType || [];
   const isAdmin = sysRole === 'admin' || sysRole === 'super_admin';
 
+  // Silently refresh session whenever the menu is opened so role approvals
+  // show up immediately without requiring a manual "Sync Account" click.
+  const hasSyncedRef = useRef(false);
+  useEffect(() => {
+    if (!isOpen || !user || hasSyncedRef.current) return;
+    hasSyncedRef.current = true;
+    refreshUserSession().then((freshUser) => {
+      if (freshUser) setUser(freshUser as any);
+    }).catch(() => {});
+  }, [isOpen, user, setUser]);
+
   const hasRoleAccess = (def: RoleDef) => {
     if (isAdmin) return true;
+    // Citizen Dashboard is always accessible to any authenticated user
+    if (def.key === 'user') return !!user;
     if (def.systemRoles?.includes(sysRole)) return true;
+    // Creator Dashboard: also unlock if systemRole itself is a creator role
+    const creatorSystemRoles = ['host', 'mayor', 'foxer'];
+    if (creatorSystemRoles.includes(sysRole)) return true;
     return def.roleTypes.some((r) => roleTypes.includes(r));
   };
 

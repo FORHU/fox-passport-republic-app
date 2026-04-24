@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useCallback, useMemo, useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
@@ -128,7 +128,7 @@ export function useServicesBuilder() {
   );
 
   const handleBack = useCallback(() => {
-    router.push("/host");
+    router.push("/creator-dashboard");
   }, [router]);
 
   const handleSaveDraft = useCallback(() => {
@@ -189,7 +189,7 @@ export function useServicesBuilder() {
 
       setIsNotification(true);
       setTimeout(() => {
-        router.push("/host");
+        router.push("/creator-dashboard");
         store.reset();
       }, 1500);
     } catch (err: any) {

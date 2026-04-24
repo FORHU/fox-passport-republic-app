@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import React from 'react';
 import { useDashboard } from '@/hooks/dashboards/useDashboard';
@@ -18,6 +18,8 @@ import {
   LockedSection,
 } from '@/components/host/dashboard';
 import { useRoleAccess } from '@/hooks/auth/useRoleAccess';
+import { useAuthStore } from '@/store/useAuthStore';
+import { ProgressDashboard } from '@/components/users/ProgressDashboard';
 
 interface HostDashboardClientProps {
   initialData: {
@@ -40,6 +42,7 @@ export default function HostDashboardClient({ initialData }: HostDashboardClient
   } = useDashboard();
 
   const access = useRoleAccess();
+  const user = useAuthStore((s) => s.user);
   const { events, venues, inventory, services } = initialData;
 
   return (
@@ -97,7 +100,7 @@ export default function HostDashboardClient({ initialData }: HostDashboardClient
                   icon="apartment"
                   iconColor="text-pink-500"
                   requiredRole="Host"
-                  applyHref="/host/apply"
+                  applyHref="/creator-dashboard/apply"
                 >
                   <VenuesSection venues={[]} onStatusChange={() => {}} />
                 </LockedSection>
@@ -140,6 +143,10 @@ export default function HostDashboardClient({ initialData }: HostDashboardClient
                 <RecentActivity />
               </div>
             </div>
+          </div>
+
+          <div className="mt-16 border-t border-white/5 pt-10">
+            <ProgressDashboard user={user} />
           </div>
         </div>
       </main>

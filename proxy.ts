@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from "next/server";
+﻿import { NextRequest, NextResponse } from "next/server";
 
 /**
  * Proxy for authentication and authorization checks
@@ -13,7 +13,7 @@ import { NextRequest, NextResponse } from "next/server";
 // Routes that require authentication
 const PROTECTED_ROUTES = [
   "/user",
-  "/host",
+  "/creator-dashboard",
   "/admin",
   "/onboarding",
   "/progress",
@@ -26,7 +26,7 @@ const PROTECTED_ROUTES = [
 
 // Role-based route restrictions
 const ROLE_ROUTES: Record<string, string[]> = {
-  host: ["/host", "/mayor/create-venue"],
+  host: ["/creator-dashboard", "/mayor/create-venue"],
   admin: ["/admin"],
   mayor: ["/mayor/create-venue"],
 };

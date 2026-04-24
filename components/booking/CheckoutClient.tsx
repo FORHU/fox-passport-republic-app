@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
@@ -19,7 +19,7 @@ export default function CheckoutClient() {
       case "host":
       case "mayor":
       case "foxer":
-        return "/host";
+        return "/creator-dashboard";
       default:
         return "/user";
     }

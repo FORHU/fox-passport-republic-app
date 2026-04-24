@@ -1,5 +1,5 @@
-import HostCalendarClient from '@/components/host/HostCalendarClient';
+﻿import { redirect } from 'next/navigation';
 
-export default function HostCalendarPage() {
-  return <HostCalendarClient />;
+export default function Redirect() {
+  redirect('/creator-dashboard/calendar');
 }

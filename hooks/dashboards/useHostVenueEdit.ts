@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -87,7 +87,7 @@ export function useHostVenueEdit(venueId: string) {
 
   const builder = useVenueBuilder();
 
-  const backHref = "/host/venues";
+  const backHref = "/creator-dashboard/venues";
 
   const [isPrefilling, setIsPrefilling] = useState(true);
   const [prefillError, setPrefillError] = useState<string | null>(null);

@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import React from 'react';
 import Link from 'next/link';
@@ -18,7 +18,7 @@ export function VenuesSection({
   venues,
   onStatusChange,
   showViewAllLink = true,
-  viewAllHref = "/host/venues",
+  viewAllHref = "/creator-dashboard/venues",
   onEdit,
 }: VenuesSectionProps) {
   return (

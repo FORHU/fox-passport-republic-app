@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import React, { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -51,7 +51,7 @@ export default function HostVenuesClient({ initialVenues }: HostVenuesClientProp
   };
 
   const handleEdit = (id: number | string) => {
-    router.push(`/host/venues/${id}/edit`);
+    router.push(`/creator-dashboard/venues/${id}/edit`);
   };
 
   return (

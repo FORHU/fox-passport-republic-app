@@ -10,7 +10,6 @@ import { UserJourney } from '@/components/citizen/UserJourney';
 import { UserWallet } from '@/components/citizen/UserWallet';
 import { UserSavedVibes } from '@/components/citizen/UserSavedVibes';
 import { UserFooter } from '@/components/citizen/UserFooter';
-import { ProgressDashboard } from '@/components/users/ProgressDashboard';
 
 interface UserDashboardClientProps {
   user: any;
@@ -75,10 +74,7 @@ function UserDashboardContent({ user, dashboardData }: UserDashboardClientProps)
             </div>
           </div>
 
-          {/* Row 3: Progress Dashboard */}
-          <div className="mt-8 border-t border-white/10 pt-8">
-            <ProgressDashboard user={user} />
-          </div>
+
         </div>
       </main>
 

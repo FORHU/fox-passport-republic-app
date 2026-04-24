@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import React from 'react';
 import Link from 'next/link';
@@ -9,7 +9,7 @@ export function CalendarWidget() {
 
   return (
     <Link
-      href="/host/calendar"
+      href="/creator-dashboard/calendar"
       className="block bg-[#0f111a] border border-white/5 rounded-[2rem] p-6 cursor-pointer group hover:border-white/10 transition-colors"
     >
       <div className="flex justify-between items-center mb-4">

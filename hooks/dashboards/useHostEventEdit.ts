@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -167,7 +167,7 @@ export function useHostEventEdit(eventId: string) {
   const [existingStatus, setExistingStatus] = useState<string>("draft");
   const [existingEndDatetime, setExistingEndDatetime] = useState<unknown>(null);
 
-  const backHref = "/host/events";
+  const backHref = "/creator-dashboard/events";
 
   const handleBack = useCallback(() => {
     router.push(backHref);
