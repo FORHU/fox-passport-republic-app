@@ -74,37 +74,12 @@ export default function proxy(request: NextRequest) {
 
     console.log(`[Proxy] Authenticated user: ${user.email}, Role: ${user.systemRole}`);
 
-    // Check role-based access
+    // Only enforce admin routes at the proxy level.
+    // Host/mayor/foxer role checks are deferred to server components
+    // so they always use live API data (handles stale cookies after role approval).
     const sysRole = (user.systemRole || user.role || "").toLowerCase();
-    const roleTypes = user.roleType || [];
-    
     const isAdmin = sysRole === "admin" || sysRole === "super_admin";
-    const isMayor = roleTypes.includes("mayor");
-    const isHostUser = 
-      user.isHost || 
-      ["host", "mayor", "admin", "super_admin"].includes(sysRole) ||
-      roleTypes.includes("host") ||
-      isMayor;
 
-    // Route requires host role but user isn't one
-    // We EXCLUDE the application pages (/host/apply, /mayor/apply) from this check
-    const isAppPage = pathname.endsWith("/apply") || pathname === "/onboarding";
-
-    if (
-      (pathname.startsWith("/host") ||
-        pathname.startsWith("/mayor") ||
-        pathname.startsWith("/foxer")) &&
-      !isHostUser && 
-      !isAppPage
-    ) {
-      console.log(`[Proxy] Redirecting: Host role required for ${pathname}`);
-      const response = NextResponse.redirect(new URL("/", request.url));
-      response.headers.set("x-auth-required", "true");
-      response.headers.set("x-role-required", "host");
-      return response;
-    }
-
-    // Route requires admin role
     if (pathname.startsWith("/admin") && !isAdmin) {
       console.log(`[Proxy] Redirecting: Admin role required for ${pathname}`);
       return NextResponse.redirect(new URL("/", request.url));

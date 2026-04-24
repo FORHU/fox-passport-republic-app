@@ -75,6 +75,10 @@ export function DashboardHeader() {
   );
 }
 
+import { useRouter } from 'next/navigation';
+import { useRoleAccess, RoleAccess } from '@/hooks/auth/useRoleAccess';
+import { useAuthStore } from '@/store/useAuthStore';
+
 interface WelcomeBannerProps {
   isCreateMenuOpen: boolean;
   menuRef: React.RefObject<HTMLDivElement | null>;
@@ -83,6 +87,17 @@ interface WelcomeBannerProps {
   onNavigateToCreateVenue: () => void;
   onNavigateToCreateInventory: () => void;
   onNavigateToCreateService: () => void;
+  access: RoleAccess;
+}
+
+interface CreateItem {
+  label: string;
+  icon: string;
+  iconColor: string;
+  allowed: boolean;
+  requiredRole: string;
+  applyHref: string;
+  onClick: () => void;
 }
 
 export function WelcomeBanner({
@@ -93,24 +108,73 @@ export function WelcomeBanner({
   onNavigateToCreateVenue,
   onNavigateToCreateInventory,
   onNavigateToCreateService,
+  access,
 }: WelcomeBannerProps) {
+  const router = useRouter();
+  const user = useAuthStore((s) => s.user);
+
+  const createItems: CreateItem[] = [
+    {
+      label: 'Event',
+      icon: 'event',
+      iconColor: 'text-[#ccff00]',
+      allowed: access.canManageEvents,
+      requiredRole: 'Mayor',
+      applyHref: '/onboarding',
+      onClick: onNavigateToCreateEvent,
+    },
+    {
+      label: 'Venue',
+      icon: 'apartment',
+      iconColor: 'text-pink-500',
+      allowed: access.canManageVenues,
+      requiredRole: 'Host',
+      applyHref: '/host/apply',
+      onClick: onNavigateToCreateVenue,
+    },
+    {
+      label: 'Item',
+      icon: 'inventory_2',
+      iconColor: 'text-purple-400',
+      allowed: access.canManageInventory,
+      requiredRole: 'Foxer (Asset)',
+      applyHref: '/onboarding',
+      onClick: onNavigateToCreateInventory,
+    },
+    {
+      label: 'Service',
+      icon: 'design_services',
+      iconColor: 'text-yellow-400',
+      allowed: access.canManageServices,
+      requiredRole: 'Foxer (Service)',
+      applyHref: '/onboarding',
+      onClick: onNavigateToCreateService,
+    },
+  ];
+
   return (
     <div className="flex flex-col lg:flex-row justify-between items-end gap-8 mb-10">
       <div>
         <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 border border-[#ccff00]/30 shadow-[0_0_15px_rgba(204,255,0,0.1)] mb-4">
           <span className="flex h-2 w-2 rounded-full bg-[#ccff00] shadow-[0_0_10px_#ccff00] animate-pulse" />
-          <span className="text-xs font-bold uppercase tracking-widest text-white/90">System Online</span>
+          <span className="text-xs font-bold uppercase tracking-widest text-white/90">Creator Studio</span>
         </div>
         <h1 className="text-4xl lg:text-5xl font-display font-bold mb-2">
           Welcome back,{' '}
           <span className="bg-gradient-to-r from-purple-400 via-pink-400 to-orange-400 bg-clip-text text-transparent">
-            Alex!
+            {user?.name?.split(' ')[0] || 'Creator'}!
           </span>
         </h1>
         <p className="text-white/50">
-          Managing <span className="text-white font-bold">2 Events</span>,{' '}
-          <span className="text-white font-bold">2 Venues</span>, and{' '}
-          <span className="text-white font-bold">4 Assets</span>.
+          You have access to{' '}
+          {[
+            access.canManageVenues && <span key="v" className="text-white font-bold">Venues</span>,
+            access.canManageEvents && <span key="e" className="text-white font-bold">Events</span>,
+            access.canManageInventory && <span key="i" className="text-white font-bold">Inventory</span>,
+            access.canManageServices && <span key="s" className="text-white font-bold">Services</span>,
+          ]
+            .filter(Boolean)
+            .reduce<React.ReactNode[]>((acc, el, i) => (i === 0 ? [el] : [...acc, ', ', el]), [])}
         </p>
       </div>
       <div className="flex gap-4">
@@ -129,37 +193,33 @@ export function WelcomeBanner({
             <span className="material-symbols-outlined">add_circle</span>
             Create New
           </button>
+
           {isCreateMenuOpen && (
-            <div className="absolute right-0 top-full mt-2 w-48 bg-[#0f111a] border border-white/10 rounded-xl shadow-xl z-50">
-              <button
-                onClick={onNavigateToCreateEvent}
-                className="w-full text-left px-4 py-3 hover:bg-white/10 text-sm flex items-center gap-2"
-              >
-                <span className="material-symbols-outlined text-[#ccff00] text-[18px]">event</span>
-                Event
-              </button>
-              <button
-                onClick={onNavigateToCreateVenue}
-                className="w-full text-left px-4 py-3 hover:bg-white/10 text-sm flex items-center gap-2"
-              >
-                <span className="material-symbols-outlined text-pink-500 text-[18px]">apartment</span>
-                Venue
-              </button>
-              <div className="h-px bg-white/5 my-1" />
-              <button
-                onClick={onNavigateToCreateInventory}
-                className="w-full text-left px-4 py-3 hover:bg-white/10 text-sm flex items-center gap-2"
-              >
-                <span className="material-symbols-outlined text-purple-500 text-[18px]">inventory_2</span>
-                Item
-              </button>
-              <button
-                onClick={onNavigateToCreateService}
-                className="w-full text-left px-4 py-3 hover:bg-white/10 text-sm flex items-center gap-2"
-              >
-                <span className="material-symbols-outlined text-yellow-500 text-[18px]">design_services</span>
-                Service
-              </button>
+            <div className="absolute right-0 top-full mt-2 w-56 bg-[#0f111a] border border-white/10 rounded-xl shadow-xl z-50 overflow-hidden">
+              {createItems.map((item, i) => (
+                <React.Fragment key={item.label}>
+                  {i === 2 && <div className="h-px bg-white/5" />}
+                  {item.allowed ? (
+                    <button
+                      onClick={item.onClick}
+                      className="w-full text-left px-4 py-3 hover:bg-white/10 text-sm flex items-center gap-3 transition-colors"
+                    >
+                      <span className={`material-symbols-outlined ${item.iconColor} text-[18px]`}>{item.icon}</span>
+                      <span className="font-medium">{item.label}</span>
+                    </button>
+                  ) : (
+                    <button
+                      onClick={() => router.push(item.applyHref)}
+                      className="w-full text-left px-4 py-3 hover:bg-white/5 text-sm flex items-center gap-3 opacity-50 hover:opacity-70 transition-opacity group"
+                      title={`Apply as ${item.requiredRole} to unlock`}
+                    >
+                      <span className={`material-symbols-outlined ${item.iconColor} text-[18px]`}>{item.icon}</span>
+                      <span className="flex-1 text-white/60">{item.label}</span>
+                      <span className="material-symbols-outlined text-[14px] text-white/30 group-hover:text-[#ccff00]/60 transition-colors">lock</span>
+                    </button>
+                  )}
+                </React.Fragment>
+              ))}
             </div>
           )}
         </div>

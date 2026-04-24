@@ -15,7 +15,9 @@ import {
   CalendarWidget,
   CreatorProfile,
   RecentActivity,
+  LockedSection,
 } from '@/components/host/dashboard';
+import { useRoleAccess } from '@/hooks/auth/useRoleAccess';
 
 interface HostDashboardClientProps {
   initialData: {
@@ -28,11 +30,8 @@ interface HostDashboardClientProps {
 
 export default function HostDashboardClient({ initialData }: HostDashboardClientProps) {
   const {
-    // UI State only
     isCreateMenuOpen,
     menuRef,
-
-    // Handlers
     handleToggleCreateMenu,
     handleNavigateToCreateEvent,
     handleNavigateToCreateVenue,
@@ -40,7 +39,7 @@ export default function HostDashboardClient({ initialData }: HostDashboardClient
     handleNavigateToCreateService,
   } = useDashboard();
 
-  // Use server-fetched data directly
+  const access = useRoleAccess();
   const { events, venues, inventory, services } = initialData;
 
   return (
@@ -63,6 +62,7 @@ export default function HostDashboardClient({ initialData }: HostDashboardClient
             onNavigateToCreateVenue={handleNavigateToCreateVenue}
             onNavigateToCreateInventory={handleNavigateToCreateInventory}
             onNavigateToCreateService={handleNavigateToCreateService}
+            access={access}
           />
 
           <KPICards />
@@ -74,10 +74,63 @@ export default function HostDashboardClient({ initialData }: HostDashboardClient
 
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
             <div className="lg:col-span-8 space-y-10">
-              <EventsSection events={events} onStatusChange={() => {}} />
-              <VenuesSection venues={venues} onStatusChange={() => {}} />
-              <InventorySection inventory={inventory} onStatusChange={() => {}} />
-              <ServicesSection services={services} onStatusChange={() => {}} />
+
+              {access.canManageEvents ? (
+                <EventsSection events={events} onStatusChange={() => {}} />
+              ) : (
+                <LockedSection
+                  title="My Active Events"
+                  icon="hub"
+                  iconColor="text-[#ccff00]"
+                  requiredRole="Mayor"
+                  applyHref="/onboarding"
+                >
+                  <EventsSection events={[]} onStatusChange={() => {}} />
+                </LockedSection>
+              )}
+
+              {access.canManageVenues ? (
+                <VenuesSection venues={venues} onStatusChange={() => {}} />
+              ) : (
+                <LockedSection
+                  title="My Venues"
+                  icon="apartment"
+                  iconColor="text-pink-500"
+                  requiredRole="Host"
+                  applyHref="/host/apply"
+                >
+                  <VenuesSection venues={[]} onStatusChange={() => {}} />
+                </LockedSection>
+              )}
+
+              {access.canManageInventory ? (
+                <InventorySection inventory={inventory} onStatusChange={() => {}} />
+              ) : (
+                <LockedSection
+                  title="Inventories"
+                  icon="inventory_2"
+                  iconColor="text-purple-400"
+                  requiredRole="Foxer (Asset)"
+                  applyHref="/onboarding"
+                >
+                  <InventorySection inventory={[]} onStatusChange={() => {}} />
+                </LockedSection>
+              )}
+
+              {access.canManageServices ? (
+                <ServicesSection services={services} onStatusChange={() => {}} />
+              ) : (
+                <LockedSection
+                  title="Services"
+                  icon="design_services"
+                  iconColor="text-yellow-400"
+                  requiredRole="Foxer (Service)"
+                  applyHref="/onboarding"
+                >
+                  <ServicesSection services={[]} onStatusChange={() => {}} />
+                </LockedSection>
+              )}
+
             </div>
 
             <div className="lg:col-span-4">

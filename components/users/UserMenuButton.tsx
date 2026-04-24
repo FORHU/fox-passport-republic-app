@@ -1,239 +1,325 @@
-// File: src/components/user/UserMenuButton.tsx
-"use client";
+'use client';
 
-import { useRouter } from "next/navigation";
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import {
-  Heart,
-  Briefcase,
-  MessageSquare,
-  User,
-  Settings,
-  Globe,
-  HelpCircle,
-  Home,
-  UserPlus,
-  Users,
-  Gift,
-  LogOut,
-  Menu,
-  Building2,
-  ShieldCheck,
-} from "lucide-react";
-import { useUserMenu } from "@/hooks/auth/useUserMenu";
-import { useAuthStore } from "@/store/useAuthStore";
-import { useBecomeHost } from "@/hooks/features/useBecomeHost";
+  Heart, Briefcase, MessageSquare, User, Settings, Globe,
+  HelpCircle, UserPlus, Gift, LogOut, Menu, Lock, RefreshCw,
+  LayoutDashboard, Building2, MapPin, Cpu, ShieldCheck,
+} from 'lucide-react';
+import { useUserMenu } from '@/hooks/auth/useUserMenu';
+import { useAuthStore } from '@/store/useAuthStore';
+import { refreshUserSession } from '@/lib/server/auth-actions';
+import { toast } from 'sonner';
 
-// Menu item type definition
-import { LucideIcon } from "lucide-react";
-
-interface MenuItem {
+interface RoleDef {
+  key: string;
   label: string;
-  icon: LucideIcon;
   href: string;
-  description?: string;
-  hasImage?: boolean;
-  isAction?: boolean;
-  isHighlight?: boolean;
+  applyHref: string;
+  description: string;
+  icon: React.ElementType;
+  emoji: string;
+  // which roleType values grant access
+  roleTypes: string[];
+  // which systemRoles grant access (admin sees everything)
+  systemRoles?: string[];
 }
 
-interface MenuSection {
-  items: MenuItem[];
-}
+const ROLE_DEFS: RoleDef[] = [
+  {
+    key: 'user',
+    label: 'Citizen Dashboard',
+    href: '/user',
+    applyHref: '',
+    description: 'Your personal passport hub',
+    icon: LayoutDashboard,
+    emoji: '🏙️',
+    roleTypes: [],
+    systemRoles: ['user', 'host', 'mayor', 'foxer', 'admin', 'super_admin'],
+  },
+  {
+    key: 'host',
+    label: 'Host Dashboard',
+    href: '/host',
+    applyHref: '/host/apply',
+    description: 'Manage your venues & events',
+    icon: Building2,
+    emoji: '🏠',
+    roleTypes: ['host', 'mayor'],
+  },
+  {
+    key: 'mayor',
+    label: 'Mayor Dashboard',
+    href: '/mayor',
+    applyHref: '/onboarding',
+    description: 'Lead your district',
+    icon: MapPin,
+    emoji: '🏛️',
+    roleTypes: ['mayor'],
+  },
+  {
+    key: 'foxer',
+    label: 'Foxer Dashboard',
+    href: '/foxer',
+    applyHref: '/onboarding',
+    description: 'Build & manage services / assets',
+    icon: Cpu,
+    emoji: '🦊',
+    roleTypes: ['foxerAsset', 'foxerService', 'foxer'],
+  },
+];
 
-interface UserMenuButtonProps {
-  onBecomeHost?: () => void;
-}
-
-export default function UserMenuButton({ onBecomeHost }: UserMenuButtonProps) {
+function RoleLockDialog({
+  role,
+  onClose,
+}: {
+  role: RoleDef;
+  onClose: () => void;
+}) {
   const router = useRouter();
-  const { user, logout } = useAuthStore();
+  return (
+    <div
+      className="fixed inset-0 z-200 flex items-center justify-center bg-black/70 backdrop-blur-sm"
+      onClick={onClose}
+    >
+      <div
+        className="bg-[#0f111a] border border-white/10 rounded-2xl p-8 max-w-sm w-full mx-4 space-y-5"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="flex items-center gap-3">
+          <div className="w-12 h-12 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center text-2xl">
+            {role.emoji}
+          </div>
+          <div>
+            <h3 className="text-white font-bold text-lg">{role.label}</h3>
+            <p className="text-white/40 text-xs">{role.description}</p>
+          </div>
+        </div>
+
+        <div className="flex items-start gap-3 bg-yellow-500/10 border border-yellow-500/20 rounded-xl p-4">
+          <Lock className="w-4 h-4 text-yellow-400 mt-0.5 shrink-0" />
+          <p className="text-yellow-300/80 text-sm leading-relaxed">
+            You need the <span className="font-bold text-yellow-300">{role.label.replace(' Dashboard', '')}</span> role
+            to access this dashboard. Apply and wait for admin approval.
+          </p>
+        </div>
+
+        <div className="flex gap-3">
+          <button
+            onClick={() => { onClose(); router.push(role.applyHref); }}
+            className="flex-1 py-2.5 rounded-xl bg-[#ccff00] text-black font-bold text-sm hover:bg-[#b8e600] transition"
+          >
+            Apply Now
+          </button>
+          <button
+            onClick={onClose}
+            className="flex-1 py-2.5 rounded-xl bg-white/5 text-white/60 font-bold text-sm hover:bg-white/10 transition"
+          >
+            Maybe Later
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export default function UserMenuButton() {
+  const router = useRouter();
+  const { user, setUser } = useAuthStore();
   const { isOpen, toggle, close, menuRef } = useUserMenu();
-  const { mutate: becomeHost, isPending } = useBecomeHost();
+  const [lockedRole, setLockedRole] = useState<RoleDef | null>(null);
+  const [syncing, setSyncing] = useState(false);
 
-  // Unified Role Detection Logic
-  // Support both legacy 'role' and new 'systemRole'/'roleType'
-  const sysRole = user?.systemRole || user?.role;
-  const roleTypes = user?.roleType || [];
-  
-  const isAdmin = sysRole === "admin" || sysRole === "super_admin";
-  const isMayor = roleTypes.includes("mayor");
-  const isHost = user?.isHost || roleTypes.includes("host") || isMayor;
-  const isFoxer = roleTypes.includes("foxer") || roleTypes.includes("foxerAsset") || roleTypes.includes("foxerService");
+  const sysRole = (user?.systemRole || user?.role || '').toLowerCase();
+  const roleTypes: string[] = user?.roleType || [];
+  const isAdmin = sysRole === 'admin' || sysRole === 'super_admin';
 
-  // Get user initial for avatar
+  const hasRoleAccess = (def: RoleDef) => {
+    if (isAdmin) return true;
+    if (def.systemRoles?.includes(sysRole)) return true;
+    return def.roleTypes.some((r) => roleTypes.includes(r));
+  };
+
+  const handleSyncSession = async () => {
+    setSyncing(true);
+    close();
+    try {
+      const freshUser = await refreshUserSession();
+      if (freshUser) {
+        setUser(freshUser as any);
+        toast.success('Account synced — your latest roles are now active');
+      } else {
+        toast.error('Could not sync. Try logging out and back in.');
+      }
+    } catch {
+      toast.error('Sync failed');
+    } finally {
+      setSyncing(false);
+    }
+  };
+
   const userInitial =
     user?.name?.charAt(0).toUpperCase() ||
     user?.email?.charAt(0).toUpperCase() ||
-    "U";
-
-  // Determine dashboard path based on role
-  const getDashboardPath = () => {
-    if (isAdmin) return "/admin";
-    if (isMayor || isHost || isFoxer) return "/host";
-    return "/user";
-  };
-
-  const dashboardPath = getDashboardPath();
-
-  // Generate menu sections dynamically based on user role
-  const menuSections: MenuSection[] = [
-    {
-      items: [
-        { label: "Wishlists", icon: Heart, href: "/wishlists" },
-        { label: "Trips", icon: Briefcase, href: "/trips" },
-        { label: "Messages", icon: MessageSquare, href: "/messages" },
-        { label: "Dashboard", icon: User, href: dashboardPath },
-      ],
-    },
-    {
-      items: [
-        { label: "Account settings", icon: Settings, href: "/settings" },
-        { label: "Languages & currency", icon: Globe, href: "/settings/language" },
-        { label: "Help Center", icon: HelpCircle, href: "/help" },
-      ],
-    },
-    {
-      items: [
-        (isHost || isMayor)
-          ? {
-              label: "Host Dashboard",
-              description: "Manage your venues and listings.",
-              icon: Building2,
-              href: "/host",
-              hasImage: true,
-            }
-          : {
-              label: "Join FoxPassport",
-              description: "Choose your identity in the ecosystem and start your journey.",
-              icon: UserPlus,
-              href: "/onboarding",
-              hasImage: false,
-              isHighlight: true,
-            },
-        isAdmin && {
-          label: "Admin Dashboard",
-          description: "Manage platform settings and users.",
-          icon: ShieldCheck,
-          href: "/admin",
-          hasImage: true,
-        },
-      ].filter(Boolean) as MenuItem[],
-    },
-    {
-      items: [
-        { label: "Refer a Host", icon: UserPlus, href: "/refer" },
-        { label: "Find a co-host", icon: Users, href: "/co-host" },
-        { label: "Gift cards", icon: Gift, href: "/gift-cards" },
-      ],
-    },
-  ];
-
-  // Combined toggle (Airbnb style)
-  const handleToggle = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    toggle();
-  };
-
-  const handleItemClick = (item: any) => {
-    close();
-    router.push(item.href);
-  };
-
-  const handleLogout = () => {
-    close();
-    logout();
-    router.push("/");
-  };
+    'U';
 
   return (
-    <div ref={menuRef} className="relative">
-      {/* Unified Trigger Button - Airbnb Style */}
-      <button
-        onClick={handleToggle}
-        className={`flex items-center gap-3 pl-3 pr-1 py-1 rounded-full border border-white/10 bg-white/5 hover:bg-white/10 hover:shadow-[0_0_15px_rgba(204,255,0,0.2)] transition-all duration-300 backdrop-blur-md group ${
-          isOpen ? 'ring-2 ring-[#ccff00]/50 bg-white/10' : ''
-        }`}
-        aria-label="User menu"
-        aria-expanded={isOpen}
-      >
-        <Menu className="w-5 h-5 text-white/70 group-hover:text-white transition-colors" />
-        
-        <div className="w-8 h-8 rounded-full bg-[#ccff00] flex items-center justify-center border border-[#ccff00]/50 shadow-sm overflow-hidden">
-          <span className="text-black text-xs font-bold">{userInitial}</span>
-        </div>
-      </button>
+    <>
+      <div ref={menuRef} className="relative">
+        <button
+          onClick={(e) => { e.stopPropagation(); toggle(); }}
+          className={`flex items-center gap-3 pl-3 pr-1 py-1 rounded-full border border-white/10 bg-white/5 hover:bg-white/10 hover:shadow-[0_0_15px_rgba(204,255,0,0.2)] transition-all duration-300 backdrop-blur-md group ${
+            isOpen ? 'ring-2 ring-[#ccff00]/50 bg-white/10' : ''
+          }`}
+          aria-label="User menu"
+        >
+          <Menu className="w-5 h-5 text-white/70 group-hover:text-white transition-colors" />
+          <div className="w-8 h-8 rounded-full bg-[#ccff00] flex items-center justify-center border border-[#ccff00]/50 shadow-sm">
+            <span className="text-black text-xs font-bold">{userInitial}</span>
+          </div>
+        </button>
 
-      {/* Dropdown Menu - Dark Theme */}
-      {isOpen && (
-        <div className="absolute right-0 top-full mt-2 w-64 bg-[#1a1a24] rounded-xl shadow-2xl border border-white/10 py-2 z-50 backdrop-blur-xl">
-          {menuSections.map((section, sectionIdx) => (
-            <div key={sectionIdx}>
-              {/* Section divider (except for first section) */}
-              {sectionIdx > 0 && <div className="border-t border-white/10 my-2" />}
+        {isOpen && (
+          <div className="absolute right-0 top-full mt-2 w-72 bg-[#1a1a24] rounded-xl shadow-2xl border border-white/10 py-2 z-50 backdrop-blur-xl">
 
-              {section.items.map((item) => {
-                const isHighlight = item.isHighlight;
-                
+            {/* User identity */}
+            <div className="px-4 py-3 border-b border-white/5">
+              <p className="text-white font-bold text-sm truncate">{user?.name || user?.email}</p>
+              <p className="text-white/40 text-xs truncate">{user?.email}</p>
+              {roleTypes.length > 0 && (
+                <div className="flex flex-wrap gap-1 mt-2">
+                  {roleTypes.map((r) => (
+                    <span key={r} className="px-2 py-0.5 rounded-full bg-[#ccff00]/10 text-[#ccff00] text-[10px] font-bold border border-[#ccff00]/20 capitalize">
+                      {r}
+                    </span>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Role Dashboards */}
+            <div className="px-2 py-2 border-b border-white/5">
+              <p className="px-2 text-[10px] text-white/30 uppercase tracking-widest font-bold mb-1">My Dashboards</p>
+              {ROLE_DEFS.map((def) => {
+                const unlocked = hasRoleAccess(def);
+                const Icon = def.icon;
                 return (
                   <button
-                    key={item.label}
-                    onClick={() => handleItemClick(item)}
-                    disabled={isPending && item.isAction}
-                    className={`w-full text-left px-4 py-3 transition-all duration-300 flex items-start gap-3 group disabled:opacity-50 disabled:cursor-not-allowed ${
-                      isHighlight
-                        ? "relative bg-gradient-to-r from-[#ccff00]/10 to-[#00d2ff]/10 hover:from-[#ccff00]/20 hover:to-[#00d2ff]/20 overflow-hidden isolate"
-                        : "hover:bg-white/5"
+                    key={def.key}
+                    onClick={() => {
+                      if (unlocked) {
+                        close();
+                        router.push(def.href);
+                      } else {
+                        close();
+                        setLockedRole(def);
+                      }
+                    }}
+                    className={`w-full flex items-center gap-3 px-2 py-2.5 rounded-lg transition-all group ${
+                      unlocked
+                        ? 'hover:bg-white/5 cursor-pointer'
+                        : 'opacity-50 cursor-pointer hover:opacity-70'
                     }`}
                   >
-                    {/* Highlight Glow Border */}
-                    {isHighlight && (
-                      <div className="absolute inset-x-2 inset-y-1 pointer-events-none rounded-lg border border-[#ccff00]/30 group-hover:border-[#ccff00]/60 transition-colors" />
+                    <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${
+                      unlocked ? 'bg-[#ccff00]/10 border border-[#ccff00]/20' : 'bg-white/5 border border-white/10'
+                    }`}>
+                      {unlocked
+                        ? <Icon className="w-4 h-4 text-[#ccff00]" />
+                        : <Lock className="w-3.5 h-3.5 text-white/40" />
+                      }
+                    </div>
+                    <div className="flex-1 text-left min-w-0">
+                      <p className={`text-sm font-medium truncate ${unlocked ? 'text-white group-hover:text-[#ccff00]' : 'text-white/40'}`}>
+                        {def.label}
+                      </p>
+                      <p className="text-[10px] text-white/30 truncate">{def.description}</p>
+                    </div>
+                    {!unlocked && (
+                      <span className="text-[10px] text-white/20 font-bold uppercase tracking-wider shrink-0">Apply</span>
                     )}
-
-                    <item.icon className={`w-5 h-5 mt-0.5 shrink-0 transition-colors ${
-                      isHighlight ? "text-[#ccff00] group-hover:animate-pulse" : "text-white/60 group-hover:text-[#ccff00]"
-                    }`} />
-
-                    <div className="flex-1 min-w-0 z-10 relative">
-                      <span className={`text-sm font-medium block transition-colors ${
-                        isHighlight ? "text-[#ccff00] font-bold" : "text-white group-hover:text-[#ccff00]"
-                      }`}>
-                        {item.label}
-                      </span>
-                      {item.description && (
-                        <span className={`text-xs leading-tight block mt-0.5 ${
-                          isHighlight ? "text-white/80" : "text-white/50"
-                        }`}>
-                          {item.description}
-                        </span>
-                      )}
-                    </div>
-
-                  {/* Host illustration placeholder */}
-                  {item.hasImage && (
-                    <div className="w-12 h-12 shrink-0">
-                      <div className="w-full h-full bg-gradient-to-br from-[#ccff00]/20 to-green-500/20 rounded-lg flex items-center justify-center border border-[#ccff00]/30">
-                        <span className="text-2xl">🏠</span>
-                      </div>
-                    </div>
-                  )}
                   </button>
                 );
               })}
+              {isAdmin && (
+                <button
+                  onClick={() => { close(); router.push('/admin'); }}
+                  className="w-full flex items-center gap-3 px-2 py-2.5 rounded-lg hover:bg-white/5 transition-all group"
+                >
+                  <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0 bg-red-500/10 border border-red-500/20">
+                    <ShieldCheck className="w-4 h-4 text-red-400" />
+                  </div>
+                  <div className="flex-1 text-left">
+                    <p className="text-sm font-medium text-white group-hover:text-red-400">Admin Dashboard</p>
+                    <p className="text-[10px] text-white/30">Platform management</p>
+                  </div>
+                </button>
+              )}
             </div>
-          ))}
 
-          {/* Logout - Always at bottom */}
-          <div className="border-t border-white/10 my-2" />
-          <button
-            onClick={handleLogout}
-            className="w-full text-left px-4 py-3 hover:bg-red-500/10 transition-colors flex items-center gap-3 text-white/80 text-sm font-medium group"
-          >
-            <LogOut className="w-5 h-5 text-white/60 group-hover:text-red-400 transition-colors" />
-            <span className="group-hover:text-red-400 transition-colors">Log out</span>
-          </button>
-        </div>
+            {/* Standard links */}
+            <div className="px-2 py-2 border-b border-white/5 space-y-0.5">
+              {[
+                { label: 'Wishlists', icon: Heart, href: '/wishlists' },
+                { label: 'Trips', icon: Briefcase, href: '/trips' },
+                { label: 'Messages', icon: MessageSquare, href: '/messages' },
+                { label: 'Account settings', icon: Settings, href: '/settings' },
+                { label: 'Languages & currency', icon: Globe, href: '/settings/language' },
+                { label: 'Help Center', icon: HelpCircle, href: '/help' },
+              ].map((item) => (
+                <button
+                  key={item.label}
+                  onClick={() => { close(); router.push(item.href); }}
+                  className="w-full flex items-center gap-3 px-2 py-2.5 rounded-lg hover:bg-white/5 transition-colors group"
+                >
+                  <item.icon className="w-4 h-4 text-white/40 group-hover:text-[#ccff00] transition-colors shrink-0" />
+                  <span className="text-sm text-white/70 group-hover:text-white transition-colors">{item.label}</span>
+                </button>
+              ))}
+              {!isAdmin && (
+                <button
+                  onClick={() => { close(); router.push('/onboarding'); }}
+                  className="w-full flex items-center gap-3 px-2 py-2.5 rounded-lg hover:bg-[#ccff00]/5 transition-colors group"
+                >
+                  <UserPlus className="w-4 h-4 text-[#ccff00]/60 group-hover:text-[#ccff00] transition-colors shrink-0" />
+                  <span className="text-sm text-[#ccff00]/60 group-hover:text-[#ccff00] transition-colors font-medium">Apply for a Role</span>
+                </button>
+              )}
+            </div>
+
+            {/* Sync + Logout */}
+            <div className="px-2 py-2 space-y-0.5">
+              <button
+                onClick={handleSyncSession}
+                disabled={syncing}
+                className="w-full flex items-center gap-3 px-2 py-2.5 rounded-lg hover:bg-white/5 transition-colors group disabled:opacity-50"
+              >
+                <RefreshCw className={`w-4 h-4 text-white/40 group-hover:text-blue-400 transition-colors shrink-0 ${syncing ? 'animate-spin' : ''}`} />
+                <span className="text-sm text-white/50 group-hover:text-blue-400 transition-colors">
+                  {syncing ? 'Syncing account…' : 'Sync Account'}
+                </span>
+              </button>
+              <button
+                onClick={() => {
+                  close();
+                  useAuthStore.getState().logout();
+                  router.push('/');
+                }}
+                className="w-full flex items-center gap-3 px-2 py-2.5 rounded-lg hover:bg-red-500/10 transition-colors group"
+              >
+                <LogOut className="w-4 h-4 text-white/40 group-hover:text-red-400 transition-colors shrink-0" />
+                <span className="text-sm text-white/50 group-hover:text-red-400 transition-colors">Log out</span>
+              </button>
+            </div>
+
+          </div>
+        )}
+      </div>
+
+      {lockedRole && (
+        <RoleLockDialog role={lockedRole} onClose={() => setLockedRole(null)} />
       )}
-    </div>
+    </>
   );
 }
