@@ -112,6 +112,7 @@ export default function HostVenuesClient({ initialVenues }: HostVenuesClientProp
               venues={filteredVenues}
               onStatusChange={handleStatusChange}
               showViewAllLink={false}
+              showHeading={false}
               onEdit={handleEdit}
             />
           </div>
