@@ -8,5 +8,7 @@ export { AdminVenuesTable } from "./AdminVenuesTable";
 export { AdminEventsTable } from "./AdminEventsTable";
 export { AdminCategoriesTable } from "./AdminCategoriesTable";
 export { AdminCitizenTable } from "./AdminCitizenTable";
+export { AdminAssetsTable } from "./AdminAssetsTable";
+export { AdminServicesTable } from "./AdminServicesTable";
 export * from "./constants";
 export * from "./types";

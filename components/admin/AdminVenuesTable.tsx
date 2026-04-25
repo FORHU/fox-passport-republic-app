@@ -76,8 +76,8 @@ export const AdminVenuesTable: React.FC<VenueTableProps> = ({ venues, isLoading,
                 <td colSpan={5} className="p-12 text-center text-white/30 italic">No venues found in database</td>
               </tr>
             ) : (
-              venues.map((venue) => (
-                <React.Fragment key={venue.id}>
+              venues.map((venue, i) => (
+                <React.Fragment key={venue.id ?? venue.name ?? i}>
                   <tr className="border-b border-white/5 hover:bg-white/[0.03] transition-colors group">
                     <td className="p-6">
                       <div className="flex items-center gap-4">
@@ -85,7 +85,7 @@ export const AdminVenuesTable: React.FC<VenueTableProps> = ({ venues, isLoading,
                           <img 
                             alt={venue.name} 
                             className="h-full w-full object-cover group-hover:scale-110 transition-transform duration-700" 
-                            src={venue.images?.[0]?.imageUrl || venue.image || "https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=100&auto=format&fit=crop"} 
+                            src={venue.images?.[0] || venue.image || "https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=100&auto=format&fit=crop"} 
                           />
                         </div>
                         <div className="flex flex-col">

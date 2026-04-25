@@ -37,15 +37,15 @@ export const AdminEventsTable: React.FC<EventsTableProps> = ({ events, isLoading
                 <td colSpan={5} className="p-12 text-center text-white/30">No events found in database</td>
               </tr>
             ) : (
-              events.map((event) => (
-                <React.Fragment key={event.id}>
+              events.map((event, i) => (
+                <React.Fragment key={event.id ?? event.title ?? i}>
                   <tr className="border-b border-white/5 hover:bg-white/5 transition-colors group">
                     <td className="p-6">
                       <div className="flex items-center gap-3">
                         <img 
                           alt={event.title} 
                           className="h-10 w-10 rounded-lg object-cover bg-white/5 shadow-inner" 
-                          src={event.images?.[0]?.imageUrl || "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=100&auto=format&fit=crop"} 
+                          src={event.images?.[0] || "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=100&auto=format&fit=crop"} 
                         />
                         <span className="font-bold text-white group-hover:text-accent transition-colors">{event.title}</span>
                       </div>

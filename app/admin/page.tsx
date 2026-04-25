@@ -1,5 +1,4 @@
-import React from 'react';
-import { getDashboardStats, getVenues, getEvents, getCategories, getUsers } from '@/lib/server/data';
+import { getDashboardStats, getVenues, getEvents, getCategories, getUsers, getAllAssets, getAllServices } from '@/lib/server/data';
 import { requireAdmin } from '@/lib/server/auth';
 import {
   AdminSidebar,
@@ -11,26 +10,31 @@ import {
   AdminEventsTable,
   AdminCategoriesTable,
   AdminCitizenTable,
+  AdminAssetsTable,
+  AdminServicesTable,
   AdminAuthGuard
 } from '@/components/admin';
 
+export const dynamic = 'force-dynamic';
+
 export default async function AdminDashboard() {
-  // Check auth server-side
   await requireAdmin();
 
-  // Fetch data server-side
-  const stats = await getDashboardStats();
-  const venues = await getVenues();
-  const events = await getEvents();
-  const categories = await getCategories();
-  const citizens = await getUsers();
+  const [stats, venues, events, categories, citizens, assets, services] = await Promise.all([
+    getDashboardStats(),
+    getVenues(),
+    getEvents(),
+    getCategories(),
+    getUsers(),
+    getAllAssets(),
+    getAllServices(),
+  ]);
 
   return (
     <AdminAuthGuard>
       <div className="bg-background bg-gradient-dark text-text-main antialiased min-h-screen flex selection:bg-accent selection:text-black font-body">
         <AdminSidebar />
 
-        {/* Main Content */}
         <main className="flex-1 lg:pl-64 min-h-screen flex flex-col">
           <AdminHeader />
 
@@ -40,6 +44,8 @@ export default async function AdminDashboard() {
             <AdminSubmissionsTable />
             <AdminVenuesTable venues={venues} isLoading={false} />
             <AdminEventsTable events={events} isLoading={false} />
+            <AdminAssetsTable assets={assets} isLoading={false} />
+            <AdminServicesTable services={services} isLoading={false} />
             <AdminCategoriesTable categories={categories} isLoading={false} />
             <AdminCitizenTable citizens={citizens} isLoading={false} />
           </div>

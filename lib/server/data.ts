@@ -210,6 +210,26 @@ export async function getUsers() {
   }
 }
 
+export async function getAllAssets() {
+  try {
+    const body = await serverFetch('/asset');
+    return extractList(body);
+  } catch (error) {
+    console.error('Failed to fetch assets:', error);
+    return [];
+  }
+}
+
+export async function getAllServices() {
+  try {
+    const body = await serverFetch('/service');
+    return extractList(body);
+  } catch (error) {
+    console.error('Failed to fetch services:', error);
+    return [];
+  }
+}
+
 export async function getServicesByHostId(hostId: string) {
   try {
     const body = await serverFetch('/service', { ownerId: hostId });

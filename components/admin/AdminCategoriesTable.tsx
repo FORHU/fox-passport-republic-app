@@ -32,8 +32,8 @@ export const AdminCategoriesTable: React.FC<CategoriesTableProps> = ({ categorie
                 <td colSpan={5} className="p-12 text-center text-white/30">No categories found in database</td>
               </tr>
             ) : (
-              categories.map((cat) => (
-                <tr key={cat.id} className="border-b border-white/5 hover:bg-white/5 transition-colors group">
+              categories.map((cat, i) => (
+                <tr key={cat.id ?? cat.slug ?? i} className="border-b border-white/5 hover:bg-white/5 transition-colors group">
                   <td className="p-6">
                     <div className="h-10 w-10 rounded-xl bg-accent/10 border border-accent/20 flex items-center justify-center text-accent shadow-[0_0_15px_rgba(204,255,0,0.1)]">
                       <span className="material-symbols-outlined">{cat.icon || 'category'}</span>
