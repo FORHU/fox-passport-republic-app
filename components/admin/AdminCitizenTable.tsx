@@ -50,8 +50,8 @@ export const AdminCitizenTable: React.FC<CitizenTableProps> = ({ citizens, isLoa
                 <td colSpan={5} className="p-12 text-center text-white/30 italic">No citizens found in database</td>
               </tr>
             ) : (
-              citizens.map((citizen) => (
-                <React.Fragment key={citizen.id}>
+              citizens.map((citizen, i) => (
+                <React.Fragment key={citizen.id ?? citizen.email ?? i}>
                   <tr className="border-b border-white/5 hover:bg-white/[0.03] transition-colors group">
                     <td className="p-6">
                       <div className="flex items-center gap-4">
