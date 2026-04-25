@@ -107,11 +107,14 @@ function extractOne(body: any): any {
   );
 }
 
+const FALLBACK_IMG = '/herobackground.jpg';
+
 function normalizeImages(images: any[]): string[] {
-  if (!Array.isArray(images) || images.length === 0) return [];
-  return images
+  if (!Array.isArray(images) || images.length === 0) return [FALLBACK_IMG];
+  const urls = images
     .map((img) => (typeof img === 'string' ? img : img?.url || img?.imageUrl || ''))
     .filter(Boolean);
+  return urls.length > 0 ? urls : [FALLBACK_IMG];
 }
 
 function normalizeVenue(v: any) {

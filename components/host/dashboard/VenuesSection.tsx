@@ -58,8 +58,9 @@ export function VenuesSection({
                   <img
                     className={`w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 ${(vn.status || "").toLowerCase() !== "published" ? 'grayscale group-hover:grayscale-0' : ''
                       }`}
-                    src={vn.img}
+                    src={vn.img || '/herobackground.jpg'}
                     alt=""
+                    onError={(e) => { (e.target as HTMLImageElement).src = '/herobackground.jpg'; }}
                   />
                   <div className="absolute top-2 left-2 bg-black/70 backdrop-blur px-2 py-1 rounded text-[10px] font-bold uppercase">
                     {vn.type}
