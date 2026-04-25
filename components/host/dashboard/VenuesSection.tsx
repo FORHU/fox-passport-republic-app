@@ -10,6 +10,7 @@ interface VenuesSectionProps {
   venues: VenueItem[];
   onStatusChange: (id: number | string, status: string) => void;
   showViewAllLink?: boolean;
+  showHeading?: boolean;
   viewAllHref?: string;
   onEdit?: (id: number | string) => void;
 }
@@ -18,26 +19,29 @@ export function VenuesSection({
   venues,
   onStatusChange,
   showViewAllLink = true,
+  showHeading = true,
   viewAllHref = "/creator-dashboard/venues",
   onEdit,
 }: VenuesSectionProps) {
   return (
     <section id="venues">
-      <div className="flex justify-between items-center mb-6">
-        <h2 className="text-2xl font-display font-bold flex items-center gap-2">
-          <span className="material-symbols-outlined text-pink-500">apartment</span>
-          My Venues
-        </h2>
-        {showViewAllLink && (
-          <Link
-            className="text-xs font-bold text-[#ccff00] border border-[#ccff00]/30 px-4 py-2 rounded-full hover:bg-[#ccff00] hover:text-black transition-all flex items-center gap-1"
-            href={viewAllHref}
-          >
-            View All
-            <span className="material-symbols-outlined text-[16px]">arrow_forward</span>
-          </Link>
-        )}
-      </div>
+      {showHeading && (
+        <div className="flex justify-between items-center mb-6">
+          <h2 className="text-2xl font-display font-bold flex items-center gap-2">
+            <span className="material-symbols-outlined text-pink-500">apartment</span>
+            My Venues
+          </h2>
+          {showViewAllLink && (
+            <Link
+              className="text-xs font-bold text-[#ccff00] border border-[#ccff00]/30 px-4 py-2 rounded-full hover:bg-[#ccff00] hover:text-black transition-all flex items-center gap-1"
+              href={viewAllHref}
+            >
+              View All
+              <span className="material-symbols-outlined text-[16px]">arrow_forward</span>
+            </Link>
+          )}
+        </div>
+      )}
       <div className="space-y-4">
         {venues.length > 0 ? (
           venues.map((vn) => (
