@@ -32,10 +32,14 @@ interface HostDashboardClientProps {
   };
 }
 
+const FALLBACK_IMG = '/herobackground.jpg';
+
 function pickImage(images: any[]): string {
-  if (!Array.isArray(images) || images.length === 0) return '/placeholder-venue.jpg';
+  if (!Array.isArray(images) || images.length === 0) return FALLBACK_IMG;
   const primary = images.find((i) => i?.isPrimary || i?.isThumbnail) ?? images[0];
-  return primary?.url || primary?.imageUrl || '/placeholder-venue.jpg';
+  if (!primary) return FALLBACK_IMG;
+  const url = typeof primary === 'string' ? primary : primary?.url || primary?.imageUrl;
+  return url || FALLBACK_IMG;
 }
 
 function mapVenue(v: any): VenueItem {
