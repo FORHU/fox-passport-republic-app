@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { useCallback, useMemo, useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
@@ -12,6 +12,7 @@ import {
   BILLING_RATE_MAP,
   ServiceUnit,
 } from "@/data/serviceBuilderData";
+import { useFileUpload } from "@/hooks/features/useFileUpload";
 
 export function useServicesBuilder() {
   const router = useRouter();
@@ -19,6 +20,7 @@ export function useServicesBuilder() {
   const [error, setError] = useState<string | null>(null);
   const [isNotification, setIsNotification] = useState(false);
   const [categoryMap, setCategoryMap] = useState<{ [key: string]: string }>({});
+  const { uploadFile, isUploading } = useFileUpload();
 
   // Fetch categories from API to map slugs to IDs
   useEffect(() => {
@@ -90,18 +92,6 @@ export function useServicesBuilder() {
           data,
         });
 
-        // If payload too large and we included images, try again without images
-        if (status === 413 && serviceData.images) {
-          console.warn("[ServiceBuilder] Payload too large (413), retrying without images");
-          const retryData = { ...serviceData };
-          delete retryData.images;
-          try {
-            return await createService(retryData);
-          } catch (err2: any) {
-            console.error("[ServiceBuilder] Retry without images failed:", err2);
-          }
-        }
-
         // Handle specific status codes
         if (status === 401) {
           const message = "Not authenticated. Please log in again.";
@@ -172,6 +162,20 @@ export function useServicesBuilder() {
       }
       const stringHostId = String(userId);
 
+      if (!store.image) {
+        throw new Error("An image is required for publishing");
+      }
+
+      // Convert local blob URL to File and upload to S3
+      const response = await fetch(store.image);
+      const blob = await response.blob();
+      const file = new File([blob], `service-${Date.now()}.jpg`, { type: blob.type });
+
+      const uploadResult = await uploadFile(file);
+      if (!uploadResult || !uploadResult.fileId) {
+        throw new Error("Failed to upload image. Please try again.");
+      }
+
       const serviceData: CreateServicePayload = {
         name: store.title,
         description: store.description,
@@ -179,9 +183,9 @@ export function useServicesBuilder() {
         category: store.category,
         price:
           typeof store.price === "string" ? parseFloat(store.price) : Number(store.price),
-        ...(store.image && {
-          images: [{ url: store.image, isThumbnail: true, altText: store.title }],
-        }),
+        city: (store as any).city || 'N/A',
+        country: (store as any).country || 'PH',
+        imgIds: [uploadResult.fileId],
       };
 
       console.log("[ServicesBuilder] Publishing service:", serviceData);
@@ -197,7 +201,7 @@ export function useServicesBuilder() {
       setError(err.message || "Failed to publish service");
       store.setIsSubmitting(false);
     }
-  }, [isReadyToPublish, store, getUserId, createServiceWithAPI, router]);
+  }, [isReadyToPublish, store, getUserId, createServiceWithAPI, router, uploadFile]);
 
   return {
     ...store,

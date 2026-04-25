@@ -7,7 +7,7 @@ export type BackendCategory = {
   icon?: string;
 };
 
-export type BackendAssetImage = {
+export type BackendImage = {
   id?: Id;
   url?: string;
   imageUrl?: string;
@@ -20,16 +20,13 @@ export type BackendAsset = {
   id: Id;
   name: string;
   description?: string | null;
-  type?: string | null;
   status?: string | null;
   condition?: string | null;
   price?: number | string | null;
-  unit?: string | null;
   billingRate?: string | null;
-  hostId?: Id | null;
   ownerId?: Id | null;
-  category?: BackendCategory | string | null;
-  assetImages?: BackendAssetImage[] | null;
+  category?: string | null;
+  images?: BackendImage[] | null;
 };
 
 export type BackendService = {
@@ -38,26 +35,23 @@ export type BackendService = {
   description?: string | null;
   status?: string | null;
   price?: number | string | null;
-  unit?: string | null;
   billingRate?: string | null;
-  hostId?: Id | null;
-  category?: BackendCategory | string | null;
-  assetImages?: BackendAssetImage[] | null;
+  ownerId?: Id | null;
+  category?: string | null;
+  city?: string | null;
+  country?: string | null;
+  images?: BackendImage[] | null;
 };
 
 export type CreateAssetPayload = {
   name: string;
   description: string;
   condition: string;
-  categorySlug?: string;
-  categoryId?: string | null;
+  category: string;
   price: number;
   billingRate: string;
-  images?: Array<{
-    url: string;
-    isThumbnail?: boolean;
-    altText?: string;
-  }>;
+  quantity?: number;
+  imgIds: string[];
 };
 
 export type CreateServicePayload = {
@@ -66,10 +60,10 @@ export type CreateServicePayload = {
   category: string;
   price: number;
   billingRate: string;
-  images?: Array<{
-    url: string;
-    isThumbnail?: boolean;
-    altText?: string;
-  }>;
+  city: string;
+  country: string;
+  state?: string;
+  isWillingToTravel?: boolean;
+  tags?: string[];
+  imgIds: string[];
 };
-
