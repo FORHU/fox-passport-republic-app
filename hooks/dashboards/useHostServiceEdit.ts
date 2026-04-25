@@ -1,11 +1,11 @@
-﻿"use client";
+"use client";
 
 import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { useAuthStore } from "@/store/useAuthStore";
 import { useServicesBuilder } from "@/hooks/listings/useServicesBuilder";
-import { fetchServicesByHostId, updateService } from "@/lib/api/services";
+import { fetchServicesByOwnerId, updateService } from "@/lib/api/services";
 import type { Id } from "@/lib/api/types";
 import {
   SERVICE_CATEGORIES,
@@ -90,7 +90,7 @@ export function useHostServiceEdit(serviceId: string) {
       setIsPrefilling(true);
       setPrefillError(null);
       try {
-        const raw = await fetchServicesByHostId(hostId);
+        const raw = await fetchServicesByOwnerId(hostId);
         const filtered = raw.filter((s) => belongsToHost(s, hostId));
         const found = filtered.find((s) => String(s?.id) === String(serviceId));
 
@@ -114,10 +114,10 @@ export function useHostServiceEdit(serviceId: string) {
         const parsedPrice = Number(found?.price ?? 0);
         services.setPrice(Number.isFinite(parsedPrice) ? parsedPrice : 0);
 
-        services.setUnit(invertBillingRateToUnitLabel(found?.billingRate ?? found?.unit));
+        services.setUnit(invertBillingRateToUnitLabel(found?.billingRate));
         services.setStatus(mapStatusToService(found?.status));
 
-        const firstImg = found?.assetImages?.[0];
+        const firstImg = found?.images?.[0];
         const url = firstImg?.url ?? firstImg?.imageUrl ?? "";
         services.setImage(url);
         setInitialImageUrl(url);

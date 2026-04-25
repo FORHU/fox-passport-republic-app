@@ -20,6 +20,8 @@ import {
 import { useRoleAccess } from '@/hooks/auth/useRoleAccess';
 import { useAuthStore } from '@/store/useAuthStore';
 import { ProgressDashboard } from '@/components/users/ProgressDashboard';
+import { mapBackendAssetToInventoryItem, mapBackendServiceToServiceItem } from '@/lib/mappers/listings';
+import type { VenueItem, EventItem } from '@/data/dashboardData';
 
 interface HostDashboardClientProps {
   initialData: {
@@ -27,6 +29,41 @@ interface HostDashboardClientProps {
     venues: any[];
     inventory: any[];
     services: any[];
+  };
+}
+
+function pickImage(images: any[]): string {
+  if (!Array.isArray(images) || images.length === 0) return '/placeholder-venue.jpg';
+  const primary = images.find((i) => i?.isPrimary || i?.isThumbnail) ?? images[0];
+  return primary?.url || primary?.imageUrl || '/placeholder-venue.jpg';
+}
+
+function mapVenue(v: any): VenueItem {
+  return {
+    id: v.id,
+    title: v.name || v.title || 'Untitled Venue',
+    type: v.type || v.venueType || 'Venue',
+    loc: [v.city, v.country].filter(Boolean).join(', ') || v.location || 'Location TBD',
+    cap: v.capacity ? `${v.capacity} guests` : '—',
+    status: v.status || 'draft',
+    bookings: v.bookingsCount ?? v.bookings ?? null,
+    revenue: v.revenue ? `₱${Number(v.revenue).toLocaleString()}` : null,
+    img: pickImage(v.images ?? []),
+  };
+}
+
+function mapEvent(e: any): EventItem {
+  return {
+    id: e.id,
+    title: e.title || e.name || 'Untitled Event',
+    date: e.startDate || e.date || '—',
+    loc: e.location || [e.city, e.country].filter(Boolean).join(', ') || 'Location TBD',
+    type: e.type || e.eventType || 'Event',
+    status: e.status || 'draft',
+    booked: e.bookedCount ?? e.booked ?? null,
+    capacity: e.capacity ?? null,
+    revenue: e.revenue ? `₱${Number(e.revenue).toLocaleString()}` : null,
+    img: pickImage(e.images ?? e.gallery ?? []),
   };
 }
 
@@ -43,7 +80,11 @@ export default function HostDashboardClient({ initialData }: HostDashboardClient
 
   const access = useRoleAccess();
   const user = useAuthStore((s) => s.user);
-  const { events, venues, inventory, services } = initialData;
+
+  const events = (initialData.events ?? []).map(mapEvent);
+  const venues = (initialData.venues ?? []).map(mapVenue);
+  const inventory = (initialData.inventory ?? []).map(mapBackendAssetToInventoryItem);
+  const services = (initialData.services ?? []).map(mapBackendServiceToServiceItem);
 
   return (
     <div

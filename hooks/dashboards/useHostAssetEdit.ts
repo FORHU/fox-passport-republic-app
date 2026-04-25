@@ -1,11 +1,11 @@
-﻿'use client';
+'use client';
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { useAuthStore } from "@/store/useAuthStore";
 import { useInventoryBuilder } from "@/hooks/listings/useInventoryBuilder";
-import { fetchAssetsByHostId, updateAsset } from "@/lib/api/assets";
+import { fetchAssetsByOwnerId, updateAsset } from "@/lib/api/assets";
 import type { Id } from "@/lib/api/types";
 import { ASSET_CATEGORIES, CONDITIONS, STATUSES, INVENTORY_UNITS } from "@/data/listingBuilderData";
 
@@ -97,7 +97,7 @@ export function useHostAssetEdit(assetId: string) {
       setIsPrefilling(true);
       setPrefillError(null);
       try {
-        const raw = await fetchAssetsByHostId(hostId);
+        const raw = await fetchAssetsByOwnerId(hostId);
         const filtered = raw.filter((a) => belongsToHost(a, hostId));
         const found = filtered.find((a) => String(a?.id) === String(assetId));
 
@@ -126,12 +126,12 @@ export function useHostAssetEdit(assetId: string) {
         const parsedPrice = Number(found?.price ?? 0);
         inventory.setPrice(Number.isFinite(parsedPrice) ? parsedPrice : 0);
 
-        const mappedUnit = mapBillingRateToUnitLabel(found?.billingRate ?? found?.unit, found?.unit);
+        const mappedUnit = mapBillingRateToUnitLabel(found?.billingRate, "");
         inventory.setUnit(mappedUnit);
 
         inventory.setStatus(mapStatusToInventory(found?.status));
 
-        const firstImg = found?.assetImages?.[0];
+        const firstImg = found?.images?.[0];
         const url = firstImg?.url ?? firstImg?.imageUrl ?? "";
         inventory.setImage(url);
         setInitialImageUrl(url);

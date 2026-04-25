@@ -6,6 +6,7 @@ export interface ResourceItem {
   cost: number;
   icon: string;
   desc: string;
+  resourceType?: "venue" | "asset" | "service";
 }
 
 export interface GalleryItem {

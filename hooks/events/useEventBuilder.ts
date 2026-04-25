@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { useCallback, useMemo } from "react";
 import { useRouter } from "next/navigation";
@@ -42,7 +42,8 @@ export function useEventBuilder() {
               name: v.name,
               cost: v.baseRate || 10000,
               icon: "location_city",
-              desc: v.description || "Real venue from your gallery."
+              desc: v.description || "Real venue from your gallery.",
+              resourceType: "venue"
             }));
         }
 
@@ -65,7 +66,8 @@ export function useEventBuilder() {
               name: a.name,
               cost: a.price || 5000,
               icon: a.category?.icon || "inventory_2",
-              desc: a.description || "Real asset from the database."
+              desc: a.description || "Real asset from the database.",
+              resourceType: "asset"
             };
 
             const slug = a.category?.slug?.toLowerCase();
@@ -92,7 +94,8 @@ export function useEventBuilder() {
               name: s.name,
               cost: s.price || 7500,
               icon: "work_outline",
-              desc: s.description || "Premium service for your event."
+              desc: s.description || "Premium service for your event.",
+              resourceType: "service"
             };
 
             // Services have category as a string
@@ -260,32 +263,33 @@ export function useEventBuilder() {
 
       const payload = {
         name: store.eventTitle,
-        description: store.description || "Epic event created via Studio.",
-        venueId: venueItem.id, 
-        eventType,
-        startDatetime: new Date(store.date || Date.now()),
-        endDatetime: new Date(Date.now() + 4 * 60 * 60 * 1000), 
-        maxAttendees: Math.max(1, Math.floor(store.maxAttendees || 100)),
-        totalPrice: Number(financials.suggestedPrice) || 0,
-        status: 'published',
-        images: store.gallery.map((g, index) => ({
-          imageUrl: g.url,
-          isPrimary: index === 0,
-          altText: g.caption
-        }))
+        description: store.description || "Event created via Creator Studio.",
+        category: eventType,
+        isPublic: false,
       };
 
-      console.log("Publishing payload:", payload);
+      // 3. Create event template
+      const response = await api.post("/event-templates", payload);
+      const created = response.data?.template ?? response.data?.data ?? response.data;
 
-      // 3. Create Event
-      const response = await api.post("/events", payload);
+      if (created?.id) {
+        // 4. Attach venue, assets, and services via association endpoints
+        try {
+          if (venueItem?.id) {
+            await api.post(`/event-templates/${created.id}/venues`, { venueId: venueItem.id });
+          }
+          for (const item of store.baseItems) {
+            if (item.resourceType === 'asset' && item.id) {
+              await api.post(`/event-templates/${created.id}/assets`, { assetId: item.id, quantity: 1 });
+            } else if (item.resourceType === 'service' && item.id) {
+              await api.post(`/event-templates/${created.id}/services`, { serviceId: item.id });
+            }
+          }
+        } catch {
+          // Associations are best-effort — template was created successfully
+        }
 
-      if (response.data.success) {
-        toast.success("Event blueprint published!");
-
-        // 4. Link Assets and Services (optional follow-up)
-        // Here we would ideally call addAssetToEvent for each baseItem
-
+        toast.success("Event template published!");
         setTimeout(() => {
           router.push("/creator-dashboard");
           store.reset();

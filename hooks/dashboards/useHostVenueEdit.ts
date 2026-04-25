@@ -116,11 +116,11 @@ export function useHostVenueEdit(venueId: string) {
       const payload = {
         name: builder.venueName,
         description: builder.description || "Venue updated via Studio.",
-        type: builder.venueType.toLowerCase(),
+        category: builder.venueType.toLowerCase(),
         capacity: capacityNum,
         address: builder.location,
         city: builder.city,
-        state: builder.state,
+        state: builder.state || undefined,
         country: builder.country,
         price: builder.baseRate,
         spaceType: allItems.filter((i: any) => i.category === "spaces").map((i: any) => i.name),
@@ -128,7 +128,7 @@ export function useHostVenueEdit(venueId: string) {
         techAv: allItems.filter((i: any) => i.category === "tech").map((i: any) => i.name),
         staffing: allItems.filter((i: any) => i.category === "staff").map((i: any) => i.name),
         policies: allItems.filter((i: any) => i.category === "rules").map((i: any) => i.name),
-        status: targetStatus,
+        status: normalizeVenueStatusToBackend(targetStatus),
       };
 
       if (!venueId) {

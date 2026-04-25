@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { useCallback, useMemo } from "react";
 import { useRouter } from "next/navigation";
@@ -9,11 +9,13 @@ import {
   RESOURCE_CATEGORIES,
   ResourceItem,
 } from "@/data/venueBuilderData";
+import { useFileUpload } from "@/hooks/features/useFileUpload";
 
 
 export function useVenueBuilder() {
   const router = useRouter();
   const store = useVenueBuilderStore();
+  const { uploadFile, isUploading } = useFileUpload();
 
   // Get filtered resources based on active category and search
   const filteredResources = useMemo(() => {
@@ -147,15 +149,31 @@ export function useVenueBuilder() {
     store.setIsSubmitting(true);
     try {
       const allItems = [...store.includedItems, ...store.addonItems];
+      const galleryFiles = store.gallery.map(item => item.file).filter(file => file !== undefined) as File[];
+
+      if (galleryFiles.length === 0) {
+        toast.error("At least one image is required for your venue.");
+        return;
+      }
+
+      const imgIds: string[] = [];
+      for (const file of galleryFiles) {
+        const uploadResult = await uploadFile(file);
+        if (uploadResult && uploadResult.fileId) {
+          imgIds.push(uploadResult.fileId);
+        } else {
+          throw new Error("One or more images failed to upload.");
+        }
+      }
 
       const payload = {
         name: store.venueName,
         description: store.description,
-        type: store.venueType.toLowerCase(),
-        capacity: parseInt(store.capacity) || 0,
+        category: store.venueType.toLowerCase(),
+        capacity: parseInt(store.capacity) || 1,
         address: store.location,
         city: store.city,
-        state: store.state,
+        state: store.state || undefined,
         country: store.country,
         price: store.baseRate,
         spaceType: allItems.filter(i => i.category === 'spaces').map(i => i.name),
@@ -163,70 +181,15 @@ export function useVenueBuilder() {
         techAv: allItems.filter(i => i.category === 'tech').map(i => i.name),
         staffing: allItems.filter(i => i.category === 'staff').map(i => i.name),
         policies: allItems.filter(i => i.category === 'rules').map(i => i.name),
-        status: 'pending_review'
+        imgIds,
+        status: 'pending',
       };
 
-      console.log("Publishing venue...", payload);
-      const response = await api.post("/venues", payload);
-
-      // Backend now returns { message, venue } instead of { success, data }
+      const response = await api.post("/venues/create", payload);
       const createdVenue = response.data.venue;
 
       if (createdVenue && createdVenue.id) {
-        const venueId = createdVenue.id;
-        console.log("Venue created successfully with ID:", venueId);
-
-        // Handle Image Uploads
-        const galleryFiles = store.gallery.map(item => item.file).filter(file => file !== undefined) as File[];
-
-        if (galleryFiles.length > 0) {
-          console.log("🔍 Upload Debug:", {
-            venueId,
-            imageCount: galleryFiles.length,
-            firstImageType: galleryFiles[0]?.constructor?.name,
-            firstImageSize: galleryFiles[0]?.size,
-            endpoint: `/venues/${venueId}/images`
-          });
-
-          if (!venueId) {
-            console.error("❌ Venue ID is missing - cannot upload images");
-            toast.error("Venue created, but image upload failed: Venue ID missing");
-            return;
-          }
-
-          console.log(`Uploading ${galleryFiles.length} images for venue ${venueId}...`);
-          const formData = new FormData();
-          galleryFiles.forEach(file => {
-            formData.append("images", file);
-          });
-
-          try {
-            const uploadUrl = `/venues/${venueId}/images`;
-            console.log("📤 Image Upload Attempt:", {
-              url: uploadUrl,
-              fullUrl: `${api.defaults.baseURL}${uploadUrl}`,
-              filesCount: galleryFiles.length
-            });
-
-            const uploadResponse = await api.post(uploadUrl, formData);
-            console.log("✅ Images uploaded successfully:", uploadResponse.data);
-          } catch (uploadError: any) {
-            console.error("❌ Image upload failed:", {
-              name: uploadError.name,
-              message: uploadError.message,
-              status: uploadError.response?.status,
-              statusText: uploadError.response?.statusText,
-              data: uploadError.response?.data,
-              url: uploadError.config?.url,
-              code: uploadError.code
-            });
-            toast.error(`Venue created, but image upload failed: ${uploadError.message}`);
-          }
-
-        }
-
         toast.success("Venue submitted for review!");
-
         setTimeout(() => {
           router.push("/creator-dashboard");
           store.reset();
@@ -234,11 +197,11 @@ export function useVenueBuilder() {
       }
     } catch (error: any) {
       console.error("Publishing error:", error);
-      toast.error(error.response?.data?.message || "Failed to publish venue");
+      toast.error(error.response?.data?.message || error.message || "Failed to publish venue");
     } finally {
       store.setIsSubmitting(false);
     }
-  }, [store, router]);
+  }, [store, router, uploadFile]);
 
   return {
     // State

@@ -33,13 +33,40 @@ export async function getServerApi() {
 function extractData(response: any, arrayFallback = false) {
   if (!response?.data) return arrayFallback ? [] : null;
   const body = response.data;
-  
+
   if (arrayFallback) {
-    const list = body.data ?? body.venues ?? body.events ?? body.users ?? body.categories ?? body.services ?? body;
+    const list = body.venues ?? body.templates ?? body.assets ?? body.services ?? body.events ?? body.users ?? body.categories ?? body.data ?? body;
     return Array.isArray(list) ? list : [];
   } else {
-    return body.data ?? body.venue ?? body.event ?? body.category ?? body.user ?? body.service ?? body;
+    return body.venue ?? body.template ?? body.asset ?? body.service ?? body.event ?? body.category ?? body.user ?? body.data ?? body;
   }
+}
+
+// Normalize backend image objects to plain URL strings
+function normalizeImages(images: any[]): string[] {
+  if (!Array.isArray(images) || images.length === 0) return [];
+  return images
+    .map((img) => (typeof img === 'string' ? img : (img?.url || img?.imageUrl || '')))
+    .filter(Boolean);
+}
+
+// Normalize a raw backend venue to match the frontend Venue interface
+function normalizeVenue(v: any) {
+  return {
+    ...v,
+    title: v.title || v.name || 'Untitled Venue',
+    location: v.location || [v.city, v.province, v.country].filter(Boolean).join(', ') || '',
+    province: v.province || v.country || '',
+    price: Number(v.price || v.pricePerNight || 0),
+    rating: Number(v.rating || v.averageRating || 0),
+    reviews: Number(v.reviews || v.reviewCount || 0),
+    images: normalizeImages(v.images ?? []),
+    description: v.description || '',
+    category: typeof v.category === 'object' ? (v.category?.name || v.category?.slug || '') : (v.category || ''),
+    guestCount: Number(v.guestCount || v.capacity || 0),
+    bedroomCount: Number(v.bedroomCount || v.bedrooms || 0),
+    bathroomCount: Number(v.bathroomCount || v.bathrooms || 0),
+  };
 }
 
 export async function getDashboardStats() {
@@ -88,7 +115,7 @@ export async function getVenues() {
   const api = await getServerApi();
   try {
     const response = await api.get('/venues');
-    return extractData(response, true);
+    return (extractData(response, true) as any[]).map(normalizeVenue);
   } catch (error) {
     console.error("Failed to fetch venues:", error);
     return [];
@@ -143,16 +170,17 @@ export async function getHostDashboard(userId: string) {
   await requireAuth();
   const api = await getServerApi();
   try {
-    const [eventsRes, venuesRes, servicesRes] = await Promise.all([
-      api.get('/events', { params: { hostId: userId } }).catch(() => ({ data: { events: [] } })),
+    const [eventsRes, venuesRes, assetsRes, servicesRes] = await Promise.all([
+      api.get('/event-templates', { params: { ownerId: userId } }).catch(() => ({ data: { templates: [] } })),
       api.get('/venues', { params: { hostId: userId } }).catch(() => ({ data: { venues: [] } })),
-      api.get('/services', { params: { ownerId: userId } }).catch(() => ({ data: { services: [] } }))
+      api.get('/asset', { params: { ownerId: userId } }).catch(() => ({ data: { assets: [] } })),
+      api.get('/service', { params: { ownerId: userId } }).catch(() => ({ data: { services: [] } })),
     ]);
-    
+
     return {
       events: extractData(eventsRes, true),
-      venues: extractData(venuesRes, true),
-      inventory: [],
+      venues: (extractData(venuesRes, true) as any[]).map(normalizeVenue),
+      inventory: extractData(assetsRes, true),
       services: extractData(servicesRes, true),
     };
   } catch (error) {
@@ -167,7 +195,7 @@ export async function getVenueById(id: string) {
     const response = await api.get(`/venues/${id}`);
     const data = extractData(response, false);
     if (!data) return getMockFallbackVenue(id);
-    return data;
+    return normalizeVenue(data);
   } catch (error) {
     return getMockFallbackVenue(id);
   }
@@ -224,7 +252,7 @@ export async function getVenuesByCategory(categorySlug: string) {
   const api = await getServerApi();
   try {
     const response = await api.get('/venues', { params: { category: categorySlug } });
-    return extractData(response, true);
+    return (extractData(response, true) as any[]).map(normalizeVenue);
   } catch (error) {
     console.error(`Failed to fetch venues for category ${categorySlug}:`, error);
     return [];

@@ -20,7 +20,7 @@ export function mapBackendAssetToInventoryItem(asset: BackendAsset): InventoryIt
   const category =
     typeof asset.category === "string"
       ? asset.category
-      : asset.category?.name || asset.category?.slug || "Uncategorized";
+      : "Uncategorized";
 
   const statusRaw = normalizeStatus(asset.status);
   const status =
@@ -31,8 +31,8 @@ export function mapBackendAssetToInventoryItem(asset: BackendAsset): InventoryIt
         : "Available";
 
   const img =
-    asset.assetImages?.[0]?.url ||
-    asset.assetImages?.[0]?.imageUrl ||
+    asset.images?.[0]?.url ||
+    asset.images?.[0]?.imageUrl ||
     "/placeholder-inventory.jpg";
 
   return {
@@ -57,7 +57,7 @@ export function mapBackendServiceToServiceItem(service: BackendService): Service
   const slug =
     typeof service.category === "string"
       ? service.category.toLowerCase()
-      : String(service.category?.slug || service.category?.name || "other").toLowerCase();
+      : "other";
 
   const iconMap: Record<string, string> = {
     planning: "event_note",
@@ -82,7 +82,7 @@ export function mapBackendServiceToServiceItem(service: BackendService): Service
   };
 
   const price = formatPeso(service.price);
-  const unit = service.unit || service.billingRate;
+  const unit = service.billingRate;
   const displayPrice = unit ? `${price} ${unit}` : price;
 
   return {
