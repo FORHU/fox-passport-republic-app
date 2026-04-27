@@ -4,7 +4,9 @@
       "Bash(node_modules/.bin/tsc:*)",
       "Bash(find /c/Users/USER/Documents/GitHub/fox-passport-republic-app/hooks -type f \\\\\\( -name \"*.ts\" -o -name \"*.tsx\" \\\\\\) -exec sh -c 'grep -L \"\\\\\"use client\\\\\"\" \"$1\" 2>/dev/null | head -1' _ {} \\\\;)",
       "Bash(xargs grep *)",
-      "Bash(pnpm next *)"
+      "Bash(pnpm next *)",
+      "Bash(npm install *)",
+      "Bash(pnpm add *)"
     ]
   }
 }
