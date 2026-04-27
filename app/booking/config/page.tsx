@@ -2,6 +2,8 @@ import React from "react";
 import BookingConfigurationClient from "@/components/booking/BookingConfigurationClient";
 import type { Metadata } from "next";
 
+export const dynamic = 'force-dynamic';
+
 export const metadata: Metadata = {
   title: "Booking Configuration | Fox Passport Republic",
   description: "Customize your premium venue reservation.",

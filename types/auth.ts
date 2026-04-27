@@ -12,6 +12,7 @@ export interface User {
   isHost?: boolean;
   mobileNumber?: string;
   isEmailVerified?: boolean;
+  imgId?: string; // profile image URL (CloudFront)
 }
 
 export interface LoginResponse {

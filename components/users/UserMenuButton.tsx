@@ -159,6 +159,7 @@ export default function UserMenuButton() {
     user?.name?.charAt(0).toUpperCase() ||
     user?.email?.charAt(0).toUpperCase() ||
     'U';
+  const avatarUrl = user?.imgId || null;
 
   return (
     <>
@@ -171,8 +172,14 @@ export default function UserMenuButton() {
           aria-label="User menu"
         >
           <Menu className="w-5 h-5 text-white/70 group-hover:text-white transition-colors" />
-          <div className="w-8 h-8 rounded-full bg-[#ccff00] flex items-center justify-center border border-[#ccff00]/50 shadow-sm">
-            <span className="text-black text-xs font-bold">{userInitial}</span>
+          <div className="w-8 h-8 rounded-full overflow-hidden border border-[#ccff00]/50 shadow-sm flex-shrink-0">
+            {avatarUrl ? (
+              <img src={avatarUrl} alt="" className="w-full h-full object-cover" />
+            ) : (
+              <div className="w-full h-full bg-[#ccff00] flex items-center justify-center">
+                <span className="text-black text-xs font-bold">{userInitial}</span>
+              </div>
+            )}
           </div>
         </button>
 
@@ -180,18 +187,29 @@ export default function UserMenuButton() {
           <div className="absolute right-0 top-full mt-2 w-72 bg-[#1a1a24] rounded-xl shadow-2xl border border-white/10 py-2 z-50 backdrop-blur-xl">
 
             {/* User identity */}
-            <div className="px-4 py-3 border-b border-white/5">
-              <p className="text-white font-bold text-sm truncate">{user?.name || user?.email}</p>
-              <p className="text-white/40 text-xs truncate">{user?.email}</p>
-              {roleTypes.length > 0 && (
-                <div className="flex flex-wrap gap-1 mt-2">
-                  {roleTypes.map((r) => (
-                    <span key={r} className="px-2 py-0.5 rounded-full bg-[#ccff00]/10 text-[#ccff00] text-[10px] font-bold border border-[#ccff00]/20 capitalize">
-                      {r}
-                    </span>
-                  ))}
-                </div>
-              )}
+            <div className="px-4 py-3 border-b border-white/5 flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl overflow-hidden shrink-0">
+                {avatarUrl ? (
+                  <img src={avatarUrl} alt="" className="w-full h-full object-cover" />
+                ) : (
+                  <div className="w-full h-full bg-[#ccff00] flex items-center justify-center">
+                    <span className="text-black text-sm font-bold">{userInitial}</span>
+                  </div>
+                )}
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className="text-white font-bold text-sm truncate">{user?.name || user?.email}</p>
+                <p className="text-white/40 text-xs truncate">{user?.email}</p>
+                {roleTypes.length > 0 && (
+                  <div className="flex flex-wrap gap-1 mt-1.5">
+                    {roleTypes.map((r) => (
+                      <span key={r} className="px-2 py-0.5 rounded-full bg-[#ccff00]/10 text-[#ccff00] text-[10px] font-bold border border-[#ccff00]/20 capitalize">
+                        {r}
+                      </span>
+                    ))}
+                  </div>
+                )}
+              </div>
             </div>
 
             {/* Role Dashboards */}
@@ -260,7 +278,7 @@ export default function UserMenuButton() {
                 { label: 'Wishlists', icon: Heart, href: '/wishlists' },
                 { label: 'Trips', icon: Briefcase, href: '/trips' },
                 { label: 'Messages', icon: MessageSquare, href: '/messages' },
-                { label: 'Account settings', icon: Settings, href: '/settings' },
+                { label: 'Account settings', icon: Settings, href: '/user/settings' },
                 { label: 'Languages & currency', icon: Globe, href: '/settings/language' },
                 { label: 'Help Center', icon: HelpCircle, href: '/help' },
               ].map((item) => (
