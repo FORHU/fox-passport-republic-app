@@ -5,23 +5,17 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useRoleAccess, RoleAccess } from '@/hooks/auth/useRoleAccess';
 import { useAuthStore } from '@/store/useAuthStore';
+import UserMenuButton from '@/components/users/UserMenuButton';
 
 export function DashboardHeader() {
   const user = useAuthStore((s) => s.user);
   const access = useRoleAccess();
 
-  const userInitial =
-    user?.name?.charAt(0).toUpperCase() ||
-    user?.email?.charAt(0).toUpperCase() ||
-    'C';
-
-  const roleLabel = access.isMayor
-    ? 'Mayor'
-    : access.isFoxer
-    ? 'Foxer'
-    : access.isHost
-    ? 'Host'
-    : 'Creator';
+  const roleLabels: string[] = [];
+  if (access.isMayor) roleLabels.push('Mayor');
+  if (access.isHost) roleLabels.push('Host');
+  if (access.isFoxer) roleLabels.push('Foxer');
+  const roleLabel = roleLabels.length > 0 ? roleLabels.join(' · ') : 'Creator';
 
   const navLinks = [
     { label: 'Overview', href: '/creator-dashboard', anchor: false },
@@ -82,11 +76,9 @@ export function DashboardHeader() {
             <div className="flex items-center gap-3 pl-3 border-l border-white/10">
               <div className="text-right hidden sm:block">
                 <div className="text-sm font-bold">{user?.name || user?.email || 'Creator'}</div>
-                <div className="text-xs text-[#ccff00]/70 font-semibold capitalize">{roleLabel}</div>
+                <div className="text-xs text-[#ccff00]/70 font-semibold">{roleLabel}</div>
               </div>
-              <div className="h-10 w-10 rounded-full border-2 border-[#ccff00] bg-[#ccff00] flex items-center justify-center shadow-[0_0_10px_rgba(204,255,0,0.3)]">
-                <span className="text-black text-sm font-bold">{userInitial}</span>
-              </div>
+              <UserMenuButton />
             </div>
           </div>
         </div>

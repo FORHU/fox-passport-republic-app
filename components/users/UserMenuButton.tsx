@@ -115,16 +115,16 @@ export default function UserMenuButton() {
   const roleTypes: string[] = user?.roleType || [];
   const isAdmin = sysRole === 'admin' || sysRole === 'super_admin';
 
-  // Silently refresh session whenever the menu is opened so role approvals
-  // show up immediately without requiring a manual "Sync Account" click.
+  // Sync session on mount so imgId + roles are always fresh without waiting
+  // for the menu to open. hasSyncedRef prevents duplicate calls.
   const hasSyncedRef = useRef(false);
   useEffect(() => {
-    if (!isOpen || !user || hasSyncedRef.current) return;
+    if (!user || hasSyncedRef.current) return;
     hasSyncedRef.current = true;
     refreshUserSession().then((freshUser) => {
       if (freshUser) setUser(freshUser as any);
     }).catch(() => {});
-  }, [isOpen, user, setUser]);
+  }, [user, setUser]);
 
   const hasRoleAccess = (def: RoleDef) => {
     if (isAdmin) return true;
