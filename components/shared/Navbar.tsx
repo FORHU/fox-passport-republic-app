@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { Suspense, useState } from "react";
 import Link from "next/link";
@@ -165,8 +165,8 @@ function NavbarContent() {
               <Link href="/creator-dashboard" className="px-6 py-2.5 rounded-full text-sm font-medium text-white/70 hover:text-white hover:bg-white/10 transition-all hover:scale-105">
                 Host
               </Link>
-              <Link href="/passport" className="px-6 py-2.5 rounded-full text-sm font-medium text-white/70 hover:text-white hover:bg-white/10 transition-all hover:scale-105">
-                Community
+              <Link href="/user/passport" className="px-6 py-2.5 rounded-full text-sm font-medium text-white/70 hover:text-white hover:bg-white/10 transition-all hover:scale-105">
+                Passport
               </Link>
             </nav>
 
@@ -249,8 +249,14 @@ function NavbarContent() {
               {isAuthenticated && (
                 <div className="flex gap-2">
                   <button 
+                    onClick={() => { setMobileMenuOpen(false); router.push("/user/passport"); }} 
+                    className="flex-1 py-2.5 rounded-lg bg-accent text-black font-semibold hover:bg-accent/90 shadow-sm transition-all text-sm"
+                  >
+                    Passport
+                  </button>
+                  <button 
                     onClick={() => { setMobileMenuOpen(false); router.push("/user"); }} 
-                    className="flex-1 py-2.5 rounded-lg bg-[#E31C79] text-white font-semibold hover:bg-pink-700 shadow-sm transition-all text-sm"
+                    className="flex-1 py-2.5 rounded-lg bg-white/10 text-white font-semibold hover:bg-white/20 shadow-sm transition-all text-sm"
                   >
                     Profile
                   </button>

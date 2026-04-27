@@ -146,7 +146,7 @@ export const KPI_DATA = [
 // Status options for different types
 export const STATUS_OPTIONS = {
   event: ["Draft", "Published", "Ongoing", "Completed", "Cancelled"],
-  venue: ["Draft", "Pending Review", "Published", "Suspended", "Archived"],
+  venue: ["draft", "pending", "available", "rejected", "archived"],
   inventory: ["available", "reserved", "unavailable"],
   service: ["active", "paused", "unavailable"],
 };

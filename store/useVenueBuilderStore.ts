@@ -41,8 +41,6 @@ interface VenueBuilderState {
   setCountry: (c: string) => void;
   setCity: (c: string) => void;
   setState: (s: string) => void;
-  setLatitude: (lat: number | null) => void;
-  setLongitude: (lng: number | null) => void;
 
   // Actions - Gallery
   addGalleryItem: (item: GalleryItem) => void;
@@ -74,7 +72,9 @@ interface VenueBuilderState {
   reset: () => void;
 }
 
-const initialState: VenueBuilderState = {
+// Data-only fields used for reset. Never include action functions here —
+// spreading them into set() would overwrite Zustand's real implementations with no-ops.
+const initialData = {
   resources: INITIAL_RESOURCES,
   venueName: "",
   description: "",
@@ -84,11 +84,9 @@ const initialState: VenueBuilderState = {
   country: "",
   city: "",
   state: "",
-  //latitude: null,
-  //longitude: null,
-  gallery: [],
-  includedItems: [],
-  addonItems: [],
+  gallery: [] as GalleryItem[],
+  includedItems: [] as ResourceItem[],
+  addonItems: [] as ResourceItem[],
   baseRate: 15000,
   occupancyRate: 60,
   activeCategory: "spaces",
@@ -97,42 +95,12 @@ const initialState: VenueBuilderState = {
   showCustomForm: false,
   isSubmitting: false,
   isDragOver: false,
-  draggedItem: null,
+  draggedItem: null as ResourceItem | null,
   newItem: { name: "", value: "", desc: "" },
-  // placeholder functions will be overridden by zustand
-  setVenueName: () => { },
-  setDescription: () => { },
-  setVenueType: () => { },
-  setCapacity: () => { },
-  setLocation: () => { },
-  setCountry: () => { },
-  setCity: () => { },
-  setState: () => { },
-  setLatitude: () => { },
-  setLongitude: () => { },
-  addGalleryItem: () => { },
-  removeGalleryItem: () => { },
-  addCustomResource: () => { },
-  removeCustomResource: () => { },
-  addIncludedItem: () => { },
-  removeIncludedItem: () => { },
-  addAddonItem: () => { },
-  removeAddonItem: () => { },
-  setBaseRate: () => { },
-  setOccupancyRate: () => { },
-  setActiveCategory: () => { },
-  setSearchQuery: () => { },
-  setShowGuide: () => { },
-  setShowCustomForm: () => { },
-  setIsSubmitting: () => { },
-  setIsDragOver: () => { },
-  setDraggedItem: () => { },
-  setNewItem: () => { },
-  reset: () => { },
 };
 
 export const useVenueBuilderStore = create<VenueBuilderState>((set) => ({
-  ...initialState,
+  ...initialData,
 
   // Venue Details Actions
   setVenueName: (name) => set({ venueName: name }),
@@ -192,6 +160,12 @@ export const useVenueBuilderStore = create<VenueBuilderState>((set) => ({
   setDraggedItem: (item) => set({ draggedItem: item }),
   setNewItem: (item) => set({ newItem: item }),
 
-  // Reset
-  reset: () => set(initialState),
+  // Reset — only resets data fields, never action functions
+  reset: () =>
+    set((state) => {
+      state.gallery.forEach((item) => {
+        if (item.url?.startsWith('blob:')) URL.revokeObjectURL(item.url);
+      });
+      return { ...initialData };
+    }),
 }));

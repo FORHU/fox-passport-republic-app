@@ -1,167 +1,260 @@
-﻿'use client';
+'use client';
 
-import React from 'react';
-import { Lock } from 'lucide-react';
-import { useRouter } from 'next/navigation';
+import React, { useState } from 'react';
+import CircularProgress from '@/components/gamification/CircularProgress';
+import { BadgeGrid } from '@/components/gamification/BadgeCard';
+import { PassportGrid } from '@/components/gamification/PassportStamp';
+import {
+  PathProgress,
+  UserPath,
+  XP_REWARDS,
+} from '@/types/gamification';
+import {
+  calculateMasteryLevel,
+  formatXP,
+} from '@/lib/gamification';
+import { MOCK_BADGES, MOCK_PASSPORT_STAMPS } from '@/lib/gamification-data';
+import BadgeModal from '@/components/gamification/BadgeModal';
+import { Badge } from '@/types/gamification';
 
 interface ProgressDashboardProps {
   user: any;
+  showPassport?: boolean;
+  showHeader?: boolean;
 }
 
-const ROLE_ITEMS = [
+// Mock data - will be replaced with actual API calls
+const mockPaths: PathProgress[] = [
   {
-    key: 'foxerAsset',
-    aliases: ['foxer', 'foxerService'],
-    label: 'Foxer',
-    sub: 'Social Butterfly',
-    color: '#f97316',
+    path: 'foxer',
     level: 12,
-    xpCurrent: 2400,
-    xpRequired: 3000,
-    applyHref: '/onboarding',
+    currentXP: 2400,
+    requiredXP: 3000,
+    totalXP: 14400,
+    label: 'Social Butterfly',
+    color: '#f97316',
   },
   {
-    key: 'mayor',
-    aliases: [],
-    label: 'Mayor',
-    sub: 'Venue Curator',
-    color: '#3b82f6',
+    path: 'host',
     level: 5,
-    xpCurrent: 450,
-    xpRequired: 1000,
-    applyHref: '/onboarding',
+    currentXP: 450,
+    requiredXP: 1000,
+    totalXP: 4450,
+    label: 'Venue Curator',
+    color: '#3b82f6',
   },
   {
-    key: 'host',
-    aliases: [],
-    label: 'Host',
-    sub: 'Trailblazer',
-    color: '#22c55e',
+    path: 'user',
     level: 18,
-    xpCurrent: 4500,
-    xpRequired: 5000,
-    applyHref: '/creator-dashboard/apply',
+    currentXP: 4500,
+    requiredXP: 5000,
+    totalXP: 45000,
+    label: 'Trailblazer',
+    color: '#22c55e',
   },
   {
-    key: 'investor',
-    aliases: [],
-    label: 'Investor',
-    sub: 'Seed Funder',
-    color: '#eab308',
+    path: 'investor',
     level: 2,
-    xpCurrent: 150,
-    xpRequired: 1000,
-    applyHref: '/onboarding',
+    currentXP: 150,
+    requiredXP: 1000,
+    totalXP: 1150,
+    label: 'Seed Funder',
+    color: '#eab308',
   },
 ];
 
-export const ProgressDashboard: React.FC<ProgressDashboardProps> = ({ user }) => {
-  const router = useRouter();
+export const ProgressDashboard: React.FC<ProgressDashboardProps> = ({ 
+  user, 
+  showPassport = true, 
+  showHeader = true 
+}) => {
+  const [selectedPath, setSelectedPath] = useState<UserPath | null>(null);
+  const [selectedBadge, setSelectedBadge] = useState<Badge | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
-  const sysRole = (user?.systemRole || user?.role || '').toLowerCase();
-  const roleTypes: string[] = user?.roleType ?? [];
-  const isAdmin = sysRole === 'admin' || sysRole === 'super_admin';
-
-  const isUnlocked = (item: typeof ROLE_ITEMS[0]) => {
-    if (isAdmin) return true;
-    return [item.key, ...item.aliases].some((r) => roleTypes.includes(r));
+  const handleBadgeClick = (badge: Badge) => {
+    setSelectedBadge(badge);
+    setIsModalOpen(true);
   };
 
+  const masteryLevel = calculateMasteryLevel(mockPaths);
+  const totalXP = mockPaths.reduce((sum, path) => sum + path.totalXP, 0);
+  const maxTotalXP = 65000; // Mock max for demo
+
   return (
-    <div className="w-full py-8">
-      <div className="max-w-7xl mx-auto mb-12 text-center">
-        <h2 className="text-4xl font-display font-bold text-white mb-3">
-          Progress <span className="text-[#ccff00]">Dashboard</span>
-        </h2>
-        <p className="text-white/50 text-lg">Track your journey across FoxPassport.</p>
-      </div>
+    <div className="w-full">
+      {showHeader && (
+        <div className="flex flex-col lg:flex-row justify-between items-end gap-6 mb-16">
+          <div className="space-y-4">
+            {/* Status Badge */}
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 border border-white/10">
+              <span className="w-2 h-2 rounded-full bg-green-500 shadow-[0_0_10px_#22c55e]"></span>
+              <span className="text-[10px] font-mono text-white/70 tracking-widest uppercase">
+                Online • Main Server
+              </span>
+            </div>
 
-      <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        {ROLE_ITEMS.map((item) => {
-          const unlocked = isUnlocked(item);
-          const progressPct = item.xpCurrent / item.xpRequired;
-          const circumference = 440;
-          const dashOffset = circumference - circumference * ((item.level % 10) / 10);
+            {/* Title */}
+            <h1 className="text-5xl md:text-7xl font-display font-bold text-white tracking-tight leading-[0.85]">
+              Progress <br />
+              <span className="text-[#ccff00] underline decoration-[#ccff00]/20">Dashboard</span>
+            </h1>
 
+            <p className="text-white/50 text-lg max-w-xl font-light">
+              Track your journey across FoxPassport. Level up your paths to unlock exclusive perks
+              and venue access.
+            </p>
+          </div>
+
+          {/* Total Mastery Card */}
+          <div className="glass-card p-8 rounded-[2.5rem] min-w-[320px] border-t border-white/10 shadow-glow relative overflow-hidden group">
+            <div className="absolute top-[-20%] right-[-20%] w-[100%] h-[100%] bg-[#ccff00]/5 rounded-full blur-[60px] pointer-events-none group-hover:bg-[#ccff00]/10 transition-all duration-500"></div>
+
+            <div className="relative z-10 flex justify-between items-center mb-4">
+              <span className="text-xs font-bold uppercase tracking-widest text-white/50">
+                Total Mastery
+              </span>
+              <span className="text-[#ccff00] text-2xl">⭐</span>
+            </div>
+
+            <div className="text-5xl font-display font-bold text-white mb-4">Lvl {masteryLevel}</div>
+
+            <div className="w-full bg-white/10 rounded-full h-3 mb-2 overflow-hidden">
+              <div
+                className="bg-gradient-to-r from-[#ccff00] to-green-500 h-full rounded-full shadow-[0_0_10px_#ccff00]"
+                style={{ width: `${(totalXP / maxTotalXP) * 100}%` }}
+              ></div>
+            </div>
+
+            <div className="text-xs text-right text-white/40 font-mono tracking-wider">
+              {formatXP(totalXP)} / {formatXP(maxTotalXP)} XP
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Path Circular Progress Grid */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 mb-20">
+        {mockPaths.map((path) => {
           return (
             <div
-              key={item.key}
-              onClick={() => !unlocked && router.push(item.applyHref)}
-              className={`bg-[#1a1a24] rounded-[2.5rem] p-8 flex flex-col items-center border border-white/5 transition-all duration-300 ${
-                unlocked
-                  ? 'hover:-translate-y-2 hover:border-white/20 cursor-default'
-                  : 'opacity-60 grayscale hover:opacity-80 cursor-pointer group'
-              }`}
+              key={path.path}
+              onClick={() => setSelectedPath(path.path)}
+              className="glass-panel rounded-[3rem] p-10 flex flex-col items-center group hover:-translate-y-2 transition-all duration-500 cursor-pointer"
             >
-              {/* Ring */}
-              <div className="relative w-40 h-40 mb-6">
-                <svg className="w-full h-full transform -rotate-90">
-                  <circle
-                    cx="80" cy="80" r="70" fill="transparent"
-                    stroke="currentColor" strokeWidth="8"
-                    className="text-white/5"
-                  />
-                  {unlocked && (
-                    <circle
-                      cx="80" cy="80" r="70" fill="transparent"
-                      stroke={item.color} strokeWidth="8"
-                      strokeDasharray={circumference}
-                      strokeDashoffset={dashOffset}
-                      strokeLinecap="round"
-                      className="transition-all duration-1000 ease-out"
-                    />
-                  )}
-                </svg>
-                <div className="absolute inset-0 flex flex-col items-center justify-center text-center">
-                  {unlocked ? (
-                    <>
-                      <span className="text-4xl font-display font-bold text-white">
-                        {item.level < 10 ? `0${item.level}` : item.level}
-                      </span>
-                      <span className="text-[10px] uppercase font-bold tracking-widest text-white/50">Level</span>
-                    </>
-                  ) : (
-                    <Lock className="w-10 h-10 text-white/30 group-hover:text-white/50 transition-colors" />
-                  )}
-                </div>
+              <CircularProgress
+                level={path.level}
+                currentXP={path.currentXP}
+                requiredXP={path.requiredXP}
+                color={path.color}
+                size={192}
+                strokeWidth={12}
+                className="mb-8"
+              />
+
+              <h3 className="text-2xl font-display font-bold text-white mb-1 capitalize">
+                {path.path}
+              </h3>
+
+              <p
+                className="text-sm font-bold uppercase tracking-wider mb-6"
+                style={{ color: path.color }}
+              >
+                {path.label}
+              </p>
+
+              <div className="bg-white/5 rounded-xl px-4 py-2 border border-white/5 font-mono text-[10px] text-white/50 tracking-widest">
+                XP: <span className="text-white">{formatXP(path.currentXP)}</span> /{' '}
+                {formatXP(path.requiredXP)}
               </div>
-
-              {/* Label */}
-              <h3 className="text-2xl font-display font-bold text-white mb-1">{item.label}</h3>
-
-              {unlocked ? (
-                <>
-                  <p className="text-sm font-bold mb-3 uppercase tracking-wide" style={{ color: item.color }}>
-                    {item.sub}
-                  </p>
-                  {/* XP bar */}
-                  <div className="w-full space-y-1.5">
-                    <div className="w-full h-1.5 rounded-full bg-white/10 overflow-hidden">
-                      <div
-                        className="h-full rounded-full transition-all duration-1000"
-                        style={{ width: `${progressPct * 100}%`, backgroundColor: item.color }}
-                      />
-                    </div>
-                    <div className="bg-white/5 rounded-lg px-4 py-2 border border-white/5 text-xs font-mono text-gray-300 text-center">
-                      XP: {item.xpCurrent.toLocaleString()} / {item.xpRequired.toLocaleString()}
-                    </div>
-                  </div>
-                </>
-              ) : (
-                <>
-                  <p className="text-sm font-bold mb-3 uppercase tracking-wide text-white/30">Locked</p>
-                  <div className="bg-white/5 rounded-lg px-4 py-2 border border-white/5 text-xs font-mono text-white/20 text-center w-full">
-                    XP: ??? / ???
-                  </div>
-                  <p className="text-[10px] text-white/20 group-hover:text-[#ccff00]/60 transition-colors mt-2 uppercase tracking-widest">
-                    Click to apply
-                  </p>
-                </>
-              )}
             </div>
           );
         })}
       </div>
+
+      {/* Badges Section */}
+      <section className="space-y-8">
+        <div className="flex items-center justify-between">
+          <h2 className="text-3xl font-display font-bold text-white flex items-center gap-3">
+            <span className="material-symbols-outlined text-[#ccff00] text-[32px]">award_star</span>
+            Recent Drops <span className="text-[#ccff00]">&</span> Badges
+          </h2>
+          <button className="text-sm font-bold text-white/50 hover:text-white transition-colors flex items-center gap-1 group">
+            View Collection
+            <span className="text-[16px] group-hover:translate-x-1 transition-transform">→</span>
+          </button>
+        </div>
+
+        <BadgeGrid 
+          badges={MOCK_BADGES.slice(0, 4)} 
+          maxDisplay={4} 
+          className="lg:grid-cols-4" 
+          onBadgeClick={handleBadgeClick}
+        />
+      </section>
+
+      {/* Passport Stamps Section */}
+      {showPassport && (
+        <section className="mt-20 space-y-8">
+          <div className="flex items-center justify-between">
+            <div>
+              <h2 className="text-3xl font-display font-bold text-white mb-2">
+                My <span className="text-[#ccff00]">Passport</span>
+              </h2>
+              <p className="text-white/50">Collection of events you've attended</p>
+            </div>
+            <button className="text-sm font-bold text-white/50 hover:text-white transition-colors flex items-center gap-1 group">
+              View All
+              <span className="text-[16px] group-hover:translate-x-1 transition-transform">→</span>
+            </button>
+          </div>
+
+          <PassportGrid stamps={MOCK_PASSPORT_STAMPS} />
+        </section>
+      )}
+
+      {/* XP Rewards Info */}
+      <section className="mt-20 glass-panel rounded-[3rem] p-10">
+        <h2 className="text-2xl font-display font-bold text-white mb-6">
+          How to Earn XP
+        </h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="space-y-2">
+            <h3 className="text-lg font-bold text-[#ccff00]">User Path</h3>
+            <ul className="space-y-1 text-sm text-white/50">
+              <li>• Book an event: +{XP_REWARDS.bookEvent} XP</li>
+              <li>• Attend an event: +{XP_REWARDS.attendEvent} XP</li>
+              <li>• Leave a review: +{XP_REWARDS.leaveReview} XP</li>
+              <li>• Refer a friend: +{XP_REWARDS.referFriend} XP</li>
+            </ul>
+          </div>
+
+          <div className="space-y-2">
+            <h3 className="text-lg font-bold text-[#ccff00]">Foxer Path</h3>
+            <ul className="space-y-1 text-sm text-white/50">
+              <li>• Create listing: +{XP_REWARDS.createListing} XP</li>
+              <li>• Listing booked: +{XP_REWARDS.listingBooked} XP</li>
+              <li>• Complete event: +{XP_REWARDS.completeEvent} XP</li>
+              <li>• 5-star review: +{XP_REWARDS.receive5StarReview} XP</li>
+            </ul>
+          </div>
+
+          <div className="space-y-2">
+            <h3 className="text-lg font-bold text-[#ccff00]">Host Path</h3>
+            <ul className="space-y-1 text-sm text-white/50">
+              <li>• Upload venue: +{XP_REWARDS.uploadVenue} XP</li>
+              <li>• Venue booked: +{XP_REWARDS.venueBooked} XP</li>
+              <li>• Venue featured: +{XP_REWARDS.venueFeatured} XP</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <BadgeModal 
+        badge={selectedBadge} 
+        isOpen={isModalOpen} 
+        onClose={() => setIsModalOpen(false)} 
+      />
     </div>
   );
 };

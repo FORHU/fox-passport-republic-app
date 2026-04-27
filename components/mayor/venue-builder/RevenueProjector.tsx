@@ -10,6 +10,7 @@ interface RevenueProjectorProps {
   total: number;
   onBaseRateChange: (rate: number) => void;
   onOccupancyRateChange: (rate: number) => void;
+  onPreview: () => void;
 }
 
 export function RevenueProjector({
@@ -20,6 +21,7 @@ export function RevenueProjector({
   total,
   onBaseRateChange,
   onOccupancyRateChange,
+  onPreview,
 }: RevenueProjectorProps) {
   return (
     <aside className="w-80 shrink-0 border-l border-white/5 bg-[#0f111a] flex flex-col shadow-2xl z-10">
@@ -86,7 +88,11 @@ export function RevenueProjector({
       </div>
 
       <div className="p-6 border-t border-white/5 bg-[#0f111a]">
-        <button className="w-full py-3 rounded-xl border border-white/10 hover:bg-white hover:text-black transition-all text-sm font-bold text-white">
+        <button
+          onClick={onPreview}
+          className="w-full py-3 rounded-xl border border-white/10 hover:bg-white hover:text-black transition-all text-sm font-bold text-white flex items-center justify-center gap-2"
+        >
+          <span className="material-symbols-outlined text-[18px]">visibility</span>
           Preview Venue Page
         </button>
       </div>

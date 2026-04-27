@@ -56,7 +56,10 @@ export function VenueHeader({
               progress_activity
             </span>
           ) : (
-            'Publish Venue'
+            <>
+              <span className="material-symbols-outlined text-[16px]">send</span>
+              Submit for Review
+            </>
           )}
         </button>
       </div>

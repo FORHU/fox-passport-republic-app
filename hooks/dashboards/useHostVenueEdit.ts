@@ -43,13 +43,12 @@ function normalizeVenueStatusToBackend(value: unknown): string {
     .replace(/_/g, " ")
     .replace(/\s+/g, " ");
 
-  if (!raw) return "pending_review";
+  if (!raw) return "pending";
   if (raw.includes("draft")) return "draft";
-  if (raw.includes("pending")) return "pending_review";
-  if (raw.includes("publish")) return "published";
-  if (raw.includes("suspend")) return "suspended";
   if (raw.includes("archiv")) return "archived";
-  return "draft";
+  if (raw.includes("reject")) return "rejected";
+  // "publish" from the mayor always goes to pending — admin approves to available
+  return "pending";
 }
 
 function extractArrayOfNames(maybe: any): string[] {

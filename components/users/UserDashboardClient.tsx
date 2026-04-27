@@ -30,6 +30,13 @@ function UserDashboardContent({ user, dashboardData }: UserDashboardClientProps)
   const displayUserName = userName || user?.name || 'User';
   const displayDashboardData = dashboardData;
 
+  const VENUE_ROLES = ['host', 'mayor', 'foxerAsset', 'foxerService'];
+  const roleType: string[] = user?.roleType ?? [];
+  const systemRole: string = (user?.systemRole ?? user?.role ?? '').toLowerCase();
+  const canSeeVenues =
+    systemRole === 'admin' ||
+    roleType.some((r) => VENUE_ROLES.includes(r));
+
   return (
     <div className="bg-background bg-gradient-dark text-text-main antialiased min-h-screen flex flex-col selection:bg-accent selection:text-black font-body">
       <UserHeader
@@ -63,7 +70,7 @@ function UserDashboardContent({ user, dashboardData }: UserDashboardClientProps)
           {/* Row 2: For You & Wallet/Saved Vibes */}
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
             <div className="lg:col-span-8">
-              <UserForYou />
+              <UserForYou canSeeVenues={canSeeVenues} />
             </div>
             <div className="lg:col-span-4 flex flex-col gap-6 h-full">
               <UserWallet
