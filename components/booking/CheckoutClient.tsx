@@ -1,15 +1,24 @@
-﻿'use client';
+'use client';
 
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { loadStripe } from '@stripe/stripe-js';
+import { Elements } from '@stripe/react-stripe-js';
 import { useCheckoutStore } from '@/store/useCheckoutStore';
 import { useAuthStore } from '@/store/useAuthStore';
+import { createPaymentIntent } from '@/lib/api/bookings';
+import StripePaymentForm from './StripePaymentForm';
+
+const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY || '');
 
 export default function CheckoutClient() {
   const router = useRouter();
-  const { venueName, venueImage, guestCount, totalAmount, checkInDate, checkInTime } = useCheckoutStore();
+  const { venueName, venueImage, guestCount, totalAmount, checkInDate, checkInTime, draftBookingId, clientSecret, setClientSecret } = useCheckoutStore();
   const { user } = useAuthStore();
+
+  const [loadingIntent, setLoadingIntent] = useState(false);
+  const [intentError, setIntentError] = useState<string | null>(null);
 
   const getDashboardPath = () => {
     switch (user?.role?.toLowerCase()) {
@@ -27,32 +36,51 @@ export default function CheckoutClient() {
 
   const dashboardPath = getDashboardPath();
 
+  // Request a PaymentIntent when the component mounts (if not already fetched)
   useEffect(() => {
-    const observerOptions = {
-      root: null,
-      rootMargin: '0px',
-      threshold: 0.1
-    };
-    const observer = new IntersectionObserver((entries, observer) => {
-      entries.forEach(entry => {
-        if (entry.isIntersecting) {
-          entry.target.classList.add('visible');
-        }
-      });
-    }, observerOptions);
-    document.querySelectorAll('.reveal-on-scroll').forEach((el) => {
-      observer.observe(el);
-    });
+    if (clientSecret || totalAmount <= 0) return;
 
+    setLoadingIntent(true);
+    setIntentError(null);
+
+    createPaymentIntent({
+      amount: totalAmount,
+      currency: 'php',
+      ...(draftBookingId ? { bookingId: draftBookingId } : {}),
+      description: `Booking: ${venueName}`,
+    })
+      .then(({ clientSecret: secret }) => setClientSecret(secret))
+      .catch((err) => setIntentError(err?.response?.data?.message || 'Could not initialize payment. Please try again.'))
+      .finally(() => setLoadingIntent(false));
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  useEffect(() => {
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) entry.target.classList.add('visible');
+      });
+    }, { root: null, rootMargin: '0px', threshold: 0.1 });
+
+    document.querySelectorAll('.reveal-on-scroll').forEach(el => observer.observe(el));
     return () => observer.disconnect();
   }, []);
 
-  const handleConfirmPay = () => {
-    router.push('/checkout/success');
-  };
+  const elementsOptions = clientSecret
+    ? {
+        clientSecret,
+        appearance: {
+          theme: 'night' as const,
+          variables: {
+            colorPrimary: '#ccff00',
+            colorBackground: '#0d0f1a',
+            colorText: '#ffffff',
+          },
+        },
+      }
+    : null;
 
   return (
-    <div className="bg-background bg-gradient-dark text-text-main antialiased min-h-screen flex flex-col selection:bg-accent selection:text-black font-body relative overflow-x-hidden">
+    <div className="bg-background bg-gradient-dark text-text-main antialiased min-h-screen flex flex-col selection:bg-accent selection:text-black font-body relative overflow-x-hidden grow">
 
       <header className="fixed top-6 left-0 right-0 z-50 transition-all duration-300">
         <div className="mx-auto max-w-7xl px-4">
@@ -73,18 +101,26 @@ export default function CheckoutClient() {
                 <span className="h-2 w-2 rounded-full bg-green-500 animate-pulse"></span>
                 <span>Online</span>
               </div>
-              <div 
+              <div
                 className="h-10 w-10 rounded-full border border-white/10 overflow-hidden cursor-pointer hover:border-accent transition-colors"
                 onClick={() => router.push(dashboardPath)}
               >
-                <img alt="User" className="h-full w-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuD-A0KmDrOi8KQZt5YVraaoL54kpKL4sLPhBoZj6kgs089hsWPz2qJfdMww3r4NpGGBYTSIrptbwjoMo0ZmnZFpuLCt3lExTQAv1QauCbCl6k3vscDYH5z0t7EqZ-NulKXiQjy8VxqCwlvvy4h_vf5j2Lf7cN1haDT24rR_FzF8rO9swBYh5KVGtV09ogFZmVJAcrnGZCXHQEkJR8TzFmrSMkK0jRaOzO43L1j7KQZ0WraTBcdonNTmEh2phQsvKrYuVv6P1wDPPAM" />
+                {user?.imgId ? (
+                  <img alt="User" className="h-full w-full object-cover" src={user.imgId} />
+                ) : (
+                  <div className="h-full w-full bg-[#ccff00] flex items-center justify-center">
+                    <span className="text-black text-sm font-bold">
+                      {user?.name?.charAt(0).toUpperCase() || user?.email?.charAt(0).toUpperCase() || 'U'}
+                    </span>
+                  </div>
+                )}
               </div>
             </div>
           </div>
         </div>
       </header>
 
-      <main className="flex-grow pt-32 pb-20 relative">
+      <main className="grow pt-32 pb-20 relative">
         <div className="absolute top-20 right-0 w-[500px] h-[500px] bg-primary/20 rounded-full blur-[120px] pointer-events-none animate-pulse-slow mix-blend-screen"></div>
         <div className="absolute bottom-40 left-0 w-[500px] h-[500px] bg-secondary/10 rounded-full blur-[120px] pointer-events-none mix-blend-screen"></div>
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 relative z-10">
@@ -115,74 +151,66 @@ export default function CheckoutClient() {
               </div>
             </div>
           </div>
+
           <div className="grid lg:grid-cols-12 gap-8 lg:gap-12">
+            {/* Payment Panel */}
             <div className="lg:col-span-8 space-y-8 reveal-on-scroll">
               <div className="glass-panel rounded-[2rem] p-8">
                 <h2 className="text-2xl font-display font-bold text-white mb-6 flex items-center gap-3">
                   <span className="flex items-center justify-center w-8 h-8 rounded-full bg-primary text-white text-sm">1</span>
-                  Payment Method
+                  Payment
                 </h2>
-                <div className="grid sm:grid-cols-3 gap-4 mb-8">
-                  <label className="cursor-pointer group relative">
-                    <input defaultChecked className="peer sr-only" name="payment" type="radio" />
-                    <div className="h-full rounded-2xl border border-white/10 bg-white/5 p-4 flex flex-col items-center justify-center gap-3 transition-all hover:bg-white/10 hover:border-white/30 peer-checked:border-accent peer-checked:bg-accent/10">
-                      <span className="material-symbols-outlined text-3xl text-text-muted peer-checked:text-accent group-hover:text-white transition-colors">credit_card</span>
-                      <span className="font-display font-bold text-white text-sm">Card</span>
-                    </div>
-                    <div className="absolute top-3 right-3 w-2 h-2 rounded-full bg-accent opacity-0 peer-checked:opacity-100 shadow-[0_0_10px_#ccff00] transition-opacity"></div>
-                  </label>
-                  <label className="cursor-pointer group relative">
-                    <input className="peer sr-only" name="payment" type="radio" />
-                    <div className="h-full rounded-2xl border border-white/10 bg-white/5 p-4 flex flex-col items-center justify-center gap-3 transition-all hover:bg-white/10 hover:border-white/30 peer-checked:border-accent peer-checked:bg-accent/10">
-                      <span className="material-symbols-outlined text-3xl text-text-muted peer-checked:text-accent group-hover:text-white transition-colors">account_balance_wallet</span>
-                      <span className="font-display font-bold text-white text-sm">E-Wallet</span>
-                    </div>
-                  </label>
-                  <label className="cursor-pointer group relative">
-                    <input className="peer sr-only" name="payment" type="radio" />
-                    <div className="h-full rounded-2xl border border-white/10 bg-white/5 p-4 flex flex-col items-center justify-center gap-3 transition-all hover:bg-white/10 hover:border-white/30 peer-checked:border-accent peer-checked:bg-accent/10">
-                      <span className="material-symbols-outlined text-3xl text-text-muted peer-checked:text-accent group-hover:text-white transition-colors">account_balance</span>
-                      <span className="font-display font-bold text-white text-sm">Bank</span>
-                    </div>
-                  </label>
-                </div>
-                <form className="space-y-6 animate-in fade-in slide-in-from-top-4 duration-500" onSubmit={(e) => e.preventDefault()}>
-                  <div className="space-y-2">
-                    <label className="text-xs uppercase tracking-widest text-text-muted font-bold ml-1">Card Number</label>
-                    <div className="relative group">
-                      <input className="w-full bg-white/5 border border-white/10 rounded-xl px-5 py-4 font-display tracking-widest text-lg text-white placeholder-white/20 focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent transition-all hover:bg-white/10" placeholder="0000 0000 0000 0000" type="text" />
-                      <div className="absolute right-5 top-1/2 -translate-y-1/2 flex gap-2 opacity-50 grayscale group-focus-within:grayscale-0 group-focus-within:opacity-100 transition-all">
-                        <img alt="Visa" className="h-6" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBGL5EFzgWlC9w2ddTxB-D0EpajAZG3EleZsCSA7fzX1eywseNbmPgZCj-t6e4cHeeMq9IjorJm36P9E-n6emAcfNkmmayjKP_lWUK1QRzFwx0ot-40TmCOegmy0ACJU7tIsrGpMpJp2rRpalltdux4n0hH9BGkqctdp7y872QF1DunXEpfDKx9R8cfIq8ovEaqNj0MW_eYYaKCi8i_Grbj_9cUH7CvZmroi7lJglYWXzEBvOlebht3q5HOukFRQCroFSWbqHm6IXw" />
-                        <img alt="Mastercard" className="h-6" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCV7TJTzDbTE3px4AshvzjaZ8zjJB1bw6Lqum8RbsCh_mVQrYZ7bmLSsPV2op6D1kavYhoxhWbK4AGbQrOQmwEm0b_Do20sdcPBEeVf2cvyLz_baU0bsZ3mgXBBZeJqEfqbCzwK7poK4RVOedYrBTfRreymSYc5tpzQTVSBIK-VPg1-_65w1lpnPhk6z6jGHva9kNdTKtuyk-6mm2yliUCBVTpmwaTmzH4UuHJngknzNNWcO2ahFiqU88NRSkzNkCPc9jx6aPtj5Xg" />
-                      </div>
+
+                {loadingIntent && (
+                  <div className="flex items-center gap-3 py-8 justify-center text-white/50">
+                    <span className="h-5 w-5 rounded-full border-2 border-white/20 border-t-white/60 animate-spin" />
+                    Initializing secure payment…
+                  </div>
+                )}
+
+                {intentError && (
+                  <div className="flex items-start gap-3 bg-red-500/10 border border-red-500/30 rounded-xl p-4 mb-6">
+                    <span className="material-symbols-outlined text-red-400 text-[18px] mt-0.5 shrink-0">error</span>
+                    <div>
+                      <p className="text-red-400 text-sm font-medium">{intentError}</p>
+                      <button
+                        onClick={() => {
+                          setIntentError(null);
+                          setLoadingIntent(true);
+                          createPaymentIntent({
+                            amount: totalAmount,
+                            currency: 'php',
+                            ...(draftBookingId ? { bookingId: draftBookingId } : {}),
+                            description: `Booking: ${venueName}`,
+                          })
+                            .then(({ clientSecret: secret }) => setClientSecret(secret))
+                            .catch(err => setIntentError(err?.response?.data?.message || 'Could not initialize payment.'))
+                            .finally(() => setLoadingIntent(false));
+                        }}
+                        className="mt-2 text-xs text-white/60 hover:text-white underline"
+                      >
+                        Try again
+                      </button>
                     </div>
                   </div>
-                  <div className="grid grid-cols-2 gap-6">
-                    <div className="space-y-2">
-                      <label className="text-xs uppercase tracking-widest text-text-muted font-bold ml-1">Expiry Date</label>
-                      <input className="w-full bg-white/5 border border-white/10 rounded-xl px-5 py-4 font-display tracking-widest text-lg text-white placeholder-white/20 focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent transition-all hover:bg-white/10" placeholder="MM / YY" type="text" />
-                    </div>
-                    <div className="space-y-2">
-                      <label className="text-xs uppercase tracking-widest text-text-muted font-bold ml-1 flex items-center gap-1">
-                        CVC 
-                        <span className="material-symbols-outlined text-[14px] cursor-help" title="3 digits on back of card">help</span>
-                      </label>
-                      <input className="w-full bg-white/5 border border-white/10 rounded-xl px-5 py-4 font-display tracking-widest text-lg text-white placeholder-white/20 focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent transition-all hover:bg-white/10" placeholder="123" type="password" />
-                    </div>
+                )}
+
+                {!loadingIntent && !intentError && clientSecret && elementsOptions && (
+                  <Elements stripe={stripePromise} options={elementsOptions}>
+                    <StripePaymentForm totalAmount={totalAmount} />
+                  </Elements>
+                )}
+
+                {!loadingIntent && !intentError && !clientSecret && totalAmount <= 0 && (
+                  <div className="py-8 text-center text-white/40">
+                    <p>No booking amount found.</p>
+                    <Link href="/booking/config" className="mt-2 inline-block text-sm text-accent hover:underline">
+                      Go back to configure your booking
+                    </Link>
                   </div>
-                  <div className="space-y-2">
-                    <label className="text-xs uppercase tracking-widest text-text-muted font-bold ml-1">Cardholder Name</label>
-                    <input className="w-full bg-white/5 border border-white/10 rounded-xl px-5 py-4 font-display text-lg text-white placeholder-white/20 focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent transition-all hover:bg-white/10" placeholder="JUAN DELA CRUZ" type="text" />
-                  </div>
-                  <div className="flex items-center gap-3 pt-2">
-                    <div className="relative flex items-center">
-                      <input className="peer h-5 w-5 cursor-pointer appearance-none rounded-md border border-white/20 bg-white/5 checked:bg-accent checked:border-accent transition-all" id="save-card" type="checkbox" />
-                      <span className="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-black opacity-0 peer-checked:opacity-100 material-symbols-outlined text-[16px] font-bold">check</span>
-                    </div>
-                    <label className="cursor-pointer select-none text-sm text-text-muted hover:text-white transition-colors" htmlFor="save-card">Save card securely for future bookings</label>
-                  </div>
-                </form>
+                )}
               </div>
+
               <div className="glass-panel rounded-[2rem] p-8">
                 <h2 className="text-2xl font-display font-bold text-white mb-6 flex items-center gap-3">
                   <span className="flex items-center justify-center w-8 h-8 rounded-full bg-white/10 text-white text-sm">2</span>
@@ -191,72 +219,70 @@ export default function CheckoutClient() {
                 <div className="grid md:grid-cols-2 gap-6">
                   <div className="space-y-2">
                     <label className="text-xs uppercase tracking-widest text-text-muted font-bold ml-1">Email</label>
-                    <input className="w-full bg-white/5 border border-white/10 rounded-xl px-5 py-4 font-display text-lg text-white placeholder-white/20 focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent transition-all hover:bg-white/10" placeholder="hello@foxer.com" type="email" defaultValue="foxxer@gmail.com" />
+                    <input
+                      className="w-full bg-white/5 border border-white/10 rounded-xl px-5 py-4 font-display text-lg text-white placeholder-white/20 focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent transition-all hover:bg-white/10"
+                      placeholder="hello@foxer.com"
+                      type="email"
+                      defaultValue={user?.email || ''}
+                    />
                   </div>
                   <div className="space-y-2">
                     <label className="text-xs uppercase tracking-widest text-text-muted font-bold ml-1">Mobile Number</label>
-                    <input className="w-full bg-white/5 border border-white/10 rounded-xl px-5 py-4 font-display text-lg text-white placeholder-white/20 focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent transition-all hover:bg-white/10" placeholder="+63 900 000 0000" type="tel" />
+                    <input
+                      className="w-full bg-white/5 border border-white/10 rounded-xl px-5 py-4 font-display text-lg text-white placeholder-white/20 focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent transition-all hover:bg-white/10"
+                      placeholder="+63 900 000 0000"
+                      type="tel"
+                      defaultValue={user?.mobileNumber || ''}
+                    />
                   </div>
                 </div>
               </div>
             </div>
+
+            {/* Order Summary */}
             <div className="lg:col-span-4 reveal-on-scroll" style={{ transitionDelay: '200ms' }}>
               <div className="sticky top-32 space-y-6">
                 <div className="glass-card rounded-[2.5rem] p-6 border border-accent/20 shadow-glow-accent relative overflow-hidden">
                   <div className="absolute -top-20 -right-20 w-40 h-40 bg-accent/20 rounded-full blur-[50px] pointer-events-none"></div>
                   <div className="flex gap-4 mb-6">
-                    <div className="h-24 w-24 rounded-2xl overflow-hidden flex-shrink-0 border border-white/10">
-                      <img 
-                        alt="Event" 
-                        className="h-full w-full object-cover" 
-                        src={venueImage || "https://lh3.googleusercontent.com/aida-public/AB6AXuAmLMhfBavcKVkOWHaS4TPPk-NHIcut_ZhBBEe8lYdYR3H4t2yqSZKN4kaK-4daM6PVExafzgFu6-ETEkTvY3iOkNq3VyaKMs5jeDTMhhkOITtl93afJOgej_LM-nwJ4slOZvjY9jUaO0XJczNgnvj21yuB3eVwQrWu2qU4kFoFm9oertAy6N8vnz-DcYaCFbk-2wqIYps1HbNWSCB5TBISWObKfniMTbMOzf964UcanLKD2UIOD2M5IRj5kXf1kvppEdNzUJY4S3U"} 
-                      />
+                    <div className="h-24 w-24 rounded-2xl overflow-hidden shrink-0 border border-white/10">
+                      {venueImage ? (
+                        <img alt="Event" className="h-full w-full object-cover" src={venueImage} />
+                      ) : (
+                        <div className="h-full w-full bg-white/5 flex items-center justify-center">
+                          <span className="material-symbols-outlined text-white/30 text-3xl">apartment</span>
+                        </div>
+                      )}
                     </div>
                     <div>
                       <div className="text-accent font-bold text-xs mb-1 uppercase tracking-wider">
-                        {checkInDate ? `Sep ${checkInDate}` : 'Tomorrow'} • {checkInTime || '9PM'}
+                        {checkInDate ? `Day ${checkInDate}` : 'Upcoming'} · {checkInTime || '9PM'}
                       </div>
                       <h3 className="font-display font-bold text-white text-lg leading-tight mb-1">
-                        {venueName || 'Neon Nights: Retro Wave Party'}
+                        {venueName || 'Venue Booking'}
                       </h3>
                       <p className="text-text-muted text-sm flex items-center gap-1">
-                        <span className="material-symbols-outlined text-[14px]">location_on</span> Makati City
+                        <span className="material-symbols-outlined text-[14px]">location_on</span>
+                        {guestCount} {guestCount === 1 ? 'guest' : 'guests'}
                       </p>
                     </div>
                   </div>
                   <div className="border-t border-white/10 pt-4 space-y-3 mb-6">
                     <div className="flex justify-between text-sm">
-                      <span className="text-text-muted">Tickets <span className="text-white/50">x{guestCount}</span></span>
-                      <span className="text-white font-medium">₱{(1500 * guestCount).toLocaleString()}</span>
-                    </div>
-                    <div className="flex justify-between text-sm">
-                      <span className="text-text-muted">Service Fee</span>
-                      <span className="text-white font-medium">₱150.00</span>
+                      <span className="text-text-muted">Tickets <span className="text-white/50">×{guestCount}</span></span>
+                      <span className="text-white font-medium">₱{totalAmount.toLocaleString()}</span>
                     </div>
                   </div>
-                  <div className="border-t border-dashed border-white/20 pt-4 mb-8">
+                  <div className="border-t border-dashed border-white/20 pt-4">
                     <div className="flex justify-between items-end">
                       <span className="text-white font-bold font-display">Total</span>
                       <span className="text-3xl font-display font-bold text-accent text-shadow-glow">₱{totalAmount.toLocaleString()}</span>
                     </div>
                   </div>
-                  <button 
-                    onClick={handleConfirmPay}
-                    className="w-full btn-neon group relative rounded-2xl bg-accent py-4 px-6 text-black font-bold text-lg hover:shadow-[0_0_30px_rgba(204,255,0,0.4)] transition-all active:scale-95 flex items-center justify-center gap-2 overflow-hidden"
-                  >
-                    <span className="relative z-10 flex items-center gap-2 group-hover:tracking-wider transition-all duration-300">
-                      Confirm & Pay
-                      <span className="material-symbols-outlined group-hover:translate-x-1 transition-transform">arrow_forward</span>
-                    </span>
-                    <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300"></div>
-                  </button>
-                  <div className="mt-4 flex items-center justify-center gap-2 text-xs text-text-muted">
-                    <span className="material-symbols-outlined text-[14px] text-green-500">lock</span>
-                    Encrypted & Secure Checkout
-                  </div>
                 </div>
+
                 <div className="bg-surface-highlight/30 rounded-3xl p-6 border border-white/5 flex items-start gap-4">
-                  <div className="h-10 w-10 rounded-full bg-white/5 flex items-center justify-center flex-shrink-0 text-primary-glow">
+                  <div className="h-10 w-10 rounded-full bg-white/5 flex items-center justify-center shrink-0 text-primary-glow">
                     <span className="material-symbols-outlined">verified_user</span>
                   </div>
                   <div>
@@ -271,6 +297,7 @@ export default function CheckoutClient() {
           </div>
         </div>
       </main>
+
       <footer className="bg-black pt-20 pb-10 border-t border-white/10">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col md:flex-row justify-between items-center gap-4">

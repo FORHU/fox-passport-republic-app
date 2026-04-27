@@ -73,27 +73,7 @@ const PassportClient: React.FC<PassportClientProps> = ({ user }) => {
   const [selectedBadge, setSelectedBadge] = useState<Badge | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  // Dynamic role-based filtering
-  const sysRole = (user?.systemRole || user?.role || '').toLowerCase();
-  const roleTypes: string[] = Array.isArray(user?.roleType) ? user.roleType : [];
-  
   const activePathTypes: UserPath[] = ['user'];
-  
-  // Robust check for Foxer roles
-  const isFoxer = sysRole === 'foxer' || roleTypes.includes('foxer') || roleTypes.includes('foxerAsset') || roleTypes.includes('foxerService') || sysRole === 'mayor';
-  if (isFoxer) activePathTypes.push('foxer');
-  
-  // Robust check for Host roles
-  const isHost = sysRole === 'host' || roleTypes.includes('host') || sysRole === 'mayor';
-  if (isHost) activePathTypes.push('host');
-  
-  // Admin special access
-  if (sysRole === 'admin' || sysRole === 'super_admin') {
-    if (!activePathTypes.includes('foxer')) activePathTypes.push('foxer');
-    if (!activePathTypes.includes('host')) activePathTypes.push('host');
-    if (!activePathTypes.includes('investor')) activePathTypes.push('investor');
-  }
-
   const filteredPaths = mockPaths.filter(p => activePathTypes.includes(p.path));
   
   // Show ALL badges in the collection if showAllBadges is true, 
@@ -182,7 +162,7 @@ const PassportClient: React.FC<PassportClientProps> = ({ user }) => {
           
           <h2 className="text-2xl font-display font-bold text-white mb-1 tracking-tight">{userName}</h2>
           <p className="text-[10px] text-white/30 uppercase tracking-[0.2em] font-black">
-            {activePathTypes.map(p => p === 'user' ? 'Citizen' : p).join(' • ')}
+            Citizen
           </p>
         </div>
 

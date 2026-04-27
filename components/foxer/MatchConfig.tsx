@@ -4,6 +4,9 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { useRouter, useParams } from 'next/navigation';
 import { motion, AnimatePresence } from 'motion/react';
+import { useCheckoutStore } from '@/store/useCheckoutStore';
+import { createMatch } from '@/lib/api/matches';
+import { toast } from 'sonner';
 
 const FOXERS = [
   {
@@ -46,6 +49,7 @@ const MatchConfig: React.FC = () => {
   const [guests, setGuests] = useState(2);
   const [date, setDate] = useState('');
   const [requestContent, setRequestContent] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const foxer = FOXERS.find(f => f.id === Number(foxerId)) || FOXERS[0];
 
@@ -292,10 +296,47 @@ const MatchConfig: React.FC = () => {
                 <div className="flex justify-center gap-4">
                   <button onClick={prevStep} className="px-8 py-4 rounded-full border border-white/10 text-white">Edit info</button>
                   <button 
-                    onClick={() => router.push('/user/passport')}
-                    className="btn-neon px-12 py-4 rounded-full bg-accent text-black font-bold shadow-glow-accent"
+                    disabled={isSubmitting}
+                    onClick={async () => {
+                      try {
+                        setIsSubmitting(true);
+                        // 1. Create the match request on backend
+                        const response = await createMatch({
+                          foxerId: foxer.id,
+                          style: selectedStyle,
+                          date: date,
+                          guestCount: guests,
+                          requestContent: requestContent,
+                          totalAmount: foxer.basePrice * guests
+                        });
+
+                        // 2. Set checkout configuration for the match
+                        useCheckoutStore.getState().setConfig({
+                          venueId: foxer.id.toString(),
+                          venueName: `${foxer.name} - ${selectedStyle}`,
+                          venueImage: foxer.avatar,
+                          checkInDate: date ? new Date(date).getTime() : null,
+                          checkInTime: "09:00 PM",
+                          nights: 1,
+                          totalAmount: foxer.basePrice * guests,
+                          guestCount: guests
+                        });
+
+                        // 3. Store draft IDs and client secret for checkout
+                        useCheckoutStore.getState().setDraftIds(response.bookingId, response.bookingId);
+                        useCheckoutStore.getState().setClientSecret(response.clientSecret);
+
+                        toast.success('Match request created! Proceeding to payment...');
+                        router.push('/checkout');
+                      } catch (error: any) {
+                        toast.error(error.response?.data?.message || 'Failed to create match request');
+                      } finally {
+                        setIsSubmitting(false);
+                      }
+                    }}
+                    className="btn-neon px-12 py-4 rounded-full bg-accent text-black font-bold shadow-glow-accent disabled:opacity-50"
                   >
-                    Send Match Request
+                    {isSubmitting ? 'Creating Request...' : 'Send Match Request & Pay'}
                   </button>
                 </div>
               </motion.div>
