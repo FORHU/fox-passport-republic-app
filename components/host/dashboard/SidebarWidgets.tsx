@@ -1,11 +1,28 @@
 ﻿'use client';
 
-import React from 'react';
+import React, { useMemo } from 'react';
 import Link from 'next/link';
-import { SCHEDULE_ITEMS, RECENT_ACTIVITY } from '@/data/dashboardData';
+import { RECENT_ACTIVITY } from '@/data/dashboardData';
+import { useCalendarBookings, toMonthItems, getDotColor } from '@/hooks/calendar/useCalendarBookings';
 
 export function CalendarWidget() {
-  const today = 3;
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = now.getMonth();
+  const todayDay = now.getDate();
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+  const monthLabel = now.toLocaleString('default', { month: 'long', year: 'numeric' });
+
+  // Offset so the grid starts on Monday
+  const firstDayOfWeek = new Date(year, month, 1).getDay();
+  const offset = firstDayOfWeek === 0 ? 6 : firstDayOfWeek - 1;
+
+  const { bookings, isLoading } = useCalendarBookings();
+  const scheduleItems = useMemo(
+    () => toMonthItems(bookings, year, month),
+    [bookings, year, month],
+  );
 
   return (
     <Link
@@ -15,23 +32,32 @@ export function CalendarWidget() {
       <div className="flex justify-between items-center mb-4">
         <h3 className="font-display font-bold flex items-center gap-2">
           <span className="material-symbols-outlined text-[20px]">calendar_month</span>
-          October 2024
+          {monthLabel}
         </h3>
         <span className="material-symbols-outlined text-white/40 group-hover:translate-x-1 transition-transform">
           chevron_right
         </span>
       </div>
+
       <div className="grid grid-cols-7 gap-1 text-center text-xs mb-2">
         {['M', 'T', 'W', 'T', 'F', 'S', 'S'].map((d, i) => (
           <span key={i} className="text-white/40">{d}</span>
         ))}
       </div>
+
       <div className="grid grid-cols-7 gap-1 text-center text-xs">
-        <div />
-        {[...Array(31)].map((_, i) => {
+        {/* Leading empty cells */}
+        {Array.from({ length: offset }).map((_, i) => (
+          <div key={`empty-${i}`} />
+        ))}
+
+        {Array.from({ length: daysInMonth }).map((_, i) => {
           const day = i + 1;
-          const evs = SCHEDULE_ITEMS.filter((x) => day >= x.startDay && day <= x.endDay);
-          const isToday = day === today;
+          const evs = isLoading
+            ? []
+            : scheduleItems.filter((x) => day >= x.startDay && day <= x.endDay);
+          const isToday = day === todayDay;
+
           return (
             <div
               key={day}
@@ -47,7 +73,7 @@ export function CalendarWidget() {
               {evs.length > 0 && !isToday && (
                 <div className="absolute -bottom-0.5 left-1/2 -translate-x-1/2 flex gap-0.5">
                   {evs.slice(0, 3).map((e, idx) => (
-                    <div key={idx} className={`w-1 h-1 rounded-full ${e.color}`} />
+                    <div key={idx} className={`w-1 h-1 rounded-full ${getDotColor(e.type)}`} />
                   ))}
                 </div>
               )}
