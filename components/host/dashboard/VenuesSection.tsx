@@ -47,7 +47,7 @@ export function VenuesSection({
           venues.map((vn) => (
             <div
               key={vn.id}
-              className={`bg-[#0f111a]/60 backdrop-blur border border-white/5 p-5 rounded-3xl hover:bg-white/5 transition-all group border-l-4 ${(vn.status || "").toLowerCase() === "published" ? 'border-l-green-500' : 'border-l-yellow-500'
+              className={`bg-[#0f111a]/60 backdrop-blur border border-white/5 p-5 rounded-3xl hover:bg-white/5 transition-all group border-l-4 ${["published", "available"].includes((vn.status || "").toLowerCase()) ? 'border-l-green-500' : 'border-l-yellow-500'
                 } ${onEdit ? "cursor-pointer" : ""}`}
               onClick={() => onEdit?.(vn.id)}
               role={onEdit ? "button" : undefined}
@@ -91,7 +91,7 @@ export function VenuesSection({
                       onStatusChange={(s) => onStatusChange(vn.id, s)}
                     />
                   </div>
-                  {(vn.status || "").toLowerCase() === "published" ? (
+                  {["published", "available"].includes((vn.status || "").toLowerCase()) ? (
                     <div className="mt-4 grid grid-cols-3 gap-4 border-t border-white/5 pt-4">
                       <div>
                         <div className="text-[10px] text-white/40 uppercase">Bookings</div>
@@ -130,7 +130,12 @@ export function VenuesSection({
                       </div>
                       <button
                         className="px-4 py-2 rounded-full bg-white/10 text-xs font-bold hover:bg-white hover:text-black"
-                        onClick={(e) => e.stopPropagation()}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          if ((vn.status || "").toLowerCase() !== "pending_review") {
+                            onEdit?.(vn.id);
+                          }
+                        }}
                       >
                         {(vn.status || "").toLowerCase() === "pending_review" ? "Contact Support" : "Continue Editing"}
                       </button>

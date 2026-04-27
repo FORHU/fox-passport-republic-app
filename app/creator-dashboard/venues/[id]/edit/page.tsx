@@ -194,6 +194,7 @@ function HostVenueEditPageContent() {
               total={revenue.total}
               onBaseRateChange={setBaseRate}
               onOccupancyRateChange={setOccupancyRate}
+              onPreview={() => {}}
             />
           </div>
         </div>

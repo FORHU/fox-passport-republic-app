@@ -1,4 +1,5 @@
 import { cookies } from 'next/headers';
+import { redirect } from 'next/navigation';
 import { config } from '@/lib/config';
 import { requireAuth } from './auth';
 
@@ -21,8 +22,71 @@ async function getAuthToken(): Promise<string | null> {
   return token ?? null;
 }
 
+// Calls the backend refresh endpoint and updates cookies. Returns new access token or null.
+async function tryRefreshToken(): Promise<string | null> {
+  const cookieStore = await cookies();
+  const refreshToken = cookieStore.get('fox_refresh_token')?.value;
+  if (!refreshToken) return null;
+
+  try {
+    const res = await fetch(`${config.apiUrl}/auth/refresh-token`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ refreshToken }),
+      cache: 'no-store',
+    });
+
+    if (!res.ok) return null;
+
+    const body = await res.json();
+    const newAccessToken: string = body?.accessToken ?? body?.data?.accessToken;
+    const newRefreshToken: string = body?.refreshToken ?? body?.data?.refreshToken;
+
+    if (!newAccessToken) return null;
+
+    const cookieOpts = {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax' as const,
+      path: '/',
+    };
+
+    cookieStore.set('fox_token', newAccessToken, { ...cookieOpts, maxAge: 7 * 24 * 60 * 60 });
+    if (newRefreshToken) {
+      cookieStore.set('fox_refresh_token', newRefreshToken, { ...cookieOpts, maxAge: 30 * 24 * 60 * 60 });
+    }
+
+    // Update the readable fox_user cookie with the new access token
+    const userStr = cookieStore.get('fox_user')?.value;
+    if (userStr) {
+      try {
+        const user = JSON.parse(decodeURIComponent(userStr));
+        cookieStore.set('fox_user', JSON.stringify({ ...user, accessToken: newAccessToken }), {
+          secure: process.env.NODE_ENV === 'production',
+          sameSite: 'lax',
+          maxAge: 7 * 24 * 60 * 60,
+          path: '/',
+        });
+      } catch {}
+    }
+
+    console.log('[Auth] Token refreshed successfully');
+    return newAccessToken;
+  } catch {
+    return null;
+  }
+}
+
+async function clearAuthAndRedirect() {
+  const cookieStore = await cookies();
+  cookieStore.delete('fox_token');
+  cookieStore.delete('fox_refresh_token');
+  cookieStore.delete('fox_user');
+  redirect('/login');
+}
+
 async function serverFetch(endpoint: string, params?: Record<string, string>): Promise<any> {
-  const token = await getAuthToken();
+  let token = await getAuthToken();
   const baseUrl = config.apiUrl;
 
   let url = `${baseUrl}${endpoint}`;
@@ -33,13 +97,28 @@ async function serverFetch(endpoint: string, params?: Record<string, string>): P
 
   console.log(`[API] Fetching: ${url}`);
 
-  const res = await fetch(url, {
-    headers: {
-      'Content-Type': 'application/json',
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
-    },
-    cache: 'no-store',
-  });
+  const doFetch = (t: string | null) =>
+    fetch(url, {
+      headers: {
+        'Content-Type': 'application/json',
+        ...(t ? { Authorization: `Bearer ${t}` } : {}),
+      },
+      cache: 'no-store',
+    });
+
+  let res = await doFetch(token);
+
+  if (res.status === 401) {
+    // Access token expired — try to silently refresh
+    const newToken = await tryRefreshToken();
+    if (newToken) {
+      // Retry the original request with the fresh token
+      res = await doFetch(newToken);
+    } else {
+      // Refresh token also invalid — force re-login
+      await clearAuthAndRedirect();
+    }
+  }
 
   if (!res.ok) {
     const text = await res.text().catch(() => '');
@@ -118,15 +197,21 @@ function normalizeImages(images: any[]): string[] {
 }
 
 function normalizeVenue(v: any) {
+  const images = normalizeImages(v.images ?? v.gallery ?? []);
+  const img = images[0] || FALLBACK_IMG;
   return {
     ...v,
     title: v.title || v.name || 'Untitled Venue',
+    type: v.type || v.venueType || 'Venue',
+    loc: v.location || [v.city, v.province, v.country].filter(Boolean).join(', ') || '',
+    cap: v.capacity ? `${v.capacity} guests` : '—',
     location: v.location || [v.city, v.province, v.country].filter(Boolean).join(', ') || '',
     province: v.province || v.country || '',
     price: Number(v.price || v.pricePerNight || 0),
     rating: Number(v.rating || v.averageRating || 0),
     reviews: Number(v.reviews || v.reviewCount || 0),
-    images: normalizeImages(v.images ?? []),
+    images,
+    img,
     description: v.description || '',
     category:
       typeof v.category === 'object'
@@ -135,6 +220,9 @@ function normalizeVenue(v: any) {
     guestCount: Number(v.guestCount || v.capacity || 0),
     bedroomCount: Number(v.bedroomCount || v.bedrooms || 0),
     bathroomCount: Number(v.bathroomCount || v.bathrooms || 0),
+    status: v.status || 'draft',
+    bookings: v.bookingsCount ?? v.bookings ?? null,
+    revenue: v.revenue ? `₱${Number(v.revenue).toLocaleString()}` : null,
   };
 }
 

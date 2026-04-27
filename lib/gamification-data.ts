@@ -10,6 +10,7 @@ export const MOCK_BADGES: Badge[] = [
     rarity: 'Common',
     icon: 'verified',
     color: '#ccff00',
+    path: 'user',
   },
   {
     id: 'b2',
@@ -18,6 +19,7 @@ export const MOCK_BADGES: Badge[] = [
     rarity: 'Rare',
     icon: 'groups',
     color: '#f97316',
+    path: 'user',
   },
   {
     id: 'b3',
@@ -26,6 +28,7 @@ export const MOCK_BADGES: Badge[] = [
     rarity: 'Uncommon',
     icon: 'forest',
     color: '#22c55e',
+    path: 'user',
   },
   {
     id: 'b4',
@@ -34,6 +37,7 @@ export const MOCK_BADGES: Badge[] = [
     rarity: 'Epic',
     icon: 'nightlife',
     color: '#8b5cf6',
+    path: 'user',
   },
   {
     id: 'b5',
@@ -42,6 +46,7 @@ export const MOCK_BADGES: Badge[] = [
     rarity: 'Common',
     icon: 'reviews',
     color: '#3b82f6',
+    path: 'user',
   },
   {
     id: 'b6',
@@ -50,6 +55,7 @@ export const MOCK_BADGES: Badge[] = [
     rarity: 'Legendary',
     icon: 'trending_up',
     color: '#f59e0b',
+    path: 'foxer',
   },
   {
     id: 'b7',
@@ -58,6 +64,7 @@ export const MOCK_BADGES: Badge[] = [
     rarity: 'Epic',
     icon: 'palette',
     color: '#ec4899',
+    path: 'user',
   },
   {
     id: 'b8',
@@ -66,6 +73,7 @@ export const MOCK_BADGES: Badge[] = [
     rarity: 'Legendary',
     icon: 'workspace_premium',
     color: '#f59e0b',
+    path: 'host',
   },
   {
     id: 'b9',
@@ -74,6 +82,7 @@ export const MOCK_BADGES: Badge[] = [
     rarity: 'Rare',
     icon: 'diversity_3',
     color: '#3b82f6',
+    path: 'foxer',
   },
   {
     id: 'b10',
@@ -82,6 +91,7 @@ export const MOCK_BADGES: Badge[] = [
     rarity: 'Uncommon',
     icon: 'restaurant',
     color: '#22c55e',
+    path: 'user',
   },
   {
     id: 'b11',
@@ -90,6 +100,7 @@ export const MOCK_BADGES: Badge[] = [
     rarity: 'Legendary',
     icon: 'hotel_class',
     color: '#f59e0b',
+    path: 'foxer',
   },
   {
     id: 'b12',
@@ -98,6 +109,33 @@ export const MOCK_BADGES: Badge[] = [
     rarity: 'Epic',
     icon: 'local_fire_department',
     color: '#ef4444',
+    path: 'user',
+  },
+  {
+    id: 'b13',
+    name: 'The Architect',
+    description: 'Designed 5 high-capacity venues',
+    rarity: 'Epic',
+    icon: 'architecture',
+    color: '#3b82f6',
+    path: 'host',
+  },
+  {
+    id: 'b14',
+    name: 'Event Evangelist',
+    description: 'Brought 500+ attendees to the platform',
+    rarity: 'Legendary',
+    icon: 'campaign',
+    color: '#f97316',
+    path: 'foxer',
+  },
+  {
+    id: 'b15',
+    name: 'Visionary Leader',
+    description: 'Approved 10 successful city initiatives',
+    rarity: 'Legendary',
+    icon: 'account_balance',
+    color: '#ccff00',
   },
 ];
 

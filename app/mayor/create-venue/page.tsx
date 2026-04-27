@@ -1,17 +1,26 @@
 "use client";
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import RequireAuth from '@/components/authentication/RequireAuth';
 import { useVenueBuilder } from '@/hooks/venues/useVenueBuilder';
+import { useVenueBuilderStore } from '@/store/useVenueBuilderStore';
 import {
   VenueHeader,
   VenueResourcePalette,
   VenueDetailsForm,
   FeatureDropZone,
   RevenueProjector,
+  VenuePreviewModal,
 } from '@/components/mayor/venue-builder';
 
 export default function VenueCreationBuilder() {
+  const [isPreviewOpen, setIsPreviewOpen] = useState(false);
+  const resetStore = useVenueBuilderStore((s) => s.reset);
+
+  useEffect(() => {
+    resetStore();
+  }, []);
+
   const {
     // State
     venueName,
@@ -72,6 +81,23 @@ export default function VenueCreationBuilder() {
 
   return (
     <RequireAuth>
+      <VenuePreviewModal
+        isOpen={isPreviewOpen}
+        onClose={() => setIsPreviewOpen(false)}
+        venueName={venueName}
+        description={description}
+        venueType={venueType}
+        capacity={capacity}
+        location={location}
+        city={city}
+        state={state}
+        country={country}
+        gallery={gallery}
+        includedItems={includedItems}
+        addonItems={addonItems}
+        baseRate={baseRate}
+      />
+
       <div className="fixed inset-0 z-60 bg-[#02040a] text-white flex flex-col font-body">
         <VenueHeader
           venueName={venueName}
@@ -152,6 +178,7 @@ export default function VenueCreationBuilder() {
             total={revenue.total}
             onBaseRateChange={setBaseRate}
             onOccupancyRateChange={setOccupancyRate}
+            onPreview={() => setIsPreviewOpen(true)}
           />
         </div>
       </div>

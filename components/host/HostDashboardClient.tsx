@@ -1,6 +1,7 @@
-﻿'use client';
+'use client';
 
 import React from 'react';
+import { useRouter } from 'next/navigation';
 import { useDashboard } from '@/hooks/dashboards/useDashboard';
 import {
   DashboardHeader,
@@ -21,7 +22,7 @@ import { useRoleAccess } from '@/hooks/auth/useRoleAccess';
 import { useAuthStore } from '@/store/useAuthStore';
 import { ProgressDashboard } from '@/components/users/ProgressDashboard';
 import { mapBackendAssetToInventoryItem, mapBackendServiceToServiceItem } from '@/lib/mappers/listings';
-import type { VenueItem, EventItem } from '@/data/dashboardData';
+import type { EventItem } from '@/data/dashboardData';
 
 interface HostDashboardClientProps {
   initialData: {
@@ -42,20 +43,6 @@ function pickImage(images: any[]): string {
   return url || FALLBACK_IMG;
 }
 
-function mapVenue(v: any): VenueItem {
-  return {
-    id: v.id,
-    title: v.name || v.title || 'Untitled Venue',
-    type: v.type || v.venueType || 'Venue',
-    loc: [v.city, v.country].filter(Boolean).join(', ') || v.location || 'Location TBD',
-    cap: v.capacity ? `${v.capacity} guests` : '—',
-    status: v.status || 'draft',
-    bookings: v.bookingsCount ?? v.bookings ?? null,
-    revenue: v.revenue ? `₱${Number(v.revenue).toLocaleString()}` : null,
-    img: pickImage(v.images ?? []),
-  };
-}
-
 function mapEvent(e: any): EventItem {
   return {
     id: e.id,
@@ -72,6 +59,8 @@ function mapEvent(e: any): EventItem {
 }
 
 export default function HostDashboardClient({ initialData }: HostDashboardClientProps) {
+  const router = useRouter();
+
   const {
     isCreateMenuOpen,
     menuRef,
@@ -86,7 +75,7 @@ export default function HostDashboardClient({ initialData }: HostDashboardClient
   const user = useAuthStore((s) => s.user);
 
   const events = (initialData.events ?? []).map(mapEvent);
-  const venues = (initialData.venues ?? []).map(mapVenue);
+  const venues = initialData.venues ?? [];
   const inventory = (initialData.inventory ?? []).map(mapBackendAssetToInventoryItem);
   const services = (initialData.services ?? []).map(mapBackendServiceToServiceItem);
 
@@ -138,7 +127,11 @@ export default function HostDashboardClient({ initialData }: HostDashboardClient
               )}
 
               {access.canManageVenues ? (
-                <VenuesSection venues={venues} onStatusChange={() => {}} />
+                <VenuesSection
+                  venues={venues}
+                  onStatusChange={() => {}}
+                  onEdit={(id) => router.push(`/creator-dashboard/venues/${id}/edit`)}
+                />
               ) : (
                 <LockedSection
                   title="My Venues"
@@ -190,9 +183,6 @@ export default function HostDashboardClient({ initialData }: HostDashboardClient
             </div>
           </div>
 
-          <div className="mt-16 border-t border-white/5 pt-10">
-            <ProgressDashboard user={user} />
-          </div>
         </div>
       </main>
     </div>

@@ -1,6 +1,8 @@
 "use client";
 
 import { FOXERS, Foxer } from "@/data/foxers";
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 
 export default function FoxersMatchSection() {
   return (
@@ -84,10 +86,17 @@ export default function FoxersMatchSection() {
 
 // Sub-component for foxer cards
 function FoxerCard({ foxer }: { foxer: Foxer }) {
+  const router = useRouter();
+
   return (
-    <div className="group glass-card rounded-[2rem] p-8 hover:border-primary/50 transition-all duration-300 card-hover-effect">
+    <div className="group glass-card rounded-[2rem] p-8 hover:border-primary/50 transition-all duration-300 card-hover-effect relative">
+      {/* Stretched Link for the whole card to profile */}
+      <Link href={`/foxer/${foxer.id}`} className="absolute inset-0 z-0 rounded-[2rem]" aria-label={`View ${foxer.name}'s profile`}>
+        <span className="sr-only">View Profile</span>
+      </Link>
+
       {/* Header */}
-      <div className="flex items-start justify-between mb-6">
+      <div className="flex items-start justify-between mb-6 relative z-10 pointer-events-none">
         <div className="flex gap-4">
           <div className="relative">
             <img
@@ -121,12 +130,12 @@ function FoxerCard({ foxer }: { foxer: Foxer }) {
       </div>
 
       {/* Description */}
-      <p className="text-sm text-gray-300 mb-6 line-clamp-2 min-h-[40px] leading-relaxed">
+      <p className="text-sm text-gray-300 mb-6 line-clamp-2 min-h-[40px] leading-relaxed relative z-10 pointer-events-none">
         {foxer.desc}
       </p>
 
       {/* Tags */}
-      <div className="flex flex-wrap gap-2 mb-8">
+      <div className="flex flex-wrap gap-2 mb-8 relative z-10">
         {foxer.tags.map((tag, idx) => (
           <span
             key={idx}
@@ -138,7 +147,7 @@ function FoxerCard({ foxer }: { foxer: Foxer }) {
       </div>
 
       {/* Portfolio Images */}
-      <div className="flex justify-between gap-3 mb-8">
+      <div className="flex justify-between gap-3 mb-8 relative z-10 pointer-events-none">
         {foxer.images.map((img, idx) => (
           <div
             key={idx}
@@ -150,11 +159,24 @@ function FoxerCard({ foxer }: { foxer: Foxer }) {
       </div>
 
       {/* Actions */}
-      <div className="flex gap-3">
-        <button className="flex-1 rounded-full bg-gradient-to-r from-[#8b5cf6] to-[#a855f7] py-3.5 text-sm font-bold text-white hover:opacity-90 transition-opacity hover:shadow-[0_0_15px_rgba(139,92,246,0.5)]">
+      <div className="flex gap-3 relative z-20">
+        <button 
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            router.push(`/match/${foxer.id}`);
+          }}
+          className="flex-1 rounded-full bg-gradient-to-r from-[#8b5cf6] to-[#a855f7] py-3.5 text-sm font-bold text-white hover:opacity-90 transition-opacity hover:shadow-[0_0_15px_rgba(139,92,246,0.5)] flex items-center justify-center cursor-pointer"
+        >
           Match Me
         </button>
-        <button className="h-12 w-12 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-gray-400 hover:text-white hover:bg-white/10 transition-colors group/heart">
+        <button 
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+          }}
+          className="h-12 w-12 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-gray-400 hover:text-white hover:bg-white/10 transition-colors group/heart cursor-pointer"
+        >
           <span className="material-symbols-outlined group-hover/heart:scale-125 transition-transform">
             favorite
           </span>

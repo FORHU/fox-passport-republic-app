@@ -1,169 +1,539 @@
 "use client";
 
-import React from 'react';
+import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
+import Link from 'next/link';
+import { motion, AnimatePresence } from 'motion/react';
+import CircularProgress from '@/components/gamification/CircularProgress';
+import { BadgeGrid } from '@/components/gamification/BadgeCard';
+import { PassportGrid } from '@/components/gamification/PassportStamp';
+import {
+  PathProgress,
+  UserPath,
+  XP_REWARDS,
+} from '@/types/gamification';
+import {
+  calculateMasteryLevel,
+  formatXP,
+} from '@/lib/gamification';
+import { MOCK_BADGES, MOCK_PASSPORT_STAMPS } from '@/lib/gamification-data';
+import BadgeModal from '@/components/gamification/BadgeModal';
+import { Badge } from '@/types/gamification';
 
 interface PassportClientProps {
   user: any;
 }
 
+// Mock data - will be replaced with actual API calls
+const mockPaths: PathProgress[] = [
+  {
+    path: 'foxer',
+    level: 12,
+    currentXP: 2400,
+    requiredXP: 3000,
+    totalXP: 14400,
+    label: 'Social Butterfly',
+    color: '#f97316',
+  },
+  {
+    path: 'host',
+    level: 5,
+    currentXP: 450,
+    requiredXP: 1000,
+    totalXP: 4450,
+    label: 'Venue Curator',
+    color: '#3b82f6',
+  },
+  {
+    path: 'user',
+    level: 18,
+    currentXP: 4500,
+    requiredXP: 5000,
+    totalXP: 45000,
+    label: 'Trailblazer',
+    color: '#22c55e',
+  },
+  {
+    path: 'investor',
+    level: 2,
+    currentXP: 150,
+    requiredXP: 1000,
+    totalXP: 1150,
+    label: 'Seed Funder',
+    color: '#eab308',
+  },
+];
+
 const PassportClient: React.FC<PassportClientProps> = ({ user }) => {
   const router = useRouter();
-  const userName = (user?.name as string) || (user?.username as string) || "Guest";
+  const [activeTab, setActiveTab] = useState<'progress' | 'stamps' | 'matches'>('matches');
+  const [matchSubTab, setMatchSubTab] = useState<'status' | 'ranks'>('status');
+  const [showAllBadges, setShowAllBadges] = useState(false);
+  const [selectedBadge, setSelectedBadge] = useState<Badge | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  // Dynamic role-based filtering
+  const sysRole = (user?.systemRole || user?.role || '').toLowerCase();
+  const roleTypes: string[] = Array.isArray(user?.roleType) ? user.roleType : [];
+  
+  const activePathTypes: UserPath[] = ['user'];
+  
+  // Robust check for Foxer roles
+  const isFoxer = sysRole === 'foxer' || roleTypes.includes('foxer') || roleTypes.includes('foxerAsset') || roleTypes.includes('foxerService') || sysRole === 'mayor';
+  if (isFoxer) activePathTypes.push('foxer');
+  
+  // Robust check for Host roles
+  const isHost = sysRole === 'host' || roleTypes.includes('host') || sysRole === 'mayor';
+  if (isHost) activePathTypes.push('host');
+  
+  // Admin special access
+  if (sysRole === 'admin' || sysRole === 'super_admin') {
+    if (!activePathTypes.includes('foxer')) activePathTypes.push('foxer');
+    if (!activePathTypes.includes('host')) activePathTypes.push('host');
+    if (!activePathTypes.includes('investor')) activePathTypes.push('investor');
+  }
+
+  const filteredPaths = mockPaths.filter(p => activePathTypes.includes(p.path));
+  
+  // Show ALL badges in the collection if showAllBadges is true, 
+  // but we'll mark them as locked if they don't have the role later.
+  const displayBadges = showAllBadges ? MOCK_BADGES : MOCK_BADGES.filter(b => !b.path || activePathTypes.includes(b.path));
+  
+  // Identify which badges should be shown as locked
+  // For demo: you "own" some badges from every role you have
+  const ownedIds = MOCK_BADGES.filter(b => {
+    if (!b.path) return true;
+    if (!activePathTypes.includes(b.path)) return false;
+    
+    // Mock: own the first few badges of each role you have
+    const roleBadges = MOCK_BADGES.filter(rb => rb.path === b.path);
+    const indexInRole = roleBadges.findIndex(rb => rb.id === b.id);
+    return indexInRole < 2; // Own first 2 of each active role
+  }).map(b => b.id);
+  
+  const ownedBadges = MOCK_BADGES.filter(b => ownedIds.includes(b.id));
+  const finalLockedIds = MOCK_BADGES.filter(b => !ownedIds.includes(b.id)).map(b => b.id);
+
+  const handleBadgeClick = (badge: Badge) => {
+    setSelectedBadge(badge);
+    setIsModalOpen(true);
+  };
+
+  const masteryLevel = calculateMasteryLevel(filteredPaths);
+  const totalXP = filteredPaths.reduce((sum, path) => sum + path.totalXP, 0);
+  const maxTotalXP = activePathTypes.length * 20000;
+
+  const userName = user?.name || user?.username || 'Citizen User';
   const userInitials = userName.charAt(0).toUpperCase();
 
+  // Perks data
+  const perks = activePathTypes.flatMap(type => {
+    if (type === 'user') return [
+      { title: 'Priority Access', desc: 'Skip the line at partner venues', icon: 'confirmation_number' },
+      { title: 'Early Bird', desc: 'Book events 24h before others', icon: 'schedule' }
+    ];
+    if (type === 'foxer') return [
+      { title: 'Lower Fees', desc: '5% lower commission on bookings', icon: 'percent' },
+      { title: 'Verified Badge', desc: 'Exclusive creator status', icon: 'verified' }
+    ];
+    if (type === 'host') return [
+      { title: 'Analytics Pro', desc: 'Advanced heatmaps for venues', icon: 'analytics' },
+      { title: 'Host Support', desc: '24/7 dedicated manager', icon: 'support_agent' }
+    ];
+    return [];
+  });
+
   return (
-    <div className="min-h-screen bg-[#022c22] text-white pt-28 pb-12 px-4 sm:px-6 flex items-center justify-center relative">
-      {/* Background Pattern */}
-      <div className="absolute inset-0 opacity-5 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] pointer-events-none"></div>
+    <div className="flex h-[90vh] max-h-[1000px] w-full max-w-7xl bg-[#0a0a0a] rounded-[3rem] overflow-hidden border border-white/5 shadow-2xl relative mx-auto my-auto">
+      {/* Background Grid Pattern */}
+      <div className="absolute inset-0 opacity-[0.03] pointer-events-none" style={{ backgroundImage: 'radial-gradient(#ccff00 0.5px, transparent 0.5px)', backgroundSize: '24px 24px' }}></div>
+      
+      {/* Sidebar */}
+      <aside className="w-80 bg-black border-r border-white/5 p-8 flex flex-col relative z-20">
+        <Link href="/" className="flex items-center gap-3 mb-12 group cursor-pointer hover:opacity-80 transition-opacity">
+          <div className="h-10 w-10 flex items-center justify-center group-hover:scale-105 transition-transform">
+            <Image 
+              src="/foxonlylogo.png" 
+              alt="FoxPassport Logo" 
+              width={40} 
+              height={40} 
+              className="object-contain"
+              priority
+            />
+          </div>
+          <div className="relative">
+            <span className="font-display font-bold text-xl tracking-tight text-white group-hover:text-[#ccff00] transition-colors">FoxPassport</span>
+            <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-[#ccff00] group-hover:w-full transition-all duration-300"></span>
+          </div>
+        </Link>
 
-      {/* Navigation Buttons */}
-      <div className="absolute top-6 left-6 z-50">
-        <button
-          onClick={() => router.push('/user')}
-          className="flex items-center gap-2 px-4 py-2 rounded-full bg-black/20 backdrop-blur-md border border-white/10 text-white/80 hover:text-white hover:bg-black/40 transition-all font-medium text-sm"
-        >
-          <span className="material-symbols-outlined text-[18px]">arrow_back</span>
-          Back to Dashboard
-        </button>
-      </div>
-
-      <div className="w-full max-w-6xl mx-auto relative perspective-1000">
-        <div className="relative bg-gradient-to-br from-[#0f392b] to-[#04221a] rounded-[2rem] shadow-2xl border border-white/10 overflow-hidden flex flex-col md:flex-row min-h-[700px]">
-
-          {/* Left Spine/Profile */}
-          <div className="md:w-5/12 lg:w-4/12 relative border-r border-black/20 bg-black/20 backdrop-blur-sm p-8 flex flex-col z-20">
-            <div className="relative z-10 text-center mb-8">
-              <div className="inline-block relative mb-4">
-                <div className="h-32 w-32 rounded-2xl overflow-hidden border-4 border-white/10 shadow-xl mx-auto rotate-[-2deg] bg-[#10b981]/20 flex items-center justify-center">
-                   {/* Placeholder for user image, using initials for now if no image */}
-                   <span className="text-4xl font-bold text-[#10b981]">{userInitials}</span>
-                </div>
-                <div className="absolute -bottom-3 -right-3 h-12 w-12 bg-[#bef264] rounded-full flex items-center justify-center text-[#022c22] border-4 border-[#0f392b] shadow-lg animate-bounce">
-                  <span className="material-symbols-outlined">verified</span>
-                </div>
-              </div>
-              <h1 className="text-3xl font-display font-bold text-white mb-2">{userName}</h1>
-              <div className="inline-flex items-center gap-2 bg-white/10 px-4 py-1.5 rounded-full border border-white/5">
-                <span className="text-white/80 text-sm font-medium">Level 12</span>
-                <span className="w-1.5 h-1.5 rounded-full bg-[#10b981]"></span>
-                <span className="text-[#bef264] font-bold text-sm uppercase tracking-wide">Citizen</span>
-              </div>
+        <div className="flex flex-col items-center text-center mb-10">
+          <div className="relative mb-6">
+            <div className="h-28 w-28 rounded-[2rem] bg-white/5 border border-white/10 p-2 group transition-all duration-500 hover:border-[#ccff00]/30">
+               <div className="h-full w-full rounded-[1.5rem] bg-white/10 flex items-center justify-center text-4xl font-display font-bold text-white/20 overflow-hidden relative">
+                  {user?.avatar ? <img src={user.avatar} className="h-full w-full object-cover" alt="" /> : userInitials}
+               </div>
             </div>
-
-            <div className="bg-black/20 rounded-2xl p-5 border border-white/5 mb-6 relative overflow-hidden group">
-              <div
-                className="absolute w-10 h-10 flex items-center justify-center opacity-30 transition-opacity z-0"
-                style={{ animation: 'travel-perimeter 12s linear infinite' }}
-              >
-                 <span className="material-symbols-outlined text-3xl text-[#bef264]">flight</span>
-              </div>
-              <div className="flex justify-between items-end mb-2 relative z-10">
-                <span className="text-xs font-bold text-white/60 uppercase tracking-widest">Next Rank</span>
-                <span className="text-[#bef264] font-display font-bold">Diplomat</span>
-              </div>
-              <div className="h-3 w-full bg-black/40 rounded-full overflow-hidden mb-2 relative z-10">
-                <div className="h-full bg-gradient-to-r from-[#10b981] to-[#bef264] w-[20%] rounded-full shadow-[0_0_10px_#10b981]"></div>
-              </div>
-              <div className="flex justify-between text-[10px] text-white/40 font-medium relative z-10">
-                <span>1,200 XP</span>
-                <span>Level 20</span>
-              </div>
+            <div className="absolute -bottom-2 -right-2 h-8 w-8 bg-[#ccff00] rounded-full border-4 border-black flex items-center justify-center shadow-lg">
+              <span className="material-symbols-outlined text-black text-[18px] font-bold">verified</span>
             </div>
+          </div>
+          
+          <h2 className="text-2xl font-display font-bold text-white mb-1 tracking-tight">{userName}</h2>
+          <p className="text-[10px] text-white/30 uppercase tracking-[0.2em] font-black">
+            {activePathTypes.map(p => p === 'user' ? 'Citizen' : p).join(' • ')}
+          </p>
+        </div>
 
-            <div className="flex-grow">
-              <h3 className="font-display font-bold text-white mb-4 flex items-center gap-2">
-                <span className="material-symbols-outlined text-[#bef264]">stars</span>
-                Unlocked Perks
-              </h3>
-              <div className="space-y-3">
-                <div className="flex items-center gap-3 p-3 rounded-xl bg-white/5 border border-white/5 hover:bg-white/10 transition-all cursor-pointer group">
-                  <div className="h-10 w-10 rounded-lg bg-[#10b981]/20 text-[#10b981] flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
-                    <span className="material-symbols-outlined text-[20px]">confirmation_number</span>
-                  </div>
-                  <div>
-                    <p className="font-bold text-sm text-white group-hover:text-[#bef264] transition-colors">Priority Access</p>
-                    <p className="text-xs text-white/50">Skip the line at partner venues</p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-3 p-3 rounded-xl bg-white/5 border border-white/5 hover:bg-white/10 transition-all cursor-pointer group">
-                  <div className="h-10 w-10 rounded-lg bg-[#bef264]/20 text-[#bef264] flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
-                    <span className="material-symbols-outlined text-[20px]">local_drink</span>
-                  </div>
-                  <div>
-                    <p className="font-bold text-sm text-white group-hover:text-[#bef264] transition-colors">Welcome Drinks</p>
-                    <p className="text-xs text-white/50">Free drink at verified spots</p>
-                  </div>
-                </div>
-              </div>
+        <div className="space-y-6 flex-grow overflow-y-auto custom-scrollbar pr-2">
+          <div className="space-y-3">
+            <div className="flex justify-between text-[10px] font-black uppercase tracking-[0.2em] text-white/30">
+              <span>Mastery XP</span>
+              <span className="text-[#ccff00] font-mono">{formatXP(totalXP)}</span>
+            </div>
+            <div className="w-full bg-white/5 rounded-full h-2 overflow-hidden border border-white/5">
+              <div 
+                className="h-full bg-gradient-to-r from-[#22c55e] to-[#ccff00] transition-all duration-1000 shadow-[0_0_10px_#ccff0044]" 
+                style={{ width: `${Math.min(100, (totalXP / maxTotalXP) * 100)}%` }}
+              ></div>
             </div>
           </div>
 
-          {/* Right Page / Stamps */}
-          <div className="md:w-7/12 lg:w-8/12 p-6 md:p-10 relative bg-[#f0fdf4] text-[#022c22] flex flex-col z-10 overflow-hidden">
-            <div className="absolute inset-0 opacity-10" style={{ backgroundImage: "radial-gradient(#10b981 1px, transparent 1px)", backgroundSize: "20px 20px" }}></div>
-
-            <div className="relative z-20 flex flex-wrap gap-2 mb-8 items-center justify-between">
-              <h2 className="text-2xl font-display font-bold text-[#022c22]">My Journey</h2>
-              <div className="flex bg-black/5 p-1 rounded-full backdrop-blur-sm">
-                <button className="px-4 py-1.5 rounded-full text-xs font-bold bg-white text-[#022c22] shadow-sm">All</button>
-                <button className="px-4 py-1.5 rounded-full text-xs font-bold text-[#022c22]/60 hover:text-[#022c22]">Events</button>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6 relative z-10">
-              {/* Stamp 1 */}
-              <div className="aspect-square relative group cursor-pointer">
-                <div className="w-full h-full border-2 border-dashed border-black/10 rounded-xl flex items-center justify-center bg-white/40 transition-all group-hover:border-[#ec4899]/30 group-hover:bg-white/60">
-                  <div className="w-20 h-20 rounded-full border-4 border-[#ec4899] flex items-center justify-center transform group-hover:scale-110 transition-transform duration-300 bg-[#ec4899]/10 shadow-[0_0_15px_rgba(236,72,153,0.3)] rotate-[-12deg]">
-                    <div className="text-center">
-                      <span className="material-symbols-outlined text-3xl text-[#ec4899]">music_note</span>
-                      <div className="text-[8px] font-bold text-[#ec4899] uppercase tracking-tighter border-t border-[#ec4899] mt-1 pt-0.5">Concert</div>
-                    </div>
+          <div className="p-4 rounded-2xl bg-white/[0.02] border border-white/5 space-y-4">
+            <p className="text-[9px] font-black uppercase tracking-widest text-white/30">Active Perks</p>
+            <div className="space-y-4">
+              {perks.slice(0, 4).map((perk, i) => (
+                <div key={i} className="flex items-center gap-3">
+                  <div className="h-8 w-8 rounded-lg bg-white/5 flex items-center justify-center flex-shrink-0">
+                    <span className="material-symbols-outlined text-[18px] text-[#ccff00]">{perk.icon}</span>
                   </div>
-                </div>
-                <div className="absolute bottom-2 left-0 right-0 text-center opacity-0 group-hover:opacity-100 transition-opacity">
-                    <span className="text-[10px] font-bold text-[#022c22]">Neon Nights</span>
-                </div>
-              </div>
-              {/* Stamp 2 */}
-              <div className="aspect-square relative group cursor-pointer">
-                <div className="w-full h-full border-2 border-dashed border-black/10 rounded-xl flex items-center justify-center bg-white/40 transition-all group-hover:border-[#0ea5e9]/30 group-hover:bg-white/60">
-                  <div className="w-20 h-20 bg-[#0ea5e9]/10 rounded-lg rotate-3 border-4 border-[#0ea5e9] flex items-center justify-center transform group-hover:scale-110 transition-transform duration-300">
-                    <div className="text-center">
-                      <span className="material-symbols-outlined text-3xl text-[#0ea5e9]">apartment</span>
-                      <div className="text-[8px] font-bold text-[#0ea5e9] uppercase tracking-tighter border-t border-[#0ea5e9] mt-1 pt-0.5">Summit</div>
-                    </div>
+                  <div>
+                    <p className="text-[11px] font-bold text-white">{perk.title}</p>
+                    <p className="text-[9px] text-white/30 leading-none">{perk.desc}</p>
                   </div>
-                </div>
-                <div className="absolute bottom-2 left-0 right-0 text-center opacity-0 group-hover:opacity-100 transition-opacity">
-                    <span className="text-[10px] font-bold text-[#022c22]">Tech Meet</span>
-                </div>
-              </div>
-              {/* Stamp 3 */}
-              <div className="aspect-square relative group cursor-pointer">
-                <div className="w-full h-full border-2 border-dashed border-black/10 rounded-xl flex items-center justify-center bg-white/40 transition-all group-hover:border-[#f59e0b]/30 group-hover:bg-white/60">
-                  <div className="w-20 h-20 bg-[#f59e0b]/10 rounded-full border-4 border-[#f59e0b] flex items-center justify-center transform group-hover:scale-110 transition-transform duration-300 rotate-[8deg]">
-                    <div className="text-center">
-                      <span className="material-symbols-outlined text-3xl text-[#f59e0b]">restaurant</span>
-                      <div className="text-[8px] font-bold text-[#f59e0b] uppercase tracking-tighter border-t border-[#f59e0b] mt-1 pt-0.5">Foodie</div>
-                    </div>
-                  </div>
-                </div>
-                <div className="absolute bottom-2 left-0 right-0 text-center opacity-0 group-hover:opacity-100 transition-opacity">
-                    <span className="text-[10px] font-bold text-[#022c22]">Taste of MNL</span>
-                </div>
-              </div>
-              {/* Empty Slots */}
-              {[...Array(5)].map((_, i) => (
-                <div key={i} className="aspect-square relative flex items-center justify-center border-2 border-dashed border-black/5 rounded-xl hover:bg-black/5 transition-colors cursor-pointer group">
-                  <span className="text-xs font-bold text-black/10 group-hover:text-black/20">Empty</span>
                 </div>
               ))}
             </div>
           </div>
         </div>
-      </div>
+
+        <div className="mt-auto pt-8 flex flex-col gap-3">
+          <button 
+            onClick={() => setActiveTab('matches')} 
+            className={`w-full py-4 rounded-2xl font-bold text-sm transition-all flex items-center justify-center gap-3 ${activeTab === 'matches' ? 'bg-[#ccff00] text-black shadow-[0_0_20px_rgba(204,255,0,0.3)]' : 'bg-white/5 text-white/60 hover:text-white hover:bg-white/10 border border-white/5'}`}
+          >
+            <span className="material-symbols-outlined text-[20px]">handshake</span> Match Status
+          </button>
+          <button 
+            onClick={() => setActiveTab('progress')} 
+            className={`w-full py-4 rounded-2xl font-bold text-sm transition-all flex items-center justify-center gap-3 ${activeTab === 'progress' ? 'bg-[#ccff00] text-black shadow-[0_0_20px_rgba(204,255,0,0.3)]' : 'bg-white/5 text-white/60 hover:text-white hover:bg-white/10 border border-white/5'}`}
+          >
+            <span className="material-symbols-outlined text-[20px]">analytics</span> Mastery
+          </button>
+          <button 
+            onClick={() => setActiveTab('stamps')} 
+            className={`w-full py-4 rounded-2xl font-bold text-sm transition-all flex items-center justify-center gap-3 ${activeTab === 'stamps' ? 'bg-[#ccff00] text-black shadow-[0_0_20px_rgba(204,255,0,0.3)]' : 'bg-white/5 text-white/60 hover:text-white hover:bg-white/10 border border-white/5'}`}
+          >
+            <span className="material-symbols-outlined text-[20px]">menu_book</span> Passport
+          </button>
+        </div>
+      </aside>
+
+      {/* Main Content Area */}
+      <main className="flex-grow relative overflow-y-auto custom-scrollbar bg-[#050505] z-10">
+        <div className="absolute top-0 right-0 w-[50%] h-[50%] bg-[#ccff00]/5 rounded-full blur-[120px] -mr-32 -mt-32 pointer-events-none"></div>
+        
+        <div className="p-12 min-h-full flex flex-col">
+          <div className="relative z-20 mb-12 flex justify-between items-start">
+            <div>
+              <h2 className="text-4xl md:text-5xl font-display font-bold text-white mb-2 tracking-tight capitalize">
+                {activeTab === 'matches' ? 'FoxVerse Progress' : activeTab === 'progress' ? 'Mastery' : 'Journey'}
+              </h2>
+              <p className="text-white/40 text-sm font-medium tracking-wide">
+                {activeTab === 'matches' ? 'Track your ranks and experiences.' : activeTab === 'progress' ? 'Live stats and career path progress' : 'Your collection of unique event stamps'}
+              </p>
+            </div>
+            <div className="h-12 w-12 rounded-full border border-white/10 flex items-center justify-center text-white/20">
+              <span className="material-symbols-outlined text-[24px]">
+                {activeTab === 'matches' ? 'rocket_launch' : activeTab === 'progress' ? 'query_stats' : 'history_edu'}
+              </span>
+            </div>
+          </div>
+
+          <AnimatePresence mode="wait">
+            {activeTab === 'matches' ? (
+              <motion.div 
+                key="matches" 
+                initial={{ opacity: 0, x: 20 }} 
+                animate={{ opacity: 1, x: 0 }} 
+                exit={{ opacity: 0, x: -20 }} 
+                className="relative z-20 space-y-12"
+              >
+                <div className="flex justify-center">
+                  <div className="bg-white/5 p-1 rounded-full border border-white/10 flex">
+                    <button 
+                      onClick={() => setMatchSubTab('status')} 
+                      className={`px-8 py-2 rounded-full font-bold text-xs transition-all ${matchSubTab === 'status' ? 'bg-[#ccff00] text-black shadow-glow-accent' : 'text-white/40 hover:text-white'}`}
+                    >
+                      Status
+                    </button>
+                    <button 
+                      onClick={() => setMatchSubTab('ranks')} 
+                      className={`px-8 py-2 rounded-full font-bold text-xs transition-all ${matchSubTab === 'ranks' ? 'bg-[#ccff00] text-black shadow-glow-accent' : 'text-white/40 hover:text-white'}`}
+                    >
+                      Global Ranks
+                    </button>
+                  </div>
+                </div>
+
+                {matchSubTab === 'status' ? (
+                  <div className="bg-white/[0.03] border border-white/5 rounded-[2.5rem] p-8 hover:bg-white/[0.05] transition-all">
+                    <div className="flex flex-col lg:flex-row gap-8 items-center">
+                      <div className="flex items-center gap-6">
+                        <div className="relative">
+                          <img 
+                            src="https://images.unsplash.com/photo-1531123897727-8f129e1688ce?q=80&w=200&auto=format&fit=crop" 
+                            className="h-20 w-20 rounded-2xl object-cover border-2 border-white/10" 
+                            alt="" 
+                          />
+                          <div className="absolute -bottom-2 -right-2 h-6 w-6 bg-black rounded-full border border-white/20 flex items-center justify-center">
+                            <span className="material-symbols-outlined text-[14px] text-[#ccff00]">hourglass_empty</span>
+                          </div>
+                        </div>
+                        <div>
+                          <h3 className="text-xl font-bold text-white">Jasmine L.</h3>
+                          <p className="text-white/30 text-[10px] font-mono uppercase tracking-widest">Forest Fairy Tale Request</p>
+                        </div>
+                      </div>
+                      <div className="flex-grow w-full lg:max-w-md">
+                        <div className="flex justify-between mb-2">
+                           <span className="text-[10px] font-black text-[#ccff00] uppercase tracking-widest">Reviewing</span>
+                           <span className="text-[10px] text-white/20 font-mono tracking-widest">Typically 2h</span>
+                        </div>
+                        <div className="relative h-1.5 w-full bg-white/5 rounded-full overflow-hidden">
+                          <div className="absolute inset-0 bg-gradient-to-r from-[#ccff00] to-[#ccff00]/50 animate-pulse-slow" style={{ width: '40%' }}></div>
+                        </div>
+                        <div className="flex justify-between mt-3 text-[8px] font-black uppercase text-white/40 tracking-widest">
+                          <span className="text-[#ccff00]">Sent</span>
+                          <span>Reviewing</span>
+                          <span>Matched</span>
+                          <span>Secured</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="bg-white/[0.03] border border-white/5 rounded-[3rem] overflow-hidden">
+                    <table className="w-full text-left">
+                      <thead>
+                        <tr className="border-b border-white/5">
+                          <th className="px-8 py-6 text-[10px] font-black uppercase text-white/20 tracking-[0.2em]">Rank</th>
+                          <th className="px-8 py-6 text-[10px] font-black uppercase text-white/20 tracking-[0.2em]">Citizen</th>
+                          <th className="px-8 py-6 text-[10px] font-black uppercase text-white/20 tracking-[0.2em] text-right">Level</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-white/5">
+                        {[
+                          { rank: 1, name: 'Alex M.', level: 42, avatar: 'https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?q=80&w=100&auto=format&fit=crop' },
+                          { rank: 2, name: 'Sarah K.', level: 38, avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=100&auto=format&fit=crop' },
+                          { rank: 3, name: 'James W.', level: 35, avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?q=80&w=100&auto=format&fit=crop' },
+                        ].map((p) => (
+                          <tr key={p.rank} className="hover:bg-white/[0.02] transition-colors">
+                            <td className="px-8 py-6 text-xl font-display font-bold text-[#ccff00]">#{p.rank}</td>
+                            <td className="px-8 py-6 flex items-center gap-4">
+                              <img src={p.avatar} className="h-10 w-10 rounded-xl object-cover border border-white/10" alt="" />
+                              <span className="font-bold text-white">{p.name}</span>
+                            </td>
+                            <td className="px-8 py-6 text-right">
+                              <span className="bg-white/5 px-3 py-1 rounded-full text-xs font-bold text-white border border-white/5">LVL {p.level}</span>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </motion.div>
+            ) : activeTab === 'progress' ? (
+              <motion.div 
+                key="progress" 
+                initial={{ opacity: 0, x: 20 }} 
+                animate={{ opacity: 1, x: 0 }} 
+                exit={{ opacity: 0, x: -20 }} 
+                className="relative z-20 space-y-12"
+              >
+                <div className={`grid grid-cols-1 ${filteredPaths.length > 1 ? 'sm:grid-cols-2' : ''} gap-6`}>
+                  {filteredPaths.map((path) => (
+                    <div key={path.path} className="bg-white/[0.03] border border-white/5 rounded-[3rem] p-8 flex flex-col items-center text-center group hover:bg-white/[0.05] transition-all relative overflow-hidden">
+                      <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full blur-[60px] -mr-16 -mt-16"></div>
+                      <CircularProgress level={path.level} currentXP={path.currentXP} requiredXP={path.requiredXP} color={path.color} size={160} strokeWidth={10} className="mb-6" />
+                      <h4 className="text-2xl font-display font-bold text-white mb-1 capitalize tracking-tight">{path.path === 'user' ? 'Citizen' : path.path} Path</h4>
+                      <p className="text-xs font-black uppercase tracking-[0.3em] mb-6" style={{ color: path.color }}>{path.label}</p>
+                      <div className="w-full space-y-3">
+                        <div className="w-full bg-white/5 rounded-full h-1.5 overflow-hidden">
+                          <div className="h-full transition-all duration-1000" style={{ width: `${(path.currentXP / path.requiredXP) * 100}%`, backgroundColor: path.color }}></div>
+                        </div>
+                        <div className="flex justify-between items-center">
+                          <div className="text-[9px] text-white/20 font-mono tracking-widest">
+                             {formatXP(path.currentXP)} / {formatXP(path.requiredXP)} XP
+                          </div>
+                          <div 
+                            className="flex items-center gap-1.5 px-2.5 py-0.5 rounded-full border"
+                            style={{ 
+                              backgroundColor: `${path.color}10`, 
+                              borderColor: `${path.color}30` 
+                            }}
+                          >
+                            <div className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: path.color }}></div>
+                            <span className="text-[9px] font-black uppercase tracking-widest" style={{ color: path.color }}>
+                              Lvl {path.level} • {path.path === 'user' ? 'Citizen' : path.path}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                <section>
+                  <div className="flex items-center gap-4 mb-8">
+                    <h3 className="text-xl font-display font-bold text-white flex items-center gap-3">
+                      <span className="material-symbols-outlined text-[#ccff00]">award_star</span> Collection
+                    </h3>
+                    <div className="h-4 w-px bg-white/10 hidden sm:block"></div>
+                    <div className="flex items-center gap-2 bg-white/5 p-1 rounded-full border border-white/10">
+                      <button 
+                        onClick={() => setShowAllBadges(false)} 
+                        className={`px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest transition-all ${!showAllBadges ? 'bg-[#ccff00] text-black shadow-glow-accent' : 'text-white/40 hover:text-white'}`}
+                      >
+                        Owned
+                      </button>
+                      <button 
+                        onClick={() => setShowAllBadges(true)} 
+                        className={`px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest transition-all ${showAllBadges ? 'bg-[#ccff00] text-black shadow-glow-accent' : 'text-white/40 hover:text-white'}`}
+                      >
+                        All
+                      </button>
+                    </div>
+                  </div>
+                  <div className="bg-white/[0.02] border border-white/5 rounded-[3rem] p-8">
+                    <BadgeGrid 
+                      badges={showAllBadges ? MOCK_BADGES : ownedBadges} 
+                      maxDisplay={showAllBadges ? MOCK_BADGES.length : 4} 
+                      className={showAllBadges ? 'lg:grid-cols-6' : 'lg:grid-cols-4'}
+                      onBadgeClick={handleBadgeClick} 
+                      lockedBadges={finalLockedIds} 
+                    />
+                  </div>
+                </section>
+
+                <section className="bg-gradient-to-br from-[#ccff00]/10 to-transparent border border-[#ccff00]/10 rounded-[3rem] p-8 relative overflow-hidden group">
+                  <div className="absolute top-0 right-0 w-48 h-48 bg-[#ccff00]/5 rounded-full blur-[60px] -mr-24 -mt-24 group-hover:bg-[#ccff00]/10 transition-all duration-700"></div>
+                  <h3 className="text-lg font-display font-bold text-white mb-8 relative z-10 flex items-center gap-2">
+                    <span className="material-symbols-outlined text-[#ccff00]">auto_awesome</span> Mastery Guides
+                  </h3>
+                  
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 relative z-10">
+                    {/* User Path Guide - Always shown */}
+                    <div className="space-y-4">
+                      <p className="text-[10px] font-black text-[#ccff00] uppercase tracking-widest opacity-60">Citizen Activities</p>
+                      <div className="space-y-3">
+                         <div className="flex justify-between items-center p-4 rounded-2xl bg-white/5 border border-white/5 hover:bg-white/10 transition-all">
+                           <div className="flex items-center gap-3">
+                             <span className="material-symbols-outlined text-[#ccff00] text-sm">confirmation_number</span>
+                             <span className="text-sm text-white/70">Book an Experience</span>
+                           </div>
+                           <span className="font-mono text-sm text-[#ccff00] font-bold">+{XP_REWARDS.bookEvent} XP</span>
+                         </div>
+                         <div className="flex justify-between items-center p-4 rounded-2xl bg-white/5 border border-white/5 hover:bg-white/10 transition-all">
+                           <div className="flex items-center gap-3">
+                             <span className="material-symbols-outlined text-[#ccff00] text-sm">local_activity</span>
+                             <span className="text-sm text-white/70">Attend an Event</span>
+                           </div>
+                           <span className="font-mono text-sm text-[#ccff00] font-bold">+{XP_REWARDS.attendEvent} XP</span>
+                         </div>
+                      </div>
+                    </div>
+
+                    {/* Foxer Path Guide */}
+                    {activePathTypes.includes('foxer') && (
+                      <div className="space-y-4">
+                        <p className="text-[10px] font-black text-[#f97316] uppercase tracking-widest opacity-60">Foxer Career</p>
+                        <div className="space-y-3">
+                           <div className="flex justify-between items-center p-4 rounded-2xl bg-white/5 border border-white/5 hover:bg-white/10 transition-all">
+                             <div className="flex items-center gap-3">
+                               <span className="material-symbols-outlined text-[#f97316] text-sm">add_box</span>
+                               <span className="text-sm text-white/70">Create a Listing</span>
+                             </div>
+                             <span className="font-mono text-sm text-[#f97316] font-bold">+{XP_REWARDS.createListing} XP</span>
+                           </div>
+                           <div className="flex justify-between items-center p-4 rounded-2xl bg-white/5 border border-white/5 hover:bg-white/10 transition-all">
+                             <div className="flex items-center gap-3">
+                               <span className="material-symbols-outlined text-[#f97316] text-sm">task_alt</span>
+                               <span className="text-sm text-white/70">Complete Event</span>
+                             </div>
+                             <span className="font-mono text-sm text-[#f97316] font-bold">+{XP_REWARDS.completeEvent} XP</span>
+                           </div>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Host Path Guide */}
+                    {activePathTypes.includes('host') && (
+                      <div className="space-y-4">
+                        <p className="text-[10px] font-black text-[#3b82f6] uppercase tracking-widest opacity-60">Host Career</p>
+                        <div className="space-y-3">
+                           <div className="flex justify-between items-center p-4 rounded-2xl bg-white/5 border border-white/5 hover:bg-white/10 transition-all">
+                             <div className="flex items-center gap-3">
+                               <span className="material-symbols-outlined text-[#3b82f6] text-sm">apartment</span>
+                               <span className="text-sm text-white/70">Upload Venue</span>
+                             </div>
+                             <span className="font-mono text-sm text-[#3b82f6] font-bold">+{XP_REWARDS.uploadVenue} XP</span>
+                           </div>
+                           <div className="flex justify-between items-center p-4 rounded-2xl bg-white/5 border border-white/5 hover:bg-white/10 transition-all">
+                             <div className="flex items-center gap-3">
+                               <span className="material-symbols-outlined text-[#3b82f6] text-sm">star_rate</span>
+                               <span className="text-sm text-white/70">Venue Featured</span>
+                             </div>
+                             <span className="font-mono text-sm text-[#3b82f6] font-bold">+{XP_REWARDS.venueFeatured} XP</span>
+                           </div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </section>
+              </motion.div>
+            ) : (
+              <motion.div 
+                key="stamps" 
+                initial={{ opacity: 0, x: 20 }} 
+                animate={{ opacity: 1, x: 0 }} 
+                exit={{ opacity: 0, x: -20 }} 
+                className="bg-white/[0.02] border border-white/5 rounded-[3rem] p-8 min-h-[500px]"
+              >
+                <PassportGrid stamps={MOCK_PASSPORT_STAMPS} />
+                {MOCK_PASSPORT_STAMPS.length === 0 && (
+                   <div className="flex flex-col items-center justify-center py-32 opacity-20 text-center">
+                      <span className="material-symbols-outlined text-9xl mb-6">menu_book</span>
+                      <p className="font-display font-bold text-2xl tracking-tight text-white">Your passport is empty</p>
+                      <p className="text-sm mt-2 text-white/60">Attend exclusive events to start your collection!</p>
+                   </div>
+                )}
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+      </main>
+
+      <BadgeModal badge={selectedBadge} isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
+      
+      <style jsx global>{`
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.05); border-radius: 10px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.1); }
+      `}</style>
     </div>
   );
 };

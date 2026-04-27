@@ -1,8 +1,8 @@
 'use client';
 
 import React from 'react';
-import { Badge, BadgeRarity } from '@/types/gamification';
-import { BADGE_COLORS } from '@/types/gamification';
+import { motion } from 'motion/react';
+import { Badge } from '@/types/gamification';
 
 interface BadgeCardProps {
   badge: Badge;
@@ -11,71 +11,71 @@ interface BadgeCardProps {
   className?: string;
 }
 
-export default function BadgeCard({ badge, onClick, locked = false, className = '' }: BadgeCardProps) {
-  if (locked) {
-    return (
-      <div
-        className={`glass-card rounded-[2rem] p-6 flex flex-col items-center justify-center opacity-40 border-dashed border-2 border-white/5 grayscale ${className}`}
-      >
-        <span className="material-symbols-outlined text-white/20 text-[32px] mb-2">lock</span>
-        <span className="text-[10px] text-white/20 uppercase font-bold tracking-widest">Locked</span>
-      </div>
-    );
+const getPathColor = (path: string) => {
+  switch (path) {
+    case 'user': return '#22c55e'; // Green
+    case 'foxer': return '#f97316'; // Orange
+    case 'host': return '#3b82f6'; // Blue
+    case 'mayor': return '#ccff00'; // Neon
+    default: return '#ffffff';
   }
+};
 
-  const rarityClass = `badge-${badge.rarity.toLowerCase()}`;
-
+export default function BadgeCard({ badge, onClick, locked = false, className = '' }: BadgeCardProps) {
   return (
-    <div
+    <motion.div
+      whileHover={{ scale: 1.05, translateY: -5 }}
+      whileTap={{ scale: 0.95 }}
       onClick={onClick}
-      className={`glass-card rounded-[2rem] p-6 flex flex-col items-center text-center group cursor-pointer hover:bg-surface-highlight transition-all hover:scale-105 border border-white/5 hover:border-accent/20 ${className}`}
+      className={`relative aspect-square w-full rounded-[2.5rem] p-4 flex flex-col items-center justify-center cursor-pointer transition-all duration-300 overflow-hidden group ${
+        locked ? 'bg-white/[0.02] border border-white/5 opacity-40 grayscale' : 'bg-emerald-950/40 border border-emerald-500/20'
+      } ${className}`}
     >
-      {/* Badge icon with glow effect */}
-      <div className="h-16 w-16 mb-4 relative">
-        <div
-          className="absolute inset-0 rounded-full blur-xl opacity-30"
-          style={{ backgroundColor: badge.color }}
-        ></div>
-        <div
-          className={`relative h-full w-full ${rarityClass} rounded-full border border-white/10 flex items-center justify-center shadow-lg group-hover:rotate-12 transition-transform duration-500`}
-        >
-          <span className="material-symbols-outlined text-[32px] drop-shadow-lg text-white">
-            {badge.icon}
-          </span>
-        </div>
+      {/* Background Glow */}
+      {!locked && (
+        <div 
+          className="absolute inset-0 opacity-20 blur-2xl transition-opacity group-hover:opacity-40"
+          style={{ background: `radial-gradient(circle at center, ${badge.color || '#ccff00'}, transparent)` }}
+        />
+      )}
+
+      {/* Icon Circle */}
+      <div className={`relative z-10 w-12 h-12 sm:w-16 sm:h-16 rounded-full flex items-center justify-center mb-3 sm:mb-4 transition-transform duration-500 group-hover:rotate-12 ${
+        locked ? 'bg-white/5' : 'bg-black/40 shadow-inner'
+      }`}
+      style={{ border: `1px solid ${locked ? 'rgba(255,255,255,0.1)' : badge.color + '40'}` }}>
+        <span className={`material-symbols-outlined text-2xl sm:text-3xl ${locked ? 'text-white/20' : ''}`} style={{ color: !locked ? badge.color : undefined }}>
+          {locked ? 'lock' : badge.icon}
+        </span>
       </div>
 
-      {/* Badge name */}
-      <h4 className="text-sm font-bold text-white mb-1 group-hover:text-accent transition-colors">
-        {badge.name}
-      </h4>
-
-      {/* Rarity label */}
-      <span
-        className="text-[10px] uppercase tracking-widest font-bold mb-2"
-        style={{ color: BADGE_COLORS[badge.rarity] }}
-      >
-        {badge.rarity}
-      </span>
-
-      {/* Progress bar (if applicable) */}
-      {badge.progress !== undefined && badge.maxProgress !== undefined && (
-        <div className="w-full mt-2">
-          <div className="w-full bg-white/10 rounded-full h-1.5 overflow-hidden">
-            <div
-              className="h-full rounded-full transition-all duration-300"
-              style={{
-                width: `${(badge.progress / badge.maxProgress) * 100}%`,
-                backgroundColor: badge.color,
+      {/* Text Info */}
+      <div className="relative z-10 text-center w-full px-2">
+        <h4 className={`text-[9px] sm:text-[10px] font-bold mb-1 tracking-tight truncate ${locked ? 'text-white/20' : 'text-white'}`}>
+          {badge.name || 'Unknown Badge'}
+        </h4>
+        <div className="space-y-1 sm:space-y-1.5">
+          <p className="text-[7px] sm:text-[9px] font-black uppercase tracking-[0.2em]" style={{ color: !locked ? badge.color : 'rgba(255,255,255,0.1)' }}>
+            {badge.rarity}
+          </p>
+          {badge.path && (
+            <div 
+              className={`inline-flex items-center gap-1 px-2 py-0.5 sm:px-3 sm:py-1 rounded-full border transition-all ${locked ? 'bg-white/5 border-white/10 opacity-60' : ''}`}
+              style={{ 
+                backgroundColor: !locked ? `${getPathColor(badge.path)}15` : undefined,
+                borderColor: !locked ? `${getPathColor(badge.path)}40` : undefined,
+                boxShadow: !locked ? `0 0 10px ${getPathColor(badge.path)}20` : undefined
               }}
-            ></div>
-          </div>
-          <div className="text-[9px] text-white/40 mt-1 font-mono">
-            {badge.progress} / {badge.maxProgress}
-          </div>
+            >
+              <span className="w-1 h-1 sm:w-1.5 sm:h-1.5 rounded-full" style={{ backgroundColor: !locked ? getPathColor(badge.path) : 'rgba(255,255,255,0.2)' }}></span>
+              <p className="text-[6px] sm:text-[8px] font-black uppercase tracking-widest text-white">
+                {badge.path === 'user' ? 'Citizen' : badge.path}
+              </p>
+            </div>
+          )}
         </div>
-      )}
-    </div>
+      </div>
+    </motion.div>
   );
 }
 
@@ -84,19 +84,27 @@ interface BadgeGridProps {
   maxDisplay?: number;
   onBadgeClick?: (badge: Badge) => void;
   className?: string;
+  lockedBadges?: string[];
 }
 
-export function BadgeGrid({ badges, maxDisplay = 6, onBadgeClick, className = '' }: BadgeGridProps) {
+export function BadgeGrid({ badges, maxDisplay = 6, onBadgeClick, className = '', lockedBadges = [] }: BadgeGridProps) {
   const displayedBadges = badges.slice(0, maxDisplay);
   const lockedCount = Math.max(0, maxDisplay - badges.length);
 
   return (
-    <div className={`grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6 ${className}`}>
+    <div className={`grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 sm:gap-6 place-items-center ${className}`}>
       {displayedBadges.map((badge) => (
-        <BadgeCard key={badge.id} badge={badge} onClick={() => onBadgeClick?.(badge)} />
+        <BadgeCard 
+          key={badge.id} 
+          badge={badge} 
+          onClick={() => onBadgeClick?.(badge)} 
+          locked={lockedBadges.includes(badge.id)}
+        />
       ))}
       {Array.from({ length: lockedCount }).map((_, idx) => (
-        <BadgeCard key={`locked-${idx}`} badge={{} as Badge} locked={true} />
+        <div key={`locked-container-${idx}`} className="w-full">
+          <BadgeCard badge={{} as Badge} locked={true} />
+        </div>
       ))}
     </div>
   );

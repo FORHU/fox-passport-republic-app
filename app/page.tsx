@@ -13,7 +13,18 @@ import AuthModal from "@/components/landing/AuthModal";
 // --- Search Results Components ---
 import ListingCard from "@/components/landing/ListingCard";
 import { getVenues } from "@/lib/server/data";
+import { getUser } from "@/lib/server/auth";
 import { filterVenues } from "@/lib/helpers/filterVenues";
+
+const VENUE_ROLES = ['host', 'mayor', 'foxerAsset', 'foxerService'];
+
+function userCanSeeVenues(user: any): boolean {
+  if (!user) return true; // unauthenticated visitors see venues freely
+  const systemRole = (user?.systemRole ?? user?.role ?? '').toLowerCase();
+  if (systemRole === 'admin') return true;
+  const roleType: string[] = user?.roleType ?? [];
+  return roleType.some((r) => VENUE_ROLES.includes(r));
+}
 
 interface HomePageProps {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
@@ -23,6 +34,9 @@ async function HomeContent({ searchParams }: HomePageProps) {
   const params = await searchParams;
   const locationQuery = typeof params.location === 'string' ? params.location : undefined;
   const categoryQuery = typeof params.category === 'string' ? params.category : undefined;
+
+  const user = await getUser();
+  const canSeeVenues = userCanSeeVenues(user);
 
   // Fetch venues from API
   const venues = await getVenues();
@@ -48,7 +62,15 @@ async function HomeContent({ searchParams }: HomePageProps) {
               <p className="text-gray-500 text-xs md:text-sm">{filteredVenues.length} results found</p>
             </div>
 
-            {filteredVenues.length > 0 ? (
+            {!canSeeVenues ? (
+              <div className="flex flex-col items-center justify-center py-20 text-center">
+                <div className="text-4xl mb-4">🏛️</div>
+                <h3 className="text-lg font-bold text-gray-900">Venues are for Hosts &amp; Foxers</h3>
+                <p className="text-gray-500 max-w-xs mt-2 text-sm">
+                  Venue listings are only visible to Hosts, Foxers, and Mayors. Apply for a role to unlock access.
+                </p>
+              </div>
+            ) : filteredVenues.length > 0 ? (
               <div className="grid grid-cols-3 sm:grid-cols-2 gap-x-2 gap-y-6 md:gap-x-6 md:gap-y-10">
                 {filteredVenues.map((venue) => (
                   <ListingCard key={venue.id} venue={venue} />

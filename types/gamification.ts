@@ -11,6 +11,7 @@ export interface Badge {
   rarity: BadgeRarity;
   icon: string;
   color: string;
+  path?: UserPath; // NEW: associate badge with a specific path
   earnedAt?: Date;
   progress?: number; // For badges with progress requirements
   maxProgress?: number;
