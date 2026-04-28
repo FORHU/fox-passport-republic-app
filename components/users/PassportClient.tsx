@@ -73,7 +73,16 @@ const PassportClient: React.FC<PassportClientProps> = ({ user }) => {
   const [selectedBadge, setSelectedBadge] = useState<Badge | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  const activePathTypes: UserPath[] = ['user'];
+  // Map API roleType[] to gamification UserPath[]
+  const roleToPath = (role: string): UserPath | null => {
+    if (role === 'host' || role === 'mayor') return 'host';
+    if (role === 'foxerService' || role === 'foxerAsset') return 'foxer';
+    return null;
+  };
+  const rolePaths: UserPath[] = Array.from(
+    new Set((user?.roleType as string[] || []).map(roleToPath).filter(Boolean) as UserPath[])
+  );
+  const activePathTypes: UserPath[] = rolePaths.length > 0 ? [...rolePaths, 'user'] : ['user'];
   const filteredPaths = mockPaths.filter(p => activePathTypes.includes(p.path));
   
   // Show ALL badges in the collection if showAllBadges is true, 
@@ -152,7 +161,7 @@ const PassportClient: React.FC<PassportClientProps> = ({ user }) => {
           <div className="relative mb-6">
             <div className="h-28 w-28 rounded-[2rem] bg-white/5 border border-white/10 p-2 group transition-all duration-500 hover:border-[#ccff00]/30">
                <div className="h-full w-full rounded-[1.5rem] bg-white/10 flex items-center justify-center text-4xl font-display font-bold text-white/20 overflow-hidden relative">
-                  {user?.avatar ? <img src={user.avatar} className="h-full w-full object-cover" alt="" /> : userInitials}
+                  {user?.imgId ? <img src={user.imgId} className="h-full w-full object-cover" alt="" /> : userInitials}
                </div>
             </div>
             <div className="absolute -bottom-2 -right-2 h-8 w-8 bg-[#ccff00] rounded-full border-4 border-black flex items-center justify-center shadow-lg">
@@ -162,7 +171,10 @@ const PassportClient: React.FC<PassportClientProps> = ({ user }) => {
           
           <h2 className="text-2xl font-display font-bold text-white mb-1 tracking-tight">{userName}</h2>
           <p className="text-[10px] text-white/30 uppercase tracking-[0.2em] font-black">
-            Citizen
+            {activePathTypes
+              .filter(p => p !== 'user')
+              .map(p => p === 'host' ? 'Host' : p === 'foxer' ? 'Foxer' : p)
+              .join(' · ') || 'Citizen'}
           </p>
         </div>
 
