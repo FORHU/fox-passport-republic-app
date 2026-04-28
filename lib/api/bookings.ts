@@ -19,7 +19,7 @@ export async function createCheckoutEventContext(payload: {
     currency: "PHP"
   };
 
-  const resp = await api.post("/events", eventPayload);
+  const resp = await api.post("/event-requests", eventPayload);
   return resp.data?.data;
 }
 
