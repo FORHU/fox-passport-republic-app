@@ -134,7 +134,7 @@ const CustomExperienceBuilder: React.FC<{ isOpen: boolean; onClose: () => void; 
   // Success Screen
   if (isSuccess) {
     return (
-      <div className="fixed inset-0 z-[60] bg-background flex flex-col items-center justify-center p-4 animate-in fade-in duration-300">
+      <div className="fixed inset-0 z-60 bg-background flex flex-col items-center justify-center p-4 animate-in fade-in duration-300">
         <div className="w-full max-w-md text-center">
           <div className="h-32 w-32 rounded-full bg-accent/10 flex items-center justify-center text-accent mb-8 mx-auto shadow-[0_0_60px_rgba(204,255,0,0.2)]">
             <span className="material-symbols-outlined text-6xl animate-bounce">rocket_launch</span>
@@ -152,7 +152,7 @@ const CustomExperienceBuilder: React.FC<{ isOpen: boolean; onClose: () => void; 
   }
 
   return (
-    <div className="fixed inset-0 z-[60] bg-[#02040a] text-white flex flex-col animate-in slide-in-from-bottom-4 duration-300">
+    <div className="fixed inset-0 z-60 bg-[#02040a] text-white flex flex-col animate-in slide-in-from-bottom-4 duration-300">
       {/* Header */}
       <header className="h-20 border-b border-white/5 flex items-center justify-between px-6 bg-[#0f111a]/50 backdrop-blur-md sticky top-0 z-20">
         <div className="flex items-center gap-4">
@@ -171,7 +171,7 @@ const CustomExperienceBuilder: React.FC<{ isOpen: boolean; onClose: () => void; 
 
       <div className="flex-1 flex overflow-hidden">
         {/* Left Sidebar: Categories */}
-        <aside className="w-20 md:w-64 flex-shrink-0 border-r border-white/5 bg-[#0f111a]/30 flex flex-col">
+        <aside className="w-20 md:w-64 shrink-0 border-r border-white/5 bg-[#0f111a]/30 flex flex-col">
           <div className="p-4 space-y-2 overflow-y-auto flex-1">
             {SERVICE_CATEGORIES.map(cat => (
               <button
@@ -200,7 +200,7 @@ const CustomExperienceBuilder: React.FC<{ isOpen: boolean; onClose: () => void; 
         </aside>
 
         {/* Center: Main Content Area */}
-        <main className="flex-1 overflow-y-auto p-6 md:p-10 relative bg-gradient-to-b from-[#02040a] to-[#0f111a]">
+        <main className="flex-1 overflow-y-auto p-6 md:p-10 relative bg-linear-to-b from-[#02040a] to-[#0f111a]">
           {/* Search Bar */}
           {activeCategory !== 'foxer' && (
             <div className="mb-8 sticky top-0 z-10 pt-2 pb-4 bg-[#02040a]/95 backdrop-blur-sm -mt-2 -mx-2 px-2">
@@ -307,7 +307,7 @@ const CustomExperienceBuilder: React.FC<{ isOpen: boolean; onClose: () => void; 
 
         {/* Right Sidebar: Bill of Materials / Summary / Drop Zone */}
         <aside 
-          className={`w-80 flex-shrink-0 bg-[#0f111a] border-l border-white/5 flex flex-col shadow-2xl relative z-10 transition-all duration-300 ${
+          className={`w-80 shrink-0 bg-[#0f111a] border-l border-white/5 flex flex-col shadow-2xl relative z-10 transition-all duration-300 ${
             isDragOver ? 'bg-white/5 border-accent shadow-[inset_0_0_40px_rgba(204,255,0,0.1)]' : ''
           }`}
           onDragOver={handleDragOver}
@@ -473,7 +473,7 @@ const EventDetailsPage: React.FC = () => {
 
       {/* Lightbox Gallery Overlay */}
       {galleryOpen && (
-        <div className="fixed inset-0 z-[100] bg-black/95 backdrop-blur-md flex flex-col animate-in fade-in duration-200">
+        <div className="fixed inset-0 z-100 bg-black/95 backdrop-blur-md flex flex-col animate-in fade-in duration-200">
           <div className="flex justify-between items-center px-6 py-4 border-b border-white/10 bg-black/50">
             <h3 className="font-display font-bold text-white">{venue.title}</h3>
             <button onClick={() => setGalleryOpen(false)} className="p-2 hover:bg-white/10 rounded-full transition-colors">
@@ -515,7 +515,7 @@ const EventDetailsPage: React.FC = () => {
         </div>
       </header>
 
-      <main className="flex-grow pt-28 pb-20 px-4 sm:px-6">
+      <main className="grow pt-28 pb-20 px-4 sm:px-6">
         <div className="max-w-7xl mx-auto">
           
           {/* Header Title Section */}
@@ -808,7 +808,7 @@ const EventDetailsPage: React.FC = () => {
                  <p className="text-text-muted text-sm mb-6">{venue.location}, {venue.province}</p>
                  <div className="h-80 w-full rounded-2xl bg-[#1f2235] relative overflow-hidden flex items-center justify-center border border-white/10 group">
                     <div className="absolute inset-0 opacity-20" style={{ backgroundImage: "radial-gradient(#ffffff 1px, transparent 1px)", backgroundSize: "20px 20px" }}></div>
-                    <div className="absolute inset-0 bg-gradient-to-t from-[#02040a] via-transparent to-transparent opacity-50"></div>
+                    <div className="absolute inset-0 bg-linear-to-t from-[#02040a] via-transparent to-transparent opacity-50"></div>
                     <div className="relative z-10 flex flex-col items-center gap-2 group-hover:-translate-y-2 transition-transform duration-300">
                         <div className="h-16 w-16 rounded-full bg-accent/20 flex items-center justify-center animate-pulse">
                             <div className="h-4 w-4 bg-accent rounded-full shadow-[0_0_20px_#ccff00]"></div>
@@ -883,7 +883,7 @@ const EventDetailsPage: React.FC = () => {
             <div className="relative">
               <div className="sticky top-24">
                 <div className="glass-card rounded-2xl border border-white/10 p-6 shadow-glow relative overflow-hidden">
-                  <div className="absolute top-0 right-0 w-32 h-32 bg-accent/10 rounded-full blur-[40px] pointer-events-none"></div>
+                  <div className="absolute top-0 right-0 w-32 h-32 bg-accent/10 rounded-full blur-2xl pointer-events-none"></div>
                   
                   <div className="flex justify-between items-end mb-6 relative z-10">
                     <div>

@@ -108,7 +108,7 @@ export const ProgressDashboard: React.FC<ProgressDashboardProps> = ({
 
           {/* Total Mastery Card */}
           <div className="glass-card p-8 rounded-[2.5rem] min-w-[320px] border-t border-white/10 shadow-glow relative overflow-hidden group">
-            <div className="absolute top-[-20%] right-[-20%] w-[100%] h-[100%] bg-[#ccff00]/5 rounded-full blur-[60px] pointer-events-none group-hover:bg-[#ccff00]/10 transition-all duration-500"></div>
+            <div className="absolute top-[-20%] right-[-20%] w-full h-full bg-[#ccff00]/5 rounded-full blur-[60px] pointer-events-none group-hover:bg-[#ccff00]/10 transition-all duration-500"></div>
 
             <div className="relative z-10 flex justify-between items-center mb-4">
               <span className="text-xs font-bold uppercase tracking-widest text-white/50">
@@ -121,7 +121,7 @@ export const ProgressDashboard: React.FC<ProgressDashboardProps> = ({
 
             <div className="w-full bg-white/10 rounded-full h-3 mb-2 overflow-hidden">
               <div
-                className="bg-gradient-to-r from-[#ccff00] to-green-500 h-full rounded-full shadow-[0_0_10px_#ccff00]"
+                className="bg-linear-to-r from-[#ccff00] to-green-500 h-full rounded-full shadow-[0_0_10px_#ccff00]"
                 style={{ width: `${(totalXP / maxTotalXP) * 100}%` }}
               ></div>
             </div>

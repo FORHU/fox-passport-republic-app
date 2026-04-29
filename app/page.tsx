@@ -85,7 +85,7 @@ async function HomeContent({ searchParams }: HomePageProps) {
             )}
           </div>
 
-          <div className="hidden lg:block h-full sticky top-0 rounded-xl overflow-hidden bg-gray-100 border border-gray-200 relative">
+          <div className="hidden lg:block h-full sticky top-0 rounded-xl overflow-hidden bg-gray-100 border border-gray-200">
             <img
               src="https://images.unsplash.com/photo-1524661135-423995f22d0b?auto=format&fit=crop&w=1000&q=80"
               className="w-full h-full object-cover opacity-50 grayscale hover:grayscale-0 transition-all duration-700"

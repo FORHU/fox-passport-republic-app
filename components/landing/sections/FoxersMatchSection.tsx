@@ -151,7 +151,7 @@ function FoxerCard({ foxer }: { foxer: Foxer }) {
         {foxer.images.map((img, idx) => (
           <div
             key={idx}
-            className="h-20 w-20 rounded-2xl overflow-hidden border border-white/10 group-hover:scale-105 transition-transform duration-300 first:rotate-[-3deg] last:rotate-[3deg]"
+            className="h-20 w-20 rounded-2xl overflow-hidden border border-white/10 group-hover:scale-105 transition-transform duration-300 first:-rotate-3 last:rotate-3"
           >
             <img src={img} alt="Work" className="h-full w-full object-cover" />
           </div>
@@ -166,7 +166,7 @@ function FoxerCard({ foxer }: { foxer: Foxer }) {
             e.stopPropagation();
             router.push(`/match/${foxer.id}`);
           }}
-          className="flex-1 rounded-full bg-gradient-to-r from-[#8b5cf6] to-[#a855f7] py-3.5 text-sm font-bold text-white hover:opacity-90 transition-opacity hover:shadow-[0_0_15px_rgba(139,92,246,0.5)] flex items-center justify-center cursor-pointer"
+          className="flex-1 rounded-full bg-linear-to-r from-[#8b5cf6] to-[#a855f7] py-3.5 text-sm font-bold text-white hover:opacity-90 transition-opacity hover:shadow-[0_0_15px_rgba(139,92,246,0.5)] flex items-center justify-center cursor-pointer"
         >
           Match Me
         </button>

@@ -12,6 +12,14 @@ export interface Category {
   subCategories?: Category[];
   parentCategory?: Category;
 
+  // Source breakdown — tells which entity types this category belongs to
+  sources?: {
+    assets: number;
+    venues: number;
+    services: number;
+    events: number;
+  };
+
   // Design / Presentation
   image?: string | null;
   tagline?: string | null;
