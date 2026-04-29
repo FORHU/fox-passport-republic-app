@@ -181,7 +181,7 @@ export default function ProfileSettingsClient() {
 
       <div className="mx-auto max-w-6xl px-4 pt-28 pb-20 flex gap-8">
         {/* Sidebar */}
-        <aside className="w-64 flex-shrink-0">
+        <aside className="w-64 shrink-0">
           <div className="sticky top-28 space-y-6">
             {/* Avatar card */}
             <div className="bg-[#0f111a] border border-white/5 rounded-[2rem] p-6 text-center">

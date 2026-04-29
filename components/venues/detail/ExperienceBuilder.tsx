@@ -44,7 +44,7 @@ export function CustomExperienceBuilder({ isOpen, onClose, venuePrice }: Experie
   // Success Screen
   if (isSuccess) {
     return (
-      <div className="fixed inset-0 z-[60] bg-background flex flex-col items-center justify-center p-4 animate-in fade-in duration-300">
+      <div className="fixed inset-0 z-60 bg-background flex flex-col items-center justify-center p-4 animate-in fade-in duration-300">
         <div className="w-full max-w-md text-center">
           <div className="h-32 w-32 rounded-full bg-accent/10 flex items-center justify-center text-accent mb-8 mx-auto shadow-[0_0_60px_rgba(204,255,0,0.2)]">
             <span className="material-symbols-outlined text-6xl animate-bounce">rocket_launch</span>
@@ -66,7 +66,7 @@ export function CustomExperienceBuilder({ isOpen, onClose, venuePrice }: Experie
   }
 
   return (
-    <div className="fixed inset-0 z-[60] bg-[#02040a] text-white flex flex-col animate-in slide-in-from-bottom-4 duration-300">
+    <div className="fixed inset-0 z-60 bg-[#02040a] text-white flex flex-col animate-in slide-in-from-bottom-4 duration-300">
       {/* Header */}
       <header className="h-20 border-b border-white/5 flex items-center justify-between px-6 bg-[#0f111a]/50 backdrop-blur-md sticky top-0 z-20">
         <div className="flex items-center gap-4">
@@ -121,7 +121,7 @@ export function CustomExperienceBuilder({ isOpen, onClose, venuePrice }: Experie
         </aside>
 
         {/* Center: Main Content Area */}
-        <main className="flex-1 overflow-y-auto p-6 md:p-10 relative bg-gradient-to-b from-[#02040a] to-[#0f111a]">
+        <main className="flex-1 overflow-y-auto p-6 md:p-10 relative bg-linear-to-b from-[#02040a] to-[#0f111a]">
           {activeCategory !== 'foxer' && (
             <div className="mb-8 sticky top-0 z-10 pt-2 pb-4 bg-[#02040a]/95 backdrop-blur-sm -mt-2 -mx-2 px-2">
               <div className="relative max-w-2xl">
@@ -215,7 +215,6 @@ export function CustomExperienceBuilder({ isOpen, onClose, venuePrice }: Experie
                   ))}
                 </div>
               )}
-              </div>
             </div>
           ) : (
             <div className="space-y-6 animate-in fade-in slide-in-from-bottom-8 duration-500">

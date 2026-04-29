@@ -134,7 +134,7 @@ export const AdminEventsTable: React.FC<EventsTableProps> = ({ events, isLoading
                   
                   {/* Expanded Detail Panel */}
                   {expandedRow === event.id && (
-                    <tr className="bg-white/[0.02]">
+                    <tr className="bg-white/2">
                       <td colSpan={5} className="p-6 border-b border-white/5 animate-in fade-in slide-in-from-top-4 duration-300">
                         <div className="grid grid-cols-2 md:grid-cols-4 gap-6 p-4 rounded-2xl bg-black/20 border border-white/5 shadow-inner">
                           <div>

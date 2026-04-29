@@ -15,7 +15,7 @@ export default function VibeCheckSection({
 }: VibeCheckSectionProps) {
   return (
     <section className="py-10 border-y border-white/5 bg-black/20 backdrop-blur-sm relative overflow-hidden">
-      <div className="absolute inset-0 bg-gradient-to-r from-background via-transparent to-background z-10 pointer-events-none"></div>
+      <div className="absolute inset-0 bg-linear-to-r from-background via-transparent to-background z-10 pointer-events-none"></div>
 
       {/* Header */}
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 mb-8 flex justify-between items-end relative z-20 reveal-on-scroll">

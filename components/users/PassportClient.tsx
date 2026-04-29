@@ -192,7 +192,7 @@ const PassportClient: React.FC<PassportClientProps> = ({ user }) => {
           </p>
         </div>
 
-        <div className="space-y-6 flex-grow overflow-y-auto custom-scrollbar pr-2">
+        <div className="space-y-6 grow overflow-y-auto custom-scrollbar pr-2">
           <div className="space-y-3">
             <div className="flex justify-between text-[10px] font-black uppercase tracking-[0.2em] text-white/30">
               <span>Mastery XP</span>
@@ -200,18 +200,18 @@ const PassportClient: React.FC<PassportClientProps> = ({ user }) => {
             </div>
             <div className="w-full bg-white/5 rounded-full h-2 overflow-hidden border border-white/5">
               <div 
-                className="h-full bg-gradient-to-r from-[#22c55e] to-[#ccff00] transition-all duration-1000 shadow-[0_0_10px_#ccff0044]" 
+                className="h-full bg-linear-to-r from-[#22c55e] to-[#ccff00] transition-all duration-1000 shadow-[0_0_10px_#ccff0044]" 
                 style={{ width: `${Math.min(100, (totalXP / maxTotalXP) * 100)}%` }}
               ></div>
             </div>
           </div>
 
-          <div className="p-4 rounded-2xl bg-white/[0.02] border border-white/5 space-y-4">
+          <div className="p-4 rounded-2xl bg-white/2 border border-white/5 space-y-4">
             <p className="text-[9px] font-black uppercase tracking-widest text-white/30">Active Perks</p>
             <div className="space-y-4">
               {perks.slice(0, 4).map((perk, i) => (
                 <div key={i} className="flex items-center gap-3">
-                  <div className="h-8 w-8 rounded-lg bg-white/5 flex items-center justify-center flex-shrink-0">
+                  <div className="h-8 w-8 rounded-lg bg-white/5 flex items-center justify-center shrink-0">
                     <span className="material-symbols-outlined text-[18px] text-[#ccff00]">{perk.icon}</span>
                   </div>
                   <div>
@@ -247,7 +247,7 @@ const PassportClient: React.FC<PassportClientProps> = ({ user }) => {
       </aside>
 
       {/* Main Content Area */}
-      <main className="flex-grow relative overflow-y-auto custom-scrollbar bg-[#050505] z-10">
+      <main className="grow relative overflow-y-auto custom-scrollbar bg-[#050505] z-10">
         <div className="absolute top-0 right-0 w-[50%] h-[50%] bg-[#ccff00]/5 rounded-full blur-[120px] -mr-32 -mt-32 pointer-events-none"></div>
         
         <div className="p-12 min-h-full flex flex-col">
@@ -294,7 +294,7 @@ const PassportClient: React.FC<PassportClientProps> = ({ user }) => {
                 </div>
 
                 {matchSubTab === 'status' ? (
-                  <div className="bg-white/[0.03] border border-white/5 rounded-[2.5rem] p-8 hover:bg-white/[0.05] transition-all">
+                  <div className="bg-white/3 border border-white/5 rounded-[2.5rem] p-8 hover:bg-white/5 transition-all">
                     <div className="flex flex-col lg:flex-row gap-8 items-center">
                       <div className="flex items-center gap-6">
                         <div className="relative">
@@ -312,13 +312,13 @@ const PassportClient: React.FC<PassportClientProps> = ({ user }) => {
                           <p className="text-white/30 text-[10px] font-mono uppercase tracking-widest">Forest Fairy Tale Request</p>
                         </div>
                       </div>
-                      <div className="flex-grow w-full lg:max-w-md">
+                      <div className="grow w-full lg:max-w-md">
                         <div className="flex justify-between mb-2">
                            <span className="text-[10px] font-black text-[#ccff00] uppercase tracking-widest">Reviewing</span>
                            <span className="text-[10px] text-white/20 font-mono tracking-widest">Typically 2h</span>
                         </div>
                         <div className="relative h-1.5 w-full bg-white/5 rounded-full overflow-hidden">
-                          <div className="absolute inset-0 bg-gradient-to-r from-[#ccff00] to-[#ccff00]/50 animate-pulse-slow" style={{ width: '40%' }}></div>
+                          <div className="absolute inset-0 bg-linier-to-r from-[#ccff00] to-[#ccff00]/50 animate-pulse-slow" style={{ width: '40%' }}></div>
                         </div>
                         <div className="flex justify-between mt-3 text-[8px] font-black uppercase text-white/40 tracking-widest">
                           <span className="text-[#ccff00]">Sent</span>
@@ -330,7 +330,7 @@ const PassportClient: React.FC<PassportClientProps> = ({ user }) => {
                     </div>
                   </div>
                 ) : (
-                  <div className="bg-white/[0.03] border border-white/5 rounded-[3rem] overflow-hidden">
+                  <div className="bg-white/3 border border-white/5 rounded-[3rem] overflow-hidden">
                     <table className="w-full text-left">
                       <thead>
                         <tr className="border-b border-white/5">
@@ -345,7 +345,7 @@ const PassportClient: React.FC<PassportClientProps> = ({ user }) => {
                           { rank: 2, name: 'Sarah K.', level: 38, avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=100&auto=format&fit=crop' },
                           { rank: 3, name: 'James W.', level: 35, avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?q=80&w=100&auto=format&fit=crop' },
                         ].map((p) => (
-                          <tr key={p.rank} className="hover:bg-white/[0.02] transition-colors">
+                          <tr key={p.rank} className="hover:bg-white/2 transition-colors">
                             <td className="px-8 py-6 text-xl font-display font-bold text-[#ccff00]">#{p.rank}</td>
                             <td className="px-8 py-6 flex items-center gap-4">
                               <img src={p.avatar} className="h-10 w-10 rounded-xl object-cover border border-white/10" alt="" />
@@ -371,7 +371,7 @@ const PassportClient: React.FC<PassportClientProps> = ({ user }) => {
               >
                 <div className={`grid grid-cols-1 ${filteredPaths.length > 1 ? 'sm:grid-cols-2' : ''} gap-6`}>
                   {filteredPaths.map((path) => (
-                    <div key={path.path} className="bg-white/[0.03] border border-white/5 rounded-[3rem] p-8 flex flex-col items-center text-center group hover:bg-white/[0.05] transition-all relative overflow-hidden">
+                    <div key={path.path} className="bg-white/3 border border-white/5 rounded-[3rem] p-8 flex flex-col items-center text-center group hover:bg-white/5 transition-all relative overflow-hidden">
                       <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full blur-[60px] -mr-16 -mt-16"></div>
                       <CircularProgress level={path.level} currentXP={path.currentXP} requiredXP={path.requiredXP} color={path.color} size={160} strokeWidth={10} className="mb-6" />
                       <h4 className="text-2xl font-display font-bold text-white mb-1 capitalize tracking-tight">{path.path === 'user' ? 'Citizen' : path.path} Path</h4>
@@ -423,7 +423,7 @@ const PassportClient: React.FC<PassportClientProps> = ({ user }) => {
                       </button>
                     </div>
                   </div>
-                  <div className="bg-white/[0.02] border border-white/5 rounded-[3rem] p-8">
+                  <div className="bg-white/2 border border-white/5 rounded-[3rem] p-8">
                     <BadgeGrid
                       badges={showAllBadges ? MOCK_BADGES : ownedBadges}
                       maxDisplay={showAllBadges ? MOCK_BADGES.length : ownedBadges.length}
@@ -434,7 +434,7 @@ const PassportClient: React.FC<PassportClientProps> = ({ user }) => {
                   </div>
                 </section>
 
-                <section className="bg-gradient-to-br from-[#ccff00]/10 to-transparent border border-[#ccff00]/10 rounded-[3rem] p-8 relative overflow-hidden group">
+                <section className="bg-linear-to-br from-[#ccff00]/10 to-transparent border border-[#ccff00]/10 rounded-[3rem] p-8 relative overflow-hidden group">
                   <div className="absolute top-0 right-0 w-48 h-48 bg-[#ccff00]/5 rounded-full blur-[60px] -mr-24 -mt-24 group-hover:bg-[#ccff00]/10 transition-all duration-700"></div>
                   <h3 className="text-lg font-display font-bold text-white mb-8 relative z-10 flex items-center gap-2">
                     <span className="material-symbols-outlined text-[#ccff00]">auto_awesome</span> Mastery Guides
@@ -546,7 +546,7 @@ const PassportClient: React.FC<PassportClientProps> = ({ user }) => {
                 initial={{ opacity: 0, x: 20 }} 
                 animate={{ opacity: 1, x: 0 }} 
                 exit={{ opacity: 0, x: -20 }} 
-                className="bg-white/[0.02] border border-white/5 rounded-[3rem] p-8 min-h-[500px]"
+                className="bg-white/2 border border-white/5 rounded-[3rem] p-8 min-h-[500px]"
               >
                 <PassportGrid stamps={MOCK_PASSPORT_STAMPS} />
                 {MOCK_PASSPORT_STAMPS.length === 0 && (

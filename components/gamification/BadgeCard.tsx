@@ -28,7 +28,7 @@ export default function BadgeCard({ badge, onClick, locked = false, className = 
       whileTap={{ scale: 0.95 }}
       onClick={onClick}
       className={`relative aspect-square w-full rounded-[2.5rem] p-4 flex flex-col items-center justify-center cursor-pointer transition-all duration-300 overflow-hidden group ${
-        locked ? 'bg-white/[0.02] border border-white/5 opacity-40 grayscale' : 'bg-emerald-950/40 border border-emerald-500/20'
+        locked ? 'bg-white/2 border border-white/5 opacity-40 grayscale' : 'bg-emerald-950/40 border border-emerald-500/20'
       } ${className}`}
     >
       {/* Background Glow */}
