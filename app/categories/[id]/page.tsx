@@ -3,6 +3,14 @@ export const dynamic = 'force-dynamic';
 import { getCategoryBySlug, getEventsByCategory, getVenuesByCategory } from '@/lib/server/data'
 import CategoryDetailClient from '@/components/categories/CategoryDetailClient'
 
+const CATEGORY_GRADIENTS: Record<string, string> = {
+  birthday:  "from-lime-300 via-green-400 to-emerald-500",
+  wedding:   "from-pink-300 via-rose-400 to-red-400",
+  corporate: "from-emerald-400 via-teal-500 to-cyan-500",
+  social:    "from-indigo-400 via-purple-500 to-pink-500",
+  other:     "from-amber-200 via-yellow-400 to-orange-500",
+};
+
 interface CategoryDetailPageProps {
   params: Promise<{ id: string }>
 }
@@ -33,6 +41,7 @@ export default async function CategoryDetailPage({ params }: CategoryDetailPageP
     tagline: category.tagline || "Explore experiences",
     color: category.color || "#ccff00",
     spots: category.spotLabel || "Explore",
+    gradient: CATEGORY_GRADIENTS[category.name?.toLowerCase()] || category.gradient || "from-white to-gray-500",
     children: (category.subCategories || []).map((sub: any) => ({
       ...sub,
       image: sub.image || "https://images.unsplash.com/photo-1576610616656-d3aa5d1f4534?w=800",

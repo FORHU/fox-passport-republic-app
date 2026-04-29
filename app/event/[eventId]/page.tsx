@@ -411,50 +411,57 @@ const CustomExperienceBuilder: React.FC<{ isOpen: boolean; onClose: () => void; 
   );
 };
 
+const FALLBACK_IMAGES = [
+  "https://images.unsplash.com/photo-1492684223066-81342ee5ff30?w=800&auto=format&fit=crop",
+  "https://images.unsplash.com/photo-1511795409834-ef04bbd61622?w=800&auto=format&fit=crop",
+  "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=800&auto=format&fit=crop",
+  "https://images.unsplash.com/photo-1501281668745-f7f57925c3b4?w=800&auto=format&fit=crop",
+  "https://images.unsplash.com/photo-1533174072545-e8d4aa97edf9?w=800&auto=format&fit=crop",
+];
+
 const EventDetailsPage: React.FC = () => {
   const router = useRouter();
   const { eventId } = useParams();
   const [galleryOpen, setGalleryOpen] = useState(false);
   const [activeImageIndex, setActiveImageIndex] = useState(0);
   const [isCustomBookingOpen, setIsCustomBookingOpen] = useState(false);
+  const [template, setTemplate] = useState<any>(null);
 
   useEffect(() => {
     window.scrollTo(0, 0);
+    if (eventId) {
+      import('@/lib/api/bookings').then(({ getPublicTemplate }) => {
+        getPublicTemplate(eventId as string)
+          .then(data => setTemplate(data))
+          .catch(() => {});
+      });
+    }
   }, [eventId]);
 
-  // Mock Data
+  const templateImages: string[] = template?.images?.map((img: any) => img.url).filter(Boolean) ?? [];
+  const displayImages = templateImages.length > 0 ? templateImages : FALLBACK_IMAGES;
+  const location = [template?.targetCity, template?.targetState].filter(Boolean).join(', ') || 'Philippines';
+
   const venue = {
-    title: "Neon Nights: Underground Cyberpunk Rave",
-    rating: 4.92,
-    reviews: 124,
-    location: "Poblacion, Makati",
-    province: "Metro Manila",
-    category: "Nightlife",
-    guestCount: 200,
-    bedroomCount: 1, 
-    bathroomCount: 4,
-    description: "Step into a cyberpunk dreamscape right in the heart of Makati. This isn't just a party; it's an immersive journey through the city's hidden underground scenes. \n\nWe'll start at a secret rooftop bar for sunset drinks, then move to an exclusive retro-wave bunker that's normally members-only. Expect neon lights, synth-wave beats, and a crowd that matches your vibe.",
-    price: 1500,
+    title:       template?.name        ?? "Event Package",
+    location,
+    province:    template?.targetState ?? "Philippines",
+    category:    template?.category    ?? "event",
+    description: template?.description ?? "",
+    price:       template?.estimatedTotal > 0 ? template.estimatedTotal : 0,
+    images:      displayImages,
+    // static placeholders — not in the template model
+    rating: 4.92, reviews: 124,
     offers: ["VIP Access", "2 Free Drinks", "Pro Photography", "Air Conditioning", "Secure Parking", "Meet & Greet"],
-    images: [
-      "https://lh3.googleusercontent.com/aida-public/AB6AXuAmLMhfBavcKVkOWHaS4TPPk-NHIcut_ZhBBEe8lYdYR3H4t2yqSZKN4kaK-4daM6PVExafzgFu6-ETEkTvY3iOkNq3VyaKMs5jeDTMhhkOITtl93afJOgej_LM-nwJ4slOZvjY9jUaO0XJczNgnvj21yuB3eVwQrWu2qU4kFoFm9oertAy6N8vnz-DcYaCFbk-2wqIYps1HbNWSCB5TBISWObKfniMTbMOzf964UcanLKD2UIOD2M5IRj5kXf1kvppEdNzUJY4S3U",
-      "https://images.unsplash.com/photo-1574391884720-385e66752079?q=80&w=800&auto=format&fit=crop",
-      "https://images.unsplash.com/photo-1516280440614-6697288d5d38?q=80&w=800&auto=format&fit=crop",
-      "https://images.unsplash.com/photo-1493246507139-91e8fad9978e?q=80&w=800&auto=format&fit=crop",
-      "https://images.unsplash.com/photo-1533174072545-e8d4aa97edf9?q=80&w=800&auto=format&fit=crop"
-    ]
   };
 
   const host = {
-    name: "Neon Vertex",
-    avatar: "https://lh3.googleusercontent.com/aida-public/AB6AXuAawAmjQLUXCUHrFlbDS_ydJnuUpm_WUNW9I5alXTGfJCNDU8_Gnn4cey4Tt_fcRefnkP3AK4S1C13YiOGOnCLmz3aSgwJP_JwChCJBNSCeFugn97n0lpqg6JVBy926WV4xcXgfaLeBW6GNWknG__nTJeUYtmKctJxCDA5ODZq2ZxpowxJKzUXEpcS9W1ThdbCuR0rXQTeqeW2URDNRYLxCNmXPoWUlxq_9LdMzamdZIYkwK2XK3b0k_kVV4njSFnmyGojp2293vrU",
-    isCertified: true,
-    rating: 4.98,
-    reviews: 240,
-    yearsHosting: 3,
-    responseRate: 100,
-    responseTime: "within an hour",
-    description: "I'm a local photographer and nightlife curator. I specialize in finding the spots that aren't on the maps."
+    name:         template?.owner?.name  ?? "Organizer",
+    avatar:       null as string | null,
+    description:  `Organizer of ${venue.title}`,
+    isCertified:  true,
+    rating: 4.98, reviews: 240, yearsHosting: 3,
+    responseRate: 100, responseTime: "within an hour",
   };
 
   const openGallery = (index: number) => {
@@ -462,11 +469,22 @@ const EventDetailsPage: React.FC = () => {
     setGalleryOpen(true);
   };
 
+  if (!template) {
+    return (
+      <div className="bg-background min-h-screen flex items-center justify-center">
+        <div className="flex flex-col items-center gap-4 text-white/40">
+          <span className="h-8 w-8 rounded-full border-2 border-white/20 border-t-white/60 animate-spin" />
+          <span className="text-sm">Loading package…</span>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="bg-background bg-gradient-dark text-text-main antialiased min-h-screen flex flex-col selection:bg-accent selection:text-black font-body">
-      
-      <CustomExperienceBuilder 
-        isOpen={isCustomBookingOpen} 
+
+      <CustomExperienceBuilder
+        isOpen={isCustomBookingOpen}
         onClose={() => setIsCustomBookingOpen(false)} 
         venuePrice={venue.price}
       />
@@ -565,7 +583,13 @@ const EventDetailsPage: React.FC = () => {
                   <div className="absolute top-0 right-0 w-32 h-32 bg-primary/20 blur-[50px] rounded-full pointer-events-none"></div>
                   <div className="flex items-start gap-4 relative z-10">
                       <div className="relative shrink-0">
-                          <img src={host.avatar} className="w-16 h-16 rounded-full object-cover border-2 border-white/10" alt={host.name} />
+                          {host.avatar ? (
+                            <img src={host.avatar} className="w-16 h-16 rounded-full object-cover border-2 border-white/10" alt={host.name} />
+                          ) : (
+                            <div className="w-16 h-16 rounded-full bg-[#ccff00] flex items-center justify-center border-2 border-white/10">
+                              <span className="text-black text-2xl font-bold">{host.name.charAt(0).toUpperCase()}</span>
+                            </div>
+                          )}
                           <div className="absolute -bottom-1 -right-1 bg-primary text-white rounded-full p-1 border-4 border-[#0f111a] flex items-center justify-center shadow-sm">
                               <span className="material-symbols-outlined text-[14px]">verified</span>
                           </div>
@@ -823,7 +847,13 @@ const EventDetailsPage: React.FC = () => {
               {/* Host Bio */}
               <div className="flex gap-6">
                  <div className="relative shrink-0">
-                    <img src={host.avatar} className="w-16 h-16 rounded-full object-cover border-2 border-white/10" alt="Host" />
+                    {host.avatar ? (
+                      <img src={host.avatar} className="w-16 h-16 rounded-full object-cover border-2 border-white/10" alt="Host" />
+                    ) : (
+                      <div className="w-16 h-16 rounded-full bg-[#ccff00] flex items-center justify-center border-2 border-white/10">
+                        <span className="text-black text-2xl font-bold">{host.name.charAt(0).toUpperCase()}</span>
+                      </div>
+                    )}
                     <div className="absolute -bottom-1 -right-1 bg-primary text-white rounded-full p-1 border-4 border-[#0f111a] shadow-sm flex items-center justify-center">
                         <span className="material-symbols-outlined text-[14px]">verified</span>
                     </div>
@@ -887,8 +917,14 @@ const EventDetailsPage: React.FC = () => {
                   
                   <div className="flex justify-between items-end mb-6 relative z-10">
                     <div>
-                      <span className="text-2xl font-display font-bold text-white">₱{venue.price.toLocaleString()}</span>
-                      <span className="text-sm text-text-muted"> / night</span>
+                      {venue.price > 0 ? (
+                        <>
+                          <span className="text-2xl font-display font-bold text-white">₱{venue.price.toLocaleString()}</span>
+                          <span className="text-sm text-text-muted"> est. total</span>
+                        </>
+                      ) : (
+                        <span className="text-sm text-text-muted">Price on request</span>
+                      )}
                     </div>
                     <div className="flex items-center gap-1 text-xs text-white font-bold">
                         <span className="material-symbols-outlined text-[14px] fill-current">star</span>
@@ -917,7 +953,7 @@ const EventDetailsPage: React.FC = () => {
                   </div>
 
                   <button 
-                    onClick={() => router.push('/booking/config')}
+                    onClick={() => router.push(`/booking/config?templateId=${eventId}`)}
                     className="w-full btn-neon rounded-xl bg-accent py-3.5 text-black font-bold text-lg hover:shadow-[0_0_20px_rgba(204,255,0,0.4)] transition-all active:scale-95 mb-4 relative z-10"
                   >
                     Reserve
@@ -933,23 +969,25 @@ const EventDetailsPage: React.FC = () => {
 
                   <p className="text-center text-xs text-text-muted mb-6 relative z-10">You won't be charged yet</p>
 
-                  <div className="space-y-3 text-sm text-gray-300 relative z-10 pb-4">
-                    <div className="flex justify-between">
-                      <span className="underline decoration-dotted cursor-pointer">₱{venue.price.toLocaleString()} x 2 nights</span>
-                      <span>₱{(venue.price * 2).toLocaleString()}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="underline decoration-dotted cursor-pointer">Service fee</span>
-                      <span>₱150</span>
-                    </div>
-                  </div>
-
-                  <div className="h-px bg-white/10 mb-4 relative z-10"></div>
-
-                  <div className="flex justify-between items-center text-white font-bold text-lg relative z-10">
-                    <span>Total</span>
-                    <span>₱{(venue.price * 2 + 150).toLocaleString()}</span>
-                  </div>
+                  {venue.price > 0 && (
+                    <>
+                      <div className="space-y-3 text-sm text-gray-300 relative z-10 pb-4">
+                        <div className="flex justify-between">
+                          <span className="underline decoration-dotted cursor-pointer">Package estimate</span>
+                          <span>₱{venue.price.toLocaleString()}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="underline decoration-dotted cursor-pointer">Service fee</span>
+                          <span>₱150</span>
+                        </div>
+                      </div>
+                      <div className="h-px bg-white/10 mb-4 relative z-10"></div>
+                      <div className="flex justify-between items-center text-white font-bold text-lg relative z-10">
+                        <span>Total</span>
+                        <span>₱{(venue.price + 150).toLocaleString()}</span>
+                      </div>
+                    </>
+                  )}
                 </div>
                 
                 <div className="mt-4 flex items-center justify-center gap-2 text-xs text-text-muted">

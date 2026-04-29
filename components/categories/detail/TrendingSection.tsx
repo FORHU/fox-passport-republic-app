@@ -29,7 +29,7 @@ export const TrendingSection: React.FC<TrendingSectionProps> = ({ category }) =>
             ];
             const displayTitle = isMock ? [
               "Neon Jungle Rave 2024",
-              "Summer Music Festival", 
+              "Summer Music Festival",
               "Midnight Jazz Club",
               "Rooftop Sunset Party"
             ][item - 1] : item.name;
@@ -39,7 +39,7 @@ export const TrendingSection: React.FC<TrendingSectionProps> = ({ category }) =>
             return (
               <Link href={`/venues/${vid}`} key={vid + i} className="block bg-white/5 border border-white/5 rounded-[2rem] overflow-hidden group hover:shadow-2xl hover:shadow-[#ccff00]/5 transition-all cursor-pointer hover:-translate-y-1">
                 <div className="relative aspect-4/3 overflow-hidden">
-                    <Image 
+                    <Image
                       src={displayImg}
                       alt={displayTitle}
                       width={600}

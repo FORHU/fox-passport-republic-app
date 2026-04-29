@@ -51,15 +51,14 @@ async function tryRefreshToken(): Promise<string | null> {
       path: '/',
     };
 
-    cookieStore.set('fox_token', newAccessToken, { ...cookieOpts, maxAge: 7 * 24 * 60 * 60 });
-    if (newRefreshToken) {
-      cookieStore.set('fox_refresh_token', newRefreshToken, { ...cookieOpts, maxAge: 30 * 24 * 60 * 60 });
-    }
-
-    // Update the readable fox_user cookie with the new access token
-    const userStr = cookieStore.get('fox_user')?.value;
-    if (userStr) {
-      try {
+    // Cookie writes are only allowed in Server Actions/Route Handlers — skip silently in Server Components
+    try {
+      cookieStore.set('fox_token', newAccessToken, { ...cookieOpts, maxAge: 7 * 24 * 60 * 60 });
+      if (newRefreshToken) {
+        cookieStore.set('fox_refresh_token', newRefreshToken, { ...cookieOpts, maxAge: 30 * 24 * 60 * 60 });
+      }
+      const userStr = cookieStore.get('fox_user')?.value;
+      if (userStr) {
         const user = JSON.parse(decodeURIComponent(userStr));
         cookieStore.set('fox_user', JSON.stringify({ ...user, accessToken: newAccessToken }), {
           secure: process.env.NODE_ENV === 'production',
@@ -67,7 +66,9 @@ async function tryRefreshToken(): Promise<string | null> {
           maxAge: 7 * 24 * 60 * 60,
           path: '/',
         });
-      } catch {}
+      }
+    } catch {
+      // Cannot persist refreshed token in a Server Component context — the client will re-sync on next load
     }
 
     console.log('[Auth] Token refreshed successfully');
@@ -78,10 +79,8 @@ async function tryRefreshToken(): Promise<string | null> {
 }
 
 async function clearAuthAndRedirect() {
-  const cookieStore = await cookies();
-  cookieStore.delete('fox_token');
-  cookieStore.delete('fox_refresh_token');
-  cookieStore.delete('fox_user');
+  // Cookie deletion is only allowed in Server Actions/Route Handlers, not Server Components.
+  // The client-side auth store clears localStorage on the next request after a 401.
   redirect('/login');
 }
 
@@ -311,6 +310,16 @@ export async function getAdminEvents() {
   }
 }
 
+export async function getAdminEventTemplates() {
+  try {
+    const body = await serverFetch('/admin/event-templates');
+    return extractList(body);
+  } catch (error) {
+    console.error('Failed to fetch admin event templates:', error);
+    return [];
+  }
+}
+
 export async function getEvents() {
   try {
     const body = await serverFetch('/event-templates');
@@ -441,7 +450,7 @@ export async function getCategoryBySlug(slug: string) {
 
 export async function getEventsByCategory(categorySlug: string) {
   try {
-    const body = await serverFetch('/events', { category: categorySlug });
+    const body = await serverFetch('/event-templates/browse', { category: categorySlug });
     return extractList(body);
   } catch (error) {
     console.error(`Failed to fetch events for category ${categorySlug}:`, error);

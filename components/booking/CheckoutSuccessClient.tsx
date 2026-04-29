@@ -1,15 +1,29 @@
 ﻿'use client';
 
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useCheckoutStore } from '@/store/useCheckoutStore';
 import { useAuthStore } from '@/store/useAuthStore';
+import { confirmBookingPayment } from '@/lib/api/bookings';
 
 export default function CheckoutSuccessClient() {
   const router = useRouter();
-  const { venueName, venueImage, guestCount, totalAmount, checkInDate, checkInTime } = useCheckoutStore();
+  const searchParams = useSearchParams();
+  const { venueName, venueImage, venueLocation, guestCount, totalAmount, checkInDate, checkInTime, draftBookingId } = useCheckoutStore();
   const { user } = useAuthStore();
+  const confirmed = useRef(false);
+
+  // Confirm payment on the backend once, using the Stripe payment_intent from the redirect URL
+  useEffect(() => {
+    if (confirmed.current) return;
+    const paymentIntentId = searchParams.get('payment_intent');
+    const redirectStatus = searchParams.get('redirect_status');
+    if (paymentIntentId && redirectStatus === 'succeeded' && draftBookingId && totalAmount > 0) {
+      confirmed.current = true;
+      confirmBookingPayment(draftBookingId, paymentIntentId, totalAmount).catch(() => {});
+    }
+  }, []);
 
   const getDashboardPath = () => {
     switch (user?.role?.toLowerCase()) {
@@ -48,11 +62,17 @@ export default function CheckoutSuccessClient() {
                 <span className="h-2 w-2 rounded-full bg-green-500 animate-pulse"></span>
                 <span>Online</span>
               </div>
-              <div 
+              <div
                 className="h-10 w-10 rounded-full border border-white/10 overflow-hidden cursor-pointer hover:border-accent transition-colors"
                 onClick={() => router.push(dashboardPath)}
               >
-                <img alt="User" className="h-full w-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuD-A0KmDrOi8KQZt5YVraaoL54kpKL4sLPhBoZj6kgs089hsWPz2qJfdMww3r4NpGGBYTSIrptbwjoMo0ZmnZFpuLCt3lExTQAv1QauCbCl6k3vscDYH5z0t7EqZ-NulKXiQjy8VxqCwlvvy4h_vf5j2Lf7cN1haDT24rR_FzF8rO9swBYh5KVGtV09ogFZmVJAcrnGZCXHQEkJR8TzFmrSMkK0jRaOzO43L1j7KQZ0WraTBcdonNTmEh2phQsvKrYuVv6P1wDPPAM" />
+                {user?.imgId ? (
+                  <img alt="User" className="h-full w-full object-cover" src={user.imgId} />
+                ) : (
+                  <div className="h-full w-full flex items-center justify-center bg-[#ccff00] text-black font-bold text-sm">
+                    {user?.name?.charAt(0)?.toUpperCase() ?? 'U'}
+                  </div>
+                )}
               </div>
             </div>
           </div>
@@ -78,11 +98,13 @@ export default function CheckoutSuccessClient() {
             
             <div className="flex flex-col md:flex-row gap-8 mb-8">
               <div className="h-40 w-40 md:h-48 md:w-48 rounded-3xl overflow-hidden flex-shrink-0 border border-white/10 shadow-lg">
-                <img 
-                  alt="Event" 
-                  className="h-full w-full object-cover" 
-                  src={venueImage || "https://lh3.googleusercontent.com/aida-public/AB6AXuAmLMhfBavcKVkOWHaS4TPPk-NHIcut_ZhBBEe8lYdYR3H4t2yqSZKN4kaK-4daM6PVExafzgFu6-ETEkTvY3iOkNq3VyaKMs5jeDTMhhkOITtl93afJOgej_LM-nwJ4slOZvjY9jUaO0XJczNgnvj21yuB3eVwQrWu2qU4kFoFm9oertAy6N8vnz-DcYaCFbk-2wqIYps1HbNWSCB5TBISWObKfniMTbMOzf964UcanLKD2UIOD2M5IRj5kXf1kvppEdNzUJY4S3U"} 
-                />
+                {venueImage ? (
+                  <img alt="Event" className="h-full w-full object-cover" src={venueImage} />
+                ) : (
+                  <div className="h-full w-full bg-surface-highlight/50 flex items-center justify-center">
+                    <span className="material-symbols-outlined text-white/20 text-[64px]">celebration</span>
+                  </div>
+                )}
               </div>
               <div className="flex-grow flex flex-col justify-center">
                 <div className="text-accent font-bold text-xs mb-2 uppercase tracking-widest flex items-center gap-2">
@@ -119,7 +141,7 @@ export default function CheckoutSuccessClient() {
                     <p className="text-text-muted text-xs uppercase tracking-wider mb-1">Location</p>
                     <p className="text-white font-bold flex items-center gap-2">
                       <span className="material-symbols-outlined text-[16px] text-accent">location_on</span>
-                      Club Z, Makati Wait
+                      {venueLocation || 'TBD'}
                     </p>
                   </div>
                 </div>

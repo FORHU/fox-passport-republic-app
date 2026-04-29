@@ -7,6 +7,16 @@ import { useCategories } from "@/hooks/data/useCategories";
 
 const VENUE_ROLES = ["host", "mayor", "foxerAsset", "foxerService"];
 
+const EVENT_CATEGORY_ORDER = ["birthday", "wedding", "corporate", "social", "other"];
+
+const EVENT_CATEGORY_COLORS: Record<string, string> = {
+  birthday:  "#84cc16",
+  wedding:   "#ec4899",
+  corporate: "#06b6d4",
+  social:    "#8b5cf6",
+  other:     "#f97316",
+};
+
 function userCanSeeVenueCategories(user: any): boolean {
   if (!user) return false;
   const systemRole = (user?.systemRole ?? user?.role ?? "").toLowerCase();
@@ -34,14 +44,19 @@ export function useLandingPage() {
   const categoriesWithDesign = useMemo(() => {
     return categories
       .filter((cat) => {
-        const s = cat.sources;
-        if (!s) return false;
         // Only show event categories in Vibe Check
-        if (s.events === 0) return false;
-        // Venue-only categories restricted to foxers/hosts
-        const isVenueOnly = s.venues > 0 && s.assets === 0 && s.services === 0 && s.events === 0;
-        if (isVenueOnly) return canSeeVenues;
+        if (!cat.isEventCategory) return false;
+        // Venue-only event categories restricted to foxers/hosts (edge case)
+        const s = cat.sources;
+        if (s && s.venues > 0 && s.assets === 0 && s.services === 0 && s.events === 0) {
+          return canSeeVenues;
+        }
         return true;
+      })
+      .sort((a, b) => {
+        const ai = EVENT_CATEGORY_ORDER.indexOf(a.name.toLowerCase());
+        const bi = EVENT_CATEGORY_ORDER.indexOf(b.name.toLowerCase());
+        return (ai === -1 ? 999 : ai) - (bi === -1 ? 999 : bi);
       })
       .map((cat) => {
         // Use fallback if backend data is missing for some reason
@@ -61,6 +76,7 @@ export function useLandingPage() {
           spots: spotLabel,
           icon: cat.icon,
           children: cat.subCategories || [],
+          spotColor: EVENT_CATEGORY_COLORS[cat.name.toLowerCase()] ?? "#ccff00",
         };
       });
   }, [categories, canSeeVenues]);

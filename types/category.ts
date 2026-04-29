@@ -12,6 +12,8 @@ export interface Category {
   subCategories?: Category[];
   parentCategory?: Category;
 
+  isEventCategory?: boolean;
+
   // Source breakdown — tells which entity types this category belongs to
   sources?: {
     assets: number;

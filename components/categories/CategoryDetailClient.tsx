@@ -4,6 +4,7 @@ import React, { useEffect } from "react";
 import { CategoryHero } from "@/components/categories/detail/CategoryHero";
 import { CategoryHeader } from "@/components/categories/detail/CategoryHeader";
 import { CategoryGrid } from "@/components/categories/detail/CategoryGrid";
+import { EventPackagesSection } from "@/components/categories/detail/EventPackagesSection";
 import { TrendingSection } from "@/components/categories/detail/TrendingSection";
 import { CategoryFooter } from "@/components/categories/detail/CategoryFooter";
 
@@ -23,6 +24,7 @@ export default function CategoryDetailClient({ category }: CategoryDetailClientP
       <main className="grow pt-40 px-4 pb-20">
         <div className="mx-auto max-w-7xl">
           <CategoryHero category={category} />
+          <EventPackagesSection category={category} />
           <CategoryGrid category={category} />
           <TrendingSection category={category} />
         </div>

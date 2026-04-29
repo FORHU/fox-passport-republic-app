@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { Suspense } from 'react';
 import CheckoutSuccessClient from '@/components/booking/CheckoutSuccessClient';
 import type { Metadata } from 'next';
 
@@ -8,5 +8,9 @@ export const metadata: Metadata = {
 };
 
 export default function CheckoutSuccessPage() {
-  return <CheckoutSuccessClient />;
+  return (
+    <Suspense>
+      <CheckoutSuccessClient />
+    </Suspense>
+  );
 }
