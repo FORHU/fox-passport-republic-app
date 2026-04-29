@@ -136,6 +136,34 @@ export const MOCK_BADGES: Badge[] = [
     rarity: 'Legendary',
     icon: 'account_balance',
     color: '#ccff00',
+    path: 'mayor',
+  },
+  {
+    id: 'b16',
+    name: 'City Builder',
+    description: 'Listed 3 approved venues in your city',
+    rarity: 'Uncommon',
+    icon: 'location_city',
+    color: '#a855f7',
+    path: 'mayor',
+  },
+  {
+    id: 'b17',
+    name: 'District Champion',
+    description: 'Reached District Head rank as Mayor',
+    rarity: 'Rare',
+    icon: 'maps_home_work',
+    color: '#a855f7',
+    path: 'mayor',
+  },
+  {
+    id: 'b18',
+    name: 'Grand Mayor',
+    description: 'Achieved the highest Mayor rank',
+    rarity: 'Legendary',
+    icon: 'workspace_premium',
+    color: '#a855f7',
+    path: 'mayor',
   },
 ];
 
@@ -179,6 +207,22 @@ export const MOCK_ACHIEVEMENTS: Achievement[] = [
     xpReward: 300,
     path: 'investor',
     icon: 'attach_money',
+  },
+  {
+    id: 'a6',
+    title: 'First Ward',
+    description: 'List your first approved venue',
+    xpReward: 200,
+    path: 'mayor',
+    icon: 'domain_add',
+  },
+  {
+    id: 'a7',
+    title: 'City Footprint',
+    description: 'Have 3 venues featured in the platform',
+    xpReward: 750,
+    path: 'mayor',
+    icon: 'assured_workload',
   },
 ];
 
@@ -252,6 +296,12 @@ export const LEVEL_REWARDS = {
     5: { badges: [], perks: ['Verified host badge'] },
     10: { badges: [], perks: ['Priority venue placement'] },
     18: { badges: ['Host Master'], perks: ['Super Host status', 'Dedicated support'] },
+  },
+  mayor: {
+    3: { badges: ['City Builder'], perks: ['Venue listing priority review'] },
+    7: { badges: ['District Champion'], perks: ['City Planner badge', 'Featured venue slot'] },
+    12: { badges: [], perks: ['City Mayor status', 'Dedicated admin support'] },
+    18: { badges: ['Grand Mayor'], perks: ['Grand Mayor status', 'Unlimited venue listings'] },
   },
   investor: {
     3: { badges: [], perks: ['Investment analytics'] },

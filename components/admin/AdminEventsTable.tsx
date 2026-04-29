@@ -1,15 +1,47 @@
 'use client';
 
 import React, { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import api from '@/lib/axios';
+import { toast } from 'sonner';
 
 interface EventsTableProps {
   events: any[];
   isLoading: boolean;
-  refetch?: () => void;
 }
 
-export const AdminEventsTable: React.FC<EventsTableProps> = ({ events, isLoading, refetch }) => {
+export const AdminEventsTable: React.FC<EventsTableProps> = ({ events, isLoading }) => {
+  const router = useRouter();
   const [expandedRow, setExpandedRow] = useState<string | null>(null);
+  const [updatingId, setUpdatingId] = useState<string | null>(null);
+
+  const approve = async (id: string) => {
+    setUpdatingId(id);
+    try {
+      await api.patch(`/admin/events/${id}/approve`);
+      toast.success('Event approved');
+      router.refresh();
+    } catch (err: any) {
+      const msg = err?.response?.data?.message || err?.message || 'Failed to approve event';
+      toast.error(`Approve failed: ${msg}`);
+    } finally {
+      setUpdatingId(null);
+    }
+  };
+
+  const reject = async (id: string) => {
+    setUpdatingId(id);
+    try {
+      await api.patch(`/admin/events/${id}/reject`);
+      toast.success('Event rejected');
+      router.refresh();
+    } catch (err: any) {
+      const msg = err?.response?.data?.message || err?.message || 'Failed to reject event';
+      toast.error(`Reject failed: ${msg}`);
+    } finally {
+      setUpdatingId(null);
+    }
+  };
 
   if (isLoading) {
     return <div className="p-8 text-center text-white/50">Loading events...</div>;
@@ -43,11 +75,11 @@ export const AdminEventsTable: React.FC<EventsTableProps> = ({ events, isLoading
                     <td className="p-6">
                       <div className="flex items-center gap-3">
                         <img 
-                          alt={event.title} 
+                          alt={event.name} 
                           className="h-10 w-10 rounded-lg object-cover bg-white/5 shadow-inner" 
-                          src={event.images?.[0] || "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=100&auto=format&fit=crop"} 
+                          src={event.template?.images?.[0]?.url || "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=100&auto=format&fit=crop"} 
                         />
-                        <span className="font-bold text-white group-hover:text-accent transition-colors">{event.title}</span>
+                        <span className="font-bold text-white group-hover:text-accent transition-colors">{event.name}</span>
                       </div>
                     </td>
                     <td className="p-6 text-gray-300">
@@ -58,8 +90,8 @@ export const AdminEventsTable: React.FC<EventsTableProps> = ({ events, isLoading
                     </td>
                     <td className="p-6 text-gray-400">
                       <div className="flex flex-col text-xs space-y-0.5">
-                        <span className="text-white/80">{event.details?.city || "N/A"}</span>
-                        <span>{event.details?.state || event.details?.country || "N/A"}</span>
+                        <span className="text-white/80">{event.targetCity || 'N/A'}</span>
+                        <span>{event.targetState || event.targetCountry || 'N/A'}</span>
                       </div>
                     </td>
                     <td className="p-6">
@@ -78,9 +110,25 @@ export const AdminEventsTable: React.FC<EventsTableProps> = ({ events, isLoading
                       </button>
                     </td>
                     <td className="p-6 text-right">
-                      <button className="h-8 w-8 rounded-full hover:bg-white/10 flex items-center justify-center text-gray-400 hover:text-white transition-colors">
-                        <span className="material-symbols-outlined text-[20px]">more_vert</span>
-                      </button>
+                      <div className="flex justify-end items-center gap-2">
+                        {updatingId === event.id && (
+                          <div className="w-4 h-4 border-2 border-accent/20 border-t-accent rounded-full animate-spin" />
+                        )}
+                        <button
+                          disabled={!!updatingId}
+                          onClick={() => reject(event.id)}
+                          className="px-3 py-1.5 rounded-lg border border-red-500/30 bg-red-500/10 text-red-400 text-[10px] font-bold uppercase tracking-widest hover:bg-red-500/20 disabled:opacity-40 transition-all"
+                        >
+                          Reject
+                        </button>
+                        <button
+                          disabled={!!updatingId}
+                          onClick={() => approve(event.id)}
+                          className="px-3 py-1.5 rounded-lg border border-green-500/30 bg-green-500/10 text-green-400 text-[10px] font-bold uppercase tracking-widest hover:bg-green-500/20 disabled:opacity-40 transition-all"
+                        >
+                          Approve
+                        </button>
+                      </div>
                     </td>
                   </tr>
                   
@@ -109,14 +157,16 @@ export const AdminEventsTable: React.FC<EventsTableProps> = ({ events, isLoading
                           <div>
                             <p className="text-[10px] uppercase font-bold text-white/30 tracking-widest mb-1">Status</p>
                             <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold border ${
-                              event.status === 'active' || event.isPublished
+                              event.requestStatus === 'approved'
                                 ? 'bg-green-500/10 text-green-400 border-green-500/20'
+                                : event.requestStatus === 'rejected'
+                                ? 'bg-red-500/10 text-red-400 border-red-500/20'
                                 : 'bg-yellow-500/10 text-yellow-400 border-yellow-500/20'
                             }`}>
                               <span className="material-symbols-outlined text-[14px]">
-                                {event.status === 'active' ? 'check_circle' : 'hourglass_top'}
+                                {event.requestStatus === 'approved' ? 'check_circle' : event.requestStatus === 'rejected' ? 'cancel' : 'hourglass_top'}
                               </span>
-                              {(event.status || "pending").toUpperCase()}
+                              {(event.requestStatus || 'pending').toUpperCase()}
                             </span>
                           </div>
                         </div>

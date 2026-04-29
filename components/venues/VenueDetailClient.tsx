@@ -100,7 +100,7 @@ export default function VenueDetailClient({ venue, host }: VenueDetailClientProp
                 onClearDates={clearDates}
               />
               <div className="h-px bg-white/10 w-full" />
-              <VenueReviews rating={venue.rating} totalReviews={venue.reviews} />
+              <VenueReviews venueId={venue.id} rating={venue.rating} totalReviews={venue.reviews} />
               <div className="h-px bg-white/10 w-full" />
               <VenueMap location={venue.location} province={venue.province} />
               <div className="h-px bg-white/10 w-full" />

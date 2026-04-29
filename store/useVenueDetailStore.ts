@@ -1,5 +1,4 @@
 import { create } from "zustand";
-import { CUSTOM_SERVICES, AVAILABLE_FOXERS } from "@/data/venueDetailData";
 
 interface VenueDetailState {
   // Gallery
@@ -72,7 +71,7 @@ export const useVenueDetailStore = create<VenueDetailState>((set, get) => ({
 // Custom Experience Builder Store
 interface ExperienceBuilderState {
   activeCategory: string;
-  selectedFoxer: number | null;
+  selectedFoxer: string | null;
   selectedServices: string[];
   searchQuery: string;
   isSubmitting: boolean;
@@ -80,7 +79,7 @@ interface ExperienceBuilderState {
   isDragOver: boolean;
 
   setActiveCategory: (cat: string) => void;
-  setSelectedFoxer: (id: number | null) => void;
+  setSelectedFoxer: (id: string | null) => void;
   toggleService: (id: string) => void;
   setSearchQuery: (query: string) => void;
   setIsSubmitting: (submitting: boolean) => void;
@@ -115,23 +114,8 @@ export const useExperienceBuilderStore = create<ExperienceBuilderState>(
     setIsSuccess: (success) => set({ isSuccess: success }),
     setIsDragOver: (over) => set({ isDragOver: over }),
 
-    calculateTotal: (venuePrice) => {
-      const { selectedFoxer, selectedServices } = get();
-      let total = venuePrice * 2;
-
-      if (selectedFoxer) {
-        const foxer = AVAILABLE_FOXERS.find((f) => f.id === selectedFoxer);
-        if (foxer) total += foxer.fee;
-      }
-
-      Object.values(CUSTOM_SERVICES)
-        .flat()
-        .forEach((svc) => {
-          if (selectedServices.includes(svc.id)) total += svc.price;
-        });
-
-      return total;
-    },
+    // Total is calculated in the hook using live data
+    calculateTotal: (venuePrice) => venuePrice * 2,
 
     reset: () =>
       set({

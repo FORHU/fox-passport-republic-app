@@ -2,8 +2,9 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { MapPin, Users, Star } from "lucide-react";
+import { MapPin, Users, Heart } from "lucide-react";
 import { Venue } from "@/hooks/venues/useVenuesByCategory";
+import { useFavorites } from "@/hooks/features/useFavorites";
 
 interface VenueCardProps {
   venue: Venue;
@@ -14,6 +15,8 @@ export default function VenueCard({ venue }: VenueCardProps) {
   const imageUrl = primaryImage?.imageUrl || venue.images[0]?.imageUrl || "/placeholder-venue.jpg";
   const pricePerDay = venue.pricing[0]?.pricePerDay || 0;
   const currency = venue.pricing[0]?.currency || "PHP";
+  const { isFavorited, toggleFavorite } = useFavorites();
+  const saved = isFavorited(venue.id);
 
   return (
     <Link
@@ -28,6 +31,14 @@ export default function VenueCard({ venue }: VenueCardProps) {
           fill
           className="object-cover group-hover:scale-105 transition-transform duration-500"
         />
+        {/* Favorite Button */}
+        <button
+          onClick={(e) => { e.preventDefault(); e.stopPropagation(); toggleFavorite(venue.id); }}
+          className={`absolute top-3 left-3 h-9 w-9 rounded-full flex items-center justify-center shadow-md transition-all duration-200 ${saved ? "bg-red-500 text-white scale-110" : "bg-black/40 text-white hover:bg-black/60 hover:scale-105"}`}
+          aria-label={saved ? "Remove from favorites" : "Save to favorites"}
+        >
+          <Heart className={`w-4 h-4 transition-all ${saved ? "fill-current" : ""}`} />
+        </button>
         {/* Status Badge */}
         {venue.status === "active" && venue.isPublished && (
           <div className="absolute top-3 right-3 bg-green-500 text-white text-xs font-semibold px-3 py-1 rounded-full shadow-md">

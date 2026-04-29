@@ -2,7 +2,8 @@
 
 import React from 'react';
 import { useExperienceBuilder } from '@/hooks/venues/useVenueDetail';
-import { SERVICE_CATEGORIES, AVAILABLE_FOXERS } from '@/data/venueDetailData';
+import { useExperienceBuilderData } from '@/hooks/venues/useExperienceBuilderData';
+import { SERVICE_CATEGORIES } from '@/data/venueDetailData';
 
 interface ExperienceBuilderProps {
   isOpen: boolean;
@@ -11,6 +12,8 @@ interface ExperienceBuilderProps {
 }
 
 export function CustomExperienceBuilder({ isOpen, onClose, venuePrice }: ExperienceBuilderProps) {
+  const { foxers, itemsByCategory, isLoading } = useExperienceBuilderData();
+
   const {
     activeCategory,
     selectedFoxer,
@@ -34,7 +37,7 @@ export function CustomExperienceBuilder({ isOpen, onClose, venuePrice }: Experie
     handleDrop,
     handleSubmit,
     handleClose,
-  } = useExperienceBuilder(venuePrice, onClose, isOpen);
+  } = useExperienceBuilder(venuePrice, onClose, isOpen, foxers, itemsByCategory);
 
   if (!isOpen) return null;
 
@@ -72,7 +75,7 @@ export function CustomExperienceBuilder({ isOpen, onClose, venuePrice }: Experie
           </div>
           <div>
             <h2 className="font-display font-bold text-xl leading-none">Experience Builder</h2>
-            <p className="text-xs text-text-muted mt-1">Neon Nights: Custom Config</p>
+            <p className="text-xs text-text-muted mt-1">Build your custom experience</p>
           </div>
         </div>
         <button
@@ -140,62 +143,78 @@ export function CustomExperienceBuilder({ isOpen, onClose, venuePrice }: Experie
             <div className="space-y-6 animate-in fade-in slide-in-from-bottom-8 duration-500">
               <div className="flex justify-between items-end mb-4">
                 <h3 className="text-3xl font-display font-bold text-white">Select Your Curator</h3>
-                <p className="text-text-muted text-sm hidden md:block">
-                  Drag to the right or click to select.
-                </p>
+                <p className="text-text-muted text-sm hidden md:block">Drag to the right or click to select.</p>
               </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-                {AVAILABLE_FOXERS.map((foxer) => (
-                  <div
-                    key={foxer.id}
-                    draggable
-                    onDragStart={(e) => handleDragStart(e, foxer.id, 'foxer')}
-                    onClick={() => setSelectedFoxer(foxer.id)}
-                    className={`relative group rounded-[2rem] p-6 border cursor-grab active:cursor-grabbing transition-all duration-300 hover:-translate-y-1 ${
-                      selectedFoxer === foxer.id
-                        ? 'bg-surface-highlight border-accent shadow-[0_0_30px_rgba(204,255,0,0.15)]'
-                        : 'bg-white/5 border-white/5 hover:border-white/20'
-                    }`}
-                  >
-                    <div className="flex items-start justify-between mb-4">
-                      <img
-                        src={foxer.avatar}
-                        className="w-16 h-16 rounded-full object-cover border-2 border-white/10"
-                        alt={foxer.name}
-                      />
-                      <div className="flex flex-col items-end">
-                        <span className="text-accent font-bold font-display text-lg">
-                          ₱{foxer.fee.toLocaleString()}
-                        </span>
-                        <div className="flex items-center text-yellow-400 text-xs font-bold gap-1 bg-black/30 px-2 py-1 rounded-full mt-1">
-                          <span className="material-symbols-outlined text-[14px] fill-current">
-                            star
-                          </span>{' '}
-                          {foxer.rating}
-                        </div>
+
+              {isLoading ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                  {[...Array(3)].map((_, i) => (
+                    <div key={i} className="rounded-[2rem] p-6 border border-white/5 bg-white/5 animate-pulse space-y-4">
+                      <div className="flex items-start justify-between">
+                        <div className="w-16 h-16 rounded-full bg-white/10" />
+                        <div className="h-6 w-16 bg-white/10 rounded" />
                       </div>
+                      <div className="h-4 w-3/4 bg-white/10 rounded" />
+                      <div className="h-3 w-full bg-white/5 rounded" />
+                      <div className="h-10 w-full bg-white/5 rounded-xl" />
                     </div>
-                    <h4 className="text-xl font-bold text-white mb-1">{foxer.name}</h4>
-                    <p className="text-xs text-accent uppercase tracking-wider font-bold mb-3">
-                      {foxer.role}
-                    </p>
-                    <p className="text-sm text-gray-400 leading-relaxed mb-6">
-                      {foxer.description}
-                    </p>
+                  ))}
+                </div>
+              ) : foxers.length === 0 ? (
+                <div className="flex flex-col items-center justify-center py-20 text-center">
+                  <span className="material-symbols-outlined text-5xl text-white/20 mb-4">person_search</span>
+                  <p className="text-text-muted text-sm">No foxers available yet.</p>
+                  <p className="text-white/20 text-xs mt-1">Check back once foxers are approved.</p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                  {foxers.map((foxer) => (
                     <div
-                      className={`w-full py-3 rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition-all ${
+                      key={foxer.id}
+                      draggable
+                      onDragStart={(e) => handleDragStart(e, foxer.id, 'foxer')}
+                      onClick={() => setSelectedFoxer(foxer.id)}
+                      className={`relative group rounded-[2rem] p-6 border cursor-grab active:cursor-grabbing transition-all duration-300 hover:-translate-y-1 ${
                         selectedFoxer === foxer.id
-                          ? 'bg-accent text-black'
-                          : 'bg-white/10 text-white group-hover:bg-white group-hover:text-black'
+                          ? 'bg-surface-highlight border-accent shadow-[0_0_30px_rgba(204,255,0,0.15)]'
+                          : 'bg-white/5 border-white/5 hover:border-white/20'
                       }`}
                     >
-                      {selectedFoxer === foxer.id ? 'Selected' : 'Select Foxer'}
-                      {selectedFoxer === foxer.id && (
-                        <span className="material-symbols-outlined text-[18px]">check</span>
-                      )}
+                      <div className="flex items-start justify-between mb-4">
+                        <img
+                          src={foxer.avatar}
+                          className="w-16 h-16 rounded-full object-cover border-2 border-white/10"
+                          alt={foxer.name}
+                        />
+                        <div className="flex flex-col items-end">
+                          <span className="text-accent font-bold font-display text-lg">
+                            ₱{foxer.fee.toLocaleString()}
+                          </span>
+                          <div className="flex items-center text-yellow-400 text-xs font-bold gap-1 bg-black/30 px-2 py-1 rounded-full mt-1">
+                            <span className="material-symbols-outlined text-[14px] fill-current">star</span>{' '}
+                            {foxer.rating}
+                          </div>
+                        </div>
+                      </div>
+                      <h4 className="text-xl font-bold text-white mb-1">{foxer.name}</h4>
+                      <p className="text-xs text-accent uppercase tracking-wider font-bold mb-3">{foxer.role}</p>
+                      <p className="text-sm text-gray-400 leading-relaxed mb-6">{foxer.description}</p>
+                      <div
+                        className={`w-full py-3 rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition-all ${
+                          selectedFoxer === foxer.id
+                            ? 'bg-accent text-black'
+                            : 'bg-white/10 text-white group-hover:bg-white group-hover:text-black'
+                        }`}
+                      >
+                        {selectedFoxer === foxer.id ? 'Selected' : 'Select Foxer'}
+                        {selectedFoxer === foxer.id && (
+                          <span className="material-symbols-outlined text-[18px]">check</span>
+                        )}
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  ))}
+                </div>
+              )}
               </div>
             </div>
           ) : (

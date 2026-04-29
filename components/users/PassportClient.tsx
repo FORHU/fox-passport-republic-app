@@ -46,6 +46,15 @@ const mockPaths: PathProgress[] = [
     color: '#3b82f6',
   },
   {
+    path: 'mayor',
+    level: 3,
+    currentXP: 600,
+    requiredXP: 1000,
+    totalXP: 2600,
+    label: 'District Head',
+    color: '#a855f7',
+  },
+  {
     path: 'user',
     level: 18,
     currentXP: 4500,
@@ -75,7 +84,8 @@ const PassportClient: React.FC<PassportClientProps> = ({ user }) => {
 
   // Map API roleType[] to gamification UserPath[]
   const roleToPath = (role: string): UserPath | null => {
-    if (role === 'host' || role === 'mayor') return 'host';
+    if (role === 'host') return 'host';
+    if (role === 'mayor') return 'mayor';
     if (role === 'foxerService' || role === 'foxerAsset') return 'foxer';
     return null;
   };
@@ -130,6 +140,10 @@ const PassportClient: React.FC<PassportClientProps> = ({ user }) => {
       { title: 'Analytics Pro', desc: 'Advanced heatmaps for venues', icon: 'analytics' },
       { title: 'Host Support', desc: '24/7 dedicated manager', icon: 'support_agent' }
     ];
+    if (type === 'mayor') return [
+      { title: 'Venue Authority', desc: 'Priority venue listing approvals', icon: 'assured_workload' },
+      { title: 'City Badge', desc: 'Exclusive Mayor verified status', icon: 'account_balance' }
+    ];
     return [];
   });
 
@@ -173,7 +187,7 @@ const PassportClient: React.FC<PassportClientProps> = ({ user }) => {
           <p className="text-[10px] text-white/30 uppercase tracking-[0.2em] font-black">
             {activePathTypes
               .filter(p => p !== 'user')
-              .map(p => p === 'host' ? 'Host' : p === 'foxer' ? 'Foxer' : p)
+              .map(p => p === 'host' ? 'Host' : p === 'foxer' ? 'Foxer' : p === 'mayor' ? 'Mayor' : p === 'investor' ? 'Investor' : p)
               .join(' · ') || 'Citizen'}
           </p>
         </div>
@@ -410,12 +424,12 @@ const PassportClient: React.FC<PassportClientProps> = ({ user }) => {
                     </div>
                   </div>
                   <div className="bg-white/[0.02] border border-white/5 rounded-[3rem] p-8">
-                    <BadgeGrid 
-                      badges={showAllBadges ? MOCK_BADGES : ownedBadges} 
-                      maxDisplay={showAllBadges ? MOCK_BADGES.length : 4} 
+                    <BadgeGrid
+                      badges={showAllBadges ? MOCK_BADGES : ownedBadges}
+                      maxDisplay={showAllBadges ? MOCK_BADGES.length : ownedBadges.length}
                       className={showAllBadges ? 'lg:grid-cols-6' : 'lg:grid-cols-4'}
-                      onBadgeClick={handleBadgeClick} 
-                      lockedBadges={finalLockedIds} 
+                      onBadgeClick={handleBadgeClick}
+                      lockedBadges={finalLockedIds}
                     />
                   </div>
                 </section>
@@ -489,6 +503,36 @@ const PassportClient: React.FC<PassportClientProps> = ({ user }) => {
                                <span className="text-sm text-white/70">Venue Featured</span>
                              </div>
                              <span className="font-mono text-sm text-[#3b82f6] font-bold">+{XP_REWARDS.venueFeatured} XP</span>
+                           </div>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Mayor Path Guide */}
+                    {activePathTypes.includes('mayor') && (
+                      <div className="space-y-4">
+                        <p className="text-[10px] font-black text-[#a855f7] uppercase tracking-widest opacity-60">Mayor Career</p>
+                        <div className="space-y-3">
+                           <div className="flex justify-between items-center p-4 rounded-2xl bg-white/5 border border-white/5 hover:bg-white/10 transition-all">
+                             <div className="flex items-center gap-3">
+                               <span className="material-symbols-outlined text-[#a855f7] text-sm">domain_add</span>
+                               <span className="text-sm text-white/70">List a Venue</span>
+                             </div>
+                             <span className="font-mono text-sm text-[#a855f7] font-bold">+{XP_REWARDS.uploadMayorVenue} XP</span>
+                           </div>
+                           <div className="flex justify-between items-center p-4 rounded-2xl bg-white/5 border border-white/5 hover:bg-white/10 transition-all">
+                             <div className="flex items-center gap-3">
+                               <span className="material-symbols-outlined text-[#a855f7] text-sm">assured_workload</span>
+                               <span className="text-sm text-white/70">Venue Approved</span>
+                             </div>
+                             <span className="font-mono text-sm text-[#a855f7] font-bold">+{XP_REWARDS.mayorVenueApproved} XP</span>
+                           </div>
+                           <div className="flex justify-between items-center p-4 rounded-2xl bg-white/5 border border-white/5 hover:bg-white/10 transition-all">
+                             <div className="flex items-center gap-3">
+                               <span className="material-symbols-outlined text-[#a855f7] text-sm">star_rate</span>
+                               <span className="text-sm text-white/70">Venue Featured</span>
+                             </div>
+                             <span className="font-mono text-sm text-[#a855f7] font-bold">+{XP_REWARDS.mayorVenueFeatured} XP</span>
                            </div>
                         </div>
                       </div>
