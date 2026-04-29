@@ -1,7 +1,9 @@
 'use client';
 
 import React from 'react';
-import { RATING_BARS, MOCK_REVIEWS } from '@/data/venueDetailData';
+import { useQuery } from '@tanstack/react-query';
+import { RATING_BARS } from '@/data/venueDetailData';
+import { getReviewsByListing, Review } from '@/lib/api/reviews';
 
 interface VenueCalendarProps {
   checkInDate: number | null;
@@ -101,20 +103,36 @@ export function VenueCalendar({
 }
 
 interface VenueReviewsProps {
-  rating: number;
-  totalReviews: number;
+  venueId: string;
+  rating?: number;
+  totalReviews?: number;
 }
 
-export function VenueReviews({ rating, totalReviews }: VenueReviewsProps) {
+export function VenueReviews({ venueId, rating: fallbackRating = 0, totalReviews: fallbackTotal = 0 }: VenueReviewsProps) {
+  const { data: reviews = [], isLoading } = useQuery<Review[]>({
+    queryKey: ['venue-reviews', venueId],
+    queryFn: () => getReviewsByListing(venueId),
+    enabled: !!venueId,
+    staleTime: 1000 * 60 * 5,
+  });
+
+  const avgRating = reviews.length
+    ? Number((reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length).toFixed(1))
+    : fallbackRating;
+
+  const displayTotal = reviews.length || fallbackTotal;
+  const [showAll, setShowAll] = React.useState(false);
+  const visible = showAll ? reviews : reviews.slice(0, 4);
+
   return (
     <div id="reviews">
       <div className="flex items-center gap-2 mb-8">
         <span className="material-symbols-outlined text-4xl text-white fill-current">star</span>
-        <h2 className="text-5xl font-display font-bold text-white">{rating}</h2>
+        <h2 className="text-5xl font-display font-bold text-white">{avgRating}</h2>
         <div className="flex flex-col justify-center h-full ml-4 pl-4 border-l border-white/10">
           <span className="text-lg font-bold text-white leading-none">Guest favorite</span>
           <p className="text-sm text-text-muted mt-1">
-            One of the most loved homes on FoxPassport
+            {displayTotal} {displayTotal === 1 ? 'review' : 'reviews'}
           </p>
         </div>
       </div>
@@ -136,24 +154,68 @@ export function VenueReviews({ rating, totalReviews }: VenueReviewsProps) {
       </div>
 
       {/* Review Cards */}
-      <div className="grid md:grid-cols-2 gap-6">
-        {MOCK_REVIEWS.map((review, i) => (
-          <div key={i} className="glass-panel p-6 rounded-2xl border border-white/5">
-            <div className="flex items-center gap-3 mb-4">
-              <img src={review.img} className="w-10 h-10 rounded-full object-cover" alt={review.name} />
-              <div>
-                <h4 className="font-bold text-white text-sm">{review.name}</h4>
-                <p className="text-xs text-text-muted">{review.date}</p>
+      {isLoading ? (
+        <div className="grid md:grid-cols-2 gap-6">
+          {[...Array(4)].map((_, i) => (
+            <div key={i} className="glass-panel p-6 rounded-2xl border border-white/5 animate-pulse">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-10 h-10 rounded-full bg-white/10" />
+                <div className="space-y-2">
+                  <div className="h-3 w-24 bg-white/10 rounded" />
+                  <div className="h-2 w-16 bg-white/5 rounded" />
+                </div>
+              </div>
+              <div className="space-y-2">
+                <div className="h-2 w-full bg-white/5 rounded" />
+                <div className="h-2 w-4/5 bg-white/5 rounded" />
               </div>
             </div>
-            <p className="text-sm text-gray-300 leading-relaxed">{review.text}</p>
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
+      ) : reviews.length === 0 ? (
+        <div className="text-center py-12 text-text-muted text-sm">
+          No reviews yet. Be the first to leave one!
+        </div>
+      ) : (
+        <div className="grid md:grid-cols-2 gap-6">
+          {visible.map((review) => {
+            const initials = (review.user?.name ?? 'A').charAt(0).toUpperCase();
+            const date = new Date(review.createdAt).toLocaleDateString('en-US', { year: 'numeric', month: 'long' });
+            return (
+              <div key={review.id} className="glass-panel p-6 rounded-2xl border border-white/5">
+                <div className="flex items-center gap-3 mb-4">
+                  {review.user?.imgId ? (
+                    <img src={review.user.imgId} className="w-10 h-10 rounded-full object-cover" alt={review.user.name} />
+                  ) : (
+                    <div className="w-10 h-10 rounded-full bg-accent/20 flex items-center justify-center text-accent font-bold text-sm">
+                      {initials}
+                    </div>
+                  )}
+                  <div>
+                    <h4 className="font-bold text-white text-sm">{review.user?.name ?? 'Anonymous'}</h4>
+                    <div className="flex items-center gap-1">
+                      {[...Array(5)].map((_, i) => (
+                        <span key={i} className={`material-symbols-outlined text-[12px] ${i < review.rating ? 'text-yellow-400' : 'text-white/20'}`}>star</span>
+                      ))}
+                      <span className="text-xs text-text-muted ml-1">{date}</span>
+                    </div>
+                  </div>
+                </div>
+                <p className="text-sm text-gray-300 leading-relaxed">{review.comment}</p>
+              </div>
+            );
+          })}
+        </div>
+      )}
 
-      <button className="mt-8 px-6 py-3 rounded-xl border border-white/10 text-sm font-bold text-white hover:bg-white hover:text-black transition-colors">
-        Show all {totalReviews} reviews
-      </button>
+      {reviews.length > 4 && (
+        <button
+          onClick={() => setShowAll(!showAll)}
+          className="mt-8 px-6 py-3 rounded-xl border border-white/10 text-sm font-bold text-white hover:bg-white hover:text-black transition-colors"
+        >
+          {showAll ? 'Show less' : `Show all ${displayTotal} reviews`}
+        </button>
+      )}
     </div>
   );
 }

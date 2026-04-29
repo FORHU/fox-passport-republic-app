@@ -1,6 +1,6 @@
 // Gamification system types
 
-export type UserPath = 'user' | 'foxer' | 'host' | 'investor';
+export type UserPath = 'user' | 'foxer' | 'host' | 'mayor' | 'investor';
 
 export type BadgeRarity = 'Common' | 'Uncommon' | 'Rare' | 'Epic' | 'Legendary';
 
@@ -103,6 +103,13 @@ export const PATH_LABELS = {
     12: 'Premium Host',
     18: 'Super Host',
   },
+  mayor: {
+    1: 'Ward Officer',
+    3: 'District Head',
+    7: 'City Planner',
+    12: 'City Mayor',
+    18: 'Grand Mayor',
+  },
   investor: {
     1: 'Seed Funder',
     3: 'Angel Investor',
@@ -126,6 +133,7 @@ export const PATH_COLORS: Record<UserPath, string> = {
   user: '#22c55e', // Green
   foxer: '#f97316', // Orange
   host: '#3b82f6', // Blue
+  mayor: '#a855f7', // Purple
   investor: '#eab308', // Yellow
 };
 
@@ -148,6 +156,12 @@ export const XP_REWARDS = {
   uploadVenue: 75,
   venueBooked: 100,
   venueFeatured: 500,
+
+  // Mayor path
+  uploadMayorVenue: 100,
+  mayorVenueApproved: 200,
+  mayorVenueFeatured: 750,
+  cityInitiativeApproved: 500,
 
   // Investor path
   makeInvestment: 300,

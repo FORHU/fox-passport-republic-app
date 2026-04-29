@@ -271,6 +271,46 @@ export async function getVenues() {
   }
 }
 
+export async function getAdminPendingVenues() {
+  try {
+    const body = await serverFetch('/admin/venues/pending');
+    return extractList(body).map(normalizeVenue);
+  } catch (error) {
+    console.error('Failed to fetch admin pending venues:', error);
+    return [];
+  }
+}
+
+export async function getAdminPendingAssets() {
+  try {
+    const body = await serverFetch('/admin/assets/pending');
+    return extractList(body);
+  } catch (error) {
+    console.error('Failed to fetch admin pending assets:', error);
+    return [];
+  }
+}
+
+export async function getAdminPendingServices() {
+  try {
+    const body = await serverFetch('/admin/services/pending');
+    return extractList(body);
+  } catch (error) {
+    console.error('Failed to fetch admin pending services:', error);
+    return [];
+  }
+}
+
+export async function getAdminEvents() {
+  try {
+    const body = await serverFetch('/admin/events');
+    return extractList(body);
+  } catch (error) {
+    console.error('Failed to fetch admin events:', error);
+    return [];
+  }
+}
+
 export async function getEvents() {
   try {
     const body = await serverFetch('/event-templates');

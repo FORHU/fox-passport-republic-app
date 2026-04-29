@@ -101,45 +101,32 @@ export const useUserDashboard = () => {
     enabled: !!userId,
   });
 
-  // 3. Fetch Saved Vibes (Favorites)
+  // 3. Fetch Saved Vibes (Favorites) — GET /favorites/user/:userId
   const { data: savedVibes = [], isLoading: isLoadingSaved } = useQuery({
-    queryKey: ["user-saved-vibes", userId],
+    queryKey: ["favorites", userId],
     queryFn: async () => {
       if (!userId) return [];
-      try {
-        const res = await api.get(`/users/${userId}/saved-events`);
-        return res.data.data || [];
-      } catch (error) {
-        console.warn("Failed to fetch saved vibes, using mock:", error);
-        return [
-          {
-            id: 1,
-            title: "Underground Techno Blast",
-            location: "Berlin, Germany",
-            status: "open",
-            image:
-              "https://images.unsplash.com/photo-1598387993441-a364f854c3e1?q=80&w=2076&auto=format&fit=crop",
-          },
-          {
-            id: 2,
-            title: "Digital Art Exhibition",
-            location: "Seoul, South Korea",
-            status: "upcoming",
-            image:
-              "https://images.unsplash.com/photo-1547826039-bfc35e0f1ea8?q=80&w=1972&auto=format&fit=crop",
-          },
-          {
-            id: 3,
-            title: "Sunset Jazz Session",
-            location: "New Orleans, USA",
-            status: "sold_out",
-            image:
-              "https://images.unsplash.com/photo-1511192336575-5a79af67a629?q=80&w=2032&auto=format&fit=crop",
-          },
-        ];
-      }
+      const res = await api.get(`/favorites/user/${userId}`);
+      const raw: any[] = res.data.data || [];
+      return raw.map((f) => {
+        const img =
+          f.venue?.images?.find((i: any) => i.isPrimary)?.imageUrl ||
+          f.venue?.images?.[0]?.imageUrl ||
+          f.venue?.images?.[0]?.url ||
+          "https://picsum.photos/seed/venue/64/64";
+        return {
+          id: f.id,
+          title: f.venue?.name || f.event?.name || "Saved Item",
+          location: f.venue
+            ? [f.venue.city, f.venue.state].filter(Boolean).join(", ")
+            : "",
+          image: img,
+          status: "open" as const,
+        };
+      });
     },
     enabled: !!userId,
+    staleTime: 1000 * 60 * 5,
   });
 
   // 4. Fetch Recommendations (For You)

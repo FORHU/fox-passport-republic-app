@@ -1,45 +1,31 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter, useParams } from 'next/navigation';
 import { motion, AnimatePresence } from 'motion/react';
 import { useCheckoutStore } from '@/store/useCheckoutStore';
 import { createMatch } from '@/lib/api/matches';
 import { toast } from 'sonner';
+import api from '@/lib/axios';
 
-const FOXERS = [
-  {
-    id: 1,
-    name: 'Jasmine L.',
-    role: 'Event Foxer',
-    rating: 4.9,
-    reviews: 128,
-    avatar: 'https://images.unsplash.com/photo-1531123897727-8f129e1688ce?q=80&w=200&auto=format&fit=crop',
-    styles: ['Boho Camping', 'Intimate Soirée', 'Forest Fairy Tale'],
-    basePrice: 5000
-  },
-  {
-    id: 2,
-    name: 'Marco D.',
-    role: 'Talent Foxer',
-    rating: 5.0,
-    reviews: 84,
-    avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?q=80&w=200&auto=format&fit=crop',
-    styles: ['Live Band', 'Team Building', 'Stargazing Night'],
-    basePrice: 3500
-  },
-  {
-    id: 3,
-    name: 'Sarah K.',
-    role: 'Gear Foxer',
-    rating: 4.8,
-    reviews: 56,
-    avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=200&auto=format&fit=crop',
-    styles: ['Sound System', 'Electronic Lighting', 'Event Power'],
-    basePrice: 8000
-  }
-];
+interface Foxer {
+  id: string;
+  name: string;
+  role: string;
+  rating: number;
+  reviews: number;
+  avatar: string;
+  styles: string[];
+  basePrice: number;
+}
+
+// Maps roleType array → display role label
+function getRoleLabel(roleType: string[]): string {
+  if (roleType.includes('foxerService')) return 'Talent Foxer';
+  if (roleType.includes('foxerAsset')) return 'Gear Foxer';
+  return 'Event Foxer';
+}
 
 const MatchConfig: React.FC = () => {
   const router = useRouter();
@@ -50,11 +36,46 @@ const MatchConfig: React.FC = () => {
   const [date, setDate] = useState('');
   const [requestContent, setRequestContent] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [foxers, setFoxers] = useState<Foxer[]>([]);
+  const [isLoadingFoxers, setIsLoadingFoxers] = useState(true);
 
-  const foxer = FOXERS.find(f => f.id === Number(foxerId)) || FOXERS[0];
+  useEffect(() => {
+    api.get('/users?roleType=foxerService,foxerAsset')
+      .then(res => {
+        const users: any[] = Array.isArray(res.data) ? res.data : res.data?.data ?? [];
+        const mapped: Foxer[] = users.map(u => ({
+          id: u.id,
+          name: u.name || u.username || 'Foxer',
+          role: getRoleLabel(u.roleType ?? []),
+          rating: 5.0,
+          reviews: 0,
+          avatar: u.imgId || `https://ui-avatars.com/api/?name=${encodeURIComponent(u.name || 'Foxer')}&background=ccff00&color=000`,
+          styles: u.roleType?.includes('foxerService')
+            ? ['Live Band', 'Team Building', 'Stargazing Night']
+            : ['Sound System', 'Electronic Lighting', 'Event Power'],
+          basePrice: 3500,
+        }));
+        setFoxers(mapped);
+      })
+      .catch(() => toast.error('Could not load foxers'))
+      .finally(() => setIsLoadingFoxers(false));
+  }, []);
+
+  const foxer = foxers.find(f => f.id === foxerId) ?? foxers[0];
 
   const nextStep = () => setStep(prev => Math.min(prev + 1, 4));
   const prevStep = () => setStep(prev => Math.max(prev - 1, 1));
+
+  if (isLoadingFoxers || !foxer) {
+    return (
+      <div className="bg-background min-h-screen flex items-center justify-center">
+        <div className="flex flex-col items-center gap-4 text-white/40">
+          <div className="w-10 h-10 border-4 border-accent/20 border-t-accent rounded-full animate-spin" />
+          <p className="text-sm font-display tracking-widest uppercase">Loading Foxer...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="bg-background bg-gradient-dark min-h-screen text-text-main font-body flex flex-col">

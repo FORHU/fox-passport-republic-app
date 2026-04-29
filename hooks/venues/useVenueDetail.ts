@@ -6,11 +6,8 @@ import {
   useVenueDetailStore,
   useExperienceBuilderStore,
 } from "@/store/useVenueDetailStore";
-import {
-  SERVICE_CATEGORIES,
-  CUSTOM_SERVICES,
-  AVAILABLE_FOXERS,
-} from "@/data/venueDetailData";
+import { SERVICE_CATEGORIES } from "@/data/venueDetailData";
+import type { LiveFoxer, LiveService } from "@/hooks/venues/useExperienceBuilderData";
 import { useCheckoutStore } from "@/store/useCheckoutStore";
 
 export function useVenueDetail(venueData?: any) {
@@ -53,7 +50,13 @@ export function useVenueDetail(venueData?: any) {
   };
 }
 
-export function useExperienceBuilder(venuePrice: number, onClose: () => void, isOpen: boolean) {
+export function useExperienceBuilder(
+  venuePrice: number,
+  onClose: () => void,
+  isOpen: boolean,
+  foxers: LiveFoxer[] = [],
+  itemsByCategory: Record<string, LiveService[]> = {},
+) {
   const router = useRouter();
   const store = useExperienceBuilderStore();
 
@@ -70,14 +73,12 @@ export function useExperienceBuilder(venuePrice: number, onClose: () => void, is
   }, [isOpen]);
 
   const filteredServices = useMemo(() => {
-    const categoryServices =
-      CUSTOM_SERVICES[store.activeCategory as keyof typeof CUSTOM_SERVICES] ||
-      [];
+    const categoryServices = itemsByCategory[store.activeCategory] ?? [];
     if (!store.searchQuery) return categoryServices;
     return categoryServices.filter((s) =>
       s.name.toLowerCase().includes(store.searchQuery.toLowerCase())
     );
-  }, [store.activeCategory, store.searchQuery]);
+  }, [store.activeCategory, store.searchQuery, itemsByCategory]);
 
   const currentCategoryLabel = useMemo(() => {
     return (
@@ -85,21 +86,28 @@ export function useExperienceBuilder(venuePrice: number, onClose: () => void, is
     );
   }, [store.activeCategory]);
 
-  const total = useMemo(
-    () => store.calculateTotal(venuePrice),
-    [store, venuePrice]
-  );
+  const total = useMemo(() => {
+    let t = venuePrice * 2;
+    if (store.selectedFoxer) {
+      const foxer = foxers.find(f => f.id === store.selectedFoxer);
+      if (foxer) t += foxer.fee;
+    }
+    Object.values(itemsByCategory).flat().forEach(svc => {
+      if (store.selectedServices.includes(svc.id)) t += svc.price;
+    });
+    return t;
+  }, [store.selectedFoxer, store.selectedServices, venuePrice, foxers, itemsByCategory]);
 
   const selectedFoxerData = useMemo(() => {
     if (!store.selectedFoxer) return null;
-    return AVAILABLE_FOXERS.find((f) => f.id === store.selectedFoxer) || null;
-  }, [store.selectedFoxer]);
+    return foxers.find((f) => f.id === store.selectedFoxer) ?? null;
+  }, [store.selectedFoxer, foxers]);
 
   const selectedServicesData = useMemo(() => {
-    return Object.values(CUSTOM_SERVICES)
+    return Object.values(itemsByCategory)
       .flat()
       .filter((s) => store.selectedServices.includes(s.id));
-  }, [store.selectedServices]);
+  }, [store.selectedServices, itemsByCategory]);
 
   // Drag handlers
   const handleDragStart = useCallback(
@@ -136,7 +144,7 @@ export function useExperienceBuilder(venuePrice: number, onClose: () => void, is
       const type = e.dataTransfer.getData("type");
 
       if (type === "foxer") {
-        store.setSelectedFoxer(Number(id));
+        store.setSelectedFoxer(id); // string UUID now
       } else if (type === "service") {
         if (!store.selectedServices.includes(id)) {
           store.toggleService(id);

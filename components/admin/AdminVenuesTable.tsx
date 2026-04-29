@@ -1,13 +1,13 @@
 'use client';
 
 import React, { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import api from '@/lib/axios';
 import { toast } from 'sonner';
 
 interface VenueTableProps {
   venues: any[];
   isLoading: boolean;
-  refetch?: () => void;
 }
 
 // All statuses (for display/color lookup)
@@ -19,12 +19,6 @@ const ALL_STATUSES = [
   { value: 'archived',  label: 'Archived',     color: 'bg-gray-500/10 text-gray-400 border-gray-500/20' },
 ];
 
-// Admin can only set these — draft/pending are mayor-controlled
-const ADMIN_REVIEW_STATUSES = [
-  { value: 'available', label: 'Available' },
-  { value: 'rejected',  label: 'Rejected' },
-  { value: 'archived',  label: 'Archived' },
-];
 
 function statusColor(status: string) {
   return ALL_STATUSES.find((s) => s.value === status)?.color ?? 'bg-white/5 text-white border-white/10';
@@ -63,27 +57,31 @@ function TagList({ label, icon, items }: { label: string; icon: string; items: s
   );
 }
 
-export const AdminVenuesTable: React.FC<VenueTableProps> = ({ venues, isLoading, refetch }) => {
+export const AdminVenuesTable: React.FC<VenueTableProps> = ({ venues, isLoading }) => {
+  const router = useRouter();
   const [expandedRow, setExpandedRow] = useState<string | null>(null);
   const [updatingId, setUpdatingId] = useState<string | null>(null);
   const [lightboxImg, setLightboxImg] = useState<string | null>(null);
 
-  const handleStatusUpdate = async (id: string, newStatus: string) => {
+  const approve = async (id: string) => {
     setUpdatingId(id);
     try {
-      await api.put(`/venues/${id}`, { status: newStatus });
-      toast.success(`Venue status updated to ${newStatus}`);
-      refetch?.();
-    } catch (error) {
-      console.error('Failed to update status:', error);
-      toast.error('Failed to update status');
-    } finally {
-      setUpdatingId(null);
-    }
+      await api.patch(`/admin/venues/${id}/approve`);
+      toast.success('Venue approved and made available');
+      router.refresh();
+    } catch { toast.error('Failed to approve venue'); }
+    finally { setUpdatingId(null); }
   };
 
-  const approve = (id: string) => handleStatusUpdate(id, 'available');
-  const reject  = (id: string) => handleStatusUpdate(id, 'rejected');
+  const reject = async (id: string) => {
+    setUpdatingId(id);
+    try {
+      await api.patch(`/admin/venues/${id}/reject`);
+      toast.success('Venue rejected');
+      router.refresh();
+    } catch { toast.error('Failed to reject venue'); }
+    finally { setUpdatingId(null); }
+  };
 
   if (isLoading) {
     return (
@@ -208,24 +206,20 @@ export const AdminVenuesTable: React.FC<VenueTableProps> = ({ venues, isLoading,
                             {updatingId === venue.id && (
                               <div className="w-4 h-4 border-2 border-accent/20 border-t-accent rounded-full animate-spin" />
                             )}
-                            <select
-                              disabled={updatingId === venue.id}
-                              value={venue.status}
-                              onChange={(e) => handleStatusUpdate(venue.id, e.target.value)}
-                              className="bg-[#0f111a] border border-white/10 text-[10px] font-bold rounded-lg px-2 py-1.5 focus:outline-none focus:border-accent transition-all cursor-pointer hover:border-white/20 uppercase tracking-tighter text-white"
+                            <button
+                              disabled={!!updatingId}
+                              onClick={() => reject(venue.id)}
+                              className="px-3 py-1.5 rounded-lg border border-red-500/30 bg-red-500/10 text-red-400 text-[10px] font-bold uppercase tracking-widest hover:bg-red-500/20 disabled:opacity-40 transition-all"
                             >
-                              {/* Show current status as first option if it's mayor-controlled */}
-                              {!ADMIN_REVIEW_STATUSES.find(s => s.value === venue.status) && (
-                                <option value={venue.status} className="bg-[#0f111a] text-white/40" disabled>
-                                  {(venue.status ?? 'pending').toUpperCase()} (current)
-                                </option>
-                              )}
-                              {ADMIN_REVIEW_STATUSES.map((s) => (
-                                <option key={s.value} value={s.value} className="bg-[#0f111a] text-white">
-                                  {s.label.toUpperCase()}
-                                </option>
-                              ))}
-                            </select>
+                              Reject
+                            </button>
+                            <button
+                              disabled={!!updatingId}
+                              onClick={() => approve(venue.id)}
+                              className="px-3 py-1.5 rounded-lg border border-green-500/30 bg-green-500/10 text-green-400 text-[10px] font-bold uppercase tracking-widest hover:bg-green-500/20 disabled:opacity-40 transition-all"
+                            >
+                              Approve
+                            </button>
                           </div>
                         </td>
                       </tr>

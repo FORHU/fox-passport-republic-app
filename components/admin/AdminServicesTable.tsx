@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import api from '@/lib/axios';
 import { toast } from 'sonner';
 
@@ -8,14 +9,6 @@ interface ServicesTableProps {
   services: any[];
   isLoading: boolean;
 }
-
-const SERVICE_STATUSES = [
-  { value: 'draft', label: 'Draft' },
-  { value: 'pending_review', label: 'Review' },
-  { value: 'published', label: 'Active' },
-  { value: 'suspended', label: 'Suspended' },
-  { value: 'archived', label: 'Archived' },
-];
 
 function pickImage(images: any): string {
   if (!images) return '';
@@ -29,16 +22,31 @@ function pickImage(images: any): string {
 }
 
 export const AdminServicesTable: React.FC<ServicesTableProps> = ({ services, isLoading }) => {
+  const router = useRouter();
   const [updatingId, setUpdatingId] = useState<string | null>(null);
   const [expandedRow, setExpandedRow] = useState<string | null>(null);
 
-  const handleStatusUpdate = async (id: string, newStatus: string) => {
+  const approve = async (id: string) => {
     setUpdatingId(id);
     try {
-      await api.put(`/service/${id}`, { status: newStatus });
-      toast.success(`Service status updated to ${newStatus}`);
+      await api.patch(`/admin/services/${id}/approve`);
+      toast.success('Service approved');
+      router.refresh();
     } catch {
-      toast.error('Failed to update status');
+      toast.error('Failed to approve service');
+    } finally {
+      setUpdatingId(null);
+    }
+  };
+
+  const reject = async (id: string) => {
+    setUpdatingId(id);
+    try {
+      await api.patch(`/admin/services/${id}/reject`);
+      toast.success('Service rejected');
+      router.refresh();
+    } catch {
+      toast.error('Failed to reject service');
     } finally {
       setUpdatingId(null);
     }
@@ -142,18 +150,20 @@ export const AdminServicesTable: React.FC<ServicesTableProps> = ({ services, isL
                         {updatingId === service.id && (
                           <div className="w-4 h-4 border-2 border-accent/20 border-t-accent rounded-full animate-spin" />
                         )}
-                        <select
-                          disabled={updatingId === service.id}
-                          value={service.status || 'draft'}
-                          onChange={(e) => handleStatusUpdate(service.id, e.target.value)}
-                          className="bg-[#0f111a] border border-white/10 text-[10px] font-bold rounded-lg px-2 py-1.5 focus:outline-none focus:border-accent transition-all cursor-pointer hover:border-white/20 uppercase tracking-tighter text-white"
+                        <button
+                          disabled={!!updatingId}
+                          onClick={() => reject(service.id)}
+                          className="px-3 py-1.5 rounded-lg border border-red-500/30 bg-red-500/10 text-red-400 text-[10px] font-bold uppercase tracking-widest hover:bg-red-500/20 disabled:opacity-40 transition-all"
                         >
-                          {SERVICE_STATUSES.map((s) => (
-                            <option key={s.value} value={s.value} className="bg-[#0f111a] text-white">
-                              {s.label.toUpperCase()}
-                            </option>
-                          ))}
-                        </select>
+                          Reject
+                        </button>
+                        <button
+                          disabled={!!updatingId}
+                          onClick={() => approve(service.id)}
+                          className="px-3 py-1.5 rounded-lg border border-green-500/30 bg-green-500/10 text-green-400 text-[10px] font-bold uppercase tracking-widest hover:bg-green-500/20 disabled:opacity-40 transition-all"
+                        >
+                          Approve
+                        </button>
                       </div>
                     </td>
                   </tr>
