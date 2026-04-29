@@ -18,11 +18,11 @@ export const AdminEventsTable: React.FC<EventsTableProps> = ({ events, isLoading
   const approve = async (id: string) => {
     setUpdatingId(id);
     try {
-      await api.patch(`/admin/events/${id}/approve`);
-      toast.success('Event approved');
+      await api.patch(`/admin/event-templates/${id}/approve`);
+      toast.success('Event template approved — now visible on category pages');
       router.refresh();
     } catch (err: any) {
-      const msg = err?.response?.data?.message || err?.message || 'Failed to approve event';
+      const msg = err?.response?.data?.message || err?.message || 'Failed to approve event template';
       toast.error(`Approve failed: ${msg}`);
     } finally {
       setUpdatingId(null);
@@ -32,11 +32,11 @@ export const AdminEventsTable: React.FC<EventsTableProps> = ({ events, isLoading
   const reject = async (id: string) => {
     setUpdatingId(id);
     try {
-      await api.patch(`/admin/events/${id}/reject`);
-      toast.success('Event rejected');
+      await api.patch(`/admin/event-templates/${id}/reject`);
+      toast.success('Event template rejected — hidden from category pages');
       router.refresh();
     } catch (err: any) {
-      const msg = err?.response?.data?.message || err?.message || 'Failed to reject event';
+      const msg = err?.response?.data?.message || err?.message || 'Failed to reject event template';
       toast.error(`Reject failed: ${msg}`);
     } finally {
       setUpdatingId(null);

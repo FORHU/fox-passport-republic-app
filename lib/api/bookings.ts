@@ -1,5 +1,23 @@
 import api from "@/lib/axios";
 
+// 0. Fetch a single public (approved) EventTemplate
+export async function getPublicTemplate(templateId: string) {
+  const resp = await api.get(`/event-templates/browse/${templateId}`);
+  return resp.data?.data;
+}
+
+// 0b. Book directly from an approved EventTemplate
+export async function bookFromTemplate(payload: {
+  templateId: string;
+  guestCount: number;
+  totalAmount: number;
+  startAt: string;
+  endAt: string;
+}): Promise<{ booking: { id: string }; eventId: string }> {
+  const resp = await api.post("/bookings/from-template", payload);
+  return resp.data?.data;
+}
+
 // 1. Create Draft Event Context
 export async function createCheckoutEventContext(payload: {
   venueId: string;

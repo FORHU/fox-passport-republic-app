@@ -67,12 +67,17 @@ function CategoryCard({ category, index }: { category: Category; index: number }
 
       {/* Content */}
       <div className="relative z-10 p-5 transition-all duration-300 group-hover:-translate-y-2 pointer-events-none">
-        <h3 className="text-xl font-bold text-white mb-1 leading-tight font-display">
+        <h3
+          className="text-xl font-bold mb-1 leading-tight font-display capitalize"
+          style={{ color: category.spotColor || "#ffffff" }}
+        >
           {category.name}
         </h3>
         <p className="text-sm text-white/70">{category.tagline || category.description || "Explore experiences"}</p>
         {category.spotLabel && (
-          <p className="text-xs text-[#ccff00] mt-2 font-bold">{category.spotLabel}</p>
+          <p className="text-xs mt-2 font-bold" style={{ color: category.spotColor || "#ccff00" }}>
+            {category.spotLabel}
+          </p>
         )}
       </div>
     </div>

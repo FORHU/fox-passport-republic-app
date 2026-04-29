@@ -1,4 +1,4 @@
-import React from "react";
+import React, { Suspense } from "react";
 import BookingConfigurationClient from "@/components/booking/BookingConfigurationClient";
 import type { Metadata } from "next";
 
@@ -12,7 +12,9 @@ export const metadata: Metadata = {
 export default function BookingConfigPage() {
   return (
     <div className="min-h-screen bg-background bg-gradient-dark text-text-main font-body selection:bg-accent selection:text-black">
-      <BookingConfigurationClient />
+      <Suspense>
+        <BookingConfigurationClient />
+      </Suspense>
     </div>
   );
 }

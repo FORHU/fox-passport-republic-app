@@ -1,15 +1,31 @@
 ﻿'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useCheckoutStore } from '@/store/useCheckoutStore';
 import { useAuthStore } from '@/store/useAuthStore';
+import { bookFromTemplate, getPublicTemplate } from '@/lib/api/bookings';
+import { toast } from 'sonner';
 
 export default function BookingConfigurationClient() {
   const router = useRouter();
-  const { venueName, venueImage, guestCount, checkInDate, setConfig } = useCheckoutStore();
+  const searchParams = useSearchParams();
+  const templateId = searchParams.get('templateId');
+  const { venueName, venueImage, guestCount, checkInDate, setConfig, setDraftIds } = useCheckoutStore();
   const { user } = useAuthStore();
+  const [isCreatingBooking, setIsCreatingBooking] = useState(false);
+  const [template, setTemplate] = useState<any>(null);
+  const [isLoadingTemplate, setIsLoadingTemplate] = useState(!!templateId);
+
+  useEffect(() => {
+    if (!templateId) return;
+    setIsLoadingTemplate(true);
+    getPublicTemplate(templateId)
+      .then(setTemplate)
+      .catch(() => toast.error('Could not load event details.'))
+      .finally(() => setIsLoadingTemplate(false));
+  }, [templateId]);
 
   const getDashboardPath = () => {
     switch (user?.role?.toLowerCase()) {
@@ -26,13 +42,25 @@ export default function BookingConfigurationClient() {
   };
 
   const dashboardPath = getDashboardPath();
-  
+
+  // Derived template values
+  const templateName = template?.name || venueName || 'Event Package';
+  const templateCategory = template?.category
+    ? template.category.charAt(0).toUpperCase() + template.category.slice(1).toLowerCase().replace(/_/g, ' ')
+    : 'Event';
+  const templateImage = template?.images?.[0]?.url || venueImage;
+  const templateLocation = [template?.targetCity, template?.targetState].filter(Boolean).join(', ') || 'Location TBD';
+  const basePrice = template?.estimatedTotal ?? 0;
+  const serviceFee = 150;
+  const totalAmount = basePrice + serviceFee;
+  const includedServices: any[] = template?.templateServices?.slice(0, 4) ?? [];
+
   const [selectedTime, setSelectedTime] = useState('09:00 PM');
   const [guests, setGuests] = useState(2);
   const [selectedDate, setSelectedDate] = useState(9);
 
   // Sync with store on mount
-  React.useEffect(() => {
+  useEffect(() => {
     if (guestCount) setGuests(guestCount);
     if (checkInDate) setSelectedDate(checkInDate);
   }, [guestCount, checkInDate]);
@@ -58,11 +86,17 @@ export default function BookingConfigurationClient() {
                 <span className="h-2 w-2 rounded-full bg-green-500 animate-pulse"></span>
                 <span>Online</span>
               </div>
-              <div 
+              <div
                 className="h-10 w-10 rounded-full border border-white/10 overflow-hidden cursor-pointer hover:border-accent transition-colors"
                 onClick={() => router.push(dashboardPath)}
               >
-                <img alt="User" className="h-full w-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuD-A0KmDrOi8KQZt5YVraaoL54kpKL4sLPhBoZj6kgs089hsWPz2qJfdMww3r4NpGGBYTSIrptbwjoMo0ZmnZFpuLCt3lExTQAv1QauCbCl6k3vscDYH5z0t7EqZ-NulKXiQjy8VxqCwlvvy4h_vf5j2Lf7cN1haDT24rR_FzF8rO9swBYh5KVGtV09ogFZmVJAcrnGZCXHQEkJR8TzFmrSMkK0jRaOzO43L1j7KQZ0WraTBcdonNTmEh2phQsvKrYuVv6P1wDPPAM" />
+                {user?.imgId ? (
+                  <img alt="User" className="h-full w-full object-cover" src={user.imgId} />
+                ) : (
+                  <div className="h-full w-full flex items-center justify-center bg-[#ccff00] text-black font-bold text-sm">
+                    {user?.name?.charAt(0)?.toUpperCase() ?? 'U'}
+                  </div>
+                )}
               </div>
             </div>
           </div>
@@ -75,9 +109,9 @@ export default function BookingConfigurationClient() {
             <div className="flex items-center gap-2 text-sm text-text-muted mb-4">
               <Link href="/" className="hover:text-white transition-colors">Explore</Link>
               <span className="material-symbols-outlined text-[14px]">chevron_right</span>
-              <span className="hover:text-white transition-colors">Nightlife</span>
+              <span className="hover:text-white transition-colors">{templateCategory}</span>
               <span className="material-symbols-outlined text-[14px]">chevron_right</span>
-              <span className="text-accent font-semibold">Neon Nights: Retro Wave</span>
+              <span className="text-accent font-semibold">{isLoadingTemplate ? '…' : templateName}</span>
             </div>
             <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
               <div>
@@ -190,7 +224,7 @@ export default function BookingConfigurationClient() {
                     </div>
                     <div>
                       <p className="font-bold text-white">Total Guests</p>
-                      <p className="text-sm text-text-muted">₱1,500 per person</p>
+                      <p className="text-sm text-text-muted">Package rate applies</p>
                     </div>
                   </div>
                   <div className="flex items-center gap-4 bg-surface rounded-full p-1 border border-white/10">
@@ -211,62 +245,47 @@ export default function BookingConfigurationClient() {
                 </div>
               </div>
 
-              {/* Add-ons */}
+              {/* Included Services */}
               <div className="glass-card rounded-[2rem] p-8 border border-white/10">
                 <div className="flex items-center gap-3 mb-6">
                   <span className="material-symbols-outlined text-accent text-2xl">diamond</span>
-                  <h3 className="text-xl font-display font-bold text-white">Level Up Your Experience</h3>
+                  <h3 className="text-xl font-display font-bold text-white">What's Included</h3>
                 </div>
-                <div className="grid sm:grid-cols-2 gap-4">
-                  <label className="relative cursor-pointer group">
-                    <input className="peer sr-only" type="checkbox" />
-                    <div className="p-5 rounded-2xl bg-surface-highlight/30 border border-white/5 hover:border-white/20 peer-checked:border-accent peer-checked:bg-accent/5 transition-all h-full">
-                      <div className="flex justify-between items-start mb-3">
-                        <div className="h-10 w-10 rounded-lg bg-gradient-to-br from-purple-500 to-indigo-600 flex items-center justify-center text-white shadow-lg">
-                          <span className="material-symbols-outlined">photo_camera</span>
+                {isLoadingTemplate ? (
+                  <div className="grid sm:grid-cols-2 gap-4">
+                    {[1, 2, 3, 4].map(i => (
+                      <div key={i} className="p-5 rounded-2xl bg-surface-highlight/30 border border-white/5 h-28 animate-pulse" />
+                    ))}
+                  </div>
+                ) : includedServices.length > 0 ? (
+                  <div className="grid sm:grid-cols-2 gap-4">
+                    {includedServices.map((ts: any, i: number) => {
+                      const svc = ts.service;
+                      const icons = ['check_circle', 'celebration', 'restaurant', 'camera'];
+                      const gradients = [
+                        'from-purple-500 to-indigo-600',
+                        'from-orange-400 to-red-500',
+                        'from-emerald-400 to-teal-500',
+                        'from-blue-400 to-cyan-500',
+                      ];
+                      return (
+                        <div key={ts.id ?? i} className="p-5 rounded-2xl bg-surface-highlight/30 border border-accent/30 bg-accent/5 h-full">
+                          <div className="flex justify-between items-start mb-3">
+                            <div className={`h-10 w-10 rounded-lg bg-gradient-to-br ${gradients[i % gradients.length]} flex items-center justify-center text-white shadow-lg`}>
+                              <span className="material-symbols-outlined">{icons[i % icons.length]}</span>
+                            </div>
+                            <span className="material-symbols-outlined text-accent text-[20px]">check_circle</span>
+                          </div>
+                          <h4 className="font-bold text-white mb-1">{svc?.name ?? 'Service'}</h4>
+                          <p className="text-xs text-text-muted mb-3 line-clamp-2">{svc?.description ?? ''}</p>
+                          <span className="text-accent font-bold text-sm">Included</span>
                         </div>
-                        <div className="h-6 w-6 rounded-full border border-white/20 peer-checked:bg-accent peer-checked:border-accent flex items-center justify-center transition-all">
-                          <span className="material-symbols-outlined text-black text-[14px] opacity-0 peer-checked:opacity-100">check</span>
-                        </div>
-                      </div>
-                      <h4 className="font-bold text-white mb-1">Professional Photos</h4>
-                      <p className="text-xs text-text-muted mb-3">Get 10 edited hi-res shots of your night.</p>
-                      <span className="text-accent font-bold text-sm">+ ₱500</span>
-                    </div>
-                  </label>
-                  <label className="relative cursor-pointer group">
-                    <input defaultChecked className="peer sr-only" type="checkbox" />
-                    <div className="p-5 rounded-2xl bg-surface-highlight/30 border border-white/5 hover:border-white/20 peer-checked:border-accent peer-checked:bg-accent/5 transition-all h-full">
-                      <div className="flex justify-between items-start mb-3">
-                        <div className="h-10 w-10 rounded-lg bg-gradient-to-br from-orange-400 to-red-500 flex items-center justify-center text-white shadow-lg">
-                          <span className="material-symbols-outlined">liquor</span>
-                        </div>
-                        <div className="h-6 w-6 rounded-full border border-white/20 peer-checked:bg-accent peer-checked:border-accent flex items-center justify-center transition-all">
-                          <span className="material-symbols-outlined text-black text-[14px] opacity-0 peer-checked:opacity-100">check</span>
-                        </div>
-                      </div>
-                      <h4 className="font-bold text-white mb-1">VIP Drink Package</h4>
-                      <p className="text-xs text-text-muted mb-3">Skip the line + 2 premium cocktails included.</p>
-                      <span className="text-accent font-bold text-sm">+ ₱1,200</span>
-                    </div>
-                  </label>
-                  <label className="relative cursor-pointer group">
-                    <input className="peer sr-only" type="checkbox" />
-                    <div className="p-5 rounded-2xl bg-surface-highlight/30 border border-white/5 hover:border-white/20 peer-checked:border-accent peer-checked:bg-accent/5 transition-all h-full">
-                      <div className="flex justify-between items-start mb-3">
-                        <div className="h-10 w-10 rounded-lg bg-gradient-to-br from-blue-400 to-cyan-500 flex items-center justify-center text-white shadow-lg">
-                          <span className="material-symbols-outlined">local_taxi</span>
-                        </div>
-                        <div className="h-6 w-6 rounded-full border border-white/20 peer-checked:bg-accent peer-checked:border-accent flex items-center justify-center transition-all">
-                          <span className="material-symbols-outlined text-black text-[14px] opacity-0 peer-checked:opacity-100">check</span>
-                        </div>
-                      </div>
-                      <h4 className="font-bold text-white mb-1">Priority Ride Home</h4>
-                      <p className="text-xs text-text-muted mb-3">Pre-booked secure ride within Metro Manila.</p>
-                      <span className="text-accent font-bold text-sm">+ ₱350</span>
-                    </div>
-                  </label>
-                </div>
+                      );
+                    })}
+                  </div>
+                ) : (
+                  <p className="text-text-muted text-sm">All services included in the package price.</p>
+                )}
               </div>
 
               {/* Special Requests */}
@@ -284,24 +303,23 @@ export default function BookingConfigurationClient() {
               <div className="sticky top-32 space-y-6">
                 <div className="glass-card rounded-[2rem] overflow-hidden border border-white/10 shadow-glow">
                   <div className="relative h-48">
-                    <img 
-                      alt="Event" 
-                      className="w-full h-full object-cover" 
-                      src={venueImage || "https://lh3.googleusercontent.com/aida-public/AB6AXuAmLMhfBavcKVkOWHaS4TPPk-NHIcut_ZhBBEe8lYdYR3H4t2yqSZKN4kaK-4daM6PVExafzgFu6-ETEkTvY3iOkNq3VyaKMs5jeDTMhhkOITtl93afJOgej_LM-nwJ4slOZvjY9jUaO0XJczNgnvj21yuB3eVwQrWu2qU4kFoFm9oertAy6N8vnz-DcYaCFbk-2wqIYps1HbNWSCB5TBISWObKfniMTbMOzf964UcanLKD2UIOD2M5IRj5kXf1kvppEdNzUJY4S3U"} 
-                    />
+                    {isLoadingTemplate ? (
+                      <div className="w-full h-full bg-surface-highlight/30 animate-pulse" />
+                    ) : templateImage ? (
+                      <img alt="Event" className="w-full h-full object-cover" src={templateImage} />
+                    ) : (
+                      <div className="w-full h-full bg-surface-highlight/50 flex items-center justify-center">
+                        <span className="material-symbols-outlined text-white/20 text-[64px]">celebration</span>
+                      </div>
+                    )}
                     <div className="absolute inset-0 bg-gradient-to-t from-surface via-surface/50 to-transparent"></div>
                     <div className="absolute bottom-4 left-6 right-6">
                       <div className="flex items-center gap-2 mb-1">
-                        <span className="bg-accent text-black text-[10px] font-bold px-2 py-0.5 rounded uppercase tracking-wider">Nightlife</span>
-                        <div className="flex text-yellow-400 text-[10px]">
-                          <span className="material-symbols-outlined text-[12px] fill-current">star</span>
-                          <span className="material-symbols-outlined text-[12px] fill-current">star</span>
-                          <span className="material-symbols-outlined text-[12px] fill-current">star</span>
-                          <span className="material-symbols-outlined text-[12px] fill-current">star</span>
-                          <span className="material-symbols-outlined text-[12px] fill-current">star_half</span>
-                        </div>
+                        <span className="bg-accent text-black text-[10px] font-bold px-2 py-0.5 rounded uppercase tracking-wider">{templateCategory}</span>
                       </div>
-                      <h3 className="text-xl font-display font-bold text-white leading-tight">{venueName || 'Neon Nights: Retro Wave Party'}</h3>
+                      <h3 className="text-xl font-display font-bold text-white leading-tight">
+                        {isLoadingTemplate ? <span className="opacity-50">Loading…</span> : templateName}
+                      </h3>
                     </div>
                   </div>
                   <div className="p-6 space-y-4">
@@ -311,7 +329,7 @@ export default function BookingConfigurationClient() {
                       </div>
                       <div>
                         <p className="text-sm font-bold text-white">Sep {selectedDate}, 2024</p>
-                        <p className="text-xs text-text-muted">Monday</p>
+                        <p className="text-xs text-text-muted">Scheduled date</p>
                       </div>
                     </div>
                     <div className="flex items-start gap-3 pb-4 border-b border-white/5">
@@ -328,50 +346,76 @@ export default function BookingConfigurationClient() {
                         <span className="material-symbols-outlined text-[16px]">location_on</span>
                       </div>
                       <div>
-                        <p className="text-sm font-bold text-white">Club Z, Makati City</p>
-                        <a className="text-xs text-accent hover:underline" href="#">View Map</a>
+                        <p className="text-sm font-bold text-white">{templateLocation}</p>
                       </div>
                     </div>
                   </div>
                   <div className="bg-surface-highlight/30 p-6 space-y-3">
                     <div className="flex justify-between text-sm">
-                      <span className="text-text-muted">Tickets (x{guests})</span>
-                      <span className="text-white">₱{(1500 * guests).toLocaleString()}</span>
-                    </div>
-                    <div className="flex justify-between text-sm">
-                      <span className="text-text-muted">VIP Drink Package</span>
-                      <span className="text-white">₱1,200</span>
+                      <span className="text-text-muted">Package estimate</span>
+                      <span className="text-white">
+                        {isLoadingTemplate ? '…' : `₱${basePrice.toLocaleString()}`}
+                      </span>
                     </div>
                     <div className="flex justify-between text-sm">
                       <span className="text-text-muted">Service Fee</span>
-                      <span className="text-white">₱150</span>
+                      <span className="text-white">₱{serviceFee.toLocaleString()}</span>
                     </div>
                     <div className="h-px bg-white/10 my-2"></div>
                     <div className="flex justify-between items-end">
                       <span className="text-sm font-bold text-white">Total</span>
-                      <span className="text-2xl font-display font-bold text-accent">₱{(1500 * guests + 1200 + 150).toLocaleString()}</span>
+                      <span className="text-2xl font-display font-bold text-accent">
+                        {isLoadingTemplate ? '…' : `₱${totalAmount.toLocaleString()}`}
+                      </span>
                     </div>
                   </div>
                   <div className="p-4">
-                    <button 
-                      onClick={() => {
+                    <button
+                      disabled={isCreatingBooking || isLoadingTemplate}
+                      onClick={async () => {
                         setConfig({
-                          venueId: 'mock-venue-id',
-                          venueName: venueName || 'Neon Nights: Retro Wave Party',
-                          venueImage: venueImage,
+                          templateId: templateId ?? undefined,
+                          venueName: templateName,
+                          venueImage: templateImage ?? undefined,
+                          venueLocation: templateLocation,
                           checkInDate: selectedDate,
                           checkInTime: selectedTime,
-                          nights: 1, // Mock value
-                          totalAmount: 1500 * guests + 1200 + 150,
-                          guestCount: guests
+                          nights: 1,
+                          totalAmount,
+                          guestCount: guests,
                         });
-                        router.push('/checkout');
+
+                        if (templateId) {
+                          setIsCreatingBooking(true);
+                          try {
+                            const startAt = new Date();
+                            startAt.setDate(startAt.getDate() + selectedDate);
+                            const endAt = new Date(startAt.getTime() + 6 * 60 * 60 * 1000);
+                            const result = await bookFromTemplate({
+                              templateId,
+                              guestCount: guests,
+                              totalAmount,
+                              startAt: startAt.toISOString(),
+                              endAt: endAt.toISOString(),
+                            });
+                            setDraftIds(result.eventId, result.booking.id);
+                            router.push('/checkout');
+                          } catch (err: any) {
+                            toast.error(err?.response?.data?.message || 'Could not create booking. Please try again.');
+                            setIsCreatingBooking(false);
+                          }
+                        } else {
+                          router.push('/checkout');
+                        }
                       }}
-                      className="w-full btn-neon group relative overflow-hidden rounded-xl bg-accent py-4 text-black font-bold text-lg shadow-[0_0_20px_rgba(204,255,0,0.4)] transition-transform active:scale-95"
+                      className="w-full btn-neon group relative overflow-hidden rounded-xl bg-accent py-4 text-black font-bold text-lg shadow-[0_0_20px_rgba(204,255,0,0.4)] transition-transform active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed"
                     >
                       <span className="relative z-10 flex items-center justify-center gap-2">
-                        Proceed to Payment
-                        <span className="material-symbols-outlined group-hover:translate-x-1 transition-transform">arrow_forward</span>
+                        {isCreatingBooking ? (
+                          <><span className="h-5 w-5 rounded-full border-2 border-black/20 border-t-black animate-spin" /> Creating booking…</>
+                        ) : (
+                          <>Proceed to Payment <span className="material-symbols-outlined group-hover:translate-x-1 transition-transform">arrow_forward</span></>
+                        )}
                       </span>
                     </button>
                     <p className="text-center text-[10px] text-text-muted mt-3">
