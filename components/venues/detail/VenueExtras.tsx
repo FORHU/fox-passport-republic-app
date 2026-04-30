@@ -2,8 +2,8 @@
 
 import React from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { RATING_BARS } from '@/data/venueDetailData';
 import { getReviewsByListing, Review } from '@/lib/api/reviews';
+
 
 interface VenueCalendarProps {
   checkInDate: number | null;
@@ -109,12 +109,15 @@ interface VenueReviewsProps {
 }
 
 export function VenueReviews({ venueId, rating: fallbackRating = 0, totalReviews: fallbackTotal = 0 }: VenueReviewsProps) {
-  const { data: reviews = [], isLoading } = useQuery<Review[]>({
+  const { data, isLoading } = useQuery({
     queryKey: ['venue-reviews', venueId],
     queryFn: () => getReviewsByListing(venueId),
     enabled: !!venueId,
     staleTime: 1000 * 60 * 5,
   });
+
+  const reviews: Review[] = data?.reviews ?? [];
+  const ratingDistribution: Record<number, string> = data?.ratingDistribution ?? {};
 
   const avgRating = reviews.length
     ? Number((reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length).toFixed(1))
@@ -123,6 +126,12 @@ export function VenueReviews({ venueId, rating: fallbackRating = 0, totalReviews
   const displayTotal = reviews.length || fallbackTotal;
   const [showAll, setShowAll] = React.useState(false);
   const visible = showAll ? reviews : reviews.slice(0, 4);
+
+  // Build rating bars from computed distribution
+  const ratingBars = [5, 4, 3, 2, 1].map((star) => ({
+    stars: star,
+    count: ratingDistribution[star] ?? "0%",
+  }));
 
   return (
     <div id="reviews">
@@ -137,9 +146,9 @@ export function VenueReviews({ venueId, rating: fallbackRating = 0, totalReviews
         </div>
       </div>
 
-      {/* Rating Bars */}
+      {/* Rating Bars — computed from real review data */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-4 mb-10">
-        {RATING_BARS.map((row) => (
+        {ratingBars.map((row) => (
           <div key={row.stars} className="flex items-center gap-3">
             <span className="text-sm font-bold text-white w-3">{row.stars}</span>
             <div className="flex-1 h-1.5 bg-white/10 rounded-full overflow-hidden">
@@ -260,10 +269,15 @@ interface HostBioProps {
     avatar: string;
     reviews: number;
     description: string;
+    createdAt?: string;
   };
 }
 
 export function HostBio({ host }: HostBioProps) {
+  const joinedDate = host.createdAt
+    ? new Date(host.createdAt).toLocaleDateString('en-US', { year: 'numeric', month: 'long' })
+    : 'Recently';
+
   return (
     <div className="flex gap-6 items-start">
       <div className="relative shrink-0">
@@ -278,7 +292,7 @@ export function HostBio({ host }: HostBioProps) {
       </div>
       <div>
         <h3 className="text-xl font-bold text-white mb-1">Hosted by {host.name}</h3>
-        <p className="text-text-muted text-sm mb-4">Joined May 2021</p>
+        <p className="text-text-muted text-sm mb-4">Joined {joinedDate}</p>
         <div className="flex gap-4 text-sm text-white mb-4">
           <span className="flex items-center gap-1">
             <span className="material-symbols-outlined text-[16px] text-accent">star</span>{' '}
@@ -289,8 +303,7 @@ export function HostBio({ host }: HostBioProps) {
             Identity Verified
           </span>
           <span className="flex items-center gap-1">
-            <span className="material-symbols-outlined text-[16px] text-accent">work</span> Super
-            host
+            <span className="material-symbols-outlined text-[16px] text-accent">work</span> Super host
           </span>
         </div>
         <p className="text-sm text-gray-300 leading-relaxed mb-4">{host.description}</p>
@@ -304,7 +317,11 @@ export function HostBio({ host }: HostBioProps) {
   );
 }
 
-export function HouseRules() {
+interface HouseRulesProps {
+  policies?: string[];
+}
+
+export function HouseRules({ policies = [] }: HouseRulesProps) {
   return (
     <div>
       <h3 className="text-2xl font-display font-bold text-white mb-6">Things to know</h3>
@@ -312,13 +329,19 @@ export function HouseRules() {
         <div>
           <h4 className="font-bold text-white text-sm mb-3">House Rules</h4>
           <div className="space-y-2 text-sm text-text-muted">
-            <p>Check-in after 2:00 PM</p>
-            <p>Checkout before 12:00 PM</p>
-            <p>3 guests maximum</p>
+            {policies.length > 0 ? (
+              policies.map((p, i) => <p key={i}>{p}</p>)
+            ) : (
+              <>
+                <p>Check-in after 2:00 PM</p>
+                <p>Checkout before 12:00 PM</p>
+                <p>See host for specific rules</p>
+              </>
+            )}
           </div>
         </div>
         <div>
-          <h4 className="font-bold text-white text-sm mb-3">Safety & Property</h4>
+          <h4 className="font-bold text-white text-sm mb-3">Safety &amp; Property</h4>
           <div className="space-y-2 text-sm text-text-muted">
             <p>Carbon monoxide alarm</p>
             <p>Smoke alarm</p>

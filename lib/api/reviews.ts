@@ -14,8 +14,18 @@ export interface Review {
   createdAt: string;
 }
 
-export const getReviewsByListing = async (listingId: string): Promise<Review[]> => {
+export const getReviewsByListing = async (listingId: string): Promise<{ reviews: Review[]; ratingDistribution: Record<number, string> }> => {
   const res = await api.get(`/reviews/listing/${listingId}`);
+  const data = res.data.data;
+  // Handle both old shape (array) and new shape ({ reviews, ratingDistribution })
+  if (Array.isArray(data)) {
+    return { reviews: data, ratingDistribution: { 5: "0%", 4: "0%", 3: "0%", 2: "0%", 1: "0%" } };
+  }
+  return { reviews: data?.reviews || [], ratingDistribution: data?.ratingDistribution || {} };
+};
+
+export const getRecentActivity = async (limit = 10): Promise<Review[]> => {
+  const res = await api.get(`/reviews/activity`, { params: { limit } });
   return res.data.data || [];
 };
 
