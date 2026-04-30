@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { DEFAULT_INCLUSIONS } from '@/data/venueDetailData';
+
 
 interface CuratorSectionProps {
   host: {
@@ -98,10 +98,11 @@ export function DescriptionSection({ description }: DescriptionSectionProps) {
 }
 
 interface InclusionsSectionProps {
+  inclusions: { name: string; icon: string; desc: string }[];
   onOpenCustomBuilder: () => void;
 }
 
-export function InclusionsSection({ onOpenCustomBuilder }: InclusionsSectionProps) {
+export function InclusionsSection({ inclusions, onOpenCustomBuilder }: InclusionsSectionProps) {
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
@@ -113,22 +114,26 @@ export function InclusionsSection({ onOpenCustomBuilder }: InclusionsSectionProp
           <span className="material-symbols-outlined text-[16px]">edit</span> Customize
         </button>
       </div>
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        {DEFAULT_INCLUSIONS.map((svc, i) => (
-          <div
-            key={i}
-            className="flex items-start gap-4 p-4 rounded-2xl bg-white/5 border border-white/5"
-          >
-            <div className="h-10 w-10 rounded-xl bg-surface-highlight flex items-center justify-center text-white/80 shrink-0">
-              <span className="material-symbols-outlined">{svc.icon}</span>
+      {inclusions.length === 0 ? (
+        <p className="text-sm text-text-muted py-4">No specific inclusions listed for this venue.</p>
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          {inclusions.map((svc, i) => (
+            <div
+              key={i}
+              className="flex items-start gap-4 p-4 rounded-2xl bg-white/5 border border-white/5"
+            >
+              <div className="h-10 w-10 rounded-xl bg-surface-highlight flex items-center justify-center text-white/80 shrink-0">
+                <span className="material-symbols-outlined">{svc.icon}</span>
+              </div>
+              <div>
+                <h4 className="font-bold text-white text-sm">{svc.name}</h4>
+                <p className="text-xs text-text-muted mt-1 leading-relaxed">{svc.desc}</p>
+              </div>
             </div>
-            <div>
-              <h4 className="font-bold text-white text-sm">{svc.name}</h4>
-              <p className="text-xs text-text-muted mt-1 leading-relaxed">{svc.desc}</p>
-            </div>
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
+      )}
       <div className="mt-4 bg-accent/5 border border-accent/20 rounded-xl p-4 flex gap-3 items-start">
         <span className="material-symbols-outlined text-accent shrink-0">info</span>
         <div>

@@ -89,7 +89,7 @@ export default function VenueDetailClient({ venue, host }: VenueDetailClientProp
               <div className="h-px bg-white/10 w-full" />
               <DescriptionSection description={venue.description} />
               <div className="h-px bg-white/10 w-full" />
-              <InclusionsSection onOpenCustomBuilder={() => setCustomBookingOpen(true)} />
+              <InclusionsSection inclusions={venue.inclusions || []} onOpenCustomBuilder={() => setCustomBookingOpen(true)} />
               <div className="h-px bg-white/10 w-full" />
               <AmenitiesSection offers={venue.offers || []} />
               <div className="h-px bg-white/10 w-full" />
@@ -104,9 +104,9 @@ export default function VenueDetailClient({ venue, host }: VenueDetailClientProp
               <div className="h-px bg-white/10 w-full" />
               <VenueMap location={venue.location} province={venue.province} />
               <div className="h-px bg-white/10 w-full" />
-              <HostBio host={host} />
+              <HostBio host={{ ...host, createdAt: venue.host?.createdAt }} />
               <div className="h-px bg-white/10 w-full" />
-              <HouseRules />
+              <HouseRules policies={venue.policies || []} />
             </div>
 
             {/* Right Column: Booking Widget */}
