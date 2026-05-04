@@ -13,6 +13,9 @@ export async function bookFromTemplate(payload: {
   totalAmount: number;
   startAt: string;
   endAt: string;
+  excludedAssetIds?: string[];
+  excludedServiceIds?: string[];
+  excludedVenueIds?: string[];
 }): Promise<{ booking: { id: string }; eventId: string }> {
   const resp = await api.post("/bookings/from-template", payload);
   return resp.data?.data;

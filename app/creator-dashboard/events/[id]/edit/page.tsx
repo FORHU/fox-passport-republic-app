@@ -61,6 +61,7 @@ function HostEventEditPageContent() {
     addImageToGallery,
     removeGalleryItem,
     removeBaseItem,
+    updateBaseItem,
     // Overridden handlers
     handleBack,
     handleSaveDraft,
@@ -155,6 +156,7 @@ function HostEventEditPageContent() {
                   onDragLeave={handleDragLeave}
                   onDrop={handleDrop}
                   onRemoveItem={removeBaseItem}
+                  onUpdateItem={updateBaseItem}
                 />
               </div>
             </main>

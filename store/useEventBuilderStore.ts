@@ -38,6 +38,7 @@ interface EventBuilderState {
   // Actions - Package Items
   addBaseItem: (item: ResourceItem) => void;
   removeBaseItem: (id: string) => void;
+  updateBaseItem: (id: string, patch: Partial<Pick<ResourceItem, 'agreedPrice' | 'isOptional'>>) => void;
   setTargetMargin: (margin: number) => void;
 
   // Actions - UI State
@@ -100,6 +101,10 @@ export const useEventBuilderStore = create<EventBuilderState>((set) => ({
   removeBaseItem: (id) =>
     set((state) => ({
       baseItems: state.baseItems.filter((i) => i.id !== id),
+    })),
+  updateBaseItem: (id, patch) =>
+    set((state) => ({
+      baseItems: state.baseItems.map((i) => i.id === id ? { ...i, ...patch } : i),
     })),
   setTargetMargin: (margin) => set({ targetMargin: margin }),
 

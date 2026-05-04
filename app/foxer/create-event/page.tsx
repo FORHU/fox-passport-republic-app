@@ -45,6 +45,7 @@ export default function EventCreationBuilder() {
     setShowGuide,
     setTargetMargin,
     removeBaseItem,
+    updateBaseItem,
     removeGalleryItem,
     
     // Handlers
@@ -111,6 +112,7 @@ export default function EventCreationBuilder() {
                 onDragLeave={handleDragLeave}
                 onDrop={handleDrop}
                 onRemoveItem={removeBaseItem}
+                onUpdateItem={updateBaseItem}
               />
             </div>
           </main>
