@@ -1,8 +1,11 @@
 "use client";
 
-import React from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
-import { ArrowRight, MapPin } from "lucide-react";
+import { ArrowRight, MapPin, Heart } from "lucide-react";
+import { checkFavorite, addFavorite, removeFavoriteByListing } from "@/lib/api/favorites";
+import { useAuthStore } from "@/store/useAuthStore";
+import { toast } from "sonner";
 
 const FALLBACK_IMAGES = [
   "https://images.unsplash.com/photo-1492684223066-81342ee5ff30?w=600&auto=format&fit=crop",
@@ -10,6 +13,52 @@ const FALLBACK_IMAGES = [
   "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=600&auto=format&fit=crop",
   "https://images.unsplash.com/photo-1501281668745-f7f57925c3b4?w=600&auto=format&fit=crop",
 ];
+
+function FavoriteHeart({ templateId }: { templateId: string }) {
+  const { user } = useAuthStore();
+  const [liked, setLiked] = useState(false);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (!user) return;
+    checkFavorite(templateId, "event")
+      .then(r => setLiked(r.isFavorited))
+      .catch(() => {});
+  }, [templateId, user]);
+
+  const toggle = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!user) { toast.error("Sign in to save favorites."); return; }
+    if (loading) return;
+    setLoading(true);
+    try {
+      if (liked) {
+        await removeFavoriteByListing(templateId, "event");
+        setLiked(false);
+      } else {
+        await addFavorite(templateId, "event");
+        setLiked(true);
+      }
+    } catch {
+      toast.error("Could not update favorites.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <button
+      onClick={toggle}
+      aria-label={liked ? "Remove from favorites" : "Save to favorites"}
+      className="absolute top-4 left-4 h-8 w-8 rounded-full bg-black/50 backdrop-blur-md flex items-center justify-center transition-all hover:scale-110 active:scale-95"
+    >
+      <Heart
+        className={`w-4 h-4 transition-colors ${liked ? "fill-red-500 text-red-500" : "text-white/80"}`}
+      />
+    </button>
+  );
+}
 
 interface EventPackagesSectionProps {
   category: any;
@@ -49,6 +98,7 @@ export const EventPackagesSection: React.FC<EventPackagesSectionProps> = ({ cate
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
                 />
                 <div className="absolute inset-0 bg-linear-to-t from-black/60 to-transparent" />
+                <FavoriteHeart templateId={String(template.id)} />
                 <div className="absolute top-4 right-4 bg-black/60 backdrop-blur-md px-3 py-1 rounded-full text-xs font-bold text-[#ccff00] capitalize">
                   {template.category}
                 </div>

@@ -80,3 +80,99 @@ export async function confirmBookingPayment(bookingId: string, paymentIntentId: 
   });
   return resp.data?.data;
 }
+
+// --- Service & Asset Booking Flow ---
+
+export async function bookService(payload: {
+  serviceId: string | number;
+  scheduledDate: string;
+  endDate?: string;
+  guestCount?: number;
+  location: string;
+  notes?: string;
+  totalAmount: number;
+}): Promise<{ id: string }> {
+  const resp = await api.post('/service/bookings', payload);
+  return resp.data?.data ?? resp.data;
+}
+
+export async function bookAsset(payload: {
+  assetId: string | number;
+  startDate: string;
+  endDate: string;
+  quantity: number;
+  fulfillmentType: 'delivery' | 'pickup';
+  deliveryAddress?: string;
+  notes?: string;
+  totalAmount: number;
+}): Promise<{ id: string }> {
+  const resp = await api.post('/asset/bookings', payload);
+  return resp.data?.data ?? resp.data;
+}
+
+export async function confirmServiceBooking(bookingId: string, paymentIntentId: string, amount: number) {
+  const resp = await api.post(`/service/bookings/${bookingId}/confirm`, {
+    amount,
+    method: 'stripe',
+    transactionId: paymentIntentId,
+  });
+  return resp.data?.data;
+}
+
+export async function confirmAssetBooking(bookingId: string, paymentIntentId: string, amount: number) {
+  const resp = await api.post(`/asset/bookings/${bookingId}/confirm`, {
+    amount,
+    method: 'stripe',
+    transactionId: paymentIntentId,
+  });
+  return resp.data?.data;
+}
+
+export async function fetchServiceBooking(id: string) {
+  const resp = await api.get(`/service/bookings/${id}`);
+  return resp.data?.data;
+}
+
+export async function fetchAssetBooking(id: string) {
+  const resp = await api.get(`/asset/bookings/${id}`);
+  return resp.data?.data;
+}
+
+export async function confirmArrival(type: 'service' | 'asset', id: string) {
+  const resp = await api.patch(`/${type}/bookings/${id}/confirm-arrival`);
+  return resp.data?.data;
+}
+
+export async function reportNoShow(type: 'service' | 'asset', id: string) {
+  const resp = await api.patch(`/${type}/bookings/${id}/dispute`);
+  return resp.data?.data;
+}
+
+export async function fetchTemplateAvailability(templateId: string): Promise<{ bookedDates: string[] }> {
+  const resp = await api.get(`/bookings/availability?templateId=${templateId}`);
+  return resp.data?.data ?? { bookedDates: [] };
+}
+
+export async function fetchServiceAvailability(serviceId: string): Promise<{ bookedDates: string[] }> {
+  const resp = await api.get(`/service/bookings/availability?serviceId=${serviceId}`);
+  return resp.data?.data ?? { bookedDates: [] };
+}
+
+export async function fetchAssetAvailability(assetId: string): Promise<{
+  bookedRanges: { startDate: string; endDate: string; bookedQty: number }[];
+  totalQty: number;
+}> {
+  const resp = await api.get(`/asset/bookings/availability?assetId=${assetId}`);
+  return resp.data?.data ?? { bookedRanges: [], totalQty: 0 };
+}
+
+export async function fetchFoxerBookings(ownerId: string) {
+  const [svcResp, assetResp] = await Promise.all([
+    api.get(`/service/bookings?ownerId=${ownerId}`),
+    api.get(`/asset/bookings?ownerId=${ownerId}`),
+  ]);
+  return {
+    services: svcResp.data?.data ?? [],
+    assets: assetResp.data?.data ?? [],
+  };
+}

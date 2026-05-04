@@ -711,65 +711,6 @@ const EventDetailsPage: React.FC = () => {
 
               <div className="h-px bg-white/10 w-full"></div>
 
-              {/* Calendar Visual */}
-              <div>
-                 <h3 className="text-2xl font-display font-bold text-white mb-2">Select check-in and check-out dates</h3>
-                 <p className="text-text-muted text-sm mb-6">Add your travel dates for exact pricing</p>
-                 <div className="bg-surface-highlight/30 rounded-2xl p-6 border border-white/5">
-                    <div className="flex justify-between items-center mb-4">
-                        <span className="font-bold text-white">October 2024</span>
-                        <div className="flex gap-2">
-                            <button className="h-8 w-8 flex items-center justify-center rounded-full hover:bg-white/10 text-white"><span className="material-symbols-outlined">chevron_left</span></button>
-                            <button className="h-8 w-8 flex items-center justify-center rounded-full hover:bg-white/10 text-white"><span className="material-symbols-outlined">chevron_right</span></button>
-                        </div>
-                    </div>
-                    <div className="grid grid-cols-7 gap-1 text-center text-sm text-gray-400 mb-2">
-                        <span>Su</span><span>Mo</span><span>Tu</span><span>We</span><span>Th</span><span>Fr</span><span>Sa</span>
-                    </div>
-                    <div className="grid grid-cols-7 gap-y-2 text-center text-sm font-medium">
-                        <span className="p-2 text-white/20">29</span>
-                        <span className="p-2 text-white/20">30</span>
-                        {[...Array(31)].map((_, i) => {
-                            const day = i + 1;
-                            const isAvailable = day > 10;
-                            // Mock range selection logic: Oct 12 - 14
-                            const isSelected = day >= 12 && day <= 14;
-                            const isRangeStart = day === 12;
-                            const isRangeEnd = day === 14;
-                            
-                            return (
-                                <div key={day} className="relative py-1">
-                                    {/* Range Background Connector */}
-                                    {isSelected && (
-                                        <div className={`absolute inset-y-1 bg-accent/20 ${
-                                            isRangeStart ? 'left-1/2 right-0 rounded-l-full' :
-                                            isRangeEnd ? 'left-0 right-1/2 rounded-r-full' :
-                                            'inset-x-0'
-                                        }`}></div>
-                                    )}
-                                    
-                                    {/* Day Circle */}
-                                    <span 
-                                        className={`relative z-10 w-9 h-9 mx-auto flex items-center justify-center rounded-full transition-all ${
-                                            isSelected ? 'bg-accent text-black font-bold shadow-[0_0_10px_#ccff00]' : 
-                                            isAvailable ? 'text-white hover:bg-white/10 cursor-pointer' : 
-                                            'text-white/30 line-through decoration-white/20'
-                                        }`}
-                                    >
-                                        {day}
-                                    </span>
-                                </div>
-                            );
-                        })}
-                    </div>
-                    <div className="flex justify-end mt-6">
-                        <button className="text-xs font-bold text-white underline decoration-white/30 hover:decoration-white transition-all">Clear dates</button>
-                    </div>
-                 </div>
-              </div>
-
-              <div className="h-px bg-white/10 w-full"></div>
-
               {/* Ratings & Reviews */}
               <div id="reviews">
                  <div className="flex items-center gap-2 mb-8">

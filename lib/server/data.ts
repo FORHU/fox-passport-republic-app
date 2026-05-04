@@ -370,6 +370,24 @@ export async function getAllServices() {
   }
 }
 
+export async function getAllBookings() {
+  try {
+    const [serviceBody, assetBody, eventBody] = await Promise.all([
+      serverFetch('/service/bookings'),
+      serverFetch('/asset/bookings'),
+      serverFetch('/bookings'),
+    ]);
+    return {
+      serviceBookings: extractList(serviceBody),
+      assetBookings:   extractList(assetBody),
+      eventBookings:   extractList(eventBody),
+    };
+  } catch (error) {
+    console.error('Failed to fetch bookings:', error);
+    return { serviceBookings: [], assetBookings: [], eventBookings: [] };
+  }
+}
+
 export async function getServicesByHostId(hostId: string) {
   try {
     const body = await serverFetch('/service', { ownerId: hostId });

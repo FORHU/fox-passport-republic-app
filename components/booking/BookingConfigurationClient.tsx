@@ -5,7 +5,8 @@ import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useCheckoutStore } from '@/store/useCheckoutStore';
 import { useAuthStore } from '@/store/useAuthStore';
-import { bookFromTemplate, getPublicTemplate } from '@/lib/api/bookings';
+import { bookFromTemplate, getPublicTemplate, fetchTemplateAvailability } from '@/lib/api/bookings';
+import AvailabilityCalendar from './AvailabilityCalendar';
 import { toast } from 'sonner';
 
 export default function BookingConfigurationClient() {
@@ -55,15 +56,22 @@ export default function BookingConfigurationClient() {
   const totalAmount = basePrice + serviceFee;
   const includedServices: any[] = template?.templateServices?.slice(0, 4) ?? [];
 
-  const [selectedTime, setSelectedTime] = useState('09:00 PM');
+  const [selectedTime, setSelectedTime] = useState('18:00');
   const [guests, setGuests] = useState(2);
-  const [selectedDate, setSelectedDate] = useState(9);
+  const [selectedDates, setSelectedDates] = useState<string[]>([]);
+  const [bookedDates, setBookedDates] = useState<string[]>([]);
+  const [dateError, setDateError] = useState('');
 
-  // Sync with store on mount
   useEffect(() => {
     if (guestCount) setGuests(guestCount);
-    if (checkInDate) setSelectedDate(checkInDate);
-  }, [guestCount, checkInDate]);
+  }, [guestCount]);
+
+  useEffect(() => {
+    if (!templateId) return;
+    fetchTemplateAvailability(templateId)
+      .then(d => setBookedDates(d.bookedDates))
+      .catch(() => {});
+  }, [templateId]);
 
   return (
     <div className="bg-background bg-gradient-dark text-text-main antialiased min-h-screen flex flex-col selection:bg-accent selection:text-black font-body">
@@ -140,74 +148,62 @@ export default function BookingConfigurationClient() {
                   <span className="material-symbols-outlined text-accent text-2xl">calendar_month</span>
                   <h3 className="text-xl font-display font-bold text-white">Select Date & Time</h3>
                 </div>
-                <div className="grid md:grid-cols-2 gap-8">
-                  <div>
-                    <div className="flex justify-between items-center mb-4">
-                      <span className="text-white font-bold">September 2024</span>
-                      <div className="flex gap-1">
-                        <button className="h-8 w-8 flex items-center justify-center rounded-full hover:bg-white/10 text-white transition-colors">
-                          <span className="material-symbols-outlined text-[18px]">chevron_left</span>
-                        </button>
-                        <button className="h-8 w-8 flex items-center justify-center rounded-full hover:bg-white/10 text-white transition-colors">
-                          <span className="material-symbols-outlined text-[18px]">chevron_right</span>
-                        </button>
-                      </div>
-                    </div>
-                    <div className="grid grid-cols-7 gap-1 text-center mb-2">
-                      <span className="text-xs text-text-muted font-medium py-2">S</span>
-                      <span className="text-xs text-text-muted font-medium py-2">M</span>
-                      <span className="text-xs text-text-muted font-medium py-2">T</span>
-                      <span className="text-xs text-text-muted font-medium py-2">W</span>
-                      <span className="text-xs text-text-muted font-medium py-2">T</span>
-                      <span className="text-xs text-text-muted font-medium py-2">F</span>
-                      <span className="text-xs text-text-muted font-medium py-2">S</span>
-                    </div>
-                    <div className="grid grid-cols-7 gap-2 text-sm">
-                      <span></span><span></span>
-                      {[1, 2, 3].map(d => (
-                        <button key={d} disabled className="calendar-day disabled h-10 rounded-xl flex items-center justify-center transition-all opacity-50">{d}</button>
-                      ))}
-                      {[4, 5, 6, 7, 8].map(d => (
-                        <button key={d} onClick={() => setSelectedDate(d)} className={`calendar-day h-10 rounded-xl flex items-center justify-center transition-all ${selectedDate === d ? 'bg-accent text-black font-bold shadow-[0_0_10px_#ccff00]' : 'hover:bg-white/10 text-white'}`}>{d}</button>
-                      ))}
-                      <button onClick={() => setSelectedDate(9)} className={`calendar-day h-10 rounded-xl flex items-center justify-center transition-all relative ${selectedDate === 9 ? 'bg-accent text-black font-bold shadow-[0_0_10px_#ccff00]' : 'hover:bg-white/10 text-white'}`}>
-                        9
-                        <span className={`absolute -top-1 -right-1 h-2 w-2 rounded-full border border-black ${selectedDate === 9 ? 'bg-white' : 'bg-secondary'}`}></span>
-                      </button>
-                      {[10, 11, 12, 13, 14].map(d => (
-                        <button key={d} onClick={() => setSelectedDate(d)} className={`calendar-day h-10 rounded-xl flex items-center justify-center transition-all ${selectedDate === d ? 'bg-accent text-black font-bold shadow-[0_0_10px_#ccff00]' : 'hover:bg-white/10 text-white'}`}>{d}</button>
-                      ))}
-                    </div>
+
+                {/* Date picker */}
+                <div className="mb-6">
+                  <div className="flex items-center justify-between mb-3">
+                    <label className="text-xs uppercase tracking-widest text-text-muted font-bold">Event Date(s)</label>
+                    {selectedDates.length > 0 && (
+                      <span className="text-xs font-bold text-accent flex items-center gap-1">
+                        <span className="material-symbols-outlined text-[14px]">check_circle</span>
+                        {selectedDates.length === 1
+                          ? new Date(selectedDates[0] + 'T00:00:00').toLocaleDateString('en-PH', { weekday: 'short', month: 'long', day: 'numeric', year: 'numeric' })
+                          : `${selectedDates.length} dates selected`}
+                      </span>
+                    )}
                   </div>
-                  <div className="border-t md:border-t-0 md:border-l border-white/10 pt-6 md:pt-0 md:pl-8">
-                    <span className="text-sm text-text-muted block mb-4">Available Slots for <span className="text-white font-bold">Sep {selectedDate}</span></span>
-                    <div className="grid grid-cols-2 gap-3">
-                      {['07:00 PM', '09:00 PM', '11:00 PM'].map((time) => (
-                        <label key={time} className="cursor-pointer group">
-                          <input 
-                            type="radio" 
-                            name="time" 
-                            className="hidden custom-radio" 
-                            checked={selectedTime === time}
-                            onChange={() => setSelectedTime(time)}
-                          />
-                          <div className={`border rounded-xl p-3 transition-all flex flex-col items-center justify-center group-hover:bg-white/5 relative ${selectedTime === time ? 'border-accent bg-accent/5' : 'border-white/10'}`}>
-                            {selectedTime === time && (
-                              <div className="absolute top-2 right-2 check-icon transition-all duration-300">
-                                <span className="material-symbols-outlined text-accent text-[16px]">check_circle</span>
-                              </div>
-                            )}
-                            <span className="text-white font-bold text-lg">{time}</span>
-                            <span className={`text-xs ${time === '09:00 PM' ? 'text-accent' : 'text-text-muted'}`}>{time === '09:00 PM' ? 'Best Vibes' : 'Available'}</span>
-                          </div>
-                        </label>
+                  <AvailabilityCalendar
+                    mode="multi"
+                    values={selectedDates}
+                    onChange={(dates) => { setSelectedDates(dates); if (dates.length > 0) setDateError(''); }}
+                    bookedDates={bookedDates}
+                    accent="lime"
+                  />
+                  {dateError && (
+                    <p className="text-xs text-red-400 mt-2 flex items-center gap-1.5">
+                      <span className="material-symbols-outlined text-[13px]">error</span>
+                      {dateError}
+                    </p>
+                  )}
+                  {selectedDates.length > 1 && (
+                    <div className="mt-3 flex flex-wrap gap-1.5">
+                      {selectedDates.map(d => (
+                        <span key={d} className="flex items-center gap-1 px-2.5 py-1 bg-accent/10 border border-accent/20 rounded-full text-[10px] font-bold text-accent">
+                          {new Date(d + 'T00:00:00').toLocaleDateString('en-PH', { month: 'short', day: 'numeric' })}
+                          <button onClick={() => setSelectedDates(prev => prev.filter(x => x !== d))} className="text-accent/60 hover:text-accent">
+                            <span className="material-symbols-outlined text-[12px]">close</span>
+                          </button>
+                        </span>
                       ))}
-                      <div className="border border-white/5 bg-white/5 rounded-xl p-3 flex flex-col items-center justify-center opacity-50 cursor-not-allowed">
-                        <span className="text-text-muted font-bold text-lg line-through">01:00 AM</span>
-                        <span className="text-xs text-secondary">Sold Out</span>
-                      </div>
                     </div>
-                  </div>
+                  )}
+                  {bookedDates.length > 0 && (
+                    <p className="text-[10px] text-white/30 mt-2 flex items-center gap-1">
+                      <span className="material-symbols-outlined text-[12px] text-red-400">info</span>
+                      {bookedDates.length} date{bookedDates.length !== 1 ? 's' : ''} already booked — shown in red
+                    </p>
+                  )}
+                </div>
+
+                {/* Call time */}
+                <div className="space-y-2">
+                  <label className="text-xs uppercase tracking-widest text-text-muted font-bold ml-1">Start Time</label>
+                  <input
+                    type="time"
+                    value={selectedTime}
+                    onChange={(e) => setSelectedTime(e.target.value)}
+                    className="w-full bg-white/5 border border-white/10 rounded-xl px-5 py-4 text-white focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent transition-all scheme-dark"
+                  />
                 </div>
               </div>
 
@@ -328,7 +324,13 @@ export default function BookingConfigurationClient() {
                         <span className="material-symbols-outlined text-[16px]">calendar_today</span>
                       </div>
                       <div>
-                        <p className="text-sm font-bold text-white">Sep {selectedDate}, 2024</p>
+                        <p className="text-sm font-bold text-white">
+                          {selectedDates.length === 0
+                            ? 'No date selected'
+                            : selectedDates.length === 1
+                              ? new Date(selectedDates[0] + 'T00:00:00').toLocaleDateString('en-PH', { month: 'short', day: 'numeric', year: 'numeric' })
+                              : `${selectedDates.length} dates`}
+                        </p>
                         <p className="text-xs text-text-muted">Scheduled date</p>
                       </div>
                     </div>
@@ -378,19 +380,25 @@ export default function BookingConfigurationClient() {
                           venueName: templateName,
                           venueImage: templateImage ?? undefined,
                           venueLocation: templateLocation,
-                          checkInDate: selectedDate,
+                          checkInDate: null,
                           checkInTime: selectedTime,
                           nights: 1,
                           totalAmount,
                           guestCount: guests,
                         });
 
+                        if (selectedDates.length === 0) {
+                          setDateError('Please select at least one date.');
+                          return;
+                        }
+
                         if (templateId) {
                           setIsCreatingBooking(true);
                           try {
-                            const startAt = new Date();
-                            startAt.setDate(startAt.getDate() + selectedDate);
-                            const endAt = new Date(startAt.getTime() + 6 * 60 * 60 * 1000);
+                            const startAt = new Date(`${selectedDates[0]}T${selectedTime}:00`);
+                            const lastDate = selectedDates[selectedDates.length - 1];
+                            const endAt = new Date(`${lastDate}T${selectedTime}:00`);
+                            endAt.setHours(endAt.getHours() + 6);
                             const result = await bookFromTemplate({
                               templateId,
                               guestCount: guests,
@@ -422,6 +430,33 @@ export default function BookingConfigurationClient() {
                       <span className="material-symbols-outlined text-[12px] align-middle mr-1">lock</span>
                       Secure encrypted checkout
                     </p>
+                  </div>
+                </div>
+
+                <div className="rounded-3xl border border-accent/20 bg-linear-to-b from-accent/5 to-black/20 overflow-hidden">
+                  <div className="px-6 pt-6 pb-4 flex items-center gap-3 border-b border-accent/10">
+                    <span className="material-symbols-outlined text-accent text-2xl">verified_user</span>
+                    <h4 className="text-white font-bold text-sm uppercase tracking-widest">What Happens Next</h4>
+                  </div>
+                  <div className="p-6 space-y-0">
+                    {[
+                      { icon: 'event_available', title: 'Package Confirmed', desc: 'The organizer reviews and locks in your event details.' },
+                      { icon: 'lock', title: 'Payment Held in Escrow', desc: 'Funds are secured — the provider cannot access them yet.' },
+                      { icon: 'where_to_vote', title: 'Confirm Arrival', desc: 'On event day, confirm their arrival to release payment.' },
+                    ].map((step, i) => (
+                      <div key={i} className="flex gap-4">
+                        <div className="flex flex-col items-center">
+                          <div className={`h-9 w-9 rounded-xl flex items-center justify-center shrink-0 ${i === 0 ? 'bg-accent text-black' : 'bg-white/5 border border-white/10 text-white/40'}`}>
+                            <span className="material-symbols-outlined text-[18px]">{step.icon}</span>
+                          </div>
+                          {i < 2 && <div className="w-px flex-1 bg-white/10 my-1.5" />}
+                        </div>
+                        <div className="pb-5">
+                          <p className={`text-sm font-bold mb-0.5 ${i === 0 ? 'text-accent' : 'text-white/70'}`}>{step.title}</p>
+                          <p className="text-xs text-white/35 leading-relaxed">{step.desc}</p>
+                        </div>
+                      </div>
+                    ))}
                   </div>
                 </div>
               </div>
