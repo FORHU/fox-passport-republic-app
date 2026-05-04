@@ -42,17 +42,22 @@ export default function SearchPage() {
   
   const [searchQuery, setSearchQuery] = useState(q);
 
-  const handleGlobalSearch = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter') {
-      const params = new URLSearchParams(searchParams?.toString() || "");
-      if (searchQuery) {
-        params.set("q", searchQuery);
-      } else {
-        params.delete("q");
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      const currentQ = searchParams?.get("q") || "";
+      if (searchQuery !== currentQ) {
+        const params = new URLSearchParams(searchParams?.toString() || "");
+        if (searchQuery) {
+          params.set("q", searchQuery);
+        } else {
+          params.delete("q");
+        }
+        router.replace(`/search?${params.toString()}`);
       }
-      router.push(`/search?${params.toString()}`);
-    }
-  };
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, [searchQuery, searchParams, router]);
 
   const handleTypeChange = (newType: string) => {
     const params = new URLSearchParams(searchParams?.toString() || "");
@@ -127,7 +132,6 @@ export default function SearchPage() {
               type="text" 
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              onKeyDown={handleGlobalSearch}
               placeholder="SEARCH ANYTHING..." 
               className="w-[450px] bg-white/5 border border-white/10 rounded-full py-2.5 pl-11 pr-6 text-sm font-bold text-white placeholder:text-white/30 focus:outline-none focus:border-white/20 focus:bg-white/10 transition-all tracking-wider"
             />
