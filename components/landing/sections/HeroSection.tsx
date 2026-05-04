@@ -1,6 +1,86 @@
 "use client";
 
+import { useState, useRef, useEffect } from "react";
+import { useRouter } from "next/navigation";
+
 export default function HeroSection() {
+  const router = useRouter();
+  const [locationVal, setLocationVal] = useState("");
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const locationRef = useRef<HTMLDivElement>(null);
+
+  const [cities, setCities] = useState<string[]>([]);
+  const [searchType, setSearchType] = useState("event_template");
+  const [category, setCategory] = useState("");
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
+  const [validationError, setValidationError] = useState("");
+
+  useEffect(() => {
+    if (!locationVal || locationVal.length < 2) {
+      setCities([]);
+      return;
+    }
+    const timer = setTimeout(() => {
+      fetch(`http://localhost:3002/api/v1/locations/search?q=${encodeURIComponent(locationVal)}`)
+        .then(res => res.json())
+        .then(data => {
+          if (data.status === "success") {
+            setCities(data.data.locations);
+          }
+        })
+        .catch(err => console.error("Failed to fetch locations:", err));
+    }, 300);
+    
+    return () => clearTimeout(timer);
+  }, [locationVal]);
+
+  const filteredLocations = cities;
+
+  const handleDropdownChange = (type: string, value: string) => {
+    setSearchType(type);
+    setCategory(value === "All" ? "" : value.toLowerCase());
+  };
+
+  const handleSearch = (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    setValidationError("");
+
+    if ((startDate && !endDate) || (!startDate && endDate)) {
+      setValidationError("Please provide both start and end dates.");
+      return;
+    }
+
+    const params = new URLSearchParams();
+    params.set("type", searchType);
+    if (category) params.set("category", category);
+    if (locationVal) {
+      const parts = locationVal.split(",").map(p => p.trim());
+      if (parts.length > 1) {
+         params.set("country", parts[0]);
+         params.set("city", parts.slice(1).join(", "));
+      } else {
+         params.set("city", locationVal);
+      }
+    }
+    if (startDate) params.set("startDate", startDate);
+    if (endDate) params.set("endDate", endDate);
+    
+    router.push(`/search?${params.toString()}`);
+  };
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (locationRef.current && !locationRef.current.contains(event.target as Node)) {
+        setShowSuggestions(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
+
   return (
     <section className="relative pt-10 pb-20 lg:pt-20 lg:pb-32 overflow-hidden">
       {/* Background Blurs */}
@@ -37,44 +117,89 @@ export default function HeroSection() {
               </p>
             </div>
 
-            {/* Search Box */}
-            <div className="w-full max-w-2xl mx-auto lg:mx-0 relative group z-20">
-              {/* Pulsing violet glow border */}
-              <div className="absolute -inset-[2px] rounded-[2rem] bg-gradient-to-r from-purple-700 via-violet-500 to-purple-700 opacity-80 animate-pulse blur-[2px]"></div>
-              <div className="absolute -inset-[1px] rounded-[2rem] border border-purple-500/60 shadow-[0_0_15px_rgba(139,92,246,0.5)] animate-pulse"></div>
-              
-              {/* Search bar content */}
-              <div className="relative bg-[#0c0d14] p-2 rounded-[2rem]">
-                <div className="flex flex-col sm:flex-row gap-2">
-                  <div className="relative grow">
-                    <div className="absolute inset-y-0 left-0 pl-5 flex items-center pointer-events-none text-white/50">
-                      <span className="material-symbols-outlined group-focus-within:text-purple-400 transition-colors">
-                        search
-                      </span>
+            {/* Search Area */}
+            <div className="w-full max-w-3xl mx-auto lg:mx-0 flex flex-col gap-4 z-20 relative">
+
+
+              {/* Search Box */}
+              <form onSubmit={handleSearch} className="w-full max-w-4xl mx-auto lg:mx-0 relative group z-20">
+                <div className="absolute -inset-1 bg-gradient-to-r from-primary via-purple-600 to-secondary rounded-full blur opacity-40 group-hover:opacity-70 transition duration-500 group-hover:duration-200 animate-pulse"></div>
+                <div className="relative glass-panel bg-black/80 backdrop-blur-2xl px-6 py-2 rounded-full border border-white/10 group-hover:border-white/20 transition-all shadow-[0_0_30px_rgba(139,92,246,0.3)]">
+                  <div className="flex flex-col sm:flex-row items-center gap-0">
+                    
+                    {/* Start Date */}
+                    <div className="flex-1 w-full sm:w-auto px-4 py-3 text-left cursor-pointer group/item hover:bg-white/20 transition-colors">
+                      <span className="block text-[10px] font-bold text-white/40 uppercase tracking-widest mb-1 ml-1">Start</span>
+                      <input 
+                        type="date"
+                        value={startDate}
+                        onChange={(e) => setStartDate(e.target.value)}
+                        className="bg-transparent border-none text-white focus:ring-0 text-xs font-bold w-full placeholder:text-white/20 placeholder:text-[10px] h-6 outline-none cursor-pointer text-left [color-scheme:dark]"
+                        placeholder="dd/mm/yyyy"
+                      />
                     </div>
-                    <input
-                      className="block w-full pl-12 pr-4 py-4 bg-transparent border-none text-white placeholder-white/40 focus:ring-0 text-lg font-medium focus:placeholder-white/20 transition-all outline-none"
-                      placeholder="Search vibes, artists, locations..."
-                      type="text"
-                    />
-                  </div>
-                  <div className="h-px sm:h-auto sm:w-px bg-white/10 mx-2"></div>
-                  <div className="relative w-full sm:w-48">
-                    <select className="block w-full pl-4 pr-10 py-4 bg-transparent border-none text-white focus:ring-0 font-bold cursor-pointer appearance-none hover:text-[#ccff00] transition-colors outline-none">
-                      <option className="bg-background">Manila</option>
-                      <option className="bg-background">Siargao</option>
-                      <option className="bg-background">Cebu</option>
-                      <option className="bg-background">La Union</option>
-                    </select>
-                    <div className="absolute inset-y-0 right-0 pr-4 flex items-center pointer-events-none text-[#ccff00]">
-                      <span className="material-symbols-outlined">expand_more</span>
+
+                    <div className="hidden sm:block h-8 w-px bg-white/10"></div>
+
+                    {/* End Date */}
+                    <div className="flex-1 w-full sm:w-auto px-4 py-3 text-left cursor-pointer group/item hover:bg-white/20 transition-colors">
+                      <span className="block text-[10px] font-bold text-white/40 uppercase tracking-widest mb-1 ml-1">End</span>
+                      <input 
+                        type="date"
+                        value={endDate}
+                        onChange={(e) => setEndDate(e.target.value)}
+                        className="bg-transparent border-none text-white focus:ring-0 text-xs font-bold w-full placeholder:text-white/20 placeholder:text-[10px] h-6 outline-none cursor-pointer text-left [color-scheme:dark]"
+                        placeholder="dd/mm/yyyy"
+                      />
                     </div>
+
+                    <div className="hidden sm:block h-8 w-px bg-white/10"></div>
+
+                    {/* Location */}
+                    <div className="flex-[1.5] w-full sm:w-auto px-6 py-3 text-left relative" ref={locationRef}>
+                      <span className="block text-[10px] font-bold text-white/40 uppercase tracking-widest mb-1 ml-1">Location</span>
+                      <input 
+                        id="locationInput"
+                        className="bg-transparent border-none text-white placeholder:text-white/20 placeholder:text-[10px] focus:ring-0 text-xs font-bold w-full h-6 outline-none text-left" 
+                        placeholder="Search location..." 
+                        type="text" 
+                        autoComplete="off"
+                        value={locationVal}
+                        onChange={(e) => {
+                          setLocationVal(e.target.value);
+                          setShowSuggestions(true);
+                        }}
+                        onFocus={() => setShowSuggestions(true)}
+                      />
+                      {showSuggestions && filteredLocations.length > 0 && (
+                        <ul id="locationSuggestions" className="absolute top-[calc(100%+8px)] left-0 w-full min-w-[200px] bg-[#11121a] border border-white/10 rounded-xl shadow-[0_0_20px_rgba(0,0,0,0.5)] z-50 overflow-hidden max-h-60 overflow-y-auto">
+                          {filteredLocations.map(loc => (
+                            <li
+                              key={loc}
+                              className="px-4 py-3 text-sm text-white hover:bg-[#ccff00] hover:text-black cursor-pointer font-bold transition-colors"
+                              onClick={() => {
+                                setLocationVal(loc);
+                                setShowSuggestions(false);
+                              }}
+                            >
+                              {loc}
+                            </li>
+                          ))}
+                        </ul>
+                      )}
+                    </div>
+
+                    <button type="submit" className="btn-neon h-12 w-full sm:w-32 rounded-full bg-white text-black font-bold transition-all duration-300 flex items-center justify-center text-lg shadow-[0_0_20px_rgba(255,255,255,0.2)] ml-4 hover:scale-105 active:scale-95">
+                      Go
+                    </button>
                   </div>
-                  <button className="h-14 sm:h-auto px-8 rounded-3xl bg-white text-black font-bold transition-all duration-300 flex items-center justify-center gap-2 text-lg shadow-[0_0_20px_rgba(255,255,255,0.2)] hover:bg-[#ccff00] hover:shadow-[0_0_20px_rgba(204,255,0,0.4)]">
-                    Go
-                  </button>
                 </div>
-              </div>
+              </form>
+              {validationError && (
+                <div className="text-red-400 text-sm mt-2 text-center lg:text-left font-bold animate-pulse">
+                  {validationError}
+                </div>
+              )}
             </div>
 
             {/* Social Proof */}
