@@ -276,13 +276,26 @@ export function useEventBuilder() {
         // 4. Attach venue, assets, and services via association endpoints
         try {
           if (venueItem?.id) {
-            await api.post(`/event-templates/${created.id}/venues`, { venueId: venueItem.id });
+            await api.post(`/event-templates/${created.id}/venues`, {
+              venueId: venueItem.id,
+              agreedPrice: venueItem.agreedPrice ?? venueItem.cost,
+              isOptional: venueItem.isOptional ?? false,
+            });
           }
           for (const item of store.baseItems) {
             if (item.resourceType === 'asset' && item.id) {
-              await api.post(`/event-templates/${created.id}/assets`, { assetId: item.id, quantity: 1 });
+              await api.post(`/event-templates/${created.id}/assets`, {
+                assetId: item.id,
+                quantity: 1,
+                agreedPrice: item.agreedPrice ?? item.cost,
+                isOptional: item.isOptional ?? false,
+              });
             } else if (item.resourceType === 'service' && item.id) {
-              await api.post(`/event-templates/${created.id}/services`, { serviceId: item.id });
+              await api.post(`/event-templates/${created.id}/services`, {
+                serviceId: item.id,
+                agreedPrice: item.agreedPrice ?? item.cost,
+                isOptional: item.isOptional ?? false,
+              });
             }
           }
         } catch {

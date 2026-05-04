@@ -228,10 +228,26 @@ function normalizeVenue(v: any) {
 export async function getDashboardStats() {
   try {
     const body = await serverFetch('/admin/stats');
-    return body?.data || { totalUsers: 0, activeEvents: 0 };
+    return body?.data || {
+      totalUsers: 0,
+      activeEvents: 0,
+      pendingApprovals: 0,
+      totalRevenue: 0,
+      totalBookings: 0,
+      bookingsByDay: [0, 0, 0, 0, 0, 0, 0],
+      categoryStats: [],
+    };
   } catch (error) {
     console.error('Failed to fetch dashboard stats:', error);
-    return { totalUsers: 0, activeEvents: 0 };
+    return {
+      totalUsers: 0,
+      activeEvents: 0,
+      pendingApprovals: 0,
+      totalRevenue: 0,
+      totalBookings: 0,
+      bookingsByDay: [0, 0, 0, 0, 0, 0, 0],
+      categoryStats: [],
+    };
   }
 }
 

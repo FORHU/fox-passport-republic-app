@@ -1,4 +1,5 @@
 export { default as AdminAuthGuard } from "./AdminAuthGuard";
+export { AdminContent } from "./AdminContent";
 export { AdminSidebar } from "./AdminSidebar";
 export { AdminHeader } from "./AdminHeader";
 export { AdminKPISection } from "./AdminKPISection";
@@ -10,5 +11,6 @@ export { AdminCategoriesTable } from "./AdminCategoriesTable";
 export { AdminCitizenTable } from "./AdminCitizenTable";
 export { AdminAssetsTable } from "./AdminAssetsTable";
 export { AdminServicesTable } from "./AdminServicesTable";
+export { AdminBookingsTable } from "./AdminBookingsTable";
 export * from "./constants";
 export * from "./types";

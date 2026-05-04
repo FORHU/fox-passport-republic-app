@@ -53,14 +53,30 @@ export default function BookingConfigurationClient() {
   const templateLocation = [template?.targetCity, template?.targetState].filter(Boolean).join(', ') || 'Location TBD';
   const basePrice = template?.estimatedTotal ?? 0;
   const serviceFee = 150;
-  const totalAmount = basePrice + serviceFee;
-  const includedServices: any[] = template?.templateServices?.slice(0, 4) ?? [];
+
+  // Collect all optional items from the template
+  const optionalAssets: any[] = (template?.templateAssets ?? []).filter((ta: any) => ta.isOptional);
+  const optionalServices: any[] = (template?.templateServices ?? []).filter((ts: any) => ts.isOptional);
+  const optionalVenues: any[] = (template?.templateVenues ?? []).filter((tv: any) => tv.isOptional);
+  const allOptionalItems: any[] = [
+    ...optionalAssets.map(ta => ({ ...ta, _type: 'asset', label: ta.asset?.name ?? 'Gear', price: ta.agreedPrice })),
+    ...optionalServices.map(ts => ({ ...ts, _type: 'service', label: ts.service?.name ?? 'Service', price: ts.agreedPrice })),
+    ...optionalVenues.map(tv => ({ ...tv, _type: 'venue', label: tv.venue?.name ?? 'Venue', price: tv.agreedPrice })),
+  ];
+
+  const optOutSavings = allOptionalItems
+    .filter(item => excludedItemIds.has(item.id))
+    .reduce((sum, item) => sum + (item.price ?? 0), 0);
+
+  const totalAmount = basePrice - optOutSavings + serviceFee;
+  const includedServices: any[] = template?.templateServices?.filter((ts: any) => !ts.isOptional).slice(0, 4) ?? [];
 
   const [selectedTime, setSelectedTime] = useState('18:00');
   const [guests, setGuests] = useState(2);
   const [selectedDates, setSelectedDates] = useState<string[]>([]);
   const [bookedDates, setBookedDates] = useState<string[]>([]);
   const [dateError, setDateError] = useState('');
+  const [excludedItemIds, setExcludedItemIds] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     if (guestCount) setGuests(guestCount);
@@ -284,6 +300,61 @@ export default function BookingConfigurationClient() {
                 )}
               </div>
 
+              {/* Optional Add-ons */}
+              {allOptionalItems.length > 0 && (
+                <div className="glass-card rounded-[2rem] p-8 border border-yellow-400/20">
+                  <div className="flex items-center gap-3 mb-2">
+                    <span className="material-symbols-outlined text-yellow-400 text-2xl">tune</span>
+                    <h3 className="text-xl font-display font-bold text-white">Optional Add-ons</h3>
+                  </div>
+                  <p className="text-xs text-white/40 mb-6">Uncheck any item you don't need. The price will update automatically.</p>
+                  <div className="space-y-3">
+                    {allOptionalItems.map((item) => {
+                      const excluded = excludedItemIds.has(item.id);
+                      return (
+                        <label
+                          key={item.id}
+                          className={`flex items-center justify-between p-4 rounded-2xl border cursor-pointer transition-all ${
+                            excluded
+                              ? 'border-white/5 bg-white/2 opacity-50'
+                              : 'border-yellow-400/20 bg-yellow-400/5'
+                          }`}
+                        >
+                          <div className="flex items-center gap-3">
+                            <input
+                              type="checkbox"
+                              checked={!excluded}
+                              onChange={() => {
+                                setExcludedItemIds(prev => {
+                                  const next = new Set(prev);
+                                  if (next.has(item.id)) next.delete(item.id);
+                                  else next.add(item.id);
+                                  return next;
+                                });
+                              }}
+                              className="accent-yellow-400 h-4 w-4"
+                            />
+                            <div>
+                              <p className="text-sm font-bold text-white">{item.label}</p>
+                              <p className="text-[10px] text-white/40 capitalize">{item._type}</p>
+                            </div>
+                          </div>
+                          <span className={`text-sm font-bold ${excluded ? 'text-white/30 line-through' : 'text-yellow-400'}`}>
+                            ₱{(item.price ?? 0).toLocaleString()}
+                          </span>
+                        </label>
+                      );
+                    })}
+                  </div>
+                  {optOutSavings > 0 && (
+                    <div className="mt-4 flex items-center gap-2 text-xs text-green-400 bg-green-400/5 border border-green-400/20 rounded-xl px-4 py-2.5">
+                      <span className="material-symbols-outlined text-[16px]">savings</span>
+                      You're saving ₱{optOutSavings.toLocaleString()} by removing optional items.
+                    </div>
+                  )}
+                </div>
+              )}
+
               {/* Special Requests */}
               <div className="glass-card rounded-[2rem] p-8 border border-white/10">
                 <div className="flex items-center gap-3 mb-6">
@@ -359,6 +430,12 @@ export default function BookingConfigurationClient() {
                         {isLoadingTemplate ? '…' : `₱${basePrice.toLocaleString()}`}
                       </span>
                     </div>
+                    {optOutSavings > 0 && (
+                      <div className="flex justify-between text-sm">
+                        <span className="text-green-400">Optional removed</span>
+                        <span className="text-green-400">−₱{optOutSavings.toLocaleString()}</span>
+                      </div>
+                    )}
                     <div className="flex justify-between text-sm">
                       <span className="text-text-muted">Service Fee</span>
                       <span className="text-white">₱{serviceFee.toLocaleString()}</span>
@@ -405,6 +482,9 @@ export default function BookingConfigurationClient() {
                               totalAmount,
                               startAt: startAt.toISOString(),
                               endAt: endAt.toISOString(),
+                              excludedAssetIds: optionalAssets.filter(ta => excludedItemIds.has(ta.id)).map(ta => ta.id),
+                              excludedServiceIds: optionalServices.filter(ts => excludedItemIds.has(ts.id)).map(ts => ts.id),
+                              excludedVenueIds: optionalVenues.filter(tv => excludedItemIds.has(tv.id)).map(tv => tv.id),
                             });
                             setDraftIds(result.eventId, result.booking.id);
                             router.push('/checkout');

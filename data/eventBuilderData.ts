@@ -7,6 +7,8 @@ export interface ResourceItem {
   icon: string;
   desc: string;
   resourceType?: "venue" | "asset" | "service";
+  agreedPrice?: number;
+  isOptional?: boolean;
 }
 
 export interface GalleryItem {
