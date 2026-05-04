@@ -250,23 +250,37 @@ const FoxerProfile: React.FC = () => {
                     {foxer.eventTemplates!.map((tmpl) => (
                       <div
                         key={tmpl.id}
-                        className="p-6 rounded-[2rem] bg-white/5 border border-white/5 hover:border-white/20 transition-all group"
+                        className="p-6 rounded-[2rem] bg-white/5 border border-white/5 hover:border-accent/30 transition-all group flex flex-col justify-between gap-4"
                       >
-                        <div className="flex justify-between items-start mb-3">
-                          <div>
-                            <h4 className="font-bold text-white group-hover:text-accent transition-colors">{tmpl.name}</h4>
-                            <p className="text-xs text-text-muted">{tmpl.category}</p>
+                        <div>
+                          <div className="flex justify-between items-start mb-3">
+                            <div>
+                              <h4 className="font-bold text-white group-hover:text-accent transition-colors">{tmpl.name}</h4>
+                              <p className="text-xs text-text-muted">{tmpl.category}</p>
+                            </div>
+                            {(tmpl.targetCity || tmpl.targetState) && (
+                              <span className="text-[10px] font-bold uppercase tracking-widest px-3 py-1 bg-black/40 rounded-full text-accent border border-accent/20 shrink-0 flex items-center gap-1">
+                                <span className="material-symbols-outlined text-[12px]">location_on</span>
+                                {tmpl.targetCity ?? tmpl.targetState}
+                              </span>
+                            )}
                           </div>
-                          {(tmpl.targetCity || tmpl.targetState) && (
-                            <span className="text-[10px] font-bold uppercase tracking-widest px-3 py-1 bg-black/40 rounded-full text-accent border border-accent/20 shrink-0 flex items-center gap-1">
-                              <span className="material-symbols-outlined text-[12px]">location_on</span>
-                              {tmpl.targetCity ?? tmpl.targetState}
-                            </span>
+                          {tmpl.description && (
+                            <p className="text-xs text-text-muted line-clamp-2">{tmpl.description}</p>
+                          )}
+                          {(tmpl as any).estimatedTotal > 0 && (
+                            <p className="text-xs text-accent font-bold mt-2">
+                              From ₱{((tmpl as any).estimatedTotal).toLocaleString()}
+                            </p>
                           )}
                         </div>
-                        {tmpl.description && (
-                          <p className="text-xs text-text-muted line-clamp-2">{tmpl.description}</p>
-                        )}
+                        <button
+                          onClick={() => router.push(`/booking/config?templateId=${tmpl.id}`)}
+                          className="w-full py-2.5 rounded-xl bg-white/5 border border-white/10 text-sm font-bold text-white hover:bg-accent hover:text-black hover:border-accent transition-all flex items-center justify-center gap-2 group/btn"
+                        >
+                          Book Package
+                          <span className="material-symbols-outlined text-[16px] group-hover/btn:translate-x-1 transition-transform">arrow_forward</span>
+                        </button>
                       </div>
                     ))}
                   </div>
@@ -282,7 +296,9 @@ const FoxerProfile: React.FC = () => {
                   className="space-y-6"
                 >
                   <div className="flex items-center justify-between">
-                    <h2 className="text-2xl font-display font-bold text-white">Available Services</h2>
+                    <h2 className="text-2xl font-display font-bold text-white">
+                      {roleLabel === 'Gear Foxer' ? 'Available Gears' : 'Available Services'}
+                    </h2>
                     <div className="flex items-center gap-2">
                       <span className="h-2 w-2 rounded-full bg-success animate-pulse" />
                       <span className="text-[10px] text-success font-bold uppercase">Available Now</span>
@@ -293,24 +309,33 @@ const FoxerProfile: React.FC = () => {
                     {foxer.services.map((svc) => (
                       <div
                         key={svc.id}
-                        className="p-6 rounded-[2rem] bg-white/5 border border-white/5 hover:border-white/20 transition-all group"
+                        className="p-6 rounded-[2rem] bg-white/5 border border-white/5 hover:border-accent/30 transition-all group flex flex-col justify-between gap-4"
                       >
-                        <div className="flex justify-between items-start mb-3">
-                          <div>
-                            <h4 className="font-bold text-white group-hover:text-accent transition-colors">{svc.name}</h4>
-                            <p className="text-xs text-text-muted">{svc.category.replace(/_/g, ' ')}</p>
+                        <div>
+                          <div className="flex justify-between items-start mb-3">
+                            <div>
+                              <h4 className="font-bold text-white group-hover:text-accent transition-colors">{svc.name}</h4>
+                              <p className="text-xs text-text-muted">{svc.category.replace(/_/g, ' ')}</p>
+                            </div>
+                            <span className="text-[10px] font-bold uppercase tracking-widest px-3 py-1 bg-black/40 rounded-full text-accent border border-accent/20 shrink-0">
+                              ₱{svc.price.toLocaleString()} / {svc.billingRate}
+                            </span>
                           </div>
-                          <span className="text-[10px] font-bold uppercase tracking-widest px-3 py-1 bg-black/40 rounded-full text-accent border border-accent/20 shrink-0">
-                            ₱{svc.price.toLocaleString()} / {svc.billingRate}
-                          </span>
+                          {svc.tags.length > 0 && (
+                            <div className="flex flex-wrap gap-1">
+                              {svc.tags.slice(0, 3).map((tag) => (
+                                <span key={tag} className="text-[10px] text-white/50 bg-white/5 px-2 py-0.5 rounded-full">{tag}</span>
+                              ))}
+                            </div>
+                          )}
                         </div>
-                        {svc.tags.length > 0 && (
-                          <div className="flex flex-wrap gap-1 mt-2">
-                            {svc.tags.slice(0, 3).map((tag) => (
-                              <span key={tag} className="text-[10px] text-white/50 bg-white/5 px-2 py-0.5 rounded-full">{tag}</span>
-                            ))}
-                          </div>
-                        )}
+                        <button
+                          onClick={() => router.push(`/booking/service/${svc.id}`)}
+                          className="w-full py-2.5 rounded-xl bg-white/5 border border-white/10 text-sm font-bold text-white hover:bg-accent hover:text-black hover:border-accent transition-all flex items-center justify-center gap-2 group/btn"
+                        >
+                          Book Now
+                          <span className="material-symbols-outlined text-[16px] group-hover/btn:translate-x-1 transition-transform">arrow_forward</span>
+                        </button>
                       </div>
                     ))}
                   </div>

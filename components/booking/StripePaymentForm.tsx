@@ -6,9 +6,10 @@ import { useStripe, useElements, PaymentElement } from '@stripe/react-stripe-js'
 interface StripePaymentFormProps {
   totalAmount: number;
   onSuccess?: () => void;
+  returnUrl?: string;
 }
 
-export default function StripePaymentForm({ totalAmount, onSuccess }: StripePaymentFormProps) {
+export default function StripePaymentForm({ totalAmount, onSuccess, returnUrl }: StripePaymentFormProps) {
   const stripe = useStripe();
   const elements = useElements();
   const [isProcessing, setIsProcessing] = useState(false);
@@ -24,7 +25,7 @@ export default function StripePaymentForm({ totalAmount, onSuccess }: StripePaym
     const { error } = await stripe.confirmPayment({
       elements,
       confirmParams: {
-        return_url: `${window.location.origin}/checkout/success`,
+        return_url: returnUrl ?? `${window.location.origin}/checkout/success`,
       },
     });
 
