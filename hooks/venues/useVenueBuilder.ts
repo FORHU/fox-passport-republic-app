@@ -135,8 +135,16 @@ export function useVenueBuilder() {
   }, [store]);
 
   const handlePublish = useCallback(async () => {
-    if (!store.venueName || !store.venueType) {
-      toast.error("Please fill in the required fields (Name and Type)");
+    const missing: string[] = [];
+    if (!store.venueName) missing.push("Venue Name");
+    if (!store.venueType) missing.push("Category");
+    if (!store.description) missing.push("Description");
+    if (!store.location) missing.push("Address");
+    if (!store.city) missing.push("City");
+    if (!store.country) missing.push("Country");
+
+    if (missing.length > 0) {
+      toast.error(`Please fill in: ${missing.join(", ")}`);
       return;
     }
 
@@ -196,7 +204,7 @@ export function useVenueBuilder() {
         }, 1500);
       }
     } catch (error: any) {
-      console.error("Publishing error:", error);
+      console.error("Publishing error:", error.response?.data || error.message || error);
       toast.error(error.response?.data?.message || error.message || "Failed to publish venue");
     } finally {
       store.setIsSubmitting(false);
