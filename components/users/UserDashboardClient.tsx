@@ -14,9 +14,10 @@ import { UserFooter } from '@/components/citizen/UserFooter';
 interface UserDashboardClientProps {
   user: any;
   dashboardData: any;
+  venues?: any[];
 }
 
-function UserDashboardContent({ user, dashboardData }: UserDashboardClientProps) {
+function UserDashboardContent({ user, dashboardData, venues = [] }: UserDashboardClientProps) {
   const {
     userName,
     isAuthenticated,
@@ -70,7 +71,7 @@ function UserDashboardContent({ user, dashboardData }: UserDashboardClientProps)
           {/* Row 2: For You & Wallet/Saved Vibes */}
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
             <div className="lg:col-span-8">
-              <UserForYou canSeeVenues={canSeeVenues} />
+              <UserForYou canSeeVenues={canSeeVenues} venues={venues} />
             </div>
             <div className="lg:col-span-4 flex flex-col gap-6 h-full">
               <UserWallet
@@ -90,6 +91,6 @@ function UserDashboardContent({ user, dashboardData }: UserDashboardClientProps)
   );
 }
 
-export default function UserDashboardClient({ user, dashboardData }: UserDashboardClientProps) {
-  return <UserDashboardContent user={user} dashboardData={dashboardData} />;
+export default function UserDashboardClient({ user, dashboardData, venues }: UserDashboardClientProps) {
+  return <UserDashboardContent user={user} dashboardData={dashboardData} venues={venues} />;
 }
