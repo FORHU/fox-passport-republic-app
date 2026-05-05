@@ -41,9 +41,9 @@ export const AVAILABLE_RESOURCES: Record<string, ResourceItem[]> = {
 
 export const EVENT_CATEGORIES = [
   "Corporate",
-  "Celebration",
-  "Private Experience",
-  "Popup",
+  "Birthday",
+  "Wedding",
+  "Social",
   "Other",
 ];
 

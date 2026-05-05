@@ -7,12 +7,12 @@ export enum VenueStatus {
 }
 
 export enum VenueType {
+  INDOOR = "indoor",
+  OUTDOOR = "outdoor",
+  MIX = "mix",
   HOTEL = "hotel",
-  RESORT = "resort",
-  HALL = "hall",
+  BEACH_RESORT = "beach_resort",
   GARDEN = "garden",
-  BEACH = "beach",
-  ROOFTOP = "rooftop",
   OTHER = "other",
 }
 

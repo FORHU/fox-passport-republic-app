@@ -43,7 +43,7 @@ export const INITIAL_RESOURCES: Record<string, ResourceItem[]> = {
 };
 
 export const VENUE_TYPES = Object.values(VenueType).map(
-  (t) => t.charAt(0).toUpperCase() + t.slice(1)
+  (t) => t.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase())
 );
 
 // export const SAMPLE_GALLERY_URLS = [
