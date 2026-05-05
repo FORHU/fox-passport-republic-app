@@ -1,4 +1,4 @@
-import { getDashboardStats, getVenues, getAdminEventTemplates, getCategories, getUsers, getAllAssets, getAllServices, getAllBookings } from '@/lib/server/data';
+import { getDashboardStats, getAdminPendingVenues, getAdminPendingAssets, getAdminPendingServices, getAdminEvents, getCategories, getUsers, getAllBookings } from '@/lib/server/data';
 import { requireAdmin } from '@/lib/server/auth';
 import {
   AdminSidebar,
@@ -14,12 +14,12 @@ export default async function AdminDashboard() {
 
   const [stats, venues, events, categories, citizens, assets, services, bookings] = await Promise.all([
     getDashboardStats(),
-    getVenues(),
-    getAdminEventTemplates(),
+    getAdminPendingVenues(),
+    getAdminEvents(),
     getCategories(),
     getUsers(),
-    getAllAssets(),
-    getAllServices(),
+    getAdminPendingAssets(),
+    getAdminPendingServices(),
     getAllBookings(),
   ]);
 
