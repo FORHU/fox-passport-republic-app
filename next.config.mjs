@@ -21,7 +21,11 @@ const nextConfig = {
       { protocol: 'https', hostname: 'lh3.googleusercontent.com' },
       { protocol: 'https', hostname: 'd1bdogktone6hj.cloudfront.net' },
       { protocol: 'https', hostname: '*.cloudfront.net' },
+      { protocol: 'https', hostname: '*.s3.amazonaws.com' },
+      { protocol: 'https', hostname: '*.s3.*.amazonaws.com' },
+      { protocol: 'https', hostname: 's3.amazonaws.com' },
     ],
+    unoptimized: process.env.NODE_ENV === 'development',
   },
 
   // 3. Webpack config to handle Cesium's internal usage of "fs" (file system)

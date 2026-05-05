@@ -144,45 +144,62 @@ export const UserForYou: React.FC<UserForYouProps> = ({ canSeeVenues = false, ve
         <section className="reveal-on-scroll mt-10" style={{ transitionDelay: '150ms' }}>
           <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-4">
             <h3 className="text-xl font-display font-bold text-white">Venues Available</h3>
-            <Link href="/venues" className="text-sm text-accent hover:underline font-medium">
-              View all
+            <Link href="/venues" className="text-sm text-accent hover:underline font-medium whitespace-nowrap">
+              View all ({venues.length})
             </Link>
           </div>
           <div className="grid sm:grid-cols-2 gap-6">
-            {venues.map((venue) => (
-              <Link key={venue.id} href={`/venues/${venue.id}`} className="contents">
-                <article className="glass-card group relative flex flex-col rounded-[2rem] overflow-hidden card-hover-effect cursor-pointer">
-                  <div className="relative aspect-4/3 overflow-hidden">
-                    <Image
-                      alt={venue.title}
-                      src={venue.img || '/herobackground.jpg'}
-                      className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-110"
-                      width={400}
-                      height={300}
-                    />
-                    <div className="absolute inset-0 bg-linear-to-t from-black via-transparent to-transparent opacity-80" />
-                    <div className="absolute bottom-4 left-4 z-10">
-                      <span className="bg-primary/90 backdrop-blur-md text-white text-xs font-bold px-3 py-1.5 rounded-full capitalize">
-                        {venue.type?.replace(/_/g, ' ') || 'Venue'}
-                      </span>
+            {venues.slice(0, 4).map((venue) => {
+              const hasRealImg = venue.img && venue.img !== '/herobackground.jpg';
+              return (
+                <Link key={venue.id} href={`/venues/${venue.id}`} className="contents">
+                  <article className="glass-card group relative flex flex-col rounded-[2rem] overflow-hidden card-hover-effect cursor-pointer">
+                    <div className="relative aspect-video overflow-hidden bg-white/5">
+                      {hasRealImg ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img
+                          alt={venue.title}
+                          src={venue.img}
+                          className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-110"
+                        />
+                      ) : (
+                        <div className="h-full w-full flex items-center justify-center bg-linear-to-br from-[#1a1a2e] to-[#16213e]">
+                          <span className="material-symbols-outlined text-white/20 text-6xl">apartment</span>
+                        </div>
+                      )}
+                      <div className="absolute inset-0 bg-linear-to-t from-black/80 via-transparent to-transparent" />
+                      <div className="absolute bottom-3 left-3 z-10">
+                        <span className="bg-black/60 backdrop-blur-md text-white text-[10px] font-bold px-2.5 py-1 rounded-full capitalize">
+                          {venue.type?.replace(/_/g, ' ') || 'Venue'}
+                        </span>
+                      </div>
                     </div>
-                  </div>
-                  <div className="p-5">
-                    <h3 className="text-lg font-bold text-white font-display mb-1 group-hover:text-accent transition-colors line-clamp-1">
-                      {venue.title}
-                    </h3>
-                    <p className="text-text-muted text-sm mb-3 line-clamp-1">{venue.loc || venue.location}</p>
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs font-bold text-white bg-white/10 px-2 py-1 rounded">
-                        {venue.price ? `₱${Number(venue.price).toLocaleString()}` : 'Free'}
-                      </span>
-                      <span className="text-xs text-white/50">{venue.cap || '—'}</span>
+                    <div className="p-4">
+                      <h3 className="text-base font-bold text-white font-display mb-0.5 group-hover:text-accent transition-colors line-clamp-1">
+                        {venue.title}
+                      </h3>
+                      <p className="text-text-muted text-xs mb-3 line-clamp-1">{venue.loc || venue.location || '—'}</p>
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-bold text-accent">
+                          {venue.price ? `₱${Number(venue.price).toLocaleString()}` : 'Inquire'}
+                        </span>
+                        <span className="text-[10px] text-white/40">{venue.cap || '—'}</span>
+                      </div>
                     </div>
-                  </div>
-                </article>
-              </Link>
-            ))}
+                  </article>
+                </Link>
+              );
+            })}
           </div>
+          {venues.length > 4 && (
+            <Link
+              href="/venues"
+              className="mt-4 flex items-center justify-center gap-2 w-full py-3 rounded-xl border border-white/10 text-sm font-bold text-white hover:bg-white/5 transition-colors"
+            >
+              See {venues.length - 4} more venues
+              <span className="material-symbols-outlined text-[16px]">arrow_forward</span>
+            </Link>
+          )}
         </section>
       )}
     </>
