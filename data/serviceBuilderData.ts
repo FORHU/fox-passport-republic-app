@@ -5,13 +5,10 @@ export interface ServiceCategoryItem {
 }
 
 export const SERVICE_CATEGORIES: ServiceCategoryItem[] = [
-  { id: "planning", label: "Planning", icon: "event_note" },
-  { id: "decoration", label: "Decoration", icon: "brush" },
+  { id: "design", label: "Design", icon: "brush" },
   { id: "catering", label: "Catering", icon: "restaurant" },
-  { id: "photography", label: "Photography", icon: "camera_alt" },
-  { id: "videography", label: "Videography", icon: "videocam" },
   { id: "entertainment", label: "Entertainment", icon: "music_note" },
-  { id: "coordination", label: "Coordination", icon: "groups" },
+  { id: "service_staff", label: "Service Staff", icon: "groups" },
   { id: "other", label: "Other", icon: "more_horiz" },
 ];
 

@@ -250,11 +250,9 @@ export function useEventBuilder() {
       // 2. Prepare Payload
       const safeEventTypeMapping: Record<string, string> = {
         corporate: 'corporate',
-        fair: 'fair',
         birthday: 'birthday',
         wedding: 'wedding',
-        anniversary: 'anniversary',
-        graduation: 'graduation',
+        social: 'social',
         other: 'other',
       };
 

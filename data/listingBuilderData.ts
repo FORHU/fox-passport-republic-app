@@ -7,9 +7,9 @@ export interface CategoryItem {
 }
 
 export const ASSET_CATEGORIES: CategoryItem[] = [
-  { id: "equipment", label: "Equipment", icon: "speaker" },
-  { id: "furniture", label: "Furniture", icon: "chair" },
-  { id: "decoration", label: "Decoration", icon: "palette" },
+  { id: "sound_system", label: "Sound System", icon: "speaker" },
+  { id: "furnitures", label: "Furniture", icon: "chair" },
+  { id: "decorations", label: "Decorations", icon: "palette" },
   { id: "other", label: "Other", icon: "more_horiz" },
 ];
 

@@ -169,7 +169,7 @@ export function useVenueBuilder() {
       const payload = {
         name: store.venueName,
         description: store.description,
-        category: store.venueType.toLowerCase(),
+        category: store.venueType.toLowerCase().replace(/\s+/g, "_"),
         capacity: parseInt(store.capacity) || 1,
         address: store.location,
         city: store.city,
