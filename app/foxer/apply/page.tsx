@@ -7,6 +7,12 @@ export const metadata: Metadata = {
   description: 'Apply to become an authorized Service or Equipment Provider on FoxPassport.',
 };
 
-export default function FoxerApplicationPage() {
-  return <FoxerApplicationClient />;
+export default async function FoxerApplicationPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ type?: string }>;
+}) {
+  const { type } = await searchParams;
+  const initialType = type === 'asset' ? 'asset' : 'service';
+  return <FoxerApplicationClient initialType={initialType} />;
 }

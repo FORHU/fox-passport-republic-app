@@ -25,71 +25,62 @@ export default function OnboardingClient({ user: serverUser }: { user: any }) {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 w-full">
-            {[
-              { 
-                title: 'Become a Foxer', 
-                role: 'Service & Equipment Provider',
-                icon: 'smart_toy', 
-                desc: 'Provide services and equipments to enhance the ecosystem.', 
-                color: '#00d2ff', // Cyan-ish for Foxer
-                colorClass: 'cyan-400',
-                link: '/foxer/apply'
-              },
-              { 
-                title: 'Become a Mayor', 
-                role: 'Space Provider',
-                icon: 'apartment', 
-                desc: 'Provide and manage your venues for others to host events.', 
-                color: '#ccff00', // Lime for Mayor
-                colorClass: '[#ccff00]',
-                link: '/mayor/apply'
-              },
-              { 
-                title: 'Become a Host', 
-                role: 'Event Creator',
-                icon: 'travel_explore', 
-                desc: 'Create and organize events using venues provided by Mayors.', 
-                color: '#ff00aa', // Pink for Host
-                colorClass: 'pink-500',
-                link: '/creator-dashboard/apply'
-              },
-            ].map((card, i) => (
-              <Link 
-                href={card.link} 
-                key={i} 
-                className={`group relative bg-[#1a1a24] rounded-[2rem] p-8 text-left border border-white/5 hover:bg-[#2a2a36] transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl flex flex-col`}
-                style={{
-                  borderColor: 'rgba(255,255,255,0.05)',
-                }}
-              >
-                {/* Hover border glow effect */}
-                <div 
-                  className="absolute inset-0 rounded-[2rem] opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" 
-                  style={{ boxShadow: `inset 0 0 0 1px ${card.color}` }}
-                />
-                
-                <div 
-                  className={`h-16 w-16 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 group-hover:rotate-6 transition-all`}
-                  style={{ backgroundColor: `${card.color}20` }}
-                >
-                  <span 
-                    className={`material-symbols-outlined text-[32px]`}
-                    style={{ color: card.color, textShadow: `0 0 10px ${card.color}80` }}
-                  >
-                    {card.icon}
-                  </span>
-                </div>
-                <h3 className="text-2xl font-display font-bold text-white mb-1">{card.title}</h3>
-                <p 
-                  className={`text-xs font-bold uppercase tracking-wider mb-4`}
-                  style={{ color: card.color }}
-                >
-                  {card.role}
-                </p>
-                <p className="text-sm text-white/50 group-hover:text-white/80 mt-auto">{card.desc}</p>
-              </Link>
-            ))}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 w-full">
+            {/* Foxer — Service */}
+            <Link
+              href="/foxer/apply?type=service"
+              className="group relative bg-[#1a1a24] rounded-[2rem] p-8 text-left border border-white/5 hover:bg-[#2a2a36] transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl flex flex-col"
+            >
+              <div className="absolute inset-0 rounded-[2rem] opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" style={{ boxShadow: 'inset 0 0 0 1px #00d2ff' }} />
+              <div className="h-16 w-16 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 group-hover:rotate-6 transition-all" style={{ backgroundColor: '#00d2ff20' }}>
+                <span className="material-symbols-outlined text-[32px]" style={{ color: '#00d2ff', textShadow: '0 0 10px #00d2ff80' }}>design_services</span>
+              </div>
+              <p className="text-[10px] font-bold uppercase tracking-widest mb-1" style={{ color: '#00d2ff' }}>Foxer · Service</p>
+              <h3 className="text-xl font-display font-bold text-white mb-1">Service Provider</h3>
+              <p className="text-xs text-white/50 group-hover:text-white/80 mt-auto">Offer catering, entertainment, design, and other professional services for events.</p>
+            </Link>
+
+            {/* Foxer — Gear */}
+            <Link
+              href="/foxer/apply?type=asset"
+              className="group relative bg-[#1a1a24] rounded-[2rem] p-8 text-left border border-white/5 hover:bg-[#2a2a36] transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl flex flex-col"
+            >
+              <div className="absolute inset-0 rounded-[2rem] opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" style={{ boxShadow: 'inset 0 0 0 1px #a78bfa' }} />
+              <div className="h-16 w-16 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 group-hover:rotate-6 transition-all" style={{ backgroundColor: '#a78bfa20' }}>
+                <span className="material-symbols-outlined text-[32px]" style={{ color: '#a78bfa', textShadow: '0 0 10px #a78bfa80' }}>inventory_2</span>
+              </div>
+              <p className="text-[10px] font-bold uppercase tracking-widest mb-1" style={{ color: '#a78bfa' }}>Foxer · Gear</p>
+              <h3 className="text-xl font-display font-bold text-white mb-1">Gear Provider</h3>
+              <p className="text-xs text-white/50 group-hover:text-white/80 mt-auto">Rent out sound systems, furniture, decorations, and equipment for events.</p>
+            </Link>
+
+            {/* Mayor */}
+            <Link
+              href="/mayor/apply"
+              className="group relative bg-[#1a1a24] rounded-[2rem] p-8 text-left border border-white/5 hover:bg-[#2a2a36] transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl flex flex-col"
+            >
+              <div className="absolute inset-0 rounded-[2rem] opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" style={{ boxShadow: 'inset 0 0 0 1px #ccff00' }} />
+              <div className="h-16 w-16 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 group-hover:rotate-6 transition-all" style={{ backgroundColor: '#ccff0020' }}>
+                <span className="material-symbols-outlined text-[32px]" style={{ color: '#ccff00', textShadow: '0 0 10px #ccff0080' }}>apartment</span>
+              </div>
+              <p className="text-[10px] font-bold uppercase tracking-widest mb-1" style={{ color: '#ccff00' }}>Mayor</p>
+              <h3 className="text-xl font-display font-bold text-white mb-1">Space Provider</h3>
+              <p className="text-xs text-white/50 group-hover:text-white/80 mt-auto">List and manage your venues for others to host events.</p>
+            </Link>
+
+            {/* Host */}
+            <Link
+              href="/creator-dashboard/apply"
+              className="group relative bg-[#1a1a24] rounded-[2rem] p-8 text-left border border-white/5 hover:bg-[#2a2a36] transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl flex flex-col"
+            >
+              <div className="absolute inset-0 rounded-[2rem] opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" style={{ boxShadow: 'inset 0 0 0 1px #ff00aa' }} />
+              <div className="h-16 w-16 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 group-hover:rotate-6 transition-all" style={{ backgroundColor: '#ff00aa20' }}>
+                <span className="material-symbols-outlined text-[32px]" style={{ color: '#ff00aa', textShadow: '0 0 10px #ff00aa80' }}>travel_explore</span>
+              </div>
+              <p className="text-[10px] font-bold uppercase tracking-widest mb-1" style={{ color: '#ff00aa' }}>Host</p>
+              <h3 className="text-xl font-display font-bold text-white mb-1">Event Creator</h3>
+              <p className="text-xs text-white/50 group-hover:text-white/80 mt-auto">Create and organize events using venues provided by Mayors.</p>
+            </Link>
           </div>
         </div>
       </div>

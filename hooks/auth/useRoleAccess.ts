@@ -3,10 +3,10 @@
 import { useAuthStore } from '@/store/useAuthStore';
 
 export interface RoleAccess {
-  canManageVenues: boolean;    // host, mayor
-  canManageEvents: boolean;    // mayor
-  canManageInventory: boolean; // foxerAsset, foxer
-  canManageServices: boolean;  // foxerService, foxer
+  canManageVenues: boolean;    // mayor only
+  canManageEvents: boolean;    // host only
+  canManageInventory: boolean; // foxerAsset
+  canManageServices: boolean;  // foxerService
   isAdmin: boolean;
   isMayor: boolean;
   isHost: boolean;
@@ -21,16 +21,16 @@ export function useRoleAccess(): RoleAccess {
 
   const isAdmin = sysRole === 'admin' || sysRole === 'super_admin';
   const isMayor = roleTypes.includes('mayor') || sysRole === 'mayor';
-  const isHost = roleTypes.includes('host') || sysRole === 'host' || isMayor || isAdmin;
+  const isHost = roleTypes.includes('host') || sysRole === 'host' || isAdmin;
   const isFoxer =
     roleTypes.some((r) => ['foxer', 'foxerAsset', 'foxerService'].includes(r)) ||
     sysRole === 'foxer';
 
   return {
-    canManageVenues: isHost || isAdmin,
-    canManageEvents: isMayor || isAdmin,
-    canManageInventory: isFoxer || isAdmin,
-    canManageServices: isFoxer || isAdmin,
+    canManageVenues: isMayor || isAdmin,
+    canManageEvents: isHost || isAdmin,
+    canManageInventory: roleTypes.includes('foxerAsset') || isFoxer || isAdmin,
+    canManageServices: roleTypes.includes('foxerService') || isFoxer || isAdmin,
     isAdmin,
     isMayor,
     isHost,

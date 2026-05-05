@@ -8,9 +8,9 @@ import Link from "next/link";
 import FileUploader from "@/components/shared/FileUploader";
 import KycDocumentSection from "@/components/shared/KycDocumentSection";
 
-export default function FoxerApplicationClient() {
+export default function FoxerApplicationClient({ initialType = "service" }: { initialType?: "asset" | "service" }) {
   const { mutate: applyRole, isPending } = useApplyRole();
-  const [providerType, setProviderType] = useState<"asset" | "service">("service");
+  const [providerType, setProviderType] = useState<"asset" | "service">(initialType);
 
   // Asset Form State
   const [assetData, setAssetData] = useState({
@@ -82,14 +82,23 @@ export default function FoxerApplicationClient() {
       <div className="min-h-screen bg-[#0f111a] flex flex-col items-center justify-center p-4 pt-24 pb-12 font-body">
         <div className="w-full max-w-2xl bg-[#1a1a24] rounded-[2.5rem] p-8 md:p-12 border border-white/5 shadow-2xl relative overflow-hidden">
           {/* Background Glow */}
-          <div className="absolute top-0 right-0 -mr-20 -mt-20 w-64 h-64 bg-[#00d2ff]/10 blur-[100px] rounded-full pointer-events-none" />
+          <div
+            className="absolute top-0 right-0 -mr-20 -mt-20 w-64 h-64 blur-[100px] rounded-full pointer-events-none transition-colors duration-500"
+            style={{ backgroundColor: providerType === 'asset' ? 'rgba(167,139,250,0.1)' : 'rgba(0,210,255,0.1)' }}
+          />
 
           <div className="mb-10 text-center relative z-10">
-            <div className="w-16 h-16 bg-[#00d2ff]/20 rounded-2xl flex items-center justify-center mx-auto mb-6 text-[#00d2ff]">
-              <Briefcase size={32} />
+            <div
+              className="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-6 transition-colors duration-300"
+              style={{
+                backgroundColor: providerType === 'asset' ? 'rgba(167,139,250,0.2)' : 'rgba(0,210,255,0.2)',
+                color: providerType === 'asset' ? '#a78bfa' : '#00d2ff',
+              }}
+            >
+              {providerType === 'asset' ? <Package size={32} /> : <Briefcase size={32} />}
             </div>
             <h1 className="text-3xl md:text-4xl font-display font-bold text-white mb-2">
-              Apply to be a <span className="text-[#00d2ff]">Foxer</span>
+              Apply to be a <span style={{ color: providerType === 'asset' ? '#a78bfa' : '#00d2ff' }}>Foxer</span>
             </h1>
             <p className="text-white/60">
               Provide your professional details to start offering services or equipment in FoxPassport.
@@ -109,10 +118,10 @@ export default function FoxerApplicationClient() {
             <button
               onClick={() => setProviderType("asset")}
               className={`flex-1 py-3 text-sm font-bold uppercase tracking-wider rounded-lg transition-all ${
-                providerType === "asset" ? "bg-[#00d2ff] text-black shadow-lg" : "text-white/50 hover:text-white"
+                providerType === "asset" ? "bg-[#a78bfa] text-black shadow-lg" : "text-white/50 hover:text-white"
               }`}
             >
-              Equipment Provider
+              Gear Provider
             </button>
           </div>
 
@@ -294,7 +303,8 @@ export default function FoxerApplicationClient() {
               <button
                 type="submit"
                 disabled={isPending}
-                className="w-full flex-1 flex items-center justify-center gap-2 bg-[#00d2ff] text-black font-bold py-3 px-6 rounded-xl hover:brightness-110 hover:shadow-[0_0_20px_rgba(0,210,255,0.4)] transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full flex-1 flex items-center justify-center gap-2 text-black font-bold py-3 px-6 rounded-xl hover:brightness-110 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                style={{ backgroundColor: providerType === 'asset' ? '#a78bfa' : '#00d2ff' }}
               >
                 {isPending ? "Submitting..." : "Submit Application"}
                 {!isPending && <ArrowRight size={18} />}
