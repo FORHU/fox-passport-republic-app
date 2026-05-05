@@ -4,9 +4,10 @@ import Link from 'next/link';
 
 interface UserForYouProps {
   canSeeVenues?: boolean;
+  venues?: any[];
 }
 
-export const UserForYou: React.FC<UserForYouProps> = ({ canSeeVenues = false }) => {
+export const UserForYou: React.FC<UserForYouProps> = ({ canSeeVenues = false, venues = [] }) => {
   if (!canSeeVenues) {
     return (
       <section className="reveal-on-scroll" style={{ transitionDelay: '100ms' }}>
@@ -27,6 +28,7 @@ export const UserForYou: React.FC<UserForYouProps> = ({ canSeeVenues = false }) 
   }
 
   return (
+    <>
     <section className="reveal-on-scroll" style={{ transitionDelay: '100ms' }}>
               <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-4">
                 <h3 className="text-xl font-display font-bold text-white">For You</h3>
@@ -137,5 +139,52 @@ export const UserForYou: React.FC<UserForYouProps> = ({ canSeeVenues = false }) 
                 </article>
               </div>
             </section>
+
+      {venues.length > 0 && (
+        <section className="reveal-on-scroll mt-10" style={{ transitionDelay: '150ms' }}>
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-4">
+            <h3 className="text-xl font-display font-bold text-white">Venues Available</h3>
+            <Link href="/venues" className="text-sm text-accent hover:underline font-medium">
+              View all
+            </Link>
+          </div>
+          <div className="grid sm:grid-cols-2 gap-6">
+            {venues.map((venue) => (
+              <Link key={venue.id} href={`/venues/${venue.id}`} className="contents">
+                <article className="glass-card group relative flex flex-col rounded-[2rem] overflow-hidden card-hover-effect cursor-pointer">
+                  <div className="relative aspect-4/3 overflow-hidden">
+                    <Image
+                      alt={venue.title}
+                      src={venue.img || '/herobackground.jpg'}
+                      className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-110"
+                      width={400}
+                      height={300}
+                    />
+                    <div className="absolute inset-0 bg-linear-to-t from-black via-transparent to-transparent opacity-80" />
+                    <div className="absolute bottom-4 left-4 z-10">
+                      <span className="bg-primary/90 backdrop-blur-md text-white text-xs font-bold px-3 py-1.5 rounded-full capitalize">
+                        {venue.type?.replace(/_/g, ' ') || 'Venue'}
+                      </span>
+                    </div>
+                  </div>
+                  <div className="p-5">
+                    <h3 className="text-lg font-bold text-white font-display mb-1 group-hover:text-accent transition-colors line-clamp-1">
+                      {venue.title}
+                    </h3>
+                    <p className="text-text-muted text-sm mb-3 line-clamp-1">{venue.loc || venue.location}</p>
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-bold text-white bg-white/10 px-2 py-1 rounded">
+                        {venue.price ? `₱${Number(venue.price).toLocaleString()}` : 'Free'}
+                      </span>
+                      <span className="text-xs text-white/50">{venue.cap || '—'}</span>
+                    </div>
+                  </div>
+                </article>
+              </Link>
+            ))}
+          </div>
+        </section>
+      )}
+    </>
   );
 };
