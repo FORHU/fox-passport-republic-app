@@ -183,8 +183,13 @@ export function useInventoryBuilder() {
   );
 
   const handlePublish = useCallback(async () => {
-    if (!isReadyToPublish) {
-      setError("Please complete all required fields before publishing");
+    const missing: string[] = [];
+    if (!store.title) missing.push("Title");
+    if (!store.description) missing.push("Description");
+    if (!store.category) missing.push("Category");
+    if (!store.image) missing.push("Image");
+    if (missing.length > 0) {
+      setError(`Please fill in: ${missing.join(", ")}`);
       return;
     }
 

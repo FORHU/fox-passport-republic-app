@@ -234,8 +234,11 @@ export function useEventBuilder() {
 
   const handlePublish = useCallback(async () => {
     // 1. Validation
-    if (!store.eventTitle || !store.category) {
-      toast.error("Please fill in the title and category");
+    const missing: string[] = [];
+    if (!store.eventTitle) missing.push("Event Title");
+    if (!store.category) missing.push("Category");
+    if (missing.length > 0) {
+      toast.error(`Please fill in: ${missing.join(", ")}`);
       return;
     }
 
