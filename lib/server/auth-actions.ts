@@ -47,30 +47,43 @@ export async function setAuthCookies(loginResponse: LoginResponse) {
 }
 
 /**
- * Server action to fetch the latest profile from the API and update fox_user cookie.
- * Call this after a role is approved so the proxy and client see fresh roleType data.
- * Returns the updated user object, or null if the token is missing/expired.
+ * Server action to refresh the JWT and fetch the latest profile.
+ * Uses the refresh token to issue a new access token so the backend
+ * sees the updated roleType (e.g. after a mayor/host application is approved).
+ * Returns the updated user object, or null if tokens are missing/expired.
  */
 export async function refreshUserSession(): Promise<Record<string, any> | null> {
   const cookieStore = await cookies();
 
-  let token = cookieStore.get('fox_token')?.value;
-  if (!token) {
-    const userStr = cookieStore.get('fox_user')?.value;
-    if (userStr) {
-      try { token = JSON.parse(decodeURIComponent(userStr)).accessToken; } catch {}
-    }
-  }
-  if (!token) return null;
+  const refreshToken = cookieStore.get('fox_refresh_token')?.value;
+  if (!refreshToken) return null;
 
   try {
-    const { data } = await axios.get(`${appConfig.apiUrl}/profile`, {
-      headers: { Authorization: `Bearer ${token}` },
+    // Step 1: get a brand-new access token that reflects current DB roles
+    const { data: tokenData } = await axios.post(
+      `${appConfig.apiUrl}/auth/refresh-token`,
+      { refreshToken }
+    );
+    const newAccessToken: string = tokenData.accessToken;
+    if (!newAccessToken) return null;
+
+    // Step 2: update fox_token cookie with the new JWT
+    cookieStore.set('fox_token', newAccessToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      maxAge: 7 * 24 * 60 * 60,
+      path: '/',
     });
-    const freshUser = data?.data || data;
+
+    // Step 3: fetch fresh profile using the new token
+    const { data: profileData } = await axios.get(`${appConfig.apiUrl}/profile`, {
+      headers: { Authorization: `Bearer ${newAccessToken}` },
+    });
+    const freshUser = profileData?.data || profileData;
     if (!freshUser) return null;
 
-    const userWithToken = { ...freshUser, accessToken: token };
+    const userWithToken = { ...freshUser, accessToken: newAccessToken };
     cookieStore.set('fox_user', JSON.stringify(userWithToken), {
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',
