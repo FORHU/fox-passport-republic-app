@@ -15,8 +15,13 @@ export async function createAsset(payload: CreateAssetPayload): Promise<BackendA
   return unwrapOne(resp.data);
 }
 
+export async function fetchAllAssets(params?: { category?: string; status?: string }): Promise<BackendAsset[]> {
+  const resp = await api.get('/asset', { params });
+  return unwrapList(resp.data);
+}
+
 export async function fetchAssetsByOwnerId(ownerId: Id): Promise<BackendAsset[]> {
-  const resp = await api.get("/asset", { params: { ownerId: String(ownerId) } });
+  const resp = await api.get('/asset', { params: { ownerId: String(ownerId) } });
   return unwrapList(resp.data);
 }
 

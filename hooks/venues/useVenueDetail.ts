@@ -27,7 +27,7 @@ export function useVenueDetail(venueData?: any) {
       venueId: venueData?.id || "",
       venueName: venueData?.title || "Fox Passport Republic Venue",
       venueImage: venueData?.images?.[0] || null,
-      checkInDate: store.checkInDate,
+      checkInDate: null, // Dates are now collected in the BookingWidget (ISO string) not the old day-number store
       checkInTime: "09:00 PM", // Default booking time
       nights: nights > 0 ? nights : 1,
       totalAmount: venueData?.price ? venueData.price * (nights > 0 ? nights : 1) : 0,

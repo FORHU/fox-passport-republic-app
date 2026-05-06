@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import api from '@/lib/axios';
 import { toast } from 'sonner';
+import { useQueryClient } from '@tanstack/react-query';
 
 interface EventsTableProps {
   events: any[];
@@ -12,6 +13,7 @@ interface EventsTableProps {
 
 export const AdminEventsTable: React.FC<EventsTableProps> = ({ events, isLoading }) => {
   const router = useRouter();
+  const queryClient = useQueryClient();
   const [expandedRow, setExpandedRow] = useState<string | null>(null);
   const [updatingId, setUpdatingId] = useState<string | null>(null);
 
@@ -20,6 +22,7 @@ export const AdminEventsTable: React.FC<EventsTableProps> = ({ events, isLoading
     try {
       await api.patch(`/admin/event-templates/${id}/approve`);
       toast.success('Event template approved — now visible on category pages');
+      queryClient.invalidateQueries({ queryKey: ['admin-data', 'events'] });
       router.refresh();
     } catch (err: any) {
       const msg = err?.response?.data?.message || err?.message || 'Failed to approve event template';
@@ -34,6 +37,7 @@ export const AdminEventsTable: React.FC<EventsTableProps> = ({ events, isLoading
     try {
       await api.patch(`/admin/event-templates/${id}/reject`);
       toast.success('Event template rejected — hidden from category pages');
+      queryClient.invalidateQueries({ queryKey: ['admin-data', 'events'] });
       router.refresh();
     } catch (err: any) {
       const msg = err?.response?.data?.message || err?.message || 'Failed to reject event template';

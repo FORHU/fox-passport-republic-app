@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import React, { useEffect, useRef } from 'react';
 import Link from 'next/link';
@@ -120,7 +120,9 @@ export default function CheckoutSuccessClient() {
                     <p className="text-text-muted text-xs uppercase tracking-wider mb-1">Date</p>
                     <p className="text-white font-bold flex items-center gap-2">
                       <span className="material-symbols-outlined text-[16px] text-accent">event</span>
-                      Sep {checkInDate || '9'}, 2024
+                      {checkInDate
+                        ? new Date(checkInDate + 'T00:00:00').toLocaleDateString('en-PH', { month: 'short', day: 'numeric', year: 'numeric' })
+                        : 'TBD'}
                     </p>
                   </div>
                   <div>

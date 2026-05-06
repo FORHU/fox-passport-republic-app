@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useMemo } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { useVenueBuilderStore } from "@/store/useVenueBuilderStore";
 import api from "@/lib/axios";
@@ -14,6 +15,7 @@ import { useFileUpload } from "@/hooks/features/useFileUpload";
 
 export function useVenueBuilder() {
   const router = useRouter();
+  const queryClient = useQueryClient();
   const store = useVenueBuilderStore();
   const { uploadFile, isUploading } = useFileUpload();
 
@@ -198,6 +200,11 @@ export function useVenueBuilder() {
 
       if (createdVenue && createdVenue.id) {
         toast.success("Venue submitted for review!");
+
+        // Invalidate queries to ensure real-time update
+        queryClient.invalidateQueries({ queryKey: ["host-data", "venues"] });
+        queryClient.invalidateQueries({ queryKey: ["admin-data", "venues"] });
+
         setTimeout(() => {
           router.push("/creator-dashboard");
           store.reset();

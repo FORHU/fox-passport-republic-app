@@ -306,12 +306,32 @@ export async function getAdminPendingAssets() {
   }
 }
 
+export async function getAdminAllAssets() {
+  try {
+    const body = await serverFetch('/admin/assets');
+    return extractList(body);
+  } catch (error) {
+    console.error('Failed to fetch admin all assets:', error);
+    return [];
+  }
+}
+
 export async function getAdminPendingServices() {
   try {
     const body = await serverFetch('/admin/services/pending');
     return extractList(body);
   } catch (error) {
     console.error('Failed to fetch admin pending services:', error);
+    return [];
+  }
+}
+
+export async function getAdminAllServices() {
+  try {
+    const body = await serverFetch('/admin/services');
+    return extractList(body);
+  } catch (error) {
+    console.error('Failed to fetch admin all services:', error);
     return [];
   }
 }

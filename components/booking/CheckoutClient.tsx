@@ -256,7 +256,9 @@ export default function CheckoutClient() {
                     </div>
                     <div>
                       <div className="text-accent font-bold text-xs mb-1 uppercase tracking-wider">
-                        {checkInDate ? `Day ${checkInDate}` : 'Upcoming'} · {checkInTime || '9PM'}
+                        {checkInDate
+                          ? new Date(checkInDate + 'T00:00:00').toLocaleDateString('en-PH', { month: 'short', day: 'numeric' })
+                          : 'Upcoming'} · {checkInTime || '9PM'}
                       </div>
                       <h3 className="font-display font-bold text-white text-lg leading-tight mb-1">
                         {venueName || 'Venue Booking'}

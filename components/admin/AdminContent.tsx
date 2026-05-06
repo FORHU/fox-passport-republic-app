@@ -14,6 +14,7 @@ import {
   AdminAssetsTable,
   AdminServicesTable,
 } from '@/components/admin';
+import { useAdminData } from '@/hooks/dashboards/useAdminData';
 
 interface Props {
   stats: any;
@@ -32,24 +33,34 @@ interface Props {
 
 export const AdminContent: React.FC<Props> = ({
   stats,
-  venues,
-  events,
-  categories,
-  citizens,
-  assets,
-  services,
-  bookings,
+  venues: initialVenues,
+  events: initialEvents,
+  categories: initialCategories,
+  citizens: initialCitizens,
+  assets: initialAssets,
+  services: initialServices,
+  bookings: initialBookings,
 }) => {
   const activeTab = useUIStore(s => s.activeAdminTab);
+
+  // Reactive hooks with polling
+  const { data: venues, isLoading: loadingVenues } = useAdminData('venues', initialVenues);
+  const { data: services, isLoading: loadingServices } = useAdminData('services', initialServices);
+  const { data: assets, isLoading: loadingAssets } = useAdminData('assets', initialAssets);
+  const { data: events, isLoading: loadingEvents } = useAdminData('events', initialEvents);
+  const { data: citizens, isLoading: loadingCitizens } = useAdminData('citizens', initialCitizens);
+  const { data: categories, isLoading: loadingCategories } = useAdminData('categories', initialCategories);
+  const { data: adminStats } = useAdminData('stats', stats);
+  const { data: adminBookings } = useAdminData('bookings', initialBookings);
 
   return (
     <div className="p-8 space-y-8">
       {activeTab === 'dashboard' && (
         <>
-          <AdminKPISection stats={stats} />
+          <AdminKPISection stats={adminStats} />
           <AdminChartsSection
-            bookingsByDay={stats.bookingsByDay ?? [0, 0, 0, 0, 0, 0, 0]}
-            categoryStats={stats.categoryStats ?? []}
+            bookingsByDay={adminStats?.bookingsByDay ?? [0, 0, 0, 0, 0, 0, 0]}
+            categoryStats={adminStats?.categoryStats ?? []}
           />
           <AdminSubmissionsTable />
         </>
@@ -57,34 +68,34 @@ export const AdminContent: React.FC<Props> = ({
 
       {activeTab === 'bookings' && (
         <AdminBookingsTable
-          serviceBookings={bookings.serviceBookings}
-          assetBookings={bookings.assetBookings}
-          eventBookings={bookings.eventBookings}
+          serviceBookings={adminBookings?.serviceBookings || []}
+          assetBookings={adminBookings?.assetBookings || []}
+          eventBookings={adminBookings?.eventBookings || []}
         />
       )}
 
       {activeTab === 'citizens' && (
-        <AdminCitizenTable citizens={citizens} isLoading={false} />
+        <AdminCitizenTable citizens={citizens} isLoading={loadingCitizens} />
       )}
 
       {activeTab === 'events' && (
-        <AdminEventsTable events={events} isLoading={false} />
+        <AdminEventsTable events={events} isLoading={loadingEvents} />
       )}
 
       {activeTab === 'categories' && (
-        <AdminCategoriesTable categories={categories} isLoading={false} />
+        <AdminCategoriesTable categories={categories} isLoading={loadingCategories} />
       )}
 
       {activeTab === 'venues' && (
-        <AdminVenuesTable venues={venues} isLoading={false} />
+        <AdminVenuesTable venues={venues} isLoading={loadingVenues} />
       )}
 
       {activeTab === 'assets' && (
-        <AdminAssetsTable assets={assets} isLoading={false} />
+        <AdminAssetsTable assets={assets} isLoading={loadingAssets} />
       )}
 
       {activeTab === 'services' && (
-        <AdminServicesTable services={services} isLoading={false} />
+        <AdminServicesTable services={services} isLoading={loadingServices} />
       )}
 
       {activeTab === 'settings' && (

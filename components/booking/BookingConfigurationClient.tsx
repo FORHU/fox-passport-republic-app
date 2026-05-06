@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
@@ -18,6 +18,9 @@ export default function BookingConfigurationClient() {
   const [isCreatingBooking, setIsCreatingBooking] = useState(false);
   const [template, setTemplate] = useState<any>(null);
   const [isLoadingTemplate, setIsLoadingTemplate] = useState(!!templateId);
+
+  // Pre-populate date from the venue booking widget if set
+  const initialDates = checkInDate ? [checkInDate] : [];
 
   useEffect(() => {
     if (!templateId) return;
@@ -73,7 +76,7 @@ export default function BookingConfigurationClient() {
 
   const [selectedTime, setSelectedTime] = useState('18:00');
   const [guests, setGuests] = useState(2);
-  const [selectedDates, setSelectedDates] = useState<string[]>([]);
+  const [selectedDates, setSelectedDates] = useState<string[]>(initialDates);
   const [bookedDates, setBookedDates] = useState<string[]>([]);
   const [dateError, setDateError] = useState('');
   const [excludedItemIds, setExcludedItemIds] = useState<Set<string>>(new Set());

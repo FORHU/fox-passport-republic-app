@@ -99,6 +99,12 @@ export const useUserDashboard = () => {
       }
     },
     enabled: !!userId,
+    refetchInterval: () => {
+      if (typeof document !== 'undefined' && document.hidden) return false;
+      return 15000; // 15 seconds for user events
+    },
+    refetchOnWindowFocus: true,
+    staleTime: 10000,
   });
 
   // 3. Fetch Saved Vibes (Favorites) — GET /favorites/user/:userId
@@ -126,6 +132,11 @@ export const useUserDashboard = () => {
       });
     },
     enabled: !!userId,
+    refetchInterval: () => {
+      if (typeof document !== 'undefined' && document.hidden) return false;
+      return 30000; // 30 seconds for favorites
+    },
+    refetchOnWindowFocus: true,
     staleTime: 1000 * 60 * 5,
   });
 

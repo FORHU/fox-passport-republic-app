@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import api from '@/lib/axios';
 import { toast } from 'sonner';
+import { useQueryClient } from '@tanstack/react-query';
 
 type RoleStatus = 'pending' | 'approved' | 'rejected';
 
@@ -262,6 +263,7 @@ function ApplicationDetailDrawer({
 }
 
 export const AdminSubmissionsTable: React.FC = () => {
+  const queryClient = useQueryClient();
   const [applications, setApplications] = useState<RoleApplication[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [filter, setFilter] = useState<'all' | RoleStatus>('all');
@@ -288,6 +290,11 @@ export const AdminSubmissionsTable: React.FC = () => {
     try {
       await api.patch(`/role-requests/review/${id}`, { status: 'approved' });
       toast.success('Application approved — user role updated');
+      
+      // Invalidate queries to reflect new roles immediately
+      queryClient.invalidateQueries({ queryKey: ['admin-data', 'citizens'] });
+      queryClient.invalidateQueries({ queryKey: ['me'] });
+
       setApplications(prev => prev.map(a => a.id === id ? { ...a, status: 'approved' as RoleStatus } : a));
       setSelectedApp(prev => prev?.id === id ? { ...prev, status: 'approved' as RoleStatus } : prev);
     } catch (err: any) {
