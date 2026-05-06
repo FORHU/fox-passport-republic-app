@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useMemo, useState, useEffect } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { useListingBuilderStore } from "@/store/useListingBuilderStore";
 import api from "@/lib/axios";
@@ -16,6 +17,7 @@ import { useFileUpload } from "@/hooks/features/useFileUpload";
 
 export function useServicesBuilder() {
   const router = useRouter();
+  const queryClient = useQueryClient();
   const store = useListingBuilderStore();
   const [error, setError] = useState<string | null>(null);
   const [isNotification, setIsNotification] = useState(false);
@@ -196,6 +198,10 @@ export function useServicesBuilder() {
 
       console.log("[ServicesBuilder] Publishing service:", serviceData);
       await createServiceWithAPI(serviceData);
+
+      // Invalidate queries to ensure real-time update
+      queryClient.invalidateQueries({ queryKey: ["host-data", "services"] });
+      queryClient.invalidateQueries({ queryKey: ["admin-data", "services"] });
 
       setIsNotification(true);
       setTimeout(() => {

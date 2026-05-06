@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import api from '@/lib/axios';
 import { toast } from 'sonner';
+import { useQueryClient } from '@tanstack/react-query';
 
 interface ServicesTableProps {
   services: any[];
@@ -23,6 +24,7 @@ function pickImage(images: any): string {
 
 export const AdminServicesTable: React.FC<ServicesTableProps> = ({ services, isLoading }) => {
   const router = useRouter();
+  const queryClient = useQueryClient();
   const [updatingId, setUpdatingId] = useState<string | null>(null);
   const [expandedRow, setExpandedRow] = useState<string | null>(null);
 
@@ -31,6 +33,7 @@ export const AdminServicesTable: React.FC<ServicesTableProps> = ({ services, isL
     try {
       await api.patch(`/admin/services/${id}/approve`);
       toast.success('Service approved');
+      queryClient.invalidateQueries({ queryKey: ['admin-data', 'services'] });
       router.refresh();
     } catch {
       toast.error('Failed to approve service');
@@ -44,6 +47,7 @@ export const AdminServicesTable: React.FC<ServicesTableProps> = ({ services, isL
     try {
       await api.patch(`/admin/services/${id}/reject`);
       toast.success('Service rejected');
+      queryClient.invalidateQueries({ queryKey: ['admin-data', 'services'] });
       router.refresh();
     } catch {
       toast.error('Failed to reject service');

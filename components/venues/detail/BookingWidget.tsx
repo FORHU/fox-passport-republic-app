@@ -10,6 +10,7 @@ interface VenueBookingWidgetProps {
   capacity?: string;
   onRequestBook: (data: { eventDate: string; guests: number }) => void;
   onContactOwner: () => void;
+  onCustomExperience?: () => void;
 }
 
 export function BookingWidget({
@@ -20,9 +21,11 @@ export function BookingWidget({
   capacity,
   onRequestBook,
   onContactOwner,
+  onCustomExperience,
 }: VenueBookingWidgetProps) {
   const [eventDate, setEventDate] = useState('');
-  const [guests, setGuests] = useState(1);
+  const [guests, setGuests] = useState(2);
+  const [dateError, setDateError] = useState(false);
 
   const rateLabel = billingRate === 'hour' ? 'hr' : 'day';
   const subtotal = price;
@@ -61,20 +64,22 @@ export function BookingWidget({
 
         {/* Event Date */}
         <div className="border border-white/20 rounded-xl overflow-hidden mb-4 relative z-10">
-          <div className="p-3 border-b border-white/10">
+          <div className={`p-3 border-b ${dateError ? 'border-red-500/50' : 'border-white/10'}`}>
             <label className="block text-[10px] font-bold uppercase text-text-muted mb-1">
-              Event Date
+              Event Date {dateError && <span className="text-red-400 normal-case font-normal ml-1">— required</span>}
             </label>
             <input
               type="date"
               value={eventDate}
-              onChange={(e) => setEventDate(e.target.value)}
-              className="w-full bg-transparent text-sm text-white font-medium focus:outline-none scheme-dark"
+              onChange={(e) => { setEventDate(e.target.value); setDateError(false); }}
+              className={`w-full bg-transparent text-sm font-medium focus:outline-none scheme-dark ${
+                dateError ? 'text-red-300' : 'text-white'
+              }`}
             />
           </div>
           <div className="p-3">
             <label className="block text-[10px] font-bold uppercase text-text-muted mb-1">
-              Expected Attendees
+              Number of Guests
             </label>
             <div className="flex items-center justify-between">
               <input
@@ -104,7 +109,13 @@ export function BookingWidget({
 
         {/* Request to Book CTA */}
         <button
-          onClick={() => onRequestBook({ eventDate, guests })}
+          onClick={() => {
+            if (!eventDate) {
+              setDateError(true);
+              return;
+            }
+            onRequestBook({ eventDate, guests });
+          }}
           className="w-full rounded-xl bg-accent py-3.5 text-black font-bold text-lg hover:shadow-[0_0_20px_rgba(204,255,0,0.4)] transition-all active:scale-95 mb-3 relative z-10"
         >
           Request to Book
@@ -113,13 +124,24 @@ export function BookingWidget({
         {/* Contact Owner */}
         <button
           onClick={onContactOwner}
-          className="w-full rounded-xl border border-white/20 py-3 text-white font-bold text-sm hover:bg-white hover:text-black transition-all active:scale-95 mb-4 relative z-10 flex items-center justify-center gap-2 group"
+          className="w-full rounded-xl border border-white/20 py-3 text-white font-bold text-sm hover:bg-white hover:text-black transition-all active:scale-95 mb-3 relative z-10 flex items-center justify-center gap-2 group"
         >
           <span className="material-symbols-outlined text-[18px] text-accent group-hover:text-black transition-colors">
             chat
           </span>
           Message Owner
         </button>
+
+        {/* Custom Experience CTA */}
+        {onCustomExperience && (
+          <button
+            onClick={onCustomExperience}
+            className="w-full rounded-xl border border-white/20 py-3 text-white font-bold text-sm hover:bg-white hover:text-black transition-all active:scale-95 mb-4 relative z-10 flex items-center justify-center gap-2 group"
+          >
+            <span className="material-symbols-outlined text-[18px] text-accent group-hover:text-black transition-colors">design_services</span>
+            Design Custom Experience
+          </button>
+        )}
 
         <p className="text-center text-xs text-text-muted mb-5 relative z-10">
           You won't be charged until the owner confirms.

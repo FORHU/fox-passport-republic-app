@@ -1,4 +1,4 @@
-import { getDashboardStats, getAdminPendingVenues, getAdminPendingAssets, getAdminPendingServices, getAdminEvents, getCategories, getUsers, getAllBookings } from '@/lib/server/data';
+import { getDashboardStats, getAdminPendingVenues, getAdminAllAssets, getAdminAllServices, getAdminEvents, getCategories, getUsers, getAllBookings } from '@/lib/server/data';
 import { requireAdmin } from '@/lib/server/auth';
 import {
   AdminSidebar,
@@ -18,8 +18,8 @@ export default async function AdminDashboard() {
     getAdminEvents(),
     getCategories(),
     getUsers(),
-    getAdminPendingAssets(),
-    getAdminPendingServices(),
+    getAdminAllAssets(),
+    getAdminAllServices(),
     getAllBookings(),
   ]);
 

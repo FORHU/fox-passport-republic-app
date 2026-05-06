@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import api from '@/lib/axios';
 import { toast } from 'sonner';
+import { useQueryClient } from '@tanstack/react-query';
 
 interface AssetsTableProps {
   assets: any[];
@@ -23,6 +24,7 @@ function pickImage(images: any): string {
 
 export const AdminAssetsTable: React.FC<AssetsTableProps> = ({ assets, isLoading }) => {
   const router = useRouter();
+  const queryClient = useQueryClient();
   const [updatingId, setUpdatingId] = useState<string | null>(null);
   const [expandedRow, setExpandedRow] = useState<string | null>(null);
 
@@ -31,6 +33,7 @@ export const AdminAssetsTable: React.FC<AssetsTableProps> = ({ assets, isLoading
     try {
       await api.patch(`/admin/assets/${id}/approve`);
       toast.success('Asset approved');
+      queryClient.invalidateQueries({ queryKey: ['admin-data', 'assets'] });
       router.refresh();
     } catch {
       toast.error('Failed to approve asset');
@@ -44,6 +47,7 @@ export const AdminAssetsTable: React.FC<AssetsTableProps> = ({ assets, isLoading
     try {
       await api.patch(`/admin/assets/${id}/reject`);
       toast.success('Asset rejected');
+      queryClient.invalidateQueries({ queryKey: ['admin-data', 'assets'] });
       router.refresh();
     } catch {
       toast.error('Failed to reject asset');

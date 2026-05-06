@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import api from '@/lib/axios';
 import { toast } from 'sonner';
+import { useQueryClient } from '@tanstack/react-query';
 
 interface VenueTableProps {
   venues: any[];
@@ -59,6 +60,7 @@ function TagList({ label, icon, items }: { label: string; icon: string; items: s
 
 export const AdminVenuesTable: React.FC<VenueTableProps> = ({ venues, isLoading }) => {
   const router = useRouter();
+  const queryClient = useQueryClient();
   const [expandedRow, setExpandedRow] = useState<string | null>(null);
   const [updatingId, setUpdatingId] = useState<string | null>(null);
   const [lightboxImg, setLightboxImg] = useState<string | null>(null);
@@ -68,6 +70,7 @@ export const AdminVenuesTable: React.FC<VenueTableProps> = ({ venues, isLoading 
     try {
       await api.patch(`/admin/venues/${id}/approve`);
       toast.success('Venue approved and made available');
+      queryClient.invalidateQueries({ queryKey: ['admin-data', 'venues'] });
       router.refresh();
     } catch { toast.error('Failed to approve venue'); }
     finally { setUpdatingId(null); }
@@ -78,6 +81,7 @@ export const AdminVenuesTable: React.FC<VenueTableProps> = ({ venues, isLoading 
     try {
       await api.patch(`/admin/venues/${id}/reject`);
       toast.success('Venue rejected');
+      queryClient.invalidateQueries({ queryKey: ['admin-data', 'venues'] });
       router.refresh();
     } catch { toast.error('Failed to reject venue'); }
     finally { setUpdatingId(null); }

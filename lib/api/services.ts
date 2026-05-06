@@ -15,6 +15,11 @@ export async function createService(payload: CreateServicePayload): Promise<Back
   return unwrapOne(resp.data);
 }
 
+export async function fetchAllServices(params?: { category?: string; status?: string }): Promise<BackendService[]> {
+  const resp = await api.get('/service', { params });
+  return unwrapList(resp.data);
+}
+
 export async function fetchServicesByOwnerId(ownerId: Id): Promise<BackendService[]> {
   const resp = await api.get("/service", { params: { ownerId: String(ownerId) } });
   return unwrapList(resp.data);

@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useMemo, useEffect, useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useListingBuilderStore } from "@/store/useListingBuilderStore";
 import api from "@/lib/axios";
@@ -15,6 +16,7 @@ import { useFileUpload } from "@/hooks/features/useFileUpload";
 
 export function useInventoryBuilder() {
   const router = useRouter();
+  const queryClient = useQueryClient();
   const searchParams = useSearchParams();
   const store = useListingBuilderStore();
   const [error, setError] = useState<string | null>(null);
@@ -247,6 +249,10 @@ export function useInventoryBuilder() {
       
       console.log("[ListingBuilder] Publishing asset:", assetData);
       await createAssetWithAPI(assetData);
+
+      // Invalidate queries to ensure real-time update
+      queryClient.invalidateQueries({ queryKey: ["host-data", "assets"] });
+      queryClient.invalidateQueries({ queryKey: ["admin-data", "assets"] });
 
       // Show success notification
       setIsNotification(true);

@@ -1,12 +1,14 @@
 "use client";
 
 import { useEffect, useRef, useCallback } from "react";
+import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
+import api from "@/lib/axios";
 import { config } from "@/lib/config";
 import { useAuthStore } from "@/store/useAuthStore";
 
-const IDLE_WARN_MS = 28 * 60 * 1000;        // show warning at 28 min idle
-const IDLE_LOGOUT_MS = 30 * 60 * 1000;      // auto-logout at 30 min idle
+const IDLE_WARN_MS = 2 * 60 * 60 * 1000;        // show warning at 2 hours idle
+const IDLE_LOGOUT_MS = 24 * 60 * 60 * 1000;      // auto-logout at 24 hours idle (effectively disabled)
 const REFRESH_BEFORE_EXPIRY_MS = 2 * 60 * 1000; // refresh 2 min before token expires
 
 function getTokenExpiry(token: string): number | null {
@@ -21,6 +23,26 @@ function getTokenExpiry(token: string): number | null {
 export function useSessionManager(onShowWarning: () => void, onDismissWarning: () => void) {
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
   const accessToken = useAuthStore((s) => s.accessToken);
+
+  // --- PERIODIC PROFILE REFETCH (for role updates) ---
+  useQuery({
+    queryKey: ["me"],
+    queryFn: async () => {
+      const response = await api.get("/profile");
+      const freshUser = response.data?.data || response.data;
+      if (freshUser) {
+        // Update store with fresh user data (roles, etc)
+        useAuthStore.getState().setUser(freshUser);
+      }
+      return freshUser;
+    },
+    enabled: isAuthenticated,
+    refetchInterval: (query) => {
+       if (typeof document !== 'undefined' && document.hidden) return false;
+       return 30000; // Refetch profile every 30 seconds
+    },
+    staleTime: 10000,
+  });
 
   // Keep callback refs stable so event listeners don't churn
   const onShowWarningRef = useRef(onShowWarning);
@@ -49,7 +71,7 @@ export function useSessionManager(onShowWarning: () => void, onDismissWarning: (
     clearIdleTimers();
     onDismissWarningRef.current();
     idleWarnTimer.current = setTimeout(() => onShowWarningRef.current(), IDLE_WARN_MS);
-    idleLogoutTimer.current = setTimeout(doLogout, IDLE_LOGOUT_MS);
+    // idleLogoutTimer.current = setTimeout(doLogout, IDLE_LOGOUT_MS); // Disabled forced idle logout per requirements
   }, [clearIdleTimers, doLogout]);
 
   const scheduleProactiveRefresh = useCallback((token: string) => {

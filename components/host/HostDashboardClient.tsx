@@ -22,6 +22,7 @@ import { useRoleAccess } from '@/hooks/auth/useRoleAccess';
 import { useAuthStore } from '@/store/useAuthStore';
 import { ProgressDashboard } from '@/components/users/ProgressDashboard';
 import { mapBackendAssetToInventoryItem, mapBackendServiceToServiceItem } from '@/lib/mappers/listings';
+import { useHostData } from "@/hooks/dashboards/useHostData";
 import type { EventItem } from '@/data/dashboardData';
 
 interface HostDashboardClientProps {
@@ -74,10 +75,15 @@ export default function HostDashboardClient({ initialData }: HostDashboardClient
   const access = useRoleAccess();
   const user = useAuthStore((s) => s.user);
 
-  const events = (initialData.events ?? []).map(mapEvent);
-  const venues = initialData.venues ?? [];
-  const inventory = (initialData.inventory ?? []).map(mapBackendAssetToInventoryItem);
-  const services = (initialData.services ?? []).map(mapBackendServiceToServiceItem);
+  // Reactive data with polling
+  const { data: rawServices } = useHostData('services', initialData.services);
+  const { data: rawAssets } = useHostData('assets', initialData.inventory);
+  const { data: rawEvents } = useHostData('events', initialData.events);
+  const { data: venues } = useHostData('venues', initialData.venues);
+
+  const events = (rawEvents ?? []).map(mapEvent);
+  const inventory = (rawAssets ?? []).map(mapBackendAssetToInventoryItem);
+  const services = (rawServices ?? []).map(mapBackendServiceToServiceItem);
 
   return (
     <div

@@ -1,7 +1,8 @@
 'use client';
 
-import React, { useCallback, useEffect } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 import {
   VenueNavHeader,
   VenueHero,
@@ -9,13 +10,14 @@ import {
   LightboxGallery,
   BookingWidget,
   AmenitiesSection,
-  VenueCalendar,
   VenueReviews,
   VenueMap,
   HostBio,
   HouseRules,
 } from "@/components/venues/detail";
+import { CustomExperienceBuilder } from "@/components/venues/detail/ExperienceBuilder";
 import { useVenueDetailStore } from "@/store/useVenueDetailStore";
+import { useCheckoutStore } from "@/store/useCheckoutStore";
 
 interface VenueDetailClientProps {
   venue: any;
@@ -25,6 +27,7 @@ interface VenueDetailClientProps {
 export default function VenueDetailClient({ venue, host }: VenueDetailClientProps) {
   const router = useRouter();
   const store = useVenueDetailStore();
+  const [isCustomBookingOpen, setIsCustomBookingOpen] = useState(false);
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -33,15 +36,45 @@ export default function VenueDetailClient({ venue, host }: VenueDetailClientProp
   const handleBack = useCallback(() => router.back(), [router]);
 
   const handleRequestBook = useCallback(({ eventDate, guests }: { eventDate: string; guests: number }) => {
-    router.push(`/booking/venue?venueId=${venue.id}&date=${eventDate}&guests=${guests}`);
-  }, [router, venue.id]);
+    if (!eventDate) {
+      toast.error('Please select an event date before booking.');
+      return;
+    }
+    const price = Number(venue.price || 0);
+    const platformFee = Math.round(price * 0.05);
+    const total = price + platformFee;
+
+    const checkoutStore = useCheckoutStore.getState();
+    checkoutStore.setConfig({
+      venueId: venue.id,
+      venueName: venue.title || venue.name || 'Venue',
+      venueImage: venue.img || venue.images?.[0] || null,
+      venueLocation: venue.location || venue.loc || null,
+      checkInDate: eventDate, // full ISO date string e.g. "2026-05-14"
+      checkInTime: '08:00 AM',
+      nights: 1,
+      totalAmount: total,
+      guestCount: guests,
+    });
+
+    router.push('/booking/config');
+  }, [router, venue]);
 
   const handleContactOwner = useCallback(() => {
-    router.push(`/messages?to=${venue.host?.id || ''}`);
-  }, [router, venue.host?.id]);
+    toast.info('Messaging coming soon! For now, contact the owner through the platform.');
+  }, []);
+
+  const venuePrice = Number(venue.price || 0);
 
   return (
     <div className="bg-background bg-gradient-dark text-text-main antialiased min-h-screen flex flex-col selection:bg-accent selection:text-black font-body">
+      {/* Experience Builder Overlay */}
+      <CustomExperienceBuilder
+        isOpen={isCustomBookingOpen}
+        onClose={() => setIsCustomBookingOpen(false)}
+        venuePrice={venuePrice}
+      />
+
       <LightboxGallery
         isOpen={store.galleryOpen}
         images={venue.images || []}
@@ -135,22 +168,39 @@ export default function VenueDetailClient({ venue, host }: VenueDetailClientProp
 
               <div className="h-px bg-white/10 w-full" />
 
-              {/* Amenities */}
+              {/* Included in this Build */}
               {venue.amenities?.length > 0 && (
                 <>
-                  <AmenitiesSection offers={venue.amenities} />
+                  <div>
+                    <div className="flex items-center justify-between mb-6">
+                      <h3 className="text-2xl font-display font-bold text-white">Included in this Build</h3>
+                      <button
+                        onClick={() => setIsCustomBookingOpen(true)}
+                        className="text-xs font-bold text-accent hover:text-white transition-colors flex items-center gap-1"
+                      >
+                        <span className="material-symbols-outlined text-[16px]">edit</span> Customize
+                      </button>
+                    </div>
+                    <AmenitiesSection offers={venue.amenities} />
+                    <div className="mt-4 bg-accent/5 border border-accent/20 rounded-xl p-4 flex gap-3 items-start">
+                      <span className="material-symbols-outlined text-accent shrink-0">info</span>
+                      <div>
+                        <p className="text-sm text-white font-bold mb-1">Not your vibe?</p>
+                        <p className="text-xs text-text-muted">
+                          Swap the curator, upgrade the sound, or add extras like a ramen bar in the{' '}
+                          <button
+                            onClick={() => setIsCustomBookingOpen(true)}
+                            className="text-white font-bold underline decoration-accent decoration-2 underline-offset-2 hover:text-accent transition-colors"
+                          >
+                            Experience Builder
+                          </button>.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
                   <div className="h-px bg-white/10 w-full" />
                 </>
               )}
-
-              {/* Calendar */}
-              <VenueCalendar
-                checkInDate={store.checkInDate}
-                checkOutDate={store.checkOutDate}
-                onDateClick={store.handleDateClick}
-                onClearDates={store.clearDates}
-              />
-              <div className="h-px bg-white/10 w-full" />
 
               <VenueReviews venueId={venue.id} rating={venue.rating} totalReviews={venue.reviews} />
               <div className="h-px bg-white/10 w-full" />
@@ -174,6 +224,7 @@ export default function VenueDetailClient({ venue, host }: VenueDetailClientProp
                 capacity={venue.cap}
                 onRequestBook={handleRequestBook}
                 onContactOwner={handleContactOwner}
+                onCustomExperience={() => setIsCustomBookingOpen(true)}
               />
             </div>
           </div>

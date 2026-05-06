@@ -336,7 +336,7 @@ const MatchConfig: React.FC = () => {
                           venueId: foxer.id.toString(),
                           venueName: `${foxer.name} - ${selectedStyle}`,
                           venueImage: foxer.avatar,
-                          checkInDate: date ? new Date(date).getTime() : null,
+                          checkInDate: date || null,
                           checkInTime: "09:00 PM",
                           nights: 1,
                           totalAmount: foxer.basePrice * guests,

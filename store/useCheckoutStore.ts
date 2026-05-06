@@ -19,7 +19,7 @@ interface CheckoutState {
   venueName: string;
   venueImage: string | null;
   venueLocation: string | null;
-  checkInDate: number | null;
+  checkInDate: string | null;
   checkInTime: string | null;
   nights: number;
   totalAmount: number;
@@ -40,7 +40,7 @@ interface CheckoutState {
     venueName: string;
     venueImage: string | null;
     venueLocation?: string | null;
-    checkInDate: number | null;
+    checkInDate: string | null;
     checkInTime: string | null;
     nights: number;
     totalAmount: number;

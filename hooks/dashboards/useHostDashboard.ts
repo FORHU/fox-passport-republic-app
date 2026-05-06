@@ -42,6 +42,12 @@ export const useHostDashboard = () => {
       return response.data.data;
     },
     enabled: !!userId, // Only run query if we have a user ID
+    refetchInterval: () => {
+      if (typeof document !== 'undefined' && document.hidden) return false;
+      return 10000; // 10 seconds for host dashboard
+    },
+    refetchOnWindowFocus: true,
+    staleTime: 5000,
   });
 
   const stats = {

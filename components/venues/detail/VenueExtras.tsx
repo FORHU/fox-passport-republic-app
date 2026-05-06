@@ -21,9 +21,9 @@ export function VenueCalendar({
   return (
     <div>
       <h3 className="text-2xl font-display font-bold text-white mb-2">
-        Select check-in and check-out dates
+        Check availability
       </h3>
-      <p className="text-text-muted text-sm mb-6">Add your travel dates for exact pricing</p>
+      <p className="text-text-muted text-sm mb-6">Select a date to see if this venue is available for your event</p>
       <div className="bg-surface-highlight/30 rounded-2xl p-6 border border-white/5">
         <div className="flex justify-between items-center mb-4">
           <span className="font-bold text-white">October 2024</span>
@@ -237,7 +237,7 @@ interface VenueMapProps {
 export function VenueMap({ location, province }: VenueMapProps) {
   return (
     <div>
-      <h3 className="text-2xl font-display font-bold text-white mb-2">Where you'll be</h3>
+      <h3 className="text-2xl font-display font-bold text-white mb-2">Location</h3>
       <p className="text-text-muted text-sm mb-6">
         {location}, {province}
       </p>
@@ -291,7 +291,7 @@ export function HostBio({ host }: HostBioProps) {
         </div>
       </div>
       <div>
-        <h3 className="text-xl font-bold text-white mb-1">Hosted by {host.name}</h3>
+        <h3 className="text-xl font-bold text-white mb-1">Listed by {host.name}</h3>
         <p className="text-text-muted text-sm mb-4">Joined {joinedDate}</p>
         <div className="flex gap-4 text-sm text-white mb-4">
           <span className="flex items-center gap-1">
@@ -327,15 +327,15 @@ export function HouseRules({ policies = [] }: HouseRulesProps) {
       <h3 className="text-2xl font-display font-bold text-white mb-6">Things to know</h3>
       <div className="grid md:grid-cols-3 gap-8">
         <div>
-          <h4 className="font-bold text-white text-sm mb-3">House Rules</h4>
+          <h4 className="font-bold text-white text-sm mb-3">Venue Rules</h4>
           <div className="space-y-2 text-sm text-text-muted">
             {policies.length > 0 ? (
               policies.map((p, i) => <p key={i}>{p}</p>)
             ) : (
               <>
-                <p>Check-in after 2:00 PM</p>
-                <p>Checkout before 12:00 PM</p>
-                <p>See host for specific rules</p>
+                <p>No outside catering without approval</p>
+                <p>Venue must be cleared after event</p>
+                <p>Contact owner for specific rules</p>
               </>
             )}
           </div>
