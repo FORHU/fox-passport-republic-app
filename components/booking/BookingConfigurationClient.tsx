@@ -130,7 +130,7 @@ export default function BookingConfigurationClient() {
         </div>
       </header>
 
-      <main className="flex-grow pt-32 pb-20">
+      <main className="grow pt-32 pb-20">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="mb-8">
             <div className="flex items-center gap-2 text-sm text-text-muted mb-4">
@@ -286,7 +286,7 @@ export default function BookingConfigurationClient() {
                       return (
                         <div key={ts.id ?? i} className="p-5 rounded-2xl bg-surface-highlight/30 border border-accent/30 bg-accent/5 h-full">
                           <div className="flex justify-between items-start mb-3">
-                            <div className={`h-10 w-10 rounded-lg bg-gradient-to-br ${gradients[i % gradients.length]} flex items-center justify-center text-white shadow-lg`}>
+                            <div className={`h-10 w-10 rounded-lg bg-linear-to-br ${gradients[i % gradients.length]} flex items-center justify-center text-white shadow-lg`}>
                               <span className="material-symbols-outlined">{icons[i % icons.length]}</span>
                             </div>
                             <span className="material-symbols-outlined text-accent text-[20px]">check_circle</span>
@@ -382,7 +382,7 @@ export default function BookingConfigurationClient() {
                         <span className="material-symbols-outlined text-white/20 text-[64px]">celebration</span>
                       </div>
                     )}
-                    <div className="absolute inset-0 bg-gradient-to-t from-surface via-surface/50 to-transparent"></div>
+                    <div className="absolute inset-0 bg-linear-to-t from-surface via-surface/50 to-transparent"></div>
                     <div className="absolute bottom-4 left-6 right-6">
                       <div className="flex items-center gap-2 mb-1">
                         <span className="bg-accent text-black text-[10px] font-bold px-2 py-0.5 rounded uppercase tracking-wider">{templateCategory}</span>

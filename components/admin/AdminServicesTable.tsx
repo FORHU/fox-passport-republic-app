@@ -67,7 +67,7 @@ export const AdminServicesTable: React.FC<ServicesTableProps> = ({ services, isL
 
   return (
     <div className="glass-panel rounded-[2rem] overflow-hidden border border-white/5 shadow-2xl">
-      <div className="p-6 border-b border-white/5 flex justify-between items-center bg-white/[0.02]">
+      <div className="p-6 border-b border-white/5 flex justify-between items-center bg-white/2">
         <h3 className="text-xl font-display font-bold text-white flex items-center gap-2">
           <span className="material-symbols-outlined text-yellow-400">design_services</span>
           Services
@@ -96,7 +96,7 @@ export const AdminServicesTable: React.FC<ServicesTableProps> = ({ services, isL
             ) : (
               services.map((service, i) => (
                 <React.Fragment key={service.id ?? i}>
-                  <tr className="border-b border-white/5 hover:bg-white/[0.03] transition-colors group">
+                  <tr className="border-b border-white/5 hover:bg-white/3 transition-colors group">
                     <td className="p-6">
                       <div className="flex items-center gap-4">
                         <div className="h-12 w-12 rounded-xl overflow-hidden border border-white/10 bg-white/5 shrink-0">
@@ -173,7 +173,7 @@ export const AdminServicesTable: React.FC<ServicesTableProps> = ({ services, isL
                   </tr>
 
                   {expandedRow === service.id && (
-                    <tr className="bg-white/[0.01]">
+                    <tr className="bg-white/1">
                       <td colSpan={7} className="p-6 border-b border-white/5 animate-in fade-in duration-200">
                         <div className="grid grid-cols-2 md:grid-cols-3 gap-6 p-6 rounded-3xl bg-black/40 border border-white/5">
                           <div className="col-span-2">
