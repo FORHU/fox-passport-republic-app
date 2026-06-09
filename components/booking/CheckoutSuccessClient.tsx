@@ -79,7 +79,7 @@ export default function CheckoutSuccessClient() {
         </div>
       </header>
 
-      <main className="flex-grow pt-32 pb-20 relative flex items-center justify-center">
+      <main className="grow pt-32 pb-20 relative flex items-center justify-center">
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-accent/10 rounded-full blur-[150px] pointer-events-none animate-pulse-slow mix-blend-screen"></div>
         
         <div className="w-full max-w-3xl px-4 sm:px-6 lg:px-8 relative z-10 animate-in fade-in slide-in-from-bottom-8 duration-700">
@@ -97,7 +97,7 @@ export default function CheckoutSuccessClient() {
             <div className="absolute -top-32 -right-32 w-64 h-64 bg-accent/20 rounded-full blur-[60px] pointer-events-none"></div>
             
             <div className="flex flex-col md:flex-row gap-8 mb-8">
-              <div className="h-40 w-40 md:h-48 md:w-48 rounded-3xl overflow-hidden flex-shrink-0 border border-white/10 shadow-lg">
+              <div className="h-40 w-40 md:h-48 md:w-48 rounded-3xl overflow-hidden shrink-0 border border-white/10 shadow-lg">
                 {venueImage ? (
                   <img alt="Event" className="h-full w-full object-cover" src={venueImage} />
                 ) : (
@@ -106,7 +106,7 @@ export default function CheckoutSuccessClient() {
                   </div>
                 )}
               </div>
-              <div className="flex-grow flex flex-col justify-center">
+              <div className="grow flex flex-col justify-center">
                 <div className="text-accent font-bold text-xs mb-2 uppercase tracking-widest flex items-center gap-2">
                   <span className="flex h-2 w-2 rounded-full bg-accent animate-pulse"></span>
                   Confirmed • Order #FP-{Math.floor(10000 + Math.random() * 90000)}

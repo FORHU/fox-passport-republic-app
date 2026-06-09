@@ -1,0 +1,1522 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Fox Passport Republic — Technical Audit Report</title>
+  <style>
+    /* ── Reset & Base ─────────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { font-size: 14px; }
+    body {
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      background: #fff;
+      color: #1a1a2e;
+      line-height: 1.6;
+    }
+
+    /* ── Print ────────────────────────────────────────────────── */
+    @page {
+      size: A4;
+      margin: 18mm 16mm 18mm 16mm;
+    }
+    @media print {
+      .no-print { display: none !important; }
+      .page-break { page-break-before: always; }
+      body { font-size: 11px; }
+      h1 { font-size: 26px !important; }
+      h2 { font-size: 16px !important; }
+      h3 { font-size: 13px !important; }
+    }
+
+    /* ── Typography ───────────────────────────────────────────── */
+    h1 { font-size: 32px; font-weight: 800; letter-spacing: -0.5px; }
+    h2 { font-size: 20px; font-weight: 700; margin-bottom: 12px; margin-top: 32px; }
+    h3 { font-size: 15px; font-weight: 700; margin-bottom: 8px; margin-top: 20px; }
+    p  { margin-bottom: 10px; color: #2d2d3a; }
+    ul, ol { padding-left: 20px; margin-bottom: 10px; }
+    li { margin-bottom: 4px; color: #2d2d3a; }
+    code {
+      font-family: 'Cascadia Code', 'Fira Code', monospace;
+      background: #f0f0f8;
+      padding: 1px 6px;
+      border-radius: 4px;
+      font-size: 0.88em;
+      color: #5c2fa0;
+    }
+
+    /* ── Layout ───────────────────────────────────────────────── */
+    .container { max-width: 900px; margin: 0 auto; padding: 40px 24px; }
+
+    /* ── Cover Page ───────────────────────────────────────────── */
+    .cover {
+      background: linear-gradient(135deg, #0a0a1a 0%, #12123a 50%, #0a0a1a 100%);
+      color: #fff;
+      padding: 80px 60px;
+      border-radius: 0;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      position: relative;
+      overflow: hidden;
+    }
+    .cover::before {
+      content: '';
+      position: absolute;
+      top: -100px; right: -100px;
+      width: 400px; height: 400px;
+      background: radial-gradient(circle, rgba(204,255,0,0.15) 0%, transparent 70%);
+      border-radius: 50%;
+    }
+    .cover-tag {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 4px;
+      text-transform: uppercase;
+      color: #ccff00;
+      margin-bottom: 20px;
+    }
+    .cover h1 { color: #fff; line-height: 1.1; margin-bottom: 16px; font-size: 42px; }
+    .cover-subtitle { font-size: 18px; color: rgba(255,255,255,0.6); margin-bottom: 48px; }
+    .cover-meta {
+      display: flex;
+      gap: 40px;
+      border-top: 1px solid rgba(255,255,255,0.1);
+      padding-top: 28px;
+    }
+    .cover-meta-item label { font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: #ccff00; display: block; margin-bottom: 4px; }
+    .cover-meta-item span { color: #fff; font-weight: 600; }
+    .accent-dot { width: 8px; height: 8px; background: #ccff00; border-radius: 50%; display: inline-block; margin-right: 8px; }
+
+    /* ── Sections ─────────────────────────────────────────────── */
+    .section { margin-bottom: 40px; }
+    .section-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 14px 20px;
+      background: #f8f8ff;
+      border-left: 4px solid #5c2fa0;
+      border-radius: 0 8px 8px 0;
+      margin-bottom: 20px;
+    }
+    .section-header h2 { margin: 0; color: #12123a; }
+    .section-number {
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 2px;
+      color: #5c2fa0;
+      background: rgba(92,47,160,0.1);
+      padding: 3px 8px;
+      border-radius: 4px;
+    }
+
+    /* ── Status Badges ────────────────────────────────────────── */
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      padding: 3px 10px;
+      border-radius: 20px;
+      white-space: nowrap;
+    }
+    .badge-green  { background: #d4fcd4; color: #1a7f1a; border: 1px solid #6fcf97; }
+    .badge-yellow { background: #fffbcc; color: #8a6500; border: 1px solid #f2c94c; }
+    .badge-red    { background: #fde8e8; color: #b91c1c; border: 1px solid #f87171; }
+    .badge-blue   { background: #dbeafe; color: #1d4ed8; border: 1px solid #60a5fa; }
+    .badge-gray   { background: #f3f4f6; color: #6b7280; border: 1px solid #d1d5db; }
+    .badge-purple { background: #ede9fe; color: #6d28d9; border: 1px solid #a78bfa; }
+
+    /* ── Feature Table ────────────────────────────────────────── */
+    .feature-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+      margin-bottom: 20px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+      border-radius: 10px;
+      overflow: hidden;
+    }
+    .feature-table thead tr {
+      background: #12123a;
+      color: #fff;
+    }
+    .feature-table th {
+      padding: 12px 14px;
+      text-align: left;
+      font-size: 11px;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      font-weight: 700;
+    }
+    .feature-table tbody tr:nth-child(even) { background: #fafafa; }
+    .feature-table tbody tr:hover { background: #f3f0ff; }
+    .feature-table td {
+      padding: 11px 14px;
+      border-bottom: 1px solid #eee;
+      vertical-align: middle;
+    }
+    .feature-table td:first-child { font-weight: 600; color: #12123a; }
+
+    /* ── Priority Cards ───────────────────────────────────────── */
+    .priority-section { margin-bottom: 28px; }
+    .priority-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 12px;
+      padding-bottom: 8px;
+      border-bottom: 2px solid;
+    }
+    .priority-header.critical { border-color: #ef4444; }
+    .priority-header.high     { border-color: #f97316; }
+    .priority-header.medium   { border-color: #eab308; }
+    .priority-header.low      { border-color: #22c55e; }
+
+    .priority-label {
+      font-size: 10px;
+      font-weight: 800;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      padding: 3px 12px;
+      border-radius: 20px;
+    }
+    .priority-label.critical { background: #fef2f2; color: #b91c1c; }
+    .priority-label.high     { background: #fff7ed; color: #c2410c; }
+    .priority-label.medium   { background: #fefce8; color: #a16207; }
+    .priority-label.low      { background: #f0fdf4; color: #166534; }
+
+    .rec-card {
+      border: 1px solid #e5e7eb;
+      border-radius: 10px;
+      padding: 14px 18px;
+      margin-bottom: 10px;
+      background: #fff;
+      position: relative;
+    }
+    .rec-card.critical { border-left: 4px solid #ef4444; }
+    .rec-card.high     { border-left: 4px solid #f97316; }
+    .rec-card.medium   { border-left: 4px solid #eab308; }
+    .rec-card.low      { border-left: 4px solid #22c55e; }
+
+    .rec-card h4 { font-size: 13px; font-weight: 700; margin-bottom: 4px; color: #12123a; }
+    .rec-card p  { font-size: 12px; color: #4b5563; margin: 0; }
+    .rec-card .rec-tags { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 8px; }
+    .rec-card .rec-tag {
+      font-size: 10px;
+      font-weight: 600;
+      padding: 2px 8px;
+      border-radius: 4px;
+      background: #f3f4f6;
+      color: #6b7280;
+    }
+    .rec-card .rec-effort {
+      position: absolute;
+      top: 14px;
+      right: 14px;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      color: #9ca3af;
+    }
+
+    /* ── Architecture Grid ────────────────────────────────────── */
+    .arch-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+      margin-bottom: 20px;
+    }
+    .arch-card {
+      border: 1px solid #e5e7eb;
+      border-radius: 10px;
+      padding: 16px;
+      background: #fafafa;
+    }
+    .arch-card h4 { font-size: 12px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: #5c2fa0; margin-bottom: 8px; }
+    .arch-card ul { padding-left: 16px; margin: 0; }
+    .arch-card li { font-size: 12px; color: #4b5563; margin-bottom: 3px; }
+
+    /* ── UI Audit Grid ────────────────────────────────────────── */
+    .ui-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+    .ui-card {
+      border: 1px solid #e5e7eb;
+      border-radius: 10px;
+      padding: 14px;
+      background: #fff;
+    }
+    .ui-card h4 { font-size: 12px; font-weight: 700; color: #12123a; margin-bottom: 6px; }
+    .ui-card p  { font-size: 11px; color: #6b7280; margin: 0; }
+    .ui-card .ui-status { display: flex; align-items: center; gap: 5px; margin-top: 8px; }
+
+    /* ── Route Tree ───────────────────────────────────────────── */
+    .route-group { margin-bottom: 16px; }
+    .route-group-label {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: #5c2fa0;
+      margin-bottom: 6px;
+    }
+    .route-list { display: flex; flex-wrap: wrap; gap: 6px; }
+    .route-pill {
+      font-family: 'Cascadia Code', 'Fira Code', monospace;
+      font-size: 11px;
+      padding: 3px 10px;
+      border-radius: 6px;
+      border: 1px solid #d1d5db;
+      background: #f9fafb;
+      color: #374151;
+    }
+    .route-pill.protected { border-color: #a78bfa; background: #f5f3ff; color: #5c2fa0; }
+    .route-pill.admin     { border-color: #f87171; background: #fef2f2; color: #b91c1c; }
+
+    /* ── Summary Stats ────────────────────────────────────────── */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 14px;
+      margin-bottom: 28px;
+    }
+    .stat-card {
+      border: 1px solid #e5e7eb;
+      border-radius: 12px;
+      padding: 20px;
+      text-align: center;
+      background: linear-gradient(135deg, #fff 0%, #f8f6ff 100%);
+    }
+    .stat-card .stat-number {
+      font-size: 36px;
+      font-weight: 800;
+      color: #5c2fa0;
+      line-height: 1;
+      margin-bottom: 4px;
+    }
+    .stat-card .stat-label {
+      font-size: 11px;
+      font-weight: 600;
+      color: #9ca3af;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+    }
+
+    /* ── Footer ───────────────────────────────────────────────── */
+    .doc-footer {
+      border-top: 1px solid #e5e7eb;
+      margin-top: 48px;
+      padding-top: 20px;
+      font-size: 11px;
+      color: #9ca3af;
+      display: flex;
+      justify-content: space-between;
+    }
+
+    /* ── TOC ──────────────────────────────────────────────────── */
+    .toc {
+      border: 1px solid #e5e7eb;
+      border-radius: 10px;
+      padding: 20px 24px;
+      background: #fafafa;
+      margin-bottom: 32px;
+    }
+    .toc h3 { margin-top: 0; margin-bottom: 12px; color: #12123a; font-size: 14px; }
+    .toc ol { padding-left: 20px; }
+    .toc li { font-size: 13px; margin-bottom: 4px; color: #4b5563; }
+
+    /* ── Callout ──────────────────────────────────────────────── */
+    .callout {
+      border-radius: 10px;
+      padding: 14px 18px;
+      margin-bottom: 16px;
+      border: 1px solid;
+    }
+    .callout.info    { background: #eff6ff; border-color: #93c5fd; color: #1e40af; }
+    .callout.warning { background: #fffbeb; border-color: #fcd34d; color: #92400e; }
+    .callout.danger  { background: #fef2f2; border-color: #fca5a5; color: #991b1b; }
+    .callout.success { background: #f0fdf4; border-color: #86efac; color: #166534; }
+    .callout strong  { font-weight: 700; }
+
+    /* ── Print button ─────────────────────────────────────────── */
+    .print-btn {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      background: #5c2fa0;
+      color: #fff;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 30px;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      box-shadow: 0 4px 20px rgba(92,47,160,0.4);
+      transition: transform 0.2s, box-shadow 0.2s;
+      z-index: 1000;
+    }
+    .print-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(92,47,160,0.5); }
+
+    /* ── Check/X icons ────────────────────────────────────────── */
+    .icon-check { color: #16a34a; font-weight: 900; }
+    .icon-partial { color: #d97706; font-weight: 900; }
+    .icon-x { color: #dc2626; font-weight: 900; }
+  </style>
+</head>
+<body>
+
+<button class="print-btn no-print" onclick="window.print()">
+  🖨 Save as PDF
+</button>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- COVER PAGE                                                      -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<div class="cover">
+  <div>
+    <p class="cover-tag">&#x25CF; Technical Audit Report</p>
+    <h1>Fox Passport<br/>Republic</h1>
+    <p class="cover-subtitle">Frontend Application — Feature Audit, UI Assessment<br/>& Prioritized Recommendations</p>
+    <div class="cover-meta">
+      <div class="cover-meta-item">
+        <label>Report Date</label>
+        <span>June 8, 2026</span>
+      </div>
+      <div class="cover-meta-item">
+        <label>Stack</label>
+        <span>Next.js 16 · App Router · TypeScript</span>
+      </div>
+      <div class="cover-meta-item">
+        <label>Repository</label>
+        <span>fox-passport-republic-app</span>
+      </div>
+      <div class="cover-meta-item">
+        <label>Branch</label>
+        <span>staging</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- MAIN CONTENT                                                    -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<div class="container">
+
+  <!-- TOC -->
+  <div class="toc">
+    <h3>Table of Contents</h3>
+    <ol>
+      <li>Executive Summary</li>
+      <li>Architecture Overview</li>
+      <li>Route Map</li>
+      <li>Feature Status Audit</li>
+      <li>UI Audit</li>
+      <li>Data Layer &amp; API Integration</li>
+      <li>Authentication &amp; Role System</li>
+      <li>Prioritized Recommendations</li>
+      <li>Glossary</li>
+    </ol>
+  </div>
+
+  <!-- ── 1. Executive Summary ─────────────────────────────────── -->
+  <div class="section">
+    <div class="section-header">
+      <span class="section-number">01</span>
+      <h2>Executive Summary</h2>
+    </div>
+
+    <p>
+      Fox Passport Republic is a <strong>marketplace and event platform</strong> for the Philippines that connects
+      Citizens (users), Foxers (event/service creators), Mayors (venue providers), and Administrators.
+      The frontend is built on <strong>Next.js 16 with the App Router</strong>, TypeScript, TanStack Query,
+      Zustand, and Tailwind CSS v4.
+    </p>
+    <p>
+      The codebase represents a <strong>mature MVP</strong>. Core booking, authentication, and administrative flows
+      are implemented. Several secondary features (host analytics, KYC verification, notifications) are
+      structurally present but incomplete. The build passes with no TypeScript errors.
+    </p>
+
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-number">47</div>
+        <div class="stat-label">App Routes</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-number">100+</div>
+        <div class="stat-label">Components</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-number">50</div>
+        <div class="stat-label">Hooks</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-number">11</div>
+        <div class="stat-label">Zustand Stores</div>
+      </div>
+    </div>
+
+    <div class="callout success">
+      <strong>Build Status:</strong> ✅ <code>pnpm next build</code> passes. 8 static pages prerendered, 13 dynamic pages on-demand rendered. No TypeScript errors.
+    </div>
+    <div class="callout warning">
+      <strong>Key Risk:</strong> Host dashboard KPI data is partially hardcoded. Several Foxer-facing features are stubs that will surface as blank screens in production.
+    </div>
+  </div>
+
+  <!-- ── 2. Architecture Overview ─────────────────────────────── -->
+  <div class="section page-break">
+    <div class="section-header">
+      <span class="section-number">02</span>
+      <h2>Architecture Overview</h2>
+    </div>
+
+    <div class="arch-grid">
+      <div class="arch-card">
+        <h4>Framework</h4>
+        <ul>
+          <li>Next.js 16 (App Router)</li>
+          <li>React 19 (Server + Client Components)</li>
+          <li>TypeScript — strict mode</li>
+          <li>Middleware for auth routing</li>
+        </ul>
+      </div>
+      <div class="arch-card">
+        <h4>State Management</h4>
+        <ul>
+          <li>TanStack Query v5 — server state</li>
+          <li>Zustand — UI &amp; form state (11 stores)</li>
+          <li>SessionStorage — checkout persistence</li>
+          <li>Cookies — SSR auth tokens</li>
+        </ul>
+      </div>
+      <div class="arch-card">
+        <h4>Styling</h4>
+        <ul>
+          <li>Tailwind CSS v4</li>
+          <li>shadcn/ui + Radix UI primitives</li>
+          <li>Lucide React &amp; Material Symbols icons</li>
+          <li>Motion (Framer Motion) animations</li>
+        </ul>
+      </div>
+      <div class="arch-card">
+        <h4>API &amp; Integrations</h4>
+        <ul>
+          <li>Axios — REST client (base: <code>/api/v1</code>)</li>
+          <li>Stripe — payment processing</li>
+          <li>Supabase — additional backend features</li>
+          <li>Mapbox GL — venue maps</li>
+        </ul>
+      </div>
+      <div class="arch-card">
+        <h4>Validation &amp; Schema</h4>
+        <ul>
+          <li>Zod — 13 schemas defined</li>
+          <li>React Hook Form — form management</li>
+          <li>Server-side auth guards (requireAuth, requireAdmin, requireHost)</li>
+        </ul>
+      </div>
+      <div class="arch-card">
+        <h4>Auth Strategy</h4>
+        <ul>
+          <li>JWT access + refresh tokens</li>
+          <li>localStorage + HTTP-only cookies</li>
+          <li>Middleware route protection</li>
+          <li>Silent refresh on 401</li>
+          <li>5 user roles (citizen, host, mayor, foxer, admin)</li>
+        </ul>
+      </div>
+    </div>
+
+    <h3>Data Flow Pattern</h3>
+    <p>
+      Server Components fetch initial data via <code>lib/server/data.ts</code> (with auth headers from cookies)
+      and pass it as props to Client Components. Client Components use TanStack Query hooks for
+      subsequent mutations and refreshes. Zustand stores hold UI-only state and builder form state.
+    </p>
+  </div>
+
+  <!-- ── 3. Route Map ──────────────────────────────────────────── -->
+  <div class="section">
+    <div class="section-header">
+      <span class="section-number">03</span>
+      <h2>Route Map</h2>
+    </div>
+
+    <div class="route-group">
+      <div class="route-group-label">Public Routes</div>
+      <div class="route-list">
+        <span class="route-pill">/</span>
+        <span class="route-pill">/search</span>
+        <span class="route-pill">/categories</span>
+        <span class="route-pill">/categories/[id]</span>
+        <span class="route-pill">/event/[eventId]</span>
+        <span class="route-pill">/venues/[id]</span>
+        <span class="route-pill">/foxer/[id]</span>
+        <span class="route-pill">/onboarding</span>
+      </div>
+    </div>
+
+    <div class="route-group">
+      <div class="route-group-label">Protected — Citizen (any authenticated user)</div>
+      <div class="route-list">
+        <span class="route-pill protected">/user</span>
+        <span class="route-pill protected">/user/settings</span>
+        <span class="route-pill protected">/user/passport</span>
+        <span class="route-pill protected">/booking/config</span>
+        <span class="route-pill protected">/booking/service/[id]</span>
+        <span class="route-pill protected">/booking/asset/[id]</span>
+        <span class="route-pill protected">/booking/item-checkout</span>
+        <span class="route-pill protected">/booking/item-success</span>
+        <span class="route-pill protected">/checkout</span>
+        <span class="route-pill protected">/checkout/success</span>
+        <span class="route-pill protected">/reviews/select</span>
+        <span class="route-pill protected">/reviews/write/[id]</span>
+        <span class="route-pill protected">/foxer/apply</span>
+        <span class="route-pill protected">/foxer/create-event</span>
+        <span class="route-pill protected">/foxer/create-listing</span>
+        <span class="route-pill protected">/mayor/apply</span>
+        <span class="route-pill protected">/mayor/create-venue</span>
+      </div>
+    </div>
+
+    <div class="route-group">
+      <div class="route-group-label">Protected — Creator/Host/Foxer/Mayor</div>
+      <div class="route-list">
+        <span class="route-pill protected">/creator-dashboard</span>
+        <span class="route-pill protected">/creator-dashboard/venues</span>
+        <span class="route-pill protected">/creator-dashboard/events</span>
+        <span class="route-pill protected">/creator-dashboard/services</span>
+        <span class="route-pill protected">/creator-dashboard/assets</span>
+        <span class="route-pill protected">/creator-dashboard/calendar</span>
+        <span class="route-pill protected">/creator-dashboard/earnings</span>
+        <span class="route-pill protected">/host/apply</span>
+        <span class="route-pill protected">/host/venues</span>
+        <span class="route-pill protected">/host/events</span>
+        <span class="route-pill protected">/host/services</span>
+        <span class="route-pill protected">/host/assets</span>
+        <span class="route-pill protected">/host/calendar</span>
+      </div>
+    </div>
+
+    <div class="route-group">
+      <div class="route-group-label">Protected — Admin Only</div>
+      <div class="route-list">
+        <span class="route-pill admin">/admin</span>
+      </div>
+    </div>
+
+    <div class="callout warning">
+      <strong>Route Duplication:</strong> <code>/host/*</code> and <code>/creator-dashboard/*</code> are parallel route trees that serve the same content. This creates maintenance overhead and SEO confusion. Recommend consolidating under one path.
+    </div>
+  </div>
+
+  <!-- ── 4. Feature Status Audit ──────────────────────────────── -->
+  <div class="section page-break">
+    <div class="section-header">
+      <span class="section-number">04</span>
+      <h2>Feature Status Audit</h2>
+    </div>
+
+    <h3>4.1 — Fully Implemented Features</h3>
+    <table class="feature-table">
+      <thead>
+        <tr>
+          <th>Feature</th>
+          <th>Status</th>
+          <th>Key Components / Files</th>
+          <th>Notes</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>User Authentication (Login / Signup)</td>
+          <td><span class="badge badge-green">✅ Complete</span></td>
+          <td><code>hooks/auth/useAuth.ts</code>, <code>store/useAuthStore.ts</code></td>
+          <td>JWT + refresh token, cookies + localStorage dual storage</td>
+        </tr>
+        <tr>
+          <td>Role Application Flow</td>
+          <td><span class="badge badge-green">✅ Complete</span></td>
+          <td><code>hooks/features/useBecomeHost.ts</code>, <code>useApplyRole.ts</code></td>
+          <td>Mayor, Foxer, Host applications all wired</td>
+        </tr>
+        <tr>
+          <td>Venue Discovery &amp; Search</td>
+          <td><span class="badge badge-green">✅ Complete</span></td>
+          <td><code>components/landing/FoxerLandingPage.tsx</code>, <code>/search</code></td>
+          <td>Filter by location, category, type</td>
+        </tr>
+        <tr>
+          <td>Category Browsing</td>
+          <td><span class="badge badge-green">✅ Complete</span></td>
+          <td><code>components/categories/</code></td>
+          <td>Bento grid layout, hero sections</td>
+        </tr>
+        <tr>
+          <td>Venue Detail Page</td>
+          <td><span class="badge badge-green">✅ Complete</span></td>
+          <td><code>components/venues/VenueDetailClient.tsx</code></td>
+          <td>Gallery, booking widget, reviews, map</td>
+        </tr>
+        <tr>
+          <td>Event Detail Page</td>
+          <td><span class="badge badge-green">✅ Complete</span></td>
+          <td><code>app/event/[eventId]/</code></td>
+          <td>Template view, experience builder, booking</td>
+        </tr>
+        <tr>
+          <td>Booking Checkout Flow</td>
+          <td><span class="badge badge-green">✅ Complete</span></td>
+          <td><code>components/booking/CheckoutClient.tsx</code>, <code>useCheckoutStore.ts</code></td>
+          <td>3-step flow: config → attendees → payment</td>
+        </tr>
+        <tr>
+          <td>Stripe Payment Integration</td>
+          <td><span class="badge badge-green">✅ Complete</span></td>
+          <td><code>components/booking/StripePaymentForm.tsx</code></td>
+          <td>Client secret from API, Stripe Elements</td>
+        </tr>
+        <tr>
+          <td>Item Booking (Assets/Services)</td>
+          <td><span class="badge badge-green">✅ Complete</span></td>
+          <td><code>components/booking/ItemCheckoutClient.tsx</code></td>
+          <td>Direct service/asset booking flow</td>
+        </tr>
+        <tr>
+          <td>Venue Builder (Mayor)</td>
+          <td><span class="badge badge-green">✅ Complete</span></td>
+          <td><code>components/mayor/venue-builder/</code>, <code>store/useVenueBuilderStore.ts</code></td>
+          <td>Drag-drop resources, revenue projector, preview modal</td>
+        </tr>
+        <tr>
+          <td>Event Template Builder (Foxer)</td>
+          <td><span class="badge badge-green">✅ Complete</span></td>
+          <td><code>components/foxer/event-builder/</code>, <code>store/useEventBuilderStore.ts</code></td>
+          <td>Drag-drop packages, blueprint/financials sidebar</td>
+        </tr>
+        <tr>
+          <td>Admin Dashboard</td>
+          <td><span class="badge badge-green">✅ Complete</span></td>
+          <td><code>components/admin/</code></td>
+          <td>KPIs, charts, all entity tables with approve/reject</td>
+        </tr>
+        <tr>
+          <td>Admin Approval Workflow</td>
+          <td><span class="badge badge-green">✅ Complete</span></td>
+          <td><code>AdminVenuesTable</code>, <code>AdminAssetsTable</code>, <code>AdminServicesTable</code></td>
+          <td>PATCH approve/reject endpoints, query invalidation</td>
+        </tr>
+        <tr>
+          <td>User Profile Settings</td>
+          <td><span class="badge badge-green">✅ Complete</span></td>
+          <td><code>components/users/ProfileSettingsClient.tsx</code></td>
+          <td>Edit name, avatar upload</td>
+        </tr>
+        <tr>
+          <td>Write Review</td>
+          <td><span class="badge badge-green">✅ Complete</span></td>
+          <td><code>components/reviews/WriteReviewClient.tsx</code></td>
+          <td>Star rating + text, venue selection step</td>
+        </tr>
+        <tr>
+          <td>Gamification / Passport</td>
+          <td><span class="badge badge-green">✅ Complete</span></td>
+          <td><code>components/users/PassportClient.tsx</code>, <code>components/gamification/</code></td>
+          <td>Stamps, badges, circular progress</td>
+        </tr>
+        <tr>
+          <td>Availability Calendar (booking)</td>
+          <td><span class="badge badge-green">✅ Complete</span></td>
+          <td><code>components/booking/AvailabilityCalendar.tsx</code></td>
+          <td>Date picker integrated in booking config step</td>
+        </tr>
+        <tr>
+          <td>Philippine Location Picker</td>
+          <td><span class="badge badge-green">✅ Complete</span></td>
+          <td><code>hooks/data/usePhilippineLocations.ts</code></td>
+          <td>Province/city cascade dropdown</td>
+        </tr>
+        <tr>
+          <td>Onboarding Flow</td>
+          <td><span class="badge badge-green">✅ Complete</span></td>
+          <td><code>app/onboarding/</code></td>
+          <td>New user role selection on first login</td>
+        </tr>
+        <tr>
+          <td>Session Timeout Warning</td>
+          <td><span class="badge badge-green">✅ Complete</span></td>
+          <td><code>components/shared/SessionTimeoutModal.tsx</code></td>
+          <td>Warns 5 minutes before JWT expiry</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h3>4.2 — Partially Implemented Features</h3>
+    <table class="feature-table">
+      <thead>
+        <tr>
+          <th>Feature</th>
+          <th>Status</th>
+          <th>What Works</th>
+          <th>What's Missing</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Host Dashboard Analytics</td>
+          <td><span class="badge badge-yellow">🟡 Partial</span></td>
+          <td>Structure, KPI cards, chart components, sidebar widgets all render</td>
+          <td>Revenue, occupancy, and booking count figures are <strong>hardcoded mock values</strong>; real API data not wired</td>
+        </tr>
+        <tr>
+          <td>Host Calendar</td>
+          <td><span class="badge badge-yellow">🟡 Partial</span></td>
+          <td>Calendar UI renders, <code>useCalendarBookings</code> hook exists</td>
+          <td>Booking events not populated; no drag/resize for availability blocking</td>
+        </tr>
+        <tr>
+          <td>Host Earnings Page</td>
+          <td><span class="badge badge-yellow">🟡 Partial</span></td>
+          <td>Page route + <code>FoxerEarningsClient</code> component exists</td>
+          <td>No real earnings data; payout/transfer actions not implemented</td>
+        </tr>
+        <tr>
+          <td>Foxer Profile Page</td>
+          <td><span class="badge badge-yellow">🟡 Partial</span></td>
+          <td>Route <code>/foxer/[id]</code> renders a profile shell</td>
+          <td>Portfolio, event listings, and booking-from-profile not implemented</td>
+        </tr>
+        <tr>
+          <td>Custom Experience Builder (Venue)</td>
+          <td><span class="badge badge-yellow">🟡 Partial</span></td>
+          <td>Drag-and-drop add-ons UI works on venue detail page</td>
+          <td>Cart totals not persisted; integration with booking checkout not complete</td>
+        </tr>
+        <tr>
+          <td>Foxer Matching</td>
+          <td><span class="badge badge-yellow">🟡 Partial</span></td>
+          <td>Route <code>/match/[foxerId]</code> and <code>lib/api/matches.ts</code> exist</td>
+          <td>Matching algorithm UI, acceptance/rejection flow not built</td>
+        </tr>
+        <tr>
+          <td>File Upload (S3)</td>
+          <td><span class="badge badge-yellow">🟡 Partial</span></td>
+          <td><code>components/shared/FileUploader.tsx</code> and <code>useFileUpload</code> hook exist</td>
+          <td>CloudFront/S3 signed URL flow unclear; avatar upload uses different path</td>
+        </tr>
+        <tr>
+          <td>Host Venue/Event/Asset/Service Editing</td>
+          <td><span class="badge badge-yellow">🟡 Partial</span></td>
+          <td>Edit pages render with form pre-fill from API</td>
+          <td>Save/update mutation error handling and success feedback incomplete on some edit pages</td>
+        </tr>
+        <tr>
+          <td>Favorites</td>
+          <td><span class="badge badge-yellow">🟡 Partial</span></td>
+          <td><code>hooks/features/useFavorites.ts</code> and <code>lib/api/favorites.ts</code> exist</td>
+          <td>No favorites UI in user dashboard; heart icon on listing cards may not toggle correctly</td>
+        </tr>
+        <tr>
+          <td>User Journey / Progress</td>
+          <td><span class="badge badge-yellow">🟡 Partial</span></td>
+          <td><code>UserJourney.tsx</code> renders a timeline</td>
+          <td>Journey data comes from static structure, not real booking/activity history</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h3>4.3 — Stubbed / Not Implemented</h3>
+    <table class="feature-table">
+      <thead>
+        <tr>
+          <th>Feature</th>
+          <th>Status</th>
+          <th>Notes</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>KYC / Identity Verification</td>
+          <td><span class="badge badge-red">❌ Stub</span></td>
+          <td><code>KycDocumentSection</code> component exists as a shell; no upload or verification API connected</td>
+        </tr>
+        <tr>
+          <td>In-App Notifications</td>
+          <td><span class="badge badge-red">❌ Missing</span></td>
+          <td>No notification bell, no notification center, no WebSocket or SSE stream</td>
+        </tr>
+        <tr>
+          <td>Real-Time Chat / Messaging</td>
+          <td><span class="badge badge-red">❌ Missing</span></td>
+          <td>No chat between citizen and foxer/mayor; no Supabase Realtime or socket integration</td>
+        </tr>
+        <tr>
+          <td>Payment History</td>
+          <td><span class="badge badge-red">❌ Missing</span></td>
+          <td>No transactions page for citizens; no invoice/receipt download</td>
+        </tr>
+        <tr>
+          <td>Dispute / Cancellation Management</td>
+          <td><span class="badge badge-red">❌ Missing</span></td>
+          <td>No booking cancellation flow, no dispute resolution UI</td>
+        </tr>
+        <tr>
+          <td>Host Availability Blocking</td>
+          <td><span class="badge badge-red">❌ Missing</span></td>
+          <td>Hosts cannot block dates on their calendar to prevent bookings</td>
+        </tr>
+        <tr>
+          <td>Email Notifications (Frontend trigger)</td>
+          <td><span class="badge badge-red">❌ Missing</span></td>
+          <td>Booking confirmation email, role approval email triggers not initiated from frontend</td>
+        </tr>
+        <tr>
+          <td>Admin User Management</td>
+          <td><span class="badge badge-red">❌ Missing</span></td>
+          <td><code>AdminCitizenTable</code> lists users but cannot ban/suspend or edit roles</td>
+        </tr>
+        <tr>
+          <td>Analytics Charts (real data)</td>
+          <td><span class="badge badge-red">❌ Stub</span></td>
+          <td>Chart components render but are fed mock or empty data arrays</td>
+        </tr>
+        <tr>
+          <td>Investor Dashboard</td>
+          <td><span class="badge badge-red">❌ Missing</span></td>
+          <td>Investor role mentioned in auth types but no dedicated dashboard exists</td>
+        </tr>
+        <tr>
+          <td>Map Integration (Venue Discovery)</td>
+          <td><span class="badge badge-red">❌ Incomplete</span></td>
+          <td><code>useVenueMapLogic.ts</code> exists, Mapbox GL installed, but map view not surfaced in search/discovery UI</td>
+        </tr>
+        <tr>
+          <td>Social Login (Google/Facebook)</td>
+          <td><span class="badge badge-red">❌ Missing</span></td>
+          <td>Auth modal only has email/password; no OAuth providers</td>
+        </tr>
+        <tr>
+          <td>Dark/Light Mode Toggle</td>
+          <td><span class="badge badge-red">❌ Missing</span></td>
+          <td>App is dark-only; no theme toggle available</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ── 5. UI Audit ───────────────────────────────────────────── -->
+  <div class="section page-break">
+    <div class="section-header">
+      <span class="section-number">05</span>
+      <h2>UI Audit</h2>
+    </div>
+
+    <h3>5.1 — Design System</h3>
+    <div class="arch-grid">
+      <div class="arch-card">
+        <h4>Color Palette</h4>
+        <ul>
+          <li><strong>Background:</strong> <code>#02040a</code> (near black)</li>
+          <li><strong>Surface:</strong> <code>#0f111a</code> (dark navy)</li>
+          <li><strong>Accent:</strong> <code>#ccff00</code> (neon lime)</li>
+          <li><strong>Text Main:</strong> <code>#ffffff</code></li>
+          <li><strong>Text Muted:</strong> <code>rgba(255,255,255,0.4)</code></li>
+          <li><strong>Glass:</strong> <code>rgba(255,255,255,0.03–0.08)</code></li>
+        </ul>
+      </div>
+      <div class="arch-card">
+        <h4>Typography</h4>
+        <ul>
+          <li>Display font: large, bold headings</li>
+          <li>Body: <code>Segoe UI</code> / system-ui stack</li>
+          <li>Mono: <code>Cascadia Code</code> / system mono for IDs</li>
+          <li>Tracking-widest uppercase labels throughout</li>
+          <li>Font sizes range from <code>9px</code> (micro labels) to <code>42px</code> (hero)</li>
+        </ul>
+      </div>
+      <div class="arch-card">
+        <h4>Components in Use</h4>
+        <ul>
+          <li>shadcn/ui: Button, Input, Avatar, Dropdown, Sheet, Tooltip, Collapsible, Dialog, Separator</li>
+          <li>Custom: glass-card, kpi-card, DynamicIcon</li>
+          <li>Radix UI headless primitives for accessibility</li>
+        </ul>
+      </div>
+      <div class="arch-card">
+        <h4>Motion &amp; Animation</h4>
+        <ul>
+          <li>Framer Motion (Motion v12) for page and component entrances</li>
+          <li>CSS transitions on hover states</li>
+          <li>Scroll reveal hooks (<code>useScrollReveal</code>)</li>
+          <li>Tailwind <code>animate-spin</code> for loading states</li>
+        </ul>
+      </div>
+    </div>
+
+    <h3>5.2 — Page-by-Page UI Assessment</h3>
+    <table class="feature-table">
+      <thead>
+        <tr>
+          <th>Page / Screen</th>
+          <th>Visual Quality</th>
+          <th>Responsiveness</th>
+          <th>Issue</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Landing Page (<code>/</code>)</td>
+          <td><span class="badge badge-green">Polished</span></td>
+          <td><span class="badge badge-green">Responsive</span></td>
+          <td>None identified</td>
+        </tr>
+        <tr>
+          <td>Search Page (<code>/search</code>)</td>
+          <td><span class="badge badge-green">Polished</span></td>
+          <td><span class="badge badge-yellow">Partial</span></td>
+          <td>Filter sidebar may overflow on tablet widths</td>
+        </tr>
+        <tr>
+          <td>Venue Detail (<code>/venues/[id]</code>)</td>
+          <td><span class="badge badge-green">Polished</span></td>
+          <td><span class="badge badge-green">Responsive</span></td>
+          <td>Experience builder state not persisted to checkout</td>
+        </tr>
+        <tr>
+          <td>Event Detail (<code>/event/[id]</code>)</td>
+          <td><span class="badge badge-green">Polished</span></td>
+          <td><span class="badge badge-yellow">Partial</span></td>
+          <td>Large hero section may clip on small screens</td>
+        </tr>
+        <tr>
+          <td>Category Browsing (<code>/categories</code>)</td>
+          <td><span class="badge badge-green">Polished</span></td>
+          <td><span class="badge badge-green">Responsive</span></td>
+          <td>Bento grid works well across screen sizes</td>
+        </tr>
+        <tr>
+          <td>Booking Config (<code>/booking/config</code>)</td>
+          <td><span class="badge badge-green">Polished</span></td>
+          <td><span class="badge badge-yellow">Partial</span></td>
+          <td>Calendar availability picker layout can overlap on mobile</td>
+        </tr>
+        <tr>
+          <td>Checkout (<code>/checkout</code>)</td>
+          <td><span class="badge badge-green">Polished</span></td>
+          <td><span class="badge badge-green">Responsive</span></td>
+          <td>None identified</td>
+        </tr>
+        <tr>
+          <td>Admin Dashboard (<code>/admin</code>)</td>
+          <td><span class="badge badge-green">Polished</span></td>
+          <td><span class="badge badge-yellow">Partial</span></td>
+          <td>Table columns overflow on mobile; no mobile-optimized view</td>
+        </tr>
+        <tr>
+          <td>Host Dashboard (<code>/creator-dashboard</code>)</td>
+          <td><span class="badge badge-yellow">Good</span></td>
+          <td><span class="badge badge-yellow">Partial</span></td>
+          <td>KPI numbers are placeholder; chart axes may not render correctly without data</td>
+        </tr>
+        <tr>
+          <td>Venue Builder (<code>/mayor/create-venue</code>)</td>
+          <td><span class="badge badge-green">Polished</span></td>
+          <td><span class="badge badge-red">Desktop Only</span></td>
+          <td>Drag-drop builder requires desktop; no mobile fallback</td>
+        </tr>
+        <tr>
+          <td>Event Builder (<code>/foxer/create-event</code>)</td>
+          <td><span class="badge badge-green">Polished</span></td>
+          <td><span class="badge badge-red">Desktop Only</span></td>
+          <td>Drag-drop builder requires desktop; no mobile fallback</td>
+        </tr>
+        <tr>
+          <td>User Dashboard (<code>/user</code>)</td>
+          <td><span class="badge badge-yellow">Good</span></td>
+          <td><span class="badge badge-green">Responsive</span></td>
+          <td>Journey and wallet sections feed from static/mock data</td>
+        </tr>
+        <tr>
+          <td>Passport Page (<code>/user/passport</code>)</td>
+          <td><span class="badge badge-green">Polished</span></td>
+          <td><span class="badge badge-green">Responsive</span></td>
+          <td>None; gamification UI is visually strong</td>
+        </tr>
+        <tr>
+          <td>Auth Modal</td>
+          <td><span class="badge badge-green">Polished</span></td>
+          <td><span class="badge badge-green">Responsive</span></td>
+          <td>No social login options; no "Forgot Password" flow</td>
+        </tr>
+        <tr>
+          <td>Foxer Profile (<code>/foxer/[id]</code>)</td>
+          <td><span class="badge badge-red">Stub</span></td>
+          <td><span class="badge badge-gray">N/A</span></td>
+          <td>Profile page is largely empty; no portfolio or booking CTA</td>
+        </tr>
+        <tr>
+          <td>Onboarding (<code>/onboarding</code>)</td>
+          <td><span class="badge badge-green">Polished</span></td>
+          <td><span class="badge badge-green">Responsive</span></td>
+          <td>None identified</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h3>5.3 — UI Consistency Issues</h3>
+    <ul>
+      <li><strong>Dual icon systems:</strong> Both Lucide React and Material Symbols are used side-by-side. This adds bundle weight and creates visual inconsistency between icon weights and styles.</li>
+      <li><strong>Inline <code>any</code> types in props:</strong> Several admin table components accept <code>any[]</code> props instead of typed interfaces. This bypasses TypeScript's safety in UI rendering.</li>
+      <li><strong>No loading skeletons on most pages:</strong> Only spinner fallbacks are used; skeleton screens would improve perceived performance significantly.</li>
+      <li><strong>Empty state screens:</strong> The host dashboard uses a generic <code>EmptyState</code> component, but user dashboard and foxer profile pages lack proper empty states.</li>
+      <li><strong>Form error messages:</strong> Inconsistent — some forms use toast notifications, others use inline field errors, and some have no error feedback.</li>
+    </ul>
+  </div>
+
+  <!-- ── 6. Data Layer ─────────────────────────────────────────── -->
+  <div class="section">
+    <div class="section-header">
+      <span class="section-number">06</span>
+      <h2>Data Layer &amp; API Integration</h2>
+    </div>
+
+    <h3>6.1 — API Client Structure</h3>
+    <p>
+      The client uses <strong>Axios</strong> with a configured base URL (<code>NEXT_PUBLIC_API_URL</code>, default <code>http://localhost:3002/api/v1</code>).
+      A request interceptor adds the Bearer token; a response interceptor handles 401 with silent refresh.
+      Server-side requests use a separate fetch-based helper in <code>lib/server/data.ts</code> that reads the token from cookies.
+    </p>
+
+    <table class="feature-table">
+      <thead>
+        <tr><th>API Module</th><th>File</th><th>Operations</th><th>Status</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Venues</td><td><code>lib/api/venues.ts</code></td><td>list, get, create, update, delete</td><td><span class="badge badge-green">Wired</span></td></tr>
+        <tr><td>Events</td><td><code>lib/api/events.ts</code></td><td>list, get, create, update, delete</td><td><span class="badge badge-green">Wired</span></td></tr>
+        <tr><td>Assets</td><td><code>lib/api/assets.ts</code></td><td>list, get, create, update, delete</td><td><span class="badge badge-green">Wired</span></td></tr>
+        <tr><td>Services</td><td><code>lib/api/services.ts</code></td><td>list, get, create, update, delete</td><td><span class="badge badge-green">Wired</span></td></tr>
+        <tr><td>Bookings</td><td><code>lib/api/bookings.ts</code></td><td>create, get template, get availability</td><td><span class="badge badge-green">Wired</span></td></tr>
+        <tr><td>Reviews</td><td><code>lib/api/reviews.ts</code></td><td>create, list by venue</td><td><span class="badge badge-green">Wired</span></td></tr>
+        <tr><td>Favorites</td><td><code>lib/api/favorites.ts</code></td><td>add, remove, list</td><td><span class="badge badge-yellow">Partial</span></td></tr>
+        <tr><td>Foxers</td><td><code>lib/api/foxers.ts</code></td><td>get profile, list</td><td><span class="badge badge-yellow">Partial</span></td></tr>
+        <tr><td>Matches</td><td><code>lib/api/matches.ts</code></td><td>create, get</td><td><span class="badge badge-red">Stub</span></td></tr>
+        <tr><td>Event Templates</td><td><code>lib/api/event-templates.ts</code></td><td>create, publish, list by owner</td><td><span class="badge badge-green">Wired</span></td></tr>
+        <tr><td>Auth</td><td><code>hooks/auth/useAuth.ts</code></td><td>login, signup, refresh, logout</td><td><span class="badge badge-green">Wired</span></td></tr>
+      </tbody>
+    </table>
+
+    <h3>6.2 — Known Data Issues</h3>
+    <ul>
+      <li><strong>Host dashboard mock data:</strong> <code>useHostDashboard.ts</code> computes stats from real venue data but hardcodes occupancy rates, revenue, and booking counts.</li>
+      <li><strong>Admin charts empty data:</strong> <code>AdminChartsSection</code> likely receives empty arrays; charts may render blank axes.</li>
+      <li><strong>User journey static:</strong> <code>UserJourney</code> component uses a hardcoded timeline structure, not real booking/activity history from API.</li>
+      <li><strong>Polling instead of invalidation:</strong> <code>useAdminData</code> and <code>useHostData</code> use a polling interval; TanStack Query's <code>invalidateQueries</code> (already used in admin tables) is the correct pattern.</li>
+    </ul>
+  </div>
+
+  <!-- ── 7. Auth & Roles ───────────────────────────────────────── -->
+  <div class="section">
+    <div class="section-header">
+      <span class="section-number">07</span>
+      <h2>Authentication &amp; Role System</h2>
+    </div>
+
+    <table class="feature-table">
+      <thead>
+        <tr><th>Role</th><th>Key Permission</th><th>Dashboard Route</th><th>Status</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><strong>citizen</strong> (default)</td><td>Book venues/events, write reviews</td><td><code>/user</code></td><td><span class="badge badge-green">Implemented</span></td></tr>
+        <tr><td><strong>host</strong></td><td>Create event templates, manage services &amp; assets</td><td><code>/creator-dashboard</code></td><td><span class="badge badge-green">Implemented</span></td></tr>
+        <tr><td><strong>mayor</strong></td><td>Create and manage venues</td><td><code>/creator-dashboard</code></td><td><span class="badge badge-green">Implemented</span></td></tr>
+        <tr><td><strong>foxer</strong></td><td>Create listings, provide services/assets</td><td><code>/creator-dashboard</code></td><td><span class="badge badge-yellow">Partial</span></td></tr>
+        <tr><td><strong>admin / super_admin</strong></td><td>Approve/reject all content, manage users</td><td><code>/admin</code></td><td><span class="badge badge-yellow">Partial</span></td></tr>
+        <tr><td><strong>investor</strong></td><td>Unknown — not implemented</td><td>None</td><td><span class="badge badge-red">Missing</span></td></tr>
+      </tbody>
+    </table>
+
+    <div class="callout info">
+      <strong>Note:</strong> The <code>role</code> field on the User object used in <code>BookingConfigurationClient</code> references <code>user?.role</code> (singular string), but the auth store defines roles as <code>roleType: string[]</code> (array). This mismatch could cause incorrect dashboard redirects for multi-role users.
+    </div>
+  </div>
+
+  <!-- ── 8. Recommendations ────────────────────────────────────── -->
+  <div class="section page-break">
+    <div class="section-header">
+      <span class="section-number">08</span>
+      <h2>Prioritized Recommendations</h2>
+    </div>
+
+    <!-- CRITICAL -->
+    <div class="priority-section">
+      <div class="priority-header critical">
+        <span class="priority-label critical">Critical — Fix Before Launch</span>
+        <span style="font-size:12px;color:#6b7280;">High user impact, data integrity, or security risk</span>
+      </div>
+
+      <div class="rec-card critical">
+        <span class="rec-effort">Effort: 1–2 days</span>
+        <h4>C-1 · Fix role field mismatch (user.role vs user.roleType[])</h4>
+        <p>
+          <code>BookingConfigurationClient</code> and other components read <code>user?.role</code> (singular), but the User type defines <code>roleType: string[]</code>. Multi-role users (e.g., someone who is both a host and a mayor) will get incorrect dashboard redirects. Standardize to a single field across all components and the auth store.
+        </p>
+        <div class="rec-tags">
+          <span class="rec-tag">auth</span><span class="rec-tag">types</span><span class="rec-tag">routing</span>
+        </div>
+      </div>
+
+      <div class="rec-card critical">
+        <span class="rec-effort">Effort: 1–2 days</span>
+        <h4>C-2 · Wire real data to Host Dashboard KPIs</h4>
+        <p>
+          Host dashboard KPI cards (revenue, total bookings, occupancy rate) display hardcoded or computed-from-stub values. When hosts see incorrect numbers, trust is destroyed immediately. Connect <code>useHostDashboard</code> to real API endpoints for stats.
+        </p>
+        <div class="rec-tags">
+          <span class="rec-tag">host</span><span class="rec-tag">data</span><span class="rec-tag">analytics</span>
+        </div>
+      </div>
+
+      <div class="rec-card critical">
+        <span class="rec-effort">Effort: 1 day</span>
+        <h4>C-3 · Consolidate duplicate route trees (/host/* and /creator-dashboard/*)</h4>
+        <p>
+          Both route trees serve identical content. This creates split navigation targets, double maintenance, and SEO issues. Decide on one canonical path (recommend <code>/creator-dashboard</code>) and redirect the other. Remove duplicated components and page files.
+        </p>
+        <div class="rec-tags">
+          <span class="rec-tag">routing</span><span class="rec-tag">architecture</span>
+        </div>
+      </div>
+
+      <div class="rec-card critical">
+        <span class="rec-effort">Effort: 2–3 days</span>
+        <h4>C-4 · Build "Forgot Password" flow</h4>
+        <p>
+          The auth modal has no password reset option. A production marketplace cannot launch without this. Implement forgot-password request and reset-password confirmation routes.
+        </p>
+        <div class="rec-tags">
+          <span class="rec-tag">auth</span><span class="rec-tag">UX</span>
+        </div>
+      </div>
+
+      <div class="rec-card critical">
+        <span class="rec-effort">Effort: 2–3 days</span>
+        <h4>C-5 · Implement booking cancellation / refund flow</h4>
+        <p>
+          Citizens currently have no way to cancel a booking they made. This is a legal and trust requirement for any marketplace. Add a cancellation page accessible from the user dashboard bookings list with configurable cancellation policy display.
+        </p>
+        <div class="rec-tags">
+          <span class="rec-tag">bookings</span><span class="rec-tag">UX</span><span class="rec-tag">legal</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- HIGH -->
+    <div class="priority-section">
+      <div class="priority-header high">
+        <span class="priority-label high">High — Address Before Public Beta</span>
+        <span style="font-size:12px;color:#6b7280;">Significant UX gaps or features needed for core flows</span>
+      </div>
+
+      <div class="rec-card high">
+        <span class="rec-effort">Effort: 2–3 days</span>
+        <h4>H-1 · Replace polling with TanStack Query invalidation</h4>
+        <p>
+          <code>useAdminData</code> and <code>useHostData</code> use interval polling (e.g., every 30s) to refresh data. This burns bandwidth and creates stale data windows. Replace with <code>queryClient.invalidateQueries()</code> after mutations — which is already done correctly in the admin approve/reject tables.
+        </p>
+        <div class="rec-tags">
+          <span class="rec-tag">performance</span><span class="rec-tag">data-fetching</span>
+        </div>
+      </div>
+
+      <div class="rec-card high">
+        <span class="rec-effort">Effort: 2–4 days</span>
+        <h4>H-2 · Complete the Foxer Profile page</h4>
+        <p>
+          <code>/foxer/[id]</code> is a key discovery surface but renders an empty shell. Build out the portfolio section, list the foxer's published event templates, show ratings/reviews, and add a "Book This Foxer" CTA that leads to the matching flow.
+        </p>
+        <div class="rec-tags">
+          <span class="rec-tag">foxer</span><span class="rec-tag">discovery</span><span class="rec-tag">UX</span>
+        </div>
+      </div>
+
+      <div class="rec-card high">
+        <span class="rec-effort">Effort: 1–2 days</span>
+        <h4>H-3 · Add error boundaries to all Client pages</h4>
+        <p>
+          No Client Component pages have React error boundaries. A single failed API call or undefined access will crash the entire page with a generic "Something went wrong" screen. Add page-level error boundaries using Next.js <code>error.tsx</code> per-segment files with recovery UI.
+        </p>
+        <div class="rec-tags">
+          <span class="rec-tag">reliability</span><span class="rec-tag">UX</span><span class="rec-tag">errors</span>
+        </div>
+      </div>
+
+      <div class="rec-card high">
+        <span class="rec-effort">Effort: 1 day</span>
+        <h4>H-4 · Add skeleton loading states</h4>
+        <p>
+          Nearly all loading states are spinner-only. Skeleton screens matching the shape of the loaded content dramatically improve perceived performance. Prioritize: venue cards grid, host dashboard KPI cards, admin tables.
+        </p>
+        <div class="rec-tags">
+          <span class="rec-tag">UX</span><span class="rec-tag">performance</span>
+        </div>
+      </div>
+
+      <div class="rec-card high">
+        <span class="rec-effort">Effort: 3–5 days</span>
+        <h4>H-5 · Build Payment History / Transaction screen</h4>
+        <p>
+          Citizens have no way to see their booking history or past payments in the user dashboard. This is required for trust and support. Build a transactions list page under <code>/user</code> sourced from <code>/bookings/user/:id</code>.
+        </p>
+        <div class="rec-tags">
+          <span class="rec-tag">user-dashboard</span><span class="rec-tag">bookings</span><span class="rec-tag">trust</span>
+        </div>
+      </div>
+
+      <div class="rec-card high">
+        <span class="rec-effort">Effort: 2–3 days</span>
+        <h4>H-6 · Replace inline <code>any[]</code> prop types with typed interfaces</h4>
+        <p>
+          Admin table components (<code>AdminAssetsTable</code>, <code>AdminServicesTable</code>, etc.) accept <code>assets: any[]</code>. This silently swallows API shape mismatches. Define explicit interfaces or use shared types from <code>lib/schema.ts</code> Zod infers.
+        </p>
+        <div class="rec-tags">
+          <span class="rec-tag">typescript</span><span class="rec-tag">type-safety</span>
+        </div>
+      </div>
+
+      <div class="rec-card high">
+        <span class="rec-effort">Effort: 1–2 days</span>
+        <h4>H-7 · Wire favorites toggle UI in listing cards</h4>
+        <p>
+          The API and hook for favorites exist but the heart icon in listing cards may not correctly reflect saved state or trigger the API. Verify the toggle calls <code>useFavorites</code> and that the favorites list appears in the user dashboard.
+        </p>
+        <div class="rec-tags">
+          <span class="rec-tag">user-features</span><span class="rec-tag">UX</span>
+        </div>
+      </div>
+
+      <div class="rec-card high">
+        <span class="rec-effort">Effort: 2–3 days</span>
+        <h4>H-8 · Add Mapbox venue map to search/discovery page</h4>
+        <p>
+          <code>useVenueMapLogic</code> and Mapbox GL are installed. Surfacing a map view on the search page is a significant discovery UX improvement for a location-based marketplace. Implement a split list/map view toggle.
+        </p>
+        <div class="rec-tags">
+          <span class="rec-tag">search</span><span class="rec-tag">discovery</span><span class="rec-tag">maps</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- MEDIUM -->
+    <div class="priority-section">
+      <div class="priority-header medium">
+        <span class="priority-label medium">Medium — Address in First Month Post-Launch</span>
+        <span style="font-size:12px;color:#6b7280;">UX improvements and feature completions that raise quality</span>
+      </div>
+
+      <div class="rec-card medium">
+        <span class="rec-effort">Effort: 3–5 days</span>
+        <h4>M-1 · In-App Notification Center</h4>
+        <p>
+          Build a notification bell in the navbar with a dropdown showing booking confirmations, role approvals, and review alerts. Use Supabase Realtime (already integrated) or SSE to push events without polling.
+        </p>
+        <div class="rec-tags">
+          <span class="rec-tag">UX</span><span class="rec-tag">real-time</span><span class="rec-tag">supabase</span>
+        </div>
+      </div>
+
+      <div class="rec-card medium">
+        <span class="rec-effort">Effort: 1 day</span>
+        <h4>M-2 · Standardize on one icon library</h4>
+        <p>
+          Remove Material Symbols (Google font dependency, 200KB+) and migrate all icons to Lucide React, which is already tree-shaken as an npm package. This reduces page weight and achieves visual consistency.
+        </p>
+        <div class="rec-tags">
+          <span class="rec-tag">performance</span><span class="rec-tag">UI-consistency</span>
+        </div>
+      </div>
+
+      <div class="rec-card medium">
+        <span class="rec-effort">Effort: 2–3 days</span>
+        <h4>M-3 · Complete Host Calendar with availability blocking</h4>
+        <p>
+          Hosts need to block dates when their venue is unavailable. Extend <code>HostCalendarClient</code> and <code>useCalendarBookings</code> to support date-range blocking and persist it to the API so those dates are excluded from the booking availability calendar.
+        </p>
+        <div class="rec-tags">
+          <span class="rec-tag">host</span><span class="rec-tag">calendar</span><span class="rec-tag">bookings</span>
+        </div>
+      </div>
+
+      <div class="rec-card medium">
+        <span class="rec-effort">Effort: 3–4 days</span>
+        <h4>M-4 · Connect User Journey to real booking history</h4>
+        <p>
+          The User Journey timeline in the user dashboard currently uses a hardcoded static data structure. Wire it to the bookings API so it reflects the citizen's actual activity: attended events, venues visited, Foxers booked.
+        </p>
+        <div class="rec-tags">
+          <span class="rec-tag">user-dashboard</span><span class="rec-tag">data</span>
+        </div>
+      </div>
+
+      <div class="rec-card medium">
+        <span class="rec-effort">Effort: 3–5 days</span>
+        <h4>M-5 · Build Admin User Management actions</h4>
+        <p>
+          <code>AdminCitizenTable</code> lists users but provides no management actions. Add suspend/unsuspend, role assignment, and impersonation capabilities for the admin role.
+        </p>
+        <div class="rec-tags">
+          <span class="rec-tag">admin</span><span class="rec-tag">user-management</span>
+        </div>
+      </div>
+
+      <div class="rec-card medium">
+        <span class="rec-effort">Effort: 2 days</span>
+        <h4>M-6 · Implement consistent form error handling</h4>
+        <p>
+          Currently forms use a mix of toast-only errors, inline field errors, and no feedback. Standardize: inline field errors (from Zod/react-hook-form) for validation, toasts only for network/server errors.
+        </p>
+        <div class="rec-tags">
+          <span class="rec-tag">UX</span><span class="rec-tag">forms</span><span class="rec-tag">validation</span>
+        </div>
+      </div>
+
+      <div class="rec-card medium">
+        <span class="rec-effort">Effort: 2–3 days</span>
+        <h4>M-7 · Wire Host Earnings to real payout data</h4>
+        <p>
+          The earnings dashboard (<code>FoxerEarningsClient</code>) needs connection to the API's earnings/payout endpoints. Show total earned, pending payouts, and a transaction history table per venue.
+        </p>
+        <div class="rec-tags">
+          <span class="rec-tag">host</span><span class="rec-tag">payments</span>
+        </div>
+      </div>
+
+      <div class="rec-card medium">
+        <span class="rec-effort">Effort: 2–3 days</span>
+        <h4>M-8 · Add mobile-responsive fallback for builder pages</h4>
+        <p>
+          Venue and event builders are desktop-only (drag-drop requires a pointer device). Add a mobile detection gate with a friendly message ("Builder works best on desktop") or implement a simplified mobile form alternative.
+        </p>
+        <div class="rec-tags">
+          <span class="rec-tag">mobile</span><span class="rec-tag">UX</span><span class="rec-tag">builder</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- LOW -->
+    <div class="priority-section">
+      <div class="priority-header low">
+        <span class="priority-label low">Low — Quality-of-Life Improvements</span>
+        <span style="font-size:12px;color:#6b7280;">Polish, nice-to-haves, and future-facing features</span>
+      </div>
+
+      <div class="rec-card low">
+        <span class="rec-effort">Effort: 3–5 days</span>
+        <h4>L-1 · Add Social Login (Google OAuth)</h4>
+        <p>Reduce signup friction with Google OAuth. Particularly impactful for the Philippines market where Google accounts are ubiquitous.</p>
+        <div class="rec-tags"><span class="rec-tag">auth</span><span class="rec-tag">growth</span></div>
+      </div>
+
+      <div class="rec-card low">
+        <span class="rec-effort">Effort: 1 day</span>
+        <h4>L-2 · Add image lazy loading and blur placeholders</h4>
+        <p>Venue and event card images load eagerly. Use Next.js <code>Image</code> with <code>placeholder="blur"</code> and proper <code>sizes</code> attributes for better LCP scores on slow connections.</p>
+        <div class="rec-tags"><span class="rec-tag">performance</span><span class="rec-tag">images</span></div>
+      </div>
+
+      <div class="rec-card low">
+        <span class="rec-effort">Effort: 2–3 days</span>
+        <h4>L-3 · Build in-app messaging between citizen and foxer/mayor</h4>
+        <p>Leverage Supabase Realtime for a basic chat feature. Citizens should be able to ask questions to event creators before booking.</p>
+        <div class="rec-tags"><span class="rec-tag">messaging</span><span class="rec-tag">supabase</span></div>
+      </div>
+
+      <div class="rec-card low">
+        <span class="rec-effort">Effort: 1 day</span>
+        <h4>L-4 · Add <code>CONTEXT.md</code> glossary to the repository</h4>
+        <p>Document the ubiquitous language: Citizen, Fox, Foxer, Mayor, Passport, Blueprint, etc. This prevents terminology drift as the team grows and makes onboarding faster.</p>
+        <div class="rec-tags"><span class="rec-tag">documentation</span><span class="rec-tag">team</span></div>
+      </div>
+
+      <div class="rec-card low">
+        <span class="rec-effort">Effort: 2–3 days</span>
+        <h4>L-5 · Implement KYC document upload and status tracking</h4>
+        <p>The <code>KycDocumentSection</code> component exists as a shell. Wire it to a document upload API and show verification status to both the user and the admin submissions table.</p>
+        <div class="rec-tags"><span class="rec-tag">compliance</span><span class="rec-tag">trust</span></div>
+      </div>
+
+      <div class="rec-card low">
+        <span class="rec-effort">Effort: 1–2 days</span>
+        <h4>L-6 · Add route-level Suspense and loading.tsx files</h4>
+        <p>Most page-level data fetches are in server components without accompanying <code>loading.tsx</code> files. Adding per-segment loading UIs prevents the entire layout from blocking on slow fetches.</p>
+        <div class="rec-tags"><span class="rec-tag">performance</span><span class="rec-tag">next.js</span></div>
+      </div>
+
+      <div class="rec-card low">
+        <span class="rec-effort">Effort: 2 days</span>
+        <h4>L-7 · Add an investor dashboard role &amp; route</h4>
+        <p>The <code>investor</code> role is defined in auth types but has no corresponding dashboard. If investors are a planned persona, define the route and a basic placeholder dashboard now.</p>
+        <div class="rec-tags"><span class="rec-tag">roles</span><span class="rec-tag">investor</span></div>
+      </div>
+
+      <div class="rec-card low">
+        <span class="rec-effort">Effort: 1 day</span>
+        <h4>L-8 · Add a <code>robots.txt</code> and sitemap for SEO</h4>
+        <p>Public pages (venues, categories, events) should be indexable. Add Next.js sitemap generation (<code>app/sitemap.ts</code>) and <code>robots.txt</code> to improve organic search discovery of venue and event listings.</p>
+        <div class="rec-tags"><span class="rec-tag">SEO</span><span class="rec-tag">marketing</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── 9. Glossary ───────────────────────────────────────────── -->
+  <div class="section">
+    <div class="section-header">
+      <span class="section-number">09</span>
+      <h2>Glossary — Domain Language</h2>
+    </div>
+
+    <table class="feature-table">
+      <thead>
+        <tr><th>Term</th><th>Definition</th><th>Maps To (Code)</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><strong>Citizen</strong></td><td>A regular platform user who discovers and books events/venues</td><td><code>role: "user"</code></td></tr>
+        <tr><td><strong>Fox / Foxer</strong></td><td>A creator who provides services or equipment for events</td><td><code>roleType: ["foxerAsset" | "foxerService"]</code></td></tr>
+        <tr><td><strong>Mayor</strong></td><td>A venue provider who owns and rents spaces</td><td><code>roleType: ["mayor"]</code></td></tr>
+        <tr><td><strong>Host</strong></td><td>An event creator who packages venues/services into bookable event templates</td><td><code>isHost: true</code>, <code>roleType: ["host"]</code></td></tr>
+        <tr><td><strong>Passport</strong></td><td>A citizen's gamification profile — stamps collected, badges earned, events attended</td><td><code>/user/passport</code>, <code>PassportClient</code></td></tr>
+        <tr><td><strong>Blueprint</strong></td><td>The financial summary sidebar in the event builder showing estimated cost breakdown</td><td><code>components/foxer/event-builder/EventBlueprint.tsx</code></td></tr>
+        <tr><td><strong>Event Template</strong></td><td>A reusable event package created by a Host that Citizens can book</td><td><code>lib/api/event-templates.ts</code></td></tr>
+        <tr><td><strong>Asset</strong></td><td>Physical equipment a Foxer offers for rent (camera, sound system, etc.)</td><td><code>lib/api/assets.ts</code>, <code>roleType: "foxerAsset"</code></td></tr>
+        <tr><td><strong>Service</strong></td><td>A professional service a Foxer offers (photographer, DJ, catering, etc.)</td><td><code>lib/api/services.ts</code>, <code>roleType: "foxerService"</code></td></tr>
+        <tr><td><strong>Venue</strong></td><td>A physical space listed by a Mayor for event hosting</td><td><code>lib/api/venues.ts</code></td></tr>
+        <tr><td><strong>Experience</strong></td><td>A customized event configuration a Citizen builds by selecting add-ons on the venue detail page</td><td><code>components/venues/ExperienceBuilder.tsx</code></td></tr>
+        <tr><td><strong>Fulfillment</strong></td><td>The delivery/execution stage of a booked service or asset</td><td><code>/booking/fulfillment/[type]/[id]</code></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Footer -->
+  <div class="doc-footer">
+    <span>Fox Passport Republic — Technical Audit Report</span>
+    <span>Generated: June 8, 2026 &nbsp;·&nbsp; Branch: staging &nbsp;·&nbsp; Auditor: Claude Sonnet 4.6</span>
+  </div>
+
+</div>
+
+<script>
+  // Auto-set print title
+  document.title = 'Fox Passport Republic — Technical Audit Report';
+</script>
+</body>
+</html>
