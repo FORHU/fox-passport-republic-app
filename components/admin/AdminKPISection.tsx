@@ -41,7 +41,7 @@ export const AdminKPISection: React.FC<AdminKPISectionProps> = ({ stats }) => {
       hoverBorder: 'hover:border-secondary/50',
       bgIcon: 'text-secondary',
       label: 'Event Templates',
-      value: stats.activeEvents.toLocaleString(),
+      value: (stats?.activeEvents ?? 0).toLocaleString(),
       sub: 'published packages',
       trend: null,
     },
