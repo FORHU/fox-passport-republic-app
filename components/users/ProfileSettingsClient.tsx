@@ -254,7 +254,7 @@ export default function ProfileSettingsClient() {
                   <input
                     type="tel"
                     value={phone}
-                    onChange={e => setPhone(e.target.value)}
+                   onChange={e => setPhone(e.target.value)}
                     placeholder="+63 9XX XXX XXXX"
                     className="input-field"
                   />
