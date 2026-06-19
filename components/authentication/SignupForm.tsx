@@ -1,13 +1,15 @@
 "use client";
 
 import React from 'react';
-import { useForm, SubmitHandler } from 'react-hook-form';
+import { useForm, SubmitHandler, FieldErrors } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Loader2 } from 'lucide-react'; 
 
 import { useSignup } from '@/hooks/auth/useAuth';
 import { signupSchema, SignupFormData } from '@/lib/schema';
 import { useAuthStore } from '@/store/useAuthStore';
+
+import {toast} from 'sonner';
 
 // Social buttons component
 const SocialButtons = () => (
@@ -43,7 +45,15 @@ export default function SignupForm() {
     reset();
   }, [reset]);
 
-  const onSignup: SubmitHandler<SignupFormData> = (data) => signupMutation.mutate(data);
+  const onSignup: SubmitHandler<SignupFormData> = (data) => signupMutation.mutate(data)
+
+  const onInvalid = (formErrors: FieldErrors<SignupFormData>) => {
+  if (formErrors.email) {
+    toast.error(formErrors.email.message ?? 'Invalid email address');
+  } else if (formErrors.password) {
+    toast.error(formErrors.password.message ?? 'Password must be at least 6 characters long');
+  }
+};
 
   return (
     <div className="animate-in fade-in slide-in-from-left-8 duration-300">
@@ -60,7 +70,7 @@ export default function SignupForm() {
         <div className="grow border-t border-white/10"></div>
       </div>
 
-      <form className="space-y-4" onSubmit={handleSubmit(onSignup)}>
+      <form className="space-y-4" onSubmit={handleSubmit(onSignup,  onInvalid)}>
         {/* Full Name */}
         <div className="group">
           <label className="block text-xs font-bold text-white/70 mb-1.5 ml-1 group-focus-within:text-[#ccff00] transition-colors">FULL NAME</label>

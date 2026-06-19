@@ -2,14 +2,14 @@ import { z } from "zod";
 
 // --- AUTH SCHEMAS ---
 export const loginSchema = z.object({
-  email: z.string().email("Invalid email address"),
-  password: z.string().min(6, "Password must be at least 6 characters"),
+  email: z.email("Please enter a valid email address"),
+  password: z.string().min(6, "Please enter your password"),
 });
 
 export type LoginFormData = z.infer<typeof loginSchema>;
 
 export const signupSchema = z.object({
-  email: z.string().email("Invalid email address"),
+  email: z.email("Invalid email address"),
   password: z.string().min(6, "Password must be at least 6 characters"),
   username: z.string().min(3, "Username must be at least 3 characters"),
   name: z.string().min(1, "Name is required"),
