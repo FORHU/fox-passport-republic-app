@@ -1,13 +1,15 @@
 "use client";
 
 import React, { useState } from 'react';
-import { useForm, SubmitHandler } from 'react-hook-form';
+import { useForm, SubmitHandler, FieldErrors } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Loader2 } from 'lucide-react'; 
 
 import { useLogin } from '@/hooks/auth/useAuth';
 import { loginSchema, LoginFormData } from '@/lib/schema';
 import { useAuthStore } from '@/store/useAuthStore';
+
+import { toast } from 'sonner';
 
 // Social buttons component (inline for simplicity or extracted if reused)
 const SocialButtons = () => (
@@ -46,6 +48,13 @@ export default function LoginForm() {
 
   const onLogin: SubmitHandler<LoginFormData> = (data) => loginMutation.mutate(data);
 
+  const onInvalid = (formErrors: FieldErrors<LoginFormData>) => {
+  if (formErrors.email) {
+    toast.error(formErrors.email.message ?? 'Please enter a valid email address');
+  } else if (formErrors.password) {
+    toast.error(formErrors.password.message ?? 'Please enter your password');
+  }
+};
   return (
     <div className="animate-in fade-in slide-in-from-right-8 duration-300">
       {/* Header */}
@@ -70,7 +79,7 @@ export default function LoginForm() {
       </div>
 
       {/* Form */}
-      <form className="space-y-5" onSubmit={handleSubmit(onLogin)}>
+      <form className="space-y-5" onSubmit={handleSubmit(onLogin, onInvalid)}>
         
         {/* Email Field */}
         <div className="space-y-1">
