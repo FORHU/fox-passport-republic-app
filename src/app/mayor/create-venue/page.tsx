@@ -1,0 +1,187 @@
+﻿"use client";
+
+import React, { useState, useEffect } from 'react';
+import RequireAuth from '@/features/auth/components/RequireAuth';
+import { useVenueBuilder } from '@/features/venue/hooks/useVenueBuilder';
+import { useVenueBuilderStore } from '@/features/venue/store/useVenueBuilderStore';
+import {
+  VenueHeader,
+  VenueResourcePalette,
+  VenueDetailsForm,
+  FeatureDropZone,
+  RevenueProjector,
+  VenuePreviewModal,
+} from '@/features/venue/components/venue-builder';
+
+export default function VenueCreationBuilder() {
+  const [isPreviewOpen, setIsPreviewOpen] = useState(false);
+  const resetStore = useVenueBuilderStore((s) => s.reset);
+
+  useEffect(() => {
+    resetStore();
+  }, []);
+
+  const {
+    // State
+    venueName,
+    description,
+    venueType,
+    capacity,
+    location,
+    city,
+    state,
+    country,
+    gallery,
+    includedItems,
+    addonItems,
+    baseRate,
+    occupancyRate,
+    activeCategory,
+    searchQuery,
+    showGuide,
+    isSubmitting,
+    isDragOver,
+    newItem,
+    filteredResources,
+    revenue,
+    currentCategoryLabel,
+
+    // Actions
+    setVenueName,
+    setDescription,
+    setVenueType,
+    setCapacity,
+    setLocation,
+    setCity,
+    setState,
+    setCountry,
+    removeGalleryItem,
+    removeIncludedItem,
+    removeAddonItem,
+    setBaseRate,
+    setOccupancyRate,
+    setActiveCategory,
+    setSearchQuery,
+    setShowGuide,
+    setNewItem,
+
+    // Handlers
+    handleDragStart,
+    handleDragOver,
+    handleDragLeave,
+    handleDrop,
+    handleAddCustomItem,
+    handleRemoveCustomResource,
+    addImageToGallery,
+    removeImageFromGallery,
+    handleBack,
+    handleSaveDraft,
+    handlePublish,
+  } = useVenueBuilder();
+
+  return (
+    <RequireAuth>
+      <VenuePreviewModal
+        isOpen={isPreviewOpen}
+        onClose={() => setIsPreviewOpen(false)}
+        venueName={venueName}
+        description={description}
+        venueType={venueType}
+        capacity={capacity}
+        location={location}
+        city={city}
+        state={state}
+        country={country}
+        gallery={gallery}
+        includedItems={includedItems}
+        addonItems={addonItems}
+        baseRate={baseRate}
+      />
+
+      <div className="fixed inset-0 z-60 bg-[#02040a] text-white flex flex-col font-body">
+        <VenueHeader
+          venueName={venueName}
+          isSubmitting={isSubmitting}
+          onBack={handleBack}
+          onSaveDraft={handleSaveDraft}
+          onPublish={handlePublish}
+        />
+
+        <div className="flex-1 flex overflow-hidden">
+          <VenueResourcePalette
+            activeCategory={activeCategory}
+            searchQuery={searchQuery}
+            filteredResources={filteredResources}
+            newItem={newItem}
+            currentCategoryLabel={currentCategoryLabel}
+            onCategoryChange={setActiveCategory}
+            onSearchChange={setSearchQuery}
+            onNewItemChange={setNewItem}
+            onAddCustomItem={handleAddCustomItem}
+            onRemoveResource={handleRemoveCustomResource}
+            onDragStart={handleDragStart}
+          />
+
+          <main className="flex-1 overflow-y-auto p-8 bg-[#02040a] flex gap-8">
+            <div className="flex-1 max-w-4xl mx-auto space-y-8">
+              <VenueDetailsForm
+                venueName={venueName}
+                description={description}
+                venueType={venueType}
+                capacity={capacity}
+                location={location}
+                city={city}
+                state={state}
+                country={country}
+                gallery={gallery}
+                showGuide={showGuide}
+                onNameChange={setVenueName}
+                onDescriptionChange={setDescription}
+                onTypeChange={setVenueType}
+                onCapacityChange={setCapacity}
+                onLocationChange={setLocation}
+                onCityChange={setCity}
+                onStateChange={setState}
+                onCountryChange={setCountry}
+                onAddImage={addImageToGallery}
+                onRemoveImage={removeImageFromGallery}
+                onCloseGuide={() => setShowGuide(false)}
+              />
+
+              <FeatureDropZone
+                type="included"
+                items={includedItems}
+                isDragOver={isDragOver}
+                onDragOver={handleDragOver}
+                onDragLeave={handleDragLeave}
+                onDrop={handleDrop}
+                onRemoveItem={removeIncludedItem}
+              />
+
+              <FeatureDropZone
+                type="addon"
+                items={addonItems}
+                isDragOver={isDragOver}
+                onDragOver={handleDragOver}
+                onDragLeave={handleDragLeave}
+                onDrop={handleDrop}
+                onRemoveItem={removeAddonItem}
+              />
+            </div>
+          </main>
+
+          <RevenueProjector
+            baseRate={baseRate}
+            occupancyRate={occupancyRate}
+            monthlyBase={revenue.monthlyBase}
+            monthlyAddons={revenue.monthlyAddons}
+            total={revenue.total}
+            onBaseRateChange={setBaseRate}
+            onOccupancyRateChange={setOccupancyRate}
+            onPreview={() => setIsPreviewOpen(true)}
+          />
+        </div>
+      </div>
+    </RequireAuth>
+  );
+}

@@ -1,0 +1,96 @@
+﻿'use client';
+
+import React from 'react';
+import { useUserDashboard } from '@/features/dashboard/hooks/useUserDashboard';
+import { UserHeader } from '@/features/user/components/citizen/UserHeader';
+import { UserWelcome } from '@/features/user/components/citizen/UserWelcome';
+import { UserNextUp } from '@/features/user/components/citizen/UserNextUp';
+import { UserForYou } from '@/features/user/components/citizen/UserForYou';
+import { UserJourney } from '@/features/user/components/citizen/UserJourney';
+import { UserWallet } from '@/features/user/components/citizen/UserWallet';
+import { UserSavedVibes } from '@/features/user/components/citizen/UserSavedVibes';
+import { UserFooter } from '@/features/user/components/citizen/UserFooter';
+
+interface UserDashboardClientProps {
+  user: any;
+  dashboardData: any;
+  venues?: any[];
+}
+
+function UserDashboardContent({ user, dashboardData, venues = [] }: UserDashboardClientProps) {
+  const {
+    userName,
+    isAuthenticated,
+    walletBalance,
+    recentTransactions,
+    savedVibes,
+    navigateToPassport
+  } = useUserDashboard();
+
+  // Use server data if client doesn't have
+  const displayUserName = userName || user?.name || 'User';
+  const displayDashboardData = dashboardData;
+
+  const VENUE_ROLES = ['host', 'mayor', 'foxerAsset', 'foxerService'];
+  const roleType: string[] = user?.roleType ?? [];
+  const systemRole: string = (user?.systemRole ?? user?.role ?? '').toLowerCase();
+  const canSeeVenues =
+    systemRole === 'admin' ||
+    roleType.some((r) => VENUE_ROLES.includes(r));
+
+  return (
+    <div className="bg-background bg-gradient-dark text-text-main antialiased min-h-screen flex flex-col selection:bg-accent selection:text-black font-body">
+      <UserHeader
+        isAuthenticated={isAuthenticated}
+        userName={displayUserName}
+        citizenLevel={displayDashboardData.citizenLevel}
+      />
+
+      <main className="flex-grow pt-36 px-4 pb-20">
+        <div className="mx-auto max-w-7xl">
+          <UserWelcome
+            upcomingEventsCount={displayDashboardData.upcomingEvents}
+            recommendationsCount={displayDashboardData.recommendations}
+            weather={displayDashboardData.weather}
+          />
+
+          {/* Row 1: Next Up & Journey */}
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 mb-8">
+            <div className="lg:col-span-8 flex flex-col">
+              <UserNextUp className="flex-1" />
+            </div>
+            <div className="lg:col-span-4 flex flex-col">
+              <UserJourney
+                userName={displayUserName}
+                navigateToPassport={navigateToPassport}
+                className="flex-1"
+              />
+            </div>
+          </div>
+
+          {/* Row 2: For You & Wallet/Saved Vibes */}
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+            <div className="lg:col-span-8">
+              <UserForYou canSeeVenues={canSeeVenues} venues={venues} />
+            </div>
+            <div className="lg:col-span-4 flex flex-col gap-6 h-full">
+              <UserWallet
+                walletBalance={walletBalance}
+                recentTransactions={recentTransactions}
+              />
+              <UserSavedVibes savedVibes={savedVibes} className="flex-1" />
+            </div>
+          </div>
+
+
+        </div>
+      </main>
+
+      <UserFooter />
+    </div>
+  );
+}
+
+export default function UserDashboardClient({ user, dashboardData, venues }: UserDashboardClientProps) {
+  return <UserDashboardContent user={user} dashboardData={dashboardData} venues={venues} />;
+}
