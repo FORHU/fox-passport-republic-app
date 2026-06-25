@@ -24,6 +24,7 @@ import { ProgressDashboard } from '@/components/users/ProgressDashboard';
 import { mapBackendAssetToInventoryItem, mapBackendServiceToServiceItem } from '@/lib/mappers/listings';
 import { useHostData } from "@/hooks/dashboards/useHostData";
 import type { EventItem } from '@/data/dashboardData';
+import StripeConnectSection from '@/components/host/dashboard/StripeConnectSection';
 
 interface HostDashboardClientProps {
   initialData: {
@@ -182,6 +183,7 @@ export default function HostDashboardClient({ initialData }: HostDashboardClient
 
             <div className="lg:col-span-4">
               <div className="sticky top-32 space-y-6">
+                <StripeConnectSection/>
                 <CalendarWidget />
                 <CreatorProfile />
                 <RecentActivity />

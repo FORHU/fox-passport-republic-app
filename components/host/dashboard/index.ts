@@ -12,3 +12,5 @@ export {
   CreatorProfile,
   RecentActivity,
 } from "./SidebarWidgets";
+
+export { default as StripeConnectSection } from "./StripeConnectSection";
