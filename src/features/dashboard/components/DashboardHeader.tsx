@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import React from 'react';
 import Link from 'next/link';
@@ -6,6 +6,8 @@ import { useRouter } from 'next/navigation';
 import { useRoleAccess, RoleAccess } from '@/features/auth/hooks/useRoleAccess';
 import { useAuthStore } from '@/features/auth/store/useAuthStore';
 import UserMenuButton from '@/features/user/components/UserMenuButton';
+import NotificationBell from '@/features/notifications/components/NotificationBell';
+
 
 export function DashboardHeader() {
   const user = useAuthStore((s) => s.user);
@@ -19,10 +21,10 @@ export function DashboardHeader() {
 
   const navLinks = [
     { label: 'Overview', href: '/creator-dashboard', anchor: false },
-    access.canManageEvents  && { label: 'Events',    href: '#events',    anchor: true },
-    access.canManageVenues  && { label: 'Venues',    href: '#venues',    anchor: true },
-    access.canManageInventory && { label: 'Assets',  href: '#inventory', anchor: true },
-    access.canManageServices  && { label: 'Services',href: '#services',  anchor: true },
+    access.canManageEvents && { label: 'Events', href: '#events', anchor: true },
+    access.canManageVenues && { label: 'Venues', href: '#venues', anchor: true },
+    access.canManageInventory && { label: 'Assets', href: '#inventory', anchor: true },
+    access.canManageServices && { label: 'Services', href: '#services', anchor: true },
   ].filter(Boolean) as { label: string; href: string; anchor: boolean }[];
 
   return (
@@ -69,10 +71,7 @@ export function DashboardHeader() {
 
           {/* Right Side — real user */}
           <div className="flex items-center gap-4">
-            <button className="hidden sm:flex h-10 w-10 items-center justify-center rounded-full border border-white/10 text-white hover:bg-white/10 relative">
-              <span className="material-symbols-outlined text-[20px]">notifications</span>
-              <span className="absolute top-2 right-2.5 h-2 w-2 rounded-full bg-pink-500 shadow-[0_0_8px_#db2777] animate-pulse" />
-            </button>
+            {user && <NotificationBell />}
             <div className="flex items-center gap-3 pl-3 border-l border-white/10">
               <div className="text-right hidden sm:block">
                 <div className="text-sm font-bold">{user?.name || user?.email || 'Creator'}</div>

@@ -1,19 +1,19 @@
 "use client";
 
-import {useEffect} from "react";
-import {useAuthStore} from "../store/useAuthStore";
-import {disconnectSocket, connectSocket} from "../lib/socket";
-import {useNotificationStore} from "../features/notifications/store/useNotificationStore";
-import {toast} from "sonner";
+import { useEffect } from "react";
+import { useAuthStore } from "@/features/auth/store/useAuthStore";
+import { disconnectSocket, connectSocket } from "@/shared/lib/socket";
+import { useNotificationStore } from "@/features/notifications/store/useNotificationStore";
+import { toast } from "sonner";
 
-export function SocketProvider({children}: {children: React.ReactNode}) {
+export function SocketProvider({ children }: { children: React.ReactNode }) {
     const accessToken = useAuthStore((state) => state.accessToken);
     const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
     const addNotification = useNotificationStore((state) => state.addNotification);
 
     useEffect(() => {
         if (!isAuthenticated || !accessToken) {
-            disconnectSocket(); 
+            disconnectSocket();
             return;
         }
 
