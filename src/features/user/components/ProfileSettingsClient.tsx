@@ -254,9 +254,15 @@ export default function ProfileSettingsClient() {
                   <input
                     type="tel"
                     value={phone}
-                    onChange={e => setPhone(e.target.value)}
+                    onChange={e => {
+                      const cleanValue = e.target.value.replace(/\D/g, '');
+                      if (cleanValue.length <= 11) {
+                          setPhone(cleanValue);
+                    }
+                  }}
                     placeholder="+63 9XX XXX XXXX"
                     className="input-field"
+                    maxLength={11}
                   />
                 </Field>
               </div>
