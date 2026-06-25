@@ -15,6 +15,7 @@ import { useNavbar } from "@/shared/hooks/useNavbar";
 import { useAuthStore } from "@/features/auth/store/useAuthStore";
 import UserMenuButton from "@/features/user/components/UserMenuButton";
 import { clearAuthCookies } from "@/shared/lib/server/auth-actions";
+import NotificationBell from "@/features/notifications/components/NotificationBell";
 
 // --- HOST MODAL (Internal Component) ---
 interface HostModalProps {
@@ -171,10 +172,11 @@ function NavbarContent() {
             </nav>
 
             <div className="flex items-center gap-4">
-              <button className="hidden sm:flex h-10 w-10 items-center justify-center rounded-full border border-white/10 text-white hover:bg-white hover:text-black transition-all hover:rotate-12">
-                <span className="material-symbols-outlined text-[20px]">search</span>
-              </button>
-              {!isAuthenticated ? (
+             <button className="hidden sm:flex h-10 w-10 items-center justify-center rounded-full border border-white/10 text-white hover:bg-white hover:text-black transition-all hover:rotate-12">
+              <span className="material-symbols-outlined text-[20px]">search</span>
+            </button>
+            {isAuthenticated && <NotificationBell />}
+            {!isAuthenticated ? (
                 <button
                   onClick={openLogin}
                   className="hidden sm:flex items-center gap-2 rounded-full bg-white/5 border border-white/10 px-6 py-2.5 text-sm font-bold text-white hover:bg-white hover:text-black hover:shadow-[0_0_20px_rgba(255,255,255,0.3)] transition-all duration-300 group overflow-hidden relative"

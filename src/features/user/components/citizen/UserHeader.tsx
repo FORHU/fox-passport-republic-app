@@ -1,10 +1,12 @@
-﻿'use client';
+'use client';
 
 import React from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import UserMenuButton from '@/features/user/components/UserMenuButton';
 import { useAuthStore } from '@/features/auth/store/useAuthStore';
+import NotificationBell from '@/features/notifications/components/NotificationBell';
+
 
 interface UserHeaderProps {
   isAuthenticated: boolean;
@@ -64,11 +66,7 @@ export const UserHeader: React.FC<UserHeaderProps> = ({ isAuthenticated, userNam
           </nav>
 
           <div className="flex items-center gap-4">
-            <button className="hidden sm:flex h-10 w-10 items-center justify-center rounded-full border border-white/10 text-white hover:bg-white hover:text-black transition-all hover:rotate-12 relative group">
-              <span className="material-symbols-outlined text-[20px]">notifications</span>
-              <span className="absolute top-2 right-2 h-2.5 w-2.5 rounded-full bg-[#db2777] border border-black group-hover:animate-ping"></span>
-              <span className="absolute top-2 right-2 h-2.5 w-2.5 rounded-full bg-[#db2777] border border-black"></span>
-            </button>
+            {isAuthenticated && <NotificationBell />}
 
             {isAuthenticated ? (
               <div className="hidden sm:flex items-center gap-3 pl-2">
