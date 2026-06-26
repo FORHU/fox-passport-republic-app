@@ -3,6 +3,7 @@
 import React from "react";
 import { useStripeConnect } from "@/hooks/dashboards/useStripeConnect";
 import { Loader2, CheckCircle, AlertCircle, ExternalLink } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 function StatusBadge({ enabled, label }: { enabled: boolean; label: string }) {
   return (
@@ -23,6 +24,8 @@ export default function StripeConnectSection() {
   const isComplete = status?.stripeOnboardingComplete &&
     status?.stripeChargesEnabled &&
     status?.stripePayoutsEnabled;
+
+  const router = useRouter();
 
   return (
     <div className="bg-white/5 border border-white/10 rounded-2xl p-6 hover:border-white/20 transition-all">
@@ -90,7 +93,7 @@ export default function StripeConnectSection() {
         <>
           {!isComplete ? (
             <button
-              onClick={startOnboarding}
+              onClick={() => router.push("/host/stripe-onboard")}
               disabled={onboarding}
               className="w-full flex items-center justify-center gap-2 bg-[#635bff] hover:bg-[#5b53f5] text-white text-sm font-semibold py-2.5 rounded-full transition disabled:opacity-50"
             >
@@ -102,15 +105,16 @@ export default function StripeConnectSection() {
               {status?.hasStripeAccount ? "Continue Onboarding" : "Connect Stripe"}
             </button>
           ) : (
-            <div className="flex items-center justify-center gap-2 text-[#ccff00] text-sm py-2">
+            <button
+              onClick={() => router.push("/host/stripe-dashboard")}
+              className="w-full flex items-center justify-center gap-2 bg-[#ccff00] text-black text-sm font-semibold py-2.5 rounded-full hover:bg-[#b8e600] transition"
+            >
               <CheckCircle size={14} />
-              You're all set to receive payouts
-            </div>
+              View Payout Dashboard
+            </button>
           )}
         </>
       )}
     </div>
   );
 }
-
-
