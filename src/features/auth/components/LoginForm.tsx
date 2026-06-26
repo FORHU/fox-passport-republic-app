@@ -9,6 +9,7 @@ import { useLogin } from '@/features/auth/hooks/useAuth';
 import { loginSchema, LoginFormData } from '@/shared/lib/schema';
 import { useAuthStore } from '@/features/auth/store/useAuthStore';
 
+
 import { toast } from 'sonner';
 
 // Social buttons component (inline for simplicity or extracted if reused)
@@ -34,7 +35,7 @@ const SocialButtons = () => (
 
 export default function LoginForm() {
   const loginMutation = useLogin();
-  const { toggleView } = useAuthStore();
+  const { toggleView, setView } = useAuthStore();
   const [showPassword, setShowPassword] = useState(false);
 
   const { register, handleSubmit, formState: { errors }, reset } = useForm<LoginFormData>({
@@ -133,7 +134,13 @@ export default function LoginForm() {
             <input className="w-4 h-4 rounded border-white/20 bg-white/5 text-[#ccff00] focus:ring-[#ccff00] focus:ring-offset-0 transition-colors" type="checkbox" />
             <span className="text-xs text-gray-400 group-hover:text-white transition-colors">Remember me</span>
           </label>
-          <a className="text-xs font-bold text-[#ccff00] hover:text-white hover:underline decoration-[#ccff00] underline-offset-4 transition-all" href="#">Forgot password?</a>
+          <button
+           type="button"
+            onClick={() => setView('forgot-password')}
+          className="text-xs font-bold text-[#ccff00] hover:text-white hover:underline decoration-[#ccff00] underline-offset-4 transition-all"
+          >
+  Forgot password?
+</button>
         </div>
 
         {/* Submit Button */}
