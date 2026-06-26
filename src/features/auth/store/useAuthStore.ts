@@ -1,7 +1,7 @@
 ﻿import { create } from "zustand";
 import { User, LoginResponse } from "@/features/auth/types/auth";
 
-type AuthView = "login" | "signup";
+type AuthView = "login" | "signup" | "forgot-password" | "reset-password" | "verify-email";
 
 interface AuthState {
   // State
@@ -12,11 +12,14 @@ interface AuthState {
   isLoading: boolean;
   isOpen: boolean;
   view: AuthView;
+  pendingEmail: string | null; 
 
   // Actions
   initialize: () => void;
   openLogin: () => void;
   openSignup: () => void;
+  setView: (view: AuthView) => void;
+  setPendingEmail: (email: string) => void;
   close: () => void;
   toggleView: () => void;
   setLoading: (loading: boolean) => void;
@@ -27,12 +30,13 @@ interface AuthState {
 
 export const useAuthStore = create<AuthState>((set, get) => ({
   isAuthenticated: false,
-  isLoading: true, // Start as true to prevent hydration mismatch
+  isLoading: true,
   user: null,
   accessToken: null,
   refreshToken: null,
   isOpen: false,
   view: "login",
+  pendingEmail: null,
 
   initialize: () => {
     if (typeof window === "undefined") return;
@@ -61,6 +65,8 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 
   openLogin: () => set({ isOpen: true, view: "login" }),
   openSignup: () => set({ isOpen: true, view: "signup" }),
+  setView: (view) => set({ view }),
+  setPendingEmail: (email) => set({ pendingEmail: email }),
   close: () => set({ isOpen: false }),
   toggleView: () =>
     set((state) => ({
