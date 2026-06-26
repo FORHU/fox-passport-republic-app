@@ -4,6 +4,9 @@ import React, { useEffect } from 'react';
 import { useAuthStore } from '@/features/auth/store/useAuthStore';
 import LoginForm from '@/features/auth/components/LoginForm';
 import SignupForm from '@/features/auth/components/SignupForm';
+import ForgotPasswordForm from '@/features/auth/components/ForgotPasswordForm';
+import ResetPasswordForm from '@/features/auth/components/ResetPasswordForm';
+import VerifyEmailForm from '@/features/auth/components/VerifyEmailForm';
 
 export default function AuthModal() {
   const { isOpen, view, close } = useAuthStore();
@@ -41,11 +44,11 @@ export default function AuthModal() {
               <span className="material-symbols-outlined text-[18px]">close</span>
             </button>
 
-            {view === 'login' ? (
-              <LoginForm />
-            ) : (
-              <SignupForm />
-            )}
+            {view === 'login' && <LoginForm />}
+            {view === 'signup' && <SignupForm />}
+            {view === 'forgot-password' && <ForgotPasswordForm />}
+            {view === 'reset-password' && <ResetPasswordForm />}
+            {view === 'verify-email' && <VerifyEmailForm />}
           </div>
         </div>
       </div>

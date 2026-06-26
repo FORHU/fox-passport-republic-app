@@ -30,6 +30,30 @@ const realLogin = async (data: LoginFormData): Promise<LoginResponse> => {
   return response.data;
 };
 
+const realForgotPassword = async (email: string) => {
+  const response = await api.post("/auth/forgot-password", { email });
+  return response.data;
+};
+
+const realResetPassword = async (data: {
+  email: string;
+  otpCode: string;
+  newPassword: string;
+}) => {
+  const response = await api.post("/auth/reset-password", data);
+  return response.data;
+};
+
+const realVerifyEmail = async (data: { email: string; otpCode: string }) => {
+  const response = await api.post("/auth/verify-email", data);
+  return response.data;
+};
+
+const realResendOtp = async (email: string) => {
+  const response = await api.post("/auth/resend-verification-otp", { email });
+  return response.data;
+};
+
 const realSignup = async (data: SignupFormData) => {
   const payload = {
     ...data,
@@ -79,22 +103,78 @@ export const useLogin = () => {
 };
 
 export const useSignup = () => {
-  const { toggleView, close } = useAuthStore();
+  const { setView, setPendingEmail } = useAuthStore();
 
   return useMutation({
     mutationFn: realSignup,
-    onSuccess: (data) => {
+    onSuccess: (data, variables) => {
       console.log("Signup Success:", data);
 
-      toast.success("Thanks for signing up! You can now Log In.");
+      toast.success("Account created! Please verify your email.");
 
-      // Switch to login view after successful signup
-      toggleView();
+      // Carry the email forward and show the OTP entry screen
+      setPendingEmail(variables.email);
+      setView("verify-email");
     },
     onError: (error: any) => {
       console.error("Signup Error:", error);
       const msg =
         error.response?.data?.message || "Signup Failed. Please try again.";
+      toast.error(msg);
+    },
+  });
+};
+
+export const useForgotPassword = () => {
+  return useMutation({
+    mutationFn: realForgotPassword,
+    onSuccess: (data) => {
+      toast.success(data.message || "If an account exists, a reset code has been sent.");
+    },
+    onError: (error: any) => {
+      const msg = error.response?.data?.message || "Failed to send reset code. Please try again.";
+      toast.error(msg);
+    },
+  });
+};
+
+export const useResetPassword = () => {
+  const { toggleView } = useAuthStore();
+
+  return useMutation({
+    mutationFn: realResetPassword,
+    onSuccess: (data) => {
+      toast.success(data.message || "Password reset successfully! You can now log in.");
+      toggleView(); // switch back to login view
+    },
+    onError: (error: any) => {
+      const msg = error.response?.data?.message || "Failed to reset password. Please try again.";
+      toast.error(msg);
+    },
+  });
+};
+
+export const useVerifyEmail = () => {
+  return useMutation({
+    mutationFn: realVerifyEmail,
+    onSuccess: (data) => {
+      toast.success(data.message || "Email verified successfully!");
+    },
+    onError: (error: any) => {
+      const msg = error.response?.data?.message || "Verification failed. Please check your code.";
+      toast.error(msg);
+    },
+  });
+};
+
+export const useResendOtp = () => {
+  return useMutation({
+    mutationFn: realResendOtp,
+    onSuccess: (data) => {
+      toast.success(data.message || "A new code has been sent to your email.");
+    },
+    onError: (error: any) => {
+      const msg = error.response?.data?.message || "Failed to resend code. Please try again.";
       toast.error(msg);
     },
   });

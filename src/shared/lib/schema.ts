@@ -25,6 +25,34 @@ export const signupSchema = z.object({
 
 export type SignupFormData = z.infer<typeof signupSchema>;
 
+// --- PASSWORD RESET / EMAIL VERIFICATION SCHEMAS ---
+export const forgotPasswordSchema = z.object({
+  email: z.email("Please enter a valid email address"),
+});
+
+export type ForgotPasswordFormData = z.infer<typeof forgotPasswordSchema>;
+
+export const resetPasswordSchema = z.object({
+  otpCode: z.string().length(6, "Code must be 6 digits"),
+  newPassword: z.string()
+    .min(8, "Password must be at least 8 characters")
+    .regex(/[A-Z]/, "Password must contain at least one uppercase letter")
+    .regex(/[a-z]/, "Password must contain at least one lowercase letter")
+    .regex(/\d/, "Password must contain at least one digit"),
+  confirmPassword: z.string(),
+}).refine((data) => data.newPassword === data.confirmPassword, {
+  message: "Passwords do not match",
+  path: ["confirmPassword"],
+});
+
+export type ResetPasswordFormData = z.infer<typeof resetPasswordSchema>;
+
+export const verifyEmailSchema = z.object({
+  otpCode: z.string().length(6, "Code must be 6 digits"),
+});
+
+export type VerifyEmailFormData = z.infer<typeof verifyEmailSchema>;
+
 // --- ASSET / INVENTORY SCHEMAS ---
 export const createAssetSchema = z.object({
   name: z.string().min(1, "Asset name is required"),
