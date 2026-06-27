@@ -188,7 +188,7 @@ export default function FulfillmentPassClient({ bookingType, bookingId }: Props)
               </div>
 
               {booking.notes ? (
-                <p className="text-sm text-text-muted leading-relaxed italic">"{booking.notes}"</p>
+                <p className="text-sm text-text-muted leading-relaxed italic">&quot;{booking.notes}&quot;</p>
               ) : (
                 <p className="text-sm text-white/30 italic">No special instructions provided.</p>
               )}
@@ -250,7 +250,7 @@ export default function FulfillmentPassClient({ bookingType, bookingId }: Props)
                 <div className="bg-red-500/10 border border-red-500/30 rounded-2xl p-4 text-center">
                   <span className="material-symbols-outlined text-red-400 text-3xl block mb-1">warning</span>
                   <p className="text-red-400 font-bold text-sm">Dispute Reported</p>
-                  <p className="text-white/40 text-xs mt-1">Our team will review within 24 hours. You'll be contacted by email.</p>
+                  <p className="text-white/40 text-xs mt-1">Our team will review within 24 hours. You&apos;ll be contacted by email.</p>
                 </div>
               ) : isCompleted ? (
                 <div className="bg-green-500/10 border border-green-500/30 rounded-2xl p-4 text-center">
@@ -329,7 +329,7 @@ export default function FulfillmentPassClient({ bookingType, bookingId }: Props)
               <span className="material-symbols-outlined text-red-400 text-5xl block mb-3">warning</span>
               <h3 className="text-xl font-display font-bold text-white mb-2">Report No-Show?</h3>
               <p className="text-sm text-text-muted leading-relaxed">
-                This flags the booking for admin review. If the provider truly failed to show, we'll initiate a full refund within 3–5 business days.
+                This flags the booking for admin review. If the provider truly failed to show, we&apos;ll initiate a full refund within 3–5 business days.
               </p>
             </div>
             <div className="flex gap-3">

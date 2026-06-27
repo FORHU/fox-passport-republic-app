@@ -230,7 +230,7 @@ export default function BookingConfigurationClient() {
               <div className="glass-card rounded-[2rem] p-8 border border-white/10">
                 <div className="flex items-center gap-3 mb-6">
                   <span className="material-symbols-outlined text-accent text-2xl">group</span>
-                  <h3 className="text-xl font-display font-bold text-white">Who's Coming?</h3>
+                  <h3 className="text-xl font-display font-bold text-white">Who&apos;s Coming?</h3>
                 </div>
                 <div className="flex items-center justify-between bg-black/20 p-4 rounded-2xl border border-white/5">
                   <div className="flex items-center gap-4">
@@ -264,7 +264,7 @@ export default function BookingConfigurationClient() {
               <div className="glass-card rounded-[2rem] p-8 border border-white/10">
                 <div className="flex items-center gap-3 mb-6">
                   <span className="material-symbols-outlined text-accent text-2xl">diamond</span>
-                  <h3 className="text-xl font-display font-bold text-white">What's Included</h3>
+                  <h3 className="text-xl font-display font-bold text-white">What&apos;s Included</h3>
                 </div>
                 {isLoadingTemplate ? (
                   <div className="grid sm:grid-cols-2 gap-4">
@@ -310,7 +310,7 @@ export default function BookingConfigurationClient() {
                     <span className="material-symbols-outlined text-yellow-400 text-2xl">tune</span>
                     <h3 className="text-xl font-display font-bold text-white">Optional Add-ons</h3>
                   </div>
-                  <p className="text-xs text-white/40 mb-6">Uncheck any item you don't need. The price will update automatically.</p>
+                  <p className="text-xs text-white/40 mb-6">Uncheck any item you don&apos;t need. The price will update automatically.</p>
                   <div className="space-y-3">
                     {allOptionalItems.map((item) => {
                       const excluded = excludedItemIds.has(item.id);
@@ -352,7 +352,7 @@ export default function BookingConfigurationClient() {
                   {optOutSavings > 0 && (
                     <div className="mt-4 flex items-center gap-2 text-xs text-green-400 bg-green-400/5 border border-green-400/20 rounded-xl px-4 py-2.5">
                       <span className="material-symbols-outlined text-[16px]">savings</span>
-                      You're saving ₱{optOutSavings.toLocaleString()} by removing optional items.
+                      You&apos;re saving ₱{optOutSavings.toLocaleString()} by removing optional items.
                     </div>
                   )}
                 </div>

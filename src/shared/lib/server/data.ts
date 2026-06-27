@@ -85,7 +85,7 @@ async function clearAuthAndRedirect() {
 }
 
 async function serverFetch(endpoint: string, params?: Record<string, string>): Promise<any> {
-  let token = await getAuthToken();
+  const token = await getAuthToken();
   const baseUrl = config.apiUrl;
 
   let url = `${baseUrl}${endpoint}`;
@@ -518,6 +518,42 @@ export async function getVenuesByCategory(categorySlug: string) {
     return extractList(body).map(normalizeVenue);
   } catch (error) {
     console.error(`Failed to fetch venues for category ${categorySlug}:`, error);
+    return [];
+  }
+}
+
+export interface SearchResult {
+  id: string;
+  name: string;
+  description?: string;
+  category?: string;
+  city?: string;
+  targetCity?: string;
+  price?: number;
+  currency?: string;
+  images?: { url: string }[];
+}
+
+export async function getSearchResults(params: {
+  type?: string;
+  city?: string;
+  category?: string;
+  startDate?: string;
+  endDate?: string;
+  q?: string;
+}): Promise<SearchResult[]> {
+  try {
+    const queryParams: Record<string, string> = {};
+    if (params.type) queryParams.type = params.type;
+    if (params.city) queryParams.city = params.city;
+    if (params.category) queryParams.category = params.category;
+    if (params.startDate) queryParams.startDate = params.startDate;
+    if (params.endDate) queryParams.endDate = params.endDate;
+    if (params.q) queryParams.q = params.q;
+    const body = await serverFetch('/search', queryParams);
+    return body?.data?.results ?? [];
+  } catch (error) {
+    console.error('Failed to fetch search results:', error);
     return [];
   }
 }

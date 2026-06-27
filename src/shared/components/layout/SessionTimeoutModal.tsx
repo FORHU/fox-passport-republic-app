@@ -37,12 +37,12 @@ export default function SessionTimeoutModal({ isOpen, onStayLoggedIn, onLogout }
           </div>
           <div>
             <h2 className="text-white font-bold text-lg leading-tight">Session Expiring Soon</h2>
-            <p className="text-white/40 text-xs">You've been inactive for a while</p>
+            <p className="text-white/40 text-xs">You&apos;ve been inactive for a while</p>
           </div>
         </div>
 
         <p className="text-white/60 text-sm leading-relaxed">
-          You'll be automatically logged out in{" "}
+          You&apos;ll be automatically logged out in{" "}
           <span className="text-yellow-400 font-bold tabular-nums">{countdown}</span>{" "}
           due to inactivity.
         </p>

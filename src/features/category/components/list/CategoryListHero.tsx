@@ -1,4 +1,5 @@
 import React from "react";
+import Link from "next/link";
 import { Search } from "lucide-react";
 
 interface CategoryListHeroProps {
@@ -10,7 +11,7 @@ export const CategoryListHero: React.FC<CategoryListHeroProps> = ({ searchQuery,
   return (
     <>
       <nav className="flex items-center gap-2 text-sm font-semibold text-slate-400 mb-10">
-        <a href="/" className="hover:text-pink-500 transition-colors">Home</a>
+        <Link href="/" className="hover:text-pink-500 transition-colors">Home</Link>
         <span className="text-slate-300">/</span>
         <span className="text-slate-900">Select Category</span>
       </nav>
@@ -18,10 +19,10 @@ export const CategoryListHero: React.FC<CategoryListHeroProps> = ({ searchQuery,
       <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-8 mb-12">
         <div className="max-w-xl">
           <h2 className="text-5xl lg:text-6xl font-black tracking-tight text-slate-900 mb-4 leading-tight">
-            What's the <span className="text-pink-500 italic">vibe</span> today?
+            What&apos;s the <span className="text-pink-500 italic">vibe</span> today?
           </h2>
           <p className="text-xl text-slate-500 font-medium">
-            Let's find your next core memory. Select a category to get started.
+            Let&apos;s find your next core memory. Select a category to get started.
           </p>
         </div>
 

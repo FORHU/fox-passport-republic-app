@@ -30,7 +30,7 @@ export default function ForgotPasswordForm() {
     <div className="animate-in fade-in slide-in-from-right-8 duration-300">
       <div className="text-center mb-8">
         <h2 className="text-3xl font-display font-bold text-white mb-2">Forgot your password?</h2>
-        <p className="text-gray-400 text-sm">Enter your email and we'll send you a reset code.</p>
+        <p className="text-gray-400 text-sm">Enter your email and we&apos;ll send you a reset code.</p>
       </div>
 
       <form className="space-y-4" onSubmit={handleSubmit(onSubmit)}>

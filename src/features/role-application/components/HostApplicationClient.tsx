@@ -121,7 +121,7 @@ export default function HostApplicationClient() {
             <div className="p-4 bg-[#ff00aa]/10 border border-[#ff00aa]/20 rounded-2xl flex items-start gap-3">
               <ShieldCheck className="text-[#ff00aa] shrink-0 mt-0.5" size={20} />
               <p className="text-xs text-[#ff00aa]/80 leading-relaxed">
-                By submitting this application, you agree to comply with FoxPassport's event hosting policies and quality standards. Your application will be reviewed by our team.
+                By submitting this application, you agree to comply with FoxPassport&apos;s event hosting policies and quality standards. Your application will be reviewed by our team.
               </p>
             </div>
 

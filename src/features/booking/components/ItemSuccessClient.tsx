@@ -1,6 +1,6 @@
 ﻿'use client';
 
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useMemo } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useItemBookingStore } from '@/features/booking/store/useItemBookingStore';
@@ -55,7 +55,7 @@ export default function ItemSuccessClient() {
       })
     : 'To be confirmed';
 
-  const orderRef = `FX-${Math.floor(10000 + Math.random() * 90000)}`;
+  const orderRef = useMemo(() => `FX-${Math.floor(10000 + Math.random() * 90000)}`, []);
 
   return (
     <div className="bg-background bg-gradient-dark text-text-main antialiased min-h-screen flex flex-col selection:bg-accent selection:text-black font-body relative overflow-x-hidden">

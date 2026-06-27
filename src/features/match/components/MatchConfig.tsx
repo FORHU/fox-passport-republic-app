@@ -126,7 +126,7 @@ const MatchConfig: React.FC = () => {
                 <div className="space-y-4">
                   <h1 className="text-4xl md:text-6xl font-display font-bold text-white">Match with {foxer.name}</h1>
                   <p className="text-xl text-text-muted max-w-2xl mx-auto italic">
-                    Select a <span className="text-white font-bold underline decoration-accent/50 underline-offset-4">Signature Experience</span>. These represent {foxer.name}'s most successful past works.
+                    Select a <span className="text-white font-bold underline decoration-accent/50 underline-offset-4">Signature Experience</span>. These represent {foxer.name}&apos;s most successful past works.
                   </p>
                 </div>
 
@@ -309,7 +309,7 @@ const MatchConfig: React.FC = () => {
                      </div>
                      <div className="bg-black/20 p-6 rounded-2xl border border-white/5">
                         <label className="text-xs font-bold text-text-muted uppercase mb-4 block">Your Note</label>
-                        <p className="text-sm italic text-gray-400">"{requestContent || 'No special requests added.'}"</p>
+                        <p className="text-sm italic text-gray-400">&quot;{requestContent || 'No special requests added.'}&quot;</p>
                      </div>
                   </div>
                 </div>

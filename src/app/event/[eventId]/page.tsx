@@ -403,7 +403,7 @@ const CustomExperienceBuilder: React.FC<{ isOpen: boolean; onClose: () => void; 
                 </>
               )}
             </button>
-            <p className="text-[10px] text-center text-text-muted mt-3">You won't be charged yet.</p>
+            <p className="text-[10px] text-center text-text-muted mt-3">You won&apos;t be charged yet.</p>
           </div>
         </aside>
       </div>
@@ -605,7 +605,7 @@ const EventDetailsPage: React.FC = () => {
                               </div>
                           </div>
                           <p className="text-sm text-text-muted leading-relaxed">
-                              "{host.description}"
+                              &quot;{host.description}&quot;
                           </p>
                       </div>
                   </div>
@@ -769,7 +769,7 @@ const EventDetailsPage: React.FC = () => {
 
               {/* Map Section */}
               <div>
-                 <h3 className="text-2xl font-display font-bold text-white mb-2">Where you'll be</h3>
+                 <h3 className="text-2xl font-display font-bold text-white mb-2">Where you&apos;ll be</h3>
                  <p className="text-text-muted text-sm mb-6">{venue.location}, {venue.province}</p>
                  <div className="h-80 w-full rounded-2xl bg-[#1f2235] relative overflow-hidden flex items-center justify-center border border-white/10 group">
                     <div className="absolute inset-0 opacity-20" style={{ backgroundImage: "radial-gradient(#ffffff 1px, transparent 1px)", backgroundSize: "20px 20px" }}></div>
@@ -908,7 +908,7 @@ const EventDetailsPage: React.FC = () => {
                     Design Custom Experience
                   </button>
 
-                  <p className="text-center text-xs text-text-muted mb-6 relative z-10">You won't be charged yet</p>
+                  <p className="text-center text-xs text-text-muted mb-6 relative z-10">You won&apos;t be charged yet</p>
 
                   {venue.price > 0 && (
                     <>

@@ -40,7 +40,7 @@ export function CuratorSection({ host }: CuratorSectionProps) {
               {host.rating}
             </div>
           </div>
-          <p className="text-sm text-text-muted leading-relaxed">"{host.description}"</p>
+          <p className="text-sm text-text-muted leading-relaxed">&quot;{host.description}&quot;</p>
         </div>
       </div>
     </div>

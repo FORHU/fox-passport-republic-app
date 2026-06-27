@@ -1,5 +1,6 @@
 export const dynamic = 'force-dynamic';
 
+import Link from 'next/link';
 import { getCategoryBySlug, getEventsByCategory, getVenuesByCategory } from '@/shared/lib/server/data'
 import CategoryDetailClient from '@/features/category/components/CategoryDetailClient'
 
@@ -23,9 +24,9 @@ export default async function CategoryDetailPage({ params }: CategoryDetailPageP
     return (
       <div className="min-h-screen bg-black flex flex-col items-center justify-center text-center p-4">
         <h1 className="text-3xl font-bold text-white mb-4">Category Not Found</h1>
-        <a href="/" className="px-6 py-3 rounded-xl bg-[#ccff00] text-black font-bold hover:bg-[#b3e600] transition-colors">
+        <Link href="/" className="px-6 py-3 rounded-xl bg-[#ccff00] text-black font-bold hover:bg-[#b3e600] transition-colors">
           Go Home
-        </a>
+        </Link>
       </div>
     )
   }

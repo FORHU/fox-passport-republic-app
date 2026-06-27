@@ -233,7 +233,7 @@ function ApplicationDetailDrawer({
           {app.status === 'rejected' && app.rejectionReason && (
             <div className="bg-red-500/10 border border-red-500/20 rounded-xl p-4">
               <p className="text-xs text-red-400/60 uppercase tracking-wider mb-1">Rejection Reason</p>
-              <p className="text-red-300 text-sm">"{app.rejectionReason}"</p>
+              <p className="text-red-300 text-sm">&quot;{app.rejectionReason}&quot;</p>
             </div>
           )}
         </div>

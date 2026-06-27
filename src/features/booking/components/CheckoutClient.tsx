@@ -290,7 +290,7 @@ export default function CheckoutClient() {
                   <div>
                     <h4 className="text-white font-bold font-display text-sm mb-1">FoxPassport Guarantee</h4>
                     <p className="text-xs text-text-muted leading-relaxed">
-                      Your booking is protected. If the vibe isn't as described, we've got your back with a full refund within 24 hours of the event.
+                      Your booking is protected. If the vibe isn&apos;t as described, we&apos;ve got your back with a full refund within 24 hours of the event.
                     </p>
                   </div>
                 </div>

@@ -127,7 +127,7 @@ export default function FoxerEarningsClient() {
           <div className="glass-panel rounded-2xl p-10 border border-white/10 text-center">
             <span className="material-symbols-outlined text-white/10 text-6xl block mb-3">inbox</span>
             <p className="text-white/40 text-sm">No bookings yet.</p>
-            <p className="text-white/20 text-xs mt-1">Once clients book your services or equipment, they'll appear here.</p>
+            <p className="text-white/20 text-xs mt-1">Once clients book your services or equipment, they&apos;ll appear here.</p>
           </div>
         ) : (
           <div className="space-y-3">

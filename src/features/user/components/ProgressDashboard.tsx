@@ -201,7 +201,7 @@ export const ProgressDashboard: React.FC<ProgressDashboardProps> = ({
               <h2 className="text-3xl font-display font-bold text-white mb-2">
                 My <span className="text-[#ccff00]">Passport</span>
               </h2>
-              <p className="text-white/50">Collection of events you've attended</p>
+              <p className="text-white/50">Collection of events you&apos;ve attended</p>
             </div>
             <button className="text-sm font-bold text-white/50 hover:text-white transition-colors flex items-center gap-1 group">
               View All

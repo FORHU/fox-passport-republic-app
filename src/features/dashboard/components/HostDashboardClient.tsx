@@ -24,7 +24,7 @@ import { ProgressDashboard } from '@/features/user/components/ProgressDashboard'
 import { mapBackendAssetToInventoryItem, mapBackendServiceToServiceItem } from '@/features/dashboard/mappers/listings';
 import { useHostData } from "@/features/dashboard/hooks/useHostData";
 import type { EventItem } from '@/features/dashboard/data/dashboardData';
-import StripeConnectSection from '@/components/host/dashboard/StripeConnectSection';
+import StripeConnectSection from '@/features/dashboard/components/StripeConnectSection';
 
 interface HostDashboardClientProps {
   initialData: {
