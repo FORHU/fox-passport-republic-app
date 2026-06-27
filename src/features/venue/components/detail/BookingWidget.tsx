@@ -144,7 +144,7 @@ export function BookingWidget({
         )}
 
         <p className="text-center text-xs text-text-muted mb-5 relative z-10">
-          You won't be charged until the owner confirms.
+          You won&apos;t be charged until the owner confirms.
         </p>
 
         {/* Price Breakdown */}

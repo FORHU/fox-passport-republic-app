@@ -364,7 +364,7 @@ export default function AssetBookingClient({ assetId }: { assetId: string }) {
                   <div className="flex items-start gap-3 px-4 py-3 bg-white/5 rounded-xl border border-white/10">
                     <span className="material-symbols-outlined text-accent text-[18px] mt-0.5 shrink-0">info</span>
                     <p className="text-sm text-text-muted">
-                      You'll pick up and return the equipment directly from the owner's location. Coordinates will be shared after booking is confirmed.
+                      You&apos;ll pick up and return the equipment directly from the owner&apos;s location. Coordinates will be shared after booking is confirmed.
                     </p>
                   </div>
                 )}

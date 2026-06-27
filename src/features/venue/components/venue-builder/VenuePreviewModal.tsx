@@ -189,7 +189,7 @@ export function VenuePreviewModal({
               {includedItems.length > 0 && (
                 <div>
                   <div className="h-px bg-white/10 mb-8" />
-                  <h2 className="text-xl font-display font-bold mb-2">What's included</h2>
+                  <h2 className="text-xl font-display font-bold mb-2">What&apos;s included</h2>
                   <p className="text-xs text-white/40 mb-5">Standard features bundled with every booking</p>
                   <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                     {includedItems.map((item) => (

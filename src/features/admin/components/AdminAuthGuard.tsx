@@ -1,6 +1,7 @@
 ﻿"use client";
 
 import React, { useEffect, useState } from 'react';
+import Link from 'next/link';
 import { useAuthStore, useAuthActions, useAuthStatus, useAuthLoading } from '@/features/auth/store/useAuthStore';
 
 interface AdminAuthGuardProps {
@@ -93,12 +94,12 @@ const AdminAuthGuard: React.FC<AdminAuthGuardProps> = ({ children }) => {
           <p className="relative z-10 text-white/60 mb-10">
             You do not have the necessary permissions to access this area.
           </p>
-          <a
+          <Link
             href="/"
             className="relative z-10 w-full btn-neon bg-white/10 hover:bg-white/20 text-white font-bold py-4 px-8 rounded-full transition-all block text-center"
           >
             Return to Home
-          </a>
+          </Link>
         </div>
       </div>
     );

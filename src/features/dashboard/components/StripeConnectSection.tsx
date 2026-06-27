@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { useStripeConnect } from "@/hooks/dashboards/useStripeConnect";
+import { useStripeConnect } from "@/features/dashboard/hooks/useStripeConnect";
 import { Loader2, CheckCircle, AlertCircle, ExternalLink } from "lucide-react";
 
 function StatusBadge({ enabled, label }: { enabled: boolean; label: string }) {
@@ -104,7 +104,7 @@ export default function StripeConnectSection() {
           ) : (
             <div className="flex items-center justify-center gap-2 text-[#ccff00] text-sm py-2">
               <CheckCircle size={14} />
-              You're all set to receive payouts
+              You&apos;re all set to receive payouts
             </div>
           )}
         </>

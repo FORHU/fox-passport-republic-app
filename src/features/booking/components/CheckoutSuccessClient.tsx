@@ -1,6 +1,6 @@
 ﻿'use client';
 
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useMemo } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useCheckoutStore } from '@/features/booking/store/useCheckoutStore';
@@ -13,6 +13,7 @@ export default function CheckoutSuccessClient() {
   const { venueName, venueImage, venueLocation, guestCount, totalAmount, checkInDate, checkInTime, draftBookingId } = useCheckoutStore();
   const { user } = useAuthStore();
   const confirmed = useRef(false);
+  const orderNumber = useMemo(() => Math.floor(10000 + Math.random() * 90000), []);
 
   // Confirm payment on the backend once, using the Stripe payment_intent from the redirect URL
   useEffect(() => {
@@ -89,7 +90,7 @@ export default function CheckoutSuccessClient() {
             </div>
             <h1 className="text-4xl md:text-5xl font-display font-bold text-white tracking-tight mb-4">Booking Confirmed!</h1>
             <p className="text-lg text-text-muted max-w-lg mx-auto">
-              You're all set for <span className="text-accent font-bold">{venueName || 'Neon Nights'}</span>. We've sent the receipt and digital ticket to your email.
+              You&apos;re all set for <span className="text-accent font-bold">{venueName || 'Neon Nights'}</span>. We&apos;ve sent the receipt and digital ticket to your email.
             </p>
           </div>
 
@@ -109,7 +110,7 @@ export default function CheckoutSuccessClient() {
               <div className="grow flex flex-col justify-center">
                 <div className="text-accent font-bold text-xs mb-2 uppercase tracking-widest flex items-center gap-2">
                   <span className="flex h-2 w-2 rounded-full bg-accent animate-pulse"></span>
-                  Confirmed • Order #FP-{Math.floor(10000 + Math.random() * 90000)}
+                  Confirmed • Order #FP-{orderNumber}
                 </div>
                 <h3 className="font-display font-bold text-white text-3xl leading-tight mb-4">
                   {venueName || 'Neon Nights: Retro Wave Party'}

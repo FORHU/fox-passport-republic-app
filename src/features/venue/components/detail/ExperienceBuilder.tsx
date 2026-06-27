@@ -408,7 +408,7 @@ export function CustomExperienceBuilder({ isOpen, onClose, venuePrice }: Experie
               )}
             </button>
             <p className="text-[10px] text-center text-text-muted mt-3">
-              You won't be charged yet.
+              You won&apos;t be charged yet.
             </p>
           </div>
         </aside>
