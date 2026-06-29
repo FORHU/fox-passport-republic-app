@@ -15,6 +15,9 @@ import {
   AdminServicesTable,
 } from '@/features/admin/components';
 import { useAdminData } from '@/features/admin/hooks/useAdminData';
+import { useAdminPendingVenues } from '@/features/admin/hooks/useAdminPendingVenues';
+import { useAdminPendingAssets } from '@/features/admin/hooks/useAdminPendingAssets';
+import { useAdminPendingServices } from '@/features/admin/hooks/useAdminPendingServices';
 
 interface Props {
   stats: any;
@@ -52,7 +55,9 @@ export const AdminContent: React.FC<Props> = ({
   const { data: categories, isLoading: loadingCategories } = useAdminData('categories', initialCategories);
   const { data: adminStats } = useAdminData('stats', stats);
   const { data: adminBookings } = useAdminData('bookings', initialBookings);
-
+  const { venues: pendingVenues, isLoading: loadingPendingVenues } = useAdminPendingVenues();
+  const { assets: pendingAssets, isLoading: loadingPendingAssets } = useAdminPendingAssets();
+  const { services: pendingServices, isLoading: loadingPendingServices } = useAdminPendingServices();
   return (
     <div className="p-8 space-y-8">
       {activeTab === 'dashboard' && (
@@ -63,6 +68,13 @@ export const AdminContent: React.FC<Props> = ({
             categoryStats={adminStats?.categoryStats ?? []}
           />
           <AdminSubmissionsTable />
+
+          <div className="space-y-6">
+            <h2 className="text-xl font-display font-bold text-white">Pending Listings</h2>
+            <AdminVenuesTable venues={pendingVenues} isLoading={loadingPendingVenues} />
+            <AdminAssetsTable assets={pendingAssets} isLoading={loadingPendingAssets} />
+            <AdminServicesTable services={pendingServices} isLoading={loadingPendingServices} />
+          </div>
         </>
       )}
 
