@@ -1,8 +1,15 @@
 "use client";
 
 import React from "react";
+import Link from "next/link";
 import { useStripeConnect } from "@/features/dashboard/hooks/useStripeConnect";
-import { Loader2, CheckCircle, AlertCircle, ExternalLink } from "lucide-react";
+import {
+  Loader2,
+  CheckCircle,
+  AlertCircle,
+  ExternalLink,
+  LayoutDashboard,
+} from "lucide-react";
 
 function StatusBadge({ enabled, label }: { enabled: boolean; label: string }) {
   return (
@@ -18,7 +25,7 @@ function StatusBadge({ enabled, label }: { enabled: boolean; label: string }) {
 }
 
 export default function StripeConnectSection() {
-  const { status, loading, onboarding, error, startOnboarding } = useStripeConnect();
+  const { status, loading, error } = useStripeConnect();
 
   const isComplete = status?.stripeOnboardingComplete &&
     status?.stripeChargesEnabled &&
@@ -89,22 +96,26 @@ export default function StripeConnectSection() {
       {!loading && (
         <>
           {!isComplete ? (
-            <button
-              onClick={startOnboarding}
-              disabled={onboarding}
-              className="w-full flex items-center justify-center gap-2 bg-[#635bff] hover:bg-[#5b53f5] text-white text-sm font-semibold py-2.5 rounded-full transition disabled:opacity-50"
+            <Link
+              href="/host/stripe-onboard"
+              className="w-full flex items-center justify-center gap-2 bg-[#635bff] hover:bg-[#5b53f5] text-white text-sm font-semibold py-2.5 rounded-full transition"
             >
-              {onboarding ? (
-                <Loader2 size={14} className="animate-spin" />
-              ) : (
-                <ExternalLink size={14} />
-              )}
+              <ExternalLink size={14} />
               {status?.hasStripeAccount ? "Continue Onboarding" : "Connect Stripe"}
-            </button>
+            </Link>
           ) : (
-            <div className="flex items-center justify-center gap-2 text-[#ccff00] text-sm py-2">
-              <CheckCircle size={14} />
-              You&apos;re all set to receive payouts
+            <div className="flex flex-col gap-3">
+              <div className="flex items-center justify-center gap-2 text-[#ccff00] text-sm py-2">
+                <CheckCircle size={14} />
+                You&apos;re all set to receive payouts
+              </div>
+              <Link
+                href="/host/stripe-dashboard"
+                className="w-full flex items-center justify-center gap-2 bg-white/10 hover:bg-white/20 text-white text-sm font-semibold py-2.5 rounded-full transition border border-white/10"
+              >
+                <LayoutDashboard size={14} />
+                Stripe Dashboard
+              </Link>
             </div>
           )}
         </>
@@ -112,5 +123,3 @@ export default function StripeConnectSection() {
     </div>
   );
 }
-
-
