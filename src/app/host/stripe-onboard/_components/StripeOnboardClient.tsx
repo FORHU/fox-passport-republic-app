@@ -10,7 +10,6 @@ import {
   ConnectAccountOnboarding,
   ConnectComponentsProvider,
 } from "@stripe/react-connect-js";
-import api from "@/shared/lib/axios";
 import { Loader2, ArrowLeft } from "lucide-react";
 
 export default function StripeOnboardClient() {
@@ -29,10 +28,20 @@ export default function StripeOnboardClient() {
         const instance = loadConnectAndInitialize({
           publishableKey: process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!,
           fetchClientSecret: async () => {
-            const res = await api.post("/stripe-connect/session");
-            const secret = res.data?.data?.clientSecret ?? res.data?.clientSecret;
-            if (!secret) throw new Error("No client secret returned");
-            return secret;
+            const storedId = localStorage.getItem("fox_stripe_account_id");
+            const res = await fetch("/api/stripe-connect/session", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ stripeAccountId: storedId || undefined }),
+            });
+            if (!res.ok) {
+              const err = await res.json().catch(() => ({ error: "Request failed" }));
+              throw new Error(err.error || `HTTP ${res.status}`);
+            }
+            const data = await res.json();
+            if (!data.clientSecret) throw new Error("No client secret returned");
+            if (data.stripeAccountId) localStorage.setItem("fox_stripe_account_id", data.stripeAccountId);
+            return data.clientSecret;
           },
           appearance: {
             overlays: "dialog",
