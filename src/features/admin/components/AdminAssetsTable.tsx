@@ -186,21 +186,50 @@ export const AdminAssetsTable: React.FC<AssetsTableProps> = ({ assets, isLoading
                             <p className="text-[9px] uppercase font-bold text-purple-400 tracking-[0.2em] mb-2">Quantity</p>
                             <p className="text-white font-bold">{asset.quantity ?? '—'}</p>
                           </div>
-                          {Array.isArray(asset.images) && asset.images.length > 1 && (
-                            <div className="col-span-4">
-                              <p className="text-[9px] uppercase font-bold text-purple-400 tracking-[0.2em] mb-3">Gallery</p>
-                              <div className="flex gap-2 flex-wrap">
-                                {asset.images.map((img: any, idx: number) => {
-                                  const src = typeof img === 'string' ? img : img?.url || img?.imageUrl;
-                                  return src ? (
-                                    <a key={idx} href={src} target="_blank" rel="noopener noreferrer">
-                                      <img src={src} alt="" className="h-20 w-20 object-cover rounded-xl border border-white/10 hover:border-purple-400/50 transition" />
-                                    </a>
-                                  ) : null;
-                                })}
-                              </div>
-                            </div>
-                          )}
+                          
+                          <div className="col-span-4">
+  <p className="text-[9px] uppercase font-bold text-purple-400 tracking-[0.2em] mb-3">
+    Uploaded Files ({Array.isArray(asset.images) ? asset.images.length : 0})
+  </p>
+  {Array.isArray(asset.images) && asset.images.length > 0 ? (
+    <div className="flex gap-2 flex-wrap">
+      {asset.images.map((img: any, idx: number) => {
+        const src = typeof img === 'string' ? img : img?.url || img?.imageUrl;
+        const name = typeof img === 'string' ? null : img?.name;
+        const isPdf = name?.toLowerCase().endsWith('.pdf') || src?.toLowerCase().endsWith('.pdf');
+
+        if (!src) return null;
+
+        return isPdf ? (
+          <a
+            key={idx}
+            href={src}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="h-20 w-20 rounded-xl bg-white/5 border border-white/10 flex flex-col items-center justify-center gap-1 hover:border-purple-400/50 transition group"
+          >
+            <span className="material-symbols-outlined text-[24px] text-red-400 group-hover:scale-110 transition-transform">picture_as_pdf</span>
+            <span className="text-[8px] text-white/40 truncate max-w-[60px]">{name || 'File'}</span>
+          </a>
+        ) : (
+          <a key={idx} href={src} target="_blank" rel="noopener noreferrer" className="relative group">
+            <img
+              src={src}
+              alt=""
+              className="h-20 w-20 object-cover rounded-xl border border-white/10 group-hover:border-purple-400/50 transition"
+            />
+            <div className="absolute inset-0 rounded-xl bg-black/50 opacity-0 group-hover:opacity-100 transition flex items-center justify-center">
+              <span className="material-symbols-outlined text-white text-[18px]">open_in_new</span>
+            </div>
+          </a>
+        );
+      })}
+    </div>
+  ) : (
+    <p className="text-xs text-white/30 italic">No files uploaded</p>
+  )}
+</div>
+
                         </div>
                       </td>
                     </tr>
