@@ -82,15 +82,15 @@ Status values are sourced from backend Prisma enums — the frontend must mirror
 | Venue | `draft` → `pending` (admin review) → `available` / `rejected` / `archived` |
 | Asset | `draft` → `pending` (admin review) → `available` / `reserved` / `rejected` / `archived` |
 | Service | `draft` → `pending` (admin review) → `available` → `paused` / `archived` / `rejected` |
-| Event Template | `eventStatus: draft` → `eventStatus: pending` + `requestStatus: pending` (admin review) → `eventStatus: ongoing` / `completed` / `cancelled` |
+| Event Template | `draft` → `pending` (admin review) → `published` / `rejected` / `archived` |
 | Booking | `pending` → `confirmed` → `active` → `completed` / `cancelled` / `disputed` |
 | Role Application | `pending` → `approved` / `rejected` |
 
 Notes:
 - `"paused"` on Service is the Foxer's availability toggle (not a separate field) — only valid after `"available"`
 - `"reserved"` on Asset is system-set when an asset is booked
-- Event Template has two status fields: `eventStatus` (lifecycle) and `requestStatus` (admin approval gate)
-- Submitting an Event Template for admin review requires a dedicated `POST /event-templates/:id/submit` endpoint (backend gap — the existing `updateTemplate` endpoint does not accept status fields)
+- Event Template uses a single `status: EventTemplateStatus` field (enum: `draft/pending/published/rejected/archived`) — not the `EventStatus` enum used by the spawned `Event` model
+- Host submits a template via `POST /event-templates/:id/submit` — only valid from `draft` state, sets status to `pending`
 
 ---
 
