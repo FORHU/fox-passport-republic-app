@@ -44,7 +44,7 @@ export interface Event {
   categoryId: string | null;
   title: string;
   description: string;
-  status: "draft" | "active" | "cancelled" | "completed";
+  status: "draft" | "pending" | "ongoing" | "completed" | "cancelled";
   maxAttendees: number | null;
   isPublished: boolean;
   createdAt: string;

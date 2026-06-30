@@ -19,3 +19,8 @@ export async function updateEvent(eventId: Id, payload: any): Promise<any> {
 export async function deleteEvent(eventId: Id): Promise<void> {
   await api.delete(`/event-templates/${eventId}`);
 }
+
+export async function submitEventTemplate(eventId: Id): Promise<any> {
+  const resp = await api.post(`/event-templates/${eventId}/submit`);
+  return resp.data?.template ?? resp.data;
+}
