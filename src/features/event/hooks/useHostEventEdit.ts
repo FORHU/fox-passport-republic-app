@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { useAuthStore } from "@/features/auth/store/useAuthStore";
 import { useEventBuilder } from "@/features/event/hooks/useEventBuilder";
-import { fetchEventsByHostId, updateEvent } from "@/features/event/api/events";
+import { fetchEventsByHostId, updateEvent, submitEventTemplate } from "@/features/event/api/events";
 import { EVENT_CATEGORIES, VENUE_ICONS, TALENT_ICONS } from "@/features/event/data/eventBuilderData";
 import type { Id } from "@/shared/lib/api-types";
 
@@ -29,15 +29,13 @@ function normalizeLower(value: unknown) {
 function normalizeEventStatusToBackend(value: unknown): string {
   const raw = normalizeLower(value);
 
-  // Backend event enum values (see `types/event.ts`):
-  // - draft | active | cancelled | completed
+  // Backend EventStatus enum (prisma/schema.prisma): draft | pending | ongoing | completed | cancelled
   if (!raw) return "draft";
   if (raw.includes("draft")) return "draft";
+  if (raw.includes("pend")) return "pending";
+  if (raw.includes("ongoing")) return "ongoing";
   if (raw.includes("cancel")) return "cancelled";
   if (raw.includes("complete")) return "completed";
-  if (raw.includes("publish")) return "published";
-  if (raw.includes("active")) return "published";
-  if (raw.includes("ongoing")) return "ongoing";
   return "draft";
 }
 
@@ -222,7 +220,6 @@ export function useHostEventEdit(eventId: string) {
         endDatetime,
         maxAttendees: Math.max(1, Math.floor(builder.maxAttendees || 100)),
         totalPrice: Number(builder.financials?.suggestedPrice) || 0,
-        status: targetStatus,
         images: builder.gallery.map((g, index) => ({
           imageUrl: g.url,
           isPrimary: index === 0,
@@ -232,8 +229,11 @@ export function useHostEventEdit(eventId: string) {
 
       await updateEvent(eventId, payload);
 
-      setExistingStatus(targetStatus);
-      toast.success(targetStatus === "draft" ? "Draft saved!" : "Event published!");
+      if (targetStatus === "pending") {
+        await submitEventTemplate(eventId);
+      }
+
+      toast.success(targetStatus === "draft" ? "Draft saved!" : "Event submitted for review!");
       setTimeout(() => {
         builder.reset();
         router.push(backHref);
@@ -250,7 +250,7 @@ export function useHostEventEdit(eventId: string) {
     }
   };
 
-  const handlePublish = useCallback(() => submitEvent("published"), [
+  const handlePublish = useCallback(() => submitEvent("pending"), [
     builder,
     eventId,
     existingEndDatetime,

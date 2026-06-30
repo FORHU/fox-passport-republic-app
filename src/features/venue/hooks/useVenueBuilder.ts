@@ -124,16 +124,41 @@ export function useVenueBuilder() {
     router.push("/creator-dashboard");
   }, [router]);
 
-  const handleSaveDraft = useCallback(() => {
-    console.log("Saving draft...", {
-      venueName: store.venueName,
-      description: store.description,
-      venueType: store.venueType,
-      capacity: store.capacity,
-      location: store.location,
-      includedItems: store.includedItems,
-      addonItems: store.addonItems,
-    });
+  const handleSaveDraft = useCallback(async () => {
+    if (!store.venueName) {
+      toast.error("Please enter a venue name before saving");
+      return;
+    }
+
+    store.setIsSubmitting(true);
+    try {
+      const allItems = [...store.includedItems, ...store.addonItems];
+      const payload = {
+        name: store.venueName,
+        description: store.description || undefined,
+        category: store.venueType ? store.venueType.toLowerCase().replace(/\s+/g, "_") : undefined,
+        capacity: parseInt(store.capacity) || undefined,
+        address: store.location || undefined,
+        city: store.city || undefined,
+        state: store.state || undefined,
+        country: store.country || undefined,
+        price: store.baseRate || undefined,
+        spaceType: allItems.filter(i => i.category === 'spaces').map(i => i.name),
+        amenities: allItems.filter(i => i.category === 'amenities').map(i => i.name),
+        techAv: allItems.filter(i => i.category === 'tech').map(i => i.name),
+        staffing: allItems.filter(i => i.category === 'staff').map(i => i.name),
+        policies: allItems.filter(i => i.category === 'rules').map(i => i.name),
+        status: 'draft',
+      };
+
+      await api.post("/venues/create", payload);
+      toast.success("Draft saved!");
+    } catch (error: any) {
+      const msg = error?.response?.data?.message || "Failed to save draft";
+      toast.error(msg);
+    } finally {
+      store.setIsSubmitting(false);
+    }
   }, [store]);
 
   const handlePublish = useCallback(async () => {

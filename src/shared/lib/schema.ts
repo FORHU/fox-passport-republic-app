@@ -77,7 +77,7 @@ export const createServiceSchema = z.object({
   category: z.string().min(1, "Category is required"),
   price: z.number().min(0, "Price must be non-negative"),
   billingRate: z.enum(["hourly", "daily", "weekly", "monthly"]).default("hourly"),
-  status: z.enum(["active", "paused", "unavailable"]).default("active"),
+  status: z.enum(["draft", "pending", "available", "paused", "archived", "rejected"]).default("draft"),
 });
 
 export type CreateServiceFormData = z.infer<typeof createServiceSchema>;
@@ -98,7 +98,7 @@ export const createEventSchema = z.object({
   endDatetime: z.date(),
   maxAttendees: z.number().int().min(1, "Max attendees must be at least 1"),
   totalPrice: z.number().min(0, "Price must be non-negative").optional(),
-  status: z.enum(["draft", "published", "cancelled", "completed"]).default("draft"),
+  status: z.enum(["draft", "pending", "ongoing", "completed", "cancelled"]).default("draft"),
 });
 
 export type CreateEventFormData = z.infer<typeof createEventSchema>;
@@ -120,7 +120,7 @@ export const createVenueSchema = z.object({
   state: z.string().optional(),
   country: z.string().min(1, "Country is required"),
   price: z.number().min(0, "Price must be non-negative"),
-  status: z.enum(["draft", "pending_review", "published", "suspended", "archived"]).default("draft"),
+  status: z.enum(["draft", "pending", "available", "archived", "rejected"]).default("draft"),
 });
 
 export type CreateVenueFormData = z.infer<typeof createVenueSchema>;

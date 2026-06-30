@@ -48,7 +48,7 @@ const getInitialState = (type: ListingType = "inventory") => ({
   price: 0,
   unit: type === "service" ? "Per Hour" : "Per Item / Day",
   condition: "good",
-  status: type === "service" ? "active" : "available",
+  status: "draft",
   image: "",
   showGuide: true,
   isSubmitting: false,
