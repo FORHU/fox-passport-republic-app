@@ -3,8 +3,8 @@
 import { useSearchParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import Image from "next/image";
-import type { SearchResult } from "@/shared/lib/server/data";
+import SearchFilters from "@/features/search/components/SearchFilters";
+import SearchResults from "@/features/search/components/SearchResults";
 
 const Pill = ({ label, active, onClick }: { label: string; active: boolean; onClick: () => void }) => (
   <button
@@ -40,16 +40,11 @@ const getCategoriesForType = (t: string) => {
   }
 };
 
-interface Props {
-  initialResults: SearchResult[];
-}
-
-export default function SearchClient({ initialResults }: Props) {
+export default function SearchClient() {
   const searchParams = useSearchParams();
   const router = useRouter();
 
   const type = searchParams?.get("type") || "event_template";
-  const city = searchParams?.get("city") || "";
   const category = searchParams?.get("category") || "";
   const q = searchParams?.get("q") || "";
 
@@ -115,7 +110,7 @@ export default function SearchClient({ initialResults }: Props) {
       </div>
 
       <div className="max-w-7xl mx-auto">
-        <div className="flex flex-col gap-6 mb-12">
+        <div className="flex flex-col gap-6 mb-10">
           <div className="flex flex-col md:flex-row justify-between items-start md:items-end border-b border-white/10 pb-4 gap-4">
             <div className="flex gap-8">
               <button
@@ -177,51 +172,14 @@ export default function SearchClient({ initialResults }: Props) {
           </div>
         </div>
 
-        {initialResults.length === 0 ? (
-          <div className="text-center py-20 bg-white/5 rounded-2xl border border-white/10">
-            <h3 className="text-2xl font-bold mb-2">
-              {city ? "No results found for this location." : "No results found."}
-            </h3>
-            <p className="text-white/60">Try adjusting your filters to find what you&apos;re looking for.</p>
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {initialResults.map((item) => (
-              <div
-                key={item.id}
-                className="bg-[#11121a] border border-white/10 rounded-2xl overflow-hidden hover:border-[#ccff00]/50 transition-colors group"
-              >
-                <div className="h-48 bg-white/5 relative overflow-hidden">
-                  {item.images && item.images.length > 0 ? (
-                    <Image src={item.images[0].url} alt={item.name} fill className="object-cover group-hover:scale-105 transition-transform duration-500" />
-                  ) : (
-                    <div className="absolute inset-0 flex items-center justify-center text-white/20">No Image</div>
-                  )}
-                  {item.category && (
-                    <div className="absolute top-4 left-4 bg-black/60 backdrop-blur-md px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider text-[#ccff00]">
-                      {item.category}
-                    </div>
-                  )}
-                </div>
-                <div className="p-6">
-                  <h3 className="text-xl font-bold mb-2 truncate">{item.name}</h3>
-                  <p className="text-white/60 text-sm line-clamp-2 mb-4">{item.description}</p>
-                  <div className="flex items-center justify-between mt-auto pt-4 border-t border-white/10">
-                    <div className="flex items-center text-sm text-white/60">
-                      <span className="material-symbols-outlined text-[16px] mr-1">location_on</span>
-                      <span className="truncate max-w-[120px]">{item.city || item.targetCity || "Location TBD"}</span>
-                    </div>
-                    {item.price && (
-                      <div className="font-bold text-[#ccff00]">
-                        {item.currency} {item.price}
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
+        <div className="flex flex-col lg:flex-row gap-8">
+          <aside className="w-full lg:w-80 shrink-0">
+            <SearchFilters />
+          </aside>
+          <main className="flex-1 min-w-0">
+            <SearchResults />
+          </main>
+        </div>
       </div>
     </div>
   );
