@@ -17,7 +17,7 @@ import {
 } from "@/features/venue/components/detail";
 import { CustomExperienceBuilder } from "@/features/venue/components/detail/ExperienceBuilder";
 import { useVenueDetailStore } from "@/features/venue/store/useVenueDetailStore";
-import { useCheckoutStore } from "@/features/booking/store/useCheckoutStore";
+
 
 interface VenueDetailClientProps {
   venue: any;
@@ -34,31 +34,6 @@ export default function VenueDetailClient({ venue, host }: VenueDetailClientProp
   }, []);
 
   const handleBack = useCallback(() => router.back(), [router]);
-
-  const handleRequestBook = useCallback(({ eventDate, guests }: { eventDate: string; guests: number }) => {
-    if (!eventDate) {
-      toast.error('Please select an event date before booking.');
-      return;
-    }
-    const price = Number(venue.price || 0);
-    const platformFee = Math.round(price * 0.05);
-    const total = price + platformFee;
-
-    const checkoutStore = useCheckoutStore.getState();
-    checkoutStore.setConfig({
-      venueId: venue.id,
-      venueName: venue.title || venue.name || 'Venue',
-      venueImage: venue.img || venue.images?.[0] || null,
-      venueLocation: venue.location || venue.loc || null,
-      checkInDate: eventDate, // full ISO date string e.g. "2026-05-14"
-      checkInTime: '08:00 AM',
-      nights: 1,
-      totalAmount: total,
-      guestCount: guests,
-    });
-
-    router.push('/booking/config');
-  }, [router, venue]);
 
   const handleContactOwner = useCallback(() => {
     toast.info('Messaging coming soon! For now, contact the owner through the platform.');
@@ -217,12 +192,12 @@ export default function VenueDetailClient({ venue, host }: VenueDetailClientProp
             {/* Right Column: Venue Booking Widget */}
             <div className="lg:sticky lg:top-32 lg:h-fit">
               <BookingWidget
+                venueId={venue.id}
                 price={venue.price}
                 billingRate={venue.billingRate}
                 rating={venue.rating || 0}
                 reviews={venue.reviews || 0}
                 capacity={venue.cap}
-                onRequestBook={handleRequestBook}
                 onContactOwner={handleContactOwner}
                 onCustomExperience={() => setIsCustomBookingOpen(true)}
               />
