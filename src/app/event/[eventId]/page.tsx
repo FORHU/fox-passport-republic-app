@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 
+
 // --- Mock Data for Customization ---
 const AVAILABLE_FOXERS = [
   { id: 1, name: 'Jinx', role: 'Visual Director', fee: 5000, rating: 5.0, avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=200&auto=format&fit=crop', description: 'Specializes in neon aesthetics and cyberpunk themes.' },
@@ -41,7 +42,7 @@ const CUSTOM_SERVICES: Record<string, any[]> = {
     { id: 'med2', name: 'Film Photo Booth', price: 5000, icon: 'camera', desc: 'Unlimited prints with custom border.' },
   ]
 };
-
+``
 // Default inclusions for this specific event
 const DEFAULT_INCLUSIONS = [
   { name: 'Standard Audio', icon: 'speaker', desc: 'High-fidelity sound system suitable for 200 pax.' },
@@ -870,26 +871,6 @@ const EventDetailsPage: React.FC = () => {
                     <div className="flex items-center gap-1 text-xs text-white font-bold">
                         <span className="material-symbols-outlined text-[14px] fill-current">star</span>
                         {venue.rating} · <span className="text-text-muted underline cursor-pointer">{venue.reviews} reviews</span>
-                    </div>
-                  </div>
-
-                  <div className="border border-white/20 rounded-xl overflow-hidden mb-4 relative z-10">
-                    <div className="grid grid-cols-2 border-b border-white/20">
-                      <div className="p-3 border-r border-white/20 hover:bg-white/5 cursor-pointer transition-colors relative group">
-                        <label className="block text-[10px] font-bold uppercase text-text-muted mb-1 group-hover:text-white">Check-in</label>
-                        <div className="text-sm text-white font-medium">Oct 12</div>
-                      </div>
-                      <div className="p-3 hover:bg-white/5 cursor-pointer transition-colors group">
-                        <label className="block text-[10px] font-bold uppercase text-text-muted mb-1 group-hover:text-white">Checkout</label>
-                        <div className="text-sm text-white font-medium">Oct 14</div>
-                      </div>
-                    </div>
-                    <div className="p-3 hover:bg-white/5 cursor-pointer transition-colors group">
-                      <label className="block text-[10px] font-bold uppercase text-text-muted mb-1 group-hover:text-white">Guests</label>
-                      <div className="flex justify-between items-center">
-                        <span className="text-sm text-white font-medium">1 guest</span>
-                        <span className="material-symbols-outlined text-[18px] text-white">expand_more</span>
-                      </div>
                     </div>
                   </div>
 
