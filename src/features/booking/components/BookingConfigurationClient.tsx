@@ -6,21 +6,18 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { useCheckoutStore } from '@/features/booking/store/useCheckoutStore';
 import { useAuthStore } from '@/features/auth/store/useAuthStore';
 import { bookFromTemplate, getPublicTemplate, fetchTemplateAvailability } from '@/features/booking/api/bookings';
-import AvailabilityCalendar from './AvailabilityCalendar';
+import DateRangePicker from '@/shared/components/ui/DateRangePicker';
 import { toast } from 'sonner';
 
 export default function BookingConfigurationClient() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const templateId = searchParams.get('templateId');
-  const { venueName, venueImage, guestCount, checkInDate, setConfig, setDraftIds } = useCheckoutStore();
+  const { venueName, venueImage, guestCount, setConfig, setDraftIds } = useCheckoutStore();
   const { user } = useAuthStore();
   const [isCreatingBooking, setIsCreatingBooking] = useState(false);
   const [template, setTemplate] = useState<any>(null);
   const [isLoadingTemplate, setIsLoadingTemplate] = useState(!!templateId);
-
-  // Pre-populate date from the venue booking widget if set
-  const initialDates = checkInDate ? [checkInDate] : [];
 
   useEffect(() => {
     if (!templateId) return;
@@ -74,9 +71,9 @@ export default function BookingConfigurationClient() {
   const totalAmount = basePrice - optOutSavings + serviceFee;
   const includedServices: any[] = template?.templateServices?.filter((ts: any) => !ts.isOptional).slice(0, 4) ?? [];
 
-  const [selectedTime, setSelectedTime] = useState('18:00');
   const [guests, setGuests] = useState(2);
-  const [selectedDates, setSelectedDates] = useState<string[]>(initialDates);
+  const [startDate, setStartDate] = useState('');
+  const [endDate, setEndDate] = useState('');
   const [bookedDates, setBookedDates] = useState<string[]>([]);
   const [dateError, setDateError] = useState('');
   const [excludedItemIds, setExcludedItemIds] = useState<Set<string>>(new Set());
@@ -172,40 +169,24 @@ export default function BookingConfigurationClient() {
                 <div className="mb-6">
                   <div className="flex items-center justify-between mb-3">
                     <label className="text-xs uppercase tracking-widest text-text-muted font-bold">Event Date(s)</label>
-                    {selectedDates.length > 0 && (
+                    {startDate && endDate && (
                       <span className="text-xs font-bold text-accent flex items-center gap-1">
                         <span className="material-symbols-outlined text-[14px]">check_circle</span>
-                        {selectedDates.length === 1
-                          ? new Date(selectedDates[0] + 'T00:00:00').toLocaleDateString('en-PH', { weekday: 'short', month: 'long', day: 'numeric', year: 'numeric' })
-                          : `${selectedDates.length} dates selected`}
+                        {new Date(startDate + 'T00:00:00').toLocaleDateString('en-PH', { weekday: 'short', month: 'long', day: 'numeric', year: 'numeric' })}
+                        {' — '}
+                        {new Date(endDate + 'T00:00:00').toLocaleDateString('en-PH', { weekday: 'short', month: 'long', day: 'numeric', year: 'numeric' })}
                       </span>
                     )}
                   </div>
-                  <AvailabilityCalendar
-                    mode="multi"
-                    values={selectedDates}
-                    onChange={(dates) => { setSelectedDates(dates); if (dates.length > 0) setDateError(''); }}
-                    bookedDates={bookedDates}
-                    accent="lime"
+                  <DateRangePicker
+                    startDate={startDate}
+                    endDate={endDate}
+                    onStartChange={(d) => { setStartDate(d); setDateError(''); }}
+                    onEndChange={(d) => { setEndDate(d); setDateError(''); }}
+                    errors={dateError ? { dates: dateError } : undefined}
+                    startLabel="Check-in"
+                    endLabel="Checkout"
                   />
-                  {dateError && (
-                    <p className="text-xs text-red-400 mt-2 flex items-center gap-1.5">
-                      <span className="material-symbols-outlined text-[13px]">error</span>
-                      {dateError}
-                    </p>
-                  )}
-                  {selectedDates.length > 1 && (
-                    <div className="mt-3 flex flex-wrap gap-1.5">
-                      {selectedDates.map(d => (
-                        <span key={d} className="flex items-center gap-1 px-2.5 py-1 bg-accent/10 border border-accent/20 rounded-full text-[10px] font-bold text-accent">
-                          {new Date(d + 'T00:00:00').toLocaleDateString('en-PH', { month: 'short', day: 'numeric' })}
-                          <button onClick={() => setSelectedDates(prev => prev.filter(x => x !== d))} className="text-accent/60 hover:text-accent">
-                            <span className="material-symbols-outlined text-[12px]">close</span>
-                          </button>
-                        </span>
-                      ))}
-                    </div>
-                  )}
                   {bookedDates.length > 0 && (
                     <p className="text-[10px] text-white/30 mt-2 flex items-center gap-1">
                       <span className="material-symbols-outlined text-[12px] text-red-400">info</span>
@@ -214,16 +195,6 @@ export default function BookingConfigurationClient() {
                   )}
                 </div>
 
-                {/* Call time */}
-                <div className="space-y-2">
-                  <label className="text-xs uppercase tracking-widest text-text-muted font-bold ml-1">Start Time</label>
-                  <input
-                    type="time"
-                    value={selectedTime}
-                    onChange={(e) => setSelectedTime(e.target.value)}
-                    className="w-full bg-white/5 border border-white/10 rounded-xl px-5 py-4 text-white focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent transition-all scheme-dark"
-                  />
-                </div>
               </div>
 
               {/* Guests Section */}
@@ -399,24 +370,16 @@ export default function BookingConfigurationClient() {
                       </div>
                       <div>
                         <p className="text-sm font-bold text-white">
-                          {selectedDates.length === 0
+                          {!startDate
                             ? 'No date selected'
-                            : selectedDates.length === 1
-                              ? new Date(selectedDates[0] + 'T00:00:00').toLocaleDateString('en-PH', { month: 'short', day: 'numeric', year: 'numeric' })
-                              : `${selectedDates.length} dates`}
+                            : !endDate
+                              ? new Date(startDate + 'T00:00:00').toLocaleDateString('en-PH', { month: 'short', day: 'numeric', year: 'numeric' })
+                              : `${new Date(startDate + 'T00:00:00').toLocaleDateString('en-PH', { month: 'short', day: 'numeric' })} — ${new Date(endDate + 'T00:00:00').toLocaleDateString('en-PH', { month: 'short', day: 'numeric', year: 'numeric' })}`}
                         </p>
                         <p className="text-xs text-text-muted">Scheduled date</p>
                       </div>
                     </div>
-                    <div className="flex items-start gap-3 pb-4 border-b border-white/5">
-                      <div className="h-8 w-8 rounded-full bg-white/5 flex items-center justify-center text-text-muted">
-                        <span className="material-symbols-outlined text-[16px]">schedule</span>
-                      </div>
-                      <div>
-                        <p className="text-sm font-bold text-white">{selectedTime}</p>
-                        <p className="text-xs text-text-muted">6 hours duration</p>
-                      </div>
-                    </div>
+
                     <div className="flex items-start gap-3">
                       <div className="h-8 w-8 rounded-full bg-white/5 flex items-center justify-center text-text-muted">
                         <span className="material-symbols-outlined text-[16px]">location_on</span>
@@ -460,24 +423,23 @@ export default function BookingConfigurationClient() {
                           venueName: templateName,
                           venueImage: templateImage ?? undefined,
                           venueLocation: templateLocation,
-                          checkInDate: null,
-                          checkInTime: selectedTime,
-                          nights: 1,
+                          checkInDate: startDate,
+                          nights: endDate ? Math.max(1, Math.ceil((new Date(endDate).getTime() - new Date(startDate).getTime()) / (1000 * 60 * 60 * 24))) + 1 : 1,
                           totalAmount,
                           guestCount: guests,
                         });
 
-                        if (selectedDates.length === 0) {
-                          setDateError('Please select at least one date.');
+                        if (!startDate) {
+                          setDateError('Please select a check-in date.');
                           return;
                         }
 
                         if (templateId) {
                           setIsCreatingBooking(true);
                           try {
-                            const startAt = new Date(`${selectedDates[0]}T${selectedTime}:00`);
-                            const lastDate = selectedDates[selectedDates.length - 1];
-                            const endAt = new Date(`${lastDate}T${selectedTime}:00`);
+                            const startAt = new Date(`${startDate}T18:00:00`);
+                            const endDateToUse = endDate || startDate;
+                            const endAt = new Date(`${endDateToUse}T18:00:00`);
                             endAt.setHours(endAt.getHours() + 6);
                             const result = await bookFromTemplate({
                               templateId,
