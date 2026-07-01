@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useMemo, useRef } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { fetchVenueById } from '@/features/venue/api/venues';
@@ -10,136 +10,10 @@ import { StepperControl } from '@/shared/components/ui/StepperControl';
 import { ProgressIndicator } from '@/shared/components/ui/ProgressIndicator';
 import { FormSection } from '@/shared/components/ui/FormSection';
 import { EscrowTimeline } from '@/shared/components/ui/EscrowTimeline';
+import DateRangePicker, { diffDays } from '@/shared/components/ui/DateRangePicker';
 import { toast } from 'sonner';
 
 const SERVICE_FEE_RATE = 0.10;
-
-function diffDays(start: string, end: string): number {
-  if (!start || !end) return 1;
-  const diff = new Date(end).getTime() - new Date(start).getTime();
-  return Math.max(1, Math.ceil(diff / (1000 * 60 * 60 * 24)) + 1);
-}
-
-function formatDate(dateStr: string): string {
-  return new Date(dateStr + 'T00:00:00').toLocaleDateString('en-PH', {
-    weekday: 'short', month: 'short', day: 'numeric', year: 'numeric',
-  });
-}
-
-const WEEKDAYS = ['Su','Mo','Tu','We','Th','Fr','Sa'];
-const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-
-function toDateStr(year: number, month: number, day: number) {
-  return `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-}
-
-function daysInMonth(year: number, month: number) {
-  return new Date(year, month + 1, 0).getDate();
-}
-
-function firstDayOfMonth(year: number, month: number) {
-  return new Date(year, month, 1).getDay();
-}
-
-function CompactDatePicker({
-  startValue, endValue, onStartChange, onEndChange, onDone,
-}: {
-  startValue: string; endValue: string;
-  onStartChange: (d: string) => void; onEndChange: (d: string) => void;
-  onDone: () => void;
-}) {
-  const today = new Date();
-  const todayStr = today.toISOString().split('T')[0];
-  const [viewYear, setViewYear] = useState(today.getFullYear());
-  const [viewMonth, setViewMonth] = useState(today.getMonth());
-
-  const dim = daysInMonth(viewYear, viewMonth);
-  const offset = firstDayOfMonth(viewYear, viewMonth);
-
-  const cells: (number | null)[] = [];
-  for (let i = 0; i < offset; i++) cells.push(null);
-  for (let d = 1; d <= dim; d++) cells.push(d);
-  while (cells.length % 7 !== 0) cells.push(null);
-
-  const prevMonth = () => {
-    if (viewMonth === 0) { setViewYear(y => y - 1); setViewMonth(11); }
-    else setViewMonth(m => m - 1);
-  };
-  const nextMonth = () => {
-    if (viewMonth === 11) { setViewYear(y => y + 1); setViewMonth(0); }
-    else setViewMonth(m => m + 1);
-  };
-
-  const handleClick = (ds: string) => {
-    if (ds < todayStr) return;
-    if (!startValue || (startValue && endValue)) {
-      onStartChange(ds);
-      onEndChange('');
-      return;
-    }
-    if (ds < startValue) { onStartChange(ds); return; }
-    onEndChange(ds);
-    onDone();
-  };
-
-  const isSelected = (ds: string) => ds === startValue || ds === endValue;
-  const isInRange = (ds: string) => startValue && endValue && ds > startValue && ds < endValue;
-
-  return (
-    <div className="bg-black/95 border border-white/10 rounded-2xl p-4 w-[280px] shadow-[0_0_30px_rgba(0,0,0,0.5)]">
-      <div className="flex items-center justify-between mb-3">
-        <button
-          onClick={prevMonth}
-          className="h-7 w-7 rounded-lg hover:bg-white/10 flex items-center justify-center text-white/40 hover:text-accent active:scale-90 transition-all duration-200 group"
-        >
-          <span className="material-symbols-outlined text-[16px] group-hover:-translate-x-0.5 transition-transform duration-200">chevron_left</span>
-        </button>
-        <p className="text-xs font-bold text-accent tracking-wide select-none">{MONTHS[viewMonth]} {viewYear}</p>
-        <button
-          onClick={nextMonth}
-          className="h-7 w-7 rounded-lg hover:bg-white/10 flex items-center justify-center text-white/40 hover:text-accent active:scale-90 transition-all duration-200 group"
-        >
-          <span className="material-symbols-outlined text-[16px] group-hover:translate-x-0.5 transition-transform duration-200">chevron_right</span>
-        </button>
-      </div>
-
-      <div className="grid grid-cols-7 mb-1">
-        {WEEKDAYS.map(d => (
-          <div key={d} className="text-center text-[9px] text-white/60 font-bold py-1 tracking-wider">{d}</div>
-        ))}
-      </div>
-
-      <div className="grid grid-cols-7 gap-px">
-        {cells.map((day, i) => {
-          if (day === null) return <div key={`e-${i}`} className="h-8" />;
-          const ds = toDateStr(viewYear, viewMonth, day);
-          const past = ds < todayStr;
-          const sel = isSelected(ds);
-          const inRange = isInRange(ds);
-
-          return (
-            <button
-              key={ds}
-              onClick={() => handleClick(ds)}
-              disabled={past}
-              className={[
-                'h-8 w-full text-[13px] font-semibold transition-all duration-150 flex items-center justify-center',
-                inRange ? 'bg-gradient-to-r from-accent/10 via-accent/15 to-accent/10' : '',
-                sel ? 'bg-accent text-black rounded-full z-10 shadow-[0_0_12px_rgba(204,255,0,0.4)] scale-105' : '',
-                !sel && !past ? 'text-white/90 hover:bg-white/10 hover:rounded-full hover:scale-105 cursor-pointer active:scale-95' : '',
-                past ? 'text-white/20 cursor-not-allowed' : '',
-                ds === todayStr && !sel ? 'ring-1 ring-white/70 rounded-full animate-pulse' : '',
-              ].filter(Boolean).join(' ')}
-            >
-              {day}
-            </button>
-          );
-        })}
-      </div>
-
-    </div>
-  );
-}
 
 export default function VenueBookingClient({ venueId }: { venueId: string }) {
   const router = useRouter();
@@ -151,26 +25,9 @@ export default function VenueBookingClient({ venueId }: { venueId: string }) {
 
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
-  const [startDisplay, setStartDisplay] = useState('');
-  const [endDisplay, setEndDisplay] = useState('');
   const [guestCount, setGuestCount] = useState(2);
   const [specialRequests, setSpecialRequests] = useState('');
   const [errors, setErrors] = useState<{ dates?: string }>({});
-  const [calendarOpen, setCalendarOpen] = useState(false);
-  const [popupPos, setPopupPos] = useState({ top: 0, left: 0 });
-  const triggerRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => { setStartDisplay(startDate ? startDate.replace(/-/g, '/') : ''); }, [startDate]);
-  useEffect(() => { setEndDisplay(endDate ? endDate.replace(/-/g, '/') : ''); }, [endDate]);
-
-  const parseDisplay = (val: string, setter: (d: string) => void) => {
-    const cleaned = val.replace(/\//g, '-');
-    const d = new Date(cleaned);
-    if (!isNaN(d.getTime())) {
-      setter(d.toISOString().split('T')[0]);
-      setErrors({});
-    }
-  };
 
   useEffect(() => {
     fetchVenueById(venueId)
@@ -323,69 +180,16 @@ export default function VenueBookingClient({ venueId }: { venueId: string }) {
 
               {/* Date Range */}
               <FormSection icon="date_range" title="Select Dates">
-                <div className="relative">
-                  <div className="grid sm:grid-cols-2 gap-6">
-                    <div className="space-y-2">
-                      <label className="text-xs uppercase tracking-widest text-text-muted font-bold ml-1">Start Date</label>
-                      <div className="relative" ref={triggerRef}>
-                        <input
-                          type="text"
-                          value={startDisplay}
-                          placeholder="YYYY/MM/DD"
-                          onChange={(e) => setStartDisplay(e.target.value)}
-                          onBlur={(e) => parseDisplay(e.target.value, setStartDate)}
-                          className="w-full bg-white/5 border border-white/10 rounded-xl px-5 py-4 text-white placeholder-text-muted/50 focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent transition-all pr-12"
-                        />
-                        <span
-                          onClick={(e) => {
-                            const rect = e.currentTarget.parentElement!.getBoundingClientRect();
-                            setPopupPos({ top: rect.bottom + 4, left: rect.right - 280 });
-                            setCalendarOpen(true);
-                          }}
-                          className="absolute right-4 top-1/2 -translate-y-1/2 text-white/30 cursor-pointer material-symbols-outlined"
-                        >
-                          calendar_today
-                        </span>
-                      </div>
-                    </div>
-                    <div className="space-y-2">
-                      <label className="text-xs uppercase tracking-widest text-text-muted font-bold ml-1">End Date</label>
-                      <div className="relative">
-                        <input
-                          type="text"
-                          value={endDisplay}
-                          placeholder="YYYY/MM/DD"
-                          onChange={(e) => setEndDisplay(e.target.value)}
-                          onBlur={(e) => parseDisplay(e.target.value, setEndDate)}
-                          className="w-full bg-white/5 border border-white/10 rounded-xl px-5 py-4 text-white placeholder-text-muted/50 focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent transition-all pr-12"
-                        />
-                        <span
-                          onClick={(e) => {
-                            const rect = e.currentTarget.parentElement!.getBoundingClientRect();
-                            setPopupPos({ top: rect.bottom + 4, left: rect.right - 280 });
-                            setCalendarOpen(true);
-                          }}
-                          className="absolute right-4 top-1/2 -translate-y-1/2 text-white/30 cursor-pointer material-symbols-outlined"
-                        >
-                          calendar_today
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-
-                  {errors.dates && (
-                    <p className="text-xs text-red-400 mt-3 flex items-center gap-1.5">
-                      <span className="material-symbols-outlined text-[13px]">error</span>
-                      {errors.dates}
-                    </p>
-                  )}
-                  {startDate && endDate && !calendarOpen && (
-                    <p className="text-xs text-white/40 mt-3 flex items-center gap-1">
-                      <span className="material-symbols-outlined text-[12px]">info</span>
-                      {formatDate(startDate)} → {formatDate(endDate)} · {days} day{days !== 1 ? 's' : ''}
-                    </p>
-                  )}
-                </div>
+                <DateRangePicker
+                  startDate={startDate}
+                  endDate={endDate}
+                  onStartChange={(d) => { setStartDate(d); setErrors({}); }}
+                  onEndChange={(d) => { setEndDate(d); setErrors({}); }}
+                  errors={errors}
+                  startLabel="Start Date"
+                  endLabel="End Date"
+                  showSummary={false}
+                />
               </FormSection>
 
               {/* Guest Count */}
@@ -504,23 +308,6 @@ export default function VenueBookingClient({ venueId }: { venueId: string }) {
         </div>
       </footer>
 
-      {calendarOpen && (
-        <div className="fixed inset-0 z-50" onClick={() => setCalendarOpen(false)}>
-          <div
-            className="absolute animate-in fade-in zoom-in-95 duration-150"
-            style={{ top: popupPos.top, left: popupPos.left }}
-            onClick={(e) => e.stopPropagation()}
-          >
-            <CompactDatePicker
-              startValue={startDate}
-              endValue={endDate}
-              onStartChange={(d) => { setStartDate(d); setErrors({}); }}
-              onEndChange={(d) => { setEndDate(d); setErrors({}); }}
-              onDone={() => setCalendarOpen(false)}
-            />
-          </div>
-        </div>
-      )}
     </div>
   );
 }
