@@ -169,6 +169,31 @@ export async function fetchAssetAvailability(assetId: string): Promise<{
   return resp.data?.data ?? { bookedRanges: [], totalQty: 0 };
 }
 
+// 6. Direct Venue Booking — creates Event + VenueTransaction + Booking in one call
+export async function bookVenueDraft(payload: {
+  venueId: string;
+  startDate: string;
+  endDate: string;
+  guestCount: number;
+  totalAmount: number;
+  specialRequests?: string;
+}): Promise<{ bookingId: string }> {
+  const resp = await api.post("/bookings/draft", payload);
+  return { bookingId: resp.data?.data?.id };
+}
+
+export async function fetchUserBookings(
+  userId: string,
+  page = 1,
+  limit = 4
+): Promise<{ bookings: any[]; pagination: { page: number; limit: number; total: number; totalPages: number } }> {
+  const resp = await api.get(`/bookings/user/${userId}?page=${page}&limit=${limit}`);
+  return {
+    bookings: resp.data?.data ?? [],
+    pagination: resp.data?.pagination ?? { page, limit, total: 0, totalPages: 0 },
+  };
+}
+
 export async function fetchFoxerBookings(ownerId: string) {
   const [svcResp, assetResp] = await Promise.all([
     api.get(`/service/bookings?ownerId=${ownerId}`),
