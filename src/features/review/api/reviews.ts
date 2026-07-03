@@ -1,5 +1,17 @@
 ﻿import api from "@/shared/lib/axios";
 
+export interface ReviewReply {
+  id: string;
+  reviewId: string;
+  userId: string;
+  text: string;
+  user?: {
+    name: string;
+    imgId?: string;
+  };
+  createdAt: string;
+}
+
 export interface Review {
   id: string;
   rating: number;
@@ -12,6 +24,7 @@ export interface Review {
     imgId?: string;
   };
   createdAt: string;
+  replies?: ReviewReply[];
 }
 
 export const getReviewsByListing = async (listingId: string): Promise<{ reviews: Review[]; ratingDistribution: Record<number, string> }> => {
@@ -36,6 +49,32 @@ export const createReview = async (data: {
   type: string;
 }): Promise<Review> => {
   const res = await api.post("/reviews/create", data);
+  return res.data.data;
+};
+
+export const submitReview = async (data: {
+  bookingId: string;
+  rating: number;
+  comment: string;
+  targetId: string;
+  targetType: string;
+}): Promise<Review> => {
+  const res = await api.post("/reviews/create", data);
+  return res.data.data;
+};
+
+export const getReviewsByTarget = async (targetId: string, targetType: string, includeReplies = true): Promise<Review[]> => {
+  const res = await api.get("/reviews", { params: { targetId, targetType, includeReplies } });
+  const raw = res.data.data ?? res.data;
+  if (!Array.isArray(raw)) return [];
+  return raw.map((r: any) => ({
+    ...r,
+    replies: r.replies ?? r.reviewReplies ?? [],
+  }));
+};
+
+export const postReviewReply = async (reviewId: string, text: string): Promise<ReviewReply> => {
+  const res = await api.post(`/reviews/${reviewId}/reply`, { text });
   return res.data.data;
 };
 

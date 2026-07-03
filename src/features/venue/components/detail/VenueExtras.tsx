@@ -1,8 +1,11 @@
 ﻿'use client';
 
 import React from 'react';
-import { useQuery } from '@tanstack/react-query';
-import { getReviewsByListing, Review } from '@/features/review/api/reviews';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { getReviewsByListing, postReviewReply, Review, ReviewReply } from '@/features/review/api/reviews';
+import ReviewReplyModal from '@/features/review/components/ReviewReplyModal';
+import { useAuthStore } from '@/features/auth/store/useAuthStore';
+import { toast } from 'sonner';
 
 
 interface VenueCalendarProps {
@@ -106,9 +109,87 @@ interface VenueReviewsProps {
   venueId: string;
   rating?: number;
   totalReviews?: number;
+  hostId?: string;
 }
 
-export function VenueReviews({ venueId, rating: fallbackRating = 0, totalReviews: fallbackTotal = 0 }: VenueReviewsProps) {
+const LOCAL_KEY = 'fpr-local-replies';
+
+function getLocalRepliesFor(reviewId: string): ReviewReply[] {
+  if (typeof window === 'undefined') return [];
+  try {
+    const all = JSON.parse(localStorage.getItem(LOCAL_KEY) || '{}');
+    return all[reviewId] ?? [];
+  } catch {
+    return [];
+  }
+}
+
+function persistLocalReply(reviewId: string, reply: ReviewReply): void {
+  const all = JSON.parse(localStorage.getItem(LOCAL_KEY) || '{}');
+  all[reviewId] = [...(all[reviewId] ?? []), reply];
+  localStorage.setItem(LOCAL_KEY, JSON.stringify(all));
+}
+
+function ReviewReplyForm({ reviewId, venueId, onClose }: { reviewId: string; venueId: string; onClose: () => void }) {
+  const [text, setText] = React.useState('');
+  const queryClient = useQueryClient();
+
+  const mutation = useMutation({
+    mutationFn: () => postReviewReply(reviewId, text),
+    onSuccess: (data) => {
+      persistLocalReply(reviewId, data);
+      queryClient.setQueryData(['venue-reviews', venueId], (old: { reviews: Review[]; ratingDistribution: Record<string, string> } | undefined) => {
+        if (!old) return old;
+        return {
+          ...old,
+          reviews: old.reviews.map((review) => {
+            if (review.id === reviewId) {
+              return { ...review, replies: [...(review.replies ?? []), data] };
+            }
+            return review;
+          }),
+        };
+      });
+      queryClient.invalidateQueries({ queryKey: ['venue-reviews'] });
+      toast.success('Reply posted');
+      onClose();
+    },
+    onError: () => {
+      toast.error('Failed to post reply');
+    },
+  });
+
+  return (
+    <div className="mt-4 space-y-3">
+      <textarea
+        value={text}
+        onChange={(e) => setText(e.target.value)}
+        placeholder="Write your reply..."
+        rows={3}
+        className="w-full bg-white/5 border border-white/10 rounded-xl p-3 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-accent resize-none"
+      />
+      <div className="flex gap-2 justify-end">
+        <button
+          onClick={onClose}
+          className="px-4 py-2 text-xs font-bold text-white/70 hover:text-white transition-colors"
+        >
+          Cancel
+        </button>
+        <button
+          onClick={() => mutation.mutate()}
+          disabled={!text.trim() || mutation.isPending}
+          className="px-4 py-2 rounded-xl bg-accent text-black text-xs font-bold hover:bg-accent/80 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          {mutation.isPending ? 'Posting...' : 'Reply'}
+        </button>
+      </div>
+    </div>
+  );
+}
+
+export function VenueReviews({ venueId, rating: fallbackRating = 0, totalReviews: fallbackTotal = 0, hostId }: VenueReviewsProps) {
+  const user = useAuthStore((s) => s.user);
+  const currentUserId = user?.id;
   const { data, isLoading } = useQuery({
     queryKey: ['venue-reviews', venueId],
     queryFn: () => getReviewsByListing(venueId),
@@ -116,8 +197,21 @@ export function VenueReviews({ venueId, rating: fallbackRating = 0, totalReviews
     staleTime: 1000 * 60 * 5,
   });
 
-  const reviews: Review[] = data?.reviews ?? [];
-  const ratingDistribution: Record<number, string> = data?.ratingDistribution ?? {};
+  const serverReviews: Review[] = data?.reviews ?? [];
+  const reviews: Review[] = serverReviews.map((r) => ({
+    ...r,
+    replies: [...(r.replies ?? []), ...getLocalRepliesFor(r.id)],
+  }));
+  const totalReviews = reviews.length;
+  const ratingDistribution: Record<number, string> = {};
+  if (totalReviews > 0) {
+    [5, 4, 3, 2, 1].forEach((star) => {
+      const count = reviews.filter((r) => r.rating === star).length;
+      ratingDistribution[star] = ((count / totalReviews) * 100).toFixed(0) + '%';
+    });
+  } else {
+    [5, 4, 3, 2, 1].forEach((star) => { ratingDistribution[star] = '0%'; });
+  }
 
   const avgRating = reviews.length
     ? Number((reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length).toFixed(1))
@@ -125,9 +219,14 @@ export function VenueReviews({ venueId, rating: fallbackRating = 0, totalReviews
 
   const displayTotal = reviews.length || fallbackTotal;
   const [showAll, setShowAll] = React.useState(false);
+  const [replyOpenId, setReplyOpenId] = React.useState<string | null>(null);
+  const [replyModalReviewId, setReplyModalReviewId] = React.useState<string | null>(null);
+  const [replyModalReply, setReplyModalReply] = React.useState<ReviewReply | null>(null);
+  const replyModalReview = replyModalReviewId
+    ? reviews.find((r) => r.id === replyModalReviewId) ?? null
+    : null;
   const visible = showAll ? reviews : reviews.slice(0, 4);
 
-  // Build rating bars from computed distribution
   const ratingBars = [5, 4, 3, 2, 1].map((star) => ({
     stars: star,
     count: ratingDistribution[star] ?? "0%",
@@ -146,7 +245,6 @@ export function VenueReviews({ venueId, rating: fallbackRating = 0, totalReviews
         </div>
       </div>
 
-      {/* Rating Bars — computed from real review data */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-4 mb-10">
         {ratingBars.map((row) => (
           <div key={row.stars} className="flex items-center gap-3">
@@ -162,7 +260,6 @@ export function VenueReviews({ venueId, rating: fallbackRating = 0, totalReviews
         ))}
       </div>
 
-      {/* Review Cards */}
       {isLoading ? (
         <div className="grid md:grid-cols-2 gap-6">
           {[...Array(4)].map((_, i) => (
@@ -190,6 +287,7 @@ export function VenueReviews({ venueId, rating: fallbackRating = 0, totalReviews
           {visible.map((review) => {
             const initials = (review.user?.name ?? 'A').charAt(0).toUpperCase();
             const date = new Date(review.createdAt).toLocaleDateString('en-US', { year: 'numeric', month: 'long' });
+            const canReply = currentUserId && (currentUserId === hostId || currentUserId === review.userId);
             return (
               <div key={review.id} className="glass-panel p-6 rounded-2xl border border-white/5">
                 <div className="flex items-center gap-3 mb-4">
@@ -211,6 +309,64 @@ export function VenueReviews({ venueId, rating: fallbackRating = 0, totalReviews
                   </div>
                 </div>
                 <p className="text-sm text-gray-300 leading-relaxed">{review.comment}</p>
+
+                {/* Replies */}
+                {review.replies && review.replies.length > 0 && (
+                  <div className="mt-4 space-y-3 border-t border-white/5 pt-4">
+                    {review.replies.map((reply) => {
+                      const replyInitials = (reply.user?.name ?? 'A').charAt(0).toUpperCase();
+                      return (
+                        <div key={reply.id} className="flex gap-3 pl-4 border-l-2 border-accent/30">
+                          {reply.user?.imgId ? (
+                            <img src={reply.user.imgId} className="w-7 h-7 rounded-full object-cover shrink-0 mt-0.5" alt={reply.user.name} />
+                          ) : (
+                            <div className="w-7 h-7 rounded-full bg-accent/10 flex items-center justify-center text-accent font-bold text-[10px] shrink-0 mt-0.5">
+                              {replyInitials}
+                            </div>
+                          )}
+                          <div className="min-w-0">
+                            <div className="flex items-center gap-2">
+                              <span className="text-xs font-bold text-white">{reply.user?.name ?? 'Anonymous'}</span>
+                              <span className="text-[10px] text-text-muted">
+                                {new Date(reply.createdAt).toLocaleDateString('en-US', { year: 'numeric', month: 'short' })}
+                              </span>
+                            </div>
+                            <p className="text-xs text-gray-300 mt-0.5">{reply.text}</p>
+                            <button
+                              onClick={(e) => { e.stopPropagation(); setReplyModalReviewId(review.id); }}
+                              className="mt-1 text-[10px] text-white/30 hover:text-white transition-colors"
+                            >
+                              Show More
+                            </button>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+
+                {/* Reply button / form */}
+                {canReply && replyOpenId === review.id && (
+                  <>
+                    <ReviewReplyForm reviewId={review.id} venueId={venueId} onClose={() => setReplyOpenId(null)} />
+                  </>
+                )}
+                {canReply && replyOpenId !== review.id && (
+                  <button
+                    onClick={() => setReplyOpenId(review.id)}
+                    className="mt-3 text-xs font-bold text-accent hover:text-white transition-colors"
+                  >
+                    Reply
+                  </button>
+                )}
+
+                {/* Modal trigger for all users */}
+                <button
+                  onClick={() => setReplyModalReviewId(review.id)}
+                  className="mt-3 ml-3 text-xs text-white/40 hover:text-white transition-colors"
+                >
+                  Show More
+                </button>
               </div>
             );
           })}
@@ -225,6 +381,17 @@ export function VenueReviews({ venueId, rating: fallbackRating = 0, totalReviews
           {showAll ? 'Show less' : `Show all ${displayTotal} reviews`}
         </button>
       )}
+
+      <ReviewReplyModal
+        isOpen={!!replyModalReview}
+        onClose={() => setReplyModalReviewId(null)}
+        review={replyModalReview}
+      />
+      <ReviewReplyModal
+        isOpen={!!replyModalReply}
+        onClose={() => setReplyModalReply(null)}
+        reply={replyModalReply}
+      />
     </div>
   );
 }

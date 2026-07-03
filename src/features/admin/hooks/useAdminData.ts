@@ -35,8 +35,16 @@ export const useAdminData = (type: string, initialData?: any) => {
             endpoint = "/admin/stats";
             break;
           case "bookings":
-            endpoint = "/admin/bookings"; // Assuming this exists or works with standard list
-            break;
+            const [svcResp, assetResp, eventResp] = await Promise.all([
+              api.get("/service/bookings"),
+              api.get("/asset/bookings"),
+              api.get("/bookings"),
+            ]);
+            return {
+              serviceBookings: svcResp.data?.data ?? [],
+              assetBookings: assetResp.data?.data ?? [],
+              eventBookings: eventResp.data?.data ?? [],
+            };
           default:
             return [];
         }
