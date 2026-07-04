@@ -210,6 +210,17 @@ export async function bookVenueDraft(payload: {
   return { bookingId: resp.data?.data?.id };
 }
 
+export async function cancelBooking(bookingId: string): Promise<void> {
+  await api.patch(`/bookings/${bookingId}/cancel`);
+}
+
+export async function fetchBookingById(
+  id: string
+): Promise<any> {
+  const resp = await api.get(`/bookings/${id}`);
+  return resp.data?.data ?? resp.data;
+}
+
 export async function fetchUserBookings(
   userId: string,
   page = 1,
