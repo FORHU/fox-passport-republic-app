@@ -424,6 +424,7 @@ export default function BookingConfigurationClient() {
                           venueImage: templateImage ?? undefined,
                           venueLocation: templateLocation,
                           checkInDate: startDate,
+                          checkInTime: null,
                           nights: endDate ? Math.max(1, Math.ceil((new Date(endDate).getTime() - new Date(startDate).getTime()) / (1000 * 60 * 60 * 24))) + 1 : 1,
                           totalAmount,
                           guestCount: guests,
