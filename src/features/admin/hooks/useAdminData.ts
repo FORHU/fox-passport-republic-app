@@ -14,7 +14,7 @@ export const useAdminData = (type: string, initialData?: any) => {
         let endpoint = "";
         switch (type) {
           case "venues":
-            endpoint = "/admin/venues/pending";
+            endpoint = "/admin/venues";
             break;
           case "assets":
             endpoint = "/admin/assets"; // We updated this to show all for admin in previous turn
@@ -35,8 +35,18 @@ export const useAdminData = (type: string, initialData?: any) => {
             endpoint = "/admin/stats";
             break;
           case "bookings":
-            endpoint = "/admin/bookings"; // Assuming this exists or works with standard list
-            break;
+            const [serviceBody, assetBody, eventBody] = await Promise.all([
+              api.get('/service/bookings'),
+              api.get('/asset/bookings'),
+              api.get('/bookings'),
+            ]);
+            const extractList = (body: any) =>
+              body.data?.data?.venues ?? body.data?.data ?? body.data?.venues ?? body.data?.events ?? body.data?.results ?? (Array.isArray(body.data) ? body.data : body.data?.data ?? []);
+            return {
+              serviceBookings: extractList(serviceBody),
+              assetBookings: extractList(assetBody),
+              eventBookings: extractList(eventBody),
+            };
           default:
             return [];
         }

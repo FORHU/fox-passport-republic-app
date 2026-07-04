@@ -8,6 +8,7 @@ import { BrandLogo } from '@/shared/components/layout/BrandLogo';
 const NAV_ITEMS = [
   { label: 'Dashboard',   icon: 'dashboard',           id: 'dashboard'  },
   { label: 'Bookings',    icon: 'confirmation_number', id: 'bookings'   },
+  { label: 'Disputes',    icon: 'gavel',               id: 'disputes'   },
   { label: 'Citizens',    icon: 'group',               id: 'citizens'   },
   { label: 'Events',      icon: 'event',               id: 'events',    section: 'Manage' },
   { label: 'Categories',  icon: 'category',            id: 'categories' },
