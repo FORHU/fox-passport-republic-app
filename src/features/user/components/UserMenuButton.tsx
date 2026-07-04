@@ -277,6 +277,7 @@ export default function UserMenuButton() {
               {[
                 { label: 'Wishlists', icon: Heart, href: '/wishlists' },
                 { label: 'Trips', icon: Briefcase, href: '/trips' },
+                { label: 'My Bookings', icon: Briefcase, href: '/booking' },
                 { label: 'Messages', icon: MessageSquare, href: '/messages' },
                 { label: 'Account settings', icon: Settings, href: '/user/settings' },
                 { label: 'Languages & currency', icon: Globe, href: '/settings/language' },

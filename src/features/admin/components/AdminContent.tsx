@@ -13,6 +13,7 @@ import {
   AdminCitizenTable,
   AdminAssetsTable,
   AdminServicesTable,
+  AdminDisputesPanel,
 } from '@/features/admin/components';
 import { useAdminData } from '@/features/admin/hooks/useAdminData';
 import { useAdminPendingVenues } from '@/features/admin/hooks/useAdminPendingVenues';
@@ -108,6 +109,10 @@ export const AdminContent: React.FC<Props> = ({
 
       {activeTab === 'services' && (
         <AdminServicesTable services={services} isLoading={loadingServices} />
+      )}
+
+      {activeTab === 'disputes' && (
+        <AdminDisputesPanel />
       )}
 
       {activeTab === 'settings' && (

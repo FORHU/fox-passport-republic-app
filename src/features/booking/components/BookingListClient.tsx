@@ -122,7 +122,7 @@ export default function BookingListClient() {
                   return (
                     <Link
                       key={booking.id}
-                      href={`/booking/venue/${booking.id}`}
+                      href={`/booking/${booking.id}`}
                       className="glass-panel rounded-2xl p-6 flex flex-col md:flex-row md:items-center justify-between gap-4 hover:bg-white/5 transition-all border border-white/5 hover:border-accent/30 group"
                     >
                       <div className="flex items-start gap-4">
