@@ -198,10 +198,11 @@ export function VenueReviews({ venueId, rating: fallbackRating = 0, totalReviews
   });
 
   const serverReviews: Review[] = data?.reviews ?? [];
-  const reviews: Review[] = serverReviews.map((r) => ({
-    ...r,
-    replies: [...(r.replies ?? []), ...getLocalRepliesFor(r.id)],
-  }));
+  const reviews: Review[] = serverReviews.map((r) => {
+    const all = [...(r.replies ?? []), ...getLocalRepliesFor(r.id)];
+    const seen = new Set<string>();
+    return { ...r, replies: all.filter((reply) => { const k = reply.id; return seen.has(k) ? false : (seen.add(k), true); }) };
+  });
   const totalReviews = reviews.length;
   const ratingDistribution: Record<number, string> = {};
   if (totalReviews > 0) {
@@ -219,6 +220,7 @@ export function VenueReviews({ venueId, rating: fallbackRating = 0, totalReviews
 
   const displayTotal = reviews.length || fallbackTotal;
   const [showAll, setShowAll] = React.useState(false);
+
   const [replyOpenId, setReplyOpenId] = React.useState<string | null>(null);
   const [replyModalReviewId, setReplyModalReviewId] = React.useState<string | null>(null);
   const [replyModalReply, setReplyModalReply] = React.useState<ReviewReply | null>(null);
@@ -310,10 +312,10 @@ export function VenueReviews({ venueId, rating: fallbackRating = 0, totalReviews
                 </div>
                 <p className="text-sm text-gray-300 leading-relaxed">{review.comment}</p>
 
-                {/* Replies */}
+                {/* Replies — show max 2 inline, full list in modal */}
                 {review.replies && review.replies.length > 0 && (
                   <div className="mt-4 space-y-3 border-t border-white/5 pt-4">
-                    {review.replies.map((reply) => {
+                    {review.replies.slice(0, 2).map((reply) => {
                       const replyInitials = (reply.user?.name ?? 'A').charAt(0).toUpperCase();
                       return (
                         <div key={reply.id} className="flex gap-3 pl-4 border-l-2 border-accent/30">
@@ -332,12 +334,6 @@ export function VenueReviews({ venueId, rating: fallbackRating = 0, totalReviews
                               </span>
                             </div>
                             <p className="text-xs text-gray-300 mt-0.5">{reply.text}</p>
-                            <button
-                              onClick={(e) => { e.stopPropagation(); setReplyModalReviewId(review.id); }}
-                              className="mt-1 text-[10px] text-white/30 hover:text-white transition-colors"
-                            >
-                              Show More
-                            </button>
                           </div>
                         </div>
                       );
@@ -360,7 +356,7 @@ export function VenueReviews({ venueId, rating: fallbackRating = 0, totalReviews
                   </button>
                 )}
 
-                {/* Modal trigger for all users */}
+                {/* Modal trigger */}
                 <button
                   onClick={() => setReplyModalReviewId(review.id)}
                   className="mt-3 ml-3 text-xs text-white/40 hover:text-white transition-colors"
