@@ -1,10 +1,11 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useAuthStore } from '@/features/auth/store/useAuthStore';
-import { fetchUserBookings } from '@/features/booking/api/bookings';
+import { fetchUserBookings, cancelBooking } from '@/features/booking/api/bookings';
+import CancelBookingModal from '@/features/booking/components/CancelBookingModal';
 import { toast } from 'sonner';
 
 const STATUS_LABEL: Record<string, { label: string; color: string }> = {
@@ -24,7 +25,29 @@ export default function BookingListClient() {
   const [totalPages, setTotalPages] = useState(1);
   const [isInitial, setIsInitial] = useState(true);
   const [isFetching, setIsFetching] = useState(false);
+  const [cancellingId, setCancellingId] = useState<string | null>(null);
   const limit = 4;
+
+  const handleCancelBooking = useCallback(async (bookingId: string) => {
+    setCancellingId(bookingId);
+    try {
+      await cancelBooking(bookingId);
+      toast.success('Booking cancelled. Refund will appear in 5–10 business days.');
+      const userId = user?.id || user?.userId;
+      if (userId) {
+        const res = await fetchUserBookings(userId, page, limit);
+        setBookings(res.bookings);
+        setTotalPages(res.pagination.totalPages || 1);
+      }
+    } catch (err: any) {
+      const msg = err?.response?.data?.message || 'Failed to cancel booking.';
+      toast.error(msg);
+    } finally {
+      setCancellingId(null);
+    }
+  }, [user?.id, user?.userId, page]);
+
+  const [cancelTarget, setCancelTarget] = useState<any | null>(null);
 
   useEffect(() => {
     if (!user?.id && !user?.userId) return;
@@ -118,36 +141,62 @@ export default function BookingListClient() {
                   const startDate = booking.startAt
                     ? new Date(booking.startAt).toLocaleDateString('en-PH', { month: 'short', day: 'numeric', year: 'numeric' })
                     : '—';
+                  const isCompleted = booking.status === 'completed';
+                  const canCancel = booking.status === 'pending' || booking.status === 'confirmed';
+                  const noReview = !booking.hasReview;
 
                   return (
-                    <Link
+                    <div
                       key={booking.id}
-                      href={`/booking/${booking.id}`}
-                      className="glass-panel rounded-2xl p-6 flex flex-col md:flex-row md:items-center justify-between gap-4 hover:bg-white/5 transition-all border border-white/5 hover:border-accent/30 group"
+                      className="glass-panel rounded-2xl p-6 border border-white/5 hover:border-accent/30 transition-all"
                     >
-                      <div className="flex items-start gap-4">
-                        <div className="h-14 w-14 rounded-xl bg-white/5 flex items-center justify-center shrink-0 group-hover:bg-accent/10 transition-colors">
-                          <span className="material-symbols-outlined text-white/40 group-hover:text-accent text-2xl transition-colors">apartment</span>
-                        </div>
-                        <div>
-                          <h3 className="font-display font-bold text-white text-lg">{eventName}</h3>
-                          <p className="text-text-muted text-sm mt-1 flex items-center gap-2">
-                            <span className="material-symbols-outlined text-[14px]">calendar_today</span>
-                            {startDate}
-                            <span className="material-symbols-outlined text-[14px] ml-1">group</span>
-                            {booking.guestCount} {booking.guestCount === 1 ? 'guest' : 'guests'}
-                          </p>
-                          <p className="text-text-muted text-xs mt-1 font-mono">#{booking.id.slice(0, 12)}</p>
+                      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                        <Link
+                          href={`/booking/venue/${booking.id}`}
+                          className="flex items-start gap-4 flex-1 min-w-0 group"
+                        >
+                          <div className="h-14 w-14 rounded-xl bg-white/5 flex items-center justify-center shrink-0 group-hover:bg-accent/10 transition-colors">
+                            <span className="material-symbols-outlined text-white/40 group-hover:text-accent text-2xl transition-colors">apartment</span>
+                          </div>
+                          <div>
+                            <h3 className="font-display font-bold text-white text-lg">{eventName}</h3>
+                            <p className="text-text-muted text-sm mt-1 flex items-center gap-2">
+                              <span className="material-symbols-outlined text-[14px]">calendar_today</span>
+                              {startDate}
+                              <span className="material-symbols-outlined text-[14px] ml-1">group</span>
+                              {booking.guestCount} {booking.guestCount === 1 ? 'guest' : 'guests'}
+                            </p>
+                            <p className="text-text-muted text-xs mt-1 font-mono">#{booking.id.slice(0, 12)}</p>
+                          </div>
+                        </Link>
+                        <div className="flex items-center gap-4 md:text-right shrink-0">
+                          <span className={`px-3 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider ${statusInfo.color}`}>
+                            {statusInfo.label}
+                          </span>
+                          <span className="text-xl font-display font-bold text-accent">₱{booking.totalAmount?.toLocaleString() || '0'}</span>
                         </div>
                       </div>
-                      <div className="flex items-center gap-4 md:text-right">
-                        <span className={`px-3 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider ${statusInfo.color}`}>
-                          {statusInfo.label}
-                        </span>
-                        <span className="text-xl font-display font-bold text-accent">₱{booking.totalAmount?.toLocaleString() || '0'}</span>
-                        <span className="material-symbols-outlined text-white/20 group-hover:text-accent transition-colors">chevron_right</span>
-                      </div>
-                    </Link>
+                      {(isCompleted && noReview || canCancel) && (
+                        <div className="mt-4 pt-4 border-t border-white/5 flex justify-end gap-3">
+                          {isCompleted && noReview && (
+                            <Link
+                              href={`/reviews/write/${booking.id}`}
+                              className="px-5 py-2.5 rounded-xl bg-accent text-black font-bold text-xs hover:shadow-[0_0_20px_rgba(204,255,0,0.4)] transition-all"
+                            >
+                              Leave a Review
+                            </Link>
+                          )}
+                          {canCancel && (
+                            <button
+                              onClick={() => setCancelTarget(booking)}
+                              className="px-5 py-2.5 rounded-xl border border-red-400/30 text-red-400 font-bold text-xs hover:bg-red-500/10 transition-all"
+                            >
+                              Cancel
+                            </button>
+                          )}
+                        </div>
+                      )}
+                    </div>
                   );
                 })}
               </div>
@@ -193,6 +242,19 @@ export default function BookingListClient() {
           )}
         </div>
       </main>
+
+      <CancelBookingModal
+        isOpen={!!cancelTarget}
+        onClose={() => setCancelTarget(null)}
+        onConfirm={() => {
+          if (cancelTarget) {
+            handleCancelBooking(cancelTarget.id);
+            setCancelTarget(null);
+          }
+        }}
+        isPending={cancellingId !== null}
+        booking={cancelTarget || {}}
+      />
     </div>
   );
 }
