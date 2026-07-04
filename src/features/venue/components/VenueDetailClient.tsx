@@ -177,7 +177,7 @@ export default function VenueDetailClient({ venue, host }: VenueDetailClientProp
                 </>
               )}
 
-              <VenueReviews venueId={venue.id} rating={venue.rating} totalReviews={venue.reviews} />
+              <VenueReviews venueId={venue.id} rating={venue.rating} totalReviews={venue.reviews} hostId={venue.hostId ?? host?.id} />
               <div className="h-px bg-white/10 w-full" />
 
               <VenueMap location={venue.location} province={venue.province} />

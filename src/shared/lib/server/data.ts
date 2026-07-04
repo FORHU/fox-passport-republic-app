@@ -200,6 +200,7 @@ function normalizeVenue(v: any) {
   const img = images[0] || FALLBACK_IMG;
   return {
     ...v,
+    hostId: v.hostId ?? v.host?.id ?? null,
     title: v.title || v.name || 'Untitled Venue',
     type: v.type || v.venueType || 'Venue',
     loc: v.location || [v.city, v.province, v.country].filter(Boolean).join(', ') || '',
@@ -453,6 +454,15 @@ export async function getHostDashboard(userId: string) {
   } catch (error) {
     console.error('Failed to fetch host dashboard:', error);
     return { events: [], venues: [], inventory: [], services: [] };
+  }
+}
+
+export async function getBookingById(id: string) {
+  try {
+    const body = await serverFetch(`/bookings/${id}`);
+    return extractOne(body);
+  } catch {
+    return null;
   }
 }
 
