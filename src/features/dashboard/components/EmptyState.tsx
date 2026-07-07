@@ -9,7 +9,6 @@ interface EmptyStateProps {
 }
 
 export function EmptyState({ type, href }: EmptyStateProps) {
-  const label = type.charAt(0).toUpperCase() + type.slice(1);
   const singleLabel = type.endsWith('ies') 
     ? type.slice(0, -3) + 'y' 
     : type.endsWith('s') 

@@ -8,7 +8,7 @@ import { mapBackendEventToEventItem } from "@/features/dashboard/mappers/hostDas
 import type { EventItem } from "@/features/dashboard/data/dashboardData";
 import type { Id } from "@/shared/lib/api-types";
 
-function belongsToHost(record: any, hostId: Id): boolean {
+function belongsToHost(record: unknown, hostId: Id): boolean {
   const idStr = String(hostId);
   const candidates: unknown[] = [
     record?.organizerId,

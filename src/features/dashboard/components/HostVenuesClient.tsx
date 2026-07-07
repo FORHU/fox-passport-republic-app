@@ -14,7 +14,7 @@ function normalizeValue(value: unknown): string {
 }
 
 interface HostVenuesClientProps {
-  initialVenues: any[]
+  initialVenues: unknown[]
 }
 
 export default function HostVenuesClient({ initialVenues }: HostVenuesClientProps) {

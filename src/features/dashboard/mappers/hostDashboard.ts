@@ -1,4 +1,4 @@
-﻿import type { EventItem, VenueItem } from "@/features/dashboard/data/dashboardData";
+import type { EventItem, VenueItem } from "@/features/dashboard/data/dashboardData";
 
 function formatDate(value: unknown): string {
   if (!value) return "Date TBD";
@@ -28,67 +28,69 @@ function normalizeStatus(status: unknown): string {
     .join(" ");
 }
 
-export function mapBackendEventToEventItem(event: any): EventItem {
-  const status = normalizeStatus(event?.status);
-  const type = String(event?.eventType ?? event?.type ?? "")
+export function mapBackendEventToEventItem(event: unknown): EventItem {
+  const ev = event as Record<string, unknown>;
+  const status = normalizeStatus(ev?.status);
+  const type = String(ev?.eventType ?? ev?.type ?? "")
     .trim()
     .toUpperCase();
 
-  const totalPrice = event?.totalPrice ?? event?.total_price;
+  const totalPrice = ev?.totalPrice ?? ev?.total_price;
   const revenue =
     totalPrice ? `₱${(Number(totalPrice) / 1000).toFixed(1)}k` : "₱0";
 
   const img =
-    event?.image ??
-    event?.images?.[0]?.imageUrl ??
-    event?.images?.[0]?.url ??
+    ev?.image ??
+    ev?.images?.[0]?.imageUrl ??
+    ev?.images?.[0]?.url ??
     "https://images.unsplash.com/photo-1533105079780-92b9be482077?q=80&w=2072";
 
   return {
-    id: event?.id,
-    title: event?.name ?? event?.title ?? "Untitled Event",
-    date: formatDate(event?.startDatetime ?? event?.start_datetime ?? event?.date),
+    id: ev?.id,
+    title: ev?.name ?? ev?.title ?? "Untitled Event",
+    date: formatDate(ev?.startDatetime ?? ev?.start_datetime ?? ev?.date),
     loc:
-      event?.venue?.name ??
-      event?.venueName ??
-      (event?.venue?.city
-        ? `${event.venue.city}, ${event.venue.country || "PH"}`
+      ev?.venue?.name ??
+      ev?.venueName ??
+      (ev?.venue?.city
+        ? `${ev.venue.city}, ${ev.venue.country || "PH"}`
         : "Venue TBD"),
     type: type || "EVENT",
     status,
     // UI in the dashboard currently uses `0` for booked
     booked: 0,
-    capacity: event?.maxAttendees ?? event?.capacity ?? 100,
+    capacity: ev?.maxAttendees ?? ev?.capacity ?? 100,
     revenue,
     img,
   };
 }
 
-export function mapBackendVenueToVenueItem(venue: any): VenueItem {
-  const status = normalizeStatus(venue?.status);
-  const type = String(venue?.type ?? venue?.venueType ?? "")
+export function mapBackendVenueToVenueItem(venue: unknown): VenueItem {
+  const v = venue as Record<string, unknown>;
+  const status = normalizeStatus(v?.status);
+  const type = String(v?.type ?? v?.venueType ?? "")
     .trim()
     .toUpperCase();
 
   const img =
-    venue?.venueImages?.[0]?.url ??
-    venue?.venueImages?.[0]?.imageUrl ??
-    venue?.image ??
-    venue?.images?.[0] ??
+    (v?.venueImages as Record<string, unknown>[] | undefined)?.[0]?.url ??
+    (v?.venueImages as Record<string, unknown>[] | undefined)?.[0]?.imageUrl ??
+    v?.image ??
+    (v?.images as unknown[] | undefined)?.[0] ??
     "https://images.unsplash.com/photo-1574391884720-385e66752079?q=80&w=2072";
 
   return {
-    id: venue?.id,
-    title: venue?.name ?? venue?.title ?? "Untitled Venue",
+    id: v?.id,
+    title: v?.name ?? v?.title ?? "Untitled Venue",
     type: type || "VENUE",
     loc:
-      venue?.city
-        ? `${venue.city}, ${venue.country || "PH"}`
-        : venue?.address ?? "Location TBD",
-    cap: venue?.capacity ? `${venue.capacity} Cap` : "N/A",
+      v?.city
+        ? `${v.city}, ${v.country || "PH"}`
+        : v?.address ?? "Location TBD",
+    cap: v?.capacity ? `${v.capacity} Cap` : "N/A",
     status,
-    bookings: venue?.bookings ?? "New",
-    revenue: venue?.revenue ?? "₱0",
+    bookings: v?.bookings ?? "New",
+    revenue: v?.revenue ?? "₱0",
     img,
   };
 }

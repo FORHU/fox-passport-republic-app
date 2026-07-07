@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { Suspense, useState, useMemo } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
@@ -13,9 +13,9 @@ import { CategoryListHero } from "@/features/category/components/list/CategoryLi
 import { CategoryBentoGrid } from "@/features/category/components/list/CategoryBentoGrid";
 
 interface CategoriesClientProps {
-  initialCategories: any[];
-  initialEvents: any[];
-  initialVenues: any[];
+  initialCategories: Record<string, unknown>[];
+  initialEvents: Record<string, unknown>[];
+  initialVenues: Record<string, unknown>[];
   initialType?: string;
 }
 

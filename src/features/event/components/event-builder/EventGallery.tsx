@@ -1,6 +1,7 @@
 ﻿'use client';
 
 import React from 'react';
+import Image from 'next/image';
 import { GalleryItem } from '@/features/event/data/eventBuilderData';
 
 interface EventGalleryProps {
@@ -52,10 +53,11 @@ export function EventGallery({ gallery, onAddImage, onRemoveImage }: EventGaller
         >
           {gallery.length > 0 ? (
             <>
-              <img
+              <Image
+                fill
                 src={gallery[0].url}
-                className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
                 alt=""
+                className="object-cover transition-transform duration-700 group-hover:scale-105"
               />
               <div className="absolute top-3 left-3 bg-accent text-black text-[10px] font-bold px-2 py-1 rounded z-10">
                 Cover
@@ -85,7 +87,12 @@ export function EventGallery({ gallery, onAddImage, onRemoveImage }: EventGaller
               key={img.id}
               className="relative group rounded-xl overflow-hidden border border-white/10 h-full"
             >
-              <img src={img.url} className="w-full h-full object-cover" alt="" />
+              <Image
+                fill
+                src={img.url}
+                alt=""
+                className="object-cover"
+              />
               <button
                 onClick={() => onRemoveImage(img.id)}
                 className="absolute top-2 right-2 p-1.5 bg-black/50 text-white rounded-full opacity-0 group-hover:opacity-100 hover:bg-red-500 z-20"

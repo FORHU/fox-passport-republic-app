@@ -63,9 +63,9 @@ export function toMonthItems(bookings: CalendarBooking[], year: number, month: n
     }));
 }
 
-function extractList(resp: any): any[] {
-  const body = resp?.data;
-  const list = body?.data ?? body?.bookings ?? body?.items ?? body;
+function extractList(resp: unknown): unknown[] {
+  const body = (resp as { data?: unknown })?.data;
+  const list = (body as { data?: unknown[]; bookings?: unknown[]; items?: unknown[] } | unknown[])?.data ?? (body as { bookings?: unknown[]; items?: unknown[] } | unknown[])?.bookings ?? (body as { items?: unknown[] } | unknown[])?.items ?? body;
   return Array.isArray(list) ? list : [];
 }
 
@@ -77,11 +77,12 @@ export function useCalendarBookings() {
 
   const load = useCallback(async () => {
     if (!user?.id) {
+      setBookings([]);
+      setError(null);
       setIsLoading(false);
       return;
     }
 
-    setIsLoading(true);
     setError(null);
     const results: CalendarBooking[] = [];
 
@@ -173,9 +174,12 @@ export function useCalendarBookings() {
 
     setBookings(results);
     setIsLoading(false);
-  }, [user?.id]);
+  }, [user]);
 
-  useEffect(() => { load(); }, [load]);
+  useEffect(() => {
+    const timer = setTimeout(() => load(), 0);
+    return () => clearTimeout(timer);
+  }, [load]);
 
   return { bookings, isLoading, error, refetch: load };
 }

@@ -1,29 +1,25 @@
-﻿'use client';
+'use client';
 
 import React from 'react';
 import { ResourceItem } from '@/features/event/data/eventBuilderData';
 
 interface EventBlueprintProps {
-  baseItems: ResourceItem[];
   targetMargin: number;
   baseCost: number;
   suggestedPrice: number;
   venueCost: number;
   talentCost: number;
   blueprintHealth: number;
-  galleryCount: number;
   onMarginChange: (margin: number) => void;
 }
 
 export function EventBlueprint({
-  baseItems,
   targetMargin,
   baseCost,
   suggestedPrice,
   venueCost,
   talentCost,
   blueprintHealth,
-  galleryCount,
   onMarginChange,
 }: EventBlueprintProps) {
   return (
