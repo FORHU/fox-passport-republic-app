@@ -25,13 +25,15 @@ export type CreatePolicyPayload = {
   rules: { fromHours: number; toHours: number | null; refundPercent: number }[];
 };
 
-function unwrapList(data: any): CancellationPolicy[] {
-  const raw = data?.policies ?? data?.data ?? (Array.isArray(data) ? data : []);
+function unwrapList(data: unknown): CancellationPolicy[] {
+  const record = data as Record<string, unknown> | undefined;
+  const raw = record?.policies ?? record?.data ?? (Array.isArray(data) ? data : []);
   return Array.isArray(raw) ? raw : [];
 }
 
-function unwrapOne(data: any): CancellationPolicy {
-  return data?.policy ?? data?.data ?? data;
+function unwrapOne(data: unknown): CancellationPolicy {
+  const record = data as Record<string, unknown> | undefined;
+  return (record?.policy ?? record?.data ?? data) as CancellationPolicy;
 }
 
 export async function fetchCancellationPolicies(): Promise<CancellationPolicy[]> {

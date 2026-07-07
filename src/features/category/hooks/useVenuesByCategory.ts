@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
@@ -53,11 +53,6 @@ export interface Venue {
   };
 }
 
-interface VenuesResponse {
-  success: boolean;
-  data: Venue[];
-  count: number;
-}
 
 const fetchVenuesByCategory = async (categoryName: string | null): Promise<Venue[]> => {
   if (!categoryName) return [];

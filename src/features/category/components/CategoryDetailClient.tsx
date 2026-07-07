@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import React, { useEffect } from "react";
 import { CategoryHero } from "@/features/category/components/detail/CategoryHero";
@@ -9,7 +9,7 @@ import { TrendingSection } from "@/features/category/components/detail/TrendingS
 import { CategoryFooter } from "@/features/category/components/detail/CategoryFooter";
 
 interface CategoryDetailClientProps {
-  category: any; // CategoryWithDesign type
+  category: Record<string, unknown>; // CategoryWithDesign type
 }
 
 export default function CategoryDetailClient({ category }: CategoryDetailClientProps) {

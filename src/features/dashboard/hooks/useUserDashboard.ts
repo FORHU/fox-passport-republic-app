@@ -113,10 +113,10 @@ export const useUserDashboard = () => {
     queryFn: async () => {
       if (!userId) return [];
       const res = await api.get(`/favorites/user/${userId}`);
-      const raw: any[] = res.data.data || [];
+      const raw: unknown[] = res.data.data || [];
       return raw.map((f) => {
         const img =
-          f.venue?.images?.find((i: any) => i.isPrimary)?.imageUrl ||
+          f.venue?.images?.find((i: { isPrimary?: boolean }) => i.isPrimary)?.imageUrl ||
           f.venue?.images?.[0]?.imageUrl ||
           f.venue?.images?.[0]?.url ||
           "https://picsum.photos/seed/venue/64/64";

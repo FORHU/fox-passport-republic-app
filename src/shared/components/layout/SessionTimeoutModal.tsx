@@ -11,12 +11,15 @@ interface SessionTimeoutModalProps {
 
 export default function SessionTimeoutModal({ isOpen, onStayLoggedIn, onLogout }: SessionTimeoutModalProps) {
   const [secondsLeft, setSecondsLeft] = useState(120);
+  const startTimeRef = React.useRef(Date.now());
 
   useEffect(() => {
-    if (!isOpen) { setSecondsLeft(120); return; }
+    if (!isOpen) return;
+    startTimeRef.current = Date.now();
 
     const interval = setInterval(() => {
-      setSecondsLeft((s) => (s > 0 ? s - 1 : 0));
+      const elapsed = Math.floor((Date.now() - startTimeRef.current) / 1000);
+      setSecondsLeft(Math.max(0, 120 - elapsed));
     }, 1000);
 
     return () => clearInterval(interval);

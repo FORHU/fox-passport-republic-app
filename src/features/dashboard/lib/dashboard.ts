@@ -8,17 +8,11 @@
 import api from "@/shared/lib/axios";
 import type { Id } from "@/shared/lib/api-types";
 
-interface DashboardDataFetch {
-  success: boolean;
-  data: any;
-  error?: string;
-}
-
 /**
  * Fetch user's venues on the server
  * Used by host dashboard
  */
-export async function fetchHostVenues(userId: Id): Promise<any[]> {
+export async function fetchHostVenues(userId: Id): Promise<unknown[]> {
   try {
     const response = await api.get("/venues", {
       params: { hostId: userId },
@@ -40,7 +34,7 @@ export async function fetchHostVenues(userId: Id): Promise<any[]> {
  * Fetch user's events on the server
  * Used by host dashboard
  */
-export async function fetchHostEvents(userId: Id): Promise<any[]> {
+export async function fetchHostEvents(userId: Id): Promise<unknown[]> {
   try {
     const response = await api.get("/events", {
       params: { organizerId: userId },

@@ -1,6 +1,6 @@
 ﻿"use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { useAuthStore } from "@/features/auth/store/useAuthStore";
@@ -15,7 +15,7 @@ function pad2(n: number) {
 
 function toDatetimeLocalValue(value: unknown): string {
   if (!value) return "";
-  const d = new Date(value as any);
+  const d = new Date(value as string | number | Date);
   if (Number.isNaN(d.getTime())) return "";
   return `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}T${pad2(
     d.getHours()
@@ -53,12 +53,12 @@ function mapEventTypeToCategory(eventType: unknown): string {
 
   // If backend already sent a display label (e.g. "Corporate")
   const asLabel = String(eventType ?? "").trim();
-  if (EVENT_CATEGORIES.includes(asLabel as any)) return asLabel;
+  if (EVENT_CATEGORIES.includes(asLabel as string)) return asLabel;
 
   return map[t] ?? "Other";
 }
 
-function belongsToHost(record: any, hostId: Id): boolean {
+function belongsToHost(record: unknown, hostId: Id): boolean {
   const idStr = String(hostId);
   const candidates: unknown[] = [
     record?.organizerId,
@@ -79,14 +79,15 @@ function belongsToHost(record: any, hostId: Id): boolean {
   return candidates.some((c) => c != null && String(c) === idStr);
 }
 
-function extractImageUrl(img: any): string | null {
+function extractImageUrl(img: unknown): string | null {
   if (!img) return null;
   if (typeof img === "string") return img;
-  return img?.url ?? img?.imageUrl ?? img?.image ?? null;
+  const obj = img as Record<string, unknown>;
+  return obj?.url ?? obj?.imageUrl ?? obj?.image ?? null;
 }
 
-function eventAssetToResourceItem(a: any) {
-  const asset = a?.asset ?? a;
+function eventAssetToResourceItem(a: unknown) {
+  const asset = (a as Record<string, unknown>)?.asset ?? a;
   const assetId = asset?.id ?? a?.assetId ?? asset?.assetId ?? a?.id;
   const name = asset?.name ?? a?.name ?? "Untitled";
   const desc = asset?.description ?? a?.description ?? "";
@@ -120,8 +121,8 @@ function eventAssetToResourceItem(a: any) {
   };
 }
 
-function eventServiceToResourceItem(s: any) {
-  const service = s?.service ?? s;
+function eventServiceToResourceItem(s: unknown) {
+  const service = (s as Record<string, unknown>)?.service ?? s;
   const serviceId = service?.id ?? s?.serviceId ?? service?.serviceId ?? s?.id;
   const name = service?.name ?? s?.name ?? "Untitled";
   const desc = service?.description ?? s?.description ?? "";
@@ -162,7 +163,6 @@ export function useHostEventEdit(eventId: string) {
 
   const [isPrefilling, setIsPrefilling] = useState(true);
   const [prefillError, setPrefillError] = useState<string | null>(null);
-  const [existingStatus, setExistingStatus] = useState<string>("draft");
   const [existingEndDatetime, setExistingEndDatetime] = useState<unknown>(null);
 
   const backHref = "/creator-dashboard/events";
@@ -297,7 +297,7 @@ export function useHostEventEdit(eventId: string) {
         // Keep originals for update payload consistency.
         setExistingStatus(normalizeEventStatusToBackend(found?.status ?? "draft"));
         setExistingEndDatetime(found?.endDatetime ?? found?.end_datetime ?? null);
-        (builder as any).existingVenueId = found?.venueId ?? found?.venue?.id ?? null;
+        (builder as { existingVenueId?: string | null }).existingVenueId = found?.venueId ?? (found?.venue as Record<string, unknown>)?.id ?? null;
 
         // Prefill store state.
         builder.reset();
@@ -356,8 +356,8 @@ export function useHostEventEdit(eventId: string) {
             builder.addBaseItem(eventServiceToResourceItem(es));
           });
         }
-      } catch (err: any) {
-        console.error("Failed to prefill event edit:", err);
+      } catch (error) {
+        console.error("Failed to prefill event edit:", error);
         if (!cancelled) setPrefillError("Failed to load event.");
       } finally {
         if (!cancelled) setIsPrefilling(false);
@@ -370,8 +370,8 @@ export function useHostEventEdit(eventId: string) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [eventId, hostId]);
 
-  const { handleBack: _ignoredHandleBack, handlePublish: _ignoredHandlePublish, ...rest } =
-    builder as any;
+  const { ...rest } =
+    builder as unknown as Record<string, unknown>;
 
   return {
     ...rest,
