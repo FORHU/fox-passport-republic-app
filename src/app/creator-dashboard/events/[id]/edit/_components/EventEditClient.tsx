@@ -19,10 +19,10 @@ function EventEditContent({ id }: Props) {
   const {
     isPrefilling, prefillError,
     eventTitle, description, category, date, location, maxAttendees, showGuide,
-    activeCategory, searchQuery, filteredResources, financials, blueprintHealth,
+    cancellationPolicyId, activeCategory, searchQuery, filteredResources, financials, blueprintHealth,
     gallery, baseItems, targetMargin, isSubmitting, isDragOver,
     setActiveCategory, setEventTitle, setDescription, setCategory, setDate,
-    setLocation, setMaxAttendees, setShowGuide, setSearchQuery, setTargetMargin,
+    setLocation, setMaxAttendees, setCancellationPolicyId, setShowGuide, setSearchQuery, setTargetMargin,
     handleDragStart, handleDragOver, handleDragLeave, handleDrop,
     addImageToGallery, removeGalleryItem, removeBaseItem, updateBaseItem,
     handleBack, handleSaveDraft, handlePublish,
@@ -66,7 +66,7 @@ function EventEditContent({ id }: Props) {
             <ResourcePalette activeCategory={activeCategory} searchQuery={searchQuery} filteredResources={filteredResources} onCategoryChange={setActiveCategory} onSearchChange={setSearchQuery} onDragStart={handleDragStart} />
             <main className="flex-1 overflow-y-auto p-8 bg-[#02040a] flex gap-8">
               <div className="flex-1 max-w-4xl mx-auto space-y-8">
-                <EventDetailsForm eventTitle={eventTitle} description={description} category={category} date={date} location={location} maxAttendees={maxAttendees} showGuide={showGuide} onTitleChange={setEventTitle} onDescriptionChange={setDescription} onCategoryChange={setCategory} onDateChange={setDate} onLocationChange={setLocation} onMaxAttendeesChange={setMaxAttendees} onCloseGuide={() => setShowGuide(false)} />
+                <EventDetailsForm eventTitle={eventTitle} description={description} category={category} date={date} location={location} maxAttendees={maxAttendees} showGuide={showGuide} cancellationPolicyId={cancellationPolicyId} onTitleChange={setEventTitle} onDescriptionChange={setDescription} onCategoryChange={setCategory} onDateChange={setDate} onLocationChange={setLocation} onMaxAttendeesChange={setMaxAttendees} onCancellationPolicyChange={setCancellationPolicyId} onCloseGuide={() => setShowGuide(false)} />
                 <EventGallery gallery={gallery} onAddImage={addImageToGallery} onRemoveImage={removeGalleryItem} />
                 <CorePackageDropZone baseItems={baseItems} isDragOver={isDragOver} onDragOver={handleDragOver} onDragLeave={handleDragLeave} onDrop={handleDrop} onRemoveItem={removeBaseItem} onUpdateItem={updateBaseItem} />
               </div>

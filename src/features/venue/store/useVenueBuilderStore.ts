@@ -16,6 +16,9 @@ interface VenueBuilderState {
   state: string;
   gallery: GalleryItem[];
 
+  // Cancellation Policy
+  cancellationPolicyId: string | null;
+
   // Package Items
   includedItems: ResourceItem[];
   addonItems: ResourceItem[];
@@ -49,6 +52,9 @@ interface VenueBuilderState {
   // Actions - Resources
   addCustomResource: (category: string, item: ResourceItem) => void;
   removeCustomResource: (category: string, id: string) => void;
+
+  // Actions - Cancellation Policy
+  setCancellationPolicyId: (id: string | null) => void;
 
   // Actions - Package Items
   addIncludedItem: (item: ResourceItem) => void;
@@ -85,6 +91,7 @@ const initialData = {
   city: "",
   state: "",
   gallery: [] as GalleryItem[],
+  cancellationPolicyId: null as string | null,
   includedItems: [] as ResourceItem[],
   addonItems: [] as ResourceItem[],
   baseRate: 15000,
@@ -133,6 +140,9 @@ export const useVenueBuilderStore = create<VenueBuilderState>((set) => ({
         [category]: (state.resources[category] || []).filter((r) => r.id !== id),
       },
     })),
+
+  // Cancellation Policy Actions
+  setCancellationPolicyId: (id) => set({ cancellationPolicyId: id }),
 
   // Package Items Actions
   addIncludedItem: (item) =>

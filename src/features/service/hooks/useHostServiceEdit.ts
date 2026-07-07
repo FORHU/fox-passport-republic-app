@@ -182,6 +182,7 @@ export function useHostServiceEdit(serviceId: string) {
               ],
             }
           : {}),
+        cancellationPolicyId: services.cancellationPolicyId || undefined,
         status: services.status,
       };
 

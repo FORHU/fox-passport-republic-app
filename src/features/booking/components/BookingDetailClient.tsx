@@ -5,7 +5,6 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { fetchBookingById } from '@/features/booking/api/bookings';
 import { useAuthStore } from '@/features/auth/store/useAuthStore';
-import CancelBookingModal from '@/features/booking/components/CancelBookingModal';
 import { toast } from 'sonner';
 
 const STATUS_LABEL: Record<string, { label: string; color: string }> = {
@@ -33,7 +32,6 @@ export default function BookingDetailClient({ bookingId }: { bookingId: string }
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
   const [error, setError] = useState('');
-  const [showCancelModal, setShowCancelModal] = useState(false);
 
   useEffect(() => {
     if (!bookingId) return;
@@ -162,15 +160,7 @@ export default function BookingDetailClient({ bookingId }: { bookingId: string }
                 </div>
                 <p className="text-text-muted text-sm font-mono">Booking #{bookingId}</p>
               </div>
-              {isActiveStatus && !isCancelled && (
-                <button
-                  onClick={() => setShowCancelModal(true)}
-                  className="px-6 py-3 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 font-bold text-sm hover:bg-red-500/20 hover:border-red-500/30 active:scale-95 transition-all flex items-center gap-2"
-                >
-                  <span className="material-symbols-outlined text-[18px]">cancel</span>
-                  Cancel Booking
-                </button>
-              )}
+
             </div>
 
             <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
@@ -239,21 +229,6 @@ export default function BookingDetailClient({ bookingId }: { bookingId: string }
           )}
         </div>
       </main>
-
-      {showCancelModal && booking && (
-        <CancelBookingModal
-          bookingId={bookingId}
-          onClose={() => setShowCancelModal(false)}
-          onSuccess={() => {
-            setShowCancelModal(false);
-            fetchBookingById(bookingId)
-              .then((data) => {
-                if (data) setBooking(data);
-              })
-              .catch(() => {});
-          }}
-        />
-      )}
     </>
   );
 }

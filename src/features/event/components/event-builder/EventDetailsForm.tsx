@@ -2,6 +2,7 @@
 
 import React from 'react';
 import { EVENT_CATEGORIES } from '@/features/event/data/eventBuilderData';
+import CancellationPolicyPicker from '@/features/cancellation-policy/components/CancellationPolicyPicker';
 
 interface EventDetailsFormProps {
   eventTitle: string;
@@ -11,12 +12,14 @@ interface EventDetailsFormProps {
   location: string;
   maxAttendees: number;
   showGuide: boolean;
+  cancellationPolicyId: string | null;
   onTitleChange: (title: string) => void;
   onDescriptionChange: (desc: string) => void;
   onCategoryChange: (cat: string) => void;
   onDateChange: (date: string) => void;
   onLocationChange: (loc: string) => void;
   onMaxAttendeesChange: (count: number) => void;
+  onCancellationPolicyChange: (policyId: string | null) => void;
   onCloseGuide: () => void;
 }
 
@@ -28,12 +31,14 @@ export function EventDetailsForm({
   location,
   maxAttendees,
   showGuide,
+  cancellationPolicyId,
   onTitleChange,
   onDescriptionChange,
   onCategoryChange,
   onDateChange,
   onLocationChange,
   onMaxAttendeesChange,
+  onCancellationPolicyChange,
   onCloseGuide,
 }: EventDetailsFormProps) {
   return (
@@ -153,6 +158,14 @@ export function EventDetailsForm({
               />
             </div>
           </div>
+        </div>
+
+        {/* Cancellation Policy */}
+        <div className="max-w-xs">
+          <CancellationPolicyPicker
+            value={cancellationPolicyId}
+            onChange={onCancellationPolicyChange}
+          />
         </div>
 
         {/* Description */}

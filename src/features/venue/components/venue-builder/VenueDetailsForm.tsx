@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { GalleryItem, VENUE_TYPES } from '@/features/venue/data/venueBuilderData';
 import { config } from '@/shared/lib/config';
+import CancellationPolicyPicker from '@/features/cancellation-policy/components/CancellationPolicyPicker';
 
 interface LocationInputProps {
   value: string;
@@ -102,6 +103,7 @@ interface VenueDetailsFormProps {
   country: string;
   gallery: GalleryItem[];
   showGuide: boolean;
+  cancellationPolicyId: string | null;
   onNameChange: (name: string) => void;
   onDescriptionChange: (desc: string) => void;
   onTypeChange: (type: string) => void;
@@ -110,6 +112,7 @@ interface VenueDetailsFormProps {
   onCityChange: (city: string) => void;
   onStateChange: (state: string) => void;
   onCountryChange: (country: string) => void;
+  onCancellationPolicyChange: (policyId: string | null) => void;
   onAddImage: (files: File[]) => void;
   onRemoveImage: (id: string) => void;
   onCloseGuide: () => void;
@@ -126,6 +129,7 @@ export function VenueDetailsForm({
   country,
   gallery,
   showGuide,
+  cancellationPolicyId,
   onNameChange,
   onDescriptionChange,
   onTypeChange,
@@ -134,6 +138,7 @@ export function VenueDetailsForm({
   onCityChange,
   onStateChange,
   onCountryChange,
+  onCancellationPolicyChange,
   onAddImage,
   onRemoveImage,
   onCloseGuide,
@@ -299,6 +304,14 @@ export function VenueDetailsForm({
                   }}
                 />
               </div>
+            </div>
+
+            {/* Cancellation Policy */}
+            <div className="max-w-xs">
+              <CancellationPolicyPicker
+                value={cancellationPolicyId}
+                onChange={onCancellationPolicyChange}
+              />
             </div>
 
             {/* Description */}

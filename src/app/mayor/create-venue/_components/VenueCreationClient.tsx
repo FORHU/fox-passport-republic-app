@@ -24,11 +24,11 @@ export default function VenueCreationClient() {
 
   const {
     venueName, description, venueType, capacity, location, city, state, country,
-    gallery, includedItems, addonItems, baseRate, occupancyRate, activeCategory,
+    gallery, cancellationPolicyId, includedItems, addonItems, baseRate, occupancyRate, activeCategory,
     searchQuery, showGuide, isSubmitting, isDragOver, newItem, filteredResources,
     revenue, currentCategoryLabel,
     setVenueName, setDescription, setVenueType, setCapacity, setLocation, setCity,
-    setState, setCountry, removeIncludedItem, removeAddonItem,
+    setState, setCountry, setCancellationPolicyId, removeIncludedItem, removeAddonItem,
     setBaseRate, setOccupancyRate, setActiveCategory, setSearchQuery, setShowGuide,
     setNewItem, handleDragStart, handleDragOver, handleDragLeave, handleDrop,
     handleAddCustomItem, handleRemoveCustomResource, addImageToGallery,
@@ -91,6 +91,7 @@ export default function VenueCreationClient() {
                 country={country}
                 gallery={gallery}
                 showGuide={showGuide}
+                cancellationPolicyId={cancellationPolicyId}
                 onNameChange={setVenueName}
                 onDescriptionChange={setDescription}
                 onTypeChange={setVenueType}
@@ -99,6 +100,7 @@ export default function VenueCreationClient() {
                 onCityChange={setCity}
                 onStateChange={setState}
                 onCountryChange={setCountry}
+                onCancellationPolicyChange={setCancellationPolicyId}
                 onAddImage={addImageToGallery}
                 onRemoveImage={removeImageFromGallery}
                 onCloseGuide={() => setShowGuide(false)}
