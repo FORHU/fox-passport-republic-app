@@ -127,6 +127,7 @@ export function useHostVenueEdit(venueId: string) {
         techAv: allItems.filter((i: any) => i.category === "tech").map((i: any) => i.name),
         staffing: allItems.filter((i: any) => i.category === "staff").map((i: any) => i.name),
         policies: allItems.filter((i: any) => i.category === "rules").map((i: any) => i.name),
+        cancellationPolicyId: builder.cancellationPolicyId || undefined,
         status: normalizeVenueStatusToBackend(targetStatus),
       };
 

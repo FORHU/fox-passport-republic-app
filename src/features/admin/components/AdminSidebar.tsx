@@ -8,14 +8,14 @@ import { BrandLogo } from '@/shared/components/layout/BrandLogo';
 const NAV_ITEMS = [
   { label: 'Dashboard',   icon: 'dashboard',           id: 'dashboard'  },
   { label: 'Bookings',    icon: 'confirmation_number', id: 'bookings'   },
-  { label: 'Disputes',    icon: 'gavel',               id: 'disputes'   },
   { label: 'Citizens',    icon: 'group',               id: 'citizens'   },
   { label: 'Events',      icon: 'event',               id: 'events',    section: 'Manage' },
   { label: 'Categories',  icon: 'category',            id: 'categories' },
   { label: 'Venues',      icon: 'storefront',          id: 'venues'     },
   { label: 'Assets',      icon: 'inventory_2',         id: 'assets',    section: 'Listings' },
   { label: 'Services',    icon: 'build',               id: 'services'   },
-  { label: 'Settings',    icon: 'settings',            id: 'settings',  section: 'System' },
+  { label: 'Policies',    icon: 'policy',              id: 'policies',  section: 'System' },
+  { label: 'Settings',    icon: 'settings',            id: 'settings'  },
 ] as const;
 
 export const AdminSidebar: React.FC = () => {

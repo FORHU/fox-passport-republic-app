@@ -237,7 +237,7 @@ export function useInventoryBuilder() {
         throw new Error("Failed to upload image. Please try again.");
       }
 
-      const assetData: CreateAssetPayload = {
+      const assetData: CreateAssetPayload & { cancellationPolicyId?: string } = {
         name: store.title,
         description: store.description,
         condition: store.condition,
@@ -245,6 +245,7 @@ export function useInventoryBuilder() {
         price: parsedPrice,
         billingRate: unitMap[store.unit] || "daily",
         imgIds: [uploadResult.fileId],
+        cancellationPolicyId: store.cancellationPolicyId || undefined,
       };
       
       console.log("[ListingBuilder] Publishing asset:", assetData);

@@ -165,11 +165,8 @@ export default function CancelBookingModal({ bookingId, onClose, onSuccess }: Ca
             </div>
 
             {state.eligibleData.message && (
-              <div className="bg-blue-500/10 border border-blue-500/20 rounded-xl p-3">
-                <div className="flex items-start gap-2">
-                  <span className="material-symbols-outlined text-blue-400 text-[16px] shrink-0 mt-0.5">policy</span>
-                  <p className="text-blue-400 text-xs leading-relaxed">{state.eligibleData.message}</p>
-                </div>
+              <div className="bg-blue-500/10 border border-blue-500/20 rounded-xl p-3 text-center">
+                <p className="text-blue-400 text-xs leading-relaxed">{state.eligibleData.message}</p>
               </div>
             )}
 

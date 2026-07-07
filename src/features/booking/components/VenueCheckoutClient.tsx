@@ -344,8 +344,8 @@ export default function VenueCheckoutClient() {
                     ) : (
                       <div className="py-8 text-center text-white/40">
                         <p>No payment information available.</p>
-                        <Link href={`/booking/venue/${bookingId || ''}`} className="mt-2 inline-block text-sm text-accent hover:underline">
-                          Go back to configure your booking
+                        <Link href={`/booking/${bookingId || ''}`} className="mt-2 inline-block text-sm text-accent hover:underline">
+                          View booking details
                         </Link>
                       </div>
                     )}

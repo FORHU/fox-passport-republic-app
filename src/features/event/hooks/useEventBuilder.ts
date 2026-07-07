@@ -267,6 +267,7 @@ export function useEventBuilder() {
         description: store.description || "Event created via Creator Studio.",
         category: eventType,
         isPublic: false,
+        cancellationPolicyId: store.cancellationPolicyId || undefined,
       };
 
       // 3. Create event template

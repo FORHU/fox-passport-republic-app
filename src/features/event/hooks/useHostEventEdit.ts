@@ -220,6 +220,7 @@ export function useHostEventEdit(eventId: string) {
         endDatetime,
         maxAttendees: Math.max(1, Math.floor(builder.maxAttendees || 100)),
         totalPrice: Number(builder.financials?.suggestedPrice) || 0,
+        cancellationPolicyId: builder.cancellationPolicyId || undefined,
         images: builder.gallery.map((g, index) => ({
           imageUrl: g.url,
           isPrimary: index === 0,
