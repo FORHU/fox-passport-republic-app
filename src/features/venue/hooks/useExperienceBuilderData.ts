@@ -21,7 +21,34 @@ export interface LiveService {
   price: number;
   icon: string;
   desc: string;
-  category: string; // maps to the sidebar category key
+  category: string;
+}
+
+// ─── API Response Types ────────────────────────────────────────────────────────
+
+interface ApiUser {
+  id: string;
+  name?: string;
+  username?: string;
+  roleType?: string;
+  imgId?: string;
+  bio?: string;
+}
+
+interface ApiService {
+  id: string;
+  name: string;
+  price: number;
+  category: string;
+  description?: string;
+}
+
+interface ApiAsset {
+  id: string;
+  name: string;
+  price: number;
+  category: string;
+  description?: string;
 }
 
 // ─── Category icon map ─────────────────────────────────────────────────────────
@@ -66,7 +93,7 @@ const ASSET_CAT_TO_TAB: Record<string, string> = {
 
 async function fetchFoxers(): Promise<LiveFoxer[]> {
   const res = await api.get("/users?roleType=foxerService,foxerAsset");
-  const users: any[] = Array.isArray(res.data) ? res.data : res.data?.data ?? [];
+  const users: ApiUser[] = Array.isArray(res.data) ? res.data : res.data?.data ?? [];
   return users.map((u) => ({
     id: u.id,
     name: u.name || u.username || "Foxer",
@@ -82,26 +109,26 @@ async function fetchFoxers(): Promise<LiveFoxer[]> {
 
 async function fetchServices(): Promise<LiveService[]> {
   const res = await api.get("/service");
-  const services: any[] = Array.isArray(res.data) ? res.data : res.data?.data ?? [];
+  const services: ApiService[] = Array.isArray(res.data) ? res.data : res.data?.data ?? [];
   return services.map((s) => ({
     id: s.id,
     name: s.name,
     price: s.price,
     icon: SERVICE_CATEGORY_ICON[s.category] ?? "star",
-    desc: s.description,
+    desc: s.description ?? "",
     category: SERVICE_CAT_TO_TAB[s.category] ?? "catering",
   }));
 }
 
 async function fetchAssets(): Promise<LiveService[]> {
   const res = await api.get("/asset");
-  const assets: any[] = Array.isArray(res.data) ? res.data : res.data?.data ?? [];
+  const assets: ApiAsset[] = Array.isArray(res.data) ? res.data : res.data?.data ?? [];
   return assets.map((a) => ({
     id: a.id,
     name: a.name,
     price: a.price,
     icon: ASSET_CATEGORY_ICON[a.category] ?? "category",
-    desc: a.description,
+    desc: a.description ?? "",
     category: ASSET_CAT_TO_TAB[a.category] ?? "tech",
   }));
 }
@@ -133,7 +160,9 @@ export function useExperienceBuilderData() {
   // Group by sidebar category tab (same shape CUSTOM_SERVICES had)
   const itemsByCategory: Record<string, LiveService[]> = {};
   for (const item of allItems) {
-    if (!itemsByCategory[item.category]) itemsByCategory[item.category] = [];
+    if (!itemsByCategory[item.category]) {
+      itemsByCategory[item.category] = [];
+    }
     itemsByCategory[item.category].push(item);
   }
 
