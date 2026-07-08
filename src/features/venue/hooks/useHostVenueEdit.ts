@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { useCallback, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
@@ -124,7 +124,7 @@ export function useHostVenueEdit(venueId: string) {
 
     builder.setIsSubmitting(true);
     try {
-      const allItems: VenueItem[] = [...builder.includedItems, ...builder.addonItems];
+      const allItems: any[] = [...builder.includedItems, ...builder.addonItems];
       const payload: VenueUpdatePayload = {
         name: builder.venueName,
         description: builder.description || 'Venue updated via Studio.',

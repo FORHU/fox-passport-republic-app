@@ -59,7 +59,7 @@ export function useEventBuilder() {
 
         // Process Assets
         if (assetResp.data.assets) {
-          assetResp.data.assets.forEach((a: Record<string, unknown>) => {
+          assetResp.data.assets.forEach((a: any) => {
             const item: ResourceItem = {
               id: a.id,
               name: a.name,
@@ -87,7 +87,7 @@ export function useEventBuilder() {
         // Process Services
         const rawServices = serviceResp.data.services || serviceResp.data.data || [];
         if (Array.isArray(rawServices)) {
-          rawServices.forEach((s: Record<string, unknown>) => {
+          rawServices.forEach((s: any) => {
             const item: ResourceItem = {
               id: s.id,
               name: s.name,

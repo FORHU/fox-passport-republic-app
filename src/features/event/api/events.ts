@@ -1,12 +1,25 @@
-﻿import api from "@/shared/lib/axios";
+import api from "@/shared/lib/axios";
 import type { Id } from "@/shared/lib/api-types";
 
 function unwrapListResponse(data: unknown): unknown[] {
-  const raw = (data as { templates?: unknown[]; data?: unknown[] } | unknown[])?.templates ?? (data as { data?: unknown[] } | unknown[])?.data ?? (Array.isArray(data) ? data : []);
-  return Array.isArray(raw) ? raw : [];
+  // If the response is already an array, return it
+  if (Array.isArray(data)) return data;
+
+  // Ensure data is an object before accessing properties
+  if (data == null || typeof data !== 'object') return [];
+
+  const obj = data as Record<string, unknown>;
+
+  const templates = obj.templates;
+  if (Array.isArray(templates)) return templates;
+
+  const d = obj.data;
+  if (Array.isArray(d)) return d;
+
+  return [];
 }
 
-export async function fetchEventsByHostId(hostId: Id): Promise<unknown[]> {
+export async function fetchEventsByHostId(hostId: Id): Promise<any[]> {
   const resp = await api.get("/event-templates", { params: { ownerId: String(hostId) } });
   return unwrapListResponse(resp.data);
 }
