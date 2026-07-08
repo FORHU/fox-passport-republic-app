@@ -10,8 +10,10 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    "public/**",
   ]),
   {
+    files: ["**/*.{js,jsx,mjs,ts,tsx,mts,cts}"],
     rules: {
       // Downgraded from error: codebase uses `any` extensively for untyped API
       // responses. Flag as warnings so new instances are visible without blocking.
