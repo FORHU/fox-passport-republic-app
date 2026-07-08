@@ -58,7 +58,7 @@ function mapEventTypeToCategory(eventType: unknown): string {
   return map[t] ?? "Other";
 }
 
-function belongsToHost(record: unknown, hostId: Id): boolean {
+function belongsToHost(record: any, hostId: Id): boolean {
   const idStr = String(hostId);
   const candidates: unknown[] = [
     record?.organizerId,
@@ -82,11 +82,11 @@ function belongsToHost(record: unknown, hostId: Id): boolean {
 function extractImageUrl(img: unknown): string | null {
   if (!img) return null;
   if (typeof img === "string") return img;
-  const obj = img as Record<string, unknown>;
+  const obj = img as any;
   return obj?.url ?? obj?.imageUrl ?? obj?.image ?? null;
 }
 
-function eventAssetToResourceItem(a: unknown) {
+function eventAssetToResourceItem(a: any) {
   const asset = (a as Record<string, unknown>)?.asset ?? a;
   const assetId = asset?.id ?? a?.assetId ?? asset?.assetId ?? a?.id;
   const name = asset?.name ?? a?.name ?? "Untitled";
@@ -121,7 +121,7 @@ function eventAssetToResourceItem(a: unknown) {
   };
 }
 
-function eventServiceToResourceItem(s: unknown) {
+function eventServiceToResourceItem(s: any) {
   const service = (s as Record<string, unknown>)?.service ?? s;
   const serviceId = service?.id ?? s?.serviceId ?? service?.serviceId ?? s?.id;
   const name = service?.name ?? s?.name ?? "Untitled";
