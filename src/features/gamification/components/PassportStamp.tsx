@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { PassportStamp } from '@/features/gamification/types/gamification';
-import { formatXP } from '@/features/gamification/lib/gamification';
+import Image from 'next/image';
 
 interface PassportStampCardProps {
   stamp: PassportStamp;
@@ -25,10 +25,11 @@ export default function PassportStampCard({ stamp, onClick, className = '' }: Pa
       {/* Event Image */}
       {stamp.imageUrl && (
         <div className="relative h-48 overflow-hidden">
-          <img
+          <Image
+            fill
             src={stamp.imageUrl}
             alt={stamp.eventTitle}
-            className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+            className="object-cover group-hover:scale-110 transition-transform duration-500"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent"></div>
 

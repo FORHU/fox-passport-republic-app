@@ -4,7 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import api from "@/shared/lib/axios";
 import { useAuthStore } from "@/features/auth/store/useAuthStore";
 
-export const useHostData = (type: 'services' | 'assets' | 'events' | 'venues', initialData?: any[]) => {
+export const useHostData = (type: 'services' | 'assets' | 'events' | 'venues', initialData?: unknown[]) => {
   const user = useAuthStore(s => s.user);
   const userId = user?.id;
 
@@ -14,7 +14,7 @@ export const useHostData = (type: 'services' | 'assets' | 'events' | 'venues', i
       if (!userId) return [];
       
       let endpoint = "";
-      let params: any = {};
+      let params: Record<string, string> = {};
       
       switch (type) {
         case "services":

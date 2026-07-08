@@ -34,6 +34,7 @@ interface VenueCategory {
 export interface Venue {
   id: string;
   name: string;
+  title: string;
   description: string;
   venueType: string;
   capacity?: number;
@@ -44,6 +45,12 @@ export interface Venue {
   state: string;
   country: string;
   host: VenueHost;
+  rating?: number;
+  reviews?: number;
+  location: string;
+  province: string;
+  billingRate?: string;
+  spaceType?: string[];
   category: VenueCategory | null;
   pricing: VenuePricing[];
   images: VenueImage[];
@@ -53,10 +60,10 @@ export interface Venue {
   };
 }
 
-interface VenuesResponse {
-  success: boolean;
-  data: Venue[];
-  count: number;
+// Added explicit typing for Axios response payload structure
+interface AxiosVenuePayload {
+  venues?: Venue[];
+  data?: Venue[];
 }
 
 const fetchVenuesByCategory = async (categoryName: string | null): Promise<Venue[]> => {
@@ -65,7 +72,7 @@ const fetchVenuesByCategory = async (categoryName: string | null): Promise<Venue
   // Convert category name to slug (lowercase, replace spaces with hyphens)
   const categorySlug = categoryName.toLowerCase().replace(/\s+/g, "-").replace(/&/g, "");
 
-  const response = await axios.get(
+  const response = await axios.get<AxiosVenuePayload>(
     `${config.apiUrl}/venues/category/${categorySlug}`
   );
 
@@ -77,7 +84,7 @@ export function useVenuesByCategory(categoryName: string | null) {
     data: venues = [],
     isLoading: loading,
     error,
-  } = useQuery({
+  } = useQuery<Venue[], Error>({
     queryKey: ["venues-by-category", categoryName],
     queryFn: () => fetchVenuesByCategory(categoryName),
     enabled: !!categoryName,
@@ -87,6 +94,6 @@ export function useVenuesByCategory(categoryName: string | null) {
   return {
     venues,
     loading,
-    error: error ? (error as Error).message : null,
+    error: error instanceof Error ? error.message : error ? String(error) : null,
   };
 }

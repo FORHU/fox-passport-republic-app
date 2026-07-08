@@ -1,6 +1,6 @@
 // Category type matching backend Prisma model
 export interface Category {
-  venues: any;
+  venues: unknown[];
   id: string;
   name: string;
   slug: string;

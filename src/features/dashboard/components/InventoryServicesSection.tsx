@@ -2,6 +2,7 @@
 
 import React from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { InventoryItem, ServiceItem } from '@/features/dashboard/data/dashboardData';
 import { StatusBadge } from './StatusBadge';
 import { EmptyState } from './EmptyState';
@@ -53,10 +54,12 @@ export function InventorySection({
               }}
             >
               <div className="aspect-square overflow-hidden rounded-lg">
-                <img
+                <Image
                   src={it.img}
-                  className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
                   alt=""
+                  width={400}
+                  height={400}
+                  className="object-cover group-hover:scale-110 transition-transform duration-500"
                 />
               </div>
 

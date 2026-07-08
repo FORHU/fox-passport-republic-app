@@ -1,6 +1,7 @@
 ﻿"use client";
 import { Heart, Star } from "lucide-react";
 import Link from "next/link";
+import Image from "next/image";
 import { Venue } from "@/features/venue/data/hardcodedVenues";
 import { useSearchParams } from "next/navigation";
 
@@ -15,10 +16,11 @@ export default function ListingCard({ venue }: { venue: Venue }) {
       
       {/* Image Container */}
       <div className="relative aspect-square w-full overflow-hidden rounded-md md:rounded-xl bg-gray-200 mb-1.5 md:mb-3">
-        <img 
-          src={venue.images[0]} 
+        <Image
+          fill
+          src={venue.images[0]}
           alt={venue.title}
-          className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+          className="object-cover transition-transform duration-500 group-hover:scale-105"
         />
         {/* Heart Icon: Smaller on mobile */}
         <button className="absolute top-1 right-1 md:top-3 md:right-3 p-1 rounded-full hover:bg-white/10 transition-colors">

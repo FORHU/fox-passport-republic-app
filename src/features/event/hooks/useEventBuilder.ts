@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { useCallback, useMemo } from "react";
 import { useRouter } from "next/navigation";
@@ -7,7 +7,6 @@ import api from "@/shared/lib/axios";
 import { toast } from "sonner";
 import { useEffect, useState } from "react";
 import {
-  AVAILABLE_RESOURCES,
   VENUE_ICONS,
   TALENT_ICONS,
   ResourceItem,
@@ -36,15 +35,15 @@ export function useEventBuilder() {
         
         if (rawVenues && Array.isArray(rawVenues)) {
           venues = rawVenues
-            .filter((v: any) => v.status?.toLowerCase() === "published")
-            .map((v: any) => ({
-              id: v.id,
-              name: v.name,
-              cost: v.baseRate || 10000,
-              icon: "location_city",
-              desc: v.description || "Real venue from your gallery.",
-              resourceType: "venue"
-            }));
+            .filter((v: Record<string, unknown>) => (v.status as string)?.toLowerCase() === "published")
+            .map((v: Record<string, unknown>) => ({
+               id: String(v.id),
+               name: String(v.name ?? ""),
+               cost: Number(v.baseRate || 10000),
+               icon: "location_city",
+               desc: String(v.description || "Real venue from your gallery."),
+               resourceType: "venue"
+             }));
         }
 
         // Fetch Assets/Services
@@ -101,17 +100,17 @@ export function useEventBuilder() {
             // Services have category as a string
             const category = typeof s.category === 'string' ? s.category.toLowerCase() : s.category?.slug?.toLowerCase();
             
-            if (category === "entertainment") {
-              talent.push({ ...item, icon: "music_note" });
-            } else if (["planning", "catering", "photography", "videography"].includes(category)) {
-              const iconMap: any = { 
-                catering: "restaurant", 
-                photography: "camera_alt", 
-                videography: "videocam",
-                planning: "event_note" 
-              };
-              service.push({ ...item, icon: iconMap[category] || "work_outline" });
-            } else {
+             if (category === "entertainment") {
+               talent.push({ ...item, icon: "music_note" });
+             } else if (["planning", "catering", "photography", "videography"].includes(category)) {
+               const iconMap: Record<string, string> = { 
+                 catering: "restaurant", 
+                 photography: "camera_alt", 
+                 videography: "videocam",
+                 planning: "event_note" 
+               };
+               service.push({ ...item, icon: iconMap[category] || "work_outline" });
+             } else {
               service.push(item);
             }
           });
@@ -130,6 +129,7 @@ export function useEventBuilder() {
     };
     fetchData();
   }, []);
+
 
   // Get filtered resources based on active category and search
   const filteredResources = useMemo(() => {
@@ -267,6 +267,7 @@ export function useEventBuilder() {
         description: store.description || "Event created via Creator Studio.",
         category: eventType,
         isPublic: false,
+        cancellationPolicyId: store.cancellationPolicyId || undefined,
       };
 
       // 3. Create event template
@@ -309,13 +310,14 @@ export function useEventBuilder() {
           store.reset();
         }, 1500);
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Publishing error:", error);
-      toast.error(error.response?.data?.message || "Failed to publish event");
+      const errMsg = (error as { response?: { data?: { message?: string } } })?.response?.data?.message || "Failed to publish event";
+      toast.error(errMsg);
     } finally {
       store.setIsSubmitting(false);
     }
-  }, [store, router, financials, realResources]);
+  }, [store, router, realResources]);
 
   return {
     // State

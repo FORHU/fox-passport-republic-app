@@ -1,6 +1,7 @@
 ﻿'use client';
 
 import React from 'react';
+import Image from 'next/image';
 import { OCCUPANCY_DATA, PENDING_REQUESTS } from '@/features/dashboard/data/dashboardData';
 
 export function OccupancyChart() {
@@ -48,7 +49,7 @@ export function PendingRequests() {
       <div className="space-y-3">
         {PENDING_REQUESTS.map((req) => (
           <div key={req.id} className="flex items-center gap-3 p-2 rounded-xl hover:bg-white/5">
-            <img className="h-10 w-10 rounded-full border border-white/10" src={req.avatar} alt="" />
+            <Image className="h-10 w-10 rounded-full border border-white/10" src={req.avatar} alt="" width={40} height={40} />
             <div className="flex-1 min-w-0">
               <div className="flex justify-between">
                 <p className="text-sm font-bold">{req.name}</p>

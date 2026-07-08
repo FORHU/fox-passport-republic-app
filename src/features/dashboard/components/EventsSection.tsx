@@ -2,6 +2,7 @@
 
 import React from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { EventItem } from '@/features/dashboard/data/dashboardData';
 import { StatusBadge } from './StatusBadge';
 import { EmptyState } from './EmptyState';
@@ -55,10 +56,11 @@ export function EventsSection({
             >
               <div className="flex flex-col sm:flex-row gap-5">
                 <div className="relative w-full sm:w-36 aspect-video sm:aspect-square rounded-2xl overflow-hidden shrink-0">
-                  <img
-                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+                  <Image
+                    fill
                     src={ev.img || '/herobackground.jpg'}
                     alt=""
+                    className="object-cover group-hover:scale-110 transition-transform duration-700"
                     onError={(e) => { (e.target as HTMLImageElement).src = '/herobackground.jpg'; }}
                   />
                   <div className="absolute top-2 left-2 bg-black/70 backdrop-blur px-2 py-1 rounded text-[10px] font-bold uppercase">

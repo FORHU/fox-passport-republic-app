@@ -16,6 +16,9 @@ interface ListingBuilderState {
   status: string;
   image: string;
 
+  // Cancellation Policy
+  cancellationPolicyId: string | null;
+
   // UI State
   showGuide: boolean;
   isSubmitting: boolean;
@@ -31,6 +34,7 @@ interface ListingBuilderState {
   setCondition: (condition: string) => void;
   setStatus: (status: string) => void;
   setImage: (url: string) => void;
+  setCancellationPolicyId: (id: string | null) => void;
   setShowGuide: (show: boolean) => void;
   setIsSubmitting: (submitting: boolean) => void;
 
@@ -50,6 +54,7 @@ const getInitialState = (type: ListingType = "inventory") => ({
   condition: "good",
   status: "draft",
   image: "",
+  cancellationPolicyId: null as string | null,
   showGuide: true,
   isSubmitting: false,
 });
@@ -67,6 +72,7 @@ export const useListingBuilderStore = create<ListingBuilderState>((set) => ({
   setCondition: (condition) => set({ condition }),
   setStatus: (status) => set({ status }),
   setImage: (url) => set({ image: url }),
+  setCancellationPolicyId: (id) => set({ cancellationPolicyId: id }),
   setShowGuide: (show) => set({ showGuide: show }),
   setIsSubmitting: (submitting) => set({ isSubmitting: submitting }),
 
@@ -86,6 +92,7 @@ export const useListingDetails = () =>
     condition: state.condition,
     status: state.status,
     image: state.image,
+    cancellationPolicyId: state.cancellationPolicyId,
   }));
 
 export const useListingUI = () =>

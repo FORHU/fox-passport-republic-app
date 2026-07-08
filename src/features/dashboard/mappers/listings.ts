@@ -1,13 +1,13 @@
 ﻿import type { BackendAsset, BackendService } from "@/shared/lib/api-types";
 import type { InventoryItem, ServiceItem } from "@/features/dashboard/data/dashboardData";
 
-function normalizeStatus(status: any): string {
+function normalizeStatus(status: unknown): string {
   const raw = String(status ?? "").toLowerCase();
   if (!raw) return "available";
   return raw;
 }
 
-function formatPeso(value: any): string {
+function formatPeso(value: unknown): string {
   const num =
     typeof value === "string" ? parseFloat(value) :
       typeof value === "number" ? value :
