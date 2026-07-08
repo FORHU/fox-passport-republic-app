@@ -51,37 +51,34 @@ export default function BookingListClient() {
 
   const [cancelTarget, setCancelTarget] = useState<any | null>(null);
 
+  const loadBookings = () => {
+    const userId = user?.id || user?.userId;
+    if (!userId) return;
+    if (!isInitial) setIsFetching(true);
+    fetchUserBookings(userId, page, limit)
+      .then((res) => {
+        setBookings(res.bookings);
+        setTotalPages(res.pagination.totalPages || 1);
+      })
+      .catch(() => toast.error('Could not load bookings.'))
+      .finally(() => {
+        setIsInitial(false);
+        setIsFetching(false);
+      });
+  };
+
   useEffect(() => {
-    if (!user?.id && !user?.userId) return;
-    const userId = user?.id || user?.userId || '';
-    const loadBookings = () => {
-      const userId = user?.id || user?.userId;
-      if (!userId) return;
-      if (!isInitial) setIsFetching(true);
-      fetchUserBookings(userId, page, limit)
-        .then((res) => {
-          setBookings(res.bookings);
-          setTotalPages(res.pagination.totalPages || 1);
-        })
-        .catch(() => toast.error('Could not load bookings.'))
-        .finally(() => {
-          setIsInitial(false);
-          setIsFetching(false);
-        });
-    };
+    loadBookings();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?.id, user?.userId, page]);
 
-    useEffect(() => {
-      loadBookings();
-      // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [user?.id, user?.userId, page]);
-
-    const getDashboardPath = () => {
-      switch (user?.role?.toLowerCase() || user?.systemRole) {
-        case 'admin': case 'super_admin': return '/admin';
-        case 'host': case 'mayor': case 'foxer': return '/creator-dashboard';
-        default: return '/user';
-      }
-    };
+  const getDashboardPath = () => {
+    switch (user?.role?.toLowerCase() || user?.systemRole) {
+      case 'admin': case 'super_admin': return '/admin';
+      case 'host': case 'mayor': case 'foxer': return '/creator-dashboard';
+      default: return '/user';
+    }
+  };
 
     if (isInitial) {
       return (

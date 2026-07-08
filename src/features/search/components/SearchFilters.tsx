@@ -15,24 +15,22 @@ export default function SearchFilters() {
   const searchParams = useSearchParams();
 
   const type = searchParams?.get("type") || "event_template";
-  const initial = {
-    city: searchParams?.get("city") || "",
-    category: searchParams?.get("category") || "",
-    minPrice: searchParams?.get("minPrice") || "",
-    maxPrice: searchParams?.get("maxPrice") || "",
-  };
-  const [city, setCity] = useState(initial.city);
-  const [category, setCategory] = useState(initial.category);
-  const [minPrice, setMinPrice] = useState(initial.minPrice);
-  const [maxPrice, setMaxPrice] = useState(initial.maxPrice);
+  const searchParamsStr = searchParams?.toString() || "";
 
-  useEffect(() => {
-    const params = new URLSearchParams(searchParams?.toString() || "");
-    setCity(params.get("city") || "");
-    setCategory(params.get("category") || "");
-    setMinPrice(params.get("minPrice") || "");
-    setMaxPrice(params.get("maxPrice") || "");
-  }, [searchParams]);
+  const [city, setCity] = useState(() => searchParams?.get("city") || "");
+  const [category, setCategory] = useState(() => searchParams?.get("category") || "");
+  const [minPrice, setMinPrice] = useState(() => searchParams?.get("minPrice") || "");
+  const [maxPrice, setMaxPrice] = useState(() => searchParams?.get("maxPrice") || "");
+
+  const [prevParamsStr, setPrevParamsStr] = useState(searchParamsStr);
+
+  if (searchParamsStr !== prevParamsStr) {
+    setPrevParamsStr(searchParamsStr);
+    setCity(searchParams?.get("city") || "");
+    setCategory(searchParams?.get("category") || "");
+    setMinPrice(searchParams?.get("minPrice") || "");
+    setMaxPrice(searchParams?.get("maxPrice") || "");
+  }
 
   const updateParams = (updates: Record<string, string>) => {
     const params = new URLSearchParams(searchParams?.toString() || "");
