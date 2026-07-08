@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -295,7 +295,6 @@ export function useHostEventEdit(eventId: string) {
         if (cancelled) return;
 
         // Keep originals for update payload consistency.
-        setExistingStatus(normalizeEventStatusToBackend(found?.status ?? "draft"));
         setExistingEndDatetime(found?.endDatetime ?? found?.end_datetime ?? null);
         (builder as { existingVenueId?: string | null }).existingVenueId = found?.venueId ?? (found?.venue as Record<string, unknown>)?.id ?? null;
 
@@ -370,11 +369,8 @@ export function useHostEventEdit(eventId: string) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [eventId, hostId]);
 
-  const { ...rest } =
-    builder as unknown as Record<string, unknown>;
-
   return {
-    ...rest,
+    ...builder,
     handleBack,
     handlePublish,
     handleSaveDraft,

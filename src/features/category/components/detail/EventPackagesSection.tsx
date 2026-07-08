@@ -62,7 +62,7 @@ function FavoriteHeart({ templateId }: { templateId: string }) {
 }
 
 interface EventPackagesSectionProps {
-  category: Record<string, unknown>;
+  category: any;
 }
 
 export const EventPackagesSection: React.FC<EventPackagesSectionProps> = ({ category }) => {
@@ -82,7 +82,7 @@ export const EventPackagesSection: React.FC<EventPackagesSectionProps> = ({ cate
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-        {events.map((template: Record<string, unknown>, i: number) => {
+        {events.map((template: any, i: number) => {
           const img = template.images?.[0]?.url ?? FALLBACK_IMAGES[i % FALLBACK_IMAGES.length];
           const location = [template.targetCity, template.targetState].filter(Boolean).join(", ");
 

@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import React, { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -14,7 +14,7 @@ function normalizeValue(value: unknown): string {
 }
 
 interface HostEventsClientProps {
-  initialEvents: unknown[]
+  initialEvents: any[];
 }
 
 export default function HostEventsClient({ initialEvents }: HostEventsClientProps) {

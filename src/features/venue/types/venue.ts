@@ -1,3 +1,21 @@
+export enum VenueStatus {
+  DRAFT = "draft",
+  PENDING_REVIEW = "pending_review",
+  PUBLISHED = "published",
+  SUSPENDED = "suspended",
+  ARCHIVED = "archived",
+}
+
+export enum VenueType {
+  INDOOR = "indoor",
+  OUTDOOR = "outdoor",
+  MIX = "mix",
+  HOTEL = "hotel",
+  BEACH_RESORT = "beach_resort",
+  GARDEN = "garden",
+  OTHER = "other",
+}
+
 export interface Host {
   id?: string;
   name: string;

@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
@@ -113,7 +113,7 @@ export const useUserDashboard = () => {
     queryFn: async () => {
       if (!userId) return [];
       const res = await api.get(`/favorites/user/${userId}`);
-      const raw: unknown[] = res.data.data || [];
+      const raw: any[] = res.data.data || [];
       return raw.map((f) => {
         const img =
           f.venue?.images?.find((i: { isPrimary?: boolean }) => i.isPrimary)?.imageUrl ||

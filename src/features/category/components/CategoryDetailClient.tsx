@@ -9,7 +9,7 @@ import { TrendingSection } from "@/features/category/components/detail/TrendingS
 import { CategoryFooter } from "@/features/category/components/detail/CategoryFooter";
 
 interface CategoryDetailClientProps {
-  category: Record<string, unknown>; // CategoryWithDesign type
+  category: any; // CategoryWithDesign type
 }
 
 export default function CategoryDetailClient({ category }: CategoryDetailClientProps) {

@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { useState, useEffect, useCallback } from 'react';
 import api from '@/shared/lib/axios';
@@ -63,9 +63,9 @@ export function toMonthItems(bookings: CalendarBooking[], year: number, month: n
     }));
 }
 
-function extractList(resp: unknown): unknown[] {
+function extractList(resp: unknown): any[] {
   const body = (resp as { data?: unknown })?.data;
-  const list = (body as { data?: unknown[]; bookings?: unknown[]; items?: unknown[] } | unknown[])?.data ?? (body as { bookings?: unknown[]; items?: unknown[] } | unknown[])?.bookings ?? (body as { items?: unknown[] } | unknown[])?.items ?? body;
+  const list = (body as any)?.data ?? (body as any)?.bookings ?? (body as any)?.items ?? body;
   return Array.isArray(list) ? list : [];
 }
 
