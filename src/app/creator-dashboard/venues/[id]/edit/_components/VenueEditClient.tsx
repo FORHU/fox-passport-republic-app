@@ -18,11 +18,11 @@ function VenueEditContent({ id }: Props) {
   const {
     isPrefilling, prefillError,
     venueName, description, venueType, capacity, location, city, state, country,
-    gallery, includedItems, addonItems, baseRate, occupancyRate, activeCategory,
+    gallery, cancellationPolicyId, includedItems, addonItems, baseRate, occupancyRate, activeCategory,
     searchQuery, showGuide, isSubmitting, isDragOver, newItem, filteredResources,
     revenue, currentCategoryLabel,
     setVenueName, setDescription, setVenueType, setCapacity, setLocation, setCity,
-    setState, setCountry, removeIncludedItem, removeAddonItem, setBaseRate,
+    setState, setCountry, setCancellationPolicyId, removeIncludedItem, removeAddonItem, setBaseRate,
     setOccupancyRate, setActiveCategory, setSearchQuery, setShowGuide, setNewItem,
     handleDragStart, handleDragOver, handleDragLeave, handleDrop, handleAddCustomItem,
     handleRemoveCustomResource, addImageToGallery, removeImageFromGallery,
@@ -67,7 +67,7 @@ function VenueEditContent({ id }: Props) {
             <VenueResourcePalette activeCategory={activeCategory} searchQuery={searchQuery} filteredResources={filteredResources} newItem={newItem} currentCategoryLabel={currentCategoryLabel} onCategoryChange={setActiveCategory} onSearchChange={setSearchQuery} onNewItemChange={setNewItem} onAddCustomItem={handleAddCustomItem} onRemoveResource={handleRemoveCustomResource} onDragStart={handleDragStart} />
             <main className="flex-1 overflow-y-auto p-8 bg-[#02040a] flex gap-8">
               <div className="flex-1 max-w-4xl mx-auto space-y-8">
-                <VenueDetailsForm venueName={venueName} description={description} venueType={venueType} capacity={capacity} location={location} city={city} state={state} country={country} gallery={gallery} showGuide={showGuide} onNameChange={setVenueName} onDescriptionChange={setDescription} onTypeChange={setVenueType} onCapacityChange={setCapacity} onLocationChange={setLocation} onCityChange={setCity} onStateChange={setState} onCountryChange={setCountry} onAddImage={addImageToGallery} onRemoveImage={removeImageFromGallery} onCloseGuide={() => setShowGuide(false)} />
+                <VenueDetailsForm venueName={venueName} description={description} venueType={venueType} capacity={capacity} location={location} city={city} state={state} country={country} gallery={gallery} showGuide={showGuide} cancellationPolicyId={cancellationPolicyId} onNameChange={setVenueName} onDescriptionChange={setDescription} onTypeChange={setVenueType} onCapacityChange={setCapacity} onLocationChange={setLocation} onCityChange={setCity} onStateChange={setState} onCountryChange={setCountry} onCancellationPolicyChange={setCancellationPolicyId} onAddImage={addImageToGallery} onRemoveImage={removeImageFromGallery} onCloseGuide={() => setShowGuide(false)} />
                 <FeatureDropZone type="included" items={includedItems} isDragOver={isDragOver} onDragOver={handleDragOver} onDragLeave={handleDragLeave} onDrop={handleDrop} onRemoveItem={removeIncludedItem} />
                 <FeatureDropZone type="addon" items={addonItems} isDragOver={isDragOver} onDragOver={handleDragOver} onDragLeave={handleDragLeave} onDrop={handleDrop} onRemoveItem={removeAddonItem} />
               </div>

@@ -84,6 +84,34 @@ export async function confirmBookingPayment(bookingId: string, paymentIntentId: 
   return resp.data?.data;
 }
 
+// 6. Fetch a single booking by ID (full details with payments + event info)
+export async function fetchBookingById(bookingId: string) {
+  const resp = await api.get(`/bookings/${bookingId}`);
+  return resp.data?.data;
+}
+
+// 7. Check cancellation eligibility and refund estimate
+export async function checkCancelEligibility(bookingId: string): Promise<{
+  eligible: boolean;
+  refundPercent: number;
+  totalPaid: number;
+  estimatedRefund: number;
+  message: string;
+  hoursUntilStart: number;
+}> {
+  const resp = await api.post(`/bookings/${bookingId}/cancel/check`);
+  return resp.data?.data;
+}
+
+// 8. Cancel a booking and process refunds
+export async function cancelBooking(bookingId: string): Promise<{
+  booking: any;
+  refunds: any[];
+}> {
+  const resp = await api.post(`/bookings/${bookingId}/cancel`);
+  return resp.data?.data;
+}
+
 // --- Service & Asset Booking Flow ---
 
 export async function bookService(payload: {
@@ -182,17 +210,6 @@ export async function bookVenueDraft(payload: {
   return { bookingId: resp.data?.data?.id };
 }
 
-export async function cancelBooking(bookingId: string): Promise<void> {
-  await api.patch(`/bookings/${bookingId}/cancel`);
-}
-
-export async function fetchBookingById(
-  id: string
-): Promise<any> {
-  const resp = await api.get(`/bookings/${id}`);
-  return resp.data?.data ?? resp.data;
-}
-
 export async function fetchUserBookings(
   userId: string,
   page = 1,
@@ -213,5 +230,87 @@ export async function fetchFoxerBookings(ownerId: string) {
   return {
     services: svcResp.data?.data ?? [],
     assets: assetResp.data?.data ?? [],
+  };
+}
+
+// ── Admin: Disputes & Refunds ────────────────────────────────────────────────
+
+export interface DisputeRecord {
+  id: string;
+  bookingId: string;
+  bookingType: 'service' | 'asset' | 'event';
+  reason: string;
+  description?: string;
+  status: 'pending' | 'approved' | 'rejected' | 'refunded' | 'refund_failed';
+  createdAt: string;
+  resolvedAt?: string;
+  resolvedBy?: string;
+  adminNotes?: string;
+  citizen: { id: string; name: string; email: string };
+  booking: {
+    totalAmount: number;
+    status: string;
+    scheduledDate?: string;
+    startAt?: string;
+    service?: { name: string };
+    asset?: { name: string };
+    event?: { name: string };
+  };
+  refunds?: RefundRecord[];
+}
+
+export interface RefundRecord {
+  id: string;
+  bookingId: string;
+  amount: number;
+  status: 'pending' | 'succeeded' | 'completed' | 'failed';
+  method: string;
+  failureReason?: string;
+  adminNotes?: string;
+  createdAt: string;
+  processedAt?: string;
+}
+
+export async function fetchDisputedBookings(): Promise<DisputeRecord[]> {
+  const resp = await api.get('/admin/disputes');
+  return resp.data?.data ?? [];
+}
+
+export async function resolveDispute(
+  disputeId: string,
+  action: 'approve' | 'reject',
+  adminNotes?: string
+): Promise<DisputeRecord> {
+  const resp = await api.patch(`/admin/disputes/${disputeId}/resolve`, { action, adminNotes });
+  return resp.data?.data;
+}
+
+export async function retryRefund(refundId: string): Promise<RefundRecord> {
+  const resp = await api.post(`/admin/refunds/${refundId}/retry`);
+  return resp.data?.data;
+}
+
+export async function issueManualRefund(payload: {
+  bookingId: string;
+  amount: number;
+  reason: string;
+}): Promise<RefundRecord> {
+  const resp = await api.post('/admin/refunds/manual', payload);
+  return resp.data?.data;
+}
+
+export async function fetchRefundHistory(params?: {
+  status?: string;
+  page?: number;
+  limit?: number;
+}): Promise<{ refunds: RefundRecord[]; pagination: { page: number; limit: number; total: number; totalPages: number } }> {
+  const qs = new URLSearchParams();
+  if (params?.status) qs.set('status', params.status);
+  if (params?.page) qs.set('page', String(params.page));
+  if (params?.limit) qs.set('limit', String(params.limit));
+  const resp = await api.get(`/admin/refunds${qs.toString() ? `?${qs.toString()}` : ''}`);
+  return {
+    refunds: resp.data?.data ?? [],
+    pagination: resp.data?.pagination ?? { page: 1, limit: 20, total: 0, totalPages: 0 },
   };
 }

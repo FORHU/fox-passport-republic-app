@@ -1,11 +1,12 @@
-﻿'use client';
+'use client';
 
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { useAuthStore } from '@/features/auth/store/useAuthStore';
 import { fetchFoxerBookings } from '@/features/booking/api/bookings';
 
-type AnyBooking = any;
+type Booking = Record<string, unknown>;
 
 const STATUS_CFG: Record<string, { label: string; color: string; bg: string; icon: string; tip: string }> = {
   pending:   { label: 'Pending',    color: 'text-yellow-400', bg: 'bg-yellow-400/10 border-yellow-400/20', icon: 'schedule',     tip: 'Waiting for client payment confirmation.' },
@@ -18,12 +19,12 @@ const STATUS_CFG: Record<string, { label: string; color: string; bg: string; ico
 
 export default function FoxerEarningsClient() {
   const { user } = useAuthStore();
-  const [serviceBookings, setServiceBookings] = useState<AnyBooking[]>([]);
-  const [assetBookings, setAssetBookings]     = useState<AnyBooking[]>([]);
+  const [serviceBookings, setServiceBookings] = useState<Booking[]>([]);
+  const [assetBookings, setAssetBookings]     = useState<Booking[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const id = user?.id ?? (user as any)?.userId;
+    const id = user?.id ?? (user as { userId?: string })?.userId;
     if (!id) return;
     fetchFoxerBookings(id)
       .then(({ services, assets }) => {
@@ -34,10 +35,10 @@ export default function FoxerEarningsClient() {
       .finally(() => setLoading(false));
   }, [user]);
 
-  const allBookings: (AnyBooking & { _type: 'service' | 'asset' })[] = [
+  const allBookings: any[] = ([
     ...serviceBookings.map(b => ({ ...b, _type: 'service' as const })),
     ...assetBookings.map(b => ({ ...b, _type: 'asset' as const })),
-  ].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+  ] as any[]).sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 
   const escrowTotal   = allBookings.filter(b => ['pending', 'confirmed'].includes(b.status)).reduce((s, b) => s + b.totalAmount, 0);
   const releasedTotal = allBookings.filter(b => b.status === 'completed').reduce((s, b) => s + b.totalAmount, 0);
@@ -143,7 +144,7 @@ export default function FoxerEarningsClient() {
                   {/* Thumbnail */}
                   <div className="h-16 w-16 rounded-xl overflow-hidden flex-shrink-0 bg-white/5 border border-white/10">
                     {image
-                      ? <img src={image} alt={item?.name} className="h-full w-full object-cover" />
+                      ? <Image src={image} alt={item?.name ?? ''} width={64} height={64} className="object-cover" />
                       : <div className="h-full w-full flex items-center justify-center">
                           <span className="material-symbols-outlined text-white/20 text-2xl">
                             {booking._type === 'service' ? 'build' : 'inventory_2'}

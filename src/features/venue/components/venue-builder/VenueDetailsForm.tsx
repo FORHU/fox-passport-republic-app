@@ -3,17 +3,31 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { GalleryItem, VENUE_TYPES } from '@/features/venue/data/venueBuilderData';
 import { config } from '@/shared/lib/config';
+import CancellationPolicyPicker from '@/features/cancellation-policy/components/CancellationPolicyPicker';
+
+// Strictly define Mapbox Context structure to replace 'any'
+interface MapboxContextItem {
+  id: string;
+  text: string;
+}
+
+interface MapboxFeature {
+  id: string;
+  text: string;
+  place_name: string;
+  context?: MapboxContextItem[];
+}
 
 interface LocationInputProps {
   value: string;
   onChange: (val: string) => void;
-  onSelect: (val: string, context?: any) => void;
+  onSelect: (val: string, context?: MapboxContextItem[]) => void;
   type: 'country' | 'place' | 'region';
   placeholder: string;
 }
 
 const LocationInput = ({ value, onChange, onSelect, type, placeholder }: LocationInputProps) => {
-  const [suggestions, setSuggestions] = useState<any[]>([]);
+  const [suggestions, setSuggestions] = useState<MapboxFeature[]>([]);
   const [showDropdown, setShowDropdown] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -38,7 +52,7 @@ const LocationInput = ({ value, onChange, onSelect, type, placeholder }: Locatio
       );
       if (response.ok) {
         const data = await response.json();
-        setSuggestions(data.features || []);
+        setSuggestions((data.features as MapboxFeature[]) || []);
         setShowDropdown(true);
       }
     } catch (e) {
@@ -49,7 +63,7 @@ const LocationInput = ({ value, onChange, onSelect, type, placeholder }: Locatio
   useEffect(() => {
     const timer = setTimeout(() => {
       if (value.length >= 2) {
-        fetchSuggestions(value);
+        void fetchSuggestions(value);
       }
     }, 400);
     return () => clearTimeout(timer);
@@ -102,6 +116,7 @@ interface VenueDetailsFormProps {
   country: string;
   gallery: GalleryItem[];
   showGuide: boolean;
+  cancellationPolicyId: string | null;
   onNameChange: (name: string) => void;
   onDescriptionChange: (desc: string) => void;
   onTypeChange: (type: string) => void;
@@ -110,6 +125,7 @@ interface VenueDetailsFormProps {
   onCityChange: (city: string) => void;
   onStateChange: (state: string) => void;
   onCountryChange: (country: string) => void;
+  onCancellationPolicyChange: (policyId: string | null) => void;
   onAddImage: (files: File[]) => void;
   onRemoveImage: (id: string) => void;
   onCloseGuide: () => void;
@@ -126,6 +142,7 @@ export function VenueDetailsForm({
   country,
   gallery,
   showGuide,
+  cancellationPolicyId,
   onNameChange,
   onDescriptionChange,
   onTypeChange,
@@ -134,6 +151,7 @@ export function VenueDetailsForm({
   onCityChange,
   onStateChange,
   onCountryChange,
+  onCancellationPolicyChange,
   onAddImage,
   onRemoveImage,
   onCloseGuide,
@@ -233,8 +251,6 @@ export function VenueDetailsForm({
               </div>
             </div>
 
-
-
             {/* Address */}
             <div>
               <label className="text-[10px] uppercase font-bold text-white/40 tracking-widest mb-2 block">
@@ -274,10 +290,10 @@ export function VenueDetailsForm({
                   onChange={onCityChange}
                   type="place"
                   placeholder="City"
-                  onSelect={(val: string, context: any) => {
+                  onSelect={(val: string, context?: MapboxContextItem[]) => {
                     onCityChange(val);
-                    const region = context?.find((c: any) => c.id.startsWith('region'))?.text;
-                    const countryName = context?.find((c: any) => c.id.startsWith('country'))?.text;
+                    const region = context?.find((c) => c.id.startsWith('region'))?.text;
+                    const countryName = context?.find((c) => c.id.startsWith('country'))?.text;
                     if (region) onStateChange(region);
                     if (countryName) onCountryChange(countryName);
                   }}
@@ -292,13 +308,21 @@ export function VenueDetailsForm({
                   onChange={onStateChange}
                   type="region"
                   placeholder="State/Province"
-                  onSelect={(val: string, context: any) => {
+                  onSelect={(val: string, context?: MapboxContextItem[]) => {
                     onStateChange(val);
-                    const countryName = context?.find((c: any) => c.id.startsWith('country'))?.text;
+                    const countryName = context?.find((c) => c.id.startsWith('country'))?.text;
                     if (countryName) onCountryChange(countryName);
                   }}
                 />
               </div>
+            </div>
+
+            {/* Cancellation Policy */}
+            <div className="max-w-xs">
+              <CancellationPolicyPicker
+                value={cancellationPolicyId}
+                onChange={onCancellationPolicyChange}
+              />
             </div>
 
             {/* Description */}

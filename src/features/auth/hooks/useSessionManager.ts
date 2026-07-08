@@ -99,7 +99,7 @@ export function useSessionManager(onShowWarning: () => void, onDismissWarning: (
         // Update store so next scheduleProactiveRefresh fires correctly
         useAuthStore.setState({ accessToken: newToken });
 
-        scheduleProactiveRefresh(newToken);
+        scheduleProactiveRefresh(newToken); // eslint-disable-line react-hooks/immutability
       } catch {
         // Silent — the reactive 401 interceptor in axios.ts handles failures
       }

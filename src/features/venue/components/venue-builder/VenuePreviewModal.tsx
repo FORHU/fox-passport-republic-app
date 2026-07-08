@@ -48,7 +48,6 @@ export function VenuePreviewModal({
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = 'hidden';
-      setActiveImage(0);
     } else {
       document.body.style.overflow = '';
     }

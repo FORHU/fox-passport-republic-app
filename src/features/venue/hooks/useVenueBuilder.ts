@@ -148,6 +148,7 @@ export function useVenueBuilder() {
         techAv: allItems.filter(i => i.category === 'tech').map(i => i.name),
         staffing: allItems.filter(i => i.category === 'staff').map(i => i.name),
         policies: allItems.filter(i => i.category === 'rules').map(i => i.name),
+        cancellationPolicyId: store.cancellationPolicyId || undefined,
         status: 'draft',
       };
 
@@ -216,6 +217,7 @@ export function useVenueBuilder() {
         techAv: allItems.filter(i => i.category === 'tech').map(i => i.name),
         staffing: allItems.filter(i => i.category === 'staff').map(i => i.name),
         policies: allItems.filter(i => i.category === 'rules').map(i => i.name),
+        cancellationPolicyId: store.cancellationPolicyId || undefined,
         imgIds,
         status: 'pending',
       };

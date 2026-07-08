@@ -14,7 +14,7 @@ vi.mock('sonner', () => ({
 }))
 
 vi.mock('@/features/auth/store/useAuthStore', () => ({
-  useAuthStore: (selector: any) => selector({ user: { id: 'host-001' } }),
+  useAuthStore: (selector: (state: { user: { id: string } }) => unknown) => selector({ user: { id: 'host-001' } }),
 }))
 
 vi.mock('@/features/event/api/events', () => ({
@@ -49,8 +49,8 @@ function wrapper({ children }: { children: React.ReactNode }) {
 describe('useHostEventEdit — handlePublish', () => {
   beforeEach(() => {
     vi.clearAllMocks()
-    vi.mocked(updateEvent).mockResolvedValue({} as any)
-    vi.mocked(submitEventTemplate).mockResolvedValue({} as any)
+    vi.mocked(updateEvent).mockResolvedValue({} as unknown)
+    vi.mocked(submitEventTemplate).mockResolvedValue({} as unknown)
   })
 
   it('calls submitEventTemplate after saving content when publish is clicked', async () => {

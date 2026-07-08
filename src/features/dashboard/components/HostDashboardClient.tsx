@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import React from 'react';
 import { useRouter } from 'next/navigation';
@@ -20,7 +20,6 @@ import {
 } from '@/features/dashboard/components';
 import { useRoleAccess } from '@/features/auth/hooks/useRoleAccess';
 import { useAuthStore } from '@/features/auth/store/useAuthStore';
-import { ProgressDashboard } from '@/features/user/components/ProgressDashboard';
 import { mapBackendAssetToInventoryItem, mapBackendServiceToServiceItem } from '@/features/dashboard/mappers/listings';
 import { useHostData } from "@/features/dashboard/hooks/useHostData";
 import type { EventItem } from '@/features/dashboard/data/dashboardData';
@@ -28,35 +27,36 @@ import StripeConnectSection from '@/features/dashboard/components/StripeConnectS
 
 interface HostDashboardClientProps {
   initialData: {
-    events: any[];
-    venues: any[];
-    inventory: any[];
-    services: any[];
+    events: unknown[];
+    venues: unknown[];
+    inventory: unknown[];
+    services: unknown[];
   };
 }
 
 const FALLBACK_IMG = '/herobackground.jpg';
 
-function pickImage(images: any[]): string {
+function pickImage(images: unknown[]): string {
   if (!Array.isArray(images) || images.length === 0) return FALLBACK_IMG;
-  const primary = images.find((i) => i?.isPrimary || i?.isThumbnail) ?? images[0];
+  const primary = (images as { isPrimary?: boolean; isThumbnail?: boolean; url?: string; imageUrl?: string }[]).find((i) => i?.isPrimary || i?.isThumbnail) ?? images[0];
   if (!primary) return FALLBACK_IMG;
-  const url = typeof primary === 'string' ? primary : primary?.url || primary?.imageUrl;
+  const url = typeof primary === 'string' ? primary : (primary as { url?: string; imageUrl?: string })?.url || (primary as { imageUrl?: string })?.imageUrl;
   return url || FALLBACK_IMG;
 }
 
-function mapEvent(e: any): EventItem {
+function mapEvent(e: unknown): EventItem {
+  const ev = e as any;
   return {
-    id: e.id,
-    title: e.title || e.name || 'Untitled Event',
-    date: e.startDate || e.date || '—',
-    loc: e.location || [e.city, e.country].filter(Boolean).join(', ') || 'Location TBD',
-    type: e.type || e.eventType || 'Event',
-    status: e.status || 'draft',
-    booked: e.bookedCount ?? e.booked ?? null,
-    capacity: e.capacity ?? null,
-    revenue: e.revenue ? `₱${Number(e.revenue).toLocaleString()}` : null,
-    img: pickImage(e.images ?? e.gallery ?? []),
+    id: ev?.id,
+    title: (ev?.title as string) || (ev?.name as string) || 'Untitled Event',
+    date: (ev?.startDate as string) || (ev?.date as string) || '—',
+    loc: (ev?.location as string) || [ev?.city, ev?.country].filter(Boolean).join(', ') || 'Location TBD',
+    type: (ev?.type as string) || (ev?.eventType as string) || 'Event',
+    status: (ev?.status as string) || 'draft',
+    booked: (ev?.bookedCount ?? ev?.booked) as number | null,
+    capacity: (ev?.capacity as number | null) ?? null,
+    revenue: ev?.revenue ? `₱${Number(ev.revenue).toLocaleString()}` : null,
+    img: pickImage((ev?.images ?? ev?.gallery ?? []) as unknown[]),
   };
 }
 
@@ -74,7 +74,6 @@ export default function HostDashboardClient({ initialData }: HostDashboardClient
   } = useDashboard();
 
   const access = useRoleAccess();
-  const user = useAuthStore((s) => s.user);
 
   // Reactive data with polling
   const { data: rawServices } = useHostData('services', initialData.services);

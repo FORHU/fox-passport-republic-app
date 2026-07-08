@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
@@ -116,7 +116,7 @@ export const useUserDashboard = () => {
       const raw: any[] = res.data.data || [];
       return raw.map((f) => {
         const img =
-          f.venue?.images?.find((i: any) => i.isPrimary)?.imageUrl ||
+          f.venue?.images?.find((i: { isPrimary?: boolean }) => i.isPrimary)?.imageUrl ||
           f.venue?.images?.[0]?.imageUrl ||
           f.venue?.images?.[0]?.url ||
           "https://picsum.photos/seed/venue/64/64";

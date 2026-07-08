@@ -22,6 +22,7 @@ function ListingBuilderContent() {
     condition,
     status,
     image,
+    cancellationPolicyId,
     showGuide,
     isSubmitting,
     categories,
@@ -38,6 +39,7 @@ function ListingBuilderContent() {
     setUnit,
     setCondition,
     setStatus,
+    setCancellationPolicyId,
     setShowGuide,
     handleBack,
     handleSaveDraft,
@@ -70,12 +72,14 @@ function ListingBuilderContent() {
           price={price}
           unit={unit}
           status={status}
+          cancellationPolicyId={cancellationPolicyId}
           onCategorySelect={handleCategorySelect}
           onCustomCategoryChange={setCustomCategory}
           onConditionChange={setCondition}
           onPriceChange={setPrice}
           onUnitChange={setUnit}
           onStatusChange={setStatus}
+          onCancellationPolicyChange={setCancellationPolicyId}
         />
 
         <ListingPreviewCard

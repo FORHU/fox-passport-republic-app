@@ -18,7 +18,6 @@ export default function HeroSection() {
 
   useEffect(() => {
     if (!locationVal || locationVal.length < 2) {
-      setCities([]);
       return;
     }
     const timer = setTimeout(() => {
@@ -165,10 +164,14 @@ export default function HeroSection() {
                         type="text" 
                         autoComplete="off"
                         value={locationVal}
-                        onChange={(e) => {
-                          setLocationVal(e.target.value);
-                          setShowSuggestions(true);
-                        }}
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        setLocationVal(val);
+                        setShowSuggestions(true);
+                        if (val.length < 2) {
+                          setCities([]);
+                        }
+                      }}
                         onFocus={() => setShowSuggestions(true)}
                       />
                       {showSuggestions && filteredLocations.length > 0 && (

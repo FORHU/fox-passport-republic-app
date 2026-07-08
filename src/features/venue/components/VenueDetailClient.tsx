@@ -17,11 +17,12 @@ import {
 } from "@/features/venue/components/detail";
 import { CustomExperienceBuilder } from "@/features/venue/components/detail/ExperienceBuilder";
 import { useVenueDetailStore } from "@/features/venue/store/useVenueDetailStore";
-
+import { Venue } from "../hooks/useVenuesByCategory";
+import { Host } from "../types/venue";
 
 interface VenueDetailClientProps {
-  venue: any;
-  host: any;
+  venue: Venue;
+  host: Host;
 }
 
 export default function VenueDetailClient({ venue, host }: VenueDetailClientProps) {
@@ -39,7 +40,8 @@ export default function VenueDetailClient({ venue, host }: VenueDetailClientProp
     toast.info('Messaging coming soon! For now, contact the owner through the platform.');
   }, []);
 
-  const venuePrice = Number(venue.price || 0);
+  // Safe fallback pricing conversions
+  const venuePrice = Number(venue.pricing?.[0]?.pricePerDay || 0);
 
   return (
     <div className="bg-background bg-gradient-dark text-text-main antialiased min-h-screen flex flex-col selection:bg-accent selection:text-black font-body">
@@ -50,15 +52,15 @@ export default function VenueDetailClient({ venue, host }: VenueDetailClientProp
         venuePrice={venuePrice}
       />
 
-      <LightboxGallery
-        isOpen={store.galleryOpen}
-        images={venue.images || []}
-        title={venue.title}
-        activeIndex={store.activeImageIndex}
-        onClose={() => store.setGalleryOpen(false)}
-        onNext={() => store.nextImage(venue.images?.length || 0)}
-        onPrev={() => store.prevImage(venue.images?.length || 0)}
-      />
+    <LightboxGallery
+      isOpen={store.galleryOpen}
+      images={(venue.images || []).map((img) => img.imageUrl)} // 👈 Change to this
+      title={venue.title}
+      activeIndex={store.activeImageIndex}
+      onClose={() => store.setGalleryOpen(false)}
+      onNext={() => store.nextImage(venue.images?.length || 0)}
+      onPrev={() => store.prevImage(venue.images?.length || 0)}
+    />
 
       <VenueNavHeader title={venue.title} onBack={handleBack} />
 
@@ -66,13 +68,13 @@ export default function VenueDetailClient({ venue, host }: VenueDetailClientProp
         <div className="max-w-7xl mx-auto">
           <VenueHero
             title={venue.title}
-            rating={venue.rating}
-            reviews={venue.reviews}
+            rating={venue.rating || 0}
+            reviews={venue.reviews || 0}
             location={venue.location}
             province={venue.province}
           />
 
-          <VenueGalleryGrid images={venue.images || []} onOpenGallery={store.openGallery} />
+          <VenueGalleryGrid images={(venue.images || []).map((img) => img.imageUrl)} onOpenGallery={store.openGallery} />
 
           <div className="grid lg:grid-cols-[1.8fr_1fr] gap-16 relative">
             {/* Left Column */}
@@ -106,17 +108,17 @@ export default function VenueDetailClient({ venue, host }: VenueDetailClientProp
                   <div className="flex gap-4 items-start">
                     <span className="material-symbols-outlined text-white text-2xl mt-1">groups</span>
                     <div>
-                      <h3 className="font-bold text-white text-base">Up to {venue.cap || `${venue.capacity} guests`}</h3>
+                      <h3 className="font-bold text-white text-base">Up to {venue.capacity} guests</h3>
                       <p className="text-sm text-text-muted">Capacity for your event attendees.</p>
                     </div>
                   </div>
                 )}
-                {venue.spaceType?.length > 0 && (
+                {venue.spaceType && venue.spaceType.length > 0 && (
                   <div className="flex gap-4 items-start">
                     <span className="material-symbols-outlined text-white text-2xl mt-1">apartment</span>
                     <div>
                       <h3 className="font-bold text-white text-base capitalize">
-                        {venue.spaceType.map((s: string) => s.replace(/_/g, ' ')).join(', ')}
+                        {venue.spaceType.map((s) => s.replace(/_/g, ' ')).join(', ')}
                       </h3>
                       <p className="text-sm text-text-muted">Space configuration available.</p>
                     </div>
@@ -143,8 +145,8 @@ export default function VenueDetailClient({ venue, host }: VenueDetailClientProp
 
               <div className="h-px bg-white/10 w-full" />
 
-              {/* Included in this Build */}
-              {venue.amenities?.length > 0 && (
+              {/* Included in this Build (Fallback Array provided to prevent crash if undefined) */}
+              {((venue as any).amenities || []).length > 0 && (
                 <>
                   <div>
                     <div className="flex items-center justify-between mb-6">
@@ -156,7 +158,7 @@ export default function VenueDetailClient({ venue, host }: VenueDetailClientProp
                         <span className="material-symbols-outlined text-[16px]">edit</span> Customize
                       </button>
                     </div>
-                    <AmenitiesSection offers={venue.amenities} />
+                    <AmenitiesSection offers={(venue as any).amenities} />
                     <div className="mt-4 bg-accent/5 border border-accent/20 rounded-xl p-4 flex gap-3 items-start">
                       <span className="material-symbols-outlined text-accent shrink-0">info</span>
                       <div>
@@ -177,27 +179,31 @@ export default function VenueDetailClient({ venue, host }: VenueDetailClientProp
                 </>
               )}
 
-              <VenueReviews venueId={venue.id} rating={venue.rating} totalReviews={venue.reviews} hostId={venue.hostId ?? host?.id} />
+              <VenueReviews venueId={venue.id} rating={venue.rating} totalReviews={venue.reviews} hostId={venue.host?.id || host?.id} />
               <div className="h-px bg-white/10 w-full" />
 
               <VenueMap location={venue.location} province={venue.province} />
               <div className="h-px bg-white/10 w-full" />
 
-              <HostBio host={{ ...host, createdAt: venue.host?.createdAt }} />
-              <div className="h-px bg-white/10 w-full" />
+              <HostBio host={{ 
+                ...host,                     
+                reviews: venue.reviews || 0,
+                description: host.bio || "",
+                createdAt: venue.host?.id ? new Date().toISOString() : undefined 
+              }} />
 
-              <HouseRules policies={venue.policies || []} />
+              <HouseRules policies={(venue as any).policies || []} />
             </div>
 
             {/* Right Column: Venue Booking Widget */}
             <div className="lg:sticky lg:top-32 lg:h-fit">
               <BookingWidget
                 venueId={venue.id}
-                price={venue.price}
+                price={venuePrice}
                 billingRate={venue.billingRate}
                 rating={venue.rating || 0}
                 reviews={venue.reviews || 0}
-                capacity={venue.cap}
+                capacity={venue.capacity?.toString() || "0"}
                 onContactOwner={handleContactOwner}
                 onCustomExperience={() => setIsCustomBookingOpen(true)}
               />

@@ -1,11 +1,10 @@
-﻿"use client";
+"use client";
 
 import React, { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { DashboardHeader, EventsSection } from "@/features/dashboard/components";
 import RequireAuth from "@/features/auth/components/RequireAuth";
 import { STATUS_OPTIONS } from "@/features/dashboard/data/dashboardData";
-import { Loader2, AlertTriangle } from "lucide-react";
 
 function normalizeValue(value: unknown): string {
   return String(value ?? "")
@@ -15,7 +14,7 @@ function normalizeValue(value: unknown): string {
 }
 
 interface HostEventsClientProps {
-  initialEvents: any[]
+  initialEvents: any[];
 }
 
 export default function HostEventsClient({ initialEvents }: HostEventsClientProps) {
