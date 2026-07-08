@@ -1,12 +1,20 @@
 import { NextRequest, NextResponse } from "next/server";
 import Stripe from "stripe";
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: "2026-06-24.dahlia",
-});
+// Initialize Stripe client lazily to avoid throwing errors during Next.js build evaluation when env vars are missing
+const getStripe = () => {
+  const apiKey = process.env.STRIPE_SECRET_KEY;
+  if (!apiKey) {
+    throw new Error("STRIPE_SECRET_KEY is not defined");
+  }
+  return new Stripe(apiKey, {
+    apiVersion: "2026-06-24.dahlia" as any,
+  });
+};
 
 export async function POST(req: NextRequest) {
   try {
+    const stripe = getStripe();
     const body = await req.json().catch(() => ({}));
     let { stripeAccountId } = body;
 

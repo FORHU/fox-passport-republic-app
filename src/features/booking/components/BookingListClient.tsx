@@ -51,7 +51,7 @@ export default function BookingListClient() {
 
   useEffect(() => {
     if (!user?.id && !user?.userId) return;
-    const userId = user?.id || user?.userId!;
+    const userId = user?.id || user?.userId || '';
     if (!isInitial) setIsFetching(true);
     fetchUserBookings(userId, page, limit)
       .then((res) => {
