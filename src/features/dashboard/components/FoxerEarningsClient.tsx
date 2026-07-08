@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
@@ -35,10 +35,10 @@ export default function FoxerEarningsClient() {
       .finally(() => setLoading(false));
   }, [user]);
 
-  const allBookings: (AnyBooking & { _type: 'service' | 'asset' })[] = [
+  const allBookings: any[] = ([
     ...serviceBookings.map(b => ({ ...b, _type: 'service' as const })),
     ...assetBookings.map(b => ({ ...b, _type: 'asset' as const })),
-  ].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+  ] as any[]).sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 
   const escrowTotal   = allBookings.filter(b => ['pending', 'confirmed'].includes(b.status)).reduce((s, b) => s + b.totalAmount, 0);
   const releasedTotal = allBookings.filter(b => b.status === 'completed').reduce((s, b) => s + b.totalAmount, 0);

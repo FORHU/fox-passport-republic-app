@@ -71,7 +71,7 @@ function EventEditContent({ id }: Props) {
                 <CorePackageDropZone baseItems={baseItems} isDragOver={isDragOver} onDragOver={handleDragOver} onDragLeave={handleDragLeave} onDrop={handleDrop} onRemoveItem={removeBaseItem} onUpdateItem={updateBaseItem} />
               </div>
             </main>
-            <EventBlueprint baseItems={baseItems} targetMargin={targetMargin} baseCost={financials.baseCost} suggestedPrice={financials.suggestedPrice} venueCost={financials.venueCost} talentCost={financials.talentCost} blueprintHealth={blueprintHealth} galleryCount={gallery.length} onMarginChange={(m: number) => setTargetMargin(m)} />
+            <EventBlueprint targetMargin={targetMargin} baseCost={financials.baseCost} suggestedPrice={financials.suggestedPrice} venueCost={financials.venueCost} talentCost={financials.talentCost} blueprintHealth={blueprintHealth} onMarginChange={(m: number) => setTargetMargin(m)} />
           </div>
         </div>
       )}

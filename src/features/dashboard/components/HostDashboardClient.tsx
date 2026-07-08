@@ -45,7 +45,7 @@ function pickImage(images: unknown[]): string {
 }
 
 function mapEvent(e: unknown): EventItem {
-  const ev = e as Record<string, unknown>;
+  const ev = e as any;
   return {
     id: ev?.id,
     title: (ev?.title as string) || (ev?.name as string) || 'Untitled Event',

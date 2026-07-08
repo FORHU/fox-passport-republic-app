@@ -13,9 +13,9 @@ import { CategoryListHero } from "@/features/category/components/list/CategoryLi
 import { CategoryBentoGrid } from "@/features/category/components/list/CategoryBentoGrid";
 
 interface CategoriesClientProps {
-  initialCategories: Record<string, unknown>[];
-  initialEvents: Record<string, unknown>[];
-  initialVenues: Record<string, unknown>[];
+  initialCategories: any[];
+  initialEvents: any[];
+  initialVenues: any[];
   initialType?: string;
 }
 

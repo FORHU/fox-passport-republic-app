@@ -29,7 +29,7 @@ function normalizeStatus(status: unknown): string {
 }
 
 export function mapBackendEventToEventItem(event: unknown): EventItem {
-  const ev = event as Record<string, unknown>;
+  const ev = event as any;
   const status = normalizeStatus(ev?.status);
   const type = String(ev?.eventType ?? ev?.type ?? "")
     .trim()
@@ -66,7 +66,7 @@ export function mapBackendEventToEventItem(event: unknown): EventItem {
 }
 
 export function mapBackendVenueToVenueItem(venue: unknown): VenueItem {
-  const v = venue as Record<string, unknown>;
+  const v = venue as any;
   const status = normalizeStatus(v?.status);
   const type = String(v?.type ?? v?.venueType ?? "")
     .trim()

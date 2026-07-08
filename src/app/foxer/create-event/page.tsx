@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import React from 'react';
 import RequireAuth from '@/features/auth/components/RequireAuth';
@@ -122,14 +122,12 @@ export default function EventCreationBuilder() {
           </main>
 
           <EventBlueprint
-            baseItems={baseItems}
             targetMargin={targetMargin}
             baseCost={financials.baseCost}
             suggestedPrice={financials.suggestedPrice}
             venueCost={financials.venueCost}
             talentCost={financials.talentCost}
             blueprintHealth={blueprintHealth}
-            galleryCount={gallery.length}
             onMarginChange={setTargetMargin}
           />
         </div>
