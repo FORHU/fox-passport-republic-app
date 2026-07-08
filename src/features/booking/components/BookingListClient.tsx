@@ -30,27 +30,6 @@ export default function BookingListClient() {
   const [cancelTargetId, setCancelTargetId] = useState<string | null>(null);
   const limit = 4;
 
-  const handleCancelBooking = useCallback(async (bookingId: string) => {
-    setCancellingId(bookingId);
-    try {
-      await cancelBooking(bookingId);
-      toast.success('Booking cancelled. Refund will appear in 5–10 business days.');
-      const userId = user?.id || user?.userId;
-      if (userId) {
-        const res = await fetchUserBookings(userId, page, limit);
-        setBookings(res.bookings);
-        setTotalPages(res.pagination.totalPages || 1);
-      }
-    } catch (err: any) {
-      const msg = err?.response?.data?.message || 'Failed to cancel booking.';
-      toast.error(msg);
-    } finally {
-      setCancellingId(null);
-    }
-  }, [user?.id, user?.userId, page]);
-
-  const [cancelTarget, setCancelTarget] = useState<any | null>(null);
-
   const loadBookings = () => {
     const userId = user?.id || user?.userId;
     if (!userId) return;
