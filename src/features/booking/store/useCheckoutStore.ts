@@ -35,13 +35,13 @@ interface CheckoutState {
   
   // Setters
   setConfig: (config: {
-    venueId?: string;
-    templateId?: string;
+    venueId?: string | null;
+    templateId?: string | null;
     venueName: string;
-    venueImage: string | null;
+    venueImage?: string | null;
     venueLocation?: string | null;
     checkInDate: string | null;
-    checkInTime: string | null;
+    checkInTime?: string | null;
     nights: number;
     totalAmount: number;
     guestCount: number;

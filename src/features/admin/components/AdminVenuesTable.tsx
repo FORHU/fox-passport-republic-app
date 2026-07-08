@@ -1,6 +1,6 @@
-﻿'use client';
+'use client';
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import api from '@/shared/lib/axios';
 import { toast } from 'sonner';
@@ -20,6 +20,8 @@ const ALL_STATUSES = [
   { value: 'archived',  label: 'Archived',     color: 'bg-gray-500/10 text-gray-400 border-gray-500/20' },
 ];
 
+const MIN_REJECTION_REASON_LENGTH = 20;
+const PAGE_SIZE = 5;
 
 function statusColor(status: string) {
   return ALL_STATUSES.find((s) => s.value === status)?.color ?? 'bg-white/5 text-white border-white/10';
@@ -65,24 +67,59 @@ export const AdminVenuesTable: React.FC<VenueTableProps> = ({ venues, isLoading 
   const [updatingId, setUpdatingId] = useState<string | null>(null);
   const [lightboxImg, setLightboxImg] = useState<string | null>(null);
 
+  // Rows the admin has already acted on this session — hidden immediately
+  // rather than waiting on a server refetch (which returns all statuses).
+  const [removedIds, setRemovedIds] = useState<Set<string>>(new Set());
+  const visibleVenues = venues.filter((v) => !removedIds.has(v.id));
+
+  const PAGE_SIZE = 5;
+  const [currentPage, setCurrentPage] = useState(1);
+  const totalPages = Math.max(1, Math.ceil(visibleVenues.length / PAGE_SIZE));
+  const safePage = Math.min(currentPage, totalPages);
+  const paginatedVenues = visibleVenues.slice((safePage - 1) * PAGE_SIZE, safePage * PAGE_SIZE);
+
+  // Inline reject-reason state — which venue is being rejected, and the
+  // reason text typed so far. No separate modal component/file; the small
+  // confirmation dialog is rendered directly at the bottom of this file.
+  const [rejectingVenue, setRejectingVenue] = useState<{ id: string; name: string } | null>(null);
+  const [rejectReason, setRejectReason] = useState('');
+
   const approve = async (id: string) => {
     setUpdatingId(id);
     try {
       await api.patch(`/admin/venues/${id}/approve`);
       toast.success('Venue approved and made available');
+      setRemovedIds((prev) => new Set(prev).add(id));
       queryClient.invalidateQueries({ queryKey: ['admin-data', 'venues'] });
       router.refresh();
     } catch { toast.error('Failed to approve venue'); }
     finally { setUpdatingId(null); }
   };
 
-  const reject = async (id: string) => {
+  const openRejectDialog = (id: string, name: string) => {
+    setRejectReason('');
+    setRejectingVenue({ id, name });
+  };
+
+  const closeRejectDialog = () => {
+    setRejectingVenue(null);
+    setRejectReason('');
+  };
+
+  const confirmReject = async () => {
+    if (!rejectingVenue) return;
+    const trimmed = rejectReason.trim();
+    if (trimmed.length < MIN_REJECTION_REASON_LENGTH) return;
+
+    const id = rejectingVenue.id;
     setUpdatingId(id);
     try {
-      await api.patch(`/admin/venues/${id}/reject`);
+      await api.patch(`/admin/venues/${id}/reject`, { reason: trimmed });
       toast.success('Venue rejected');
+      setRemovedIds((prev) => new Set(prev).add(id));
       queryClient.invalidateQueries({ queryKey: ['admin-data', 'venues'] });
       router.refresh();
+      closeRejectDialog();
     } catch { toast.error('Failed to reject venue'); }
     finally { setUpdatingId(null); }
   };
@@ -114,6 +151,55 @@ export const AdminVenuesTable: React.FC<VenueTableProps> = ({ venues, isLoading 
         </div>
       )}
 
+      {/* Inline reject-reason dialog — same file, no separate component */}
+      {rejectingVenue && (
+        <div
+          className="fixed inset-0 z-999 flex items-center justify-center bg-black/70 backdrop-blur-sm"
+          onClick={closeRejectDialog}
+        >
+          <div
+            className="bg-[#0f111a] border border-white/10 rounded-2xl p-8 max-w-sm w-full mx-4 space-y-4"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h3 className="text-white font-bold text-lg">Reject &quot;{rejectingVenue.name}&quot;</h3>
+            <p className="text-white/50 text-sm">
+              Provide a reason for rejection (minimum {MIN_REJECTION_REASON_LENGTH} characters).
+            </p>
+            <div>
+              <textarea
+                value={rejectReason}
+                onChange={(e) => setRejectReason(e.target.value)}
+                placeholder="e.g. Photos do not match the listing description, missing safety information"
+                rows={4}
+                disabled={updatingId === rejectingVenue.id}
+                className="w-full bg-white/5 border border-white/10 rounded-xl p-3 text-white text-sm placeholder:text-white/30 focus:outline-none focus:border-red-500/50 resize-none disabled:opacity-50"
+              />
+              <p className={`text-[11px] mt-1.5 ${rejectReason.trim().length >= MIN_REJECTION_REASON_LENGTH ? 'text-white/30' : 'text-red-400/80'}`}>
+                {rejectReason.trim().length >= MIN_REJECTION_REASON_LENGTH
+                  ? `${rejectReason.trim().length} characters`
+                  : `${MIN_REJECTION_REASON_LENGTH - rejectReason.trim().length} more character${MIN_REJECTION_REASON_LENGTH - rejectReason.trim().length === 1 ? '' : 's'} required`}
+              </p>
+            </div>
+            <div className="flex gap-3 pt-1">
+              <button
+                onClick={confirmReject}
+                disabled={rejectReason.trim().length < MIN_REJECTION_REASON_LENGTH || updatingId === rejectingVenue.id}
+                className="flex-1 py-2.5 rounded-xl bg-red-500/80 text-white font-bold text-sm hover:bg-red-500 transition disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-red-500/80"
+              >
+                {updatingId === rejectingVenue.id ? 'Rejecting...' : 'Confirm Rejection'}
+              </button>
+              <button
+                onClick={closeRejectDialog}
+                disabled={updatingId === rejectingVenue.id}
+                className="flex-1 py-2.5 rounded-xl bg-white/5 text-white/60 font-bold text-sm hover:bg-white/10 transition disabled:opacity-50"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="glass-panel rounded-[2rem] overflow-hidden border border-white/5 shadow-2xl">
         <div className="p-6 border-b border-white/5 flex justify-between items-center bg-white/2">
           <h3 className="text-xl font-display font-bold text-white flex items-center gap-2">
@@ -138,12 +224,12 @@ export const AdminVenuesTable: React.FC<VenueTableProps> = ({ venues, isLoading 
               </tr>
             </thead>
             <tbody className="text-sm">
-              {venues.length === 0 ? (
+              {paginatedVenues.length === 0 ? (
                 <tr>
                   <td colSpan={5} className="p-12 text-center text-white/30 italic">No venues found in database</td>
                 </tr>
               ) : (
-                venues.map((venue, i) => {
+                paginatedVenues.map((venue, i) => {
                   const images: string[] = (venue.venueImages ?? venue.images ?? [])
                     .map(extractImageUrl)
                     .filter(Boolean) as string[];
@@ -212,7 +298,7 @@ export const AdminVenuesTable: React.FC<VenueTableProps> = ({ venues, isLoading 
                             )}
                             <button
                               disabled={!!updatingId}
-                              onClick={() => reject(venue.id)}
+                              onClick={() => openRejectDialog(venue.id, venue.name)}
                               className="px-3 py-1.5 rounded-lg border border-red-500/30 bg-red-500/10 text-red-400 text-[10px] font-bold uppercase tracking-widest hover:bg-red-500/20 disabled:opacity-40 transition-all"
                             >
                               Reject
@@ -334,7 +420,7 @@ export const AdminVenuesTable: React.FC<VenueTableProps> = ({ venues, isLoading 
                                   </button>
                                   <button
                                     disabled={updatingId === venue.id}
-                                    onClick={() => reject(venue.id)}
+                                    onClick={() => openRejectDialog(venue.id, venue.name)}
                                     className="flex items-center gap-2 px-4 py-2 rounded-full bg-red-500/10 border border-red-500/30 text-red-400 text-xs font-bold hover:bg-red-500/20 transition-all disabled:opacity-40"
                                   >
                                     <span className="material-symbols-outlined text-[16px]">cancel</span>
@@ -354,11 +440,36 @@ export const AdminVenuesTable: React.FC<VenueTableProps> = ({ venues, isLoading 
           </table>
         </div>
 
-        <div className="p-6 border-t border-white/5 flex justify-between items-center bg-black/20">
+        <div className="p-6 border-t border-white/5 flex justify-between items-center bg-black/20 gap-4 flex-wrap">
           <span className="text-[10px] text-white/30 uppercase tracking-[0.2em] font-bold italic">FoxPassport Administration</span>
-          <span className="text-[10px] text-white/50 bg-white/5 px-3 py-1 rounded-full border border-white/10">
-            Showing {venues.length} listing{venues.length !== 1 ? 's' : ''}
-          </span>
+
+          <div className="flex items-center gap-4">
+            <span className="text-[10px] text-white/50 bg-white/5 px-3 py-1 rounded-full border border-white/10">
+              {visibleVenues.length} listing{visibleVenues.length !== 1 ? 's' : ''} total
+            </span>
+
+            {totalPages > 1 && (
+              <div className="flex items-center gap-1">
+                <button
+                  onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                  disabled={currentPage === 1}
+                  className="px-2.5 py-1 rounded-lg border border-white/10 bg-white/5 text-white/60 text-[10px] font-bold hover:bg-white/10 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+                >
+                  Prev
+                </button>
+                <span className="text-[10px] text-white/40 px-2 font-mono">
+                  {currentPage} / {totalPages}
+                </span>
+                <button
+                  onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                  disabled={currentPage === totalPages}
+                  className="px-2.5  py-1 rounded-lg border border-white/10 bg-white/5 text-white/60 text-[10px] font-bold hover:bg-white/10 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+                >
+                  Next
+                </button>
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </>
