@@ -169,6 +169,9 @@ function NavbarContent() {
               <Link href="/user/passport" className="px-6 py-2.5 rounded-full text-sm font-medium text-white/70 hover:text-white hover:bg-white/10 transition-all hover:scale-105">
                 Passport
               </Link>
+              <Link href="/booking" className="px-6 py-2.5 rounded-full text-sm font-medium text-white/70 hover:text-white hover:bg-white/10 transition-all hover:scale-105">
+                Bookings
+              </Link>
             </nav>
 
             <div className="flex items-center gap-4">

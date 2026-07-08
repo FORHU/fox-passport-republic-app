@@ -11,6 +11,9 @@ interface EventBuilderState {
   maxAttendees: number;
   gallery: GalleryItem[];
 
+  // Cancellation Policy
+  cancellationPolicyId: string | null;
+
   // Package Items
   baseItems: ResourceItem[];
   targetMargin: number;
@@ -30,6 +33,7 @@ interface EventBuilderState {
   setDate: (date: string) => void;
   setLocation: (loc: string) => void;
   setMaxAttendees: (count: number) => void;
+  setCancellationPolicyId: (id: string | null) => void;
 
   // Actions - Gallery
   addGalleryItem: (item: GalleryItem) => void;
@@ -61,6 +65,7 @@ const initialState = {
   location: "",
   maxAttendees: 100,
   gallery: [],
+  cancellationPolicyId: null as string | null,
   baseItems: [],
   targetMargin: 20,
   activeCategory: "venue",
@@ -81,6 +86,7 @@ export const useEventBuilderStore = create<EventBuilderState>((set) => ({
   setDate: (date) => set({ date: date }),
   setLocation: (loc) => set({ location: loc }),
   setMaxAttendees: (count) => set({ maxAttendees: count }),
+  setCancellationPolicyId: (id) => set({ cancellationPolicyId: id }),
 
   // Gallery Actions
   addGalleryItem: (item) =>

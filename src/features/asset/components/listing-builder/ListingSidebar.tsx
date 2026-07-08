@@ -8,6 +8,7 @@ import {
   ListingType,
 } from '@/features/asset/data/listingBuilderData';
 import { SERVICE_UNITS } from '@/features/service/data/serviceBuilderData';
+import CancellationPolicyPicker from '@/features/cancellation-policy/components/CancellationPolicyPicker';
 
 interface ListingSidebarProps {
   activeType: ListingType;
@@ -19,12 +20,14 @@ interface ListingSidebarProps {
   price: number;
   unit: string;
   status: string;
+  cancellationPolicyId: string | null;
   onCategorySelect: (catId: string) => void;
   onCustomCategoryChange: (cat: string) => void;
   onConditionChange: (cond: string) => void;
   onPriceChange: (price: number) => void;
   onUnitChange: (unit: string) => void;
   onStatusChange: (status: string) => void;
+  onCancellationPolicyChange: (policyId: string | null) => void;
 }
 
 export function ListingSidebar({
@@ -37,12 +40,14 @@ export function ListingSidebar({
   price,
   unit,
   status,
+  cancellationPolicyId,
   onCategorySelect,
   onCustomCategoryChange,
   onConditionChange,
   onPriceChange,
   onUnitChange,
   onStatusChange,
+  onCancellationPolicyChange,
 }: ListingSidebarProps) {
   const units = activeType === 'inventory' ? INVENTORY_UNITS : SERVICE_UNITS;
 
@@ -165,6 +170,14 @@ export function ListingSidebar({
               </span>
             </div>
           </div>
+        </div>
+
+        {/* Cancellation Policy */}
+        <div>
+          <CancellationPolicyPicker
+            value={cancellationPolicyId}
+            onChange={onCancellationPolicyChange}
+          />
         </div>
 
         {/* Status */}

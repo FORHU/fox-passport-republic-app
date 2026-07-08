@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import React, { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -19,7 +19,7 @@ function normalizeCategoryValue(item: InventoryItem): string {
 }
 
 interface HostAssetsClientProps {
-  initialInventory: any[]
+  initialInventory: any[];
 }
 
 export default function HostAssetsClient({ initialInventory }: HostAssetsClientProps) {

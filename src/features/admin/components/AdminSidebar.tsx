@@ -14,7 +14,8 @@ const NAV_ITEMS = [
   { label: 'Venues',      icon: 'storefront',          id: 'venues'     },
   { label: 'Assets',      icon: 'inventory_2',         id: 'assets',    section: 'Listings' },
   { label: 'Services',    icon: 'build',               id: 'services'   },
-  { label: 'Settings',    icon: 'settings',            id: 'settings',  section: 'System' },
+  { label: 'Policies',    icon: 'policy',              id: 'policies',  section: 'System' },
+  { label: 'Settings',    icon: 'settings',            id: 'settings'  },
 ] as const;
 
 export const AdminSidebar: React.FC = () => {
