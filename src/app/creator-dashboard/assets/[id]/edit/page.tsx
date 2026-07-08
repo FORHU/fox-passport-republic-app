@@ -31,6 +31,7 @@ function HostAssetEditPageContent() {
     condition,
     status,
     image,
+    cancellationPolicyId,
     showGuide,
     isSubmitting,
     error,
@@ -49,6 +50,7 @@ function HostAssetEditPageContent() {
     setUnit,
     setCondition,
     setStatus,
+    setCancellationPolicyId,
     setShowGuide,
 
     handleBack,
@@ -130,12 +132,14 @@ function HostAssetEditPageContent() {
             price={price}
             unit={unit}
             status={status}
+            cancellationPolicyId={cancellationPolicyId}
             onCategorySelect={handleCategorySelect}
             onCustomCategoryChange={setCustomCategory}
             onConditionChange={setCondition}
             onPriceChange={setPrice}
             onUnitChange={setUnit}
             onStatusChange={setStatus}
+            onCancellationPolicyChange={setCancellationPolicyId}
           />
 
           <ListingPreviewCard

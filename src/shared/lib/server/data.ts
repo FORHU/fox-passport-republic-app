@@ -105,14 +105,26 @@ async function serverFetch(endpoint: string, params?: Record<string, string>): P
       cache: 'no-store',
     });
 
-  let res = await doFetch(token);
+  let res: Response;
+
+  try {
+    res = await doFetch(token);
+  } catch (err) {
+    console.error(`[API] Network error fetching ${url}:`, err);
+    throw new Error(`Network error: unable to reach API at ${url}`);
+  }
 
   if (res.status === 401) {
     // Access token expired — try to silently refresh
     const newToken = await tryRefreshToken();
     if (newToken) {
       // Retry the original request with the fresh token
-      res = await doFetch(newToken);
+      try {
+        res = await doFetch(newToken);
+      } catch (err) {
+        console.error(`[API] Network error on retry ${url}:`, err);
+        throw new Error(`Network error: unable to reach API at ${url}`);
+      }
     } else {
       // Refresh token also invalid — force re-login
       await clearAuthAndRedirect();
@@ -542,6 +554,26 @@ export interface SearchResult {
   price?: number;
   currency?: string;
   images?: { url: string }[];
+}
+
+export async function getAdminDisputes() {
+  try {
+    const body = await serverFetch('/admin/disputes');
+    return extractList(body);
+  } catch (error) {
+    console.error('Failed to fetch admin disputes:', error);
+    return [];
+  }
+}
+
+export async function getAdminRefunds() {
+  try {
+    const body = await serverFetch('/admin/refunds');
+    return extractList(body);
+  } catch (error) {
+    console.error('Failed to fetch admin refunds:', error);
+    return [];
+  }
 }
 
 export async function getSearchResults(params: {

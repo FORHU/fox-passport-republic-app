@@ -184,7 +184,7 @@ export function useServicesBuilder() {
         throw new Error("Failed to upload image. Please try again.");
       }
 
-      const serviceData: CreateServicePayload = {
+      const serviceData: CreateServicePayload & { cancellationPolicyId?: string } = {
         name: store.title,
         description: store.description,
         billingRate: BILLING_RATE_MAP[store.unit as ServiceUnit] || "hourly",
@@ -194,6 +194,7 @@ export function useServicesBuilder() {
         city: (store as any).city || 'N/A',
         country: (store as any).country || 'PH',
         imgIds: [uploadResult.fileId],
+        cancellationPolicyId: store.cancellationPolicyId || undefined,
       };
 
       console.log("[ServicesBuilder] Publishing service:", serviceData);

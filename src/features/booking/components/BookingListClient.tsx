@@ -1,10 +1,10 @@
 'use client';
 
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useAuthStore } from '@/features/auth/store/useAuthStore';
-import { fetchUserBookings, cancelBooking } from '@/features/booking/api/bookings';
+import { fetchUserBookings } from '@/features/booking/api/bookings';
 import CancelBookingModal from '@/features/booking/components/CancelBookingModal';
 import { toast } from 'sonner';
 
@@ -15,6 +15,8 @@ const STATUS_LABEL: Record<string, { label: string; color: string }> = {
   completed: { label: 'Completed', color: 'text-white/50 bg-white/5' },
   cancelled: { label: 'Cancelled', color: 'text-red-400 bg-red-500/10' },
   disputed: { label: 'Disputed', color: 'text-orange-400 bg-orange-500/10' },
+  refunded: { label: 'Refunded', color: 'text-purple-400 bg-purple-500/10' },
+  refund_failed: { label: 'Refund Failed', color: 'text-orange-400 bg-orange-500/10' },
 };
 
 export default function BookingListClient() {
@@ -25,33 +27,12 @@ export default function BookingListClient() {
   const [totalPages, setTotalPages] = useState(1);
   const [isInitial, setIsInitial] = useState(true);
   const [isFetching, setIsFetching] = useState(false);
-  const [cancellingId, setCancellingId] = useState<string | null>(null);
+  const [cancelTargetId, setCancelTargetId] = useState<string | null>(null);
   const limit = 4;
 
-  const handleCancelBooking = useCallback(async (bookingId: string) => {
-    setCancellingId(bookingId);
-    try {
-      await cancelBooking(bookingId);
-      toast.success('Booking cancelled. Refund will appear in 5–10 business days.');
-      const userId = user?.id || user?.userId;
-      if (userId) {
-        const res = await fetchUserBookings(userId, page, limit);
-        setBookings(res.bookings);
-        setTotalPages(res.pagination.totalPages || 1);
-      }
-    } catch (err: any) {
-      const msg = err?.response?.data?.message || 'Failed to cancel booking.';
-      toast.error(msg);
-    } finally {
-      setCancellingId(null);
-    }
-  }, [user?.id, user?.userId, page]);
-
-  const [cancelTarget, setCancelTarget] = useState<any | null>(null);
-
-  useEffect(() => {
-    if (!user?.id && !user?.userId) return;
-    const userId = user?.id || user?.userId!;
+  const loadBookings = () => {
+    const userId = user?.id || user?.userId;
+    if (!userId) return;
     if (!isInitial) setIsFetching(true);
     fetchUserBookings(userId, page, limit)
       .then((res) => {
@@ -63,6 +44,11 @@ export default function BookingListClient() {
         setIsInitial(false);
         setIsFetching(false);
       });
+  };
+
+  useEffect(() => {
+    loadBookings();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?.id, user?.userId, page]);
 
   const getDashboardPath = () => {
@@ -152,7 +138,7 @@ export default function BookingListClient() {
                     >
                       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                         <Link
-                          href={`/booking/venue/${booking.id}`}
+                          href={`/booking/${booking.id}`}
                           className="flex items-start gap-4 flex-1 min-w-0 group"
                         >
                           <div className="h-14 w-14 rounded-xl bg-white/5 flex items-center justify-center shrink-0 group-hover:bg-accent/10 transition-colors">
@@ -176,26 +162,30 @@ export default function BookingListClient() {
                           <span className="text-xl font-display font-bold text-accent">₱{booking.totalAmount?.toLocaleString() || '0'}</span>
                         </div>
                       </div>
-                      {(isCompleted && noReview || canCancel) && (
-                        <div className="mt-4 pt-4 border-t border-white/5 flex justify-end gap-3">
-                          {isCompleted && noReview && (
-                            <Link
-                              href={`/reviews/write/${booking.id}`}
-                              className="px-5 py-2.5 rounded-xl bg-accent text-black font-bold text-xs hover:shadow-[0_0_20px_rgba(204,255,0,0.4)] transition-all"
-                            >
-                              Leave a Review
-                            </Link>
-                          )}
-                          {canCancel && (
-                            <button
-                              onClick={() => setCancelTarget(booking)}
-                              className="px-5 py-2.5 rounded-xl border border-red-400/30 text-red-400 font-bold text-xs hover:bg-red-500/10 transition-all"
-                            >
-                              Cancel
-                            </button>
-                          )}
-                        </div>
-                      )}
+                      <div className="mt-4 pt-4 border-t border-white/5 flex justify-end gap-3">
+                        <Link
+                          href={`/booking/${booking.id}`}
+                          className="px-5 py-2.5 rounded-xl bg-white/5 text-white/70 font-bold text-xs hover:bg-white/10 hover:text-white transition-all"
+                        >
+                          View Details
+                        </Link>
+                        {isCompleted && noReview && (
+                          <Link
+                            href={`/reviews/write/${booking.id}`}
+                            className="px-5 py-2.5 rounded-xl bg-accent text-black font-bold text-xs hover:shadow-[0_0_20px_rgba(204,255,0,0.4)] transition-all"
+                          >
+                            Leave a Review
+                          </Link>
+                        )}
+                        {canCancel && (
+                          <button
+                            onClick={() => setCancelTargetId(booking.id)}
+                            className="px-5 py-2.5 rounded-xl border border-red-400/30 text-red-400 font-bold text-xs hover:bg-red-500/10 transition-all"
+                          >
+                            Cancel
+                          </button>
+                        )}
+                      </div>
                     </div>
                   );
                 })}
@@ -243,18 +233,17 @@ export default function BookingListClient() {
         </div>
       </main>
 
-      <CancelBookingModal
-        isOpen={!!cancelTarget}
-        onClose={() => setCancelTarget(null)}
-        onConfirm={() => {
-          if (cancelTarget) {
-            handleCancelBooking(cancelTarget.id);
-            setCancelTarget(null);
-          }
-        }}
-        isPending={cancellingId !== null}
-        booking={cancelTarget || {}}
-      />
+      {cancelTargetId && (
+        <CancelBookingModal
+          bookingId={cancelTargetId}
+          onClose={() => setCancelTargetId(null)}
+          onSuccess={() => {
+            setCancelTargetId(null);
+            toast.success('Booking cancelled. Refund (if any) will appear in 5–10 business days.');
+            loadBookings();
+          }}
+        />
+      )}
     </div>
   );
 }

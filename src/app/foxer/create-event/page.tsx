@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import React from 'react';
 import RequireAuth from '@/features/auth/components/RequireAuth';
@@ -22,6 +22,7 @@ export default function EventCreationBuilder() {
     location,
     maxAttendees,
     gallery,
+    cancellationPolicyId,
     baseItems,
     targetMargin,
     activeCategory,
@@ -40,6 +41,7 @@ export default function EventCreationBuilder() {
     setDate,
     setLocation,
     setMaxAttendees,
+    setCancellationPolicyId,
     setActiveCategory,
     setSearchQuery,
     setShowGuide,
@@ -90,12 +92,14 @@ export default function EventCreationBuilder() {
                 location={location}
                 maxAttendees={maxAttendees}
                 showGuide={showGuide}
+                cancellationPolicyId={cancellationPolicyId}
                 onTitleChange={setEventTitle}
                 onDescriptionChange={setDescription}
                 onCategoryChange={setCategory}
                 onDateChange={setDate}
                 onLocationChange={setLocation}
                 onMaxAttendeesChange={setMaxAttendees}
+                onCancellationPolicyChange={setCancellationPolicyId}
                 onCloseGuide={() => setShowGuide(false)}
               />
 
@@ -118,14 +122,12 @@ export default function EventCreationBuilder() {
           </main>
 
           <EventBlueprint
-            baseItems={baseItems}
             targetMargin={targetMargin}
             baseCost={financials.baseCost}
             suggestedPrice={financials.suggestedPrice}
             venueCost={financials.venueCost}
             talentCost={financials.talentCost}
             blueprintHealth={blueprintHealth}
-            galleryCount={gallery.length}
             onMarginChange={setTargetMargin}
           />
         </div>

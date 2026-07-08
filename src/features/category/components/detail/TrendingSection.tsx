@@ -1,4 +1,4 @@
-﻿import React from "react";
+import React from "react";
 import Image from "next/image";
 import { ArrowRight } from "lucide-react";
 import { Category } from "@/features/category/data/categories";
@@ -18,7 +18,7 @@ export const TrendingSection: React.FC<TrendingSectionProps> = ({ category }) =>
         </button>
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          {(category?.venues?.length ? category.venues.slice(0, 4) : [1, 2, 3, 4]).map((item: any, i: number) => {
+          {((category?.venues?.length ? category.venues.slice(0, 4) : [1, 2, 3, 4]) as any[]).map((item: any, i: number) => {
             const isMock = typeof item === 'number';
             const vid = isMock ? 'mock-id' : item.id;
             const images = [

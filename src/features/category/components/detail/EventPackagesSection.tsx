@@ -1,7 +1,8 @@
-﻿"use client";
+"use client";
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { ArrowRight, MapPin, Heart } from "lucide-react";
 import { checkFavorite, addFavorite, removeFavoriteByListing } from "@/features/user/api/favorites";
 import { useAuthStore } from "@/features/auth/store/useAuthStore";
@@ -65,7 +66,7 @@ interface EventPackagesSectionProps {
 }
 
 export const EventPackagesSection: React.FC<EventPackagesSectionProps> = ({ category }) => {
-  const events: any[] = category?.events ?? [];
+  const events: Record<string, unknown>[] = (category?.events as Record<string, unknown>[]) ?? [];
 
   if (events.length === 0) return null;
 
@@ -92,9 +93,11 @@ export const EventPackagesSection: React.FC<EventPackagesSectionProps> = ({ cate
               className="group bg-white/5 border border-white/5 rounded-[2rem] overflow-hidden hover:border-white/20 hover:-translate-y-1 hover:shadow-2xl hover:shadow-[#ccff00]/5 transition-all duration-300 block"
             >
               <div className="relative h-52 overflow-hidden">
-                <img
+                <Image
                   src={img}
-                  alt={template.name}
+                  alt={template.name as string}
+                  width={600}
+                  height={400}
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
                 />
                 <div className="absolute inset-0 bg-linear-to-t from-black/60 to-transparent" />

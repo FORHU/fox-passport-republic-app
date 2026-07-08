@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import React, { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -14,7 +14,7 @@ function normalizeValue(value: unknown): string {
 }
 
 interface HostVenuesClientProps {
-  initialVenues: any[]
+  initialVenues: any[];
 }
 
 export default function HostVenuesClient({ initialVenues }: HostVenuesClientProps) {

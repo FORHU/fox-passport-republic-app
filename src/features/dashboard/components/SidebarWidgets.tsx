@@ -1,6 +1,6 @@
 ﻿'use client';
 
-import React, { useMemo } from 'react';
+import React from 'react';
 import Link from 'next/link';
 import { RECENT_ACTIVITY } from '@/features/dashboard/data/dashboardData';
 import { useCalendarBookings, toMonthItems, getDotColor } from '@/features/booking/hooks/useCalendarBookings';
@@ -19,10 +19,7 @@ export function CalendarWidget() {
   const offset = firstDayOfWeek === 0 ? 6 : firstDayOfWeek - 1;
 
   const { bookings, isLoading } = useCalendarBookings();
-  const scheduleItems = useMemo(
-    () => toMonthItems(bookings, year, month),
-    [bookings, year, month],
-  );
+  const scheduleItems = toMonthItems(bookings, year, month);
 
   return (
     <Link

@@ -205,6 +205,7 @@ export function useHostAssetEdit(assetId: string) {
               ],
             }
           : {}),
+        cancellationPolicyId: inventory.cancellationPolicyId || undefined,
         status: inventory.status,
       };
 
