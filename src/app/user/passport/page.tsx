@@ -1,9 +1,10 @@
 ﻿export const dynamic = 'force-dynamic';
 
 import { requireAuth } from '@/shared/lib/server/auth'
-import PassportClient from '@/features/user/components/PassportClient'
+import PassportStampsClient from '@/features/gamification/components/PassportStampsClient'
 
 export default async function PassportPage() {
   const user = await requireAuth()
-  return <PassportClient user={user} />
+  const userId = user.id ?? user.userId ?? ''
+  return <PassportStampsClient userId={userId} />
 }

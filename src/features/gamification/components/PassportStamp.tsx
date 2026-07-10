@@ -98,7 +98,6 @@ export function PassportGrid({ stamps, onStampClick, className = '' }: PassportG
   if (stamps.length === 0) {
     return (
       <div className="glass-panel rounded-[3rem] p-16 text-center">
-        <div className="text-6xl mb-4">📖</div>
         <h3 className="text-xl font-bold text-white mb-2">No stamps yet</h3>
         <p className="text-text-muted max-w-md mx-auto">
           Start attending events to collect passport stamps and track your journey!

@@ -5,6 +5,8 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useAuthStore } from '@/features/auth/store/useAuthStore';
 import { fetchServiceBooking, fetchAssetBooking, confirmArrival, reportNoShow } from '@/features/booking/api/bookings';
+import { createStamp } from '@/features/gamification/api/stamps';
+import { toast } from 'sonner';
 
 type BookingType = 'service' | 'asset';
 
@@ -51,6 +53,13 @@ export default function FulfillmentPassClient({ bookingType, bookingId }: Props)
     try {
       const updated = await confirmArrival(bookingType, bookingId);
       setBooking(updated);
+      // Trigger stamp creation for this booking
+      try {
+        await createStamp(bookingId);
+        toast.success('🎉 Stamp earned!');
+      } catch {
+        // Stamp creation is best-effort; don't block the arrival confirmation UI
+      }
     } catch (e: any) {
       alert(e?.response?.data?.message ?? e.message);
     } finally {
