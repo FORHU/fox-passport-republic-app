@@ -35,7 +35,7 @@ export const useNotifications = () => {
 
   useEffect(() => {
     if (data) {
-        setNotifications(data);
+        setNotifications(data.notifications, data.unreadCount);
     }
   }, [data, setNotifications]);
 

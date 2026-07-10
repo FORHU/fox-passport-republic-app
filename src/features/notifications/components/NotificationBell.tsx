@@ -1,13 +1,17 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { Bell, ChevronDown } from "lucide-react";
 import { useNotifications } from "../hooks/useNotifications";
+import { Notification } from "../types";
 
 export default function NotificationBell() {
   const [isOpen, setIsOpen] = useState(false);
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const router = useRouter();
   const { notifications, unreadCount, isLoading, markAsRead, markAllAsRead } = useNotifications();
 
   useEffect(() => {
@@ -20,9 +24,17 @@ export default function NotificationBell() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const handleItemClick = (id: string, isRead: boolean) => {
-    if (!isRead) markAsRead(id);
-    setExpandedId((prev) => (prev === id ? null : id));
+  const handleItemClick = (n: Notification) => {
+    if (!n.isRead) markAsRead(n.id);
+
+    const link = n.metadata?.link as string | undefined;
+    if (link) {
+      setIsOpen(false);
+      router.push(link);
+      return;
+    }
+
+    setExpandedId((prev) => (prev === n.id ? null : n.id));
   };
 
   return (
@@ -60,16 +72,11 @@ export default function NotificationBell() {
                 const isExpanded = expandedId === n.id;
                 const isRejected = n.type === "role_request_rejected";
                 const isAccepted = n.type === "role_request_approved";
-                const isApplicationStatus = isRejected || isAccepted;
-
-                const displayedTitle = isApplicationStatus
-                  ? `${isRejected ? "🔴" : "🟢"} Your application ${isRejected ? "was rejected" : "was accepted"}`
-                  : n.title;
 
                 return (
                   <li
                     key={n.id}
-                    onClick={() => handleItemClick(n.id, n.isRead)}
+                    onClick={() => handleItemClick(n)}
                     className={`px-4 py-3 cursor-pointer hover:bg-white/5 transition-all duration-200 ${!n.isRead ? "bg-white/[0.03]" : ""
                       } ${isExpanded ? "bg-white/[0.06] border-l-2 border-[#ccff00]" : ""}`}
                   >
@@ -77,7 +84,7 @@ export default function NotificationBell() {
                       {!n.isRead && <span className="mt-1.5 h-1.5 w-1.5 rounded-full bg-[#ccff00] shrink-0" />}
                       <div className="flex-1 min-w-0">
                         <div className="flex items-start justify-between gap-2">
-                          <p className="text-sm font-bold text-white truncate">{displayedTitle}</p>
+                          <p className="text-sm font-bold text-white truncate">{n.title}</p>
                           <ChevronDown
                             size={14}
                             className={`text-white/40 shrink-0 mt-0.5 transition-transform duration-200 ${isExpanded ? "rotate-180 text-[#ccff00]" : ""
@@ -85,9 +92,7 @@ export default function NotificationBell() {
                           />
                         </div>
 
-                        {!isApplicationStatus && (
-                          <p className="text-xs text-white/50 mt-0.5 line-clamp-2">{n.message}</p>
-                        )}
+                        <p className="text-xs text-white/50 mt-0.5 line-clamp-2">{n.message}</p>
 
                         {isExpanded && (
                           <p
@@ -111,6 +116,18 @@ export default function NotificationBell() {
                 );
               })}
             </ul>
+          )}
+
+          {notifications.length > 0 && (
+            <div className="border-t border-white/5 px-4 py-3">
+              <Link
+                href="/notifications"
+                className="flex items-center justify-center gap-1 text-xs font-medium text-[#ccff00] hover:underline"
+              >
+                View all notifications
+                <ChevronDown size={12} className="rotate-[-90deg]" />
+              </Link>
+            </div>
           )}
         </div>
       )}
