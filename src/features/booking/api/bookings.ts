@@ -1,8 +1,9 @@
 ﻿import api from "@/shared/lib/axios";
 
 // 0. Fetch a single public (approved) EventTemplate
-export async function getPublicTemplate(templateId: string) {
-  const resp = await api.get(`/event-templates/browse/${templateId}`);
+export async function getPublicTemplate(templateId: string, options?: { claimed?: boolean }) {
+  const params = options?.claimed ? '?claimed=1' : '';
+  const resp = await api.get(`/event-templates/browse/${templateId}${params}`);
   return resp.data?.data;
 }
 

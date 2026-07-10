@@ -8,6 +8,7 @@ import { useAuthStore } from '@/features/auth/store/useAuthStore';
 import { bookFromTemplate, getPublicTemplate, fetchTemplateAvailability } from '@/features/booking/api/bookings';
 import DateRangePicker from '@/shared/components/ui/DateRangePicker';
 import { toast } from 'sonner';
+import WaitlistButton from '@/features/booking/components/WaitlistButton';
 
 export default function BookingConfigurationClient() {
   const router = useRouter();
@@ -22,11 +23,12 @@ export default function BookingConfigurationClient() {
   useEffect(() => {
     if (!templateId) return;
     setIsLoadingTemplate(true);
-    getPublicTemplate(templateId)
+    const claimed = searchParams.get('claimed') === '1';
+    getPublicTemplate(templateId, { claimed })
       .then(setTemplate)
       .catch(() => toast.error('Could not load event details.'))
       .finally(() => setIsLoadingTemplate(false));
-  }, [templateId]);
+  }, [templateId, searchParams]);
 
   const getDashboardPath = () => {
     switch (user?.role?.toLowerCase()) {
@@ -53,6 +55,8 @@ export default function BookingConfigurationClient() {
   const templateLocation = [template?.targetCity, template?.targetState].filter(Boolean).join(', ') || 'Location TBD';
   const basePrice = template?.estimatedTotal ?? 0;
   const serviceFee = 150;
+  const currentAttendees = template?.currentAttendees ?? 0;
+  const isFull = template?.maxAttendees != null && currentAttendees >= template.maxAttendees;
 
   // Collect all optional items from the template
   const optionalAssets: any[] = (template?.templateAssets ?? []).filter((ta: any) => ta.isOptional);
@@ -158,8 +162,20 @@ export default function BookingConfigurationClient() {
 
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 relative">
             <div className="lg:col-span-8 space-y-8">
-              {/* Calendar Section */}
-              <div className="glass-card rounded-[2rem] p-8 border border-white/10">
+              {isFull ? (
+                <div className="glass-card rounded-[2rem] p-8 border border-yellow-400/20 text-center">
+                  <div className="flex flex-col items-center gap-4 py-8">
+                    <span className="material-symbols-outlined text-yellow-400 text-5xl">hourglass_empty</span>
+                    <h3 className="text-2xl font-display font-bold text-white">This event is at capacity</h3>
+                    <p className="text-text-muted max-w-md">
+                      All spots are currently filled. Join the waitlist to be notified when a spot opens up.
+                    </p>
+                  </div>
+                </div>
+              ) : (
+                <>
+                {/* Calendar Section */}
+                <div className="glass-card rounded-[2rem] p-8 border border-white/10">
                 <div className="flex items-center gap-3 mb-6">
                   <span className="material-symbols-outlined text-accent text-2xl">calendar_month</span>
                   <h3 className="text-xl font-display font-bold text-white">Select Date & Time</h3>
@@ -337,8 +353,9 @@ export default function BookingConfigurationClient() {
                 </div>
                 <textarea className="w-full bg-black/20 border border-white/10 rounded-2xl p-4 text-white placeholder-text-muted/50 focus:border-accent focus:ring-1 focus:ring-accent transition-all resize-none h-32 outline-none" placeholder="Celebrating a birthday? Allergies? Let the host know..."></textarea>
               </div>
+                </>
+              )}
             </div>
-
             {/* Sidebar Summary */}
             <div className="lg:col-span-4 relative">
               <div className="sticky top-32 space-y-6">
@@ -415,6 +432,16 @@ export default function BookingConfigurationClient() {
                     </div>
                   </div>
                   <div className="p-4">
+                    {isFull ? (
+                      <div className="space-y-4">
+                        <div className="rounded-2xl bg-yellow-400/10 border border-yellow-400/20 p-4 text-center">
+                          <p className="text-sm font-bold text-yellow-400">This event is at capacity</p>
+                          <p className="text-xs text-white/50 mt-1">Join the waitlist for a chance to get in if a spot opens up.</p>
+                        </div>
+                        <WaitlistButton templateId={template.id} />
+                      </div>
+                    ) : (
+                      <>
                     <button
                       disabled={isCreatingBooking || isLoadingTemplate}
                       onClick={async () => {
@@ -476,6 +503,8 @@ export default function BookingConfigurationClient() {
                       <span className="material-symbols-outlined text-[12px] align-middle mr-1">lock</span>
                       Secure encrypted checkout
                     </p>
+                      </>
+                    )}
                   </div>
                 </div>
 
