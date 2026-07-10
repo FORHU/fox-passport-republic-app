@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import QueryProvider from "./QueryProvider";
 import { AuthStoreProvider } from "./AuthStoreProvider";
+import { SocketProvider } from "./SocketProvider";
 
 export default function Providers({ children }: { children: React.ReactNode }) {
   const [ready, setReady] = useState(false);
@@ -22,7 +23,7 @@ export default function Providers({ children }: { children: React.ReactNode }) {
   return (
     <QueryProvider>
       <AuthStoreProvider>
-        {children}
+        <SocketProvider>{children}</SocketProvider>
       </AuthStoreProvider>
     </QueryProvider>
   );
