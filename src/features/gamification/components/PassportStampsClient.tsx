@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { fetchStamps, Stamp } from '@/features/gamification/api/stamps';
+import { useCategories } from '@/features/category/hooks/useCategories';
 
 interface Props {
   userId: string;
@@ -111,6 +112,7 @@ export default function PassportStampsClient({ userId }: Props) {
   const [stamps, setStamps] = useState<Stamp[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const { categories } = useCategories();
 
   useEffect(() => {
     if (!userId) return;
@@ -120,6 +122,10 @@ export default function PassportStampsClient({ userId }: Props) {
       .catch(() => setError('Could not load your passport stamps'))
       .finally(() => setLoading(false));
   }, [userId]);
+
+  const featuredCategories = categories
+    .filter((c) => !c.parentCategoryId)
+    .slice(0, 4);
 
   return (
     <div className="bg-black text-text-main antialiased min-h-screen font-body">
@@ -161,20 +167,17 @@ export default function PassportStampsClient({ userId }: Props) {
             <div className="glass-panel rounded-3xl p-16 text-center border border-white/10">
               <span className="animate-spin material-symbols-outlined text-accent text-4xl block mx-auto">progress_activity</span>
             </div>
-          ) : error ? (
-            <div className="glass-panel rounded-3xl p-16 text-center border border-white/10">
-              <span className="material-symbols-outlined text-white/20 text-6xl block mb-4">error</span>
-              <p className="text-white/60">{error}</p>
-            </div>
-          ) : stamps.length === 0 ? (
-            <div className="glass-panel rounded-3xl p-10 border border-white/10 text-center">
-              <h3 className="text-2xl font-display font-bold text-white mb-1">No stamps yet</h3>
-              <p className="text-text-muted max-w-md mx-auto mb-8">
+          ) : (stamps.length === 0 || error) ? (
+            <div className="glass-panel rounded-3xl p-10 border border-white/10 text-center relative overflow-hidden">
+              <div className="absolute -top-20 -right-20 w-64 h-64 bg-accent/10 rounded-full blur-3xl pointer-events-none" />
+
+              <h3 className="relative z-10 text-2xl font-display font-bold text-white mb-1">No stamps yet</h3>
+              <p className="relative z-10 text-text-muted max-w-md mx-auto mb-8">
                 Your passport is blank — book and attend an event to collect your first stamp!
               </p>
 
               {/* Ghost preview of the reward */}
-              <div className="relative mx-auto mb-8 w-44 opacity-50 grayscale pointer-events-none">
+              <div className="relative z-10 mx-auto mb-8 w-44 opacity-50 grayscale pointer-events-none">
                 <StampCard
                   stamp={{ id: 'sample', eventName: 'Your First Event', earnedAt: new Date().toISOString(), imageUrl: '' }}
                   index={0}
@@ -186,19 +189,34 @@ export default function PassportStampsClient({ userId }: Props) {
 
               <Link
                 href="/categories"
-                className="inline-flex items-center gap-2 rounded-full bg-accent px-7 py-3 text-sm font-bold text-black transition-all hover:-translate-y-0.5 hover:shadow-[0_0_20px_rgba(204,255,0,0.4)]"
+                className="relative z-10 inline-flex items-center gap-2 rounded-full bg-accent px-7 py-3 text-sm font-bold text-black transition-all hover:-translate-y-0.5 hover:shadow-[0_0_20px_rgba(204,255,0,0.4)]"
               >
                 <span className="material-symbols-outlined text-[18px]">explore</span>
                 Explore Events
               </Link>
+
+              {featuredCategories.length > 0 && (
+                <div className="relative z-10 mt-6 pt-6 border-t border-white/10 flex flex-wrap justify-center gap-3">
+                  {featuredCategories.map((cat) => (
+                    <Link
+                      key={cat.id}
+                      href={`/categories/${cat.slug}`}
+                      className="inline-flex items-center gap-2 rounded-full bg-white/5 border border-white/10 px-4 py-2 text-sm font-medium text-white/80 hover:bg-white/10 hover:text-white hover:border-accent/40 transition-all"
+                    >
+                      {cat.icon && <span className="material-symbols-outlined text-[16px] text-accent">{cat.icon}</span>}
+                      {cat.name}
+                    </Link>
+                  ))}
+                </div>
+              )}
             </div>
           ) : (
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-x-6 gap-y-10 px-2 py-4">
-              {stamps.map((stamp, i) => (
-                <StampCard key={stamp.id} stamp={stamp} index={i} />
-              ))}
-            </div>
-          )}
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-x-6 gap-y-10 px-2 py-4">
+                {stamps.map((stamp, i) => (
+                  <StampCard key={stamp.id} stamp={stamp} index={i} />
+                ))}
+              </div>
+            )}
         </div>
       </main>
     </div>
