@@ -1,4 +1,4 @@
-﻿import api from "@/shared/lib/axios";
+import api from "@/shared/lib/axios";
 
 export interface EventTemplate {
   id: string;
@@ -13,6 +13,9 @@ export interface EventTemplate {
   images: { id: string; url: string; name: string }[];
   templateVenues?: { venue?: { city?: string; price?: number } }[];
   owner?: { id: string; name: string };
+  maxAttendees?: number | null;
+  currentAttendees?: number;
+  estimatedTotal?: number;
 }
 
 export async function fetchTrendingTemplates(
