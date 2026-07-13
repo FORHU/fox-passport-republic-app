@@ -12,67 +12,19 @@ import {
   PathProgress,
   UserPath,
   XP_REWARDS,
+  Badge,
 } from '@/features/gamification/types/gamification';
 import {
   calculateMasteryLevel,
   formatXP,
+  initializePathProgress,
 } from '@/features/gamification/lib/gamification';
-import { MOCK_BADGES, MOCK_PASSPORT_STAMPS } from '@/features/gamification/lib/gamification-data';
 import BadgeModal from '@/features/gamification/components/BadgeModal';
-import { Badge } from '@/features/gamification/types/gamification';
+import { useMyPassport } from '@/features/gamification/hooks/usePassport';
 
 interface PassportClientProps {
   user: any;
 }
-
-// Mock data - will be replaced with actual API calls
-const mockPaths: PathProgress[] = [
-  {
-    path: 'foxer',
-    level: 12,
-    currentXP: 2400,
-    requiredXP: 3000,
-    totalXP: 14400,
-    label: 'Social Butterfly',
-    color: '#f97316',
-  },
-  {
-    path: 'host',
-    level: 5,
-    currentXP: 450,
-    requiredXP: 1000,
-    totalXP: 4450,
-    label: 'Venue Curator',
-    color: '#3b82f6',
-  },
-  {
-    path: 'mayor',
-    level: 3,
-    currentXP: 600,
-    requiredXP: 1000,
-    totalXP: 2600,
-    label: 'District Head',
-    color: '#a855f7',
-  },
-  {
-    path: 'user',
-    level: 18,
-    currentXP: 4500,
-    requiredXP: 5000,
-    totalXP: 45000,
-    label: 'Trailblazer',
-    color: '#22c55e',
-  },
-  {
-    path: 'investor',
-    level: 2,
-    currentXP: 150,
-    requiredXP: 1000,
-    totalXP: 1150,
-    label: 'Seed Funder',
-    color: '#eab308',
-  },
-];
 
 const PassportClient: React.FC<PassportClientProps> = ({ user }) => {
   const router = useRouter();
@@ -81,6 +33,8 @@ const PassportClient: React.FC<PassportClientProps> = ({ user }) => {
   const [showAllBadges, setShowAllBadges] = useState(false);
   const [selectedBadge, setSelectedBadge] = useState<Badge | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+
+  const { paths: apiPaths, badges: allBadges, stamps, isLoading } = useMyPassport();
 
   // Map API roleType[] to gamification UserPath[]
   const roleToPath = (role: string): UserPath | null => {
@@ -93,26 +47,16 @@ const PassportClient: React.FC<PassportClientProps> = ({ user }) => {
     new Set((user?.roleType as string[] || []).map(roleToPath).filter(Boolean) as UserPath[])
   );
   const activePathTypes: UserPath[] = rolePaths.length > 0 ? [...rolePaths, 'user'] : ['user'];
-  const filteredPaths = mockPaths.filter(p => activePathTypes.includes(p.path));
-  
-  // Show ALL badges in the collection if showAllBadges is true, 
-  // but we'll mark them as locked if they don't have the role later.
-  const displayBadges = showAllBadges ? MOCK_BADGES : MOCK_BADGES.filter(b => !b.path || activePathTypes.includes(b.path));
-  
-  // Identify which badges should be shown as locked
-  // For demo: you "own" some badges from every role you have
-  const ownedIds = MOCK_BADGES.filter(b => {
-    if (!b.path) return true;
-    if (!activePathTypes.includes(b.path)) return false;
-    
-    // Mock: own the first few badges of each role you have
-    const roleBadges = MOCK_BADGES.filter(rb => rb.path === b.path);
-    const indexInRole = roleBadges.findIndex(rb => rb.id === b.id);
-    return indexInRole < 2; // Own first 2 of each active role
-  }).map(b => b.id);
-  
-  const ownedBadges = MOCK_BADGES.filter(b => ownedIds.includes(b.id));
-  const finalLockedIds = MOCK_BADGES.filter(b => !ownedIds.includes(b.id)).map(b => b.id);
+
+  // Merge real paths with defaults for roles that have no XP yet
+  const filteredPaths: PathProgress[] = activePathTypes.map(
+    (pt) => apiPaths.find((p) => p.path === pt) ?? initializePathProgress(pt)
+  );
+
+  // Badges: show relevant paths unless "All" is toggled
+  const displayBadges = showAllBadges ? allBadges : allBadges.filter(b => !b.path || activePathTypes.includes(b.path));
+  const earnedBadges = allBadges.filter(b => !!b.earnedAt);
+  const finalLockedIds = allBadges.filter(b => !b.earnedAt).map(b => b.id);
 
   const handleBadgeClick = (badge: Badge) => {
     setSelectedBadge(badge);
@@ -425,8 +369,8 @@ const PassportClient: React.FC<PassportClientProps> = ({ user }) => {
                   </div>
                   <div className="bg-white/2 border border-white/5 rounded-[3rem] p-8">
                     <BadgeGrid
-                      badges={showAllBadges ? MOCK_BADGES : ownedBadges}
-                      maxDisplay={showAllBadges ? MOCK_BADGES.length : ownedBadges.length}
+                      badges={showAllBadges ? displayBadges : earnedBadges}
+                      maxDisplay={showAllBadges ? displayBadges.length : earnedBadges.length}
                       className={showAllBadges ? 'lg:grid-cols-6' : 'lg:grid-cols-4'}
                       onBadgeClick={handleBadgeClick}
                       lockedBadges={finalLockedIds}
@@ -548,8 +492,8 @@ const PassportClient: React.FC<PassportClientProps> = ({ user }) => {
                 exit={{ opacity: 0, x: -20 }} 
                 className="bg-white/2 border border-white/5 rounded-[3rem] p-8 min-h-[500px]"
               >
-                <PassportGrid stamps={MOCK_PASSPORT_STAMPS} />
-                {MOCK_PASSPORT_STAMPS.length === 0 && (
+                <PassportGrid stamps={stamps} />
+                {stamps.length === 0 && (
                    <div className="flex flex-col items-center justify-center py-32 opacity-20 text-center">
                       <span className="material-symbols-outlined text-9xl mb-6">menu_book</span>
                       <p className="font-display font-bold text-2xl tracking-tight text-white">Your passport is empty</p>

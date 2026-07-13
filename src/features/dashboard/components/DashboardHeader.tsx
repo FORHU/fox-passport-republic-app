@@ -25,6 +25,7 @@ export function DashboardHeader() {
     access.canManageVenues && { label: 'Venues', href: '#venues', anchor: true },
     access.canManageInventory && { label: 'Assets', href: '#inventory', anchor: true },
     access.canManageServices && { label: 'Services', href: '#services', anchor: true },
+    (access.canManageEvents || access.isMayor) && { label: 'Check In', href: '/creator-dashboard/check-in', anchor: false },
   ].filter(Boolean) as { label: string; href: string; anchor: boolean }[];
 
   return (
