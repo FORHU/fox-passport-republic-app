@@ -6,6 +6,7 @@ import Link from "next/link";
 import { Bell, ChevronDown } from "lucide-react";
 import { useNotifications } from "../hooks/useNotifications";
 import { Notification } from "../types";
+import NotificationDetail from "./NotificationDetail";
 
 export default function NotificationBell() {
   const [isOpen, setIsOpen] = useState(false);
@@ -26,15 +27,12 @@ export default function NotificationBell() {
 
   const handleItemClick = (n: Notification) => {
     if (!n.isRead) markAsRead(n.id);
-
-    const link = n.metadata?.link as string | undefined;
-    if (link) {
-      setIsOpen(false);
-      router.push(link);
-      return;
-    }
-
     setExpandedId((prev) => (prev === n.id ? null : n.id));
+  };
+
+  const handleViewDetails = (link: string) => {
+    setIsOpen(false);
+    router.push(link);
   };
 
   return (
@@ -70,8 +68,6 @@ export default function NotificationBell() {
             <ul className="divide-y divide-white/5">
               {notifications.map((n) => {
                 const isExpanded = expandedId === n.id;
-                const isRejected = n.type === "role_request_rejected";
-                const isAccepted = n.type === "role_request_approved";
 
                 return (
                   <li
@@ -92,19 +88,15 @@ export default function NotificationBell() {
                           />
                         </div>
 
-                        <p className="text-xs text-white/50 mt-0.5 line-clamp-2">{n.message}</p>
+                        {!isExpanded && (
+                          <p className="text-xs text-white/50 mt-0.5 line-clamp-2">{n.message}</p>
+                        )}
 
                         {isExpanded && (
-                          <p
-                            className={`text-xs mt-2 p-3 rounded-lg border whitespace-pre-line leading-relaxed ${isRejected
-                              ? "bg-red-500/10 border-red-500/20 text-red-300"
-                              : isAccepted
-                                ? "bg-green-500/10 border-green-500/20 text-green-300"
-                                : "text-white/60"
-                              }`}
-                          >
-                            {n.message}
-                          </p>
+                          <NotificationDetail
+                            notification={n}
+                            onViewFull={handleViewDetails}
+                          />
                         )}
 
                         <p className="text-[10px] text-white/30 mt-1.5">

@@ -1,0 +1,22 @@
+
+> foxpassport-app@0.1.0 dev
+> next dev --webpack
+
+   ▲ Next.js 16.0.10 (webpack)
+   - Local:         http://localhost:3000
+   - Network:       http://192.168.1.184:3000
+   - Environments: .env
+
+ ✓ Starting...
+[baseline-browser-mapping] The data in this module is over two months old.  To ensure accurate Baseline data, please update: `npm i baseline-browser-mapping@latest -D`
+ ✓ Ready in 7.9s
+ ○ Compiling /user/passport ...
+ GET /user/passport 200 in 11.4s (compile: 8.5s, render: 2.9s)
+ GET /user/passport 200 in 12.8s (compile: 9.8s, render: 3.0s)
+ ○ Compiling / ...
+[API] Fetching: http://localhost:3002/api/v1/venues
+[API] Fetching: http://localhost:3002/api/v1/venues
+[API] Fetching: http://localhost:3002/api/v1/venues
+ GET / 200 in 25.8s (compile: 22.3s, render: 3.4s)
+ GET / 200 in 2.6s (compile: 120ms, render: 2.5s)
+ GET / 200 in 2.7s (compile: 64ms, render: 2.6s)
