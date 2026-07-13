@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import QRCode from 'react-qr-code';
 import { fetchBookingById } from '@/features/booking/api/bookings';
 import { useAuthStore } from '@/features/auth/store/useAuthStore';
 import { toast } from 'sonner';
@@ -190,6 +191,42 @@ export default function BookingDetailClient({ bookingId }: { bookingId: string }
               </div>
             </div>
           </div>
+
+          {booking.ticketCode && !isCancelled && booking.status !== 'completed' && (
+            <div className="glass-panel rounded-3xl p-8 mt-6">
+              <div className="flex flex-col md:flex-row items-center gap-8">
+                <div className="shrink-0">
+                  <div className="p-4 bg-white rounded-2xl">
+                    <QRCode
+                      value={booking.ticketCode}
+                      size={160}
+                      bgColor="#ffffff"
+                      fgColor="#000000"
+                    />
+                  </div>
+                </div>
+                <div className="flex-1 text-center md:text-left">
+                  <div className="flex items-center gap-2 justify-center md:justify-start mb-2">
+                    <span className="material-symbols-outlined text-accent text-[20px]">qr_code_2</span>
+                    <h2 className="text-xl font-display font-bold text-white">Your Entry Ticket</h2>
+                  </div>
+                  <p className="text-text-muted text-sm mb-4">
+                    Show this QR code to the host at the event entrance. They will scan it to verify your booking.
+                  </p>
+                  <div className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-white/5 border border-white/10">
+                    <span className="material-symbols-outlined text-white/40 text-[16px]">confirmation_number</span>
+                    <span className="font-mono text-white font-semibold tracking-widest text-sm">{booking.ticketCode}</span>
+                  </div>
+                  {booking.checkedIn && (
+                    <div className="mt-3 inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-green-500/10 border border-green-500/20 ml-0 md:ml-3">
+                      <span className="material-symbols-outlined text-green-400 text-[16px]">check_circle</span>
+                      <span className="text-green-400 text-sm font-semibold">Checked In</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
 
           {payments.length > 0 && (
             <div className="glass-panel rounded-3xl p-8 mt-6">

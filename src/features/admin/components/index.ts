@@ -12,6 +12,7 @@ export { AdminCitizenTable } from "./AdminCitizenTable";
 export { AdminAssetsTable } from "./AdminAssetsTable";
 export { AdminServicesTable } from "./AdminServicesTable";
 export { AdminBookingsTable } from "./AdminBookingsTable";
+export { AdminDisputesPanel } from "./AdminDisputesPanel";
 export { default as AdminCancellationPolicies } from "./AdminCancellationPolicies";
 export * from "./constants";
 export * from "./types";

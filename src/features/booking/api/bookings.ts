@@ -1,5 +1,11 @@
 ﻿import api from "@/shared/lib/axios";
 
+// Host: scan citizen QR at event door
+export async function checkInBooking(ticketCode: string): Promise<{ id: string; checkedIn: boolean; [k: string]: any }> {
+  const resp = await api.patch("/bookings/check-in", { ticketCode });
+  return resp.data?.data;
+}
+
 // 0. Fetch a single public (approved) EventTemplate
 export async function getPublicTemplate(templateId: string, options?: { claimed?: boolean }) {
   const params = options?.claimed ? '?claimed=1' : '';

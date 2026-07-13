@@ -14,7 +14,8 @@ const NAV_ITEMS = [
   { label: 'Venues',      icon: 'storefront',          id: 'venues'     },
   { label: 'Assets',      icon: 'inventory_2',         id: 'assets',    section: 'Listings' },
   { label: 'Services',    icon: 'build',               id: 'services'   },
-  { label: 'Policies',    icon: 'policy',              id: 'policies',  section: 'System' },
+  { label: 'Disputes',    icon: 'gavel',               id: 'disputes',  section: 'System' },
+  { label: 'Policies',    icon: 'policy',              id: 'policies'  },
   { label: 'Settings',    icon: 'settings',            id: 'settings'  },
 ] as const;
 
