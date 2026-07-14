@@ -20,7 +20,8 @@ import {
   initializePathProgress,
 } from '@/features/gamification/lib/gamification';
 import BadgeModal from '@/features/gamification/components/BadgeModal';
-import { useMyPassport } from '@/features/gamification/hooks/usePassport';
+import { useMyPassport, useLeaderboard, useOutgoingMatchRequests, useIncomingMatchRequests, useRespondToMatch } from '@/features/gamification/hooks/usePassport';
+import type { OutgoingMatchGroup, IncomingMatchRequest } from '@/features/gamification/api/passport';
 
 interface PassportClientProps {
   user: any;
@@ -29,12 +30,26 @@ interface PassportClientProps {
 const PassportClient: React.FC<PassportClientProps> = ({ user }) => {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<'progress' | 'stamps' | 'matches'>('matches');
-  const [matchSubTab, setMatchSubTab] = useState<'status' | 'ranks'>('status');
+  const [matchSubTab, setMatchSubTab] = useState<'outgoing' | 'incoming' | 'ranks'>('outgoing');
   const [showAllBadges, setShowAllBadges] = useState(false);
   const [selectedBadge, setSelectedBadge] = useState<Badge | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   const { paths: apiPaths, badges: allBadges, stamps, isLoading } = useMyPassport();
+
+  const roleTypes: string[] = user?.roleType ?? [];
+  const isEventFoxer = roleTypes.includes('eventFoxer');
+  const isProvider = roleTypes.some((r) => ['gearFoxer', 'serviceFoxer', 'venueFoxer'].includes(r));
+
+  const { data: leaderboard = [], isLoading: leaderboardLoading } = useLeaderboard(20);
+  const { data: outgoingGroups = [], isLoading: outgoingLoading } = useOutgoingMatchRequests(isEventFoxer);
+  const { data: incomingRequests = [], isLoading: incomingLoading } = useIncomingMatchRequests(isProvider);
+  const respondMutation = useRespondToMatch();
+
+  const statusColor = (s: string) =>
+    s === 'accepted' ? '#22c55e' : s === 'declined' ? '#ef4444' : s === 'secured' ? '#ccff00' : '#f97316';
+  const statusLabel = (s: string) =>
+    s === 'accepted' ? 'Accepted' : s === 'declined' ? 'Declined' : s === 'secured' ? 'Secured' : 'Pending';
 
   // Map API roleType[] to gamification UserPath[]
   const roleToPath = (role: string): UserPath | null => {
@@ -223,14 +238,24 @@ const PassportClient: React.FC<PassportClientProps> = ({ user }) => {
               >
                 <div className="flex justify-center">
                   <div className="bg-white/5 p-1 rounded-full border border-white/10 flex">
-                    <button 
-                      onClick={() => setMatchSubTab('status')} 
-                      className={`px-8 py-2 rounded-full font-bold text-xs transition-all ${matchSubTab === 'status' ? 'bg-[#ccff00] text-black shadow-glow-accent' : 'text-white/40 hover:text-white'}`}
-                    >
-                      Status
-                    </button>
-                    <button 
-                      onClick={() => setMatchSubTab('ranks')} 
+                    {isEventFoxer && (
+                      <button
+                        onClick={() => setMatchSubTab('outgoing')}
+                        className={`px-8 py-2 rounded-full font-bold text-xs transition-all ${matchSubTab === 'outgoing' ? 'bg-[#ccff00] text-black shadow-glow-accent' : 'text-white/40 hover:text-white'}`}
+                      >
+                        My Requests
+                      </button>
+                    )}
+                    {isProvider && (
+                      <button
+                        onClick={() => setMatchSubTab('incoming')}
+                        className={`px-8 py-2 rounded-full font-bold text-xs transition-all ${matchSubTab === 'incoming' ? 'bg-[#ccff00] text-black shadow-glow-accent' : 'text-white/40 hover:text-white'}`}
+                      >
+                        Incoming
+                      </button>
+                    )}
+                    <button
+                      onClick={() => setMatchSubTab('ranks')}
                       className={`px-8 py-2 rounded-full font-bold text-xs transition-all ${matchSubTab === 'ranks' ? 'bg-[#ccff00] text-black shadow-glow-accent' : 'text-white/40 hover:text-white'}`}
                     >
                       Global Ranks
@@ -238,71 +263,130 @@ const PassportClient: React.FC<PassportClientProps> = ({ user }) => {
                   </div>
                 </div>
 
-                {matchSubTab === 'status' ? (
-                  <div className="bg-white/3 border border-white/5 rounded-[2.5rem] p-8 hover:bg-white/5 transition-all">
-                    <div className="flex flex-col lg:flex-row gap-8 items-center">
-                      <div className="flex items-center gap-6">
-                        <div className="relative">
-                          <img 
-                            src="https://images.unsplash.com/photo-1531123897727-8f129e1688ce?q=80&w=200&auto=format&fit=crop" 
-                            className="h-20 w-20 rounded-2xl object-cover border-2 border-white/10" 
-                            alt="" 
-                          />
-                          <div className="absolute -bottom-2 -right-2 h-6 w-6 bg-black rounded-full border border-white/20 flex items-center justify-center">
-                            <span className="material-symbols-outlined text-[14px] text-[#ccff00]">hourglass_empty</span>
+                {matchSubTab === 'outgoing' && (
+                  <div className="space-y-4">
+                    {outgoingLoading ? (
+                      <div className="text-center py-16 text-white/30 text-sm">Loading requests…</div>
+                    ) : outgoingGroups.length === 0 ? (
+                      <div className="flex flex-col items-center py-24 opacity-20 text-center">
+                        <span className="material-symbols-outlined text-8xl mb-4">handshake</span>
+                        <p className="font-display font-bold text-xl text-white">No match requests yet</p>
+                        <p className="text-sm mt-1 text-white/60">Match providers to your event templates to get started.</p>
+                      </div>
+                    ) : outgoingGroups.map((group: OutgoingMatchGroup) => (
+                      <div key={group.templateId} className="bg-white/3 border border-white/5 rounded-[2rem] p-6">
+                        <div className="flex items-center gap-3 mb-4">
+                          <span className="material-symbols-outlined text-[#ccff00] text-lg">event</span>
+                          <div>
+                            <p className="font-bold text-white">{group.templateName}</p>
+                            <p className="text-[10px] text-white/30 uppercase tracking-widest">{group.targetCity}{group.targetState ? `, ${group.targetState}` : ''} · {group.category}</p>
                           </div>
                         </div>
-                        <div>
-                          <h3 className="text-xl font-bold text-white">Jasmine L.</h3>
-                          <p className="text-white/30 text-[10px] font-mono uppercase tracking-widest">Forest Fairy Tale Request</p>
+                        <div className="space-y-3">
+                          {group.requests.map((req) => (
+                            <div key={req.id} className="flex items-center justify-between p-4 rounded-xl bg-white/5 border border-white/5">
+                              <div className="flex items-center gap-3">
+                                <div className="h-9 w-9 rounded-xl bg-white/10 flex items-center justify-center text-sm font-bold text-white/40 overflow-hidden">
+                                  {req.provider?.imgId ? <img src={req.provider.imgId} className="h-full w-full object-cover" alt="" /> : (req.provider?.name?.charAt(0) ?? '?')}
+                                </div>
+                                <div>
+                                  <p className="text-sm font-bold text-white">{req.provider?.name ?? 'Unknown'}</p>
+                                  <p className="text-[10px] text-white/30 uppercase tracking-widest">{req.item?.name} · {req.type}</p>
+                                </div>
+                              </div>
+                              <span className="text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-full border" style={{ color: statusColor(req.matchRequestStatus), borderColor: `${statusColor(req.matchRequestStatus)}30`, backgroundColor: `${statusColor(req.matchRequestStatus)}10` }}>
+                                {statusLabel(req.matchRequestStatus)}
+                              </span>
+                            </div>
+                          ))}
                         </div>
                       </div>
-                      <div className="grow w-full lg:max-w-md">
-                        <div className="flex justify-between mb-2">
-                           <span className="text-[10px] font-black text-[#ccff00] uppercase tracking-widest">Reviewing</span>
-                           <span className="text-[10px] text-white/20 font-mono tracking-widest">Typically 2h</span>
-                        </div>
-                        <div className="relative h-1.5 w-full bg-white/5 rounded-full overflow-hidden">
-                          <div className="absolute inset-0 bg-linier-to-r from-[#ccff00] to-[#ccff00]/50 animate-pulse-slow" style={{ width: '40%' }}></div>
-                        </div>
-                        <div className="flex justify-between mt-3 text-[8px] font-black uppercase text-white/40 tracking-widest">
-                          <span className="text-[#ccff00]">Sent</span>
-                          <span>Reviewing</span>
-                          <span>Matched</span>
-                          <span>Secured</span>
-                        </div>
-                      </div>
-                    </div>
+                    ))}
                   </div>
-                ) : (
+                )}
+
+                {matchSubTab === 'incoming' && (
+                  <div className="space-y-3">
+                    {incomingLoading ? (
+                      <div className="text-center py-16 text-white/30 text-sm">Loading requests…</div>
+                    ) : incomingRequests.length === 0 ? (
+                      <div className="flex flex-col items-center py-24 opacity-20 text-center">
+                        <span className="material-symbols-outlined text-8xl mb-4">inbox</span>
+                        <p className="font-display font-bold text-xl text-white">No incoming requests</p>
+                        <p className="text-sm mt-1 text-white/60">Event Foxers will appear here when they match your listings.</p>
+                      </div>
+                    ) : incomingRequests.map((req: IncomingMatchRequest) => (
+                      <div key={req.id} className="flex items-center justify-between p-5 bg-white/3 border border-white/5 rounded-[1.5rem] hover:bg-white/5 transition-all">
+                        <div className="flex items-center gap-4">
+                          <div className="h-11 w-11 rounded-xl bg-white/10 flex items-center justify-center text-sm font-bold text-white/40 overflow-hidden shrink-0">
+                            {req.template.owner?.imgId ? <img src={req.template.owner.imgId} className="h-full w-full object-cover" alt="" /> : (req.template.owner?.name?.charAt(0) ?? '?')}
+                          </div>
+                          <div>
+                            <p className="text-sm font-bold text-white">{req.template.owner?.name}</p>
+                            <p className="text-[10px] text-white/30 uppercase tracking-widest">{req.template.name} · {req.item?.name}</p>
+                          </div>
+                        </div>
+                        {req.matchRequestStatus === 'pending' ? (
+                          <div className="flex gap-2">
+                            <button
+                              onClick={() => respondMutation.mutate({ matchId: req.id, type: req.type, status: 'accepted' })}
+                              disabled={respondMutation.isPending}
+                              className="px-4 py-2 rounded-xl bg-[#22c55e]/10 border border-[#22c55e]/30 text-[#22c55e] text-xs font-bold hover:bg-[#22c55e]/20 transition-all disabled:opacity-50"
+                            >
+                              Accept
+                            </button>
+                            <button
+                              onClick={() => respondMutation.mutate({ matchId: req.id, type: req.type, status: 'declined' })}
+                              disabled={respondMutation.isPending}
+                              className="px-4 py-2 rounded-xl bg-white/5 border border-white/10 text-white/40 text-xs font-bold hover:text-white hover:bg-white/10 transition-all disabled:opacity-50"
+                            >
+                              Decline
+                            </button>
+                          </div>
+                        ) : (
+                          <span className="text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-full border" style={{ color: statusColor(req.matchRequestStatus), borderColor: `${statusColor(req.matchRequestStatus)}30`, backgroundColor: `${statusColor(req.matchRequestStatus)}10` }}>
+                            {statusLabel(req.matchRequestStatus)}
+                          </span>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {matchSubTab === 'ranks' && (
                   <div className="bg-white/3 border border-white/5 rounded-[3rem] overflow-hidden">
-                    <table className="w-full text-left">
-                      <thead>
-                        <tr className="border-b border-white/5">
-                          <th className="px-8 py-6 text-[10px] font-black uppercase text-white/20 tracking-[0.2em]">Rank</th>
-                          <th className="px-8 py-6 text-[10px] font-black uppercase text-white/20 tracking-[0.2em]">Citizen</th>
-                          <th className="px-8 py-6 text-[10px] font-black uppercase text-white/20 tracking-[0.2em] text-right">Level</th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-white/5">
-                        {[
-                          { rank: 1, name: 'Alex M.', level: 42, avatar: 'https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?q=80&w=100&auto=format&fit=crop' },
-                          { rank: 2, name: 'Sarah K.', level: 38, avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=100&auto=format&fit=crop' },
-                          { rank: 3, name: 'James W.', level: 35, avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?q=80&w=100&auto=format&fit=crop' },
-                        ].map((p) => (
-                          <tr key={p.rank} className="hover:bg-white/2 transition-colors">
-                            <td className="px-8 py-6 text-xl font-display font-bold text-[#ccff00]">#{p.rank}</td>
-                            <td className="px-8 py-6 flex items-center gap-4">
-                              <img src={p.avatar} className="h-10 w-10 rounded-xl object-cover border border-white/10" alt="" />
-                              <span className="font-bold text-white">{p.name}</span>
-                            </td>
-                            <td className="px-8 py-6 text-right">
-                              <span className="bg-white/5 px-3 py-1 rounded-full text-xs font-bold text-white border border-white/5">LVL {p.level}</span>
-                            </td>
+                    {leaderboardLoading ? (
+                      <div className="text-center py-16 text-white/30 text-sm">Loading leaderboard…</div>
+                    ) : (
+                      <table className="w-full text-left">
+                        <thead>
+                          <tr className="border-b border-white/5">
+                            <th className="px-8 py-6 text-[10px] font-black uppercase text-white/20 tracking-[0.2em]">Rank</th>
+                            <th className="px-8 py-6 text-[10px] font-black uppercase text-white/20 tracking-[0.2em]">Citizen</th>
+                            <th className="px-8 py-6 text-[10px] font-black uppercase text-white/20 tracking-[0.2em] text-right">Total XP</th>
                           </tr>
-                        ))}
-                      </tbody>
-                    </table>
+                        </thead>
+                        <tbody className="divide-y divide-white/5">
+                          {leaderboard.map((entry) => (
+                            <tr key={entry.userId} className="hover:bg-white/2 transition-colors">
+                              <td className="px-8 py-5 text-xl font-display font-bold text-[#ccff00]">#{entry.rank}</td>
+                              <td className="px-8 py-5">
+                                <div className="flex items-center gap-4">
+                                  <div className="h-10 w-10 rounded-xl bg-white/10 flex items-center justify-center text-sm font-bold text-white/40 overflow-hidden shrink-0">
+                                    {entry.user.imgId ? <img src={entry.user.imgId} className="h-full w-full object-cover" alt="" /> : entry.user.name?.charAt(0)}
+                                  </div>
+                                  <span className="font-bold text-white">{entry.user.name}</span>
+                                  {entry.userId === user?.id && <span className="text-[9px] font-black text-[#ccff00] uppercase tracking-widest bg-[#ccff00]/10 px-2 py-0.5 rounded-full">You</span>}
+                                </div>
+                              </td>
+                              <td className="px-8 py-5 text-right">
+                                <span className="font-mono text-sm text-[#ccff00] font-bold">{formatXP(entry.totalXP)} XP</span>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    )}
                   </div>
                 )}
               </motion.div>

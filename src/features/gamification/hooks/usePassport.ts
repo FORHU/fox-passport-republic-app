@@ -1,7 +1,10 @@
 "use client";
 
-import { useQuery } from "@tanstack/react-query";
-import { getMyPassport, getAllBadges, getUserPassport, mapPaths, mapStamps, mapBadges } from "../api/passport";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import {
+  getMyPassport, getAllBadges, getUserPassport, mapPaths, mapStamps, mapBadges,
+  getLeaderboard, getOutgoingMatchRequests, getIncomingMatchRequests, respondToMatch,
+} from "../api/passport";
 
 export function useMyPassport() {
   const passportQuery = useQuery({
@@ -29,6 +32,40 @@ export function useMyPassport() {
     isLoading: passportQuery.isLoading || badgesQuery.isLoading,
     isError: passportQuery.isError || badgesQuery.isError,
   };
+}
+
+export function useLeaderboard(limit = 20) {
+  return useQuery({
+    queryKey: ["passport", "leaderboard", limit],
+    queryFn: () => getLeaderboard(limit),
+  });
+}
+
+export function useOutgoingMatchRequests(enabled = true) {
+  return useQuery({
+    queryKey: ["matches", "outgoing"],
+    queryFn: getOutgoingMatchRequests,
+    enabled,
+  });
+}
+
+export function useIncomingMatchRequests(enabled = true) {
+  return useQuery({
+    queryKey: ["matches", "incoming"],
+    queryFn: getIncomingMatchRequests,
+    enabled,
+  });
+}
+
+export function useRespondToMatch() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ matchId, type, status }: { matchId: string; type: string; status: "accepted" | "declined" }) =>
+      respondToMatch(matchId, type, status),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["matches"] });
+    },
+  });
 }
 
 export function useUserPassport(userId: string) {
