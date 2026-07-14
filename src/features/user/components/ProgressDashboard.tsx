@@ -26,7 +26,7 @@ interface ProgressDashboardProps {
 // Mock data - will be replaced with actual API calls
 const mockPaths: PathProgress[] = [
   {
-    path: 'foxer',
+    path: 'gearFoxer',
     level: 12,
     currentXP: 2400,
     requiredXP: 3000,
@@ -35,7 +35,7 @@ const mockPaths: PathProgress[] = [
     color: '#f97316',
   },
   {
-    path: 'host',
+    path: 'eventFoxer',
     level: 5,
     currentXP: 450,
     requiredXP: 1000,

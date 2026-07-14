@@ -46,7 +46,7 @@ export async function requireHost() {
   const systemRole = (user?.systemRole ?? user?.role ?? '').toLowerCase();
   const roleType: string[] = user?.roleType ?? [];
   const hostSystemRoles = ['host', 'mayor', 'foxer', 'admin', 'super_admin'];
-  const hostRoleTypes = ['host', 'mayor', 'foxer', 'foxerAsset', 'foxerService'];
+  const hostRoleTypes = ['eventFoxer', 'venueFoxer', 'gearFoxer', 'serviceFoxer'];
 
   const hasAccess =
     hostSystemRoles.includes(systemRole) ||

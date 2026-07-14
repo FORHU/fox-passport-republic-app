@@ -34,7 +34,7 @@ export default function MayorApplicationClient() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    applyRole({ roleType: "mayor", data: formData });
+    applyRole({ roleType: "venueFoxer", data: formData });
   };
 
   return (
