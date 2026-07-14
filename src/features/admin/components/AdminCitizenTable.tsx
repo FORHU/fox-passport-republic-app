@@ -17,10 +17,10 @@ const SYSTEM_ROLE_STYLE: Record<string, { label: string; color: string; icon: st
 
 // roleType[] values
 const ROLE_TYPE_STYLE: Record<string, { label: string; color: string; icon: string }> = {
-  host:         { label: 'Host',          color: 'bg-blue-500/10 text-blue-400 border-blue-500/20',     icon: 'storefront'  },
-  foxerAsset:   { label: 'Gear Foxer',    color: 'bg-purple-500/10 text-purple-400 border-purple-500/20', icon: 'inventory_2' },
-  foxerService: { label: 'Service Foxer', color: 'bg-orange-500/10 text-orange-400 border-orange-500/20', icon: 'build'       },
-  mayor:        { label: 'Mayor',         color: 'bg-yellow-500/10 text-yellow-400 border-yellow-500/20', icon: 'star'        },
+  eventFoxer:   { label: 'Host',          color: 'bg-blue-500/10 text-blue-400 border-blue-500/20',     icon: 'storefront'  },
+  gearFoxer:    { label: 'Gear Foxer',    color: 'bg-purple-500/10 text-purple-400 border-purple-500/20', icon: 'inventory_2' },
+  serviceFoxer: { label: 'Service Foxer', color: 'bg-orange-500/10 text-orange-400 border-orange-500/20', icon: 'build'       },
+  venueFoxer:   { label: 'Mayor',         color: 'bg-yellow-500/10 text-yellow-400 border-yellow-500/20', icon: 'star'        },
   investor:     { label: 'Investor',      color: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20', icon: 'payments'  },
 };
 

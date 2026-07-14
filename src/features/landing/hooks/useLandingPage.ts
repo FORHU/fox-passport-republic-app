@@ -5,7 +5,7 @@ import { useScrollReveal } from "@/shared/hooks/useScrollReveal";
 import { useAuthStore } from "@/features/auth/store/useAuthStore";
 import { useCategories } from "@/features/category/hooks/useCategories";
 
-const VENUE_ROLES = ["host", "mayor", "foxerAsset", "foxerService"];
+const VENUE_ROLES = ["eventFoxer", "venueFoxer", "gearFoxer", "serviceFoxer"];
 
 const EVENT_CATEGORY_ORDER = ["birthday", "wedding", "corporate", "social", "other"];
 

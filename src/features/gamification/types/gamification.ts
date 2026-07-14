@@ -1,6 +1,6 @@
 // Gamification system types
 
-export type UserPath = 'user' | 'foxer' | 'host' | 'mayor' | 'investor';
+export type UserPath = 'user' | 'gearFoxer' | 'serviceFoxer' | 'eventFoxer' | 'venueFoxer' | 'investor';
 
 export type BadgeRarity = 'Common' | 'Uncommon' | 'Rare' | 'Epic' | 'Legendary';
 
@@ -89,21 +89,28 @@ export const PATH_LABELS = {
     15: 'Trailblazer',
     20: 'VIP Explorer',
   },
-  foxer: {
+  gearFoxer: {
     1: 'Starter Foxer',
     5: 'Social Butterfly',
     10: 'Event Curator',
     15: 'Master Foxer',
     20: 'Elite Foxer',
   },
-  host: {
+  serviceFoxer: {
+    1: 'Starter Foxer',
+    5: 'Social Butterfly',
+    10: 'Event Curator',
+    15: 'Master Foxer',
+    20: 'Elite Foxer',
+  },
+  eventFoxer: {
     1: 'New Host',
     3: 'Venue Curator',
     7: 'Established Host',
     12: 'Premium Host',
     18: 'Super Host',
   },
-  mayor: {
+  venueFoxer: {
     1: 'Ward Officer',
     3: 'District Head',
     7: 'City Planner',
@@ -131,9 +138,10 @@ export const BADGE_COLORS: Record<BadgeRarity, string> = {
 // Path colors
 export const PATH_COLORS: Record<UserPath, string> = {
   user: '#22c55e', // Green
-  foxer: '#f97316', // Orange
-  host: '#3b82f6', // Blue
-  mayor: '#a855f7', // Purple
+  gearFoxer: '#f97316', // Orange
+  serviceFoxer: '#f97316', // Orange
+  eventFoxer: '#3b82f6', // Blue
+  venueFoxer: '#a855f7', // Purple
   investor: '#eab308', // Yellow
 };
 

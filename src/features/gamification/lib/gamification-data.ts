@@ -55,7 +55,7 @@ export const MOCK_BADGES: Badge[] = [
     rarity: 'Legendary',
     icon: 'trending_up',
     color: '#f59e0b',
-    path: 'foxer',
+    path: 'gearFoxer',
   },
   {
     id: 'b7',
@@ -73,7 +73,7 @@ export const MOCK_BADGES: Badge[] = [
     rarity: 'Legendary',
     icon: 'workspace_premium',
     color: '#f59e0b',
-    path: 'host',
+    path: 'eventFoxer',
   },
   {
     id: 'b9',
@@ -82,7 +82,7 @@ export const MOCK_BADGES: Badge[] = [
     rarity: 'Rare',
     icon: 'diversity_3',
     color: '#3b82f6',
-    path: 'foxer',
+    path: 'gearFoxer',
   },
   {
     id: 'b10',
@@ -100,7 +100,7 @@ export const MOCK_BADGES: Badge[] = [
     rarity: 'Legendary',
     icon: 'hotel_class',
     color: '#f59e0b',
-    path: 'foxer',
+    path: 'gearFoxer',
   },
   {
     id: 'b12',
@@ -118,7 +118,7 @@ export const MOCK_BADGES: Badge[] = [
     rarity: 'Epic',
     icon: 'architecture',
     color: '#3b82f6',
-    path: 'host',
+    path: 'eventFoxer',
   },
   {
     id: 'b14',
@@ -127,7 +127,7 @@ export const MOCK_BADGES: Badge[] = [
     rarity: 'Legendary',
     icon: 'campaign',
     color: '#f97316',
-    path: 'foxer',
+    path: 'gearFoxer',
   },
   {
     id: 'b15',
@@ -136,7 +136,7 @@ export const MOCK_BADGES: Badge[] = [
     rarity: 'Legendary',
     icon: 'account_balance',
     color: '#ccff00',
-    path: 'mayor',
+    path: 'venueFoxer',
   },
   {
     id: 'b16',
@@ -145,7 +145,7 @@ export const MOCK_BADGES: Badge[] = [
     rarity: 'Uncommon',
     icon: 'location_city',
     color: '#a855f7',
-    path: 'mayor',
+    path: 'venueFoxer',
   },
   {
     id: 'b17',
@@ -154,7 +154,7 @@ export const MOCK_BADGES: Badge[] = [
     rarity: 'Rare',
     icon: 'maps_home_work',
     color: '#a855f7',
-    path: 'mayor',
+    path: 'venueFoxer',
   },
   {
     id: 'b18',
@@ -163,7 +163,7 @@ export const MOCK_BADGES: Badge[] = [
     rarity: 'Legendary',
     icon: 'workspace_premium',
     color: '#a855f7',
-    path: 'mayor',
+    path: 'venueFoxer',
   },
 ];
 
@@ -189,7 +189,7 @@ export const MOCK_ACHIEVEMENTS: Achievement[] = [
     title: 'Listing Pro',
     description: 'Create 5 event listings',
     xpReward: 500,
-    path: 'foxer',
+    path: 'gearFoxer',
     icon: 'event_available',
   },
   {
@@ -197,7 +197,7 @@ export const MOCK_ACHIEVEMENTS: Achievement[] = [
     title: 'Venue Curator',
     description: 'Upload 3 venues',
     xpReward: 300,
-    path: 'host',
+    path: 'eventFoxer',
     icon: 'location_city',
   },
   {
@@ -213,7 +213,7 @@ export const MOCK_ACHIEVEMENTS: Achievement[] = [
     title: 'First Ward',
     description: 'List your first approved venue',
     xpReward: 200,
-    path: 'mayor',
+    path: 'venueFoxer',
     icon: 'domain_add',
   },
   {
@@ -221,7 +221,7 @@ export const MOCK_ACHIEVEMENTS: Achievement[] = [
     title: 'City Footprint',
     description: 'Have 3 venues featured in the platform',
     xpReward: 750,
-    path: 'mayor',
+    path: 'venueFoxer',
     icon: 'assured_workload',
   },
 ];
@@ -287,17 +287,22 @@ export const LEVEL_REWARDS = {
     15: { badges: [], perks: ['Silver VIP status', 'Priority support'] },
     20: { badges: ['VIP Foxer'], perks: ['Gold VIP status', 'Exclusive events'] },
   },
-  foxer: {
+  gearFoxer: {
     5: { badges: [], perks: ['Featured listing slot'] },
     10: { badges: [], perks: ['Premium analytics dashboard'] },
     15: { badges: [], perks: ['Elite Foxer badge', 'Custom branding'] },
   },
-  host: {
+  serviceFoxer: {
+    5: { badges: [], perks: ['Featured listing slot'] },
+    10: { badges: [], perks: ['Premium analytics dashboard'] },
+    15: { badges: [], perks: ['Elite Foxer badge', 'Custom branding'] },
+  },
+  eventFoxer: {
     5: { badges: [], perks: ['Verified host badge'] },
     10: { badges: [], perks: ['Priority venue placement'] },
     18: { badges: ['Host Master'], perks: ['Super Host status', 'Dedicated support'] },
   },
-  mayor: {
+  venueFoxer: {
     3: { badges: ['City Builder'], perks: ['Venue listing priority review'] },
     7: { badges: ['District Champion'], perks: ['City Planner badge', 'Featured venue slot'] },
     12: { badges: [], perks: ['City Mayor status', 'Dedicated admin support'] },

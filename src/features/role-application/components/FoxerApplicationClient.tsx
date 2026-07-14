@@ -58,7 +58,7 @@ export default function FoxerApplicationClient({ initialType = "service" }: { in
     e.preventDefault();
     if (providerType === "asset") {
       applyRole({
-        roleType: "foxerAsset",
+        roleType: "gearFoxer",
         data: {
           ...assetData,
           assetTypes: assetData.assetTypes.split(",").map((s) => s.trim()).filter(Boolean),
@@ -66,7 +66,7 @@ export default function FoxerApplicationClient({ initialType = "service" }: { in
       });
     } else {
       applyRole({
-        roleType: "foxerService",
+        roleType: "serviceFoxer",
         data: {
           ...serviceData,
           experience: parseInt(serviceData.experience, 10),

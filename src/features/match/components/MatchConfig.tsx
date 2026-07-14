@@ -22,8 +22,8 @@ interface Foxer {
 
 // Maps roleType array → display role label
 function getRoleLabel(roleType: string[]): string {
-  if (roleType.includes('foxerService')) return 'Talent Foxer';
-  if (roleType.includes('foxerAsset')) return 'Gear Foxer';
+  if (roleType.includes('serviceFoxer')) return 'Talent Foxer';
+  if (roleType.includes('gearFoxer')) return 'Gear Foxer';
   return 'Event Foxer';
 }
 
@@ -40,7 +40,7 @@ const MatchConfig: React.FC = () => {
   const [isLoadingFoxers, setIsLoadingFoxers] = useState(true);
 
   useEffect(() => {
-    api.get('/users?roleType=foxerService,foxerAsset')
+    api.get('/users?roleType=serviceFoxer,gearFoxer')
       .then(res => {
         const users: any[] = Array.isArray(res.data) ? res.data : res.data?.data ?? [];
         const mapped: Foxer[] = users.map(u => ({
@@ -50,7 +50,7 @@ const MatchConfig: React.FC = () => {
           rating: 5.0,
           reviews: 0,
           avatar: u.imgId || `https://ui-avatars.com/api/?name=${encodeURIComponent(u.name || 'Foxer')}&background=ccff00&color=000`,
-          styles: u.roleType?.includes('foxerService')
+          styles: u.roleType?.includes('serviceFoxer')
             ? ['Live Band', 'Team Building', 'Stargazing Night']
             : ['Sound System', 'Electronic Lighting', 'Event Power'],
           basePrice: 3500,

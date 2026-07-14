@@ -6,7 +6,7 @@ import { toast } from "sonner";
 import { useAuthStore } from "@/features/auth/store/useAuthStore";
 import { useRouter } from "next/navigation";
 
-export type RoleType = "mayor" | "foxerAsset" | "foxerService" | "investor" | "host";
+export type RoleType = "venueFoxer" | "gearFoxer" | "serviceFoxer" | "investor" | "eventFoxer";
 
 interface ApplyRolePayload {
   roleType: RoleType;

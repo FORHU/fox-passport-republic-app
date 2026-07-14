@@ -14,9 +14,10 @@ interface BadgeCardProps {
 const getPathColor = (path: string) => {
   switch (path) {
     case 'user': return '#22c55e'; // Green
-    case 'foxer': return '#f97316'; // Orange
-    case 'host': return '#3b82f6'; // Blue
-    case 'mayor': return '#ccff00'; // Neon
+    case 'gearFoxer': return '#f97316'; // Orange
+    case 'serviceFoxer': return '#f97316'; // Orange
+    case 'eventFoxer': return '#3b82f6'; // Blue
+    case 'venueFoxer': return '#ccff00'; // Neon
     default: return '#ffffff';
   }
 };

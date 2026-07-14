@@ -9,10 +9,10 @@ import { fetchFoxers, type Foxer } from "@/features/user/api/foxers";
 const FALLBACK_AVATAR = "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=400&auto=format&fit=crop";
 
 const ROLE_FILTERS = [
-  { label: "All",          value: undefined,        icon: "groups" },
-  { label: "Event Foxer",  value: "host",            icon: "celebration" },
-  { label: "Talent Foxer", value: "foxerService",    icon: "theater_comedy" },
-  { label: "Gear Foxer",   value: "foxerAsset",      icon: "speaker" },
+  { label: "All",          value: undefined,          icon: "groups" },
+  { label: "Event Foxer",  value: "eventFoxer",       icon: "celebration" },
+  { label: "Talent Foxer", value: "serviceFoxer",     icon: "theater_comedy" },
+  { label: "Gear Foxer",   value: "gearFoxer",        icon: "speaker" },
 ] as const;
 
 type RoleFilter = typeof ROLE_FILTERS[number]["value"];
@@ -136,9 +136,9 @@ export default function FoxersMatchSection() {
 
 function getRoleLabel(foxer: Foxer): string {
   const roles = foxer.roleType ?? [];
-  if (roles.includes("host")) return "Event Foxer";
-  if (roles.includes("foxerAsset")) return "Gear Foxer";
-  if (roles.includes("foxerService")) {
+  if (roles.includes("eventFoxer")) return "Event Foxer";
+  if (roles.includes("gearFoxer")) return "Gear Foxer";
+  if (roles.includes("serviceFoxer")) {
     const cat = foxer.services[0]?.category;
     return cat ? cat.replace(/_/g, " ") : "Talent Foxer";
   }
@@ -149,7 +149,7 @@ function getRoleLabel(foxer: Foxer): string {
 function FoxerCard({ foxer }: { foxer: Foxer }) {
   const router = useRouter();
 
-  const isHost = foxer.roleType?.includes("host");
+  const isHost = foxer.roleType?.includes("eventFoxer");
 
   // Portfolio images: prefer event templates for hosts, services for others
   const hasTemplates = (foxer.eventTemplates?.length ?? 0) > 0;

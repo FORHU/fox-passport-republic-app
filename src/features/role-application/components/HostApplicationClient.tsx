@@ -33,7 +33,7 @@ export default function HostApplicationClient() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     applyRole({
-      roleType: "host",
+      roleType: "eventFoxer",
       data: {
         ...formData,
       },

@@ -31,7 +31,7 @@ function UserDashboardContent({ user, dashboardData, venues = [] }: UserDashboar
   const displayUserName = userName || user?.name || 'User';
   const displayDashboardData = dashboardData;
 
-  const VENUE_ROLES = ['host', 'mayor', 'foxerAsset', 'foxerService'];
+  const VENUE_ROLES = ['eventFoxer', 'venueFoxer', 'gearFoxer', 'serviceFoxer'];
   const roleType: string[] = user?.roleType ?? [];
   const systemRole: string = (user?.systemRole ?? user?.role ?? '').toLowerCase();
   const canSeeVenues =

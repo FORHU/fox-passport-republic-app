@@ -46,7 +46,7 @@ const ROLE_DEFS: RoleDef[] = [
     description: 'Manage your venues & events',
     icon: Building2,
     emoji: '🏠',
-    roleTypes: ['host', 'mayor', 'foxerAsset', 'foxerService', 'foxer'],
+    roleTypes: ['eventFoxer', 'venueFoxer', 'gearFoxer', 'serviceFoxer'],
   },
 ];
 
