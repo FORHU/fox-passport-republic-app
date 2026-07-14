@@ -9,9 +9,9 @@ import { fetchFoxerById, type Foxer } from '@/features/user/api/foxers';
 
 function getRoleLabel(foxer: Foxer): string {
   const roles = foxer.roleType ?? [];
-  if (roles.includes('host')) return 'Event Foxer';
-  if (roles.includes('foxerAsset')) return 'Gear Foxer';
-  if (roles.includes('foxerService')) return 'Talent Foxer';
+  if (roles.includes('eventFoxer')) return 'Event Foxer';
+  if (roles.includes('gearFoxer')) return 'Gear Foxer';
+  if (roles.includes('serviceFoxer')) return 'Talent Foxer';
   return 'Foxer';
 }
 
@@ -87,7 +87,7 @@ const FoxerProfile: React.FC = () => {
     ? `https://fox-passport-republic-assets.s3.ap-southeast-1.amazonaws.com/${foxer.imgId}`
     : FALLBACK_AVATAR;
 
-  const isHost = foxer.roleType?.includes('host');
+  const isHost = foxer.roleType?.includes('eventFoxer');
   const roleLabel = getRoleLabel(foxer);
   const location = [foxer.city, foxer.state].filter(Boolean).join(', ');
 

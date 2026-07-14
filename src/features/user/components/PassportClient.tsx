@@ -84,9 +84,10 @@ const PassportClient: React.FC<PassportClientProps> = ({ user }) => {
 
   // Map API roleType[] to gamification UserPath[]
   const roleToPath = (role: string): UserPath | null => {
-    if (role === 'host') return 'host';
-    if (role === 'mayor') return 'mayor';
-    if (role === 'foxerService' || role === 'foxerAsset') return 'foxer';
+    if (role === 'eventFoxer') return 'eventFoxer';
+    if (role === 'venueFoxer') return 'venueFoxer';
+    if (role === 'gearFoxer') return 'gearFoxer';
+    if (role === 'serviceFoxer') return 'serviceFoxer';
     return null;
   };
   const rolePaths: UserPath[] = Array.from(
@@ -132,15 +133,15 @@ const PassportClient: React.FC<PassportClientProps> = ({ user }) => {
       { title: 'Priority Access', desc: 'Skip the line at partner venues', icon: 'confirmation_number' },
       { title: 'Early Bird', desc: 'Book events 24h before others', icon: 'schedule' }
     ];
-    if (type === 'foxer') return [
+    if (type === 'gearFoxer' || type === 'serviceFoxer') return [
       { title: 'Lower Fees', desc: '5% lower commission on bookings', icon: 'percent' },
       { title: 'Verified Badge', desc: 'Exclusive creator status', icon: 'verified' }
     ];
-    if (type === 'host') return [
+    if (type === 'eventFoxer') return [
       { title: 'Analytics Pro', desc: 'Advanced heatmaps for venues', icon: 'analytics' },
       { title: 'Host Support', desc: '24/7 dedicated manager', icon: 'support_agent' }
     ];
-    if (type === 'mayor') return [
+    if (type === 'venueFoxer') return [
       { title: 'Venue Authority', desc: 'Priority venue listing approvals', icon: 'assured_workload' },
       { title: 'City Badge', desc: 'Exclusive Mayor verified status', icon: 'account_balance' }
     ];
@@ -187,7 +188,7 @@ const PassportClient: React.FC<PassportClientProps> = ({ user }) => {
           <p className="text-[10px] text-white/30 uppercase tracking-[0.2em] font-black">
             {activePathTypes
               .filter(p => p !== 'user')
-              .map(p => p === 'host' ? 'Host' : p === 'foxer' ? 'Foxer' : p === 'mayor' ? 'Mayor' : p === 'investor' ? 'Investor' : p)
+              .map(p => p === 'eventFoxer' ? 'Event Foxer' : p === 'gearFoxer' ? 'Gear Foxer' : p === 'serviceFoxer' ? 'Service Foxer' : p === 'venueFoxer' ? 'Venue Foxer' : p === 'investor' ? 'Investor' : p)
               .join(' · ') || 'Citizen'}
           </p>
         </div>
@@ -374,7 +375,7 @@ const PassportClient: React.FC<PassportClientProps> = ({ user }) => {
                     <div key={path.path} className="bg-white/3 border border-white/5 rounded-[3rem] p-8 flex flex-col items-center text-center group hover:bg-white/5 transition-all relative overflow-hidden">
                       <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full blur-[60px] -mr-16 -mt-16"></div>
                       <CircularProgress level={path.level} currentXP={path.currentXP} requiredXP={path.requiredXP} color={path.color} size={160} strokeWidth={10} className="mb-6" />
-                      <h4 className="text-2xl font-display font-bold text-white mb-1 capitalize tracking-tight">{path.path === 'user' ? 'Citizen' : path.path} Path</h4>
+                      <h4 className="text-2xl font-display font-bold text-white mb-1 capitalize tracking-tight">{path.path === 'user' ? 'Citizen' : path.path === 'gearFoxer' ? 'Gear Foxer' : path.path === 'serviceFoxer' ? 'Service Foxer' : path.path === 'eventFoxer' ? 'Event Foxer' : path.path === 'venueFoxer' ? 'Venue Foxer' : path.path} Path</h4>
                       <p className="text-xs font-black uppercase tracking-[0.3em] mb-6" style={{ color: path.color }}>{path.label}</p>
                       <div className="w-full space-y-3">
                         <div className="w-full bg-white/5 rounded-full h-1.5 overflow-hidden">
@@ -393,7 +394,7 @@ const PassportClient: React.FC<PassportClientProps> = ({ user }) => {
                           >
                             <div className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: path.color }}></div>
                             <span className="text-[9px] font-black uppercase tracking-widest" style={{ color: path.color }}>
-                              Lvl {path.level} • {path.path === 'user' ? 'Citizen' : path.path}
+                              Lvl {path.level} • {path.path === 'user' ? 'Citizen' : path.path === 'gearFoxer' ? 'Gear Foxer' : path.path === 'serviceFoxer' ? 'Service Foxer' : path.path === 'eventFoxer' ? 'Event Foxer' : path.path === 'venueFoxer' ? 'Venue Foxer' : path.path}
                             </span>
                           </div>
                         </div>
@@ -463,7 +464,7 @@ const PassportClient: React.FC<PassportClientProps> = ({ user }) => {
                     </div>
 
                     {/* Foxer Path Guide */}
-                    {activePathTypes.includes('foxer') && (
+                    {(activePathTypes.includes('gearFoxer') || activePathTypes.includes('serviceFoxer')) && (
                       <div className="space-y-4">
                         <p className="text-[10px] font-black text-[#f97316] uppercase tracking-widest opacity-60">Foxer Career</p>
                         <div className="space-y-3">
@@ -486,7 +487,7 @@ const PassportClient: React.FC<PassportClientProps> = ({ user }) => {
                     )}
 
                     {/* Host Path Guide */}
-                    {activePathTypes.includes('host') && (
+                    {activePathTypes.includes('eventFoxer') && (
                       <div className="space-y-4">
                         <p className="text-[10px] font-black text-[#3b82f6] uppercase tracking-widest opacity-60">Host Career</p>
                         <div className="space-y-3">
@@ -509,7 +510,7 @@ const PassportClient: React.FC<PassportClientProps> = ({ user }) => {
                     )}
 
                     {/* Mayor Path Guide */}
-                    {activePathTypes.includes('mayor') && (
+                    {activePathTypes.includes('venueFoxer') && (
                       <div className="space-y-4">
                         <p className="text-[10px] font-black text-[#a855f7] uppercase tracking-widest opacity-60">Mayor Career</p>
                         <div className="space-y-3">

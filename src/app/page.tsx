@@ -16,7 +16,7 @@ import { getVenues } from "@/shared/lib/server/data";
 import { getUser } from "@/shared/lib/server/auth";
 import { filterVenues } from "@/features/venue/helpers/filterVenues";
 
-const VENUE_ROLES = ['host', 'mayor', 'foxerAsset', 'foxerService'];
+const VENUE_ROLES = ['eventFoxer', 'venueFoxer', 'gearFoxer', 'serviceFoxer'];
 
 function userCanSeeVenues(user: any): boolean {
   if (!user) return true; // unauthenticated visitors see venues freely
