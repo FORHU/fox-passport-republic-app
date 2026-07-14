@@ -6,10 +6,10 @@ export interface User {
   email: string;
   username: string;
   name: string;
-  systemRole: "user" | "admin" | "super_admin" | "mayor";
+  systemRole: "user" | "admin" | "super_admin";
   roleType?: string[];
   role?: string; // legacy — prefer systemRole
-  isHost?: boolean;
+  isEventFoxer?: boolean;
   mobileNumber?: string;
   isEmailVerified?: boolean;
   imgId?: string; // profile image URL (CloudFront)
