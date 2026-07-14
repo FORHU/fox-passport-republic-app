@@ -11,7 +11,6 @@ import NotificationBell from '@/features/notifications/components/NotificationBe
 interface UserHeaderProps {
   isAuthenticated: boolean;
   userName?: string;
-  citizenLevel?: number;
 }
 
 function getRoleLabel(systemRole: string, roleTypes: string[]): string {
@@ -28,7 +27,7 @@ function getRoleLabel(systemRole: string, roleTypes: string[]): string {
   return active.length > 0 ? active.join(' · ') : 'Citizen';
 }
 
-export const UserHeader: React.FC<UserHeaderProps> = ({ isAuthenticated, userName, citizenLevel }) => {
+export const UserHeader: React.FC<UserHeaderProps> = ({ isAuthenticated, userName }) => {
   const storeUser = useAuthStore(state => state.user);
 
   const roleLabel = storeUser

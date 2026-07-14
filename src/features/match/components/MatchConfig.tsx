@@ -43,18 +43,22 @@ const MatchConfig: React.FC = () => {
     api.get('/users?roleType=serviceFoxer,gearFoxer')
       .then(res => {
         const users: any[] = Array.isArray(res.data) ? res.data : res.data?.data ?? [];
-        const mapped: Foxer[] = users.map(u => ({
-          id: u.id,
-          name: u.name || u.username || 'Foxer',
-          role: getRoleLabel(u.roleType ?? []),
-          rating: 5.0,
-          reviews: 0,
-          avatar: u.imgId || `https://ui-avatars.com/api/?name=${encodeURIComponent(u.name || 'Foxer')}&background=ccff00&color=000`,
-          styles: u.roleType?.includes('serviceFoxer')
-            ? ['Live Band', 'Team Building', 'Stargazing Night']
-            : ['Sound System', 'Electronic Lighting', 'Event Power'],
-          basePrice: 3500,
-        }));
+        const mapped: Foxer[] = users.map(u => {
+          const allItems = [...(u.services ?? []), ...(u.assets ?? [])];
+          const prices = allItems.map((i: any) => i.price).filter((p: number) => p > 0);
+          const basePrice = prices.length > 0 ? Math.min(...prices) : 0;
+          const tags: string[] = allItems.slice(0, 3).map((i: any) => i.name).filter(Boolean);
+          return {
+            id: u.id,
+            name: u.name || u.username || 'Foxer',
+            role: getRoleLabel(u.roleType ?? []),
+            rating: 0,
+            reviews: 0,
+            avatar: u.imgId || `https://ui-avatars.com/api/?name=${encodeURIComponent(u.name || 'Foxer')}&background=ccff00&color=000`,
+            styles: tags.length > 0 ? tags : (u.roleType?.includes('serviceFoxer') ? ['Service Foxer'] : ['Gear Foxer']),
+            basePrice,
+          };
+        });
         setFoxers(mapped);
       })
       .catch(() => toast.error('Could not load foxers'))

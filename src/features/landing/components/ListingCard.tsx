@@ -2,8 +2,16 @@
 import { Heart, Star } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
-import { Venue } from "@/features/venue/data/hardcodedVenues";
 import { useSearchParams } from "next/navigation";
+
+interface Venue {
+  id: string;
+  title: string;
+  category: string;
+  rating: number;
+  price: number;
+  images: string[];
+}
 
 export default function ListingCard({ venue }: { venue: Venue }) {
   const searchParams = useSearchParams();

@@ -3,16 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
-
-
-// --- Mock Data for Customization ---
-const AVAILABLE_FOXERS = [
-  { id: 1, name: 'Jinx', role: 'Visual Director', fee: 5000, rating: 5.0, avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=200&auto=format&fit=crop', description: 'Specializes in neon aesthetics and cyberpunk themes.' },
-  { id: 2, name: 'Kael', role: 'Audio Engineer', fee: 4500, rating: 4.8, avatar: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?q=80&w=200&auto=format&fit=crop', description: 'Expert in immersive soundscapes and bass-heavy setups.' },
-  { id: 3, name: 'Luna', role: 'Stylist', fee: 6000, rating: 4.9, avatar: 'https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?q=80&w=200&auto=format&fit=crop', description: 'Fashion and venue styling for the perfect photo op.' },
-  { id: 4, name: 'Orion', role: 'Lighting Tech', fee: 5500, rating: 4.9, avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=200&auto=format&fit=crop', description: 'Laser shows and projection mapping wizard.' },
-  { id: 5, name: 'Nova', role: 'Mixologist', fee: 4000, rating: 4.7, avatar: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?q=80&w=200&auto=format&fit=crop', description: 'Crafts custom themed cocktails for your event.' },
-];
+import { useExperienceBuilderData } from '@/features/venue/hooks/useExperienceBuilderData';
 
 const SERVICE_CATEGORIES = [
   { id: 'foxer', label: 'Curator', icon: 'person_search' },
@@ -22,43 +13,16 @@ const SERVICE_CATEGORIES = [
   { id: 'media', label: 'Photo & Video', icon: 'videocam' },
 ];
 
-const CUSTOM_SERVICES: Record<string, any[]> = {
-  catering: [
-    { id: 'cat1', name: 'Neon Cocktail Bar', price: 15000, icon: 'local_bar', desc: 'Unlimited signature cocktails for 4 hours.' },
-    { id: 'cat2', name: 'Midnight Ramen Station', price: 12000, icon: 'ramen_dining', desc: 'Hot ramen bar with 3 broth choices.' },
-    { id: 'cat3', name: 'Sushi Platter Deluxe', price: 8000, icon: 'set_meal', desc: 'Fresh sashimi and rolls for 20 pax.' },
-  ],
-  tech: [
-    { id: 'tech1', name: 'Funktion-One Sound', price: 25000, icon: 'speaker', desc: 'Club-standard audio system setup.' },
-    { id: 'tech2', name: 'Laser & Fog Show', price: 8000, icon: 'blur_on', desc: 'Synchronized light show with heavy fog.' },
-    { id: 'tech3', name: 'Silent Disco Gear', price: 10000, icon: 'headphones', desc: '50 headsets and 3-channel transmitter.' },
-  ],
-  decor: [
-    { id: 'dec1', name: 'Cyberpunk Props', price: 5000, icon: 'smart_toy', desc: 'Futuristic barrels, wires, and neon signs.' },
-    { id: 'dec2', name: 'Lounge Seating', price: 7000, icon: 'chair', desc: 'Velvet sofas and LED tables.' },
-  ],
-  media: [
-    { id: 'med1', name: 'Aftermovie (Drone)', price: 10000, icon: 'videocam', desc: '4K drone shots and cinematic editing.' },
-    { id: 'med2', name: 'Film Photo Booth', price: 5000, icon: 'camera', desc: 'Unlimited prints with custom border.' },
-  ]
-};
-``
-// Default inclusions for this specific event
-const DEFAULT_INCLUSIONS = [
-  { name: 'Standard Audio', icon: 'speaker', desc: 'High-fidelity sound system suitable for 200 pax.' },
-  { name: 'Ambient Lighting', icon: 'light_mode', desc: 'Static wash lighting to set the mood.' },
-  { name: 'Welcome Drinks', icon: 'local_bar', desc: '2 signature cocktails per guest upon entry.' },
-  { name: 'Event Photography', icon: 'photo_camera', desc: 'Roaming photographer for 2 hours.' },
-];
-
 const CustomExperienceBuilder: React.FC<{ isOpen: boolean; onClose: () => void; venuePrice: number }> = ({ isOpen, onClose, venuePrice }) => {
   const [activeCategory, setActiveCategory] = useState('foxer');
-  const [selectedFoxer, setSelectedFoxer] = useState<number | null>(null);
+  const [selectedFoxer, setSelectedFoxer] = useState<string | null>(null);
   const [selectedServices, setSelectedServices] = useState<string[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   const [isDragOver, setIsDragOver] = useState(false);
+
+  const { foxers, itemsByCategory } = useExperienceBuilderData();
 
   // Prevent background scroll when open
   useEffect(() => {
@@ -74,12 +38,12 @@ const CustomExperienceBuilder: React.FC<{ isOpen: boolean; onClose: () => void; 
   };
 
   const calculateTotal = () => {
-    let total = venuePrice * 2; // Base
+    let total = venuePrice * 2;
     if (selectedFoxer) {
-      const foxer = AVAILABLE_FOXERS.find(f => f.id === selectedFoxer);
+      const foxer = foxers.find(f => f.id === selectedFoxer);
       if (foxer) total += foxer.fee;
     }
-    Object.values(CUSTOM_SERVICES).flat().forEach(svc => {
+    Object.values(itemsByCategory).flat().forEach(svc => {
       if (selectedServices.includes(svc.id)) total += svc.price;
     });
     return total;
@@ -94,13 +58,13 @@ const CustomExperienceBuilder: React.FC<{ isOpen: boolean; onClose: () => void; 
   };
 
   const getFilteredServices = () => {
-    const services = CUSTOM_SERVICES[activeCategory] || [];
+    const services = itemsByCategory[activeCategory] || [];
     if (!searchQuery) return services;
     return services.filter(s => s.name.toLowerCase().includes(searchQuery.toLowerCase()));
   };
 
   // Drag and Drop Handlers
-  const handleDragStart = (e: React.DragEvent, id: string | number, type: 'foxer' | 'service') => {
+  const handleDragStart = (e: React.DragEvent, id: string, type: 'foxer' | 'service') => {
     e.dataTransfer.setData('id', id.toString());
     e.dataTransfer.setData('type', type);
     e.dataTransfer.effectAllowed = 'copy';
@@ -124,7 +88,7 @@ const CustomExperienceBuilder: React.FC<{ isOpen: boolean; onClose: () => void; 
     const type = e.dataTransfer.getData('type');
 
     if (type === 'foxer') {
-      setSelectedFoxer(Number(id));
+      setSelectedFoxer(id);
     } else if (type === 'service') {
       if (!selectedServices.includes(id)) {
         handleServiceToggle(id);
@@ -225,8 +189,8 @@ const CustomExperienceBuilder: React.FC<{ isOpen: boolean; onClose: () => void; 
                 <p className="text-text-muted text-sm hidden md:block">Drag to the right or click to select.</p>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-                {AVAILABLE_FOXERS.map(foxer => (
-                  <div 
+                {foxers.map(foxer => (
+                  <div
                     key={foxer.id}
                     draggable
                     onDragStart={(e) => handleDragStart(e, foxer.id, 'foxer')}
@@ -352,11 +316,11 @@ const CustomExperienceBuilder: React.FC<{ isOpen: boolean; onClose: () => void; 
                     <span className="material-symbols-outlined text-[16px]">person</span>
                   </div>
                   <div>
-                    <p className="text-sm font-bold text-white">{AVAILABLE_FOXERS.find(f => f.id === selectedFoxer)?.name}</p>
+                    <p className="text-sm font-bold text-white">{foxers.find(f => f.id === selectedFoxer)?.name}</p>
                     <p className="text-xs text-text-muted">Curator Fee</p>
                   </div>
                 </div>
-                <span className="text-sm font-bold text-white">₱{AVAILABLE_FOXERS.find(f => f.id === selectedFoxer)?.fee.toLocaleString()}</span>
+                <span className="text-sm font-bold text-white">₱{foxers.find(f => f.id === selectedFoxer)?.fee.toLocaleString()}</span>
                 <button onClick={() => setSelectedFoxer(null)} className="absolute -right-2 -top-2 opacity-0 group-hover:opacity-100 p-1 text-red-400 hover:text-red-300 transition-opacity">
                     <span className="material-symbols-outlined text-[16px]">cancel</span>
                 </button>
@@ -372,7 +336,7 @@ const CustomExperienceBuilder: React.FC<{ isOpen: boolean; onClose: () => void; 
             {selectedServices.length > 0 && (
               <div className="space-y-4 pt-4 border-t border-white/5">
                 <p className="text-xs font-bold text-text-muted uppercase tracking-wider">Add-ons</p>
-                {Object.values(CUSTOM_SERVICES).flat().filter(s => selectedServices.includes(s.id)).map(s => (
+                {Object.values(itemsByCategory).flat().filter(s => selectedServices.includes(s.id)).map(s => (
                   <div key={s.id} className="flex justify-between items-start animate-in fade-in slide-in-from-right-4 group relative">
                     <p className="text-sm text-gray-300 w-2/3">{s.name}</p>
                     <span className="text-sm font-bold text-white">₱{s.price.toLocaleString()}</span>
@@ -451,19 +415,34 @@ const EventDetailsPage: React.FC = () => {
     description: template?.description ?? "",
     price:       template?.estimatedTotal > 0 ? template.estimatedTotal : 0,
     images:      displayImages,
-    // static placeholders — not in the template model
-    rating: 4.92, reviews: 124,
-    offers: ["VIP Access", "2 Free Drinks", "Pro Photography", "Air Conditioning", "Secure Parking", "Meet & Greet"],
+    rating: 0,
+    reviews: 0,
+    offers: [],
   };
 
   const host = {
-    name:         template?.owner?.name  ?? "Organizer",
-    avatar:       null as string | null,
-    description:  `Organizer of ${venue.title}`,
-    isCertified:  true,
-    rating: 4.98, reviews: 240, yearsHosting: 3,
-    responseRate: 100, responseTime: "within an hour",
+    name:        template?.owner?.name   ?? "Organizer",
+    avatar:      template?.owner?.imgId  ?? null as string | null,
+    description: `Organizer of ${venue.title}`,
   };
+
+  const inclusions: { name: string; icon: string; desc: string }[] = [
+    ...(template?.assets ?? []).map((a: any) => ({
+      name: a.asset?.name ?? a.name ?? 'Asset',
+      icon: 'category',
+      desc: a.asset?.description ?? '',
+    })),
+    ...(template?.services ?? []).map((s: any) => ({
+      name: s.service?.name ?? s.name ?? 'Service',
+      icon: 'star',
+      desc: s.service?.description ?? '',
+    })),
+    ...(template?.venues ?? []).map((v: any) => ({
+      name: v.venue?.name ?? v.name ?? 'Venue',
+      icon: 'apartment',
+      desc: v.venue?.description ?? '',
+    })),
+  ];
 
   const openGallery = (index: number) => {
     setActiveImageIndex(index);
@@ -653,6 +632,7 @@ const EventDetailsPage: React.FC = () => {
               <div className="h-px bg-white/10 w-full"></div>
 
               {/* Included Services Section */}
+              {inclusions.length > 0 && (
               <div>
                   <div className="flex items-center justify-between mb-6">
                       <h3 className="text-2xl font-display font-bold text-white">Included in this Build</h3>
@@ -661,7 +641,7 @@ const EventDetailsPage: React.FC = () => {
                       </button>
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      {DEFAULT_INCLUSIONS.map((svc, i) => (
+                      {inclusions.map((svc, i) => (
                           <div key={i} className="flex items-start gap-4 p-4 rounded-2xl bg-white/5 border border-white/5">
                               <div className="h-10 w-10 rounded-xl bg-surface-highlight flex items-center justify-center text-white/80 shrink-0">
                                   <span className="material-symbols-outlined">{svc.icon}</span>
@@ -684,6 +664,7 @@ const EventDetailsPage: React.FC = () => {
                       </div>
                   </div>
               </div>
+              )}
 
               <div className="h-px bg-white/10 w-full"></div>
 

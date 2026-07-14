@@ -11,11 +11,6 @@ interface UserDashboardData {
   userInitial: string;
   upcomingEvents: number;
   recommendations: number;
-  citizenLevel: number;
-  weather: {
-    temp: string;
-    condition: string;
-  };
 }
 
 export const useUserDashboard = () => {
@@ -168,25 +163,15 @@ export const useUserDashboard = () => {
   // Combine loading states
   const isLoading = isLoadingEvents || isLoadingSaved || isLoadingRecs;
 
-  // Reconstruct dashboardData for backward compatibility
   const dashboardData: UserDashboardData = {
     userName,
     userInitial,
     upcomingEvents: upcomingEvents.length,
     recommendations: recommendations.length,
-    citizenLevel: 12, // Mock or fetch
-    weather: {
-      temp: "32°C",
-      condition: "Sunny",
-    },
   };
 
-  // Wallet data (Mock)
-  const walletBalance = 4250.0;
-  const recentTransactions: { type: "purchase" | "topup"; label: string; amount: number }[] = [
-    { type: "purchase", label: "Ticket Purchase", amount: -1500 },
-    { type: "topup", label: "Top Up", amount: 5000 },
-  ];
+  const walletBalance = 0;
+  const recentTransactions: { type: "purchase" | "topup"; label: string; amount: number }[] = [];
 
   return {
     userName,
@@ -195,12 +180,10 @@ export const useUserDashboard = () => {
     dashboardData,
     walletBalance,
     recentTransactions,
-    savedVibes, // Return the query data directly
-    upcomingEvents, // Also exporing this if needed
-    recommendations, // Also exporting this if needed
+    savedVibes,
+    upcomingEvents,
+    recommendations,
     isLoading,
-
-    // Actions
     handleLogout,
     navigateToPassport,
   };

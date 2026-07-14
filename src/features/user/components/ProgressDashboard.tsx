@@ -1,11 +1,10 @@
-﻿'use client';
+'use client';
 
 import React, { useState } from 'react';
 import CircularProgress from '@/features/gamification/components/CircularProgress';
 import { BadgeGrid } from '@/features/gamification/components/BadgeCard';
 import { PassportGrid } from '@/features/gamification/components/PassportStamp';
 import {
-  PathProgress,
   UserPath,
   XP_REWARDS,
 } from '@/features/gamification/types/gamification';
@@ -13,9 +12,9 @@ import {
   calculateMasteryLevel,
   formatXP,
 } from '@/features/gamification/lib/gamification';
-import { MOCK_BADGES, MOCK_PASSPORT_STAMPS } from '@/features/gamification/lib/gamification-data';
 import BadgeModal from '@/features/gamification/components/BadgeModal';
 import { Badge } from '@/features/gamification/types/gamification';
+import { useMyPassport } from '@/features/gamification/hooks/usePassport';
 
 interface ProgressDashboardProps {
   user: any;
@@ -23,70 +22,39 @@ interface ProgressDashboardProps {
   showHeader?: boolean;
 }
 
-// Mock data - will be replaced with actual API calls
-const mockPaths: PathProgress[] = [
-  {
-    path: 'gearFoxer',
-    level: 12,
-    currentXP: 2400,
-    requiredXP: 3000,
-    totalXP: 14400,
-    label: 'Social Butterfly',
-    color: '#f97316',
-  },
-  {
-    path: 'eventFoxer',
-    level: 5,
-    currentXP: 450,
-    requiredXP: 1000,
-    totalXP: 4450,
-    label: 'Venue Curator',
-    color: '#3b82f6',
-  },
-  {
-    path: 'user',
-    level: 18,
-    currentXP: 4500,
-    requiredXP: 5000,
-    totalXP: 45000,
-    label: 'Trailblazer',
-    color: '#22c55e',
-  },
-  {
-    path: 'investor',
-    level: 2,
-    currentXP: 150,
-    requiredXP: 1000,
-    totalXP: 1150,
-    label: 'Seed Funder',
-    color: '#eab308',
-  },
-];
-
-export const ProgressDashboard: React.FC<ProgressDashboardProps> = ({ 
-  user, 
-  showPassport = true, 
-  showHeader = true 
+export const ProgressDashboard: React.FC<ProgressDashboardProps> = ({
+  user: _user,
+  showPassport = true,
+  showHeader = true
 }) => {
-  const [selectedPath, setSelectedPath] = useState<UserPath | null>(null);
+  const [_selectedPath, setSelectedPath] = useState<UserPath | null>(null);
   const [selectedBadge, setSelectedBadge] = useState<Badge | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+
+  const { paths, stamps, badges, isLoading } = useMyPassport();
 
   const handleBadgeClick = (badge: Badge) => {
     setSelectedBadge(badge);
     setIsModalOpen(true);
   };
 
-  const masteryLevel = calculateMasteryLevel(mockPaths);
-  const totalXP = mockPaths.reduce((sum, path) => sum + path.totalXP, 0);
-  const maxTotalXP = 65000; // Mock max for demo
+  const masteryLevel = calculateMasteryLevel(paths);
+  const totalXP = paths.reduce((sum, path) => sum + path.totalXP, 0);
+  const maxTotalXP = Math.max(totalXP * 1.2, 1000);
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center py-20 text-white/40">
+        <span className="h-6 w-6 rounded-full border-2 border-white/20 border-t-white/60 animate-spin" />
+      </div>
+    );
+  }
 
   return (
     <div className="w-full">
       {showHeader && (
         <div className="flex flex-col lg:flex-row justify-between items-end gap-6 mb-16">
           <div className="space-y-4">
-            {/* Status Badge */}
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 border border-white/10">
               <span className="w-2 h-2 rounded-full bg-green-500 shadow-[0_0_10px_#22c55e]"></span>
               <span className="text-[10px] font-mono text-white/70 tracking-widest uppercase">
@@ -94,7 +62,6 @@ export const ProgressDashboard: React.FC<ProgressDashboardProps> = ({
               </span>
             </div>
 
-            {/* Title */}
             <h1 className="text-5xl md:text-7xl font-display font-bold text-white tracking-tight leading-[0.85]">
               Progress <br />
               <span className="text-[#ccff00] underline decoration-[#ccff00]/20">Dashboard</span>
@@ -106,7 +73,6 @@ export const ProgressDashboard: React.FC<ProgressDashboardProps> = ({
             </p>
           </div>
 
-          {/* Total Mastery Card */}
           <div className="glass-card p-8 rounded-[2.5rem] min-w-[320px] border-t border-white/10 shadow-glow relative overflow-hidden group">
             <div className="absolute top-[-20%] right-[-20%] w-full h-full bg-[#ccff00]/5 rounded-full blur-[60px] pointer-events-none group-hover:bg-[#ccff00]/10 transition-all duration-500"></div>
 
@@ -122,21 +88,21 @@ export const ProgressDashboard: React.FC<ProgressDashboardProps> = ({
             <div className="w-full bg-white/10 rounded-full h-3 mb-2 overflow-hidden">
               <div
                 className="bg-linear-to-r from-[#ccff00] to-green-500 h-full rounded-full shadow-[0_0_10px_#ccff00]"
-                style={{ width: `${(totalXP / maxTotalXP) * 100}%` }}
+                style={{ width: `${Math.min((totalXP / maxTotalXP) * 100, 100)}%` }}
               ></div>
             </div>
 
             <div className="text-xs text-right text-white/40 font-mono tracking-wider">
-              {formatXP(totalXP)} / {formatXP(maxTotalXP)} XP
+              {formatXP(totalXP)} XP total
             </div>
           </div>
         </div>
       )}
 
       {/* Path Circular Progress Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 mb-20">
-        {mockPaths.map((path) => {
-          return (
+      {paths.length > 0 ? (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 mb-20">
+          {paths.map((path) => (
             <div
               key={path.path}
               onClick={() => setSelectedPath(path.path)}
@@ -168,9 +134,13 @@ export const ProgressDashboard: React.FC<ProgressDashboardProps> = ({
                 {formatXP(path.requiredXP)}
               </div>
             </div>
-          );
-        })}
-      </div>
+          ))}
+        </div>
+      ) : (
+        <div className="mb-20 glass-panel rounded-[3rem] p-10 text-center text-white/40">
+          <p>Complete bookings to start earning XP on your paths.</p>
+        </div>
+      )}
 
       {/* Badges Section */}
       <section className="space-y-8">
@@ -185,12 +155,16 @@ export const ProgressDashboard: React.FC<ProgressDashboardProps> = ({
           </button>
         </div>
 
-        <BadgeGrid 
-          badges={MOCK_BADGES.slice(0, 4)} 
-          maxDisplay={4} 
-          className="lg:grid-cols-4" 
-          onBadgeClick={handleBadgeClick}
-        />
+        {badges.length > 0 ? (
+          <BadgeGrid
+            badges={badges.slice(0, 4)}
+            maxDisplay={4}
+            className="lg:grid-cols-4"
+            onBadgeClick={handleBadgeClick}
+          />
+        ) : (
+          <p className="text-white/40 text-sm">No badges earned yet.</p>
+        )}
       </section>
 
       {/* Passport Stamps Section */}
@@ -209,7 +183,11 @@ export const ProgressDashboard: React.FC<ProgressDashboardProps> = ({
             </button>
           </div>
 
-          <PassportGrid stamps={MOCK_PASSPORT_STAMPS} />
+          {stamps.length > 0 ? (
+            <PassportGrid stamps={stamps} />
+          ) : (
+            <p className="text-white/40 text-sm">Attend events to collect passport stamps.</p>
+          )}
         </section>
       )}
 
@@ -250,10 +228,10 @@ export const ProgressDashboard: React.FC<ProgressDashboardProps> = ({
         </div>
       </section>
 
-      <BadgeModal 
-        badge={selectedBadge} 
-        isOpen={isModalOpen} 
-        onClose={() => setIsModalOpen(false)} 
+      <BadgeModal
+        badge={selectedBadge}
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
       />
     </div>
   );
