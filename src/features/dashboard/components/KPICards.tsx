@@ -18,12 +18,9 @@ export function KPICards() {
           <h3 className="text-3xl font-display font-bold mb-3">{kpi.value}</h3>
           
           {kpi.isRating ? (
-            <div className="flex items-center gap-1 text-xs text-yellow-400">
-              {[...Array(4)].map((_, i) => (
-                <span key={i} className="material-symbols-outlined text-[16px]">star</span>
-              ))}
-              <span className="material-symbols-outlined text-[16px]">star_half</span>
-              <span className="text-white/40 ml-1">(209 reviews)</span>
+            <div className="flex items-center gap-1 text-xs text-white/30">
+              <span className="material-symbols-outlined text-[16px]">star_border</span>
+              <span>No reviews yet</span>
             </div>
           ) : (
             <div className="flex items-center gap-2 text-xs">

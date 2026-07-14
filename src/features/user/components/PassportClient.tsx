@@ -1,7 +1,6 @@
 ﻿"use client";
 
 import React, { useState } from 'react';
-import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'motion/react';
@@ -15,7 +14,6 @@ import {
   Badge,
 } from '@/features/gamification/types/gamification';
 import {
-  calculateMasteryLevel,
   formatXP,
   initializePathProgress,
 } from '@/features/gamification/lib/gamification';
@@ -27,15 +25,63 @@ interface PassportClientProps {
   user: any;
 }
 
+const PATH_SHORT: Record<string, string> = {
+  user: 'Citizen',
+  eventFoxer: 'Event',
+  venueFoxer: 'Venue',
+  gearFoxer: 'Gear',
+  serviceFoxer: 'Service',
+};
+
+const PATH_COLORS: Record<string, string> = {
+  user: '#ccff00',
+  eventFoxer: '#3b82f6',
+  venueFoxer: '#a855f7',
+  gearFoxer: '#f97316',
+  serviceFoxer: '#22c55e',
+};
+
+// Frontend mirror of API PERK_THRESHOLDS — level at which each perk unlocks per path
+const PATH_PERKS: Record<string, { level: number; perk: string }[]> = {
+  user:         [{ level: 1, perk: 'early_bird' }, { level: 5, perk: 'priority_access' }, { level: 10, perk: 'vip_lounge' }, { level: 15, perk: 'founding_citizen' }],
+  eventFoxer:   [{ level: 1, perk: 'host_support' }, { level: 5, perk: 'analytics_pro' }, { level: 10, perk: 'featured_listing' }, { level: 15, perk: 'event_boost' }],
+  venueFoxer:   [{ level: 1, perk: 'venue_authority' }, { level: 3, perk: 'city_badge' }, { level: 8, perk: 'venue_spotlight' }, { level: 15, perk: 'mayor_verified' }],
+  gearFoxer:    [{ level: 1, perk: 'gear_verified' }, { level: 3, perk: 'lower_fees' }, { level: 8, perk: 'gear_featured' }],
+  serviceFoxer: [{ level: 1, perk: 'service_verified' }, { level: 3, perk: 'service_lower_fees' }, { level: 8, perk: 'service_featured' }],
+};
+
+// Perk key → display metadata
+const PERK_META: Record<string, { title: string; desc: string; icon: string }> = {
+  early_bird:         { title: 'Early Bird',         desc: 'Book events 24h before others',         icon: 'schedule' },
+  priority_access:    { title: 'Priority Access',    desc: 'Skip the line at partner venues',        icon: 'confirmation_number' },
+  vip_lounge:         { title: 'VIP Lounge',         desc: 'Access to exclusive event areas',        icon: 'diamond' },
+  founding_citizen:   { title: 'Founding Citizen',   desc: 'OG member recognition',                  icon: 'workspace_premium' },
+  host_support:       { title: 'Host Support',        desc: '24/7 dedicated event manager',           icon: 'support_agent' },
+  analytics_pro:      { title: 'Analytics Pro',      desc: 'Advanced heatmaps for your venues',      icon: 'analytics' },
+  featured_listing:   { title: 'Featured Listing',   desc: 'Priority placement in search results',   icon: 'featured_play_list' },
+  event_boost:        { title: 'Event Boost',         desc: 'Promoted visibility for your events',    icon: 'rocket_launch' },
+  venue_authority:    { title: 'Venue Authority',     desc: 'Priority venue listing approvals',       icon: 'assured_workload' },
+  city_badge:         { title: 'City Badge',          desc: 'Verified mayor status in your city',     icon: 'account_balance' },
+  venue_spotlight:    { title: 'Venue Spotlight',     desc: 'Top placement in venue listings',        icon: 'auto_awesome' },
+  mayor_verified:     { title: 'Mayor Verified',      desc: 'Highest tier city authority',            icon: 'verified_user' },
+  gear_verified:      { title: 'Gear Verified',       desc: 'Exclusive gear provider status',         icon: 'verified' },
+  lower_fees:         { title: 'Lower Fees',          desc: '5% lower commission on bookings',        icon: 'percent' },
+  gear_featured:      { title: 'Gear Featured',       desc: 'Priority in equipment listings',         icon: 'star' },
+  service_verified:   { title: 'Service Verified',    desc: 'Exclusive service provider status',      icon: 'verified' },
+  service_lower_fees: { title: 'Lower Fees',          desc: '5% lower commission on bookings',        icon: 'percent' },
+  service_featured:   { title: 'Service Featured',    desc: 'Priority in service listings',           icon: 'star' },
+};
+
 const PassportClient: React.FC<PassportClientProps> = ({ user }) => {
-  const router = useRouter();
   const [activeTab, setActiveTab] = useState<'progress' | 'stamps' | 'matches'>('matches');
   const [matchSubTab, setMatchSubTab] = useState<'outgoing' | 'incoming' | 'ranks'>('outgoing');
   const [showAllBadges, setShowAllBadges] = useState(false);
   const [selectedBadge, setSelectedBadge] = useState<Badge | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [expandedPath, setExpandedPath] = useState<string | null>(null);
+  const [perkTab, setPerkTab] = useState<'unlocked' | 'locked'>('unlocked');
 
-  const { paths: apiPaths, badges: allBadges, stamps, isLoading } = useMyPassport();
+  const { paths: apiPaths, badges: allBadges, stamps, perks: earnedPerkKeys } = useMyPassport();
 
   const roleTypes: string[] = user?.roleType ?? [];
   const isEventFoxer = roleTypes.includes('eventFoxer');
@@ -79,41 +125,22 @@ const PassportClient: React.FC<PassportClientProps> = ({ user }) => {
     setIsModalOpen(true);
   };
 
-  const masteryLevel = calculateMasteryLevel(filteredPaths);
   const totalXP = filteredPaths.reduce((sum, path) => sum + path.totalXP, 0);
   const maxTotalXP = activePathTypes.length * 20000;
 
   const userName = user?.name || user?.username || 'Citizen User';
   const userInitials = userName.charAt(0).toUpperCase();
 
-  // Perks data
-  const perks = activePathTypes.flatMap(type => {
-    if (type === 'user') return [
-      { title: 'Priority Access', desc: 'Skip the line at partner venues', icon: 'confirmation_number' },
-      { title: 'Early Bird', desc: 'Book events 24h before others', icon: 'schedule' }
-    ];
-    if (type === 'gearFoxer' || type === 'serviceFoxer') return [
-      { title: 'Lower Fees', desc: '5% lower commission on bookings', icon: 'percent' },
-      { title: 'Verified Badge', desc: 'Exclusive creator status', icon: 'verified' }
-    ];
-    if (type === 'eventFoxer') return [
-      { title: 'Analytics Pro', desc: 'Advanced heatmaps for venues', icon: 'analytics' },
-      { title: 'Host Support', desc: '24/7 dedicated manager', icon: 'support_agent' }
-    ];
-    if (type === 'venueFoxer') return [
-      { title: 'Venue Authority', desc: 'Priority venue listing approvals', icon: 'assured_workload' },
-      { title: 'City Badge', desc: 'Exclusive Mayor verified status', icon: 'account_balance' }
-    ];
-    return [];
-  });
 
   return (
-    <div className="flex h-[90vh] max-h-[1000px] w-full max-w-7xl bg-[#0a0a0a] rounded-[3rem] overflow-hidden border border-white/5 shadow-2xl relative mx-auto my-auto">
+    <div className="min-h-screen bg-[#0a0a0a] p-6 lg:p-10 relative">
       {/* Background Grid Pattern */}
-      <div className="absolute inset-0 opacity-[0.03] pointer-events-none" style={{ backgroundImage: 'radial-gradient(#ccff00 0.5px, transparent 0.5px)', backgroundSize: '24px 24px' }}></div>
-      
+      <div className="fixed inset-0 opacity-[0.03] pointer-events-none" style={{ backgroundImage: 'radial-gradient(#ccff00 0.5px, transparent 0.5px)', backgroundSize: '24px 24px' }}></div>
+
+      <div className="flex max-w-[1400px] mx-auto min-h-[calc(100vh-5rem)] rounded-[3rem] overflow-clip border border-white/5 shadow-2xl relative">
+
       {/* Sidebar */}
-      <aside className="w-80 bg-black border-r border-white/5 p-8 flex flex-col relative z-20">
+      <aside className="w-80 bg-black border-r border-white/5 p-8 flex flex-col z-20 sticky top-6 lg:top-10 self-start h-[calc(100vh-3rem)] lg:h-[calc(100vh-5rem)] overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
         <Link href="/" className="flex items-center gap-3 mb-12 group cursor-pointer hover:opacity-80 transition-opacity">
           <div className="h-10 w-10 flex items-center justify-center group-hover:scale-105 transition-transform">
             <Image 
@@ -152,36 +179,125 @@ const PassportClient: React.FC<PassportClientProps> = ({ user }) => {
           </p>
         </div>
 
-        <div className="space-y-6 grow overflow-y-auto custom-scrollbar pr-2">
-          <div className="space-y-3">
+        <div className="space-y-5 grow">
+          <div className="space-y-2">
             <div className="flex justify-between text-[10px] font-black uppercase tracking-[0.2em] text-white/30">
               <span>Mastery XP</span>
               <span className="text-[#ccff00] font-mono">{formatXP(totalXP)}</span>
             </div>
-            <div className="w-full bg-white/5 rounded-full h-2 overflow-hidden border border-white/5">
-              <div 
-                className="h-full bg-linear-to-r from-[#22c55e] to-[#ccff00] transition-all duration-1000 shadow-[0_0_10px_#ccff0044]" 
+            <div className="w-full bg-white/5 rounded-full h-1.5 overflow-hidden border border-white/5">
+              <div
+                className="h-full bg-linear-to-r from-[#22c55e] to-[#ccff00] transition-all duration-1000 shadow-[0_0_10px_#ccff0044]"
                 style={{ width: `${Math.min(100, (totalXP / maxTotalXP) * 100)}%` }}
               ></div>
             </div>
           </div>
 
-          <div className="p-4 rounded-2xl bg-white/2 border border-white/5 space-y-4">
-            <p className="text-[9px] font-black uppercase tracking-widest text-white/30">Active Perks</p>
-            <div className="space-y-4">
-              {perks.slice(0, 4).map((perk, i) => (
-                <div key={i} className="flex items-center gap-3">
-                  <div className="h-8 w-8 rounded-lg bg-white/5 flex items-center justify-center shrink-0">
-                    <span className="material-symbols-outlined text-[18px] text-[#ccff00]">{perk.icon}</span>
-                  </div>
-                  <div>
-                    <p className="text-[11px] font-bold text-white">{perk.title}</p>
-                    <p className="text-[9px] text-white/30 leading-none">{perk.desc}</p>
-                  </div>
+          {(() => {
+            const pathPerkData = activePathTypes.map(path => {
+              const perks = (PATH_PERKS[path] ?? []).map(({ level, perk }) => ({
+                perk, level,
+                earned: earnedPerkKeys.includes(perk),
+                meta: PERK_META[perk],
+                color: PATH_COLORS[path] ?? '#ccff00',
+              })).filter(p => p.meta);
+              return {
+                path,
+                label: PATH_SHORT[path] ?? path,
+                color: PATH_COLORS[path] ?? '#ccff00',
+                unlocked: perks.filter(p => p.earned),
+                locked: perks.filter(p => !p.earned),
+                total: perks.length,
+              };
+            });
+            const totalEarned = pathPerkData.reduce((s, p) => s + p.unlocked.length, 0);
+            const totalAll = pathPerkData.reduce((s, p) => s + p.total, 0);
+
+            return (
+              <div className="rounded-2xl bg-white/2 border border-white/5 overflow-hidden">
+                <div className="px-3.5 pt-3 pb-2.5 flex items-center justify-between border-b border-white/5">
+                  <p className="text-[9px] font-black uppercase tracking-widest text-white/30">Perks</p>
+                  <span className="text-[9px] font-mono font-bold text-[#ccff00]">{totalEarned}<span className="text-white/20">/{totalAll}</span></span>
                 </div>
-              ))}
-            </div>
-          </div>
+
+                <div className="divide-y divide-white/5">
+                  {pathPerkData.map(({ path, label, color, unlocked, locked, total }) => {
+                    const isOpen = expandedPath === path;
+                    const display = perkTab === 'unlocked' ? unlocked : locked;
+                    return (
+                      <div key={path}>
+                        <button
+                          onClick={() => { setExpandedPath(isOpen ? null : path); setPerkTab('unlocked'); }}
+                          className="w-full flex items-center gap-2.5 px-3.5 py-2.5 hover:bg-white/3 transition-all"
+                        >
+                          <div className="h-5 w-5 rounded-md flex items-center justify-center shrink-0" style={{ backgroundColor: `${color}18` }}>
+                            <div className="h-1.5 w-1.5 rounded-full" style={{ backgroundColor: color }} />
+                          </div>
+                          <span className="text-[10px] font-bold text-white/60 flex-1 text-left">{label} Perks</span>
+                          <span className="text-[8px] font-mono text-white/20 mr-1">{unlocked.length}/{total}</span>
+                          <span className={`material-symbols-outlined text-[14px] text-white/20 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`}>expand_more</span>
+                        </button>
+
+                        {isOpen && (
+                          <div className="px-3 pb-3">
+                            <div className="flex gap-1 mb-2.5 bg-white/3 rounded-xl p-0.5">
+                              <button
+                                onClick={() => setPerkTab('unlocked')}
+                                className="flex-1 py-1.5 rounded-lg text-[8px] font-black uppercase tracking-widest transition-all"
+                                style={perkTab === 'unlocked' ? { backgroundColor: color, color: '#000' } : { color: 'rgba(255,255,255,0.3)' }}
+                              >
+                                Active{unlocked.length > 0 ? ` (${unlocked.length})` : ''}
+                              </button>
+                              <button
+                                onClick={() => setPerkTab('locked')}
+                                className={`flex-1 py-1.5 rounded-lg text-[8px] font-black uppercase tracking-widest transition-all ${perkTab === 'locked' ? 'bg-white/10 text-white' : 'text-white/30'}`}
+                              >
+                                Locked{locked.length > 0 ? ` (${locked.length})` : ''}
+                              </button>
+                            </div>
+
+                            <div className="space-y-0.5">
+                              {display.length === 0 ? (
+                                <p className="text-center text-[8px] text-white/20 py-3">
+                                  {perkTab === 'unlocked' ? 'No perks unlocked yet — keep leveling up!' : 'All perks for this path unlocked!'}
+                                </p>
+                              ) : perkTab === 'unlocked' ? (
+                                display.map(({ perk, meta, color: c }) => (
+                                  <div key={perk} className="flex items-center gap-2 px-2 py-1.5 rounded-xl" style={{ backgroundColor: `${c}08` }}>
+                                    <div className="h-6 w-6 rounded-md flex items-center justify-center shrink-0" style={{ backgroundColor: `${c}18` }}>
+                                      <span className="material-symbols-outlined text-[13px]" style={{ color: c }}>{meta!.icon}</span>
+                                    </div>
+                                    <div className="min-w-0 flex-1">
+                                      <p className="text-[10px] font-bold text-white leading-tight">{meta!.title}</p>
+                                      <p className="text-[8px] text-white/30 leading-none mt-0.5 truncate">{meta!.desc}</p>
+                                    </div>
+                                    <span className="material-symbols-outlined text-[12px] shrink-0" style={{ color: c }}>check_circle</span>
+                                  </div>
+                                ))
+                              ) : (
+                                display.map(({ perk, level, meta }) => (
+                                  <div key={perk} className="flex items-center gap-2 px-2 py-1.5 rounded-xl">
+                                    <div className="relative h-6 w-6 rounded-md bg-white/4 border border-white/5 flex items-center justify-center shrink-0">
+                                      <span className="material-symbols-outlined text-[13px] text-white/15">{meta!.icon}</span>
+                                      <div className="absolute -bottom-1 -right-1 h-3 w-3 bg-[#111] rounded-full border border-white/10 flex items-center justify-center">
+                                        <span className="material-symbols-outlined text-[7px] text-white/25">lock</span>
+                                      </div>
+                                    </div>
+                                    <p className="text-[10px] font-bold text-white/25 leading-tight flex-1">{meta!.title}</p>
+                                    <span className="text-[7px] font-black text-white/20 bg-white/5 border border-white/5 px-1.5 py-0.5 rounded-full shrink-0">LVL {level}</span>
+                                  </div>
+                                ))
+                              )}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            );
+          })()}
         </div>
 
         <div className="mt-auto pt-8 flex flex-col gap-3">
@@ -207,10 +323,10 @@ const PassportClient: React.FC<PassportClientProps> = ({ user }) => {
       </aside>
 
       {/* Main Content Area */}
-      <main className="grow relative overflow-y-auto custom-scrollbar bg-[#050505] z-10">
-        <div className="absolute top-0 right-0 w-[50%] h-[50%] bg-[#ccff00]/5 rounded-full blur-[120px] -mr-32 -mt-32 pointer-events-none"></div>
-        
-        <div className="p-12 min-h-full flex flex-col">
+      <main className="grow relative bg-[#050505] z-10">
+        <div className="fixed top-0 right-0 w-[50%] h-[50%] bg-[#ccff00]/5 rounded-full blur-[120px] -mr-32 -mt-32 pointer-events-none"></div>
+
+        <div className="p-12 flex flex-col">
           <div className="relative z-20 mb-12 flex justify-between items-start">
             <div>
               <h2 className="text-4xl md:text-5xl font-display font-bold text-white mb-2 tracking-tight capitalize">
@@ -591,8 +707,10 @@ const PassportClient: React.FC<PassportClientProps> = ({ user }) => {
         </div>
       </main>
 
+      </div>
+
       <BadgeModal badge={selectedBadge} isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
-      
+
       <style jsx global>{`
         .custom-scrollbar::-webkit-scrollbar { width: 6px; }
         .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }

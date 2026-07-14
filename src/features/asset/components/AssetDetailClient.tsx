@@ -9,33 +9,6 @@ import { useAuthStore } from '@/features/auth/store/useAuthStore';
 import { toast } from 'sonner';
 import type { BackendAsset } from '@/shared/lib/api-types';
 
-// Hardcoded add-ons by category (until BE supports them)
-const ADDON_PRESETS: Record<string, { name: string; price: number; icon: string }[]> = {
-  Audio: [
-    { name: 'On-site Sound Engineer', price: 3500, icon: 'engineering' },
-    { name: 'In-Ear Monitor System', price: 2000, icon: 'headphones' },
-    { name: 'Live Recording Service', price: 5000, icon: 'fiber_manual_record' },
-  ],
-  Gear: [
-    { name: 'Delivery & Setup (within Metro)', price: 1500, icon: 'local_shipping' },
-    { name: 'Instax Camera + Film', price: 800, icon: 'photo_camera' },
-    { name: 'Extra Batteries & Backup Power', price: 500, icon: 'battery_charging_full' },
-  ],
-  Lighting: [
-    { name: 'Fog Machine Add-on', price: 1000, icon: 'cloud' },
-    { name: 'Additional Uplights (x4)', price: 600, icon: 'light_mode' },
-  ],
-  Default: [
-    { name: 'Setup & Teardown Assistance', price: 1200, icon: 'build' },
-    { name: 'On-call Tech Support', price: 2000, icon: 'support_agent' },
-  ],
-};
-
-function getAddons(category?: string | null) {
-  if (!category) return ADDON_PRESETS.Default;
-  return ADDON_PRESETS[category] ?? ADDON_PRESETS.Default;
-}
-
 function getFeatures(asset: BackendAsset) {
   const features = [];
   if (asset.condition) features.push({ icon: 'verified', text: `Condition: ${asset.condition}` });
@@ -91,7 +64,6 @@ export default function AssetDetailClient({ assetId }: { assetId: string }) {
   const price = Number(asset.price ?? 0);
   const billingUnit = asset.billingRate?.replace('per_', '') ?? 'day';
   const features = getFeatures(asset);
-  const addons = getAddons(asset.category);
   const ownerName = asset.ownerId ? `Provider #${asset.ownerId}` : 'Fox Provider';
 
   return (
@@ -195,35 +167,6 @@ export default function AssetDetailClient({ assetId }: { assetId: string }) {
               </p>
             </section>
 
-            {/* Monetized Add-ons */}
-            <section>
-              <div className="flex items-center justify-between mb-8">
-                <h3 className="text-2xl font-display font-bold text-white">Monetized Add-ons</h3>
-                <div className="px-4 py-1 rounded-full border border-white/5 text-[9px] font-bold text-white/30 uppercase tracking-widest">Optional Enhancements</div>
-              </div>
-              <div className="grid gap-4">
-                {addons.map((addon, i) => (
-                  <div
-                    key={i}
-                    className="flex items-center justify-between p-6 rounded-[2rem] bg-white/5 border border-white/5 hover:border-accent/40 hover:bg-accent/5 transition-all group cursor-pointer"
-                  >
-                    <div className="flex items-center gap-5">
-                      <div className="h-12 w-12 rounded-full bg-white/5 flex items-center justify-center group-hover:bg-accent group-hover:text-black transition-all">
-                        <span className="material-symbols-outlined text-[20px]">{addon.icon}</span>
-                      </div>
-                      <div>
-                        <p className="font-bold text-white tracking-wide">{addon.name}</p>
-                        <p className="text-[10px] text-text-muted uppercase tracking-widest">Managed by {ownerName}</p>
-                      </div>
-                    </div>
-                    <div className="text-right">
-                      <span className="text-accent font-display font-bold text-xl block">₱{addon.price.toLocaleString()}</span>
-                      <span className="text-[8px] text-white/20 font-bold uppercase tracking-tighter">One-time fee</span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </section>
           </div>
 
           {/* Right Sticky Sidebar */}

@@ -21,6 +21,24 @@ export function VenueCalendar({
   onDateClick,
   onClearDates,
 }: VenueCalendarProps) {
+  const today = new Date();
+  const [year, setYear] = React.useState(today.getFullYear());
+  const [month, setMonth] = React.useState(today.getMonth());
+
+  const firstDayOfMonth = new Date(year, month, 1).getDay();
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+  const prevMonthDays = new Date(year, month, 0).getDate();
+  const monthLabel = new Date(year, month, 1).toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+
+  const prevMonth = () => {
+    if (month === 0) { setMonth(11); setYear(y => y - 1); }
+    else setMonth(m => m - 1);
+  };
+  const nextMonth = () => {
+    if (month === 11) { setMonth(0); setYear(y => y + 1); }
+    else setMonth(m => m + 1);
+  };
+
   return (
     <div>
       <h3 className="text-2xl font-display font-bold text-white mb-2">
@@ -29,32 +47,27 @@ export function VenueCalendar({
       <p className="text-text-muted text-sm mb-6">Select a date to see if this venue is available for your event</p>
       <div className="bg-surface-highlight/30 rounded-2xl p-6 border border-white/5">
         <div className="flex justify-between items-center mb-4">
-          <span className="font-bold text-white">October 2024</span>
+          <span className="font-bold text-white">{monthLabel}</span>
           <div className="flex gap-2">
-            <button className="h-8 w-8 flex items-center justify-center rounded-full hover:bg-white/10 text-white">
+            <button onClick={prevMonth} className="h-8 w-8 flex items-center justify-center rounded-full hover:bg-white/10 text-white">
               <span className="material-symbols-outlined">chevron_left</span>
             </button>
-            <button className="h-8 w-8 flex items-center justify-center rounded-full hover:bg-white/10 text-white">
+            <button onClick={nextMonth} className="h-8 w-8 flex items-center justify-center rounded-full hover:bg-white/10 text-white">
               <span className="material-symbols-outlined">chevron_right</span>
             </button>
           </div>
         </div>
         <div className="grid grid-cols-7 gap-1 text-center text-sm text-gray-400 mb-2">
-          <span>Su</span>
-          <span>Mo</span>
-          <span>Tu</span>
-          <span>We</span>
-          <span>Th</span>
-          <span>Fr</span>
-          <span>Sa</span>
+          <span>Su</span><span>Mo</span><span>Tu</span><span>We</span><span>Th</span><span>Fr</span><span>Sa</span>
         </div>
         <div className="grid grid-cols-7 gap-y-2 text-center text-sm font-medium">
-          <span className="p-2 text-white/20">29</span>
-          <span className="p-2 text-white/20">30</span>
-          {[...Array(31)].map((_, i) => {
+          {[...Array(firstDayOfMonth)].map((_, i) => (
+            <span key={`prev-${i}`} className="p-2 text-white/20">
+              {prevMonthDays - firstDayOfMonth + i + 1}
+            </span>
+          ))}
+          {[...Array(daysInMonth)].map((_, i) => {
             const day = i + 1;
-            const isAvailable = day > 10;
-
             const isRangeStart = checkInDate === day;
             const isRangeEnd = checkOutDate === day;
             const isInRange =
@@ -81,9 +94,7 @@ export function VenueCalendar({
                   className={`relative z-10 w-9 h-9 mx-auto flex items-center justify-center rounded-full transition-all ${
                     isSelected
                       ? 'bg-accent text-black font-bold shadow-[0_0_10px_#ccff00]'
-                      : isAvailable
-                      ? 'text-white hover:bg-white/10 cursor-pointer'
-                      : 'text-white/30 line-through decoration-white/20'
+                      : 'text-white hover:bg-white/10 cursor-pointer'
                   }`}
                 >
                   {day}
@@ -460,13 +471,6 @@ export function HostBio({ host }: HostBioProps) {
           <span className="flex items-center gap-1">
             <span className="material-symbols-outlined text-[16px] text-accent">star</span>{' '}
             {host.reviews} Reviews
-          </span>
-          <span className="flex items-center gap-1">
-            <span className="material-symbols-outlined text-[16px] text-accent">verified</span>{' '}
-            Identity Verified
-          </span>
-          <span className="flex items-center gap-1">
-            <span className="material-symbols-outlined text-[16px] text-accent">work</span> Super host
           </span>
         </div>
         <p className="text-sm text-gray-300 leading-relaxed mb-4">{host.description}</p>

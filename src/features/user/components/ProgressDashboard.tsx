@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import CircularProgress from '@/features/gamification/components/CircularProgress';
 import { BadgeGrid } from '@/features/gamification/components/BadgeCard';
 import { PassportGrid } from '@/features/gamification/components/PassportStamp';
@@ -27,6 +28,7 @@ export const ProgressDashboard: React.FC<ProgressDashboardProps> = ({
   showPassport = true,
   showHeader = true
 }) => {
+  const router = useRouter();
   const [_selectedPath, setSelectedPath] = useState<UserPath | null>(null);
   const [selectedBadge, setSelectedBadge] = useState<Badge | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -149,7 +151,7 @@ export const ProgressDashboard: React.FC<ProgressDashboardProps> = ({
             <span className="material-symbols-outlined text-[#ccff00] text-[32px]">award_star</span>
             Recent Drops <span className="text-[#ccff00]">&</span> Badges
           </h2>
-          <button className="text-sm font-bold text-white/50 hover:text-white transition-colors flex items-center gap-1 group">
+          <button onClick={() => router.push('/user/passport')} className="text-sm font-bold text-white/50 hover:text-white transition-colors flex items-center gap-1 group">
             View Collection
             <span className="text-[16px] group-hover:translate-x-1 transition-transform">→</span>
           </button>
@@ -177,7 +179,7 @@ export const ProgressDashboard: React.FC<ProgressDashboardProps> = ({
               </h2>
               <p className="text-white/50">Collection of events you&apos;ve attended</p>
             </div>
-            <button className="text-sm font-bold text-white/50 hover:text-white transition-colors flex items-center gap-1 group">
+            <button onClick={() => router.push('/user/passport')} className="text-sm font-bold text-white/50 hover:text-white transition-colors flex items-center gap-1 group">
               View All
               <span className="text-[16px] group-hover:translate-x-1 transition-transform">→</span>
             </button>

@@ -5,6 +5,7 @@ import { getPathLabel, calculateXPForNextLevel } from "../lib/gamification";
 export interface ApiPassport {
   id: string;
   userId: string;
+  perks: string[];
   paths: ApiPassportPath[];
   stamps: ApiPassportStamp[];
   userBadges: ApiUserBadge[];
