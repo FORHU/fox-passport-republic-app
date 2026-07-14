@@ -17,58 +17,38 @@ export const TrendingSection: React.FC<TrendingSectionProps> = ({ category }) =>
           View all <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
         </button>
       </div>
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          {((category?.venues?.length ? category.venues.slice(0, 4) : [1, 2, 3, 4]) as any[]).map((item: any, i: number) => {
-            const isMock = typeof item === 'number';
-            const vid = isMock ? 'mock-id' : item.id;
-            const images = [
-              "https://images.unsplash.com/photo-1511795409834-ef04bbd61622?w=600&auto=format&fit=crop",
-              "https://images.unsplash.com/photo-1492684223066-81342ee5ff30?w=600&auto=format&fit=crop",
-              "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=600&auto=format&fit=crop",
-              "https://images.unsplash.com/photo-1501281668745-f7f57925c3b4?w=600&auto=format&fit=crop"
-            ];
-            const displayTitle = isMock ? [
-              "Neon Jungle Rave 2024",
-              "Summer Music Festival",
-              "Midnight Jazz Club",
-              "Rooftop Sunset Party"
-            ][item - 1] : item.name;
-            const displayPrice = isMock ? "₱1,500" : `₱${item.price?.toLocaleString() || '1,500'}`;
-            const displayImg = isMock ? images[item - 1] : (item.images?.[0] || images[0]);
-
-            return (
-              <Link href={`/venues/${vid}`} key={vid + i} className="block bg-white/5 border border-white/5 rounded-[2rem] overflow-hidden group hover:shadow-2xl hover:shadow-[#ccff00]/5 transition-all cursor-pointer hover:-translate-y-1">
-                <div className="relative aspect-4/3 overflow-hidden">
-                    <Image
-                      src={displayImg}
-                      alt={displayTitle}
-                      width={600}
-                      height={450}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
-                    />
-                    <div className="absolute top-4 right-4 bg-black/60 backdrop-blur-md px-3 py-1 rounded-full text-xs font-bold text-white flex items-center gap-1">
-                      <span className="w-1.5 h-1.5 bg-[#ccff00] rounded-full animate-pulse"></span>
-                      Live
-                    </div>
+      {category?.venues?.length ? (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          {category.venues.slice(0, 4).map((item: any) => (
+            <Link href={`/venues/${item.id}`} key={item.id} className="block bg-white/5 border border-white/5 rounded-[2rem] overflow-hidden group hover:shadow-2xl hover:shadow-[#ccff00]/5 transition-all cursor-pointer hover:-translate-y-1">
+              <div className="relative aspect-4/3 overflow-hidden">
+                <Image
+                  src={item.images?.[0] || 'https://images.unsplash.com/photo-1511795409834-ef04bbd61622?w=600&auto=format&fit=crop'}
+                  alt={item.name}
+                  width={600}
+                  height={450}
+                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+                />
+              </div>
+              <div className="p-6">
+                <h4 className="font-bold text-white text-lg mb-2 group-hover:text-[#ccff00] transition-colors line-clamp-1">{item.name}</h4>
+                <p className="text-gray-400 text-sm mb-4 line-clamp-2">{item.description || ''}</p>
+                <div className="flex items-center justify-between border-t border-white/10 pt-4">
+                  <span className="text-base font-bold text-white">₱{item.price?.toLocaleString()}</span>
+                  <span className="h-8 w-8 rounded-full bg-white/10 flex items-center justify-center text-white group-hover:bg-[#ccff00] group-hover:text-black transition-colors">
+                    <ArrowRight className="w-4 h-4" />
+                  </span>
                 </div>
-                <div className="p-6">
-                    <h4 className="font-bold text-white text-lg mb-2 group-hover:text-[#ccff00] transition-colors line-clamp-1">
-                      {displayTitle}
-                    </h4>
-                    <p className="text-gray-400 text-sm mb-4 line-clamp-2">
-                      {isMock ? "Experience the ultimate vibe with amazing music and great company." : (item.description || "Experience the ultimate vibe with amazing music and great company.")}
-                    </p>
-                    <div className="flex items-center justify-between border-t border-white/10 pt-4">
-                      <span className="text-base font-bold text-white">{displayPrice}</span>
-                      <span className="h-8 w-8 rounded-full bg-white/10 flex items-center justify-center text-white group-hover:bg-[#ccff00] group-hover:text-black transition-colors">
-                          <ArrowRight className="w-4 h-4" />
-                      </span>
-                    </div>
-                </div>
-              </Link>
-            )
-          })}
-      </div>
+              </div>
+            </Link>
+          ))}
+        </div>
+      ) : (
+        <div className="flex flex-col items-center justify-center py-20 text-center text-white/30">
+          <span className="material-symbols-outlined text-5xl mb-4">explore_off</span>
+          <p className="text-sm">No trending venues yet for {category.name}.</p>
+        </div>
+      )}
     </section>
   );
 };

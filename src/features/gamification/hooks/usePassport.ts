@@ -23,12 +23,14 @@ export function useMyPassport() {
   const paths = passport ? mapPaths(passport.paths) : [];
   const stamps = passport ? mapStamps(passport.stamps) : [];
   const badges = passport ? mapBadges(allBadges, passport.userBadges) : [];
+  const perks: string[] = passport?.perks ?? [];
 
   return {
     passport,
     paths,
     stamps,
     badges,
+    perks,
     isLoading: passportQuery.isLoading || badgesQuery.isLoading,
     isError: passportQuery.isError || badgesQuery.isError,
   };

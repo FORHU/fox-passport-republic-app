@@ -1,9 +1,13 @@
-﻿'use client';
+'use client';
 
 import React from 'react';
 import { Star } from 'lucide-react';
-import Image from 'next/image';
-import { MOCK_RECENT_REVIEWS, REVIEW_CATEGORIES } from '@/features/review/data/reviewsData';
+
+const REVIEW_CATEGORIES = [
+  { id: 'food', label: 'Food' },
+  { id: 'service', label: 'Service' },
+  { id: 'ambiance', label: 'Ambiance' },
+];
 
 interface StarRatingProps {
   rating: number;
@@ -83,37 +87,7 @@ export function RecentReviews() {
   return (
     <div className="bg-white rounded-2xl border-2 border-gray-200 p-6 sticky top-8">
       <h2 className="text-xl font-bold text-gray-900 mb-6">Recent reviews</h2>
-      
-      <div className="space-y-6">
-        {MOCK_RECENT_REVIEWS.map((review, idx) => (
-          <div key={idx} className="pb-6 border-b border-gray-100 last:border-0 last:pb-0">
-            <div className="flex items-start gap-3 mb-3">
-              <Image
-                src={review.user.avatar}
-                alt={review.user.name}
-                width={40}
-                height={40}
-                className="rounded-full object-cover"
-              />
-              <div className="flex-1">
-                <p className="font-bold text-gray-900">{review.user.name}</p>
-                <div className="flex gap-1 my-1">
-                  {[...Array(review.rating)].map((_, i) => (
-                    <Star
-                      key={i}
-                      className="w-4 h-4 fill-pink-500 text-pink-500"
-                    />
-                  ))}
-                </div>
-                <p className="text-xs text-gray-500">{review.date}</p>
-              </div>
-            </div>
-            <p className="text-sm text-gray-700 leading-relaxed line-clamp-3">
-              {review.text}
-            </p>
-          </div>
-        ))}
-      </div>
+      <p className="text-sm text-gray-400 text-center py-6">No reviews yet.</p>
     </div>
   );
 }

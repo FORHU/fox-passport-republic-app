@@ -82,16 +82,6 @@ export const PENDING_REQUESTS: PendingRequest[] = [];
 
 export const RECENT_ACTIVITY: ActivityItem[] = [];
 
-export const OCCUPANCY_DATA = [
-  { d: "M", h: 48 },
-  { d: "T", h: 72 },
-  { d: "W", h: 64 },
-  { d: "T", h: 112 },
-  { d: "F", h: 144, a: true },
-  { d: "S", h: 152, a: true },
-  { d: "S", h: 96 },
-];
-
 export const KPI_DATA = [
   {
     id: "earnings",

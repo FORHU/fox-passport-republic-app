@@ -2,7 +2,7 @@
 
 import React from 'react';
 import Image from 'next/image';
-import { OCCUPANCY_DATA, PENDING_REQUESTS } from '@/features/dashboard/data/dashboardData';
+import { PENDING_REQUESTS } from '@/features/dashboard/data/dashboardData';
 
 export function OccupancyChart() {
   return (
@@ -17,21 +17,8 @@ export function OccupancyChart() {
           <option>30 Days</option>
         </select>
       </div>
-      <div className="flex items-end justify-between gap-3" style={{ height: '160px' }}>
-        {OCCUPANCY_DATA.map((x, i) => (
-          <div key={i} className="flex-1 flex flex-col items-center gap-2">
-            <div
-              className="w-full rounded-t-lg"
-              style={{
-                height: `${x.h}px`,
-                background: x.a
-                  ? 'linear-gradient(to top, rgba(219,39,119,0.5), rgba(219,39,119,0.9))'
-                  : 'linear-gradient(to top, rgba(124,58,237,0.4), rgba(124,58,237,0.7))',
-              }}
-            />
-            <span className="text-[10px] text-white/40 font-bold">{x.d}</span>
-          </div>
-        ))}
+      <div className="flex items-center justify-center text-white/20 text-sm" style={{ height: '160px' }}>
+        No occupancy data yet
       </div>
     </div>
   );

@@ -417,13 +417,15 @@ const EventDetailsPage: React.FC = () => {
     images:      displayImages,
     rating: 0,
     reviews: 0,
-    offers: [],
+    offers: [] as string[],
   };
 
   const host = {
     name:        template?.owner?.name   ?? "Organizer",
     avatar:      template?.owner?.imgId  ?? null as string | null,
     description: `Organizer of ${venue.title}`,
+    rating:      0,
+    reviews:     0,
   };
 
   const inclusions: { name: string; icon: string; desc: string }[] = [
