@@ -91,6 +91,64 @@ export function mapStamps(apiStamps: ApiPassportStamp[]): PassportStamp[] {
   }));
 }
 
+export async function getLeaderboard(limit = 20): Promise<LeaderboardEntry[]> {
+  const res = await api.get(`/passport/leaderboard?limit=${limit}`);
+  return res.data.data;
+}
+
+export interface LeaderboardEntry {
+  rank: number;
+  userId: string;
+  totalXP: number;
+  totalLevel: number;
+  user: { id: string; name: string; imgId: string | null; roleType: string[] };
+}
+
+export async function getOutgoingMatchRequests(): Promise<OutgoingMatchGroup[]> {
+  const res = await api.get("/event-template/matches/outgoing");
+  return res.data.data;
+}
+
+export async function getIncomingMatchRequests(): Promise<IncomingMatchRequest[]> {
+  const res = await api.get("/event-template/matches/incoming");
+  return res.data.data;
+}
+
+export async function respondToMatch(matchId: string, type: string, status: "accepted" | "declined"): Promise<void> {
+  await api.patch(`/event-template/matches/${matchId}/respond`, { type, status });
+}
+
+export interface MatchRequestItem {
+  id: string;
+  matchRequestStatus: "pending" | "accepted" | "declined" | "secured";
+  matchedAt: string | null;
+  description: string | null;
+  date: string | null;
+  type: "asset" | "service" | "venue";
+  provider: { id: string; name: string; imgId: string | null } | null;
+  item: { id: string; name: string } | null;
+}
+
+export interface OutgoingMatchGroup {
+  templateId: string;
+  templateName: string;
+  category: string;
+  targetCity: string | null;
+  targetState: string | null;
+  requests: MatchRequestItem[];
+}
+
+export interface IncomingMatchRequest extends MatchRequestItem {
+  template: {
+    id: string;
+    name: string;
+    category: string;
+    targetCity: string | null;
+    targetState: string | null;
+    owner: { id: string; name: string; imgId: string | null };
+  };
+}
+
 // Merges all badge definitions with user's earned badges
 export function mapBadges(allBadges: ApiBadge[], userBadges: ApiUserBadge[]): Badge[] {
   const earnedMap = new Map(userBadges.map((ub) => [ub.badgeId, new Date(ub.earnedAt)]));
