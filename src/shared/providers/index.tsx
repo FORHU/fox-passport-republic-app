@@ -4,6 +4,12 @@ import { useEffect, useState } from "react";
 import QueryProvider from "./QueryProvider";
 import { AuthStoreProvider } from "./AuthStoreProvider";
 import { SocketProvider } from "./SocketProvider";
+import useWaitlistNotificationWatcher from "@/features/booking/hooks/useWaitlistNotificationWatcher";
+
+function WaitlistWatcher() {
+  useWaitlistNotificationWatcher();
+  return null;
+}
 
 export default function Providers({ children }: { children: React.ReactNode }) {
   const [ready, setReady] = useState(false);
@@ -23,7 +29,10 @@ export default function Providers({ children }: { children: React.ReactNode }) {
   return (
     <QueryProvider>
       <AuthStoreProvider>
-        <SocketProvider>{children}</SocketProvider>
+        <SocketProvider>
+          <WaitlistWatcher />
+          {children}
+        </SocketProvider>
       </AuthStoreProvider>
     </QueryProvider>
   );

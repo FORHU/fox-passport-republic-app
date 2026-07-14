@@ -3,15 +3,14 @@
 import React from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useUserWaitlist, useWaitlistNotification, useLeaveWaitlist, useClaimSpot } from '@/features/booking/hooks/useWaitlist';
+import { useUserWaitlist, useLeaveWaitlist } from '@/features/booking/hooks/useWaitlist';
 import { toast } from 'sonner';
+import BookingHeader from '@/features/booking/components/BookingHeader';
 
 export default function WaitlistPageClient() {
   const router = useRouter();
   const { data: entries, isLoading, isError, error } = useUserWaitlist();
-  const { data: notification } = useWaitlistNotification();
   const leaveMutation = useLeaveWaitlist();
-  const claimSpotMutation = useClaimSpot();
 
   const handleLeave = (entryId: string) => {
     leaveMutation.mutate(entryId, {
@@ -26,45 +25,10 @@ export default function WaitlistPageClient() {
 
   return (
     <div className="bg-background bg-gradient-dark text-text-main antialiased min-h-screen flex flex-col selection:bg-accent selection:text-black font-body relative overflow-x-hidden">
+      <BookingHeader />
+
       <main className="grow pt-32 pb-20">
         <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
-          {/* Notification Banner */}
-          {notification?.hasSpotOpened && (
-            <div className="mb-8 rounded-2xl bg-green-500/10 border border-green-500/30 p-6 text-center">
-              <span className="material-symbols-outlined text-green-400 text-4xl mb-2">celebration</span>
-              <h2 className="text-xl font-display font-bold text-white mb-1">A spot just opened up!</h2>
-              <p className="text-text-muted mb-4">
-                You&apos;re next in line for <strong className="text-white">{notification.templateName}</strong>.
-                Claim your spot before someone else does.
-              </p>
-              <button
-                onClick={() => {
-                  claimSpotMutation.mutate(
-                    { templateId: notification.templateId, entryId: notification.entryId },
-                    {
-                      onSuccess: () => {
-                        toast.success('Spot claimed! Complete your booking.');
-                        router.push(`/booking/config?templateId=${notification.templateId}&claimed=1`);
-                      },
-                      onError: (err: any) => {
-                        toast.error(err?.response?.data?.message || 'Spot already taken by someone else.');
-                      },
-                    },
-                  );
-                }}
-                disabled={claimSpotMutation.isPending}
-                className="inline-flex items-center gap-2 rounded-xl bg-accent px-6 py-3 text-black font-bold hover:brightness-110 transition-all disabled:opacity-60"
-              >
-                {claimSpotMutation.isPending ? (
-                  <><span className="h-4 w-4 rounded-full border-2 border-black/20 border-t-black animate-spin" /> Claiming...</>
-                ) : (
-                  <><span className="material-symbols-outlined">celebration</span> Claim Your Spot</>
-                )}
-              </button>
-              <p className="text-[10px] text-white/30 mt-3">This offer expires soon — first come, first served.</p>
-            </div>
-          )}
-
           {/* Header */}
           <div className="mb-8">
             <div className="flex items-center gap-2 text-sm text-text-muted mb-4">

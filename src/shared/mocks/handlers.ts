@@ -55,6 +55,34 @@ const waitlistDb: Record<string, { id: string; templateId: string; userId: strin
 const claimedTemplateIds = new Set<string>();
 let mockSpotOpenedCounter = 0;
 
+interface MockNotification {
+  id: string;
+  userId: string;
+  type: string;
+  title: string;
+  message: string;
+  isRead: boolean;
+  metadata?: Record<string, unknown> | null;
+  createdAt: string;
+}
+
+const mockNotifications: MockNotification[] = (() => {
+  try {
+    const stored = localStorage.getItem('mock_notifications');
+    return stored ? JSON.parse(stored) : [];
+  } catch {
+    return [];
+  }
+})();
+
+function persistNotifications() {
+  try {
+    localStorage.setItem('mock_notifications', JSON.stringify(mockNotifications));
+  } catch { /* ignore */ }
+}
+
+let waitlistNotificationAdded = mockNotifications.some((n) => n.type === 'WAITLIST_SPOT_OPENED');
+
 export const handlers = [
   http.get(`${BASE}/bookings/:id`, ({ params }) => {
     if (params.id === 'notfound') return HttpResponse.json({ data: null }, { status: 404 });
@@ -158,8 +186,7 @@ export const handlers = [
         currentAttendees: 30,
       },
     };
-    const data = entries.length > 0
-      ? entries.map((e) => ({
+    const data = entries.map((e) => ({
           id: e.id,
           templateId: e.templateId,
           position: e.position,
@@ -172,16 +199,7 @@ export const handlers = [
             maxAttendees: 20,
             currentAttendees: 20,
           },
-        }))
-      : [
-          {
-            id: 'wl_mock_1',
-            templateId: 'full-event',
-            position: 3,
-            totalWaiting: 5,
-            template: mockTemplates['full-event'],
-          },
-        ];
+        }));
     return HttpResponse.json({ success: true, data });
   }),
 
@@ -220,6 +238,50 @@ export const handlers = [
       success: true,
       data: { message: 'Spot claimed! You have 15 minutes to complete your booking.' },
     });
+  }),
+
+  // ── Notifications ────────────────────────────────────────────────────
+  http.get(`${BASE}/notifications`, () => {
+    if (mockSpotOpenedCounter >= 3 && !claimedTemplateIds.has('full-event') && !waitlistNotificationAdded) {
+      mockNotifications.unshift({
+        id: 'wl_notif_001',
+        userId: 'user_123',
+        type: 'WAITLIST_SPOT_OPENED',
+        title: 'Spot Available!',
+        message: 'A spot has opened up for Corporate Team Building. Complete your booking to secure your spot.',
+        isRead: false,
+        metadata: { link: '/booking/config?templateId=full-event&claimed=1' },
+        createdAt: new Date().toISOString(),
+      });
+      waitlistNotificationAdded = true;
+    }
+    return HttpResponse.json({
+      notifications: mockNotifications,
+      unreadCount: mockNotifications.filter((n) => !n.isRead).length,
+    });
+  }),
+
+  http.patch(`${BASE}/notifications/:id/read`, ({ params }) => {
+    const n = mockNotifications.find((n) => n.id === params.id);
+    if (n) n.isRead = true;
+    persistNotifications();
+    return HttpResponse.json({ data: n ?? null });
+  }),
+
+  http.patch(`${BASE}/notifications/read-all`, () => {
+    mockNotifications.forEach((n) => { n.isRead = true; });
+    persistNotifications();
+    return HttpResponse.json({ success: true });
+  }),
+
+  http.post(`${BASE}/notifications`, async ({ request }) => {
+    const body = (await request.json()) as MockNotification;
+    const exists = mockNotifications.some((n) => n.id === body.id);
+    if (!exists) {
+      mockNotifications.unshift(body);
+      persistNotifications();
+    }
+    return HttpResponse.json({ data: body });
   }),
 
   // ── Auth (return a fake logged-in user) ─────────────────────────────────

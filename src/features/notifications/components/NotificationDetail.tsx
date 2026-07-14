@@ -28,7 +28,9 @@ export default function NotificationDetail({
   onViewFull: (link: string) => void;
 }) {
   const link = notification.metadata?.link as string | undefined;
-  const bookingId = extractBookingId(link);
+  const isWaitlist = notification.type === 'WAITLIST_SPOT_OPENED';
+
+  const bookingId = isWaitlist ? null : extractBookingId(link);
 
   const [booking, setBooking] = useState<any>(null);
   const [loading, setLoading] = useState(false);
@@ -57,6 +59,26 @@ export default function NotificationDetail({
   const statusInfo = booking?.status
     ? STATUS_LABEL[booking.status] ?? STATUS_LABEL.pending
     : null;
+
+  if (isWaitlist && link) {
+    return (
+      <div className="text-xs mt-2 rounded-lg border border-green-500/20 bg-green-500/5 text-white/60">
+        <div className="p-3 leading-relaxed whitespace-pre-line">
+          <p>{notification.message}</p>
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              onViewFull(link);
+            }}
+            className="mt-3 w-full flex items-center justify-center gap-2 rounded-lg bg-[#ccff00] px-4 py-2.5 text-xs font-bold text-black hover:brightness-110 transition-all"
+          >
+            Process your payment now
+            <span className="material-symbols-outlined text-[14px]">arrow_forward</span>
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="text-xs mt-2 rounded-lg border border-white/10 bg-black/20 text-white/60">

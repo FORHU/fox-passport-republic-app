@@ -16,12 +16,17 @@ export const useNotificationStore = create<NotificationState>((set) => ({
   unreadCount: 0,
 
   setNotifications: (notifications, unreadCount) =>
-    set({
-      notifications,
-      unreadCount:
-        typeof unreadCount === "number"
-          ? unreadCount
-          : notifications.filter((n) => !n.isRead).length,
+    set((state) => {
+      const apiIds = new Set(notifications.map((n) => n.id));
+      const localOnly = state.notifications.filter((n) => !apiIds.has(n.id));
+      const merged = [...notifications, ...localOnly];
+      return {
+        notifications: merged,
+        unreadCount:
+          typeof unreadCount === "number"
+            ? unreadCount
+            : merged.filter((n) => !n.isRead).length,
+      };
     }),
 
   addNotification: (notification) =>
