@@ -33,6 +33,8 @@ interface ApiUser {
   roleType?: string;
   imgId?: string;
   bio?: string;
+  services?: { price: number }[];
+  assets?: { price: number }[];
 }
 
 interface ApiService {
@@ -94,17 +96,21 @@ const ASSET_CAT_TO_TAB: Record<string, string> = {
 async function fetchFoxers(): Promise<LiveFoxer[]> {
   const res = await api.get("/users?roleType=serviceFoxer,gearFoxer");
   const users: ApiUser[] = Array.isArray(res.data) ? res.data : res.data?.data ?? [];
-  return users.map((u) => ({
-    id: u.id,
-    name: u.name || u.username || "Foxer",
-    role: u.roleType?.includes("serviceFoxer") ? "Talent Foxer" : "Gear Foxer",
-    fee: 3500,
-    rating: 5.0,
-    avatar:
-      u.imgId ||
-      `https://ui-avatars.com/api/?name=${encodeURIComponent(u.name || "Foxer")}&background=ccff00&color=000`,
-    description: u.bio || "Available for custom event curation.",
-  }));
+  return users.map((u) => {
+    const priceList = [...(u.services ?? []), ...(u.assets ?? [])].map((i) => i.price).filter((p) => p > 0);
+    const fee = priceList.length > 0 ? Math.min(...priceList) : 0;
+    return {
+      id: u.id,
+      name: u.name || u.username || "Foxer",
+      role: u.roleType?.includes("serviceFoxer") ? "Talent Foxer" : "Gear Foxer",
+      fee,
+      rating: 0,
+      avatar:
+        u.imgId ||
+        `https://ui-avatars.com/api/?name=${encodeURIComponent(u.name || "Foxer")}&background=ccff00&color=000`,
+      description: u.bio || "Available for custom event curation.",
+    };
+  });
 }
 
 async function fetchServices(): Promise<LiveService[]> {

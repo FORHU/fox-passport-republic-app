@@ -43,7 +43,6 @@ function UserDashboardContent({ user, dashboardData, venues = [] }: UserDashboar
       <UserHeader
         isAuthenticated={isAuthenticated}
         userName={displayUserName}
-        citizenLevel={displayDashboardData.citizenLevel}
       />
 
       <main className="flex-grow pt-36 px-4 pb-20">
@@ -51,7 +50,6 @@ function UserDashboardContent({ user, dashboardData, venues = [] }: UserDashboar
           <UserWelcome
             upcomingEventsCount={displayDashboardData.upcomingEvents}
             recommendationsCount={displayDashboardData.recommendations}
-            weather={displayDashboardData.weather}
           />
 
           {/* Row 1: Next Up & Journey */}

@@ -210,9 +210,17 @@ function normalizeImages(images: any[]): string[] {
 function normalizeVenue(v: any) {
   const images = normalizeImages(v.images ?? v.gallery ?? []);
   const img = images[0] || FALLBACK_IMG;
+  const mayor = v.mayor ?? v.host ?? null;
   return {
     ...v,
-    hostId: v.hostId ?? v.host?.id ?? null,
+    hostId: v.hostId ?? v.mayorId ?? mayor?.id ?? null,
+    host: mayor ? {
+      id: mayor.id,
+      name: mayor.name || 'Venue Owner',
+      avatar: mayor.imgId || `https://ui-avatars.com/api/?name=${encodeURIComponent(mayor.name || 'Host')}&background=ccff00&color=000`,
+      bio: '',
+      email: mayor.email,
+    } : null,
     title: v.title || v.name || 'Untitled Venue',
     type: v.type || v.venueType || 'Venue',
     loc: v.location || [v.city, v.province, v.country].filter(Boolean).join(', ') || '',
@@ -269,23 +277,10 @@ export async function getUserDashboard(_userId: string) {
   try {
     const body = await serverFetch('/bookings').catch(() => ({ data: [] }));
     const upcomingEvents = (body?.data || []).length;
-
-    return {
-      userName: 'User',
-      upcomingEvents,
-      recommendations: 0,
-      citizenLevel: 5,
-      weather: { temp: '22°C', condition: 'Sunny' },
-    };
+    return { userName: 'User', upcomingEvents, recommendations: 0 };
   } catch (error) {
     console.error('Failed to fetch user dashboard:', error);
-    return {
-      userName: 'User',
-      upcomingEvents: 0,
-      recommendations: 0,
-      citizenLevel: 5,
-      weather: { temp: '22°C', condition: 'Sunny' },
-    };
+    return { userName: 'User', upcomingEvents: 0, recommendations: 0 };
   }
 }
 
@@ -482,36 +477,11 @@ export async function getVenueById(id: string) {
   try {
     const body = await serverFetch(`/venues/${id}`);
     const data = extractOne(body);
-    if (!data) return getMockFallbackVenue(id);
+    if (!data) return null;
     return normalizeVenue(data);
   } catch {
-    return getMockFallbackVenue(id);
+    return null;
   }
-}
-
-function getMockFallbackVenue(id: string) {
-  return {
-    id,
-    title: 'Neon Nights: Underground Cyberpunk Rave',
-    rating: 4.92,
-    reviews: 124,
-    location: 'Poblacion, Makati',
-    province: 'Metro Manila',
-    category: 'Nightlife',
-    guestCount: 200,
-    bedroomCount: 1,
-    bathroomCount: 4,
-    price: 1500,
-    offers: ['VIP Access', '2 Free Drinks', 'Pro Photography', 'Air Conditioning', 'Secure Parking', 'Meet & Greet'],
-    description:
-      "Step into a cyberpunk dreamscape right in the heart of Makati. This isn't just a party; it's an immersive journey through the city's hidden underground scenes.\n\nWe'll start at a secret rooftop bar for sunset drinks, then move to an exclusive retro-wave bunker that's normally members-only. Expect neon lights, synth-wave beats, and a crowd that matches your vibe.",
-    images: [
-      'https://images.unsplash.com/photo-1574391884720-385e66752079?q=80&w=800&auto=format&fit=crop',
-      'https://images.unsplash.com/photo-1516280440614-6697288d5d38?q=80&w=800&auto=format&fit=crop',
-      'https://images.unsplash.com/photo-1493246507139-91e8fad9978e?q=80&w=800&auto=format&fit=crop',
-      'https://images.unsplash.com/photo-1533174072545-e8d4aa97edf9?q=80&w=800&auto=format&fit=crop',
-    ],
-  };
 }
 
 export async function getCategoryBySlug(slug: string) {

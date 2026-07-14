@@ -3,7 +3,14 @@
 import React from 'react';
 import { useExperienceBuilder } from '@/features/venue/hooks/useVenueDetail';
 import { useExperienceBuilderData } from '@/features/venue/hooks/useExperienceBuilderData';
-import { SERVICE_CATEGORIES } from '@/features/venue/data/venueDetailData';
+
+const SERVICE_CATEGORIES = [
+  { id: 'foxer', label: 'Curator', icon: 'person_search' },
+  { id: 'catering', label: 'Food & Drink', icon: 'restaurant' },
+  { id: 'tech', label: 'Tech & AV', icon: 'speaker' },
+  { id: 'decor', label: 'Decor & Style', icon: 'palette' },
+  { id: 'media', label: 'Photo & Video', icon: 'videocam' },
+];
 
 interface ExperienceBuilderProps {
   isOpen: boolean;

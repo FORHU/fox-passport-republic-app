@@ -3,13 +3,9 @@ import React from 'react';
 interface UserWelcomeProps {
     upcomingEventsCount: number;
     recommendationsCount: number;
-    weather: {
-        temp: string;
-        condition: string;
-    };
 }
 
-export const UserWelcome: React.FC<UserWelcomeProps> = ({ upcomingEventsCount, recommendationsCount, weather }) => {
+export const UserWelcome: React.FC<UserWelcomeProps> = ({ upcomingEventsCount, recommendationsCount }) => {
   return (
     <div className="flex flex-col md:flex-row justify-between items-end mb-10 reveal-on-scroll">
             <div>
@@ -19,27 +15,15 @@ export const UserWelcome: React.FC<UserWelcomeProps> = ({ upcomingEventsCount, r
               <p className="text-text-muted mt-2 text-lg">You have <span className="text-white font-bold">{upcomingEventsCount} upcoming events</span> and <span className="text-white font-bold">{recommendationsCount} recommendations</span>.</p>
             </div>
             <div className="hidden md:flex gap-4 mt-6 md:mt-0">
-              {/* Weather Widget */}
-              <div className="bg-surface-highlight/40 rounded-2xl p-4 border border-white/5 flex items-center gap-4 min-w-[200px]">
-                <div className="h-10 w-10 rounded-full bg-accent/20 flex items-center justify-center text-accent">
-                  <span className="material-symbols-outlined">sunny</span>
-                </div>
-                <div>
-                  <div className="text-xs text-text-muted uppercase font-bold">Weather</div>
-                  <div className="text-white font-bold">{weather.temp} {weather.condition}</div>
-                </div>
-              </div>
-
-              {/* Quick Links migrated from sidebar */}
+              {/* Quick Links */}
               <div className="flex gap-3">
                 <a href="#" className="bg-surface-highlight/40 hover:bg-surface-highlight border border-white/5 hover:border-white/20 rounded-2xl p-4 flex flex-col items-center justify-center gap-1 transition-all group min-w-[80px] relative">
                   <div className="h-8 w-8 rounded-full bg-blue-500/20 text-blue-400 group-hover:bg-blue-500 group-hover:text-white flex items-center justify-center transition-all">
                     <span className="material-symbols-outlined text-[20px]">chat_bubble</span>
                   </div>
                   <span className="text-white font-bold text-[10px]">Messages</span>
-                  <span className="bg-red-500 text-white text-[8px] px-1.5 py-0.5 rounded-full absolute top-2 right-2 animate-pulse">2</span>
                 </a>
-                
+
                 <a href="#" className="bg-surface-highlight/40 hover:bg-surface-highlight border border-white/5 hover:border-white/20 rounded-2xl p-4 flex flex-col items-center justify-center gap-1 transition-all group min-w-[80px]">
                   <div className="h-8 w-8 rounded-full bg-pink-500/20 text-pink-400 group-hover:bg-pink-500 group-hover:text-white flex items-center justify-center transition-all">
                     <span className="material-symbols-outlined text-[20px]">settings</span>

@@ -6,7 +6,13 @@ import {
   useVenueDetailStore,
   useExperienceBuilderStore,
 } from "@/features/venue/store/useVenueDetailStore";
-import { SERVICE_CATEGORIES } from "@/features/venue/data/venueDetailData";
+const SERVICE_CATEGORIES = [
+  { id: "foxer", label: "Curator", icon: "person_search" },
+  { id: "catering", label: "Food & Drink", icon: "restaurant" },
+  { id: "tech", label: "Tech & AV", icon: "speaker" },
+  { id: "decor", label: "Decor & Style", icon: "palette" },
+  { id: "media", label: "Photo & Video", icon: "videocam" },
+];
 import type { LiveFoxer, LiveService } from "@/features/venue/hooks/useExperienceBuilderData";
 import { useCheckoutStore } from "@/features/booking/store/useCheckoutStore";
 
