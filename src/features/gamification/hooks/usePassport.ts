@@ -3,7 +3,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   getMyPassport, getAllBadges, getUserPassport, mapPaths, mapStamps, mapBadges,
-  getLeaderboard, getOutgoingMatchRequests, getIncomingMatchRequests, respondToMatch,
+  getLeaderboard, getOutgoingMatchRequests, getIncomingMatchRequests, getClientMatchRequests, respondToMatch,
 } from "../api/passport";
 
 export function useMyPassport() {
@@ -55,6 +55,14 @@ export function useIncomingMatchRequests(enabled = true) {
   return useQuery({
     queryKey: ["matches", "incoming"],
     queryFn: getIncomingMatchRequests,
+    enabled,
+  });
+}
+
+export function useClientMatchRequests(offset = 0, enabled = true) {
+  return useQuery({
+    queryKey: ["matches", "client-inbox", offset],
+    queryFn: () => getClientMatchRequests(10, offset),
     enabled,
   });
 }

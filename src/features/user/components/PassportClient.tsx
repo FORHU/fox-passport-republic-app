@@ -18,8 +18,8 @@ import {
   initializePathProgress,
 } from '@/features/gamification/lib/gamification';
 import BadgeModal from '@/features/gamification/components/BadgeModal';
-import { useMyPassport, useLeaderboard, useOutgoingMatchRequests, useIncomingMatchRequests, useRespondToMatch } from '@/features/gamification/hooks/usePassport';
-import type { OutgoingMatchGroup, IncomingMatchRequest } from '@/features/gamification/api/passport';
+import { useMyPassport, useLeaderboard, useOutgoingMatchRequests, useIncomingMatchRequests, useClientMatchRequests, useRespondToMatch } from '@/features/gamification/hooks/usePassport';
+import type { OutgoingMatchGroup, IncomingMatchRequest, ClientMatchRequest } from '@/features/gamification/api/passport';
 
 interface PassportClientProps {
   user: any;
@@ -74,7 +74,9 @@ const PERK_META: Record<string, { title: string; desc: string; icon: string }> =
 
 const PassportClient: React.FC<PassportClientProps> = ({ user }) => {
   const [activeTab, setActiveTab] = useState<'progress' | 'stamps' | 'matches'>('matches');
-  const [matchSubTab, setMatchSubTab] = useState<'outgoing' | 'incoming' | 'ranks'>('outgoing');
+  const [matchSubTab, setMatchSubTab] = useState<'outgoing' | 'incoming' | 'client-inbox' | 'ranks'>('client-inbox');
+  const [clientInboxOffset, setClientInboxOffset] = useState(0);
+  const [clientInboxAll, setClientInboxAll] = useState<ClientMatchRequest[]>([]);
   const [showAllBadges, setShowAllBadges] = useState(false);
   const [selectedBadge, setSelectedBadge] = useState<Badge | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -90,12 +92,31 @@ const PassportClient: React.FC<PassportClientProps> = ({ user }) => {
   const { data: leaderboard = [], isLoading: leaderboardLoading } = useLeaderboard(20);
   const { data: outgoingGroups = [], isLoading: outgoingLoading } = useOutgoingMatchRequests(isEventFoxer);
   const { data: incomingRequests = [], isLoading: incomingLoading } = useIncomingMatchRequests(isProvider);
+  const { data: clientInboxPage, isLoading: clientInboxLoading } = useClientMatchRequests(clientInboxOffset, isEventFoxer);
+  // Accumulate pages as user loads more
+  React.useEffect(() => {
+    if (clientInboxPage?.data) {
+      if (clientInboxOffset === 0) {
+        setClientInboxAll(clientInboxPage.data);
+      } else {
+        setClientInboxAll(prev => [...prev, ...clientInboxPage.data]);
+      }
+    }
+  }, [clientInboxPage, clientInboxOffset]);
   const respondMutation = useRespondToMatch();
 
-  const statusColor = (s: string) =>
-    s === 'accepted' ? '#22c55e' : s === 'declined' ? '#ef4444' : s === 'secured' ? '#ccff00' : '#f97316';
-  const statusLabel = (s: string) =>
-    s === 'accepted' ? 'Accepted' : s === 'declined' ? 'Declined' : s === 'secured' ? 'Secured' : 'Pending';
+  const statusColor = (s: string) => {
+    if (s === 'accepted' || s === 'approved') return '#22c55e';
+    if (s === 'declined' || s === 'rejected') return '#ef4444';
+    if (s === 'secured') return '#ccff00';
+    return '#f97316';
+  };
+  const statusLabel = (s: string) => {
+    if (s === 'accepted' || s === 'approved') return 'Approved';
+    if (s === 'declined' || s === 'rejected') return 'Declined';
+    if (s === 'secured') return 'Secured';
+    return 'Pending';
+  };
 
   // Map API roleType[] to gamification UserPath[]
   const roleToPath = (role: string): UserPath | null => {
@@ -356,6 +377,19 @@ const PassportClient: React.FC<PassportClientProps> = ({ user }) => {
                   <div className="bg-white/5 p-1 rounded-full border border-white/10 flex">
                     {isEventFoxer && (
                       <button
+                        onClick={() => setMatchSubTab('client-inbox')}
+                        className={`px-8 py-2 rounded-full font-bold text-xs transition-all ${matchSubTab === 'client-inbox' ? 'bg-[#ccff00] text-black shadow-glow-accent' : 'text-white/40 hover:text-white'}`}
+                      >
+                        Client Inbox
+                        {(clientInboxPage?.total ?? 0) > 0 && (
+                          <span className="ml-1.5 inline-flex items-center justify-center h-4 w-4 rounded-full bg-[#ff00aa] text-white text-[9px] font-black">
+                            {clientInboxPage!.total}
+                          </span>
+                        )}
+                      </button>
+                    )}
+                    {isEventFoxer && (
+                      <button
                         onClick={() => setMatchSubTab('outgoing')}
                         className={`px-8 py-2 rounded-full font-bold text-xs transition-all ${matchSubTab === 'outgoing' ? 'bg-[#ccff00] text-black shadow-glow-accent' : 'text-white/40 hover:text-white'}`}
                       >
@@ -378,6 +412,67 @@ const PassportClient: React.FC<PassportClientProps> = ({ user }) => {
                     </button>
                   </div>
                 </div>
+
+                {matchSubTab === 'client-inbox' && (
+                  <div className="space-y-4">
+                    {clientInboxLoading ? (
+                      <div className="text-center py-16 text-white/30 text-sm">Loading requests…</div>
+                    ) : clientInboxAll.length === 0 ? (
+                      <div className="flex flex-col items-center py-24 opacity-20 text-center">
+                        <span className="material-symbols-outlined text-8xl mb-4">person_search</span>
+                        <p className="font-display font-bold text-xl text-white">No client requests yet</p>
+                        <p className="text-sm mt-1 text-white/60">When someone matches with you, their request will appear here.</p>
+                      </div>
+                    ) : (<>
+                    {clientInboxAll.map((req: ClientMatchRequest) => (
+                      <div key={req.id} className="flex items-center justify-between p-5 bg-white/3 border border-white/5 rounded-[1.5rem] hover:bg-white/5 transition-all">
+                        <div className="flex items-center gap-4">
+                          <div className="h-11 w-11 rounded-xl bg-white/10 flex items-center justify-center text-sm font-bold text-white/40 overflow-hidden shrink-0">
+                            {req.client?.imgId
+                              ? <img src={`https://fox-passport-republic-assets.s3.ap-southeast-1.amazonaws.com/${req.client.imgId}`} className="h-full w-full object-cover" alt="" />
+                              : (req.client?.name?.charAt(0) ?? '?')}
+                          </div>
+                          <div>
+                            <p className="text-sm font-bold text-white">{req.client?.name}</p>
+                            <p className="text-[10px] text-white/30 uppercase tracking-widest">
+                              {req.name} · {req.guestCount} guests · {new Date(req.startAt).toLocaleDateString()}
+                            </p>
+                            {req.template && (
+                              <p className="text-[10px] text-accent/60 mt-0.5">Based on: {req.template.name}</p>
+                            )}
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-3">
+                          {req.totalAmount > 0 && (
+                            <span className="text-xs font-bold text-white/50">₱{req.totalAmount.toLocaleString()}</span>
+                          )}
+                          <span
+                            className="text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-full border"
+                            style={{
+                              color: statusColor(req.requestStatus),
+                              borderColor: `${statusColor(req.requestStatus)}30`,
+                              backgroundColor: `${statusColor(req.requestStatus)}10`,
+                            }}
+                          >
+                            {statusLabel(req.requestStatus)}
+                          </span>
+                        </div>
+                      </div>
+                    ))}
+                    {clientInboxPage?.hasMore && (
+                      <div className="flex justify-center pt-2">
+                        <button
+                          onClick={() => setClientInboxOffset(o => o + 10)}
+                          disabled={clientInboxLoading}
+                          className="px-8 py-3 rounded-full border border-white/10 text-white/50 hover:text-white hover:bg-white/5 text-xs font-bold uppercase tracking-widest transition-all disabled:opacity-30"
+                        >
+                          {clientInboxLoading ? 'Loading…' : 'Load More'}
+                        </button>
+                      </div>
+                    )}
+                    </>)}
+                  </div>
+                )}
 
                 {matchSubTab === 'outgoing' && (
                   <div className="space-y-4">

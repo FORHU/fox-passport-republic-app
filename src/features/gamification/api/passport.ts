@@ -150,6 +150,31 @@ export interface IncomingMatchRequest extends MatchRequestItem {
   };
 }
 
+export interface ClientMatchRequest {
+  id: string;
+  name: string;
+  description: string;
+  startAt: string;
+  guestCount: number;
+  totalAmount: number;
+  requestStatus: string;
+  eventStatus: string;
+  createdAt: string;
+  client: { id: string; name: string; imgId: string | null };
+  template: { id: string; name: string; category: string } | null;
+}
+
+export interface ClientMatchInboxPage {
+  data: ClientMatchRequest[];
+  total: number;
+  hasMore: boolean;
+}
+
+export async function getClientMatchRequests(limit = 10, offset = 0): Promise<ClientMatchInboxPage> {
+  const res = await api.get("/matches/client-inbox", { params: { limit, offset } });
+  return { data: res.data.data, total: res.data.total, hasMore: res.data.hasMore };
+}
+
 // Merges all badge definitions with user's earned badges
 export function mapBadges(allBadges: ApiBadge[], userBadges: ApiUserBadge[]): Badge[] {
   const earnedMap = new Map(userBadges.map((ub) => [ub.badgeId, new Date(ub.earnedAt)]));
