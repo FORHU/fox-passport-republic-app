@@ -38,19 +38,32 @@ export default function QRScannerClient() {
 
     const code = decodedText.trim();
     try {
-      await checkInBooking(code);
-      setScanState('success');
-      setLastResult({ ticketCode: code });
+      const res = await checkInBooking(code);
+      if (res.payoutTriggered || res.status === 'completed') {
+        setScanState('success');
+        setLastResult({ ticketCode: code, message: 'Checked in — payout released' });
+      } else {
+        setScanState('already_checked_in');
+        setLastResult({ ticketCode: code, message: 'Already checked in' });
+      }
     } catch (err: any) {
       const status = err?.response?.status;
-      if (status === 409) {
-        setScanState('already_checked_in');
-        setLastResult({ ticketCode: code });
-      } else {
-        const msg = err?.response?.data?.message || 'Invalid ticket';
-        setScanState('error');
-        setLastResult({ ticketCode: code, message: msg });
+      let msg = 'Invalid ticket';
+      switch (status) {
+        case 400:
+          msg = err?.response?.data?.message || 'Ticket not paid — payment required before check-in';
+          break;
+        case 403:
+          msg = err?.response?.data?.message || 'You are not the host for this booking';
+          break;
+        case 404:
+          msg = err?.response?.data?.message || 'Ticket code not found';
+          break;
+        default:
+          msg = err?.response?.data?.message || 'Invalid ticket';
       }
+      setScanState('error');
+      setLastResult({ ticketCode: code, message: msg });
     } finally {
       processingRef.current = false;
     }
@@ -144,7 +157,7 @@ export default function QRScannerClient() {
             <span className="material-symbols-outlined text-green-400 text-5xl">check_circle</span>
           </div>
           <div className="text-center">
-            <p className="text-green-400 font-bold text-xl mb-1">Checked In!</p>
+            <p className="text-green-400 font-bold text-xl mb-1">{lastResult?.message || 'Checked In!'}</p>
             <p className="text-text-muted text-sm font-mono">{lastResult?.ticketCode}</p>
           </div>
           <button
@@ -163,7 +176,7 @@ export default function QRScannerClient() {
             <span className="material-symbols-outlined text-yellow-400 text-5xl">warning</span>
           </div>
           <div className="text-center">
-            <p className="text-yellow-400 font-bold text-xl mb-1">Already Checked In</p>
+            <p className="text-yellow-400 font-bold text-xl mb-1">{lastResult?.message || 'Already Checked In'}</p>
             <p className="text-text-muted text-sm font-mono">{lastResult?.ticketCode}</p>
           </div>
           <button

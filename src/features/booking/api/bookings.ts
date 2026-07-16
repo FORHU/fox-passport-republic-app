@@ -1,7 +1,16 @@
 ﻿import api from "@/shared/lib/axios";
 
-// Host: scan citizen QR at event door
-export async function checkInBooking(ticketCode: string): Promise<{ id: string; checkedIn: boolean; [k: string]: any }> {
+// Host: scan citizen QR at event door.
+// Scanning completes check-in AND triggers payout release in one call.
+export interface CheckInResult {
+  id: string;
+  checkedIn: boolean;
+  status: string;
+  payoutTriggered: boolean;
+  message?: string;
+}
+
+export async function checkInBooking(ticketCode: string): Promise<CheckInResult> {
   const resp = await api.patch("/bookings/check-in", { ticketCode });
   return resp.data?.data;
 }
