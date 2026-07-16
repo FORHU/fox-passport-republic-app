@@ -1,16 +1,39 @@
 ﻿"use client";
 
-import React from "react";
+import React, { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { Heart, Star, MapPin } from "lucide-react";
 import { Event } from "@/features/event/types/event";
+import { addFavorite, removeFavoriteByListing } from "@/features/user/api/favorites";
 
 interface EventCardProps {
   event: Event;
 }
 
 const EventCard: React.FC<EventCardProps> = ({ event }) => {
+  const [isFavorited, setIsFavorited] = useState(false);
+  const [favLoading, setFavLoading] = useState(false);
+
+  const handleFavorite = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    e.preventDefault();
+    if (favLoading) return;
+    setFavLoading(true);
+    const next = !isFavorited;
+    setIsFavorited(next);
+    try {
+      if (next) {
+        await addFavorite(event.id, "event");
+      } else {
+        await removeFavoriteByListing(event.id, "event");
+      }
+    } catch {
+      setIsFavorited(!next);
+    } finally {
+      setFavLoading(false);
+    }
+  };
   // Get the primary image or first image
   const primaryImage = event.images.find(img => img.isPrimary) || event.images[0];
   const imageUrl = primaryImage?.imageUrl || "https://images.unsplash.com/photo-1540575467063-178a50c2df87?auto=format&fit=crop&w=800&q=80";
@@ -47,13 +70,12 @@ const EventCard: React.FC<EventCardProps> = ({ event }) => {
         />
         {/* Favorite Button */}
         <button
-          className="absolute top-3 right-3 p-2 rounded-full bg-white/80 hover:bg-white transition-colors"
-          onClick={(e) => {
-            e.stopPropagation();
-            // TODO: Handle favorite toggle
-          }}
+          className="absolute top-3 right-3 p-2 rounded-full bg-white/80 hover:bg-white transition-colors disabled:opacity-60"
+          onClick={handleFavorite}
+          disabled={favLoading}
+          aria-label={isFavorited ? "Remove from favorites" : "Add to favorites"}
         >
-          <Heart className="w-5 h-5 text-gray-700" />
+          <Heart className={`w-5 h-5 transition-colors ${isFavorited ? "fill-pink-500 text-pink-500" : "text-gray-700"}`} />
         </button>
       </div>
 
@@ -65,7 +87,7 @@ const EventCard: React.FC<EventCardProps> = ({ event }) => {
             {event.title}
           </h3>
           {averageRating && (
-            <div className="flex items-center gap-1 flex-shrink-0">
+            <div className="flex items-center gap-1 shrink-0">
               <Star className="w-4 h-4 fill-current text-gray-900" />
               <span className="text-sm text-gray-900">{averageRating}</span>
             </div>

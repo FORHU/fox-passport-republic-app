@@ -74,24 +74,8 @@ export const useUserDashboard = () => {
     queryKey: ["user-upcoming-events", userId],
     queryFn: async () => {
       if (!userId) return [];
-      try {
-        const res = await api.get(`/bookings/upcoming`);
-        return res.data.data || [];
-      } catch (error) {
-        // Fallback to mock data if API fails
-        console.warn("Failed to fetch upcoming events, using mock:", error);
-        return [
-          {
-            id: 1,
-            title: "Neon Nights Festival",
-            date: "Tomorrow, 8:00 PM",
-            location: "Electric Avenue, Tokyo",
-            image:
-              "https://images.unsplash.com/photo-1493225255756-d9584f8606e9?q=80&w=2070&auto=format&fit=crop",
-            attendees: 1240,
-          },
-        ];
-      }
+      const res = await api.get(`/bookings/upcoming`);
+      return res.data.data || [];
     },
     enabled: !!userId,
     refetchInterval: () => {
@@ -139,23 +123,8 @@ export const useUserDashboard = () => {
   const { data: recommendations = [], isLoading: isLoadingRecs } = useQuery({
     queryKey: ["user-recommendations", userId],
     queryFn: async () => {
-      try {
-        // Could be personalized based on user preferences
-        const res = await api.get("/events/recommendations");
-        return res.data.data || [];
-      } catch (error) {
-        console.warn("Failed to fetch recommendations, using mock:", error);
-        return [
-          {
-            id: 1,
-            title: "Cyberpunk Street Food Market",
-            category: "Food",
-            match: 98,
-            image:
-              "https://images.unsplash.com/photo-1555939594-58d7cb561ad1?q=80&w=1974&auto=format&fit=crop",
-          },
-        ];
-      }
+      const res = await api.get("/event-templates/recommendations");
+      return res.data.data || [];
     },
     enabled: !!userId,
   });
