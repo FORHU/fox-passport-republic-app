@@ -217,24 +217,43 @@ const FoxerProfile: React.FC = () => {
                 </div>
               </motion.div>
 
-              {(foxer.foxerSpecializations?.length ?? 0) > 0 && (
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.15 }}
-                  className="glass-card rounded-[2.5rem] p-8 space-y-4"
-                >
-                  <h3 className="text-lg font-bold flex items-center gap-2">
-                    <span className="material-symbols-outlined text-accent">verified_user</span>
-                    Specializations
-                  </h3>
-                  <div className="flex flex-wrap gap-2">
-                    {foxer.foxerSpecializations!.map((s, i) => (
-                      <ProfileSpecializationChip key={i} spec={s} />
+              {(foxer.foxerSpecializations?.length ?? 0) > 0 && (() => {
+                const ROLE_LABELS: Record<string, string> = {
+                  eventFoxer: "Event Foxer",
+                  serviceFoxer: "Service Foxer",
+                  gearFoxer: "Gear Foxer",
+                  venueFoxer: "Venue Foxer",
+                };
+                const grouped = (foxer.foxerSpecializations ?? []).reduce<Record<string, typeof foxer.foxerSpecializations>>((acc, s) => {
+                  (acc[s.roleType] ??= []).push(s);
+                  return acc;
+                }, {});
+                return (
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.15 }}
+                    className="glass-card rounded-[2.5rem] p-8 space-y-5"
+                  >
+                    <h3 className="text-lg font-bold flex items-center gap-2">
+                      <span className="material-symbols-outlined text-accent">verified_user</span>
+                      Specializations
+                    </h3>
+                    {Object.entries(grouped).map(([roleType, specs]) => (
+                      <div key={roleType} className="space-y-2">
+                        <p className="text-[10px] font-bold uppercase tracking-widest text-white/30">
+                          {ROLE_LABELS[roleType] ?? roleType}
+                        </p>
+                        <div className="flex flex-wrap gap-2">
+                          {specs!.map((s, i) => (
+                            <ProfileSpecializationChip key={i} spec={s} />
+                          ))}
+                        </div>
+                      </div>
                     ))}
-                  </div>
-                </motion.div>
-              )}
+                  </motion.div>
+                );
+              })()}
 
               <div className="flex flex-col gap-3">
                 <button

@@ -1,89 +1,209 @@
-﻿'use client';
+'use client';
 
 import React from 'react';
 import { PassportStamp } from '@/features/gamification/types/gamification';
-import Image from 'next/image';
+
+type StampMeta = { icon: string; color: string; label: string; shape: 'circle' | 'rect' | 'hex' };
+
+function getStampMeta(title: string): StampMeta {
+  const t = title.toLowerCase();
+  if (t.includes('wedding'))
+    return { icon: '💍', color: '#ec4899', label: 'CELEBRATION', shape: 'circle' };
+  if (t.includes('birthday') || t.includes('surprise') || t.includes('party'))
+    return { icon: '🎂', color: '#f59e0b', label: 'FESTIVITY', shape: 'rect' };
+  if (t.includes('corporate') || t.includes('summit') || t.includes('demo') || t.includes('startup') || t.includes('acme'))
+    return { icon: '🏢', color: '#3b82f6', label: 'BUSINESS', shape: 'rect' };
+  if (t.includes('social') || t.includes('rooftop') || t.includes('festival') || t.includes('music'))
+    return { icon: '🎊', color: '#10b981', label: 'SOCIAL', shape: 'circle' };
+  if (t.includes('concert') || t.includes('band') || t.includes('live'))
+    return { icon: '🎵', color: '#8b5cf6', label: 'MUSIC', shape: 'circle' };
+  return { icon: '⭐', color: '#ccff00', label: 'EVENT', shape: 'rect' };
+}
+
+// Extract short city name
+function shortLocation(loc: string) {
+  return loc.split(',')[0].toUpperCase();
+}
+
+// Extract year from date
+function stampYear(date: Date) {
+  return new Date(date).getFullYear();
+}
+
+// Deterministic rotation — varies per stamp so the grid looks natural
+const ROTATIONS = [-3, 2, -1.5, 3, -2, 1, -3.5, 2.5, -1];
 
 interface PassportStampCardProps {
   stamp: PassportStamp;
   onClick?: () => void;
-  className?: string;
+  index?: number;
 }
 
-export default function PassportStampCard({ stamp, onClick, className = '' }: PassportStampCardProps) {
-  const formattedDate = new Date(stamp.eventDate).toLocaleDateString('en-US', {
-    month: 'short',
-    day: 'numeric',
-    year: 'numeric',
-  });
+function CircleStamp({ stamp, meta, rotate }: { stamp: PassportStamp; meta: StampMeta; rotate: number }) {
+  const c = meta.color;
+  const date = new Date(stamp.eventDate);
+  const day = date.toLocaleDateString('en-US', { day: '2-digit' });
+  const mon = date.toLocaleDateString('en-US', { month: 'short' }).toUpperCase();
+  const yr  = date.getFullYear();
+
+  return (
+    <div className="flex items-center justify-center p-6">
+      <div
+        className="relative flex items-center justify-center"
+        style={{ transform: `rotate(${rotate}deg)` }}
+      >
+        {/* Outer ring */}
+        <div
+          className="h-44 w-44 rounded-full flex items-center justify-center"
+          style={{
+            border: `3px solid ${c}`,
+            opacity: 0.9,
+            boxShadow: `0 0 0 6px transparent, 0 0 0 8px ${c}22`,
+          }}
+        >
+          {/* Inner ring */}
+          <div
+            className="h-36 w-36 rounded-full flex flex-col items-center justify-center gap-1"
+            style={{ border: `2px solid ${c}` }}
+          >
+            {/* Top arc label */}
+            <span
+              className="text-[9px] font-black uppercase tracking-[0.3em]"
+              style={{ color: c }}
+            >
+              {meta.label}
+            </span>
+
+            {/* Icon */}
+            <span className="text-3xl leading-none">{meta.icon}</span>
+
+            {/* City */}
+            <span
+              className="text-[8px] font-black tracking-[0.2em]"
+              style={{ color: c }}
+            >
+              {shortLocation(stamp.location)}
+            </span>
+
+            {/* Date line */}
+            <div
+              className="flex items-center gap-1 text-[8px] font-bold px-3 py-0.5 rounded-full mt-0.5"
+              style={{ border: `1px solid ${c}44`, color: `${c}99` }}
+            >
+              {day} · {mon} · {yr}
+            </div>
+          </div>
+        </div>
+
+        {/* XP badge */}
+        <div
+          className="absolute -top-1 -right-1 text-[8px] font-black px-1.5 py-0.5 rounded-full text-black"
+          style={{ backgroundColor: c }}
+        >
+          +{stamp.xpEarned}XP
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function RectStamp({ stamp, meta, rotate }: { stamp: PassportStamp; meta: StampMeta; rotate: number }) {
+  const c = meta.color;
+  const date = new Date(stamp.eventDate);
+  const mon = date.toLocaleDateString('en-US', { month: 'short' }).toUpperCase();
+  const yr  = date.getFullYear();
+
+  // Truncate long titles
+  const title = stamp.eventTitle.length > 22
+    ? stamp.eventTitle.slice(0, 20).toUpperCase() + '…'
+    : stamp.eventTitle.toUpperCase();
+
+  return (
+    <div className="flex items-center justify-center p-6">
+      <div
+        className="relative"
+        style={{ transform: `rotate(${rotate}deg)` }}
+      >
+        {/* Perforated outer edge using dashed border */}
+        <div
+          className="px-5 py-4 rounded-2xl"
+          style={{
+            border: `3px dashed ${c}`,
+            opacity: 0.92,
+          }}
+        >
+          {/* Inner solid border */}
+          <div
+            className="px-4 py-3 rounded-xl flex flex-col items-center gap-1.5 min-w-[140px]"
+            style={{ border: `2px solid ${c}` }}
+          >
+            {/* Top label */}
+            <span
+              className="text-[8px] font-black uppercase tracking-[0.25em]"
+              style={{ color: c }}
+            >
+              {meta.label}
+            </span>
+
+            {/* Divider stars */}
+            <span className="text-[8px]" style={{ color: `${c}66` }}>★ ★ ★</span>
+
+            {/* Icon */}
+            <span className="text-2xl leading-none">{meta.icon}</span>
+
+            {/* Event title */}
+            <span
+              className="text-[9px] font-black tracking-[0.15em] text-center leading-tight max-w-[120px]"
+              style={{ color: c }}
+            >
+              {title}
+            </span>
+
+            {/* Divider */}
+            <div className="w-full h-px" style={{ backgroundColor: `${c}44` }} />
+
+            {/* Location + Date */}
+            <div className="flex items-center justify-between w-full gap-2">
+              <span className="text-[7px] font-bold tracking-wider" style={{ color: `${c}88` }}>
+                {shortLocation(stamp.location)}
+              </span>
+              <span className="text-[7px] font-bold tracking-wider" style={{ color: `${c}88` }}>
+                {mon} {yr}
+              </span>
+            </div>
+
+            {/* Verified */}
+            <span className="text-[7px] font-black tracking-[0.3em] mt-0.5" style={{ color: `${c}55` }}>
+              ✓ VERIFIED
+            </span>
+          </div>
+        </div>
+
+        {/* XP badge */}
+        <div
+          className="absolute -top-2 -right-2 text-[8px] font-black px-1.5 py-0.5 rounded-full text-black"
+          style={{ backgroundColor: c }}
+        >
+          +{stamp.xpEarned}XP
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export default function PassportStampCard({ stamp, onClick, index = 0 }: PassportStampCardProps) {
+  const meta = getStampMeta(stamp.eventTitle);
+  const rotate = ROTATIONS[index % ROTATIONS.length];
 
   return (
     <div
       onClick={onClick}
-      className={`glass-card rounded-[2rem] overflow-hidden group cursor-pointer hover:scale-105 transition-all duration-300 border border-white/5 hover:border-accent/30 ${className}`}
+      className="cursor-pointer hover:scale-105 transition-transform duration-300 flex items-center justify-center"
     >
-      {/* Event Image */}
-      {stamp.imageUrl && (
-        <div className="relative h-48 overflow-hidden">
-          <Image
-            fill
-            src={stamp.imageUrl}
-            alt={stamp.eventTitle}
-            className="object-cover group-hover:scale-110 transition-transform duration-500"
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent"></div>
-
-          {/* XP Badge */}
-          <div className="absolute top-4 right-4 bg-accent text-black px-3 py-1 rounded-full text-xs font-bold shadow-neon">
-            +{stamp.xpEarned} XP
-          </div>
-        </div>
-      )}
-
-      {/* Stamp Content */}
-      <div className="p-6">
-        <h3 className="text-lg font-bold text-white mb-2 group-hover:text-accent transition-colors line-clamp-2">
-          {stamp.eventTitle}
-        </h3>
-
-        <div className="flex items-center gap-2 text-sm text-text-muted mb-3">
-          <span className="text-[16px]">📍</span>
-          <span>{stamp.location}</span>
-        </div>
-
-        <div className="flex items-center gap-2 text-sm text-text-muted mb-4">
-          <span className="text-[16px]">📅</span>
-          <span>{formattedDate}</span>
-        </div>
-
-        {/* Badges Earned */}
-        {stamp.badgesEarned && stamp.badgesEarned.length > 0 && (
-          <div className="border-t border-white/10 pt-4 mt-4">
-            <p className="text-xs text-text-muted mb-2 uppercase tracking-wider font-bold">
-              Badges Earned
-            </p>
-            <div className="flex gap-2 flex-wrap">
-              {stamp.badgesEarned.map((badge) => (
-                <div
-                  key={badge.id}
-                  className="flex items-center gap-1 bg-white/5 rounded-full px-3 py-1 text-xs"
-                >
-                  <span className="text-[14px]">{badge.icon === 'palette' ? '🎨' : '⭐'}</span>
-                  <span className="text-white font-medium">{badge.name}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* Stamp Verification */}
-        <div className="flex items-center justify-between mt-4 pt-4 border-t border-white/10">
-          <span className="text-[10px] text-text-muted uppercase tracking-widest font-bold">
-            Verified
-          </span>
-          <span className="text-green-500 text-[16px]">✓</span>
-        </div>
-      </div>
+      {meta.shape === 'circle'
+        ? <CircleStamp stamp={stamp} meta={meta} rotate={rotate} />
+        : <RectStamp  stamp={stamp} meta={meta} rotate={rotate} />
+      }
     </div>
   );
 }
@@ -97,20 +217,25 @@ interface PassportGridProps {
 export function PassportGrid({ stamps, onStampClick, className = '' }: PassportGridProps) {
   if (stamps.length === 0) {
     return (
-      <div className="glass-panel rounded-[3rem] p-16 text-center">
-        <div className="text-6xl mb-4">📖</div>
+      <div className="flex flex-col items-center py-24 opacity-20 text-center">
+        <span className="text-7xl mb-4">📖</span>
         <h3 className="text-xl font-bold text-white mb-2">No stamps yet</h3>
-        <p className="text-text-muted max-w-md mx-auto">
-          Start attending events to collect passport stamps and track your journey!
+        <p className="text-sm text-white/60 max-w-xs">
+          Attend or organize events to start collecting passport stamps.
         </p>
       </div>
     );
   }
 
   return (
-    <div className={`grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 ${className}`}>
-      {stamps.map((stamp) => (
-        <PassportStampCard key={stamp.id} stamp={stamp} onClick={() => onStampClick?.(stamp)} />
+    <div className={`grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 ${className}`}>
+      {stamps.map((stamp, i) => (
+        <PassportStampCard
+          key={stamp.id}
+          stamp={stamp}
+          index={i}
+          onClick={() => onStampClick?.(stamp)}
+        />
       ))}
     </div>
   );

@@ -51,14 +51,6 @@ export default function FoxersMatchSection() {
               Browse Certified Foxers available for your dates. These pros know the scene inside out.
             </p>
           </div>
-          <div className="hidden lg:block">
-            <div className="h-12 w-12 rounded-full overflow-hidden border-2 border-white/20 shadow-glow-accent animate-pulse-slow">
-              <img
-                src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=100&auto=format&fit=crop"
-                alt="User"
-              />
-            </div>
-          </div>
         </div>
 
         {/* Role-type Filter Bar */}
@@ -152,15 +144,27 @@ function SpecializationChip({ spec }: { spec: FoxerSpecialization }) {
   );
 }
 
-function getRoleLabel(foxer: Foxer): string {
+function getPrimaryRole(foxer: Foxer): string {
   const roles = foxer.roleType ?? [];
-  if (roles.includes("eventFoxer")) return "Event Foxer";
-  if (roles.includes("gearFoxer")) return "Gear Foxer";
-  if (roles.includes("serviceFoxer")) {
-    const cat = foxer.services[0]?.category;
-    return cat ? cat.replace(/_/g, " ") : "Talent Foxer";
-  }
-  return "Foxer";
+  if (roles.includes("eventFoxer")) return "eventFoxer";
+  if (roles.includes("gearFoxer")) return "gearFoxer";
+  if (roles.includes("serviceFoxer")) return "serviceFoxer";
+  return "";
+}
+
+const ROLE_META: Record<string, { label: string; description: string; color: string }> = {
+  eventFoxer:   { label: "Event Foxer",   description: "Plans & coordinates your entire event end-to-end", color: "#ff00aa" },
+  gearFoxer:    { label: "Gear Foxer",    description: "Rents out equipment — sound, lighting & décor",    color: "#a78bfa" },
+  serviceFoxer: { label: "Talent Foxer",  description: "Provides services like photography, catering & entertainment", color: "#00d2ff" },
+  venueFoxer:   { label: "Venue Foxer",   description: "Provides the space for your event",                color: "#ccff00" },
+};
+
+function getRoleMeta(foxer: Foxer) {
+  const roles = foxer.roleType ?? [];
+  if (roles.includes("eventFoxer"))   return ROLE_META.eventFoxer;
+  if (roles.includes("gearFoxer"))    return ROLE_META.gearFoxer;
+  if (roles.includes("serviceFoxer")) return ROLE_META.serviceFoxer;
+  return { label: "Foxer", description: "FoxPassport verified professional", color: "#ffffff" };
 }
 
 // Sub-component for foxer cards
@@ -183,7 +187,9 @@ function FoxerCard({ foxer }: { foxer: Foxer }) {
     ? [...new Set((foxer.eventTemplates ?? []).map((t) => t.category))].slice(0, 4)
     : [...new Set(foxer.services.flatMap((s) => s.tags))].slice(0, 4);
 
-  const roleLabel = getRoleLabel(foxer);
+  const roleMeta = getRoleMeta(foxer);
+  const isEventFoxer = foxer.roleType?.includes("eventFoxer");
+  const showStartHere = isEventFoxer && (foxer.eventTemplates?.length ?? 0) > 0;
 
   const bio = (isHost && hasTemplates)
     ? (foxer.eventTemplates?.[0]?.description ?? null)
@@ -194,14 +200,27 @@ function FoxerCard({ foxer }: { foxer: Foxer }) {
     : FALLBACK_AVATAR;
 
   return (
-    <div className="group glass-card rounded-[2rem] p-8 hover:border-primary/50 transition-all duration-300 card-hover-effect relative flex flex-col">
+    <div
+      className="group glass-card rounded-[2rem] p-8 transition-all duration-300 card-hover-effect relative flex flex-col"
+      style={showStartHere ? { borderColor: "rgba(255,0,170,0.3)" } : undefined}
+    >
+      {/* "Start here" banner for Event Foxers with content */}
+      {showStartHere && (
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 z-20 pointer-events-none">
+          <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest bg-[#ff00aa] text-white shadow-[0_0_12px_rgba(255,0,170,0.6)]">
+            <span className="material-symbols-outlined text-[11px]">bolt</span>
+            Start here
+          </span>
+        </div>
+      )}
+
       {/* Stretched Link */}
       <Link href={`/foxer/${foxer.id}`} className="absolute inset-0 z-0 rounded-[2rem]" aria-label={`View ${foxer.name}'s profile`}>
         <span className="sr-only">View Profile</span>
       </Link>
 
       {/* Header */}
-      <div className="flex items-start justify-between mb-6 relative z-10 pointer-events-none">
+      <div className="flex items-start justify-between mb-3 relative z-10 pointer-events-none">
         <div className="flex gap-4">
           <div className="relative">
             <img
@@ -217,7 +236,7 @@ function FoxerCard({ foxer }: { foxer: Foxer }) {
               {foxer.name}{" "}
               <span className="material-symbols-outlined text-primary text-[18px] fill-current">verified</span>
             </div>
-            <div className="text-text-muted text-sm capitalize">{roleLabel}</div>
+            <div className="text-sm font-semibold" style={{ color: roleMeta.color }}>{roleMeta.label}</div>
           </div>
         </div>
         <div className="text-right">
@@ -229,9 +248,14 @@ function FoxerCard({ foxer }: { foxer: Foxer }) {
         </div>
       </div>
 
+      {/* Role description */}
+      <p className="text-xs text-white/40 mb-5 relative z-10 pointer-events-none pl-20">
+        {roleMeta.description}
+      </p>
+
       {/* Bio */}
       {bio && (
-        <p className="text-sm text-text-muted leading-relaxed mb-5 relative z-10 pointer-events-none line-clamp-2">
+        <p className="text-sm text-text-muted leading-relaxed mb-4 relative z-10 pointer-events-none line-clamp-2">
           {bio}
         </p>
       )}
@@ -254,14 +278,17 @@ function FoxerCard({ foxer }: { foxer: Foxer }) {
         )}
       </div>
 
-      {/* Specialization chips */}
-      {(foxer.foxerSpecializations?.length ?? 0) > 0 && (
-        <div className="flex flex-wrap gap-1.5 mb-6 relative z-10">
-          {foxer.foxerSpecializations!.map((s, i) => (
-            <SpecializationChip key={i} spec={s} />
-          ))}
-        </div>
-      )}
+      {/* Specialization chips — scoped to the primary role shown on this card */}
+      {(() => {
+        const primaryRole = getPrimaryRole(foxer);
+        const specs = (foxer.foxerSpecializations ?? []).filter(s => s.roleType === primaryRole);
+        if (specs.length === 0) return null;
+        return (
+          <div className="flex flex-wrap gap-1.5 mb-6 relative z-10">
+            {specs.map((s, i) => <SpecializationChip key={i} spec={s} />)}
+          </div>
+        );
+      })()}
 
       {/* Portfolio Images */}
       {portfolioImages.length > 0 && (
