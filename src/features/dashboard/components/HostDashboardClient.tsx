@@ -22,6 +22,7 @@ import { useRoleAccess } from '@/features/auth/hooks/useRoleAccess';
 import { useAuthStore } from '@/features/auth/store/useAuthStore';
 import { mapBackendAssetToInventoryItem, mapBackendServiceToServiceItem } from '@/features/dashboard/mappers/listings';
 import { useHostData } from "@/features/dashboard/hooks/useHostData";
+import { useFoxerDashboard } from "@/features/dashboard/hooks/useFoxerDashboard";
 import type { EventItem } from '@/features/dashboard/data/dashboardData';
 import StripeConnectSection from '@/features/dashboard/components/StripeConnectSection';
 
@@ -75,6 +76,8 @@ export default function HostDashboardClient({ initialData }: HostDashboardClient
 
   const access = useRoleAccess();
 
+  const { stats: foxerStats, isLoading: statsLoading } = useFoxerDashboard();
+
   // Reactive data with polling
   const { data: rawServices } = useHostData('services', initialData.services);
   const { data: rawAssets } = useHostData('assets', initialData.inventory);
@@ -108,7 +111,7 @@ export default function HostDashboardClient({ initialData }: HostDashboardClient
             access={access}
           />
 
-          <KPICards />
+          <KPICards stats={foxerStats} isLoading={statsLoading} />
 
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 mb-10">
             <OccupancyChart />
