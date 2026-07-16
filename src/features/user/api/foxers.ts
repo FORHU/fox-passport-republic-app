@@ -21,6 +21,12 @@ export interface FoxerEventTemplate {
   images: { url: string }[];
 }
 
+export interface FoxerSpecialization {
+  roleType: string;
+  category: string;
+  source: "declared" | "earned";
+}
+
 export interface Foxer {
   id: string;
   name: string;
@@ -31,6 +37,7 @@ export interface Foxer {
   createdAt: string;
   services: FoxerService[];
   eventTemplates?: FoxerEventTemplate[];
+  foxerSpecializations?: FoxerSpecialization[];
 }
 
 export async function fetchFoxers(limit = 9, page = 1, roleType?: string): Promise<Foxer[]> {

@@ -7,6 +7,15 @@ import RequireAuth from "@/features/auth/components/RequireAuth";
 import Link from "next/link";
 import FileUploader from "@/shared/components/layout/FileUploader";
 import KycDocumentSection from "@/shared/components/layout/KycDocumentSection";
+import SpecializationPicker from "./SpecializationPicker";
+
+const EVENT_CATEGORY_OPTIONS = [
+  { value: "corporate", label: "Corporate" },
+  { value: "birthday", label: "Birthday" },
+  { value: "wedding", label: "Wedding" },
+  { value: "social", label: "Social" },
+  { value: "other", label: "Other" },
+];
 
 export default function HostApplicationClient() {
   const { mutate: applyRole, isPending } = useApplyRole();
@@ -21,6 +30,7 @@ export default function HostApplicationClient() {
     selfieFileId: "",
     portfolioFileId: "",
   });
+  const [specializations, setSpecializations] = useState<string[]>([]);
 
   const handleFileUpload = (field: string, fileId: string) => {
     setFormData(prev => ({ ...prev, [field]: fileId }));
@@ -36,6 +46,7 @@ export default function HostApplicationClient() {
       roleType: "eventFoxer",
       data: {
         ...formData,
+        specializations,
       },
     });
   };
@@ -111,9 +122,16 @@ export default function HostApplicationClient() {
               </div>
             </div>
 
+            <SpecializationPicker
+              options={EVENT_CATEGORY_OPTIONS}
+              value={specializations}
+              onChange={setSpecializations}
+              accentColor="#ff00aa"
+            />
+
             <KycDocumentSection onUpload={handleFileUpload} />
 
-            <FileUploader 
+            <FileUploader
               label="Portfolio / Resume (Optional)" 
               onUploadComplete={(id) => handleFileUpload("portfolioFileId", id)} 
             />

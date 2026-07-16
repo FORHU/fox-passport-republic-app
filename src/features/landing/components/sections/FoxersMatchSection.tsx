@@ -4,7 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
-import { fetchFoxers, type Foxer } from "@/features/user/api/foxers";
+import { fetchFoxers, type Foxer, type FoxerSpecialization } from "@/features/user/api/foxers";
 
 const FALLBACK_AVATAR = "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=400&auto=format&fit=crop";
 
@@ -134,6 +134,24 @@ export default function FoxersMatchSection() {
   );
 }
 
+function SpecializationChip({ spec }: { spec: FoxerSpecialization }) {
+  const label = spec.category.replace(/_/g, " ");
+  if (spec.source === "earned") {
+    return (
+      <span className="inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide bg-yellow-400/15 border border-yellow-400/40 text-yellow-300">
+        <span className="material-symbols-outlined text-[11px] fill-current">star</span>
+        {label}
+      </span>
+    );
+  }
+  return (
+    <span className="inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide bg-white/5 border border-white/15 text-white/50">
+      <span className="material-symbols-outlined text-[11px]">label</span>
+      {label}
+    </span>
+  );
+}
+
 function getRoleLabel(foxer: Foxer): string {
   const roles = foxer.roleType ?? [];
   if (roles.includes("eventFoxer")) return "Event Foxer";
@@ -219,7 +237,7 @@ function FoxerCard({ foxer }: { foxer: Foxer }) {
       )}
 
       {/* Tags */}
-      <div className="flex flex-wrap gap-2 mb-8 relative z-10">
+      <div className="flex flex-wrap gap-2 mb-4 relative z-10">
         {tags.length > 0 ? (
           tags.map((tag, idx) => (
             <span
@@ -235,6 +253,15 @@ function FoxerCard({ foxer }: { foxer: Foxer }) {
           </span>
         )}
       </div>
+
+      {/* Specialization chips */}
+      {(foxer.foxerSpecializations?.length ?? 0) > 0 && (
+        <div className="flex flex-wrap gap-1.5 mb-6 relative z-10">
+          {foxer.foxerSpecializations!.map((s, i) => (
+            <SpecializationChip key={i} spec={s} />
+          ))}
+        </div>
+      )}
 
       {/* Portfolio Images */}
       {portfolioImages.length > 0 && (
