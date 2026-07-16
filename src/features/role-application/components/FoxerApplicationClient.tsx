@@ -7,6 +7,22 @@ import RequireAuth from "@/features/auth/components/RequireAuth";
 import Link from "next/link";
 import FileUploader from "@/shared/components/layout/FileUploader";
 import KycDocumentSection from "@/shared/components/layout/KycDocumentSection";
+import SpecializationPicker from "./SpecializationPicker";
+
+const SERVICE_CATEGORY_OPTIONS = [
+  { value: "design", label: "Design" },
+  { value: "catering", label: "Catering" },
+  { value: "entertainment", label: "Entertainment" },
+  { value: "service_staff", label: "Service Staff" },
+  { value: "other", label: "Other" },
+];
+
+const ASSET_CATEGORY_OPTIONS = [
+  { value: "furnitures", label: "Furnitures" },
+  { value: "sound_system", label: "Sound System" },
+  { value: "decorations", label: "Decorations" },
+  { value: "other", label: "Other" },
+];
 
 export default function FoxerApplicationClient({ initialType = "service" }: { initialType?: "asset" | "service" }) {
   const { mutate: applyRole, isPending } = useApplyRole();
@@ -23,6 +39,7 @@ export default function FoxerApplicationClient({ initialType = "service" }: { in
     birPermitFileId: "",
     selfieFileId: "",
   });
+  const [assetSpecializations, setAssetSpecializations] = useState<string[]>([]);
 
   // Service Form State
   const [serviceData, setServiceData] = useState({
@@ -37,6 +54,7 @@ export default function FoxerApplicationClient({ initialType = "service" }: { in
     birPermitFileId: "",
     selfieFileId: "",
   });
+  const [serviceSpecializations, setServiceSpecializations] = useState<string[]>([]);
 
   const handleFileUpload = (field: string, fileId: string) => {
     if (providerType === "asset") {
@@ -62,6 +80,7 @@ export default function FoxerApplicationClient({ initialType = "service" }: { in
         data: {
           ...assetData,
           assetTypes: assetData.assetTypes.split(",").map((s) => s.trim()).filter(Boolean),
+          specializations: assetSpecializations,
         },
       });
     } else {
@@ -72,6 +91,7 @@ export default function FoxerApplicationClient({ initialType = "service" }: { in
           experience: parseInt(serviceData.experience, 10),
           serviceTypes: serviceData.serviceTypes.split(",").map((s) => s.trim()).filter(Boolean),
           portfolioUrls: serviceData.portfolioUrls.split(",").map((s) => s.trim()).filter(Boolean),
+          specializations: serviceSpecializations,
         },
       });
     }
@@ -220,8 +240,15 @@ export default function FoxerApplicationClient({ initialType = "service" }: { in
                   </div>
                 </div>
 
-                <KycDocumentSection 
-                  onUpload={handleFileUpload} 
+                <SpecializationPicker
+                  options={SERVICE_CATEGORY_OPTIONS}
+                  value={serviceSpecializations}
+                  onChange={setServiceSpecializations}
+                  accentColor="#00d2ff"
+                />
+
+                <KycDocumentSection
+                  onUpload={handleFileUpload}
                   title="Professional Verification"
                   description="As a service provider, we require a full background check including NBI clearance."
                 />
@@ -284,8 +311,15 @@ export default function FoxerApplicationClient({ initialType = "service" }: { in
                   </div>
                 </div>
 
-                <KycDocumentSection 
-                  onUpload={handleFileUpload} 
+                <SpecializationPicker
+                  options={ASSET_CATEGORY_OPTIONS}
+                  value={assetSpecializations}
+                  onChange={setAssetSpecializations}
+                  accentColor="#a78bfa"
+                />
+
+                <KycDocumentSection
+                  onUpload={handleFileUpload}
                   title="Equipment Provider Verification"
                   description="Verify your identity to start listing assets on FoxPassport."
                 />

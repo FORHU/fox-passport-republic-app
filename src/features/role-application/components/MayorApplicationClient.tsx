@@ -7,6 +7,17 @@ import RequireAuth from "@/features/auth/components/RequireAuth";
 import Link from "next/link";
 import FileUploader from "@/shared/components/layout/FileUploader";
 import KycDocumentSection from "@/shared/components/layout/KycDocumentSection";
+import SpecializationPicker from "./SpecializationPicker";
+
+const VENUE_CATEGORY_OPTIONS = [
+  { value: "indoor", label: "Indoor" },
+  { value: "outdoor", label: "Outdoor" },
+  { value: "mix", label: "Indoor/Outdoor Mix" },
+  { value: "hotel", label: "Hotel" },
+  { value: "beach_resort", label: "Beach Resort" },
+  { value: "garden", label: "Garden" },
+  { value: "other", label: "Other" },
+];
 
 export default function MayorApplicationClient() {
   const { mutate: applyRole, isPending } = useApplyRole();
@@ -23,6 +34,7 @@ export default function MayorApplicationClient() {
     birPermitFileId: "",
     selfieFileId: "",
   });
+  const [specializations, setSpecializations] = useState<string[]>([]);
 
   const handleFileUpload = (field: string, fileId: string) => {
     setFormData(prev => ({ ...prev, [field]: fileId }));
@@ -34,7 +46,7 @@ export default function MayorApplicationClient() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    applyRole({ roleType: "venueFoxer", data: formData });
+    applyRole({ roleType: "venueFoxer", data: { ...formData, specializations } });
   };
 
   return (
@@ -150,6 +162,13 @@ export default function MayorApplicationClient() {
                 />
               </div>
             </div>
+
+            <SpecializationPicker
+              options={VENUE_CATEGORY_OPTIONS}
+              value={specializations}
+              onChange={setSpecializations}
+              accentColor="#ccff00"
+            />
 
             <KycDocumentSection onUpload={handleFileUpload} />
 

@@ -5,7 +5,25 @@ import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import { motion } from 'motion/react';
 import { useQuery } from '@tanstack/react-query';
-import { fetchFoxerById, type Foxer } from '@/features/user/api/foxers';
+import { fetchFoxerById, type Foxer, type FoxerSpecialization } from '@/features/user/api/foxers';
+
+function ProfileSpecializationChip({ spec }: { spec: FoxerSpecialization }) {
+  const label = spec.category.replace(/_/g, ' ');
+  if (spec.source === 'earned') {
+    return (
+      <span className="inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-bold uppercase tracking-wide bg-yellow-400/15 border border-yellow-400/40 text-yellow-300">
+        <span className="material-symbols-outlined text-[13px] fill-current">star</span>
+        {label}
+      </span>
+    );
+  }
+  return (
+    <span className="inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-bold uppercase tracking-wide bg-white/5 border border-white/15 text-white/50">
+      <span className="material-symbols-outlined text-[13px]">label</span>
+      {label}
+    </span>
+  );
+}
 
 function getRoleLabel(foxer: Foxer): string {
   const roles = foxer.roleType ?? [];
@@ -198,6 +216,25 @@ const FoxerProfile: React.FC = () => {
                   ))}
                 </div>
               </motion.div>
+
+              {(foxer.foxerSpecializations?.length ?? 0) > 0 && (
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.15 }}
+                  className="glass-card rounded-[2.5rem] p-8 space-y-4"
+                >
+                  <h3 className="text-lg font-bold flex items-center gap-2">
+                    <span className="material-symbols-outlined text-accent">verified_user</span>
+                    Specializations
+                  </h3>
+                  <div className="flex flex-wrap gap-2">
+                    {foxer.foxerSpecializations!.map((s, i) => (
+                      <ProfileSpecializationChip key={i} spec={s} />
+                    ))}
+                  </div>
+                </motion.div>
+              )}
 
               <div className="flex flex-col gap-3">
                 <button
