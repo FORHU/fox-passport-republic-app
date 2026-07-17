@@ -11,6 +11,7 @@ const FALLBACK_AVATAR = "https://images.unsplash.com/photo-1535713875002-d1d0cf3
 const ROLE_FILTERS = [
   { label: "All",          value: undefined,          icon: "groups" },
   { label: "Event Foxer",  value: "eventFoxer",       icon: "celebration" },
+  { label: "Venue Foxer",  value: "venueFoxer",       icon: "location_city" },
   { label: "Talent Foxer", value: "serviceFoxer",     icon: "theater_comedy" },
   { label: "Gear Foxer",   value: "gearFoxer",        icon: "speaker" },
 ] as const;
@@ -156,7 +157,7 @@ const ROLE_META: Record<string, { label: string; description: string; color: str
   eventFoxer:   { label: "Event Foxer",   description: "Plans & coordinates your entire event end-to-end", color: "#ff00aa" },
   gearFoxer:    { label: "Gear Foxer",    description: "Rents out equipment — sound, lighting & décor",    color: "#a78bfa" },
   serviceFoxer: { label: "Talent Foxer",  description: "Provides services like photography, catering & entertainment", color: "#00d2ff" },
-  venueFoxer:   { label: "Venue Foxer",   description: "Provides the space for your event",                color: "#ccff00" },
+  venueFoxer:   { label: "Venue Foxer",   description: "Provides the perfect space for your event",        color: "#ccff00" },
 };
 
 function getRoleMeta(foxer: Foxer) {
@@ -172,28 +173,36 @@ function FoxerCard({ foxer }: { foxer: Foxer }) {
   const router = useRouter();
 
   const isHost = foxer.roleType?.includes("eventFoxer");
+  const isGearFoxer = foxer.roleType?.includes("gearFoxer");
 
-  // Portfolio images: prefer event templates for hosts, services for others
   const hasTemplates = (foxer.eventTemplates?.length ?? 0) > 0;
+  const hasAssets = (foxer.assets?.length ?? 0) > 0;
 
+  // Portfolio images: templates for EventFoxer, assets for GearFoxer, services otherwise
   const portfolioImages = (
     isHost && hasTemplates
       ? (foxer.eventTemplates ?? []).flatMap((t) => t.images.map((img) => img.url))
-      : foxer.services.flatMap((s) => s.images.map((img) => img.url))
+      : isGearFoxer && hasAssets
+        ? (foxer.assets ?? []).flatMap((a) => a.images.map((img) => img.url))
+        : foxer.services.flatMap((s) => s.images.map((img) => img.url))
   ).slice(0, 3);
 
-  // Tags: event categories for hosts with templates, service tags otherwise
+  // Tags
   const tags = (isHost && hasTemplates)
     ? [...new Set((foxer.eventTemplates ?? []).map((t) => t.category))].slice(0, 4)
-    : [...new Set(foxer.services.flatMap((s) => s.tags))].slice(0, 4);
+    : isGearFoxer && hasAssets
+      ? [...new Set((foxer.assets ?? []).map((a) => a.category))].slice(0, 4)
+      : [...new Set(foxer.services.flatMap((s) => s.tags))].slice(0, 4);
 
   const roleMeta = getRoleMeta(foxer);
   const isEventFoxer = foxer.roleType?.includes("eventFoxer");
-  const showStartHere = isEventFoxer && (foxer.eventTemplates?.length ?? 0) > 0;
+  const showStartHere = isEventFoxer && hasTemplates;
 
   const bio = (isHost && hasTemplates)
     ? (foxer.eventTemplates?.[0]?.description ?? null)
-    : (foxer.services[0]?.description ?? null);
+    : isGearFoxer && hasAssets
+      ? (foxer.assets?.[0]?.description ?? null)
+      : (foxer.services[0]?.description ?? null);
 
   const avatarUrl = foxer.imgId
     ? `https://fox-passport-republic-assets.s3.ap-southeast-1.amazonaws.com/${foxer.imgId}`

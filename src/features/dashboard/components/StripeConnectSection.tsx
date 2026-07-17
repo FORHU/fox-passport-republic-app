@@ -97,7 +97,7 @@ export default function StripeConnectSection() {
         <>
           {!isComplete ? (
             <Link
-              href="/host/stripe-onboard"
+              href="/creator-dashboard/stripe-onboard"
               className="w-full flex items-center justify-center gap-2 bg-[#635bff] hover:bg-[#5b53f5] text-white text-sm font-semibold py-2.5 rounded-full transition"
             >
               <ExternalLink size={14} />
@@ -110,7 +110,7 @@ export default function StripeConnectSection() {
                 You&apos;re all set to receive payouts
               </div>
               <Link
-                href="/host/stripe-dashboard"
+                href="/creator-dashboard/stripe-dashboard"
                 className="w-full flex items-center justify-center gap-2 bg-white/10 hover:bg-white/20 text-white text-sm font-semibold py-2.5 rounded-full transition border border-white/10"
               >
                 <LayoutDashboard size={14} />

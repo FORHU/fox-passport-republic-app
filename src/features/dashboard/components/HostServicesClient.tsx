@@ -87,6 +87,13 @@ export default function HostServicesClient({ initialServices }: HostServicesClie
             </div>
 
             <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
+              <button
+                onClick={() => router.push('/foxer/create-service')}
+                className="flex items-center gap-2 px-5 py-2.5 rounded-full bg-[#ccff00] text-black text-sm font-bold hover:opacity-90 transition-opacity shrink-0"
+              >
+                <span className="material-symbols-outlined text-[16px]">add</span>
+                Add Service
+              </button>
               <div className="relative w-full sm:w-72">
                 <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-white/40 text-[18px]">
                   search
