@@ -23,10 +23,28 @@ const nextConfig = {
     unoptimized: process.env.NODE_ENV === 'development',
   },
 
+  async redirects() {
+    return [
+      { source: '/host',                      destination: '/creator-dashboard',                      permanent: true },
+      { source: '/host/apply',                destination: '/creator-dashboard/apply',                permanent: true },
+      { source: '/host/calendar',             destination: '/creator-dashboard/calendar',             permanent: true },
+      { source: '/host/events',               destination: '/creator-dashboard/events',               permanent: true },
+      { source: '/host/events/:id/edit',      destination: '/creator-dashboard/events/:id/edit',      permanent: true },
+      { source: '/host/assets',               destination: '/creator-dashboard/assets',               permanent: true },
+      { source: '/host/assets/:id/edit',      destination: '/creator-dashboard/assets/:id/edit',      permanent: true },
+      { source: '/host/services',             destination: '/creator-dashboard/services',             permanent: true },
+      { source: '/host/services/:id/edit',    destination: '/creator-dashboard/services/:id/edit',    permanent: true },
+      { source: '/host/venues',               destination: '/creator-dashboard/venues',               permanent: true },
+      { source: '/host/venues/:id/edit',      destination: '/creator-dashboard/venues/:id/edit',      permanent: true },
+      { source: '/host/stripe-dashboard',     destination: '/creator-dashboard/stripe-dashboard',     permanent: true },
+      { source: '/host/stripe-onboard',       destination: '/creator-dashboard/stripe-onboard',       permanent: true },
+    ];
+  },
+
   async headers() {
     return [
       {
-        source: '/host/:path*',
+        source: '/creator-dashboard/stripe-:path*',
         headers: [
           {
             key: 'Content-Security-Policy',

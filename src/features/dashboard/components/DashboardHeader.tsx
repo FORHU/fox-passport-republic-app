@@ -14,8 +14,8 @@ export function DashboardHeader() {
   const access = useRoleAccess();
 
   const roleLabels: string[] = [];
-  if (access.isMayor) roleLabels.push('Mayor');
-  if (access.isHost) roleLabels.push('Host');
+  if (access.isMayor) roleLabels.push('Venue Foxer');
+  if (access.isHost) roleLabels.push('Event Foxer');
   if (access.isFoxer) roleLabels.push('Foxer');
   const roleLabel = roleLabels.length > 0 ? roleLabels.join(' · ') : 'Creator';
 
@@ -127,8 +127,8 @@ export function WelcomeBanner({
       icon: 'event',
       iconColor: 'text-[#ccff00]',
       allowed: access.canManageEvents,
-      requiredRole: 'Mayor',
-      applyHref: '/onboarding',
+      requiredRole: 'Event Foxer',
+      applyHref: '/creator-dashboard/apply',
       onClick: onNavigateToCreateEvent,
     },
     {
@@ -136,8 +136,8 @@ export function WelcomeBanner({
       icon: 'apartment',
       iconColor: 'text-pink-500',
       allowed: access.canManageVenues,
-      requiredRole: 'Host',
-      applyHref: '/creator-dashboard/apply',
+      requiredRole: 'Venue Foxer',
+      applyHref: '/mayor/apply',
       onClick: onNavigateToCreateVenue,
     },
     {

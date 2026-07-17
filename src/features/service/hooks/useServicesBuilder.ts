@@ -24,6 +24,12 @@ export function useServicesBuilder() {
   const [categoryMap, setCategoryMap] = useState<{ [key: string]: string }>({});
   const { uploadFile, isUploading } = useFileUpload();
 
+  // Ensure the shared store is initialized for service mode
+  useEffect(() => {
+    store.initializeForType("service");
+    return () => { store.reset(); };
+  }, []);
+
   // Fetch categories from API to map slugs to IDs
   useEffect(() => {
     const fetchCategories = async () => {
