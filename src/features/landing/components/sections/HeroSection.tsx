@@ -1,9 +1,280 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
+import { createPortal } from "react-dom";
+import { config } from "@/shared/lib/config";
+
+const CATEGORIES = ["Wedding", "Corporate", "Birthday", "Social", "Other"];
+
+const WEEKDAYS = ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"];
+const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+
+function toDateStr(year: number, month: number, day: number) {
+  return `${year}-${String(month + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+}
+
+function CompactCalendar({
+  value,
+  onSelect,
+}: {
+  value: string;
+  onSelect: (d: string) => void;
+}) {
+  const today = new Date();
+  const todayStr = today.toISOString().split("T")[0];
+  const [viewYear, setViewYear] = useState(
+    value ? new Date(value + "T00:00:00").getFullYear() : today.getFullYear()
+  );
+  const [viewMonth, setViewMonth] = useState(
+    value ? new Date(value + "T00:00:00").getMonth() : today.getMonth()
+  );
+
+  const dim = new Date(viewYear, viewMonth + 1, 0).getDate();
+  const offset = new Date(viewYear, viewMonth, 1).getDay();
+
+  const cells: (number | null)[] = [];
+  for (let i = 0; i < offset; i++) cells.push(null);
+  for (let d = 1; d <= dim; d++) cells.push(d);
+  while (cells.length % 7 !== 0) cells.push(null);
+
+  const prevMonth = () => {
+    if (viewMonth === 0) { setViewYear((y) => y - 1); setViewMonth(11); }
+    else setViewMonth((m) => m - 1);
+  };
+  const nextMonth = () => {
+    if (viewMonth === 11) { setViewYear((y) => y + 1); setViewMonth(0); }
+    else setViewMonth((m) => m + 1);
+  };
+
+  return (
+    <div className="glass-card rounded-xl border border-white/10 p-3 w-[260px] shadow-[0_0_30px_rgba(0,0,0,0.5)]">
+      <div className="flex items-center justify-between mb-2">
+        <button
+          type="button"
+          onClick={prevMonth}
+          className="h-7 w-7 rounded-lg hover:bg-white/10 flex items-center justify-center text-white/40 hover:text-[#ccff00] active:scale-90 transition-all duration-200"
+        >
+          <span className="material-symbols-outlined text-[16px]">chevron_left</span>
+        </button>
+        <p className="text-xs font-bold text-[#ccff00] tracking-wide select-none">
+          {MONTHS[viewMonth]} {viewYear}
+        </p>
+        <button
+          type="button"
+          onClick={nextMonth}
+          className="h-7 w-7 rounded-lg hover:bg-white/10 flex items-center justify-center text-white/40 hover:text-[#ccff00] active:scale-90 transition-all duration-200"
+        >
+          <span className="material-symbols-outlined text-[16px]">chevron_right</span>
+        </button>
+      </div>
+
+      <div className="grid grid-cols-7 mb-1">
+        {WEEKDAYS.map((d) => (
+          <div key={d} className="text-center text-[9px] text-white/60 font-bold py-1 tracking-wider">
+            {d}
+          </div>
+        ))}
+      </div>
+
+      <div className="grid grid-cols-7 gap-px">
+        {cells.map((day, i) => {
+          if (day === null) return <div key={`e-${i}`} className="h-8" />;
+          const ds = toDateStr(viewYear, viewMonth, day);
+          const past = ds < todayStr;
+          const sel = ds === value;
+          return (
+            <button
+              key={ds}
+              type="button"
+              disabled={past}
+              onClick={() => onSelect(ds)}
+              className={[
+                "h-8 w-full text-[13px] font-semibold transition-all duration-150 flex items-center justify-center",
+                sel ? "bg-[#ccff00] text-black rounded-full z-10 shadow-[0_0_12px_rgba(204,255,0,0.4)] scale-105" : "",
+                !sel && !past ? "text-white/90 hover:bg-white/10 hover:rounded-full hover:scale-105 cursor-pointer active:scale-95" : "",
+                past ? "text-white/20 cursor-not-allowed" : "",
+              ].filter(Boolean).join(" ")}
+            >
+              {day}
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+function DateField({
+  label,
+  value,
+  error,
+  onSelect,
+  onClearError,
+}: {
+  label: string;
+  value: string;
+  error?: string;
+  onSelect: (d: string) => void;
+  onClearError: () => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+  const [pos, setPos] = useState({ top: 0, left: 0 });
+
+  const close = useCallback(() => setOpen(false), []);
+
+  useEffect(() => {
+    if (!open) return;
+    const handler = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, [open]);
+
+  const toggle = () => {
+    if (!open && ref.current) {
+      const rect = ref.current.getBoundingClientRect();
+      setPos({ top: rect.bottom + 6, left: rect.left });
+    }
+    setOpen((o) => !o);
+  };
+
+  const display = value
+    ? new Date(value + "T00:00:00").toLocaleDateString("en-PH", {
+        month: "short",
+        day: "numeric",
+        year: "numeric",
+      })
+    : "";
+
+  return (
+    <div className="flex-1 w-auto px-4 py-3 text-left cursor-pointer group/item hover:bg-white/10 transition-colors relative" ref={ref}>
+      <span className="block text-[10px] font-bold text-white/40 uppercase tracking-widest mb-1 ml-1">{label}</span>
+      <button
+        type="button"
+        onClick={toggle}
+        className={`bg-transparent border-none text-white text-xs font-bold w-full h-6 outline-none text-left ${
+          value ? "" : "text-white/40"
+        } ${error ? "text-red-400" : ""}`}
+      >
+        {display || "Select date"}
+      </button>
+      {error && (
+        <span className="block text-[10px] font-bold text-red-400 mt-1 ml-1 animate-pulse">{error}</span>
+      )}
+
+      {open &&
+        createPortal(
+          <div
+            className="fixed z-[101] animate-in fade-in zoom-in-95 duration-150"
+            style={{ top: pos.top, left: pos.left }}
+            onMouseDown={(e) => e.stopPropagation()}
+          >
+            <CompactCalendar
+              value={value}
+              onSelect={(d) => {
+                onSelect(d);
+                onClearError();
+                close();
+              }}
+            />
+          </div>,
+          document.body
+        )}
+    </div>
+  );
+}
+
+function CategoryField({
+  value,
+  error,
+  onChange,
+  onClearError,
+}: {
+  value: string;
+  error?: string;
+  onChange: (val: string) => void;
+  onClearError: () => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+  const [pos, setPos] = useState({ top: 0, left: 0, width: 0 });
+
+  const close = useCallback(() => setOpen(false), []);
+
+  useEffect(() => {
+    if (!open) return;
+    const handler = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, [open]);
+
+  const toggle = () => {
+    if (!open && ref.current) {
+      const rect = ref.current.getBoundingClientRect();
+      setPos({ top: rect.bottom + 6, left: rect.left, width: rect.width });
+    }
+    setOpen((o) => !o);
+  };
+
+  return (
+    <div className="flex-1 w-auto px-4 py-3 text-left cursor-pointer group/item hover:bg-white/10 transition-colors relative" ref={ref}>
+      <span className="block text-[10px] font-bold text-white/40 uppercase tracking-widest mb-1 ml-1">Category</span>
+      <button
+        type="button"
+        onClick={toggle}
+        className={`flex items-center justify-between w-full bg-transparent border-none text-white text-xs font-bold h-6 outline-none text-left ${
+          value ? "" : "text-white/40"
+        } ${error ? "text-red-400" : ""}`}
+      >
+        <span className="capitalize truncate">{value || "Select..."}</span>
+        <span className={`material-symbols-outlined text-[16px] text-white/40 transition-transform duration-200 ${open ? "rotate-180" : ""}`}>
+          expand_more
+        </span>
+      </button>
+      {error && (
+        <span className="block text-[10px] font-bold text-red-400 mt-1 ml-1 animate-pulse">{error}</span>
+      )}
+
+      {open &&
+        createPortal(
+          <div
+            className="fixed z-[101] animate-in fade-in zoom-in-95 duration-150"
+            style={{ top: pos.top, left: pos.left, width: pos.width }}
+            onMouseDown={(e) => e.stopPropagation()}
+          >
+            <div className="glass-card rounded-xl border border-white/10 p-1.5 shadow-[0_0_30px_rgba(0,0,0,0.5)]">
+              {CATEGORIES.map((cat) => (
+                <button
+                  key={cat}
+                  type="button"
+                  onClick={() => {
+                    onChange(cat);
+                    onClearError();
+                    close();
+                  }}
+                  className={`w-full text-left px-3 py-2 rounded-lg text-sm capitalize transition-all ${
+                    value === cat
+                      ? "bg-[#ccff00]/15 text-[#ccff00] font-bold"
+                      : "text-white/70 hover:bg-white/10 hover:text-white"
+                  }`}
+                >
+                  {cat}
+                </button>
+              ))}
+            </div>
+          </div>,
+          document.body
+        )}
+    </div>
+  );
+}
 
 const CATEGORY_COLORS: Record<string, string> = {
   birthday:  "bg-lime-400/20 text-lime-300",
@@ -24,18 +295,22 @@ export default function HeroSection({ featuredTemplates = [] }: HeroSectionProps
   const locationRef = useRef<HTMLDivElement>(null);
 
   const [cities, setCities] = useState<string[]>([]);
-  const [searchType, setSearchType] = useState("event_template");
   const [category, setCategory] = useState("");
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
-  const [validationError, setValidationError] = useState("");
+  const [errors, setErrors] = useState<{
+    location?: string;
+    category?: string;
+    startDate?: string;
+    endDate?: string;
+  }>({});
 
   useEffect(() => {
     if (!locationVal || locationVal.length < 2) {
       return;
     }
     const timer = setTimeout(() => {
-      fetch(`http://localhost:3002/api/v1/locations/search?q=${encodeURIComponent(locationVal)}`)
+      fetch(`${config.apiUrl}/locations/search?q=${encodeURIComponent(locationVal)}`)
         .then(res => res.json())
         .then(data => {
           if (data.status === "success") {
@@ -44,41 +319,41 @@ export default function HeroSection({ featuredTemplates = [] }: HeroSectionProps
         })
         .catch(err => console.error("Failed to fetch locations:", err));
     }, 300);
-    
+
     return () => clearTimeout(timer);
   }, [locationVal]);
 
   const filteredLocations = cities;
 
-  const handleDropdownChange = (type: string, value: string) => {
-    setSearchType(type);
-    setCategory(value === "All" ? "" : value.toLowerCase());
-  };
-
   const handleSearch = (e?: React.FormEvent) => {
     if (e) e.preventDefault();
-    setValidationError("");
 
-    if ((startDate && !endDate) || (!startDate && endDate)) {
-      setValidationError("Please provide both start and end dates.");
-      return;
+    const nextErrors: typeof errors = {};
+    if (!locationVal.trim()) nextErrors.location = "Required";
+    if (!category) nextErrors.category = "Required";
+    if (!startDate) nextErrors.startDate = "Required";
+    if (!endDate) nextErrors.endDate = "Required";
+
+    if (startDate && endDate && new Date(endDate) < new Date(startDate)) {
+      nextErrors.endDate = "Invalid date";
     }
+
+    setErrors(nextErrors);
+    if (Object.keys(nextErrors).length > 0) return;
 
     const params = new URLSearchParams();
-    params.set("type", searchType);
-    if (category) params.set("category", category);
-    if (locationVal) {
-      const parts = locationVal.split(",").map(p => p.trim());
-      if (parts.length > 1) {
-         params.set("country", parts[0]);
-         params.set("city", parts.slice(1).join(", "));
-      } else {
-         params.set("city", locationVal);
-      }
+    params.set("category", category.toLowerCase());
+    const parts = locationVal.split(",").map(p => p.trim());
+    if (parts.length > 1) {
+      params.set("country", parts[0]);
+      params.set("city", parts.slice(1).join(", "));
+    } else {
+      params.set("city", locationVal);
     }
-    if (startDate) params.set("startDate", startDate);
-    if (endDate) params.set("endDate", endDate);
-    
+    params.set("label", locationVal);
+    params.set("startDate", startDate);
+    params.set("endDate", endDate);
+
     router.push(`/search?${params.toString()}`);
   };
 
@@ -132,60 +407,66 @@ export default function HeroSection({ featuredTemplates = [] }: HeroSectionProps
 
             {/* Search Area */}
             <div className="w-full max-w-3xl mx-auto lg:mx-0 flex flex-col gap-4 z-20 relative">
-
-
               {/* Search Box */}
               <form onSubmit={handleSearch} className="w-full max-w-4xl mx-auto lg:mx-0 relative group z-20">
                 <div className="absolute -inset-1 bg-gradient-to-r from-primary via-purple-600 to-secondary rounded-full blur opacity-40 group-hover:opacity-70 transition duration-500 group-hover:duration-200 animate-pulse"></div>
                 <div className="relative glass-panel bg-black/80 backdrop-blur-2xl px-6 py-2 rounded-full border border-white/10 group-hover:border-white/20 transition-all shadow-[0_0_30px_rgba(139,92,246,0.3)]">
-                  <div className="flex flex-col sm:flex-row items-center gap-0">
-                    
-                    {/* Start Date */}
-                    <div className="flex-1 w-full sm:w-auto px-4 py-3 text-left cursor-pointer group/item hover:bg-white/20 transition-colors">
-                      <span className="block text-[10px] font-bold text-white/40 uppercase tracking-widest mb-1 ml-1">Start</span>
-                      <input 
-                        type="date"
-                        value={startDate}
-                        onChange={(e) => setStartDate(e.target.value)}
-                        className="bg-transparent border-none text-white focus:ring-0 text-xs font-bold w-full placeholder:text-white/20 placeholder:text-[10px] h-6 outline-none cursor-pointer text-left [color-scheme:dark]"
-                        placeholder="dd/mm/yyyy"
-                      />
-                    </div>
+                  <div className="flex flex-row items-center gap-0">
 
-                    <div className="hidden sm:block h-8 w-px bg-white/10"></div>
+                    {/* Category */}
+                    <CategoryField
+                      value={category}
+                      error={errors.category}
+                      onChange={setCategory}
+                      onClearError={() => setErrors((prev) => ({ ...prev, category: undefined }))}
+                    />
+
+                    <div className="h-8 w-px bg-white/10"></div>
+
+                    {/* Start Date */}
+                    <DateField
+                      label="Start"
+                      value={startDate}
+                      error={errors.startDate}
+                      onSelect={(d) => {
+                        setStartDate(d);
+                        setErrors((prev) => ({ ...prev, startDate: undefined, endDate: undefined }));
+                      }}
+                      onClearError={() => setErrors((prev) => ({ ...prev, startDate: undefined }))}
+                    />
+
+                    <div className="h-8 w-px bg-white/10"></div>
 
                     {/* End Date */}
-                    <div className="flex-1 w-full sm:w-auto px-4 py-3 text-left cursor-pointer group/item hover:bg-white/20 transition-colors">
-                      <span className="block text-[10px] font-bold text-white/40 uppercase tracking-widest mb-1 ml-1">End</span>
-                      <input 
-                        type="date"
-                        value={endDate}
-                        onChange={(e) => setEndDate(e.target.value)}
-                        className="bg-transparent border-none text-white focus:ring-0 text-xs font-bold w-full placeholder:text-white/20 placeholder:text-[10px] h-6 outline-none cursor-pointer text-left [color-scheme:dark]"
-                        placeholder="dd/mm/yyyy"
-                      />
-                    </div>
+                    <DateField
+                      label="End"
+                      value={endDate}
+                      error={errors.endDate}
+                      onSelect={setEndDate}
+                      onClearError={() => setErrors((prev) => ({ ...prev, endDate: undefined }))}
+                    />
 
-                    <div className="hidden sm:block h-8 w-px bg-white/10"></div>
+                    <div className="h-8 w-px bg-white/10"></div>
 
                     {/* Location */}
-                    <div className="flex-[1.5] w-full sm:w-auto px-6 py-3 text-left relative" ref={locationRef}>
+                    <div className="flex-[1.5] w-auto px-6 py-3 text-left relative" ref={locationRef}>
                       <span className="block text-[10px] font-bold text-white/40 uppercase tracking-widest mb-1 ml-1">Location</span>
-                      <input 
+                      <input
                         id="locationInput"
-                        className="bg-transparent border-none text-white placeholder:text-white/20 placeholder:text-[10px] focus:ring-0 text-xs font-bold w-full h-6 outline-none text-left" 
-                        placeholder="Search location..." 
-                        type="text" 
+                        className={`bg-transparent border-none text-white placeholder:text-white/20 placeholder:text-[10px] focus:ring-0 text-xs font-bold w-full h-6 outline-none text-left ${errors.location ? "text-red-400" : ""}`}
+                        placeholder="Search location..."
+                        type="text"
                         autoComplete="off"
                         value={locationVal}
-                      onChange={(e) => {
-                        const val = e.target.value;
-                        setLocationVal(val);
-                        setShowSuggestions(true);
-                        if (val.length < 2) {
-                          setCities([]);
-                        }
-                      }}
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          setLocationVal(val);
+                          setShowSuggestions(true);
+                          setErrors((prev) => ({ ...prev, location: undefined }));
+                          if (val.length < 2) {
+                            setCities([]);
+                          }
+                        }}
                         onFocus={() => setShowSuggestions(true)}
                       />
                       {showSuggestions && filteredLocations.length > 0 && (
@@ -206,15 +487,15 @@ export default function HeroSection({ featuredTemplates = [] }: HeroSectionProps
                       )}
                     </div>
 
-                    <button type="submit" className="btn-neon h-12 w-full sm:w-32 rounded-full bg-white text-black font-bold transition-all duration-300 flex items-center justify-center text-lg shadow-[0_0_20px_rgba(255,255,255,0.2)] ml-4 hover:scale-105 active:scale-95">
+                    <button type="submit" className="btn-neon h-12 w-32 rounded-full bg-white text-black font-bold transition-all duration-300 flex items-center justify-center text-lg shadow-[0_0_20px_rgba(255,255,255,0.2)] ml-4 hover:scale-105 active:scale-95">
                       Go
                     </button>
                   </div>
                 </div>
               </form>
-              {validationError && (
-                <div className="text-red-400 text-sm mt-2 text-center lg:text-left font-bold animate-pulse">
-                  {validationError}
+              {Object.keys(errors).length > 0 && (
+                <div className="text-red-400 text-xs mt-2 text-center lg:text-left font-bold animate-pulse">
+                  Please complete all required fields before searching.
                 </div>
               )}
             </div>
