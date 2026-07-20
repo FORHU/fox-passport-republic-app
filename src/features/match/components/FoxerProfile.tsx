@@ -208,6 +208,16 @@ const FoxerProfile: React.FC = () => {
                     <p className="text-xl font-display font-bold text-white">{secondaryCount}</p>
                     <p className="text-[10px] text-text-muted uppercase font-bold">{secondaryLabel}</p>
                   </div>
+                  <div className="w-px h-8 bg-white/10" />
+                  <div>
+                    <p className="text-xl font-display font-bold text-white flex items-center gap-1">
+                      {foxer.avgRating != null ? foxer.avgRating.toFixed(1) : '—'}
+                      <span className="material-symbols-outlined text-yellow-400 text-[16px] fill-current">star</span>
+                    </p>
+                    <p className="text-[10px] text-text-muted uppercase font-bold">
+                      {foxer.reviewCount ? `${foxer.reviewCount} Review${foxer.reviewCount !== 1 ? 's' : ''}` : 'No Reviews'}
+                    </p>
+                  </div>
                 </div>
               </motion.div>
 

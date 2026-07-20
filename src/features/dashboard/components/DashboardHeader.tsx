@@ -2,7 +2,7 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { useRoleAccess, RoleAccess } from '@/features/auth/hooks/useRoleAccess';
 import { useAuthStore } from '@/features/auth/store/useAuthStore';
 import UserMenuButton from '@/features/user/components/UserMenuButton';
@@ -12,6 +12,7 @@ import NotificationBell from '@/features/notifications/components/NotificationBe
 export function DashboardHeader() {
   const user = useAuthStore((s) => s.user);
   const access = useRoleAccess();
+  const pathname = usePathname();
 
   const roleLabels: string[] = [];
   if (access.isMayor) roleLabels.push('Venue Foxer');
@@ -20,13 +21,13 @@ export function DashboardHeader() {
   const roleLabel = roleLabels.length > 0 ? roleLabels.join(' · ') : 'Creator';
 
   const navLinks = [
-    { label: 'Overview', href: '/creator-dashboard', anchor: false },
-    access.canManageEvents && { label: 'Events', href: '#events', anchor: true },
-    access.canManageVenues && { label: 'Venues', href: '#venues', anchor: true },
-    access.canManageInventory && { label: 'Assets', href: '#inventory', anchor: true },
-    access.canManageServices && { label: 'Services', href: '#services', anchor: true },
-    (access.canManageEvents || access.isMayor) && { label: 'Check In', href: '/creator-dashboard/check-in', anchor: false },
-  ].filter(Boolean) as { label: string; href: string; anchor: boolean }[];
+    { label: 'Overview', href: '/creator-dashboard' },
+    access.canManageEvents    && { label: 'Events',   href: '/creator-dashboard/events' },
+    access.canManageVenues    && { label: 'Venues',   href: '/creator-dashboard/venues' },
+    access.canManageInventory && { label: 'Assets',   href: '/creator-dashboard/assets' },
+    access.canManageServices  && { label: 'Services', href: '/creator-dashboard/services' },
+    (access.canManageEvents || access.isMayor) && { label: 'Check In', href: '/creator-dashboard/check-in' },
+  ].filter(Boolean) as { label: string; href: string }[];
 
   return (
     <header className="fixed top-6 left-0 right-0 z-50">
@@ -47,27 +48,26 @@ export function DashboardHeader() {
             </div>
           </Link>
 
-          {/* Navigation — only shows sections the user has access to */}
+          {/* Navigation */}
           <nav className="hidden md:flex items-center gap-1 bg-black/30 p-1.5 rounded-full border border-white/5">
-            {navLinks.map((link) =>
-              link.anchor ? (
-                <a
-                  key={link.label}
-                  href={link.href}
-                  className="px-5 py-2.5 rounded-full text-sm font-medium text-white/60 hover:text-white hover:bg-white/10 transition-colors"
-                >
-                  {link.label}
-                </a>
-              ) : (
+            {navLinks.map((link) => {
+              const isActive = link.href === '/creator-dashboard'
+                ? pathname === '/creator-dashboard'
+                : pathname.startsWith(link.href);
+              return (
                 <Link
                   key={link.label}
                   href={link.href}
-                  className="px-5 py-2.5 rounded-full text-sm font-bold text-black bg-[#ccff00] shadow-[0_0_15px_rgba(204,255,0,0.3)]"
+                  className={
+                    isActive
+                      ? 'px-5 py-2.5 rounded-full text-sm font-bold text-black bg-[#ccff00] shadow-[0_0_15px_rgba(204,255,0,0.3)]'
+                      : 'px-5 py-2.5 rounded-full text-sm font-medium text-white/60 hover:text-white hover:bg-white/10 transition-colors'
+                  }
                 >
                   {link.label}
                 </Link>
-              )
-            )}
+              );
+            })}
           </nav>
 
           {/* Right Side — real user */}

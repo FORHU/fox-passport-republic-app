@@ -77,8 +77,8 @@ export default function NotificationBell() {
                   <li
                     key={n.id}
                     onClick={() => handleItemClick(n)}
-                    className={`px-4 py-3 cursor-pointer hover:bg-white/5 transition-all duration-200 ${!n.isRead ? "bg-white/[0.03]" : ""
-                      } ${isExpanded ? "bg-white/[0.06] border-l-2 border-[#ccff00]" : ""}`}
+                    className={`px-4 py-3 cursor-pointer hover:bg-white/5 transition-all duration-200 ${!n.isRead ? "bg-white/3" : ""
+                      } ${isExpanded ? "bg-white/6 border-l-2 border-[#ccff00]" : ""}`}
                   >
                     <div className="flex items-start gap-2">
                       {!n.isRead && <span className="mt-1.5 h-1.5 w-1.5 rounded-full bg-[#ccff00] shrink-0" />}
@@ -125,7 +125,7 @@ export default function NotificationBell() {
                 className="flex items-center justify-center gap-1 text-xs font-medium text-[#ccff00] hover:underline"
               >
                 View all notifications
-                <ChevronDown size={12} className="rotate-[-90deg]" />
+                <ChevronDown size={12} className="-rotate-90" />
               </Link>
             </div>
           )}

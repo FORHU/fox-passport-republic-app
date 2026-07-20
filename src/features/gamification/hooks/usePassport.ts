@@ -5,6 +5,7 @@ import {
   getMyPassport, getAllBadges, getUserPassport, mapPaths, mapStamps, mapBadges,
   getLeaderboard, getOutgoingMatchRequests, getIncomingMatchRequests, getClientMatchRequests, respondToMatch,
 } from "../api/passport";
+import { acceptMatch, declineMatch } from "@/features/match/api/matches";
 
 export function useMyPassport() {
   const passportQuery = useQuery({
@@ -74,6 +75,26 @@ export function useRespondToMatch() {
       respondToMatch(matchId, type, status),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["matches"] });
+    },
+  });
+}
+
+export function useAcceptMatch() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (matchId: string) => acceptMatch(matchId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["matches", "client-inbox"] });
+    },
+  });
+}
+
+export function useDeclineMatch() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (matchId: string) => declineMatch(matchId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["matches", "client-inbox"] });
     },
   });
 }

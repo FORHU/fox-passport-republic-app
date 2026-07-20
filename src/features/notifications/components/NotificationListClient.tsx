@@ -204,8 +204,8 @@ export default function NotificationListClient() {
                     onClick={() => handleItemClick(n)}
                     className={`group flex items-start gap-4 rounded-2xl border border-white/5 p-5 transition-all ${
                       n.isRead
-                        ? "bg-white/[0.02] hover:bg-white/[0.04]"
-                        : "bg-white/[0.05] hover:bg-white/[0.07] border-l-2 border-l-accent"
+                        ? "bg-white/2 hover:bg-white/4"
+                        : "bg-white/5 hover:bg-white/[0.07] border-l-2 border-l-accent"
                     } ${link ? "cursor-pointer" : ""}`}
                   >
                     <div

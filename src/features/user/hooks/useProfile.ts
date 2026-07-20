@@ -22,6 +22,7 @@ export interface UpdateProfilePayload {
   username?: string;
   phone?: string;
   profileImage?: string;
+  city?: string;
 }
 
 export interface ChangePasswordPayload {

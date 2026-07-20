@@ -107,9 +107,9 @@ export default function FoxerEarningsClient() {
             <p className="text-white/40 text-xs mt-0.5">Connect your bank account to receive automatic payouts when escrow releases.</p>
           </div>
         </div>
-        <button className="flex-shrink-0 px-5 py-2.5 rounded-xl bg-accent text-black font-bold text-sm hover:bg-accent/90 active:scale-95 transition-all">
+        <Link href="/creator-dashboard/stripe-onboard" className="shrink-0 px-5 py-2.5 rounded-xl bg-accent text-black font-bold text-sm hover:bg-accent/90 active:scale-95 transition-all">
           Connect Bank
-        </button>
+        </Link>
       </div>
 
       {/* Booking List */}

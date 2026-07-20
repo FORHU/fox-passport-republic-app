@@ -250,7 +250,7 @@ function FoxerCard({ foxer }: { foxer: Foxer }) {
         </div>
         <div className="text-right">
           <div className="flex items-center justify-end gap-1 font-bold text-white">
-            5.0{" "}
+            {foxer.avgRating != null ? foxer.avgRating.toFixed(1) : "New"}{" "}
             <span className="material-symbols-outlined text-yellow-400 text-[16px] fill-current">star</span>
           </div>
           <div className="text-xs text-text-muted">{foxer.city}</div>

@@ -62,6 +62,8 @@ export interface Foxer {
   venues?: FoxerVenue[];
   eventTemplates?: FoxerEventTemplate[];
   foxerSpecializations?: FoxerSpecialization[];
+  avgRating?: number | null;
+  reviewCount?: number;
 }
 
 export async function fetchFoxers(limit = 9, page = 1, roleType?: string): Promise<Foxer[]> {
