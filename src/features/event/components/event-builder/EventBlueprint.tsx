@@ -11,6 +11,8 @@ interface EventBlueprintProps {
   talentCost: number;
   blueprintHealth: number;
   onMarginChange: (margin: number) => void;
+  /** When true, panel is always visible (used inside a mobile drawer). */
+  inDrawer?: boolean;
 }
 
 export function EventBlueprint({
@@ -21,9 +23,10 @@ export function EventBlueprint({
   talentCost,
   blueprintHealth,
   onMarginChange,
+  inDrawer = false,
 }: EventBlueprintProps) {
   return (
-    <aside className="w-80 shrink-0 border-l border-white/5 bg-[#0f111a] flex flex-col shadow-2xl z-10">
+    <aside className={`${inDrawer ? 'flex w-full border-l-0' : 'hidden md:flex w-80'} shrink-0 border-l border-white/5 bg-[#0f111a] flex-col shadow-2xl z-10`}>
       <div className="p-6 border-b border-white/5">
         <h3 className="font-display font-bold text-white text-lg">Event Blueprint</h3>
         <p className="text-xs text-text-muted">Financial Overview</p>
