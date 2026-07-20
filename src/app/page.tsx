@@ -12,7 +12,7 @@ import AuthModal from "@/features/auth/components/AuthModal";
 
 // --- Search Results Components ---
 import ListingCard from "@/features/landing/components/ListingCard";
-import { getVenues } from "@/shared/lib/server/data";
+import { getVenues, getFeaturedEventTemplates } from "@/shared/lib/server/data";
 import { getUser } from "@/shared/lib/server/auth";
 import { filterVenues } from "@/features/venue/helpers/filterVenues";
 
@@ -103,7 +103,8 @@ async function HomeContent({ searchParams }: HomePageProps) {
   }
 
   // --- NEW FOXERNEW LANDING PAGE (Default) ---
-  return <FoxerLandingPage />;
+  const featuredTemplates = await getFeaturedEventTemplates(4);
+  return <FoxerLandingPage featuredTemplates={featuredTemplates} />;
 }
 
 export default function Home({ searchParams }: HomePageProps) {
