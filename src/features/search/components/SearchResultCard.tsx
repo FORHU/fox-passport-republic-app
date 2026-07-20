@@ -9,8 +9,8 @@ interface SearchResultCardProps {
 
 const DETAIL_PATH: Record<string, (id: string) => string> = {
   venue: (id) => `/venues/${id}`,
-  service: (id) => `/services/${id}`,
-  asset: (id) => `/assets/${id}`,
+  service: (id) => `/booking/service/${id}`,
+  asset: (id) => `/booking/asset/${id}`,
   event_template: (id) => `/event/${id}`,
 };
 
@@ -19,7 +19,7 @@ export default function SearchResultCard({ item, type }: SearchResultCardProps) 
 
   return (
     <div
-      onClick={() => router.push(DETAIL_PATH[type]?.(item.id) ?? "#")}
+      onClick={() => router.push(DETAIL_PATH[item._type ?? type]?.(item.id) ?? "#")}
       className="bg-[#11121a] border border-white/10 rounded-2xl overflow-hidden hover:border-[#ccff00]/50 transition-colors group cursor-pointer"
     >
       <div className="h-48 bg-white/5 relative overflow-hidden">

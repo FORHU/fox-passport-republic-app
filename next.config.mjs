@@ -23,24 +23,41 @@ const nextConfig = {
     unoptimized: process.env.NODE_ENV === 'development',
   },
 
-  async headers() {
+  async redirects() {
     return [
+      { source: '/host',                      destination: '/creator-dashboard',                      permanent: true },
+      { source: '/host/apply',                destination: '/creator-dashboard/apply',                permanent: true },
+      { source: '/host/calendar',             destination: '/creator-dashboard/calendar',             permanent: true },
+      { source: '/host/events',               destination: '/creator-dashboard/events',               permanent: true },
+      { source: '/host/events/:id/edit',      destination: '/creator-dashboard/events/:id/edit',      permanent: true },
+      { source: '/host/assets',               destination: '/creator-dashboard/assets',               permanent: true },
+      { source: '/host/assets/:id/edit',      destination: '/creator-dashboard/assets/:id/edit',      permanent: true },
+      { source: '/host/services',             destination: '/creator-dashboard/services',             permanent: true },
+      { source: '/host/services/:id/edit',    destination: '/creator-dashboard/services/:id/edit',    permanent: true },
+      { source: '/host/venues',               destination: '/creator-dashboard/venues',               permanent: true },
+      { source: '/host/venues/:id/edit',      destination: '/creator-dashboard/venues/:id/edit',      permanent: true },
+      { source: '/host/stripe-dashboard',     destination: '/creator-dashboard/stripe-dashboard',     permanent: true },
+      { source: '/host/stripe-onboard',       destination: '/creator-dashboard/stripe-onboard',       permanent: true },
+    ];
+  },
+
+  async headers() {
+    const stripeCSP = [
       {
-        source: '/host/:path*',
-        headers: [
-          {
-            key: 'Content-Security-Policy',
-            value: [
-              "default-src 'self'",
-              "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.stripe.com https://*.stripe.network",
-              "style-src 'self' 'unsafe-inline' https://*.stripe.com",
-              "frame-src https://*.stripe.com https://*.stripe.network",
-              "connect-src 'self' https://*.stripe.com https://*.stripe.network http://localhost:3002",
-              "img-src 'self' data: https://*.stripe.com",
-            ].join('; '),
-          },
-        ],
+        key: 'Content-Security-Policy',
+        value: [
+          "default-src 'self'",
+          "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.stripe.com https://*.stripe.network",
+          "style-src 'self' 'unsafe-inline' https://*.stripe.com",
+          "frame-src https://*.stripe.com https://*.stripe.network",
+          "connect-src 'self' https://*.stripe.com https://*.stripe.network http://localhost:3002",
+          "img-src 'self' data: https://*.stripe.com",
+        ].join('; '),
       },
+    ];
+    return [
+      { source: '/creator-dashboard/stripe-dashboard', headers: stripeCSP },
+      { source: '/creator-dashboard/stripe-onboard',   headers: stripeCSP },
     ];
   },
 

@@ -11,6 +11,28 @@ export interface FoxerService {
   images: { url: string }[];
 }
 
+export interface FoxerAsset {
+  id: string;
+  name: string;
+  category: string;
+  price: number;
+  billingRate: string;
+  description?: string;
+  images: { url: string }[];
+}
+
+export interface FoxerVenue {
+  id: string;
+  name: string;
+  category: string;
+  price: number;
+  billingRate: string;
+  description?: string;
+  city?: string;
+  capacity?: number;
+  images: { url: string }[];
+}
+
 export interface FoxerEventTemplate {
   id: string;
   name: string;
@@ -36,8 +58,12 @@ export interface Foxer {
   roleType?: string[];
   createdAt: string;
   services: FoxerService[];
+  assets?: FoxerAsset[];
+  venues?: FoxerVenue[];
   eventTemplates?: FoxerEventTemplate[];
   foxerSpecializations?: FoxerSpecialization[];
+  avgRating?: number | null;
+  reviewCount?: number;
 }
 
 export async function fetchFoxers(limit = 9, page = 1, roleType?: string): Promise<Foxer[]> {

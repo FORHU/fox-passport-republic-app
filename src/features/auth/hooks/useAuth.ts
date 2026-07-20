@@ -88,6 +88,9 @@ export const useLogin = () => {
       const userRole = (data.user?.systemRole ?? data.user?.role)?.toLowerCase();
       if (userRole === "admin" || userRole === "super_admin") {
         router.push("/admin");
+      } else if (typeof window !== "undefined" && localStorage.getItem("fp_new_user")) {
+        localStorage.removeItem("fp_new_user");
+        router.push("/onboarding");
       } else {
         router.push("/");
       }

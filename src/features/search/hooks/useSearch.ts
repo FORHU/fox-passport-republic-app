@@ -41,7 +41,7 @@ export const useSearch = () => {
             const ep = ENDPOINTS[t];
             try {
               const res = await api.get(ep.path);
-              return extractList(res.data, ep.extractKey);
+              return extractList(res.data, ep.extractKey).map((item) => ({ ...item, _type: t }));
             } catch {
               return [];
             }

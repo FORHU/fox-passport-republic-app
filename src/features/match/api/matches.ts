@@ -16,3 +16,13 @@ export const getMyMatches = async () => {
   const response = await api.get('/matches/my');
   return response.data;
 };
+
+export const acceptMatch = async (matchId: string) => {
+  const response = await api.patch(`/matches/${matchId}/accept`);
+  return response.data;
+};
+
+export const declineMatch = async (matchId: string, reason?: string) => {
+  const response = await api.patch(`/matches/${matchId}/decline`, { reason });
+  return response.data;
+};
