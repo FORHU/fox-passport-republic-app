@@ -85,6 +85,13 @@ export default function HostAssetsClient({ initialInventory }: HostAssetsClientP
               </div>
 
               <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
+                <button
+                  onClick={() => router.push('/foxer/create-listing')}
+                  className="flex items-center gap-2 px-5 py-2.5 rounded-full bg-[#ccff00] text-black text-sm font-bold hover:opacity-90 transition-opacity shrink-0"
+                >
+                  <span className="material-symbols-outlined text-[16px]">add</span>
+                  Add Gear
+                </button>
                 <div className="relative w-full sm:w-72">
                   <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-white/40 text-[18px]">
                     search
@@ -101,11 +108,11 @@ export default function HostAssetsClient({ initialInventory }: HostAssetsClientP
                   <select
                     value={status}
                     onChange={(e) => setStatus(e.target.value)}
-                    className="w-full bg-white/5 border border-white/10 rounded-full px-4 py-2 text-sm placeholder:text-white/40 focus:outline-none focus:border-[#ccff00]"
+                    className="w-full bg-[#0f111a] text-white border border-white/10 rounded-full px-4 py-2 text-sm focus:outline-none focus:border-[#ccff00]"
                   >
-                    <option value="all">All Status</option>
+                    <option className="bg-[#0f111a] text-white" value="all">All Status</option>
                     {STATUS_OPTIONS.inventory.map((s) => (
-                      <option key={s} value={s}>
+                      <option className="bg-[#0f111a] text-white" key={s} value={s}>
                         {s}
                       </option>
                     ))}

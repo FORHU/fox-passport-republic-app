@@ -15,7 +15,7 @@ export const useFoxerDashboard = () => {
   } = useQuery({
     queryKey: ["foxer-stats"],
     queryFn: async () => {
-      const res = await api.get("/foxers/me/stats");
+      const res = await api.get("/users/foxers/me/stats");
       return res.data.data;
     },
   });

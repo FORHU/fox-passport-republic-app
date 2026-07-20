@@ -131,7 +131,7 @@ export default function HostCalendarClient() {
                   return (
                     <div
                       key={day}
-                      className="bg-[#0f111a] border-b border-r border-white/5 flex flex-col relative group hover:bg-white/5 min-h-[120px]"
+                      className="bg-[#0f111a] border-b border-r border-white/5 flex flex-col relative group hover:bg-white/5 min-h-30"
                     >
                       <div
                         className={`mx-3 mt-3 mb-2 text-sm font-bold w-8 h-8 flex items-center justify-center rounded-lg ${
@@ -156,7 +156,7 @@ export default function HostCalendarClient() {
                           return isStart ? (
                             <div
                               key={e.id}
-                              className={`${getBgColor(e.type)} text-[11px] font-bold py-1.5 px-2 flex items-center gap-1 truncate h-[26px] cursor-pointer hover:brightness-110 transition-all ${roundedClass}`}
+                              className={`${getBgColor(e.type)} text-[11px] font-bold py-1.5 px-2 flex items-center gap-1 truncate h-6.5 cursor-pointer hover:brightness-110 transition-all ${roundedClass}`}
                             >
                               <span className="material-symbols-outlined text-[14px]">
                                 {getIcon(e.type)}
@@ -166,7 +166,7 @@ export default function HostCalendarClient() {
                           ) : (
                             <div
                               key={e.id}
-                              className={`${getBgColor(e.type)} h-[26px] cursor-pointer hover:brightness-110 transition-all ${roundedClass}`}
+                              className={`${getBgColor(e.type)} h-6.5 cursor-pointer hover:brightness-110 transition-all ${roundedClass}`}
                             />
                           );
                         })}

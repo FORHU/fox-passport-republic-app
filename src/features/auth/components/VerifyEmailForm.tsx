@@ -27,6 +27,7 @@ export default function VerifyEmailForm() {
       { email: pendingEmail, otpCode: data.otpCode },
       {
         onSuccess: () => {
+          localStorage.setItem("fp_new_user", "1");
           setView("login");
         },
       }

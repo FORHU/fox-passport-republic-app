@@ -28,6 +28,7 @@ function ProfileSpecializationChip({ spec }: { spec: FoxerSpecialization }) {
 function getRoleLabel(foxer: Foxer): string {
   const roles = foxer.roleType ?? [];
   if (roles.includes('eventFoxer')) return 'Event Foxer';
+  if (roles.includes('venueFoxer')) return 'Venue Foxer';
   if (roles.includes('gearFoxer')) return 'Gear Foxer';
   if (roles.includes('serviceFoxer')) return 'Talent Foxer';
   return 'Foxer';
@@ -106,36 +107,48 @@ const FoxerProfile: React.FC = () => {
     : FALLBACK_AVATAR;
 
   const isHost = foxer.roleType?.includes('eventFoxer');
+  const isGearFoxer = foxer.roleType?.includes('gearFoxer');
+  const isVenueFoxer = foxer.roleType?.includes('venueFoxer');
   const roleLabel = getRoleLabel(foxer);
   const location = [foxer.city, foxer.state].filter(Boolean).join(', ');
 
-  // Tags: service tags for talent/gear, event categories for hosts
+  const hasAssets = (foxer.assets?.length ?? 0) > 0;
+
+  // Tags: categories for hosts/gear, service tags for talent
   const allTags = isHost
     ? [...new Set((foxer.eventTemplates ?? []).map((t) => t.category))]
-    : [...new Set(foxer.services.flatMap((s) => s.tags))];
+    : isGearFoxer
+      ? [...new Set((foxer.assets ?? []).map((a) => a.category))]
+      : [...new Set(foxer.services.flatMap((s) => s.tags))];
 
-  // Chip labels for the skills card
   const chipLabels = allTags.length > 0
     ? allTags
     : isHost
       ? (foxer.eventTemplates ?? []).map((t) => t.name)
-      : foxer.services.map((s) => s.name);
+      : isGearFoxer
+        ? (foxer.assets ?? []).map((a) => a.name)
+        : foxer.services.map((s) => s.name);
 
-  // Bio: first event template description for hosts, first service description otherwise
   const bio = isHost
     ? (foxer.eventTemplates?.[0]?.description ?? 'This host has not added a bio yet.')
-    : (foxer.services[0]?.description ?? 'This foxer has not added a bio yet.');
+    : isGearFoxer && hasAssets
+      ? (foxer.assets?.[0]?.description ?? 'This foxer has not added a bio yet.')
+      : (foxer.services[0]?.description ?? 'This foxer has not added a bio yet.');
 
-  // Portfolio images: event template images for hosts, service images otherwise
   const portfolioImages = (
     isHost
       ? (foxer.eventTemplates ?? []).flatMap((t) => t.images.map((img) => img.url))
-      : foxer.services.flatMap((s) => s.images.map((img) => img.url))
+      : isGearFoxer
+        ? (foxer.assets ?? []).flatMap((a) => a.images.map((img) => img.url))
+        : foxer.services.flatMap((s) => s.images.map((img) => img.url))
   ).slice(0, 6);
 
-  // Stats card counts
-  const primaryCount = isHost ? (foxer.eventTemplates?.length ?? 0) : foxer.services.length;
-  const primaryLabel = isHost ? 'Events' : 'Services';
+  const primaryCount = isHost
+    ? (foxer.eventTemplates?.length ?? 0)
+    : isGearFoxer
+      ? (foxer.assets?.length ?? 0)
+      : foxer.services.length;
+  const primaryLabel = isHost ? 'Events' : isGearFoxer ? 'Gear' : 'Services';
   const secondaryCount = allTags.length;
   const secondaryLabel = isHost ? 'Categories' : 'Skills';
 
@@ -194,6 +207,16 @@ const FoxerProfile: React.FC = () => {
                   <div>
                     <p className="text-xl font-display font-bold text-white">{secondaryCount}</p>
                     <p className="text-[10px] text-text-muted uppercase font-bold">{secondaryLabel}</p>
+                  </div>
+                  <div className="w-px h-8 bg-white/10" />
+                  <div>
+                    <p className="text-xl font-display font-bold text-white flex items-center gap-1">
+                      {foxer.avgRating != null ? foxer.avgRating.toFixed(1) : '—'}
+                      <span className="material-symbols-outlined text-yellow-400 text-[16px] fill-current">star</span>
+                    </p>
+                    <p className="text-[10px] text-text-muted uppercase font-bold">
+                      {foxer.reviewCount ? `${foxer.reviewCount} Review${foxer.reviewCount !== 1 ? 's' : ''}` : 'No Reviews'}
+                    </p>
                   </div>
                 </div>
               </motion.div>
@@ -343,8 +366,8 @@ const FoxerProfile: React.FC = () => {
                 </motion.section>
               )}
 
-              {/* Talent / Gear Foxer: show services */}
-              {!isHost && foxer.services.length > 0 && (
+              {/* VenueFoxer: show venues */}
+              {isVenueFoxer && (foxer.venues?.length ?? 0) > 0 && (
                 <motion.section
                   initial={{ opacity: 0, x: 20 }}
                   animate={{ opacity: 1, x: 0 }}
@@ -352,21 +375,102 @@ const FoxerProfile: React.FC = () => {
                   className="space-y-6"
                 >
                   <div className="flex items-center justify-between">
-                    <h2 className="text-2xl font-display font-bold text-white">
-                      {roleLabel === 'Gear Foxer' ? 'Available Gears' : 'Available Services'}
-                    </h2>
+                    <h2 className="text-2xl font-display font-bold text-white">Venues</h2>
+                    <div className="flex items-center gap-2">
+                      <span className="h-2 w-2 rounded-full bg-success animate-pulse" />
+                      <span className="text-[10px] text-success font-bold uppercase">Available</span>
+                    </div>
+                  </div>
+                  <div className="grid sm:grid-cols-2 gap-4">
+                    {foxer.venues!.map((venue) => (
+                      <div key={venue.id} className="p-6 rounded-[2rem] bg-white/5 border border-white/5 hover:border-accent/30 transition-all group flex flex-col justify-between gap-4">
+                        <div>
+                          <div className="flex justify-between items-start mb-3">
+                            <div>
+                              <h4 className="font-bold text-white group-hover:text-accent transition-colors">{venue.name}</h4>
+                              <p className="text-xs text-text-muted">{venue.category.replace(/_/g, ' ')} · {venue.city}</p>
+                            </div>
+                            <span className="text-[10px] font-bold uppercase tracking-widest px-3 py-1 bg-black/40 rounded-full text-accent border border-accent/20 shrink-0">
+                              ₱{venue.price.toLocaleString()} / {venue.billingRate}
+                            </span>
+                          </div>
+                          {venue.capacity && <p className="text-xs text-text-muted">Up to {venue.capacity} guests</p>}
+                          {venue.description && <p className="text-xs text-text-muted line-clamp-2 mt-1">{venue.description}</p>}
+                        </div>
+                        <button
+                          onClick={() => router.push(`/venues/${venue.id}`)}
+                          className="w-full py-2.5 rounded-xl bg-white/5 border border-white/10 text-sm font-bold text-white hover:bg-accent hover:text-black hover:border-accent transition-all flex items-center justify-center gap-2 group/btn"
+                        >
+                          View Venue
+                          <span className="material-symbols-outlined text-[16px] group-hover/btn:translate-x-1 transition-transform">arrow_forward</span>
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </motion.section>
+              )}
+
+              {/* GearFoxer: show assets */}
+              {isGearFoxer && (foxer.assets?.length ?? 0) > 0 && (
+                <motion.section
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.2 }}
+                  className="space-y-6"
+                >
+                  <div className="flex items-center justify-between">
+                    <h2 className="text-2xl font-display font-bold text-white">Available Gear</h2>
                     <div className="flex items-center gap-2">
                       <span className="h-2 w-2 rounded-full bg-success animate-pulse" />
                       <span className="text-[10px] text-success font-bold uppercase">Available Now</span>
                     </div>
                   </div>
+                  <div className="grid sm:grid-cols-2 gap-4">
+                    {foxer.assets!.map((asset) => (
+                      <div key={asset.id} className="p-6 rounded-[2rem] bg-white/5 border border-white/5 hover:border-accent/30 transition-all group flex flex-col justify-between gap-4">
+                        <div>
+                          <div className="flex justify-between items-start mb-3">
+                            <div>
+                              <h4 className="font-bold text-white group-hover:text-accent transition-colors">{asset.name}</h4>
+                              <p className="text-xs text-text-muted">{asset.category.replace(/_/g, ' ')}</p>
+                            </div>
+                            <span className="text-[10px] font-bold uppercase tracking-widest px-3 py-1 bg-black/40 rounded-full text-accent border border-accent/20 shrink-0">
+                              ₱{asset.price.toLocaleString()} / {asset.billingRate}
+                            </span>
+                          </div>
+                          {asset.description && <p className="text-xs text-text-muted line-clamp-2">{asset.description}</p>}
+                        </div>
+                        <button
+                          onClick={() => router.push(`/booking/asset/${asset.id}`)}
+                          className="w-full py-2.5 rounded-xl bg-white/5 border border-white/10 text-sm font-bold text-white hover:bg-accent hover:text-black hover:border-accent transition-all flex items-center justify-center gap-2 group/btn"
+                        >
+                          Rent Now
+                          <span className="material-symbols-outlined text-[16px] group-hover/btn:translate-x-1 transition-transform">arrow_forward</span>
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </motion.section>
+              )}
 
+              {/* ServiceFoxer: show services */}
+              {!isHost && !isGearFoxer && foxer.services.length > 0 && (
+                <motion.section
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.2 }}
+                  className="space-y-6"
+                >
+                  <div className="flex items-center justify-between">
+                    <h2 className="text-2xl font-display font-bold text-white">Available Services</h2>
+                    <div className="flex items-center gap-2">
+                      <span className="h-2 w-2 rounded-full bg-success animate-pulse" />
+                      <span className="text-[10px] text-success font-bold uppercase">Available Now</span>
+                    </div>
+                  </div>
                   <div className="grid sm:grid-cols-2 gap-4">
                     {foxer.services.map((svc) => (
-                      <div
-                        key={svc.id}
-                        className="p-6 rounded-[2rem] bg-white/5 border border-white/5 hover:border-accent/30 transition-all group flex flex-col justify-between gap-4"
-                      >
+                      <div key={svc.id} className="p-6 rounded-[2rem] bg-white/5 border border-white/5 hover:border-accent/30 transition-all group flex flex-col justify-between gap-4">
                         <div>
                           <div className="flex justify-between items-start mb-3">
                             <div>

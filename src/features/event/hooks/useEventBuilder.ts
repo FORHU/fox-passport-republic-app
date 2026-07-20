@@ -48,8 +48,8 @@ export function useEventBuilder() {
 
         // Fetch Assets/Services
         const [assetResp, serviceResp] = await Promise.all([
-          api.get("/assets"),
-          api.get("/services")
+          api.get("/asset"),
+          api.get("/service")
         ]);
 
         const talent: ResourceItem[] = [];

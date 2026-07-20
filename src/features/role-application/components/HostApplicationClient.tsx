@@ -63,7 +63,7 @@ export default function HostApplicationClient() {
               <Globe size={32} />
             </div>
             <h1 className="text-3xl md:text-4xl font-display font-bold text-white mb-2">
-              Become a <span className="text-[#ff00aa]">Host</span>
+              Become an <span className="text-[#ff00aa]">Event Foxer</span>
             </h1>
             <p className="text-white/60">
               Apply to become an authorized Event Creator. Organizers use venues provided by Mayors to create unforgettable experiences.

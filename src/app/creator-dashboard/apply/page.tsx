@@ -3,8 +3,8 @@ import HostApplicationClient from '@/features/role-application/components/HostAp
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Apply to be a Host | FoxPassport',
-  description: 'Apply to become an authorized Event Creator on FoxPassport.',
+  title: 'Apply to be an Event Foxer | FoxPassport',
+  description: 'Apply to become an authorized Event Foxer on FoxPassport.',
 };
 
 export default function HostApplicationPage() {
