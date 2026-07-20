@@ -11,6 +11,8 @@ interface ResourcePaletteProps {
   onCategoryChange: (catId: string) => void;
   onSearchChange: (query: string) => void;
   onDragStart: (e: React.DragEvent, item: ResourceItem) => void;
+  /** When true, panels stack vertically and are always visible (used inside a mobile drawer). */
+  inDrawer?: boolean;
 }
 
 export function ResourcePalette({
@@ -20,11 +22,13 @@ export function ResourcePalette({
   onCategoryChange,
   onSearchChange,
   onDragStart,
+  inDrawer = false,
 }: ResourcePaletteProps) {
+  const docked = inDrawer ? '' : 'hidden md:flex';
   return (
     <>
       {/* Category Navigation */}
-      <nav className="w-24 shrink-0 bg-[#0f111a] border-r border-white/5 flex flex-col items-center py-6 gap-6 overflow-y-auto hide-scrollbar z-20">
+      <nav className={`${docked} w-24 shrink-0 bg-[#0f111a] border-r border-white/5 flex-col items-center py-6 gap-6 overflow-y-auto hide-scrollbar z-20 ${inDrawer ? 'flex w-full border-r-0 border-b' : 'flex'}`}>
         {RESOURCE_CATEGORIES.map((cat) => (
           <button
             key={cat.id}
@@ -42,7 +46,7 @@ export function ResourcePalette({
       </nav>
 
       {/* Resource List */}
-      <aside className="w-80 shrink-0 border-r border-white/5 bg-[#0f111a] flex flex-col relative z-10">
+      <aside className={`${docked} w-80 shrink-0 border-r border-white/5 bg-[#0f111a] flex-col relative z-10 ${inDrawer ? 'flex w-full border-r-0' : 'flex'}`}>
         <div className="p-6">
           <h3 className="font-display font-bold text-xl text-white mb-1">
             {RESOURCE_CATEGORIES.find((c) => c.id === activeCategory)?.label}
