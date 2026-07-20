@@ -131,7 +131,7 @@ function CompactDatePicker({
 }
 
 export default function DateRangePicker({
-  startDate, endDate, onStartChange, onEndChange, errors, startLabel = 'Start Date', endLabel = 'End Date', showSummary = true,
+  startDate, endDate, onStartChange, onEndChange, errors, startLabel = 'Start Date', endLabel = 'End Date', showSummary = true, stacked = false,
 }: {
   startDate: string;
   endDate: string;
@@ -141,12 +141,21 @@ export default function DateRangePicker({
   startLabel?: string;
   endLabel?: string;
   showSummary?: boolean;
+  stacked?: boolean;
 }) {
   const [calendarOpen, setCalendarOpen] = useState(false);
   const [popupPos, setPopupPos] = useState({ top: 0, left: 0 });
   const triggerRef = useRef<HTMLDivElement>(null);
 
-  const toDisplay = (d: string) => d ? d.replace(/-/g, '/') : '';
+  const toDisplay = (d: string) =>
+    d
+      ? new Date(d + 'T00:00:00').toLocaleDateString('en-PH', {
+          weekday: 'short',
+          month: 'short',
+          day: 'numeric',
+          year: 'numeric',
+        })
+      : '';
   const [localStart, setLocalStart] = useState(toDisplay(startDate));
   const [localEnd, setLocalEnd] = useState(toDisplay(endDate));
 
@@ -190,14 +199,14 @@ export default function DateRangePicker({
 
   return (
     <div className="relative">
-      <div className="grid sm:grid-cols-2 gap-6">
+      <div className={stacked ? "grid grid-cols-1 gap-4" : "grid sm:grid-cols-2 gap-6"}>
         <div className="space-y-2">
           <label className="text-xs uppercase tracking-widest text-text-muted font-bold ml-1">{startLabel}</label>
           <div className="relative" ref={triggerRef}>
             <input
               type="text"
               value={localStart}
-              placeholder="YYYY/MM/DD"
+              placeholder="Select date"
               onChange={(e) => setLocalStart(e.target.value)}
               onBlur={(e) => parseDisplay(e.target.value, onStartChange)}
               className="w-full bg-white/5 border border-white/10 rounded-xl px-5 py-4 text-white placeholder-text-muted/50 focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent transition-all pr-12"
@@ -216,7 +225,7 @@ export default function DateRangePicker({
             <input
               type="text"
               value={localEnd}
-              placeholder="YYYY/MM/DD"
+              placeholder="Select date"
               onChange={(e) => setLocalEnd(e.target.value)}
               onBlur={(e) => parseDisplay(e.target.value, onEndChange)}
               className="w-full bg-white/5 border border-white/10 rounded-xl px-5 py-4 text-white placeholder-text-muted/50 focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent transition-all pr-12"
