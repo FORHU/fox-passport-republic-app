@@ -504,6 +504,26 @@ export async function getEventsByCategory(categorySlug: string) {
   }
 }
 
+export async function getFeaturedEventTemplates(limit = 4) {
+  try {
+    const body = await serverFetch('/event-templates/browse', { limit: String(limit) });
+    return extractList(body);
+  } catch (error) {
+    console.error('Failed to fetch featured event templates:', error);
+    return [];
+  }
+}
+
+export async function getTrendingEventsByCategory(categorySlug: string) {
+  try {
+    const body = await serverFetch('/event-templates/trending', { category: categorySlug });
+    return extractList(body);
+  } catch (error) {
+    console.error(`Failed to fetch trending events for category ${categorySlug}:`, error);
+    return [];
+  }
+}
+
 export async function getVenuesByCategory(categorySlug: string) {
   try {
     const body = await serverFetch('/venues', { category: categorySlug });
