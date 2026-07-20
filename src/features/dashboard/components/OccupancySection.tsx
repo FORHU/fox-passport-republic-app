@@ -2,7 +2,7 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { useClientMatchRequests } from '@/features/gamification/hooks/usePassport';
+import { useClientMatchRequests, useAcceptMatch, useDeclineMatch } from '@/features/gamification/hooks/usePassport';
 import type { ClientMatchRequest } from '@/features/gamification/api/passport';
 
 export function OccupancyChart() {
@@ -33,6 +33,8 @@ function statusColor(s: string) {
 
 export function PendingRequests() {
   const { data: page, isLoading } = useClientMatchRequests(0, true);
+  const acceptMutation = useAcceptMatch();
+  const declineMutation = useDeclineMatch();
   const requests: ClientMatchRequest[] = page?.data ?? [];
   const pendingOnly = requests.filter(r => r.requestStatus === 'pending').slice(0, 4);
   const totalPending = requests.filter(r => r.requestStatus === 'pending').length;
@@ -61,30 +63,45 @@ export function PendingRequests() {
             <span className="material-symbols-outlined text-3xl text-white/10 mb-2">inbox</span>
             <p className="text-xs text-white/20">No pending requests</p>
           </div>
-        ) : pendingOnly.map((req) => (
-          <div key={req.id} className="flex items-center gap-3 p-2.5 rounded-xl hover:bg-white/5 transition-colors">
-            <div className="h-9 w-9 rounded-full bg-white/10 flex items-center justify-center text-sm font-bold text-white/40 shrink-0 overflow-hidden">
-              {req.client?.imgId
-                ? <img src={`https://fox-passport-republic-assets.s3.ap-southeast-1.amazonaws.com/${req.client.imgId}`} className="h-full w-full object-cover" alt="" />
-                : (req.client?.name?.charAt(0) ?? '?')}
+        ) : pendingOnly.map((req) => {
+          const isActing = acceptMutation.isPending || declineMutation.isPending;
+          return (
+            <div key={req.id} className="flex items-center gap-3 p-2.5 rounded-xl hover:bg-white/5 transition-colors">
+              <div className="h-9 w-9 rounded-full bg-white/10 flex items-center justify-center text-sm font-bold text-white/40 shrink-0 overflow-hidden">
+                {req.client?.imgId
+                  ? <img src={`https://fox-passport-republic-assets.s3.ap-southeast-1.amazonaws.com/${req.client.imgId}`} className="h-full w-full object-cover" alt="" />
+                  : (req.client?.name?.charAt(0) ?? '?')}
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-bold text-white truncate">{req.client?.name}</p>
+                <p className="text-[10px] text-white/40 truncate">
+                  {req.guestCount} guests · {new Date(req.startAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                </p>
+                {req.template && (
+                  <p className="text-[10px] text-[#ccff00]/60 truncate">{req.template.name}</p>
+                )}
+              </div>
+              <div className="flex gap-1 shrink-0">
+                <button
+                  disabled={isActing}
+                  onClick={() => acceptMutation.mutate(req.id)}
+                  title="Accept"
+                  className="h-7 w-7 rounded-full bg-green-500/20 text-green-400 hover:bg-green-500 hover:text-white transition-colors flex items-center justify-center disabled:opacity-40 disabled:cursor-not-allowed"
+                >
+                  <span className="material-symbols-outlined text-[14px]">check</span>
+                </button>
+                <button
+                  disabled={isActing}
+                  onClick={() => declineMutation.mutate(req.id)}
+                  title="Decline"
+                  className="h-7 w-7 rounded-full bg-red-500/20 text-red-400 hover:bg-red-500 hover:text-white transition-colors flex items-center justify-center disabled:opacity-40 disabled:cursor-not-allowed"
+                >
+                  <span className="material-symbols-outlined text-[14px]">close</span>
+                </button>
+              </div>
             </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-bold text-white truncate">{req.client?.name}</p>
-              <p className="text-[10px] text-white/40 truncate">
-                {req.guestCount} guests · {new Date(req.startAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
-              </p>
-              {req.template && (
-                <p className="text-[10px] text-[#ccff00]/60 truncate">{req.template.name}</p>
-              )}
-            </div>
-            <span
-              className="text-[9px] font-black uppercase tracking-wide px-2 py-0.5 rounded-full border shrink-0"
-              style={{ color: statusColor(req.requestStatus), borderColor: `${statusColor(req.requestStatus)}40`, backgroundColor: `${statusColor(req.requestStatus)}10` }}
-            >
-              {req.requestStatus}
-            </span>
-          </div>
-        ))}
+          );
+        })}
       </div>
 
       <Link

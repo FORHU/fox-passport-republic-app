@@ -7,6 +7,7 @@ import QRCode from 'react-qr-code';
 import { fetchBookingById } from '@/features/booking/api/bookings';
 import { useAuthStore } from '@/features/auth/store/useAuthStore';
 import { toast } from 'sonner';
+import CancelBookingModal from './CancelBookingModal';
 
 const STATUS_LABEL: Record<string, { label: string; color: string }> = {
   pending: { label: 'Pending', color: 'text-yellow-400 bg-yellow-500/10' },
@@ -33,6 +34,7 @@ export default function BookingDetailClient({ bookingId }: { bookingId: string }
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
   const [error, setError] = useState('');
+  const [showCancelModal, setShowCancelModal] = useState(false);
 
   useEffect(() => {
     if (!bookingId) return;
@@ -147,7 +149,7 @@ export default function BookingDetailClient({ bookingId }: { bookingId: string }
             <span className="material-symbols-outlined text-[14px]">chevron_right</span>
             <Link href="/booking" className="hover:text-white transition-colors">My Bookings</Link>
             <span className="material-symbols-outlined text-[14px]">chevron_right</span>
-            <span className="text-accent font-semibold truncate max-w-[200px]">#{bookingId.slice(0, 12)}</span>
+            <span className="text-accent font-semibold truncate max-w-50">#{bookingId.slice(0, 12)}</span>
           </div>
 
           <div className="glass-panel rounded-3xl p-8 space-y-8">
@@ -161,7 +163,15 @@ export default function BookingDetailClient({ bookingId }: { bookingId: string }
                 </div>
                 <p className="text-text-muted text-sm font-mono">Booking #{bookingId}</p>
               </div>
-
+              {isActiveStatus && (
+                <button
+                  onClick={() => setShowCancelModal(true)}
+                  className="flex items-center gap-2 px-5 py-2.5 rounded-xl border border-red-500/30 text-red-400 text-sm font-semibold hover:bg-red-500/10 hover:border-red-500/50 transition-all shrink-0"
+                >
+                  <span className="material-symbols-outlined text-[16px]">cancel</span>
+                  Cancel Booking
+                </button>
+              )}
             </div>
 
             <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
@@ -266,6 +276,17 @@ export default function BookingDetailClient({ bookingId }: { bookingId: string }
           )}
         </div>
       </main>
+
+      {showCancelModal && (
+        <CancelBookingModal
+          bookingId={bookingId}
+          onClose={() => setShowCancelModal(false)}
+          onSuccess={() => {
+            setShowCancelModal(false);
+            fetchBookingById(bookingId).then(setBooking).catch(() => {});
+          }}
+        />
+      )}
     </>
   );
 }
