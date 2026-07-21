@@ -33,7 +33,7 @@ export default function VibeCheckSection({
         className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 relative z-20 reveal-on-scroll"
         style={{ transitionDelay: "100ms" }}
       >
-        <div className="flex overflow-x-auto gap-4 pb-3 sm:pb-6 snap-x snap-mandatory hide-scrollbar sm:grid sm:grid-cols-2 lg:grid-cols-4 sm:pb-0 sm:overflow-visible">
+        <div className="flex overflow-x-auto gap-4 pb-3 snap-x snap-mandatory hide-scrollbar sm:grid sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 sm:pb-6 sm:overflow-visible">
           {categories.map((cat, idx) => (
             <CategoryCard key={cat.name || idx} category={cat} index={idx} />
           ))}
