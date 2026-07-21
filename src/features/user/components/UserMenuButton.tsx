@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
@@ -104,7 +104,11 @@ function RoleLockDialog({
   );
 }
 
-export default function UserMenuButton() {
+interface UserMenuButtonProps {
+  onSignIn?: () => void;
+}
+
+export default function UserMenuButton({ onSignIn }: UserMenuButtonProps = {}) {
   const router = useRouter();
   const { user, setUser } = useAuthStore();
   const { isOpen, toggle, close, menuRef } = useUserMenu();
@@ -166,51 +170,67 @@ export default function UserMenuButton() {
       <div ref={menuRef} className="relative">
         <button
           onClick={(e) => { e.stopPropagation(); toggle(); }}
-          className={`flex items-center gap-3 pl-3 pr-1 py-1 rounded-full border border-white/10 bg-white/5 hover:bg-white/10 hover:shadow-[0_0_15px_rgba(204,255,0,0.2)] transition-all duration-300 backdrop-blur-md group ${
+          className={`flex items-center gap-2.5 sm:gap-3 pl-2.5 sm:pl-3 pr-1 py-1 rounded-full border border-white/10 bg-white/5 hover:bg-white/10 hover:shadow-[0_0_15px_rgba(204,255,0,0.2)] transition-all duration-300 backdrop-blur-md group cursor-pointer ${
             isOpen ? 'ring-2 ring-[#ccff00]/50 bg-white/10' : ''
           }`}
           aria-label="User menu"
         >
-          <Menu className="w-5 h-5 text-white/70 group-hover:text-white transition-colors" />
-          <div className="w-8 h-8 rounded-full overflow-hidden border border-[#ccff00]/50 shadow-sm flex-shrink-0">
+          <Menu className="w-4 h-4 sm:w-5 sm:h-5 text-white/70 group-hover:text-white transition-colors" />
+          <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full overflow-hidden border border-[#ccff00]/50 shadow-sm flex-shrink-0">
             {avatarUrl ? (
               <img src={avatarUrl} alt="" className="w-full h-full object-cover" />
             ) : (
               <div className="w-full h-full bg-[#ccff00] flex items-center justify-center">
-                <span className="text-black text-xs font-bold">{userInitial}</span>
+                <span className="text-black text-[10px] sm:text-xs font-bold">{user ? userInitial : '?'}</span>
               </div>
             )}
           </div>
         </button>
 
         {isOpen && (
-          <div className="absolute right-0 top-full mt-2 w-72 bg-[#1a1a24] rounded-xl shadow-2xl border border-white/10 py-2 z-50 backdrop-blur-xl">
+          <div className="fixed inset-x-4 top-16 sm:absolute sm:right-0 sm:top-full sm:inset-x-auto sm:mt-2 w-auto sm:w-72 max-h-[80vh] overflow-y-auto custom-scrollbar bg-[#1a1a24] rounded-2xl shadow-[0_0_40px_rgba(0,0,0,0.8)] border border-white/10 py-2 z-[100] backdrop-blur-xl animate-in fade-in zoom-in-95 duration-150">
 
-            {/* User identity */}
-            <div className="px-4 py-3 border-b border-white/5 flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl overflow-hidden shrink-0">
-                {avatarUrl ? (
-                  <img src={avatarUrl} alt="" className="w-full h-full object-cover" />
-                ) : (
-                  <div className="w-full h-full bg-[#ccff00] flex items-center justify-center">
-                    <span className="text-black text-sm font-bold">{userInitial}</span>
-                  </div>
-                )}
+            {/* Identity / Sign-In Header */}
+            {!user ? (
+              <div className="px-4 py-3 border-b border-white/5 space-y-2">
+                <p className="text-white font-bold text-sm">Welcome to FoxPassport</p>
+                <p className="text-white/40 text-xs">Sign in or register to unlock full access</p>
+                <button
+                  onClick={() => {
+                    close();
+                    if (onSignIn) onSignIn();
+                  }}
+                  className="w-full py-2.5 rounded-xl bg-[#ccff00] text-black font-bold text-sm hover:bg-[#b8e600] transition-all cursor-pointer shadow-[0_0_15px_rgba(204,255,0,0.3)]"
+                >
+                  Sign In / Register
+                </button>
               </div>
-              <div className="min-w-0 flex-1">
-                <p className="text-white font-bold text-sm truncate">{user?.name || user?.email}</p>
-                <p className="text-white/40 text-xs truncate">{user?.email}</p>
-                {roleTypes.length > 0 && (
-                  <div className="flex flex-wrap gap-1 mt-1.5">
-                    {roleTypes.map((r) => (
-                      <span key={r} className="px-2 py-0.5 rounded-full bg-[#ccff00]/10 text-[#ccff00] text-[10px] font-bold border border-[#ccff00]/20 capitalize">
-                        {r}
-                      </span>
-                    ))}
-                  </div>
-                )}
+            ) : (
+              <div className="px-4 py-3 border-b border-white/5 flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl overflow-hidden shrink-0">
+                  {avatarUrl ? (
+                    <img src={avatarUrl} alt="" className="w-full h-full object-cover" />
+                  ) : (
+                    <div className="w-full h-full bg-[#ccff00] flex items-center justify-center">
+                      <span className="text-black text-sm font-bold">{userInitial}</span>
+                    </div>
+                  )}
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="text-white font-bold text-sm truncate">{user?.name || user?.email}</p>
+                  <p className="text-white/40 text-xs truncate">{user?.email}</p>
+                  {roleTypes.length > 0 && (
+                    <div className="flex flex-wrap gap-1 mt-1.5">
+                      {roleTypes.map((r) => (
+                        <span key={r} className="px-2 py-0.5 rounded-full bg-[#ccff00]/10 text-[#ccff00] text-[10px] font-bold border border-[#ccff00]/20 capitalize">
+                          {r}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                </div>
               </div>
-            </div>
+            )}
 
             {/* Role Dashboards */}
             <div className="px-2 py-2 border-b border-white/5">

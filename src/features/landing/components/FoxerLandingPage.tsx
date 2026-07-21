@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useLandingPage } from "@/features/landing/hooks/useLandingPage";
 
@@ -26,7 +26,7 @@ const FoxerLandingPage: React.FC<FoxerLandingPageProps> = ({ featuredTemplates =
       <LandingHeader onSignIn={() => openAuthModal("login")} />
 
       {/* Main Content */}
-      <main className="flex-grow pt-32">
+      <main className="flex-grow">
         {/* Hero Section */}
         <HeroSection featuredTemplates={featuredTemplates} />
 
