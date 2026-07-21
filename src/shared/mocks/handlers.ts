@@ -1,4 +1,4 @@
-﻿import { http, HttpResponse } from 'msw';
+import { http, HttpResponse } from 'msw';
 
 const BASE = 'http://localhost:3002/api/v1';
 
@@ -220,10 +220,5 @@ export const handlers = [
       success: true,
       data: { message: 'Spot claimed! You have 15 minutes to complete your booking.' },
     });
-  }),
-
-  // ── Auth (return a fake logged-in user) ─────────────────────────────────
-  http.post(`${BASE}/auth/refresh-token`, () => {
-    return HttpResponse.json({ accessToken: 'mock_token_abc', user: { id: 'user_123', name: 'Test Citizen', email: 'citizen@test.com', systemRole: 'user' } });
   }),
 ];
