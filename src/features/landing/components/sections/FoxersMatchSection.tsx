@@ -40,27 +40,27 @@ export default function FoxersMatchSection() {
   const hasMore = showCount < foxers.length;
 
   return (
-    <section className="py-20 relative overflow-hidden bg-black/40">
+    <section className="py-6 sm:py-20 relative overflow-hidden bg-black/40">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 relative z-10 reveal-on-scroll">
         {/* Header */}
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6 mb-12">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-3 sm:gap-6 mb-6 sm:mb-8">
           <div>
-            <h2 className="font-display text-4xl md:text-5xl font-bold text-white mb-4">
+            <h2 className="font-display text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-1 sm:mb-3">
               Who&apos;s vibe matches yours?
             </h2>
-            <p className="text-lg text-text-muted max-w-2xl">
+            <p className="text-sm sm:text-base md:text-lg text-text-muted max-w-2xl">
               Browse Certified Foxers available for your dates. These pros know the scene inside out.
             </p>
           </div>
         </div>
 
         {/* Role-type Filter Bar */}
-        <div className="flex flex-wrap items-center gap-3 mb-10">
+        <div className="flex overflow-x-auto hide-scrollbar flex-nowrap items-center gap-2 sm:gap-3 -mx-4 px-4 pb-2 sm:mx-0 sm:px-0 sm:pb-0 mb-5 sm:mb-8">
           {ROLE_FILTERS.map((f) => (
             <button
               key={String(f.value)}
               onClick={() => handleFilterChange(f.value)}
-              className={`flex items-center gap-2 rounded-full px-5 py-2.5 text-sm font-medium transition-all ${
+              className={`flex items-center gap-2 rounded-full px-3.5 py-1.5 text-xs sm:px-5 sm:py-2.5 sm:text-sm font-medium transition-all flex-shrink-0 ${
                 activeRole === f.value
                   ? "bg-white text-black font-bold shadow-[0_0_15px_rgba(255,255,255,0.2)]"
                   : "border border-white/10 text-white hover:bg-white/5 glass-panel"
@@ -73,11 +73,11 @@ export default function FoxersMatchSection() {
         </div>
 
         {/* Foxers Grid */}
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+        <div className="flex overflow-x-auto gap-3 sm:gap-4 pb-2 sm:pb-6 snap-x snap-mandatory hide-scrollbar md:grid md:grid-cols-2 lg:grid-cols-3 md:pb-0 md:overflow-visible">
           {isLoading
             ? Array.from({ length: 3 }).map((_, i) => (
-                <div key={i} className="glass-card rounded-[2rem] p-8 animate-pulse space-y-4">
-                  <div className="flex gap-4">
+                <div key={i} className="glass-card rounded-[2rem] p-2.5 sm:p-8 animate-pulse space-y-4 flex-shrink-0 w-[65vw] max-w-[240px] snap-center">
+        <div className="flex gap-2 sm:gap-4">
                     <div className="h-16 w-16 rounded-full bg-white/10" />
                     <div className="flex-1 space-y-2 pt-2">
                       <div className="h-4 w-32 bg-white/10 rounded" />
@@ -104,7 +104,7 @@ export default function FoxersMatchSection() {
 
         {/* Load More */}
         {hasMore && (
-          <div className="mt-12 flex justify-center">
+          <div className="hidden sm:block sm:mt-12 text-center">
             <button
               onClick={() => setShowCount((c) => c + MORE_COUNT)}
               className="group relative px-8 py-4 rounded-full bg-transparent text-white font-bold transition-all flex items-center gap-2 overflow-visible"
@@ -210,7 +210,7 @@ function FoxerCard({ foxer }: { foxer: Foxer }) {
 
   return (
     <div
-      className="group glass-card rounded-[2rem] p-8 transition-all duration-300 card-hover-effect relative flex flex-col"
+      className="group glass-card rounded-[2rem] p-2.5 sm:p-8 flex-shrink-0 w-[65vw] max-w-[240px] sm:w-auto sm:max-w-none snap-center transition-all duration-300 card-hover-effect relative flex flex-col"
       style={showStartHere ? { borderColor: "rgba(255,0,170,0.3)" } : undefined}
     >
       {/* "Start here" banner for Event Foxers with content */}
@@ -229,59 +229,65 @@ function FoxerCard({ foxer }: { foxer: Foxer }) {
       </Link>
 
       {/* Header */}
-      <div className="flex items-start justify-between mb-3 relative z-10 pointer-events-none">
-        <div className="flex gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2 mb-3 relative z-10 pointer-events-none">
+        <div className="flex items-center gap-1.5 sm:gap-4">
           <div className="relative">
             <img
               src={avatarUrl}
               alt={foxer.name}
-              className="h-16 w-16 rounded-full object-cover border-2 border-surface-highlight group-hover:scale-105 transition-transform"
+              className="h-7 w-7 sm:h-16 sm:w-16 rounded-full object-cover border-2 border-surface-highlight group-hover:scale-105 transition-transform"
               onError={(e) => { (e.target as HTMLImageElement).src = FALLBACK_AVATAR; }}
             />
-            <div className="absolute bottom-0 right-0 h-4 w-4 rounded-full bg-green-500 border-2 border-surface-highlight ring-2 ring-black" />
+            <div className="absolute bottom-0 right-0 h-2 w-2 sm:h-4 sm:w-4 rounded-full bg-green-500 border-2 border-surface-highlight ring-2 ring-black" />
           </div>
           <div>
-            <div className="flex items-center gap-1 font-display font-bold text-xl text-white">
+            <div className="flex items-center gap-1 font-display font-bold text-[9px] sm:text-xl text-white leading-tight">
               {foxer.name}{" "}
-              <span className="material-symbols-outlined text-primary text-[18px] fill-current">verified</span>
+              <span className="material-symbols-outlined text-primary text-[9px] sm:text-[18px] fill-current">verified</span>
             </div>
-            <div className="text-sm font-semibold" style={{ color: roleMeta.color }}>{roleMeta.label}</div>
+            <div className="text-[7px] sm:text-sm font-semibold" style={{ color: roleMeta.color }}>{roleMeta.label}</div>
           </div>
         </div>
+<<<<<<< Updated upstream
         <div className="text-right">
           <div className="flex items-center justify-end gap-1 font-bold text-white">
             {foxer.avgRating != null ? foxer.avgRating.toFixed(1) : "New"}{" "}
+=======
+        <div className="sm:text-right text-left">
+          <div className="flex items-center justify-end gap-1 font-bold text-[11px] sm:text-base text-white">
+            5.0{" "}
+>>>>>>> Stashed changes
             <span className="material-symbols-outlined text-yellow-400 text-[16px] fill-current">star</span>
           </div>
-          <div className="text-xs text-text-muted">{foxer.city}</div>
+          <div className="text-[10px] sm:text-xs text-text-muted">{foxer.city}</div>
         </div>
       </div>
 
       {/* Role description */}
-      <p className="text-xs text-white/40 mb-5 relative z-10 pointer-events-none pl-20">
+      <p className="text-[10px] text-white/40 mb-3 sm:mb-5 relative z-10 pointer-events-none pl-8 sm:pl-20">
         {roleMeta.description}
       </p>
 
       {/* Bio */}
       {bio && (
-        <p className="text-sm text-text-muted leading-relaxed mb-4 relative z-10 pointer-events-none line-clamp-2">
+        <p className="text-[10px] sm:text-sm text-text-muted leading-relaxed mb-3 sm:mb-4 relative z-10 pointer-events-none line-clamp-2">
           {bio}
         </p>
       )}
 
       {/* Tags */}
-      <div className="flex flex-wrap gap-2 mb-4 relative z-10">
+      <div className="flex flex-wrap gap-1 sm:gap-1.5 mb-2 sm:mb-4 relative z-10">
         {tags.length > 0 ? (
           tags.map((tag, idx) => (
             <span
               key={idx}
-              className="rounded-lg bg-black/30 px-3 py-1.5 text-xs font-bold text-gray-400 border border-white/5 group-hover:text-white transition-colors"
+              className="rounded-lg bg-black/30 px-2 py-0.5 text-[10px] font-bold text-gray-400 border border-white/5 group-hover:text-white transition-colors"
             >
               {tag}
             </span>
           ))
         ) : (
-          <span className="rounded-lg bg-black/30 px-3 py-1.5 text-xs font-bold text-gray-400 border border-white/5">
+          <span className="rounded-lg bg-black/30 px-2 py-0.5 text-[10px] font-bold text-gray-400 border border-white/5">
             Creative Services
           </span>
         )}
@@ -293,7 +299,7 @@ function FoxerCard({ foxer }: { foxer: Foxer }) {
         const specs = (foxer.foxerSpecializations ?? []).filter(s => s.roleType === primaryRole);
         if (specs.length === 0) return null;
         return (
-          <div className="flex flex-wrap gap-1.5 mb-6 relative z-10">
+          <div className="flex flex-wrap gap-1 sm:gap-1.5 mb-4 sm:mb-6 relative z-10">
             {specs.map((s, i) => <SpecializationChip key={i} spec={s} />)}
           </div>
         );
@@ -301,11 +307,11 @@ function FoxerCard({ foxer }: { foxer: Foxer }) {
 
       {/* Portfolio Images */}
       {portfolioImages.length > 0 && (
-        <div className="flex justify-between gap-3 mb-8 relative z-10 pointer-events-none">
+        <div className="flex justify-between gap-2 sm:gap-3 mb-5 sm:mb-8 relative z-10 pointer-events-none">
           {portfolioImages.map((img, idx) => (
             <div
               key={idx}
-              className="h-20 flex-1 rounded-2xl overflow-hidden border border-white/10 group-hover:scale-105 transition-transform duration-300 first:-rotate-3 last:rotate-3"
+              className="h-6 w-6 sm:h-20 sm:w-20 rounded-lg sm:rounded-xl overflow-hidden border border-white/10 group-hover:scale-105 transition-transform duration-300 first:-rotate-3 last:rotate-3"
             >
               <img src={img} alt="Work" className="h-full w-full object-cover" />
             </div>
@@ -314,20 +320,20 @@ function FoxerCard({ foxer }: { foxer: Foxer }) {
       )}
 
       {/* Actions */}
-      <div className="flex gap-3 relative z-20 mt-auto pt-2">
+      <div className="flex gap-2 sm:gap-3 relative z-20 mt-auto pt-2">
         <button
           onClick={(e) => {
             e.preventDefault();
             e.stopPropagation();
             router.push(`/match/${foxer.id}`);
           }}
-          className="flex-1 rounded-full bg-linear-to-r from-[#8b5cf6] to-[#a855f7] py-3.5 text-sm font-bold text-white hover:opacity-90 transition-opacity hover:shadow-[0_0_15px_rgba(139,92,246,0.5)] flex items-center justify-center cursor-pointer"
+          className="flex-1 rounded-full bg-linear-to-r from-[#8b5cf6] to-[#a855f7] py-1 text-[9px] sm:py-3.5 sm:text-sm font-bold text-white hover:opacity-90 transition-opacity hover:shadow-[0_0_15px_rgba(139,92,246,0.5)] flex items-center justify-center cursor-pointer"
         >
           Match Me
         </button>
         <button
           onClick={(e) => { e.preventDefault(); e.stopPropagation(); }}
-          className="h-12 w-12 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-gray-400 hover:text-white hover:bg-white/10 transition-colors group/heart cursor-pointer"
+          className="h-7 w-7 sm:h-12 sm:w-12 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-gray-400 hover:text-white hover:bg-white/10 transition-colors group/heart cursor-pointer"
         >
           <span className="material-symbols-outlined group-hover/heart:scale-125 transition-transform">favorite</span>
         </button>

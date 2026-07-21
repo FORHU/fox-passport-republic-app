@@ -44,6 +44,7 @@ const nextConfig = {
   async headers() {
     const stripeCSP = [
       {
+<<<<<<< Updated upstream
         key: 'Content-Security-Policy',
         value: [
           "default-src 'self'",
@@ -53,6 +54,38 @@ const nextConfig = {
           "connect-src 'self' https://*.stripe.com https://*.stripe.network http://localhost:3002",
           "img-src 'self' data: https://*.stripe.com",
         ].join('; '),
+=======
+        source: '/creator-dashboard/stripe-onboard',
+        headers: [
+          {
+            key: 'Content-Security-Policy',
+            value: [
+              "default-src 'self'",
+              "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.stripe.com https://*.stripe.network",
+              "style-src 'self' 'unsafe-inline' https://*.stripe.com",
+              "frame-src https://*.stripe.com https://*.stripe.network",
+              "connect-src 'self' https://*.stripe.com https://*.stripe.network http://localhost:3002",
+              "img-src 'self' data: https://*.stripe.com",
+            ].join('; '),
+          },
+        ],
+      },
+      {
+        source: '/creator-dashboard/stripe-dashboard',
+        headers: [
+          {
+            key: 'Content-Security-Policy',
+            value: [
+              "default-src 'self'",
+              "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.stripe.com https://*.stripe.network",
+              "style-src 'self' 'unsafe-inline' https://*.stripe.com",
+              "frame-src https://*.stripe.com https://*.stripe.network",
+              "connect-src 'self' https://*.stripe.com https://*.stripe.network http://localhost:3002",
+              "img-src 'self' data: https://*.stripe.com",
+            ].join('; '),
+          },
+        ],
+>>>>>>> Stashed changes
       },
     ];
     return [
