@@ -110,15 +110,11 @@ function CompactCalendar({
 function DateField({
   label,
   value,
-  error,
   onSelect,
-  onClearError,
 }: {
   label: string;
   value: string;
-  error?: string;
   onSelect: (d: string) => void;
-  onClearError: () => void;
 }) {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
@@ -147,25 +143,21 @@ function DateField({
     ? new Date(value + "T00:00:00").toLocaleDateString("en-PH", {
         month: "short",
         day: "numeric",
-        year: "numeric",
       })
     : "";
 
   return (
-    <div className="flex-1 w-auto px-4 py-3 text-left cursor-pointer group/item hover:bg-white/10 transition-colors relative" ref={ref}>
-      <span className="block text-[10px] font-bold text-white/40 uppercase tracking-widest mb-1 ml-1">{label}</span>
+    <div className="flex-1 min-w-[100px] px-3 py-2 sm:px-4 sm:py-2.5 text-left cursor-pointer group/item hover:bg-white/10 rounded-2xl transition-colors relative" ref={ref}>
+      <span className="block text-[9px] sm:text-[10px] font-extrabold text-white/40 uppercase tracking-widest mb-0.5 ml-1">{label}</span>
       <button
         type="button"
         onClick={toggle}
-        className={`bg-transparent border-none text-white text-xs font-bold w-full h-6 outline-none text-left ${
-          value ? "" : "text-white/40"
-        } ${error ? "text-red-400" : ""}`}
+        className={`bg-transparent border-none text-xs sm:text-sm font-semibold w-full outline-none text-left cursor-pointer truncate ${
+          value ? "text-white" : "text-white/40"
+        }`}
       >
         {display || "Select date"}
       </button>
-      {error && (
-        <span className="block text-[10px] font-bold text-red-400 mt-1 ml-1 animate-pulse">{error}</span>
-      )}
 
       {open &&
         createPortal(
@@ -178,7 +170,6 @@ function DateField({
               value={value}
               onSelect={(d) => {
                 onSelect(d);
-                onClearError();
                 close();
               }}
             />
@@ -191,14 +182,10 @@ function DateField({
 
 function CategoryField({
   value,
-  error,
   onChange,
-  onClearError,
 }: {
   value: string;
-  error?: string;
   onChange: (val: string) => void;
-  onClearError: () => void;
 }) {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
@@ -218,29 +205,26 @@ function CategoryField({
   const toggle = () => {
     if (!open && ref.current) {
       const rect = ref.current.getBoundingClientRect();
-      setPos({ top: rect.bottom + 6, left: rect.left, width: rect.width });
+      setPos({ top: rect.bottom + 6, left: rect.left, width: Math.max(160, rect.width) });
     }
     setOpen((o) => !o);
   };
 
   return (
-    <div className="flex-1 w-auto px-4 py-3 text-left cursor-pointer group/item hover:bg-white/10 transition-colors relative" ref={ref}>
-      <span className="block text-[10px] font-bold text-white/40 uppercase tracking-widest mb-1 ml-1">Category</span>
+    <div className="flex-1 min-w-[100px] px-3 py-2 sm:px-4 sm:py-2.5 text-left cursor-pointer group/item hover:bg-white/10 rounded-2xl transition-colors relative" ref={ref}>
+      <span className="block text-[9px] sm:text-[10px] font-extrabold text-white/40 uppercase tracking-widest mb-0.5 ml-1">CATEGORY</span>
       <button
         type="button"
         onClick={toggle}
-        className={`flex items-center justify-between w-full bg-transparent border-none text-white text-xs font-bold h-6 outline-none text-left ${
-          value ? "" : "text-white/40"
-        } ${error ? "text-red-400" : ""}`}
+        className={`flex items-center justify-between w-full bg-transparent border-none text-xs sm:text-sm font-semibold outline-none text-left cursor-pointer ${
+          value ? "text-white" : "text-white/40"
+        }`}
       >
         <span className="capitalize truncate">{value || "Select..."}</span>
-        <span className={`material-symbols-outlined text-[16px] text-white/40 transition-transform duration-200 ${open ? "rotate-180" : ""}`}>
+        <span className={`material-symbols-outlined text-[16px] text-white/40 shrink-0 transition-transform duration-200 ml-1 ${open ? "rotate-180" : ""}`}>
           expand_more
         </span>
       </button>
-      {error && (
-        <span className="block text-[10px] font-bold text-red-400 mt-1 ml-1 animate-pulse">{error}</span>
-      )}
 
       {open &&
         createPortal(
@@ -249,17 +233,28 @@ function CategoryField({
             style={{ top: pos.top, left: pos.left, width: pos.width }}
             onMouseDown={(e) => e.stopPropagation()}
           >
-            <div className="glass-card rounded-xl border border-white/10 p-1.5 shadow-[0_0_30px_rgba(0,0,0,0.5)]">
+            <div className="glass-card rounded-xl border border-white/10 p-1.5 shadow-[0_0_30px_rgba(0,0,0,0.5)] bg-[#11121a]">
+              <button
+                type="button"
+                onClick={() => {
+                  onChange("");
+                  close();
+                }}
+                className={`w-full text-left px-3 py-2 rounded-lg text-xs sm:text-sm capitalize transition-all ${
+                  !value ? "bg-[#ccff00]/15 text-[#ccff00] font-bold" : "text-white/70 hover:bg-white/10 hover:text-white"
+                }`}
+              >
+                All Categories
+              </button>
               {CATEGORIES.map((cat) => (
                 <button
                   key={cat}
                   type="button"
                   onClick={() => {
                     onChange(cat);
-                    onClearError();
                     close();
                   }}
-                  className={`w-full text-left px-3 py-2 rounded-lg text-sm capitalize transition-all ${
+                  className={`w-full text-left px-3 py-2 rounded-lg text-xs sm:text-sm capitalize transition-all ${
                     value === cat
                       ? "bg-[#ccff00]/15 text-[#ccff00] font-bold"
                       : "text-white/70 hover:bg-white/10 hover:text-white"
@@ -276,7 +271,7 @@ function CategoryField({
   );
 }
 
-function LocationDropdown({
+function LocationField({
   value,
   onChange,
 }: {
@@ -301,7 +296,7 @@ function LocationDropdown({
   const toggle = () => {
     if (!open && ref.current) {
       const rect = ref.current.getBoundingClientRect();
-      setPos({ top: rect.bottom + 6, left: Math.max(16, rect.left - 40), width: Math.max(180, rect.width) });
+      setPos({ top: rect.bottom + 6, left: Math.max(16, rect.left), width: Math.max(180, rect.width) });
     }
     setOpen((o) => !o);
   };
@@ -309,19 +304,26 @@ function LocationDropdown({
   const locations = ["All Locations", "Baguio", "Manila", "Cebu", "Siargao", "Boracay", "Palawan"];
 
   return (
-    <div ref={ref} className="w-16 sm:w-28 lg:w-44 shrink-0 relative">
-      <button
-        type="button"
-        onClick={toggle}
-        className="w-full flex items-center justify-between gap-0.5 sm:gap-1 text-[10px] sm:text-xs lg:text-sm font-bold text-white bg-transparent border-none outline-none cursor-pointer px-1 sm:px-2 py-1"
-      >
-        <span className="truncate text-left text-white/90">
-          {value || "Location"}
-        </span>
-        <span className={`material-symbols-outlined text-[12px] sm:text-[16px] text-white/50 shrink-0 transition-transform duration-200 ${open ? "rotate-180" : ""}`}>
-          expand_more
-        </span>
-      </button>
+    <div className="flex-1 min-w-[110px] px-3 py-2 sm:px-4 sm:py-2.5 text-left cursor-pointer group/item hover:bg-white/10 rounded-2xl transition-colors relative" ref={ref}>
+      <span className="block text-[9px] sm:text-[10px] font-extrabold text-white/40 uppercase tracking-widest mb-0.5 ml-1">LOCATION</span>
+      <div className="flex items-center justify-between w-full">
+        <input
+          type="text"
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          placeholder="Search location..."
+          className="bg-transparent border-none text-white placeholder:text-white/40 text-xs sm:text-sm font-semibold outline-none focus:ring-0 w-full min-w-0 text-ellipsis p-0"
+        />
+        <button
+          type="button"
+          onClick={toggle}
+          className="bg-transparent border-none outline-none cursor-pointer p-0 shrink-0 text-white/40 hover:text-white transition-colors"
+        >
+          <span className={`material-symbols-outlined text-[16px] transition-transform duration-200 ${open ? "rotate-180" : ""}`}>
+            expand_more
+          </span>
+        </button>
+      </div>
 
       {open &&
         createPortal(
@@ -374,16 +376,23 @@ interface HeroSectionProps {
 
 export default function HeroSection({ featuredTemplates = [] }: HeroSectionProps) {
   const router = useRouter();
-  const [searchQuery, setSearchQuery] = useState("");
+  const [categoryVal, setCategoryVal] = useState("");
+  const [startDateVal, setStartDateVal] = useState("");
+  const [endDateVal, setEndDateVal] = useState("");
   const [locationVal, setLocationVal] = useState("");
 
   const handleSearch = (e?: React.FormEvent) => {
     if (e) e.preventDefault();
 
     const params = new URLSearchParams();
-    if (searchQuery.trim()) {
-      params.set("query", searchQuery.trim());
-      params.set("category", searchQuery.trim().toLowerCase());
+    if (categoryVal.trim()) {
+      params.set("category", categoryVal.trim().toLowerCase());
+    }
+    if (startDateVal) {
+      params.set("startDate", startDateVal);
+    }
+    if (endDateVal) {
+      params.set("endDate", endDateVal);
     }
     if (locationVal.trim()) {
       params.set("city", locationVal.trim());
@@ -431,49 +440,98 @@ export default function HeroSection({ featuredTemplates = [] }: HeroSectionProps
             </div>
 
             {/* Search Area */}
-            <div className="w-full max-w-3xl mx-auto lg:mx-0 flex flex-col gap-4 z-20 relative">
-              {/* Search Box */}
-              <form onSubmit={handleSearch} className="w-full max-w-4xl mx-auto lg:mx-0 relative group z-20">
-                {/* 1. Outer Glow */}
-                <div className="absolute -inset-1 bg-gradient-to-r from-primary via-purple-600 to-secondary rounded-full blur opacity-40 group-hover:opacity-70 transition duration-500 group-hover:duration-200 animate-pulse"></div>
+            <div className="w-full max-w-[950px] mx-auto lg:mx-0 flex flex-col gap-4 z-20 relative">
+              {/* Search Box Form */}
+              <form onSubmit={handleSearch} className="w-full relative group z-20">
+                {/* Ambient Purple/Magenta Outer Glow */}
+                <div className="absolute -inset-1 bg-gradient-to-r from-purple-600 via-indigo-500 to-pink-500 rounded-[2.5rem] blur opacity-40 group-hover:opacity-75 transition duration-500 animate-pulse"></div>
 
-                {/* Outer Search Container */}
-                <div className="relative glass-panel bg-black/80 backdrop-blur-2xl p-1 sm:p-2 pl-3 sm:pl-4 rounded-full border border-white/10 group-hover:border-white/20 transition-all shadow-[0_0_30px_rgba(139,92,246,0.3)]">
-                  {/* 2. Single-Row Alignment */}
-                  <div className="flex flex-row items-center gap-1.5 sm:gap-2">
+                {/* Outer Capsule Glass Panel */}
+                <div className="relative glass-panel bg-[#151326]/85 backdrop-blur-2xl p-2 sm:p-2.5 rounded-[2.5rem] border border-white/10 group-hover:border-white/20 transition-all shadow-[0_0_35px_rgba(139,92,246,0.3)]">
+                  
+                  {/* DESKTOP & TABLET VIEW (md and up): Single Horizontal Capsule Pill */}
+                  <div className="hidden md:flex flex-row items-center gap-1 lg:gap-2 px-1">
+                    {/* 1. CATEGORY */}
+                    <CategoryField
+                      value={categoryVal}
+                      onChange={(cat) => setCategoryVal(cat)}
+                    />
 
-                    {/* 3. Search Icon & Input Field */}
-                    <div className="flex-1 flex items-center gap-1.5 sm:gap-2 min-w-0">
-                      <span className="material-symbols-outlined text-[16px] sm:text-[20px] text-white/50 shrink-0">
-                        search
-                      </span>
-                      <input
-                        id="heroSearchInput"
-                        type="text"
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                        placeholder="Search experiences, events, vibes..."
-                        className="bg-transparent border-none text-white placeholder:text-white/30 text-[10px] sm:text-sm lg:text-base font-medium outline-none focus:ring-0 w-full min-w-0 text-ellipsis"
-                      />
-                    </div>
+                    {/* Divider */}
+                    <div className="w-px h-8 bg-white/10 shrink-0"></div>
 
-                    {/* 4. Vertical Separator */}
-                    <div className="w-px bg-white/10 h-5 sm:h-8 shrink-0"></div>
+                    {/* 2. START */}
+                    <DateField
+                      label="START"
+                      value={startDateVal}
+                      onSelect={(d) => setStartDateVal(d)}
+                    />
 
-                    {/* 5. Location Selector */}
-                    <LocationDropdown
+                    {/* Divider */}
+                    <div className="w-px h-8 bg-white/10 shrink-0"></div>
+
+                    {/* 3. END */}
+                    <DateField
+                      label="END"
+                      value={endDateVal}
+                      onSelect={(d) => setEndDateVal(d)}
+                    />
+
+                    {/* Divider */}
+                    <div className="w-px h-8 bg-white/10 shrink-0"></div>
+
+                    {/* 4. LOCATION */}
+                    <LocationField
                       value={locationVal}
                       onChange={(loc) => setLocationVal(loc)}
                     />
 
-                    {/* 6. "Go" Button */}
+                    {/* 5. "Go" Button */}
                     <button
                       type="submit"
-                      className="rounded-full bg-white text-black font-bold h-8 sm:h-12 px-3 sm:px-6 text-[10px] sm:text-xs lg:text-sm shrink-0 transition-all duration-300 hover:scale-105 active:scale-95 shadow-[0_0_20px_rgba(255,255,255,0.2)] flex items-center justify-center"
+                      className="rounded-full bg-white text-black font-extrabold text-sm lg:text-base px-8 py-3.5 shrink-0 transition-all duration-300 hover:bg-white/90 hover:scale-105 active:scale-95 shadow-[0_0_20px_rgba(255,255,255,0.3)] flex items-center justify-center cursor-pointer ml-1 font-display"
                     >
                       Go
                     </button>
                   </div>
+
+                  {/* MOBILE VIEW (< md): Sleek Responsive Capsule Bar */}
+                  <div className="flex md:hidden flex-col gap-2 p-1">
+                    {/* Row 1: CATEGORY & START */}
+                    <div className="grid grid-cols-2 gap-1 items-center bg-white/5 rounded-2xl p-1 border border-white/5">
+                      <CategoryField
+                        value={categoryVal}
+                        onChange={(cat) => setCategoryVal(cat)}
+                      />
+                      <DateField
+                        label="START"
+                        value={startDateVal}
+                        onSelect={(d) => setStartDateVal(d)}
+                      />
+                    </div>
+
+                    {/* Row 2: END & LOCATION */}
+                    <div className="grid grid-cols-2 gap-1 items-center bg-white/5 rounded-2xl p-1 border border-white/5">
+                      <DateField
+                        label="END"
+                        value={endDateVal}
+                        onSelect={(d) => setEndDateVal(d)}
+                      />
+                      <LocationField
+                        value={locationVal}
+                        onChange={(loc) => setLocationVal(loc)}
+                      />
+                    </div>
+
+                    {/* Row 3: "Go" Button (Full width white capsule button on mobile) */}
+                    <button
+                      type="submit"
+                      className="w-full rounded-full bg-white text-black font-extrabold text-base py-3.5 shrink-0 transition-all duration-300 hover:bg-white/90 active:scale-95 shadow-[0_0_20px_rgba(255,255,255,0.3)] flex items-center justify-center cursor-pointer font-display mt-0.5"
+                    >
+                      Go
+                    </button>
+                  </div>
+
                 </div>
               </form>
             </div>
