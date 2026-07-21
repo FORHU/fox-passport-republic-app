@@ -20,11 +20,11 @@ export default function VibeCheckSection({
       {/* Header */}
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 mb-8 flex justify-between items-end relative z-20 reveal-on-scroll">
         <div>
-          <h2 className="text-3xl font-display font-bold text-white group cursor-default">
+          <h2 className="text-2xl sm:text-3xl font-display font-bold text-white group cursor-default">
             <span className="inline-block hover:animate-wiggle">Vibe</span>{" "}
             <span className="inline-block hover:text-accent transition-colors">Check</span>
           </h2>
-          <p className="text-text-muted mt-1">Browse by category</p>
+          <p className="text-xs sm:text-sm text-text-muted mt-1">Browse by category</p>
         </div>
       </div>
 
@@ -33,7 +33,7 @@ export default function VibeCheckSection({
         className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 relative z-20 reveal-on-scroll"
         style={{ transitionDelay: "100ms" }}
       >
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6">
+        <div className="flex overflow-x-auto gap-4 pb-3 sm:pb-6 snap-x snap-mandatory hide-scrollbar sm:grid sm:grid-cols-2 lg:grid-cols-4 sm:pb-0 sm:overflow-visible">
           {categories.map((cat, idx) => (
             <CategoryCard key={cat.name || idx} category={cat} index={idx} />
           ))}
@@ -47,7 +47,7 @@ export default function VibeCheckSection({
 function CategoryCard({ category, index }: { category: Category; index: number }) {
   return (
     <div
-      className="group relative flex flex-col justify-end rounded-3xl border border-white/5 h-[280px] overflow-hidden hover:border-white/20 transition-all duration-300 hover:-translate-y-1"
+      className="group relative flex flex-col justify-end rounded-3xl border border-white/5 flex-shrink-0 w-[65vw] max-w-[240px] h-[180px] sm:w-auto sm:max-w-none sm:h-[280px] snap-center overflow-hidden hover:border-white/20 transition-all duration-300 hover:-translate-y-1"
       style={{ transitionDelay: `${index * 50}ms` }}
     >
       {/* Main Link for the entire card */}
@@ -66,13 +66,13 @@ function CategoryCard({ category, index }: { category: Category; index: number }
       </div>
 
       {/* Content */}
-      <div className="relative z-10 p-5 transition-all duration-300 group-hover:-translate-y-2 pointer-events-none">
-        <h3 className="text-xl font-bold mb-1 leading-tight font-display capitalize text-white">
+      <div className="relative z-10 p-2.5 sm:p-5 transition-all duration-300 group-hover:-translate-y-2 pointer-events-none">
+        <h3 className="text-[10px] sm:text-xl font-bold mb-0.5 sm:mb-1 leading-tight font-display capitalize text-white">
           {category.name}
         </h3>
-        <p className="text-sm text-white/70">{category.tagline || category.description || "Explore experiences"}</p>
+        <p className="text-[10px] sm:text-sm text-white/70 line-clamp-2">{category.tagline || category.description || "Explore experiences"}</p>
         {category.spotLabel && (
-          <p className="text-xs mt-2 font-bold text-white/60">{category.spotLabel}</p>
+          <p className="text-[10px] sm:text-sm mt-2 font-bold text-white/60">{category.spotLabel}</p>
         )}
       </div>
     </div>
