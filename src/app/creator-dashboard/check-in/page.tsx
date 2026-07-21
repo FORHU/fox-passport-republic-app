@@ -23,7 +23,7 @@ export default function CheckInPage() {
               Event Check-In
             </div>
             <p className="text-sm text-white/50">
-              Scan the QR code on a citizen's booking page to verify their entry.
+              Scan the QR code on a citizen&apos;s booking page to verify their entry.
             </p>
           </div>
 
