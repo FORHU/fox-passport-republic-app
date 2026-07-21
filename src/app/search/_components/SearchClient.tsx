@@ -1,12 +1,20 @@
 "use client";
 
 import { useSearchParams, useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo, useRef } from "react";
+import { useQuery } from "@tanstack/react-query";
 import Link from "next/link";
 import SearchFilters from "@/features/search/components/SearchFilters";
 import EventFoxersSection from "@/features/search/components/EventFoxersSection";
 import EventTemplatesSection from "@/features/search/components/EventTemplatesSection";
 import GearServiceBento from "@/features/search/components/GearServiceBento";
+import {
+  fetchEventFoxers,
+  fetchEventTemplates,
+  fetchGearFoxers,
+  fetchServiceFoxers,
+  foxersToRows,
+} from "@/features/search/api/search";
 
 export default function SearchClient() {
   const searchParams = useSearchParams();
@@ -15,8 +23,32 @@ export default function SearchClient() {
   const q = searchParams?.get("q") || "";
   const category = searchParams?.get("category") || "";
   const city = searchParams?.get("label") || searchParams?.get("city") || "";
+  const maxPrice = searchParams?.get("maxPrice") || "";
 
   const [searchQuery, setSearchQuery] = useState(q);
+  const [efPage, setEfPage] = useState(1);
+  const [etPage, setEtPage] = useState(1);
+  const [gsPage, setGsPage] = useState(1);
+
+  useEffect(() => {
+    setEfPage(1);
+    setEtPage(1);
+    setGsPage(1);
+  }, [q, category, city, maxPrice]);
+
+  const mswStarted = useRef(false);
+
+  useEffect(() => {
+    if (process.env.NODE_ENV === "development" && !mswStarted.current) {
+      mswStarted.current = true;
+      import("@/mocks/browser").then(({ worker }) => {
+        worker.start({
+          onUnhandledRequest: "bypass",
+          url: /^http:\/\/localhost:3002\/api\/v1\//,
+        });
+      });
+    }
+  }, []);
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -33,6 +65,57 @@ export default function SearchClient() {
     }, 500);
     return () => clearTimeout(timer);
   }, [searchQuery, searchParams, router]);
+
+  const filters = useMemo(() => ({
+    ...(city && { city }),
+    ...(category && { category }),
+    ...(maxPrice && { maxPrice }),
+    ...(q && { q }),
+  }), [city, category, maxPrice, q]);
+
+  const { data: efData, isFetching: efFetching } = useQuery({
+    queryKey: ["eventFoxers", efPage, city, category, maxPrice, q],
+    queryFn: () => fetchEventFoxers(efPage, 2, filters),
+    staleTime: 1000 * 60 * 5,
+    placeholderData: (prev: any) => prev,
+  });
+
+  const { data: etData, isFetching: etFetching } = useQuery({
+    queryKey: ["eventTemplates", etPage, city, category, maxPrice, q],
+    queryFn: () => fetchEventTemplates(etPage, 6, filters),
+    staleTime: 1000 * 60 * 5,
+    placeholderData: (prev: any) => prev,
+  });
+
+  const { data: gfData, isFetching: gfFetching } = useQuery({
+    queryKey: ["gearFoxers", gsPage, city, category, maxPrice, q],
+    queryFn: () => fetchGearFoxers(gsPage, 5, filters),
+    staleTime: 1000 * 60 * 5,
+    placeholderData: (prev: any) => prev,
+  });
+
+  const { data: sfData, isFetching: sfFetching } = useQuery({
+    queryKey: ["serviceFoxers", gsPage, city, category, maxPrice, q],
+    queryFn: () => fetchServiceFoxers(gsPage, 5, filters),
+    staleTime: 1000 * 60 * 5,
+    placeholderData: (prev: any) => prev,
+  });
+
+  const eventFoxers = efData?.items ?? [];
+  const eventTemplates = etData?.items ?? [];
+  const gearFoxers = gfData?.items ?? [];
+  const serviceFoxers = sfData?.items ?? [];
+
+  const efTotalPages = efData?.pagination?.totalPages ?? 1;
+  const etTotalPages = etData?.pagination?.totalPages ?? 1;
+  const gsTotalPages = Math.max(
+    gfData?.pagination?.totalPages ?? 1,
+    sfData?.pagination?.totalPages ?? 1,
+    1
+  );
+
+  const gearRows = useMemo(() => foxersToRows(gearFoxers), [gearFoxers]);
+  const serviceRows = useMemo(() => foxersToRows(serviceFoxers), [serviceFoxers]);
 
   return (
     <div className="min-h-screen bg-[#0c0d14] text-white pt-32 pb-12 px-8 relative">
@@ -80,9 +163,28 @@ export default function SearchClient() {
             <SearchFilters />
           </aside>
           <main className="flex-1 min-w-0 space-y-16">
-            <EventFoxersSection />
-            <EventTemplatesSection />
-            <GearServiceBento />
+            <EventFoxersSection
+              items={eventFoxers}
+              isFetching={efFetching}
+              page={efPage}
+              totalPages={efTotalPages}
+              onPageChange={setEfPage}
+            />
+            <EventTemplatesSection
+              items={eventTemplates}
+              isFetching={etFetching}
+              page={etPage}
+              totalPages={etTotalPages}
+              onPageChange={setEtPage}
+            />
+            <GearServiceBento
+              gearItems={gearRows}
+              serviceItems={serviceRows}
+              isFetching={gfFetching || sfFetching}
+              page={gsPage}
+              totalPages={gsTotalPages}
+              onPageChange={setGsPage}
+            />
           </main>
         </div>
       </div>
