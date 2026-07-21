@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { Category } from "@/features/category/types/category";
 import Link from "next/link";
@@ -14,7 +14,7 @@ export default function VibeCheckSection({
   categories,
 }: VibeCheckSectionProps) {
   return (
-    <section className="py-10 border-y border-white/5 bg-black/20 backdrop-blur-sm relative overflow-hidden">
+    <section className="py-4 sm:py-10 border-y border-white/5 bg-black/20 backdrop-blur-sm relative overflow-hidden">
       <div className="absolute inset-0 bg-linear-to-r from-background via-transparent to-background z-10 pointer-events-none"></div>
 
       {/* Header */}

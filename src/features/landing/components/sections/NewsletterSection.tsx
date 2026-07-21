@@ -13,7 +13,7 @@ export default function NewsletterSection() {
   };
 
   return (
-    <section className="py-10 sm:py-24 relative overflow-hidden">
+    <section className="py-4 sm:py-24 relative overflow-hidden">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 relative z-10 reveal-on-scroll">
         <div className="bg-gradient-to-br from-primary via-purple-900 to-black rounded-[1.5rem] sm:rounded-[3rem] p-6 sm:p-12 lg:p-24 text-center relative overflow-hidden shadow-2xl border border-white/10 group hover:border-white/20 transition-all">
           {/* Background Effects */}

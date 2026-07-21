@@ -276,6 +276,90 @@ function CategoryField({
   );
 }
 
+function LocationDropdown({
+  value,
+  onChange,
+}: {
+  value: string;
+  onChange: (val: string) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+  const [pos, setPos] = useState({ top: 0, left: 0, width: 0 });
+
+  const close = useCallback(() => setOpen(false), []);
+
+  useEffect(() => {
+    if (!open) return;
+    const handler = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, [open]);
+
+  const toggle = () => {
+    if (!open && ref.current) {
+      const rect = ref.current.getBoundingClientRect();
+      setPos({ top: rect.bottom + 6, left: Math.max(16, rect.left - 40), width: Math.max(180, rect.width) });
+    }
+    setOpen((o) => !o);
+  };
+
+  const locations = ["All Locations", "Baguio", "Manila", "Cebu", "Siargao", "Boracay", "Palawan"];
+
+  return (
+    <div ref={ref} className="w-16 sm:w-28 lg:w-44 shrink-0 relative">
+      <button
+        type="button"
+        onClick={toggle}
+        className="w-full flex items-center justify-between gap-0.5 sm:gap-1 text-[10px] sm:text-xs lg:text-sm font-bold text-white bg-transparent border-none outline-none cursor-pointer px-1 sm:px-2 py-1"
+      >
+        <span className="truncate text-left text-white/90">
+          {value || "Location"}
+        </span>
+        <span className={`material-symbols-outlined text-[12px] sm:text-[16px] text-white/50 shrink-0 transition-transform duration-200 ${open ? "rotate-180" : ""}`}>
+          expand_more
+        </span>
+      </button>
+
+      {open &&
+        createPortal(
+          <div
+            className="fixed z-[101] animate-in fade-in zoom-in-95 duration-150"
+            style={{ top: pos.top, left: pos.left, width: pos.width }}
+            onMouseDown={(e) => e.stopPropagation()}
+          >
+            <div className="glass-card rounded-xl border border-white/10 p-1.5 shadow-[0_0_30px_rgba(0,0,0,0.5)] bg-[#11121a]">
+              {locations.map((loc) => {
+                const val = loc === "All Locations" ? "" : loc;
+                const isSelected = value === val;
+                return (
+                  <button
+                    key={loc}
+                    type="button"
+                    onClick={() => {
+                      onChange(val);
+                      close();
+                    }}
+                    className={`w-full text-left px-3 py-2 rounded-lg text-xs sm:text-sm font-semibold transition-all ${
+                      isSelected
+                        ? "bg-[#ccff00]/15 text-[#ccff00]"
+                        : "text-white/70 hover:bg-white/10 hover:text-white"
+                    }`}
+                  >
+                    {loc}
+                  </button>
+                );
+              })}
+            </div>
+          </div>,
+          document.body
+        )}
+    </div>
+  );
+}
+
 const CATEGORY_COLORS: Record<string, string> = {
   birthday:  "bg-lime-400/20 text-lime-300",
   wedding:   "bg-pink-400/20 text-pink-300",
@@ -290,89 +374,29 @@ interface HeroSectionProps {
 
 export default function HeroSection({ featuredTemplates = [] }: HeroSectionProps) {
   const router = useRouter();
+  const [searchQuery, setSearchQuery] = useState("");
   const [locationVal, setLocationVal] = useState("");
-  const [showSuggestions, setShowSuggestions] = useState(false);
-  const locationRef = useRef<HTMLDivElement>(null);
-
-  const [cities, setCities] = useState<string[]>([]);
-  const [category, setCategory] = useState("");
-  const [startDate, setStartDate] = useState("");
-  const [endDate, setEndDate] = useState("");
-  const [errors, setErrors] = useState<{
-    location?: string;
-    category?: string;
-    startDate?: string;
-    endDate?: string;
-  }>({});
-
-  useEffect(() => {
-    if (!locationVal || locationVal.length < 2) {
-      return;
-    }
-    const timer = setTimeout(() => {
-      fetch(`${config.apiUrl}/locations/search?q=${encodeURIComponent(locationVal)}`)
-        .then(res => res.json())
-        .then(data => {
-          if (data.status === "success") {
-            setCities(data.data.locations);
-          }
-        })
-        .catch(err => console.error("Failed to fetch locations:", err));
-    }, 300);
-
-    return () => clearTimeout(timer);
-  }, [locationVal]);
-
-  const filteredLocations = cities;
 
   const handleSearch = (e?: React.FormEvent) => {
     if (e) e.preventDefault();
 
-    const nextErrors: typeof errors = {};
-    if (!locationVal.trim()) nextErrors.location = "Required";
-    if (!category) nextErrors.category = "Required";
-    if (!startDate) nextErrors.startDate = "Required";
-    if (!endDate) nextErrors.endDate = "Required";
-
-    if (startDate && endDate && new Date(endDate) < new Date(startDate)) {
-      nextErrors.endDate = "Invalid date";
-    }
-
-    setErrors(nextErrors);
-    if (Object.keys(nextErrors).length > 0) return;
-
     const params = new URLSearchParams();
-    params.set("category", category.toLowerCase());
-    const parts = locationVal.split(",").map(p => p.trim());
-    if (parts.length > 1) {
-      params.set("country", parts[0]);
-      params.set("city", parts.slice(1).join(", "));
-    } else {
-      params.set("city", locationVal);
+    if (searchQuery.trim()) {
+      params.set("query", searchQuery.trim());
+      params.set("category", searchQuery.trim().toLowerCase());
     }
-    params.set("label", locationVal);
-    params.set("startDate", startDate);
-    params.set("endDate", endDate);
+    if (locationVal.trim()) {
+      params.set("city", locationVal.trim());
+      params.set("label", locationVal.trim());
+    }
 
     router.push(`/search?${params.toString()}`);
   };
 
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (locationRef.current && !locationRef.current.contains(event.target as Node)) {
-        setShowSuggestions(false);
-      }
-    };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, []);
-
   return (
-    <section className="relative pt-10 pb-20 lg:pt-20 lg:pb-32 overflow-hidden">
+    <section className="relative pt-24 sm:pt-36 lg:pt-40 pb-6 sm:pb-20 lg:pb-32 overflow-hidden">
       {/* Background Blurs */}
-      <div className="absolute top-20 right-0 w-[500px] h-[500px] bg-primary/20 rounded-full blur-[120px] pointer-events-none animate-pulse-slow mix-blend-screen"></div>
+      <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-primary/20 rounded-full blur-[120px] pointer-events-none animate-pulse-slow mix-blend-screen"></div>
       <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-secondary/10 rounded-full blur-[120px] pointer-events-none mix-blend-screen"></div>
 
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 relative z-10">
@@ -389,7 +413,7 @@ export default function HeroSection({ featuredTemplates = [] }: HeroSectionProps
               </div>
 
               {/* Title */}
-              <h1 className="text-6xl font-display font-bold tracking-tight text-white sm:text-7xl lg:text-8xl leading-[0.95] group cursor-default">
+              <h1 className="text-4xl sm:text-7xl lg:text-8xl font-display font-bold tracking-tight text-white leading-tight sm:leading-[0.95] group cursor-default">
                 Find your <br />
                 <span
                   className="text-gradient relative inline-block hover:scale-105 transition-transform duration-500 cursor-cell"
@@ -400,8 +424,9 @@ export default function HeroSection({ featuredTemplates = [] }: HeroSectionProps
               </h1>
 
               {/* Subtitle */}
-              <p className="text-xl text-text-muted max-w-xl mx-auto lg:mx-0 leading-relaxed font-light">
-                Curated experiences for the main character energy. Underground gigs, secret spots, and adventures that actually matter.
+              <p className="text-xs sm:text-sm lg:text-xl text-text-muted max-w-xl mx-auto lg:mx-0 leading-relaxed font-light">
+                Curated experiences for the main character energy. <br className="block" />
+                Underground gigs, secret spots, and adventures that actually matter.
               </p>
             </div>
 
@@ -409,95 +434,48 @@ export default function HeroSection({ featuredTemplates = [] }: HeroSectionProps
             <div className="w-full max-w-3xl mx-auto lg:mx-0 flex flex-col gap-4 z-20 relative">
               {/* Search Box */}
               <form onSubmit={handleSearch} className="w-full max-w-4xl mx-auto lg:mx-0 relative group z-20">
+                {/* 1. Outer Glow */}
                 <div className="absolute -inset-1 bg-gradient-to-r from-primary via-purple-600 to-secondary rounded-full blur opacity-40 group-hover:opacity-70 transition duration-500 group-hover:duration-200 animate-pulse"></div>
-                <div className="relative glass-panel bg-black/80 backdrop-blur-2xl px-6 py-2 rounded-full border border-white/10 group-hover:border-white/20 transition-all shadow-[0_0_30px_rgba(139,92,246,0.3)]">
-                  <div className="flex flex-row items-center gap-0">
 
-                    {/* Category */}
-                    <CategoryField
-                      value={category}
-                      error={errors.category}
-                      onChange={setCategory}
-                      onClearError={() => setErrors((prev) => ({ ...prev, category: undefined }))}
-                    />
+                {/* Outer Search Container */}
+                <div className="relative glass-panel bg-black/80 backdrop-blur-2xl p-1 sm:p-2 pl-3 sm:pl-4 rounded-full border border-white/10 group-hover:border-white/20 transition-all shadow-[0_0_30px_rgba(139,92,246,0.3)]">
+                  {/* 2. Single-Row Alignment */}
+                  <div className="flex flex-row items-center gap-1.5 sm:gap-2">
 
-                    <div className="h-8 w-px bg-white/10"></div>
-
-                    {/* Start Date */}
-                    <DateField
-                      label="Start"
-                      value={startDate}
-                      error={errors.startDate}
-                      onSelect={(d) => {
-                        setStartDate(d);
-                        setErrors((prev) => ({ ...prev, startDate: undefined, endDate: undefined }));
-                      }}
-                      onClearError={() => setErrors((prev) => ({ ...prev, startDate: undefined }))}
-                    />
-
-                    <div className="h-8 w-px bg-white/10"></div>
-
-                    {/* End Date */}
-                    <DateField
-                      label="End"
-                      value={endDate}
-                      error={errors.endDate}
-                      onSelect={setEndDate}
-                      onClearError={() => setErrors((prev) => ({ ...prev, endDate: undefined }))}
-                    />
-
-                    <div className="h-8 w-px bg-white/10"></div>
-
-                    {/* Location */}
-                    <div className="flex-[1.5] w-auto px-6 py-3 text-left relative" ref={locationRef}>
-                      <span className="block text-[10px] font-bold text-white/40 uppercase tracking-widest mb-1 ml-1">Location</span>
+                    {/* 3. Search Icon & Input Field */}
+                    <div className="flex-1 flex items-center gap-1.5 sm:gap-2 min-w-0">
+                      <span className="material-symbols-outlined text-[16px] sm:text-[20px] text-white/50 shrink-0">
+                        search
+                      </span>
                       <input
-                        id="locationInput"
-                        className={`bg-transparent border-none text-white placeholder:text-white/20 placeholder:text-[10px] focus:ring-0 text-xs font-bold w-full h-6 outline-none text-left ${errors.location ? "text-red-400" : ""}`}
-                        placeholder="Search location..."
+                        id="heroSearchInput"
                         type="text"
-                        autoComplete="off"
-                        value={locationVal}
-                        onChange={(e) => {
-                          const val = e.target.value;
-                          setLocationVal(val);
-                          setShowSuggestions(true);
-                          setErrors((prev) => ({ ...prev, location: undefined }));
-                          if (val.length < 2) {
-                            setCities([]);
-                          }
-                        }}
-                        onFocus={() => setShowSuggestions(true)}
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        placeholder="Search experiences, events, vibes..."
+                        className="bg-transparent border-none text-white placeholder:text-white/30 text-[10px] sm:text-sm lg:text-base font-medium outline-none focus:ring-0 w-full min-w-0 text-ellipsis"
                       />
-                      {showSuggestions && filteredLocations.length > 0 && (
-                        <ul id="locationSuggestions" className="absolute top-[calc(100%+8px)] left-0 w-full min-w-[200px] bg-[#11121a] border border-white/10 rounded-xl shadow-[0_0_20px_rgba(0,0,0,0.5)] z-50 overflow-hidden max-h-60 overflow-y-auto">
-                          {filteredLocations.map(loc => (
-                            <li
-                              key={loc}
-                              className="px-4 py-3 text-sm text-white hover:bg-[#ccff00] hover:text-black cursor-pointer font-bold transition-colors"
-                              onClick={() => {
-                                setLocationVal(loc);
-                                setShowSuggestions(false);
-                              }}
-                            >
-                              {loc}
-                            </li>
-                          ))}
-                        </ul>
-                      )}
                     </div>
 
-                    <button type="submit" className="btn-neon h-12 w-32 rounded-full bg-white text-black font-bold transition-all duration-300 flex items-center justify-center text-lg shadow-[0_0_20px_rgba(255,255,255,0.2)] ml-4 hover:scale-105 active:scale-95">
+                    {/* 4. Vertical Separator */}
+                    <div className="w-px bg-white/10 h-5 sm:h-8 shrink-0"></div>
+
+                    {/* 5. Location Selector */}
+                    <LocationDropdown
+                      value={locationVal}
+                      onChange={(loc) => setLocationVal(loc)}
+                    />
+
+                    {/* 6. "Go" Button */}
+                    <button
+                      type="submit"
+                      className="rounded-full bg-white text-black font-bold h-8 sm:h-12 px-3 sm:px-6 text-[10px] sm:text-xs lg:text-sm shrink-0 transition-all duration-300 hover:scale-105 active:scale-95 shadow-[0_0_20px_rgba(255,255,255,0.2)] flex items-center justify-center"
+                    >
                       Go
                     </button>
                   </div>
                 </div>
               </form>
-              {Object.keys(errors).length > 0 && (
-                <div className="text-red-400 text-xs mt-2 text-center lg:text-left font-bold animate-pulse">
-                  Please complete all required fields before searching.
-                </div>
-              )}
             </div>
 
             {/* Social Proof */}
@@ -535,8 +513,8 @@ export default function HeroSection({ featuredTemplates = [] }: HeroSectionProps
             </div>
           </div>
 
-          {/* Right — Featured Event Package Cards */}
-          <div className="lg:col-span-5 relative mt-16 lg:mt-0 perspective-1000">
+          {/* Right — Featured Event Package Cards (Hidden on mobile) */}
+          <div className="hidden sm:block lg:col-span-5 relative mt-16 lg:mt-0 perspective-1000">
             <div className="relative grid grid-cols-2 gap-4">
               {/* Left column */}
               <div className="space-y-3 translate-y-12 animate-float">
@@ -608,9 +586,9 @@ export default function HeroSection({ featuredTemplates = [] }: HeroSectionProps
                   );
                 })}
               </div>
-              {/* Center badge */}
+              {/* Book Now Button: Preserved on desktop */}
               <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-30">
-                <Link href="/search" className="bg-[#ccff00] text-black px-6 py-3 rounded-full font-display font-bold uppercase tracking-widest shadow-[0_0_30px_#ccff00] animate-pulse hover:scale-110 transition-transform block">
+                <Link href="/search" className="bg-[#ccff00] text-black px-6 py-3 rounded-full font-display font-bold uppercase tracking-widest text-base shadow-[0_0_30px_#ccff00] animate-pulse hover:scale-110 transition-transform block text-center">
                   Book Now
                 </Link>
               </div>

@@ -104,7 +104,7 @@ function DropdownPositioner({
   open,
   cssVar,
 }: {
-  triggerRef: React.RefObject<HTMLElement>;
+  triggerRef: React.RefObject<HTMLElement | null>;
   open: boolean;
   cssVar: string;
 }) {
