@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useLandingPage } from "@/features/landing/hooks/useLandingPage";
 
@@ -13,7 +13,11 @@ import NewsletterSection from "./sections/NewsletterSection";
 import LandingFooter from "./sections/LandingFooter";
 import AuthModal from "@/features/auth/components/AuthModal";
 
-const FoxerLandingPage: React.FC = () => {
+interface FoxerLandingPageProps {
+  featuredTemplates?: any[];
+}
+
+const FoxerLandingPage: React.FC<FoxerLandingPageProps> = ({ featuredTemplates = [] }) => {
   const { displayedCategories, openAuthModal } = useLandingPage();
 
   return (
@@ -22,9 +26,9 @@ const FoxerLandingPage: React.FC = () => {
       <LandingHeader onSignIn={() => openAuthModal("login")} />
 
       {/* Main Content */}
-      <main className="flex-grow pt-32">
+      <main className="flex-grow pb-16 md:pb-0">
         {/* Hero Section */}
-        <HeroSection />
+        <HeroSection featuredTemplates={featuredTemplates} />
 
         {/* Vibe Check - Categories */}
         <VibeCheckSection categories={displayedCategories} />
