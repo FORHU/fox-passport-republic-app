@@ -71,7 +71,7 @@ async function HomeContent({ searchParams }: HomePageProps) {
                 </p>
               </div>
             ) : filteredVenues.length > 0 ? (
-              <div className="grid grid-cols-3 sm:grid-cols-2 gap-x-2 gap-y-6 md:gap-x-6 md:gap-y-10">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-2 gap-y-6 md:gap-x-6 md:gap-y-10">
                 {filteredVenues.map((venue) => (
                   <ListingCard key={venue.id} venue={venue} />
                 ))}

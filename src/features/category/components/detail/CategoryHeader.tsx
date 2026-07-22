@@ -33,9 +33,15 @@ export const CategoryHeader: React.FC<CategoryHeaderProps> = ({ category }) => {
             </span>
           </nav>
 
+          {/* Mobile category badge */}
+          <span className="md:hidden flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold text-black bg-[#ccff00]">
+            <DynamicIcon name={category.icon || "Grid3X3"} className="w-3.5 h-3.5" />
+            {category.name}
+          </span>
+
           {/* Close / Action */}
           <div className="flex items-center gap-4">
-            <button onClick={() => router.push('/')} className="h-10 w-10 flex items-center justify-center rounded-full bg-white/5 hover:bg-white hover:text-black transition-all">
+            <button onClick={() => router.push('/')} className="h-11 w-11 flex items-center justify-center rounded-full bg-white/5 hover:bg-white hover:text-black transition-all">
               <X className="w-5 h-5" />
             </button>
           </div>

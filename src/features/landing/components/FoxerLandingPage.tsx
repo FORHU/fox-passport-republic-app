@@ -26,7 +26,7 @@ const FoxerLandingPage: React.FC<FoxerLandingPageProps> = ({ featuredTemplates =
       <LandingHeader onSignIn={() => openAuthModal("login")} />
 
       {/* Main Content */}
-      <main className="flex-grow">
+      <main className="flex-grow pb-16 md:pb-0">
         {/* Hero Section */}
         <HeroSection featuredTemplates={featuredTemplates} />
 
