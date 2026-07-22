@@ -451,12 +451,14 @@ export default function HeroSection({ featuredTemplates = [] }: HeroSectionProps
             </div>
 
             {/* Search Area */}
-            <div className="w-full max-w-3xl mx-auto lg:mx-0 flex flex-col gap-4 z-20 relative">
-              {/* Search Box */}
-              <form onSubmit={handleSearch} className="w-full max-w-4xl mx-auto lg:mx-0 relative group z-20">
+            <motion.div
+              variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0, transition: { duration: 0.5, ease: [0, 0, 0.2, 1] } } }}
+              className="w-full max-w-[950px] mx-auto lg:mx-0 flex flex-col gap-4 z-20 relative"
+            >
+              {/* Search Box Form */}
+              <form onSubmit={handleSearch} className="w-full relative group z-20">
                 {/* 1. Outer Glow */}
-                <div className="absolute -inset-1 bg-gradient-to-r from-primary via-purple-600 to-secondary rounded-full blur opacity-40 group-hover:opacity-70 transition duration-500 group-hover:duration-200 animate-pulse"></div>
-
+                <div className="absolute -inset-1 bg-linear-to-r from-primary via-purple-600 to-secondary rounded-[2.5rem] blur opacity-40 group-hover:opacity-70 transition duration-500 group-hover:duration-200 animate-pulse"></div>
                 {/* Outer Capsule Glass Panel */}
                 <div className="relative glass-panel bg-[#151326]/85 backdrop-blur-2xl p-2 sm:p-2.5 rounded-[2.5rem] border border-white/10 group-hover:border-white/20 transition-all shadow-[0_0_35px_rgba(139,92,246,0.3)]">
 
