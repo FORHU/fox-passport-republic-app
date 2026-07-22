@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen, fireEvent, within } from "@testing-library/react";
+import "@testing-library/jest-dom/vitest";
 
 vi.mock("next/image", () => ({
   default: (props: any) => <img src="mock.png" alt={props.alt ?? ""} {...props} />,
@@ -7,6 +8,7 @@ vi.mock("next/image", () => ({
 
 vi.mock("next/navigation", () => ({
   useRouter: () => ({ push: vi.fn(), back: vi.fn() }),
+  usePathname: () => "/creator-dashboard",
 }));
 
 const mockAccess = {
