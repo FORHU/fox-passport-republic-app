@@ -1,6 +1,7 @@
 "use client";
 
 import { FormEvent, useState } from "react";
+import { motion } from "motion/react";
 
 export default function NewsletterSection() {
   const [email, setEmail] = useState("");
@@ -13,9 +14,15 @@ export default function NewsletterSection() {
   };
 
   return (
-    <section className="py-4 sm:py-24 relative overflow-hidden">
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 relative z-10 reveal-on-scroll">
-        <div className="bg-gradient-to-br from-primary via-purple-900 to-black rounded-[1.5rem] sm:rounded-[3rem] p-6 sm:p-12 lg:p-24 text-center relative overflow-hidden shadow-2xl border border-white/10 group hover:border-white/20 transition-all">
+    <section className="py-8 sm:py-20 relative overflow-hidden">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 relative z-10">
+        <motion.div
+          className="bg-linear-to-br from-primary via-purple-900 to-black rounded-[1.5rem] sm:rounded-[3rem] p-6 sm:p-12 lg:p-24 text-center relative overflow-hidden shadow-2xl border border-white/10 group hover:border-white/20 transition-all"
+          initial={{ opacity: 0, y: 32 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.55, ease: [0, 0, 0.2, 1] }}
+        >
           {/* Background Effects */}
           <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none">
             <div className="absolute top-[-50%] left-[-20%] w-full h-full rounded-full bg-[#ccff00] blur-[150px] opacity-20 animate-pulse-slow"></div>
@@ -71,7 +78,7 @@ export default function NewsletterSection() {
               WE RESPECT YOUR INBOX. NO SPAM, JUST VIBES.
             </p>
           </div>
-        </div>
+        </motion.div>
       </div>
     </section>
   );
