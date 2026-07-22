@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect, useCallback } from "react";
-import { motion } from "motion/react";
+import { motion, AnimatePresence } from "motion/react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
@@ -453,6 +453,45 @@ export default function HeroSection({ featuredTemplates = [] }: HeroSectionProps
     endDate?: string;
   }>({});
 
+  const [mounted, setMounted] = useState(false);
+  const [isMobileModalOpen, setIsMobileModalOpen] = useState(false);
+  const [activeRow, setActiveRow] = useState<"where" | "category" | "start" | "end" | null>(null);
+  const [cities, setCities] = useState<string[]>([]);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (!locationVal || locationVal.length < 2) {
+      setCities([]);
+      return;
+    }
+    const timer = setTimeout(() => {
+      fetch(`${config.apiUrl}/locations/search?q=${encodeURIComponent(locationVal)}`)
+        .then(res => res.json())
+        .then(data => {
+          if (data.status === "success") {
+            setCities(data.data.locations);
+          }
+        })
+        .catch(err => console.error("Failed to fetch locations:", err));
+    }, 300);
+
+    return () => clearTimeout(timer);
+  }, [locationVal]);
+
+  useEffect(() => {
+    if (isMobileModalOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [isMobileModalOpen]);
+
   const handleSearch = (e?: React.FormEvent) => {
     if (e) e.preventDefault();
 
@@ -548,8 +587,8 @@ export default function HeroSection({ featuredTemplates = [] }: HeroSectionProps
                 {/* Outer Capsule Glass Panel */}
                 <div className="relative glass-panel bg-[#151326]/85 backdrop-blur-2xl p-1 sm:p-2.5 rounded-full sm:rounded-[2.5rem] border border-white/10 group-hover:border-white/20 transition-all shadow-[0_0_35px_rgba(139,92,246,0.3)]">
 
-                  {/* Single Unified Horizontal Capsule Pill (Responsive for both Mobile & Desktop) */}
-                  <div className="flex flex-row items-center gap-0.5 sm:gap-1 lg:gap-2 px-0.5 sm:px-1">
+                  {/* Single Unified Horizontal Capsule Pill (Desktop) */}
+                  <div className="hidden md:flex flex-row items-center gap-0.5 sm:gap-1 lg:gap-2 px-0.5 sm:px-1">
                     {/* 1. CATEGORY */}
                     <CategoryField
                       value={category}
@@ -603,6 +642,40 @@ export default function HeroSection({ featuredTemplates = [] }: HeroSectionProps
                     >
                       Go
                     </button>
+                  </div>
+
+                  {/* Mobile Collapsed Search Bar */}
+                  <div
+                    type="button"
+                    onClick={() => {
+                      setIsMobileModalOpen(true);
+                      setActiveRow("where");
+                    }}
+                    className="flex md:hidden items-center justify-between w-full px-3 py-2 cursor-pointer select-none"
+                  >
+                    <div className="flex items-center gap-3 min-w-0">
+                      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#ccff00]/10 text-[#ccff00] shadow-[0_0_15px_rgba(204,255,0,0.2)]">
+                        <span className="material-symbols-outlined text-[20px] font-bold">search</span>
+                      </div>
+                      <div className="text-left min-w-0">
+                        <div className="text-xs font-bold text-white truncate">
+                          {locationVal || "Anywhere"}
+                        </div>
+                        <div className="text-[10px] text-white/50 truncate font-medium">
+                          {(() => {
+                            const dateStr = startDate && endDate
+                              ? `${new Date(startDate + "T00:00:00").toLocaleDateString("en-PH", { month: "short", day: "numeric" })} – ${new Date(endDate + "T00:00:00").toLocaleDateString("en-PH", { month: "short", day: "numeric" })}`
+                              : startDate
+                              ? `From ${new Date(startDate + "T00:00:00").toLocaleDateString("en-PH", { month: "short", day: "numeric" })}`
+                              : "Any dates";
+                            return `${dateStr} · ${category || "Select category"}`;
+                          })()}
+                        </div>
+                      </div>
+                    </div>
+                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-white/5 text-white/60 hover:text-[#ccff00] hover:bg-white/10 transition-colors">
+                      <span className="material-symbols-outlined text-[18px]">tune</span>
+                    </div>
                   </div>
                 </div>
               </form>
@@ -734,6 +807,327 @@ export default function HeroSection({ featuredTemplates = [] }: HeroSectionProps
           </div>
         </div>
       </div>
+
+      {mounted && createPortal(
+        <AnimatePresence>
+          {isMobileModalOpen && (
+            <motion.div
+              initial={{ y: "100%", opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              exit={{ y: "100%", opacity: 0 }}
+              transition={{ type: "spring", damping: 25, stiffness: 220 }}
+              className="fixed inset-0 z-[150] bg-[#0d0e12] flex flex-col text-white select-none"
+            >
+              {/* Header */}
+              <div className="flex items-center justify-between px-6 py-4 border-b border-white/10 shrink-0">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setCategory("");
+                    setStartDate("");
+                    setEndDate("");
+                    setLocationVal("");
+                    setErrors({});
+                  }}
+                  className="text-xs font-bold text-[#ccff00] hover:text-[#ccff00]/80 tracking-wider uppercase transition-colors"
+                >
+                  Clear All
+                </button>
+                <h2 className="text-base font-display font-bold text-white tracking-wide">Search Events</h2>
+                <button
+                  type="button"
+                  onClick={() => setIsMobileModalOpen(false)}
+                  className="h-8 w-8 rounded-full bg-white/5 flex items-center justify-center text-white/60 hover:text-white active:scale-90 transition-all flex shrink-0"
+                >
+                  <span className="material-symbols-outlined text-[20px]">close</span>
+                </button>
+              </div>
+
+              {/* Scrollable Content */}
+              <div className="flex-1 overflow-y-auto px-6 py-6 space-y-4 pb-32">
+                {/* 1. WHERE (Location) Row */}
+                <div className={`p-4 rounded-2xl border transition-all duration-300 ${
+                  activeRow === "where"
+                    ? "bg-white/5 border-[#ccff00]/30 shadow-[0_0_20px_rgba(204,255,0,0.05)]"
+                    : "bg-[#151326]/40 border-white/5 hover:border-white/10"
+                }`}>
+                  <div
+                    onClick={() => setActiveRow(activeRow === "where" ? null : "where")}
+                    className="flex justify-between items-center cursor-pointer"
+                  >
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-[10px] font-extrabold text-white/40 uppercase tracking-widest">WHERE</span>
+                        {errors.location && (
+                          <span className="text-[9px] font-bold text-red-400 animate-pulse uppercase tracking-wider">Required</span>
+                        )}
+                      </div>
+                      <div className={`text-sm font-semibold mt-1 transition-all ${locationVal ? "text-white" : "text-white/40"}`}>
+                        {locationVal || "Search location or city"}
+                      </div>
+                    </div>
+                    <span className={`material-symbols-outlined text-white/40 transition-transform duration-200 ${
+                      activeRow === "where" ? "rotate-180 text-[#ccff00]" : ""
+                    }`}>
+                      expand_more
+                    </span>
+                  </div>
+
+                  {activeRow === "where" && (
+                    <div className="mt-4 pt-4 border-t border-white/10 space-y-4 animate-in fade-in slide-in-from-top-2 duration-200">
+                      <div className="relative">
+                        <input
+                          type="text"
+                          value={locationVal}
+                          onChange={(e) => {
+                            setLocationVal(e.target.value);
+                            setErrors((prev) => ({ ...prev, location: undefined }));
+                          }}
+                          placeholder="Search city, province, region..."
+                          className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white text-sm outline-none focus:border-[#ccff00] focus:ring-1 focus:ring-[#ccff00]/20 transition-all font-semibold"
+                          autoFocus
+                        />
+                      </div>
+
+                      {cities.length > 0 ? (
+                        <div className="space-y-1.5 max-h-48 overflow-y-auto">
+                          {cities.map((city) => (
+                            <button
+                              key={city}
+                              type="button"
+                              onClick={() => {
+                                setLocationVal(city);
+                                setErrors((prev) => ({ ...prev, location: undefined }));
+                                setActiveRow("category");
+                              }}
+                              className={`w-full text-left px-3 py-2.5 rounded-xl text-xs font-bold transition-all flex items-center justify-between ${
+                                locationVal === city
+                                  ? "bg-[#ccff00]/15 text-[#ccff00]"
+                                  : "text-white/70 hover:bg-white/5"
+                              }`}
+                            >
+                              <span>{city}</span>
+                              {locationVal === city && <span className="material-symbols-outlined text-[16px]">check</span>}
+                            </button>
+                          ))}
+                        </div>
+                      ) : (
+                        <div className="space-y-3">
+                          <p className="text-[10px] font-bold text-white/30 uppercase tracking-wider px-1">Popular Locations</p>
+                          <div className="grid grid-cols-2 gap-2">
+                            {["All Locations", "Baguio", "Manila", "Cebu", "Siargao", "Boracay", "Palawan"].map((loc) => {
+                              const val = loc === "All Locations" ? "" : loc;
+                              const isSelected = val === "" ? locationVal === "" : locationVal === val;
+                              return (
+                                <button
+                                  key={loc}
+                                  type="button"
+                                  onClick={() => {
+                                    setLocationVal(val);
+                                    setErrors((prev) => ({ ...prev, location: undefined }));
+                                    setActiveRow("category");
+                                  }}
+                                  className={`text-left px-3.5 py-2.5 rounded-xl text-xs font-bold border transition-all ${
+                                    isSelected
+                                      ? "bg-[#ccff00]/15 text-[#ccff00] border-[#ccff00]/30"
+                                      : "bg-white/5 border-white/5 text-white/70 hover:border-white/10"
+                                  }`}
+                                >
+                                  {loc}
+                                </button>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+
+                {/* 2. CATEGORY Row */}
+                <div className={`p-4 rounded-2xl border transition-all duration-300 ${
+                  activeRow === "category"
+                    ? "bg-white/5 border-[#ccff00]/30 shadow-[0_0_20px_rgba(204,255,0,0.05)]"
+                    : "bg-[#151326]/40 border-white/5 hover:border-white/10"
+                }`}>
+                  <div
+                    onClick={() => setActiveRow(activeRow === "category" ? null : "category")}
+                    className="flex justify-between items-center cursor-pointer"
+                  >
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-[10px] font-extrabold text-white/40 uppercase tracking-widest">CATEGORY</span>
+                        {errors.category && (
+                          <span className="text-[9px] font-bold text-red-400 animate-pulse uppercase tracking-wider">Required</span>
+                        )}
+                      </div>
+                      <div className={`text-sm font-semibold mt-1 capitalize transition-all ${category ? "text-white" : "text-white/40"}`}>
+                        {category || "Select category"}
+                      </div>
+                    </div>
+                    <span className={`material-symbols-outlined text-white/40 transition-transform duration-200 ${
+                      activeRow === "category" ? "rotate-180 text-[#ccff00]" : ""
+                    }`}>
+                      expand_more
+                    </span>
+                  </div>
+
+                  {activeRow === "category" && (
+                    <div className="mt-4 pt-4 border-t border-white/10 animate-in fade-in slide-in-from-top-2 duration-200">
+                      <div className="grid grid-cols-2 gap-2">
+                        {CATEGORIES.map((cat) => (
+                          <button
+                            key={cat}
+                            type="button"
+                            onClick={() => {
+                              setCategory(cat);
+                              setErrors((prev) => ({ ...prev, category: undefined }));
+                              setActiveRow("start");
+                            }}
+                            className={`text-center py-3 rounded-xl text-xs font-bold border transition-all ${
+                              category === cat
+                                ? "bg-[#ccff00]/15 text-[#ccff00] border-[#ccff00]/30 font-extrabold"
+                                : "bg-white/5 border-white/5 text-white/70 hover:border-white/10"
+                            }`}
+                          >
+                            {cat}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* 3. START DATE Row */}
+                <div className={`p-4 rounded-2xl border transition-all duration-300 ${
+                  activeRow === "start"
+                    ? "bg-white/5 border-[#ccff00]/30 shadow-[0_0_20px_rgba(204,255,0,0.05)]"
+                    : "bg-[#151326]/40 border-white/5 hover:border-white/10"
+                }`}>
+                  <div
+                    onClick={() => setActiveRow(activeRow === "start" ? null : "start")}
+                    className="flex justify-between items-center cursor-pointer"
+                  >
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-[10px] font-extrabold text-white/40 uppercase tracking-widest">START DATE</span>
+                        {errors.startDate && (
+                          <span className="text-[9px] font-bold text-red-400 animate-pulse uppercase tracking-wider">Required</span>
+                        )}
+                      </div>
+                      <div className={`text-sm font-semibold mt-1 transition-all ${startDate ? "text-white" : "text-white/40"}`}>
+                        {startDate ? new Date(startDate + "T00:00:00").toLocaleDateString("en-PH", {
+                          month: "short",
+                          day: "numeric",
+                          year: "numeric",
+                        }) : "Select start date"}
+                      </div>
+                    </div>
+                    <span className={`material-symbols-outlined text-white/40 transition-transform duration-200 ${
+                      activeRow === "start" ? "rotate-180 text-[#ccff00]" : ""
+                    }`}>
+                      expand_more
+                    </span>
+                  </div>
+
+                  {activeRow === "start" && (
+                    <div className="mt-4 pt-4 border-t border-white/10 flex justify-center animate-in fade-in slide-in-from-top-2 duration-200">
+                      <CompactCalendar
+                        value={startDate}
+                        onSelect={(d) => {
+                          setStartDate(d);
+                          setErrors((prev) => ({ ...prev, startDate: undefined, endDate: undefined }));
+                          setActiveRow("end");
+                        }}
+                      />
+                    </div>
+                  )}
+                </div>
+
+                {/* 4. END DATE Row */}
+                <div className={`p-4 rounded-2xl border transition-all duration-300 ${
+                  activeRow === "end"
+                    ? "bg-white/5 border-[#ccff00]/30 shadow-[0_0_20px_rgba(204,255,0,0.05)]"
+                    : "bg-[#151326]/40 border-white/5 hover:border-white/10"
+                }`}>
+                  <div
+                    onClick={() => setActiveRow(activeRow === "end" ? null : "end")}
+                    className="flex justify-between items-center cursor-pointer"
+                  >
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-[10px] font-extrabold text-white/40 uppercase tracking-widest">END DATE</span>
+                        {errors.endDate && (
+                          <span className="text-[9px] font-bold text-red-400 animate-pulse uppercase tracking-wider">{errors.endDate}</span>
+                        )}
+                      </div>
+                      <div className={`text-sm font-semibold mt-1 transition-all ${endDate ? "text-white" : "text-white/40"}`}>
+                        {endDate ? new Date(endDate + "T00:00:00").toLocaleDateString("en-PH", {
+                          month: "short",
+                          day: "numeric",
+                          year: "numeric",
+                        }) : "Select end date"}
+                      </div>
+                    </div>
+                    <span className={`material-symbols-outlined text-white/40 transition-transform duration-200 ${
+                      activeRow === "end" ? "rotate-180 text-[#ccff00]" : ""
+                    }`}>
+                      expand_more
+                    </span>
+                  </div>
+
+                  {activeRow === "end" && (
+                    <div className="mt-4 pt-4 border-t border-white/10 flex justify-center animate-in fade-in slide-in-from-top-2 duration-200">
+                      <CompactCalendar
+                        value={endDate}
+                        onSelect={(d) => {
+                          setEndDate(d);
+                          setErrors((prev) => ({ ...prev, endDate: undefined }));
+                          setActiveRow(null);
+                        }}
+                      />
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Pinned Bottom Bar */}
+              <div className="absolute bottom-0 left-0 right-0 p-6 border-t border-white/10 bg-[#0d0e12]/90 backdrop-blur-md shrink-0 z-10">
+                <button
+                  type="button"
+                  onClick={() => {
+                    const nextErrors: typeof errors = {};
+                    if (!locationVal.trim()) nextErrors.location = "Required";
+                    if (!category) nextErrors.category = "Required";
+                    if (!startDate) nextErrors.startDate = "Required";
+                    if (!endDate) nextErrors.endDate = "Required";
+
+                    if (startDate && endDate && new Date(endDate) < new Date(startDate)) {
+                      nextErrors.endDate = "Invalid date";
+                    }
+
+                    setErrors(nextErrors);
+                    if (Object.keys(nextErrors).length > 0) {
+                      if (nextErrors.location) setActiveRow("where");
+                      else if (nextErrors.category) setActiveRow("category");
+                      else if (nextErrors.startDate) setActiveRow("start");
+                      else if (nextErrors.endDate) setActiveRow("end");
+                      return;
+                    }
+                    setIsMobileModalOpen(false);
+                    handleSearch();
+                  }}
+                  className="w-full py-4 bg-[#ccff00] text-black font-display font-black text-xs sm:text-sm uppercase tracking-widest rounded-full shadow-[0_0_25px_rgba(204,255,0,0.3)] hover:bg-[#ccff00]/90 active:scale-95 transition-all flex items-center justify-center gap-2 cursor-pointer"
+                >
+                  <span className="material-symbols-outlined text-[20px] font-bold">search</span>
+                  Search Events
+                </button>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>,
+        document.body
+      )}
     </section>
   );
 }
