@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { motion } from "motion/react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
@@ -43,7 +44,13 @@ export default function FoxersMatchSection() {
     <section className="py-6 sm:py-20 relative overflow-hidden bg-black/40">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 relative z-10 reveal-on-scroll">
         {/* Header */}
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-3 sm:gap-6 mb-6 sm:mb-8">
+        <motion.div
+          className="flex flex-col md:flex-row justify-between items-start md:items-end gap-3 sm:gap-6 mb-6 sm:mb-8"
+          initial={{ opacity: 0, y: 24 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.5, ease: [0, 0, 0.2, 1] }}
+        >
           <div>
             <h2 className="font-display text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-1 sm:mb-3">
               Who&apos;s vibe matches yours?
@@ -52,7 +59,7 @@ export default function FoxersMatchSection() {
               Browse Certified Foxers available for your dates. These pros know the scene inside out.
             </p>
           </div>
-        </div>
+        </motion.div>
 
         {/* Role-type Filter Bar */}
         <div className="flex overflow-x-auto hide-scrollbar flex-nowrap items-center gap-2 sm:gap-3 -mx-4 px-4 pb-2 sm:mx-0 sm:px-0 sm:pb-0 mb-5 sm:mb-8">
@@ -60,7 +67,7 @@ export default function FoxersMatchSection() {
             <button
               key={String(f.value)}
               onClick={() => handleFilterChange(f.value)}
-              className={`flex items-center gap-2 rounded-full px-3.5 py-1.5 text-xs sm:px-5 sm:py-2.5 sm:text-sm font-medium transition-all flex-shrink-0 ${
+              className={`flex items-center gap-1.5 rounded-full px-3 py-1 text-[11px] sm:px-5 sm:py-2.5 sm:text-sm font-medium transition-all shrink-0 ${
                 activeRole === f.value
                   ? "bg-white text-black font-bold shadow-[0_0_15px_rgba(255,255,255,0.2)]"
                   : "border border-white/10 text-white hover:bg-white/5 glass-panel"
@@ -76,7 +83,7 @@ export default function FoxersMatchSection() {
         <div className="flex overflow-x-auto gap-3 sm:gap-4 pt-4 pb-4 sm:pb-6 snap-x snap-mandatory hide-scrollbar md:grid md:grid-cols-2 lg:grid-cols-3 md:pb-0 md:pt-0 md:overflow-visible">
           {isLoading
             ? Array.from({ length: 3 }).map((_, i) => (
-                <div key={i} className="glass-card rounded-[2rem] p-4 sm:p-8 animate-pulse space-y-4 flex-shrink-0 w-[82vw] max-w-[300px] sm:w-auto sm:max-w-none snap-center">
+                <div key={i} className="glass-card rounded-[2rem] p-4 sm:p-8 animate-pulse space-y-4 shrink-0 w-[82vw] max-w-75 sm:w-auto sm:max-w-none snap-center">
                   <div className="flex gap-2 sm:gap-4">
                     <div className="h-10 w-10 sm:h-16 sm:w-16 rounded-full bg-white/10" />
                     <div className="flex-1 space-y-2 pt-2">
@@ -104,15 +111,15 @@ export default function FoxersMatchSection() {
 
         {/* Load More */}
         {hasMore && (
-          <div className="hidden sm:block sm:mt-12 text-center">
+          <div className="mt-8 sm:mt-12 flex justify-center">
             <button
               onClick={() => setShowCount((c) => c + MORE_COUNT)}
-              className="group relative px-8 py-4 rounded-full bg-transparent text-white font-bold transition-all flex items-center gap-2 overflow-visible"
+              className="group relative px-6 py-2.5 rounded-full bg-transparent text-sm text-white font-bold transition-all flex items-center gap-2 overflow-visible"
             >
               <span className="absolute -inset-4 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-[#ccff00]/30 blur-xl" />
               <span className="absolute -inset-2 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-[#ccff00]/40 blur-lg" />
               <span className="absolute inset-0 rounded-full border-2 border-white/20 group-hover:border-[#ccff00] group-hover:shadow-[0_0_20px_rgba(204,255,0,0.6),0_0_40px_rgba(204,255,0,0.3)] transition-all duration-300" />
-              <span className="absolute inset-[2px] rounded-full bg-[#0a0b0f]" />
+              <span className="absolute inset-0.5 rounded-full bg-[#0a0b0f]" />
               <span className="relative z-10 group-hover:text-[#ccff00] transition-colors">
                 Load More Foxers
               </span>
@@ -210,7 +217,7 @@ function FoxerCard({ foxer }: { foxer: Foxer }) {
 
   return (
     <div
-      className="group glass-card rounded-[2rem] p-4 sm:p-8 flex-shrink-0 w-[82vw] max-w-[300px] sm:w-auto sm:max-w-none snap-center transition-all duration-300 card-hover-effect relative flex flex-col mt-2 sm:mt-0"
+      className="group glass-card rounded-[2rem] p-4 sm:p-8 shrink-0 w-[82vw] max-w-75 sm:w-auto sm:max-w-none snap-center transition-all duration-300 card-hover-effect relative flex flex-col mt-2 sm:mt-0"
       style={showStartHere ? { borderColor: "rgba(255,0,170,0.4)" } : undefined}
     >
       {/* "Start here" banner for Event Foxers with content */}
@@ -321,13 +328,13 @@ function FoxerCard({ foxer }: { foxer: Foxer }) {
             e.stopPropagation();
             router.push(`/match/${foxer.id}`);
           }}
-          className="flex-1 rounded-full bg-linear-to-r from-[#8b5cf6] to-[#a855f7] py-2.5 sm:py-3.5 text-xs sm:text-sm font-bold text-white hover:opacity-90 transition-opacity hover:shadow-[0_0_15px_rgba(139,92,246,0.5)] flex items-center justify-center cursor-pointer"
+          className="flex-1 rounded-full bg-linear-to-r from-[#8b5cf6] to-[#a855f7] py-2 sm:py-2.5 text-xs font-bold text-white hover:opacity-90 transition-opacity hover:shadow-[0_0_15px_rgba(139,92,246,0.5)] flex items-center justify-center cursor-pointer"
         >
           Match Me
         </button>
         <button
           onClick={(e) => { e.preventDefault(); e.stopPropagation(); }}
-          className="h-9 w-9 sm:h-12 sm:w-12 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-gray-400 hover:text-white hover:bg-white/10 transition-colors group/heart cursor-pointer shrink-0"
+          className="h-11 w-11 sm:h-12 sm:w-12 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-gray-400 hover:text-white hover:bg-white/10 transition-colors group/heart cursor-pointer shrink-0"
         >
           <span className="material-symbols-outlined text-[18px] sm:text-[24px] group-hover/heart:scale-125 transition-transform">favorite</span>
         </button>

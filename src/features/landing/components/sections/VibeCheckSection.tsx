@@ -1,5 +1,6 @@
 "use client";
 
+import { motion } from "motion/react";
 import { Category } from "@/features/category/types/category";
 import Link from "next/link";
 
@@ -18,7 +19,13 @@ export default function VibeCheckSection({
       <div className="absolute inset-0 bg-linear-to-r from-background via-transparent to-background z-10 pointer-events-none"></div>
 
       {/* Header */}
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 mb-8 flex justify-between items-end relative z-20 reveal-on-scroll">
+      <motion.div
+        className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 mb-8 flex justify-between items-end relative z-20"
+        initial={{ opacity: 0, y: 20 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true }}
+        transition={{ duration: 0.5, ease: [0, 0, 0.2, 1] }}
+      >
         <div>
           <h2 className="text-2xl sm:text-3xl font-display font-bold text-white group cursor-default">
             <span className="inline-block hover:animate-wiggle">Vibe</span>{" "}
@@ -26,29 +33,34 @@ export default function VibeCheckSection({
           </h2>
           <p className="text-xs sm:text-sm text-text-muted mt-1">Browse by category</p>
         </div>
-      </div>
+      </motion.div>
 
       {/* Category Grid */}
-      <div
-        className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 relative z-20 reveal-on-scroll"
-        style={{ transitionDelay: "100ms" }}
+      <motion.div
+        className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 relative z-20"
+        initial="hidden"
+        whileInView="visible"
+        viewport={{ once: true }}
+        variants={{ hidden: {}, visible: { transition: { staggerChildren: 0.07 } } }}
       >
-        <div className="flex overflow-x-auto gap-4 pb-3 sm:pb-6 snap-x snap-mandatory hide-scrollbar sm:grid sm:grid-cols-2 lg:grid-cols-4 sm:pb-0 sm:overflow-visible">
+        <div className="flex overflow-x-auto gap-4 pb-3 snap-x snap-mandatory hide-scrollbar sm:grid sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 sm:pb-6 sm:overflow-visible">
           {categories.map((cat, idx) => (
             <CategoryCard key={cat.name || idx} category={cat} index={idx} />
           ))}
         </div>
-      </div>
+      </motion.div>
     </section>
   );
 }
 
 // Sub-component for category cards
-function CategoryCard({ category, index }: { category: Category; index: number }) {
+function CategoryCard({ category }: { category: Category; index: number }) {
   return (
-    <div
-      className="group relative flex flex-col justify-end rounded-3xl border border-white/5 flex-shrink-0 w-[65vw] max-w-[240px] h-[180px] sm:w-auto sm:max-w-none sm:h-[280px] snap-center overflow-hidden hover:border-white/20 transition-all duration-300 hover:-translate-y-1"
-      style={{ transitionDelay: `${index * 50}ms` }}
+    <motion.div
+      className="group relative flex flex-col justify-end rounded-3xl border border-white/5 shrink-0 w-[65vw] max-w-60 h-50 sm:w-auto sm:max-w-none sm:h-70 snap-center overflow-hidden hover:border-white/20 transition-colors duration-300"
+      variants={{ hidden: { opacity: 0, y: 24 }, visible: { opacity: 1, y: 0, transition: { duration: 0.45, ease: [0, 0, 0.2, 1] } } }}
+      whileHover={{ y: -4 }}
+      transition={{ type: "spring", stiffness: 300, damping: 20 }}
     >
       {/* Main Link for the entire card */}
       <Link href={`/categories/${category.name.toLowerCase()}`} className="absolute inset-0 z-20">
@@ -66,15 +78,15 @@ function CategoryCard({ category, index }: { category: Category; index: number }
       </div>
 
       {/* Content */}
-      <div className="relative z-10 p-2.5 sm:p-5 transition-all duration-300 group-hover:-translate-y-2 pointer-events-none">
-        <h3 className="text-[10px] sm:text-xl font-bold mb-0.5 sm:mb-1 leading-tight font-display capitalize text-white">
+      <div className="relative z-10 p-4 sm:p-5 transition-all duration-300 group-hover:-translate-y-2 pointer-events-none">
+        <h3 className="text-sm sm:text-xl font-bold mb-1 leading-tight font-display capitalize text-white">
           {category.name}
         </h3>
-        <p className="text-[10px] sm:text-sm text-white/70 line-clamp-2">{category.tagline || category.description || "Explore experiences"}</p>
+        <p className="text-xs sm:text-sm text-white/70 line-clamp-2">{category.tagline || category.description || "Explore experiences"}</p>
         {category.spotLabel && (
-          <p className="text-[10px] sm:text-sm mt-2 font-bold text-white/60">{category.spotLabel}</p>
+          <p className="text-xs sm:text-sm mt-2 font-bold text-white/60">{category.spotLabel}</p>
         )}
       </div>
-    </div>
+    </motion.div>
   );
 }
