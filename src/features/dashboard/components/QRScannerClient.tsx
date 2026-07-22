@@ -113,7 +113,7 @@ export default function QRScannerClient() {
         </div>
         <div>
           <h2 className="text-xl font-display font-bold text-white">QR Check-In</h2>
-          <p className="text-text-muted text-xs">Scan citizen's entry ticket at the door</p>
+          <p className="text-text-muted text-xs">Scan citizen&apos;s entry ticket at the door</p>
         </div>
       </div>
 
@@ -123,7 +123,7 @@ export default function QRScannerClient() {
             <span className="material-symbols-outlined text-white/20 text-6xl">qr_code_2</span>
           </div>
           <p className="text-text-muted text-sm text-center">
-            Open camera to scan the QR code shown on the citizen's booking page.
+            Open camera to scan the QR code shown on the citizen&apos;s booking page.
           </p>
           <button
             onClick={startScanner}

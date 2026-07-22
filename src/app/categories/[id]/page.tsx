@@ -1,7 +1,7 @@
 export const dynamic = 'force-dynamic';
 
 import Link from 'next/link';
-import { getCategoryBySlug, getEventsByCategory, getVenuesByCategory } from '@/shared/lib/server/data'
+import { getCategoryBySlug, getEventsByCategory, getTrendingEventsByCategory } from '@/shared/lib/server/data'
 import CategoryDetailClient from '@/features/category/components/CategoryDetailClient'
 
 const CATEGORY_GRADIENTS: Record<string, string> = {
@@ -32,8 +32,10 @@ export default async function CategoryDetailPage({ params }: CategoryDetailPageP
   }
 
   // Fetch related data
-  const events = await getEventsByCategory(category.slug)
-  const venues = await getVenuesByCategory(category.slug)
+  const [events, trending] = await Promise.all([
+    getEventsByCategory(category.slug),
+    getTrendingEventsByCategory(category.slug),
+  ])
 
   // Enrich category with design data (similar to the hook)
   const categoryWithDesign = {
@@ -48,7 +50,7 @@ export default async function CategoryDetailPage({ params }: CategoryDetailPageP
       image: sub.image || "https://images.unsplash.com/photo-1576610616656-d3aa5d1f4534?w=800",
     })),
     events,
-    venues,
+    trending,
   }
 
   return <CategoryDetailClient category={categoryWithDesign} />

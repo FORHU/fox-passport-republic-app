@@ -1,7 +1,10 @@
 "use client";
 
 import { useState, useRef, useEffect, useCallback } from "react";
+import { motion } from "motion/react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
+import Image from "next/image";
 import { createPortal } from "react-dom";
 import { config } from "@/shared/lib/config";
 
@@ -136,7 +139,8 @@ function DateField({
   const toggle = () => {
     if (!open && ref.current) {
       const rect = ref.current.getBoundingClientRect();
-      setPos({ top: rect.bottom + 6, left: rect.left });
+      const safeLeft = Math.min(rect.left, window.innerWidth - 268);
+      setPos({ top: rect.bottom + 6, left: Math.max(8, safeLeft) });
     }
     setOpen((o) => !o);
   };
@@ -168,7 +172,7 @@ function DateField({
       {open &&
         createPortal(
           <div
-            className="fixed z-[101] animate-in fade-in zoom-in-95 duration-150"
+            className="fixed z-101 animate-in fade-in zoom-in-95 duration-150"
             style={{ top: pos.top, left: pos.left }}
             onMouseDown={(e) => e.stopPropagation()}
           >
@@ -243,7 +247,7 @@ function CategoryField({
       {open &&
         createPortal(
           <div
-            className="fixed z-[101] animate-in fade-in zoom-in-95 duration-150"
+            className="fixed z-101 animate-in fade-in zoom-in-95 duration-150"
             style={{ top: pos.top, left: pos.left, width: pos.width }}
             onMouseDown={(e) => e.stopPropagation()}
           >
@@ -274,109 +278,155 @@ function CategoryField({
   );
 }
 
+function LocationDropdown({
+  value,
+  onChange,
+}: {
+  value: string;
+  onChange: (val: string) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+  const [pos, setPos] = useState({ top: 0, left: 0, width: 0 });
 
-export default function HeroSection() {
-  const router = useRouter();
-  const [locationVal, setLocationVal] = useState("");
-  const [showSuggestions, setShowSuggestions] = useState(false);
-  const locationRef = useRef<HTMLDivElement>(null);
-
-  const [cities, setCities] = useState<string[]>([]);
-  const [category, setCategory] = useState("");
-  const [startDate, setStartDate] = useState("");
-  const [endDate, setEndDate] = useState("");
-  const [errors, setErrors] = useState<{
-    location?: string;
-    category?: string;
-    startDate?: string;
-    endDate?: string;
-  }>({});
+  const close = useCallback(() => setOpen(false), []);
 
   useEffect(() => {
-    if (!locationVal || locationVal.length < 2) {
-      return;
+    if (!open) return;
+    const handler = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, [open]);
+
+  const toggle = () => {
+    if (!open && ref.current) {
+      const rect = ref.current.getBoundingClientRect();
+      setPos({ top: rect.bottom + 6, left: Math.max(16, rect.left - 40), width: Math.max(180, rect.width) });
     }
-    const timer = setTimeout(() => {
-      fetch(`${config.apiUrl}/locations/search?q=${encodeURIComponent(locationVal)}`)
-        .then(res => res.json())
-        .then(data => {
-          if (data.status === "success") {
-            setCities(data.data.locations);
-          }
-        })
-        .catch(err => console.error("Failed to fetch locations:", err));
-    }, 300);
+    setOpen((o) => !o);
+  };
 
-    return () => clearTimeout(timer);
-  }, [locationVal]);
+  const locations = ["All Locations", "Baguio", "Manila", "Cebu", "Siargao", "Boracay", "Palawan"];
 
-  const filteredLocations = cities;
+  return (
+    <div ref={ref} className="w-16 sm:w-28 lg:w-44 shrink-0 relative">
+      <button
+        type="button"
+        onClick={toggle}
+        className="w-full flex items-center justify-between gap-0.5 sm:gap-1 text-[10px] sm:text-xs lg:text-sm font-bold text-white bg-transparent border-none outline-none cursor-pointer px-1 sm:px-2 py-1"
+      >
+        <span className="truncate text-left text-white/90">
+          {value || "Location"}
+        </span>
+        <span className={`material-symbols-outlined text-[12px] sm:text-[16px] text-white/50 shrink-0 transition-transform duration-200 ${open ? "rotate-180" : ""}`}>
+          expand_more
+        </span>
+      </button>
+
+      {open &&
+        createPortal(
+          <div
+            className="fixed z-101 animate-in fade-in zoom-in-95 duration-150"
+            style={{ top: pos.top, left: pos.left, width: pos.width }}
+            onMouseDown={(e) => e.stopPropagation()}
+          >
+            <div className="glass-card rounded-xl border border-white/10 p-1.5 shadow-[0_0_30px_rgba(0,0,0,0.5)] bg-[#11121a]">
+              {locations.map((loc) => {
+                const val = loc === "All Locations" ? "" : loc;
+                const isSelected = value === val;
+                return (
+                  <button
+                    key={loc}
+                    type="button"
+                    onClick={() => {
+                      onChange(val);
+                      close();
+                    }}
+                    className={`w-full text-left px-3 py-2 rounded-lg text-xs sm:text-sm font-semibold transition-all ${
+                      isSelected
+                        ? "bg-[#ccff00]/15 text-[#ccff00]"
+                        : "text-white/70 hover:bg-white/10 hover:text-white"
+                    }`}
+                  >
+                    {loc}
+                  </button>
+                );
+              })}
+            </div>
+          </div>,
+          document.body
+        )}
+    </div>
+  );
+}
+
+const CATEGORY_COLORS: Record<string, string> = {
+  birthday:  "bg-lime-400/20 text-lime-300",
+  wedding:   "bg-pink-400/20 text-pink-300",
+  corporate: "bg-cyan-400/20 text-cyan-300",
+  social:    "bg-purple-400/20 text-purple-300",
+  other:     "bg-amber-400/20 text-amber-300",
+};
+
+interface HeroSectionProps {
+  featuredTemplates?: any[];
+}
+
+export default function HeroSection({ featuredTemplates = [] }: HeroSectionProps) {
+  const router = useRouter();
+  const [searchQuery, setSearchQuery] = useState("");
+  const [locationVal, setLocationVal] = useState("");
 
   const handleSearch = (e?: React.FormEvent) => {
     if (e) e.preventDefault();
 
-    const nextErrors: typeof errors = {};
-    if (!locationVal.trim()) nextErrors.location = "Required";
-    if (!category) nextErrors.category = "Required";
-    if (!startDate) nextErrors.startDate = "Required";
-    if (!endDate) nextErrors.endDate = "Required";
-
-    if (startDate && endDate && new Date(endDate) < new Date(startDate)) {
-      nextErrors.endDate = "Invalid date";
-    }
-
-    setErrors(nextErrors);
-    if (Object.keys(nextErrors).length > 0) return;
-
     const params = new URLSearchParams();
-    params.set("category", category.toLowerCase());
-    const parts = locationVal.split(",").map(p => p.trim());
-    if (parts.length > 1) {
-      params.set("country", parts[0]);
-      params.set("city", parts.slice(1).join(", "));
-    } else {
-      params.set("city", locationVal);
+    if (searchQuery.trim()) {
+      params.set("query", searchQuery.trim());
+      params.set("category", searchQuery.trim().toLowerCase());
     }
-    params.set("label", locationVal);
-    params.set("startDate", startDate);
-    params.set("endDate", endDate);
+    if (locationVal.trim()) {
+      params.set("city", locationVal.trim());
+      params.set("label", locationVal.trim());
+    }
 
     router.push(`/search?${params.toString()}`);
   };
 
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (locationRef.current && !locationRef.current.contains(event.target as Node)) {
-        setShowSuggestions(false);
-      }
-    };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, []);
-
   return (
-    <section className="relative pt-10 pb-20 lg:pt-20 lg:pb-32 overflow-hidden">
+    <section className="relative pt-24 sm:pt-36 lg:pt-40 pb-6 sm:pb-20 lg:pb-32 overflow-hidden">
       {/* Background Blurs */}
-      <div className="absolute top-20 right-0 w-[500px] h-[500px] bg-primary/20 rounded-full blur-[120px] pointer-events-none animate-pulse-slow mix-blend-screen"></div>
-      <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-secondary/10 rounded-full blur-[120px] pointer-events-none mix-blend-screen"></div>
+      <div className="absolute top-0 right-0 w-125 h-125 bg-primary/20 rounded-full blur-[120px] pointer-events-none animate-pulse-slow mix-blend-screen"></div>
+      <div className="absolute bottom-0 left-0 w-125 h-125 bg-secondary/10 rounded-full blur-[120px] pointer-events-none mix-blend-screen"></div>
 
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 relative z-10">
         <div className="grid lg:grid-cols-12 gap-16 lg:gap-8 items-center">
           {/* Left Content */}
-          <div className="lg:col-span-7 flex flex-col gap-10 text-center lg:text-left reveal-on-scroll">
+          <motion.div
+            className="lg:col-span-7 flex flex-col gap-10 text-center lg:text-left"
+            initial="hidden"
+            animate="visible"
+            variants={{ hidden: {}, visible: { transition: { staggerChildren: 0.12 } } }}
+          >
             <div className="space-y-6">
               {/* Badge */}
-              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 border border-[#ccff00]/50 shadow-[0_0_25px_rgba(204,255,0,0.3),0_0_50px_rgba(204,255,0,0.1)] mx-auto lg:mx-0 backdrop-blur-sm animate-bounce duration-1000">
+              <motion.div
+                variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0, transition: { duration: 0.5, ease: [0, 0, 0.2, 1] } } }}
+                className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 border border-[#ccff00]/50 shadow-[0_0_25px_rgba(204,255,0,0.3),0_0_50px_rgba(204,255,0,0.1)] mx-auto lg:mx-0 backdrop-blur-sm animate-bounce duration-1000"
+              >
                 <span className="flex h-3 w-3 rounded-full bg-[#ccff00] shadow-[0_0_15px_#ccff00,0_0_30px_#ccff00] animate-pulse"></span>
                 <span className="text-xs font-bold uppercase tracking-widest text-white/90 font-display">
                   Fresh Drops Daily
                 </span>
-              </div>
+              </motion.div>
 
               {/* Title */}
-              <h1 className="text-6xl font-display font-bold tracking-tight text-white sm:text-7xl lg:text-8xl leading-[0.95] group cursor-default">
+              <motion.h1
+                variants={{ hidden: { opacity: 0, y: 24 }, visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: [0, 0, 0.2, 1] } } }}
+                className="text-4xl sm:text-7xl lg:text-8xl font-display font-bold tracking-tight text-white leading-tight sm:leading-[0.95] group cursor-default"
+              >
                 Find your <br />
                 <span
                   className="text-gradient relative inline-block hover:scale-105 transition-transform duration-500 cursor-cell"
@@ -384,205 +434,185 @@ export default function HeroSection() {
                 >
                   Core Memory.
                 </span>
-              </h1>
+              </motion.h1>
 
               {/* Subtitle */}
-              <p className="text-xl text-text-muted max-w-xl mx-auto lg:mx-0 leading-relaxed font-light">
-                Curated experiences for the main character energy. Underground gigs, secret spots, and adventures that actually matter.
-              </p>
+              <motion.p
+                variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0, transition: { duration: 0.5, ease: [0, 0, 0.2, 1] } } }}
+                className="text-xs sm:text-sm lg:text-xl text-text-muted max-w-xl mx-auto lg:mx-0 leading-relaxed font-light"
+              >
+                Curated experiences for the main character energy. <br className="block" />
+                Underground gigs, secret spots, and adventures that actually matter.
+              </motion.p>
             </div>
 
             {/* Search Area */}
-            <div className="w-full max-w-3xl mx-auto lg:mx-0 flex flex-col gap-4 z-20 relative">
-
-
+            <motion.div
+              variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0, transition: { duration: 0.5, ease: [0, 0, 0.2, 1] } } }}
+              className="w-full max-w-3xl mx-auto lg:mx-0 flex flex-col gap-4 z-20 relative"
+            >
               {/* Search Box */}
               <form onSubmit={handleSearch} className="w-full max-w-4xl mx-auto lg:mx-0 relative group z-20">
-                <div className="absolute -inset-1 bg-gradient-to-r from-primary via-purple-600 to-secondary rounded-full blur opacity-40 group-hover:opacity-70 transition duration-500 group-hover:duration-200 animate-pulse"></div>
-                <div className="relative glass-panel bg-black/80 backdrop-blur-2xl px-6 py-2 rounded-full border border-white/10 group-hover:border-white/20 transition-all shadow-[0_0_30px_rgba(139,92,246,0.3)]">
-                  <div className="flex flex-row items-center gap-0">
-                    
-                    {/* Category */}
-                    <CategoryField
-                      value={category}
-                      error={errors.category}
-                      onChange={setCategory}
-                      onClearError={() => setErrors((prev) => ({ ...prev, category: undefined }))}
-                    />
+                {/* 1. Outer Glow */}
+                <div className="absolute -inset-1 bg-linear-to-r from-primary via-purple-600 to-secondary rounded-full blur opacity-40 group-hover:opacity-70 transition duration-500 group-hover:duration-200 animate-pulse"></div>
 
-                    <div className="h-8 w-px bg-white/10"></div>
+                {/* Outer Search Container */}
+                <div className="relative glass-panel bg-black/80 backdrop-blur-2xl p-1 sm:p-2 pl-3 sm:pl-4 rounded-full border border-white/10 group-hover:border-white/20 transition-all shadow-[0_0_30px_rgba(139,92,246,0.3)]">
+                  {/* 2. Single-Row Alignment */}
+                  <div className="flex flex-row items-center gap-1.5 sm:gap-2">
 
-                    {/* Start Date */}
-                    <DateField
-                      label="Start"
-                      value={startDate}
-                      error={errors.startDate}
-                      onSelect={(d) => {
-                        setStartDate(d);
-                        setErrors((prev) => ({ ...prev, startDate: undefined, endDate: undefined }));
-                      }}
-                      onClearError={() => setErrors((prev) => ({ ...prev, startDate: undefined }))}
-                    />
-
-                    <div className="h-8 w-px bg-white/10"></div>
-
-                    {/* End Date */}
-                    <DateField
-                      label="End"
-                      value={endDate}
-                      error={errors.endDate}
-                      onSelect={setEndDate}
-                      onClearError={() => setErrors((prev) => ({ ...prev, endDate: undefined }))}
-                    />
-
-                    <div className="h-8 w-px bg-white/10"></div>
-
-                    {/* Location */}
-                    <div className="flex-[1.5] w-auto px-6 py-3 text-left relative" ref={locationRef}>
-                      <span className="block text-[10px] font-bold text-white/40 uppercase tracking-widest mb-1 ml-1">Location</span>
-                      <input 
-                        id="locationInput"
-                        className={`bg-transparent border-none text-white placeholder:text-white/20 placeholder:text-[10px] focus:ring-0 text-xs font-bold w-full h-6 outline-none text-left ${errors.location ? "text-red-400" : ""}`} 
-                        placeholder="Search location..." 
-                        type="text" 
-                        autoComplete="off"
-                        value={locationVal}
-                      onChange={(e) => {
-                        const val = e.target.value;
-                        setLocationVal(val);
-                        setShowSuggestions(true);
-                        setErrors((prev) => ({ ...prev, location: undefined }));
-                        if (val.length < 2) {
-                          setCities([]);
-                        }
-                      }}
-                        onFocus={() => setShowSuggestions(true)}
+                    {/* 3. Search Icon & Input Field */}
+                    <div className="flex-1 flex items-center gap-1.5 sm:gap-2 min-w-0">
+                      <span className="material-symbols-outlined text-[16px] sm:text-[20px] text-white/50 shrink-0">
+                        search
+                      </span>
+                      <input
+                        id="heroSearchInput"
+                        type="text"
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        placeholder="Search experiences, events, vibes..."
+                        className="bg-transparent border-none text-white placeholder:text-white/30 text-[10px] sm:text-sm lg:text-base font-medium outline-none focus:ring-0 w-full min-w-0 text-ellipsis"
                       />
-                      {showSuggestions && filteredLocations.length > 0 && (
-                        <ul id="locationSuggestions" className="absolute top-[calc(100%+8px)] left-0 w-full min-w-[200px] bg-[#11121a] border border-white/10 rounded-xl shadow-[0_0_20px_rgba(0,0,0,0.5)] z-50 overflow-hidden max-h-60 overflow-y-auto">
-                          {filteredLocations.map(loc => (
-                            <li
-                              key={loc}
-                              className="px-4 py-3 text-sm text-white hover:bg-[#ccff00] hover:text-black cursor-pointer font-bold transition-colors"
-                              onClick={() => {
-                                setLocationVal(loc);
-                                setShowSuggestions(false);
-                              }}
-                            >
-                              {loc}
-                            </li>
-                          ))}
-                        </ul>
-                      )}
                     </div>
 
-                    <button type="submit" className="btn-neon h-12 w-32 rounded-full bg-white text-black font-bold transition-all duration-300 flex items-center justify-center text-lg shadow-[0_0_20px_rgba(255,255,255,0.2)] ml-4 hover:scale-105 active:scale-95">
+                    {/* 4. Vertical Separator */}
+                    <div className="w-px bg-white/10 h-5 sm:h-8 shrink-0"></div>
+
+                    {/* 5. Location Selector */}
+                    <LocationDropdown
+                      value={locationVal}
+                      onChange={(loc) => setLocationVal(loc)}
+                    />
+
+                    {/* 6. "Go" Button */}
+                    <button
+                      type="submit"
+                      className="rounded-full bg-white text-black font-bold h-8 sm:h-12 px-3 sm:px-6 text-[10px] sm:text-xs lg:text-sm shrink-0 transition-all duration-300 hover:scale-105 active:scale-95 shadow-[0_0_20px_rgba(255,255,255,0.2)] flex items-center justify-center"
+                    >
                       Go
                     </button>
                   </div>
                 </div>
               </form>
-              {Object.keys(errors).length > 0 && (
-                <div className="text-red-400 text-xs mt-2 text-center lg:text-left font-bold animate-pulse">
-                  Please complete all required fields before searching.
-                </div>
-              )}
-            </div>
+            </motion.div>
 
             {/* Social Proof */}
-            <div className="flex items-center justify-center lg:justify-start gap-6 pt-4">
+            <motion.div
+              variants={{ hidden: { opacity: 0, y: 16 }, visible: { opacity: 1, y: 0, transition: { duration: 0.5, ease: [0, 0, 0.2, 1] } } }}
+              className="flex items-center justify-center lg:justify-start gap-6 pt-4"
+            >
               <div className="flex -space-x-4 hover:space-x-0 transition-all duration-500">
                 <img
                   alt="User"
-                  className="h-12 w-12 rounded-full border-2 border-background object-cover hover:scale-110 hover:z-10 transition-transform"
+                  className="h-8 w-8 sm:h-10 sm:w-10 rounded-full border-2 border-background object-cover hover:scale-110 hover:z-10 transition-transform"
                   src="https://lh3.googleusercontent.com/aida-public/AB6AXuD-A0KmDrOi8KQZt5YVraaoL54kpKL4sLPhBoZj6kgs089hsWPz2qJfdMww3r4NpGGBYTSIrptbwjoMo0ZmnZFpuLCt3lExTQAv1QauCbCl6k3vscDYH5z0t7EqZ-NulKXiQjy8VxqCwlvvy4h_vf5j2Lf7cN1haDT24rR_FzF8rO9swBYh5KVGtV09ogFZmVJAcrnGZCXHQEkJR8TzFmrSMkK0jRaOzO43L1j7KQZ0WraTBcdonNTmEh2phQsvKrYuVv6P1wDPPAM"
                 />
                 <img
                   alt="User"
-                  className="h-12 w-12 rounded-full border-2 border-background object-cover hover:scale-110 hover:z-10 transition-transform"
+                  className="h-8 w-8 sm:h-10 sm:w-10 rounded-full border-2 border-background object-cover hover:scale-110 hover:z-10 transition-transform"
                   src="https://lh3.googleusercontent.com/aida-public/AB6AXuAawAmjQLUXCUHrFlbDS_ydJnuUpm_WUNW9I5alXTGfJCNDU8_Gnn4cey4Tt_fcRefnkP3AK4S1C13YiOGOnCLmz3aSgwJP_JwChCJBNSCeFugn97n0lpqg6JVBy926WV4xcXgfaLeBW6GNWknG__nTJeUYtmKctJxCDA5ODZq2ZxpowxJKzUXEpcS9W1ThdbCuR0rXQTeqeW2URDNRYLxCNmXPoWUlxq_9LdMzamdZIYkwK2XK3b0k_kVV4njSFnmyGojp2293vrU"
                 />
                 <img
                   alt="User"
-                  className="h-12 w-12 rounded-full border-2 border-background object-cover hover:scale-110 hover:z-10 transition-transform"
+                  className="h-8 w-8 sm:h-10 sm:w-10 rounded-full border-2 border-background object-cover hover:scale-110 hover:z-10 transition-transform"
                   src="https://lh3.googleusercontent.com/aida-public/AB6AXuDgd--zxF5w1ZztnRmVlmV-feUqN_qBWaBYUT5CujXc0w-0AUuWAmHt_hqnGMMe6m_fRhEWkVx4s-GPtdMKYzlfSOQqHXDOj1gZA2nyUJx9g-k_T2GXeIiYRFWE4OhzISNwTdKHnUtx3za3LKNh05jbmOS4npA_2XzCQ6-b0jqwzXF4Zy5LKfBRtJpHKvZknn8VWcB24VzWfO5VUZJ4zVgdHD766vR4O1OP3A6j3meIxBZLNL5KDybSUXLKzRdPbfxAQ2NIKRBRKsA"
                 />
-                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-surface-highlight text-white border-2 border-background text-xs font-bold hover:bg-[#ccff00] hover:text-black transition-colors cursor-pointer">
+                <div className="flex h-8 w-8 sm:h-10 sm:w-10 items-center justify-center rounded-full bg-surface-highlight text-white border-2 border-background text-[10px] sm:text-xs font-bold hover:bg-[#ccff00] hover:text-black transition-colors cursor-pointer">
                   +2k
                 </div>
               </div>
-              <div className="text-sm font-medium text-text-muted group cursor-default">
-                <div className="flex text-[#ccff00] text-lg mb-1 group-hover:gap-1 transition-all">
-                  <span className="material-symbols-outlined text-[20px] fill-current animate-pulse">star</span>
-                  <span className="material-symbols-outlined text-[20px] fill-current animate-pulse delay-75">star</span>
-                  <span className="material-symbols-outlined text-[20px] fill-current animate-pulse delay-100">star</span>
-                  <span className="material-symbols-outlined text-[20px] fill-current animate-pulse delay-150">star</span>
-                  <span className="material-symbols-outlined text-[20px] fill-current animate-pulse delay-200">star</span>
+              <div className="text-xs sm:text-sm font-medium text-text-muted group cursor-default">
+                <div className="flex text-[#ccff00] mb-0.5 group-hover:gap-0.5 transition-all">
+                  <span className="material-symbols-outlined text-[14px] sm:text-[18px] fill-current animate-pulse">star</span>
+                  <span className="material-symbols-outlined text-[14px] sm:text-[18px] fill-current animate-pulse delay-75">star</span>
+                  <span className="material-symbols-outlined text-[14px] sm:text-[18px] fill-current animate-pulse delay-100">star</span>
+                  <span className="material-symbols-outlined text-[14px] sm:text-[18px] fill-current animate-pulse delay-150">star</span>
+                  <span className="material-symbols-outlined text-[14px] sm:text-[18px] fill-current animate-pulse delay-200">star</span>
                 </div>
                 Verified by Citizens
               </div>
-            </div>
-          </div>
+            </motion.div>
+          </motion.div>
 
-          {/* Right Image Grid */}
-          <div className="lg:col-span-5 relative mt-16 lg:mt-0 perspective-1000">
+          {/* Right — Featured Event Package Cards (Hidden on mobile) */}
+          <div className="hidden sm:block lg:col-span-5 relative mt-16 lg:mt-0 perspective-1000">
             <div className="relative grid grid-cols-2 gap-4">
-              <div className="space-y-4 translate-y-12 animate-float">
-                <div className="relative group rounded-[2rem] overflow-hidden border border-white/10 shadow-2xl rotate-[-3deg] hover:rotate-0 hover:scale-105 transition-all duration-500 z-10 cursor-pointer">
-                  <img
-                    alt="Weddings & Commitments"
-                    className="w-full h-56 object-cover filter brightness-90 group-hover:brightness-110 transition-all duration-700 scale-100 group-hover:scale-110"
-                    src="https://images.unsplash.com/photo-1519741497674-611481863552?w=800&auto=format&fit=crop"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-80 group-hover:opacity-100 transition-opacity"></div>
-                  <span className="absolute bottom-4 left-4 text-white font-display font-bold text-lg tracking-wide group-hover:translate-x-2 transition-transform">
-                    Weddings
-                  </span>
-                  <div className="absolute top-4 right-4 bg-white/20 backdrop-blur-md rounded-full p-2 opacity-0 group-hover:opacity-100 transition-all duration-300 translate-y-4 group-hover:translate-y-0">
-                    <span className="material-symbols-outlined text-white text-[16px]">arrow_outward</span>
-                  </div>
-                </div>
-                <div className="relative group rounded-[2rem] overflow-hidden border border-white/10 shadow-2xl rotate-[2deg] hover:rotate-0 hover:scale-105 transition-all duration-500 cursor-pointer">
-                  <img
-                    alt="Private Experiences"
-                    className="w-full h-72 object-cover filter brightness-90 group-hover:brightness-110 transition-all duration-700 scale-100 group-hover:scale-110"
-                    src="https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=800&auto=format&fit=crop"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-80 group-hover:opacity-100 transition-opacity"></div>
-                  <span className="absolute bottom-4 left-4 text-white font-display font-bold text-lg tracking-wide group-hover:translate-x-2 transition-transform">
-                    Private Dining
-                  </span>
-                </div>
+              {/* Left column */}
+              <div className="space-y-3 translate-y-12 animate-float">
+                {[featuredTemplates[0], featuredTemplates[1]].map((t, i) => {
+                  if (!t) return null;
+                  const img = t.images?.[0]?.url ?? "https://images.unsplash.com/photo-1530103862676-de8c9debad1d?w=800&auto=format&fit=crop";
+                  const loc = [t.targetCity, t.targetState].filter(Boolean).join(", ");
+                  const rotations = ["-rotate-3", "rotate-2"];
+                  const heights = ["h-52", "h-48"];
+                  return (
+                    <Link
+                      key={t.id}
+                      href={`/event/${t.id}`}
+                      className={`relative group rounded-[2rem] overflow-hidden border border-white/10 shadow-2xl ${rotations[i]} hover:rotate-0 hover:scale-105 transition-all duration-500 z-10 block`}
+                    >
+                      <Image
+                        src={img}
+                        alt={t.name}
+                        width={400}
+                        height={300}
+                        className={`w-full ${heights[i]} object-cover filter brightness-90 group-hover:brightness-110 transition-all duration-700 group-hover:scale-110`}
+                      />
+                      <div className="absolute inset-0 bg-linear-to-t from-black/90 via-black/20 to-transparent" />
+                      {t.category && (
+                        <span className={`absolute top-3 left-3 text-[10px] font-black px-2.5 py-1 rounded-full uppercase tracking-widest ${CATEGORY_COLORS[t.category] ?? "bg-white/20 text-white"}`}>
+                          {t.category}
+                        </span>
+                      )}
+                      <div className="absolute bottom-3 left-4 right-4">
+                        <p className="text-white font-display font-bold text-sm leading-tight line-clamp-1 group-hover:translate-x-1 transition-transform">{t.name}</p>
+                        {loc && <p className="text-white/50 text-[10px] mt-0.5">{loc}</p>}
+                      </div>
+                    </Link>
+                  );
+                })}
               </div>
-              <div className="space-y-4 animate-float-delayed">
-                <div className="relative group rounded-[2rem] overflow-hidden border border-white/10 shadow-2xl rotate-[3deg] hover:rotate-0 hover:scale-105 transition-all duration-500 cursor-pointer">
-                  <img
-                    alt="Celebrations"
-                    className="w-full h-72 object-cover filter brightness-90 group-hover:brightness-110 transition-all duration-700 scale-100 group-hover:scale-110"
-                    src="https://images.unsplash.com/photo-1530103862676-de8c9debad1d?w=800&auto=format&fit=crop"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-80 group-hover:opacity-100 transition-opacity"></div>
-                  <span className="absolute bottom-4 left-4 text-white font-display font-bold text-lg tracking-wide group-hover:translate-x-2 transition-transform">
-                    Celebrations
-                  </span>
-                </div>
-                <div className="relative group rounded-[2rem] overflow-hidden border border-white/10 shadow-2xl rotate-[-2deg] hover:rotate-0 hover:scale-105 transition-all duration-500 z-10 cursor-pointer">
-                  <img
-                    alt="Signature Places"
-                    className="w-full h-56 object-cover filter brightness-90 group-hover:brightness-110 transition-all duration-700 scale-100 group-hover:scale-110"
-                    src="https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=800&auto=format&fit=crop"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-80 group-hover:opacity-100 transition-opacity"></div>
-                  <span className="absolute bottom-4 left-4 text-white font-display font-bold text-lg tracking-wide group-hover:translate-x-2 transition-transform">
-                    Signature Places
-                  </span>
-                </div>
+              {/* Right column */}
+              <div className="space-y-3 animate-float-delayed">
+                {[featuredTemplates[2], featuredTemplates[3]].map((t, i) => {
+                  if (!t) return null;
+                  const img = t.images?.[0]?.url ?? "https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=800&auto=format&fit=crop";
+                  const loc = [t.targetCity, t.targetState].filter(Boolean).join(", ");
+                  const rotations = ["rotate-3", "-rotate-2"];
+                  const heights = ["h-60", "h-52"];
+                  return (
+                    <Link
+                      key={t.id}
+                      href={`/event/${t.id}`}
+                      className={`relative group rounded-[2rem] overflow-hidden border border-white/10 shadow-2xl ${rotations[i]} hover:rotate-0 hover:scale-105 transition-all duration-500 block`}
+                    >
+                      <Image
+                        src={img}
+                        alt={t.name}
+                        width={400}
+                        height={300}
+                        className={`w-full ${heights[i]} object-cover filter brightness-90 group-hover:brightness-110 transition-all duration-700 group-hover:scale-110`}
+                      />
+                      <div className="absolute inset-0 bg-linear-to-t from-black/90 via-black/20 to-transparent" />
+                      {t.category && (
+                        <span className={`absolute top-3 left-3 text-[10px] font-black px-2.5 py-1 rounded-full uppercase tracking-widest ${CATEGORY_COLORS[t.category] ?? "bg-white/20 text-white"}`}>
+                          {t.category}
+                        </span>
+                      )}
+                      <div className="absolute bottom-3 left-4 right-4">
+                        <p className="text-white font-display font-bold text-sm leading-tight line-clamp-1 group-hover:translate-x-1 transition-transform">{t.name}</p>
+                        {loc && <p className="text-white/50 text-[10px] mt-0.5">{loc}</p>}
+                      </div>
+                    </Link>
+                  );
+                })}
               </div>
-              {/* Trending Badge */}
-              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-30 pointer-events-none">
-                <div className="bg-[#ccff00] text-black px-6 py-3 rounded-full font-display font-bold uppercase tracking-widest shadow-[0_0_30px_#ccff00] transform animate-pulse border border-white/20 pointer-events-auto hover:scale-110 transition-transform cursor-pointer">
-                  Trending
-                </div>
+              {/* Book Now Button: Preserved on desktop */}
+              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-30">
+                <Link href="/search" className="bg-[#ccff00] text-black px-6 py-3 rounded-full font-display font-bold uppercase tracking-widest text-base shadow-[0_0_30px_#ccff00] animate-pulse hover:scale-110 transition-transform block text-center">
+                  Book Now
+                </Link>
               </div>
             </div>
           </div>

@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useEffect, useRef, useCallback } from "react";
 import { useQuery } from "@tanstack/react-query";
@@ -36,7 +36,8 @@ export function useSessionManager(onShowWarning: () => void, onDismissWarning: (
       }
       return freshUser;
     },
-    enabled: isAuthenticated,
+    enabled: isAuthenticated && !!accessToken,
+    retry: false,
     refetchInterval: (query) => {
        if (typeof document !== 'undefined' && document.hidden) return false;
        return 30000; // Refetch profile every 30 seconds
