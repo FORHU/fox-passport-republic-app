@@ -51,6 +51,8 @@ export interface Venue {
   province: string;
   billingRate?: string;
   spaceType?: string[];
+  lat?: number | null;
+  lng?: number | null;
   category: VenueCategory | null;
   pricing: VenuePricing[];
   images: VenueImage[];

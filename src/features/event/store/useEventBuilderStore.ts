@@ -8,6 +8,11 @@ interface EventBuilderState {
   category: string;
   date: string;
   location: string;
+  targetCity: string;
+  targetState: string;
+  targetCountry: string;
+  lat: number | null;
+  lng: number | null;
   maxAttendees: number;
   gallery: GalleryItem[];
 
@@ -32,6 +37,11 @@ interface EventBuilderState {
   setCategory: (cat: string) => void;
   setDate: (date: string) => void;
   setLocation: (loc: string) => void;
+  setTargetCity: (city: string) => void;
+  setTargetState: (state: string) => void;
+  setTargetCountry: (country: string) => void;
+  setLat: (lat: number | null) => void;
+  setLng: (lng: number | null) => void;
   setMaxAttendees: (count: number) => void;
   setCancellationPolicyId: (id: string | null) => void;
 
@@ -63,6 +73,11 @@ const initialState = {
   category: "",
   date: "",
   location: "",
+  targetCity: "",
+  targetState: "",
+  targetCountry: "",
+  lat: null as number | null,
+  lng: null as number | null,
   maxAttendees: 100,
   gallery: [],
   cancellationPolicyId: null as string | null,
@@ -85,6 +100,11 @@ export const useEventBuilderStore = create<EventBuilderState>((set) => ({
   setCategory: (cat) => set({ category: cat }),
   setDate: (date) => set({ date: date }),
   setLocation: (loc) => set({ location: loc }),
+  setTargetCity: (city) => set({ targetCity: city }),
+  setTargetState: (state) => set({ targetState: state }),
+  setTargetCountry: (country) => set({ targetCountry: country }),
+  setLat: (lat) => set({ lat }),
+  setLng: (lng) => set({ lng }),
   setMaxAttendees: (count) => set({ maxAttendees: count }),
   setCancellationPolicyId: (id) => set({ cancellationPolicyId: id }),
 

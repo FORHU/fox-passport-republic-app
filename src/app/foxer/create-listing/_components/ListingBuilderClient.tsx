@@ -22,6 +22,9 @@ function ListingBuilderContent() {
     condition,
     status,
     image,
+    city,
+    state,
+    country,
     cancellationPolicyId,
     showGuide,
     isSubmitting,
@@ -39,6 +42,11 @@ function ListingBuilderContent() {
     setUnit,
     setCondition,
     setStatus,
+    setCity,
+    setState,
+    setCountry,
+    setLat,
+    setLng,
     setCancellationPolicyId,
     setShowGuide,
     handleBack,
@@ -72,6 +80,9 @@ function ListingBuilderContent() {
           price={price}
           unit={unit}
           status={status}
+          city={city}
+          state={state}
+          country={country}
           cancellationPolicyId={cancellationPolicyId}
           onCategorySelect={handleCategorySelect}
           onCustomCategoryChange={setCustomCategory}
@@ -79,6 +90,10 @@ function ListingBuilderContent() {
           onPriceChange={setPrice}
           onUnitChange={setUnit}
           onStatusChange={setStatus}
+          onCityChange={setCity}
+          onStateChange={setState}
+          onCountryChange={setCountry}
+          onLatLngChange={(lat, lng) => { setLat(lat); setLng(lng); }}
           onCancellationPolicyChange={setCancellationPolicyId}
         />
 

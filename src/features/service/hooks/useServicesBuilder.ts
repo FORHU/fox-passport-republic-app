@@ -197,8 +197,11 @@ export function useServicesBuilder() {
         category: store.category,
         price:
           typeof store.price === "string" ? parseFloat(store.price) : Number(store.price),
-        city: (store as any).city || 'N/A',
-        country: (store as any).country || 'PH',
+        city: store.city || 'N/A',
+        state: store.state || undefined,
+        country: store.country || 'PH',
+        lat: store.lat ?? undefined,
+        lng: store.lng ?? undefined,
         imgIds: [uploadResult.fileId],
         cancellationPolicyId: store.cancellationPolicyId || undefined,
       };

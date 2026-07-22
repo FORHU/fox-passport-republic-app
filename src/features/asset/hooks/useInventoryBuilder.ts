@@ -244,6 +244,11 @@ export function useInventoryBuilder() {
         category: store.category,
         price: parsedPrice,
         billingRate: unitMap[store.unit] || "daily",
+        city: store.city || undefined,
+        state: store.state || undefined,
+        country: store.country || undefined,
+        lat: store.lat ?? undefined,
+        lng: store.lng ?? undefined,
         imgIds: [uploadResult.fileId],
         cancellationPolicyId: store.cancellationPolicyId || undefined,
       };
