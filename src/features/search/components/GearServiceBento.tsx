@@ -1,37 +1,7 @@
 "use client";
 
-import { useSearchParams } from "next/navigation";
-import { useQuery } from "@tanstack/react-query";
-import { fetchFoxers, type Foxer } from "@/features/user/api/foxers";
 import { useRouter } from "next/navigation";
-
-interface ProviderRow {
-  foxerId: string;
-  name: string;
-  itemName: string;
-  category: string;
-  price: number;
-  billingRate: string;
-  img?: string;
-}
-
-function toRows(foxers: Foxer[]): ProviderRow[] {
-  const rows: ProviderRow[] = [];
-  foxers.forEach((f) => {
-    f.services.forEach((s) => {
-      rows.push({
-        foxerId: f.id,
-        name: f.name,
-        itemName: s.name,
-        category: s.category,
-        price: s.price,
-        billingRate: s.billingRate,
-        img: s.images?.[0]?.url,
-      });
-    });
-  });
-  return rows;
-}
+import type { ProviderRow } from "@/features/search/api/search";
 
 function BentoColumn({
   title,
@@ -92,26 +62,16 @@ function BentoColumn({
   );
 }
 
-export default function GearServiceBento() {
-  const searchParams = useSearchParams();
-  const city = searchParams?.get("city") || "";
+interface GearServiceBentoProps {
+  gearItems: ProviderRow[];
+  serviceItems: ProviderRow[];
+  isFetching: boolean;
+  page: number;
+  totalPages: number;
+  onPageChange: (page: number) => void;
+}
 
-  const { data: gear, isLoading: gearLoading } = useQuery({
-    queryKey: ["gearFoxers", city],
-    queryFn: () => fetchFoxers(20, 1, "gearFoxer"),
-  });
-  const { data: service, isLoading: serviceLoading } = useQuery({
-    queryKey: ["serviceFoxers", city],
-    queryFn: () => fetchFoxers(20, 1, "serviceFoxer"),
-  });
-
-  const gearRows = toRows(gear ?? []).filter(
-    (r) => !city || r.name.toLowerCase().includes(city.toLowerCase())
-  );
-  const serviceRows = toRows(service ?? []).filter(
-    (r) => !city || r.name.toLowerCase().includes(city.toLowerCase())
-  );
-
+export default function GearServiceBento({ gearItems, serviceItems, isFetching, page, totalPages, onPageChange }: GearServiceBentoProps) {
   return (
     <section className="space-y-6">
       <div className="flex items-center gap-4">
@@ -123,9 +83,44 @@ export default function GearServiceBento() {
       </div>
 
       <div className="grid grid-cols-2 gap-6">
-        <BentoColumn title="Gear Foxers" icon="audio_file" rows={gearRows} loading={gearLoading} />
-        <BentoColumn title="Service Foxers" icon="design_services" rows={serviceRows} loading={serviceLoading} />
+        <BentoColumn title="Gear Foxers" icon="audio_file" rows={gearItems} loading={isFetching && gearItems.length === 0} />
+        <BentoColumn title="Service Foxers" icon="design_services" rows={serviceItems} loading={isFetching && serviceItems.length === 0} />
       </div>
+
+      {totalPages > 1 && (
+        <div className="flex items-center justify-center gap-2 pt-2">
+          <button
+            onClick={() => onPageChange(Math.max(1, page - 1))}
+            disabled={page <= 1}
+            className="px-4 py-2 rounded-full bg-white/5 border border-white/10 text-white text-sm font-bold disabled:opacity-30 hover:bg-white/10 transition-all"
+          >
+            Previous
+          </button>
+          {Array.from({ length: totalPages }).map((_, i) => {
+            const p = i + 1;
+            return (
+              <button
+                key={p}
+                onClick={() => onPageChange(p)}
+                className={`h-9 w-9 rounded-full text-sm font-bold transition-all ${
+                  p === page
+                    ? "bg-white text-black"
+                    : "bg-white/5 border border-white/10 text-white/60 hover:bg-white/10"
+                }`}
+              >
+                {p}
+              </button>
+            );
+          })}
+          <button
+            onClick={() => onPageChange(Math.min(totalPages, page + 1))}
+            disabled={page >= totalPages}
+            className="px-4 py-2 rounded-full bg-white/5 border border-white/10 text-white text-sm font-bold disabled:opacity-30 hover:bg-white/10 transition-all"
+          >
+            Next
+          </button>
+        </div>
+      )}
     </section>
   );
 }

@@ -1,14 +1,6 @@
 "use client";
 
-import { useSearchParams } from "next/navigation";
-import { useQuery } from "@tanstack/react-query";
-import api from "@/shared/lib/axios";
 import Link from "next/link";
-
-function extractList(body: any, key: string): any[] {
-  const list = body?.[key] ?? body?.data ?? [];
-  return Array.isArray(list) ? list : [];
-}
 
 function TemplateCard({ item }: { item: any }) {
   return (
@@ -61,31 +53,15 @@ function TemplateCard({ item }: { item: any }) {
   );
 }
 
-export default function EventTemplatesSection() {
-  const searchParams = useSearchParams();
-  const category = searchParams?.get("category") || "";
-  const city = searchParams?.get("city") || "";
-  const maxPrice = searchParams?.get("maxPrice") || "";
+interface EventTemplatesSectionProps {
+  items: any[];
+  isFetching: boolean;
+  page: number;
+  totalPages: number;
+  onPageChange: (page: number) => void;
+}
 
-  const { data, isLoading } = useQuery({
-    queryKey: ["searchTemplates", category, city, maxPrice],
-    queryFn: async () => {
-      const res = await api.get("/event-templates");
-      let results = extractList(res.data, "templates");
-      results = results.filter((item: any) => {
-        const itemCity = item.targetCity || item.city || "";
-        if (city && !itemCity.toLowerCase().includes(city.trim().toLowerCase())) return false;
-        const itemCategory = item.category || "";
-        if (category && itemCategory.toLowerCase().trim() !== category.toLowerCase().trim()) return false;
-        if (maxPrice && Number(item.price) > Number(maxPrice)) return false;
-        return true;
-      });
-      return results;
-    },
-  });
-
-  const items = data ?? [];
-
+export default function EventTemplatesSection({ items, isFetching, page, totalPages, onPageChange }: EventTemplatesSectionProps) {
   return (
     <section className="space-y-6">
       <div className="flex items-center gap-4">
@@ -96,7 +72,7 @@ export default function EventTemplatesSection() {
         <div className="h-px flex-1 bg-white/10" />
       </div>
 
-      {isLoading ? (
+      {isFetching && items.length === 0 ? (
         <div className="grid grid-cols-3 gap-6">
           {Array.from({ length: 6 }).map((_, i) => (
             <div key={i} className="bg-[#11121a] border border-white/10 rounded-2xl h-64 animate-pulse" />
@@ -111,11 +87,48 @@ export default function EventTemplatesSection() {
           </p>
         </div>
       ) : (
-        <div className="grid grid-cols-3 gap-6">
-          {items.map((item: any) => (
-            <TemplateCard key={item.id} item={item} />
-          ))}
-        </div>
+        <>
+          <div className="grid grid-cols-3 gap-6">
+            {items.map((item: any) => (
+              <TemplateCard key={item.id} item={item} />
+            ))}
+          </div>
+
+          {totalPages > 1 && (
+            <div className="flex items-center justify-center gap-2 pt-4">
+              <button
+                onClick={() => onPageChange(Math.max(1, page - 1))}
+                disabled={page <= 1}
+                className="px-4 py-2 rounded-full bg-white/5 border border-white/10 text-white text-sm font-bold disabled:opacity-30 hover:bg-white/10 transition-all"
+              >
+                Previous
+              </button>
+              {Array.from({ length: totalPages }).map((_, i) => {
+                const p = i + 1;
+                return (
+                  <button
+                    key={p}
+                    onClick={() => onPageChange(p)}
+                    className={`h-9 w-9 rounded-full text-sm font-bold transition-all ${
+                      p === page
+                        ? "bg-white text-black"
+                        : "bg-white/5 border border-white/10 text-white/60 hover:bg-white/10"
+                    }`}
+                  >
+                    {p}
+                  </button>
+                );
+              })}
+              <button
+                onClick={() => onPageChange(Math.min(totalPages, page + 1))}
+                disabled={page >= totalPages}
+                className="px-4 py-2 rounded-full bg-white/5 border border-white/10 text-white text-sm font-bold disabled:opacity-30 hover:bg-white/10 transition-all"
+              >
+                Next
+              </button>
+            </div>
+          )}
+        </>
       )}
     </section>
   );
