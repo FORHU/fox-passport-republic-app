@@ -154,25 +154,25 @@ function DateField({
     : "";
 
   return (
-    <div className="flex-1 w-auto px-4 py-3 text-left cursor-pointer group/item hover:bg-white/10 transition-colors relative" ref={ref}>
-      <span className="block text-[10px] font-bold text-white/40 uppercase tracking-widest mb-1 ml-1">{label}</span>
+    <div className="flex-1 min-w-0 md:min-w-[100px] px-1 py-0.5 sm:px-3 sm:py-2 md:px-4 md:py-2.5 text-left cursor-pointer group/item hover:bg-white/10 rounded-2xl transition-colors relative" ref={ref}>
+      <span className="block text-[7px] md:text-[10px] font-extrabold text-white/40 uppercase tracking-widest mb-0.5 ml-1">{label}</span>
       <button
         type="button"
         onClick={toggle}
-        className={`bg-transparent border-none text-white text-xs font-bold w-full h-6 outline-none text-left ${
-          value ? "" : "text-white/40"
+        className={`bg-transparent border-none text-[9px] sm:text-xs md:text-sm font-semibold w-full outline-none text-left cursor-pointer truncate ${
+          value ? "text-white" : "text-white/40"
         } ${error ? "text-red-400" : ""}`}
       >
-        {display || "Select date"}
+        {display || "Select"}
       </button>
       {error && (
-        <span className="block text-[10px] font-bold text-red-400 mt-1 ml-1 animate-pulse">{error}</span>
+        <span className="block text-[7px] md:text-[9px] font-bold text-red-400 mt-0.5 ml-1 animate-pulse truncate">{error}</span>
       )}
 
       {open &&
         createPortal(
           <div
-            className="fixed z-101 animate-in fade-in zoom-in-95 duration-150"
+            className="fixed z-[101] animate-in fade-in zoom-in-95 duration-150"
             style={{ top: pos.top, left: pos.left }}
             onMouseDown={(e) => e.stopPropagation()}
           >
@@ -220,38 +220,38 @@ function CategoryField({
   const toggle = () => {
     if (!open && ref.current) {
       const rect = ref.current.getBoundingClientRect();
-      setPos({ top: rect.bottom + 6, left: rect.left, width: rect.width });
+      setPos({ top: rect.bottom + 6, left: rect.left, width: Math.max(160, rect.width) });
     }
     setOpen((o) => !o);
   };
 
   return (
-    <div className="flex-1 w-auto px-4 py-3 text-left cursor-pointer group/item hover:bg-white/10 transition-colors relative" ref={ref}>
-      <span className="block text-[10px] font-bold text-white/40 uppercase tracking-widest mb-1 ml-1">Category</span>
+    <div className="flex-1 min-w-0 md:min-w-[100px] px-1 py-0.5 sm:px-3 sm:py-2 md:px-4 md:py-2.5 text-left cursor-pointer group/item hover:bg-white/10 rounded-2xl transition-colors relative" ref={ref}>
+      <span className="block text-[7px] md:text-[10px] font-extrabold text-white/40 uppercase tracking-widest mb-0.5 ml-1">CATEGORY</span>
       <button
         type="button"
         onClick={toggle}
-        className={`flex items-center justify-between w-full bg-transparent border-none text-white text-xs font-bold h-6 outline-none text-left ${
-          value ? "" : "text-white/40"
+        className={`flex items-center justify-between w-full bg-transparent border-none text-[9px] sm:text-xs md:text-sm font-semibold outline-none text-left cursor-pointer ${
+          value ? "text-white" : "text-white/40"
         } ${error ? "text-red-400" : ""}`}
       >
-        <span className="capitalize truncate">{value || "Select..."}</span>
-        <span className={`material-symbols-outlined text-[16px] text-white/40 transition-transform duration-200 ${open ? "rotate-180" : ""}`}>
+        <span className="capitalize truncate">{value || "Select"}</span>
+        <span className={`hidden sm:inline-block material-symbols-outlined text-[16px] text-white/40 shrink-0 transition-transform duration-200 ml-1 ${open ? "rotate-180" : ""}`}>
           expand_more
         </span>
       </button>
       {error && (
-        <span className="block text-[10px] font-bold text-red-400 mt-1 ml-1 animate-pulse">{error}</span>
+        <span className="block text-[7px] md:text-[9px] font-bold text-red-400 mt-0.5 ml-1 animate-pulse truncate">{error}</span>
       )}
 
       {open &&
         createPortal(
           <div
-            className="fixed z-101 animate-in fade-in zoom-in-95 duration-150"
+            className="fixed z-[101] animate-in fade-in zoom-in-95 duration-150"
             style={{ top: pos.top, left: pos.left, width: pos.width }}
             onMouseDown={(e) => e.stopPropagation()}
           >
-            <div className="glass-card rounded-xl border border-white/10 p-1.5 shadow-[0_0_30px_rgba(0,0,0,0.5)]">
+            <div className="glass-card rounded-xl border border-white/10 p-1.5 shadow-[0_0_30px_rgba(0,0,0,0.5)] bg-[#11121a]">
               {CATEGORIES.map((cat) => (
                 <button
                   key={cat}
@@ -261,7 +261,7 @@ function CategoryField({
                     onClearError();
                     close();
                   }}
-                  className={`w-full text-left px-3 py-2 rounded-lg text-sm capitalize transition-all ${
+                  className={`w-full text-left px-3 py-2 rounded-lg text-xs sm:text-sm capitalize transition-all ${
                     value === cat
                       ? "bg-[#ccff00]/15 text-[#ccff00] font-bold"
                       : "text-white/70 hover:bg-white/10 hover:text-white"
@@ -278,32 +278,64 @@ function CategoryField({
   );
 }
 
-function LocationDropdown({
+function LocationField({
   value,
+  error,
   onChange,
+  onClearError,
 }: {
   value: string;
+  error?: string;
   onChange: (val: string) => void;
+  onClearError: () => void;
 }) {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
   const [pos, setPos] = useState({ top: 0, left: 0, width: 0 });
+  const [cities, setCities] = useState<string[]>([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
 
-  const close = useCallback(() => setOpen(false), []);
+  const close = useCallback(() => {
+    setOpen(false);
+    setShowSuggestions(false);
+  }, []);
 
   useEffect(() => {
-    if (!open) return;
-    const handler = (e: MouseEvent) => {
-      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+    const handleClickOutside = (event: MouseEvent) => {
+      if (ref.current && !ref.current.contains(event.target as Node)) {
+        setOpen(false);
+        setShowSuggestions(false);
+      }
     };
-    document.addEventListener("mousedown", handler);
-    return () => document.removeEventListener("mousedown", handler);
-  }, [open]);
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!value || value.length < 2) {
+      setCities([]);
+      return;
+    }
+    const timer = setTimeout(() => {
+      fetch(`${config.apiUrl}/locations/search?q=${encodeURIComponent(value)}`)
+        .then(res => res.json())
+        .then(data => {
+          if (data.status === "success") {
+            setCities(data.data.locations);
+          }
+        })
+        .catch(err => console.error("Failed to fetch locations:", err));
+    }, 300);
+
+    return () => clearTimeout(timer);
+  }, [value]);
 
   const toggle = () => {
     if (!open && ref.current) {
       const rect = ref.current.getBoundingClientRect();
-      setPos({ top: rect.bottom + 6, left: Math.max(16, rect.left - 40), width: Math.max(180, rect.width) });
+      setPos({ top: rect.bottom + 6, left: Math.max(16, rect.left), width: Math.max(180, rect.width) });
     }
     setOpen((o) => !o);
   };
@@ -311,24 +343,57 @@ function LocationDropdown({
   const locations = ["All Locations", "Baguio", "Manila", "Cebu", "Siargao", "Boracay", "Palawan"];
 
   return (
-    <div ref={ref} className="w-16 sm:w-28 lg:w-44 shrink-0 relative">
-      <button
-        type="button"
-        onClick={toggle}
-        className="w-full flex items-center justify-between gap-0.5 sm:gap-1 text-[10px] sm:text-xs lg:text-sm font-bold text-white bg-transparent border-none outline-none cursor-pointer px-1 sm:px-2 py-1"
-      >
-        <span className="truncate text-left text-white/90">
-          {value || "Location"}
-        </span>
-        <span className={`material-symbols-outlined text-[12px] sm:text-[16px] text-white/50 shrink-0 transition-transform duration-200 ${open ? "rotate-180" : ""}`}>
-          expand_more
-        </span>
-      </button>
+    <div className="flex-1 min-w-0 md:min-w-[110px] px-1 py-0.5 sm:px-3 sm:py-2 md:px-4 md:py-2.5 text-left cursor-pointer group/item hover:bg-white/10 rounded-2xl transition-colors relative" ref={ref}>
+      <span className="block text-[7px] md:text-[10px] font-extrabold text-white/40 uppercase tracking-widest mb-0.5 ml-1">LOCATION</span>
+      <div className="flex items-center justify-between w-full">
+        <input
+          type="text"
+          value={value}
+          onChange={(e) => {
+            onChange(e.target.value);
+            onClearError();
+            setShowSuggestions(true);
+          }}
+          onFocus={() => setShowSuggestions(true)}
+          placeholder="Search..."
+          className={`bg-transparent border-none text-white placeholder:text-white/40 text-[9px] sm:text-xs md:text-sm font-semibold outline-none focus:ring-0 w-full min-w-0 text-ellipsis p-0 ${error ? "text-red-400" : ""}`}
+        />
+        <button
+          type="button"
+          onClick={toggle}
+          className="bg-transparent border-none outline-none cursor-pointer p-0 shrink-0 text-white/40 hover:text-white transition-colors"
+        >
+          <span className={`hidden sm:inline-block material-symbols-outlined text-[16px] transition-transform duration-200 ${open ? "rotate-180" : ""}`}>
+            expand_more
+          </span>
+        </button>
+      </div>
+      {error && (
+        <span className="block text-[7px] md:text-[9px] font-bold text-red-400 mt-0.5 ml-1 animate-pulse truncate">{error}</span>
+      )}
 
-      {open &&
+      {showSuggestions && cities.length > 0 && (
+        <ul className="absolute top-[calc(100%+8px)] left-0 w-full min-w-[200px] bg-[#11121a] border border-white/10 rounded-xl shadow-[0_0_20px_rgba(0,0,0,0.5)] z-50 overflow-hidden max-h-60 overflow-y-auto p-0 list-none m-0">
+          {cities.map((loc) => (
+            <li
+              key={loc}
+              className="px-4 py-3 text-sm text-white hover:bg-[#ccff00] hover:text-black cursor-pointer font-bold transition-colors list-none"
+              onClick={() => {
+                onChange(loc);
+                onClearError();
+                setShowSuggestions(false);
+              }}
+            >
+              {loc}
+            </li>
+          ))}
+        </ul>
+      )}
+
+      {open && !showSuggestions &&
         createPortal(
           <div
-            className="fixed z-101 animate-in fade-in zoom-in-95 duration-150"
+            className="fixed z-[101] animate-in fade-in zoom-in-95 duration-150"
             style={{ top: pos.top, left: pos.left, width: pos.width }}
             onMouseDown={(e) => e.stopPropagation()}
           >
@@ -342,6 +407,7 @@ function LocationDropdown({
                     type="button"
                     onClick={() => {
                       onChange(val);
+                      onClearError();
                       close();
                     }}
                     className={`w-full text-left px-3 py-2 rounded-lg text-xs sm:text-sm font-semibold transition-all ${
@@ -376,21 +442,45 @@ interface HeroSectionProps {
 
 export default function HeroSection({ featuredTemplates = [] }: HeroSectionProps) {
   const router = useRouter();
-  const [searchQuery, setSearchQuery] = useState("");
+  const [category, setCategory] = useState("");
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
   const [locationVal, setLocationVal] = useState("");
+  const [errors, setErrors] = useState<{
+    location?: string;
+    category?: string;
+    startDate?: string;
+    endDate?: string;
+  }>({});
 
   const handleSearch = (e?: React.FormEvent) => {
     if (e) e.preventDefault();
 
+    const nextErrors: typeof errors = {};
+    if (!locationVal.trim()) nextErrors.location = "Required";
+    if (!category) nextErrors.category = "Required";
+    if (!startDate) nextErrors.startDate = "Required";
+    if (!endDate) nextErrors.endDate = "Required";
+
+    if (startDate && endDate && new Date(endDate) < new Date(startDate)) {
+      nextErrors.endDate = "Invalid date";
+    }
+
+    setErrors(nextErrors);
+    if (Object.keys(nextErrors).length > 0) return;
+
     const params = new URLSearchParams();
-    if (searchQuery.trim()) {
-      params.set("query", searchQuery.trim());
-      params.set("category", searchQuery.trim().toLowerCase());
+    params.set("category", category.toLowerCase());
+    const parts = locationVal.split(",").map(p => p.trim());
+    if (parts.length > 1) {
+      params.set("country", parts[0]);
+      params.set("city", parts.slice(1).join(", "));
+    } else {
+      params.set("city", locationVal);
     }
-    if (locationVal.trim()) {
-      params.set("city", locationVal.trim());
-      params.set("label", locationVal.trim());
-    }
+    params.set("label", locationVal);
+    params.set("startDate", startDate);
+    params.set("endDate", endDate);
 
     router.push(`/search?${params.toString()}`);
   };
@@ -449,52 +539,78 @@ export default function HeroSection({ featuredTemplates = [] }: HeroSectionProps
             {/* Search Area */}
             <motion.div
               variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0, transition: { duration: 0.5, ease: [0, 0, 0.2, 1] } } }}
-              className="w-full max-w-3xl mx-auto lg:mx-0 flex flex-col gap-4 z-20 relative"
+              className="w-full max-w-[950px] mx-auto lg:mx-0 flex flex-col gap-4 z-20 relative"
             >
-              {/* Search Box */}
-              <form onSubmit={handleSearch} className="w-full max-w-4xl mx-auto lg:mx-0 relative group z-20">
+              {/* Search Box Form */}
+              <form onSubmit={handleSearch} className="w-full relative group z-20 px-2 sm:px-0">
                 {/* 1. Outer Glow */}
-                <div className="absolute -inset-1 bg-linear-to-r from-primary via-purple-600 to-secondary rounded-full blur opacity-40 group-hover:opacity-70 transition duration-500 group-hover:duration-200 animate-pulse"></div>
+                <div className="absolute -inset-x-1 sm:-inset-1 bg-linear-to-r from-primary via-purple-600 to-secondary rounded-full sm:rounded-[2.5rem] blur opacity-40 group-hover:opacity-70 transition duration-500 group-hover:duration-200 animate-pulse"></div>
+                {/* Outer Capsule Glass Panel */}
+                <div className="relative glass-panel bg-[#151326]/85 backdrop-blur-2xl p-1 sm:p-2.5 rounded-full sm:rounded-[2.5rem] border border-white/10 group-hover:border-white/20 transition-all shadow-[0_0_35px_rgba(139,92,246,0.3)]">
 
-                {/* Outer Search Container */}
-                <div className="relative glass-panel bg-black/80 backdrop-blur-2xl p-1 sm:p-2 pl-3 sm:pl-4 rounded-full border border-white/10 group-hover:border-white/20 transition-all shadow-[0_0_30px_rgba(139,92,246,0.3)]">
-                  {/* 2. Single-Row Alignment */}
-                  <div className="flex flex-row items-center gap-1.5 sm:gap-2">
-
-                    {/* 3. Search Icon & Input Field */}
-                    <div className="flex-1 flex items-center gap-1.5 sm:gap-2 min-w-0">
-                      <span className="material-symbols-outlined text-[16px] sm:text-[20px] text-white/50 shrink-0">
-                        search
-                      </span>
-                      <input
-                        id="heroSearchInput"
-                        type="text"
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                        placeholder="Search experiences, events, vibes..."
-                        className="bg-transparent border-none text-white placeholder:text-white/30 text-[10px] sm:text-sm lg:text-base font-medium outline-none focus:ring-0 w-full min-w-0 text-ellipsis"
-                      />
-                    </div>
-
-                    {/* 4. Vertical Separator */}
-                    <div className="w-px bg-white/10 h-5 sm:h-8 shrink-0"></div>
-
-                    {/* 5. Location Selector */}
-                    <LocationDropdown
-                      value={locationVal}
-                      onChange={(loc) => setLocationVal(loc)}
+                  {/* Single Unified Horizontal Capsule Pill (Responsive for both Mobile & Desktop) */}
+                  <div className="flex flex-row items-center gap-0.5 sm:gap-1 lg:gap-2 px-0.5 sm:px-1">
+                    {/* 1. CATEGORY */}
+                    <CategoryField
+                      value={category}
+                      error={errors.category}
+                      onChange={setCategory}
+                      onClearError={() => setErrors((prev) => ({ ...prev, category: undefined }))}
                     />
 
-                    {/* 6. "Go" Button */}
+                    {/* Divider */}
+                    <div className="w-px h-6 sm:h-8 bg-white/10 shrink-0"></div>
+
+                    {/* 2. START */}
+                    <DateField
+                      label="START"
+                      value={startDate}
+                      error={errors.startDate}
+                      onSelect={(d) => {
+                        setStartDate(d);
+                        setErrors((prev) => ({ ...prev, startDate: undefined, endDate: undefined }));
+                      }}
+                      onClearError={() => setErrors((prev) => ({ ...prev, startDate: undefined }))}
+                    />
+
+                    {/* Divider */}
+                    <div className="w-px h-6 sm:h-8 bg-white/10 shrink-0"></div>
+
+                    {/* 3. END */}
+                    <DateField
+                      label="END"
+                      value={endDate}
+                      error={errors.endDate}
+                      onSelect={setEndDate}
+                      onClearError={() => setErrors((prev) => ({ ...prev, endDate: undefined }))}
+                    />
+
+                    {/* Divider */}
+                    <div className="w-px h-6 sm:h-8 bg-white/10 shrink-0"></div>
+
+                    {/* 4. LOCATION */}
+                    <LocationField
+                      value={locationVal}
+                      error={errors.location}
+                      onChange={setLocationVal}
+                      onClearError={() => setErrors((prev) => ({ ...prev, location: undefined }))}
+                    />
+
+                    {/* 5. "Go" Button */}
                     <button
                       type="submit"
-                      className="rounded-full bg-white text-black font-bold h-8 sm:h-12 px-3 sm:px-6 text-[10px] sm:text-xs lg:text-sm shrink-0 transition-all duration-300 hover:scale-105 active:scale-95 shadow-[0_0_20px_rgba(255,255,255,0.2)] flex items-center justify-center"
+                      className="rounded-full bg-white text-black font-extrabold text-[10px] sm:text-sm lg:text-base px-3 py-1.5 sm:px-6 sm:py-3 lg:px-8 lg:py-3.5 shrink-0 transition-all duration-300 hover:bg-white/90 hover:scale-105 active:scale-95 shadow-[0_0_20px_rgba(255,255,255,0.3)] flex items-center justify-center cursor-pointer ml-1 font-display"
                     >
                       Go
                     </button>
                   </div>
                 </div>
               </form>
+              {Object.keys(errors).length > 0 && (
+                <div className="text-red-400 text-xs mt-2 text-center lg:text-left font-bold animate-pulse">
+                  Please complete all required fields before searching.
+                </div>
+              )}
             </motion.div>
 
             {/* Social Proof */}

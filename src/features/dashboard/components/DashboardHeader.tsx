@@ -1,12 +1,19 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
+import { Menu } from 'lucide-react';
 import { useRoleAccess, RoleAccess } from '@/features/auth/hooks/useRoleAccess';
 import { useAuthStore } from '@/features/auth/store/useAuthStore';
 import UserMenuButton from '@/features/user/components/UserMenuButton';
 import NotificationBell from '@/features/notifications/components/NotificationBell';
+import {
+  Sheet,
+  SheetContent,
+  SheetTrigger,
+  SheetClose,
+} from '@/shared/components/ui/sheet';
 
 const NAV_ICONS: Record<string, string> = {
   Overview:   'dashboard',
@@ -21,6 +28,7 @@ const NAV_ICONS: Record<string, string> = {
 export function DashboardHeader() {
   const user = useAuthStore((s) => s.user);
   const access = useRoleAccess();
+  const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const pathname = usePathname();
 
   const roleLabels: string[] = [];
@@ -43,6 +51,44 @@ export function DashboardHeader() {
     <header className="fixed top-6 left-0 right-0 z-50">
       <div className="mx-auto max-w-7xl px-4">
         <div className="bg-black/60 backdrop-blur-xl border border-white/10 rounded-full px-6 h-20 flex items-center justify-between shadow-2xl">
+          {/* Mobile menu trigger */}
+          <Sheet open={mobileNavOpen} onOpenChange={setMobileNavOpen}>
+            <SheetTrigger asChild>
+              <button
+                aria-label="Open navigation"
+                className="md:hidden h-11 w-11 -ml-2 flex items-center justify-center rounded-full text-white/70 hover:text-white hover:bg-white/10 transition-colors"
+              >
+                <Menu className="h-5 w-5" />
+              </button>
+            </SheetTrigger>
+            <SheetContent side="left" className="w-72 bg-[#0f111a] border-white/5 p-0">
+              <div className="px-6 h-20 flex items-center border-b border-white/5">
+                <span className="text-sm font-bold uppercase tracking-widest text-white/60">Navigation</span>
+              </div>
+              <nav className="flex flex-col p-4 gap-1">
+                {navLinks.map((link) => {
+                  const isActive = link.href === '/creator-dashboard'
+                    ? pathname === '/creator-dashboard'
+                    : pathname.startsWith(link.href);
+                  return (
+                    <SheetClose asChild key={link.label}>
+                      <Link
+                        href={link.href}
+                        className={`px-4 py-3 rounded-xl text-sm font-bold transition-colors ${
+                          isActive
+                            ? 'text-black bg-[#ccff00]'
+                            : 'text-white/70 hover:text-white hover:bg-white/10'
+                        }`}
+                      >
+                        {link.label}
+                      </Link>
+                    </SheetClose>
+                  );
+                })}
+              </nav>
+            </SheetContent>
+          </Sheet>
+
           {/* Logo */}
           <Link href="/" className="flex items-center gap-3 group">
             <div className="flex h-10 w-10 items-center justify-center rounded-full bg-white text-black font-bold shadow-[0_0_15px_rgba(255,255,255,0.3)] group-hover:rotate-180 transition-transform duration-700">
