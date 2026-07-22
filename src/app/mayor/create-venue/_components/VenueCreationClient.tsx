@@ -24,11 +24,12 @@ export default function VenueCreationClient() {
 
   const {
     venueName, description, venueType, capacity, location, city, state, country,
+    lat, lng,
     gallery, cancellationPolicyId, includedItems, addonItems, baseRate, occupancyRate, activeCategory,
     searchQuery, showGuide, isSubmitting, isDragOver, newItem, filteredResources,
     revenue, currentCategoryLabel,
     setVenueName, setDescription, setVenueType, setCapacity, setLocation, setCity,
-    setState, setCountry, setCancellationPolicyId, removeIncludedItem, removeAddonItem,
+    setState, setCountry, setLat, setLng, setCancellationPolicyId, removeIncludedItem, removeAddonItem,
     setBaseRate, setOccupancyRate, setActiveCategory, setSearchQuery, setShowGuide,
     setNewItem, handleDragStart, handleDragOver, handleDragLeave, handleDrop,
     handleAddCustomItem, handleRemoveCustomResource, addImageToGallery,
@@ -89,6 +90,8 @@ export default function VenueCreationClient() {
                 city={city}
                 state={state}
                 country={country}
+                lat={lat}
+                lng={lng}
                 gallery={gallery}
                 showGuide={showGuide}
                 cancellationPolicyId={cancellationPolicyId}
@@ -100,6 +103,7 @@ export default function VenueCreationClient() {
                 onCityChange={setCity}
                 onStateChange={setState}
                 onCountryChange={setCountry}
+                onLatLngChange={(lat, lng) => { setLat(lat); setLng(lng); }}
                 onCancellationPolicyChange={setCancellationPolicyId}
                 onAddImage={addImageToGallery}
                 onRemoveImage={removeImageFromGallery}

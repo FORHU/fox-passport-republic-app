@@ -1,109 +1,9 @@
 ﻿'use client';
 
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useRef, useCallback } from 'react';
 import { GalleryItem, VENUE_TYPES } from '@/features/venue/data/venueBuilderData';
-import { config } from '@/shared/lib/config';
 import CancellationPolicyPicker from '@/features/cancellation-policy/components/CancellationPolicyPicker';
-
-// Strictly define Mapbox Context structure to replace 'any'
-interface MapboxContextItem {
-  id: string;
-  text: string;
-}
-
-interface MapboxFeature {
-  id: string;
-  text: string;
-  place_name: string;
-  context?: MapboxContextItem[];
-}
-
-interface LocationInputProps {
-  value: string;
-  onChange: (val: string) => void;
-  onSelect: (val: string, context?: MapboxContextItem[]) => void;
-  type: 'country' | 'place' | 'region';
-  placeholder: string;
-}
-
-const LocationInput = ({ value, onChange, onSelect, type, placeholder }: LocationInputProps) => {
-  const [suggestions, setSuggestions] = useState<MapboxFeature[]>([]);
-  const [showDropdown, setShowDropdown] = useState(false);
-  const dropdownRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
-        setShowDropdown(false);
-      }
-    };
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
-
-  const fetchSuggestions = async (query: string) => {
-    if (!query || query.length < 2) {
-      setSuggestions([]);
-      return;
-    }
-    try {
-      const response = await fetch(
-        `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(query)}.json?access_token=${config.mapboxToken}&types=${type}&limit=5`
-      );
-      if (response.ok) {
-        const data = await response.json();
-        setSuggestions((data.features as MapboxFeature[]) || []);
-        setShowDropdown(true);
-      }
-    } catch (e) {
-      console.warn('Mapbox error:', e);
-    }
-  };
-
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      if (value.length >= 2) {
-        void fetchSuggestions(value);
-      }
-    }, 400);
-    return () => clearTimeout(timer);
-  }, [value]);
-
-  return (
-    <div className="relative w-full" ref={dropdownRef}>
-      <input
-        type="text"
-        value={value}
-        onChange={(e) => {
-          onChange(e.target.value);
-          setShowDropdown(true);
-        }}
-        placeholder={placeholder}
-        className="w-full bg-white/5 border border-white/5 rounded-xl px-4 py-3 text-sm text-white focus:ring-1 focus:ring-accent/50 outline-none transition-all"
-      />
-      {showDropdown && suggestions.length > 0 && (
-        <div className="absolute top-full left-0 right-0 mt-2 bg-[#1a1d2d] border border-white/10 rounded-xl overflow-hidden z-50 shadow-2xl backdrop-blur-xl">
-          {suggestions.map((s) => (
-            <button
-              key={s.id}
-              onClick={(e) => {
-                e.preventDefault();
-                onSelect(s.text, s.context);
-                setShowDropdown(false);
-              }}
-              className="w-full text-left px-4 py-3 text-xs text-white hover:bg-accent hover:text-black transition-colors border-b border-white/5 last:border-0"
-            >
-              <span className="font-bold">{s.text}</span>
-              <span className="opacity-40 ml-2 italic">
-                {s.place_name.replace(s.text, '').replace(/^[\s,]+/, '')}
-              </span>
-            </button>
-          ))}
-        </div>
-      )}
-    </div>
-  );
-};
+import { MapboxLocationInput, MapboxContextItem } from '@/shared/components/ui/MapboxLocationInput';
 
 interface VenueDetailsFormProps {
   venueName: string;
@@ -114,6 +14,8 @@ interface VenueDetailsFormProps {
   city: string;
   state: string;
   country: string;
+  lat?: number | null;
+  lng?: number | null;
   gallery: GalleryItem[];
   showGuide: boolean;
   cancellationPolicyId: string | null;
@@ -125,6 +27,7 @@ interface VenueDetailsFormProps {
   onCityChange: (city: string) => void;
   onStateChange: (state: string) => void;
   onCountryChange: (country: string) => void;
+  onLatLngChange?: (lat: number, lng: number) => void;
   onCancellationPolicyChange: (policyId: string | null) => void;
   onAddImage: (files: File[]) => void;
   onRemoveImage: (id: string) => void;
@@ -151,6 +54,7 @@ export function VenueDetailsForm({
   onCityChange,
   onStateChange,
   onCountryChange,
+  onLatLngChange = () => {},
   onCancellationPolicyChange,
   onAddImage,
   onRemoveImage,
@@ -273,7 +177,7 @@ export function VenueDetailsForm({
                 <label className="text-[10px] uppercase font-bold text-white/40 tracking-widest mb-2 block">
                   Country
                 </label>
-                <LocationInput
+                <MapboxLocationInput
                   value={country}
                   onChange={onCountryChange}
                   type="country"
@@ -285,17 +189,18 @@ export function VenueDetailsForm({
                 <label className="text-[10px] uppercase font-bold text-white/40 tracking-widest mb-2 block">
                   City
                 </label>
-                <LocationInput
+                <MapboxLocationInput
                   value={city}
                   onChange={onCityChange}
                   type="place"
                   placeholder="City"
-                  onSelect={(val: string, context?: MapboxContextItem[]) => {
+                  onSelect={(val: string, context?: MapboxContextItem[], center?: [number, number]) => {
                     onCityChange(val);
                     const region = context?.find((c) => c.id.startsWith('region'))?.text;
                     const countryName = context?.find((c) => c.id.startsWith('country'))?.text;
                     if (region) onStateChange(region);
                     if (countryName) onCountryChange(countryName);
+                    if (center) onLatLngChange(center[1], center[0]); // center is [lng, lat]
                   }}
                 />
               </div>
@@ -303,7 +208,7 @@ export function VenueDetailsForm({
                 <label className="text-[10px] uppercase font-bold text-white/40 tracking-widest mb-2 block">
                   State/Province
                 </label>
-                <LocationInput
+                <MapboxLocationInput
                   value={state}
                   onChange={onStateChange}
                   type="region"

@@ -51,6 +51,11 @@ export type CreateAssetPayload = {
   price: number;
   billingRate: string;
   quantity?: number;
+  city?: string;
+  state?: string;
+  country?: string;
+  lat?: number;
+  lng?: number;
   imgIds: string[];
 };
 
@@ -63,6 +68,8 @@ export type CreateServicePayload = {
   city: string;
   country: string;
   state?: string;
+  lat?: number;
+  lng?: number;
   isWillingToTravel?: boolean;
   tags?: string[];
   imgIds: string[];

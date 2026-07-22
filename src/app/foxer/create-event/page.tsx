@@ -33,13 +33,18 @@ export default function EventCreationBuilder() {
     filteredResources,
     financials,
     blueprintHealth,
-    
+
     // Actions
     setEventTitle,
     setDescription,
     setCategory,
     setDate,
     setLocation,
+    setTargetCity,
+    setTargetState,
+    setTargetCountry,
+    setLat,
+    setLng,
     setMaxAttendees,
     setCancellationPolicyId,
     setActiveCategory,
@@ -49,7 +54,7 @@ export default function EventCreationBuilder() {
     removeBaseItem,
     updateBaseItem,
     removeGalleryItem,
-    
+
     // Handlers
     handleDragStart,
     handleDragOver,
@@ -63,7 +68,7 @@ export default function EventCreationBuilder() {
 
   return (
     <RequireAuth>
-      <div className="fixed inset-0 z-[60] bg-[#02040a] text-white flex flex-col font-body">
+      <div className="fixed inset-0 z-60 bg-[#02040a] text-white flex flex-col font-body">
         <EventHeader
           eventTitle={eventTitle}
           isSubmitting={isSubmitting}
@@ -98,6 +103,10 @@ export default function EventCreationBuilder() {
                 onCategoryChange={setCategory}
                 onDateChange={setDate}
                 onLocationChange={setLocation}
+                onTargetCityChange={setTargetCity}
+                onTargetStateChange={setTargetState}
+                onTargetCountryChange={setTargetCountry}
+                onLatLngChange={(lat, lng) => { setLat(lat); setLng(lng); }}
                 onMaxAttendeesChange={setMaxAttendees}
                 onCancellationPolicyChange={setCancellationPolicyId}
                 onCloseGuide={() => setShowGuide(false)}

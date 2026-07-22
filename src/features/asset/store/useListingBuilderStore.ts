@@ -16,6 +16,13 @@ interface ListingBuilderState {
   status: string;
   image: string;
 
+  // Location
+  city: string;
+  state: string;
+  country: string;
+  lat: number | null;
+  lng: number | null;
+
   // Cancellation Policy
   cancellationPolicyId: string | null;
 
@@ -34,6 +41,11 @@ interface ListingBuilderState {
   setCondition: (condition: string) => void;
   setStatus: (status: string) => void;
   setImage: (url: string) => void;
+  setCity: (city: string) => void;
+  setState: (state: string) => void;
+  setCountry: (country: string) => void;
+  setLat: (lat: number | null) => void;
+  setLng: (lng: number | null) => void;
   setCancellationPolicyId: (id: string | null) => void;
   setShowGuide: (show: boolean) => void;
   setIsSubmitting: (submitting: boolean) => void;
@@ -54,6 +66,11 @@ const getInitialState = (type: ListingType = "inventory") => ({
   condition: "good",
   status: "draft",
   image: "",
+  city: "",
+  state: "",
+  country: "",
+  lat: null as number | null,
+  lng: null as number | null,
   cancellationPolicyId: null as string | null,
   showGuide: true,
   isSubmitting: false,
@@ -72,6 +89,11 @@ export const useListingBuilderStore = create<ListingBuilderState>((set) => ({
   setCondition: (condition) => set({ condition }),
   setStatus: (status) => set({ status }),
   setImage: (url) => set({ image: url }),
+  setCity: (city) => set({ city }),
+  setState: (state) => set({ state }),
+  setCountry: (country) => set({ country }),
+  setLat: (lat) => set({ lat }),
+  setLng: (lng) => set({ lng }),
   setCancellationPolicyId: (id) => set({ cancellationPolicyId: id }),
   setShowGuide: (show) => set({ showGuide: show }),
   setIsSubmitting: (submitting) => set({ isSubmitting: submitting }),
