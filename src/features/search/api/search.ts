@@ -18,6 +18,8 @@ export interface UnifiedSearchFilters {
   category?: string;
   maxPrice?: string;
   q?: string;
+  startDate?: string;
+  endDate?: string;
 }
 
 export interface ProviderRow {
@@ -58,6 +60,8 @@ export async function fetchEventFoxers(
   if (filters?.category) params.category = filters.category;
   if (filters?.maxPrice) params.maxPrice = filters.maxPrice;
   if (filters?.q) params.q = filters.q;
+  if (filters?.startDate) params.startDate = filters.startDate;
+  if (filters?.endDate) params.endDate = filters.endDate;
   const res = await api.get("/users/foxers", { params });
   const body = res.data ?? {};
   return {
@@ -76,11 +80,12 @@ export async function fetchEventTemplates(
   if (filters?.category) params.category = filters.category;
   if (filters?.maxPrice) params.maxPrice = filters.maxPrice;
   if (filters?.q) params.q = filters.q;
-  const res = await api.get("/event-templates", { params });
+  if (filters?.startDate) params.startDate = filters.startDate;
+  if (filters?.endDate) params.endDate = filters.endDate;
+  const res = await api.get("/event-templates/browse", { params });
   const body = res.data ?? {};
-  const list = body.templates ?? body.data ?? [];
   return {
-    items: Array.isArray(list) ? list : [],
+    items: Array.isArray(body.data) ? body.data : [],
     pagination: body.pagination ?? { page, limit, total: 0, totalPages: 0 },
   };
 }
@@ -95,6 +100,8 @@ export async function fetchGearFoxers(
   if (filters?.category) params.category = filters.category;
   if (filters?.maxPrice) params.maxPrice = filters.maxPrice;
   if (filters?.q) params.q = filters.q;
+  if (filters?.startDate) params.startDate = filters.startDate;
+  if (filters?.endDate) params.endDate = filters.endDate;
   const res = await api.get("/users/foxers", { params });
   const body = res.data ?? {};
   return {
@@ -113,6 +120,8 @@ export async function fetchServiceFoxers(
   if (filters?.category) params.category = filters.category;
   if (filters?.maxPrice) params.maxPrice = filters.maxPrice;
   if (filters?.q) params.q = filters.q;
+  if (filters?.startDate) params.startDate = filters.startDate;
+  if (filters?.endDate) params.endDate = filters.endDate;
   const res = await api.get("/users/foxers", { params });
   const body = res.data ?? {};
   return {

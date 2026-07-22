@@ -98,6 +98,44 @@ export const handlers = [
     return HttpResponse.json({ data: buildTemplate(params.templateId as string, claimed) });
   }),
 
+  // ── Event Templates list (search page) ────────────────────────────────
+  http.get(`${BASE}/event-templates/browse`, ({ request }) => {
+    const url = new URL(request.url);
+    const page = Number(url.searchParams.get('page') || '1');
+    const limit = Number(url.searchParams.get('limit') || '6');
+    const category = url.searchParams.get('category') || '';
+    const city = url.searchParams.get('city') || '';
+    const q = url.searchParams.get('q') || '';
+
+    const all = [
+      buildTemplate('tpl_1'),
+      buildTemplate('tpl_2'),
+      buildTemplate('tpl_3'),
+      buildTemplate('tpl_4'),
+      buildTemplate('tpl_5'),
+      buildTemplate('tpl_6'),
+      { ...buildTemplate('tpl_7'), name: 'Beach Birthday Bash', category: 'birthday', targetCity: 'Batangas' },
+      { ...buildTemplate('tpl_8'), name: 'Wedding Garden Ceremony', category: 'wedding', targetCity: 'Tagaytay' },
+      { ...buildTemplate('tpl_9'), name: 'Social Mixer Night', category: 'social', targetCity: 'Makati' },
+    ];
+
+    let filtered = all;
+    if (category) filtered = filtered.filter((t) => t.category === category);
+    if (city) filtered = filtered.filter((t) => t.targetCity?.toLowerCase().includes(city.toLowerCase()));
+    if (q) filtered = filtered.filter((t) => t.name?.toLowerCase().includes(q.toLowerCase()) || t.description?.toLowerCase().includes(q.toLowerCase()));
+
+    const total = filtered.length;
+    const totalPages = Math.max(1, Math.ceil(total / limit));
+    const start = (page - 1) * limit;
+    const items = filtered.slice(start, start + limit);
+
+    return HttpResponse.json({
+      success: true,
+      data: items,
+      pagination: { page, limit, total, totalPages },
+    });
+  }),
+
   // ── Waitlist ────────────────────────────────────────────────────────────
   http.get(`${BASE}/waitlist`, ({ request }) => {
     const url = new URL(request.url);

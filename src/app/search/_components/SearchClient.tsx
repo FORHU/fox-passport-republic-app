@@ -24,6 +24,8 @@ export default function SearchClient() {
   const category = searchParams?.get("category") || "";
   const city = searchParams?.get("label") || searchParams?.get("city") || "";
   const maxPrice = searchParams?.get("maxPrice") || "";
+  const startDate = searchParams?.get("startDate") || "";
+  const endDate = searchParams?.get("endDate") || "";
 
   const [searchQuery, setSearchQuery] = useState(q);
   const [efPage, setEfPage] = useState(1);
@@ -34,7 +36,7 @@ export default function SearchClient() {
     setEfPage(1);
     setEtPage(1);
     setGsPage(1);
-  }, [q, category, city, maxPrice]);
+  }, [q, category, city, maxPrice, startDate, endDate]);
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -57,31 +59,33 @@ export default function SearchClient() {
     ...(category && { category }),
     ...(maxPrice && { maxPrice }),
     ...(q && { q }),
-  }), [city, category, maxPrice, q]);
+    ...(startDate && { startDate }),
+    ...(endDate && { endDate }),
+  }), [city, category, maxPrice, q, startDate, endDate]);
 
   const { data: efData, isFetching: efFetching } = useQuery({
-    queryKey: ["eventFoxers", efPage, city, category, maxPrice, q],
+    queryKey: ["eventFoxers", efPage, city, category, maxPrice, q, startDate, endDate],
     queryFn: () => fetchEventFoxers(efPage, 2, filters),
     staleTime: 1000 * 60 * 5,
     placeholderData: (prev: any) => prev,
   });
 
   const { data: etData, isFetching: etFetching } = useQuery({
-    queryKey: ["eventTemplates", etPage, city, category, maxPrice, q],
+    queryKey: ["eventTemplates", etPage, city, category, maxPrice, q, startDate, endDate],
     queryFn: () => fetchEventTemplates(etPage, 6, filters),
     staleTime: 1000 * 60 * 5,
     placeholderData: (prev: any) => prev,
   });
 
   const { data: gfData, isFetching: gfFetching } = useQuery({
-    queryKey: ["gearFoxers", gsPage, city, category, maxPrice, q],
+    queryKey: ["gearFoxers", gsPage, city, category, maxPrice, q, startDate, endDate],
     queryFn: () => fetchGearFoxers(gsPage, 5, filters),
     staleTime: 1000 * 60 * 5,
     placeholderData: (prev: any) => prev,
   });
 
   const { data: sfData, isFetching: sfFetching } = useQuery({
-    queryKey: ["serviceFoxers", gsPage, city, category, maxPrice, q],
+    queryKey: ["serviceFoxers", gsPage, city, category, maxPrice, q, startDate, endDate],
     queryFn: () => fetchServiceFoxers(gsPage, 5, filters),
     staleTime: 1000 * 60 * 5,
     placeholderData: (prev: any) => prev,
