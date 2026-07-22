@@ -149,15 +149,16 @@ function DateField({
     : "";
 
   return (
-    <div className="flex-1 min-w-[100px] px-3 py-2 sm:px-4 sm:py-2.5 text-left cursor-pointer group/item hover:bg-white/10 rounded-2xl transition-colors relative" ref={ref}>
-      <span className="block text-[9px] sm:text-[10px] font-extrabold text-white/40 uppercase tracking-widest mb-0.5 ml-1">{label}</span>
+    <div className="flex-1 min-w-0 md:min-w-[100px] px-1 py-0.5 sm:px-3 sm:py-2 md:px-4 md:py-2.5 text-left cursor-pointer group/item hover:bg-white/10 rounded-2xl transition-colors relative" ref={ref}>
+      <span className="block text-[7px] md:text-[10px] font-extrabold text-white/40 uppercase tracking-widest mb-0.5 ml-1">{label}</span>
       <button
         type="button"
         onClick={toggle}
-        className={`bg-transparent border-none text-xs sm:text-sm font-semibold w-full outline-none text-left cursor-pointer truncate ${value ? "text-white" : "text-white/40"
-          }`}
+        className={`bg-transparent border-none text-[9px] sm:text-xs md:text-sm font-semibold w-full outline-none text-left cursor-pointer truncate ${
+          value ? "text-white" : "text-white/40"
+        }`}
       >
-        {display || "Select date"}
+        {display || "Select"}
       </button>
 
       {open &&
@@ -212,16 +213,17 @@ function CategoryField({
   };
 
   return (
-    <div className="flex-1 min-w-[100px] px-3 py-2 sm:px-4 sm:py-2.5 text-left cursor-pointer group/item hover:bg-white/10 rounded-2xl transition-colors relative" ref={ref}>
-      <span className="block text-[9px] sm:text-[10px] font-extrabold text-white/40 uppercase tracking-widest mb-0.5 ml-1">CATEGORY</span>
+    <div className="flex-1 min-w-0 md:min-w-[100px] px-1 py-0.5 sm:px-3 sm:py-2 md:px-4 md:py-2.5 text-left cursor-pointer group/item hover:bg-white/10 rounded-2xl transition-colors relative" ref={ref}>
+      <span className="block text-[7px] md:text-[10px] font-extrabold text-white/40 uppercase tracking-widest mb-0.5 ml-1">CATEGORY</span>
       <button
         type="button"
         onClick={toggle}
-        className={`flex items-center justify-between w-full bg-transparent border-none text-xs sm:text-sm font-semibold outline-none text-left cursor-pointer ${value ? "text-white" : "text-white/40"
-          }`}
+        className={`flex items-center justify-between w-full bg-transparent border-none text-[9px] sm:text-xs md:text-sm font-semibold outline-none text-left cursor-pointer ${
+          value ? "text-white" : "text-white/40"
+        }`}
       >
-        <span className="capitalize truncate">{value || "Select..."}</span>
-        <span className={`material-symbols-outlined text-[16px] text-white/40 shrink-0 transition-transform duration-200 ml-1 ${open ? "rotate-180" : ""}`}>
+        <span className="capitalize truncate">{value || "Select"}</span>
+        <span className={`hidden sm:inline-block material-symbols-outlined text-[16px] text-white/40 shrink-0 transition-transform duration-200 ml-1 ${open ? "rotate-180" : ""}`}>
           expand_more
         </span>
       </button>
@@ -302,22 +304,22 @@ function LocationField({
   const locations = ["All Locations", "Baguio", "Manila", "Cebu", "Siargao", "Boracay", "Palawan"];
 
   return (
-    <div className="flex-1 min-w-[110px] px-3 py-2 sm:px-4 sm:py-2.5 text-left cursor-pointer group/item hover:bg-white/10 rounded-2xl transition-colors relative" ref={ref}>
-      <span className="block text-[9px] sm:text-[10px] font-extrabold text-white/40 uppercase tracking-widest mb-0.5 ml-1">LOCATION</span>
+    <div className="flex-1 min-w-0 md:min-w-[110px] px-1 py-0.5 sm:px-3 sm:py-2 md:px-4 md:py-2.5 text-left cursor-pointer group/item hover:bg-white/10 rounded-2xl transition-colors relative" ref={ref}>
+      <span className="block text-[7px] md:text-[10px] font-extrabold text-white/40 uppercase tracking-widest mb-0.5 ml-1">LOCATION</span>
       <div className="flex items-center justify-between w-full">
         <input
           type="text"
           value={value}
           onChange={(e) => onChange(e.target.value)}
-          placeholder="Search location..."
-          className="bg-transparent border-none text-white placeholder:text-white/40 text-xs sm:text-sm font-semibold outline-none focus:ring-0 w-full min-w-0 text-ellipsis p-0"
+          placeholder="Search..."
+          className="bg-transparent border-none text-white placeholder:text-white/40 text-[9px] sm:text-xs md:text-sm font-semibold outline-none focus:ring-0 w-full min-w-0 text-ellipsis p-0"
         />
         <button
           type="button"
           onClick={toggle}
           className="bg-transparent border-none outline-none cursor-pointer p-0 shrink-0 text-white/40 hover:text-white transition-colors"
         >
-          <span className={`material-symbols-outlined text-[16px] transition-transform duration-200 ${open ? "rotate-180" : ""}`}>
+          <span className={`hidden sm:inline-block material-symbols-outlined text-[16px] transition-transform duration-200 ${open ? "rotate-180" : ""}`}>
             expand_more
           </span>
         </button>
@@ -456,14 +458,14 @@ export default function HeroSection({ featuredTemplates = [] }: HeroSectionProps
               className="w-full max-w-[950px] mx-auto lg:mx-0 flex flex-col gap-4 z-20 relative"
             >
               {/* Search Box Form */}
-              <form onSubmit={handleSearch} className="w-full relative group z-20">
+              <form onSubmit={handleSearch} className="w-full relative group z-20 px-2 sm:px-0">
                 {/* 1. Outer Glow */}
-                <div className="absolute -inset-1 bg-linear-to-r from-primary via-purple-600 to-secondary rounded-[2.5rem] blur opacity-40 group-hover:opacity-70 transition duration-500 group-hover:duration-200 animate-pulse"></div>
+                <div className="absolute -inset-x-1 sm:-inset-1 bg-linear-to-r from-primary via-purple-600 to-secondary rounded-full sm:rounded-[2.5rem] blur opacity-40 group-hover:opacity-70 transition duration-500 group-hover:duration-200 animate-pulse"></div>
                 {/* Outer Capsule Glass Panel */}
-                <div className="relative glass-panel bg-[#151326]/85 backdrop-blur-2xl p-2 sm:p-2.5 rounded-[2.5rem] border border-white/10 group-hover:border-white/20 transition-all shadow-[0_0_35px_rgba(139,92,246,0.3)]">
+                <div className="relative glass-panel bg-[#151326]/85 backdrop-blur-2xl p-1 sm:p-2.5 rounded-full sm:rounded-[2.5rem] border border-white/10 group-hover:border-white/20 transition-all shadow-[0_0_35px_rgba(139,92,246,0.3)]">
 
-                  {/* DESKTOP & TABLET VIEW (md and up): Single Horizontal Capsule Pill */}
-                  <div className="hidden md:flex flex-row items-center gap-1 lg:gap-2 px-1">
+                  {/* Single Unified Horizontal Capsule Pill (Responsive for both Mobile & Desktop) */}
+                  <div className="flex flex-row items-center gap-0.5 sm:gap-1 lg:gap-2 px-0.5 sm:px-1">
                     {/* 1. CATEGORY */}
                     <CategoryField
                       value={categoryVal}
@@ -471,7 +473,7 @@ export default function HeroSection({ featuredTemplates = [] }: HeroSectionProps
                     />
 
                     {/* Divider */}
-                    <div className="w-px h-8 bg-white/10 shrink-0"></div>
+                    <div className="w-px h-6 sm:h-8 bg-white/10 shrink-0"></div>
 
                     {/* 2. START */}
                     <DateField
@@ -481,7 +483,7 @@ export default function HeroSection({ featuredTemplates = [] }: HeroSectionProps
                     />
 
                     {/* Divider */}
-                    <div className="w-px h-8 bg-white/10 shrink-0"></div>
+                    <div className="w-px h-6 sm:h-8 bg-white/10 shrink-0"></div>
 
                     {/* 3. END */}
                     <DateField
@@ -491,7 +493,7 @@ export default function HeroSection({ featuredTemplates = [] }: HeroSectionProps
                     />
 
                     {/* Divider */}
-                    <div className="w-px h-8 bg-white/10 shrink-0"></div>
+                    <div className="w-px h-6 sm:h-8 bg-white/10 shrink-0"></div>
 
                     {/* 4. LOCATION */}
                     <LocationField
@@ -502,44 +504,7 @@ export default function HeroSection({ featuredTemplates = [] }: HeroSectionProps
                     {/* 5. "Go" Button */}
                     <button
                       type="submit"
-                      className="rounded-full bg-white text-black font-extrabold text-sm lg:text-base px-8 py-3.5 shrink-0 transition-all duration-300 hover:bg-white/90 hover:scale-105 active:scale-95 shadow-[0_0_20px_rgba(255,255,255,0.3)] flex items-center justify-center cursor-pointer ml-1 font-display"
-                    >
-                      Go
-                    </button>
-                  </div>
-
-                  {/* MOBILE VIEW (< md): Sleek Responsive Capsule Bar */}
-                  <div className="flex md:hidden flex-col gap-2 p-1">
-                    {/* Row 1: CATEGORY & START */}
-                    <div className="grid grid-cols-2 gap-1 items-center bg-white/5 rounded-2xl p-1 border border-white/5">
-                      <CategoryField
-                        value={categoryVal}
-                        onChange={(cat) => setCategoryVal(cat)}
-                      />
-                      <DateField
-                        label="START"
-                        value={startDateVal}
-                        onSelect={(d) => setStartDateVal(d)}
-                      />
-                    </div>
-
-                    {/* Row 2: END & LOCATION */}
-                    <div className="grid grid-cols-2 gap-1 items-center bg-white/5 rounded-2xl p-1 border border-white/5">
-                      <DateField
-                        label="END"
-                        value={endDateVal}
-                        onSelect={(d) => setEndDateVal(d)}
-                      />
-                      <LocationField
-                        value={locationVal}
-                        onChange={(loc) => setLocationVal(loc)}
-                      />
-                    </div>
-
-                    {/* Row 3: "Go" Button (Full width white capsule button on mobile) */}
-                    <button
-                      type="submit"
-                      className="w-full rounded-full bg-white text-black font-extrabold text-base py-3.5 shrink-0 transition-all duration-300 hover:bg-white/90 active:scale-95 shadow-[0_0_20px_rgba(255,255,255,0.3)] flex items-center justify-center cursor-pointer font-display mt-0.5"
+                      className="rounded-full bg-white text-black font-extrabold text-[10px] sm:text-sm lg:text-base px-3 py-1.5 sm:px-6 sm:py-3 lg:px-8 lg:py-3.5 shrink-0 transition-all duration-300 hover:bg-white/90 hover:scale-105 active:scale-95 shadow-[0_0_20px_rgba(255,255,255,0.3)] flex items-center justify-center cursor-pointer ml-1 font-display"
                     >
                       Go
                     </button>
