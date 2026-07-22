@@ -1,7 +1,7 @@
 "use client";
 
 import { useSearchParams, useRouter } from "next/navigation";
-import { useEffect, useState, useMemo, useRef } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import Link from "next/link";
 import SearchFilters from "@/features/search/components/SearchFilters";
@@ -35,20 +35,6 @@ export default function SearchClient() {
     setEtPage(1);
     setGsPage(1);
   }, [q, category, city, maxPrice]);
-
-  const mswStarted = useRef(false);
-
-  useEffect(() => {
-    if (process.env.NODE_ENV === "development" && !mswStarted.current) {
-      mswStarted.current = true;
-      import("@/mocks/browser").then(({ worker }) => {
-        worker.start({
-          onUnhandledRequest: "bypass",
-          url: /^http:\/\/localhost:3002\/api\/v1\//,
-        });
-      });
-    }
-  }, []);
 
   useEffect(() => {
     const timer = setTimeout(() => {

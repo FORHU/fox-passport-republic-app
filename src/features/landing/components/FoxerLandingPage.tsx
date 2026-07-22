@@ -28,7 +28,7 @@ const FoxerLandingPage: React.FC<FoxerLandingPageProps> = ({ featuredTemplates =
       {/* Main Content */}
       <main className="flex-grow pb-16 md:pb-0">
         {/* Hero Section */}
-        <HeroSection featuredTemplates={featuredTemplates} />
+        <HeroSection />
 
         {/* Vibe Check - Categories */}
         <VibeCheckSection categories={displayedCategories} />

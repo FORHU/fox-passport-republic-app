@@ -110,23 +110,21 @@ async function serverFetch(endpoint: string, params?: Record<string, string>): P
   try {
     res = await doFetch(token);
   } catch (err) {
-    console.error(`[API] Network error fetching ${url}:`, err);
-    throw new Error(`Network error: unable to reach API at ${url}`);
+    console.warn(`[API] Network error fetching ${url} — API may be offline`);
+    return null;
   }
 
   if (res.status === 401) {
     // Access token expired — try to silently refresh
     const newToken = await tryRefreshToken();
     if (newToken) {
-      // Retry the original request with the fresh token
       try {
         res = await doFetch(newToken);
-      } catch (err) {
-        console.error(`[API] Network error on retry ${url}:`, err);
-        throw new Error(`Network error: unable to reach API at ${url}`);
+      } catch {
+        console.warn(`[API] Network error on retry ${url}`);
+        return null;
       }
     } else {
-      // Refresh token also invalid — force re-login
       await clearAuthAndRedirect();
     }
   }
