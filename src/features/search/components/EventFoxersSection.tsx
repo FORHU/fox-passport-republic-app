@@ -1,20 +1,11 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
-import { useSearchParams } from "next/navigation";
-import { useQuery } from "@tanstack/react-query";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import {
-  fetchFoxers,
-  type Foxer,
-  type FoxerSpecialization,
-} from "@/features/user/api/foxers";
+import { type Foxer, type FoxerSpecialization } from "@/features/user/api/foxers";
 
 const FALLBACK_AVATAR =
   "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=400&auto=format&fit=crop";
-
-const PAGE_SIZE = 6;
 
 function SpecializationChip({ spec }: { spec: FoxerSpecialization }) {
   const label = spec.category.replace(/_/g, " ");
@@ -67,7 +58,7 @@ function FoxerCard({ foxer }: { foxer: Foxer }) {
     isHost && hasTemplates
       ? (foxer.eventTemplates ?? []).flatMap((t) => t.images.map((img) => img.url))
       : foxer.services.flatMap((s) => s.images.map((img) => img.url))
-  ).slice(0, 3);
+  ).filter(Boolean).slice(0, 3);
 
   const tags = (isHost && hasTemplates)
     ? [...new Set((foxer.eventTemplates ?? []).map((t) => t.category))].slice(0, 4)
@@ -210,35 +201,15 @@ function SkeletonCard() {
   );
 }
 
-export default function EventFoxersSection() {
-  const searchParams = useSearchParams();
-  const [page, setPage] = useState(1);
+interface EventFoxersSectionProps {
+  items: Foxer[];
+  isFetching: boolean;
+  page: number;
+  totalPages: number;
+  onPageChange: (page: number) => void;
+}
 
-  const category = searchParams?.get("category") || "";
-  const city = searchParams?.get("city") || "";
-  const maxPrice = searchParams?.get("maxPrice") || "";
-  const lat = searchParams?.get("lat");
-  const lng = searchParams?.get("lng");
-  const radius = searchParams?.get("radius") || "25";
-
-  useEffect(() => {
-    setPage(1);
-  }, [searchParams?.toString()]);
-
-  const { data, isLoading, isError } = useQuery({
-    queryKey: ["eventFoxers", category, city, maxPrice, lat, lng, radius, page],
-    queryFn: () => fetchFoxers(PAGE_SIZE, page, "eventFoxer"),
-  });
-
-  const foxers = data ?? [];
-  const total = 24;
-  const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
-
-  const goTo = useCallback((p: number) => {
-    setPage(Math.min(Math.max(1, p), totalPages));
-    window.scrollTo({ top: 0, behavior: "smooth" });
-  }, [totalPages]);
-
+export default function EventFoxersSection({ items, isFetching, page, totalPages, onPageChange }: EventFoxersSectionProps) {
   return (
     <section className="space-y-6">
       <div className="flex items-end justify-between">
@@ -256,17 +227,13 @@ export default function EventFoxersSection() {
         </span>
       </div>
 
-      {isLoading ? (
-          <div className="grid md:grid-cols-2 gap-8">
-          {Array.from({ length: PAGE_SIZE }).map((_, i) => (
+      {isFetching && items.length === 0 ? (
+        <div className="grid md:grid-cols-2 gap-8">
+          {Array.from({ length: 2 }).map((_, i) => (
             <SkeletonCard key={i} />
           ))}
         </div>
-      ) : isError ? (
-        <div className="text-center py-16 glass-card rounded-[2rem]">
-          <p className="text-white/60 text-sm">Could not load Event Foxers.</p>
-        </div>
-      ) : foxers.length === 0 ? (
+      ) : items.length === 0 ? (
         <div className="text-center py-16 glass-card rounded-[2rem]">
           <span className="material-symbols-outlined text-[56px] text-white/20">search_off</span>
           <h3 className="text-xl font-bold text-white mt-2">No Event Foxers found</h3>
@@ -275,48 +242,46 @@ export default function EventFoxersSection() {
           </p>
         </div>
       ) : (
-        <>
-          <div className="grid md:grid-cols-2 gap-8">
-            {foxers.map((foxer) => (
-              <FoxerCard key={foxer.id} foxer={foxer} />
-            ))}
-          </div>
+        <div className="grid md:grid-cols-2 gap-8">
+          {items.map((foxer) => (
+            <FoxerCard key={foxer.id} foxer={foxer} />
+          ))}
+        </div>
+      )}
 
-          {totalPages > 1 && (
-            <div className="flex items-center justify-center gap-2 pt-4">
+      {totalPages > 1 && (
+        <div className="flex items-center justify-center gap-2 pt-4">
+          <button
+            onClick={() => onPageChange(Math.max(1, page - 1))}
+            disabled={page <= 1}
+            className="px-4 py-2 rounded-full bg-white/5 border border-white/10 text-white text-sm font-bold disabled:opacity-30 hover:bg-white/10 transition-all"
+          >
+            Previous
+          </button>
+          {Array.from({ length: totalPages }).map((_, i) => {
+            const p = i + 1;
+            return (
               <button
-                onClick={() => goTo(page - 1)}
-                disabled={page === 1}
-                className="px-4 py-2 rounded-full bg-white/5 border border-white/10 text-white text-sm font-bold disabled:opacity-30 hover:bg-white/10 transition-all"
+                key={p}
+                onClick={() => onPageChange(p)}
+                className={`h-9 w-9 rounded-full text-sm font-bold transition-all ${
+                  p === page
+                    ? "bg-white text-black"
+                    : "bg-white/5 border border-white/10 text-white/60 hover:bg-white/10"
+                }`}
               >
-                Previous
+                {p}
               </button>
-              {Array.from({ length: totalPages }).map((_, i) => {
-                const p = i + 1;
-                return (
-                  <button
-                    key={p}
-                    onClick={() => goTo(p)}
-                    className={`h-9 w-9 rounded-full text-sm font-bold transition-all ${
-                      p === page
-                        ? "bg-white text-black"
-                        : "bg-white/5 border border-white/10 text-white/60 hover:bg-white/10"
-                    }`}
-                  >
-                    {p}
-                  </button>
-                );
-              })}
-              <button
-                onClick={() => goTo(page + 1)}
-                disabled={page === totalPages}
-                className="px-4 py-2 rounded-full bg-white/5 border border-white/10 text-white text-sm font-bold disabled:opacity-30 hover:bg-white/10 transition-all"
-              >
-                Next
-              </button>
-            </div>
-          )}
-        </>
+            );
+          })}
+          <button
+            onClick={() => onPageChange(Math.min(totalPages, page + 1))}
+            disabled={page >= totalPages}
+            className="px-4 py-2 rounded-full bg-white/5 border border-white/10 text-white text-sm font-bold disabled:opacity-30 hover:bg-white/10 transition-all"
+          >
+            Next
+          </button>
+        </div>
       )}
     </section>
   );
