@@ -12,7 +12,7 @@ export const CategoryHero: React.FC<CategoryHeroProps> = ({ category }) => {
 
 
   return (
-    <div className="mb-20 relative">
+    <div className="mb-12 sm:mb-20 relative overflow-hidden">
       {/* Force-include dynamic gradient classes for Tailwind JIT */}
       <div className="hidden">
         from-lime-300 via-green-400 to-emerald-500
@@ -34,14 +34,14 @@ export const CategoryHero: React.FC<CategoryHeroProps> = ({ category }) => {
           </span>
         </div>
 
-        <h1 className="text-5xl md:text-8xl font-black font-display text-white mb-8 leading-tight tracking-tight">
+        <h1 className="text-3xl sm:text-5xl md:text-8xl font-black font-display text-white mb-6 sm:mb-8 leading-tight tracking-tight">
           Explore <br />
           <span className={`inline-block text-transparent bg-clip-text bg-linear-to-r ${gradientColors}`}>
             {category.name}
           </span>
         </h1>
         
-        <p className="text-2xl text-gray-400 max-w-2xl leading-relaxed font-light">
+        <p className="text-base sm:text-2xl text-gray-400 max-w-2xl leading-relaxed font-light">
           {category.tagline}
         </p>
       </div>

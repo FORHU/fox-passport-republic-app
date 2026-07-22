@@ -1,25 +1,26 @@
 'use client';
 
-import React, { useState } from 'react';
+import React from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { Menu } from 'lucide-react';
 import { useRoleAccess, RoleAccess } from '@/features/auth/hooks/useRoleAccess';
 import { useAuthStore } from '@/features/auth/store/useAuthStore';
 import UserMenuButton from '@/features/user/components/UserMenuButton';
 import NotificationBell from '@/features/notifications/components/NotificationBell';
-import {
-  Sheet,
-  SheetContent,
-  SheetTrigger,
-  SheetClose,
-} from '@/shared/components/ui/sheet';
+
+const NAV_ICONS: Record<string, string> = {
+  Overview:   'dashboard',
+  Events:     'celebration',
+  Venues:     'location_city',
+  Assets:     'inventory_2',
+  Services:   'design_services',
+  'Check In': 'qr_code_scanner',
+};
 
 
 export function DashboardHeader() {
   const user = useAuthStore((s) => s.user);
   const access = useRoleAccess();
-  const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const pathname = usePathname();
 
   const roleLabels: string[] = [];
@@ -38,49 +39,10 @@ export function DashboardHeader() {
   ].filter(Boolean) as { label: string; href: string }[];
 
   return (
+    <>
     <header className="fixed top-6 left-0 right-0 z-50">
       <div className="mx-auto max-w-7xl px-4">
         <div className="bg-black/60 backdrop-blur-xl border border-white/10 rounded-full px-6 h-20 flex items-center justify-between shadow-2xl">
-          {/* Mobile menu trigger */}
-          <Sheet open={mobileNavOpen} onOpenChange={setMobileNavOpen}>
-            <SheetTrigger asChild>
-              <button
-                aria-label="Open navigation"
-                className="md:hidden h-11 w-11 -ml-2 flex items-center justify-center rounded-full text-white/70 hover:text-white hover:bg-white/10 transition-colors"
-              >
-                <Menu className="h-5 w-5" />
-              </button>
-            </SheetTrigger>
-            <SheetContent side="left" className="w-72 bg-[#0f111a] border-white/5 p-0">
-              <div className="px-6 h-20 flex items-center border-b border-white/5">
-                <span className="text-sm font-bold uppercase tracking-widest text-white/60">Navigation</span>
-              </div>
-              <nav className="flex flex-col p-4 gap-1">
-                {navLinks.map((link) =>
-                  link.anchor ? (
-                    <SheetClose asChild key={link.label}>
-                      <a
-                        href={link.href}
-                        className="px-4 py-3 rounded-xl text-sm font-medium text-white/70 hover:text-white hover:bg-white/10 transition-colors"
-                      >
-                        {link.label}
-                      </a>
-                    </SheetClose>
-                  ) : (
-                    <SheetClose asChild key={link.label}>
-                      <Link
-                        href={link.href}
-                        className="px-4 py-3 rounded-xl text-sm font-bold text-black bg-[#ccff00]"
-                      >
-                        {link.label}
-                      </Link>
-                    </SheetClose>
-                  )
-                )}
-              </nav>
-            </SheetContent>
-          </Sheet>
-
           {/* Logo */}
           <Link href="/" className="flex items-center gap-3 group">
             <div className="flex h-10 w-10 items-center justify-center rounded-full bg-white text-black font-bold shadow-[0_0_15px_rgba(255,255,255,0.3)] group-hover:rotate-180 transition-transform duration-700">
@@ -132,6 +94,33 @@ export function DashboardHeader() {
         </div>
       </div>
     </header>
+
+    {/* Mobile bottom tab bar */}
+    <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-black/90 backdrop-blur-xl border-t border-white/10 safe-area-pb">
+      <div className="flex overflow-x-auto hide-scrollbar">
+        {navLinks.map((link) => {
+          const isActive = link.href === '/creator-dashboard'
+            ? pathname === '/creator-dashboard'
+            : pathname.startsWith(link.href);
+          const icon = NAV_ICONS[link.label] ?? 'circle';
+          return (
+            <Link
+              key={link.label}
+              href={link.href}
+              className={`flex flex-col items-center justify-center gap-1 min-w-16 flex-1 py-3 px-2 transition-colors ${
+                isActive ? 'text-[#ccff00]' : 'text-white/50 hover:text-white'
+              }`}
+            >
+              <span className={`material-symbols-outlined text-[22px] ${isActive ? 'fill-current' : ''}`}>
+                {icon}
+              </span>
+              <span className="text-[10px] font-bold whitespace-nowrap">{link.label}</span>
+            </Link>
+          );
+        })}
+      </div>
+    </nav>
+    </>
   );
 }
 
@@ -215,7 +204,7 @@ export function WelcomeBanner({
           <span className="flex h-2 w-2 rounded-full bg-[#ccff00] shadow-[0_0_10px_#ccff00] animate-pulse" />
           <span className="text-xs font-bold uppercase tracking-widest text-white/90">Creator Studio</span>
         </div>
-        <h1 className="text-4xl lg:text-5xl font-display font-bold mb-2">
+        <h1 className="text-2xl sm:text-4xl lg:text-5xl font-display font-bold mb-2">
           Welcome back,{' '}
           <span className="bg-gradient-to-r from-purple-400 via-pink-400 to-orange-400 bg-clip-text text-transparent">
             {user?.name?.split(' ')[0] || 'Creator'}!

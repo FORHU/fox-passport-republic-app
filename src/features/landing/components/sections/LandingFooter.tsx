@@ -1,20 +1,20 @@
-﻿import { BrandLogo } from "@/shared/components/layout/BrandLogo";
+import { BrandLogo } from "@/shared/components/layout/BrandLogo";
 
 export default function LandingFooter() {
   return (
-    <footer className="bg-black pt-20 pb-10 border-t border-white/10">
+    <footer className="bg-black pt-10 pb-20 sm:pt-20 sm:pb-10 border-t border-white/10">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-2 md:grid-cols-12 gap-8 md:gap-12 mb-16">
-          {/* Brand - full width on mobile, 5 cols on desktop */}
+        <div className="grid grid-cols-2 md:grid-cols-12 gap-5 md:gap-12 mb-8 sm:mb-16">
+          {/* Brand */}
           <div className="col-span-2 md:col-span-5">
-            <BrandLogo className="mb-8 w-fit" />
-            <p className="text-gray-400 leading-relaxed mb-8 max-w-sm text-base sm:text-lg">
+            <BrandLogo className="mb-4 sm:mb-8 w-fit" />
+            <p className="text-gray-400 leading-relaxed mb-4 sm:mb-8 max-w-sm text-sm sm:text-base">
               The ultimate platform for the next generation of explorers. We make discovering and
               booking experiences in the Philippines seamless and exciting.
             </p>
-            <div className="flex gap-4">
+            <div className="flex gap-3">
               <a
-                className="h-10 w-10 sm:h-12 sm:w-12 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-white hover:bg-[#ccff00] hover:text-black hover:border-[#ccff00] hover:shadow-[0_0_20px_rgba(204,255,0,0.4)] transition-all duration-300 transform hover:-translate-y-1"
+                className="h-9 w-9 sm:h-12 sm:w-12 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-white hover:bg-[#ccff00] hover:text-black hover:border-[#ccff00] hover:shadow-[0_0_20px_rgba(204,255,0,0.4)] transition-all duration-300"
                 href="#"
               >
                 <span className="sr-only">Twitter</span>
@@ -23,7 +23,7 @@ export default function LandingFooter() {
                 </svg>
               </a>
               <a
-                className="h-10 w-10 sm:h-12 sm:w-12 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-white hover:bg-secondary hover:text-white hover:border-secondary hover:shadow-[0_0_20px_rgba(219,39,119,0.4)] transition-all duration-300 transform hover:-translate-y-1"
+                className="h-9 w-9 sm:h-12 sm:w-12 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-white hover:bg-secondary hover:text-white hover:border-secondary hover:shadow-[0_0_20px_rgba(219,39,119,0.4)] transition-all duration-300"
                 href="#"
               >
                 <span className="sr-only">Instagram</span>
@@ -40,58 +40,42 @@ export default function LandingFooter() {
 
           {/* Links: Discover */}
           <div className="md:col-span-2">
-            <h3 className="font-bold text-white mb-4 sm:mb-6 font-display text-sm sm:text-base">Discover</h3>
-            <ul className="space-y-3 sm:space-y-4">
-              <li>
-                <a className="text-xs sm:text-sm text-gray-400 hover:text-[#ccff00] font-medium transition-colors hover:pl-2 inline-block" href="#">
-                  Events
-                </a>
-              </li>
-              <li>
-                <a className="text-xs sm:text-sm text-gray-400 hover:text-[#ccff00] font-medium transition-colors hover:pl-2 inline-block" href="#">
-                  Adventures
-                </a>
-              </li>
-              <li>
-                <a className="text-xs sm:text-sm text-gray-400 hover:text-[#ccff00] font-medium transition-colors hover:pl-2 inline-block" href="#">
-                  Venues
-                </a>
-              </li>
+            <h3 className="font-bold text-white mb-3 sm:mb-6 font-display text-xs sm:text-sm uppercase tracking-widest">Discover</h3>
+            <ul className="space-y-2 sm:space-y-4">
+              {["Events", "Adventures", "Venues"].map((item) => (
+                <li key={item}>
+                  <a className="text-xs text-gray-400 hover:text-[#ccff00] font-medium transition-colors" href="#">
+                    {item}
+                  </a>
+                </li>
+              ))}
             </ul>
           </div>
 
           {/* Links: Company */}
           <div className="md:col-span-2">
-            <h3 className="font-bold text-white mb-4 sm:mb-6 font-display text-sm sm:text-base">Company</h3>
-            <ul className="space-y-3 sm:space-y-4">
-              <li>
-                <a className="text-xs sm:text-sm text-gray-400 hover:text-[#ccff00] font-medium transition-colors hover:pl-2 inline-block" href="#">
-                  About
-                </a>
-              </li>
-              <li>
-                <a className="text-xs sm:text-sm text-gray-400 hover:text-[#ccff00] font-medium transition-colors hover:pl-2 inline-block" href="#">
-                  Careers
-                </a>
-              </li>
-              <li>
-                <a className="text-xs sm:text-sm text-gray-400 hover:text-[#ccff00] font-medium transition-colors hover:pl-2 inline-block" href="#">
-                  Blog
-                </a>
-              </li>
+            <h3 className="font-bold text-white mb-3 sm:mb-6 font-display text-xs sm:text-sm uppercase tracking-widest">Company</h3>
+            <ul className="space-y-2 sm:space-y-4">
+              {["About", "Careers", "Blog"].map((item) => (
+                <li key={item}>
+                  <a className="text-xs text-gray-400 hover:text-[#ccff00] font-medium transition-colors" href="#">
+                    {item}
+                  </a>
+                </li>
+              ))}
             </ul>
           </div>
 
           {/* Download App */}
           <div className="col-span-2 md:col-span-3">
-            <h3 className="font-bold text-white mb-4 sm:mb-6 font-display text-sm sm:text-base">Download App</h3>
-            <p className="text-[10px] sm:text-xs text-gray-400 mb-3 sm:mb-4">Get the full experience on mobile.</p>
+            <h3 className="font-bold text-white mb-3 sm:mb-6 font-display text-xs sm:text-sm uppercase tracking-widest">Download App</h3>
+            <p className="text-[10px] text-gray-400 mb-3">Get the full experience on mobile.</p>
             <div className="flex gap-2 flex-wrap">
-              <button className="bg-white/10 border border-white/20 text-white px-3 py-2 sm:px-4 sm:py-3 rounded-xl text-[10px] sm:text-xs font-bold flex items-center gap-1.5 sm:gap-2 hover:bg-white hover:text-black transition-all hover:scale-105 hover:shadow-lg">
+              <button className="bg-white/10 border border-white/20 text-white px-3 py-2 rounded-xl text-[10px] sm:text-xs font-bold flex items-center gap-1.5 hover:bg-white hover:text-black transition-all">
                 <span className="material-symbols-outlined text-[14px] sm:text-[18px]">ios</span>
                 App Store
               </button>
-              <button className="bg-white/10 border border-white/20 text-white px-3 py-2 sm:px-4 sm:py-3 rounded-xl text-[10px] sm:text-xs font-bold flex items-center gap-1.5 sm:gap-2 hover:bg-white hover:text-black transition-all hover:scale-105 hover:shadow-lg">
+              <button className="bg-white/10 border border-white/20 text-white px-3 py-2 rounded-xl text-[10px] sm:text-xs font-bold flex items-center gap-1.5 hover:bg-white hover:text-black transition-all">
                 <span className="material-symbols-outlined text-[14px] sm:text-[18px]">android</span>
                 Google Play
               </button>
@@ -100,20 +84,16 @@ export default function LandingFooter() {
         </div>
 
         {/* Bottom Bar */}
-        <div className="border-t border-white/5 pt-6 sm:pt-8 flex flex-col sm:flex-row justify-between items-center gap-4">
-          <p className="text-[10px] sm:text-xs text-gray-500 font-medium text-center sm:text-left">
+        <div className="border-t border-white/5 pt-4 sm:pt-8 flex flex-col sm:flex-row justify-between items-center gap-3">
+          <p className="text-[10px] text-gray-500 font-medium text-center sm:text-left">
             &copy; 2024 FoxPassport Inc. All rights reserved.
           </p>
           <div className="flex gap-4 sm:gap-6">
-            <a className="text-[10px] sm:text-xs text-gray-500 hover:text-white font-medium transition-colors" href="#">
-              Privacy
-            </a>
-            <a className="text-[10px] sm:text-xs text-gray-500 hover:text-white font-medium transition-colors" href="#">
-              Terms
-            </a>
-            <a className="text-[10px] sm:text-xs text-gray-500 hover:text-white font-medium transition-colors" href="#">
-              Cookies
-            </a>
+            {["Privacy", "Terms", "Cookies"].map((item) => (
+              <a key={item} className="text-[10px] text-gray-500 hover:text-white font-medium transition-colors" href="#">
+                {item}
+              </a>
+            ))}
           </div>
         </div>
       </div>

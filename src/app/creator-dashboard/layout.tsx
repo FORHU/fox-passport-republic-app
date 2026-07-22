@@ -20,7 +20,9 @@ export default function HostLayout({
 
   return (
     <RequireAuth>
-      {children}
+      <div className="pb-16 md:pb-0">
+        {children}
+      </div>
       {isOpen && <CreateVenueWizard />}
     </RequireAuth>
   );
