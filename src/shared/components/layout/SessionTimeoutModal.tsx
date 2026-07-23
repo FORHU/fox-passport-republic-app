@@ -11,7 +11,7 @@ interface SessionTimeoutModalProps {
 
 export default function SessionTimeoutModal({ isOpen, onStayLoggedIn, onLogout }: SessionTimeoutModalProps) {
   const [secondsLeft, setSecondsLeft] = useState(120);
-  const startTimeRef = React.useRef(Date.now());
+  const startTimeRef = React.useRef(0);
 
   useEffect(() => {
     if (!isOpen) return;

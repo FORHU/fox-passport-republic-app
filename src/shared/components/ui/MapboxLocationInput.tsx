@@ -39,33 +39,33 @@ export function MapboxLocationInput({ value, onChange, onSelect, type, placehold
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  const fetchSuggestions = async (query: string) => {
-    if (!query || query.length < 2) {
-      setSuggestions([]);
-      return;
-    }
-    try {
-      const response = await fetch(
-        `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(query)}.json?access_token=${config.mapboxToken}&types=${type}&limit=5`
-      );
-      if (response.ok) {
-        const data = await response.json();
-        setSuggestions((data.features as MapboxFeature[]) || []);
-        setShowDropdown(true);
-      }
-    } catch (e) {
-      console.warn('Mapbox error:', e);
-    }
-  };
-
   useEffect(() => {
+    const fetchSuggestions = async (query: string) => {
+      if (!query || query.length < 2) {
+        setSuggestions([]);
+        return;
+      }
+      try {
+        const response = await fetch(
+          `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(query)}.json?access_token=${config.mapboxToken}&types=${type}&limit=5`
+        );
+        if (response.ok) {
+          const data = await response.json();
+          setSuggestions((data.features as MapboxFeature[]) || []);
+          setShowDropdown(true);
+        }
+      } catch (e) {
+        console.warn('Mapbox error:', e);
+      }
+    };
+
     const timer = setTimeout(() => {
       if (value.length >= 2) {
         void fetchSuggestions(value);
       }
     }, 400);
     return () => clearTimeout(timer);
-  }, [value]);
+  }, [value, type]);
 
   return (
     <div className="relative w-full" ref={dropdownRef}>

@@ -109,7 +109,7 @@ async function serverFetch(endpoint: string, params?: Record<string, string>): P
 
   try {
     res = await doFetch(token);
-  } catch (err) {
+  } catch {
     console.warn(`[API] Network error fetching ${url} — API may be offline`);
     return null;
   }
@@ -270,6 +270,7 @@ export async function getDashboardStats() {
   }
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export async function getUserDashboard(_userId: string) {
   await requireAuth();
   try {
