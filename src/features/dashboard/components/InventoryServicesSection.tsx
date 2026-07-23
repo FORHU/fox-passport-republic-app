@@ -6,6 +6,7 @@ import Image from 'next/image';
 import { InventoryItem, ServiceItem } from '@/features/dashboard/data/dashboardData';
 import { StatusBadge } from './StatusBadge';
 import { EmptyState } from './EmptyState';
+import { PaginationBar } from './PaginationBar';
 
 interface InventorySectionProps {
   inventory: InventoryItem[];
@@ -13,6 +14,9 @@ interface InventorySectionProps {
   showViewAllLink?: boolean;
   viewAllHref?: string;
   onEdit?: (id: number | string) => void;
+  page?: number;
+  totalPages?: number;
+  onPageChange?: (page: number) => void;
 }
 
 export function InventorySection({
@@ -21,6 +25,9 @@ export function InventorySection({
   showViewAllLink = true,
   viewAllHref = "/creator-dashboard/assets",
   onEdit,
+  page,
+  totalPages,
+  onPageChange,
 }: InventorySectionProps) {
   return (
     <section id="inventory">
@@ -71,7 +78,7 @@ export function InventorySection({
                 />
               </div>
 
-              <div className="p-4 bg-gradient-to-t from-black/80 to-transparent absolute bottom-0 left-0 right-0 rounded-b-lg">
+              <div className="p-4 bg-linear-to-t from-black/80 to-transparent absolute bottom-0 left-0 right-0 rounded-b-lg">
                 <h4 className="font-bold text-sm">{it.name}</h4>
                 <p className="text-[10px] text-white/50 uppercase">
                   {typeof it.category === 'string'
@@ -85,6 +92,9 @@ export function InventorySection({
           <EmptyState type="inventories" href="/foxer/create-listing?type=inventory" />
         )}
       </div>
+      {onPageChange && page !== undefined && totalPages !== undefined && (
+        <PaginationBar page={page} totalPages={totalPages} onPageChange={onPageChange} />
+      )}
     </section>
   );
 }
@@ -95,6 +105,9 @@ interface ServicesSectionProps {
   showViewAllLink?: boolean;
   viewAllHref?: string;
   onEdit?: (id: number | string) => void;
+  page?: number;
+  totalPages?: number;
+  onPageChange?: (page: number) => void;
 }
 
 export function ServicesSection({
@@ -103,6 +116,9 @@ export function ServicesSection({
   showViewAllLink = true,
   viewAllHref = "/creator-dashboard/services",
   onEdit,
+  page,
+  totalPages,
+  onPageChange,
 }: ServicesSectionProps) {
   return (
     <section>
@@ -136,9 +152,13 @@ export function ServicesSection({
               }}
             >
               <div className="flex items-center gap-4">
-                <div className={`h-12 w-12 rounded-xl flex items-center justify-center ${sv.color}`}>
-                  <span className="material-symbols-outlined">{sv.icon}</span>
-                </div>
+                {sv.img ? (
+                  <img src={sv.img} alt={sv.name} className="h-12 w-12 rounded-xl object-cover shrink-0" />
+                ) : (
+                  <div className={`h-12 w-12 rounded-xl flex items-center justify-center shrink-0 ${sv.color}`}>
+                    <span className="material-symbols-outlined">{sv.icon}</span>
+                  </div>
+                )}
                 <div>
                   <h4 className={`font-bold ${sv.status === 'Active' ? 'text-white' : 'text-white/50'}`}>
                     {sv.name}
@@ -157,6 +177,9 @@ export function ServicesSection({
           <EmptyState type="services" href="/foxer/create-listing?type=service" />
         )}
       </div>
+      {onPageChange && page !== undefined && totalPages !== undefined && (
+        <PaginationBar page={page} totalPages={totalPages} onPageChange={onPageChange} />
+      )}
     </section>
   );
 }

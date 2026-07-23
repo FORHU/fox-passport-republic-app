@@ -84,6 +84,7 @@ export function mapBackendServiceToServiceItem(service: BackendService): Service
   const price = formatPeso(service.price);
   const unit = service.billingRate;
   const displayPrice = unit ? `${price} ${unit}` : price;
+  const img = service.images?.[0]?.url || service.images?.[0]?.imageUrl || undefined;
 
   return {
     id: service.id,
@@ -92,6 +93,7 @@ export function mapBackendServiceToServiceItem(service: BackendService): Service
     status,
     icon: iconMap[slug] || "room_service",
     color: colorMap[slug] || "text-accent bg-accent/20",
+    img,
   };
 }
 

@@ -22,6 +22,12 @@ export async function getPublicTemplate(templateId: string, options?: { claimed?
   return resp.data?.data;
 }
 
+// 0a. Fetch own draft/template (auth-protected — works for drafts too)
+export async function getOwnTemplate(templateId: string) {
+  const resp = await api.get(`/event-templates/${templateId}`);
+  return resp.data?.template;
+}
+
 // 0b. Book directly from an approved EventTemplate
 export async function bookFromTemplate(payload: {
   templateId: string;

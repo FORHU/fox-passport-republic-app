@@ -1,8 +1,9 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { useParams, useRouter } from 'next/navigation';
+import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
+import { useEventBuilderStore } from '@/features/event/store/useEventBuilderStore';
 import { LocationMap } from '@/shared/components/ui/LocationMap';
 import { useExperienceBuilderData } from '@/features/venue/hooks/useExperienceBuilderData';
 
@@ -377,543 +378,421 @@ const CustomExperienceBuilder: React.FC<{ isOpen: boolean; onClose: () => void; 
   );
 };
 
-const FALLBACK_IMAGES = [
-  "https://images.unsplash.com/photo-1492684223066-81342ee5ff30?w=800&auto=format&fit=crop",
-  "https://images.unsplash.com/photo-1511795409834-ef04bbd61622?w=800&auto=format&fit=crop",
-  "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=800&auto=format&fit=crop",
-  "https://images.unsplash.com/photo-1501281668745-f7f57925c3b4?w=800&auto=format&fit=crop",
-  "https://images.unsplash.com/photo-1533174072545-e8d4aa97edf9?w=800&auto=format&fit=crop",
-];
+const CATEGORY_ICONS: Record<string, string> = {
+  music: 'music_note', sports: 'sports_soccer', food: 'restaurant',
+  art: 'palette', tech: 'computer', business: 'work',
+  wellness: 'spa', education: 'school', other: 'celebration',
+};
+
+function formatEventDate(dateStr: string | null | undefined) {
+  if (!dateStr) return null;
+  const d = new Date(dateStr);
+  if (isNaN(d.getTime())) return null;
+  return d.toLocaleDateString('en-PH', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })
+    + ' · '
+    + d.toLocaleTimeString('en-PH', { hour: 'numeric', minute: '2-digit', hour12: true });
+}
 
 const EventDetailsPage: React.FC = () => {
   const router = useRouter();
   const { eventId } = useParams();
+  const searchParams = useSearchParams();
+  const isPreview = searchParams.get('preview') === '1';
   const [galleryOpen, setGalleryOpen] = useState(false);
   const [activeImageIndex, setActiveImageIndex] = useState(0);
   const [isCustomBookingOpen, setIsCustomBookingOpen] = useState(false);
   const [template, setTemplate] = useState<any>(null);
+  const [loadError, setLoadError] = useState<string | null>(null);
+  const [cancellationPolicy, setCancellationPolicy] = useState<{ name: string; description: string } | null>(null);
+  const [clientMounted, setClientMounted] = useState(false);
+  const storeItems = useEventBuilderStore((s) => s.baseItems);
+
+  useEffect(() => {
+    setClientMounted(true);
+  }, []);
 
   useEffect(() => {
     window.scrollTo(0, 0);
-    if (eventId) {
+    if (!eventId) return;
+    const id = eventId as string;
+    if (isPreview) {
+      import('@/features/booking/api/bookings').then(({ getOwnTemplate }) => {
+        getOwnTemplate(id)
+          .then(data => {
+            if (!data) { setLoadError('Template not found.'); return; }
+            setTemplate(data);
+          })
+          .catch((err) => setLoadError(err?.response?.data?.message ?? 'Failed to load preview.'));
+      });
+    } else {
       import('@/features/booking/api/bookings').then(({ getPublicTemplate }) => {
-        getPublicTemplate(eventId as string)
-          .then(data => setTemplate(data))
-          .catch(() => {});
+        getPublicTemplate(id)
+          .then(data => {
+            if (!data) { setLoadError('Template not found.'); return; }
+            setTemplate(data);
+          })
+          .catch((err) => setLoadError(err?.response?.data?.message ?? 'Failed to load event.'));
       });
     }
-  }, [eventId]);
+  }, [eventId, isPreview]);
 
-  const templateImages: string[] = template?.images?.map((img: any) => img.url).filter(Boolean) ?? [];
-  const displayImages = templateImages.length > 0 ? templateImages : FALLBACK_IMAGES;
-  const location = [template?.targetCity, template?.targetState].filter(Boolean).join(', ') || 'Philippines';
+  // Fetch cancellation policy details when the template has one
+  useEffect(() => {
+    const policyId = template?.cancellationPolicyId;
+    if (!policyId) { setCancellationPolicy(null); return; }
+    import('@/features/cancellation-policy/api/cancellation-policies').then(({ fetchCancellationPolicyById }) => {
+      fetchCancellationPolicyById(policyId)
+        .then((p) => setCancellationPolicy({ name: p.name, description: p.description }))
+        .catch(() => setCancellationPolicy({ name: 'Custom Policy', description: 'A cancellation policy applies to this event.' }));
+    });
+  }, [template?.cancellationPolicyId]);
 
+  /* ── Derived data ── */
+  const templateImages: string[] = (template?.images ?? []).map((img: any) => img.url).filter(Boolean);
+  const hasImages = templateImages.length > 0;
+  const location = [template?.targetCity, template?.targetState].filter(Boolean).join(', ') || null;
   const firstVenue = template?.templateVenues?.[0]?.venue;
   const mapLat: number | null = firstVenue?.lat ?? template?.lat ?? null;
   const mapLng: number | null = firstVenue?.lng ?? template?.lng ?? null;
+  // In preview mode, calculate price from store items so it's always up-to-date
+  const storePrice = storeItems.reduce((acc, item) => acc + (item.agreedPrice ?? item.cost), 0);
+  const price: number = isPreview && storePrice > 0 ? storePrice : (template?.estimatedTotal > 0 ? template.estimatedTotal : 0);
+  const ownerName: string = template?.owner?.name ?? 'Organizer';
+  const ownerInitial = ownerName.charAt(0).toUpperCase();
+  const eventDate = formatEventDate(template?.date);
+  const maxAttendees: number | null = template?.maxAttendees ?? null;
+  const category: string = template?.category ?? '';
+  const isDraft = template?.status === 'draft' || template?.status === 'pending';
 
-  const venue = {
-    title:       template?.name        ?? "Event Package",
-    location,
-    province:    template?.targetState ?? "Philippines",
-    category:    template?.category    ?? "event",
-    description: template?.description ?? "",
-    price:       template?.estimatedTotal > 0 ? template.estimatedTotal : 0,
-    images:      displayImages,
-    rating: 0,
-    reviews: 0,
-    offers: [] as string[],
-  };
-
-  const host = {
-    name:        template?.owner?.name   ?? "Organizer",
-    avatar:      template?.owner?.imgId  ?? null as string | null,
-    description: `Organizer of ${venue.title}`,
-    rating:      0,
-    reviews:     0,
-  };
-
-  const inclusions: { name: string; icon: string; desc: string }[] = [
-    ...(template?.templateAssets ?? []).map((a: any) => ({
-      name: a.asset?.name ?? a.name ?? 'Asset',
-      icon: 'category',
-      desc: a.asset?.description ?? '',
-    })),
-    ...(template?.templateServices ?? []).map((s: any) => ({
-      name: s.service?.name ?? s.name ?? 'Service',
-      icon: 'star',
-      desc: s.service?.description ?? '',
-    })),
-    ...(template?.templateVenues ?? []).map((v: any) => ({
-      name: v.venue?.name ?? v.name ?? 'Venue',
-      icon: 'apartment',
-      desc: v.venue?.description ?? '',
-    })),
+  const dbInclusions: { name: string; icon: string; desc: string; imageUrl?: string }[] = [
+    ...(template?.templateVenues ?? []).map((v: any) => ({ name: v.venue?.name ?? 'Venue', icon: 'apartment', desc: v.venue?.description ?? '', imageUrl: v.venue?.images?.[0]?.url ?? undefined })),
+    ...(template?.templateAssets ?? []).map((a: any) => ({ name: a.asset?.name ?? 'Asset', icon: 'category', desc: a.asset?.description ?? '', imageUrl: a.asset?.images?.[0]?.url ?? undefined })),
+    ...(template?.templateServices ?? []).map((s: any) => ({ name: s.service?.name ?? 'Service', icon: 'star', desc: s.service?.description ?? '', imageUrl: s.service?.images?.[0]?.url ?? undefined })),
   ];
+  // In preview mode always show store items (source of truth while building).
+  // Fall back to DB inclusions only on the public listing page.
+  // In preview: wait until client is mounted so the Zustand store is fully hydrated
+  // from localStorage before deciding which source to use. Without this gate,
+  // storeItems can be [] on first render even when the builder added 7 items.
+  const inclusions: { name: string; icon: string; desc: string; imageUrl?: string }[] =
+    isPreview && clientMounted && storeItems.length > 0
+      ? storeItems.map((item) => ({ name: item.name, icon: item.icon, desc: item.desc ?? '', imageUrl: item.imageUrl }))
+      : dbInclusions;
 
-  const openGallery = (index: number) => {
-    setActiveImageIndex(index);
-    setGalleryOpen(true);
-  };
-
-  if (!template) {
-    return (
-      <div className="bg-background min-h-screen flex items-center justify-center">
-        <div className="flex flex-col items-center gap-4 text-white/40">
-          <span className="h-8 w-8 rounded-full border-2 border-white/20 border-t-white/60 animate-spin" />
-          <span className="text-sm">Loading package…</span>
-        </div>
+  if (loadError) return (
+    <div className="bg-background min-h-screen flex items-center justify-center">
+      <div className="flex flex-col items-center gap-4 text-white/40 text-center px-6">
+        <span className="text-4xl">⚠️</span>
+        <span className="text-sm text-white/60">{loadError}</span>
+        <button onClick={() => router.back()} className="mt-2 px-4 py-2 rounded-full border border-white/10 text-xs font-bold text-white hover:bg-white hover:text-black transition-all">Go back</button>
       </div>
-    );
-  }
+    </div>
+  );
+
+  if (!template) return (
+    <div className="bg-background min-h-screen flex items-center justify-center">
+      <div className="flex flex-col items-center gap-4 text-white/40">
+        <span className="h-8 w-8 rounded-full border-2 border-white/20 border-t-white/60 animate-spin" />
+        <span className="text-sm">Loading package…</span>
+      </div>
+    </div>
+  );
 
   return (
     <div className="bg-background bg-gradient-dark text-text-main antialiased min-h-screen flex flex-col selection:bg-accent selection:text-black font-body">
 
-      <CustomExperienceBuilder
-        isOpen={isCustomBookingOpen}
-        onClose={() => setIsCustomBookingOpen(false)} 
-        venuePrice={venue.price}
-      />
+      <CustomExperienceBuilder isOpen={isCustomBookingOpen} onClose={() => setIsCustomBookingOpen(false)} venuePrice={price} />
 
-      {/* Lightbox Gallery Overlay */}
-      {galleryOpen && (
+      {/* Draft preview banner */}
+      {isPreview && isDraft && (
+        <div className="fixed top-0 left-0 right-0 z-200 h-9 bg-yellow-500/95 backdrop-blur-sm text-black text-xs font-bold text-center px-4 flex items-center justify-center gap-2">
+          <span className="material-symbols-outlined text-[14px]">visibility</span>
+          Draft Preview — this is how your listing will look when published
+          <button onClick={() => router.back()} className="ml-4 underline opacity-70 hover:opacity-100">← Back to builder</button>
+        </div>
+      )}
+
+      {/* Lightbox */}
+      {galleryOpen && hasImages && (
         <div className="fixed inset-0 z-100 bg-black/95 backdrop-blur-md flex flex-col animate-in fade-in duration-200">
           <div className="flex justify-between items-center px-6 py-4 border-b border-white/10 bg-black/50">
-            <h3 className="font-display font-bold text-white">{venue.title}</h3>
-            <button onClick={() => setGalleryOpen(false)} className="p-2 hover:bg-white/10 rounded-full transition-colors">
-              <span className="material-symbols-outlined text-white">close</span>
-            </button>
+            <h3 className="font-display font-bold text-white">{template.name}</h3>
+            <button onClick={() => setGalleryOpen(false)} className="p-2 hover:bg-white/10 rounded-full"><span className="material-symbols-outlined text-white">close</span></button>
           </div>
           <div className="flex-1 relative flex items-center justify-center p-4">
-            <img src={venue.images[activeImageIndex]} alt="Gallery" className="max-h-[80vh] max-w-full object-contain shadow-2xl rounded-lg" />
-            <button onClick={() => setActiveImageIndex((activeImageIndex - 1 + venue.images.length) % venue.images.length)} className="absolute left-4 p-4 rounded-full bg-black/50 hover:bg-white/20 text-white border border-white/10 transition-all">
-              <span className="material-symbols-outlined text-white">chevron_left</span>
-            </button>
-            <button onClick={() => setActiveImageIndex((activeImageIndex + 1) % venue.images.length)} className="absolute right-4 p-4 rounded-full bg-black/50 hover:bg-white/20 text-white border border-white/10 transition-all">
-              <span className="material-symbols-outlined text-white">chevron_right</span>
-            </button>
+            <img src={templateImages[activeImageIndex]} alt="Gallery" className="max-h-[80vh] max-w-full object-contain shadow-2xl rounded-lg" />
+            <button onClick={() => setActiveImageIndex((activeImageIndex - 1 + templateImages.length) % templateImages.length)} className="absolute left-4 p-4 rounded-full bg-black/50 hover:bg-white/20 text-white border border-white/10"><span className="material-symbols-outlined">chevron_left</span></button>
+            <button onClick={() => setActiveImageIndex((activeImageIndex + 1) % templateImages.length)} className="absolute right-4 p-4 rounded-full bg-black/50 hover:bg-white/20 text-white border border-white/10"><span className="material-symbols-outlined">chevron_right</span></button>
           </div>
         </div>
       )}
 
-      {/* Navigation */}
-      <header className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-md border-b border-white/5 h-20 transition-all duration-300">
+      {/* Nav */}
+      <header className={`fixed left-0 right-0 z-50 bg-background/80 backdrop-blur-md border-b border-white/5 h-20 ${isPreview && isDraft ? 'top-9' : 'top-0'}`}>
         <div className="mx-auto max-w-7xl px-4 h-full flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-3 group cursor-pointer">
-            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-white text-black font-bold shadow-[0_0_15px_rgba(255,255,255,0.3)] group-hover:rotate-180 transition-transform duration-700">
+          <Link href="/" className="flex items-center gap-3 group">
+            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-white text-black font-bold group-hover:rotate-180 transition-transform duration-700">
               <span className="material-symbols-outlined text-[24px]">explore</span>
             </div>
             <h2 className="text-2xl font-display font-bold tracking-tight text-white group-hover:text-accent transition-colors">FoxPassport</h2>
           </Link>
           <div className="flex items-center gap-4">
-            <button className="hidden sm:flex items-center gap-2 px-4 py-2 rounded-full border border-white/10 hover:bg-white/5 transition-colors text-sm font-medium text-white">
-              <span className="material-symbols-outlined text-[18px]">share</span> Share
-            </button>
-            <button className="hidden sm:flex items-center gap-2 px-4 py-2 rounded-full border border-white/10 hover:bg-white/5 transition-colors text-sm font-medium text-white">
-              <span className="material-symbols-outlined text-[18px]">favorite_border</span> Save
-            </button>
-            <button onClick={() => router.back()} className="h-10 w-10 flex items-center justify-center rounded-full bg-white/5 hover:bg-white hover:text-black transition-all text-white">
-              <span className="material-symbols-outlined">close</span>
-            </button>
+            <button className="hidden sm:flex items-center gap-2 px-4 py-2 rounded-full border border-white/10 hover:bg-white/5 text-sm font-medium text-white"><span className="material-symbols-outlined text-[18px]">share</span> Share</button>
+            <button className="hidden sm:flex items-center gap-2 px-4 py-2 rounded-full border border-white/10 hover:bg-white/5 text-sm font-medium text-white"><span className="material-symbols-outlined text-[18px]">favorite_border</span> Save</button>
+            <button onClick={() => router.back()} className="h-10 w-10 flex items-center justify-center rounded-full bg-white/5 hover:bg-white hover:text-black transition-all text-white"><span className="material-symbols-outlined">close</span></button>
           </div>
         </div>
       </header>
 
-      <main className="grow pt-28 pb-20 px-4 sm:px-6">
+      <main className={`grow pb-20 px-4 sm:px-6 ${isPreview && isDraft ? 'pt-[132px]' : 'pt-28'}`}>
         <div className="max-w-7xl mx-auto">
-          
-          {/* Header Title Section */}
+
+          {/* Title */}
           <div className="mb-6">
-            <h1 className="text-3xl md:text-4xl font-display font-bold text-white mb-3">{venue.title}</h1>
-            <div className="flex flex-wrap items-center gap-4 text-sm text-text-muted">
-              <div className="flex items-center gap-1 font-bold text-white">
-                <span className="material-symbols-outlined text-[18px] fill-current text-white">star</span>
-                {venue.rating}
-                <span className="text-text-muted font-normal underline decoration-dotted cursor-pointer ml-1">{venue.reviews} reviews</span>
-              </div>
-              <span>·</span>
-              <span className="flex items-center gap-1 text-white underline decoration-dotted cursor-pointer">
-                {venue.location}, {venue.province}
-              </span>
+            <div className="flex flex-wrap items-center gap-2 mb-3">
+              {category && (
+                <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-accent/10 border border-accent/20 text-accent text-[10px] font-bold uppercase tracking-wider">
+                  <span className="material-symbols-outlined text-[12px]">{CATEGORY_ICONS[category] ?? 'celebration'}</span>
+                  {category}
+                </span>
+              )}
+              {isPreview && isDraft && (
+                <span className="px-2.5 py-1 rounded-full bg-yellow-500/10 border border-yellow-500/20 text-yellow-400 text-[10px] font-bold uppercase tracking-wider">Draft</span>
+              )}
+            </div>
+            <h1 className="text-3xl md:text-4xl font-display font-bold text-white mb-3">{template.name || 'Untitled Event'}</h1>
+            <div className="flex flex-wrap items-center gap-4 text-sm text-white/60">
+              {location && <span className="flex items-center gap-1"><span className="material-symbols-outlined text-[15px] text-white/30">location_on</span>{location}</span>}
+              {eventDate && <span className="flex items-center gap-1"><span className="material-symbols-outlined text-[15px] text-white/30">calendar_today</span>{eventDate}</span>}
+              {maxAttendees && <span className="flex items-center gap-1"><span className="material-symbols-outlined text-[15px] text-white/30">group</span>Up to {maxAttendees} guests</span>}
             </div>
           </div>
 
-          {/* Hero Image Grid */}
-          <div className="grid grid-cols-4 grid-rows-2 gap-3 h-[350px] md:h-[500px] rounded-2xl overflow-hidden mb-12 relative">
-            <div className="col-span-2 row-span-2 relative cursor-pointer group" onClick={() => openGallery(0)}>
-              <img src={venue.images[0]} className="w-full h-full object-cover group-hover:brightness-110 transition-all duration-500" alt="Main" />
-              <div className="absolute inset-0 bg-black/10 group-hover:bg-transparent transition-colors"></div>
-            </div>
-            {venue.images.slice(1, 5).map((img, idx) => (
-              <div key={idx} className="relative cursor-pointer group" onClick={() => openGallery(idx + 1)}>
-                <img src={img} className="w-full h-full object-cover group-hover:brightness-110 transition-all duration-500" alt={`View ${idx}`} />
-                <div className="absolute inset-0 bg-black/10 group-hover:bg-transparent transition-colors"></div>
+          {/* Gallery */}
+          {hasImages ? (
+            <div className="grid grid-cols-4 grid-rows-2 gap-3 h-87.5 md:h-125 rounded-2xl overflow-hidden mb-12 relative">
+              <div className="col-span-2 row-span-2 cursor-pointer group" onClick={() => { setActiveImageIndex(0); setGalleryOpen(true); }}>
+                <img src={templateImages[0]} className="w-full h-full object-cover group-hover:brightness-110 transition-all duration-500" alt="Main" />
               </div>
-            ))}
-            <button 
-              onClick={() => openGallery(0)}
-              className="absolute bottom-6 right-6 bg-white/10 backdrop-blur-md border border-white/20 text-white text-sm font-bold px-4 py-2.5 rounded-lg hover:bg-white hover:text-black transition-all flex items-center gap-2 shadow-lg"
-            >
-              <span className="material-symbols-outlined text-[18px]">grid_view</span>
-              Show all photos
-            </button>
-          </div>
+              {templateImages.slice(1, 5).map((img: string, idx: number) => (
+                <div key={idx} className="relative cursor-pointer group" onClick={() => { setActiveImageIndex(idx + 1); setGalleryOpen(true); }}>
+                  <img src={img} className="w-full h-full object-cover group-hover:brightness-110 transition-all duration-500" alt={`View ${idx + 1}`} />
+                  {idx === 3 && templateImages.length > 5 && (
+                    <div className="absolute inset-0 bg-black/60 flex items-center justify-center"><span className="text-white font-bold text-lg">+{templateImages.length - 5}</span></div>
+                  )}
+                </div>
+              ))}
+              {templateImages.length > 1 && (
+                <button onClick={() => { setActiveImageIndex(0); setGalleryOpen(true); }} className="absolute bottom-6 right-6 bg-white/10 backdrop-blur-md border border-white/20 text-white text-sm font-bold px-4 py-2.5 rounded-lg hover:bg-white hover:text-black transition-all flex items-center gap-2">
+                  <span className="material-symbols-outlined text-[18px]">grid_view</span> Show all photos
+                </button>
+              )}
+            </div>
+          ) : (
+            <div className="h-65 md:h-90 rounded-2xl mb-12 bg-white/3 border border-white/5 flex flex-col items-center justify-center gap-3 text-white/20">
+              <span className="material-symbols-outlined text-5xl">photo_library</span>
+              <p className="text-sm font-medium">No gallery images yet</p>
+              {isPreview && <p className="text-xs text-white/15">Add photos in the Event Gallery section of the builder</p>}
+            </div>
+          )}
 
-          <div className="grid lg:grid-cols-[1.8fr_1fr] gap-16 relative">
-            
-            {/* Left Column: Details */}
+          <div className="grid lg:grid-cols-[1.8fr_1fr] gap-16">
+
+            {/* Left */}
             <div className="space-y-10">
-              
-              {/* Curator Section */}
-              <div className="bg-surface-highlight/30 border border-white/5 rounded-3xl p-6 mb-8 relative overflow-hidden group">
-                  <div className="absolute top-0 right-0 w-32 h-32 bg-primary/20 blur-[50px] rounded-full pointer-events-none"></div>
-                  <div className="flex items-start gap-4 relative z-10">
-                      <div className="relative shrink-0">
-                          {host.avatar ? (
-                            <img src={host.avatar} className="w-16 h-16 rounded-full object-cover border-2 border-white/10" alt={host.name} />
-                          ) : (
-                            <div className="w-16 h-16 rounded-full bg-[#ccff00] flex items-center justify-center border-2 border-white/10">
-                              <span className="text-black text-2xl font-bold">{host.name.charAt(0).toUpperCase()}</span>
-                            </div>
-                          )}
-                          <div className="absolute -bottom-1 -right-1 bg-primary text-white rounded-full p-1 border-4 border-[#0f111a] flex items-center justify-center shadow-sm">
-                              <span className="material-symbols-outlined text-[14px]">verified</span>
-                          </div>
+
+              {/* Host card */}
+              <div className="bg-surface-highlight/30 border border-white/5 rounded-3xl p-6 relative overflow-hidden">
+                <div className="flex items-start gap-4">
+                  <div className="relative shrink-0">
+                    {template.owner?.imgId ? (
+                      <img src={template.owner.imgId} className="w-16 h-16 rounded-full object-cover border-2 border-white/10" alt={ownerName} />
+                    ) : (
+                      <div className="w-16 h-16 rounded-full bg-accent flex items-center justify-center border-2 border-white/10">
+                        <span className="text-black text-2xl font-bold">{ownerInitial}</span>
                       </div>
-                      <div className="flex-1">
-                          <div className="flex justify-between items-start">
-                              <div>
-                                  <h3 className="font-display font-bold text-white text-lg">Curated by {host.name}</h3>
-                                  <p className="text-accent text-xs font-bold uppercase tracking-wider mb-2">Visual Director</p>
-                              </div>
-                              <div className="flex items-center gap-1 text-yellow-400 text-xs font-bold bg-black/40 px-2 py-1 rounded-lg">
-                                  <span className="material-symbols-outlined text-[14px] fill-current">star</span> {host.rating}
-                              </div>
-                          </div>
-                          <p className="text-sm text-text-muted leading-relaxed">
-                              &quot;{host.description}&quot;
-                          </p>
-                      </div>
+                    )}
+                    <div className="absolute -bottom-1 -right-1 bg-[#7c3aed] text-white rounded-full p-1 border-4 border-[#0f111a] flex items-center justify-center shadow-sm">
+                      <span className="material-symbols-outlined text-[14px]">verified</span>
+                    </div>
                   </div>
-              </div>
-
-              {/* Highlights */}
-              <div className="space-y-6">
-                <div className="flex gap-4 items-start">
-                    <span className="material-symbols-outlined text-white text-2xl mt-1">verified</span>
-                    <div>
-                        <h3 className="font-bold text-white text-base">Certified Foxer</h3>
-                        <p className="text-sm text-text-muted">Experienced host with verified identity and skills.</p>
-                    </div>
-                </div>
-                <div className="flex gap-4 items-start">
-                    <span className="material-symbols-outlined text-white text-2xl mt-1">location_on</span>
-                    <div>
-                        <h3 className="font-bold text-white text-base">Great Location</h3>
-                        <p className="text-sm text-text-muted">95% of recent guests gave the location a 5-star rating.</p>
-                    </div>
-                </div>
-                <div className="flex gap-4 items-start">
-                    <span className="material-symbols-outlined text-white text-2xl mt-1">calendar_today</span>
-                    <div>
-                        <h3 className="font-bold text-white text-base">Free cancellation for 48 hours</h3>
-                        <p className="text-sm text-text-muted">Get a full refund if you change your mind.</p>
-                    </div>
+                  <div className="flex-1">
+                    <h3 className="font-display font-bold text-white text-lg">Curated by {ownerName}</h3>
+                    <p className="text-accent text-xs font-bold uppercase tracking-wider">Event Organizer</p>
+                  </div>
                 </div>
               </div>
 
-              <div className="h-px bg-white/10 w-full"></div>
+              {/* Real event details */}
+              {(eventDate || maxAttendees || location) && (
+                <div className="space-y-5">
+                  {eventDate && <div className="flex gap-4 items-start"><span className="material-symbols-outlined text-white text-2xl mt-0.5">calendar_today</span><div><h3 className="font-bold text-white text-base">Event Date</h3><p className="text-sm text-text-muted">{eventDate}</p></div></div>}
+                  {maxAttendees && <div className="flex gap-4 items-start"><span className="material-symbols-outlined text-white text-2xl mt-0.5">group</span><div><h3 className="font-bold text-white text-base">Guest Capacity</h3><p className="text-sm text-text-muted">Up to {maxAttendees} guests</p></div></div>}
+                  {location && <div className="flex gap-4 items-start"><span className="material-symbols-outlined text-white text-2xl mt-0.5">location_on</span><div><h3 className="font-bold text-white text-base">Location</h3><p className="text-sm text-text-muted">{location}</p></div></div>}
+                </div>
+              )}
+
+              {(eventDate || maxAttendees || location) && <div className="h-px bg-white/10 w-full" />}
 
               {/* Description */}
               <div>
                 <h3 className="text-2xl font-display font-bold text-white mb-4">About this experience</h3>
-                <p className="text-gray-300 text-base leading-relaxed whitespace-pre-line mb-4">
-                    {venue.description}
-                </p>
-                <button className="text-white font-bold underline decoration-accent underline-offset-4 flex items-center gap-1 hover:text-accent transition-colors">
-                    Show more <span className="material-symbols-outlined text-[18px]">chevron_right</span>
-                </button>
+                {template.description
+                  ? <p className="text-gray-300 text-base leading-relaxed whitespace-pre-line">{template.description}</p>
+                  : <p className="text-white/20 italic text-sm">No description added yet.</p>
+                }
               </div>
 
-              <div className="h-px bg-white/10 w-full"></div>
+              <div className="h-px bg-white/10 w-full" />
 
-              {/* Included Services Section */}
-              {inclusions.length > 0 && (
-              <div>
+              {/* Inclusions */}
+              {inclusions.length > 0 ? (
+                <div>
                   <div className="flex items-center justify-between mb-6">
-                      <h3 className="text-2xl font-display font-bold text-white">Included in this Build</h3>
-                      <button onClick={() => setIsCustomBookingOpen(true)} className="text-xs font-bold text-accent hover:text-white transition-colors flex items-center gap-1">
-                          <span className="material-symbols-outlined text-[16px]">edit</span> Customize
-                      </button>
+                    <h3 className="text-2xl font-display font-bold text-white">Included in this Build</h3>
+                    <button onClick={() => setIsCustomBookingOpen(true)} className="text-xs font-bold text-accent flex items-center gap-1"><span className="material-symbols-outlined text-[16px]">edit</span> Customize</button>
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      {inclusions.map((svc, i) => (
-                          <div key={i} className="flex items-start gap-4 p-4 rounded-2xl bg-white/5 border border-white/5">
-                              <div className="h-10 w-10 rounded-xl bg-surface-highlight flex items-center justify-center text-white/80 shrink-0">
-                                  <span className="material-symbols-outlined">{svc.icon}</span>
-                              </div>
-                              <div>
-                                  <h4 className="font-bold text-white text-sm">{svc.name}</h4>
-                                  <p className="text-xs text-text-muted mt-1 leading-relaxed">{svc.desc}</p>
-                              </div>
-                          </div>
-                      ))}
-                  </div>
-                  <div className="mt-4 bg-accent/5 border border-accent/20 rounded-xl p-4 flex gap-3 items-start">
-                      <span className="material-symbols-outlined text-accent shrink-0">info</span>
-                      <div>
-                          <p className="text-sm text-white font-bold mb-1">Not your vibe?</p>
-                          <p className="text-xs text-text-muted">
-                              You can swap the curator, upgrade the sound, or add crazy extras like a ramen bar in the 
-                              <button onClick={() => setIsCustomBookingOpen(true)} className="text-white font-bold underline decoration-accent decoration-2 underline-offset-2 ml-1 hover:text-accent transition-colors">Experience Builder</button>.
-                          </p>
+                    {inclusions.map((svc, i) => (
+                      <div key={i} className="flex items-start gap-4 p-4 rounded-2xl bg-white/5 border border-white/5">
+                        {svc.imageUrl ? (
+                          <img src={svc.imageUrl} alt={svc.name} className="h-10 w-10 rounded-xl object-cover shrink-0" />
+                        ) : (
+                          <div className="h-10 w-10 rounded-xl bg-surface-highlight flex items-center justify-center text-white/80 shrink-0"><span className="material-symbols-outlined">{svc.icon}</span></div>
+                        )}
+                        <div><h4 className="font-bold text-white text-sm">{svc.name}</h4><p className="text-xs text-text-muted mt-1 leading-relaxed">{svc.desc}</p></div>
                       </div>
-                  </div>
-              </div>
-              )}
-
-              <div className="h-px bg-white/10 w-full"></div>
-
-              {/* Amenities */}
-              <div>
-                <h3 className="text-2xl font-display font-bold text-white mb-6">What this place offers</h3>
-                <div className="grid grid-cols-2 gap-4">
-                    {venue.offers.map((offer, i) => (
-                        <div key={i} className="flex items-center gap-3 text-gray-300">
-                            <span className="material-symbols-outlined text-[24px] text-white/70">
-                                {offer.includes('Wifi') ? 'wifi' : 
-                                 offer.includes('Parking') ? 'local_parking' : 
-                                 offer.includes('Kitchen') ? 'kitchen' : 
-                                 offer.includes('Air') ? 'ac_unit' : 
-                                 offer.includes('Pool') ? 'pool' : 
-                                 'check_circle'}
-                            </span>
-                            {offer}
-                        </div>
                     ))}
+                  </div>
                 </div>
-                <button className="mt-8 px-6 py-3 rounded-xl border border-white/10 text-sm font-bold text-white hover:bg-white hover:text-black transition-colors">
-                    Show all 15 amenities
-                </button>
-              </div>
+              ) : isPreview ? (
+                <div>
+                  <h3 className="text-2xl font-display font-bold text-white mb-4">Included in this Build</h3>
+                  <div className="rounded-2xl border border-dashed border-white/10 p-8 text-center">
+                    <span className="material-symbols-outlined text-4xl text-white/15 block mb-2">inventory_2</span>
+                    <p className="text-sm text-white/25">No venues, gear, or services added yet.</p>
+                    <p className="text-xs text-white/15 mt-1">Drag items into the builder to include them.</p>
+                  </div>
+                </div>
+              ) : null}
 
-              <div className="h-px bg-white/10 w-full"></div>
+              {(inclusions.length > 0 || isPreview) && <div className="h-px bg-white/10 w-full" />}
 
-              {/* Ratings & Reviews */}
-              <div id="reviews">
-                 <div className="flex items-center gap-2 mb-8">
-                    <span className="material-symbols-outlined text-4xl text-white fill-current">star</span>
-                    <h2 className="text-5xl font-display font-bold text-white">{venue.rating}</h2>
-                    <div className="flex flex-col justify-center h-full ml-4 pl-4 border-l border-white/10">
-                        <span className="text-lg font-bold text-white leading-none">Guest favorite</span>
-                        <p className="text-sm text-text-muted mt-1">One of the most loved homes on FoxPassport</p>
-                    </div>
-                 </div>
-
-                 {/* Rating Bars */}
-                 <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-4 mb-10">
-                    {[
-                        { stars: 5, count: '92%' },
-                        { stars: 4, count: '6%' },
-                        { stars: 3, count: '2%' },
-                        { stars: 2, count: '0%' },
-                        { stars: 1, count: '0%' },
-                    ].map((row) => (
-                        <div key={row.stars} className="flex items-center gap-3">
-                            <span className="text-sm font-bold text-white w-3">{row.stars}</span>
-                            <div className="flex-1 h-1.5 bg-white/10 rounded-full overflow-hidden">
-                                <div className="h-full bg-accent rounded-full shadow-[0_0_8px_rgba(204,255,0,0.5)]" style={{ width: row.count }}></div>
-                            </div>
-                            <span className="text-xs font-medium text-text-muted w-8 text-right">{row.count}</span>
-                        </div>
-                    ))}
-                 </div>
-
-                 {/* Review Cards */}
-                 <div className="grid md:grid-cols-2 gap-6">
-                    {[
-                        { name: "Sarah K.", date: "January 2024", text: "So cozy! The real highlight was the host. Neon Vertex made sure we had everything we needed. 10/10 would vibe again.", img: "https://lh3.googleusercontent.com/aida-public/AB6AXuAmLMhfBavcKVkOWHaS4TPPk-NHIcut_ZhBBEe8lYdYR3H4t2yqSZKN4kaK-4daM6PVExafzgFu6-ETEkTvY3iOkNq3VyaKMs5jeDTMhhkOITtl93afJOgej_LM-nwJ4slOZvjY9jUaO0XJczNgnvj21yuB3eVwQrWu2qU4kFoFm9oertAy6N8vnz-DcYaCFbk-2wqIYps1HbNWSCB5TBISWObKfniMTbMOzf964UcanLKD2UIOD2M5IRj5kXf1kvppEdNzUJY4S3U" },
-                        { name: "Mike T.", date: "December 2023", text: "Great location, very quiet despite being in the center of the district. The photography add-on is a must!", img: "https://lh3.googleusercontent.com/aida-public/AB6AXuDgd--zxF5w1ZztnRmVlmV-feUqN_qBWaBYUT5CujXc0w-0AUuWAmHt_hqnGMMe6m_fRhEWkVx4s-GPtdMKYzlfSOQqHXDOj1gZA2nyUJx9g-k_T2GXeIiYRFWE4OhzISNwTdKHnUtx3za3LKNh05jbmOS4npA_2XzCQ6-b0jqwzXF4Zy5LKfBRtJpHKvZknn8VWcB24VzWfO5VUZJ4zVgdHD766vR4O1OP3A6j3meIxBZLNL5KDybSUXLKzRdPbfxAQ2NIKRBRKsA" }
-                    ].map((review, i) => (
-                        <div key={i} className="glass-panel p-6 rounded-2xl border border-white/5">
-                            <div className="flex items-center gap-3 mb-4">
-                                <img src={review.img} className="w-10 h-10 rounded-full object-cover" alt={review.name} />
-                                <div>
-                                    <h4 className="font-bold text-white text-sm">{review.name}</h4>
-                                    <p className="text-xs text-text-muted">{review.date}</p>
-                                </div>
-                            </div>
-                            <p className="text-sm text-gray-300 leading-relaxed">{review.text}</p>
-                        </div>
-                    ))}
-                 </div>
-                 
-                 <button className="mt-8 px-6 py-3 rounded-xl border border-white/10 text-sm font-bold text-white hover:bg-white hover:text-black transition-colors">
-                    Show all {venue.reviews} reviews
-                 </button>
-              </div>
-
-              <div className="h-px bg-white/10 w-full"></div>
-
-              {/* Map Section */}
+              {/* Map */}
               <div>
-                 <h3 className="text-2xl font-display font-bold text-white mb-2">Where you&apos;ll be</h3>
-                 <p className="text-text-muted text-sm mb-6">{venue.location}, {venue.province}</p>
-                 {mapLat && mapLng ? (
-                   <div className="relative rounded-2xl overflow-hidden border border-white/10">
-                     <LocationMap lat={mapLat} lng={mapLng} className="h-80 w-full" />
-                     <div className="absolute bottom-3 left-1/2 -translate-x-1/2">
-                       <span className="bg-black/80 backdrop-blur-md text-white text-xs font-bold px-3 py-1.5 rounded-full border border-white/10">
-                         Exact location provided after booking
-                       </span>
-                     </div>
-                   </div>
-                 ) : (
-                   <div className="h-80 w-full rounded-2xl bg-[#1f2235] relative overflow-hidden flex items-center justify-center border border-white/10 group">
-                     <div className="absolute inset-0 opacity-20" style={{ backgroundImage: "radial-gradient(#ffffff 1px, transparent 1px)", backgroundSize: "20px 20px" }}></div>
-                     <div className="absolute inset-0 bg-linear-to-t from-[#02040a] via-transparent to-transparent opacity-50"></div>
-                     <div className="relative z-10 flex flex-col items-center gap-2 group-hover:-translate-y-2 transition-transform duration-300">
-                       <div className="h-16 w-16 rounded-full bg-accent/20 flex items-center justify-center animate-pulse">
-                         <div className="h-4 w-4 bg-accent rounded-full shadow-[0_0_20px_#ccff00]"></div>
-                       </div>
-                       <span className="bg-black/80 backdrop-blur-md text-white text-xs font-bold px-3 py-1.5 rounded-full border border-white/10">Exact location provided after booking</span>
-                     </div>
-                   </div>
-                 )}
+                <h3 className="text-2xl font-display font-bold text-white mb-2">Where you&apos;ll be</h3>
+                {location && <p className="text-text-muted text-sm mb-6">{location}</p>}
+                {mapLat && mapLng ? (
+                  <div className="relative rounded-2xl overflow-hidden border border-white/10">
+                    <LocationMap lat={mapLat} lng={mapLng} className="h-80 w-full" />
+                    <div className="absolute bottom-3 left-1/2 -translate-x-1/2">
+                      <span className="bg-black/80 backdrop-blur-md text-white text-xs font-bold px-3 py-1.5 rounded-full border border-white/10">Exact location provided after booking</span>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="h-52 rounded-2xl bg-white/3 border border-white/5 flex flex-col items-center justify-center gap-2 text-white/20">
+                    <span className="material-symbols-outlined text-3xl">location_off</span>
+                    <p className="text-sm">Set a location in the builder to show the map</p>
+                  </div>
+                )}
               </div>
 
-              <div className="h-px bg-white/10 w-full"></div>
+              <div className="h-px bg-white/10 w-full" />
 
-              {/* Host Bio */}
-              <div className="flex gap-6">
-                 <div className="relative shrink-0">
-                    {host.avatar ? (
-                      <img src={host.avatar} className="w-16 h-16 rounded-full object-cover border-2 border-white/10" alt="Host" />
-                    ) : (
-                      <div className="w-16 h-16 rounded-full bg-[#ccff00] flex items-center justify-center border-2 border-white/10">
-                        <span className="text-black text-2xl font-bold">{host.name.charAt(0).toUpperCase()}</span>
-                      </div>
-                    )}
-                    <div className="absolute -bottom-1 -right-1 bg-primary text-white rounded-full p-1 border-4 border-[#0f111a] shadow-sm flex items-center justify-center">
-                        <span className="material-symbols-outlined text-[14px]">verified</span>
+              {/* Host bio */}
+              <div className="flex gap-6 items-start">
+                <div className="relative shrink-0">
+                  {template.owner?.imgId ? (
+                    <img src={template.owner.imgId} className="w-16 h-16 rounded-full object-cover border-2 border-white/10" alt="Host" />
+                  ) : (
+                    <div className="w-16 h-16 rounded-full bg-accent flex items-center justify-center border-2 border-white/10">
+                      <span className="text-black text-2xl font-bold">{ownerInitial}</span>
                     </div>
-                 </div>
-                 <div>
-                    <h3 className="text-xl font-bold text-white mb-1">Hosted by {host.name}</h3>
-                    <p className="text-text-muted text-sm mb-4">Joined May 2021</p>
-                    <div className="flex gap-4 text-sm text-white mb-4">
-                        <span className="flex items-center gap-1"><span className="material-symbols-outlined text-[16px] text-accent">star</span> {host.reviews} Reviews</span>
-                        <span className="flex items-center gap-1"><span className="material-symbols-outlined text-[16px] text-accent">verified</span> Identity Verified</span>
-                        <span className="flex items-center gap-1"><span className="material-symbols-outlined text-[16px] text-accent">work</span> Superhost</span>
-                    </div>
-                    <p className="text-sm text-gray-300 leading-relaxed mb-4">{host.description}</p>
-                    <div className="flex items-center gap-4">
-                        <button className="px-6 py-3 rounded-xl border border-white/10 text-sm font-bold text-white hover:bg-white hover:text-black transition-colors">
-                            Contact Host
-                        </button>
-                    </div>
-                 </div>
+                  )}
+                  <div className="absolute -bottom-1 -right-1 bg-[#7c3aed] text-white rounded-full p-1 border-4 border-[#0f111a] shadow-sm flex items-center justify-center">
+                    <span className="material-symbols-outlined text-[14px]">verified</span>
+                  </div>
+                </div>
+                <div>
+                  <h3 className="text-xl font-bold text-white mb-1">Hosted by {ownerName}</h3>
+                  <p className="text-text-muted text-sm mb-4">FoxPassport Organizer</p>
+                  <div className="flex gap-4 text-sm text-white mb-4">
+                    <span className="flex items-center gap-1"><span className="material-symbols-outlined text-[16px] text-accent">verified</span> Identity Verified</span>
+                  </div>
+                  <button className="px-6 py-3 rounded-xl border border-white/10 text-sm font-bold text-white hover:bg-white hover:text-black transition-colors">Contact Host</button>
+                </div>
               </div>
 
-              <div className="h-px bg-white/10 w-full"></div>
+              <div className="h-px bg-white/10 w-full" />
 
-              {/* Things to Know */}
+              {/* Things to know */}
               <div>
                 <h3 className="text-2xl font-display font-bold text-white mb-6">Things to know</h3>
-                <div className="grid md:grid-cols-3 gap-8">
-                   <div>
-                      <h4 className="font-bold text-white text-sm mb-3">House Rules</h4>
-                      <div className="space-y-2 text-sm text-text-muted">
-                        <p>Check-in after 2:00 PM</p>
-                        <p>Checkout before 12:00 PM</p>
-                        <p>3 guests maximum</p>
-                      </div>
-                   </div>
-                   <div>
-                      <h4 className="font-bold text-white text-sm mb-3">Safety & Property</h4>
-                      <div className="space-y-2 text-sm text-text-muted">
-                        <p>Carbon monoxide alarm</p>
-                        <p>Smoke alarm</p>
-                        <p>Security camera on property</p>
-                      </div>
-                   </div>
-                   <div>
-                      <h4 className="font-bold text-white text-sm mb-3">Cancellation Policy</h4>
-                      <div className="space-y-2 text-sm text-text-muted">
-                        <p>Free cancellation for 48 hours.</p>
-                        <p>Review the full policy for details.</p>
-                      </div>
-                   </div>
+                <div className="grid md:grid-cols-2 gap-8">
+                  <div>
+                    <h4 className="font-bold text-white text-sm mb-3">Event Info</h4>
+                    <div className="space-y-2 text-sm text-text-muted">
+                      {maxAttendees && <p>Maximum {maxAttendees} guests</p>}
+                      {category && <p>Category: {category.charAt(0).toUpperCase() + category.slice(1)}</p>}
+                      {!maxAttendees && !category && <p className="italic text-white/20">No details set yet.</p>}
+                    </div>
+                  </div>
+                  <div>
+                    <h4 className="font-bold text-white text-sm mb-3">Cancellation Policy</h4>
+                    <div className="space-y-2 text-sm text-text-muted">
+                      {cancellationPolicy ? (
+                        <>
+                          <p className="font-semibold text-white/80">{cancellationPolicy.name}</p>
+                          {cancellationPolicy.description && <p>{cancellationPolicy.description}</p>}
+                        </>
+                      ) : template?.cancellationPolicyId ? (
+                        <p>Loading policy…</p>
+                      ) : (
+                        <p>Default policy: full refund if cancelled within 48 hours of booking.</p>
+                      )}
+                    </div>
+                  </div>
                 </div>
               </div>
 
             </div>
 
-            {/* Right Column: Booking Widget */}
+            {/* Right: Booking widget */}
             <div className="relative">
               <div className="sticky top-24">
                 <div className="glass-card rounded-2xl border border-white/10 p-6 shadow-glow relative overflow-hidden">
-                  <div className="absolute top-0 right-0 w-32 h-32 bg-accent/10 rounded-full blur-2xl pointer-events-none"></div>
-                  
-                  <div className="flex justify-between items-end mb-6 relative z-10">
-                    <div>
-                      {venue.price > 0 ? (
-                        <>
-                          <span className="text-2xl font-display font-bold text-white">₱{venue.price.toLocaleString()}</span>
-                          <span className="text-sm text-text-muted"> est. total</span>
-                        </>
-                      ) : (
-                        <span className="text-sm text-text-muted">Price on request</span>
-                      )}
-                    </div>
-                    <div className="flex items-center gap-1 text-xs text-white font-bold">
-                        <span className="material-symbols-outlined text-[14px] fill-current">star</span>
-                        {venue.rating} · <span className="text-text-muted underline cursor-pointer">{venue.reviews} reviews</span>
-                    </div>
+                  <div className="absolute top-0 right-0 w-32 h-32 bg-accent/10 rounded-full blur-2xl pointer-events-none" />
+                  <div className="mb-6 relative z-10">
+                    {price > 0
+                      ? <><span className="text-2xl font-display font-bold text-white">₱{price.toLocaleString()}</span><span className="text-sm text-text-muted"> est. total</span></>
+                      : <span className="text-sm text-text-muted">Price on request</span>
+                    }
                   </div>
 
-                  <button 
-                    onClick={() => router.push(`/booking/config?templateId=${eventId}`)}
-                    className="w-full btn-neon rounded-xl bg-accent py-3.5 text-black font-bold text-lg hover:shadow-[0_0_20px_rgba(204,255,0,0.4)] transition-all active:scale-95 mb-4 relative z-10"
-                  >
-                    Reserve
-                  </button>
-
-                  <button 
-                    onClick={() => setIsCustomBookingOpen(true)}
-                    className="w-full rounded-xl border border-white/20 py-3.5 text-white font-bold text-sm hover:bg-white hover:text-black transition-all active:scale-95 mb-4 relative z-10 flex items-center justify-center gap-2 group"
-                  >
-                    <span className="material-symbols-outlined text-accent group-hover:text-black transition-colors">design_services</span>
-                    Design Custom Experience
-                  </button>
-
-                  <p className="text-center text-xs text-text-muted mb-6 relative z-10">You won&apos;t be charged yet</p>
-
-                  {venue.price > 0 && (
+                  {isPreview ? (
+                    <div className="w-full rounded-xl border border-dashed border-white/15 py-3.5 text-white/30 text-sm font-bold text-center mb-4 relative z-10">
+                      Booking available after publishing
+                    </div>
+                  ) : (
                     <>
-                      <div className="space-y-3 text-sm text-gray-300 relative z-10 pb-4">
-                        <div className="flex justify-between">
-                          <span className="underline decoration-dotted cursor-pointer">Package estimate</span>
-                          <span>₱{venue.price.toLocaleString()}</span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span className="underline decoration-dotted cursor-pointer">Service fee</span>
-                          <span>₱150</span>
-                        </div>
-                      </div>
-                      <div className="h-px bg-white/10 mb-4 relative z-10"></div>
-                      <div className="flex justify-between items-center text-white font-bold text-lg relative z-10">
-                        <span>Total</span>
-                        <span>₱{(venue.price + 150).toLocaleString()}</span>
-                      </div>
+                      <button onClick={() => router.push(`/booking/config?templateId=${eventId}`)} className="w-full btn-neon rounded-xl bg-accent py-3.5 text-black font-bold text-lg hover:shadow-[0_0_20px_rgba(204,255,0,0.4)] transition-all active:scale-95 mb-4 relative z-10">Reserve</button>
+                      <button onClick={() => setIsCustomBookingOpen(true)} className="w-full rounded-xl border border-white/20 py-3.5 text-white font-bold text-sm hover:bg-white hover:text-black transition-all active:scale-95 mb-4 relative z-10 flex items-center justify-center gap-2 group">
+                        <span className="material-symbols-outlined text-accent group-hover:text-black transition-colors">design_services</span>Design Custom Experience
+                      </button>
+                      <p className="text-center text-xs text-text-muted mb-6 relative z-10">You won&apos;t be charged yet</p>
                     </>
                   )}
-                </div>
-                
-                <div className="mt-4 flex items-center justify-center gap-2 text-xs text-text-muted">
-                    <span className="material-symbols-outlined text-[14px]">flag</span>
-                    <span className="underline cursor-pointer hover:text-white">Report this listing</span>
+
+                  {price > 0 && (
+                    <>
+                      <div className="space-y-3 text-sm text-gray-300 relative z-10 pb-4">
+                        <div className="flex justify-between"><span>Package estimate</span><span>₱{price.toLocaleString()}</span></div>
+                        <div className="flex justify-between"><span>Service fee</span><span>₱150</span></div>
+                      </div>
+                      <div className="h-px bg-white/10 mb-4 relative z-10" />
+                      <div className="flex justify-between items-center text-white font-bold text-lg relative z-10"><span>Total</span><span>₱{(price + 150).toLocaleString()}</span></div>
+                    </>
+                  )}
                 </div>
               </div>
             </div>
@@ -922,19 +801,15 @@ const EventDetailsPage: React.FC = () => {
         </div>
       </main>
 
-      {/* Footer */}
       <footer className="bg-black pt-20 pb-10 border-t border-white/10">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col md:flex-row justify-between items-center gap-4">
-            <div className="flex items-center gap-2">
-              <span className="material-symbols-outlined text-white">explore</span>
-              <span className="text-xl font-display font-bold text-white">FoxPassport</span>
-            </div>
-            <p className="text-xs text-gray-500 font-medium">© 2024 FoxPassport Republic All rights reserved.</p>
+            <div className="flex items-center gap-2"><span className="material-symbols-outlined text-white">explore</span><span className="text-xl font-display font-bold text-white">FoxPassport</span></div>
+            <p className="text-xs text-gray-500">© 2024 FoxPassport Republic. All rights reserved.</p>
             <div className="flex gap-6">
-              <a className="text-xs text-gray-500 hover:text-white font-medium transition-colors" href="#">Privacy</a>
-              <a className="text-xs text-gray-500 hover:text-white font-medium transition-colors" href="#">Terms</a>
-              <a className="text-xs text-gray-500 hover:text-white font-medium transition-colors" href="#">Cookies</a>
+              <a className="text-xs text-gray-500 hover:text-white transition-colors" href="#">Privacy</a>
+              <a className="text-xs text-gray-500 hover:text-white transition-colors" href="#">Terms</a>
+              <a className="text-xs text-gray-500 hover:text-white transition-colors" href="#">Cookies</a>
             </div>
           </div>
         </div>

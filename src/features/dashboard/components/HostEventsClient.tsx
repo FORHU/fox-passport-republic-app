@@ -5,6 +5,8 @@ import { useRouter } from "next/navigation";
 import { DashboardHeader, EventsSection } from "@/features/dashboard/components";
 import RequireAuth from "@/features/auth/components/RequireAuth";
 import { STATUS_OPTIONS } from "@/features/dashboard/data/dashboardData";
+import api from "@/shared/lib/axios";
+import { toast } from "sonner";
 
 function normalizeValue(value: unknown): string {
   return String(value ?? "")
@@ -51,6 +53,21 @@ export default function HostEventsClient({ initialEvents }: HostEventsClientProp
 
   const handleEdit = (id: number | string) => {
     router.push(`/creator-dashboard/events/${id}/edit`);
+  };
+
+  const handleDelete = async (id: number | string) => {
+    setEvents((prev) => prev.filter((ev) => ev.id !== id));
+    try {
+      await api.delete(`/event-templates/${id}`);
+      toast.success("Draft deleted");
+    } catch (err: any) {
+      console.error('[handleDelete] failed', err?.response?.status, err?.response?.data);
+      toast.error(err?.response?.data?.message ?? "Failed to delete draft");
+      setEvents((prev) => {
+        if (prev.some((ev) => ev.id === id)) return prev;
+        return [...prev, initialEvents.find((ev: any) => ev.id === id)].filter(Boolean);
+      });
+    }
   };
 
   return (
@@ -110,6 +127,7 @@ export default function HostEventsClient({ initialEvents }: HostEventsClientProp
             <EventsSection
               events={filteredEvents}
               onStatusChange={handleStatusChange}
+              onDelete={handleDelete}
               showViewAllLink={false}
               onEdit={handleEdit}
             />

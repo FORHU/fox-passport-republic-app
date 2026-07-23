@@ -364,9 +364,10 @@ export async function getAdminEventTemplates() {
   }
 }
 
-export async function getEvents() {
+export async function getEvents(ownerId?: string) {
   try {
-    const body = await serverFetch('/event-templates');
+    const params = ownerId ? { ownerId } : undefined;
+    const body = await serverFetch('/event-templates', params);
     return extractList(body);
   } catch (error) {
     console.error('Failed to fetch events:', error);
