@@ -1,6 +1,6 @@
 ﻿'use client';
 
-import { useCallback, useMemo } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { useVenueBuilderStore } from "@/features/venue/store/useVenueBuilderStore";
@@ -11,6 +11,10 @@ import {
   ResourceItem,
 } from "@/features/venue/data/venueBuilderData";
 import { useFileUpload } from "@/shared/hooks/useFileUpload";
+import { fetchVenueCatalog } from "@/features/venue/api/venues";
+
+type VenueCatalog = { tech: string[]; amenities: string[]; staff: string[] };
+const CATALOG_TABS = new Set(['tech', 'amenities', 'staff']);
 
 
 export function useVenueBuilder() {
@@ -18,6 +22,44 @@ export function useVenueBuilder() {
   const queryClient = useQueryClient();
   const store = useVenueBuilderStore();
   const { uploadFile, isUploading } = useFileUpload();
+
+  const [catalog, setCatalog] = useState<VenueCatalog | null>(null);
+
+  useEffect(() => {
+    fetchVenueCatalog()
+      .then(setCatalog)
+      .catch(() => {});
+  }, []);
+
+  // Catalog suggestions for the active tab, excluding already-added names
+  const catalogItems = useMemo(() => {
+    if (!catalog || !CATALOG_TABS.has(store.activeCategory)) return [];
+    const key = store.activeCategory as keyof VenueCatalog;
+    const existing = new Set(
+      (store.resources[store.activeCategory] || []).map((r) => r.name.toLowerCase())
+    );
+    const all = catalog[key] || [];
+    const visible = store.searchQuery
+      ? all.filter((n) => n.toLowerCase().includes(store.searchQuery.toLowerCase()))
+      : all;
+    return visible.filter((n) => !existing.has(n.toLowerCase()));
+  }, [catalog, store.activeCategory, store.resources, store.searchQuery]);
+
+  const handleAddCatalogItem = useCallback(
+    (name: string) => {
+      const catDef = RESOURCE_CATEGORIES.find((c) => c.id === store.activeCategory);
+      const newResource: ResourceItem = {
+        id: `catalog-${store.activeCategory}-${Date.now()}`,
+        name,
+        value: 0,
+        icon: catDef?.icon || "star",
+        desc: "",
+        category: store.activeCategory,
+      };
+      store.addCustomResource(store.activeCategory, newResource);
+    },
+    [store]
+  );
 
   // Get filtered resources based on active category and search
   const filteredResources = useMemo(() => {
@@ -253,6 +295,7 @@ export function useVenueBuilder() {
     // State
     ...store,
     filteredResources,
+    catalogItems,
     revenue,
     currentCategoryLabel,
 
@@ -262,6 +305,7 @@ export function useVenueBuilder() {
     handleDragLeave,
     handleDrop,
     handleAddCustomItem,
+    handleAddCatalogItem,
     handleRemoveCustomResource: store.removeCustomResource,
     addImageToGallery,
     removeImageFromGallery,
