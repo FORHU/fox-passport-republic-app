@@ -10,30 +10,30 @@ interface CategoryListHeroProps {
 export const CategoryListHero: React.FC<CategoryListHeroProps> = ({ searchQuery, setSearchQuery }) => {
   return (
     <>
-      <nav className="flex items-center gap-2 text-sm font-semibold text-slate-400 mb-10">
+      <nav className="flex items-center gap-2 text-xs sm:text-sm font-semibold text-slate-400 mb-6 sm:mb-10">
         <Link href="/" className="hover:text-pink-500 transition-colors">Home</Link>
         <span className="text-slate-300">/</span>
         <span className="text-slate-900">Select Category</span>
       </nav>
 
-      <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-8 mb-12">
+      <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-4 sm:gap-8 mb-6 sm:mb-12">
         <div className="max-w-xl">
-          <h2 className="text-5xl lg:text-6xl font-black tracking-tight text-slate-900 mb-4 leading-tight">
+          <h2 className="text-3xl sm:text-5xl lg:text-6xl font-black tracking-tight text-slate-900 mb-3 sm:mb-4 leading-tight">
             What&apos;s the <span className="text-pink-500 italic">vibe</span> today?
           </h2>
-          <p className="text-xl text-slate-500 font-medium">
+          <p className="text-base sm:text-xl text-slate-500 font-medium">
             Let&apos;s find your next core memory. Select a category to get started.
           </p>
         </div>
 
         <div className="relative w-full lg:w-96 group">
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-pink-500 transition-colors w-5 h-5" />
+          <Search className="absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-pink-500 transition-colors w-4 h-4 sm:w-5 sm:h-5" />
           <input
             type="text"
             placeholder="Search categories..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-12 pr-6 py-4 rounded-2xl border-none ring-1 ring-slate-200 bg-white shadow-sm focus:ring-2 focus:ring-pink-500 focus:shadow-lg transition-all outline-none"
+            className="w-full pl-10 sm:pl-12 pr-4 sm:pr-6 py-3 sm:py-4 rounded-xl sm:rounded-2xl border-none ring-1 ring-slate-200 bg-white shadow-sm focus:ring-2 focus:ring-pink-500 focus:shadow-lg transition-all outline-none text-xs sm:text-base"
           />
         </div>
       </div>

@@ -14,12 +14,17 @@ export const CategoryHeader: React.FC<CategoryHeaderProps> = ({ category }) => {
   const router = useRouter();
 
   return (
-    <header className="fixed top-6 left-0 right-0 z-50 transition-all duration-300">
-      <div className="mx-auto max-w-7xl px-4">
-        <div className="backdrop-blur-md bg-black/30 border border-white/10 rounded-full px-6 h-20 flex items-center justify-between shadow-2xl hover:bg-black/40 transition-colors duration-500">
+    <header className="fixed top-4 sm:top-6 left-0 right-0 z-50 transition-all duration-300">
+      <div className="mx-auto max-w-7xl px-3 sm:px-4">
+        <div className="backdrop-blur-md bg-black/30 border border-white/10 rounded-full px-3 sm:px-6 h-14 sm:h-20 flex items-center justify-between shadow-2xl hover:bg-black/40 transition-colors duration-500">
           
           {/* Logo */}
-          <BrandLogo logoSize={48} textSize="text-2xl" />
+          <div className="hidden sm:block">
+            <BrandLogo logoSize={48} textSize="text-2xl" />
+          </div>
+          <div className="sm:hidden">
+            <BrandLogo logoSize={32} textSize="text-lg" />
+          </div>
 
           {/* Nav Pill */}
           <nav className="hidden md:flex items-center gap-2 bg-black/20 p-1.5 rounded-full border border-white/5">
@@ -34,15 +39,15 @@ export const CategoryHeader: React.FC<CategoryHeaderProps> = ({ category }) => {
           </nav>
 
           {/* Mobile category badge */}
-          <span className="md:hidden flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold text-black bg-[#ccff00]">
-            <DynamicIcon name={category.icon || "Grid3X3"} className="w-3.5 h-3.5" />
+          <span className="md:hidden flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] sm:text-xs font-bold text-black bg-[#ccff00]">
+            <DynamicIcon name={category.icon || "Grid3X3"} className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
             {category.name}
           </span>
 
           {/* Close / Action */}
-          <div className="flex items-center gap-4">
-            <button onClick={() => router.push('/')} className="h-11 w-11 flex items-center justify-center rounded-full bg-white/5 hover:bg-white hover:text-black transition-all">
-              <X className="w-5 h-5" />
+          <div className="flex items-center gap-3 sm:gap-4">
+            <button onClick={() => router.push('/')} className="h-9 w-9 sm:h-11 sm:w-11 flex items-center justify-center rounded-full bg-white/5 hover:bg-white hover:text-black transition-all">
+              <X className="w-4 h-4 sm:w-5 sm:h-5" />
             </button>
           </div>
         </div>
