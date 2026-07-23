@@ -33,3 +33,12 @@ export async function updateVenue(venueId: Id, payload: any): Promise<any> {
 export async function deleteVenue(venueId: Id): Promise<void> {
   await api.delete(`/venues/${venueId}`);
 }
+
+export async function fetchVenueCatalog(): Promise<{
+  tech: string[];
+  amenities: string[];
+  staff: string[];
+}> {
+  const resp = await api.get("/venues/catalog");
+  return resp.data;
+}

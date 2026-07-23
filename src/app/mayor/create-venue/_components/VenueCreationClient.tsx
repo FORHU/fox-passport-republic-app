@@ -32,8 +32,9 @@ export default function VenueCreationClient() {
     setState, setCountry, setLat, setLng, setCancellationPolicyId, removeIncludedItem, removeAddonItem,
     setBaseRate, setOccupancyRate, setActiveCategory, setSearchQuery, setShowGuide,
     setNewItem, handleDragStart, handleDragOver, handleDragLeave, handleDrop,
-    handleAddCustomItem, handleRemoveCustomResource, addImageToGallery,
+    handleAddCustomItem, handleAddCatalogItem, handleRemoveCustomResource, addImageToGallery,
     removeImageFromGallery, handleBack, handleSaveDraft, handlePublish,
+    catalogItems,
   } = useVenueBuilder();
 
   return (
@@ -69,12 +70,14 @@ export default function VenueCreationClient() {
             activeCategory={activeCategory}
             searchQuery={searchQuery}
             filteredResources={filteredResources}
+            catalogItems={catalogItems}
             newItem={newItem}
             currentCategoryLabel={currentCategoryLabel}
             onCategoryChange={setActiveCategory}
             onSearchChange={setSearchQuery}
             onNewItemChange={setNewItem}
             onAddCustomItem={handleAddCustomItem}
+            onAddCatalogItem={handleAddCatalogItem}
             onRemoveResource={handleRemoveCustomResource}
             onDragStart={handleDragStart}
           />

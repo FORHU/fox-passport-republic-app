@@ -7,12 +7,14 @@ interface VenueResourcePaletteProps {
   activeCategory: string;
   searchQuery: string;
   filteredResources: ResourceItem[];
+  catalogItems?: string[];
   newItem: { name: string; value: string; desc: string; image?: string; file?: File };
   currentCategoryLabel: string;
   onCategoryChange: (catId: string) => void;
   onSearchChange: (query: string) => void;
   onNewItemChange: (item: { name: string; value: string; desc: string; image?: string; file?: File }) => void;
   onAddCustomItem: () => void;
+  onAddCatalogItem?: (name: string) => void;
   onRemoveResource: (category: string, id: string) => void;
   onDragStart: (e: React.DragEvent, item: ResourceItem) => void;
 }
@@ -21,12 +23,14 @@ export function VenueResourcePalette({
   activeCategory,
   searchQuery,
   filteredResources,
+  catalogItems,
   newItem,
   currentCategoryLabel,
   onCategoryChange,
   onSearchChange,
   onNewItemChange,
   onAddCustomItem,
+  onAddCatalogItem,
   onRemoveResource,
   onDragStart,
 }: VenueResourcePaletteProps) {
@@ -202,6 +206,41 @@ export function VenueResourcePalette({
               </div>
             </div>
           ))}
+
+          {catalogItems && catalogItems.length > 0 && (
+            <div className="pt-1">
+              {filteredResources.length > 0 && (
+                <div className="flex items-center gap-2 mb-3">
+                  <div className="flex-1 h-px bg-white/5" />
+                  <span className="text-[9px] uppercase tracking-[0.2em] text-white/20 font-bold shrink-0">
+                    Suggestions
+                  </span>
+                  <div className="flex-1 h-px bg-white/5" />
+                </div>
+              )}
+              {filteredResources.length === 0 && (
+                <p className="text-[10px] text-white/20 uppercase tracking-wider font-bold mb-3">
+                  Suggestions
+                </p>
+              )}
+              <div className="space-y-1.5">
+                {catalogItems.map((name) => (
+                  <button
+                    key={name}
+                    onClick={() => onAddCatalogItem?.(name)}
+                    className="w-full flex items-center justify-between px-3 py-2.5 rounded-xl bg-white/3 hover:bg-white/7 border border-white/5 hover:border-accent/20 text-left transition-all group"
+                  >
+                    <span className="text-xs text-white/50 group-hover:text-white transition-colors truncate">
+                      {name}
+                    </span>
+                    <span className="material-symbols-outlined text-[15px] text-white/20 group-hover:text-accent transition-colors shrink-0 ml-2">
+                      add
+                    </span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       </aside>
     </>
