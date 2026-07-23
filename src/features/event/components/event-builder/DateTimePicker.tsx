@@ -30,7 +30,7 @@ function parseValue(val: string) {
 }
 
 function buildValue(year: number, month: number, day: number, hour: number, minute: number, ampm: 'AM' | 'PM') {
-  let h = ampm === 'PM' ? (hour === 12 ? 12 : hour + 12) : (hour === 12 ? 0 : hour);
+  const h = ampm === 'PM' ? (hour === 12 ? 12 : hour + 12) : (hour === 12 ? 0 : hour);
   const pad = (n: number) => String(n).padStart(2, '0');
   return `${year}-${pad(month + 1)}-${pad(day)}T${pad(h)}:${pad(minute)}`;
 }
