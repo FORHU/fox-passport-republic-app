@@ -33,14 +33,14 @@ export default function RootLayout({
           rel="stylesheet"
         />
       </head>
-      <body className="antialiased font-body text-text-main bg-background overflow-x-hidden flex flex-col min-h-screen bg-gradient-dark">
+      <body className="antialiased font-body text-text-main bg-background flex flex-col min-h-screen bg-gradient-dark">
         <Providers>
           {/* 2. Add the Toaster here. 'richColors' gives you green for success/red for error automatically. */}
           <Toaster position="top-center" richColors />
 
           {/* 3. Your Auth Modal sits here */}
           <AuthModal />
-          <main className="grow">
+          <main className="grow overflow-x-hidden">
             {children}
           </main>
         </Providers>

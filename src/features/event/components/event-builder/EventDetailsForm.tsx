@@ -4,6 +4,7 @@ import React from 'react';
 import { EVENT_CATEGORIES } from '@/features/event/data/eventBuilderData';
 import CancellationPolicyPicker from '@/features/cancellation-policy/components/CancellationPolicyPicker';
 import { MapboxLocationInput, MapboxContextItem } from '@/shared/components/ui/MapboxLocationInput';
+import DateTimePicker from './DateTimePicker';
 
 interface EventDetailsFormProps {
   eventTitle: string;
@@ -121,17 +122,7 @@ export function EventDetailsForm({
             <label className="text-[10px] uppercase font-bold text-white/40 tracking-widest mb-2 block">
               When
             </label>
-            <div className="flex items-center gap-2 bg-white/5 px-4 py-3 rounded-xl border border-white/5 focus-within:border-accent/30 transition-colors">
-              <span className="material-symbols-outlined text-white/50 text-[18px]">
-                calendar_today
-              </span>
-              <input
-                type="datetime-local"
-                value={date}
-                onChange={(e) => onDateChange(e.target.value)}
-                className="bg-transparent border-none p-0 text-sm text-white placeholder-white/30 focus:ring-0 w-full scheme-dark"
-              />
-            </div>
+            <DateTimePicker value={date} onChange={onDateChange} />
           </div>
           <div className="flex-1">
             <label className="text-[10px] uppercase font-bold text-white/40 tracking-widest mb-2 block">
@@ -183,15 +174,42 @@ export function EventDetailsForm({
 
         {/* Description */}
         <div>
-          <label className="text-[10px] uppercase font-bold text-white/40 tracking-widest mb-2 block">
-            Description
-          </label>
-          <textarea
-            value={description}
-            onChange={(e) => onDescriptionChange(e.target.value)}
-            placeholder="Describe the vibe, the music, the crowd..."
-            className="w-full bg-white/5 border border-white/5 rounded-xl p-4 text-sm text-white placeholder-white/30 resize-none h-40 focus:border-accent/30 outline-none transition-colors"
-          />
+          {(() => {
+            const wordCount = description.trim() === '' ? 0 : description.trim().split(/\s+/).length;
+            const tooShort = wordCount < 100;
+            const atLimit = wordCount >= 500;
+            const borderColor = atLimit ? 'border-red-500/60' : tooShort && wordCount > 0 ? 'border-yellow-500/40' : 'border-white/5';
+            const countColor = atLimit ? 'text-red-400' : wordCount >= 450 ? 'text-yellow-400' : wordCount >= 100 ? 'text-accent' : 'text-white/30';
+
+            const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+              const val = e.target.value;
+              const words = val.trim() === '' ? [] : val.trim().split(/\s+/);
+              if (words.length > 500) return;
+              onDescriptionChange(val);
+            };
+
+            return (
+              <>
+                <div className="flex items-center justify-between mb-2">
+                  <label className="text-[10px] uppercase font-bold text-white/40 tracking-widest">
+                    Description
+                  </label>
+                  <span className={`text-[10px] font-bold tabular-nums ${countColor}`}>
+                    {wordCount} / 500 words {tooShort && wordCount > 0 ? `· ${100 - wordCount} more to go` : ''}
+                  </span>
+                </div>
+                <textarea
+                  value={description}
+                  onChange={handleChange}
+                  placeholder="Describe the vibe, the music, the crowd... (100–500 words)"
+                  className={`w-full bg-white/5 border ${borderColor} rounded-xl p-4 text-sm text-white placeholder-white/30 resize-none h-52 focus:border-accent/30 outline-none transition-colors`}
+                />
+                {tooShort && wordCount > 0 && (
+                  <p className="mt-1.5 text-[10px] text-yellow-400/80">Minimum 100 words required to publish.</p>
+                )}
+              </>
+            );
+          })()}
         </div>
       </div>
     </div>

@@ -1,6 +1,7 @@
 "use client";
 
 import React, { Suspense } from "react";
+import { useRouter } from "next/navigation";
 import RequireAuth from "@/features/auth/components/RequireAuth";
 import { Loader2, AlertTriangle } from "lucide-react";
 import {
@@ -16,11 +17,12 @@ import { useHostEventEdit } from "@/features/event/hooks/useHostEventEdit";
 interface Props { id: string; }
 
 function EventEditContent({ id }: Props) {
+  const router = useRouter();
   const {
     isPrefilling, prefillError,
     eventTitle, description, category, date, location, maxAttendees, showGuide,
     cancellationPolicyId, activeCategory, searchQuery, filteredResources, financials, blueprintHealth,
-    gallery, baseItems, targetMargin, isSubmitting, isDragOver,
+    gallery, baseItems, targetMargin, isSubmitting, saveStatus, isDragOver,
     setActiveCategory, setEventTitle, setDescription, setCategory, setDate,
     setLocation, setMaxAttendees, setCancellationPolicyId, setShowGuide, setSearchQuery, setTargetMargin,
     handleDragStart, handleDragOver, handleDragLeave, handleDrop,
@@ -31,7 +33,7 @@ function EventEditContent({ id }: Props) {
   return (
     <RequireAuth>
       {!id ? (
-        <div className="fixed inset-0 z-[80] bg-[#02040a] text-white flex items-center justify-center">
+        <div className="fixed inset-0 z-80 bg-[#02040a] text-white flex items-center justify-center">
           <div className="glass-panel rounded-[2rem] p-12 border border-red-500/20">
             <div className="flex flex-col items-center gap-3 text-center">
               <AlertTriangle className="h-8 w-8 text-red-400" />
@@ -40,7 +42,7 @@ function EventEditContent({ id }: Props) {
           </div>
         </div>
       ) : prefillError ? (
-        <div className="fixed inset-0 z-[80] bg-[#02040a]/90 text-white flex items-center justify-center">
+        <div className="fixed inset-0 z-80 bg-[#02040a]/90 text-white flex items-center justify-center">
           <div className="glass-panel rounded-[2rem] p-12 border border-red-500/20 text-center max-w-lg w-full">
             <div className="flex flex-col items-center gap-3 text-center">
               <AlertTriangle className="h-8 w-8 text-red-400" />
@@ -51,7 +53,7 @@ function EventEditContent({ id }: Props) {
           </div>
         </div>
       ) : isPrefilling ? (
-        <div className="fixed inset-0 z-[80] bg-[#02040a]/90 text-white flex items-center justify-center">
+        <div className="fixed inset-0 z-80 bg-[#02040a]/90 text-white flex items-center justify-center">
           <div className="glass-panel rounded-[2rem] p-12 border border-white/5">
             <div className="flex flex-col items-center gap-3">
               <Loader2 className="h-8 w-8 text-[#ccff00] animate-spin" />
@@ -60,8 +62,8 @@ function EventEditContent({ id }: Props) {
           </div>
         </div>
       ) : (
-        <div className="fixed inset-0 z-[60] bg-[#02040a] text-white flex flex-col font-body">
-          <EventHeader eventTitle={eventTitle} isSubmitting={isSubmitting} onBack={handleBack} onSaveDraft={handleSaveDraft} onPublish={handlePublish} />
+        <div className="fixed inset-0 z-60 bg-[#02040a] text-white flex flex-col font-body">
+          <EventHeader eventTitle={eventTitle} isSubmitting={isSubmitting} saveStatus={saveStatus} onBack={handleBack} onSaveDraft={handleSaveDraft} onPublish={handlePublish} />
           <div className="flex-1 flex overflow-hidden">
             <ResourcePalette activeCategory={activeCategory} searchQuery={searchQuery} filteredResources={filteredResources} onCategoryChange={setActiveCategory} onSearchChange={setSearchQuery} onDragStart={handleDragStart} />
             <main className="flex-1 overflow-y-auto p-8 bg-[#02040a] flex gap-8">
@@ -71,7 +73,7 @@ function EventEditContent({ id }: Props) {
                 <CorePackageDropZone baseItems={baseItems} isDragOver={isDragOver} onDragOver={handleDragOver} onDragLeave={handleDragLeave} onDrop={handleDrop} onRemoveItem={removeBaseItem} onUpdateItem={updateBaseItem} />
               </div>
             </main>
-            <EventBlueprint targetMargin={targetMargin} baseCost={financials.baseCost} suggestedPrice={financials.suggestedPrice} venueCost={financials.venueCost} talentCost={financials.talentCost} blueprintHealth={blueprintHealth} onMarginChange={(m: number) => setTargetMargin(m)} />
+            <EventBlueprint targetMargin={targetMargin} baseCost={financials.baseCost} suggestedPrice={financials.suggestedPrice} venueCost={financials.venueCost} talentCost={financials.talentCost} blueprintHealth={blueprintHealth} onMarginChange={(m: number) => setTargetMargin(m)} onPreview={async () => { await handleSaveDraft(); router.push(`/event/${id}?preview=1`); }} />
           </div>
         </div>
       )}

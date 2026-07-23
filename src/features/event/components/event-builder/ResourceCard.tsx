@@ -16,9 +16,13 @@ export function ResourceCard({ item, onDragStart }: ResourceCardProps) {
       className="group bg-[#161b26] hover:bg-[#1c2230] border border-white/5 hover:border-white/10 rounded-2xl p-4 cursor-grab"
     >
       <div className="flex gap-4">
-        <div className="h-12 w-12 rounded-xl bg-black/40 flex items-center justify-center text-white/50 shrink-0">
-          <span className="material-symbols-outlined text-[24px]">{item.icon}</span>
-        </div>
+        {item.imageUrl ? (
+          <img src={item.imageUrl} alt={item.name} className="h-12 w-12 rounded-xl object-cover shrink-0" />
+        ) : (
+          <div className="h-12 w-12 rounded-xl bg-black/40 flex items-center justify-center text-white/50 shrink-0">
+            <span className="material-symbols-outlined text-[24px]">{item.icon}</span>
+          </div>
+        )}
         <div className="min-w-0 flex-1">
           <div className="flex justify-between items-start">
             <h4 className="font-bold text-white text-sm truncate pr-2">{item.name}</h4>

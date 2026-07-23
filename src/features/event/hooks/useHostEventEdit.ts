@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import { useAuthStore } from "@/features/auth/store/useAuthStore";
 import { useEventBuilder } from "@/features/event/hooks/useEventBuilder";
 import { fetchEventsByHostId, updateEvent, submitEventTemplate } from "@/features/event/api/events";
+import api from "@/shared/lib/axios";
 import { EVENT_CATEGORIES, VENUE_ICONS, TALENT_ICONS } from "@/features/event/data/eventBuilderData";
 import type { Id } from "@/shared/lib/api-types";
 
@@ -172,80 +173,77 @@ export function useHostEventEdit(eventId: string) {
   }, [router]);
 
   const submitEvent = async (targetStatus: string) => {
-    // 1. Validation
-    if (!builder.eventTitle || !builder.category) {
-      toast.error("Please fill in the title and category");
+    if (!builder.eventTitle) {
+      toast.error("Please add an event title");
       return;
     }
 
     builder.setIsSubmitting(true);
     try {
-      const venueItemFromBase =
-        builder.baseItems.find((i) => VENUE_ICONS.includes(i.icon)) ?? null;
-
-      const startDatetime = new Date(builder.date || Date.now());
-      const endDatetime = existingEndDatetime
-        ? new Date(existingEndDatetime as any)
-        : new Date(Date.now() + 4 * 60 * 60 * 1000);
-
       const safeEventTypeMapping: Record<string, string> = {
         corporate: "corporate",
-        fair: "fair",
+        fair: "other",
         birthday: "birthday",
         wedding: "wedding",
-        anniversary: "anniversary",
-        graduation: "graduation",
+        anniversary: "other",
+        graduation: "other",
         other: "other",
+        celebration: "other",
+        "private experience": "other",
+        popup: "other",
       };
 
-      const rawCategory = builder.category.toLowerCase().replace(/\s+/g, "_");
+      const rawCategory = builder.category.toLowerCase().replace(/\s+/g, "_").replace(/_/g, " ");
       const eventType = safeEventTypeMapping[rawCategory] || "other";
 
-      const venueId =
-        venueItemFromBase?.id ??
-        (builder as any).existingVenueId ??
-        null;
-
-      if (!venueId) {
-        toast.error("Please select a venue for your event");
-        return;
-      }
-
-      const payload = {
+      const payload: Record<string, unknown> = {
         name: builder.eventTitle,
-        description: builder.description || "Epic event created via Studio.",
-        venueId,
-        eventType,
-        startDatetime,
-        endDatetime,
-        maxAttendees: Math.max(1, Math.floor(builder.maxAttendees || 100)),
-        totalPrice: Number(builder.financials?.suggestedPrice) || 0,
+        description: builder.description || undefined,
+        category: eventType,
+        isPublic: false,
+        maxAttendees: builder.maxAttendees > 0 ? builder.maxAttendees : undefined,
         cancellationPolicyId: builder.cancellationPolicyId || undefined,
-        images: builder.gallery.map((g, index) => ({
-          imageUrl: g.url,
-          isPrimary: index === 0,
-          altText: g.caption,
-        })),
+        targetCity: builder.targetCity || undefined,
+        targetState: builder.targetState || undefined,
+        targetCountry: builder.targetCountry || undefined,
+        lat: builder.lat ?? undefined,
+        lng: builder.lng ?? undefined,
       };
 
       await updateEvent(eventId, payload);
 
       if (targetStatus === "pending") {
+        // Attach venue separately if one is in the package
+        const venueItem = builder.baseItems.find((i) => VENUE_ICONS.includes(i.icon));
+        const venueId = venueItem?.id ?? (builder as any).existingVenueId ?? null;
+        if (venueId) {
+          try {
+            await api.post(`/event-templates/${eventId}/venues`, {
+              venueId,
+              agreedPrice: venueItem?.agreedPrice ?? venueItem?.cost ?? 0,
+              isOptional: venueItem?.isOptional ?? false,
+            });
+          } catch {
+            // venue attachment is best-effort
+          }
+        }
         await submitEventTemplate(eventId);
       }
 
       toast.success(targetStatus === "draft" ? "Draft saved!" : "Event submitted for review!");
-      setTimeout(() => {
-        builder.reset();
-        router.push(backHref);
-      }, 500);
+      if (targetStatus === "pending") {
+        setTimeout(() => {
+          builder.reset();
+          router.push(backHref);
+        }, 500);
+      }
     } catch (error: any) {
       console.error("Event update error:", error);
       const backendMessage =
         error?.response?.data?.message ||
         error?.response?.data?.error ||
         (typeof error?.response?.data === "string" ? error.response.data : null);
-      toast.error(backendMessage || "Failed to update event");
+      toast.error(backendMessage || "Failed to save event");
     } finally {
       builder.setIsSubmitting(false);
     }
@@ -254,14 +252,12 @@ export function useHostEventEdit(eventId: string) {
   const handlePublish = useCallback(() => submitEvent("pending"), [
     builder,
     eventId,
-    existingEndDatetime,
     router,
   ]);
 
   const handleSaveDraft = useCallback(() => submitEvent("draft"), [
     builder,
     eventId,
-    existingEndDatetime,
     router,
   ]);
 
@@ -300,6 +296,9 @@ export function useHostEventEdit(eventId: string) {
 
         // Prefill store state.
         builder.reset();
+        // Set draftId immediately so the auto-save in useEventBuilder PUTs to
+        // this template instead of POSTing a new draft while the form is filling in.
+        builder.setDraftId(String(found.id));
         builder.setShowGuide(false);
 
         builder.setEventTitle(found?.name ?? found?.title ?? "Untitled Event");

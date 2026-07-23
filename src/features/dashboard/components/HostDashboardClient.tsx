@@ -1,7 +1,9 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { toast } from 'sonner';
+import api from '@/shared/lib/axios';
 import { useDashboard } from '@/features/dashboard/hooks/useDashboard';
 import {
   DashboardHeader,
@@ -78,15 +80,40 @@ export default function HostDashboardClient({ initialData }: HostDashboardClient
 
   const { stats: foxerStats, isLoading: statsLoading } = useFoxerDashboard();
 
-  // Reactive data with polling
-  const { data: rawServices } = useHostData('services', initialData.services);
-  const { data: rawAssets } = useHostData('assets', initialData.inventory);
-  const { data: rawEvents } = useHostData('events', initialData.events);
-  const { data: venues } = useHostData('venues', initialData.venues);
+  const PER_PAGE = 5;
+  const [eventsPage, setEventsPage] = useState(1);
+  const [venuesPage, setVenuesPage] = useState(1);
+  const [assetsPage, setAssetsPage] = useState(1);
+  const [servicesPage, setServicesPage] = useState(1);
+  const [deletedEventIds, setDeletedEventIds] = useState<Set<string>>(new Set());
 
-  const events = (rawEvents ?? []).map(mapEvent);
+  const handleDeleteEvent = async (id: number | string) => {
+    const sid = String(id);
+    setDeletedEventIds((prev) => new Set([...prev, sid]));
+    try {
+      await api.delete(`/event-templates/${sid}`);
+      toast.success("Draft deleted");
+    } catch (err: any) {
+      console.error('[handleDeleteEvent]', err?.response?.status, err?.response?.data);
+      toast.error(err?.response?.data?.message ?? "Failed to delete draft");
+      setDeletedEventIds((prev) => { const next = new Set(prev); next.delete(sid); return next; });
+    }
+  };
+
+  // Reactive data with polling
+  const { data: rawServices, total: totalServices } = useHostData('services', initialData.services, { page: servicesPage, limit: PER_PAGE });
+  const { data: rawAssets, total: totalAssets } = useHostData('assets', initialData.inventory, { page: assetsPage, limit: PER_PAGE });
+  const { data: rawEvents, total: totalEvents } = useHostData('events', initialData.events, { page: eventsPage, limit: PER_PAGE });
+  const { data: rawVenues, total: totalVenues } = useHostData('venues', initialData.venues, { page: venuesPage, limit: PER_PAGE });
+
+  const events = (rawEvents ?? []).map(mapEvent).filter((ev) => !deletedEventIds.has(String(ev.id)));
+  const venues = rawVenues ?? [];
   const inventory = (rawAssets ?? []).map(mapBackendAssetToInventoryItem);
   const services = (rawServices ?? []).map(mapBackendServiceToServiceItem);
+  const totalEventPages = Math.max(1, Math.ceil(totalEvents / PER_PAGE));
+  const totalVenuePages = Math.max(1, Math.ceil(totalVenues / PER_PAGE));
+  const totalAssetPages = Math.max(1, Math.ceil(totalAssets / PER_PAGE));
+  const totalServicePages = Math.max(1, Math.ceil(totalServices / PER_PAGE));
 
   return (
     <div
@@ -122,7 +149,15 @@ export default function HostDashboardClient({ initialData }: HostDashboardClient
             <div className="lg:col-span-8 space-y-10">
 
               {access.canManageEvents ? (
-                <EventsSection events={events} onStatusChange={() => {}} />
+                <EventsSection
+                  events={events}
+                  onStatusChange={() => {}}
+                  onDelete={handleDeleteEvent}
+                  onEdit={(id) => router.push(`/creator-dashboard/events/${id}/edit`)}
+                  page={eventsPage}
+                  totalPages={totalEventPages}
+                  onPageChange={setEventsPage}
+                />
               ) : (
                 <LockedSection
                   title="My Active Events"
@@ -140,6 +175,9 @@ export default function HostDashboardClient({ initialData }: HostDashboardClient
                   venues={venues}
                   onStatusChange={() => {}}
                   onEdit={(id) => router.push(`/creator-dashboard/venues/${id}/edit`)}
+                  page={venuesPage}
+                  totalPages={totalVenuePages}
+                  onPageChange={setVenuesPage}
                 />
               ) : (
                 <LockedSection
@@ -154,7 +192,13 @@ export default function HostDashboardClient({ initialData }: HostDashboardClient
               )}
 
               {access.canManageInventory ? (
-                <InventorySection inventory={inventory} onStatusChange={() => {}} />
+                <InventorySection
+                  inventory={inventory}
+                  onStatusChange={() => {}}
+                  page={assetsPage}
+                  totalPages={totalAssetPages}
+                  onPageChange={setAssetsPage}
+                />
               ) : (
                 <LockedSection
                   title="Inventories"
@@ -168,7 +212,13 @@ export default function HostDashboardClient({ initialData }: HostDashboardClient
               )}
 
               {access.canManageServices ? (
-                <ServicesSection services={services} onStatusChange={() => {}} />
+                <ServicesSection
+                  services={services}
+                  onStatusChange={() => {}}
+                  page={servicesPage}
+                  totalPages={totalServicePages}
+                  onPageChange={setServicesPage}
+                />
               ) : (
                 <LockedSection
                   title="Services"
