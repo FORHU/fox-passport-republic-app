@@ -18,7 +18,7 @@ export default function CategoryDetailClient({ category }: CategoryDetailClientP
   }, []);
 
   return (
-    <div className="bg-[#0a0a0a] text-white antialiased min-h-screen flex flex-col selection:bg-[#ccff00] selection:text-black font-sans">
+    <div className="bg-[#0a0a0a] text-white antialiased min-h-screen flex flex-col selection:bg-[#ccff00] selection:text-black font-sans overflow-x-hidden">
       <CategoryHeader category={category} />
 
       <main className="grow pt-24 sm:pt-32 lg:pt-40 px-4 sm:px-6 lg:px-8 pb-20 md:pb-0">
