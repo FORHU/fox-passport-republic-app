@@ -26,7 +26,7 @@ export const CategoryHero: React.FC<CategoryHeroProps> = ({ category }) => {
       <div className={`absolute -top-32 -left-20 w-[500px] h-[500px] bg-linear-to-br ${gradientColors} rounded-full blur-[150px] opacity-30 pointer-events-none`}></div>
       
       <div className="relative z-10 animate-in fade-in slide-in-from-bottom-4 duration-700">
-        <div className="flex items-center gap-2 mb-2 text-xs font-bold tracking-wider uppercase text-gray-500">
+        <div className="flex items-center gap-2 mb-2 text-[10px] sm:text-xs font-bold tracking-wider uppercase text-gray-500">
           <span>Categories</span>  
           <span className="text-gray-700">&gt;</span>
           <span className={`inline-block text-transparent bg-clip-text bg-linear-to-r ${gradientColors}`}>
@@ -34,14 +34,14 @@ export const CategoryHero: React.FC<CategoryHeroProps> = ({ category }) => {
           </span>
         </div>
 
-        <h1 className="text-3xl sm:text-5xl md:text-8xl font-black font-display text-white mb-6 sm:mb-8 leading-tight tracking-tight">
+        <h1 className="text-3xl sm:text-5xl md:text-8xl font-black font-display text-white mb-4 sm:mb-6 lg:mb-8 leading-tight tracking-tight">
           Explore <br />
           <span className={`inline-block text-transparent bg-clip-text bg-linear-to-r ${gradientColors}`}>
             {category.name}
           </span>
         </h1>
         
-        <p className="text-base sm:text-2xl text-gray-400 max-w-2xl leading-relaxed font-light">
+        <p className="text-sm sm:text-xl lg:text-2xl text-gray-400 max-w-2xl leading-relaxed font-light">
           {category.tagline}
         </p>
       </div>
