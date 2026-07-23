@@ -6,22 +6,32 @@ import Image from 'next/image';
 import { EventItem } from '@/features/dashboard/data/dashboardData';
 import { StatusBadge } from './StatusBadge';
 import { EmptyState } from './EmptyState';
+import { PaginationBar } from './PaginationBar';
 
 interface EventsSectionProps {
   events: EventItem[];
   onStatusChange: (id: number | string, status: string) => void;
+  onDelete?: (id: number | string) => void;
   showViewAllLink?: boolean;
   viewAllHref?: string;
   onEdit?: (id: number | string) => void;
+  page?: number;
+  totalPages?: number;
+  onPageChange?: (page: number) => void;
 }
 
 export function EventsSection({
   events,
   onStatusChange,
+  onDelete,
   showViewAllLink = true,
   viewAllHref = "/creator-dashboard/events",
   onEdit,
+  page,
+  totalPages,
+  onPageChange,
 }: EventsSectionProps) {
+  const [confirmDeleteId, setConfirmDeleteId] = React.useState<number | string | null>(null);
   return (
     <section id="events">
       <div className="flex justify-between items-center mb-6">
@@ -44,7 +54,7 @@ export function EventsSection({
           events.map((ev) => (
             <div
               key={ev.id}
-              className={`bg-[#0f111a]/60 backdrop-blur border border-white/5 p-5 rounded-3xl hover:bg-white/5 transition-all group border-l-4 ${ev.status === 'Ongoing' ? 'border-l-green-500' : 'border-l-yellow-500'
+              className={`bg-[#0f111a] border border-white/5 p-5 rounded-3xl hover:bg-white/5 transition-all group border-l-4 ${ev.status === 'Ongoing' ? 'border-l-green-500' : 'border-l-yellow-500'
                 } ${onEdit ? "cursor-pointer" : ""}`}
               onClick={() => onEdit?.(ev.id)}
               role={onEdit ? "button" : undefined}
@@ -128,12 +138,41 @@ export function EventsSection({
                         <span className="material-symbols-outlined text-[18px]">warning</span>
                         <span className="text-xs">Missing venue confirmation</span>
                       </div>
-                      <button
-                        className="px-4 py-2 rounded-full border border-white/10 text-xs font-bold hover:bg-white hover:text-black"
-                        onClick={(e) => e.stopPropagation()}
-                      >
-                        Continue Editing
-                      </button>
+                      <div className="flex items-center gap-2">
+                        {confirmDeleteId === ev.id ? (
+                          <>
+                            <span className="text-xs text-white/50">Delete this draft?</span>
+                            <button
+                              className="px-3 py-1.5 rounded-full bg-red-500/20 border border-red-500/30 text-red-400 text-xs font-bold hover:bg-red-500 hover:text-white"
+                              onClick={(e) => { e.stopPropagation(); onDelete?.(ev.id); setConfirmDeleteId(null); }}
+                            >
+                              Yes, delete
+                            </button>
+                            <button
+                              className="px-3 py-1.5 rounded-full border border-white/10 text-xs font-bold hover:bg-white/5"
+                              onClick={(e) => { e.stopPropagation(); setConfirmDeleteId(null); }}
+                            >
+                              Cancel
+                            </button>
+                          </>
+                        ) : (
+                          <>
+                            <button
+                              className="h-8 w-8 rounded-full border border-white/10 flex items-center justify-center text-white/40 hover:bg-red-500/20 hover:border-red-500/30 hover:text-red-400"
+                              title="Delete draft"
+                              onClick={(e) => { e.stopPropagation(); setConfirmDeleteId(ev.id); }}
+                            >
+                              <span className="material-symbols-outlined text-[16px]">delete</span>
+                            </button>
+                            <button
+                              className="px-4 py-2 rounded-full border border-white/10 text-xs font-bold hover:bg-white hover:text-black"
+                              onClick={(e) => { e.stopPropagation(); onEdit?.(ev.id); }}
+                            >
+                              Continue Editing
+                            </button>
+                          </>
+                        )}
+                      </div>
                     </div>
                   )}
                 </div>
@@ -144,6 +183,10 @@ export function EventsSection({
           <EmptyState type="events" href="/foxer/create-event" />
         )}
       </div>
+
+      {onPageChange && page !== undefined && totalPages !== undefined && (
+        <PaginationBar page={page} totalPages={totalPages} onPageChange={onPageChange} />
+      )}
     </section>
   );
 }

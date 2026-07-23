@@ -94,7 +94,7 @@ const ASSET_CAT_TO_TAB: Record<string, string> = {
 // ─── Fetchers ─────────────────────────────────────────────────────────────────
 
 async function fetchFoxers(): Promise<LiveFoxer[]> {
-  const res = await api.get("/users?roleType=serviceFoxer,gearFoxer");
+  const res = await api.get("/users/foxers?roleType=serviceFoxer,gearFoxer");
   const users: ApiUser[] = Array.isArray(res.data) ? res.data : res.data?.data ?? [];
   return users.map((u) => {
     const priceList = [...(u.services ?? []), ...(u.assets ?? [])].map((i) => i.price).filter((p) => p > 0);

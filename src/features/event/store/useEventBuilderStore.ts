@@ -1,4 +1,5 @@
 ﻿import { create } from "zustand";
+import { persist, createJSONStorage } from "zustand/middleware";
 import { ResourceItem, GalleryItem } from "@/features/event/data/eventBuilderData";
 
 interface EventBuilderState {
@@ -48,6 +49,7 @@ interface EventBuilderState {
   // Actions - Gallery
   addGalleryItem: (item: GalleryItem) => void;
   removeGalleryItem: (id: string) => void;
+  updateGalleryItemFileId: (id: string, fileId: string) => void;
 
   // Actions - Package Items
   addBaseItem: (item: ResourceItem) => void;
@@ -62,6 +64,12 @@ interface EventBuilderState {
   setShowGuide: (show: boolean) => void;
   setIsSubmitting: (submitting: boolean) => void;
   setIsDragOver: (over: boolean) => void;
+
+  // Draft tracking
+  draftId: string | null;
+  setDraftId: (id: string | null) => void;
+  saveStatus: 'idle' | 'saving' | 'saved' | 'error';
+  setSaveStatus: (status: 'idle' | 'saving' | 'saved' | 'error') => void;
 
   // Actions - Reset
   reset: () => void;
@@ -89,62 +97,104 @@ const initialState = {
   showGuide: true,
   isSubmitting: false,
   isDragOver: false,
+  draftId: null as string | null,
+  saveStatus: 'idle' as 'idle' | 'saving' | 'saved' | 'error',
 };
 
-export const useEventBuilderStore = create<EventBuilderState>((set) => ({
-  ...initialState,
+export const useEventBuilderStore = create<EventBuilderState>()(
+  persist(
+    (set) => ({
+      ...initialState,
 
-  // Event Details Actions
-  setEventTitle: (title) => set({ eventTitle: title }),
-  setDescription: (desc) => set({ description: desc }),
-  setCategory: (cat) => set({ category: cat }),
-  setDate: (date) => set({ date: date }),
-  setLocation: (loc) => set({ location: loc }),
-  setTargetCity: (city) => set({ targetCity: city }),
-  setTargetState: (state) => set({ targetState: state }),
-  setTargetCountry: (country) => set({ targetCountry: country }),
-  setLat: (lat) => set({ lat }),
-  setLng: (lng) => set({ lng }),
-  setMaxAttendees: (count) => set({ maxAttendees: count }),
-  setCancellationPolicyId: (id) => set({ cancellationPolicyId: id }),
+      // Event Details Actions
+      setEventTitle: (title) => set({ eventTitle: title }),
+      setDescription: (desc) => set({ description: desc }),
+      setCategory: (cat) => set({ category: cat }),
+      setDate: (date) => set({ date: date }),
+      setLocation: (loc) => set({ location: loc }),
+      setTargetCity: (city) => set({ targetCity: city }),
+      setTargetState: (state) => set({ targetState: state }),
+      setTargetCountry: (country) => set({ targetCountry: country }),
+      setLat: (lat) => set({ lat }),
+      setLng: (lng) => set({ lng }),
+      setMaxAttendees: (count) => set({ maxAttendees: count }),
+      setCancellationPolicyId: (id) => set({ cancellationPolicyId: id }),
 
-  // Gallery Actions
-  addGalleryItem: (item) =>
-    set((state) => ({
-      gallery: [...state.gallery, item],
-    })),
-  removeGalleryItem: (id) =>
-    set((state) => ({
-      gallery: state.gallery.filter((g) => g.id !== id),
-    })),
+      // Gallery Actions
+      addGalleryItem: (item) =>
+        set((state) => ({
+          gallery: [...state.gallery, item],
+        })),
+      removeGalleryItem: (id) =>
+        set((state) => ({
+          gallery: state.gallery.filter((g) => g.id !== id),
+        })),
+      updateGalleryItemFileId: (id, fileId) =>
+        set((state) => ({
+          gallery: state.gallery.map((g) => g.id === id ? { ...g, fileId } : g),
+        })),
 
-  // Package Items Actions
-  addBaseItem: (item) =>
-    set((state) => {
-      if (state.baseItems.find((i) => i.id === item.id)) return state;
-      return { baseItems: [...state.baseItems, item] };
+      // Package Items Actions
+      addBaseItem: (item) =>
+        set((state) => {
+          if (state.baseItems.find((i) => i.id === item.id)) return state;
+          return { baseItems: [...state.baseItems, item] };
+        }),
+      removeBaseItem: (id) =>
+        set((state) => ({
+          baseItems: state.baseItems.filter((i) => i.id !== id),
+        })),
+      updateBaseItem: (id, patch) =>
+        set((state) => ({
+          baseItems: state.baseItems.map((i) => i.id === id ? { ...i, ...patch } : i),
+        })),
+      setTargetMargin: (margin) => set({ targetMargin: margin }),
+
+      // UI State Actions
+      setActiveCategory: (cat) => set({ activeCategory: cat, searchQuery: "" }),
+      setSearchQuery: (query) => set({ searchQuery: query }),
+      setDraggedItem: (item) => set({ draggedItem: item }),
+      setShowGuide: (show) => set({ showGuide: show }),
+      setIsSubmitting: (submitting) => set({ isSubmitting: submitting }),
+      setIsDragOver: (over) => set({ isDragOver: over }),
+
+      // Draft tracking
+      setDraftId: (id) => set({ draftId: id }),
+      setSaveStatus: (status) => set({ saveStatus: status }),
+
+      // Reset — clears localStorage so published events don't bleed into new ones
+      reset: () => {
+        if (typeof window !== 'undefined') localStorage.removeItem('fp-event-builder');
+        set(initialState);
+      },
     }),
-  removeBaseItem: (id) =>
-    set((state) => ({
-      baseItems: state.baseItems.filter((i) => i.id !== id),
-    })),
-  updateBaseItem: (id, patch) =>
-    set((state) => ({
-      baseItems: state.baseItems.map((i) => i.id === id ? { ...i, ...patch } : i),
-    })),
-  setTargetMargin: (margin) => set({ targetMargin: margin }),
-
-  // UI State Actions
-  setActiveCategory: (cat) => set({ activeCategory: cat, searchQuery: "" }),
-  setSearchQuery: (query) => set({ searchQuery: query }),
-  setDraggedItem: (item) => set({ draggedItem: item }),
-  setShowGuide: (show) => set({ showGuide: show }),
-  setIsSubmitting: (submitting) => set({ isSubmitting: submitting }),
-  setIsDragOver: (over) => set({ isDragOver: over }),
-
-  // Reset
-  reset: () => set(initialState),
-}));
+    {
+      name: 'fp-event-builder',
+      storage: createJSONStorage(() => localStorage),
+      // Only persist serializable state — File objects and transient UI state are excluded
+      partialize: (state) => ({
+        eventTitle: state.eventTitle,
+        description: state.description,
+        category: state.category,
+        date: state.date,
+        location: state.location,
+        targetCity: state.targetCity,
+        targetState: state.targetState,
+        targetCountry: state.targetCountry,
+        lat: state.lat,
+        lng: state.lng,
+        maxAttendees: state.maxAttendees,
+        cancellationPolicyId: state.cancellationPolicyId,
+        baseItems: state.baseItems,
+        targetMargin: state.targetMargin,
+        showGuide: state.showGuide,
+        draftId: state.draftId,
+        // Strip File objects — blob URLs survive same-tab navigation, not hard reloads
+        gallery: state.gallery.map(({ file: _file, ...rest }) => rest),
+      }),
+    }
+  )
+);
 
 // Selectors
 export const useEventData = () =>

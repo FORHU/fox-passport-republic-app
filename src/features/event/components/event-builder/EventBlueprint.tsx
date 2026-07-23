@@ -11,6 +11,7 @@ interface EventBlueprintProps {
   talentCost: number;
   blueprintHealth: number;
   onMarginChange: (margin: number) => void;
+  onPreview?: () => void;
   /** When true, panel is always visible (used inside a mobile drawer). */
   inDrawer?: boolean;
 }
@@ -23,6 +24,7 @@ export function EventBlueprint({
   talentCost,
   blueprintHealth,
   onMarginChange,
+  onPreview,
   inDrawer = false,
 }: EventBlueprintProps) {
   return (
@@ -104,7 +106,12 @@ export function EventBlueprint({
             </div>
           </div>
         </div>
-        <button className="w-full py-3 rounded-xl border border-white/10 hover:bg-white hover:text-black transition-all text-sm font-bold text-white">
+        <button
+          onClick={onPreview}
+          disabled={!onPreview}
+          className="w-full py-3 rounded-xl border border-white/10 hover:bg-white hover:text-black transition-all text-sm font-bold text-white disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+        >
+          <span className="material-symbols-outlined text-[16px]">open_in_new</span>
           Preview Listing
         </button>
       </div>

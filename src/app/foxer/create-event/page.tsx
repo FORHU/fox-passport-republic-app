@@ -1,8 +1,10 @@
 'use client';
 
-import React from 'react';
+
+import { useRouter } from 'next/navigation';
 import RequireAuth from '@/features/auth/components/RequireAuth';
 import { useEventBuilder } from '@/features/event/hooks/useEventBuilder';
+import { useEventBuilderStore } from '@/features/event/store/useEventBuilderStore';
 import {
   ResourcePalette,
   EventHeader,
@@ -13,6 +15,7 @@ import {
 } from '@/features/event/components/event-builder';
 
 export default function EventCreationBuilder() {
+  const router = useRouter();
   const {
     // State
     eventTitle,
@@ -29,6 +32,7 @@ export default function EventCreationBuilder() {
     searchQuery,
     showGuide,
     isSubmitting,
+    saveStatus,
     isDragOver,
     filteredResources,
     financials,
@@ -66,12 +70,22 @@ export default function EventCreationBuilder() {
     handlePublish,
   } = useEventBuilder();
 
+  const handlePreview = async () => {
+    // Save with inclusions sync so the preview reflects the full Core Package
+    await handleSaveDraft({ syncInclusions: true });
+    const id = useEventBuilderStore.getState().draftId;
+    if (id) {
+      router.push(`/event/${id}?preview=1`);
+    }
+  };
+
   return (
     <RequireAuth>
       <div className="fixed inset-0 z-60 bg-[#02040a] text-white flex flex-col font-body">
         <EventHeader
           eventTitle={eventTitle}
           isSubmitting={isSubmitting}
+          saveStatus={saveStatus}
           onBack={handleBack}
           onSaveDraft={handleSaveDraft}
           onPublish={handlePublish}
@@ -138,6 +152,7 @@ export default function EventCreationBuilder() {
             talentCost={financials.talentCost}
             blueprintHealth={blueprintHealth}
             onMarginChange={setTargetMargin}
+            onPreview={handlePreview}
           />
         </div>
       </div>

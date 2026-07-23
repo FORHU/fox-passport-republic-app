@@ -20,6 +20,7 @@ export interface EventItem {
   capacity: number | null;
   revenue: string | null;
   img: string;
+  isPublic?: boolean;
 }
 
 export interface VenueItem {
@@ -50,6 +51,7 @@ export interface ServiceItem {
   status: string;
   icon: string;
   color: string;
+  img?: string;
 }
 
 export interface PendingRequest {

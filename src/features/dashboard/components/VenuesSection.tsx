@@ -6,6 +6,7 @@ import Image from 'next/image';
 import { VenueItem } from '@/features/dashboard/data/dashboardData';
 import { StatusBadge } from './StatusBadge';
 import { EmptyState } from './EmptyState';
+import { PaginationBar } from './PaginationBar';
 
 interface VenuesSectionProps {
   venues: VenueItem[];
@@ -14,6 +15,9 @@ interface VenuesSectionProps {
   showHeading?: boolean;
   viewAllHref?: string;
   onEdit?: (id: number | string) => void;
+  page?: number;
+  totalPages?: number;
+  onPageChange?: (page: number) => void;
 }
 
 export function VenuesSection({
@@ -23,6 +27,9 @@ export function VenuesSection({
   showHeading = true,
   viewAllHref = "/creator-dashboard/venues",
   onEdit,
+  page,
+  totalPages,
+  onPageChange,
 }: VenuesSectionProps) {
   return (
     <section id="venues">
@@ -150,6 +157,9 @@ export function VenuesSection({
           <EmptyState type="venues" href="/mayor/create-venue" />
         )}
       </div>
+      {onPageChange && page !== undefined && totalPages !== undefined && (
+        <PaginationBar page={page} totalPages={totalPages} onPageChange={onPageChange} />
+      )}
     </section>
   );
 }
