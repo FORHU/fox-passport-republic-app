@@ -17,7 +17,7 @@ export default function FileUploader({
   accept = "image/*,application/pdf",
   maxSizeMB = 10,
 }: FileUploaderProps) {
-  const { uploadFile, isUploading } = useFileUpload();
+  const { uploadFile } = useFileUpload();
   const [fileName, setFileName] = useState<string | null>(null);
   const [status, setStatus] = useState<"idle" | "uploading" | "success" | "error">("idle");
   const fileInputRef = useRef<HTMLInputElement>(null);

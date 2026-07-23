@@ -6,13 +6,13 @@ export async function getUser() {
     const api = await getServerApi()
     const { data } = await api.get('/profile')
     return data?.data || data || null
-  } catch (error) {
+  } catch {
     try {
       const { cookies } = await import('next/headers');
       const cookieStore = await cookies();
       const userStr = cookieStore.get('fox_user')?.value;
       if (userStr) return JSON.parse(decodeURIComponent(userStr));
-    } catch (e) {
+    } catch {
       return null;
     }
     return null
