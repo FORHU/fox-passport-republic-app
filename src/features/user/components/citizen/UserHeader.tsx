@@ -69,7 +69,7 @@ export const UserHeader: React.FC<UserHeaderProps> = ({ isAuthenticated, userNam
             {isAuthenticated && <NotificationBell />}
 
             {isAuthenticated ? (
-              <div className="hidden sm:flex items-center gap-3 pl-2">
+              <div className="flex items-center gap-3 pl-2">
                 <div className="text-right hidden lg:block">
                   <p className="text-xs text-[#ccff00] font-bold uppercase tracking-wide">Hey, {displayName}</p>
                   <p className="text-sm font-bold text-white">{roleLabel}</p>
@@ -77,14 +77,15 @@ export const UserHeader: React.FC<UserHeaderProps> = ({ isAuthenticated, userNam
                 <UserMenuButton />
               </div>
             ) : (
-              <Link href="/" className="hidden sm:flex items-center gap-2 rounded-full bg-[#ccff00] px-6 py-2.5 text-sm font-bold text-black hover:bg-[#b8e600] transition-all">
-                Sign In
-              </Link>
+              <>
+                <Link href="/" className="hidden sm:flex items-center gap-2 rounded-full bg-[#ccff00] px-6 py-2.5 text-sm font-bold text-black hover:bg-[#b8e600] transition-all">
+                  Sign In
+                </Link>
+                <div className="sm:hidden">
+                  <UserMenuButton />
+                </div>
+              </>
             )}
-
-            <button className="flex sm:hidden h-10 w-10 items-center justify-center rounded-full bg-white text-black">
-              <span className="material-symbols-outlined">menu</span>
-            </button>
           </div>
         </div>
       </div>

@@ -12,10 +12,7 @@ export const CategoryHero: React.FC<CategoryHeroProps> = ({ category }) => {
 
 
   return (
-<<<<<<< HEAD
     <div className="mb-8 sm:mb-12 lg:mb-20 relative overflow-hidden">
-=======
-    <div className="mb-12 sm:mb-20 relative">
       {/* Force-include dynamic gradient classes for Tailwind JIT */}
       <div className="hidden">
         from-lime-300 via-green-400 to-emerald-500

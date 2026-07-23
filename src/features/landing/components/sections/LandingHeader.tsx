@@ -67,15 +67,7 @@ export default function LandingHeader({ onSignIn }: LandingHeaderProps) {
 
             {/* Actions */}
             <div className="flex items-center gap-2 sm:gap-3">
-              {/* Search — visible on all sizes */}
-              <Link
-                href="/search"
-                className="flex h-8 w-8 sm:h-10 sm:w-10 items-center justify-center rounded-full border border-white/10 text-white hover:bg-white hover:text-black transition-all hover:rotate-12"
-              >
-                <span className="material-symbols-outlined text-[18px] sm:text-[20px]">search</span>
-              </Link>
-
-              {/* Desktop-only: Sign In + UserMenuButton */}
+              {/* Desktop-only: Sign In */}
               {!isAuthenticated && (
                 <button
                   onClick={onSignIn}
@@ -85,9 +77,7 @@ export default function LandingHeader({ onSignIn }: LandingHeaderProps) {
                   <div className="absolute inset-0 bg-white translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-out z-0"></div>
                 </button>
               )}
-              <div className="hidden md:block">
-                <UserMenuButton onSignIn={onSignIn} />
-              </div>
+              <UserMenuButton onSignIn={onSignIn} />
             </div>
           </div>
         </div>
@@ -128,20 +118,6 @@ export default function LandingHeader({ onSignIn }: LandingHeaderProps) {
             <span className="text-[9px] font-bold tracking-wide">Community</span>
           </Link>
 
-          {/* Account / Sign In */}
-          {isAuthenticated ? (
-            <div className="flex-1 flex items-center justify-center py-2">
-              <UserMenuButton onSignIn={onSignIn} />
-            </div>
-          ) : (
-            <button
-              onClick={onSignIn}
-              className="flex flex-col items-center justify-center gap-0.5 flex-1 py-3 text-white/40 hover:text-white transition-colors"
-            >
-              <span className="material-symbols-outlined text-[22px]">login</span>
-              <span className="text-[9px] font-bold tracking-wide">Sign In</span>
-            </button>
-          )}
         </nav>
       </motion.div>
     </>
