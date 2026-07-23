@@ -434,7 +434,6 @@ export function useEventBuilder() {
       saveDraftRef.current({ silent: true });
     }, 2000);
     return () => clearTimeout(timer);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     store.eventTitle, store.description, store.category, store.date,
     store.location, store.maxAttendees, store.cancellationPolicyId,
