@@ -9,6 +9,7 @@ import {
 } from '@/features/asset/data/listingBuilderData';
 import { SERVICE_UNITS } from '@/features/service/data/serviceBuilderData';
 import CancellationPolicyPicker from '@/features/cancellation-policy/components/CancellationPolicyPicker';
+import { MapboxLocationInput, MapboxContextItem } from '@/shared/components/ui/MapboxLocationInput';
 
 interface ListingSidebarProps {
   activeType: ListingType;
@@ -20,6 +21,9 @@ interface ListingSidebarProps {
   price: number;
   unit: string;
   status: string;
+  city?: string;
+  state?: string;
+  country?: string;
   cancellationPolicyId: string | null;
   onCategorySelect: (catId: string) => void;
   onCustomCategoryChange: (cat: string) => void;
@@ -27,6 +31,10 @@ interface ListingSidebarProps {
   onPriceChange: (price: number) => void;
   onUnitChange: (unit: string) => void;
   onStatusChange: (status: string) => void;
+  onCityChange?: (city: string) => void;
+  onStateChange?: (state: string) => void;
+  onCountryChange?: (country: string) => void;
+  onLatLngChange?: (lat: number, lng: number) => void;
   onCancellationPolicyChange: (policyId: string | null) => void;
 }
 
@@ -40,6 +48,9 @@ export function ListingSidebar({
   price,
   unit,
   status,
+  city = '',
+  state = '',
+  country = '',
   cancellationPolicyId,
   onCategorySelect,
   onCustomCategoryChange,
@@ -47,6 +58,10 @@ export function ListingSidebar({
   onPriceChange,
   onUnitChange,
   onStatusChange,
+  onCityChange = () => {},
+  onStateChange = () => {},
+  onCountryChange = () => {},
+  onLatLngChange = () => {},
   onCancellationPolicyChange,
 }: ListingSidebarProps) {
   const units = activeType === 'inventory' ? INVENTORY_UNITS : SERVICE_UNITS;
@@ -177,6 +192,34 @@ export function ListingSidebar({
           <CancellationPolicyPicker
             value={cancellationPolicyId}
             onChange={onCancellationPolicyChange}
+          />
+        </div>
+
+        {/* Location */}
+        <div className="space-y-3">
+          <label className="text-[10px] uppercase font-bold text-white/40 tracking-widest block">
+            Location
+          </label>
+          <MapboxLocationInput
+            value={city}
+            onChange={onCityChange}
+            type="place"
+            placeholder="City"
+            onSelect={(val: string, context?: MapboxContextItem[], center?: [number, number]) => {
+              onCityChange(val);
+              const region = context?.find((c) => c.id.startsWith('region'))?.text;
+              const countryName = context?.find((c) => c.id.startsWith('country'))?.text;
+              if (region) onStateChange(region);
+              if (countryName) onCountryChange(countryName);
+              if (center) onLatLngChange(center[1], center[0]);
+            }}
+          />
+          <MapboxLocationInput
+            value={country}
+            onChange={onCountryChange}
+            type="country"
+            placeholder="Country"
+            onSelect={(val: string) => onCountryChange(val)}
           />
         </div>
 

@@ -35,6 +35,9 @@ interface VenueBuilderState {
   draggedItem: ResourceItem | null;
   newItem: { name: string; value: string; desc: string };
 
+  lat: number | null;
+  lng: number | null;
+
   // Actions - Venue Details
   setVenueName: (name: string) => void;
   setDescription: (desc: string) => void;
@@ -44,6 +47,8 @@ interface VenueBuilderState {
   setCountry: (c: string) => void;
   setCity: (c: string) => void;
   setState: (s: string) => void;
+  setLat: (lat: number | null) => void;
+  setLng: (lng: number | null) => void;
 
   // Actions - Gallery
   addGalleryItem: (item: GalleryItem) => void;
@@ -90,6 +95,8 @@ const initialData = {
   country: "",
   city: "",
   state: "",
+  lat: null as number | null,
+  lng: null as number | null,
   gallery: [] as GalleryItem[],
   cancellationPolicyId: null as string | null,
   includedItems: [] as ResourceItem[],
@@ -118,8 +125,8 @@ export const useVenueBuilderStore = create<VenueBuilderState>((set) => ({
   setCountry: (c) => set({ country: c }),
   setCity: (c) => set({ city: c }),
   setState: (s) => set({ state: s }),
-  // setLatitude: (lat) => set({ latitude: lat }),
-  // setLongitude: (lng) => set({ longitude: lng }),
+  setLat: (lat) => set({ lat }),
+  setLng: (lng) => set({ lng }),
 
   // Gallery Actions
   addGalleryItem: (item) => set((state) => ({ gallery: [...state.gallery, item] })),

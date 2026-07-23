@@ -3,6 +3,7 @@
 import React from 'react';
 import { EVENT_CATEGORIES } from '@/features/event/data/eventBuilderData';
 import CancellationPolicyPicker from '@/features/cancellation-policy/components/CancellationPolicyPicker';
+import { MapboxLocationInput, MapboxContextItem } from '@/shared/components/ui/MapboxLocationInput';
 
 interface EventDetailsFormProps {
   eventTitle: string;
@@ -18,6 +19,10 @@ interface EventDetailsFormProps {
   onCategoryChange: (cat: string) => void;
   onDateChange: (date: string) => void;
   onLocationChange: (loc: string) => void;
+  onTargetCityChange?: (city: string) => void;
+  onTargetStateChange?: (state: string) => void;
+  onTargetCountryChange?: (country: string) => void;
+  onLatLngChange?: (lat: number, lng: number) => void;
   onMaxAttendeesChange: (count: number) => void;
   onCancellationPolicyChange: (policyId: string | null) => void;
   onCloseGuide: () => void;
@@ -37,6 +42,10 @@ export function EventDetailsForm({
   onCategoryChange,
   onDateChange,
   onLocationChange,
+  onTargetCityChange,
+  onTargetStateChange,
+  onTargetCountryChange,
+  onLatLngChange,
   onMaxAttendeesChange,
   onCancellationPolicyChange,
   onCloseGuide,
@@ -120,7 +129,7 @@ export function EventDetailsForm({
                 type="datetime-local"
                 value={date}
                 onChange={(e) => onDateChange(e.target.value)}
-                className="bg-transparent border-none p-0 text-sm text-white placeholder-white/30 focus:ring-0 w-full [color-scheme:dark]"
+                className="bg-transparent border-none p-0 text-sm text-white placeholder-white/30 focus:ring-0 w-full scheme-dark"
               />
             </div>
           </div>
@@ -128,17 +137,21 @@ export function EventDetailsForm({
             <label className="text-[10px] uppercase font-bold text-white/40 tracking-widest mb-2 block">
               Where
             </label>
-            <div className="flex items-center gap-2 bg-white/5 px-4 py-3 rounded-xl border border-white/5 focus-within:border-accent/30 transition-colors">
-              <span className="material-symbols-outlined text-white/50 text-[18px]">
-                location_on
-              </span>
-              <input
-                value={location}
-                onChange={(e) => onLocationChange(e.target.value)}
-                placeholder="e.g. BGC, Taguig"
-                className="bg-transparent border-none p-0 text-sm text-white placeholder-white/30 focus:ring-0 w-full"
-              />
-            </div>
+            <MapboxLocationInput
+              value={location}
+              onChange={onLocationChange}
+              type="place"
+              placeholder="e.g. BGC, Taguig"
+              onSelect={(val: string, context?: MapboxContextItem[], center?: [number, number]) => {
+                onLocationChange(val);
+                if (onTargetCityChange) onTargetCityChange(val);
+                const region = context?.find((c) => c.id.startsWith('region'))?.text;
+                const countryName = context?.find((c) => c.id.startsWith('country'))?.text;
+                if (region && onTargetStateChange) onTargetStateChange(region);
+                if (countryName && onTargetCountryChange) onTargetCountryChange(countryName);
+                if (center && onLatLngChange) onLatLngChange(center[1], center[0]);
+              }}
+            />
           </div>
           <div className="flex-1">
             <label className="text-[10px] uppercase font-bold text-white/40 tracking-widest mb-2 block">

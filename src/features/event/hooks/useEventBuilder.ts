@@ -267,6 +267,11 @@ export function useEventBuilder() {
         description: store.description || "Event created via Creator Studio.",
         category: eventType,
         isPublic: false,
+        targetCity: store.targetCity || undefined,
+        targetState: store.targetState || undefined,
+        targetCountry: store.targetCountry || undefined,
+        lat: store.lat ?? undefined,
+        lng: store.lng ?? undefined,
         cancellationPolicyId: store.cancellationPolicyId || undefined,
       };
 

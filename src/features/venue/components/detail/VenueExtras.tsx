@@ -1,6 +1,7 @@
 ﻿'use client';
 
 import React from 'react';
+import { LocationMap } from '@/shared/components/ui/LocationMap';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { getReviewsByListing, postReviewReply, Review, ReviewReply } from '@/features/review/api/reviews';
 import ReviewReplyModal from '@/features/review/components/ReviewReplyModal';
@@ -406,33 +407,46 @@ export function VenueReviews({ venueId, rating: fallbackRating = 0, totalReviews
 interface VenueMapProps {
   location: string;
   province: string;
+  lat?: number | null;
+  lng?: number | null;
 }
 
-export function VenueMap({ location, province }: VenueMapProps) {
+export function VenueMap({ location, province, lat, lng }: VenueMapProps) {
   return (
     <div>
       <h3 className="text-2xl font-display font-bold text-white mb-2">Location</h3>
       <p className="text-text-muted text-sm mb-6">
         {location}, {province}
       </p>
-      <div className="h-80 w-full rounded-2xl bg-[#1f2235] relative overflow-hidden flex items-center justify-center border border-white/10 group">
-        <div
-          className="absolute inset-0 opacity-20"
-          style={{
-            backgroundImage: 'radial-gradient(#ffffff 1px, transparent 1px)',
-            backgroundSize: '20px 20px',
-          }}
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-[#02040a] via-transparent to-transparent opacity-50" />
-        <div className="relative z-10 flex flex-col items-center gap-2 group-hover:-translate-y-2 transition-transform duration-300">
-          <div className="h-16 w-16 rounded-full bg-accent/20 flex items-center justify-center animate-pulse">
-            <div className="h-4 w-4 bg-accent rounded-full shadow-[0_0_20px_#ccff00]" />
+      {lat && lng ? (
+        <div className="relative rounded-2xl overflow-hidden border border-white/10">
+          <LocationMap lat={lat} lng={lng} className="h-80 w-full" />
+          <div className="absolute bottom-3 left-1/2 -translate-x-1/2">
+            <span className="bg-black/80 backdrop-blur-md text-white text-xs font-bold px-3 py-1.5 rounded-full border border-white/10">
+              Exact location provided after booking
+            </span>
           </div>
-          <span className="bg-black/80 backdrop-blur-md text-white text-xs font-bold px-3 py-1.5 rounded-full border border-white/10">
-            Exact location provided after booking
-          </span>
         </div>
-      </div>
+      ) : (
+        <div className="h-80 w-full rounded-2xl bg-[#1f2235] relative overflow-hidden flex items-center justify-center border border-white/10 group">
+          <div
+            className="absolute inset-0 opacity-20"
+            style={{
+              backgroundImage: 'radial-gradient(#ffffff 1px, transparent 1px)',
+              backgroundSize: '20px 20px',
+            }}
+          />
+          <div className="absolute inset-0 bg-linear-to-t from-[#02040a] via-transparent to-transparent opacity-50" />
+          <div className="relative z-10 flex flex-col items-center gap-2 group-hover:-translate-y-2 transition-transform duration-300">
+            <div className="h-16 w-16 rounded-full bg-accent/20 flex items-center justify-center animate-pulse">
+              <div className="h-4 w-4 bg-accent rounded-full shadow-[0_0_20px_#ccff00]" />
+            </div>
+            <span className="bg-black/80 backdrop-blur-md text-white text-xs font-bold px-3 py-1.5 rounded-full border border-white/10">
+              Exact location provided after booking
+            </span>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { LocationMap } from '@/shared/components/ui/LocationMap';
 import { useExperienceBuilderData } from '@/features/venue/hooks/useExperienceBuilderData';
 
 const SERVICE_CATEGORIES = [
@@ -407,6 +408,10 @@ const EventDetailsPage: React.FC = () => {
   const displayImages = templateImages.length > 0 ? templateImages : FALLBACK_IMAGES;
   const location = [template?.targetCity, template?.targetState].filter(Boolean).join(', ') || 'Philippines';
 
+  const firstVenue = template?.templateVenues?.[0]?.venue;
+  const mapLat: number | null = firstVenue?.lat ?? template?.lat ?? null;
+  const mapLng: number | null = firstVenue?.lng ?? template?.lng ?? null;
+
   const venue = {
     title:       template?.name        ?? "Event Package",
     location,
@@ -429,17 +434,17 @@ const EventDetailsPage: React.FC = () => {
   };
 
   const inclusions: { name: string; icon: string; desc: string }[] = [
-    ...(template?.assets ?? []).map((a: any) => ({
+    ...(template?.templateAssets ?? []).map((a: any) => ({
       name: a.asset?.name ?? a.name ?? 'Asset',
       icon: 'category',
       desc: a.asset?.description ?? '',
     })),
-    ...(template?.services ?? []).map((s: any) => ({
+    ...(template?.templateServices ?? []).map((s: any) => ({
       name: s.service?.name ?? s.name ?? 'Service',
       icon: 'star',
       desc: s.service?.description ?? '',
     })),
-    ...(template?.venues ?? []).map((v: any) => ({
+    ...(template?.templateVenues ?? []).map((v: any) => ({
       name: v.venue?.name ?? v.name ?? 'Venue',
       icon: 'apartment',
       desc: v.venue?.description ?? '',
@@ -755,16 +760,27 @@ const EventDetailsPage: React.FC = () => {
               <div>
                  <h3 className="text-2xl font-display font-bold text-white mb-2">Where you&apos;ll be</h3>
                  <p className="text-text-muted text-sm mb-6">{venue.location}, {venue.province}</p>
-                 <div className="h-80 w-full rounded-2xl bg-[#1f2235] relative overflow-hidden flex items-center justify-center border border-white/10 group">
-                    <div className="absolute inset-0 opacity-20" style={{ backgroundImage: "radial-gradient(#ffffff 1px, transparent 1px)", backgroundSize: "20px 20px" }}></div>
-                    <div className="absolute inset-0 bg-linear-to-t from-[#02040a] via-transparent to-transparent opacity-50"></div>
-                    <div className="relative z-10 flex flex-col items-center gap-2 group-hover:-translate-y-2 transition-transform duration-300">
-                        <div className="h-16 w-16 rounded-full bg-accent/20 flex items-center justify-center animate-pulse">
-                            <div className="h-4 w-4 bg-accent rounded-full shadow-[0_0_20px_#ccff00]"></div>
-                        </div>
-                        <span className="bg-black/80 backdrop-blur-md text-white text-xs font-bold px-3 py-1.5 rounded-full border border-white/10">Exact location provided after booking</span>
-                    </div>
-                 </div>
+                 {mapLat && mapLng ? (
+                   <div className="relative rounded-2xl overflow-hidden border border-white/10">
+                     <LocationMap lat={mapLat} lng={mapLng} className="h-80 w-full" />
+                     <div className="absolute bottom-3 left-1/2 -translate-x-1/2">
+                       <span className="bg-black/80 backdrop-blur-md text-white text-xs font-bold px-3 py-1.5 rounded-full border border-white/10">
+                         Exact location provided after booking
+                       </span>
+                     </div>
+                   </div>
+                 ) : (
+                   <div className="h-80 w-full rounded-2xl bg-[#1f2235] relative overflow-hidden flex items-center justify-center border border-white/10 group">
+                     <div className="absolute inset-0 opacity-20" style={{ backgroundImage: "radial-gradient(#ffffff 1px, transparent 1px)", backgroundSize: "20px 20px" }}></div>
+                     <div className="absolute inset-0 bg-linear-to-t from-[#02040a] via-transparent to-transparent opacity-50"></div>
+                     <div className="relative z-10 flex flex-col items-center gap-2 group-hover:-translate-y-2 transition-transform duration-300">
+                       <div className="h-16 w-16 rounded-full bg-accent/20 flex items-center justify-center animate-pulse">
+                         <div className="h-4 w-4 bg-accent rounded-full shadow-[0_0_20px_#ccff00]"></div>
+                       </div>
+                       <span className="bg-black/80 backdrop-blur-md text-white text-xs font-bold px-3 py-1.5 rounded-full border border-white/10">Exact location provided after booking</span>
+                     </div>
+                   </div>
+                 )}
               </div>
 
               <div className="h-px bg-white/10 w-full"></div>
