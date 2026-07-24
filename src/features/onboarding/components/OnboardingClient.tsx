@@ -185,7 +185,7 @@ export default function OnboardingClient({ user: serverUser }: { user: any }) {
                 <button
                   onClick={handleProfileContinue}
                   disabled={isSaving || !name.trim()}
-                  className="flex-[2] py-3.5 rounded-xl bg-[#ccff00] text-black font-bold hover:brightness-110 transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+                  className="flex-2 py-3.5 rounded-xl bg-[#ccff00] text-black font-bold hover:brightness-110 transition-all disabled:opacity-40 disabled:cursor-not-allowed"
                 >
                   {isSaving ? 'Saving…' : 'Continue →'}
                 </button>
