@@ -175,7 +175,7 @@ export const AdminEventsTable: React.FC<EventsTableProps> = ({ events, isLoading
                       </td>
                       <td className="p-6 text-gray-300">
                         <div className="flex flex-col">
-                          <span className="font-medium text-white/90">{event.host?.name || "Unknown Host"}</span>
+                          <span className="font-medium text-white/90">{event.host?.name || "Unknown Organizer"}</span>
                           <span className="text-[10px] text-white/40 font-mono tracking-tighter">ID: {event.hostId}</span>
                         </div>
                       </td>

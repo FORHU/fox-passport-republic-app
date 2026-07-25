@@ -215,7 +215,7 @@ function normalizeVenue(v: any) {
     host: mayor ? {
       id: mayor.id,
       name: mayor.name || 'Venue Owner',
-      avatar: mayor.imgId || `https://ui-avatars.com/api/?name=${encodeURIComponent(mayor.name || 'Host')}&background=ccff00&color=000`,
+      avatar: mayor.imgId || `https://ui-avatars.com/api/?name=${encodeURIComponent(mayor.name || 'Owner')}&background=ccff00&color=000`,
       bio: '',
       email: mayor.email,
     } : null,

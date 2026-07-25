@@ -266,7 +266,7 @@ export const AdminVenuesTable: React.FC<VenueTableProps> = ({ venues, isLoading 
                         </td>
                         <td className="p-6">
                           <div className="flex flex-col">
-                            <span className="font-bold text-white/90">{venue.host?.name ?? 'Unknown Host'}</span>
+                            <span className="font-bold text-white/90">{venue.host?.name ?? 'Unknown Owner'}</span>
                             <span className="text-[10px] text-white/30 font-mono tracking-tighter">ID: {venue.hostId?.slice(0, 8)}…</span>
                           </div>
                         </td>
