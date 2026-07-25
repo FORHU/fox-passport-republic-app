@@ -91,12 +91,12 @@ export default function BookingConfigurationClient() {
     <div className="bg-background bg-gradient-dark text-text-main antialiased min-h-screen flex flex-col selection:bg-accent selection:text-black font-body">
       <header className="fixed top-6 left-0 right-0 z-50 transition-all duration-300">
         <div className="mx-auto max-w-7xl px-4">
-          <div className="glass-panel rounded-full px-6 h-20 flex items-center justify-between shadow-2xl hover:bg-black/40 transition-colors duration-500">
-            <Link href="/" className="flex items-center gap-3 group cursor-pointer">
-              <div className="flex h-10 w-10 items-center justify-center overflow-hidden group-hover:scale-110 transition-transform duration-300">
+          <div className="glass-panel rounded-full px-4 sm:px-6 h-14 sm:h-20 flex items-center justify-between shadow-2xl hover:bg-black/40 transition-colors duration-500">
+            <Link href="/" className="flex items-center gap-2 sm:gap-3 group cursor-pointer">
+              <div className="flex h-8 w-8 sm:h-10 sm:w-10 items-center justify-center overflow-hidden group-hover:scale-110 transition-transform duration-300">
                 <Image src="/foxonlylogo.png" alt="FoxPassport Logo" width={40} height={40} className="object-contain" priority />
               </div>
-              <h2 className="text-2xl font-display font-bold tracking-tight text-white group-hover:text-accent transition-colors">FoxPassport</h2>
+              <h2 className="text-lg sm:text-2xl font-display font-bold tracking-tight text-white group-hover:text-accent transition-colors">FoxPassport</h2>
             </Link>
             <nav className="hidden md:flex items-center gap-2 bg-black/20 p-1.5 rounded-full border border-white/5">
               <Link href="/" className="px-6 py-2.5 rounded-full text-sm font-medium text-white/70 hover:text-white hover:bg-white/10 transition-all hover:scale-105">Explore</Link>
@@ -125,7 +125,7 @@ export default function BookingConfigurationClient() {
         </div>
       </header>
 
-      <main className="grow pt-32 pb-20">
+      <main className="grow pt-24 sm:pt-32 pb-20">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="mb-8">
             <div className="flex items-center gap-2 text-sm text-text-muted mb-4">
@@ -137,7 +137,7 @@ export default function BookingConfigurationClient() {
             </div>
             <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
               <div>
-                <h1 className="text-4xl md:text-5xl font-display font-bold text-white mb-2">Secure Your Spot</h1>
+                <h1 className="text-2xl sm:text-4xl md:text-5xl font-display font-bold text-white mb-2">Secure Your Spot</h1>
                 <p className="text-text-muted">Customize your experience and get ready for the core memory.</p>
               </div>
               <div className="flex items-center gap-4 bg-surface-highlight/30 px-6 py-3 rounded-full border border-white/5">
@@ -157,7 +157,7 @@ export default function BookingConfigurationClient() {
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 relative">
             <div className="lg:col-span-8 space-y-8">
               {isFull ? (
-                <div className="glass-card rounded-[2rem] p-8 border border-yellow-400/20 text-center">
+                <div className="glass-card rounded-[2rem] p-4 sm:p-8 border border-yellow-400/20 text-center">
                   <div className="flex flex-col items-center gap-4 py-8">
                     <span className="material-symbols-outlined text-yellow-400 text-5xl">hourglass_empty</span>
                     <h3 className="text-2xl font-display font-bold text-white">This event is at capacity</h3>
@@ -169,7 +169,7 @@ export default function BookingConfigurationClient() {
               ) : (
                 <>
                 {/* Calendar Section */}
-                <div className="glass-card rounded-[2rem] p-8 border border-white/10">
+                <div className="glass-card rounded-[2rem] p-4 sm:p-8 border border-white/10">
                 <div className="flex items-center gap-3 mb-6">
                   <span className="material-symbols-outlined text-accent text-2xl">calendar_month</span>
                   <h3 className="text-xl font-display font-bold text-white">Select Date & Time</h3>
@@ -208,7 +208,7 @@ export default function BookingConfigurationClient() {
               </div>
 
               {/* Guests Section */}
-              <div className="glass-card rounded-[2rem] p-8 border border-white/10">
+              <div className="glass-card rounded-[2rem] p-4 sm:p-8 border border-white/10">
                 <div className="flex items-center gap-3 mb-6">
                   <span className="material-symbols-outlined text-accent text-2xl">group</span>
                   <h3 className="text-xl font-display font-bold text-white">Who&apos;s Coming?</h3>
@@ -242,7 +242,7 @@ export default function BookingConfigurationClient() {
               </div>
 
               {/* Included Services */}
-              <div className="glass-card rounded-[2rem] p-8 border border-white/10">
+              <div className="glass-card rounded-[2rem] p-4 sm:p-8 border border-white/10">
                 <div className="flex items-center gap-3 mb-6">
                   <span className="material-symbols-outlined text-accent text-2xl">diamond</span>
                   <h3 className="text-xl font-display font-bold text-white">What&apos;s Included</h3>
@@ -286,7 +286,7 @@ export default function BookingConfigurationClient() {
 
               {/* Optional Add-ons */}
               {allOptionalItems.length > 0 && (
-                <div className="glass-card rounded-[2rem] p-8 border border-yellow-400/20">
+                <div className="glass-card rounded-[2rem] p-4 sm:p-8 border border-yellow-400/20">
                   <div className="flex items-center gap-3 mb-2">
                     <span className="material-symbols-outlined text-yellow-400 text-2xl">tune</span>
                     <h3 className="text-xl font-display font-bold text-white">Optional Add-ons</h3>
@@ -340,7 +340,7 @@ export default function BookingConfigurationClient() {
               )}
 
               {/* Special Requests */}
-              <div className="glass-card rounded-[2rem] p-8 border border-white/10">
+              <div className="glass-card rounded-[2rem] p-4 sm:p-8 border border-white/10">
                 <div className="flex items-center gap-3 mb-6">
                   <span className="material-symbols-outlined text-accent text-2xl">edit_note</span>
                   <h3 className="text-xl font-display font-bold text-white">Special Requests</h3>

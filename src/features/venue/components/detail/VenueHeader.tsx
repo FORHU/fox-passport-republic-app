@@ -11,13 +11,13 @@ interface VenueNavHeaderProps {
 
 export function VenueNavHeader({ title, onBack }: VenueNavHeaderProps) {
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-md border-b border-white/5 h-20 transition-all duration-300">
+    <header className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-md border-b border-white/5 h-14 sm:h-20 transition-all duration-300">
       <div className="mx-auto max-w-7xl px-4 h-full flex items-center justify-between">
-        <Link href="/" className="flex items-center gap-3 group cursor-pointer">
-          <div className="flex h-10 w-10 items-center justify-center overflow-hidden group-hover:scale-110 transition-transform duration-300">
+        <Link href="/" className="flex items-center gap-2 sm:gap-3 group cursor-pointer">
+          <div className="flex h-8 w-8 sm:h-10 sm:w-10 items-center justify-center overflow-hidden group-hover:scale-110 transition-transform duration-300">
             <Image src="/foxonlylogo.png" alt="FoxPassport Logo" width={40} height={40} className="object-contain" priority />
           </div>
-          <h2 className="text-2xl font-display font-bold tracking-tight text-white group-hover:text-accent transition-colors">
+          <h2 className="text-lg sm:text-2xl font-display font-bold tracking-tight text-white group-hover:text-accent transition-colors">
             FoxPassport
           </h2>
         </Link>
@@ -76,7 +76,7 @@ interface VenueGalleryGridProps {
 
 export function VenueGalleryGrid({ images, onOpenGallery }: VenueGalleryGridProps) {
   return (
-    <div className="grid grid-cols-4 grid-rows-2 gap-3 h-[350px] md:h-[500px] rounded-2xl overflow-hidden mb-12 relative">
+    <div className="grid grid-cols-2 sm:grid-cols-4 grid-rows-2 gap-2 sm:gap-3 h-52 sm:h-87.5 md:h-125 rounded-2xl overflow-hidden mb-8 sm:mb-12 relative">
       <div
         className="col-span-2 row-span-2 relative cursor-pointer group"
         onClick={() => onOpenGallery(0)}
@@ -91,7 +91,7 @@ export function VenueGalleryGrid({ images, onOpenGallery }: VenueGalleryGridProp
       {images.slice(1, 5).map((img, idx) => (
         <div
           key={idx}
-          className="relative cursor-pointer group"
+          className="relative hidden sm:block cursor-pointer group"
           onClick={() => onOpenGallery(idx + 1)}
         >
           <img

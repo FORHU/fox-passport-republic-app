@@ -64,7 +64,7 @@ export default function VenueDetailClient({ venue, host }: VenueDetailClientProp
 
       <VenueNavHeader title={venue.title} onBack={handleBack} />
 
-      <main className="grow pt-28 pb-20 px-4 sm:px-6">
+      <main className="grow pt-20 sm:pt-28 pb-20 px-4 sm:px-6">
         <div className="max-w-7xl mx-auto">
           <VenueHero
             title={venue.title}

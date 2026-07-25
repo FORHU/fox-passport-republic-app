@@ -274,8 +274,8 @@ const CustomExperienceBuilder: React.FC<{ isOpen: boolean; onClose: () => void; 
         </main>
 
         {/* Right Sidebar: Bill of Materials / Summary / Drop Zone */}
-        <aside 
-          className={`w-80 shrink-0 bg-[#0f111a] border-l border-white/5 flex flex-col shadow-2xl relative z-10 transition-all duration-300 ${
+        <aside
+          className={`hidden md:flex flex-col w-80 shrink-0 bg-[#0f111a] border-l border-white/5 shadow-2xl relative z-10 transition-all duration-300 ${
             isDragOver ? 'bg-white/5 border-accent shadow-[inset_0_0_40px_rgba(204,255,0,0.1)]' : ''
           }`}
           onDragOver={handleDragOver}
@@ -374,6 +374,23 @@ const CustomExperienceBuilder: React.FC<{ isOpen: boolean; onClose: () => void; 
             <p className="text-[10px] text-center text-text-muted mt-3">You won&apos;t be charged yet.</p>
           </div>
         </aside>
+      </div>
+
+      {/* Mobile submit bar — replaces the hidden right sidebar on small screens */}
+      <div className="md:hidden flex items-center justify-between px-4 py-3 bg-[#0f111a] border-t border-white/10 shrink-0">
+        <div>
+          <p className="text-[10px] text-white/40">Total Estimate</p>
+          <span className="text-lg font-display font-bold text-accent">₱{calculateTotal().toLocaleString()}</span>
+        </div>
+        <button
+          onClick={handleSubmit}
+          disabled={isSubmitting}
+          className="px-5 py-2.5 rounded-xl bg-white text-black font-bold text-sm hover:bg-accent transition-colors disabled:opacity-50 flex items-center gap-2"
+        >
+          {isSubmitting
+            ? <span className="material-symbols-outlined animate-spin text-[18px]">progress_activity</span>
+            : 'Request Booking'}
+        </button>
       </div>
     </div>
   );
@@ -529,13 +546,13 @@ const EventDetailsPage: React.FC = () => {
       )}
 
       {/* Nav */}
-      <header className={`fixed left-0 right-0 z-50 bg-background/80 backdrop-blur-md border-b border-white/5 h-20 ${isPreview && isDraft ? 'top-9' : 'top-0'}`}>
+      <header className={`fixed left-0 right-0 z-50 bg-background/80 backdrop-blur-md border-b border-white/5 h-14 sm:h-20 ${isPreview && isDraft ? 'top-9' : 'top-0'}`}>
         <div className="mx-auto max-w-7xl px-4 h-full flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-3 group">
-            <div className="flex h-10 w-10 items-center justify-center overflow-hidden group-hover:scale-110 transition-transform duration-300">
+          <Link href="/" className="flex items-center gap-2 sm:gap-3 group">
+            <div className="flex h-8 w-8 sm:h-10 sm:w-10 items-center justify-center overflow-hidden group-hover:scale-110 transition-transform duration-300">
               <Image src="/foxonlylogo.png" alt="FoxPassport Logo" width={40} height={40} className="object-contain" priority />
             </div>
-            <h2 className="text-2xl font-display font-bold tracking-tight text-white group-hover:text-accent transition-colors">FoxPassport</h2>
+            <h2 className="text-lg sm:text-2xl font-display font-bold tracking-tight text-white group-hover:text-accent transition-colors">FoxPassport</h2>
           </Link>
           <div className="flex items-center gap-4">
             <button className="hidden sm:flex items-center gap-2 px-4 py-2 rounded-full border border-white/10 hover:bg-white/5 text-sm font-medium text-white"><span className="material-symbols-outlined text-[18px]">share</span> Share</button>
@@ -545,7 +562,7 @@ const EventDetailsPage: React.FC = () => {
         </div>
       </header>
 
-      <main className={`grow pb-20 px-4 sm:px-6 ${isPreview && isDraft ? 'pt-[132px]' : 'pt-28'}`}>
+      <main className={`grow pb-20 px-4 sm:px-6 ${isPreview && isDraft ? 'pt-26.25 sm:pt-33' : 'pt-20 sm:pt-28'}`}>
         <div className="max-w-7xl mx-auto">
 
           {/* Title */}
@@ -571,12 +588,12 @@ const EventDetailsPage: React.FC = () => {
 
           {/* Gallery */}
           {hasImages ? (
-            <div className="grid grid-cols-4 grid-rows-2 gap-3 h-87.5 md:h-125 rounded-2xl overflow-hidden mb-12 relative">
+            <div className="grid grid-cols-2 sm:grid-cols-4 grid-rows-2 gap-2 sm:gap-3 h-52 sm:h-80 md:h-125 rounded-2xl overflow-hidden mb-8 sm:mb-12 relative">
               <div className="col-span-2 row-span-2 cursor-pointer group" onClick={() => { setActiveImageIndex(0); setGalleryOpen(true); }}>
                 <img src={templateImages[0]} className="w-full h-full object-cover group-hover:brightness-110 transition-all duration-500" alt="Main" />
               </div>
               {templateImages.slice(1, 5).map((img: string, idx: number) => (
-                <div key={idx} className="relative cursor-pointer group" onClick={() => { setActiveImageIndex(idx + 1); setGalleryOpen(true); }}>
+                <div key={idx} className="relative hidden sm:block cursor-pointer group" onClick={() => { setActiveImageIndex(idx + 1); setGalleryOpen(true); }}>
                   <img src={img} className="w-full h-full object-cover group-hover:brightness-110 transition-all duration-500" alt={`View ${idx + 1}`} />
                   {idx === 3 && templateImages.length > 5 && (
                     <div className="absolute inset-0 bg-black/60 flex items-center justify-center"><span className="text-white font-bold text-lg">+{templateImages.length - 5}</span></div>

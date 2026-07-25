@@ -115,12 +115,12 @@ export default function BookingDetailClient({ bookingId }: { bookingId: string }
     <>
       <header className="fixed top-6 left-0 right-0 z-50">
         <div className="mx-auto max-w-4xl px-4">
-          <div className="glass-panel rounded-full px-6 h-20 flex items-center justify-between shadow-2xl hover:bg-black/40 transition-colors duration-500">
-            <Link href="/" className="flex items-center gap-3 group cursor-pointer">
-              <div className="flex h-10 w-10 items-center justify-center overflow-hidden group-hover:scale-110 transition-transform duration-300">
+          <div className="glass-panel rounded-full px-4 sm:px-6 h-14 sm:h-20 flex items-center justify-between shadow-2xl hover:bg-black/40 transition-colors duration-500">
+            <Link href="/" className="flex items-center gap-2 sm:gap-3 group cursor-pointer">
+              <div className="flex h-8 w-8 sm:h-10 sm:w-10 items-center justify-center overflow-hidden group-hover:scale-110 transition-transform duration-300">
                 <Image src="/foxonlylogo.png" alt="FoxPassport Logo" width={40} height={40} className="object-contain" priority />
               </div>
-              <h2 className="text-2xl font-display font-bold tracking-tight text-white group-hover:text-accent transition-colors">FoxPassport</h2>
+              <h2 className="text-lg sm:text-2xl font-display font-bold tracking-tight text-white group-hover:text-accent transition-colors">FoxPassport</h2>
             </Link>
             <nav className="hidden md:flex items-center gap-2 bg-black/20 p-1.5 rounded-full border border-white/5">
               <Link href="/" className="px-6 py-2.5 rounded-full text-sm font-medium text-white/70 hover:text-white hover:bg-white/10 transition-all">Explore</Link>
@@ -142,7 +142,7 @@ export default function BookingDetailClient({ bookingId }: { bookingId: string }
         </div>
       </header>
 
-      <main className="grow pt-32 pb-20">
+      <main className="grow pt-24 sm:pt-32 pb-20">
         <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
           <div className="flex items-center gap-2 text-sm text-text-muted mb-6">
             <Link href="/" className="hover:text-white transition-colors">Home</Link>
@@ -152,11 +152,11 @@ export default function BookingDetailClient({ bookingId }: { bookingId: string }
             <span className="text-accent font-semibold truncate max-w-50">#{bookingId.slice(0, 12)}</span>
           </div>
 
-          <div className="glass-panel rounded-3xl p-8 space-y-8">
+          <div className="glass-panel rounded-3xl p-4 sm:p-8 space-y-6 sm:space-y-8">
             <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
               <div>
-                <div className="flex items-center gap-3 mb-2">
-                  <h1 className="text-3xl md:text-4xl font-display font-bold text-white">{eventName}</h1>
+                <div className="flex flex-wrap items-center gap-2 sm:gap-3 mb-2">
+                  <h1 className="text-2xl sm:text-3xl md:text-4xl font-display font-bold text-white">{eventName}</h1>
                   <span className={`px-3 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider ${statusInfo.color}`}>
                     {statusInfo.label}
                   </span>
@@ -203,7 +203,7 @@ export default function BookingDetailClient({ bookingId }: { bookingId: string }
           </div>
 
           {booking.ticketCode && !isCancelled && booking.status !== 'completed' && (
-            <div className="glass-panel rounded-3xl p-8 mt-6">
+            <div className="glass-panel rounded-3xl p-4 sm:p-8 mt-6">
               <div className="flex flex-col md:flex-row items-center gap-8">
                 <div className="shrink-0">
                   <div className="p-4 bg-white rounded-2xl">
@@ -239,7 +239,7 @@ export default function BookingDetailClient({ bookingId }: { bookingId: string }
           )}
 
           {payments.length > 0 && (
-            <div className="glass-panel rounded-3xl p-8 mt-6">
+            <div className="glass-panel rounded-3xl p-4 sm:p-8 mt-6">
               <h2 className="text-xl font-display font-bold text-white mb-4">Payment History</h2>
               <div className="space-y-3">
                 {payments.map((payment: any, idx: number) => {
