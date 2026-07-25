@@ -18,9 +18,9 @@ export const UserForYou: React.FC<UserForYouProps> = ({ canSeeVenues = false, ve
           <div className="h-16 w-16 rounded-full bg-surface-highlight flex items-center justify-center mb-4">
             <span className="material-symbols-outlined text-white/40 text-3xl">storefront</span>
           </div>
-          <h4 className="font-bold text-white text-lg mb-2">Venues are for Hosts &amp; Foxers</h4>
+          <h4 className="font-bold text-white text-lg mb-2">Venues are for Creator Roles</h4>
           <p className="text-text-muted text-sm max-w-xs">
-            Venue listings are available to Hosts, Foxers, and Mayors. Apply for a role to unlock this section.
+            Venue listings are available to Event Foxers, Gear Foxers, and Venue Foxers. Apply for a role to unlock this section.
           </p>
         </div>
       </section>

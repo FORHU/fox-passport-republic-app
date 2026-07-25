@@ -2,15 +2,22 @@
 
 import { FormEvent, useState } from "react";
 import { motion } from "motion/react";
+import api from "@/shared/lib/axios";
 
 export default function NewsletterSection() {
   const [email, setEmail] = useState("");
+  const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
 
-  const handleSubmit = (e: FormEvent) => {
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
-    // TODO: Implement newsletter signup
-    console.log("Newsletter signup:", email);
-    setEmail("");
+    setStatus("loading");
+    try {
+      await api.post("/newsletter/subscribe", { email });
+      setStatus("success");
+      setEmail("");
+    } catch {
+      setStatus("error");
+    }
   };
 
   return (
@@ -54,25 +61,38 @@ export default function NewsletterSection() {
               straight to your inbox.
             </p>
 
-            <form
-              onSubmit={handleSubmit}
-              className="flex flex-col sm:flex-row gap-3 sm:gap-4 max-w-lg mx-auto"
-            >
-              <input
-                className="flex-1 rounded-full bg-black/40 border border-white/20 text-white placeholder-gray-400 px-4 py-3 sm:px-8 sm:py-5 focus:outline-none focus:ring-2 focus:ring-[#ccff00] focus:bg-black/60 transition-all font-medium backdrop-blur-sm text-xs sm:text-base"
-                placeholder="your@email.com"
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-              />
-              <button
-                className="bg-[#ccff00] text-black font-bold text-xs sm:text-lg px-5 py-3 sm:px-10 sm:py-5 rounded-full hover:bg-white transition-all shadow-[0_0_20px_rgba(204,255,0,0.4)] hover:shadow-[0_0_40px_rgba(255,255,255,0.4)] hover:-translate-y-1 active:translate-y-0"
-                type="submit"
+            {status === "success" ? (
+              <div className="max-w-lg mx-auto py-4 sm:py-6 text-center">
+                <p className="text-[#ccff00] font-bold text-base sm:text-xl mb-1">You&apos;re on the list!</p>
+                <p className="text-white/60 text-xs sm:text-sm">We&apos;ll drop the freshest updates straight to your inbox.</p>
+              </div>
+            ) : (
+              <form
+                onSubmit={handleSubmit}
+                className="flex flex-col sm:flex-row gap-3 sm:gap-4 max-w-lg mx-auto"
               >
-                Subscribe
-              </button>
-            </form>
+                <input
+                  className="flex-1 rounded-full bg-black/40 border border-white/20 text-white placeholder-gray-400 px-4 py-3 sm:px-8 sm:py-5 focus:outline-none focus:ring-2 focus:ring-[#ccff00] focus:bg-black/60 transition-all font-medium backdrop-blur-sm text-xs sm:text-base disabled:opacity-50"
+                  placeholder="your@email.com"
+                  type="email"
+                  value={email}
+                  onChange={(e) => { setEmail(e.target.value); if (status === "error") setStatus("idle"); }}
+                  required
+                  disabled={status === "loading"}
+                />
+                <button
+                  className="bg-[#ccff00] text-black font-bold text-xs sm:text-lg px-5 py-3 sm:px-10 sm:py-5 rounded-full hover:bg-white transition-all shadow-[0_0_20px_rgba(204,255,0,0.4)] hover:shadow-[0_0_40px_rgba(255,255,255,0.4)] hover:-translate-y-1 active:translate-y-0 disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:translate-y-0"
+                  type="submit"
+                  disabled={status === "loading"}
+                >
+                  {status === "loading" ? "Subscribing…" : "Subscribe"}
+                </button>
+              </form>
+            )}
+
+            {status === "error" && (
+              <p className="mt-2 text-red-400 text-xs sm:text-sm text-center">Something went wrong. Please try again.</p>
+            )}
 
             <p className="mt-4 sm:mt-8 text-[10px] sm:text-xs text-white/50 font-medium tracking-wide">
               WE RESPECT YOUR INBOX. NO SPAM, JUST VIBES.

@@ -1,9 +1,9 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
+import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import Image from 'next/image';
 import { fetchStamps, Stamp } from '@/features/gamification/api/stamps';
 import { useCategories } from '@/features/category/hooks/useCategories';
 
@@ -134,8 +134,8 @@ export default function PassportStampsClient({ userId }: Props) {
         <div className="mx-auto max-w-7xl px-4">
           <div className="glass-panel rounded-full px-6 h-20 flex items-center justify-between shadow-2xl">
             <Link href="/" className="flex items-center gap-3 group">
-              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-white text-black font-bold group-hover:rotate-180 transition-transform duration-700">
-                <span className="material-symbols-outlined text-[24px]">explore</span>
+              <div className="flex h-10 w-10 items-center justify-center overflow-hidden group-hover:scale-110 transition-transform duration-300">
+                <Image src="/foxonlylogo.png" alt="FoxPassport Logo" width={40} height={40} className="object-contain" priority />
               </div>
               <h2 className="text-2xl font-display font-bold text-white group-hover:text-accent transition-colors">FoxPassport</h2>
             </Link>

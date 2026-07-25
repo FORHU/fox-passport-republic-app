@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { Menu } from 'lucide-react';
@@ -91,8 +92,8 @@ export function DashboardHeader() {
 
           {/* Logo */}
           <Link href="/" className="flex items-center gap-3 group">
-            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-white text-black font-bold shadow-[0_0_15px_rgba(255,255,255,0.3)] group-hover:rotate-180 transition-transform duration-700">
-              <span className="material-symbols-outlined text-[24px]">explore</span>
+            <div className="flex h-10 w-10 items-center justify-center overflow-hidden group-hover:scale-110 transition-transform duration-300">
+              <Image src="/foxonlylogo.png" alt="FoxPassport Logo" width={40} height={40} className="object-contain" priority />
             </div>
             <div className="flex flex-col">
               <h2 className="text-xl font-display font-bold text-white group-hover:text-[#ccff00] transition-colors">
@@ -220,7 +221,7 @@ export function WelcomeBanner({
       iconColor: 'text-pink-500',
       allowed: access.canManageVenues,
       requiredRole: 'Venue Foxer',
-      applyHref: '/mayor/apply',
+      applyHref: '/venue-foxer/apply',
       onClick: onNavigateToCreateVenue,
     },
     {

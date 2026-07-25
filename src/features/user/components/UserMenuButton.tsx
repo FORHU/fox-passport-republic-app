@@ -36,7 +36,7 @@ const ROLE_DEFS: RoleDef[] = [
     icon: LayoutDashboard,
     emoji: '🏙️',
     roleTypes: [],
-    systemRoles: ['user', 'host', 'mayor', 'foxer', 'admin', 'super_admin'],
+    systemRoles: ['user', 'admin', 'super_admin'],
   },
   {
     key: 'host',
@@ -135,9 +135,6 @@ export default function UserMenuButton({ onSignIn }: UserMenuButtonProps = {}) {
     // Citizen Dashboard is always accessible to any authenticated user
     if (def.key === 'user') return !!user;
     if (def.systemRoles?.includes(sysRole)) return true;
-    // Creator Dashboard: also unlock if systemRole itself is a creator role
-    const creatorSystemRoles = ['host', 'mayor', 'foxer'];
-    if (creatorSystemRoles.includes(sysRole)) return true;
     return def.roleTypes.some((r) => roleTypes.includes(r));
   };
 
@@ -296,20 +293,30 @@ export default function UserMenuButton({ onSignIn }: UserMenuButtonProps = {}) {
             <div className="px-2 py-2 border-b border-white/5 space-y-0.5">
               {[
                 { label: 'Wishlists', icon: Heart, href: '/wishlists' },
-                { label: 'Trips', icon: Briefcase, href: '/trips' },
+                { label: 'Trips', icon: Briefcase, href: '/trips', comingSoon: true },
                 { label: 'My Bookings', icon: Briefcase, href: '/booking' },
-                { label: 'Messages', icon: MessageSquare, href: '/messages' },
+                { label: 'Messages', icon: MessageSquare, href: '/messages', comingSoon: true },
                 { label: 'Account settings', icon: Settings, href: '/user/settings' },
-                { label: 'Languages & currency', icon: Globe, href: '/settings/language' },
-                { label: 'Help Center', icon: HelpCircle, href: '/help' },
+                { label: 'Languages & currency', icon: Globe, href: '/settings/language', comingSoon: true },
+                { label: 'Help Center', icon: HelpCircle, href: '/help', comingSoon: true },
               ].map((item) => (
                 <button
                   key={item.label}
-                  onClick={() => { close(); router.push(item.href); }}
+                  onClick={() => {
+                    close();
+                    if ((item as { comingSoon?: boolean }).comingSoon) {
+                      toast.info(`${item.label} coming soon!`);
+                      return;
+                    }
+                    router.push(item.href);
+                  }}
                   className="w-full flex items-center gap-3 px-2 py-2.5 rounded-lg hover:bg-white/5 transition-colors group"
                 >
                   <item.icon className="w-4 h-4 text-white/40 group-hover:text-[#ccff00] transition-colors shrink-0" />
                   <span className="text-sm text-white/70 group-hover:text-white transition-colors">{item.label}</span>
+                  {(item as { comingSoon?: boolean }).comingSoon && (
+                    <span className="ml-auto text-[9px] font-bold text-white/20 uppercase tracking-wider">Soon</span>
+                  )}
                 </button>
               ))}
               {!isAdmin && (

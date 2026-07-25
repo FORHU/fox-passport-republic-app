@@ -63,14 +63,14 @@ const PERK_META: Record<string, { title: string; desc: string; icon: string }> =
   priority_access:    { title: 'Priority Access',    desc: 'Skip the line at partner venues',        icon: 'confirmation_number' },
   vip_lounge:         { title: 'VIP Lounge',         desc: 'Access to exclusive event areas',        icon: 'diamond' },
   founding_citizen:   { title: 'Founding Citizen',   desc: 'OG member recognition',                  icon: 'workspace_premium' },
-  host_support:       { title: 'Host Support',        desc: '24/7 dedicated event manager',           icon: 'support_agent' },
+  host_support:       { title: 'Creator Support',     desc: '24/7 dedicated event manager',           icon: 'support_agent' },
   analytics_pro:      { title: 'Analytics Pro',      desc: 'Advanced heatmaps for your venues',      icon: 'analytics' },
   featured_listing:   { title: 'Featured Listing',   desc: 'Priority placement in search results',   icon: 'featured_play_list' },
   event_boost:        { title: 'Event Boost',         desc: 'Promoted visibility for your events',    icon: 'rocket_launch' },
   venue_authority:    { title: 'Venue Authority',     desc: 'Priority venue listing approvals',       icon: 'assured_workload' },
-  city_badge:         { title: 'City Badge',          desc: 'Verified mayor status in your city',     icon: 'account_balance' },
+  city_badge:         { title: 'City Badge',          desc: 'Verified Venue Foxer status in your city', icon: 'account_balance' },
   venue_spotlight:    { title: 'Venue Spotlight',     desc: 'Top placement in venue listings',        icon: 'auto_awesome' },
-  mayor_verified:     { title: 'Mayor Verified',      desc: 'Highest tier city authority',            icon: 'verified_user' },
+  mayor_verified:     { title: 'Venue Verified',      desc: 'Highest tier venue authority',           icon: 'verified_user' },
   gear_verified:      { title: 'Gear Verified',       desc: 'Exclusive gear provider status',         icon: 'verified' },
   lower_fees:         { title: 'Lower Fees',          desc: '5% lower commission on bookings',        icon: 'percent' },
   gear_featured:      { title: 'Gear Featured',       desc: 'Priority in equipment listings',         icon: 'star' },
@@ -601,33 +601,33 @@ const PassportClient: React.FC<PassportClientProps> = ({ user }) => {
                       </div>
                     )}
 
-                    {/* Host Path Guide */}
+                    {/* Event Foxer Path Guide */}
                     {activePathTypes.includes('eventFoxer') && (
                       <div className="space-y-4">
-                        <p className="text-[10px] font-black text-[#3b82f6] uppercase tracking-widest opacity-60">Host Career</p>
+                        <p className="text-[10px] font-black text-[#3b82f6] uppercase tracking-widest opacity-60">Event Foxer Career</p>
                         <div className="space-y-3">
                            <div className="flex justify-between items-center p-4 rounded-2xl bg-white/5 border border-white/5 hover:bg-white/10 transition-all">
                              <div className="flex items-center gap-3">
-                               <span className="material-symbols-outlined text-[#3b82f6] text-sm">apartment</span>
-                               <span className="text-sm text-white/70">Upload Venue</span>
+                               <span className="material-symbols-outlined text-[#3b82f6] text-sm">celebration</span>
+                               <span className="text-sm text-white/70">Complete an Event</span>
                              </div>
-                             <span className="font-mono text-sm text-[#3b82f6] font-bold">+{XP_REWARDS.uploadVenue} XP</span>
+                             <span className="font-mono text-sm text-[#3b82f6] font-bold">+{XP_REWARDS.completeEvent} XP</span>
                            </div>
                            <div className="flex justify-between items-center p-4 rounded-2xl bg-white/5 border border-white/5 hover:bg-white/10 transition-all">
                              <div className="flex items-center gap-3">
                                <span className="material-symbols-outlined text-[#3b82f6] text-sm">star_rate</span>
-                               <span className="text-sm text-white/70">Venue Featured</span>
+                               <span className="text-sm text-white/70">Earn a 5-Star Review</span>
                              </div>
-                             <span className="font-mono text-sm text-[#3b82f6] font-bold">+{XP_REWARDS.venueFeatured} XP</span>
+                             <span className="font-mono text-sm text-[#3b82f6] font-bold">+{XP_REWARDS.receive5StarReview} XP</span>
                            </div>
                         </div>
                       </div>
                     )}
 
-                    {/* Mayor Path Guide */}
+                    {/* Venue Foxer Path Guide */}
                     {activePathTypes.includes('venueFoxer') && (
                       <div className="space-y-4">
-                        <p className="text-[10px] font-black text-[#a855f7] uppercase tracking-widest opacity-60">Mayor Career</p>
+                        <p className="text-[10px] font-black text-[#a855f7] uppercase tracking-widest opacity-60">Venue Foxer Career</p>
                         <div className="space-y-3">
                            <div className="flex justify-between items-center p-4 rounded-2xl bg-white/5 border border-white/5 hover:bg-white/10 transition-all">
                              <div className="flex items-center gap-3">

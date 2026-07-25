@@ -1,6 +1,7 @@
 ﻿'use client';
 
 import React, { useState, useEffect } from 'react';
+import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { fetchAssetById } from '@/features/asset/api/assets';
@@ -78,8 +79,8 @@ export default function AssetDetailClient({ assetId }: { assetId: string }) {
           Back
         </button>
         <Link href="/" className="flex items-center gap-2 group">
-          <div className="flex h-9 w-9 items-center justify-center rounded-full bg-white text-black group-hover:rotate-180 transition-transform duration-700">
-            <span className="material-symbols-outlined text-[20px]">explore</span>
+          <div className="flex h-9 w-9 items-center justify-center overflow-hidden group-hover:scale-110 transition-transform duration-300">
+            <Image src="/foxonlylogo.png" alt="FoxPassport Logo" width={36} height={36} className="object-contain" priority />
           </div>
           <span className="text-xl font-display font-bold text-white group-hover:text-accent transition-colors">FoxPassport</span>
         </Link>

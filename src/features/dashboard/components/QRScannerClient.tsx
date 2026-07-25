@@ -54,7 +54,7 @@ export default function QRScannerClient() {
           msg = err?.response?.data?.message || 'Ticket not paid — payment required before check-in';
           break;
         case 403:
-          msg = err?.response?.data?.message || 'You are not the host for this booking';
+          msg = err?.response?.data?.message || 'You are not the authorized check-in manager for this booking';
           break;
         case 404:
           msg = err?.response?.data?.message || 'Ticket code not found';

@@ -28,7 +28,7 @@ export default function CreateVenueWizard() {
         {/* Redirect to full builder */}
         <div className="flex flex-col items-center gap-4">
           <a
-            href="/mayor/create-venue"
+            href="/venue-foxer/create-venue"
             className="w-full py-4 bg-[#ccff00] text-black font-bold rounded-xl hover:brightness-110 transition-all text-center"
           >
             Open Venue Builder

@@ -163,7 +163,7 @@ export default function HostDashboardClient({ initialData }: HostDashboardClient
                   title="My Active Events"
                   icon="hub"
                   iconColor="text-[#ccff00]"
-                  requiredRole="Host"
+                  requiredRole="Event Foxer"
                   applyHref="/creator-dashboard/apply"
                 >
                   <EventsSection events={[]} onStatusChange={() => {}} />
@@ -184,8 +184,8 @@ export default function HostDashboardClient({ initialData }: HostDashboardClient
                   title="My Venues"
                   icon="apartment"
                   iconColor="text-pink-500"
-                  requiredRole="Mayor"
-                  applyHref="/mayor/apply"
+                  requiredRole="Venue Foxer"
+                  applyHref="/venue-foxer/apply"
                 >
                   <VenuesSection venues={[]} onStatusChange={() => {}} />
                 </LockedSection>

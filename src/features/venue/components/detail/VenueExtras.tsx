@@ -472,7 +472,7 @@ export function HostBio({ host }: HostBioProps) {
         <img
           src={host.avatar}
           className="w-16 h-16 rounded-full object-cover border-2 border-white/10"
-          alt="Host"
+          alt="Venue owner"
         />
         <div className="absolute -bottom-1 -right-1 bg-accent text-black rounded-full p-1 border-4 border-[#0f111a] shadow-sm flex items-center justify-center">
           <span className="material-symbols-outlined text-[14px]">verified</span>
@@ -490,7 +490,7 @@ export function HostBio({ host }: HostBioProps) {
         <p className="text-sm text-gray-300 leading-relaxed mb-4">{host.description}</p>
         <div className="flex items-center gap-4">
           <button className="px-6 py-3 rounded-xl border border-white/10 text-sm font-bold text-white hover:bg-white hover:text-black transition-colors">
-            Contact Host
+            Contact Owner
           </button>
         </div>
       </div>

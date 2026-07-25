@@ -1,4 +1,7 @@
+"use client";
+
 import React from 'react';
+import { toast } from "sonner";
 
 interface Transaction {
     type: 'purchase' | 'topup';
@@ -38,10 +41,16 @@ export const UserWallet: React.FC<UserWalletProps> = ({ walletBalance, recentTra
                     </div>
                   </div>
                   <div className="grid grid-cols-2 gap-3 mb-6">
-                    <button className="bg-accent text-black py-3 rounded-xl font-bold hover:bg-white transition-colors flex items-center justify-center gap-2 shadow-[0_0_15px_rgba(204,255,0,0.3)]">
+                    <button
+                      onClick={() => toast.info("Top Up coming soon!", { description: "Wallet funding will be available in the next release." })}
+                      className="bg-accent text-black py-3 rounded-xl font-bold hover:bg-white transition-colors flex items-center justify-center gap-2 shadow-[0_0_15px_rgba(204,255,0,0.3)]"
+                    >
                       <span className="material-symbols-outlined text-[18px]">add</span> Top Up
                     </button>
-                    <button className="bg-white/10 text-white py-3 rounded-xl font-bold hover:bg-white/20 transition-colors flex items-center justify-center gap-2">
+                    <button
+                      onClick={() => toast.info("Send coming soon!", { description: "Peer-to-peer transfers will be available in the next release." })}
+                      className="bg-white/10 text-white py-3 rounded-xl font-bold hover:bg-white/20 transition-colors flex items-center justify-center gap-2"
+                    >
                       <span className="material-symbols-outlined text-[18px]">send</span> Send
                     </button>
                   </div>

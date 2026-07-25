@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
+import Image from 'next/image';
 import Link from 'next/link';
 import { useEventBuilderStore } from '@/features/event/store/useEventBuilderStore';
 import { LocationMap } from '@/shared/components/ui/LocationMap';
@@ -531,8 +532,8 @@ const EventDetailsPage: React.FC = () => {
       <header className={`fixed left-0 right-0 z-50 bg-background/80 backdrop-blur-md border-b border-white/5 h-20 ${isPreview && isDraft ? 'top-9' : 'top-0'}`}>
         <div className="mx-auto max-w-7xl px-4 h-full flex items-center justify-between">
           <Link href="/" className="flex items-center gap-3 group">
-            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-white text-black font-bold group-hover:rotate-180 transition-transform duration-700">
-              <span className="material-symbols-outlined text-[24px]">explore</span>
+            <div className="flex h-10 w-10 items-center justify-center overflow-hidden group-hover:scale-110 transition-transform duration-300">
+              <Image src="/foxonlylogo.png" alt="FoxPassport Logo" width={40} height={40} className="object-contain" priority />
             </div>
             <h2 className="text-2xl font-display font-bold tracking-tight text-white group-hover:text-accent transition-colors">FoxPassport</h2>
           </Link>
@@ -703,7 +704,7 @@ const EventDetailsPage: React.FC = () => {
               <div className="flex gap-6 items-start">
                 <div className="relative shrink-0">
                   {template.owner?.imgId ? (
-                    <img src={template.owner.imgId} className="w-16 h-16 rounded-full object-cover border-2 border-white/10" alt="Host" />
+                    <img src={template.owner.imgId} className="w-16 h-16 rounded-full object-cover border-2 border-white/10" alt="Event organizer" />
                   ) : (
                     <div className="w-16 h-16 rounded-full bg-accent flex items-center justify-center border-2 border-white/10">
                       <span className="text-black text-2xl font-bold">{ownerInitial}</span>
@@ -719,7 +720,7 @@ const EventDetailsPage: React.FC = () => {
                   <div className="flex gap-4 text-sm text-white mb-4">
                     <span className="flex items-center gap-1"><span className="material-symbols-outlined text-[16px] text-accent">verified</span> Identity Verified</span>
                   </div>
-                  <button className="px-6 py-3 rounded-xl border border-white/10 text-sm font-bold text-white hover:bg-white hover:text-black transition-colors">Contact Host</button>
+                  <button className="px-6 py-3 rounded-xl border border-white/10 text-sm font-bold text-white hover:bg-white hover:text-black transition-colors">Contact Organizer</button>
                 </div>
               </div>
 

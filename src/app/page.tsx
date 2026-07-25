@@ -65,9 +65,9 @@ async function HomeContent({ searchParams }: HomePageProps) {
             {!canSeeVenues ? (
               <div className="flex flex-col items-center justify-center py-20 text-center">
                 <div className="text-4xl mb-4">🏛️</div>
-                <h3 className="text-lg font-bold text-gray-900">Venues are for Hosts &amp; Foxers</h3>
+                <h3 className="text-lg font-bold text-gray-900">Venues are for Venue Foxers &amp; Creators</h3>
                 <p className="text-gray-500 max-w-xs mt-2 text-sm">
-                  Venue listings are only visible to Hosts, Foxers, and Mayors. Apply for a role to unlock access.
+                  Venue listings are only visible to Venue Foxers and Event Foxers. Apply for a role to unlock access.
                 </p>
               </div>
             ) : filteredVenues.length > 0 ? (

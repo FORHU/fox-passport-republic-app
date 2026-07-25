@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
+import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import QRCode from 'react-qr-code';
@@ -58,11 +59,10 @@ export default function BookingDetailClient({ bookingId }: { bookingId: string }
   }, [bookingId]);
 
   const getDashboardPath = () => {
-    switch (user?.role?.toLowerCase() || user?.systemRole) {
-      case 'admin': case 'super_admin': return '/admin';
-      case 'host': case 'mayor': case 'foxer': return '/creator-dashboard';
-      default: return '/user';
-    }
+    if (user?.systemRole === "admin" || user?.systemRole === "super_admin") return "/admin";
+    const creatorRoles = ["venueFoxer", "eventFoxer", "gearFoxer", "serviceFoxer"];
+    if (user?.roleType?.some((r) => creatorRoles.includes(r))) return "/creator-dashboard";
+    return "/user";
   };
 
   if (loading) {
@@ -117,8 +117,8 @@ export default function BookingDetailClient({ bookingId }: { bookingId: string }
         <div className="mx-auto max-w-4xl px-4">
           <div className="glass-panel rounded-full px-6 h-20 flex items-center justify-between shadow-2xl hover:bg-black/40 transition-colors duration-500">
             <Link href="/" className="flex items-center gap-3 group cursor-pointer">
-              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-white text-black font-bold shadow-[0_0_15px_rgba(255,255,255,0.3)] group-hover:rotate-180 transition-transform duration-700">
-                <span className="material-symbols-outlined text-[24px]">explore</span>
+              <div className="flex h-10 w-10 items-center justify-center overflow-hidden group-hover:scale-110 transition-transform duration-300">
+                <Image src="/foxonlylogo.png" alt="FoxPassport Logo" width={40} height={40} className="object-contain" priority />
               </div>
               <h2 className="text-2xl font-display font-bold tracking-tight text-white group-hover:text-accent transition-colors">FoxPassport</h2>
             </Link>
@@ -221,7 +221,7 @@ export default function BookingDetailClient({ bookingId }: { bookingId: string }
                     <h2 className="text-xl font-display font-bold text-white">Your Entry Ticket</h2>
                   </div>
                   <p className="text-text-muted text-sm mb-4">
-                    Show this QR code to the host at the event entrance. They will scan it to verify your booking.
+                    Show this QR code to the organizer at the event entrance. They will scan it to verify your booking.
                   </p>
                   <div className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-white/5 border border-white/10">
                     <span className="material-symbols-outlined text-white/40 text-[16px]">confirmation_number</span>
