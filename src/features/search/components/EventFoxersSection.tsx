@@ -218,7 +218,7 @@ export default function EventFoxersSection({ items, isFetching, page, totalPages
             Event Foxers
           </h2>
           <p className="text-white/50 text-sm mt-1">
-            Hosts who specialize in your vibe.
+            Organizers who specialize in your vibe.
           </p>
         </div>
         <span className="flex items-center gap-2 text-xs text-white/40">

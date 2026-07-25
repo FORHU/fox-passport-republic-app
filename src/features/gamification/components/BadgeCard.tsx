@@ -13,10 +13,10 @@ const RARITY_CONFIG: Record<string, { bg: string; border: string; glow: string; 
 
 const PATH_CONFIG: Record<string, { color: string; label: string }> = {
   user:         { color: '#22c55e', label: 'Citizen' },
-  gearFoxer:    { color: '#f97316', label: 'GearFoxer' },
-  serviceFoxer: { color: '#f97316', label: 'ServiceFoxer' },
-  eventFoxer:   { color: '#3b82f6', label: 'EventFoxer' },
-  venueFoxer:   { color: '#ccff00', label: 'VenueFoxer' },
+  gearFoxer:    { color: '#f97316', label: 'Gear Foxer' },
+  serviceFoxer: { color: '#f97316', label: 'Talent Foxer' },
+  eventFoxer:   { color: '#3b82f6', label: 'Event Foxer' },
+  venueFoxer:   { color: '#ccff00', label: 'Venue Foxer' },
 };
 
 interface BadgeCardProps {

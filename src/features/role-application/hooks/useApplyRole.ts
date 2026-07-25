@@ -40,9 +40,8 @@ export const useApplyRole = () => {
     mutationFn: (payload: ApplyRolePayload) => applyRole(payload, accessToken!),
     onSuccess: (data) => {
       toast.success(data.message || "Application submitted successfully!");
-      // Redirect back to dashboard after successful application
       setTimeout(() => {
-        router.push("/user");
+        router.push("/onboarding");
       }, 1500);
     },
     onError: (error: any) => {

@@ -18,13 +18,11 @@ import { Badge } from '@/features/gamification/types/gamification';
 import { useMyPassport } from '@/features/gamification/hooks/usePassport';
 
 interface ProgressDashboardProps {
-  user: any;
   showPassport?: boolean;
   showHeader?: boolean;
 }
 
 export const ProgressDashboard: React.FC<ProgressDashboardProps> = ({
-  user: _user,
   showPassport = true,
   showHeader = true
 }) => {

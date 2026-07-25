@@ -61,10 +61,10 @@ export default function MayorApplicationClient() {
               <Building2 size={32} />
             </div>
             <h1 className="text-3xl md:text-4xl font-display font-bold text-white mb-2">
-              Apply to be a <span className="text-[#ccff00]">Mayor</span>
+              Apply to be a <span className="text-[#ccff00]">Venue Foxer</span>
             </h1>
             <p className="text-white/60">
-              Provide your details below to start managing venues in FoxPassport ecosystem.
+              Provide your details below to start listing and managing venues in the FoxPassport ecosystem.
             </p>
           </div>
 

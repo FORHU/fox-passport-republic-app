@@ -16,6 +16,7 @@ export default function WriteReviewClient({ venue }: WriteReviewClientProps) {
     reviewText,
     selectedCategories,
     isValid,
+    isSubmitting,
     setRating,
     setHoveredRating,
     setReviewText,
@@ -87,10 +88,10 @@ export default function WriteReviewClient({ venue }: WriteReviewClientProps) {
                 {/* Submit Button */}
                 <button
                   type="submit"
-                  disabled={!isValid}
+                  disabled={!isValid || isSubmitting}
                   className="w-full md:w-auto px-8 py-3.5 bg-pink-600 text-white font-bold rounded-lg hover:bg-pink-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors shadow-md"
                 >
-                  Submit Review
+                  {isSubmitting ? "Submitting…" : "Submit Review"}
                 </button>
               </form>
             </div>

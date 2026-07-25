@@ -1,5 +1,5 @@
 import VenueCreationClient from '@/features/venue/components/VenueCreationClient';
 
-export default function VenueCreationPage() {
+export default function VenueFoxerCreateVenuePage() {
   return <VenueCreationClient />;
 }

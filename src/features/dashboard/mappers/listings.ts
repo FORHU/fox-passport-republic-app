@@ -33,7 +33,7 @@ export function mapBackendAssetToInventoryItem(asset: BackendAsset): InventoryIt
   const img =
     asset.images?.[0]?.url ||
     asset.images?.[0]?.imageUrl ||
-    "/placeholder-inventory.jpg";
+    null;
 
   return {
     id: asset.id,
