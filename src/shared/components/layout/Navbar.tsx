@@ -202,7 +202,7 @@ function NavbarContent() {
     <>
       <nav className="fixed top-0 left-0 right-0 z-110 transition-all duration-300">
         <div className="mx-auto max-w-7xl px-4">
-          <div className="glass-panel rounded-full px-6 h-20 flex items-center justify-between shadow-2xl hover:bg-black/40 transition-colors duration-500">
+          <div className="glass-panel rounded-full px-4 sm:px-6 h-14 sm:h-20 flex items-center justify-between shadow-2xl hover:bg-black/40 transition-colors duration-500">
 
             {/* LOGO */}
             <BrandLogo />

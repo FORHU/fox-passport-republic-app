@@ -162,7 +162,7 @@ const PassportClient: React.FC<PassportClientProps> = ({ user }) => {
 
 
   return (
-    <div className="min-h-screen bg-[#0a0a0a] p-6 lg:p-10 relative">
+    <div className="min-h-screen bg-[#0a0a0a] p-3 sm:p-6 lg:p-10 relative">
       {/* Background Grid Pattern */}
       <div className="fixed inset-0 opacity-[0.03] pointer-events-none" style={{ backgroundImage: 'radial-gradient(#ccff00 0.5px, transparent 0.5px)', backgroundSize: '24px 24px' }}></div>
 
@@ -223,7 +223,7 @@ const PassportClient: React.FC<PassportClientProps> = ({ user }) => {
       <main className="grow relative bg-[#050505] z-10">
         <div className="fixed top-0 right-0 w-[50%] h-[50%] bg-[#ccff00]/5 rounded-full blur-[120px] -mr-32 -mt-32 pointer-events-none"></div>
 
-        <div className="p-12 flex flex-col">
+        <div className="p-4 sm:p-8 lg:p-12 flex flex-col">
           <div className="relative z-20 mb-12 flex justify-between items-start">
             <div>
               <h2 className="text-4xl md:text-5xl font-display font-bold text-white mb-2 tracking-tight capitalize">
@@ -249,12 +249,12 @@ const PassportClient: React.FC<PassportClientProps> = ({ user }) => {
                 exit={{ opacity: 0, x: -20 }} 
                 className="relative z-20 space-y-12"
               >
-                <div className="flex justify-center">
-                  <div className="bg-white/5 p-1 rounded-full border border-white/10 flex">
+                <div className="flex justify-center overflow-x-auto px-2">
+                  <div className="bg-white/5 p-1 rounded-full border border-white/10 flex shrink-0">
                     {isEventFoxer && (
                       <button
                         onClick={() => setMatchSubTab('client-inbox')}
-                        className={`px-8 py-2 rounded-full font-bold text-xs transition-all ${matchSubTab === 'client-inbox' ? 'bg-[#ccff00] text-black shadow-glow-accent' : 'text-white/40 hover:text-white'}`}
+                        className={`px-3 sm:px-8 py-2 rounded-full font-bold text-xs transition-all ${matchSubTab === 'client-inbox' ? 'bg-[#ccff00] text-black shadow-glow-accent' : 'text-white/40 hover:text-white'}`}
                       >
                         Client Inbox
                         {(clientInboxPage?.total ?? 0) > 0 && (
@@ -267,7 +267,7 @@ const PassportClient: React.FC<PassportClientProps> = ({ user }) => {
                     {isEventFoxer && (
                       <button
                         onClick={() => setMatchSubTab('outgoing')}
-                        className={`px-8 py-2 rounded-full font-bold text-xs transition-all ${matchSubTab === 'outgoing' ? 'bg-[#ccff00] text-black shadow-glow-accent' : 'text-white/40 hover:text-white'}`}
+                        className={`px-3 sm:px-8 py-2 rounded-full font-bold text-xs transition-all ${matchSubTab === 'outgoing' ? 'bg-[#ccff00] text-black shadow-glow-accent' : 'text-white/40 hover:text-white'}`}
                       >
                         My Requests
                       </button>
@@ -275,14 +275,14 @@ const PassportClient: React.FC<PassportClientProps> = ({ user }) => {
                     {isProvider && (
                       <button
                         onClick={() => setMatchSubTab('incoming')}
-                        className={`px-8 py-2 rounded-full font-bold text-xs transition-all ${matchSubTab === 'incoming' ? 'bg-[#ccff00] text-black shadow-glow-accent' : 'text-white/40 hover:text-white'}`}
+                        className={`px-3 sm:px-8 py-2 rounded-full font-bold text-xs transition-all ${matchSubTab === 'incoming' ? 'bg-[#ccff00] text-black shadow-glow-accent' : 'text-white/40 hover:text-white'}`}
                       >
                         Incoming
                       </button>
                     )}
                     <button
                       onClick={() => setMatchSubTab('ranks')}
-                      className={`px-8 py-2 rounded-full font-bold text-xs transition-all ${matchSubTab === 'ranks' ? 'bg-[#ccff00] text-black shadow-glow-accent' : 'text-white/40 hover:text-white'}`}
+                      className={`px-3 sm:px-8 py-2 rounded-full font-bold text-xs transition-all ${matchSubTab === 'ranks' ? 'bg-[#ccff00] text-black shadow-glow-accent' : 'text-white/40 hover:text-white'}`}
                     >
                       Global Ranks
                     </button>
@@ -445,20 +445,21 @@ const PassportClient: React.FC<PassportClientProps> = ({ user }) => {
                     {leaderboardLoading ? (
                       <div className="text-center py-16 text-white/30 text-sm">Loading leaderboard…</div>
                     ) : (
-                      <table className="w-full text-left">
+                      <div className="overflow-x-auto">
+                      <table className="w-full min-w-90 text-left">
                         <thead>
                           <tr className="border-b border-white/5">
-                            <th className="px-8 py-6 text-[10px] font-black uppercase text-white/20 tracking-[0.2em]">Rank</th>
-                            <th className="px-8 py-6 text-[10px] font-black uppercase text-white/20 tracking-[0.2em]">Citizen</th>
-                            <th className="px-8 py-6 text-[10px] font-black uppercase text-white/20 tracking-[0.2em] text-right">Total XP</th>
+                            <th className="px-4 sm:px-8 py-4 sm:py-6 text-[10px] font-black uppercase text-white/20 tracking-[0.2em]">Rank</th>
+                            <th className="px-4 sm:px-8 py-4 sm:py-6 text-[10px] font-black uppercase text-white/20 tracking-[0.2em]">Citizen</th>
+                            <th className="px-4 sm:px-8 py-4 sm:py-6 text-[10px] font-black uppercase text-white/20 tracking-[0.2em] text-right">Total XP</th>
                           </tr>
                         </thead>
                         <tbody className="divide-y divide-white/5">
                           {leaderboard.map((entry) => (
                             <tr key={entry.userId} className="hover:bg-white/2 transition-colors">
-                              <td className="px-8 py-5 text-xl font-display font-bold text-[#ccff00]">#{entry.rank}</td>
-                              <td className="px-8 py-5">
-                                <div className="flex items-center gap-4">
+                              <td className="px-4 sm:px-8 py-4 sm:py-5 text-xl font-display font-bold text-[#ccff00]">#{entry.rank}</td>
+                              <td className="px-4 sm:px-8 py-4 sm:py-5">
+                                <div className="flex items-center gap-3 sm:gap-4">
                                   <div className="h-10 w-10 rounded-xl bg-white/10 flex items-center justify-center text-sm font-bold text-white/40 overflow-hidden shrink-0">
                                     {entry.user.imgId ? <img src={entry.user.imgId} className="h-full w-full object-cover" alt="" /> : entry.user.name?.charAt(0)}
                                   </div>
@@ -466,13 +467,14 @@ const PassportClient: React.FC<PassportClientProps> = ({ user }) => {
                                   {entry.userId === user?.id && <span className="text-[9px] font-black text-[#ccff00] uppercase tracking-widest bg-[#ccff00]/10 px-2 py-0.5 rounded-full">You</span>}
                                 </div>
                               </td>
-                              <td className="px-8 py-5 text-right">
+                              <td className="px-4 sm:px-8 py-4 sm:py-5 text-right">
                                 <span className="font-mono text-sm text-[#ccff00] font-bold">{formatXP(entry.totalXP)} XP</span>
                               </td>
                             </tr>
                           ))}
                         </tbody>
                       </table>
+                      </div>
                     )}
                   </div>
                 )}
