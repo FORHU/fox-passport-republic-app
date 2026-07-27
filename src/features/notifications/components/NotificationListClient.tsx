@@ -133,10 +133,10 @@ export default function NotificationListClient() {
         </div>
       </header>
 
-      <main className="grow pt-32 pb-20">
+      <main className="grow pt-28 sm:pt-32 pb-28 sm:pb-20">
         <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
-          <div className="mb-8">
-            <div className="flex items-center gap-2 text-sm text-text-muted mb-4">
+          <div className="mb-6 sm:mb-8">
+            <div className="hidden sm:flex items-center gap-2 text-sm text-text-muted mb-4">
               <Link href="/" className="hover:text-white transition-colors">
                 Home
               </Link>
@@ -147,7 +147,7 @@ export default function NotificationListClient() {
             </div>
             <div className="flex items-center justify-between gap-4">
               <div className="flex items-center gap-3">
-                <h1 className="text-4xl md:text-5xl font-display font-bold text-white">
+                <h1 className="text-3xl sm:text-4xl md:text-5xl font-display font-bold text-white">
                   Notifications
                 </h1>
                 {unreadCount > 0 && (
@@ -159,9 +159,9 @@ export default function NotificationListClient() {
               {unreadCount > 0 && (
                 <button
                   onClick={() => markAllAsRead()}
-                  className="px-4 py-2 rounded-xl bg-white/5 text-white/70 font-bold text-xs hover:bg-white/10 hover:text-white transition-all"
+                  className="px-4 py-2 rounded-xl bg-white/5 text-white/70 font-bold text-xs hover:bg-white/10 hover:text-white transition-all whitespace-nowrap"
                 >
-                  Mark all as read
+                  Mark all read
                 </button>
               )}
             </div>

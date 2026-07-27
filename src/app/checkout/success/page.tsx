@@ -1,5 +1,6 @@
 ﻿import React, { Suspense } from 'react';
 import CheckoutSuccessClient from '@/features/booking/components/CheckoutSuccessClient';
+import MobileBookingSuccess from '@/features/booking/components/MobileBookingSuccess';
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
@@ -9,8 +10,17 @@ export const metadata: Metadata = {
 
 export default function CheckoutSuccessPage() {
   return (
-    <Suspense>
-      <CheckoutSuccessClient />
-    </Suspense>
+    <>
+      {/* Mobile view */}
+      <div className="sm:hidden">
+        <MobileBookingSuccess />
+      </div>
+      {/* Desktop view */}
+      <div className="hidden sm:block">
+        <Suspense>
+          <CheckoutSuccessClient />
+        </Suspense>
+      </div>
+    </>
   );
 }

@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import React, { useState } from 'react';
 import { ArrowLeft, Star, Calendar } from 'lucide-react';
@@ -58,7 +58,7 @@ export default function WriteReviewClient({ booking }: WriteReviewClientProps) {
         </div>
       </header>
 
-      <main className="grow pt-32 pb-20">
+      <main className="grow pt-32 pb-28 sm:pb-20">
         <div className="mx-auto max-w-3xl px-4 sm:px-6">
           {/* Booking Info Card */}
           <div className="glass-panel rounded-2xl p-6 md:p-8 border border-white/5 mb-8">
@@ -144,7 +144,7 @@ export default function WriteReviewClient({ booking }: WriteReviewClientProps) {
                   )}
                 </p>
                 {comment.trim().length >= 10 && (
-                  <span className="text-xs text-green-400">✓ Good length</span>
+                  <span className="text-xs text-green-400">âœ“ Good length</span>
                 )}
               </div>
             </div>

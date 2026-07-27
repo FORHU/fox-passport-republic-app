@@ -125,7 +125,7 @@ export default function HostDashboardClient({ initialData }: HostDashboardClient
     >
       <DashboardHeader />
 
-      <main className="pt-32 pb-20">
+      <main className="pt-32 pb-28 sm:pb-20">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <WelcomeBanner
             isCreateMenuOpen={isCreateMenuOpen}

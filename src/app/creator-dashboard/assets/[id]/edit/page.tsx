@@ -50,6 +50,14 @@ function HostAssetEditPageContent() {
     setUnit,
     setCondition,
     setStatus,
+    city,
+    state,
+    country,
+    setCity,
+    setState,
+    setCountry,
+    setLat,
+    setLng,
     setCancellationPolicyId,
     setShowGuide,
 
@@ -132,6 +140,9 @@ function HostAssetEditPageContent() {
             price={price}
             unit={unit}
             status={status}
+            city={city}
+            state={state}
+            country={country}
             cancellationPolicyId={cancellationPolicyId}
             onCategorySelect={handleCategorySelect}
             onCustomCategoryChange={setCustomCategory}
@@ -139,6 +150,10 @@ function HostAssetEditPageContent() {
             onPriceChange={setPrice}
             onUnitChange={setUnit}
             onStatusChange={setStatus}
+            onCityChange={setCity}
+            onStateChange={setState}
+            onCountryChange={setCountry}
+            onLatLngChange={(lat, lng) => { setLat(lat); setLng(lng); }}
             onCancellationPolicyChange={setCancellationPolicyId}
           />
 
@@ -168,6 +183,7 @@ function HostAssetEditPageContent() {
             unit={unit}
             completionPercentage={completionPercentage}
             isReadyToPublish={isReadyToPublish}
+            previewHref={`/booking/asset/${id}`}
           />
         </div>
       </div>

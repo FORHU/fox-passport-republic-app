@@ -5,6 +5,7 @@ export const dynamic = 'force-dynamic';
 
 // --- New FoxerNew Landing Page ---
 import FoxerLandingPage from "@/features/landing/components/FoxerLandingPage";
+import MobileHomePage from "@/features/landing/components/MobileHomePage";
 
 // --- Shared Components ---
 import Navbar from "@/shared/components/layout/Navbar";
@@ -104,7 +105,16 @@ async function HomeContent({ searchParams }: HomePageProps) {
 
   // --- NEW FOXERNEW LANDING PAGE (Default) ---
   const featuredTemplates = await getFeaturedEventTemplates(4);
-  return <FoxerLandingPage featuredTemplates={featuredTemplates} />;
+  return (
+    <>
+      <div className="sm:hidden">
+        <MobileHomePage />
+      </div>
+      <div className="hidden sm:block">
+        <FoxerLandingPage featuredTemplates={featuredTemplates} />
+      </div>
+    </>
+  );
 }
 
 export default function Home({ searchParams }: HomePageProps) {

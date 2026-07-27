@@ -56,11 +56,36 @@ Code: `systemRole: "admin"` or `"super_admin"`.
 
 ## Core Concepts
 
+**Citizen ID**
+A permanent, human-readable identifier assigned to every Citizen at signup. Format: `FX-{YYYY}-{5-digit sequential}` (e.g. `FX-2026-00481`). Stored as `citizenId` on the User record. Displayed prominently on the Passport booklet card.
+_Avoid_: User ID (that's the internal UUID), account number
+
 **Passport**
-A Citizen's gamification profile. Tracks stamps collected, badges earned, and events attended.
+A Citizen's gamification profile. Tracks stamps collected, badges earned, XP earned, and level progress per Path.
+
+**Path**
+A per-RoleType XP progression track. Each Citizen has one Path per role they hold (`user`, `eventFoxer`, `venueFoxer`, `gearFoxer`, `serviceFoxer`, `investor`). Levels and tier labels are independent per Path.
+
+**Level**
+A numeric milestone within a Path, earned by accumulating XP. XP required per level scales by 15% per level (`XP_PER_LEVEL = 1000` base). Each Path has named tier labels at milestone levels:
+
+| Path | Tier sequence |
+|---|---|
+| Citizen (`user`) | Newcomer (1) → Explorer (5) → Adventurer (10) → Trailblazer (15) → VIP Explorer (20) |
+| EventFoxer | Event Starter (1) → Event Planner (3) → Event Pro (7) → Premium Creator (12) → Super Creator (18) |
+| VenueFoxer | Ward Officer (1) → District Head (3) → City Planner (7) → City Leader (12) → Grand Foxer (18) |
+| GearFoxer | Starter Foxer (1) → Social Butterfly (5) → Event Curator (10) → Master Foxer (15) → Elite Foxer (20) |
+| ServiceFoxer | Starter Foxer (1) → Social Butterfly (5) → Event Curator (10) → Master Foxer (15) → Elite Foxer (20) |
+| Investor | Seed Funder (1) → Angel Investor (3) → Venture Partner (6) → Major Stakeholder (10) → Elite Investor (15) |
+
+**Badge**
+A collectible unlocked by completing specific achievements within a Path. Has a rarity tier: Common, Uncommon, Rare, Epic, Legendary. Rarity determines visual treatment (color/glow).
+
+**VIP Status**
+A cross-path prestige tier earned by sustained activity across roles: Bronze → Silver → Gold → Platinum. Distinct from Path Level — it is an aggregate status, not per-Path.
 
 **Stamp**
-A collectible awarded to a Citizen after attending an event or visiting a Venue.
+A collectible awarded to a Citizen when a Booking reaches `completed` status. Triggered by event completion, not booking confirmation — a no-show or cancellation does not earn a Stamp.
 
 **Specialization**
 A category tag on a Foxer's profile and listings showing their area of focus. Two forms:
@@ -89,8 +114,17 @@ _Avoid_: Host fee, commission
 **Platform Fee**
 The percentage the platform takes on every transaction, added on top of (itemsTotal + Host Markup). Not carved out of any role's earnings.
 
+**Match**
+A confirmed two-way connection between any two platform participants. The same entity covers two collaboration patterns:
+- *Citizen ↔ Foxer* — a Citizen selects and connects with a Foxer; leads toward a Booking.
+- *Foxer ↔ Foxer* — two supply-side participants connect so they can collaborate; an EventFoxer can add a matched GearFoxer or ServiceFoxer directly into their Event Template builder and negotiate pricing within that match.
+
+A Match begins as a Match Request (pending), becomes a Match once both parties accept. The match score (expressed as a percentage) represents compatibility based on specializations and history.
+_Avoid_: Partner, connection, collaboration (use Match)
+
 **Booking**
-A confirmed reservation linking a Citizen, an Event Template (or direct Venue/Asset/Service), dates, and a payment.
+A confirmed reservation linking a Citizen, an Event Template (or direct Venue/Asset/Service), dates, and a payment. Each Booking has a unique `ticketCode` — format `BKG-{10 uppercase hex chars}` (e.g. `BKG-A3F72E8C41`) — used for check-in scanning and receipts.
+_Avoid_: confirmation code, booking code
 
 ---
 
@@ -104,6 +138,8 @@ A confirmed reservation linking a Citizen, an Event Template (or direct Venue/As
 | Event Template | `draft` → `pending` → `published` / `rejected` / `archived` |
 | Booking | `pending` → `confirmed` → `active` → `completed` / `cancelled` / `disputed` |
 | Role Application | `pending` → `approved` / `rejected` |
+
+**Note:** KYC (identity and document verification) is not a separate process — it is the document-upload step within a Role Application. The `/kyc` screen is a status view of the same Role Application, not an independent entity.
 
 ---
 

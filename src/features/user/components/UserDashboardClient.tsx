@@ -45,7 +45,7 @@ function UserDashboardContent({ user, dashboardData, venues = [] }: UserDashboar
         userName={displayUserName}
       />
 
-      <main className="flex-grow pt-36 px-4 pb-20">
+      <main className="grow pt-28 sm:pt-36 px-4 pb-28 sm:pb-20">
         <div className="mx-auto max-w-7xl">
           <UserWelcome
             upcomingEventsCount={displayDashboardData.upcomingEvents}

@@ -98,7 +98,7 @@ export default function BookingListClient() {
           </div>
         </header>
 
-        <main className="grow pt-32 pb-20">
+        <main className="grow pt-28 sm:pt-32 pb-28 sm:pb-20">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <div className="mb-10">
               <div className="flex items-center gap-2 text-sm text-text-muted mb-4">

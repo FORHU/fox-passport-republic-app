@@ -180,7 +180,7 @@ export default function AssetBookingClient({ assetId }: { assetId: string }) {
         </div>
       </header>
 
-      <main className="grow pt-32 pb-20">
+      <main className="grow pt-32 pb-28 sm:pb-20">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
 
           {/* Breadcrumb + heading */}

@@ -101,7 +101,7 @@ export default function HostCalendarClient() {
         </div>
 
         {/* Calendar Grid */}
-        <main className="pt-36 pb-10 px-4">
+        <main className="pt-36 pb-28 sm:pb-10 px-4">
           <div className="mx-auto max-w-7xl">
             {isLoading ? (
               <div className="flex items-center justify-center h-96 text-white/30 text-sm">

@@ -154,21 +154,18 @@ export const XP_REWARDS = {
   shareEvent: 15,
   referFriend: 200,
 
-  // Foxer path
+  // GearFoxer / ServiceFoxer path
   createListing: 100,
   listingBooked: 150,
   completeEvent: 200,
   receive5StarReview: 50,
 
-  // Host path
+  // VenueFoxer path
   uploadVenue: 75,
   venueBooked: 100,
   venueFeatured: 500,
-
-  // Mayor path
-  uploadMayorVenue: 100,
-  mayorVenueApproved: 200,
-  mayorVenueFeatured: 750,
+  venueApproved: 200,
+  venueFeaturedPremium: 750,
   cityInitiativeApproved: 500,
 
   // Investor path

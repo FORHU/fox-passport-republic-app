@@ -15,7 +15,7 @@ export default function CheckInPage() {
     >
       <DashboardHeader />
 
-      <main className="pt-32 pb-20">
+      <main className="pt-32 pb-28 sm:pb-20">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="mb-8">
             <div className="text-2xl font-display font-bold flex items-center gap-2 mb-2">

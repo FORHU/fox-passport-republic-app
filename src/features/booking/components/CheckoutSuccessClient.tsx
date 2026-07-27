@@ -74,7 +74,7 @@ export default function CheckoutSuccessClient() {
         </div>
       </header>
 
-      <main className="grow pt-32 pb-20 relative flex items-center justify-center">
+      <main className="grow pt-32 pb-28 sm:pb-20 relative flex items-center justify-center">
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-accent/10 rounded-full blur-[150px] pointer-events-none animate-pulse-slow mix-blend-screen"></div>
         
         <div className="w-full max-w-3xl px-4 sm:px-6 lg:px-8 relative z-10 animate-in fade-in slide-in-from-bottom-8 duration-700">

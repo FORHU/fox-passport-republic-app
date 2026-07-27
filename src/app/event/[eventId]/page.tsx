@@ -7,6 +7,7 @@ import Link from 'next/link';
 import { useEventBuilderStore } from '@/features/event/store/useEventBuilderStore';
 import { LocationMap } from '@/shared/components/ui/LocationMap';
 import { useExperienceBuilderData } from '@/features/venue/hooks/useExperienceBuilderData';
+import MobileEventDetail from '@/features/event/components/MobileEventDetail';
 
 const SERVICE_CATEGORIES = [
   { id: 'foxer', label: 'Curator', icon: 'person_search' },
@@ -519,6 +520,14 @@ const EventDetailsPage: React.FC = () => {
   return (
     <div className="bg-background bg-gradient-dark text-text-main antialiased min-h-screen flex flex-col selection:bg-accent selection:text-black font-body">
 
+      {/* Mobile-only redesigned view */}
+      <div className="sm:hidden">
+        <MobileEventDetail event={template} />
+      </div>
+
+      {/* Desktop / tablet view */}
+      <div className="hidden sm:contents">
+
       <CustomExperienceBuilder isOpen={isCustomBookingOpen} onClose={() => setIsCustomBookingOpen(false)} venuePrice={price} />
 
       {/* Draft preview banner */}
@@ -562,7 +571,34 @@ const EventDetailsPage: React.FC = () => {
         </div>
       </header>
 
-      <main className={`grow pb-20 px-4 sm:px-6 ${isPreview && isDraft ? 'pt-26.25 sm:pt-33' : 'pt-20 sm:pt-28'}`}>
+      {/* Mobile sticky booking bar (design: glass card at bottom with price + Reserve CTA) */}
+      {!isPreview && template && (
+        <div
+          className="sm:hidden fixed bottom-5 left-4 right-4 z-40 flex items-center justify-between px-5 py-3 rounded-2xl"
+          style={{
+            background: "rgba(18,18,24,0.92)",
+            backdropFilter: "blur(20px)",
+            border: "1px solid rgba(255,255,255,0.1)",
+            boxShadow: "0 20px 50px rgba(0,0,0,0.5)",
+          }}
+        >
+          <div>
+            <p className="text-[10px] text-white/40 font-bold uppercase tracking-wider">Est. total</p>
+            <p className="text-xl font-display font-bold text-[#ccff00]">
+              {price > 0 ? `₱${price.toLocaleString()}` : "Price on request"}
+            </p>
+          </div>
+          <button
+            onClick={() => router.push(`/booking/config?templateId=${eventId}`)}
+            className="px-6 py-3 rounded-full bg-[#ccff00] text-black font-bold text-sm"
+            style={{ boxShadow: "0 4px 16px rgba(204,255,0,0.35)" }}
+          >
+            Reserve
+          </button>
+        </div>
+      )}
+
+      <main className={`grow pb-28 sm:pb-20 px-4 sm:px-6 ${isPreview && isDraft ? 'pt-26.25 sm:pt-33' : 'pt-20 sm:pt-28'}`}>
         <div className="max-w-7xl mx-auto">
 
           {/* Title */}
@@ -832,6 +868,7 @@ const EventDetailsPage: React.FC = () => {
           </div>
         </div>
       </footer>
+      </div>{/* end hidden sm:contents */}
     </div>
   );
 };

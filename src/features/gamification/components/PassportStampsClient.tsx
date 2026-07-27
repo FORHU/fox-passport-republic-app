@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import React, { useEffect, useState } from 'react';
 import Image from 'next/image';
@@ -13,7 +13,7 @@ interface Props {
 
 function formatEarnedAt(iso: string): string {
   const d = new Date(iso);
-  if (isNaN(d.getTime())) return '—';
+  if (isNaN(d.getTime())) return 'â€”';
   return d.toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' });
 }
 
@@ -80,7 +80,7 @@ function StampCard({ stamp, index }: { stamp: Stamp; index: number }) {
           ) : (
             <div className="flex h-full w-full items-center justify-center bg-black">
               <div className="flex h-20 w-20 items-center justify-center rounded-full ring-2 ring-accent/70">
-                {/* Brand fox as a white silhouette on black — always visible */}
+                {/* Brand fox as a white silhouette on black â€” always visible */}
                 <img
                   src="/foxonlylogo.png"
                   alt=""
@@ -150,7 +150,7 @@ export default function PassportStampsClient({ userId }: Props) {
         </div>
       </header>
 
-      <main className="pt-36 pb-20 px-4">
+      <main className="pt-36 pb-28 sm:pb-20 px-4">
         <div className="mx-auto max-w-5xl">
           {/* Header */}
           <div className="glass-panel rounded-3xl p-8 border border-white/10 mb-6 flex items-center gap-4">
@@ -173,7 +173,7 @@ export default function PassportStampsClient({ userId }: Props) {
 
               <h3 className="relative z-10 text-2xl font-display font-bold text-white mb-1">No stamps yet</h3>
               <p className="relative z-10 text-text-muted max-w-md mx-auto mb-8">
-                Your passport is blank — book and attend an event to collect your first stamp!
+                Your passport is blank â€” book and attend an event to collect your first stamp!
               </p>
 
               {/* Ghost preview of the reward */}
