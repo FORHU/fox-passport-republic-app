@@ -71,7 +71,7 @@ export default function HostServicesClient({ initialServices }: HostServicesClie
     >
       <DashboardHeader />
 
-      <main className="pt-32 pb-20">
+      <main className="pt-32 pb-28 sm:pb-20">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
             <div className="flex-1">

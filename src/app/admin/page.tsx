@@ -6,6 +6,7 @@ import {
   AdminContent,
   AdminAuthGuard,
 } from '@/features/admin/components';
+import MobileAdminView from '@/features/admin/components/MobileAdminView';
 
 export const dynamic = 'force-dynamic';
 
@@ -25,7 +26,8 @@ export default async function AdminDashboard() {
 
   return (
     <AdminAuthGuard>
-      <div className="bg-background bg-gradient-dark text-text-main antialiased min-h-screen flex selection:bg-accent selection:text-black font-body">
+      <MobileAdminView />
+      <div className="hidden sm:flex bg-background bg-gradient-dark text-text-main antialiased min-h-screen selection:bg-accent selection:text-black font-body">
         <AdminSidebar />
 
         <main className="flex-1 lg:pl-64 min-h-screen flex flex-col">

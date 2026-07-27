@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import React, { useEffect, useState } from 'react';
 import Image from 'next/image';
@@ -142,7 +142,7 @@ export default function BookingDetailClient({ bookingId }: { bookingId: string }
         </div>
       </header>
 
-      <main className="grow pt-24 sm:pt-32 pb-20">
+      <main className="grow pt-24 sm:pt-32 pb-28 sm:pb-20">
         <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
           <div className="flex items-center gap-2 text-sm text-text-muted mb-6">
             <Link href="/" className="hover:text-white transition-colors">Home</Link>
@@ -180,7 +180,7 @@ export default function BookingDetailClient({ bookingId }: { bookingId: string }
                 <p className="text-white font-semibold">
                   {booking.startAt
                     ? new Date(booking.startAt).toLocaleDateString('en-PH', { month: 'long', day: 'numeric', year: 'numeric' })
-                    : '—'}
+                    : 'â€”'}
                 </p>
               </div>
               <div>
@@ -188,16 +188,16 @@ export default function BookingDetailClient({ bookingId }: { bookingId: string }
                 <p className="text-white font-semibold">
                   {booking.endAt
                     ? new Date(booking.endAt).toLocaleDateString('en-PH', { month: 'long', day: 'numeric', year: 'numeric' })
-                    : '—'}
+                    : 'â€”'}
                 </p>
               </div>
               <div>
                 <p className="text-text-muted text-xs uppercase tracking-wider mb-1">Guests</p>
-                <p className="text-white font-semibold">{booking.guestCount || '—'}</p>
+                <p className="text-white font-semibold">{booking.guestCount || 'â€”'}</p>
               </div>
               <div>
                 <p className="text-text-muted text-xs uppercase tracking-wider mb-1">Total Amount</p>
-                <p className="text-accent font-display font-bold text-xl">₱{booking.totalAmount?.toLocaleString() || '0'}</p>
+                <p className="text-accent font-display font-bold text-xl">â‚±{booking.totalAmount?.toLocaleString() || '0'}</p>
               </div>
             </div>
           </div>
@@ -253,11 +253,11 @@ export default function BookingDetailClient({ bookingId }: { bookingId: string }
                         <p className="text-text-muted text-xs">
                           {payment.createdAt
                             ? new Date(payment.createdAt).toLocaleDateString('en-PH', { month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' })
-                            : '—'}
+                            : 'â€”'}
                         </p>
                       </div>
                       <div className="flex items-center gap-3">
-                        <span className="text-white font-bold">₱{payment.amount?.toLocaleString() || '0'}</span>
+                        <span className="text-white font-bold">â‚±{payment.amount?.toLocaleString() || '0'}</span>
                         <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${pStatus.color}`}>
                           {pStatus.label}
                         </span>
@@ -269,7 +269,7 @@ export default function BookingDetailClient({ bookingId }: { bookingId: string }
               {totalPaid > 0 && (
                 <div className="flex items-center justify-between pt-4 mt-2 border-t border-white/10">
                   <span className="text-text-muted text-sm">Total Paid</span>
-                  <span className="text-accent font-display font-bold text-lg">₱{totalPaid.toLocaleString()}</span>
+                  <span className="text-accent font-display font-bold text-lg">â‚±{totalPaid.toLocaleString()}</span>
                 </div>
               )}
             </div>

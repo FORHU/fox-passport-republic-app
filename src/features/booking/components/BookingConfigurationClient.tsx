@@ -125,7 +125,7 @@ export default function BookingConfigurationClient() {
         </div>
       </header>
 
-      <main className="grow pt-24 sm:pt-32 pb-20">
+      <main className="grow pt-24 sm:pt-32 pb-28 sm:pb-20">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="mb-8">
             <div className="flex items-center gap-2 text-sm text-text-muted mb-4">
@@ -220,7 +220,7 @@ export default function BookingConfigurationClient() {
                     </div>
                     <div>
                       <p className="font-bold text-white">Total Guests</p>
-                      <p className="text-sm text-text-muted">Package rate applies</p>
+                      <p className="text-sm text-text-muted">Price scales with guest count</p>
                     </div>
                   </div>
                   <div className="flex items-center gap-4 bg-surface rounded-full p-1 border border-white/10">

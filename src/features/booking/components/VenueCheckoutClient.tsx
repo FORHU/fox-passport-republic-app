@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import React, { useEffect, useState, useRef, useMemo } from 'react';
 import Image from 'next/image';
@@ -53,14 +53,14 @@ export default function VenueCheckoutClient() {
         await confirmBookingPayment(bookingId, piId, totalAmount);
       }
     } catch {
-      // Booking was already confirmed via webhook — safe to ignore
+      // Booking was already confirmed via webhook â€” safe to ignore
     }
 
     // Save contact info to user's profile
     try {
       await api.put('/profile', { phone: mobileNumber || undefined });
     } catch {
-      // Non-critical — profile update failure shouldn't block success
+      // Non-critical â€” profile update failure shouldn't block success
     }
   };
 
@@ -179,7 +179,7 @@ export default function VenueCheckoutClient() {
         </div>
       </header>
 
-      <main className="grow pt-32 pb-20 relative">
+      <main className="grow pt-32 pb-28 sm:pb-20 relative">
         <div className="absolute top-20 right-0 w-[500px] h-[500px] bg-primary/20 rounded-full blur-[120px] pointer-events-none animate-pulse-slow mix-blend-screen"></div>
         <div className="absolute bottom-40 left-0 w-[500px] h-[500px] bg-secondary/10 rounded-full blur-[120px] pointer-events-none mix-blend-screen"></div>
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 relative z-10">
@@ -229,7 +229,7 @@ export default function VenueCheckoutClient() {
                     ) : loadingIntent ? (
                       <div className="flex items-center gap-3 py-8 justify-center text-white/50">
                         <span className="h-5 w-5 rounded-full border-2 border-white/20 border-t-white/60 animate-spin" />
-                        Initializing secure payment…
+                        Initializing secure paymentâ€¦
                       </div>
                     ) : (
                       <StripePaymentForm
@@ -306,14 +306,14 @@ export default function VenueCheckoutClient() {
                       onClick={() => formRef.current?.submit()}
                       className="w-full rounded-2xl bg-[#ccff00] py-4 px-6 text-black font-bold text-lg hover:shadow-[0_0_30px_rgba(204,255,0,0.4)] transition-all active:scale-95 flex items-center justify-center gap-2"
                     >
-                      Confirm & Pay ₱{totalAmount.toLocaleString()}
+                      Confirm & Pay â‚±{totalAmount.toLocaleString()}
                       <span className="material-symbols-outlined">arrow_forward</span>
                     </button>
                   )}
 
                   <div className="flex items-center justify-center gap-2 text-xs text-white/40">
                     <span className="material-symbols-outlined text-[14px] text-green-500">lock</span>
-                    Encrypted & Secure · Powered by Stripe
+                    Encrypted & Secure Â· Powered by Stripe
                   </div>
 
                   {paymentSuccess && (
@@ -330,7 +330,7 @@ export default function VenueCheckoutClient() {
                 </Elements>
               ) : (
                 <>
-                  {/* Loading / no clientSecret yet — render panels without Elements */}
+                  {/* Loading / no clientSecret yet â€” render panels without Elements */}
                   <div className="glass-panel rounded-[2rem] p-8">
                     <h2 className="text-2xl font-display font-bold text-white mb-6 flex items-center gap-3">
                       <span className="flex items-center justify-center w-8 h-8 rounded-full bg-primary text-white text-sm">1</span>
@@ -339,7 +339,7 @@ export default function VenueCheckoutClient() {
                     {loadingIntent ? (
                       <div className="flex items-center gap-3 py-8 justify-center text-white/50">
                         <span className="h-5 w-5 rounded-full border-2 border-white/20 border-t-white/60 animate-spin" />
-                        Initializing secure payment…
+                        Initializing secure paymentâ€¦
                       </div>
                     ) : (
                       <div className="py-8 text-center text-white/40">
@@ -390,7 +390,7 @@ export default function VenueCheckoutClient() {
                       </h3>
                       <p className="text-text-muted text-sm flex items-center gap-1">
                         <span className="material-symbols-outlined text-[14px]">receipt</span>
-                        Booking ID: {bookingId.slice(0, 8)}…
+                        Booking ID: {bookingId.slice(0, 8)}â€¦
                       </p>
                     </div>
                   </div>
@@ -404,7 +404,7 @@ export default function VenueCheckoutClient() {
                     <div className="flex justify-between items-end">
                       <span className="text-white font-bold font-display">Total</span>
                       <span className="text-3xl font-display font-bold text-accent text-shadow-glow">
-                        {totalAmount > 0 ? `₱${totalAmount.toLocaleString()}` : 'Processing…'}
+                        {totalAmount > 0 ? `â‚±${totalAmount.toLocaleString()}` : 'Processingâ€¦'}
                       </span>
                     </div>
                   </div>
@@ -434,7 +434,7 @@ export default function VenueCheckoutClient() {
               <span className="material-symbols-outlined text-white">explore</span>
               <span className="text-xl font-display font-bold text-white">FoxPassport</span>
             </div>
-            <p className="text-xs text-gray-500 font-medium">© 2024 FoxPassport Inc. All rights reserved.</p>
+            <p className="text-xs text-gray-500 font-medium">Â© 2024 FoxPassport Inc. All rights reserved.</p>
             <div className="flex gap-6">
               <a className="text-xs text-gray-500 hover:text-white font-medium transition-colors" href="#">Privacy</a>
               <a className="text-xs text-gray-500 hover:text-white font-medium transition-colors" href="#">Terms</a>

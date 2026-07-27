@@ -128,7 +128,7 @@ const MatchConfig: React.FC = () => {
         </div>
       </header>
 
-      <main className="grow pt-32 pb-20 px-4">
+      <main className="grow pt-32 pb-28 sm:pb-20 px-4">
         <div className="mx-auto max-w-4xl">
           <AnimatePresence mode="wait">
             {step === 1 && (

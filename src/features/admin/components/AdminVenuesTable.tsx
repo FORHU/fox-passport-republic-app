@@ -326,7 +326,7 @@ export const AdminVenuesTable: React.FC<VenueTableProps> = ({ venues, isLoading 
                                   Gallery ({images.length} photo{images.length !== 1 ? 's' : ''})
                                 </p>
                                 {images.length > 0 ? (
-                                  <div className="flex gap-3 overflow-x-auto pb-1">
+                                  <div className="flex gap-3 overflow-x-auto no-scrollbar pb-1">
                                     {images.map((url, idx) => (
                                       <button
                                         key={idx}

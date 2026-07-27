@@ -141,7 +141,7 @@ export default function ItemCheckoutClient() {
         </div>
       </header>
 
-      <main className="grow pt-32 pb-20 relative">
+      <main className="grow pt-32 pb-28 sm:pb-20 relative">
         <div className="absolute top-20 right-0 w-[500px] h-[500px] bg-primary/20 rounded-full blur-[120px] pointer-events-none animate-pulse-slow mix-blend-screen" />
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 relative z-10">
 

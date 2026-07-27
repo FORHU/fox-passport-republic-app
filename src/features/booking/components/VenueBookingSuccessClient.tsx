@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import React, { useEffect, useRef, useMemo } from 'react';
 import Image from 'next/image';
@@ -75,7 +75,7 @@ export default function VenueBookingSuccessClient() {
         </div>
       </header>
 
-      <main className="grow pt-32 pb-20 relative flex items-center justify-center">
+      <main className="grow pt-32 pb-28 sm:pb-20 relative flex items-center justify-center">
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-accent/10 rounded-full blur-[150px] pointer-events-none animate-pulse-slow mix-blend-screen"></div>
 
         <div className="w-full max-w-3xl px-4 sm:px-6 lg:px-8 relative z-10 animate-in fade-in slide-in-from-bottom-8 duration-700">
@@ -112,7 +112,7 @@ export default function VenueBookingSuccessClient() {
                     <p className="text-text-muted text-xs uppercase tracking-wider mb-1">Reference</p>
                     <p className="text-white font-bold flex items-center gap-2">
                       <span className="material-symbols-outlined text-[16px] text-accent">receipt</span>
-                      {bookingId ? `#${bookingId.slice(0, 12)}` : '—'}
+                      {bookingId ? `#${bookingId.slice(0, 12)}` : 'â€”'}
                     </p>
                   </div>
                   <div>
@@ -133,7 +133,7 @@ export default function VenueBookingSuccessClient() {
                     <p className="text-text-muted text-xs uppercase tracking-wider mb-1">Amount Paid</p>
                     <p className="text-white font-bold flex items-center gap-2">
                       <span className="material-symbols-outlined text-[16px] text-accent">payments</span>
-                      ₱{totalAmount.toLocaleString()}
+                      â‚±{totalAmount.toLocaleString()}
                     </p>
                   </div>
                 </div>
@@ -143,7 +143,7 @@ export default function VenueBookingSuccessClient() {
             <div className="border-t border-dashed border-white/20 pt-6 mt-6 flex flex-col sm:flex-row justify-between items-center gap-4">
               <div>
                 <p className="text-text-muted text-sm">Total Charged</p>
-                <span className="text-3xl font-display font-bold text-white">₱{totalAmount.toLocaleString()}.00</span>
+                <span className="text-3xl font-display font-bold text-white">â‚±{totalAmount.toLocaleString()}.00</span>
               </div>
               <div className="flex gap-3 w-full sm:w-auto">
                 <Link href="/booking" className="flex-1 sm:flex-none px-6 py-3 rounded-xl border border-white/10 text-white font-bold text-sm hover:bg-white/5 transition-all text-center">

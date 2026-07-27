@@ -72,7 +72,7 @@ function VenueEditContent({ id }: Props) {
                 <FeatureDropZone type="addon" items={addonItems} isDragOver={isDragOver} onDragOver={handleDragOver} onDragLeave={handleDragLeave} onDrop={handleDrop} onRemoveItem={removeAddonItem} />
               </div>
             </main>
-            <RevenueProjector baseRate={baseRate} occupancyRate={occupancyRate} monthlyBase={revenue.monthlyBase} monthlyAddons={revenue.monthlyAddons} total={revenue.total} onBaseRateChange={setBaseRate} onOccupancyRateChange={setOccupancyRate} onPreview={() => {}} />
+            <RevenueProjector baseRate={baseRate} occupancyRate={occupancyRate} monthlyBase={revenue.monthlyBase} monthlyAddons={revenue.monthlyAddons} total={revenue.total} onBaseRateChange={setBaseRate} onOccupancyRateChange={setOccupancyRate} onPreview={() => window.open(`/venues/${id}`, '_blank')} />
           </div>
         </div>
       )}

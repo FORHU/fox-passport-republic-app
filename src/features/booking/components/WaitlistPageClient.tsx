@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import React from 'react';
 import Link from 'next/link';
@@ -26,7 +26,7 @@ export default function WaitlistPageClient() {
 
   return (
     <div className="bg-background bg-gradient-dark text-text-main antialiased min-h-screen flex flex-col selection:bg-accent selection:text-black font-body relative overflow-x-hidden">
-      <main className="grow pt-32 pb-20">
+      <main className="grow pt-32 pb-28 sm:pb-20">
         <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
           {/* Notification Banner */}
           {notification?.hasSpotOpened && (
@@ -61,7 +61,7 @@ export default function WaitlistPageClient() {
                   <><span className="material-symbols-outlined">celebration</span> Claim Your Spot</>
                 )}
               </button>
-              <p className="text-[10px] text-white/30 mt-3">This offer expires soon — first come, first served.</p>
+              <p className="text-[10px] text-white/30 mt-3">This offer expires soon â€” first come, first served.</p>
             </div>
           )}
 

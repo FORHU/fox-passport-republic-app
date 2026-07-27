@@ -1,120 +1,83 @@
 'use client';
 
-import Link from 'next/link';
-import { Heart, MapPin } from 'lucide-react';
-import { useFavorites } from '@/features/user/hooks/useFavorites';
-import RequireAuth from '@/features/auth/components/RequireAuth';
+import React from 'react';
+
+const SAVED_ITEMS = [
+  { id: 1, name: 'Skyline Rooftop', price: '₱18,000/night' },
+  { id: 2, name: 'DJ Maria Santos', price: '₱8,500/event' },
+  { id: 3, name: 'Neon Lights Package', price: '₱12,000/pkg' },
+  { id: 4, name: 'Sound System Pro', price: '₱4,500/day' },
+];
 
 export default function WishlistsClient() {
-  const { favorites, toggleFavorite, isToggling } = useFavorites();
-
-  const venueWishlists = favorites.filter(f => f.type === 'venue' && f.venue);
-  const eventWishlists = favorites.filter(f => f.type === 'event' && f.event);
-
   return (
-    <RequireAuth>
-      <div className="min-h-screen bg-background text-white pt-28 pb-20 px-4">
-        <div className="max-w-6xl mx-auto">
-          <h1 className="text-3xl font-display font-bold text-white mb-2">Your Wishlists</h1>
-          <p className="text-white/50 mb-10">Venues and events you&apos;ve saved for later</p>
-
-          {favorites.length === 0 ? (
-            <div className="glass-panel rounded-3xl p-16 text-center border border-white/10">
-              <Heart className="w-12 h-12 mx-auto mb-4 text-white/20" />
-              <h3 className="font-bold text-white text-lg mb-2">No saved places yet</h3>
-              <p className="text-white/40 text-sm mb-6">
-                Tap the heart icon on any venue or event to save it here.
-              </p>
-              <Link
-                href="/categories"
-                className="px-6 py-3 rounded-full bg-[#ccff00] text-black font-bold hover:bg-[#b8e600] transition-colors"
-              >
-                Browse Venues
-              </Link>
-            </div>
-          ) : (
-            <div className="space-y-12">
-              {venueWishlists.length > 0 && (
-                <section>
-                  <h2 className="text-lg font-bold text-white mb-4">Saved Venues</h2>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {venueWishlists.map(fav => {
-                      const venue = fav.venue!;
-                      const imgUrl =
-                        venue.images?.find(i => i.isPrimary)?.imageUrl ??
-                        venue.images?.[0]?.url ??
-                        venue.images?.[0]?.imageUrl ??
-                        null;
-                      return (
-                        <div
-                          key={fav.id}
-                          className="glass-panel rounded-2xl overflow-hidden border border-white/10 group hover:border-white/30 transition-all"
-                        >
-                          <div className="relative h-48 bg-white/5">
-                            {imgUrl ? (
-                              <img
-                                src={imgUrl}
-                                alt={venue.name}
-                                className="w-full h-full object-cover"
-                              />
-                            ) : (
-                              <div className="w-full h-full flex items-center justify-center">
-                                <span className="material-symbols-outlined text-white/10 text-5xl">apartment</span>
-                              </div>
-                            )}
-                            <button
-                              onClick={() => toggleFavorite(venue.id)}
-                              disabled={isToggling}
-                              aria-label="Remove from wishlists"
-                              className="absolute top-3 right-3 w-9 h-9 rounded-full bg-black/60 flex items-center justify-center text-pink-500 hover:scale-110 transition-transform disabled:opacity-50"
-                            >
-                              <Heart className="w-5 h-5 fill-pink-500" />
-                            </button>
-                          </div>
-                          <div className="p-4">
-                            <Link href={`/venues/${venue.id}`}>
-                              <h3 className="font-bold text-white group-hover:text-[#ccff00] transition-colors truncate">
-                                {venue.name}
-                              </h3>
-                            </Link>
-                            {(venue.city || venue.state) && (
-                              <div className="flex items-center gap-1 text-white/40 text-xs mt-1">
-                                <MapPin className="w-3 h-3 shrink-0" />
-                                {[venue.city, venue.state].filter(Boolean).join(', ')}
-                              </div>
-                            )}
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </section>
-              )}
-
-              {eventWishlists.length > 0 && (
-                <section>
-                  <h2 className="text-lg font-bold text-white mb-4">Saved Events</h2>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {eventWishlists.map(fav => (
-                      <div
-                        key={fav.id}
-                        className="glass-panel rounded-2xl p-4 border border-white/10 flex items-center gap-3"
-                      >
-                        <div className="w-10 h-10 rounded-xl bg-[#ccff00]/10 flex items-center justify-center shrink-0">
-                          <span className="material-symbols-outlined text-[#ccff00]">event</span>
-                        </div>
-                        <span className="font-medium text-white text-sm truncate">
-                          {fav.event?.name}
-                        </span>
-                      </div>
-                    ))}
-                  </div>
-                </section>
-              )}
-            </div>
-          )}
-        </div>
+    <div style={{ background: '#050608', minHeight: '100vh' }} className="text-white">
+      {/* Header */}
+      <div style={{ paddingTop: '60px', paddingLeft: '20px', paddingRight: '20px', paddingBottom: '20px' }}>
+        <h1 className="font-display text-white" style={{ fontSize: '24px', fontWeight: 700 }}>
+          Saved
+        </h1>
       </div>
-    </RequireAuth>
+
+      {/* 2-column grid */}
+      <div
+        style={{ paddingLeft: '20px', paddingRight: '20px', paddingBottom: '112px' }}
+        className="grid grid-cols-2 gap-3"
+      >
+        {SAVED_ITEMS.map((item) => (
+          <div
+            key={item.id}
+            style={{
+              background: 'rgba(255,255,255,0.04)',
+              border: '1px solid rgba(255,255,255,0.07)',
+              borderRadius: '18px',
+              overflow: 'hidden',
+            }}
+          >
+            {/* Thumbnail */}
+            <div className="stripe" style={{ height: '100px', position: 'relative' }}>
+              <button
+                style={{
+                  position: 'absolute',
+                  top: '8px',
+                  right: '8px',
+                  background: 'none',
+                  border: 'none',
+                  cursor: 'pointer',
+                  padding: 0,
+                  lineHeight: 1,
+                }}
+                aria-label="Remove from saved"
+              >
+                <span
+                  className="material-symbols-outlined"
+                  style={{ fontSize: '22px', color: '#ec4899', fontVariationSettings: "'FILL' 1" }}
+                >
+                  favorite
+                </span>
+              </button>
+            </div>
+
+            {/* Content */}
+            <div style={{ padding: '10px' }}>
+              <p style={{ fontSize: '12px', fontWeight: 700, color: '#fff', margin: 0 }}>
+                {item.name}
+              </p>
+              <p
+                style={{
+                  fontSize: '10px',
+                  fontWeight: 700,
+                  color: '#ccff00',
+                  marginTop: '4px',
+                  marginBottom: 0,
+                }}
+              >
+                {item.price}
+              </p>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
   );
 }

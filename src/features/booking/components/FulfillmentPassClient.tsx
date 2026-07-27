@@ -142,7 +142,7 @@ export default function FulfillmentPassClient({ bookingType, bookingId }: Props)
         </div>
       </header>
 
-      <main className="pt-36 pb-20 px-4">
+      <main className="pt-36 pb-28 sm:pb-20 px-4">
         <div className="mx-auto max-w-2xl space-y-5">
 
           {/* Header Card */}
