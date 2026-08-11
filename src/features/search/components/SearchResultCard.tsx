@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-img-element */
 "use client";
 
 import { useRouter } from "next/navigation";
@@ -14,12 +15,17 @@ const DETAIL_PATH: Record<string, (id: string) => string> = {
   event_template: (id) => `/event/${id}`,
 };
 
-export default function SearchResultCard({ item, type }: SearchResultCardProps) {
+export default function SearchResultCard({
+  item,
+  type,
+}: SearchResultCardProps) {
   const router = useRouter();
 
   return (
     <div
-      onClick={() => router.push(DETAIL_PATH[item._type ?? type]?.(item.id) ?? "#")}
+      onClick={() =>
+        router.push(DETAIL_PATH[item._type ?? type]?.(item.id) ?? "#")
+      }
       className="bg-[#11121a] border border-white/10 rounded-2xl overflow-hidden hover:border-[#ccff00]/50 transition-colors group cursor-pointer"
     >
       <div className="h-48 bg-white/5 relative overflow-hidden">
@@ -41,14 +47,22 @@ export default function SearchResultCard({ item, type }: SearchResultCardProps) 
         )}
       </div>
       <div className="p-6">
-        <h3 className="text-xl font-bold text-white mb-2 truncate">{item.name || item.title || "Untitled"}</h3>
+        <h3 className="text-xl font-bold text-white mb-2 truncate">
+          {item.name || item.title || "Untitled"}
+        </h3>
         {item.description && (
-          <p className="text-white/60 text-sm line-clamp-2 mb-4">{item.description}</p>
+          <p className="text-white/60 text-sm line-clamp-2 mb-4">
+            {item.description}
+          </p>
         )}
         <div className="flex items-center justify-between pt-4 border-t border-white/10">
           <div className="flex items-center gap-1 text-sm text-white/60">
-            <span className="material-symbols-outlined text-[16px]">location_on</span>
-            <span className="truncate max-w-[120px]">{item.city || item.targetCity || "Location TBD"}</span>
+            <span className="material-symbols-outlined text-[16px]">
+              location_on
+            </span>
+            <span className="truncate max-w-[120px]">
+              {item.city || item.targetCity || "Location TBD"}
+            </span>
           </div>
           {item.price && (
             <div className="font-bold text-[#ccff00]">

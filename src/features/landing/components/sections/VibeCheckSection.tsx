@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-img-element */
 "use client";
 
 import { motion } from "motion/react";
@@ -5,7 +6,8 @@ import { Category } from "@/features/category/types/category";
 import Link from "next/link";
 
 // Default image for categories without images
-const DEFAULT_CATEGORY_IMAGE = "https://images.unsplash.com/photo-1492684223066-81342ee5ff30?auto=format&fit=crop&q=80&w=800";
+const DEFAULT_CATEGORY_IMAGE =
+  "https://images.unsplash.com/photo-1492684223066-81342ee5ff30?auto=format&fit=crop&q=80&w=800";
 
 interface VibeCheckSectionProps {
   categories: Category[];
@@ -29,9 +31,13 @@ export default function VibeCheckSection({
         <div>
           <h2 className="text-2xl sm:text-3xl font-display font-bold text-white group cursor-default">
             <span className="inline-block hover:animate-wiggle">Vibe</span>{" "}
-            <span className="inline-block hover:text-accent transition-colors">Check</span>
+            <span className="inline-block hover:text-accent transition-colors">
+              Check
+            </span>
           </h2>
-          <p className="text-xs sm:text-sm text-text-muted mt-1">Browse by category</p>
+          <p className="text-xs sm:text-sm text-text-muted mt-1">
+            Browse by category
+          </p>
         </div>
       </motion.div>
 
@@ -41,7 +47,10 @@ export default function VibeCheckSection({
         initial="hidden"
         whileInView="visible"
         viewport={{ once: true }}
-        variants={{ hidden: {}, visible: { transition: { staggerChildren: 0.07 } } }}
+        variants={{
+          hidden: {},
+          visible: { transition: { staggerChildren: 0.07 } },
+        }}
       >
         <div className="flex overflow-x-auto gap-4 pb-3 snap-x snap-mandatory hide-scrollbar sm:grid sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 sm:pb-6 sm:overflow-visible">
           {categories.map((cat, idx) => (
@@ -58,12 +67,22 @@ function CategoryCard({ category }: { category: Category; index: number }) {
   return (
     <motion.div
       className="group relative flex flex-col justify-end rounded-3xl border border-white/5 shrink-0 w-[65vw] max-w-60 h-50 sm:w-auto sm:max-w-none sm:h-70 snap-center overflow-hidden hover:border-white/20 transition-colors duration-300"
-      variants={{ hidden: { opacity: 0, y: 24 }, visible: { opacity: 1, y: 0, transition: { duration: 0.45, ease: [0, 0, 0.2, 1] } } }}
+      variants={{
+        hidden: { opacity: 0, y: 24 },
+        visible: {
+          opacity: 1,
+          y: 0,
+          transition: { duration: 0.45, ease: [0, 0, 0.2, 1] },
+        },
+      }}
       whileHover={{ y: -4 }}
       transition={{ type: "spring", stiffness: 300, damping: 20 }}
     >
       {/* Main Link for the entire card */}
-      <Link href={`/categories/${category.name.toLowerCase()}`} className="absolute inset-0 z-20">
+      <Link
+        href={`/categories/${category.name.toLowerCase()}`}
+        className="absolute inset-0 z-20"
+      >
         <span className="sr-only">View {category.name}</span>
       </Link>
 
@@ -82,9 +101,13 @@ function CategoryCard({ category }: { category: Category; index: number }) {
         <h3 className="text-sm sm:text-xl font-bold mb-1 leading-tight font-display capitalize text-white">
           {category.name}
         </h3>
-        <p className="text-xs sm:text-sm text-white/70 line-clamp-2">{category.tagline || category.description || "Explore experiences"}</p>
+        <p className="text-xs sm:text-sm text-white/70 line-clamp-2">
+          {category.tagline || category.description || "Explore experiences"}
+        </p>
         {category.spotLabel && (
-          <p className="text-xs sm:text-sm mt-2 font-bold text-white/60">{category.spotLabel}</p>
+          <p className="text-xs sm:text-sm mt-2 font-bold text-white/60">
+            {category.spotLabel}
+          </p>
         )}
       </div>
     </motion.div>

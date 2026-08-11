@@ -1,7 +1,8 @@
-﻿import { Suspense } from "react";
+/* eslint-disable @next/next/no-img-element */
+import { Suspense } from "react";
 
 // Skip static generation for this page - it fetches dynamic data
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 
 // --- New FoxerNew Landing Page ---
 import FoxerLandingPage from "@/features/landing/components/FoxerLandingPage";
@@ -16,12 +17,12 @@ import { getVenues, getFeaturedEventTemplates } from "@/shared/lib/server/data";
 import { getUser } from "@/shared/lib/server/auth";
 import { filterVenues } from "@/features/venue/helpers/filterVenues";
 
-const VENUE_ROLES = ['eventFoxer', 'venueFoxer', 'gearFoxer', 'serviceFoxer'];
+const VENUE_ROLES = ["eventFoxer", "venueFoxer", "gearFoxer", "serviceFoxer"];
 
 function userCanSeeVenues(user: any): boolean {
   if (!user) return true; // unauthenticated visitors see venues freely
-  const systemRole = (user?.systemRole ?? user?.role ?? '').toLowerCase();
-  if (systemRole === 'admin') return true;
+  const systemRole = (user?.systemRole ?? user?.role ?? "").toLowerCase();
+  if (systemRole === "admin") return true;
   const roleType: string[] = user?.roleType ?? [];
   return roleType.some((r) => VENUE_ROLES.includes(r));
 }
@@ -32,8 +33,10 @@ interface HomePageProps {
 
 async function HomeContent({ searchParams }: HomePageProps) {
   const params = await searchParams;
-  const locationQuery = typeof params.location === 'string' ? params.location : undefined;
-  const categoryQuery = typeof params.category === 'string' ? params.category : undefined;
+  const locationQuery =
+    typeof params.location === "string" ? params.location : undefined;
+  const categoryQuery =
+    typeof params.category === "string" ? params.category : undefined;
 
   const user = await getUser();
   const canSeeVenues = userCanSeeVenues(user);
@@ -57,17 +60,24 @@ async function HomeContent({ searchParams }: HomePageProps) {
           <div className="overflow-y-auto pr-1 md:pr-2 custom-scrollbar">
             <div className="mb-4 md:mb-6 px-1">
               <h2 className="text-lg md:text-xl font-bold mb-1">
-                {locationQuery ? `Stays in ${locationQuery}` : `${categoryQuery} Venues`}
+                {locationQuery
+                  ? `Stays in ${locationQuery}`
+                  : `${categoryQuery} Venues`}
               </h2>
-              <p className="text-gray-500 text-xs md:text-sm">{filteredVenues.length} results found</p>
+              <p className="text-gray-500 text-xs md:text-sm">
+                {filteredVenues.length} results found
+              </p>
             </div>
 
             {!canSeeVenues ? (
               <div className="flex flex-col items-center justify-center py-20 text-center">
                 <div className="text-4xl mb-4">🏛️</div>
-                <h3 className="text-lg font-bold text-gray-900">Venues are for Hosts &amp; Foxers</h3>
+                <h3 className="text-lg font-bold text-gray-900">
+                  Venues are for Hosts &amp; Foxers
+                </h3>
                 <p className="text-gray-500 max-w-xs mt-2 text-sm">
-                  Venue listings are only visible to Hosts, Foxers, and Mayors. Apply for a role to unlock access.
+                  Venue listings are only visible to Hosts, Foxers, and Mayors.
+                  Apply for a role to unlock access.
                 </p>
               </div>
             ) : filteredVenues.length > 0 ? (
@@ -79,8 +89,12 @@ async function HomeContent({ searchParams }: HomePageProps) {
             ) : (
               <div className="flex flex-col items-center justify-center py-20 text-center">
                 <div className="text-4xl mb-4">🔍</div>
-                <h3 className="text-lg font-bold text-gray-900">No results found</h3>
-                <p className="text-gray-500 max-w-xs mt-2 text-sm">Try a different category or location.</p>
+                <h3 className="text-lg font-bold text-gray-900">
+                  No results found
+                </h3>
+                <p className="text-gray-500 max-w-xs mt-2 text-sm">
+                  Try a different category or location.
+                </p>
               </div>
             )}
           </div>
@@ -93,7 +107,10 @@ async function HomeContent({ searchParams }: HomePageProps) {
             />
             <div className="absolute inset-0 flex items-center justify-center">
               <button className="bg-white text-gray-900 px-6 py-3 rounded-full shadow-lg font-bold text-sm">
-                Map View <span className="text-xs font-normal text-gray-500">(Placeholder)</span>
+                Map View{" "}
+                <span className="text-xs font-normal text-gray-500">
+                  (Placeholder)
+                </span>
               </button>
             </div>
           </div>
@@ -109,7 +126,13 @@ async function HomeContent({ searchParams }: HomePageProps) {
 
 export default function Home({ searchParams }: HomePageProps) {
   return (
-    <Suspense fallback={<div className="min-h-screen flex items-center justify-center">Loading...</div>}>
+    <Suspense
+      fallback={
+        <div className="min-h-screen flex items-center justify-center">
+          Loading...
+        </div>
+      }
+    >
       <HomeContent searchParams={searchParams} />
     </Suspense>
   );

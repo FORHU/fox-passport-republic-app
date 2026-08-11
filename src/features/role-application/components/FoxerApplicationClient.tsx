@@ -1,8 +1,18 @@
-﻿"use client";
+/* eslint-disable @typescript-eslint/no-unused-vars */
+"use client";
 
 import React, { useState } from "react";
 import { useApplyRole } from "@/features/role-application/hooks/useApplyRole";
-import { Briefcase, Package, Tag, Hash, ArrowRight, UserCircle, Link as LinkIcon, BadgeCheck } from "lucide-react";
+import {
+  Briefcase,
+  Package,
+  Tag,
+  Hash,
+  ArrowRight,
+  UserCircle,
+  Link as LinkIcon,
+  BadgeCheck,
+} from "lucide-react";
 import RequireAuth from "@/features/auth/components/RequireAuth";
 import Link from "next/link";
 import FileUploader from "@/shared/components/layout/FileUploader";
@@ -24,9 +34,15 @@ const ASSET_CATEGORY_OPTIONS = [
   { value: "other", label: "Other" },
 ];
 
-export default function FoxerApplicationClient({ initialType = "service" }: { initialType?: "asset" | "service" }) {
+export default function FoxerApplicationClient({
+  initialType = "service",
+}: {
+  initialType?: "asset" | "service";
+}) {
   const { mutate: applyRole, isPending } = useApplyRole();
-  const [providerType, setProviderType] = useState<"asset" | "service">(initialType);
+  const [providerType, setProviderType] = useState<"asset" | "service">(
+    initialType,
+  );
 
   // Asset Form State
   const [assetData, setAssetData] = useState({
@@ -39,7 +55,9 @@ export default function FoxerApplicationClient({ initialType = "service" }: { in
     birPermitFileId: "",
     selfieFileId: "",
   });
-  const [assetSpecializations, setAssetSpecializations] = useState<string[]>([]);
+  const [assetSpecializations, setAssetSpecializations] = useState<string[]>(
+    [],
+  );
 
   // Service Form State
   const [serviceData, setServiceData] = useState({
@@ -54,13 +72,15 @@ export default function FoxerApplicationClient({ initialType = "service" }: { in
     birPermitFileId: "",
     selfieFileId: "",
   });
-  const [serviceSpecializations, setServiceSpecializations] = useState<string[]>([]);
+  const [serviceSpecializations, setServiceSpecializations] = useState<
+    string[]
+  >([]);
 
   const handleFileUpload = (field: string, fileId: string) => {
     if (providerType === "asset") {
-      setAssetData(prev => ({ ...prev, [field]: fileId }));
+      setAssetData((prev) => ({ ...prev, [field]: fileId }));
     } else {
-      setServiceData(prev => ({ ...prev, [field]: fileId }));
+      setServiceData((prev) => ({ ...prev, [field]: fileId }));
     }
   };
 
@@ -79,7 +99,10 @@ export default function FoxerApplicationClient({ initialType = "service" }: { in
         roleType: "gearFoxer",
         data: {
           ...assetData,
-          assetTypes: assetData.assetTypes.split(",").map((s) => s.trim()).filter(Boolean),
+          assetTypes: assetData.assetTypes
+            .split(",")
+            .map((s) => s.trim())
+            .filter(Boolean),
           specializations: assetSpecializations,
         },
       });
@@ -89,8 +112,14 @@ export default function FoxerApplicationClient({ initialType = "service" }: { in
         data: {
           ...serviceData,
           experience: parseInt(serviceData.experience, 10),
-          serviceTypes: serviceData.serviceTypes.split(",").map((s) => s.trim()).filter(Boolean),
-          portfolioUrls: serviceData.portfolioUrls.split(",").map((s) => s.trim()).filter(Boolean),
+          serviceTypes: serviceData.serviceTypes
+            .split(",")
+            .map((s) => s.trim())
+            .filter(Boolean),
+          portfolioUrls: serviceData.portfolioUrls
+            .split(",")
+            .map((s) => s.trim())
+            .filter(Boolean),
           specializations: serviceSpecializations,
         },
       });
@@ -104,24 +133,44 @@ export default function FoxerApplicationClient({ initialType = "service" }: { in
           {/* Background Glow */}
           <div
             className="absolute top-0 right-0 -mr-20 -mt-20 w-64 h-64 blur-[100px] rounded-full pointer-events-none transition-colors duration-500"
-            style={{ backgroundColor: providerType === 'asset' ? 'rgba(167,139,250,0.1)' : 'rgba(0,210,255,0.1)' }}
+            style={{
+              backgroundColor:
+                providerType === "asset"
+                  ? "rgba(167,139,250,0.1)"
+                  : "rgba(0,210,255,0.1)",
+            }}
           />
 
           <div className="mb-10 text-center relative z-10">
             <div
               className="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-6 transition-colors duration-300"
               style={{
-                backgroundColor: providerType === 'asset' ? 'rgba(167,139,250,0.2)' : 'rgba(0,210,255,0.2)',
-                color: providerType === 'asset' ? '#a78bfa' : '#00d2ff',
+                backgroundColor:
+                  providerType === "asset"
+                    ? "rgba(167,139,250,0.2)"
+                    : "rgba(0,210,255,0.2)",
+                color: providerType === "asset" ? "#a78bfa" : "#00d2ff",
               }}
             >
-              {providerType === 'asset' ? <Package size={32} /> : <Briefcase size={32} />}
+              {providerType === "asset" ? (
+                <Package size={32} />
+              ) : (
+                <Briefcase size={32} />
+              )}
             </div>
             <h1 className="text-3xl md:text-4xl font-display font-bold text-white mb-2">
-              Apply to be a <span style={{ color: providerType === 'asset' ? '#a78bfa' : '#00d2ff' }}>Foxer</span>
+              Apply to be a{" "}
+              <span
+                style={{
+                  color: providerType === "asset" ? "#a78bfa" : "#00d2ff",
+                }}
+              >
+                Foxer
+              </span>
             </h1>
             <p className="text-white/60">
-              Provide your professional details to start offering services or equipment in FoxPassport.
+              Provide your professional details to start offering services or
+              equipment in FoxPassport.
             </p>
           </div>
 
@@ -130,7 +179,9 @@ export default function FoxerApplicationClient({ initialType = "service" }: { in
             <button
               onClick={() => setProviderType("service")}
               className={`flex-1 py-3 text-sm font-bold uppercase tracking-wider rounded-lg transition-all ${
-                providerType === "service" ? "bg-[#00d2ff] text-black shadow-lg" : "text-white/50 hover:text-white"
+                providerType === "service"
+                  ? "bg-[#00d2ff] text-black shadow-lg"
+                  : "text-white/50 hover:text-white"
               }`}
             >
               Service Provider
@@ -138,7 +189,9 @@ export default function FoxerApplicationClient({ initialType = "service" }: { in
             <button
               onClick={() => setProviderType("asset")}
               className={`flex-1 py-3 text-sm font-bold uppercase tracking-wider rounded-lg transition-all ${
-                providerType === "asset" ? "bg-[#a78bfa] text-black shadow-lg" : "text-white/50 hover:text-white"
+                providerType === "asset"
+                  ? "bg-[#a78bfa] text-black shadow-lg"
+                  : "text-white/50 hover:text-white"
               }`}
             >
               Gear Provider
@@ -150,8 +203,12 @@ export default function FoxerApplicationClient({ initialType = "service" }: { in
               // --- SERVICE PROVIDER FORM ---
               <>
                 <div className="space-y-2">
-                  <label className="text-sm font-bold text-white/80 uppercase tracking-wider">Service Types *</label>
-                  <p className="text-xs text-white/40 mb-1">Comma-separated (e.g. Photography, DJ, Catering)</p>
+                  <label className="text-sm font-bold text-white/80 uppercase tracking-wider">
+                    Service Types *
+                  </label>
+                  <p className="text-xs text-white/40 mb-1">
+                    Comma-separated (e.g. Photography, DJ, Catering)
+                  </p>
                   <div className="relative">
                     <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-white/40">
                       <Tag size={18} />
@@ -169,7 +226,9 @@ export default function FoxerApplicationClient({ initialType = "service" }: { in
                 </div>
 
                 <div className="space-y-2">
-                  <label className="text-sm font-bold text-white/80 uppercase tracking-wider">Years of Experience *</label>
+                  <label className="text-sm font-bold text-white/80 uppercase tracking-wider">
+                    Years of Experience *
+                  </label>
                   <div className="relative">
                     <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-white/40">
                       <UserCircle size={18} />
@@ -188,7 +247,9 @@ export default function FoxerApplicationClient({ initialType = "service" }: { in
                 </div>
 
                 <div className="space-y-2">
-                  <label className="text-sm font-bold text-white/80 uppercase tracking-wider">Portfolio Links *</label>
+                  <label className="text-sm font-bold text-white/80 uppercase tracking-wider">
+                    Portfolio Links *
+                  </label>
                   <div className="relative">
                     <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-white/40">
                       <LinkIcon size={18} />
@@ -206,7 +267,9 @@ export default function FoxerApplicationClient({ initialType = "service" }: { in
                 </div>
 
                 <div className="space-y-2">
-                  <label className="text-sm font-bold text-white/80 uppercase tracking-wider">NBI Clearance ID *</label>
+                  <label className="text-sm font-bold text-white/80 uppercase tracking-wider">
+                    NBI Clearance ID *
+                  </label>
                   <div className="relative">
                     <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-white/40">
                       <BadgeCheck size={18} />
@@ -222,9 +285,11 @@ export default function FoxerApplicationClient({ initialType = "service" }: { in
                     />
                   </div>
                 </div>
-                
+
                 <div className="space-y-2">
-                  <label className="text-sm font-bold text-white/80 uppercase tracking-wider">TIN Number (Optional)</label>
+                  <label className="text-sm font-bold text-white/80 uppercase tracking-wider">
+                    TIN Number (Optional)
+                  </label>
                   <div className="relative">
                     <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-white/40">
                       <Hash size={18} />
@@ -257,7 +322,9 @@ export default function FoxerApplicationClient({ initialType = "service" }: { in
               // --- ASSET PROVIDER FORM ---
               <>
                 <div className="space-y-2">
-                  <label className="text-sm font-bold text-white/80 uppercase tracking-wider">Business Name *</label>
+                  <label className="text-sm font-bold text-white/80 uppercase tracking-wider">
+                    Business Name *
+                  </label>
                   <div className="relative">
                     <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-white/40">
                       <Briefcase size={18} />
@@ -275,8 +342,12 @@ export default function FoxerApplicationClient({ initialType = "service" }: { in
                 </div>
 
                 <div className="space-y-2">
-                  <label className="text-sm font-bold text-white/80 uppercase tracking-wider">Equipment Types *</label>
-                  <p className="text-xs text-white/40 mb-1">Comma-separated (e.g. Speakers, Microphones, Lights)</p>
+                  <label className="text-sm font-bold text-white/80 uppercase tracking-wider">
+                    Equipment Types *
+                  </label>
+                  <p className="text-xs text-white/40 mb-1">
+                    Comma-separated (e.g. Speakers, Microphones, Lights)
+                  </p>
                   <div className="relative">
                     <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-white/40">
                       <Package size={18} />
@@ -294,7 +365,9 @@ export default function FoxerApplicationClient({ initialType = "service" }: { in
                 </div>
 
                 <div className="space-y-2">
-                  <label className="text-sm font-bold text-white/80 uppercase tracking-wider">TIN Number *</label>
+                  <label className="text-sm font-bold text-white/80 uppercase tracking-wider">
+                    TIN Number *
+                  </label>
                   <div className="relative">
                     <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-white/40">
                       <Hash size={18} />
@@ -328,8 +401,8 @@ export default function FoxerApplicationClient({ initialType = "service" }: { in
 
             {/* Actions */}
             <div className="pt-6 flex flex-col sm:flex-row gap-4 items-center">
-              <Link 
-                href="/onboarding" 
+              <Link
+                href="/onboarding"
                 className="w-full sm:w-auto px-6 py-3 rounded-xl border border-white/10 text-white hover:bg-white/5 transition-colors text-center font-medium"
               >
                 Back
@@ -338,7 +411,10 @@ export default function FoxerApplicationClient({ initialType = "service" }: { in
                 type="submit"
                 disabled={isPending}
                 className="w-full flex-1 flex items-center justify-center gap-2 text-black font-bold py-3 px-6 rounded-xl hover:brightness-110 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-                style={{ backgroundColor: providerType === 'asset' ? '#a78bfa' : '#00d2ff' }}
+                style={{
+                  backgroundColor:
+                    providerType === "asset" ? "#a78bfa" : "#00d2ff",
+                }}
               >
                 {isPending ? "Submitting..." : "Submit Application"}
                 {!isPending && <ArrowRight size={18} />}

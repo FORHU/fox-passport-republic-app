@@ -46,7 +46,7 @@ export interface VenueItem {
   value: number;
   icon: string;
   desc: string;
-  category: 'spaces' | 'amenities' | 'tech' | 'staff' | 'rules';
+  category: "spaces" | "amenities" | "tech" | "staff" | "rules";
 }
 
 export interface GalleryItem {

@@ -12,7 +12,10 @@ interface VenueCardProps {
 
 export default function VenueCard({ venue }: VenueCardProps) {
   const primaryImage = venue.images.find((img) => img.isPrimary);
-  const imageUrl = primaryImage?.imageUrl || venue.images[0]?.imageUrl || "/placeholder-venue.jpg";
+  const imageUrl =
+    primaryImage?.imageUrl ||
+    venue.images[0]?.imageUrl ||
+    "/placeholder-venue.jpg";
   const pricePerDay = venue.pricing[0]?.pricePerDay || 0;
   const currency = venue.pricing[0]?.currency || "PHP";
   const { isFavorited, toggleFavorite } = useFavorites();
@@ -33,11 +36,17 @@ export default function VenueCard({ venue }: VenueCardProps) {
         />
         {/* Favorite Button */}
         <button
-          onClick={(e) => { e.preventDefault(); e.stopPropagation(); toggleFavorite(venue.id); }}
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            toggleFavorite(venue.id);
+          }}
           className={`absolute top-3 left-3 h-9 w-9 rounded-full flex items-center justify-center shadow-md transition-all duration-200 ${saved ? "bg-red-500 text-white scale-110" : "bg-black/40 text-white hover:bg-black/60 hover:scale-105"}`}
           aria-label={saved ? "Remove from favorites" : "Save to favorites"}
         >
-          <Heart className={`w-4 h-4 transition-all ${saved ? "fill-current" : ""}`} />
+          <Heart
+            className={`w-4 h-4 transition-all ${saved ? "fill-current" : ""}`}
+          />
         </button>
         {/* Status Badge */}
         {venue.status === "active" && venue.isPublished && (
@@ -75,7 +84,9 @@ export default function VenueCard({ venue }: VenueCardProps) {
         <div className="flex items-center gap-4 text-sm text-gray-600 mb-3">
           <div className="flex items-center gap-1">
             <MapPin className="w-4 h-4 text-gray-400" />
-            <span className="truncate">{venue.city}, {venue.state}</span>
+            <span className="truncate">
+              {venue.city}, {venue.state}
+            </span>
           </div>
           {venue.capacity && (
             <div className="flex items-center gap-1">
@@ -93,7 +104,9 @@ export default function VenueCard({ venue }: VenueCardProps) {
             </div>
             <div>
               <p className="text-xs text-gray-500">Hosted by</p>
-              <p className="text-sm font-medium text-gray-900">{venue.host.name}</p>
+              <p className="text-sm font-medium text-gray-900">
+                {venue.host.name}
+              </p>
             </div>
           </div>
 

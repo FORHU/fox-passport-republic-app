@@ -20,7 +20,7 @@ export interface EventTemplate {
 
 export async function fetchTrendingTemplates(
   category?: string,
-  limit = 8
+  limit = 8,
 ): Promise<EventTemplate[]> {
   const params: Record<string, string | number> = { limit };
   if (category) params.category = category;

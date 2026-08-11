@@ -3,8 +3,14 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import RequireAuth from "@/features/auth/components/RequireAuth";
-import { DashboardHeader, InventorySection } from "@/features/dashboard/components";
-import { STATUS_OPTIONS, type InventoryItem } from "@/features/dashboard/data/dashboardData";
+import {
+  DashboardHeader,
+  InventorySection,
+} from "@/features/dashboard/components";
+import {
+  STATUS_OPTIONS,
+  type InventoryItem,
+} from "@/features/dashboard/data/dashboardData";
 
 function normalizeValue(value: unknown): string {
   return String(value ?? "")
@@ -15,14 +21,18 @@ function normalizeValue(value: unknown): string {
 
 function normalizeCategoryValue(item: InventoryItem): string {
   if (!item.category) return "";
-  return typeof item.category === "string" ? item.category : item.category?.name ?? "";
+  return typeof item.category === "string"
+    ? item.category
+    : (item.category?.name ?? "");
 }
 
 interface HostAssetsClientProps {
   initialInventory: any[];
 }
 
-export default function HostAssetsClient({ initialInventory }: HostAssetsClientProps) {
+export default function HostAssetsClient({
+  initialInventory,
+}: HostAssetsClientProps) {
   const router = useRouter();
   const [searchQuery, setSearchQuery] = useState("");
   const [status, setStatus] = useState<"all" | string>("all");
@@ -37,7 +47,9 @@ export default function HostAssetsClient({ initialInventory }: HostAssetsClientP
 
     return inventory.filter((it) => {
       const statusOk =
-        status === "all" ? true : normalizeValue(it.status) === normalizeValue(status);
+        status === "all"
+          ? true
+          : normalizeValue(it.status) === normalizeValue(status);
 
       const searchOk = !q
         ? true
@@ -50,7 +62,7 @@ export default function HostAssetsClient({ initialInventory }: HostAssetsClientP
 
   const handleStatusChange = (id: number | string, nextStatus: string) => {
     setInventory((prev) =>
-      prev.map((it) => (it.id === id ? { ...it, status: nextStatus } : it))
+      prev.map((it) => (it.id === id ? { ...it, status: nextStatus } : it)),
     );
   };
 
@@ -86,10 +98,12 @@ export default function HostAssetsClient({ initialInventory }: HostAssetsClientP
 
               <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
                 <button
-                  onClick={() => router.push('/foxer/create-listing')}
+                  onClick={() => router.push("/foxer/create-listing")}
                   className="flex items-center gap-2 px-5 py-2.5 rounded-full bg-[#ccff00] text-black text-sm font-bold hover:opacity-90 transition-opacity shrink-0"
                 >
-                  <span className="material-symbols-outlined text-[16px]">add</span>
+                  <span className="material-symbols-outlined text-[16px]">
+                    add
+                  </span>
                   Add Gear
                 </button>
                 <div className="relative w-full sm:w-72">
@@ -110,9 +124,15 @@ export default function HostAssetsClient({ initialInventory }: HostAssetsClientP
                     onChange={(e) => setStatus(e.target.value)}
                     className="w-full bg-[#0f111a] text-white border border-white/10 rounded-full px-4 py-2 text-sm focus:outline-none focus:border-[#ccff00]"
                   >
-                    <option className="bg-[#0f111a] text-white" value="all">All Status</option>
+                    <option className="bg-[#0f111a] text-white" value="all">
+                      All Status
+                    </option>
                     {STATUS_OPTIONS.inventory.map((s) => (
-                      <option className="bg-[#0f111a] text-white" key={s} value={s}>
+                      <option
+                        className="bg-[#0f111a] text-white"
+                        key={s}
+                        value={s}
+                      >
                         {s}
                       </option>
                     ))}

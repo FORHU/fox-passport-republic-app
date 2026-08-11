@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
-import React from 'react';
-import { useRouter } from 'next/navigation';
+import React from "react";
+import { useRouter } from "next/navigation";
 
 interface VenueBookingWidgetProps {
   venueId: string;
@@ -17,7 +17,7 @@ interface VenueBookingWidgetProps {
 export function BookingWidget({
   venueId,
   price,
-  billingRate = 'day',
+  billingRate = "day",
   rating,
   reviews,
   capacity,
@@ -26,7 +26,7 @@ export function BookingWidget({
 }: VenueBookingWidgetProps) {
   const router = useRouter();
 
-  const rateLabel = billingRate === 'hour' ? 'hr' : 'day';
+  const rateLabel = billingRate === "hour" ? "hr" : "day";
 
   return (
     <div className="relative top-24">
@@ -44,16 +44,22 @@ export function BookingWidget({
             <span className="text-sm text-text-muted"> / {rateLabel}</span>
           </div>
           <div className="flex items-center gap-1 text-xs text-white font-bold">
-            <span className="material-symbols-outlined text-[14px] fill-current text-yellow-400">star</span>
-            {rating} ·{' '}
-            <span className="text-text-muted underline cursor-pointer">{reviews} reviews</span>
+            <span className="material-symbols-outlined text-[14px] fill-current text-yellow-400">
+              star
+            </span>
+            {rating} ·{" "}
+            <span className="text-text-muted underline cursor-pointer">
+              {reviews} reviews
+            </span>
           </div>
         </div>
 
         {/* Capacity badge */}
         {capacity && (
           <div className="flex items-center gap-2 mb-4 relative z-10 text-xs text-white/60">
-            <span className="material-symbols-outlined text-[16px]">groups</span>
+            <span className="material-symbols-outlined text-[16px]">
+              groups
+            </span>
             Up to {capacity}
           </div>
         )}
@@ -83,7 +89,9 @@ export function BookingWidget({
             onClick={onCustomExperience}
             className="w-full rounded-xl border border-white/20 py-3 text-white font-bold text-sm hover:bg-white hover:text-black transition-all active:scale-95 relative z-10 flex items-center justify-center gap-2 group"
           >
-            <span className="material-symbols-outlined text-[18px] text-accent group-hover:text-black transition-colors">design_services</span>
+            <span className="material-symbols-outlined text-[18px] text-accent group-hover:text-black transition-colors">
+              design_services
+            </span>
             Design Custom Experience
           </button>
         )}
@@ -91,7 +99,9 @@ export function BookingWidget({
 
       <div className="mt-4 flex items-center justify-center gap-2 text-xs text-text-muted">
         <span className="material-symbols-outlined text-[14px]">flag</span>
-        <span className="underline cursor-pointer hover:text-white">Report this listing</span>
+        <span className="underline cursor-pointer hover:text-white">
+          Report this listing
+        </span>
       </div>
     </div>
   );

@@ -1,8 +1,14 @@
 // Gamification system types
 
-export type UserPath = 'user' | 'gearFoxer' | 'serviceFoxer' | 'eventFoxer' | 'venueFoxer' | 'investor';
+export type UserPath =
+  | "user"
+  | "gearFoxer"
+  | "serviceFoxer"
+  | "eventFoxer"
+  | "venueFoxer"
+  | "investor";
 
-export type BadgeRarity = 'Common' | 'Uncommon' | 'Rare' | 'Epic' | 'Legendary';
+export type BadgeRarity = "Common" | "Uncommon" | "Rare" | "Epic" | "Legendary";
 
 export interface Badge {
   id: string;
@@ -71,7 +77,7 @@ export interface UserGamification {
   passportStamps: PassportStamp[];
   vipStatus?: {
     isVip: boolean;
-    tier: 'Bronze' | 'Silver' | 'Gold' | 'Platinum';
+    tier: "Bronze" | "Silver" | "Gold" | "Platinum";
     perks: string[];
   };
 }
@@ -83,66 +89,66 @@ export const XP_MULTIPLIER = 1.15; // XP required increases by 15% per level
 // Path level labels based on level ranges
 export const PATH_LABELS = {
   user: {
-    1: 'Newcomer',
-    5: 'Explorer',
-    10: 'Adventurer',
-    15: 'Trailblazer',
-    20: 'VIP Explorer',
+    1: "Newcomer",
+    5: "Explorer",
+    10: "Adventurer",
+    15: "Trailblazer",
+    20: "VIP Explorer",
   },
   gearFoxer: {
-    1: 'Starter Foxer',
-    5: 'Social Butterfly',
-    10: 'Event Curator',
-    15: 'Master Foxer',
-    20: 'Elite Foxer',
+    1: "Starter Foxer",
+    5: "Social Butterfly",
+    10: "Event Curator",
+    15: "Master Foxer",
+    20: "Elite Foxer",
   },
   serviceFoxer: {
-    1: 'Starter Foxer',
-    5: 'Social Butterfly',
-    10: 'Event Curator',
-    15: 'Master Foxer',
-    20: 'Elite Foxer',
+    1: "Starter Foxer",
+    5: "Social Butterfly",
+    10: "Event Curator",
+    15: "Master Foxer",
+    20: "Elite Foxer",
   },
   eventFoxer: {
-    1: 'New Host',
-    3: 'Venue Curator',
-    7: 'Established Host',
-    12: 'Premium Host',
-    18: 'Super Host',
+    1: "New Host",
+    3: "Venue Curator",
+    7: "Established Host",
+    12: "Premium Host",
+    18: "Super Host",
   },
   venueFoxer: {
-    1: 'Ward Officer',
-    3: 'District Head',
-    7: 'City Planner',
-    12: 'City Mayor',
-    18: 'Grand Mayor',
+    1: "Ward Officer",
+    3: "District Head",
+    7: "City Planner",
+    12: "City Mayor",
+    18: "Grand Mayor",
   },
   investor: {
-    1: 'Seed Funder',
-    3: 'Angel Investor',
-    6: 'Venture Partner',
-    10: 'Major Stakeholder',
-    15: 'Elite Investor',
+    1: "Seed Funder",
+    3: "Angel Investor",
+    6: "Venture Partner",
+    10: "Major Stakeholder",
+    15: "Elite Investor",
   },
 };
 
 // Badge colors by rarity
 export const BADGE_COLORS: Record<BadgeRarity, string> = {
-  Common: '#94a3b8', // Slate
-  Uncommon: '#22c55e', // Green
-  Rare: '#3b82f6', // Blue
-  Epic: '#a855f7', // Purple
-  Legendary: '#f59e0b', // Amber
+  Common: "#94a3b8", // Slate
+  Uncommon: "#22c55e", // Green
+  Rare: "#3b82f6", // Blue
+  Epic: "#a855f7", // Purple
+  Legendary: "#f59e0b", // Amber
 };
 
 // Path colors
 export const PATH_COLORS: Record<UserPath, string> = {
-  user: '#22c55e', // Green
-  gearFoxer: '#f97316', // Orange
-  serviceFoxer: '#f97316', // Orange
-  eventFoxer: '#3b82f6', // Blue
-  venueFoxer: '#a855f7', // Purple
-  investor: '#eab308', // Yellow
+  user: "#22c55e", // Green
+  gearFoxer: "#f97316", // Orange
+  serviceFoxer: "#f97316", // Orange
+  eventFoxer: "#3b82f6", // Blue
+  venueFoxer: "#a855f7", // Purple
+  investor: "#eab308", // Yellow
 };
 
 // XP rewards for different actions

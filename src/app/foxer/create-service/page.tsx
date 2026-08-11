@@ -1,14 +1,15 @@
-'use client';
+/* eslint-disable @typescript-eslint/no-unused-vars */
+"use client";
 
-import React from 'react';
-import RequireAuth from '@/features/auth/components/RequireAuth';
-import { useServicesBuilder } from '@/features/service/hooks/useServicesBuilder';
+import React from "react";
+import RequireAuth from "@/features/auth/components/RequireAuth";
+import { useServicesBuilder } from "@/features/service/hooks/useServicesBuilder";
 import {
   ListingHeader,
   ListingSidebar,
   ListingPreviewCard,
   ListingStatusPanel,
-} from '@/features/asset/components/listing-builder';
+} from "@/features/asset/components/listing-builder";
 
 function ServiceBuilderContent() {
   const {

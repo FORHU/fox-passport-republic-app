@@ -6,7 +6,7 @@ function unwrapListResponse(data: unknown): unknown[] {
   if (Array.isArray(data)) return data;
 
   // Ensure data is an object before accessing properties
-  if (data == null || typeof data !== 'object') return [];
+  if (data == null || typeof data !== "object") return [];
 
   const obj = data as Record<string, unknown>;
 
@@ -20,11 +20,16 @@ function unwrapListResponse(data: unknown): unknown[] {
 }
 
 export async function fetchEventsByHostId(hostId: Id): Promise<any[]> {
-  const resp = await api.get("/event-templates", { params: { ownerId: String(hostId) } });
+  const resp = await api.get("/event-templates", {
+    params: { ownerId: String(hostId) },
+  });
   return unwrapListResponse(resp.data);
 }
 
-export async function updateEvent(eventId: Id, payload: unknown): Promise<unknown> {
+export async function updateEvent(
+  eventId: Id,
+  payload: unknown,
+): Promise<unknown> {
   const resp = await api.put(`/event-templates/${eventId}`, payload);
   return resp.data?.template ?? resp.data?.data ?? resp.data;
 }

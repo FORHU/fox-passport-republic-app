@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
-import React, { useState, useRef } from 'react';
-import { createPortal } from 'react-dom';
+import React, { useState, useRef } from "react";
+import { createPortal } from "react-dom";
 
 export function diffDays(start: string, end: string): number {
   if (!start || !end) return 1;
@@ -10,16 +10,32 @@ export function diffDays(start: string, end: string): number {
 }
 
 export function formatDate(dateStr: string): string {
-  return new Date(dateStr + 'T00:00:00').toLocaleDateString('en-PH', {
-    weekday: 'short', month: 'short', day: 'numeric', year: 'numeric',
+  return new Date(dateStr + "T00:00:00").toLocaleDateString("en-PH", {
+    weekday: "short",
+    month: "short",
+    day: "numeric",
+    year: "numeric",
   });
 }
 
-const WEEKDAYS = ['Su','Mo','Tu','We','Th','Fr','Sa'];
-const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+const WEEKDAYS = ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"];
+const MONTHS = [
+  "Jan",
+  "Feb",
+  "Mar",
+  "Apr",
+  "May",
+  "Jun",
+  "Jul",
+  "Aug",
+  "Sep",
+  "Oct",
+  "Nov",
+  "Dec",
+];
 
 function toDateStr(year: number, month: number, day: number) {
-  return `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+  return `${year}-${String(month + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
 }
 
 function daysInMonth(year: number, month: number) {
@@ -31,14 +47,20 @@ function firstDayOfMonth(year: number, month: number) {
 }
 
 function CompactDatePicker({
-  startValue, endValue, onStartChange, onEndChange, onDone,
+  startValue,
+  endValue,
+  onStartChange,
+  onEndChange,
+  onDone,
 }: {
-  startValue: string; endValue: string;
-  onStartChange: (d: string) => void; onEndChange: (d: string) => void;
+  startValue: string;
+  endValue: string;
+  onStartChange: (d: string) => void;
+  onEndChange: (d: string) => void;
   onDone: () => void;
 }) {
   const today = new Date();
-  const todayStr = today.toISOString().split('T')[0];
+  const todayStr = today.toISOString().split("T")[0];
   const [viewYear, setViewYear] = useState(today.getFullYear());
   const [viewMonth, setViewMonth] = useState(today.getMonth());
 
@@ -51,28 +73,36 @@ function CompactDatePicker({
   while (cells.length % 7 !== 0) cells.push(null);
 
   const prevMonth = () => {
-    if (viewMonth === 0) { setViewYear(y => y - 1); setViewMonth(11); }
-    else setViewMonth(m => m - 1);
+    if (viewMonth === 0) {
+      setViewYear((y) => y - 1);
+      setViewMonth(11);
+    } else setViewMonth((m) => m - 1);
   };
   const nextMonth = () => {
-    if (viewMonth === 11) { setViewYear(y => y + 1); setViewMonth(0); }
-    else setViewMonth(m => m + 1);
+    if (viewMonth === 11) {
+      setViewYear((y) => y + 1);
+      setViewMonth(0);
+    } else setViewMonth((m) => m + 1);
   };
 
   const handleClick = (ds: string) => {
     if (ds < todayStr) return;
     if (!startValue || (startValue && endValue)) {
       onStartChange(ds);
-      onEndChange('');
+      onEndChange("");
       return;
     }
-    if (ds < startValue) { onStartChange(ds); return; }
+    if (ds < startValue) {
+      onStartChange(ds);
+      return;
+    }
     onEndChange(ds);
     onDone();
   };
 
   const isSelected = (ds: string) => ds === startValue || ds === endValue;
-  const isInRange = (ds: string) => startValue && endValue && ds > startValue && ds < endValue;
+  const isInRange = (ds: string) =>
+    startValue && endValue && ds > startValue && ds < endValue;
 
   return (
     <div className="bg-black/95 border border-white/10 rounded-2xl p-4 w-[280px] shadow-[0_0_30px_rgba(0,0,0,0.5)]">
@@ -81,20 +111,31 @@ function CompactDatePicker({
           onClick={prevMonth}
           className="h-7 w-7 rounded-lg hover:bg-white/10 flex items-center justify-center text-white/40 hover:text-accent active:scale-90 transition-all duration-200 group"
         >
-          <span className="material-symbols-outlined text-[16px] group-hover:-translate-x-0.5 transition-transform duration-200">chevron_left</span>
+          <span className="material-symbols-outlined text-[16px] group-hover:-translate-x-0.5 transition-transform duration-200">
+            chevron_left
+          </span>
         </button>
-        <p className="text-xs font-bold text-accent tracking-wide select-none">{MONTHS[viewMonth]} {viewYear}</p>
+        <p className="text-xs font-bold text-accent tracking-wide select-none">
+          {MONTHS[viewMonth]} {viewYear}
+        </p>
         <button
           onClick={nextMonth}
           className="h-7 w-7 rounded-lg hover:bg-white/10 flex items-center justify-center text-white/40 hover:text-accent active:scale-90 transition-all duration-200 group"
         >
-          <span className="material-symbols-outlined text-[16px] group-hover:translate-x-0.5 transition-transform duration-200">chevron_right</span>
+          <span className="material-symbols-outlined text-[16px] group-hover:translate-x-0.5 transition-transform duration-200">
+            chevron_right
+          </span>
         </button>
       </div>
 
       <div className="grid grid-cols-7 mb-1">
-        {WEEKDAYS.map(d => (
-          <div key={d} className="text-center text-[9px] text-white/60 font-bold py-1 tracking-wider">{d}</div>
+        {WEEKDAYS.map((d) => (
+          <div
+            key={d}
+            className="text-center text-[9px] text-white/60 font-bold py-1 tracking-wider"
+          >
+            {d}
+          </div>
         ))}
       </div>
 
@@ -112,26 +153,43 @@ function CompactDatePicker({
               onClick={() => handleClick(ds)}
               disabled={past}
               className={[
-                'h-8 w-full text-[13px] font-semibold transition-all duration-150 flex items-center justify-center',
-                inRange ? 'bg-gradient-to-r from-accent/10 via-accent/15 to-accent/10' : '',
-                sel ? 'bg-accent text-black rounded-full z-10 shadow-[0_0_12px_rgba(204,255,0,0.4)] scale-105' : '',
-                !sel && !past ? 'text-white/90 hover:bg-white/10 hover:rounded-full hover:scale-105 cursor-pointer active:scale-95' : '',
-                past ? 'text-white/20 cursor-not-allowed' : '',
-                ds === todayStr && !sel ? 'ring-1 ring-white/70 rounded-full animate-pulse' : '',
-              ].filter(Boolean).join(' ')}
+                "h-8 w-full text-[13px] font-semibold transition-all duration-150 flex items-center justify-center",
+                inRange
+                  ? "bg-gradient-to-r from-accent/10 via-accent/15 to-accent/10"
+                  : "",
+                sel
+                  ? "bg-accent text-black rounded-full z-10 shadow-[0_0_12px_rgba(204,255,0,0.4)] scale-105"
+                  : "",
+                !sel && !past
+                  ? "text-white/90 hover:bg-white/10 hover:rounded-full hover:scale-105 cursor-pointer active:scale-95"
+                  : "",
+                past ? "text-white/20 cursor-not-allowed" : "",
+                ds === todayStr && !sel
+                  ? "ring-1 ring-white/70 rounded-full animate-pulse"
+                  : "",
+              ]
+                .filter(Boolean)
+                .join(" ")}
             >
               {day}
             </button>
           );
         })}
       </div>
-
     </div>
   );
 }
 
 export default function DateRangePicker({
-  startDate, endDate, onStartChange, onEndChange, errors, startLabel = 'Start Date', endLabel = 'End Date', showSummary = true, stacked = false,
+  startDate,
+  endDate,
+  onStartChange,
+  onEndChange,
+  errors,
+  startLabel = "Start Date",
+  endLabel = "End Date",
+  showSummary = true,
+  stacked = false,
 }: {
   startDate: string;
   endDate: string;
@@ -149,20 +207,20 @@ export default function DateRangePicker({
 
   const toDisplay = (d: string) =>
     d
-      ? new Date(d + 'T00:00:00').toLocaleDateString('en-PH', {
-          weekday: 'short',
-          month: 'short',
-          day: 'numeric',
-          year: 'numeric',
+      ? new Date(d + "T00:00:00").toLocaleDateString("en-PH", {
+          weekday: "short",
+          month: "short",
+          day: "numeric",
+          year: "numeric",
         })
-      : '';
+      : "";
   const [localStart, setLocalStart] = useState(toDisplay(startDate));
   const [localEnd, setLocalEnd] = useState(toDisplay(endDate));
 
   const handleCalendarStart = (d: string) => {
     onStartChange(d);
     setLocalStart(toDisplay(d));
-    setLocalEnd('');
+    setLocalEnd("");
   };
 
   const handleCalendarEnd = (d: string) => {
@@ -171,15 +229,17 @@ export default function DateRangePicker({
   };
 
   const parseDisplay = (val: string, setter: (d: string) => void) => {
-    const cleaned = val.replace(/\//g, '-');
+    const cleaned = val.replace(/\//g, "-");
     const d = new Date(cleaned);
     if (!isNaN(d.getTime())) {
-      setter(d.toISOString().split('T')[0]);
+      setter(d.toISOString().split("T")[0]);
     }
   };
 
   const openCalendar = (e: React.MouseEvent) => {
-    const rect = (e.currentTarget as HTMLElement).parentElement!.getBoundingClientRect();
+    const rect = (
+      e.currentTarget as HTMLElement
+    ).parentElement!.getBoundingClientRect();
     const CALENDAR_W = 280;
     const CALENDAR_H = 300;
     let top = rect.bottom + 4;
@@ -199,9 +259,15 @@ export default function DateRangePicker({
 
   return (
     <div className="relative">
-      <div className={stacked ? "grid grid-cols-1 gap-4" : "grid sm:grid-cols-2 gap-6"}>
+      <div
+        className={
+          stacked ? "grid grid-cols-1 gap-4" : "grid sm:grid-cols-2 gap-6"
+        }
+      >
         <div className="space-y-2">
-          <label className="text-xs uppercase tracking-widest text-text-muted font-bold ml-1">{startLabel}</label>
+          <label className="text-xs uppercase tracking-widest text-text-muted font-bold ml-1">
+            {startLabel}
+          </label>
           <div className="relative" ref={triggerRef}>
             <input
               type="text"
@@ -220,7 +286,9 @@ export default function DateRangePicker({
           </div>
         </div>
         <div className="space-y-2">
-          <label className="text-xs uppercase tracking-widest text-text-muted font-bold ml-1">{endLabel}</label>
+          <label className="text-xs uppercase tracking-widest text-text-muted font-bold ml-1">
+            {endLabel}
+          </label>
           <div className="relative">
             <input
               type="text"
@@ -249,28 +317,33 @@ export default function DateRangePicker({
       {showSummary && startDate && endDate && !calendarOpen && (
         <p className="text-xs text-white/40 mt-3 flex items-center gap-1">
           <span className="material-symbols-outlined text-[12px]">info</span>
-          {formatDate(startDate)} → {formatDate(endDate)} · {days} day{days !== 1 ? 's' : ''}
+          {formatDate(startDate)} → {formatDate(endDate)} · {days} day
+          {days !== 1 ? "s" : ""}
         </p>
       )}
 
-      {calendarOpen && createPortal(
-        <>
-          <div className="fixed inset-0 z-[100]" onClick={() => setCalendarOpen(false)} />
-          <div
-            className="fixed z-[101] animate-in fade-in zoom-in-95 duration-150"
-            style={{ top: popupPos.top, left: popupPos.left }}
-          >
-            <CompactDatePicker
-              startValue={startDate}
-              endValue={endDate}
-              onStartChange={handleCalendarStart}
-              onEndChange={handleCalendarEnd}
-              onDone={() => setCalendarOpen(false)}
+      {calendarOpen &&
+        createPortal(
+          <>
+            <div
+              className="fixed inset-0 z-[100]"
+              onClick={() => setCalendarOpen(false)}
             />
-          </div>
-        </>,
-        document.body
-      )}
+            <div
+              className="fixed z-[101] animate-in fade-in zoom-in-95 duration-150"
+              style={{ top: popupPos.top, left: popupPos.left }}
+            >
+              <CompactDatePicker
+                startValue={startDate}
+                endValue={endDate}
+                onStartChange={handleCalendarStart}
+                onEndChange={handleCalendarEnd}
+                onDone={() => setCalendarOpen(false)}
+              />
+            </div>
+          </>,
+          document.body,
+        )}
     </div>
   );
 }

@@ -5,7 +5,10 @@ import Image from "next/image";
 import Link from "next/link";
 import { Heart, Star, MapPin } from "lucide-react";
 import { Event } from "@/features/event/types/event";
-import { addFavorite, removeFavoriteByListing } from "@/features/user/api/favorites";
+import {
+  addFavorite,
+  removeFavoriteByListing,
+} from "@/features/user/api/favorites";
 
 interface EventCardProps {
   event: Event;
@@ -35,22 +38,31 @@ const EventCard: React.FC<EventCardProps> = ({ event }) => {
     }
   };
   // Get the primary image or first image
-  const primaryImage = event.images.find(img => img.isPrimary) || event.images[0];
-  const imageUrl = primaryImage?.imageUrl || "https://images.unsplash.com/photo-1540575467063-178a50c2df87?auto=format&fit=crop&w=800&q=80";
-  
+  const primaryImage =
+    event.images.find((img) => img.isPrimary) || event.images[0];
+  const imageUrl =
+    primaryImage?.imageUrl ||
+    "https://images.unsplash.com/photo-1540575467063-178a50c2df87?auto=format&fit=crop&w=800&q=80";
+
   // Calculate average rating
-  const averageRating = event.reviews && event.reviews.length > 0
-    ? (event.reviews.reduce((sum, r) => sum + r.rating, 0) / event.reviews.length).toFixed(2)
-    : null;
-  
+  const averageRating =
+    event.reviews && event.reviews.length > 0
+      ? (
+          event.reviews.reduce((sum, r) => sum + r.rating, 0) /
+          event.reviews.length
+        ).toFixed(2)
+      : null;
+
   // Get price
-  const price = event.pricing && event.pricing.length > 0
-    ? parseFloat(event.pricing[0].basePrice)
-    : null;
-  
-  const currency = event.pricing && event.pricing.length > 0
-    ? event.pricing[0].currency
-    : "PHP";
+  const price =
+    event.pricing && event.pricing.length > 0
+      ? parseFloat(event.pricing[0].basePrice)
+      : null;
+
+  const currency =
+    event.pricing && event.pricing.length > 0
+      ? event.pricing[0].currency
+      : "PHP";
 
   // Get location
   const location = event.details
@@ -73,9 +85,13 @@ const EventCard: React.FC<EventCardProps> = ({ event }) => {
           className="absolute top-3 right-3 p-2 rounded-full bg-white/80 hover:bg-white transition-colors disabled:opacity-60"
           onClick={handleFavorite}
           disabled={favLoading}
-          aria-label={isFavorited ? "Remove from favorites" : "Add to favorites"}
+          aria-label={
+            isFavorited ? "Remove from favorites" : "Add to favorites"
+          }
         >
-          <Heart className={`w-5 h-5 transition-colors ${isFavorited ? "fill-pink-500 text-pink-500" : "text-gray-700"}`} />
+          <Heart
+            className={`w-5 h-5 transition-colors ${isFavorited ? "fill-pink-500 text-pink-500" : "text-gray-700"}`}
+          />
         </button>
       </div>
 
@@ -109,7 +125,8 @@ const EventCard: React.FC<EventCardProps> = ({ event }) => {
         {price !== null && (
           <p className="text-gray-900">
             <span className="font-semibold">
-              {currency === "PHP" ? "₱" : "$"}{price.toLocaleString()}
+              {currency === "PHP" ? "₱" : "$"}
+              {price.toLocaleString()}
             </span>
             <span className="text-gray-500 text-sm"> / event</span>
           </p>

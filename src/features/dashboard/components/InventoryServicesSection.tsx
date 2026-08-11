@@ -1,12 +1,16 @@
-﻿'use client';
+/* eslint-disable @next/next/no-img-element */
+"use client";
 
-import React from 'react';
-import Link from 'next/link';
-import Image from 'next/image';
-import { InventoryItem, ServiceItem } from '@/features/dashboard/data/dashboardData';
-import { StatusBadge } from './StatusBadge';
-import { EmptyState } from './EmptyState';
-import { PaginationBar } from './PaginationBar';
+import React from "react";
+import Link from "next/link";
+import Image from "next/image";
+import {
+  InventoryItem,
+  ServiceItem,
+} from "@/features/dashboard/data/dashboardData";
+import { StatusBadge } from "./StatusBadge";
+import { EmptyState } from "./EmptyState";
+import { PaginationBar } from "./PaginationBar";
 
 interface InventorySectionProps {
   inventory: InventoryItem[];
@@ -33,7 +37,9 @@ export function InventorySection({
     <section id="inventory">
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-2xl font-display font-bold flex items-center gap-2">
-          <span className="material-symbols-outlined text-purple-500">inventory_2</span>
+          <span className="material-symbols-outlined text-purple-500">
+            inventory_2
+          </span>
           Inventories
         </h2>
         {showViewAllLink && (
@@ -42,11 +48,17 @@ export function InventorySection({
             href={viewAllHref}
           >
             View All
-            <span className="material-symbols-outlined text-[16px]">arrow_forward</span>
+            <span className="material-symbols-outlined text-[16px]">
+              arrow_forward
+            </span>
           </Link>
         )}
       </div>
-      <div className={inventory.length > 0 ? "grid grid-cols-2 md:grid-cols-4 gap-4" : ""}>
+      <div
+        className={
+          inventory.length > 0 ? "grid grid-cols-2 md:grid-cols-4 gap-4" : ""
+        }
+      >
         {inventory.length > 0 ? (
           inventory.map((it) => (
             <div
@@ -81,19 +93,26 @@ export function InventorySection({
               <div className="p-4 bg-linear-to-t from-black/80 to-transparent absolute bottom-0 left-0 right-0 rounded-b-lg">
                 <h4 className="font-bold text-sm">{it.name}</h4>
                 <p className="text-[10px] text-white/50 uppercase">
-                  {typeof it.category === 'string'
+                  {typeof it.category === "string"
                     ? it.category
-                    : it.category?.name ?? 'Uncategorized'}
+                    : (it.category?.name ?? "Uncategorized")}
                 </p>
               </div>
             </div>
           ))
         ) : (
-          <EmptyState type="inventories" href="/foxer/create-listing?type=inventory" />
+          <EmptyState
+            type="inventories"
+            href="/foxer/create-listing?type=inventory"
+          />
         )}
       </div>
       {onPageChange && page !== undefined && totalPages !== undefined && (
-        <PaginationBar page={page} totalPages={totalPages} onPageChange={onPageChange} />
+        <PaginationBar
+          page={page}
+          totalPages={totalPages}
+          onPageChange={onPageChange}
+        />
       )}
     </section>
   );
@@ -124,7 +143,9 @@ export function ServicesSection({
     <section>
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-2xl font-display font-bold flex items-center gap-2">
-          <span className="material-symbols-outlined text-yellow-400">handyman</span>
+          <span className="material-symbols-outlined text-yellow-400">
+            handyman
+          </span>
           Services
         </h2>
         {showViewAllLink && (
@@ -133,7 +154,9 @@ export function ServicesSection({
             href={viewAllHref}
           >
             View All
-            <span className="material-symbols-outlined text-[16px]">arrow_forward</span>
+            <span className="material-symbols-outlined text-[16px]">
+              arrow_forward
+            </span>
           </Link>
         )}
       </div>
@@ -153,14 +176,22 @@ export function ServicesSection({
             >
               <div className="flex items-center gap-4">
                 {sv.img ? (
-                  <img src={sv.img} alt={sv.name} className="h-12 w-12 rounded-xl object-cover shrink-0" />
+                  <img
+                    src={sv.img}
+                    alt={sv.name}
+                    className="h-12 w-12 rounded-xl object-cover shrink-0"
+                  />
                 ) : (
-                  <div className={`h-12 w-12 rounded-xl flex items-center justify-center shrink-0 ${sv.color}`}>
+                  <div
+                    className={`h-12 w-12 rounded-xl flex items-center justify-center shrink-0 ${sv.color}`}
+                  >
                     <span className="material-symbols-outlined">{sv.icon}</span>
                   </div>
                 )}
                 <div>
-                  <h4 className={`font-bold ${sv.status === 'Active' ? 'text-white' : 'text-white/50'}`}>
+                  <h4
+                    className={`font-bold ${sv.status === "Active" ? "text-white" : "text-white/50"}`}
+                  >
                     {sv.name}
                   </h4>
                   <p className="text-xs text-white/40">{sv.price}</p>
@@ -174,11 +205,18 @@ export function ServicesSection({
             </div>
           ))
         ) : (
-          <EmptyState type="services" href="/foxer/create-listing?type=service" />
+          <EmptyState
+            type="services"
+            href="/foxer/create-listing?type=service"
+          />
         )}
       </div>
       {onPageChange && page !== undefined && totalPages !== undefined && (
-        <PaginationBar page={page} totalPages={totalPages} onPageChange={onPageChange} />
+        <PaginationBar
+          page={page}
+          totalPages={totalPages}
+          onPageChange={onPageChange}
+        />
       )}
     </section>
   );

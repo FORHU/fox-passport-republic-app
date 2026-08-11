@@ -2,7 +2,10 @@
 
 import { useQuery } from "@tanstack/react-query";
 import api from "@/shared/lib/axios";
-import { Category, CategoriesApiResponse } from "@/features/category/types/category";
+import {
+  Category,
+  CategoriesApiResponse,
+} from "@/features/category/types/category";
 
 interface UseCategoriesReturn {
   categories: Category[];

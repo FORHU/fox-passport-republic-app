@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-img-element */
 "use client";
 
 import { useState } from "react";
@@ -5,19 +6,24 @@ import { motion } from "motion/react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
-import { fetchFoxers, type Foxer, type FoxerSpecialization } from "@/features/user/api/foxers";
+import {
+  fetchFoxers,
+  type Foxer,
+  type FoxerSpecialization,
+} from "@/features/user/api/foxers";
 
-const FALLBACK_AVATAR = "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=400&auto=format&fit=crop";
+const FALLBACK_AVATAR =
+  "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=400&auto=format&fit=crop";
 
 const ROLE_FILTERS = [
-  { label: "All",          value: undefined,          icon: "groups" },
-  { label: "Event Foxer",  value: "eventFoxer",       icon: "celebration" },
-  { label: "Venue Foxer",  value: "venueFoxer",       icon: "location_city" },
-  { label: "Talent Foxer", value: "serviceFoxer",     icon: "theater_comedy" },
-  { label: "Gear Foxer",   value: "gearFoxer",        icon: "speaker" },
+  { label: "All", value: undefined, icon: "groups" },
+  { label: "Event Foxer", value: "eventFoxer", icon: "celebration" },
+  { label: "Venue Foxer", value: "venueFoxer", icon: "location_city" },
+  { label: "Talent Foxer", value: "serviceFoxer", icon: "theater_comedy" },
+  { label: "Gear Foxer", value: "gearFoxer", icon: "speaker" },
 ] as const;
 
-type RoleFilter = typeof ROLE_FILTERS[number]["value"];
+type RoleFilter = (typeof ROLE_FILTERS)[number]["value"];
 
 const INITIAL_COUNT = 6;
 const MORE_COUNT = 6;
@@ -56,7 +62,8 @@ export default function FoxersMatchSection() {
               Who&apos;s vibe matches yours?
             </h2>
             <p className="text-sm sm:text-base md:text-lg text-text-muted max-w-2xl">
-              Browse Certified Foxers available for your dates. These pros know the scene inside out.
+              Browse Certified Foxers available for your dates. These pros know
+              the scene inside out.
             </p>
           </div>
         </motion.div>
@@ -73,7 +80,9 @@ export default function FoxersMatchSection() {
                   : "border border-white/10 text-white hover:bg-white/5 glass-panel"
               }`}
             >
-              <span className="material-symbols-outlined text-[16px]">{f.icon}</span>
+              <span className="material-symbols-outlined text-[16px]">
+                {f.icon}
+              </span>
               {f.label}
             </button>
           ))}
@@ -83,7 +92,10 @@ export default function FoxersMatchSection() {
         <div className="flex overflow-x-auto gap-3 sm:gap-4 pt-4 pb-4 sm:pb-6 snap-x snap-mandatory hide-scrollbar md:grid md:grid-cols-2 lg:grid-cols-3 md:pb-0 md:pt-0 md:overflow-visible">
           {isLoading
             ? Array.from({ length: 3 }).map((_, i) => (
-                <div key={i} className="glass-card rounded-[2rem] p-4 sm:p-8 animate-pulse space-y-4 shrink-0 w-[82vw] max-w-75 sm:w-auto sm:max-w-none snap-center">
+                <div
+                  key={i}
+                  className="glass-card rounded-[2rem] p-4 sm:p-8 animate-pulse space-y-4 shrink-0 w-[82vw] max-w-75 sm:w-auto sm:max-w-none snap-center"
+                >
                   <div className="flex gap-2 sm:gap-4">
                     <div className="h-10 w-10 sm:h-16 sm:w-16 rounded-full bg-white/10" />
                     <div className="flex-1 space-y-2 pt-2">
@@ -94,16 +106,22 @@ export default function FoxersMatchSection() {
                   <div className="h-3 w-full bg-white/5 rounded" />
                   <div className="h-3 w-3/4 bg-white/5 rounded" />
                   <div className="flex gap-2">
-                    {[1, 2, 3].map((j) => <div key={j} className="h-6 w-16 bg-white/5 rounded-lg" />)}
+                    {[1, 2, 3].map((j) => (
+                      <div key={j} className="h-6 w-16 bg-white/5 rounded-lg" />
+                    ))}
                   </div>
                   <div className="h-12 w-full bg-white/5 rounded-full" />
                 </div>
               ))
-            : visibleFoxers.map((foxer) => <FoxerCard key={foxer.id} foxer={foxer} />)}
+            : visibleFoxers.map((foxer) => (
+                <FoxerCard key={foxer.id} foxer={foxer} />
+              ))}
 
           {!isLoading && foxers.length === 0 && (
             <div className="col-span-3 text-center py-20 text-text-muted">
-              <span className="material-symbols-outlined text-5xl mb-4 block">person_search</span>
+              <span className="material-symbols-outlined text-5xl mb-4 block">
+                person_search
+              </span>
               <p>No foxers available yet. Check back soon!</p>
             </div>
           )}
@@ -139,7 +157,9 @@ function SpecializationChip({ spec }: { spec: FoxerSpecialization }) {
   if (spec.source === "earned") {
     return (
       <span className="inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide bg-yellow-400/15 border border-yellow-400/40 text-yellow-300">
-        <span className="material-symbols-outlined text-[11px] fill-current">star</span>
+        <span className="material-symbols-outlined text-[11px] fill-current">
+          star
+        </span>
         {label}
       </span>
     );
@@ -160,19 +180,42 @@ function getPrimaryRole(foxer: Foxer): string {
   return "";
 }
 
-const ROLE_META: Record<string, { label: string; description: string; color: string }> = {
-  eventFoxer:   { label: "Event Foxer",   description: "Plans & coordinates your entire event end-to-end", color: "#ff00aa" },
-  gearFoxer:    { label: "Gear Foxer",    description: "Rents out equipment — sound, lighting & décor",    color: "#a78bfa" },
-  serviceFoxer: { label: "Talent Foxer",  description: "Provides services like photography, catering & entertainment", color: "#00d2ff" },
-  venueFoxer:   { label: "Venue Foxer",   description: "Provides the perfect space for your event",        color: "#ccff00" },
+const ROLE_META: Record<
+  string,
+  { label: string; description: string; color: string }
+> = {
+  eventFoxer: {
+    label: "Event Foxer",
+    description: "Plans & coordinates your entire event end-to-end",
+    color: "#ff00aa",
+  },
+  gearFoxer: {
+    label: "Gear Foxer",
+    description: "Rents out equipment — sound, lighting & décor",
+    color: "#a78bfa",
+  },
+  serviceFoxer: {
+    label: "Talent Foxer",
+    description: "Provides services like photography, catering & entertainment",
+    color: "#00d2ff",
+  },
+  venueFoxer: {
+    label: "Venue Foxer",
+    description: "Provides the perfect space for your event",
+    color: "#ccff00",
+  },
 };
 
 function getRoleMeta(foxer: Foxer) {
   const roles = foxer.roleType ?? [];
-  if (roles.includes("eventFoxer"))   return ROLE_META.eventFoxer;
-  if (roles.includes("gearFoxer"))    return ROLE_META.gearFoxer;
+  if (roles.includes("eventFoxer")) return ROLE_META.eventFoxer;
+  if (roles.includes("gearFoxer")) return ROLE_META.gearFoxer;
   if (roles.includes("serviceFoxer")) return ROLE_META.serviceFoxer;
-  return { label: "Foxer", description: "FoxPassport verified professional", color: "#ffffff" };
+  return {
+    label: "Foxer",
+    description: "FoxPassport verified professional",
+    color: "#ffffff",
+  };
 }
 
 // Sub-component for foxer cards
@@ -188,28 +231,35 @@ function FoxerCard({ foxer }: { foxer: Foxer }) {
   // Portfolio images: templates for EventFoxer, assets for GearFoxer, services otherwise
   const portfolioImages = (
     isHost && hasTemplates
-      ? (foxer.eventTemplates ?? []).flatMap((t) => t.images.map((img) => img.url))
+      ? (foxer.eventTemplates ?? []).flatMap((t) =>
+          t.images.map((img) => img.url),
+        )
       : isGearFoxer && hasAssets
         ? (foxer.assets ?? []).flatMap((a) => a.images.map((img) => img.url))
         : foxer.services.flatMap((s) => s.images.map((img) => img.url))
   ).slice(0, 3);
 
   // Tags
-  const tags = (isHost && hasTemplates)
-    ? [...new Set((foxer.eventTemplates ?? []).map((t) => t.category))].slice(0, 4)
-    : isGearFoxer && hasAssets
-      ? [...new Set((foxer.assets ?? []).map((a) => a.category))].slice(0, 4)
-      : [...new Set(foxer.services.flatMap((s) => s.tags))].slice(0, 4);
+  const tags =
+    isHost && hasTemplates
+      ? [...new Set((foxer.eventTemplates ?? []).map((t) => t.category))].slice(
+          0,
+          4,
+        )
+      : isGearFoxer && hasAssets
+        ? [...new Set((foxer.assets ?? []).map((a) => a.category))].slice(0, 4)
+        : [...new Set(foxer.services.flatMap((s) => s.tags))].slice(0, 4);
 
   const roleMeta = getRoleMeta(foxer);
   const isEventFoxer = foxer.roleType?.includes("eventFoxer");
   const showStartHere = isEventFoxer && hasTemplates;
 
-  const bio = (isHost && hasTemplates)
-    ? (foxer.eventTemplates?.[0]?.description ?? null)
-    : isGearFoxer && hasAssets
-      ? (foxer.assets?.[0]?.description ?? null)
-      : (foxer.services[0]?.description ?? null);
+  const bio =
+    isHost && hasTemplates
+      ? (foxer.eventTemplates?.[0]?.description ?? null)
+      : isGearFoxer && hasAssets
+        ? (foxer.assets?.[0]?.description ?? null)
+        : (foxer.services[0]?.description ?? null);
 
   const avatarUrl = foxer.imgId
     ? `https://fox-passport-republic-assets.s3.ap-southeast-1.amazonaws.com/${foxer.imgId}`
@@ -231,7 +281,11 @@ function FoxerCard({ foxer }: { foxer: Foxer }) {
       )}
 
       {/* Stretched Link */}
-      <Link href={`/foxer/${foxer.id}`} className="absolute inset-0 z-0 rounded-[2rem]" aria-label={`View ${foxer.name}'s profile`}>
+      <Link
+        href={`/foxer/${foxer.id}`}
+        className="absolute inset-0 z-0 rounded-[2rem]"
+        aria-label={`View ${foxer.name}'s profile`}
+      >
         <span className="sr-only">View Profile</span>
       </Link>
 
@@ -243,24 +297,37 @@ function FoxerCard({ foxer }: { foxer: Foxer }) {
               src={avatarUrl}
               alt={foxer.name}
               className="h-10 w-10 sm:h-16 sm:w-16 rounded-full object-cover border-2 border-surface-highlight group-hover:scale-105 transition-transform"
-              onError={(e) => { (e.target as HTMLImageElement).src = FALLBACK_AVATAR; }}
+              onError={(e) => {
+                (e.target as HTMLImageElement).src = FALLBACK_AVATAR;
+              }}
             />
             <div className="absolute bottom-0 right-0 h-2.5 w-2.5 sm:h-4 sm:w-4 rounded-full bg-green-500 border-2 border-surface-highlight ring-2 ring-black" />
           </div>
           <div>
             <div className="flex items-center gap-1 font-display font-bold text-sm sm:text-xl text-white leading-tight">
               {foxer.name}{" "}
-              <span className="material-symbols-outlined text-primary text-[14px] sm:text-[18px] fill-current">verified</span>
+              <span className="material-symbols-outlined text-primary text-[14px] sm:text-[18px] fill-current">
+                verified
+              </span>
             </div>
-            <div className="text-xs sm:text-sm font-semibold" style={{ color: roleMeta.color }}>{roleMeta.label}</div>
+            <div
+              className="text-xs sm:text-sm font-semibold"
+              style={{ color: roleMeta.color }}
+            >
+              {roleMeta.label}
+            </div>
           </div>
         </div>
         <div className="text-right">
           <div className="flex items-center justify-end gap-1 font-bold text-xs sm:text-base text-white">
             {foxer.avgRating != null ? foxer.avgRating.toFixed(1) : "New"}{" "}
-            <span className="material-symbols-outlined text-yellow-400 text-[14px] sm:text-[16px] fill-current">star</span>
+            <span className="material-symbols-outlined text-yellow-400 text-[14px] sm:text-[16px] fill-current">
+              star
+            </span>
           </div>
-          <div className="text-[10px] sm:text-xs text-text-muted">{foxer.city}</div>
+          <div className="text-[10px] sm:text-xs text-text-muted">
+            {foxer.city}
+          </div>
         </div>
       </div>
 
@@ -297,11 +364,15 @@ function FoxerCard({ foxer }: { foxer: Foxer }) {
       {/* Specialization chips */}
       {(() => {
         const primaryRole = getPrimaryRole(foxer);
-        const specs = (foxer.foxerSpecializations ?? []).filter(s => s.roleType === primaryRole);
+        const specs = (foxer.foxerSpecializations ?? []).filter(
+          (s) => s.roleType === primaryRole,
+        );
         if (specs.length === 0) return null;
         return (
           <div className="flex flex-wrap gap-1.5 mb-3 sm:mb-6 relative z-10">
-            {specs.map((s, i) => <SpecializationChip key={i} spec={s} />)}
+            {specs.map((s, i) => (
+              <SpecializationChip key={i} spec={s} />
+            ))}
           </div>
         );
       })()}
@@ -314,7 +385,11 @@ function FoxerCard({ foxer }: { foxer: Foxer }) {
               key={idx}
               className="h-12 w-12 sm:h-20 sm:w-20 rounded-lg sm:rounded-xl overflow-hidden border border-white/10 group-hover:scale-105 transition-transform duration-300 first:-rotate-3 last:rotate-3"
             >
-              <img src={img} alt="Work" className="h-full w-full object-cover" />
+              <img
+                src={img}
+                alt="Work"
+                className="h-full w-full object-cover"
+              />
             </div>
           ))}
         </div>
@@ -333,10 +408,15 @@ function FoxerCard({ foxer }: { foxer: Foxer }) {
           Match Me
         </button>
         <button
-          onClick={(e) => { e.preventDefault(); e.stopPropagation(); }}
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+          }}
           className="h-11 w-11 sm:h-12 sm:w-12 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-gray-400 hover:text-white hover:bg-white/10 transition-colors group/heart cursor-pointer shrink-0"
         >
-          <span className="material-symbols-outlined text-[18px] sm:text-[24px] group-hover/heart:scale-125 transition-transform">favorite</span>
+          <span className="material-symbols-outlined text-[18px] sm:text-[24px] group-hover/heart:scale-125 transition-transform">
+            favorite
+          </span>
         </button>
       </div>
     </div>

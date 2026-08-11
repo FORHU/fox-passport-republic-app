@@ -2,7 +2,10 @@
 
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { useAuthActions, useAuthStore } from "@/features/auth/store/useAuthStore";
+import {
+  useAuthActions,
+  useAuthStore,
+} from "@/features/auth/store/useAuthStore";
 import { useQuery } from "@tanstack/react-query";
 import api from "@/shared/lib/axios";
 
@@ -79,7 +82,7 @@ export const useUserDashboard = () => {
     },
     enabled: !!userId,
     refetchInterval: () => {
-      if (typeof document !== 'undefined' && document.hidden) return false;
+      if (typeof document !== "undefined" && document.hidden) return false;
       return 15000; // 15 seconds for user events
     },
     refetchOnWindowFocus: true,
@@ -95,7 +98,8 @@ export const useUserDashboard = () => {
       const raw: any[] = res.data.data || [];
       return raw.map((f) => {
         const img =
-          f.venue?.images?.find((i: { isPrimary?: boolean }) => i.isPrimary)?.imageUrl ||
+          f.venue?.images?.find((i: { isPrimary?: boolean }) => i.isPrimary)
+            ?.imageUrl ||
           f.venue?.images?.[0]?.imageUrl ||
           f.venue?.images?.[0]?.url ||
           "https://picsum.photos/seed/venue/64/64";
@@ -112,7 +116,7 @@ export const useUserDashboard = () => {
     },
     enabled: !!userId,
     refetchInterval: () => {
-      if (typeof document !== 'undefined' && document.hidden) return false;
+      if (typeof document !== "undefined" && document.hidden) return false;
       return 30000; // 30 seconds for favorites
     },
     refetchOnWindowFocus: true,
@@ -140,7 +144,11 @@ export const useUserDashboard = () => {
   };
 
   const walletBalance = 0;
-  const recentTransactions: { type: "purchase" | "topup"; label: string; amount: number }[] = [];
+  const recentTransactions: {
+    type: "purchase" | "topup";
+    label: string;
+    amount: number;
+  }[] = [];
 
   return {
     userName,

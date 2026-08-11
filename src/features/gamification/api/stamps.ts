@@ -10,7 +10,7 @@ export interface Stamp {
 export async function fetchStamps(userId: string): Promise<Stamp[]> {
   const passport = await getUserPassport(userId);
   if (!passport || !passport.stamps) return [];
-  
+
   return passport.stamps.map((s) => ({
     id: s.id,
     eventName: s.eventName,

@@ -14,20 +14,56 @@ import {
 } from "@/features/event/components/event-builder";
 import { useHostEventEdit } from "@/features/event/hooks/useHostEventEdit";
 
-interface Props { id: string; }
+interface Props {
+  id: string;
+}
 
 function EventEditContent({ id }: Props) {
   const router = useRouter();
   const {
-    isPrefilling, prefillError,
-    eventTitle, description, category, date, location, maxAttendees, showGuide,
-    cancellationPolicyId, activeCategory, searchQuery, filteredResources, financials, blueprintHealth,
-    gallery, baseItems, targetMargin, isSubmitting, saveStatus, isDragOver,
-    setActiveCategory, setEventTitle, setDescription, setCategory, setDate,
-    setLocation, setMaxAttendees, setCancellationPolicyId, setShowGuide, setSearchQuery, setTargetMargin,
-    handleDragStart, handleDragOver, handleDragLeave, handleDrop,
-    addImageToGallery, removeGalleryItem, removeBaseItem, updateBaseItem,
-    handleBack, handleSaveDraft, handlePublish,
+    isPrefilling,
+    prefillError,
+    eventTitle,
+    description,
+    category,
+    date,
+    location,
+    maxAttendees,
+    showGuide,
+    cancellationPolicyId,
+    activeCategory,
+    searchQuery,
+    filteredResources,
+    financials,
+    blueprintHealth,
+    gallery,
+    baseItems,
+    targetMargin,
+    isSubmitting,
+    saveStatus,
+    isDragOver,
+    setActiveCategory,
+    setEventTitle,
+    setDescription,
+    setCategory,
+    setDate,
+    setLocation,
+    setMaxAttendees,
+    setCancellationPolicyId,
+    setShowGuide,
+    setSearchQuery,
+    setTargetMargin,
+    handleDragStart,
+    handleDragOver,
+    handleDragLeave,
+    handleDrop,
+    addImageToGallery,
+    removeGalleryItem,
+    removeBaseItem,
+    updateBaseItem,
+    handleBack,
+    handleSaveDraft,
+    handlePublish,
   } = useHostEventEdit(id);
 
   return (
@@ -48,7 +84,12 @@ function EventEditContent({ id }: Props) {
               <AlertTriangle className="h-8 w-8 text-red-400" />
               <div className="text-sm font-bold">Unable to load this event</div>
               <div className="text-xs text-white/50">{prefillError}</div>
-              <button onClick={handleBack} className="mt-4 px-4 py-2 rounded-full border border-white/10 text-xs font-bold hover:bg-white hover:text-black">Back to Events</button>
+              <button
+                onClick={handleBack}
+                className="mt-4 px-4 py-2 rounded-full border border-white/10 text-xs font-bold hover:bg-white hover:text-black"
+              >
+                Back to Events
+              </button>
             </div>
           </div>
         </div>
@@ -63,17 +104,72 @@ function EventEditContent({ id }: Props) {
         </div>
       ) : (
         <div className="fixed inset-0 z-60 bg-[#02040a] text-white flex flex-col font-body">
-          <EventHeader eventTitle={eventTitle} isSubmitting={isSubmitting} saveStatus={saveStatus} onBack={handleBack} onSaveDraft={handleSaveDraft} onPublish={handlePublish} />
+          <EventHeader
+            eventTitle={eventTitle}
+            isSubmitting={isSubmitting}
+            saveStatus={saveStatus}
+            onBack={handleBack}
+            onSaveDraft={handleSaveDraft}
+            onPublish={handlePublish}
+          />
           <div className="flex-1 flex overflow-hidden">
-            <ResourcePalette activeCategory={activeCategory} searchQuery={searchQuery} filteredResources={filteredResources} onCategoryChange={setActiveCategory} onSearchChange={setSearchQuery} onDragStart={handleDragStart} />
+            <ResourcePalette
+              activeCategory={activeCategory}
+              searchQuery={searchQuery}
+              filteredResources={filteredResources}
+              onCategoryChange={setActiveCategory}
+              onSearchChange={setSearchQuery}
+              onDragStart={handleDragStart}
+            />
             <main className="flex-1 overflow-y-auto p-8 bg-[#02040a] flex gap-8">
               <div className="flex-1 max-w-4xl mx-auto space-y-8">
-                <EventDetailsForm eventTitle={eventTitle} description={description} category={category} date={date} location={location} maxAttendees={maxAttendees} showGuide={showGuide} cancellationPolicyId={cancellationPolicyId} onTitleChange={setEventTitle} onDescriptionChange={setDescription} onCategoryChange={setCategory} onDateChange={setDate} onLocationChange={setLocation} onMaxAttendeesChange={setMaxAttendees} onCancellationPolicyChange={setCancellationPolicyId} onCloseGuide={() => setShowGuide(false)} />
-                <EventGallery gallery={gallery} onAddImage={addImageToGallery} onRemoveImage={removeGalleryItem} />
-                <CorePackageDropZone baseItems={baseItems} isDragOver={isDragOver} onDragOver={handleDragOver} onDragLeave={handleDragLeave} onDrop={handleDrop} onRemoveItem={removeBaseItem} onUpdateItem={updateBaseItem} />
+                <EventDetailsForm
+                  eventTitle={eventTitle}
+                  description={description}
+                  category={category}
+                  date={date}
+                  location={location}
+                  maxAttendees={maxAttendees}
+                  showGuide={showGuide}
+                  cancellationPolicyId={cancellationPolicyId}
+                  onTitleChange={setEventTitle}
+                  onDescriptionChange={setDescription}
+                  onCategoryChange={setCategory}
+                  onDateChange={setDate}
+                  onLocationChange={setLocation}
+                  onMaxAttendeesChange={setMaxAttendees}
+                  onCancellationPolicyChange={setCancellationPolicyId}
+                  onCloseGuide={() => setShowGuide(false)}
+                />
+                <EventGallery
+                  gallery={gallery}
+                  onAddImage={addImageToGallery}
+                  onRemoveImage={removeGalleryItem}
+                />
+                <CorePackageDropZone
+                  baseItems={baseItems}
+                  isDragOver={isDragOver}
+                  onDragOver={handleDragOver}
+                  onDragLeave={handleDragLeave}
+                  onDrop={handleDrop}
+                  onRemoveItem={removeBaseItem}
+                  onUpdateItem={updateBaseItem}
+                />
               </div>
             </main>
-            <EventBlueprint targetMargin={targetMargin} baseCost={financials.baseCost} suggestedPrice={financials.suggestedPrice} venueCost={financials.venueCost} talentCost={financials.talentCost} blueprintHealth={blueprintHealth} onMarginChange={(m: number) => setTargetMargin(m)} onPreview={async () => { await handleSaveDraft(); router.push(`/event/${id}?preview=1`); }} />
+            <EventBlueprint
+              targetMargin={targetMargin}
+              baseCost={financials.baseCost}
+              suggestedPrice={financials.suggestedPrice}
+              venueCost={financials.venueCost}
+              talentCost={financials.talentCost}
+              blueprintHealth={blueprintHealth}
+              onMarginChange={(m: number) => setTargetMargin(m)}
+              onPreview={async () => {
+                await handleSaveDraft();
+                router.push(`/event/${id}?preview=1`);
+              }}
+            />
           </div>
         </div>
       )}

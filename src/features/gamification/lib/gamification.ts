@@ -7,7 +7,7 @@ import {
   XP_MULTIPLIER,
   PATH_LABELS,
   PATH_COLORS,
-} from '@/features/gamification/types/gamification';
+} from "@/features/gamification/types/gamification";
 
 /**
  * Calculate the XP required for a specific level
@@ -55,7 +55,10 @@ export function calculateLevelFromXP(totalXP: number): {
 /**
  * Get progress percentage for current level
  */
-export function getProgressPercentage(currentXP: number, requiredXP: number): number {
+export function getProgressPercentage(
+  currentXP: number,
+  requiredXP: number,
+): number {
   if (requiredXP === 0) return 100;
   return Math.min(100, Math.round((currentXP / requiredXP) * 100));
 }
@@ -75,7 +78,7 @@ export function getPathLabel(path: UserPath, level: number): string {
     }
   }
 
-  return labels[1] || 'Beginner';
+  return labels[1] || "Beginner";
 }
 
 /**
@@ -107,17 +110,17 @@ export function calculateTotalXP(paths: PathProgress[]): number {
  */
 export function checkVIPStatus(paths: PathProgress[]): {
   isVip: boolean;
-  tier: 'Bronze' | 'Silver' | 'Gold' | 'Platinum' | null;
+  tier: "Bronze" | "Silver" | "Gold" | "Platinum" | null;
 } {
-  const userPath = paths.find((p) => p.path === 'user');
+  const userPath = paths.find((p) => p.path === "user");
   if (!userPath) return { isVip: false, tier: null };
 
   const level = userPath.level;
 
-  if (level >= 25) return { isVip: true, tier: 'Platinum' };
-  if (level >= 20) return { isVip: true, tier: 'Gold' };
-  if (level >= 15) return { isVip: true, tier: 'Silver' };
-  if (level >= 10) return { isVip: true, tier: 'Bronze' };
+  if (level >= 25) return { isVip: true, tier: "Platinum" };
+  if (level >= 20) return { isVip: true, tier: "Gold" };
+  if (level >= 15) return { isVip: true, tier: "Silver" };
+  if (level >= 10) return { isVip: true, tier: "Bronze" };
 
   return { isVip: false, tier: null };
 }
@@ -127,14 +130,18 @@ export function checkVIPStatus(paths: PathProgress[]): {
  */
 export function awardXP(
   currentPath: PathProgress,
-  xpAmount: number
+  xpAmount: number,
 ): {
   updatedPath: PathProgress;
   leveledUp: boolean;
   levelsGained: number;
 } {
   const newTotalXP = currentPath.totalXP + xpAmount;
-  const { level: newLevel, currentXP, requiredXP } = calculateLevelFromXP(newTotalXP);
+  const {
+    level: newLevel,
+    currentXP,
+    requiredXP,
+  } = calculateLevelFromXP(newTotalXP);
 
   const leveledUp = newLevel > currentPath.level;
   const levelsGained = newLevel - currentPath.level;
@@ -180,33 +187,35 @@ export function formatXP(xp: number): string {
 /**
  * Get perks for VIP tier
  */
-export function getVIPPerks(tier: 'Bronze' | 'Silver' | 'Gold' | 'Platinum'): string[] {
+export function getVIPPerks(
+  tier: "Bronze" | "Silver" | "Gold" | "Platinum",
+): string[] {
   const perks: Record<string, string[]> = {
     Bronze: [
-      'Early access to new events',
-      '5% discount on bookings',
-      'Bronze badge on profile',
+      "Early access to new events",
+      "5% discount on bookings",
+      "Bronze badge on profile",
     ],
     Silver: [
-      'Priority customer support',
-      '10% discount on bookings',
-      'Access to exclusive events',
-      'Silver badge on profile',
+      "Priority customer support",
+      "10% discount on bookings",
+      "Access to exclusive events",
+      "Silver badge on profile",
     ],
     Gold: [
-      'VIP concierge service',
-      '15% discount on bookings',
-      'Skip the line at venues',
-      'Gold badge on profile',
-      'Complimentary upgrades',
+      "VIP concierge service",
+      "15% discount on bookings",
+      "Skip the line at venues",
+      "Gold badge on profile",
+      "Complimentary upgrades",
     ],
     Platinum: [
-      'Personal event planner',
-      '25% discount on bookings',
-      'Exclusive Platinum events',
-      'Platinum badge on profile',
-      'Premium venue access',
-      'Lifetime VIP status',
+      "Personal event planner",
+      "25% discount on bookings",
+      "Exclusive Platinum events",
+      "Platinum badge on profile",
+      "Premium venue access",
+      "Lifetime VIP status",
     ],
   };
 

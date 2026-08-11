@@ -3,7 +3,10 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import RequireAuth from "@/features/auth/components/RequireAuth";
-import { DashboardHeader, VenuesSection } from "@/features/dashboard/components";
+import {
+  DashboardHeader,
+  VenuesSection,
+} from "@/features/dashboard/components";
 import { STATUS_OPTIONS } from "@/features/dashboard/data/dashboardData";
 
 function normalizeValue(value: unknown): string {
@@ -17,7 +20,9 @@ interface HostVenuesClientProps {
   initialVenues: any[];
 }
 
-export default function HostVenuesClient({ initialVenues }: HostVenuesClientProps) {
+export default function HostVenuesClient({
+  initialVenues,
+}: HostVenuesClientProps) {
   const router = useRouter();
   const [searchQuery, setSearchQuery] = useState("");
   const [status, setStatus] = useState<"all" | string>("all");
@@ -32,7 +37,9 @@ export default function HostVenuesClient({ initialVenues }: HostVenuesClientProp
 
     return venues.filter((vn) => {
       const statusOk =
-        status === "all" ? true : normalizeValue(vn.status) === normalizeValue(status);
+        status === "all"
+          ? true
+          : normalizeValue(vn.status) === normalizeValue(status);
 
       const searchOk = !q
         ? true
@@ -46,7 +53,7 @@ export default function HostVenuesClient({ initialVenues }: HostVenuesClientProp
 
   const handleStatusChange = (id: number | string, nextStatus: string) => {
     setVenues((prev) =>
-      prev.map((vn) => (vn.id === id ? { ...vn, status: nextStatus } : vn))
+      prev.map((vn) => (vn.id === id ? { ...vn, status: nextStatus } : vn)),
     );
   };
 
@@ -70,7 +77,9 @@ export default function HostVenuesClient({ initialVenues }: HostVenuesClientProp
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
               <div className="flex-1">
                 <div className="text-2xl font-display font-bold flex items-center gap-2 mb-2">
-                  <span className="material-symbols-outlined text-pink-500">apartment</span>
+                  <span className="material-symbols-outlined text-pink-500">
+                    apartment
+                  </span>
                   My Venues
                 </div>
                 <p className="text-sm text-white/50">
@@ -97,9 +106,15 @@ export default function HostVenuesClient({ initialVenues }: HostVenuesClientProp
                     onChange={(e) => setStatus(e.target.value)}
                     className="w-full bg-[#0f111a] text-white border border-white/10 rounded-full px-4 py-2 text-sm focus:outline-none focus:border-[#ccff00]"
                   >
-                    <option className="bg-[#0f111a] text-white" value="all">All Status</option>
+                    <option className="bg-[#0f111a] text-white" value="all">
+                      All Status
+                    </option>
                     {STATUS_OPTIONS.venue.map((s) => (
-                      <option className="bg-[#0f111a] text-white" key={s} value={s}>
+                      <option
+                        className="bg-[#0f111a] text-white"
+                        key={s}
+                        value={s}
+                      >
                         {s}
                       </option>
                     ))}

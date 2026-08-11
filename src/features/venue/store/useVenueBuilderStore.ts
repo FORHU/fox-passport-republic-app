@@ -1,5 +1,9 @@
 ﻿import { create } from "zustand";
-import { ResourceItem, GalleryItem, INITIAL_RESOURCES } from "@/features/venue/data/venueBuilderData";
+import {
+  ResourceItem,
+  GalleryItem,
+  INITIAL_RESOURCES,
+} from "@/features/venue/data/venueBuilderData";
 
 interface VenueBuilderState {
   // Resources
@@ -129,8 +133,10 @@ export const useVenueBuilderStore = create<VenueBuilderState>((set) => ({
   setLng: (lng) => set({ lng }),
 
   // Gallery Actions
-  addGalleryItem: (item) => set((state) => ({ gallery: [...state.gallery, item] })),
-  removeGalleryItem: (id) => set((state) => ({ gallery: state.gallery.filter((g) => g.id !== id) })),
+  addGalleryItem: (item) =>
+    set((state) => ({ gallery: [...state.gallery, item] })),
+  removeGalleryItem: (id) =>
+    set((state) => ({ gallery: state.gallery.filter((g) => g.id !== id) })),
 
   // Resources Actions
   addCustomResource: (category, item) =>
@@ -144,7 +150,9 @@ export const useVenueBuilderStore = create<VenueBuilderState>((set) => ({
     set((state) => ({
       resources: {
         ...state.resources,
-        [category]: (state.resources[category] || []).filter((r) => r.id !== id),
+        [category]: (state.resources[category] || []).filter(
+          (r) => r.id !== id,
+        ),
       },
     })),
 
@@ -157,18 +165,25 @@ export const useVenueBuilderStore = create<VenueBuilderState>((set) => ({
       if (state.includedItems.find((i) => i.id === item.id)) return state;
       return { includedItems: [...state.includedItems, item] };
     }),
-  removeIncludedItem: (id) => set((state) => ({ includedItems: state.includedItems.filter((i) => i.id !== id) })),
+  removeIncludedItem: (id) =>
+    set((state) => ({
+      includedItems: state.includedItems.filter((i) => i.id !== id),
+    })),
   addAddonItem: (item) =>
     set((state) => {
       if (state.addonItems.find((i) => i.id === item.id)) return state;
       return { addonItems: [...state.addonItems, item] };
     }),
-  removeAddonItem: (id) => set((state) => ({ addonItems: state.addonItems.filter((i) => i.id !== id) })),
+  removeAddonItem: (id) =>
+    set((state) => ({
+      addonItems: state.addonItems.filter((i) => i.id !== id),
+    })),
   setBaseRate: (rate) => set({ baseRate: rate }),
   setOccupancyRate: (rate) => set({ occupancyRate: rate }),
 
   // UI State Actions
-  setActiveCategory: (cat) => set({ activeCategory: cat, searchQuery: "", showCustomForm: false }),
+  setActiveCategory: (cat) =>
+    set({ activeCategory: cat, searchQuery: "", showCustomForm: false }),
   setSearchQuery: (query) => set({ searchQuery: query }),
   setShowGuide: (show) => set({ showGuide: show }),
   setShowCustomForm: (show) => set({ showCustomForm: show }),
@@ -181,7 +196,7 @@ export const useVenueBuilderStore = create<VenueBuilderState>((set) => ({
   reset: () =>
     set((state) => {
       state.gallery.forEach((item) => {
-        if (item.url?.startsWith('blob:')) URL.revokeObjectURL(item.url);
+        if (item.url?.startsWith("blob:")) URL.revokeObjectURL(item.url);
       });
       return { ...initialData };
     }),

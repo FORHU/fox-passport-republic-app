@@ -10,14 +10,19 @@ export interface CheckInResult {
   message?: string;
 }
 
-export async function checkInBooking(ticketCode: string): Promise<CheckInResult> {
+export async function checkInBooking(
+  ticketCode: string,
+): Promise<CheckInResult> {
   const resp = await api.patch("/bookings/check-in", { ticketCode });
   return resp.data?.data;
 }
 
 // 0. Fetch a single public (approved) EventTemplate
-export async function getPublicTemplate(templateId: string, options?: { claimed?: boolean }) {
-  const params = options?.claimed ? '?claimed=1' : '';
+export async function getPublicTemplate(
+  templateId: string,
+  options?: { claimed?: boolean },
+) {
+  const params = options?.claimed ? "?claimed=1" : "";
   const resp = await api.get(`/event-templates/browse/${templateId}${params}`);
   return resp.data?.data;
 }
@@ -59,7 +64,7 @@ export async function createCheckoutEventContext(payload: {
     endDatetime: new Date(Date.now() + 86400000).toISOString(),
     maxAttendees: payload.guestCount,
     totalPrice: payload.totalPrice,
-    currency: "PHP"
+    currency: "PHP",
   };
 
   const resp = await api.post("/event-requests", eventPayload);
@@ -79,7 +84,12 @@ export async function draftBooking(payload: {
 // 3. Add Attendees to Draft
 export async function appendAttendees(
   bookingId: string,
-  attendees: Array<{ firstName: string; lastName: string; email: string; phone: string }>
+  attendees: Array<{
+    firstName: string;
+    lastName: string;
+    email: string;
+    phone: string;
+  }>,
 ) {
   const resp = await api.put(`/bookings/${bookingId}/attendees`, { attendees });
   return resp.data?.data;
@@ -97,7 +107,11 @@ export async function createPaymentIntent(payload: {
 }
 
 // 5. Confirm Booking after Payment (records the payment in our system)
-export async function confirmBookingPayment(bookingId: string, paymentIntentId: string, amount: number) {
+export async function confirmBookingPayment(
+  bookingId: string,
+  paymentIntentId: string,
+  amount: number,
+) {
   const resp = await api.post(`/bookings/${bookingId}/confirm`, {
     amount,
     method: "stripe",
@@ -145,7 +159,7 @@ export async function bookService(payload: {
   notes?: string;
   totalAmount: number;
 }): Promise<{ id: string }> {
-  const resp = await api.post('/service/bookings', payload);
+  const resp = await api.post("/service/bookings", payload);
   return resp.data?.data ?? resp.data;
 }
 
@@ -154,28 +168,36 @@ export async function bookAsset(payload: {
   startDate: string;
   endDate: string;
   quantity: number;
-  fulfillmentType: 'delivery' | 'pickup';
+  fulfillmentType: "delivery" | "pickup";
   deliveryAddress?: string;
   notes?: string;
   totalAmount: number;
 }): Promise<{ id: string }> {
-  const resp = await api.post('/asset/bookings', payload);
+  const resp = await api.post("/asset/bookings", payload);
   return resp.data?.data ?? resp.data;
 }
 
-export async function confirmServiceBooking(bookingId: string, paymentIntentId: string, amount: number) {
+export async function confirmServiceBooking(
+  bookingId: string,
+  paymentIntentId: string,
+  amount: number,
+) {
   const resp = await api.post(`/service/bookings/${bookingId}/confirm`, {
     amount,
-    method: 'stripe',
+    method: "stripe",
     transactionId: paymentIntentId,
   });
   return resp.data?.data;
 }
 
-export async function confirmAssetBooking(bookingId: string, paymentIntentId: string, amount: number) {
+export async function confirmAssetBooking(
+  bookingId: string,
+  paymentIntentId: string,
+  amount: number,
+) {
   const resp = await api.post(`/asset/bookings/${bookingId}/confirm`, {
     amount,
-    method: 'stripe',
+    method: "stripe",
     transactionId: paymentIntentId,
   });
   return resp.data?.data;
@@ -191,23 +213,29 @@ export async function fetchAssetBooking(id: string) {
   return resp.data?.data;
 }
 
-export async function confirmArrival(type: 'service' | 'asset', id: string) {
+export async function confirmArrival(type: "service" | "asset", id: string) {
   const resp = await api.patch(`/${type}/bookings/${id}/confirm-arrival`);
   return resp.data?.data;
 }
 
-export async function reportNoShow(type: 'service' | 'asset', id: string) {
+export async function reportNoShow(type: "service" | "asset", id: string) {
   const resp = await api.patch(`/${type}/bookings/${id}/dispute`);
   return resp.data?.data;
 }
 
-export async function fetchTemplateAvailability(templateId: string): Promise<{ bookedDates: string[] }> {
+export async function fetchTemplateAvailability(
+  templateId: string,
+): Promise<{ bookedDates: string[] }> {
   const resp = await api.get(`/bookings/availability?templateId=${templateId}`);
   return resp.data?.data ?? { bookedDates: [] };
 }
 
-export async function fetchServiceAvailability(serviceId: string): Promise<{ bookedDates: string[] }> {
-  const resp = await api.get(`/service/bookings/availability?serviceId=${serviceId}`);
+export async function fetchServiceAvailability(
+  serviceId: string,
+): Promise<{ bookedDates: string[] }> {
+  const resp = await api.get(
+    `/service/bookings/availability?serviceId=${serviceId}`,
+  );
   return resp.data?.data ?? { bookedDates: [] };
 }
 
@@ -235,12 +263,27 @@ export async function bookVenueDraft(payload: {
 export async function fetchUserBookings(
   userId: string,
   page = 1,
-  limit = 4
-): Promise<{ bookings: any[]; pagination: { page: number; limit: number; total: number; totalPages: number } }> {
-  const resp = await api.get(`/bookings/user/${userId}?page=${page}&limit=${limit}`);
+  limit = 4,
+): Promise<{
+  bookings: any[];
+  pagination: {
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+  };
+}> {
+  const resp = await api.get(
+    `/bookings/user/${userId}?page=${page}&limit=${limit}`,
+  );
   return {
     bookings: resp.data?.data ?? [],
-    pagination: resp.data?.pagination ?? { page, limit, total: 0, totalPages: 0 },
+    pagination: resp.data?.pagination ?? {
+      page,
+      limit,
+      total: 0,
+      totalPages: 0,
+    },
   };
 }
 
@@ -260,10 +303,10 @@ export async function fetchFoxerBookings(ownerId: string) {
 export interface DisputeRecord {
   id: string;
   bookingId: string;
-  bookingType: 'service' | 'asset' | 'event';
+  bookingType: "service" | "asset" | "event";
   reason: string;
   description?: string;
-  status: 'pending' | 'approved' | 'rejected' | 'refunded' | 'refund_failed';
+  status: "pending" | "approved" | "rejected" | "refunded" | "refund_failed";
   createdAt: string;
   resolvedAt?: string;
   resolvedBy?: string;
@@ -285,7 +328,7 @@ export interface RefundRecord {
   id: string;
   bookingId: string;
   amount: number;
-  status: 'pending' | 'succeeded' | 'completed' | 'failed';
+  status: "pending" | "succeeded" | "completed" | "failed";
   method: string;
   failureReason?: string;
   adminNotes?: string;
@@ -294,16 +337,19 @@ export interface RefundRecord {
 }
 
 export async function fetchDisputedBookings(): Promise<DisputeRecord[]> {
-  const resp = await api.get('/admin/disputes');
+  const resp = await api.get("/admin/disputes");
   return resp.data?.data ?? [];
 }
 
 export async function resolveDispute(
   disputeId: string,
-  action: 'approve' | 'reject',
-  adminNotes?: string
+  action: "approve" | "reject",
+  adminNotes?: string,
 ): Promise<DisputeRecord> {
-  const resp = await api.patch(`/admin/disputes/${disputeId}/resolve`, { action, adminNotes });
+  const resp = await api.patch(`/admin/disputes/${disputeId}/resolve`, {
+    action,
+    adminNotes,
+  });
   return resp.data?.data;
 }
 
@@ -317,7 +363,7 @@ export async function issueManualRefund(payload: {
   amount: number;
   reason: string;
 }): Promise<RefundRecord> {
-  const resp = await api.post('/admin/refunds/manual', payload);
+  const resp = await api.post("/admin/refunds/manual", payload);
   return resp.data?.data;
 }
 
@@ -325,14 +371,29 @@ export async function fetchRefundHistory(params?: {
   status?: string;
   page?: number;
   limit?: number;
-}): Promise<{ refunds: RefundRecord[]; pagination: { page: number; limit: number; total: number; totalPages: number } }> {
+}): Promise<{
+  refunds: RefundRecord[];
+  pagination: {
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+  };
+}> {
   const qs = new URLSearchParams();
-  if (params?.status) qs.set('status', params.status);
-  if (params?.page) qs.set('page', String(params.page));
-  if (params?.limit) qs.set('limit', String(params.limit));
-  const resp = await api.get(`/admin/refunds${qs.toString() ? `?${qs.toString()}` : ''}`);
+  if (params?.status) qs.set("status", params.status);
+  if (params?.page) qs.set("page", String(params.page));
+  if (params?.limit) qs.set("limit", String(params.limit));
+  const resp = await api.get(
+    `/admin/refunds${qs.toString() ? `?${qs.toString()}` : ""}`,
+  );
   return {
     refunds: resp.data?.data ?? [],
-    pagination: resp.data?.pagination ?? { page: 1, limit: 20, total: 0, totalPages: 0 },
+    pagination: resp.data?.pagination ?? {
+      page: 1,
+      limit: 20,
+      total: 0,
+      totalPages: 0,
+    },
   };
 }

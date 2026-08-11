@@ -1,20 +1,26 @@
-﻿'use client';
+/* eslint-disable @typescript-eslint/no-unused-vars, @next/next/no-img-element */
+"use client";
 
-import React, { useState, useEffect } from 'react';
-import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import { fetchAssetById } from '@/features/asset/api/assets';
-import { useCanPartner } from '@/shared/hooks/useCanPartner';
-import { useAuthStore } from '@/features/auth/store/useAuthStore';
-import { toast } from 'sonner';
-import type { BackendAsset } from '@/shared/lib/api-types';
+import React, { useState, useEffect } from "react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { fetchAssetById } from "@/features/asset/api/assets";
+import { useCanPartner } from "@/shared/hooks/useCanPartner";
+import { useAuthStore } from "@/features/auth/store/useAuthStore";
+import { toast } from "sonner";
+import type { BackendAsset } from "@/shared/lib/api-types";
 
 function getFeatures(asset: BackendAsset) {
   const features = [];
-  if (asset.condition) features.push({ icon: 'verified', text: `Condition: ${asset.condition}` });
-  if (asset.category) features.push({ icon: 'category', text: asset.category });
-  if (asset.billingRate) features.push({ icon: 'schedule', text: `Billed per ${asset.billingRate.replace('per_', '')}` });
-  features.push({ icon: 'support_agent', text: 'Owner On-call Support' });
+  if (asset.condition)
+    features.push({ icon: "verified", text: `Condition: ${asset.condition}` });
+  if (asset.category) features.push({ icon: "category", text: asset.category });
+  if (asset.billingRate)
+    features.push({
+      icon: "schedule",
+      text: `Billed per ${asset.billingRate.replace("per_", "")}`,
+    });
+  features.push({ icon: "support_agent", text: "Owner On-call Support" });
   return features;
 }
 
@@ -30,7 +36,7 @@ export default function AssetDetailClient({ assetId }: { assetId: string }) {
   useEffect(() => {
     fetchAssetById(assetId)
       .then(setAsset)
-      .catch(() => toast.error('Could not load equipment details.'))
+      .catch(() => toast.error("Could not load equipment details."))
       .finally(() => setIsLoading(false));
   }, [assetId]);
 
@@ -49,8 +55,13 @@ export default function AssetDetailClient({ assetId }: { assetId: string }) {
     return (
       <div className="min-h-screen bg-background bg-gradient-dark flex items-center justify-center text-center p-8">
         <div>
-          <h2 className="text-2xl font-bold text-white mb-3">Equipment Not Found</h2>
-          <Link href="/categories" className="px-6 py-3 rounded-xl bg-accent text-black font-bold">
+          <h2 className="text-2xl font-bold text-white mb-3">
+            Equipment Not Found
+          </h2>
+          <Link
+            href="/categories"
+            className="px-6 py-3 rounded-xl bg-accent text-black font-bold"
+          >
             Browse Equipment
           </Link>
         </div>
@@ -58,13 +69,20 @@ export default function AssetDetailClient({ assetId }: { assetId: string }) {
     );
   }
 
-  const images = (asset.images ?? []).map((img: any) => img.url ?? img.imageUrl ?? '').filter(Boolean);
-  const mainImage = images[0] || 'https://images.unsplash.com/photo-1470225620780-dba8ba36b745?q=80&w=1200&auto=format&fit=crop';
-  const galleryImages = images.length > 1 ? images : [mainImage, mainImage, mainImage, mainImage];
+  const images = (asset.images ?? [])
+    .map((img: any) => img.url ?? img.imageUrl ?? "")
+    .filter(Boolean);
+  const mainImage =
+    images[0] ||
+    "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?q=80&w=1200&auto=format&fit=crop";
+  const galleryImages =
+    images.length > 1 ? images : [mainImage, mainImage, mainImage, mainImage];
   const price = Number(asset.price ?? 0);
-  const billingUnit = asset.billingRate?.replace('per_', '') ?? 'day';
+  const billingUnit = asset.billingRate?.replace("per_", "") ?? "day";
   const features = getFeatures(asset);
-  const ownerName = asset.ownerId ? `Provider #${asset.ownerId}` : 'Fox Provider';
+  const ownerName = asset.ownerId
+    ? `Provider #${asset.ownerId}`
+    : "Fox Provider";
 
   return (
     <div className="min-h-screen bg-background bg-gradient-dark text-text-main pb-32">
@@ -74,21 +92,29 @@ export default function AssetDetailClient({ assetId }: { assetId: string }) {
           onClick={() => router.back()}
           className="flex items-center gap-2 text-sm font-bold text-white/60 hover:text-white transition-colors"
         >
-          <span className="material-symbols-outlined text-[18px]">arrow_back</span>
+          <span className="material-symbols-outlined text-[18px]">
+            arrow_back
+          </span>
           Back
         </button>
         <Link href="/" className="flex items-center gap-2 group">
           <div className="flex h-9 w-9 items-center justify-center rounded-full bg-white text-black group-hover:rotate-180 transition-transform duration-700">
-            <span className="material-symbols-outlined text-[20px]">explore</span>
+            <span className="material-symbols-outlined text-[20px]">
+              explore
+            </span>
           </div>
-          <span className="text-xl font-display font-bold text-white group-hover:text-accent transition-colors">FoxPassport</span>
+          <span className="text-xl font-display font-bold text-white group-hover:text-accent transition-colors">
+            FoxPassport
+          </span>
         </Link>
         <div className="flex gap-3">
           <button className="h-10 w-10 flex items-center justify-center rounded-full border border-white/10 text-white hover:bg-white hover:text-black transition-all">
             <span className="material-symbols-outlined text-[20px]">share</span>
           </button>
           <button className="h-10 w-10 flex items-center justify-center rounded-full border border-white/10 text-white hover:bg-white hover:text-black transition-all">
-            <span className="material-symbols-outlined text-[20px]">favorite_border</span>
+            <span className="material-symbols-outlined text-[20px]">
+              favorite_border
+            </span>
           </button>
         </div>
       </header>
@@ -96,15 +122,32 @@ export default function AssetDetailClient({ assetId }: { assetId: string }) {
       <main className="pt-24 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
         {/* Hero Gallery */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-3 h-[420px] mb-12 rounded-[2rem] overflow-hidden border border-white/10 shadow-2xl">
-          <div className="md:col-span-2 md:row-span-2 overflow-hidden cursor-pointer" onClick={() => setActiveImg(0)}>
-            <img src={galleryImages[activeImg] ?? mainImage} className="w-full h-full object-cover hover:scale-105 transition-transform duration-700" alt="Main" />
+          <div
+            className="md:col-span-2 md:row-span-2 overflow-hidden cursor-pointer"
+            onClick={() => setActiveImg(0)}
+          >
+            <img
+              src={galleryImages[activeImg] ?? mainImage}
+              className="w-full h-full object-cover hover:scale-105 transition-transform duration-700"
+              alt="Main"
+            />
           </div>
           {[1, 2, 3].map((i) => (
-            <div key={i} className="hidden md:block overflow-hidden cursor-pointer group relative" onClick={() => setActiveImg(i % galleryImages.length)}>
-              <img src={galleryImages[i % galleryImages.length]} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" alt={`View ${i}`} />
+            <div
+              key={i}
+              className="hidden md:block overflow-hidden cursor-pointer group relative"
+              onClick={() => setActiveImg(i % galleryImages.length)}
+            >
+              <img
+                src={galleryImages[i % galleryImages.length]}
+                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+                alt={`View ${i}`}
+              />
               {i === 3 && images.length > 4 && (
                 <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
-                  <span className="text-white font-display font-bold">+{images.length - 4} photos</span>
+                  <span className="text-white font-display font-bold">
+                    +{images.length - 4} photos
+                  </span>
                 </div>
               )}
             </div>
@@ -114,29 +157,36 @@ export default function AssetDetailClient({ assetId }: { assetId: string }) {
         <div className="grid lg:grid-cols-12 gap-12">
           {/* Left Details */}
           <div className="lg:col-span-8 space-y-16">
-
             {/* Header Section */}
             <section>
               <div className="flex flex-wrap items-center gap-3 mb-4">
                 <span className="bg-purple-400/20 border border-purple-400/30 rounded-full px-4 py-1 text-[10px] font-bold text-purple-400 uppercase tracking-[0.2em]">
-                  {asset.category ?? 'Equipment'}
+                  {asset.category ?? "Equipment"}
                 </span>
                 {asset.condition && (
                   <span className="flex items-center gap-1 text-white font-bold text-[10px] uppercase tracking-widest bg-white/5 rounded-full px-3 py-1">
-                    <span className="material-symbols-outlined text-accent text-[14px]">verified</span>
+                    <span className="material-symbols-outlined text-accent text-[14px]">
+                      verified
+                    </span>
                     {asset.condition}
                   </span>
                 )}
               </div>
-              <h1 className="text-5xl font-display font-bold text-white mb-6 tracking-tight leading-tight">{asset.name}</h1>
+              <h1 className="text-5xl font-display font-bold text-white mb-6 tracking-tight leading-tight">
+                {asset.name}
+              </h1>
 
               <div className="flex items-center gap-5 p-5 rounded-3xl bg-white/5 border border-white/5 w-fit hover:border-white/20 transition-all group">
                 <div className="h-12 w-12 rounded-full bg-surface-highlight flex items-center justify-center text-accent font-bold text-lg ring-2 ring-white/5 group-hover:ring-accent transition-all">
                   {ownerName.charAt(0)}
                 </div>
                 <div>
-                  <p className="text-sm font-bold text-white uppercase tracking-widest mb-0.5 leading-none">Listed by {ownerName}</p>
-                  <p className="text-xs text-text-muted">Equipment Specialist</p>
+                  <p className="text-sm font-bold text-white uppercase tracking-widest mb-0.5 leading-none">
+                    Listed by {ownerName}
+                  </p>
+                  <p className="text-xs text-text-muted">
+                    Equipment Specialist
+                  </p>
                 </div>
               </div>
             </section>
@@ -144,16 +194,24 @@ export default function AssetDetailClient({ assetId }: { assetId: string }) {
             {/* Included in this Build */}
             <section className="bg-surface-highlight/30 rounded-[3rem] p-10 border border-white/5 relative overflow-hidden">
               <div className="absolute top-0 right-0 p-8 opacity-5">
-                <span className="material-symbols-outlined text-8xl">format_quote</span>
+                <span className="material-symbols-outlined text-8xl">
+                  format_quote
+                </span>
               </div>
-              <h3 className="text-2xl font-display font-bold text-white mb-6 uppercase tracking-widest">Included in this Build</h3>
+              <h3 className="text-2xl font-display font-bold text-white mb-6 uppercase tracking-widest">
+                Included in this Build
+              </h3>
               <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
                 {features.map((f, i) => (
                   <div key={i} className="space-y-3">
                     <div className="h-12 w-12 rounded-2xl bg-white/5 flex items-center justify-center text-accent">
-                      <span className="material-symbols-outlined">{f.icon}</span>
+                      <span className="material-symbols-outlined">
+                        {f.icon}
+                      </span>
                     </div>
-                    <p className="text-[10px] font-bold text-white/50 uppercase tracking-widest">{f.text}</p>
+                    <p className="text-[10px] font-bold text-white/50 uppercase tracking-widest">
+                      {f.text}
+                    </p>
                   </div>
                 ))}
               </div>
@@ -161,41 +219,55 @@ export default function AssetDetailClient({ assetId }: { assetId: string }) {
 
             {/* Description */}
             <section>
-              <h3 className="text-2xl font-display font-bold text-white mb-6">About this Equipment</h3>
+              <h3 className="text-2xl font-display font-bold text-white mb-6">
+                About this Equipment
+              </h3>
               <p className="text-gray-400 text-lg leading-relaxed max-w-3xl">
-                {asset.description || 'High-quality equipment available for your event. Contact the provider for full specs and setup requirements.'}
+                {asset.description ||
+                  "High-quality equipment available for your event. Contact the provider for full specs and setup requirements."}
               </p>
             </section>
-
           </div>
 
           {/* Right Sticky Sidebar */}
           <div className="lg:col-span-4">
             <div className="sticky top-28 space-y-5">
-
               {/* FLOW 1: BOOK */}
               <div className="glass-card rounded-[3rem] p-8 border border-accent/20 bg-accent/5 overflow-hidden relative group shadow-glow-accent">
                 <div className="absolute top-0 right-0 w-40 h-40 bg-accent/20 blur-[60px] rounded-full pointer-events-none transition-transform group-hover:scale-150" />
                 <div className="relative z-10">
                   <div className="flex justify-between items-start mb-4">
                     <div>
-                      <span className="text-[10px] font-bold text-accent uppercase tracking-widest mb-2 block">Equipment Hire</span>
-                      <h3 className="text-3xl font-display font-bold text-white">Book Now</h3>
+                      <span className="text-[10px] font-bold text-accent uppercase tracking-widest mb-2 block">
+                        Equipment Hire
+                      </span>
+                      <h3 className="text-3xl font-display font-bold text-white">
+                        Book Now
+                      </h3>
                     </div>
                     <div className="h-10 w-10 rounded-full border border-white/10 flex items-center justify-center text-white/40">
-                      <span className="material-symbols-outlined text-[20px]">bolt</span>
+                      <span className="material-symbols-outlined text-[20px]">
+                        bolt
+                      </span>
                     </div>
                   </div>
 
                   <p className="text-sm text-text-muted mb-8 leading-relaxed">
-                    Secure this equipment for your event. Standard rates apply with instant scheduling.
+                    Secure this equipment for your event. Standard rates apply
+                    with instant scheduling.
                   </p>
 
                   <div className="flex justify-between items-end border-b border-white/5 pb-6 mb-8">
-                    <span className="text-[10px] text-text-muted font-bold uppercase tracking-widest">Starting Price</span>
+                    <span className="text-[10px] text-text-muted font-bold uppercase tracking-widest">
+                      Starting Price
+                    </span>
                     <div className="text-right">
-                      <span className="text-4xl font-display font-bold text-white">₱{price.toLocaleString()}</span>
-                      <p className="text-[10px] text-accent font-bold uppercase leading-none mt-1">Per {billingUnit}</p>
+                      <span className="text-4xl font-display font-bold text-white">
+                        ₱{price.toLocaleString()}
+                      </span>
+                      <p className="text-[10px] text-accent font-bold uppercase leading-none mt-1">
+                        Per {billingUnit}
+                      </p>
                     </div>
                   </div>
 
@@ -204,7 +276,9 @@ export default function AssetDetailClient({ assetId }: { assetId: string }) {
                     className="w-full py-5 rounded-[2rem] bg-accent text-black font-bold text-lg hover:bg-white transition-all transform active:scale-95 shadow-xl group flex items-center justify-center gap-3"
                   >
                     Configure Booking
-                    <span className="material-symbols-outlined group-hover:translate-x-1 transition-transform">arrow_forward</span>
+                    <span className="material-symbols-outlined group-hover:translate-x-1 transition-transform">
+                      arrow_forward
+                    </span>
                   </button>
                 </div>
               </div>
@@ -214,23 +288,40 @@ export default function AssetDetailClient({ assetId }: { assetId: string }) {
                 <div className="glass-card rounded-[3rem] p-8 border border-white/10 bg-white/5 hover:border-white/20 transition-all group overflow-hidden relative">
                   <div className="absolute top-0 right-0 w-32 h-32 bg-primary/20 blur-[50px] rounded-full pointer-events-none transition-transform group-hover:scale-150" />
                   <div className="relative z-10">
-                    <span className="text-[10px] font-bold text-white/40 uppercase tracking-widest mb-2 block">Collaboration</span>
-                    <h3 className="text-2xl font-display font-bold text-white mb-2 leading-none">Partner Proposal</h3>
-                    <p className="text-sm text-text-muted mb-6 leading-relaxed">Pitch a revenue-share model or cultural exchange co-branding.</p>
+                    <span className="text-[10px] font-bold text-white/40 uppercase tracking-widest mb-2 block">
+                      Collaboration
+                    </span>
+                    <h3 className="text-2xl font-display font-bold text-white mb-2 leading-none">
+                      Partner Proposal
+                    </h3>
+                    <p className="text-sm text-text-muted mb-6 leading-relaxed">
+                      Pitch a revenue-share model or cultural exchange
+                      co-branding.
+                    </p>
 
                     <div className="bg-black/40 rounded-2xl p-4 mb-6 border border-white/5 flex items-center gap-4">
                       <div className="h-10 w-10 rounded-full bg-primary/20 flex items-center justify-center text-primary">
-                        <span className="material-symbols-outlined text-[18px]">handshake</span>
+                        <span className="material-symbols-outlined text-[18px]">
+                          handshake
+                        </span>
                       </div>
-                      <span className="text-[10px] font-bold text-white/80 uppercase tracking-widest leading-tight">Shared Success<br />Model Available</span>
+                      <span className="text-[10px] font-bold text-white/80 uppercase tracking-widest leading-tight">
+                        Shared Success
+                        <br />
+                        Model Available
+                      </span>
                     </div>
 
                     <button
-                      onClick={() => router.push(`/booking/asset/${assetId}?mode=partner`)}
+                      onClick={() =>
+                        router.push(`/booking/asset/${assetId}?mode=partner`)
+                      }
                       className="w-full py-4 rounded-2xl bg-white/10 text-white font-bold hover:bg-white hover:text-black transition-all flex items-center justify-center gap-3 border border-white/5"
                     >
                       Propose Match
-                      <span className="material-symbols-outlined">join_inner</span>
+                      <span className="material-symbols-outlined">
+                        join_inner
+                      </span>
                     </button>
                   </div>
                 </div>
@@ -238,9 +329,10 @@ export default function AssetDetailClient({ assetId }: { assetId: string }) {
 
               <div className="p-5 text-center">
                 <p className="text-xs text-text-muted leading-relaxed">
-                  Not sure which option to pick?<br />
+                  Not sure which option to pick?
+                  <br />
                   <button
-                    onClick={() => toast.info('Messaging feature coming soon!')}
+                    onClick={() => toast.info("Messaging feature coming soon!")}
                     className="text-white font-bold underline decoration-accent underline-offset-4 tracking-wide"
                   >
                     Talk to the provider

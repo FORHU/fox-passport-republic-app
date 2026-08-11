@@ -1,12 +1,12 @@
-﻿'use client';
+﻿"use client";
 
-import React from 'react';
-import Link from 'next/link';
-import Image from 'next/image';
-import { VenueItem } from '@/features/dashboard/data/dashboardData';
-import { StatusBadge } from './StatusBadge';
-import { EmptyState } from './EmptyState';
-import { PaginationBar } from './PaginationBar';
+import React from "react";
+import Link from "next/link";
+import Image from "next/image";
+import { VenueItem } from "@/features/dashboard/data/dashboardData";
+import { StatusBadge } from "./StatusBadge";
+import { EmptyState } from "./EmptyState";
+import { PaginationBar } from "./PaginationBar";
 
 interface VenuesSectionProps {
   venues: VenueItem[];
@@ -36,7 +36,9 @@ export function VenuesSection({
       {showHeading && (
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-2xl font-display font-bold flex items-center gap-2">
-            <span className="material-symbols-outlined text-pink-500">apartment</span>
+            <span className="material-symbols-outlined text-pink-500">
+              apartment
+            </span>
             My Venues
           </h2>
           {showViewAllLink && (
@@ -45,7 +47,9 @@ export function VenuesSection({
               href={viewAllHref}
             >
               View All
-              <span className="material-symbols-outlined text-[16px]">arrow_forward</span>
+              <span className="material-symbols-outlined text-[16px]">
+                arrow_forward
+              </span>
             </Link>
           )}
         </div>
@@ -55,8 +59,13 @@ export function VenuesSection({
           venues.map((vn) => (
             <div
               key={vn.id}
-              className={`bg-[#0f111a]/60 backdrop-blur border border-white/5 p-5 rounded-3xl hover:bg-white/5 transition-all group border-l-4 ${["published", "available"].includes((vn.status || "").toLowerCase()) ? 'border-l-green-500' : 'border-l-yellow-500'
-                } ${onEdit ? "cursor-pointer" : ""}`}
+              className={`bg-[#0f111a]/60 backdrop-blur border border-white/5 p-5 rounded-3xl hover:bg-white/5 transition-all group border-l-4 ${
+                ["published", "available"].includes(
+                  (vn.status || "").toLowerCase(),
+                )
+                  ? "border-l-green-500"
+                  : "border-l-yellow-500"
+              } ${onEdit ? "cursor-pointer" : ""}`}
               onClick={() => onEdit?.(vn.id)}
               role={onEdit ? "button" : undefined}
               tabIndex={onEdit ? 0 : undefined}
@@ -69,10 +78,13 @@ export function VenuesSection({
                 <div className="relative w-full sm:w-36 aspect-video sm:aspect-square rounded-2xl overflow-hidden shrink-0">
                   <Image
                     fill
-                    src={vn.img || '/herobackground.jpg'}
+                    src={vn.img || "/herobackground.jpg"}
                     alt=""
-                    className={`object-cover group-hover:scale-110 transition-transform duration-700 ${(vn.status || "").toLowerCase() !== "published" ? 'grayscale group-hover:grayscale-0' : ''}`}
-                    onError={(e) => { (e.target as HTMLImageElement).src = '/herobackground.jpg'; }}
+                    className={`object-cover group-hover:scale-110 transition-transform duration-700 ${(vn.status || "").toLowerCase() !== "published" ? "grayscale group-hover:grayscale-0" : ""}`}
+                    onError={(e) => {
+                      (e.target as HTMLImageElement).src =
+                        "/herobackground.jpg";
+                    }}
                   />
                   <div className="absolute top-2 left-2 bg-black/70 backdrop-blur px-2 py-1 rounded text-[10px] font-bold uppercase">
                     {vn.type}
@@ -84,11 +96,15 @@ export function VenuesSection({
                       <h3 className="text-xl font-bold mb-2">{vn.title}</h3>
                       <div className="flex items-center gap-4 text-sm text-white/50">
                         <span className="flex items-center gap-1">
-                          <span className="material-symbols-outlined text-[16px]">location_on</span>
+                          <span className="material-symbols-outlined text-[16px]">
+                            location_on
+                          </span>
                           {vn.loc}
                         </span>
                         <span className="flex items-center gap-1">
-                          <span className="material-symbols-outlined text-[16px]">groups</span>
+                          <span className="material-symbols-outlined text-[16px]">
+                            groups
+                          </span>
                           {vn.cap}
                         </span>
                       </div>
@@ -99,14 +115,20 @@ export function VenuesSection({
                       onStatusChange={(s) => onStatusChange(vn.id, s)}
                     />
                   </div>
-                  {["published", "available"].includes((vn.status || "").toLowerCase()) ? (
+                  {["published", "available"].includes(
+                    (vn.status || "").toLowerCase(),
+                  ) ? (
                     <div className="mt-4 grid grid-cols-3 gap-4 border-t border-white/5 pt-4">
                       <div>
-                        <div className="text-[10px] text-white/40 uppercase">Bookings</div>
+                        <div className="text-[10px] text-white/40 uppercase">
+                          Bookings
+                        </div>
                         <div className="text-sm font-bold">{vn.bookings}</div>
                       </div>
                       <div>
-                        <div className="text-[10px] text-white/40 uppercase">Revenue</div>
+                        <div className="text-[10px] text-white/40 uppercase">
+                          Revenue
+                        </div>
                         <div className="text-sm font-bold">{vn.revenue}</div>
                       </div>
                       <div className="flex justify-end gap-2">
@@ -114,13 +136,17 @@ export function VenuesSection({
                           className="h-9 w-9 rounded-full bg-white/5 hover:bg-white hover:text-black flex items-center justify-center"
                           onClick={(e) => e.stopPropagation()}
                         >
-                          <span className="material-symbols-outlined text-[18px]">edit</span>
+                          <span className="material-symbols-outlined text-[18px]">
+                            edit
+                          </span>
                         </button>
                         <button
                           className="h-9 w-9 rounded-full bg-white/5 hover:bg-[#ccff00] hover:text-black flex items-center justify-center"
                           onClick={(e) => e.stopPropagation()}
                         >
-                          <span className="material-symbols-outlined text-[18px]">bar_chart</span>
+                          <span className="material-symbols-outlined text-[18px]">
+                            bar_chart
+                          </span>
                         </button>
                       </div>
                     </div>
@@ -128,7 +154,9 @@ export function VenuesSection({
                     <div className="mt-4 flex justify-between items-center border-t border-white/5 pt-4">
                       <div className="flex items-center gap-2 text-yellow-400">
                         <span className="material-symbols-outlined text-[18px]">
-                          {(vn.status || "").toLowerCase() === "pending_review" ? "policy" : "edit_square"}
+                          {(vn.status || "").toLowerCase() === "pending_review"
+                            ? "policy"
+                            : "edit_square"}
                         </span>
                         <span className="text-xs">
                           {(vn.status || "").toLowerCase() === "pending_review"
@@ -140,12 +168,16 @@ export function VenuesSection({
                         className="px-4 py-2 rounded-full bg-white/10 text-xs font-bold hover:bg-white hover:text-black"
                         onClick={(e) => {
                           e.stopPropagation();
-                          if ((vn.status || "").toLowerCase() !== "pending_review") {
+                          if (
+                            (vn.status || "").toLowerCase() !== "pending_review"
+                          ) {
                             onEdit?.(vn.id);
                           }
                         }}
                       >
-                        {(vn.status || "").toLowerCase() === "pending_review" ? "Contact Support" : "Continue Editing"}
+                        {(vn.status || "").toLowerCase() === "pending_review"
+                          ? "Contact Support"
+                          : "Continue Editing"}
                       </button>
                     </div>
                   )}
@@ -158,7 +190,11 @@ export function VenuesSection({
         )}
       </div>
       {onPageChange && page !== undefined && totalPages !== undefined && (
-        <PaginationBar page={page} totalPages={totalPages} onPageChange={onPageChange} />
+        <PaginationBar
+          page={page}
+          totalPages={totalPages}
+          onPageChange={onPageChange}
+        />
       )}
     </section>
   );

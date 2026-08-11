@@ -1,13 +1,18 @@
-﻿'use client';
+/* eslint-disable @next/next/no-img-element */
+"use client";
 
-import React from 'react';
-import { LocationMap } from '@/shared/components/ui/LocationMap';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { getReviewsByListing, postReviewReply, Review, ReviewReply } from '@/features/review/api/reviews';
-import ReviewReplyModal from '@/features/review/components/ReviewReplyModal';
-import { useAuthStore } from '@/features/auth/store/useAuthStore';
-import { toast } from 'sonner';
-
+import React from "react";
+import { LocationMap } from "@/shared/components/ui/LocationMap";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import {
+  getReviewsByListing,
+  postReviewReply,
+  Review,
+  ReviewReply,
+} from "@/features/review/api/reviews";
+import ReviewReplyModal from "@/features/review/components/ReviewReplyModal";
+import { useAuthStore } from "@/features/auth/store/useAuthStore";
+import { toast } from "sonner";
 
 interface VenueCalendarProps {
   checkInDate: number | null;
@@ -29,15 +34,22 @@ export function VenueCalendar({
   const firstDayOfMonth = new Date(year, month, 1).getDay();
   const daysInMonth = new Date(year, month + 1, 0).getDate();
   const prevMonthDays = new Date(year, month, 0).getDate();
-  const monthLabel = new Date(year, month, 1).toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+  const monthLabel = new Date(year, month, 1).toLocaleDateString("en-US", {
+    month: "long",
+    year: "numeric",
+  });
 
   const prevMonth = () => {
-    if (month === 0) { setMonth(11); setYear(y => y - 1); }
-    else setMonth(m => m - 1);
+    if (month === 0) {
+      setMonth(11);
+      setYear((y) => y - 1);
+    } else setMonth((m) => m - 1);
   };
   const nextMonth = () => {
-    if (month === 11) { setMonth(0); setYear(y => y + 1); }
-    else setMonth(m => m + 1);
+    if (month === 11) {
+      setMonth(0);
+      setYear((y) => y + 1);
+    } else setMonth((m) => m + 1);
   };
 
   return (
@@ -45,21 +57,35 @@ export function VenueCalendar({
       <h3 className="text-2xl font-display font-bold text-white mb-2">
         Check availability
       </h3>
-      <p className="text-text-muted text-sm mb-6">Select a date to see if this venue is available for your event</p>
+      <p className="text-text-muted text-sm mb-6">
+        Select a date to see if this venue is available for your event
+      </p>
       <div className="bg-surface-highlight/30 rounded-2xl p-6 border border-white/5">
         <div className="flex justify-between items-center mb-4">
           <span className="font-bold text-white">{monthLabel}</span>
           <div className="flex gap-2">
-            <button onClick={prevMonth} className="h-8 w-8 flex items-center justify-center rounded-full hover:bg-white/10 text-white">
+            <button
+              onClick={prevMonth}
+              className="h-8 w-8 flex items-center justify-center rounded-full hover:bg-white/10 text-white"
+            >
               <span className="material-symbols-outlined">chevron_left</span>
             </button>
-            <button onClick={nextMonth} className="h-8 w-8 flex items-center justify-center rounded-full hover:bg-white/10 text-white">
+            <button
+              onClick={nextMonth}
+              className="h-8 w-8 flex items-center justify-center rounded-full hover:bg-white/10 text-white"
+            >
               <span className="material-symbols-outlined">chevron_right</span>
             </button>
           </div>
         </div>
         <div className="grid grid-cols-7 gap-1 text-center text-sm text-gray-400 mb-2">
-          <span>Su</span><span>Mo</span><span>Tu</span><span>We</span><span>Th</span><span>Fr</span><span>Sa</span>
+          <span>Su</span>
+          <span>Mo</span>
+          <span>Tu</span>
+          <span>We</span>
+          <span>Th</span>
+          <span>Fr</span>
+          <span>Sa</span>
         </div>
         <div className="grid grid-cols-7 gap-y-2 text-center text-sm font-medium">
           {[...Array(firstDayOfMonth)].map((_, i) => (
@@ -79,23 +105,29 @@ export function VenueCalendar({
             const isSelected = isRangeStart || isRangeEnd;
 
             return (
-              <div key={day} className="relative py-1" onClick={() => onDateClick(day)}>
-                {(isInRange || isRangeStart || isRangeEnd) && checkInDate && checkOutDate && (
-                  <div
-                    className={`absolute inset-y-1 bg-accent/20 ${
-                      isRangeStart
-                        ? 'left-1/2 right-0 rounded-l-full'
-                        : isRangeEnd
-                        ? 'left-0 right-1/2 rounded-r-full'
-                        : 'inset-x-0'
-                    }`}
-                  />
-                )}
+              <div
+                key={day}
+                className="relative py-1"
+                onClick={() => onDateClick(day)}
+              >
+                {(isInRange || isRangeStart || isRangeEnd) &&
+                  checkInDate &&
+                  checkOutDate && (
+                    <div
+                      className={`absolute inset-y-1 bg-accent/20 ${
+                        isRangeStart
+                          ? "left-1/2 right-0 rounded-l-full"
+                          : isRangeEnd
+                            ? "left-0 right-1/2 rounded-r-full"
+                            : "inset-x-0"
+                      }`}
+                    />
+                  )}
                 <span
                   className={`relative z-10 w-9 h-9 mx-auto flex items-center justify-center rounded-full transition-all ${
                     isSelected
-                      ? 'bg-accent text-black font-bold shadow-[0_0_10px_#ccff00]'
-                      : 'text-white hover:bg-white/10 cursor-pointer'
+                      ? "bg-accent text-black font-bold shadow-[0_0_10px_#ccff00]"
+                      : "text-white hover:bg-white/10 cursor-pointer"
                   }`}
                 >
                   {day}
@@ -124,12 +156,12 @@ interface VenueReviewsProps {
   hostId?: string;
 }
 
-const LOCAL_KEY = 'fpr-local-replies';
+const LOCAL_KEY = "fpr-local-replies";
 
 function getLocalRepliesFor(reviewId: string): ReviewReply[] {
-  if (typeof window === 'undefined') return [];
+  if (typeof window === "undefined") return [];
   try {
-    const all = JSON.parse(localStorage.getItem(LOCAL_KEY) || '{}');
+    const all = JSON.parse(localStorage.getItem(LOCAL_KEY) || "{}");
     return all[reviewId] ?? [];
   } catch {
     return [];
@@ -137,37 +169,55 @@ function getLocalRepliesFor(reviewId: string): ReviewReply[] {
 }
 
 function persistLocalReply(reviewId: string, reply: ReviewReply): void {
-  const all = JSON.parse(localStorage.getItem(LOCAL_KEY) || '{}');
+  const all = JSON.parse(localStorage.getItem(LOCAL_KEY) || "{}");
   all[reviewId] = [...(all[reviewId] ?? []), reply];
   localStorage.setItem(LOCAL_KEY, JSON.stringify(all));
 }
 
-function ReviewReplyForm({ reviewId, venueId, onClose }: { reviewId: string; venueId: string; onClose: () => void }) {
-  const [text, setText] = React.useState('');
+function ReviewReplyForm({
+  reviewId,
+  venueId,
+  onClose,
+}: {
+  reviewId: string;
+  venueId: string;
+  onClose: () => void;
+}) {
+  const [text, setText] = React.useState("");
   const queryClient = useQueryClient();
 
   const mutation = useMutation({
     mutationFn: () => postReviewReply(reviewId, text),
     onSuccess: (data) => {
       persistLocalReply(reviewId, data);
-      queryClient.setQueryData(['venue-reviews', venueId], (old: { reviews: Review[]; ratingDistribution: Record<string, string> } | undefined) => {
-        if (!old) return old;
-        return {
-          ...old,
-          reviews: old.reviews.map((review) => {
-            if (review.id === reviewId) {
-              return { ...review, replies: [...(review.replies ?? []), data] };
-            }
-            return review;
-          }),
-        };
-      });
-      queryClient.invalidateQueries({ queryKey: ['venue-reviews'] });
-      toast.success('Reply posted');
+      queryClient.setQueryData(
+        ["venue-reviews", venueId],
+        (
+          old:
+            | { reviews: Review[]; ratingDistribution: Record<string, string> }
+            | undefined,
+        ) => {
+          if (!old) return old;
+          return {
+            ...old,
+            reviews: old.reviews.map((review) => {
+              if (review.id === reviewId) {
+                return {
+                  ...review,
+                  replies: [...(review.replies ?? []), data],
+                };
+              }
+              return review;
+            }),
+          };
+        },
+      );
+      queryClient.invalidateQueries({ queryKey: ["venue-reviews"] });
+      toast.success("Reply posted");
       onClose();
     },
     onError: () => {
-      toast.error('Failed to post reply');
+      toast.error("Failed to post reply");
     },
   });
 
@@ -192,18 +242,23 @@ function ReviewReplyForm({ reviewId, venueId, onClose }: { reviewId: string; ven
           disabled={!text.trim() || mutation.isPending}
           className="px-4 py-2 rounded-xl bg-accent text-black text-xs font-bold hover:bg-accent/80 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          {mutation.isPending ? 'Posting...' : 'Reply'}
+          {mutation.isPending ? "Posting..." : "Reply"}
         </button>
       </div>
     </div>
   );
 }
 
-export function VenueReviews({ venueId, rating: fallbackRating = 0, totalReviews: fallbackTotal = 0, hostId }: VenueReviewsProps) {
+export function VenueReviews({
+  venueId,
+  rating: fallbackRating = 0,
+  totalReviews: fallbackTotal = 0,
+  hostId,
+}: VenueReviewsProps) {
   const user = useAuthStore((s) => s.user);
   const currentUserId = user?.id;
   const { data, isLoading } = useQuery({
-    queryKey: ['venue-reviews', venueId],
+    queryKey: ["venue-reviews", venueId],
     queryFn: () => getReviewsByListing(venueId),
     enabled: !!venueId,
     staleTime: 1000 * 60 * 5,
@@ -213,31 +268,47 @@ export function VenueReviews({ venueId, rating: fallbackRating = 0, totalReviews
   const reviews: Review[] = serverReviews.map((r) => {
     const all = [...(r.replies ?? []), ...getLocalRepliesFor(r.id)];
     const seen = new Set<string>();
-    return { ...r, replies: all.filter((reply) => { const k = reply.id; return seen.has(k) ? false : (seen.add(k), true); }) };
+    return {
+      ...r,
+      replies: all.filter((reply) => {
+        const k = reply.id;
+        return seen.has(k) ? false : (seen.add(k), true);
+      }),
+    };
   });
   const totalReviews = reviews.length;
   const ratingDistribution: Record<number, string> = {};
   if (totalReviews > 0) {
     [5, 4, 3, 2, 1].forEach((star) => {
       const count = reviews.filter((r) => r.rating === star).length;
-      ratingDistribution[star] = ((count / totalReviews) * 100).toFixed(0) + '%';
+      ratingDistribution[star] =
+        ((count / totalReviews) * 100).toFixed(0) + "%";
     });
   } else {
-    [5, 4, 3, 2, 1].forEach((star) => { ratingDistribution[star] = '0%'; });
+    [5, 4, 3, 2, 1].forEach((star) => {
+      ratingDistribution[star] = "0%";
+    });
   }
 
   const avgRating = reviews.length
-    ? Number((reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length).toFixed(1))
+    ? Number(
+        (
+          reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length
+        ).toFixed(1),
+      )
     : fallbackRating;
 
   const displayTotal = reviews.length || fallbackTotal;
   const [showAll, setShowAll] = React.useState(false);
 
   const [replyOpenId, setReplyOpenId] = React.useState<string | null>(null);
-  const [replyModalReviewId, setReplyModalReviewId] = React.useState<string | null>(null);
-  const [replyModalReply, setReplyModalReply] = React.useState<ReviewReply | null>(null);
+  const [replyModalReviewId, setReplyModalReviewId] = React.useState<
+    string | null
+  >(null);
+  const [replyModalReply, setReplyModalReply] =
+    React.useState<ReviewReply | null>(null);
   const replyModalReview = replyModalReviewId
-    ? reviews.find((r) => r.id === replyModalReviewId) ?? null
+    ? (reviews.find((r) => r.id === replyModalReviewId) ?? null)
     : null;
   const visible = showAll ? reviews : reviews.slice(0, 4);
 
@@ -249,12 +320,18 @@ export function VenueReviews({ venueId, rating: fallbackRating = 0, totalReviews
   return (
     <div id="reviews">
       <div className="flex items-center gap-2 mb-8">
-        <span className="material-symbols-outlined text-4xl text-white fill-current">star</span>
-        <h2 className="text-5xl font-display font-bold text-white">{avgRating}</h2>
+        <span className="material-symbols-outlined text-4xl text-white fill-current">
+          star
+        </span>
+        <h2 className="text-5xl font-display font-bold text-white">
+          {avgRating}
+        </h2>
         <div className="flex flex-col justify-center h-full ml-4 pl-4 border-l border-white/10">
-          <span className="text-lg font-bold text-white leading-none">Guest favorite</span>
+          <span className="text-lg font-bold text-white leading-none">
+            Guest favorite
+          </span>
           <p className="text-sm text-text-muted mt-1">
-            {displayTotal} {displayTotal === 1 ? 'review' : 'reviews'}
+            {displayTotal} {displayTotal === 1 ? "review" : "reviews"}
           </p>
         </div>
       </div>
@@ -262,14 +339,18 @@ export function VenueReviews({ venueId, rating: fallbackRating = 0, totalReviews
       <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-4 mb-10">
         {ratingBars.map((row) => (
           <div key={row.stars} className="flex items-center gap-3">
-            <span className="text-sm font-bold text-white w-3">{row.stars}</span>
+            <span className="text-sm font-bold text-white w-3">
+              {row.stars}
+            </span>
             <div className="flex-1 h-1.5 bg-white/10 rounded-full overflow-hidden">
               <div
                 className="h-full bg-accent rounded-full shadow-[0_0_8px_rgba(204,255,0,0.5)]"
                 style={{ width: row.count }}
               />
             </div>
-            <span className="text-xs font-medium text-text-muted w-8 text-right">{row.count}</span>
+            <span className="text-xs font-medium text-text-muted w-8 text-right">
+              {row.count}
+            </span>
           </div>
         ))}
       </div>
@@ -277,7 +358,10 @@ export function VenueReviews({ venueId, rating: fallbackRating = 0, totalReviews
       {isLoading ? (
         <div className="grid md:grid-cols-2 gap-6">
           {[...Array(4)].map((_, i) => (
-            <div key={i} className="glass-panel p-6 rounded-2xl border border-white/5 animate-pulse">
+            <div
+              key={i}
+              className="glass-panel p-6 rounded-2xl border border-white/5 animate-pulse"
+            >
               <div className="flex items-center gap-3 mb-4">
                 <div className="w-10 h-10 rounded-full bg-white/10" />
                 <div className="space-y-2">
@@ -299,40 +383,72 @@ export function VenueReviews({ venueId, rating: fallbackRating = 0, totalReviews
       ) : (
         <div className="grid md:grid-cols-2 gap-6">
           {visible.map((review) => {
-            const initials = (review.user?.name ?? 'A').charAt(0).toUpperCase();
-            const date = new Date(review.createdAt).toLocaleDateString('en-US', { year: 'numeric', month: 'long' });
-            const canReply = currentUserId && (currentUserId === hostId || currentUserId === review.userId);
+            const initials = (review.user?.name ?? "A").charAt(0).toUpperCase();
+            const date = new Date(review.createdAt).toLocaleDateString(
+              "en-US",
+              { year: "numeric", month: "long" },
+            );
+            const canReply =
+              currentUserId &&
+              (currentUserId === hostId || currentUserId === review.userId);
             return (
-              <div key={review.id} className="glass-panel p-6 rounded-2xl border border-white/5">
+              <div
+                key={review.id}
+                className="glass-panel p-6 rounded-2xl border border-white/5"
+              >
                 <div className="flex items-center gap-3 mb-4">
                   {review.user?.imgId ? (
-                    <img src={review.user.imgId} className="w-10 h-10 rounded-full object-cover" alt={review.user.name} />
+                    <img
+                      src={review.user.imgId}
+                      className="w-10 h-10 rounded-full object-cover"
+                      alt={review.user.name}
+                    />
                   ) : (
                     <div className="w-10 h-10 rounded-full bg-accent/20 flex items-center justify-center text-accent font-bold text-sm">
                       {initials}
                     </div>
                   )}
                   <div>
-                    <h4 className="font-bold text-white text-sm">{review.user?.name ?? 'Anonymous'}</h4>
+                    <h4 className="font-bold text-white text-sm">
+                      {review.user?.name ?? "Anonymous"}
+                    </h4>
                     <div className="flex items-center gap-1">
                       {[...Array(5)].map((_, i) => (
-                        <span key={i} className={`material-symbols-outlined text-[12px] ${i < review.rating ? 'text-yellow-400' : 'text-white/20'}`}>star</span>
+                        <span
+                          key={i}
+                          className={`material-symbols-outlined text-[12px] ${i < review.rating ? "text-yellow-400" : "text-white/20"}`}
+                        >
+                          star
+                        </span>
                       ))}
-                      <span className="text-xs text-text-muted ml-1">{date}</span>
+                      <span className="text-xs text-text-muted ml-1">
+                        {date}
+                      </span>
                     </div>
                   </div>
                 </div>
-                <p className="text-sm text-gray-300 leading-relaxed">{review.comment}</p>
+                <p className="text-sm text-gray-300 leading-relaxed">
+                  {review.comment}
+                </p>
 
                 {/* Replies — show max 2 inline, full list in modal */}
                 {review.replies && review.replies.length > 0 && (
                   <div className="mt-4 space-y-3 border-t border-white/5 pt-4">
                     {review.replies.slice(0, 2).map((reply) => {
-                      const replyInitials = (reply.user?.name ?? 'A').charAt(0).toUpperCase();
+                      const replyInitials = (reply.user?.name ?? "A")
+                        .charAt(0)
+                        .toUpperCase();
                       return (
-                        <div key={reply.id} className="flex gap-3 pl-4 border-l-2 border-accent/30">
+                        <div
+                          key={reply.id}
+                          className="flex gap-3 pl-4 border-l-2 border-accent/30"
+                        >
                           {reply.user?.imgId ? (
-                            <img src={reply.user.imgId} className="w-7 h-7 rounded-full object-cover shrink-0 mt-0.5" alt={reply.user.name} />
+                            <img
+                              src={reply.user.imgId}
+                              className="w-7 h-7 rounded-full object-cover shrink-0 mt-0.5"
+                              alt={reply.user.name}
+                            />
                           ) : (
                             <div className="w-7 h-7 rounded-full bg-accent/10 flex items-center justify-center text-accent font-bold text-[10px] shrink-0 mt-0.5">
                               {replyInitials}
@@ -340,12 +456,19 @@ export function VenueReviews({ venueId, rating: fallbackRating = 0, totalReviews
                           )}
                           <div className="min-w-0">
                             <div className="flex items-center gap-2">
-                              <span className="text-xs font-bold text-white">{reply.user?.name ?? 'Anonymous'}</span>
+                              <span className="text-xs font-bold text-white">
+                                {reply.user?.name ?? "Anonymous"}
+                              </span>
                               <span className="text-[10px] text-text-muted">
-                                {new Date(reply.createdAt).toLocaleDateString('en-US', { year: 'numeric', month: 'short' })}
+                                {new Date(reply.createdAt).toLocaleDateString(
+                                  "en-US",
+                                  { year: "numeric", month: "short" },
+                                )}
                               </span>
                             </div>
-                            <p className="text-xs text-gray-300 mt-0.5">{reply.text}</p>
+                            <p className="text-xs text-gray-300 mt-0.5">
+                              {reply.text}
+                            </p>
                           </div>
                         </div>
                       );
@@ -356,7 +479,11 @@ export function VenueReviews({ venueId, rating: fallbackRating = 0, totalReviews
                 {/* Reply button / form */}
                 {canReply && replyOpenId === review.id && (
                   <>
-                    <ReviewReplyForm reviewId={review.id} venueId={venueId} onClose={() => setReplyOpenId(null)} />
+                    <ReviewReplyForm
+                      reviewId={review.id}
+                      venueId={venueId}
+                      onClose={() => setReplyOpenId(null)}
+                    />
                   </>
                 )}
                 {canReply && replyOpenId !== review.id && (
@@ -386,7 +513,7 @@ export function VenueReviews({ venueId, rating: fallbackRating = 0, totalReviews
           onClick={() => setShowAll(!showAll)}
           className="mt-8 px-6 py-3 rounded-xl border border-white/10 text-sm font-bold text-white hover:bg-white hover:text-black transition-colors"
         >
-          {showAll ? 'Show less' : `Show all ${displayTotal} reviews`}
+          {showAll ? "Show less" : `Show all ${displayTotal} reviews`}
         </button>
       )}
 
@@ -414,7 +541,9 @@ interface VenueMapProps {
 export function VenueMap({ location, province, lat, lng }: VenueMapProps) {
   return (
     <div>
-      <h3 className="text-2xl font-display font-bold text-white mb-2">Location</h3>
+      <h3 className="text-2xl font-display font-bold text-white mb-2">
+        Location
+      </h3>
       <p className="text-text-muted text-sm mb-6">
         {location}, {province}
       </p>
@@ -432,8 +561,8 @@ export function VenueMap({ location, province, lat, lng }: VenueMapProps) {
           <div
             className="absolute inset-0 opacity-20"
             style={{
-              backgroundImage: 'radial-gradient(#ffffff 1px, transparent 1px)',
-              backgroundSize: '20px 20px',
+              backgroundImage: "radial-gradient(#ffffff 1px, transparent 1px)",
+              backgroundSize: "20px 20px",
             }}
           />
           <div className="absolute inset-0 bg-linear-to-t from-[#02040a] via-transparent to-transparent opacity-50" />
@@ -463,8 +592,11 @@ interface HostBioProps {
 
 export function HostBio({ host }: HostBioProps) {
   const joinedDate = host.createdAt
-    ? new Date(host.createdAt).toLocaleDateString('en-US', { year: 'numeric', month: 'long' })
-    : 'Recently';
+    ? new Date(host.createdAt).toLocaleDateString("en-US", {
+        year: "numeric",
+        month: "long",
+      })
+    : "Recently";
 
   return (
     <div className="flex gap-6 items-start">
@@ -475,19 +607,27 @@ export function HostBio({ host }: HostBioProps) {
           alt="Host"
         />
         <div className="absolute -bottom-1 -right-1 bg-accent text-black rounded-full p-1 border-4 border-[#0f111a] shadow-sm flex items-center justify-center">
-          <span className="material-symbols-outlined text-[14px]">verified</span>
+          <span className="material-symbols-outlined text-[14px]">
+            verified
+          </span>
         </div>
       </div>
       <div>
-        <h3 className="text-xl font-bold text-white mb-1">Listed by {host.name}</h3>
+        <h3 className="text-xl font-bold text-white mb-1">
+          Listed by {host.name}
+        </h3>
         <p className="text-text-muted text-sm mb-4">Joined {joinedDate}</p>
         <div className="flex gap-4 text-sm text-white mb-4">
           <span className="flex items-center gap-1">
-            <span className="material-symbols-outlined text-[16px] text-accent">star</span>{' '}
+            <span className="material-symbols-outlined text-[16px] text-accent">
+              star
+            </span>{" "}
             {host.reviews} Reviews
           </span>
         </div>
-        <p className="text-sm text-gray-300 leading-relaxed mb-4">{host.description}</p>
+        <p className="text-sm text-gray-300 leading-relaxed mb-4">
+          {host.description}
+        </p>
         <div className="flex items-center gap-4">
           <button className="px-6 py-3 rounded-xl border border-white/10 text-sm font-bold text-white hover:bg-white hover:text-black transition-colors">
             Contact Host
@@ -505,7 +645,9 @@ interface HouseRulesProps {
 export function HouseRules({ policies = [] }: HouseRulesProps) {
   return (
     <div>
-      <h3 className="text-2xl font-display font-bold text-white mb-6">Things to know</h3>
+      <h3 className="text-2xl font-display font-bold text-white mb-6">
+        Things to know
+      </h3>
       <div className="grid md:grid-cols-3 gap-8">
         <div>
           <h4 className="font-bold text-white text-sm mb-3">Venue Rules</h4>
@@ -522,7 +664,9 @@ export function HouseRules({ policies = [] }: HouseRulesProps) {
           </div>
         </div>
         <div>
-          <h4 className="font-bold text-white text-sm mb-3">Safety &amp; Property</h4>
+          <h4 className="font-bold text-white text-sm mb-3">
+            Safety &amp; Property
+          </h4>
           <div className="space-y-2 text-sm text-text-muted">
             <p>Carbon monoxide alarm</p>
             <p>Smoke alarm</p>
@@ -530,7 +674,9 @@ export function HouseRules({ policies = [] }: HouseRulesProps) {
           </div>
         </div>
         <div>
-          <h4 className="font-bold text-white text-sm mb-3">Cancellation Policy</h4>
+          <h4 className="font-bold text-white text-sm mb-3">
+            Cancellation Policy
+          </h4>
           <div className="space-y-2 text-sm text-text-muted">
             <p>Free cancellation for 48 hours.</p>
             <p>Review the full policy for details.</p>

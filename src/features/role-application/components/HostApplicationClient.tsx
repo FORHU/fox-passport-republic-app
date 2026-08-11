@@ -33,10 +33,12 @@ export default function HostApplicationClient() {
   const [specializations, setSpecializations] = useState<string[]>([]);
 
   const handleFileUpload = (field: string, fileId: string) => {
-    setFormData(prev => ({ ...prev, [field]: fileId }));
+    setFormData((prev) => ({ ...prev, [field]: fileId }));
   };
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
+  ) => {
     setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
   };
 
@@ -66,13 +68,16 @@ export default function HostApplicationClient() {
               Become an <span className="text-[#ff00aa]">Event Foxer</span>
             </h1>
             <p className="text-white/60">
-              Apply to become an authorized Event Creator. Organizers use venues provided by Mayors to create unforgettable experiences.
+              Apply to become an authorized Event Creator. Organizers use venues
+              provided by Mayors to create unforgettable experiences.
             </p>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-6 relative z-10">
             <div className="space-y-2">
-              <label className="text-sm font-bold text-white/80 uppercase tracking-wider">Bio / Experience *</label>
+              <label className="text-sm font-bold text-white/80 uppercase tracking-wider">
+                Bio / Experience *
+              </label>
               <textarea
                 required
                 name="bio"
@@ -86,7 +91,9 @@ export default function HostApplicationClient() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-2">
-                <label className="text-sm font-bold text-white/80 uppercase tracking-wider">Base Location *</label>
+                <label className="text-sm font-bold text-white/80 uppercase tracking-wider">
+                  Base Location *
+                </label>
                 <div className="relative">
                   <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-white/40">
                     <MapPin size={18} />
@@ -104,7 +111,9 @@ export default function HostApplicationClient() {
               </div>
 
               <div className="space-y-2">
-                <label className="text-sm font-bold text-white/80 uppercase tracking-wider">Years of Experience</label>
+                <label className="text-sm font-bold text-white/80 uppercase tracking-wider">
+                  Years of Experience
+                </label>
                 <div className="relative">
                   <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-white/40">
                     <ShieldCheck size={18} />
@@ -132,21 +141,26 @@ export default function HostApplicationClient() {
             <KycDocumentSection onUpload={handleFileUpload} />
 
             <FileUploader
-              label="Portfolio / Resume (Optional)" 
-              onUploadComplete={(id) => handleFileUpload("portfolioFileId", id)} 
+              label="Portfolio / Resume (Optional)"
+              onUploadComplete={(id) => handleFileUpload("portfolioFileId", id)}
             />
 
             <div className="p-4 bg-[#ff00aa]/10 border border-[#ff00aa]/20 rounded-2xl flex items-start gap-3">
-              <ShieldCheck className="text-[#ff00aa] shrink-0 mt-0.5" size={20} />
+              <ShieldCheck
+                className="text-[#ff00aa] shrink-0 mt-0.5"
+                size={20}
+              />
               <p className="text-xs text-[#ff00aa]/80 leading-relaxed">
-                By submitting this application, you agree to comply with FoxPassport&apos;s event hosting policies and quality standards. Your application will be reviewed by our team.
+                By submitting this application, you agree to comply with
+                FoxPassport&apos;s event hosting policies and quality standards.
+                Your application will be reviewed by our team.
               </p>
             </div>
 
             {/* Actions */}
             <div className="pt-6 flex flex-col sm:flex-row gap-4 items-center">
-              <Link 
-                href="/onboarding" 
+              <Link
+                href="/onboarding"
                 className="w-full sm:w-auto px-6 py-3 rounded-xl border border-white/10 text-white hover:bg-white/5 transition-colors text-center font-medium"
               >
                 Back

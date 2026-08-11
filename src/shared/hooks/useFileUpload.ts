@@ -24,17 +24,16 @@ export const useFileUpload = () => {
     setIsUploading(true);
 
     try {
-      console.log(`[useFileUpload] Starting Best-Practice upload for ${file.name}...`);
+      console.log(
+        `[useFileUpload] Starting Best-Practice upload for ${file.name}...`,
+      );
 
       // STEP 1 & 2: Get Presigned URL from Backend
-      const { data: presignedData } = await api.post(
-        `/s3/get-presigned-url`,
-        {
-          originalFilename: file.name,
-          contentType: file.type,
-          sizeOfFile: file.size,
-        }
-      );
+      const { data: presignedData } = await api.post(`/s3/get-presigned-url`, {
+        originalFilename: file.name,
+        contentType: file.type,
+        sizeOfFile: file.size,
+      });
 
       const { url: uploadUrl, key } = presignedData;
 
@@ -46,20 +45,21 @@ export const useFileUpload = () => {
         },
       });
 
-      console.log(`[useFileUpload] S3 Upload successful, registering metadata...`);
+      console.log(
+        `[useFileUpload] S3 Upload successful, registering metadata...`,
+      );
 
       // Get the accessible CloudFront URL for the uploaded file
-      const { data: urlData } = await api.get(`/s3/get-cloudfront-url`, { params: { key } });
+      const { data: urlData } = await api.get(`/s3/get-cloudfront-url`, {
+        params: { key },
+      });
 
       // STEP 5 & 6: Register metadata in Backend
-      const { data: registerData } = await api.post(
-        `/files/create`,
-        {
-          url: urlData.url,
-          name: file.name,
-          type: file.type,
-        }
-      );
+      const { data: registerData } = await api.post(`/files/create`, {
+        url: urlData.url,
+        name: file.name,
+        type: file.type,
+      });
 
       return {
         fileId: registerData.file.id,
@@ -67,8 +67,13 @@ export const useFileUpload = () => {
         key: key,
       };
     } catch (error: any) {
-      console.error("[useFileUpload] Direct Upload error:", error.response?.data || error.message);
-      const msg = error.response?.data?.message || "Upload failed. Please check your connection.";
+      console.error(
+        "[useFileUpload] Direct Upload error:",
+        error.response?.data || error.message,
+      );
+      const msg =
+        error.response?.data?.message ||
+        "Upload failed. Please check your connection.";
       toast.error(msg);
       return null;
     } finally {

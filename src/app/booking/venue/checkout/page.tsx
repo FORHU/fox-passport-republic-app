@@ -2,7 +2,7 @@ import React, { Suspense } from "react";
 import VenueCheckoutClient from "@/features/booking/components/VenueCheckoutClient";
 import type { Metadata } from "next";
 
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
   title: "Checkout | Fox Passport Republic",

@@ -1,6 +1,6 @@
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 
-import AssetBookingClient from '@/features/booking/components/AssetBookingClient';
+import AssetBookingClient from "@/features/booking/components/AssetBookingClient";
 
 interface Props {
   params: Promise<{ id: string }>;
