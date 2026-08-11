@@ -8,7 +8,10 @@ import { useAuthStore } from "@/features/auth/store/useAuthStore";
 import { LoginFormData, SignupFormData } from "@/shared/lib/schema";
 import { LoginResponse } from "@/features/auth/types/auth";
 import { config } from "@/shared/lib/config";
-import { setAuthCookies, clearAuthCookies } from "@/shared/lib/server/auth-actions";
+import {
+  setAuthCookies,
+  clearAuthCookies,
+} from "@/shared/lib/server/auth-actions";
 
 // --- AXIOS SETUP ---
 const api = axios.create({
@@ -85,10 +88,12 @@ export const useLogin = () => {
 
       // Close modal and redirect based on role
       close();
-      const userRole = (data.user?.systemRole ?? data.user?.role)?.toLowerCase();
-      if (userRole === "admin" || userRole === "super_admin") {
+      if (data.user?.systemRole === "admin") {
         router.push("/admin");
-      } else if (typeof window !== "undefined" && localStorage.getItem("fp_new_user")) {
+      } else if (
+        typeof window !== "undefined" &&
+        localStorage.getItem("fp_new_user")
+      ) {
         localStorage.removeItem("fp_new_user");
         router.push("/onboarding");
       } else {
@@ -132,10 +137,14 @@ export const useForgotPassword = () => {
   return useMutation({
     mutationFn: realForgotPassword,
     onSuccess: (data) => {
-      toast.success(data.message || "If an account exists, a reset code has been sent.");
+      toast.success(
+        data.message || "If an account exists, a reset code has been sent.",
+      );
     },
     onError: (error: any) => {
-      const msg = error.response?.data?.message || "Failed to send reset code. Please try again.";
+      const msg =
+        error.response?.data?.message ||
+        "Failed to send reset code. Please try again.";
       toast.error(msg);
     },
   });
@@ -147,11 +156,15 @@ export const useResetPassword = () => {
   return useMutation({
     mutationFn: realResetPassword,
     onSuccess: (data) => {
-      toast.success(data.message || "Password reset successfully! You can now log in.");
+      toast.success(
+        data.message || "Password reset successfully! You can now log in.",
+      );
       toggleView(); // switch back to login view
     },
     onError: (error: any) => {
-      const msg = error.response?.data?.message || "Failed to reset password. Please try again.";
+      const msg =
+        error.response?.data?.message ||
+        "Failed to reset password. Please try again.";
       toast.error(msg);
     },
   });
@@ -164,7 +177,9 @@ export const useVerifyEmail = () => {
       toast.success(data.message || "Email verified successfully!");
     },
     onError: (error: any) => {
-      const msg = error.response?.data?.message || "Verification failed. Please check your code.";
+      const msg =
+        error.response?.data?.message ||
+        "Verification failed. Please check your code.";
       toast.error(msg);
     },
   });
@@ -177,7 +192,9 @@ export const useResendOtp = () => {
       toast.success(data.message || "A new code has been sent to your email.");
     },
     onError: (error: any) => {
-      const msg = error.response?.data?.message || "Failed to resend code. Please try again.";
+      const msg =
+        error.response?.data?.message ||
+        "Failed to resend code. Please try again.";
       toast.error(msg);
     },
   });
