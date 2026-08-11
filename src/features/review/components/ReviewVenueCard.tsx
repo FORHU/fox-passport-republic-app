@@ -1,9 +1,9 @@
-'use client';
+"use client";
 
-import React from 'react';
-import Image from 'next/image';
-import Link from 'next/link';
-import { MapPin } from 'lucide-react';
+import React from "react";
+import Image from "next/image";
+import Link from "next/link";
+import { MapPin } from "lucide-react";
 
 interface VenueCardProps {
   venue: {
@@ -55,7 +55,7 @@ export function ReviewVenueCard({ venue }: VenueCardProps) {
               <div
                 key={i}
                 className={`w-4 h-4 rounded-full ${
-                  i < Math.floor(venue.rating) ? 'bg-pink-500' : 'bg-gray-200'
+                  i < Math.floor(venue.rating) ? "bg-pink-500" : "bg-gray-200"
                 }`}
               />
             ))}

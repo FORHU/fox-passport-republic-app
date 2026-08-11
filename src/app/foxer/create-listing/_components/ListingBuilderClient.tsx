@@ -1,14 +1,14 @@
 "use client";
 
-import React, { Suspense } from 'react';
-import RequireAuth from '@/features/auth/components/RequireAuth';
-import { useListingBuilder } from '@/features/asset/hooks/useListingBuilder';
+import React, { Suspense } from "react";
+import RequireAuth from "@/features/auth/components/RequireAuth";
+import { useListingBuilder } from "@/features/asset/hooks/useListingBuilder";
 import {
   ListingHeader,
   ListingSidebar,
   ListingPreviewCard,
   ListingStatusPanel,
-} from '@/features/asset/components/listing-builder';
+} from "@/features/asset/components/listing-builder";
 
 function ListingBuilderContent() {
   const {
@@ -93,7 +93,10 @@ function ListingBuilderContent() {
           onCityChange={setCity}
           onStateChange={setState}
           onCountryChange={setCountry}
-          onLatLngChange={(lat, lng) => { setLat(lat); setLng(lng); }}
+          onLatLngChange={(lat, lng) => {
+            setLat(lat);
+            setLng(lng);
+          }}
           onCancellationPolicyChange={setCancellationPolicyId}
         />
 

@@ -6,7 +6,8 @@ import { toast } from "sonner";
 import { useAuthStore } from "@/features/auth/store/useAuthStore";
 import { useRouter } from "next/navigation";
 
-export type RoleType = "venueFoxer" | "gearFoxer" | "serviceFoxer" | "investor" | "eventFoxer";
+export type RoleType =
+  "venueFoxer" | "gearFoxer" | "serviceFoxer" | "investor" | "eventFoxer";
 
 interface ApplyRolePayload {
   roleType: RoleType;
@@ -19,7 +20,10 @@ interface ApplyRoleResponse {
   data: any;
 }
 
-const applyRole = async (payload: ApplyRolePayload, accessToken: string): Promise<ApplyRoleResponse> => {
+const applyRole = async (
+  payload: ApplyRolePayload,
+  accessToken: string,
+): Promise<ApplyRoleResponse> => {
   const response = await axios.post(
     `${process.env.NEXT_PUBLIC_API_URL}/role-requests/apply`,
     payload,
@@ -27,7 +31,7 @@ const applyRole = async (payload: ApplyRolePayload, accessToken: string): Promis
       headers: {
         Authorization: `Bearer ${accessToken}`,
       },
-    }
+    },
   );
   return response.data;
 };
@@ -47,7 +51,8 @@ export const useApplyRole = () => {
     },
     onError: (error: any) => {
       console.error("Error applying for role:", error);
-      const msg = error.response?.data?.message || "Failed to submit application";
+      const msg =
+        error.response?.data?.message || "Failed to submit application";
       toast.error(msg);
     },
   });

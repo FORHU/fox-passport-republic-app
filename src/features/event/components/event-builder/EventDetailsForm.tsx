@@ -1,10 +1,13 @@
-﻿'use client';
+﻿"use client";
 
-import React from 'react';
-import { EVENT_CATEGORIES } from '@/features/event/data/eventBuilderData';
-import CancellationPolicyPicker from '@/features/cancellation-policy/components/CancellationPolicyPicker';
-import { MapboxLocationInput, MapboxContextItem } from '@/shared/components/ui/MapboxLocationInput';
-import DateTimePicker from './DateTimePicker';
+import React from "react";
+import { EVENT_CATEGORIES } from "@/features/event/data/eventBuilderData";
+import CancellationPolicyPicker from "@/features/cancellation-policy/components/CancellationPolicyPicker";
+import {
+  MapboxLocationInput,
+  MapboxContextItem,
+} from "@/shared/components/ui/MapboxLocationInput";
+import DateTimePicker from "./DateTimePicker";
 
 interface EventDetailsFormProps {
   eventTitle: string;
@@ -60,9 +63,11 @@ export function EventDetailsForm({
             i
           </div>
           <div>
-            <h4 className="font-bold text-white text-sm mb-1">Welcome to the Studio</h4>
+            <h4 className="font-bold text-white text-sm mb-1">
+              Welcome to the Studio
+            </h4>
             <p className="text-xs text-text-muted">
-              Fill out your <strong>Event Header</strong>. Upload at least{' '}
+              Fill out your <strong>Event Header</strong>. Upload at least{" "}
               <strong>5 images</strong>. Select the category.
             </p>
           </div>
@@ -133,14 +138,24 @@ export function EventDetailsForm({
               onChange={onLocationChange}
               type="place"
               placeholder="e.g. BGC, Taguig"
-              onSelect={(val: string, context?: MapboxContextItem[], center?: [number, number]) => {
+              onSelect={(
+                val: string,
+                context?: MapboxContextItem[],
+                center?: [number, number],
+              ) => {
                 onLocationChange(val);
                 if (onTargetCityChange) onTargetCityChange(val);
-                const region = context?.find((c) => c.id.startsWith('region'))?.text;
-                const countryName = context?.find((c) => c.id.startsWith('country'))?.text;
+                const region = context?.find((c) =>
+                  c.id.startsWith("region"),
+                )?.text;
+                const countryName = context?.find((c) =>
+                  c.id.startsWith("country"),
+                )?.text;
                 if (region && onTargetStateChange) onTargetStateChange(region);
-                if (countryName && onTargetCountryChange) onTargetCountryChange(countryName);
-                if (center && onLatLngChange) onLatLngChange(center[1], center[0]);
+                if (countryName && onTargetCountryChange)
+                  onTargetCountryChange(countryName);
+                if (center && onLatLngChange)
+                  onLatLngChange(center[1], center[0]);
               }}
             />
           </div>
@@ -155,7 +170,9 @@ export function EventDetailsForm({
               <input
                 type="number"
                 value={maxAttendees}
-                onChange={(e) => onMaxAttendeesChange(parseInt(e.target.value) || 0)}
+                onChange={(e) =>
+                  onMaxAttendeesChange(parseInt(e.target.value) || 0)
+                }
                 placeholder="100"
                 min="1"
                 className="bg-transparent border-none p-0 text-sm text-white placeholder-white/30 focus:ring-0 w-full"
@@ -175,15 +192,30 @@ export function EventDetailsForm({
         {/* Description */}
         <div>
           {(() => {
-            const wordCount = description.trim() === '' ? 0 : description.trim().split(/\s+/).length;
+            const wordCount =
+              description.trim() === ""
+                ? 0
+                : description.trim().split(/\s+/).length;
             const tooShort = wordCount < 100;
             const atLimit = wordCount >= 500;
-            const borderColor = atLimit ? 'border-red-500/60' : tooShort && wordCount > 0 ? 'border-yellow-500/40' : 'border-white/5';
-            const countColor = atLimit ? 'text-red-400' : wordCount >= 450 ? 'text-yellow-400' : wordCount >= 100 ? 'text-accent' : 'text-white/30';
+            const borderColor = atLimit
+              ? "border-red-500/60"
+              : tooShort && wordCount > 0
+                ? "border-yellow-500/40"
+                : "border-white/5";
+            const countColor = atLimit
+              ? "text-red-400"
+              : wordCount >= 450
+                ? "text-yellow-400"
+                : wordCount >= 100
+                  ? "text-accent"
+                  : "text-white/30";
 
-            const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+            const handleChange = (
+              e: React.ChangeEvent<HTMLTextAreaElement>,
+            ) => {
               const val = e.target.value;
-              const words = val.trim() === '' ? [] : val.trim().split(/\s+/);
+              const words = val.trim() === "" ? [] : val.trim().split(/\s+/);
               if (words.length > 500) return;
               onDescriptionChange(val);
             };
@@ -194,8 +226,13 @@ export function EventDetailsForm({
                   <label className="text-[10px] uppercase font-bold text-white/40 tracking-widest">
                     Description
                   </label>
-                  <span className={`text-[10px] font-bold tabular-nums ${countColor}`}>
-                    {wordCount} / 500 words {tooShort && wordCount > 0 ? `· ${100 - wordCount} more to go` : ''}
+                  <span
+                    className={`text-[10px] font-bold tabular-nums ${countColor}`}
+                  >
+                    {wordCount} / 500 words{" "}
+                    {tooShort && wordCount > 0
+                      ? `· ${100 - wordCount} more to go`
+                      : ""}
                   </span>
                 </div>
                 <textarea
@@ -205,7 +242,9 @@ export function EventDetailsForm({
                   className={`w-full bg-white/5 border ${borderColor} rounded-xl p-4 text-sm text-white placeholder-white/30 resize-none h-52 focus:border-accent/30 outline-none transition-colors`}
                 />
                 {tooShort && wordCount > 0 && (
-                  <p className="mt-1.5 text-[10px] text-yellow-400/80">Minimum 100 words required to publish.</p>
+                  <p className="mt-1.5 text-[10px] text-yellow-400/80">
+                    Minimum 100 words required to publish.
+                  </p>
                 )}
               </>
             );

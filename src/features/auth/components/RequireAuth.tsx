@@ -2,7 +2,11 @@
 
 import React, { useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { useAuthLoading, useAuthStatus, useAuthStore } from "@/features/auth/store/useAuthStore"; // Import store
+import {
+  useAuthLoading,
+  useAuthStatus,
+  useAuthStore,
+} from "@/features/auth/store/useAuthStore"; // Import store
 import { Loader2 } from "lucide-react";
 
 interface RequireAuthProps {
@@ -10,18 +14,20 @@ interface RequireAuthProps {
   redirectTo?: string;
 }
 
-export default function RequireAuth({ children, redirectTo = "/" }: RequireAuthProps) {
+export default function RequireAuth({
+  children,
+  redirectTo = "/",
+}: RequireAuthProps) {
   const isAuthenticated = useAuthStatus();
   const isLoading = useAuthLoading();
   const router = useRouter();
-  
+
   // Get the action to open the signup modal
-  const openSignup = useAuthStore((state) => state.openSignup); 
+  const openSignup = useAuthStore((state) => state.openSignup);
 
   useEffect(() => {
     // If we are done loading AND the user is NOT logged in
     if (!isLoading && !isAuthenticated) {
-      
       // 1. Open the Signup Modal immediately
       openSignup();
 
@@ -33,15 +39,15 @@ export default function RequireAuth({ children, redirectTo = "/" }: RequireAuthP
   // Show spinner while deciding
   if (isLoading) {
     return (
-        <div className="h-screen w-full flex items-center justify-center">
-            <Loader2 className="animate-spin text-pink-600" size={30} />
-        </div>
+      <div className="h-screen w-full flex items-center justify-center">
+        <Loader2 className="animate-spin text-pink-600" size={30} />
+      </div>
     );
   }
 
   // If not authenticated, return null so they don't see the protected content for a split second
   if (!isAuthenticated) {
-    return null; 
+    return null;
   }
 
   // If authenticated, show the page

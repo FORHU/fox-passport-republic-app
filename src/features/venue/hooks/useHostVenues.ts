@@ -24,7 +24,10 @@ interface Venue {
 }
 
 // Fetch venues for a specific host
-const fetchHostVenues = async (hostId: string, token?: string | null): Promise<Venue[]> => {
+const fetchHostVenues = async (
+  hostId: string,
+  token?: string | null,
+): Promise<Venue[]> => {
   const headers: any = {};
   if (token) {
     headers.Authorization = `Bearer ${token}`;
@@ -32,7 +35,7 @@ const fetchHostVenues = async (hostId: string, token?: string | null): Promise<V
 
   const response = await axios.get(
     `${process.env.NEXT_PUBLIC_API_URL}/venues?hostId=${hostId}`,
-    { headers }
+    { headers },
   );
 
   // Backend now returns { venues } instead of { success, data }
@@ -43,7 +46,7 @@ const fetchHostVenues = async (hostId: string, token?: string | null): Promise<V
 const calculateStats = (venues: Venue[]): VenueStats => {
   const totalVenues = venues.length;
   const activeListings = venues.filter(
-    (v) => v.status === "active" && v.isPublished
+    (v) => v.status === "active" && v.isPublished,
   ).length;
 
   // TODO: Calculate from actual booking/payment data
@@ -63,7 +66,12 @@ export const useHostVenues = () => {
   const accessToken = useAuthStore((state) => state.accessToken);
   const hostId = user?.id as string | undefined;
 
-  const { data: venues = [], isLoading, error, refetch } = useQuery({
+  const {
+    data: venues = [],
+    isLoading,
+    error,
+    refetch,
+  } = useQuery({
     queryKey: ["hostVenues", hostId],
     queryFn: () => fetchHostVenues(hostId!, accessToken),
     enabled: !!hostId, // Only run query if hostId exists

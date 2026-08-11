@@ -1,8 +1,16 @@
-﻿"use client";
+/* eslint-disable @typescript-eslint/no-unused-vars */
+"use client";
 
 import React, { useState } from "react";
 import { useApplyRole } from "@/features/role-application/hooks/useApplyRole";
-import { Building2, Phone, MapPin, Hash, AlignLeft, ArrowRight } from "lucide-react";
+import {
+  Building2,
+  Phone,
+  MapPin,
+  Hash,
+  AlignLeft,
+  ArrowRight,
+} from "lucide-react";
 import RequireAuth from "@/features/auth/components/RequireAuth";
 import Link from "next/link";
 import FileUploader from "@/shared/components/layout/FileUploader";
@@ -37,16 +45,21 @@ export default function MayorApplicationClient() {
   const [specializations, setSpecializations] = useState<string[]>([]);
 
   const handleFileUpload = (field: string, fileId: string) => {
-    setFormData(prev => ({ ...prev, [field]: fileId }));
+    setFormData((prev) => ({ ...prev, [field]: fileId }));
   };
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
+  ) => {
     setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    applyRole({ roleType: "venueFoxer", data: { ...formData, specializations } });
+    applyRole({
+      roleType: "venueFoxer",
+      data: { ...formData, specializations },
+    });
   };
 
   return (
@@ -64,14 +77,17 @@ export default function MayorApplicationClient() {
               Apply to be a <span className="text-[#ccff00]">Mayor</span>
             </h1>
             <p className="text-white/60">
-              Provide your details below to start managing venues in FoxPassport ecosystem.
+              Provide your details below to start managing venues in FoxPassport
+              ecosystem.
             </p>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-6 relative z-10">
             {/* Business Name */}
             <div className="space-y-2">
-              <label className="text-sm font-bold text-white/80 uppercase tracking-wider">Business / Venue Name *</label>
+              <label className="text-sm font-bold text-white/80 uppercase tracking-wider">
+                Business / Venue Name *
+              </label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-white/40">
                   <Building2 size={18} />
@@ -90,7 +106,9 @@ export default function MayorApplicationClient() {
 
             {/* Contact Number */}
             <div className="space-y-2">
-              <label className="text-sm font-bold text-white/80 uppercase tracking-wider">Contact Number *</label>
+              <label className="text-sm font-bold text-white/80 uppercase tracking-wider">
+                Contact Number *
+              </label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-white/40">
                   <Phone size={18} />
@@ -109,7 +127,9 @@ export default function MayorApplicationClient() {
 
             {/* Address */}
             <div className="space-y-2">
-              <label className="text-sm font-bold text-white/80 uppercase tracking-wider">Complete Address *</label>
+              <label className="text-sm font-bold text-white/80 uppercase tracking-wider">
+                Complete Address *
+              </label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-white/40">
                   <MapPin size={18} />
@@ -128,7 +148,9 @@ export default function MayorApplicationClient() {
 
             {/* TIN Number */}
             <div className="space-y-2">
-              <label className="text-sm font-bold text-white/80 uppercase tracking-wider">TIN Number *</label>
+              <label className="text-sm font-bold text-white/80 uppercase tracking-wider">
+                TIN Number *
+              </label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-white/40">
                   <Hash size={18} />
@@ -147,7 +169,9 @@ export default function MayorApplicationClient() {
 
             {/* Description */}
             <div className="space-y-2">
-              <label className="text-sm font-bold text-white/80 uppercase tracking-wider">Description (Optional)</label>
+              <label className="text-sm font-bold text-white/80 uppercase tracking-wider">
+                Description (Optional)
+              </label>
               <div className="relative">
                 <div className="absolute top-3 left-0 pl-4 flex items-start pointer-events-none text-white/40">
                   <AlignLeft size={18} />
@@ -174,8 +198,8 @@ export default function MayorApplicationClient() {
 
             {/* Actions */}
             <div className="pt-6 flex flex-col sm:flex-row gap-4 items-center">
-              <Link 
-                href="/onboarding" 
+              <Link
+                href="/onboarding"
                 className="w-full sm:w-auto px-6 py-3 rounded-xl border border-white/10 text-white hover:bg-white/5 transition-colors text-center font-medium"
               >
                 Back

@@ -1,11 +1,13 @@
 import { create } from "zustand";
 import { Notification } from "../types";
 
-
 interface NotificationState {
   notifications: Notification[];
   unreadCount: number;
-  setNotifications: (notifications: Notification[], unreadCount?: number) => void;
+  setNotifications: (
+    notifications: Notification[],
+    unreadCount?: number,
+  ) => void;
   addNotification: (notification: Notification) => void;
   markAsRead: (id: string) => void;
   markAllAsRead: () => void;
@@ -33,7 +35,7 @@ export const useNotificationStore = create<NotificationState>((set) => ({
   markAsRead: (id) =>
     set((state) => {
       const updated = state.notifications.map((n) =>
-        n.id === id ? { ...n, isRead: true } : n
+        n.id === id ? { ...n, isRead: true } : n,
       );
       return {
         notifications: updated,

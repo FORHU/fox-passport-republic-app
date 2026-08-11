@@ -41,7 +41,10 @@ export const useSearch = () => {
             const ep = ENDPOINTS[t];
             try {
               const res = await api.get(ep.path);
-              return extractList(res.data, ep.extractKey).map((item) => ({ ...item, _type: t }));
+              return extractList(res.data, ep.extractKey).map((item) => ({
+                ...item,
+                _type: t,
+              }));
             } catch {
               return [];
             }
@@ -60,17 +63,21 @@ export const useSearch = () => {
       }
 
       results = results.filter((item) => {
-        
         const itemCity = item.city || item.targetCity || "";
-        if (city && !itemCity.toLowerCase().includes(city.trim().toLowerCase())) return false;
+        if (city && !itemCity.toLowerCase().includes(city.trim().toLowerCase()))
+          return false;
 
-        
-        const itemCategory = item.category || item.categoryName || item.type || "";
-        if (category && itemCategory.toLowerCase().trim() !== category.toLowerCase().trim()) return false;
+        const itemCategory =
+          item.category || item.categoryName || item.type || "";
+        if (
+          category &&
+          itemCategory.toLowerCase().trim() !== category.toLowerCase().trim()
+        )
+          return false;
 
-        
         if (q) {
-          const haystack = `${item.name || ""} ${item.title || ""} ${item.description || ""}`.toLowerCase();
+          const haystack =
+            `${item.name || ""} ${item.title || ""} ${item.description || ""}`.toLowerCase();
           if (!haystack.includes(q.trim().toLowerCase())) return false;
         }
 

@@ -68,14 +68,19 @@ interface AxiosVenuePayload {
   data?: Venue[];
 }
 
-const fetchVenuesByCategory = async (categoryName: string | null): Promise<Venue[]> => {
+const fetchVenuesByCategory = async (
+  categoryName: string | null,
+): Promise<Venue[]> => {
   if (!categoryName) return [];
 
   // Convert category name to slug (lowercase, replace spaces with hyphens)
-  const categorySlug = categoryName.toLowerCase().replace(/\s+/g, "-").replace(/&/g, "");
+  const categorySlug = categoryName
+    .toLowerCase()
+    .replace(/\s+/g, "-")
+    .replace(/&/g, "");
 
   const response = await axios.get<AxiosVenuePayload>(
-    `${config.apiUrl}/venues/category/${categorySlug}`
+    `${config.apiUrl}/venues/category/${categorySlug}`,
   );
 
   return response.data.venues || response.data.data || [];
@@ -96,6 +101,7 @@ export function useVenuesByCategory(categoryName: string | null) {
   return {
     venues,
     loading,
-    error: error instanceof Error ? error.message : error ? String(error) : null,
+    error:
+      error instanceof Error ? error.message : error ? String(error) : null,
   };
 }

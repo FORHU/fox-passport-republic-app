@@ -1,11 +1,15 @@
-﻿"use client";
+/* eslint-disable @typescript-eslint/no-unused-vars */
+"use client";
 
 import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { useAuthStore } from "@/features/auth/store/useAuthStore";
 import { useServicesBuilder } from "@/features/service/hooks/useServicesBuilder";
-import { fetchServicesByOwnerId, updateService } from "@/features/service/api/services";
+import {
+  fetchServicesByOwnerId,
+  updateService,
+} from "@/features/service/api/services";
 import type { Id } from "@/shared/lib/api-types";
 import {
   SERVICE_CATEGORIES,
@@ -35,22 +39,33 @@ function belongsToHost(record: any, hostId: Id): boolean {
 }
 
 function normalizeLower(value: unknown) {
-  return String(value ?? "").trim().toLowerCase().replace(/_/g, " ").replace(/\s+/g, " ");
+  return String(value ?? "")
+    .trim()
+    .toLowerCase()
+    .replace(/_/g, " ")
+    .replace(/\s+/g, " ");
 }
 
-function mapCategoryToService(category: any): { slug: string; customCategory: string } {
+function mapCategoryToService(category: any): {
+  slug: string;
+  customCategory: string;
+} {
   const allowed = SERVICE_CATEGORIES.map((c) => c.id);
   if (!category) return { slug: "other", customCategory: "" };
 
   if (typeof category === "string") {
-    if (allowed.includes(category)) return { slug: category, customCategory: "" };
+    if (allowed.includes(category))
+      return { slug: category, customCategory: "" };
     return { slug: "other", customCategory: category };
   }
 
   const slug = category?.slug ?? category?.id ?? category?.name ?? "";
   const s = String(slug);
   if (allowed.includes(s)) return { slug: s, customCategory: "" };
-  return { slug: "other", customCategory: category?.name ? String(category.name) : s };
+  return {
+    slug: "other",
+    customCategory: category?.name ? String(category.name) : s,
+  };
 }
 
 function mapStatusToService(value: unknown): string {
@@ -95,7 +110,8 @@ export function useHostServiceEdit(serviceId: string) {
         const found = filtered.find((s) => String(s?.id) === String(serviceId));
 
         if (!found) {
-          if (!cancelled) setPrefillError("Service not found or not owned by you.");
+          if (!cancelled)
+            setPrefillError("Service not found or not owned by you.");
           return;
         }
         if (cancelled) return;
@@ -148,7 +164,9 @@ export function useHostServiceEdit(serviceId: string) {
     }
 
     if (!services.isReadyToPublish) {
-      services.setError("Please complete all required fields before publishing");
+      services.setError(
+        "Please complete all required fields before publishing",
+      );
       return;
     }
 
@@ -158,7 +176,9 @@ export function useHostServiceEdit(serviceId: string) {
 
     try {
       const parsedPrice =
-        typeof services.price === "string" ? parseFloat(services.price) : Number(services.price);
+        typeof services.price === "string"
+          ? parseFloat(services.price)
+          : Number(services.price);
 
       if (!Number.isFinite(parsedPrice) || parsedPrice <= 0) {
         throw new Error("Please enter a valid price before publishing");
@@ -168,9 +188,8 @@ export function useHostServiceEdit(serviceId: string) {
         name: services.title,
         description: services.description,
         billingRate:
-          BILLING_RATE_MAP[
-            services.unit as keyof typeof BILLING_RATE_MAP
-          ] || "hourly",
+          BILLING_RATE_MAP[services.unit as keyof typeof BILLING_RATE_MAP] ||
+          "hourly",
         category: services.category,
         price: parsedPrice,
         ...(typeof services.image === "string" &&
@@ -178,7 +197,11 @@ export function useHostServiceEdit(serviceId: string) {
         services.image !== initialImageUrl
           ? {
               images: [
-                { url: services.image, isThumbnail: true, altText: services.title },
+                {
+                  url: services.image,
+                  isThumbnail: true,
+                  altText: services.title,
+                },
               ],
             }
           : {}),
@@ -199,7 +222,9 @@ export function useHostServiceEdit(serviceId: string) {
         err?.response?.data?.message ||
         err?.response?.data?.error ||
         (typeof err?.response?.data === "string" ? err.response.data : null);
-      services.setError(backendMessage || err?.message || "Failed to update service");
+      services.setError(
+        backendMessage || err?.message || "Failed to update service",
+      );
       services.setIsSubmitting(false);
       return;
     } finally {
@@ -216,4 +241,3 @@ export function useHostServiceEdit(serviceId: string) {
     handlePublish,
   };
 }
-

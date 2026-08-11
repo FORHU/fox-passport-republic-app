@@ -22,7 +22,7 @@ function categoryNameToSlug(name: string): string {
 }
 
 export function useEventsByCategory(
-  categoryName: string | null
+  categoryName: string | null,
 ): UseEventsByCategoryReturn {
   const [events, setEvents] = useState<Event[]>([]);
   const [loading, setLoading] = useState(false);
@@ -42,7 +42,7 @@ export function useEventsByCategory(
       const slug = categoryNameToSlug(categoryName);
 
       const response = await api.get<EventsApiResponse>(
-        `/events/by-category/${slug}`
+        `/events/by-category/${slug}`,
       );
 
       if (response.data.success) {

@@ -1,4 +1,5 @@
-﻿"use client";
+/* eslint-disable @typescript-eslint/no-unused-vars */
+"use client";
 
 import { useQuery } from "@tanstack/react-query";
 import api from "@/shared/lib/axios";
@@ -36,12 +37,17 @@ export const useAdminData = (type: string, initialData?: any) => {
             break;
           case "bookings":
             const [serviceBody, assetBody, eventBody] = await Promise.all([
-              api.get('/service/bookings'),
-              api.get('/asset/bookings'),
-              api.get('/bookings'),
+              api.get("/service/bookings"),
+              api.get("/asset/bookings"),
+              api.get("/bookings"),
             ]);
             const extractList = (body: any) =>
-              body.data?.data?.venues ?? body.data?.data ?? body.data?.venues ?? body.data?.events ?? body.data?.results ?? (Array.isArray(body.data) ? body.data : body.data?.data ?? []);
+              body.data?.data?.venues ??
+              body.data?.data ??
+              body.data?.venues ??
+              body.data?.events ??
+              body.data?.results ??
+              (Array.isArray(body.data) ? body.data : (body.data?.data ?? []));
             return {
               serviceBookings: extractList(serviceBody),
               assetBookings: extractList(assetBody),
@@ -52,18 +58,18 @@ export const useAdminData = (type: string, initialData?: any) => {
         }
 
         const res = await api.get(endpoint);
-        const raw = 
-          res.data?.data?.users ?? 
-          res.data?.data ?? 
-          res.data?.users ?? 
-          res.data?.citizens ?? 
-          res.data?.venues ?? 
-          res.data?.events ?? 
-          res.data?.categories ?? 
-          res.data?.results ?? 
-          res.data?.stats ?? 
-          (Array.isArray(res.data) ? res.data : res.data?.data ?? []);
-        
+        const raw =
+          res.data?.data?.users ??
+          res.data?.data ??
+          res.data?.users ??
+          res.data?.citizens ??
+          res.data?.venues ??
+          res.data?.events ??
+          res.data?.categories ??
+          res.data?.results ??
+          res.data?.stats ??
+          (Array.isArray(res.data) ? res.data : (res.data?.data ?? []));
+
         return raw;
       } catch (error) {
         console.error(`Failed to fetch ${type}:`, error);
@@ -74,7 +80,7 @@ export const useAdminData = (type: string, initialData?: any) => {
     initialData,
     refetchInterval: (query) => {
       // Only poll if tab is active to save resources
-      if (typeof document !== 'undefined' && document.hidden) return false;
+      if (typeof document !== "undefined" && document.hidden) return false;
       return 5000; // 5 seconds
     },
     refetchOnWindowFocus: true,

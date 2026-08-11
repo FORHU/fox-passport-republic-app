@@ -45,7 +45,8 @@ export function useStripeConnect(): UseStripeConnectReturn {
         throw new Error("No onboarding URL returned");
       }
     } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : "Failed to start onboarding";
+      const msg =
+        err instanceof Error ? err.message : "Failed to start onboarding";
       setError(msg);
     } finally {
       setOnboarding(false);

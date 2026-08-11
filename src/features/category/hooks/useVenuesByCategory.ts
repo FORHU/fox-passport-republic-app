@@ -53,15 +53,19 @@ export interface Venue {
   };
 }
 
-
-const fetchVenuesByCategory = async (categoryName: string | null): Promise<Venue[]> => {
+const fetchVenuesByCategory = async (
+  categoryName: string | null,
+): Promise<Venue[]> => {
   if (!categoryName) return [];
 
   // Convert category name to slug (lowercase, replace spaces with hyphens)
-  const categorySlug = categoryName.toLowerCase().replace(/\s+/g, "-").replace(/&/g, "");
+  const categorySlug = categoryName
+    .toLowerCase()
+    .replace(/\s+/g, "-")
+    .replace(/&/g, "");
 
   const response = await axios.get(
-    `${config.apiUrl}/venues/category/${categorySlug}`
+    `${config.apiUrl}/venues/category/${categorySlug}`,
   );
 
   return response.data.venues || response.data.data || [];

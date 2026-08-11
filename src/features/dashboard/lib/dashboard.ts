@@ -68,7 +68,9 @@ export async function fetchAdminStats() {
 /**
  * Fetch admin data by type (venues, events, categories, citizens)
  */
-export async function fetchAdminData(type: "venues" | "events" | "categories" | "citizens") {
+export async function fetchAdminData(
+  type: "venues" | "events" | "categories" | "citizens",
+) {
   try {
     let endpoint = "";
     switch (type) {

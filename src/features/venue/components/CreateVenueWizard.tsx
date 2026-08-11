@@ -21,8 +21,12 @@ export default function CreateVenueWizard() {
 
         {/* Header */}
         <div className="text-center mb-8">
-          <h2 className="text-2xl font-bold text-white mb-2">Create New Venue</h2>
-          <p className="text-white/60">Use the full venue builder for more options</p>
+          <h2 className="text-2xl font-bold text-white mb-2">
+            Create New Venue
+          </h2>
+          <p className="text-white/60">
+            Use the full venue builder for more options
+          </p>
         </div>
 
         {/* Redirect to full builder */}

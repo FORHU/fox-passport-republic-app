@@ -1,15 +1,15 @@
-﻿'use client';
+﻿"use client";
 
-import React, { useState, useMemo } from 'react';
-import Link from 'next/link';
-import RequireAuth from '@/features/auth/components/RequireAuth';
+import React, { useState, useMemo } from "react";
+import Link from "next/link";
+import RequireAuth from "@/features/auth/components/RequireAuth";
 import {
   useCalendarBookings,
   toMonthItems,
   getBgColor,
   getIcon,
   getDotColor,
-} from '@/features/booking/hooks/useCalendarBookings';
+} from "@/features/booking/hooks/useCalendarBookings";
 
 export default function HostCalendarClient() {
   const [currentDate, setCurrentDate] = useState(new Date());
@@ -17,7 +17,10 @@ export default function HostCalendarClient() {
 
   const year = currentDate.getFullYear();
   const month = currentDate.getMonth();
-  const currentMonth = currentDate.toLocaleString('default', { month: 'long', year: 'numeric' });
+  const currentMonth = currentDate.toLocaleString("default", {
+    month: "long",
+    year: "numeric",
+  });
 
   const goToPrevMonth = () => setCurrentDate(new Date(year, month - 1, 1));
   const goToNextMonth = () => setCurrentDate(new Date(year, month + 1, 1));
@@ -56,9 +59,13 @@ export default function HostCalendarClient() {
                 <span className="material-symbols-outlined">arrow_back</span>
               </Link>
               <div>
-                <h1 className="text-2xl font-display font-bold">{currentMonth}</h1>
+                <h1 className="text-2xl font-display font-bold">
+                  {currentMonth}
+                </h1>
                 <p className="text-xs text-white/50">
-                  {isLoading ? 'Loading…' : `${scheduleItems.length} booking${scheduleItems.length !== 1 ? 's' : ''} this month`}
+                  {isLoading
+                    ? "Loading…"
+                    : `${scheduleItems.length} booking${scheduleItems.length !== 1 ? "s" : ""} this month`}
                 </p>
               </div>
             </div>
@@ -68,13 +75,17 @@ export default function HostCalendarClient() {
                   onClick={goToPrevMonth}
                   className="h-10 w-10 rounded-full border border-white/10 flex items-center justify-center hover:bg-white/10"
                 >
-                  <span className="material-symbols-outlined">chevron_left</span>
+                  <span className="material-symbols-outlined">
+                    chevron_left
+                  </span>
                 </button>
                 <button
                   onClick={goToNextMonth}
                   className="h-10 w-10 rounded-full border border-white/10 flex items-center justify-center hover:bg-white/10"
                 >
-                  <span className="material-symbols-outlined">chevron_right</span>
+                  <span className="material-symbols-outlined">
+                    chevron_right
+                  </span>
                 </button>
               </div>
             </div>
@@ -86,10 +97,10 @@ export default function HostCalendarClient() {
           <div className="mx-auto max-w-7xl px-4 py-3 flex items-center gap-6">
             {(
               [
-                { label: 'Events',    dot: getDotColor('event') },
-                { label: 'Venues',    dot: getDotColor('venue') },
-                { label: 'Assets',    dot: getDotColor('inventory') },
-                { label: 'Services',  dot: getDotColor('service') },
+                { label: "Events", dot: getDotColor("event") },
+                { label: "Venues", dot: getDotColor("venue") },
+                { label: "Assets", dot: getDotColor("inventory") },
+                { label: "Services", dot: getDotColor("service") },
               ] as const
             ).map(({ label, dot }) => (
               <div key={label} className="flex items-center gap-2">
@@ -109,7 +120,7 @@ export default function HostCalendarClient() {
               </div>
             ) : (
               <div className="grid grid-cols-7 grid-rows-[auto_repeat(6,1fr)] gap-px bg-white/5 border border-white/10 rounded-2xl overflow-hidden min-h-[calc(100vh-200px)]">
-                {['MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN'].map((d) => (
+                {["MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN"].map((d) => (
                   <div
                     key={d}
                     className="bg-[#1a1d2d] p-4 text-center text-xs font-bold text-white/40 uppercase tracking-wider"
@@ -120,7 +131,9 @@ export default function HostCalendarClient() {
 
                 {days.map((day, index) => {
                   if (day === null) {
-                    return <div key={`empty-${index}`} className="bg-[#0f111a]/30" />;
+                    return (
+                      <div key={`empty-${index}`} className="bg-[#0f111a]/30" />
+                    );
                   }
 
                   const evs = scheduleItems.filter(
@@ -136,8 +149,8 @@ export default function HostCalendarClient() {
                       <div
                         className={`mx-3 mt-3 mb-2 text-sm font-bold w-8 h-8 flex items-center justify-center rounded-lg ${
                           isToday
-                            ? 'bg-[#ccff00] text-black shadow-[0_0_10px_#ccff00]'
-                            : 'text-white/50'
+                            ? "bg-[#ccff00] text-black shadow-[0_0_10px_#ccff00]"
+                            : "text-white/50"
                         }`}
                       >
                         {day}
@@ -148,10 +161,13 @@ export default function HostCalendarClient() {
                           const isStart = day === e.startDay;
                           const isEnd = day === e.endDay;
                           const roundedClass =
-                            isStart && isEnd ? 'rounded-md mx-0'
-                            : isStart        ? 'rounded-l-md rounded-r-none -mr-2'
-                            : isEnd          ? 'rounded-r-md rounded-l-none -ml-2'
-                            :                  'rounded-none -mx-2';
+                            isStart && isEnd
+                              ? "rounded-md mx-0"
+                              : isStart
+                                ? "rounded-l-md rounded-r-none -mr-2"
+                                : isEnd
+                                  ? "rounded-r-md rounded-l-none -ml-2"
+                                  : "rounded-none -mx-2";
 
                           return isStart ? (
                             <div

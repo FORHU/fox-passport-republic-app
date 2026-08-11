@@ -1,12 +1,12 @@
-﻿'use client';
+﻿"use client";
 
-import { useAuthStore } from '@/features/auth/store/useAuthStore';
+import { useAuthStore } from "@/features/auth/store/useAuthStore";
 
 export interface RoleAccess {
-  canManageVenues: boolean;    // venueFoxer only
-  canManageEvents: boolean;    // eventFoxer only
+  canManageVenues: boolean; // venueFoxer only
+  canManageEvents: boolean; // eventFoxer only
   canManageInventory: boolean; // gearFoxer
-  canManageServices: boolean;  // serviceFoxer
+  canManageServices: boolean; // serviceFoxer
   isAdmin: boolean;
   isMayor: boolean;
   isHost: boolean;
@@ -16,19 +16,21 @@ export interface RoleAccess {
 export function useRoleAccess(): RoleAccess {
   const user = useAuthStore((s) => s.user);
 
-  const sysRole = (user?.systemRole || '').toLowerCase();
+  const sysRole = (user?.systemRole || "").toLowerCase();
   const roleTypes: string[] = user?.roleType ?? [];
 
-  const isAdmin = sysRole === 'admin' || sysRole === 'super_admin';
-  const isMayor = roleTypes.includes('venueFoxer');
-  const isHost = roleTypes.includes('eventFoxer') || isAdmin;
-  const isFoxer = roleTypes.some((r) => ['gearFoxer', 'serviceFoxer'].includes(r));
+  const isAdmin = sysRole === "admin" || sysRole === "super_admin";
+  const isMayor = roleTypes.includes("venueFoxer");
+  const isHost = roleTypes.includes("eventFoxer") || isAdmin;
+  const isFoxer = roleTypes.some((r) =>
+    ["gearFoxer", "serviceFoxer"].includes(r),
+  );
 
   return {
     canManageVenues: isMayor || isAdmin,
     canManageEvents: isHost || isAdmin,
-    canManageInventory: roleTypes.includes('gearFoxer') || isFoxer || isAdmin,
-    canManageServices: roleTypes.includes('serviceFoxer') || isFoxer || isAdmin,
+    canManageInventory: roleTypes.includes("gearFoxer") || isFoxer || isAdmin,
+    canManageServices: roleTypes.includes("serviceFoxer") || isFoxer || isAdmin,
     isAdmin,
     isMayor,
     isHost,

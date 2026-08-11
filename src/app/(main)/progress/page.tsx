@@ -1,6 +1,6 @@
-﻿import { ProgressDashboard } from '@/features/user/components/ProgressDashboard';
+﻿import { ProgressDashboard } from "@/features/user/components/ProgressDashboard";
 
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 
 export default function ProgressPage() {
   return (

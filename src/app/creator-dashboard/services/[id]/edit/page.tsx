@@ -1,6 +1,6 @@
-import ServiceEditClient from './_components/ServiceEditClient';
+import ServiceEditClient from "./_components/ServiceEditClient";
 
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 
 interface Props {
   params: Promise<{ id: string }>;

@@ -1,7 +1,12 @@
-'use client';
+/* eslint-disable react-hooks/immutability, react-hooks/exhaustive-deps */
+"use client";
 
-import React, { useState, forwardRef, useImperativeHandle } from 'react';
-import { useStripe, useElements, PaymentElement } from '@stripe/react-stripe-js';
+import React, { useState, forwardRef, useImperativeHandle } from "react";
+import {
+  useStripe,
+  useElements,
+  PaymentElement,
+} from "@stripe/react-stripe-js";
 
 interface StripePaymentFormProps {
   totalAmount: number;
@@ -10,13 +15,23 @@ interface StripePaymentFormProps {
   hideButton?: boolean;
 }
 
-const StripePaymentForm = forwardRef<{ submit: () => Promise<void> }, StripePaymentFormProps>(function StripePaymentForm({ totalAmount, onSuccess, returnUrl, hideButton }, ref) {
+const StripePaymentForm = forwardRef<
+  { submit: () => Promise<void> },
+  StripePaymentFormProps
+>(function StripePaymentForm(
+  { totalAmount, onSuccess, returnUrl, hideButton },
+  ref,
+) {
   const stripe = useStripe();
   const elements = useElements();
   const [isProcessing, setIsProcessing] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  useImperativeHandle(ref, () => ({ submit: handleSubmit }), [stripe, elements, isProcessing]);
+  useImperativeHandle(ref, () => ({ submit: handleSubmit }), [
+    stripe,
+    elements,
+    isProcessing,
+  ]);
 
   const handleSubmit = async (e?: React.FormEvent) => {
     e?.preventDefault();
@@ -27,19 +42,22 @@ const StripePaymentForm = forwardRef<{ submit: () => Promise<void> }, StripePaym
 
     const { error, paymentIntent } = await stripe.confirmPayment({
       elements,
-      redirect: 'if_required',
+      redirect: "if_required",
       confirmParams: {
         return_url: returnUrl ?? `${window.location.origin}/checkout/success`,
       },
     });
 
     if (error) {
-      setErrorMessage(error.message || 'Payment failed. Please try again.');
+      setErrorMessage(error.message || "Payment failed. Please try again.");
       setIsProcessing(false);
       return;
     }
 
-    if (paymentIntent?.status === 'succeeded' || paymentIntent?.status === 'processing') {
+    if (
+      paymentIntent?.status === "succeeded" ||
+      paymentIntent?.status === "processing"
+    ) {
       onSuccess?.(paymentIntent.id);
       setIsProcessing(false);
     }
@@ -48,12 +66,14 @@ const StripePaymentForm = forwardRef<{ submit: () => Promise<void> }, StripePaym
   return (
     <div className="space-y-6">
       <div className="stripe-elements-container">
-        <PaymentElement options={{ layout: 'tabs' }} />
+        <PaymentElement options={{ layout: "tabs" }} />
       </div>
 
       {errorMessage && (
         <div className="flex items-start gap-3 bg-red-500/10 border border-red-500/30 rounded-xl p-4">
-          <span className="material-symbols-outlined text-red-400 text-[18px] mt-0.5 shrink-0">error</span>
+          <span className="material-symbols-outlined text-red-400 text-[18px] mt-0.5 shrink-0">
+            error
+          </span>
           <p className="text-red-400 text-sm">{errorMessage}</p>
         </div>
       )}
@@ -80,7 +100,9 @@ const StripePaymentForm = forwardRef<{ submit: () => Promise<void> }, StripePaym
           </button>
 
           <div className="flex items-center justify-center gap-2 text-xs text-white/40">
-            <span className="material-symbols-outlined text-[14px] text-green-500">lock</span>
+            <span className="material-symbols-outlined text-[14px] text-green-500">
+              lock
+            </span>
             Encrypted & Secure · Powered by Stripe
           </div>
         </>

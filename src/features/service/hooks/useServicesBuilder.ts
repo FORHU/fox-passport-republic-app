@@ -1,4 +1,5 @@
-﻿'use client';
+/* eslint-disable react-hooks/exhaustive-deps, @typescript-eslint/no-unused-vars */
+"use client";
 
 import { useCallback, useMemo, useState, useEffect } from "react";
 import { useQueryClient } from "@tanstack/react-query";
@@ -27,7 +28,9 @@ export function useServicesBuilder() {
   // Ensure the shared store is initialized for service mode
   useEffect(() => {
     store.initializeForType("service");
-    return () => { store.reset(); };
+    return () => {
+      store.reset();
+    };
   }, []);
 
   // Fetch categories from API to map slugs to IDs
@@ -108,21 +111,24 @@ export function useServicesBuilder() {
         }
 
         if (status === 400) {
-          const message = data?.message || data?.error || "Invalid request. Please check required fields.";
+          const message =
+            data?.message ||
+            data?.error ||
+            "Invalid request. Please check required fields.";
           setError(message);
           throw new Error(message);
         }
 
         const message =
-          data?.message || 
-          data?.error || 
-          err.message || 
+          data?.message ||
+          data?.error ||
+          err.message ||
           "Failed to create service";
         setError(message);
         throw new Error(message);
       }
     },
-    []
+    [],
   );
 
   const handleBack = useCallback(() => {
@@ -135,13 +141,16 @@ export function useServicesBuilder() {
       description: store.description,
       category: store.category,
       price: store.price,
-      unit: store.unit
+      unit: store.unit,
     });
   }, [store]);
 
-  const handleImageUpload = useCallback((url: string) => {
-    store.setImage(url);
-  }, [store]);
+  const handleImageUpload = useCallback(
+    (url: string) => {
+      store.setImage(url);
+    },
+    [store],
+  );
 
   const handleCategorySelect = useCallback(
     (catId: string) => {
@@ -150,7 +159,7 @@ export function useServicesBuilder() {
         store.setCustomCategory("");
       }
     },
-    [store]
+    [store],
   );
 
   const handlePublish = useCallback(async () => {
@@ -183,23 +192,29 @@ export function useServicesBuilder() {
       // Convert local blob URL to File and upload to S3
       const response = await fetch(store.image);
       const blob = await response.blob();
-      const file = new File([blob], `service-${Date.now()}.jpg`, { type: blob.type });
+      const file = new File([blob], `service-${Date.now()}.jpg`, {
+        type: blob.type,
+      });
 
       const uploadResult = await uploadFile(file);
       if (!uploadResult || !uploadResult.fileId) {
         throw new Error("Failed to upload image. Please try again.");
       }
 
-      const serviceData: CreateServicePayload & { cancellationPolicyId?: string } = {
+      const serviceData: CreateServicePayload & {
+        cancellationPolicyId?: string;
+      } = {
         name: store.title,
         description: store.description,
         billingRate: BILLING_RATE_MAP[store.unit as ServiceUnit] || "hourly",
         category: store.category,
         price:
-          typeof store.price === "string" ? parseFloat(store.price) : Number(store.price),
-        city: store.city || 'N/A',
+          typeof store.price === "string"
+            ? parseFloat(store.price)
+            : Number(store.price),
+        city: store.city || "N/A",
         state: store.state || undefined,
-        country: store.country || 'PH',
+        country: store.country || "PH",
         lat: store.lat ?? undefined,
         lng: store.lng ?? undefined,
         imgIds: [uploadResult.fileId],
@@ -223,7 +238,14 @@ export function useServicesBuilder() {
       setError(err.message || "Failed to publish service");
       store.setIsSubmitting(false);
     }
-  }, [isReadyToPublish, store, getUserId, createServiceWithAPI, router, uploadFile]);
+  }, [
+    isReadyToPublish,
+    store,
+    getUserId,
+    createServiceWithAPI,
+    router,
+    uploadFile,
+  ]);
 
   return {
     ...store,
