@@ -1,39 +1,47 @@
-'use client';
+/* eslint-disable react-hooks/set-state-in-effect, @next/next/no-img-element */
+"use client";
 
-import React, { useEffect, useState } from 'react';
-import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import QRCode from 'react-qr-code';
-import { fetchBookingById } from '@/features/booking/api/bookings';
-import { useAuthStore } from '@/features/auth/store/useAuthStore';
-import { toast } from 'sonner';
-import CancelBookingModal from './CancelBookingModal';
+import React, { useEffect, useState } from "react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import QRCode from "react-qr-code";
+import { fetchBookingById } from "@/features/booking/api/bookings";
+import { useAuthStore } from "@/features/auth/store/useAuthStore";
+import CancelBookingModal from "./CancelBookingModal";
+import { getDashboardPath } from "@/shared/lib/dashboard-path";
 
 const STATUS_LABEL: Record<string, { label: string; color: string }> = {
-  pending: { label: 'Pending', color: 'text-yellow-400 bg-yellow-500/10' },
-  confirmed: { label: 'Confirmed', color: 'text-blue-400 bg-blue-500/10' },
-  active: { label: 'Active', color: 'text-green-400 bg-green-500/10' },
-  completed: { label: 'Completed', color: 'text-white/50 bg-white/5' },
-  cancelled: { label: 'Cancelled', color: 'text-red-400 bg-red-500/10' },
-  disputed: { label: 'Disputed', color: 'text-orange-400 bg-orange-500/10' },
+  pending: { label: "Pending", color: "text-yellow-400 bg-yellow-500/10" },
+  confirmed: { label: "Confirmed", color: "text-blue-400 bg-blue-500/10" },
+  active: { label: "Active", color: "text-green-400 bg-green-500/10" },
+  completed: { label: "Completed", color: "text-white/50 bg-white/5" },
+  cancelled: { label: "Cancelled", color: "text-red-400 bg-red-500/10" },
+  disputed: { label: "Disputed", color: "text-orange-400 bg-orange-500/10" },
 };
 
 const PAYMENT_STATUS_LABEL: Record<string, { label: string; color: string }> = {
-  succeeded: { label: 'Paid', color: 'text-green-400 bg-green-500/10' },
-  pending: { label: 'Pending', color: 'text-yellow-400 bg-yellow-500/10' },
-  failed: { label: 'Failed', color: 'text-red-400 bg-red-500/10' },
-  refunded: { label: 'Refunded', color: 'text-purple-400 bg-purple-500/10' },
-  refund_failed: { label: 'Refund Failed', color: 'text-orange-400 bg-orange-500/10' },
-  cancelled: { label: 'Cancelled', color: 'text-white/50 bg-white/5' },
+  succeeded: { label: "Paid", color: "text-green-400 bg-green-500/10" },
+  pending: { label: "Pending", color: "text-yellow-400 bg-yellow-500/10" },
+  failed: { label: "Failed", color: "text-red-400 bg-red-500/10" },
+  refunded: { label: "Refunded", color: "text-purple-400 bg-purple-500/10" },
+  refund_failed: {
+    label: "Refund Failed",
+    color: "text-orange-400 bg-orange-500/10",
+  },
+  cancelled: { label: "Cancelled", color: "text-white/50 bg-white/5" },
 };
 
-export default function BookingDetailClient({ bookingId }: { bookingId: string }) {
+export default function BookingDetailClient({
+  bookingId,
+}: {
+  bookingId: string;
+}) {
   const router = useRouter();
   const { user } = useAuthStore();
   const [booking, setBooking] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
   const [showCancelModal, setShowCancelModal] = useState(false);
 
   useEffect(() => {
@@ -51,19 +59,16 @@ export default function BookingDetailClient({ bookingId }: { bookingId: string }
         if (err?.response?.status === 404) {
           setNotFound(true);
         } else {
-          setError(err?.response?.data?.message || err?.message || 'Failed to load booking.');
+          setError(
+            err?.response?.data?.message ||
+              err?.message ||
+              "Failed to load booking.",
+          );
         }
       })
       .finally(() => setLoading(false));
   }, [bookingId]);
 
-  const getDashboardPath = () => {
-    switch (user?.role?.toLowerCase() || user?.systemRole) {
-      case 'admin': case 'super_admin': return '/admin';
-      case 'host': case 'mayor': case 'foxer': return '/creator-dashboard';
-      default: return '/user';
-    }
-  };
 
   if (loading) {
     return (
@@ -76,10 +81,19 @@ export default function BookingDetailClient({ bookingId }: { bookingId: string }
   if (notFound) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center gap-4">
-        <span className="material-symbols-outlined text-white/20 text-6xl">search_off</span>
-        <h2 className="text-2xl font-display font-bold text-white">Booking Not Found</h2>
-        <p className="text-text-muted">This booking does not exist or has been removed.</p>
-        <Link href="/booking" className="px-6 py-3 rounded-xl bg-accent text-black font-bold hover:opacity-90 transition-all">
+        <span className="material-symbols-outlined text-white/20 text-6xl">
+          search_off
+        </span>
+        <h2 className="text-2xl font-display font-bold text-white">
+          Booking Not Found
+        </h2>
+        <p className="text-text-muted">
+          This booking does not exist or has been removed.
+        </p>
+        <Link
+          href="/booking"
+          className="px-6 py-3 rounded-xl bg-accent text-black font-bold hover:opacity-90 transition-all"
+        >
           Back to My Bookings
         </Link>
       </div>
@@ -89,8 +103,12 @@ export default function BookingDetailClient({ bookingId }: { bookingId: string }
   if (error) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center gap-4">
-        <span className="material-symbols-outlined text-red-400/60 text-6xl">error_outline</span>
-        <h2 className="text-2xl font-display font-bold text-white">Something went wrong</h2>
+        <span className="material-symbols-outlined text-red-400/60 text-6xl">
+          error_outline
+        </span>
+        <h2 className="text-2xl font-display font-bold text-white">
+          Something went wrong
+        </h2>
         <p className="text-text-muted">{error}</p>
         <button
           onClick={() => router.refresh()}
@@ -103,12 +121,13 @@ export default function BookingDetailClient({ bookingId }: { bookingId: string }
   }
 
   const statusInfo = STATUS_LABEL[booking.status] || STATUS_LABEL.pending;
-  const isActiveStatus = booking.status === 'confirmed' || booking.status === 'pending';
-  const isCancelled = booking.status === 'cancelled';
-  const eventName = booking.event?.name || 'Venue Booking';
+  const isActiveStatus =
+    booking.status === "confirmed" || booking.status === "pending";
+  const isCancelled = booking.status === "cancelled";
+  const eventName = booking.event?.name || "Venue Booking";
   const payments = booking.payments || [];
   const totalPaid = payments
-    .filter((p: any) => p.status === 'succeeded')
+    .filter((p: any) => p.status === "succeeded")
     .reduce((sum: number, p: any) => sum + (p.amount || 0), 0);
 
   return (
@@ -116,25 +135,46 @@ export default function BookingDetailClient({ bookingId }: { bookingId: string }
       <header className="fixed top-6 left-0 right-0 z-50">
         <div className="mx-auto max-w-4xl px-4">
           <div className="glass-panel rounded-full px-6 h-20 flex items-center justify-between shadow-2xl hover:bg-black/40 transition-colors duration-500">
-            <Link href="/" className="flex items-center gap-3 group cursor-pointer">
+            <Link
+              href="/"
+              className="flex items-center gap-3 group cursor-pointer"
+            >
               <div className="flex h-10 w-10 items-center justify-center rounded-full bg-white text-black font-bold shadow-[0_0_15px_rgba(255,255,255,0.3)] group-hover:rotate-180 transition-transform duration-700">
-                <span className="material-symbols-outlined text-[24px]">explore</span>
+                <span className="material-symbols-outlined text-[24px]">
+                  explore
+                </span>
               </div>
-              <h2 className="text-2xl font-display font-bold tracking-tight text-white group-hover:text-accent transition-colors">FoxPassport</h2>
+              <h2 className="text-2xl font-display font-bold tracking-tight text-white group-hover:text-accent transition-colors">
+                FoxPassport
+              </h2>
             </Link>
             <nav className="hidden md:flex items-center gap-2 bg-black/20 p-1.5 rounded-full border border-white/5">
-              <Link href="/" className="px-6 py-2.5 rounded-full text-sm font-medium text-white/70 hover:text-white hover:bg-white/10 transition-all">Explore</Link>
-              <Link href="/booking" className="px-6 py-2.5 rounded-full text-sm font-bold text-black bg-accent hover:bg-accent/90 transition-all">Bookings</Link>
+              <Link
+                href="/"
+                className="px-6 py-2.5 rounded-full text-sm font-medium text-white/70 hover:text-white hover:bg-white/10 transition-all"
+              >
+                Explore
+              </Link>
+              <Link
+                href="/booking"
+                className="px-6 py-2.5 rounded-full text-sm font-bold text-black bg-accent hover:bg-accent/90 transition-all"
+              >
+                Bookings
+              </Link>
             </nav>
             <div
               className="h-10 w-10 rounded-full border border-white/10 overflow-hidden cursor-pointer hover:border-accent transition-colors"
-              onClick={() => router.push(getDashboardPath())}
+              onClick={() => router.push(getDashboardPath(user))}
             >
               {user?.imgId ? (
-                <img alt="User" className="h-full w-full object-cover" src={user.imgId} />
+                <img
+                  alt="User"
+                  className="h-full w-full object-cover"
+                  src={user.imgId}
+                />
               ) : (
                 <div className="h-full w-full bg-[#ccff00] flex items-center justify-center text-black font-bold text-sm">
-                  {user?.name?.charAt(0)?.toUpperCase() ?? 'U'}
+                  {user?.name?.charAt(0)?.toUpperCase() ?? "U"}
                 </div>
               )}
             </div>
@@ -145,30 +185,51 @@ export default function BookingDetailClient({ bookingId }: { bookingId: string }
       <main className="grow pt-32 pb-20">
         <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
           <div className="flex items-center gap-2 text-sm text-text-muted mb-6">
-            <Link href="/" className="hover:text-white transition-colors">Home</Link>
-            <span className="material-symbols-outlined text-[14px]">chevron_right</span>
-            <Link href="/booking" className="hover:text-white transition-colors">My Bookings</Link>
-            <span className="material-symbols-outlined text-[14px]">chevron_right</span>
-            <span className="text-accent font-semibold truncate max-w-50">#{bookingId.slice(0, 12)}</span>
+            <Link href="/" className="hover:text-white transition-colors">
+              Home
+            </Link>
+            <span className="material-symbols-outlined text-[14px]">
+              chevron_right
+            </span>
+            <Link
+              href="/booking"
+              className="hover:text-white transition-colors"
+            >
+              My Bookings
+            </Link>
+            <span className="material-symbols-outlined text-[14px]">
+              chevron_right
+            </span>
+            <span className="text-accent font-semibold truncate max-w-50">
+              #{bookingId.slice(0, 12)}
+            </span>
           </div>
 
           <div className="glass-panel rounded-3xl p-8 space-y-8">
             <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
               <div>
                 <div className="flex items-center gap-3 mb-2">
-                  <h1 className="text-3xl md:text-4xl font-display font-bold text-white">{eventName}</h1>
-                  <span className={`px-3 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider ${statusInfo.color}`}>
+                  <h1 className="text-3xl md:text-4xl font-display font-bold text-white">
+                    {eventName}
+                  </h1>
+                  <span
+                    className={`px-3 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider ${statusInfo.color}`}
+                  >
                     {statusInfo.label}
                   </span>
                 </div>
-                <p className="text-text-muted text-sm font-mono">Booking #{bookingId}</p>
+                <p className="text-text-muted text-sm font-mono">
+                  Booking #{bookingId}
+                </p>
               </div>
               {isActiveStatus && (
                 <button
                   onClick={() => setShowCancelModal(true)}
                   className="flex items-center gap-2 px-5 py-2.5 rounded-xl border border-red-500/30 text-red-400 text-sm font-semibold hover:bg-red-500/10 hover:border-red-500/50 transition-all shrink-0"
                 >
-                  <span className="material-symbols-outlined text-[16px]">cancel</span>
+                  <span className="material-symbols-outlined text-[16px]">
+                    cancel
+                  </span>
                   Cancel Booking
                 </button>
               )}
@@ -176,89 +237,147 @@ export default function BookingDetailClient({ bookingId }: { bookingId: string }
 
             <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
               <div>
-                <p className="text-text-muted text-xs uppercase tracking-wider mb-1">Start Date</p>
+                <p className="text-text-muted text-xs uppercase tracking-wider mb-1">
+                  Start Date
+                </p>
                 <p className="text-white font-semibold">
                   {booking.startAt
-                    ? new Date(booking.startAt).toLocaleDateString('en-PH', { month: 'long', day: 'numeric', year: 'numeric' })
-                    : '—'}
+                    ? new Date(booking.startAt).toLocaleDateString("en-PH", {
+                        month: "long",
+                        day: "numeric",
+                        year: "numeric",
+                      })
+                    : "—"}
                 </p>
               </div>
               <div>
-                <p className="text-text-muted text-xs uppercase tracking-wider mb-1">End Date</p>
+                <p className="text-text-muted text-xs uppercase tracking-wider mb-1">
+                  End Date
+                </p>
                 <p className="text-white font-semibold">
                   {booking.endAt
-                    ? new Date(booking.endAt).toLocaleDateString('en-PH', { month: 'long', day: 'numeric', year: 'numeric' })
-                    : '—'}
+                    ? new Date(booking.endAt).toLocaleDateString("en-PH", {
+                        month: "long",
+                        day: "numeric",
+                        year: "numeric",
+                      })
+                    : "—"}
                 </p>
               </div>
               <div>
-                <p className="text-text-muted text-xs uppercase tracking-wider mb-1">Guests</p>
-                <p className="text-white font-semibold">{booking.guestCount || '—'}</p>
+                <p className="text-text-muted text-xs uppercase tracking-wider mb-1">
+                  Guests
+                </p>
+                <p className="text-white font-semibold">
+                  {booking.guestCount || "—"}
+                </p>
               </div>
               <div>
-                <p className="text-text-muted text-xs uppercase tracking-wider mb-1">Total Amount</p>
-                <p className="text-accent font-display font-bold text-xl">₱{booking.totalAmount?.toLocaleString() || '0'}</p>
+                <p className="text-text-muted text-xs uppercase tracking-wider mb-1">
+                  Total Amount
+                </p>
+                <p className="text-accent font-display font-bold text-xl">
+                  ₱{booking.totalAmount?.toLocaleString() || "0"}
+                </p>
               </div>
             </div>
           </div>
 
-          {booking.ticketCode && !isCancelled && booking.status !== 'completed' && (
-            <div className="glass-panel rounded-3xl p-8 mt-6">
-              <div className="flex flex-col md:flex-row items-center gap-8">
-                <div className="shrink-0">
-                  <div className="p-4 bg-white rounded-2xl">
-                    <QRCode
-                      value={booking.ticketCode}
-                      size={160}
-                      bgColor="#ffffff"
-                      fgColor="#000000"
-                    />
-                  </div>
-                </div>
-                <div className="flex-1 text-center md:text-left">
-                  <div className="flex items-center gap-2 justify-center md:justify-start mb-2">
-                    <span className="material-symbols-outlined text-accent text-[20px]">qr_code_2</span>
-                    <h2 className="text-xl font-display font-bold text-white">Your Entry Ticket</h2>
-                  </div>
-                  <p className="text-text-muted text-sm mb-4">
-                    Show this QR code to the host at the event entrance. They will scan it to verify your booking.
-                  </p>
-                  <div className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-white/5 border border-white/10">
-                    <span className="material-symbols-outlined text-white/40 text-[16px]">confirmation_number</span>
-                    <span className="font-mono text-white font-semibold tracking-widest text-sm">{booking.ticketCode}</span>
-                  </div>
-                  {booking.checkedIn && (
-                    <div className="mt-3 inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-green-500/10 border border-green-500/20 ml-0 md:ml-3">
-                      <span className="material-symbols-outlined text-green-400 text-[16px]">check_circle</span>
-                      <span className="text-green-400 text-sm font-semibold">Checked In</span>
+          {booking.ticketCode &&
+            !isCancelled &&
+            booking.status !== "completed" && (
+              <div className="glass-panel rounded-3xl p-8 mt-6">
+                <div className="flex flex-col md:flex-row items-center gap-8">
+                  <div className="shrink-0">
+                    <div className="p-4 bg-white rounded-2xl">
+                      <QRCode
+                        value={booking.ticketCode}
+                        size={160}
+                        bgColor="#ffffff"
+                        fgColor="#000000"
+                      />
                     </div>
-                  )}
+                  </div>
+                  <div className="flex-1 text-center md:text-left">
+                    <div className="flex items-center gap-2 justify-center md:justify-start mb-2">
+                      <span className="material-symbols-outlined text-accent text-[20px]">
+                        qr_code_2
+                      </span>
+                      <h2 className="text-xl font-display font-bold text-white">
+                        Your Entry Ticket
+                      </h2>
+                    </div>
+                    <p className="text-text-muted text-sm mb-4">
+                      Show this QR code to the host at the event entrance. They
+                      will scan it to verify your booking.
+                    </p>
+                    <div className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-white/5 border border-white/10">
+                      <span className="material-symbols-outlined text-white/40 text-[16px]">
+                        confirmation_number
+                      </span>
+                      <span className="font-mono text-white font-semibold tracking-widest text-sm">
+                        {booking.ticketCode}
+                      </span>
+                    </div>
+                    {booking.checkedIn && (
+                      <div className="mt-3 inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-green-500/10 border border-green-500/20 ml-0 md:ml-3">
+                        <span className="material-symbols-outlined text-green-400 text-[16px]">
+                          check_circle
+                        </span>
+                        <span className="text-green-400 text-sm font-semibold">
+                          Checked In
+                        </span>
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
-            </div>
-          )}
+            )}
 
           {payments.length > 0 && (
             <div className="glass-panel rounded-3xl p-8 mt-6">
-              <h2 className="text-xl font-display font-bold text-white mb-4">Payment History</h2>
+              <h2 className="text-xl font-display font-bold text-white mb-4">
+                Payment History
+              </h2>
               <div className="space-y-3">
                 {payments.map((payment: any, idx: number) => {
-                  const pStatus = PAYMENT_STATUS_LABEL[payment.status] || PAYMENT_STATUS_LABEL.pending;
+                  const pStatus =
+                    PAYMENT_STATUS_LABEL[payment.status] ||
+                    PAYMENT_STATUS_LABEL.pending;
                   return (
-                    <div key={payment.id || idx} className="flex items-center justify-between py-3 border-b border-white/5 last:border-0">
+                    <div
+                      key={payment.id || idx}
+                      className="flex items-center justify-between py-3 border-b border-white/5 last:border-0"
+                    >
                       <div>
                         <p className="text-white font-semibold text-sm">
-                          {payment.method ? payment.method.toUpperCase() : 'Card'} Payment
+                          {payment.method
+                            ? payment.method.toUpperCase()
+                            : "Card"}{" "}
+                          Payment
                         </p>
                         <p className="text-text-muted text-xs">
                           {payment.createdAt
-                            ? new Date(payment.createdAt).toLocaleDateString('en-PH', { month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' })
-                            : '—'}
+                            ? new Date(payment.createdAt).toLocaleDateString(
+                                "en-PH",
+                                {
+                                  month: "short",
+                                  day: "numeric",
+                                  year: "numeric",
+                                  hour: "2-digit",
+                                  minute: "2-digit",
+                                },
+                              )
+                            : "—"}
                         </p>
                       </div>
                       <div className="flex items-center gap-3">
-                        <span className="text-white font-bold">₱{payment.amount?.toLocaleString() || '0'}</span>
-                        <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${pStatus.color}`}>
+                        <span className="text-white font-bold">
+                          ₱{payment.amount?.toLocaleString() || "0"}
+                        </span>
+                        <span
+                          className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${pStatus.color}`}
+                        >
                           {pStatus.label}
                         </span>
                       </div>
@@ -269,7 +388,9 @@ export default function BookingDetailClient({ bookingId }: { bookingId: string }
               {totalPaid > 0 && (
                 <div className="flex items-center justify-between pt-4 mt-2 border-t border-white/10">
                   <span className="text-text-muted text-sm">Total Paid</span>
-                  <span className="text-accent font-display font-bold text-lg">₱{totalPaid.toLocaleString()}</span>
+                  <span className="text-accent font-display font-bold text-lg">
+                    ₱{totalPaid.toLocaleString()}
+                  </span>
                 </div>
               )}
             </div>
@@ -283,7 +404,9 @@ export default function BookingDetailClient({ bookingId }: { bookingId: string }
           onClose={() => setShowCancelModal(false)}
           onSuccess={() => {
             setShowCancelModal(false);
-            fetchBookingById(bookingId).then(setBooking).catch(() => {});
+            fetchBookingById(bookingId)
+              .then(setBooking)
+              .catch(() => {});
           }}
         />
       )}
