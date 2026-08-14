@@ -56,8 +56,8 @@ export default function MapboxLocationPicker({
       try {
         const res = await fetch(
           `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(
-            query
-          )}.json?access_token=${config.mapboxToken}&types=place,locality,neighborhood,address&limit=5`
+            query,
+          )}.json?access_token=${config.mapboxToken}&types=place,locality,neighborhood,address&limit=5`,
         );
         if (res.ok) {
           const data = await res.json();
@@ -100,7 +100,11 @@ export default function MapboxLocationPicker({
                 key={s.id}
                 className="px-4 py-3 text-sm text-white hover:bg-[#ccff00] hover:text-black cursor-pointer font-bold transition-colors"
                 onClick={() => {
-                  onChange({ label: s.place_name, lat: s.center[1], lng: s.center[0] });
+                  onChange({
+                    label: s.place_name,
+                    lat: s.center[1],
+                    lng: s.center[0],
+                  });
                   setQuery(s.place_name);
                   setShowDropdown(false);
                 }}

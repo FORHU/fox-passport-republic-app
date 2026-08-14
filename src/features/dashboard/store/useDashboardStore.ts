@@ -44,12 +44,12 @@ export const useDashboardStore = create<DashboardState>((set) => ({
   },
 
   // Reset Action
-  reset: () => set({
-    isCalendarOpen: false,
-    isCreateMenuOpen: false,
-  }),
+  reset: () =>
+    set({
+      isCalendarOpen: false,
+      isCreateMenuOpen: false,
+    }),
 }));
-
 
 // Selectors
 export const useDashboardData = () =>

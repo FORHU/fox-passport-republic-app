@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
-import React, { useState, useEffect, useRef } from 'react';
-import { config } from '@/shared/lib/config';
+import React, { useState, useEffect, useRef } from "react";
+import { config } from "@/shared/lib/config";
 
 export interface MapboxContextItem {
   id: string;
@@ -19,24 +19,37 @@ interface MapboxFeature {
 interface MapboxLocationInputProps {
   value: string;
   onChange: (val: string) => void;
-  onSelect: (val: string, context?: MapboxContextItem[], center?: [number, number]) => void;
-  type: 'country' | 'place' | 'region';
+  onSelect: (
+    val: string,
+    context?: MapboxContextItem[],
+    center?: [number, number],
+  ) => void;
+  type: "country" | "place" | "region";
   placeholder: string;
 }
 
-export function MapboxLocationInput({ value, onChange, onSelect, type, placeholder }: MapboxLocationInputProps) {
+export function MapboxLocationInput({
+  value,
+  onChange,
+  onSelect,
+  type,
+  placeholder,
+}: MapboxLocationInputProps) {
   const [suggestions, setSuggestions] = useState<MapboxFeature[]>([]);
   const [showDropdown, setShowDropdown] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node)
+      ) {
         setShowDropdown(false);
       }
     };
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
   useEffect(() => {
@@ -47,7 +60,7 @@ export function MapboxLocationInput({ value, onChange, onSelect, type, placehold
       }
       try {
         const response = await fetch(
-          `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(query)}.json?access_token=${config.mapboxToken}&types=${type}&limit=5`
+          `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(query)}.json?access_token=${config.mapboxToken}&types=${type}&limit=5`,
         );
         if (response.ok) {
           const data = await response.json();
@@ -55,7 +68,7 @@ export function MapboxLocationInput({ value, onChange, onSelect, type, placehold
           setShowDropdown(true);
         }
       } catch (e) {
-        console.warn('Mapbox error:', e);
+        console.warn("Mapbox error:", e);
       }
     };
 
@@ -93,7 +106,7 @@ export function MapboxLocationInput({ value, onChange, onSelect, type, placehold
             >
               <span className="font-bold">{s.text}</span>
               <span className="opacity-40 ml-2 italic">
-                {s.place_name.replace(s.text, '').replace(/^[\s,]+/, '')}
+                {s.place_name.replace(s.text, "").replace(/^[\s,]+/, "")}
               </span>
             </button>
           ))}

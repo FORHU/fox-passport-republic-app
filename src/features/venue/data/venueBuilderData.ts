@@ -14,16 +14,16 @@ export interface ResourceItem {
   icon: string;
   desc: string;
   category: string;
-  image?: string;    // local object URL or remote URL
-  file?: File;      // the actual File from the device
+  image?: string; // local object URL or remote URL
+  file?: File; // the actual File from the device
 }
 
 export interface GalleryItem {
   id: string;
-  url: string;        // local object URL (for preview) or remote URL
+  url: string; // local object URL (for preview) or remote URL
   caption: string;
   file?: File;
-  image?: string;        // the actual File from the device (present before upload)
+  image?: string; // the actual File from the device (present before upload)
 }
 
 export const RESOURCE_CATEGORIES: ResourceCategory[] = [
@@ -42,8 +42,8 @@ export const INITIAL_RESOURCES: Record<string, ResourceItem[]> = {
   rules: [],
 };
 
-export const VENUE_TYPES = Object.values(VenueType).map(
-  (t) => t.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase())
+export const VENUE_TYPES = Object.values(VenueType).map((t) =>
+  t.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase()),
 );
 
 // export const SAMPLE_GALLERY_URLS = [

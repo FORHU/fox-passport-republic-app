@@ -1,18 +1,18 @@
-'use client';
+"use client";
 
-import React from 'react';
-import Link from 'next/link';
+import React from "react";
+import Link from "next/link";
 
 interface EmptyStateProps {
-  type: 'events' | 'venues' | 'inventories' | 'services';
+  type: "events" | "venues" | "inventories" | "services";
   href: string;
 }
 
 export function EmptyState({ type, href }: EmptyStateProps) {
-  const singleLabel = type.endsWith('ies') 
-    ? type.slice(0, -3) + 'y' 
-    : type.endsWith('s') 
-      ? type.slice(0, -1) 
+  const singleLabel = type.endsWith("ies")
+    ? type.slice(0, -3) + "y"
+    : type.endsWith("s")
+      ? type.slice(0, -1)
       : type;
 
   return (

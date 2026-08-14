@@ -26,7 +26,9 @@ export function useSubmitReview() {
       router.push("/booking");
     },
     onError: (error: any) => {
-      const message = error?.response?.data?.message || "Failed to submit review. Please try again.";
+      const message =
+        error?.response?.data?.message ||
+        "Failed to submit review. Please try again.";
       toast.error(message);
     },
   });

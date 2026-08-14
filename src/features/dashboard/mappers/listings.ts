@@ -1,5 +1,8 @@
 ﻿import type { BackendAsset, BackendService } from "@/shared/lib/api-types";
-import type { InventoryItem, ServiceItem } from "@/features/dashboard/data/dashboardData";
+import type {
+  InventoryItem,
+  ServiceItem,
+} from "@/features/dashboard/data/dashboardData";
 
 function normalizeStatus(status: unknown): string {
   const raw = String(status ?? "").toLowerCase();
@@ -9,18 +12,20 @@ function normalizeStatus(status: unknown): string {
 
 function formatPeso(value: unknown): string {
   const num =
-    typeof value === "string" ? parseFloat(value) :
-      typeof value === "number" ? value :
-        NaN;
+    typeof value === "string"
+      ? parseFloat(value)
+      : typeof value === "number"
+        ? value
+        : NaN;
   if (!Number.isFinite(num)) return "₱0";
   return `₱${num.toLocaleString()}`;
 }
 
-export function mapBackendAssetToInventoryItem(asset: BackendAsset): InventoryItem {
+export function mapBackendAssetToInventoryItem(
+  asset: BackendAsset,
+): InventoryItem {
   const category =
-    typeof asset.category === "string"
-      ? asset.category
-      : "Uncategorized";
+    typeof asset.category === "string" ? asset.category : "Uncategorized";
 
   const statusRaw = normalizeStatus(asset.status);
   const status =
@@ -44,7 +49,9 @@ export function mapBackendAssetToInventoryItem(asset: BackendAsset): InventoryIt
   };
 }
 
-export function mapBackendServiceToServiceItem(service: BackendService): ServiceItem {
+export function mapBackendServiceToServiceItem(
+  service: BackendService,
+): ServiceItem {
   const statusRaw = normalizeStatus(service.status);
   const status =
     statusRaw === "published"
@@ -84,7 +91,8 @@ export function mapBackendServiceToServiceItem(service: BackendService): Service
   const price = formatPeso(service.price);
   const unit = service.billingRate;
   const displayPrice = unit ? `${price} ${unit}` : price;
-  const img = service.images?.[0]?.url || service.images?.[0]?.imageUrl || undefined;
+  const img =
+    service.images?.[0]?.url || service.images?.[0]?.imageUrl || undefined;
 
   return {
     id: service.id,
@@ -96,4 +104,3 @@ export function mapBackendServiceToServiceItem(service: BackendService): Service
     img,
   };
 }
-

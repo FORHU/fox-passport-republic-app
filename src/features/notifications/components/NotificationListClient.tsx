@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-img-element */
 "use client";
 
 import React, { useEffect, useState } from "react";
@@ -6,11 +7,9 @@ import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/features/auth/store/useAuthStore";
 import { useNotifications } from "../hooks/useNotifications";
 import { Notification } from "../types";
+import { getDashboardPath } from "@/shared/lib/dashboard-path";
 
-const TYPE_META: Record<
-  string,
-  { icon: string; color: string; bg: string }
-> = {
+const TYPE_META: Record<string, { icon: string; color: string; bg: string }> = {
   BOOKING_CONFIRMED: {
     icon: "check_circle",
     color: "text-green-300",
@@ -59,19 +58,6 @@ export default function NotificationListClient() {
     return () => clearTimeout(t);
   }, []);
 
-  const getDashboardPath = () => {
-    switch (user?.role?.toLowerCase() || user?.systemRole) {
-      case "admin":
-      case "super_admin":
-        return "/admin";
-      case "host":
-      case "mayor":
-      case "foxer":
-        return "/creator-dashboard";
-      default:
-        return "/user";
-    }
-  };
 
   const handleItemClick = (n: Notification) => {
     if (!n.isRead) markAsRead(n.id);
@@ -94,7 +80,10 @@ export default function NotificationListClient() {
       <header className="fixed top-6 left-0 right-0 z-50">
         <div className="mx-auto max-w-7xl px-4">
           <div className="glass-panel rounded-full px-6 h-20 flex items-center justify-between shadow-2xl hover:bg-black/40 transition-colors duration-500">
-            <Link href="/" className="flex items-center gap-3 group cursor-pointer">
+            <Link
+              href="/"
+              className="flex items-center gap-3 group cursor-pointer"
+            >
               <div className="flex h-10 w-10 items-center justify-center rounded-full bg-white text-black font-bold shadow-[0_0_15px_rgba(255,255,255,0.3)] group-hover:rotate-180 transition-transform duration-700">
                 <span className="material-symbols-outlined text-[24px]">
                   explore
@@ -123,7 +112,7 @@ export default function NotificationListClient() {
             </nav>
             <div
               className="h-10 w-10 rounded-full border border-white/10 overflow-hidden cursor-pointer hover:border-accent transition-colors"
-              onClick={() => router.push(getDashboardPath())}
+              onClick={() => router.push(getDashboardPath(user))}
             >
               {user?.imgId ? (
                 <img

@@ -1,10 +1,11 @@
-﻿import type { Metadata } from "next";
+/* eslint-disable @next/next/no-page-custom-font */
+import type { Metadata } from "next";
 import "cesium/Build/Cesium/Widgets/widgets.css";
 import "./globals.css";
-import { Toaster } from 'sonner';
+import { Toaster } from "sonner";
 
 // Import the Modal Component
-import AuthModal from "@/features/auth/components/AuthModal"; 
+import AuthModal from "@/features/auth/components/AuthModal";
 
 // Import the Master Provider
 import Providers from "@/shared/providers";
@@ -23,7 +24,11 @@ export default function RootLayout({
     <html lang="en" className="dark">
       <head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <link
+          rel="preconnect"
+          href="https://fonts.gstatic.com"
+          crossOrigin="anonymous"
+        />
         <link
           href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@300;400;500;600;700&display=swap"
           rel="stylesheet"
@@ -40,9 +45,7 @@ export default function RootLayout({
 
           {/* 3. Your Auth Modal sits here */}
           <AuthModal />
-          <main className="grow overflow-x-hidden">
-            {children}
-          </main>
+          <main className="grow overflow-x-hidden">{children}</main>
         </Providers>
       </body>
     </html>

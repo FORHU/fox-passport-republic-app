@@ -1,8 +1,8 @@
-﻿'use client';
+﻿"use client";
 
-import React from 'react';
-import Image from 'next/image';
-import { GalleryItem } from '@/features/event/data/eventBuilderData';
+import React from "react";
+import Image from "next/image";
+import { GalleryItem } from "@/features/event/data/eventBuilderData";
 
 interface EventGalleryProps {
   gallery: GalleryItem[];
@@ -10,7 +10,11 @@ interface EventGalleryProps {
   onRemoveImage: (id: string) => void;
 }
 
-export function EventGallery({ gallery, onAddImage, onRemoveImage }: EventGalleryProps) {
+export function EventGallery({
+  gallery,
+  onAddImage,
+  onRemoveImage,
+}: EventGalleryProps) {
   const fileInputRef = React.useRef<HTMLInputElement>(null);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -38,8 +42,9 @@ export function EventGallery({ gallery, onAddImage, onRemoveImage }: EventGaller
           Event Gallery (Min 5)
         </label>
         <span
-          className={`text-[10px] font-bold ${gallery.length < 5 ? 'text-red-400' : 'text-green-400'
-            }`}
+          className={`text-[10px] font-bold ${
+            gallery.length < 5 ? "text-red-400" : "text-green-400"
+          }`}
         >
           {gallery.length}/5
         </span>
@@ -48,8 +53,9 @@ export function EventGallery({ gallery, onAddImage, onRemoveImage }: EventGaller
       <div className="grid grid-cols-4 gap-3 h-[240px]">
         {/* Cover Image (Large) */}
         <div
-          className={`col-span-2 row-span-2 h-full relative group rounded-xl overflow-hidden border border-white/10 ${gallery.length === 0 ? 'border-dashed' : ''
-            }`}
+          className={`col-span-2 row-span-2 h-full relative group rounded-xl overflow-hidden border border-white/10 ${
+            gallery.length === 0 ? "border-dashed" : ""
+          }`}
         >
           {gallery.length > 0 ? (
             <>
@@ -66,7 +72,9 @@ export function EventGallery({ gallery, onAddImage, onRemoveImage }: EventGaller
                 onClick={() => onRemoveImage(gallery[0].id)}
                 className="absolute top-2 right-2 p-1.5 bg-black/50 text-white rounded-full opacity-0 group-hover:opacity-100 hover:bg-red-500 z-20"
               >
-                <span className="material-symbols-outlined text-[14px]">close</span>
+                <span className="material-symbols-outlined text-[14px]">
+                  close
+                </span>
               </button>
             </>
           ) : (
@@ -74,8 +82,12 @@ export function EventGallery({ gallery, onAddImage, onRemoveImage }: EventGaller
               onClick={triggerUpload}
               className="w-full h-full flex flex-col items-center justify-center text-white/30 hover:text-white hover:bg-white/5"
             >
-              <span className="material-symbols-outlined text-4xl mb-2">add_a_photo</span>
-              <span className="text-xs font-bold uppercase tracking-widest">Add Cover</span>
+              <span className="material-symbols-outlined text-4xl mb-2">
+                add_a_photo
+              </span>
+              <span className="text-xs font-bold uppercase tracking-widest">
+                Add Cover
+              </span>
             </button>
           )}
         </div>
@@ -87,17 +99,14 @@ export function EventGallery({ gallery, onAddImage, onRemoveImage }: EventGaller
               key={img.id}
               className="relative group rounded-xl overflow-hidden border border-white/10 h-full"
             >
-              <Image
-                fill
-                src={img.url}
-                alt=""
-                className="object-cover"
-              />
+              <Image fill src={img.url} alt="" className="object-cover" />
               <button
                 onClick={() => onRemoveImage(img.id)}
                 className="absolute top-2 right-2 p-1.5 bg-black/50 text-white rounded-full opacity-0 group-hover:opacity-100 hover:bg-red-500 z-20"
               >
-                <span className="material-symbols-outlined text-[14px]">close</span>
+                <span className="material-symbols-outlined text-[14px]">
+                  close
+                </span>
               </button>
             </div>
           ))}
@@ -106,7 +115,9 @@ export function EventGallery({ gallery, onAddImage, onRemoveImage }: EventGaller
               onClick={triggerUpload}
               className="border-2 border-dashed border-white/10 rounded-xl flex flex-col items-center justify-center text-white/20 hover:text-white hover:bg-white/5 h-full"
             >
-              <span className="material-symbols-outlined text-2xl mb-1">add_photo_alternate</span>
+              <span className="material-symbols-outlined text-2xl mb-1">
+                add_photo_alternate
+              </span>
               <span className="text-[9px] font-bold uppercase">Add Photo</span>
             </button>
           )}

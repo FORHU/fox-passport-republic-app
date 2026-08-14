@@ -1,6 +1,6 @@
-import VenueEditClient from './_components/VenueEditClient';
+import VenueEditClient from "./_components/VenueEditClient";
 
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 
 interface Props {
   params: Promise<{ id: string }>;

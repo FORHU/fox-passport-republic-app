@@ -1,8 +1,7 @@
 ﻿import * as React from "react";
 import { cn } from "@/shared/lib/utils";
 
-export interface InputProps
-  extends React.InputHTMLAttributes<HTMLInputElement> {
+export interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
   icon?: string;
   iconPosition?: "left" | "right";
 }
@@ -23,7 +22,7 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
               "block w-full bg-transparent border-none text-white placeholder-white/40 focus:ring-0 font-medium focus:placeholder-white/20 transition-all outline-none",
               iconPosition === "left" ? "pl-12 pr-4" : "pl-4 pr-12",
               "py-4 text-base",
-              className
+              className,
             )}
             ref={ref}
             {...props}
@@ -42,13 +41,13 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
         type={type}
         className={cn(
           "block w-full px-4 py-4 bg-transparent border-none text-white placeholder-white/40 focus:ring-0 font-medium focus:placeholder-white/20 transition-all outline-none",
-          className
+          className,
         )}
         ref={ref}
         {...props}
       />
     );
-  }
+  },
 );
 Input.displayName = "Input";
 

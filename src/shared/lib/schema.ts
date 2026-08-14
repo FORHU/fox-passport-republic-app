@@ -10,14 +10,16 @@ export type LoginFormData = z.infer<typeof loginSchema>;
 
 export const signupSchema = z.object({
   email: z.email("Invalid email address"),
-  password: z.string()
+  password: z
+    .string()
     .min(16, "Password must be at least 16 characters")
     .regex(/[A-Z]/, "Password must contain at least one uppercase letter")
     .regex(/[a-z]/, "Password must contain at least one lowercase letter")
     .regex(/\d/, "Password must contain at least one digit")
     .regex(/[@$!%*?&]/, "Password must contain at least one special character"),
   username: z.string().min(3, "Username must be at least 3 characters"),
-  name: z.string()
+  name: z
+    .string()
     .min(1, "Name is required")
     .regex(/^[A-Za-z\s'-]+$/, "Name can only contain letters"),
   mobileNumber: z.string().optional(),
@@ -32,18 +34,21 @@ export const forgotPasswordSchema = z.object({
 
 export type ForgotPasswordFormData = z.infer<typeof forgotPasswordSchema>;
 
-export const resetPasswordSchema = z.object({
-  otpCode: z.string().length(6, "Code must be 6 digits"),
-  newPassword: z.string()
-    .min(8, "Password must be at least 8 characters")
-    .regex(/[A-Z]/, "Password must contain at least one uppercase letter")
-    .regex(/[a-z]/, "Password must contain at least one lowercase letter")
-    .regex(/\d/, "Password must contain at least one digit"),
-  confirmPassword: z.string(),
-}).refine((data) => data.newPassword === data.confirmPassword, {
-  message: "Passwords do not match",
-  path: ["confirmPassword"],
-});
+export const resetPasswordSchema = z
+  .object({
+    otpCode: z.string().length(6, "Code must be 6 digits"),
+    newPassword: z
+      .string()
+      .min(8, "Password must be at least 8 characters")
+      .regex(/[A-Z]/, "Password must contain at least one uppercase letter")
+      .regex(/[a-z]/, "Password must contain at least one lowercase letter")
+      .regex(/\d/, "Password must contain at least one digit"),
+    confirmPassword: z.string(),
+  })
+  .refine((data) => data.newPassword === data.confirmPassword, {
+    message: "Passwords do not match",
+    path: ["confirmPassword"],
+  });
 
 export type ResetPasswordFormData = z.infer<typeof resetPasswordSchema>;
 
@@ -76,8 +81,12 @@ export const createServiceSchema = z.object({
   description: z.string().min(10, "Description must be at least 10 characters"),
   category: z.string().min(1, "Category is required"),
   price: z.number().min(0, "Price must be non-negative"),
-  billingRate: z.enum(["hourly", "daily", "weekly", "monthly"]).default("hourly"),
-  status: z.enum(["draft", "pending", "available", "paused", "archived", "rejected"]).default("draft"),
+  billingRate: z
+    .enum(["hourly", "daily", "weekly", "monthly"])
+    .default("hourly"),
+  status: z
+    .enum(["draft", "pending", "available", "paused", "archived", "rejected"])
+    .default("draft"),
 });
 
 export type CreateServiceFormData = z.infer<typeof createServiceSchema>;
@@ -98,7 +107,9 @@ export const createEventSchema = z.object({
   endDatetime: z.date(),
   maxAttendees: z.number().int().min(1, "Max attendees must be at least 1"),
   totalPrice: z.number().min(0, "Price must be non-negative").optional(),
-  status: z.enum(["draft", "pending", "ongoing", "completed", "cancelled"]).default("draft"),
+  status: z
+    .enum(["draft", "pending", "ongoing", "completed", "cancelled"])
+    .default("draft"),
 });
 
 export type CreateEventFormData = z.infer<typeof createEventSchema>;
@@ -120,7 +131,9 @@ export const createVenueSchema = z.object({
   state: z.string().optional(),
   country: z.string().min(1, "Country is required"),
   price: z.number().min(0, "Price must be non-negative"),
-  status: z.enum(["draft", "pending", "available", "archived", "rejected"]).default("draft"),
+  status: z
+    .enum(["draft", "pending", "available", "archived", "rejected"])
+    .default("draft"),
 });
 
 export type CreateVenueFormData = z.infer<typeof createVenueSchema>;
@@ -134,16 +147,22 @@ export type UpdateVenueFormData = z.infer<typeof updateVenueSchema>;
 // --- REVIEW SCHEMAS ---
 export const createReviewSchema = z.object({
   venueId: z.string().min(1, "Venue ID is required"),
-  rating: z.number().int().min(1, "Rating must be at least 1").max(5, "Rating cannot exceed 5"),
+  rating: z
+    .number()
+    .int()
+    .min(1, "Rating must be at least 1")
+    .max(5, "Rating cannot exceed 5"),
   reviewText: z.string().min(50, "Review must be at least 50 characters"),
-  categories: z.object({
-    cleanliness: z.number().int().min(1).max(5).optional(),
-    accuracy: z.number().int().min(1).max(5).optional(),
-    checkIn: z.number().int().min(1).max(5).optional(),
-    communication: z.number().int().min(1).max(5).optional(),
-    location: z.number().int().min(1).max(5).optional(),
-    value: z.number().int().min(1).max(5).optional(),
-  }).optional(),
+  categories: z
+    .object({
+      cleanliness: z.number().int().min(1).max(5).optional(),
+      accuracy: z.number().int().min(1).max(5).optional(),
+      checkIn: z.number().int().min(1).max(5).optional(),
+      communication: z.number().int().min(1).max(5).optional(),
+      location: z.number().int().min(1).max(5).optional(),
+      value: z.number().int().min(1).max(5).optional(),
+    })
+    .optional(),
 });
 
 export type CreateReviewFormData = z.infer<typeof createReviewSchema>;

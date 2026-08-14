@@ -2,7 +2,10 @@
 
 import React, { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { DashboardHeader, EventsSection } from "@/features/dashboard/components";
+import {
+  DashboardHeader,
+  EventsSection,
+} from "@/features/dashboard/components";
 import RequireAuth from "@/features/auth/components/RequireAuth";
 import { STATUS_OPTIONS } from "@/features/dashboard/data/dashboardData";
 import api from "@/shared/lib/axios";
@@ -19,7 +22,9 @@ interface HostEventsClientProps {
   initialEvents: any[];
 }
 
-export default function HostEventsClient({ initialEvents }: HostEventsClientProps) {
+export default function HostEventsClient({
+  initialEvents,
+}: HostEventsClientProps) {
   const router = useRouter();
   const [searchQuery, setSearchQuery] = useState("");
   const [status, setStatus] = useState<"all" | string>("all");
@@ -33,7 +38,10 @@ export default function HostEventsClient({ initialEvents }: HostEventsClientProp
     const q = normalizeValue(searchQuery);
 
     return events.filter((ev) => {
-      const statusOk = status === "all" ? true : normalizeValue(ev.status) === normalizeValue(status);
+      const statusOk =
+        status === "all"
+          ? true
+          : normalizeValue(ev.status) === normalizeValue(status);
 
       const searchOk = !q
         ? true
@@ -47,7 +55,7 @@ export default function HostEventsClient({ initialEvents }: HostEventsClientProp
 
   const handleStatusChange = (id: number | string, nextStatus: string) => {
     setEvents((prev) =>
-      prev.map((ev) => (ev.id === id ? { ...ev, status: nextStatus } : ev))
+      prev.map((ev) => (ev.id === id ? { ...ev, status: nextStatus } : ev)),
     );
   };
 
@@ -61,11 +69,17 @@ export default function HostEventsClient({ initialEvents }: HostEventsClientProp
       await api.delete(`/event-templates/${id}`);
       toast.success("Draft deleted");
     } catch (err: any) {
-      console.error('[handleDelete] failed', err?.response?.status, err?.response?.data);
+      console.error(
+        "[handleDelete] failed",
+        err?.response?.status,
+        err?.response?.data,
+      );
       toast.error(err?.response?.data?.message ?? "Failed to delete draft");
       setEvents((prev) => {
         if (prev.some((ev) => ev.id === id)) return prev;
-        return [...prev, initialEvents.find((ev: any) => ev.id === id)].filter(Boolean);
+        return [...prev, initialEvents.find((ev: any) => ev.id === id)].filter(
+          Boolean,
+        );
       });
     }
   };
@@ -86,7 +100,9 @@ export default function HostEventsClient({ initialEvents }: HostEventsClientProp
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
               <div className="flex-1">
                 <div className="text-2xl font-display font-bold flex items-center gap-2 mb-2">
-                  <span className="material-symbols-outlined text-[#ccff00]">hub</span>
+                  <span className="material-symbols-outlined text-[#ccff00]">
+                    hub
+                  </span>
                   My Events
                 </div>
                 <p className="text-sm text-white/50">
@@ -113,9 +129,15 @@ export default function HostEventsClient({ initialEvents }: HostEventsClientProp
                     onChange={(e) => setStatus(e.target.value)}
                     className="w-full bg-[#0f111a] text-white border border-white/10 rounded-full px-4 py-2 text-sm focus:outline-none focus:border-[#ccff00]"
                   >
-                    <option className="bg-[#0f111a] text-white" value="all">All Status</option>
+                    <option className="bg-[#0f111a] text-white" value="all">
+                      All Status
+                    </option>
                     {STATUS_OPTIONS.event.map((s) => (
-                      <option className="bg-[#0f111a] text-white" key={s} value={s}>
+                      <option
+                        className="bg-[#0f111a] text-white"
+                        key={s}
+                        value={s}
+                      >
                         {s}
                       </option>
                     ))}

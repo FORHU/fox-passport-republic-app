@@ -1,11 +1,11 @@
-'use client';
+"use client";
 
-import React from 'react';
+import React from "react";
 
 interface EventHeaderProps {
   eventTitle: string;
   isSubmitting: boolean;
-  saveStatus?: 'idle' | 'saving' | 'saved' | 'error';
+  saveStatus?: "idle" | "saving" | "saved" | "error";
   onBack: () => void;
   onSaveDraft: () => void;
   onPublish: () => void;
@@ -14,21 +14,26 @@ interface EventHeaderProps {
 export function EventHeader({
   eventTitle,
   isSubmitting,
-  saveStatus = 'idle',
+  saveStatus = "idle",
   onBack,
   onSaveDraft,
   onPublish,
 }: EventHeaderProps) {
   const statusLabel =
-    saveStatus === 'saving' ? 'Saving…' :
-    saveStatus === 'saved'  ? 'Draft saved' :
-    saveStatus === 'error'  ? 'Save failed — retry?' :
-    'Draft';
+    saveStatus === "saving"
+      ? "Saving…"
+      : saveStatus === "saved"
+        ? "Draft saved"
+        : saveStatus === "error"
+          ? "Save failed — retry?"
+          : "Draft";
 
   const statusDot =
-    saveStatus === 'saving' ? 'bg-yellow-400 animate-pulse' :
-    saveStatus === 'error'  ? 'bg-red-500' :
-    'bg-green-500 animate-pulse';
+    saveStatus === "saving"
+      ? "bg-yellow-400 animate-pulse"
+      : saveStatus === "error"
+        ? "bg-red-500"
+        : "bg-green-500 animate-pulse";
 
   return (
     <header className="h-16 border-b border-white/5 flex items-center justify-between px-6 bg-[#0f111a] z-20">
@@ -37,7 +42,9 @@ export function EventHeader({
           onClick={onBack}
           className="h-8 w-8 flex items-center justify-center rounded-full hover:bg-white/10"
         >
-          <span className="material-symbols-outlined text-[18px]">arrow_back</span>
+          <span className="material-symbols-outlined text-[18px]">
+            arrow_back
+          </span>
         </button>
         <div>
           <h2 className="font-display font-bold text-lg flex items-center gap-2">
@@ -48,11 +55,11 @@ export function EventHeader({
           </h2>
           <div className="flex items-center gap-2 text-[10px] text-text-muted mt-0.5">
             <span className={`w-1.5 h-1.5 rounded-full ${statusDot}`} />
-            {eventTitle || 'Untitled Event'} · {statusLabel}
+            {eventTitle || "Untitled Event"} · {statusLabel}
           </div>
         </div>
       </div>
-      
+
       <div className="flex items-center gap-3">
         <button
           onClick={onSaveDraft}
@@ -70,7 +77,7 @@ export function EventHeader({
               progress_activity
             </span>
           ) : (
-            'Publish Event'
+            "Publish Event"
           )}
         </button>
       </div>

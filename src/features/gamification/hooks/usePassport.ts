@@ -2,8 +2,17 @@
 
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
-  getMyPassport, getAllBadges, getUserPassport, mapPaths, mapStamps, mapBadges,
-  getLeaderboard, getOutgoingMatchRequests, getIncomingMatchRequests, getClientMatchRequests, respondToMatch,
+  getMyPassport,
+  getAllBadges,
+  getUserPassport,
+  mapPaths,
+  mapStamps,
+  mapBadges,
+  getLeaderboard,
+  getOutgoingMatchRequests,
+  getIncomingMatchRequests,
+  getClientMatchRequests,
+  respondToMatch,
 } from "../api/passport";
 import { acceptMatch, declineMatch } from "@/features/match/api/matches";
 
@@ -71,8 +80,15 @@ export function useClientMatchRequests(offset = 0, enabled = true) {
 export function useRespondToMatch() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: ({ matchId, type, status }: { matchId: string; type: string; status: "accepted" | "declined" }) =>
-      respondToMatch(matchId, type, status),
+    mutationFn: ({
+      matchId,
+      type,
+      status,
+    }: {
+      matchId: string;
+      type: string;
+      status: "accepted" | "declined";
+    }) => respondToMatch(matchId, type, status),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["matches"] });
     },

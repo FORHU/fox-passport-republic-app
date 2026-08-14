@@ -1,4 +1,4 @@
-﻿import api from '@/shared/lib/axios';
+﻿import api from "@/shared/lib/axios";
 
 export const createMatch = async (data: {
   foxerId: string | number;
@@ -8,12 +8,12 @@ export const createMatch = async (data: {
   requestContent: string;
   totalAmount: number;
 }) => {
-  const response = await api.post('/matches', data);
+  const response = await api.post("/matches", data);
   return response.data;
 };
 
 export const getMyMatches = async () => {
-  const response = await api.get('/matches/my');
+  const response = await api.get("/matches/my");
   return response.data;
 };
 

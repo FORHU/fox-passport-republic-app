@@ -35,17 +35,26 @@ export const useFavorites = () => {
     },
     onMutate: async (venueId: string) => {
       await queryClient.cancelQueries({ queryKey: ["favorites", userId] });
-      const prev = queryClient.getQueryData<Favorite[]>(["favorites", userId]) ?? [];
+      const prev =
+        queryClient.getQueryData<Favorite[]>(["favorites", userId]) ?? [];
       if (isFavorited(venueId)) {
         queryClient.setQueryData(
           ["favorites", userId],
-          prev.filter((f) => f.targetId !== venueId)
+          prev.filter((f) => f.targetId !== venueId),
         );
       } else {
-        queryClient.setQueryData(["favorites", userId], [
-          ...prev,
-          { id: "__optimistic__", targetId: venueId, type: "venue", createdAt: new Date().toISOString() } as Favorite,
-        ]);
+        queryClient.setQueryData(
+          ["favorites", userId],
+          [
+            ...prev,
+            {
+              id: "__optimistic__",
+              targetId: venueId,
+              type: "venue",
+              createdAt: new Date().toISOString(),
+            } as Favorite,
+          ],
+        );
       }
       return { prev };
     },

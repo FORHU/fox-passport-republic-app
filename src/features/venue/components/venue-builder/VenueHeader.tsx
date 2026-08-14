@@ -1,6 +1,6 @@
-'use client';
+"use client";
 
-import React from 'react';
+import React from "react";
 
 interface VenueHeaderProps {
   venueName: string;
@@ -24,7 +24,9 @@ export function VenueHeader({
           onClick={onBack}
           className="h-8 w-8 flex items-center justify-center rounded-full hover:bg-white/10"
         >
-          <span className="material-symbols-outlined text-[18px]">arrow_back</span>
+          <span className="material-symbols-outlined text-[18px]">
+            arrow_back
+          </span>
         </button>
         <div>
           <h2 className="font-display font-bold text-lg flex items-center gap-2">
@@ -35,7 +37,7 @@ export function VenueHeader({
           </h2>
           <div className="flex items-center gap-2 text-[10px] text-text-muted mt-0.5">
             <span className="w-1.5 h-1.5 rounded-full bg-accent animate-pulse" />
-            {venueName || 'New Venue'} (Draft)
+            {venueName || "New Venue"} (Draft)
           </div>
         </div>
       </div>
@@ -57,7 +59,9 @@ export function VenueHeader({
             </span>
           ) : (
             <>
-              <span className="material-symbols-outlined text-[16px]">send</span>
+              <span className="material-symbols-outlined text-[16px]">
+                send
+              </span>
               Submit for Review
             </>
           )}

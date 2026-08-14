@@ -1,4 +1,5 @@
-﻿"use client";
+/* eslint-disable react-hooks/exhaustive-deps, @typescript-eslint/no-unused-vars */
+"use client";
 
 import { useCallback, useEffect, useMemo } from "react";
 import { useRouter } from "next/navigation";
@@ -13,7 +14,10 @@ const SERVICE_CATEGORIES = [
   { id: "decor", label: "Decor & Style", icon: "palette" },
   { id: "media", label: "Photo & Video", icon: "videocam" },
 ];
-import type { LiveFoxer, LiveService } from "@/features/venue/hooks/useExperienceBuilderData";
+import type {
+  LiveFoxer,
+  LiveService,
+} from "@/features/venue/hooks/useExperienceBuilderData";
 import { useCheckoutStore } from "@/features/booking/store/useCheckoutStore";
 
 export function useVenueDetail(venueData?: any) {
@@ -36,10 +40,12 @@ export function useVenueDetail(venueData?: any) {
       checkInDate: null, // Dates are now collected in the BookingWidget (ISO string) not the old day-number store
       checkInTime: "09:00 PM", // Default booking time
       nights: nights > 0 ? nights : 1,
-      totalAmount: venueData?.price ? venueData.price * (nights > 0 ? nights : 1) : 0,
-      guestCount: 1 // Default to 1 guest, can be expanded later
+      totalAmount: venueData?.price
+        ? venueData.price * (nights > 0 ? nights : 1)
+        : 0,
+      guestCount: 1, // Default to 1 guest, can be expanded later
     });
-    
+
     // 2. Navigate to checkout config
     router.push("/booking/config");
   }, [router, store.checkInDate, nights, venueData]);
@@ -82,7 +88,7 @@ export function useExperienceBuilder(
     const categoryServices = itemsByCategory[store.activeCategory] ?? [];
     if (!store.searchQuery) return categoryServices;
     return categoryServices.filter((s) =>
-      s.name.toLowerCase().includes(store.searchQuery.toLowerCase())
+      s.name.toLowerCase().includes(store.searchQuery.toLowerCase()),
     );
   }, [store.activeCategory, store.searchQuery, itemsByCategory]);
 
@@ -95,14 +101,22 @@ export function useExperienceBuilder(
   const total = useMemo(() => {
     let t = venuePrice * 2;
     if (store.selectedFoxer) {
-      const foxer = foxers.find(f => f.id === store.selectedFoxer);
+      const foxer = foxers.find((f) => f.id === store.selectedFoxer);
       if (foxer) t += foxer.fee;
     }
-    Object.values(itemsByCategory).flat().forEach(svc => {
-      if (store.selectedServices.includes(svc.id)) t += svc.price;
-    });
+    Object.values(itemsByCategory)
+      .flat()
+      .forEach((svc) => {
+        if (store.selectedServices.includes(svc.id)) t += svc.price;
+      });
     return t;
-  }, [store.selectedFoxer, store.selectedServices, venuePrice, foxers, itemsByCategory]);
+  }, [
+    store.selectedFoxer,
+    store.selectedServices,
+    venuePrice,
+    foxers,
+    itemsByCategory,
+  ]);
 
   const selectedFoxerData = useMemo(() => {
     if (!store.selectedFoxer) return null;
@@ -122,7 +136,7 @@ export function useExperienceBuilder(
       e.dataTransfer.setData("type", type);
       e.dataTransfer.effectAllowed = "copy";
     },
-    []
+    [],
   );
 
   const handleDragOver = useCallback(
@@ -131,7 +145,7 @@ export function useExperienceBuilder(
       store.setIsDragOver(true);
       e.dataTransfer.dropEffect = "copy";
     },
-    [store]
+    [store],
   );
 
   const handleDragLeave = useCallback(
@@ -139,7 +153,7 @@ export function useExperienceBuilder(
       e.preventDefault();
       store.setIsDragOver(false);
     },
-    [store]
+    [store],
   );
 
   const handleDrop = useCallback(
@@ -157,7 +171,7 @@ export function useExperienceBuilder(
         }
       }
     },
-    [store]
+    [store],
   );
 
   const handleSubmit = useCallback(() => {

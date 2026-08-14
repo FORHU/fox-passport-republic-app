@@ -28,9 +28,9 @@ export default function KycDocumentSection({
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <FileUploader 
-          label="Primary Valid ID *" 
-          onUploadComplete={(id) => onUpload("validId1FileId", id)} 
+        <FileUploader
+          label="Primary Valid ID *"
+          onUploadComplete={(id) => onUpload("validId1FileId", id)}
         />
         <FileUploader
           label="NBI Clearance (PDF) *"
@@ -40,19 +40,19 @@ export default function KycDocumentSection({
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <FileUploader 
-          label="TIN ID / Certificate *" 
-          onUploadComplete={(id) => onUpload("tinIdFileId", id)} 
+        <FileUploader
+          label="TIN ID / Certificate *"
+          onUploadComplete={(id) => onUpload("tinIdFileId", id)}
         />
-        <FileUploader 
-          label="BIR 2303 / Permit *" 
-          onUploadComplete={(id) => onUpload("birPermitFileId", id)} 
+        <FileUploader
+          label="BIR 2303 / Permit *"
+          onUploadComplete={(id) => onUpload("birPermitFileId", id)}
         />
       </div>
 
-      <FileUploader 
-        label="Verification Selfie *" 
-        onUploadComplete={(id) => onUpload("selfieFileId", id)} 
+      <FileUploader
+        label="Verification Selfie *"
+        onUploadComplete={(id) => onUpload("selfieFileId", id)}
       />
     </div>
   );

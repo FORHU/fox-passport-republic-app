@@ -1,17 +1,24 @@
-'use client';
+"use client";
 
-import React from 'react';
-import { useRouter } from 'next/navigation';
-import { useWaitlistStatus, useJoinWaitlist, useLeaveWaitlist } from '@/features/booking/hooks/useWaitlist';
-import { toast } from 'sonner';
-import { useAuthStore } from '@/features/auth/store/useAuthStore';
+import React from "react";
+import { useRouter } from "next/navigation";
+import {
+  useWaitlistStatus,
+  useJoinWaitlist,
+  useLeaveWaitlist,
+} from "@/features/booking/hooks/useWaitlist";
+import { toast } from "sonner";
+import { useAuthStore } from "@/features/auth/store/useAuthStore";
 
 export interface WaitlistButtonProps {
   templateId: string;
   onJoined?: () => void;
 }
 
-export default function WaitlistButton({ templateId, onJoined }: WaitlistButtonProps) {
+export default function WaitlistButton({
+  templateId,
+  onJoined,
+}: WaitlistButtonProps) {
   const router = useRouter();
   const { isAuthenticated, openLogin } = useAuthStore();
   const { data, isLoading, isError, error } = useWaitlistStatus(templateId);
@@ -25,12 +32,12 @@ export default function WaitlistButton({ templateId, onJoined }: WaitlistButtonP
     }
     joinMutation.mutate(templateId, {
       onSuccess: () => {
-        toast.success('You\'re on the waitlist!');
+        toast.success("You're on the waitlist!");
         onJoined?.();
-        router.push('/booking/waitlist');
+        router.push("/booking/waitlist");
       },
       onError: (err: any) => {
-        toast.error(err?.response?.data?.message || 'Failed to join waitlist.');
+        toast.error(err?.response?.data?.message || "Failed to join waitlist.");
       },
     });
   };
@@ -39,10 +46,12 @@ export default function WaitlistButton({ templateId, onJoined }: WaitlistButtonP
     if (!data?.entryId) return;
     leaveMutation.mutate(data.entryId, {
       onSuccess: () => {
-        toast.success('Removed from waitlist.');
+        toast.success("Removed from waitlist.");
       },
       onError: (err: any) => {
-        toast.error(err?.response?.data?.message || 'Failed to leave waitlist.');
+        toast.error(
+          err?.response?.data?.message || "Failed to leave waitlist.",
+        );
       },
     });
   };
@@ -59,7 +68,9 @@ export default function WaitlistButton({ templateId, onJoined }: WaitlistButtonP
     return (
       <div className="rounded-2xl bg-red-500/10 border border-red-500/20 p-4 text-center">
         <p className="text-sm text-red-400">
-          {error instanceof Error ? error.message : 'Could not load waitlist status.'}
+          {error instanceof Error
+            ? error.message
+            : "Could not load waitlist status."}
         </p>
       </div>
     );
@@ -73,7 +84,9 @@ export default function WaitlistButton({ templateId, onJoined }: WaitlistButtonP
             You&apos;re #{data.position} on the waitlist
           </p>
           <p className="text-xs text-white/50 mt-1">
-            {data.totalWaiting} {data.totalWaiting === 1 ? 'person is' : 'people are'} currently waiting
+            {data.totalWaiting}{" "}
+            {data.totalWaiting === 1 ? "person is" : "people are"} currently
+            waiting
           </p>
         </div>
         <button
@@ -81,7 +94,7 @@ export default function WaitlistButton({ templateId, onJoined }: WaitlistButtonP
           disabled={leaveMutation.isPending}
           className="w-full rounded-xl border border-white/20 py-3 text-sm font-bold text-white hover:bg-white/5 transition-colors disabled:opacity-50"
         >
-          {leaveMutation.isPending ? 'Leaving...' : 'Leave Waitlist'}
+          {leaveMutation.isPending ? "Leaving..." : "Leave Waitlist"}
         </button>
       </div>
     );
@@ -102,7 +115,9 @@ export default function WaitlistButton({ templateId, onJoined }: WaitlistButtonP
         ) : (
           <>
             Join Waitlist
-            <span className="material-symbols-outlined group-hover:translate-x-1 transition-transform">arrow_forward</span>
+            <span className="material-symbols-outlined group-hover:translate-x-1 transition-transform">
+              arrow_forward
+            </span>
           </>
         )}
       </span>

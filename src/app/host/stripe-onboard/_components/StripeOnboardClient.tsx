@@ -35,12 +35,19 @@ export default function StripeOnboardClient() {
               body: JSON.stringify({ stripeAccountId: storedId || undefined }),
             });
             if (!res.ok) {
-              const err = await res.json().catch(() => ({ error: "Request failed" }));
+              const err = await res
+                .json()
+                .catch(() => ({ error: "Request failed" }));
               throw new Error(err.error || `HTTP ${res.status}`);
             }
             const data = await res.json();
-            if (!data.clientSecret) throw new Error("No client secret returned");
-            if (data.stripeAccountId) localStorage.setItem("fox_stripe_account_id", data.stripeAccountId);
+            if (!data.clientSecret)
+              throw new Error("No client secret returned");
+            if (data.stripeAccountId)
+              localStorage.setItem(
+                "fox_stripe_account_id",
+                data.stripeAccountId,
+              );
             return data.clientSecret;
           },
           appearance: {

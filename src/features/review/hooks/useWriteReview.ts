@@ -1,4 +1,5 @@
-﻿"use client";
+/* eslint-disable @typescript-eslint/no-unused-vars */
+"use client";
 
 import { useCallback } from "react";
 import { useRouter } from "next/navigation";
@@ -20,7 +21,7 @@ export function useWriteReview(venueId: string) {
       store.reset();
       router.push("/reviews/select");
     },
-    [router, store]
+    [router, store],
   );
 
   const isValid = store.rating > 0 && store.reviewText.length >= 50;

@@ -1,9 +1,9 @@
-﻿'use server';
+﻿"use server";
 
-import { cookies } from 'next/headers';
-import axios from 'axios';
-import { config as appConfig } from '@/shared/lib/config';
-import { LoginResponse } from '@/features/auth/types/auth';
+import { cookies } from "next/headers";
+import axios from "axios";
+import { config as appConfig } from "@/shared/lib/config";
+import { LoginResponse } from "@/features/auth/types/auth";
 
 /**
  * Server action to set authentication cookies
@@ -15,32 +15,34 @@ export async function setAuthCookies(loginResponse: LoginResponse) {
   const { accessToken, refreshToken, user } = loginResponse;
 
   // Set token cookie (accessible to middleware)
-  cookieStore.set('fox_token', accessToken, {
+  cookieStore.set("fox_token", accessToken, {
     httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: 'lax',
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "lax",
     maxAge: 7 * 24 * 60 * 60, // 7 days
-    path: '/',
+    path: "/",
   });
 
   // Set refresh token
   if (refreshToken) {
-    cookieStore.set('fox_refresh_token', refreshToken, {
+    cookieStore.set("fox_refresh_token", refreshToken, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
       maxAge: 30 * 24 * 60 * 60, // 30 days
-      path: '/',
+      path: "/",
     });
   }
 
-  // Set user info (not HTTP-only so client can read it)
-  const userWithToken = { ...user, accessToken };
-  cookieStore.set('fox_user', JSON.stringify(userWithToken), {
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: 'lax',
+  // Set user info (not HTTP-only so the client can read it for display).
+  // The access token is deliberately NOT included: this cookie is readable by
+  // any script on the page, so embedding the token here would undo the
+  // httpOnly protection on `fox_token` and hand it to any XSS.
+  cookieStore.set("fox_user", JSON.stringify(user), {
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "lax",
     maxAge: 7 * 24 * 60 * 60, // 7 days
-    path: '/',
+    path: "/",
   });
 
   return true;
@@ -52,45 +54,52 @@ export async function setAuthCookies(loginResponse: LoginResponse) {
  * sees the updated roleType (e.g. after a mayor/host application is approved).
  * Returns the updated user object, or null if tokens are missing/expired.
  */
-export async function refreshUserSession(): Promise<Record<string, any> | null> {
+export async function refreshUserSession(): Promise<Record<
+  string,
+  any
+> | null> {
   const cookieStore = await cookies();
 
-  const refreshToken = cookieStore.get('fox_refresh_token')?.value;
+  const refreshToken = cookieStore.get("fox_refresh_token")?.value;
   if (!refreshToken) return null;
 
   try {
     // Step 1: get a brand-new access token that reflects current DB roles
     const { data: tokenData } = await axios.post(
       `${appConfig.apiUrl}/auth/refresh-token`,
-      { refreshToken }
+      { refreshToken },
     );
     const newAccessToken: string = tokenData.accessToken;
     if (!newAccessToken) return null;
 
     // Step 2: update fox_token cookie with the new JWT
-    cookieStore.set('fox_token', newAccessToken, {
+    cookieStore.set("fox_token", newAccessToken, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
       maxAge: 7 * 24 * 60 * 60,
-      path: '/',
+      path: "/",
     });
 
     // Step 3: fetch fresh profile using the new token
-    const { data: profileData } = await axios.get(`${appConfig.apiUrl}/profile`, {
-      headers: { Authorization: `Bearer ${newAccessToken}` },
-    });
+    const { data: profileData } = await axios.get(
+      `${appConfig.apiUrl}/profile`,
+      {
+        headers: { Authorization: `Bearer ${newAccessToken}` },
+      },
+    );
     const freshUser = profileData?.data || profileData;
     if (!freshUser) return null;
 
-    const userWithToken = { ...freshUser, accessToken: newAccessToken };
-    cookieStore.set('fox_user', JSON.stringify(userWithToken), {
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
+    // Profile data only — see the note in `setAuthCookies` about keeping the
+    // access token out of this browser-readable cookie.
+    cookieStore.set("fox_user", JSON.stringify(freshUser), {
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
       maxAge: 7 * 24 * 60 * 60,
-      path: '/',
+      path: "/",
     });
-    return userWithToken;
+    return freshUser;
   } catch {
     return null;
   }
@@ -102,9 +111,9 @@ export async function refreshUserSession(): Promise<Record<string, any> | null> 
 export async function clearAuthCookies() {
   const cookieStore = await cookies();
 
-  cookieStore.delete('fox_token');
-  cookieStore.delete('fox_refresh_token');
-  cookieStore.delete('fox_user');
+  cookieStore.delete("fox_token");
+  cookieStore.delete("fox_refresh_token");
+  cookieStore.delete("fox_user");
 
   return true;
 }

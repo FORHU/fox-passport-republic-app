@@ -1,5 +1,5 @@
-﻿import { redirect } from 'next/navigation';
+﻿import { redirect } from "next/navigation";
 
 export default function Redirect() {
-  redirect('/creator-dashboard/services');
+  redirect("/creator-dashboard/services");
 }

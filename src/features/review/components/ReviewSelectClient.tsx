@@ -7,10 +7,12 @@ import { useReviewSelectStore } from "@/features/review/store/useReviewsStore";
 import { ReviewVenueCard } from "@/features/review/components";
 
 interface ReviewSelectClientProps {
-  recentVenues: any[]
+  recentVenues: any[];
 }
 
-export default function ReviewSelectClient({ recentVenues }: ReviewSelectClientProps) {
+export default function ReviewSelectClient({
+  recentVenues,
+}: ReviewSelectClientProps) {
   const { searchQuery, locationQuery, setSearchQuery, setLocationQuery } =
     useReviewSelectStore();
 
@@ -24,7 +26,8 @@ export default function ReviewSelectClient({ recentVenues }: ReviewSelectClientP
               Find a business to review
             </h1>
             <p className="text-gray-600 text-center mb-10 md:text-lg">
-              Review anything from your favorite patio spot to your local flower shop.
+              Review anything from your favorite patio spot to your local flower
+              shop.
             </p>
 
             {/* Search Bar */}
@@ -61,7 +64,9 @@ export default function ReviewSelectClient({ recentVenues }: ReviewSelectClientP
           <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-2">
             Visited one of these places recently?
           </h2>
-          <p className="text-gray-600 mb-8">Share your experience with the community</p>
+          <p className="text-gray-600 mb-8">
+            Share your experience with the community
+          </p>
 
           {/* Venue Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

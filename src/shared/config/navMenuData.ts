@@ -1,1 +1,1 @@
-﻿export { NAV_MENU } from '@/shared/lib/constants';
+﻿export { NAV_MENU } from "@/shared/lib/constants";

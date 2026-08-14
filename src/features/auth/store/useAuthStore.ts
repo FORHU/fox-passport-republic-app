@@ -1,7 +1,8 @@
 ﻿import { create } from "zustand";
 import { User, LoginResponse } from "@/features/auth/types/auth";
 
-type AuthView = "login" | "signup" | "forgot-password" | "reset-password" | "verify-email";
+type AuthView =
+  "login" | "signup" | "forgot-password" | "reset-password" | "verify-email";
 
 interface AuthState {
   // State
@@ -12,7 +13,7 @@ interface AuthState {
   isLoading: boolean;
   isOpen: boolean;
   view: AuthView;
-  pendingEmail: string | null; 
+  pendingEmail: string | null;
 
   // Actions
   initialize: () => void;
@@ -45,7 +46,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       const storedUser = localStorage.getItem("fox_user");
       const initialToken = localStorage.getItem("fox_token");
       const initialRefresh = localStorage.getItem("fox_refresh_token");
-      
+
       if (storedUser && initialToken) {
         set({
           user: JSON.parse(storedUser),
@@ -75,18 +76,17 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 
   setLoading: (loading) => set({ isLoading: loading }),
 
+  // `fox_user` holds profile data only. The token lives under `fox_token`;
+  // duplicating it inside the user object just widened its exposure.
   setUser: (user) => {
-    const token = get().accessToken;
-    const storedUser = { ...user, accessToken: token };
-    localStorage.setItem("fox_user", JSON.stringify(storedUser));
+    localStorage.setItem("fox_user", JSON.stringify(user));
     set({ user });
   },
 
   login: (loginResponse) => {
     const { accessToken, refreshToken, user } = loginResponse;
-    const storedUser = { ...user, accessToken };
 
-    localStorage.setItem("fox_user", JSON.stringify(storedUser));
+    localStorage.setItem("fox_user", JSON.stringify(user));
     localStorage.setItem("fox_token", accessToken);
     localStorage.setItem("fox_refresh_token", refreshToken);
 
@@ -96,7 +96,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       accessToken,
       refreshToken,
       isOpen: false,
-      isLoading: false
+      isLoading: false,
     });
   },
 
@@ -104,7 +104,12 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     localStorage.removeItem("fox_user");
     localStorage.removeItem("fox_token");
     localStorage.removeItem("fox_refresh_token");
-    set({ isAuthenticated: false, user: null, accessToken: null, refreshToken: null });
+    set({
+      isAuthenticated: false,
+      user: null,
+      accessToken: null,
+      refreshToken: null,
+    });
   },
 }));
 
@@ -113,6 +118,7 @@ export const useAuthStatus = () =>
   useAuthStore((state) => state.isAuthenticated);
 export const useAuthLoading = () => useAuthStore((state) => state.isLoading);
 export const useAuthActions = () => {
-  const { openLogin, openSignup, logout, setLoading, login, initialize } = useAuthStore();
+  const { openLogin, openSignup, logout, setLoading, login, initialize } =
+    useAuthStore();
   return { openLogin, openSignup, logout, setLoading, login, initialize };
 };
