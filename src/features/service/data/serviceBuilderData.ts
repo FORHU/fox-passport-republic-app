@@ -34,5 +34,5 @@ export const BILLING_RATE_MAP: Record<ServiceUnit, string> = {
   "Per Month": "monthly",
   "Per Year": "yearly",
   "One Time": "one_time",
-  "Other": "other",
+  Other: "other",
 };

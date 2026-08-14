@@ -1,6 +1,6 @@
-import EventEditClient from './_components/EventEditClient';
+import EventEditClient from "./_components/EventEditClient";
 
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 
 interface Props {
   params: Promise<{ id: string }>;

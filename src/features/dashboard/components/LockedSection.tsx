@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
-import React from 'react';
-import { useRouter } from 'next/navigation';
+import React from "react";
+import { useRouter } from "next/navigation";
 
 interface LockedSectionProps {
   title: string;
@@ -33,13 +33,23 @@ export function LockedSection({
       <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/40 backdrop-blur-[1px] rounded-2xl border border-white/5 z-10">
         <div className="flex flex-col items-center gap-4 text-center px-6 py-8 max-w-xs">
           <div className="relative">
-            <span className={`material-symbols-outlined text-[40px] ${iconColor}`}>{icon}</span>
-            <span className="absolute -top-1 -right-1 material-symbols-outlined text-[20px] text-white/50">lock</span>
+            <span
+              className={`material-symbols-outlined text-[40px] ${iconColor}`}
+            >
+              {icon}
+            </span>
+            <span className="absolute -top-1 -right-1 material-symbols-outlined text-[20px] text-white/50">
+              lock
+            </span>
           </div>
           <div>
             <p className="text-white font-bold text-base">{title}</p>
             <p className="text-white/40 text-sm mt-1">
-              Apply as <span className="text-[#ccff00] font-semibold">{requiredRole}</span> to unlock this feature
+              Apply as{" "}
+              <span className="text-[#ccff00] font-semibold">
+                {requiredRole}
+              </span>{" "}
+              to unlock this feature
             </p>
           </div>
           <button

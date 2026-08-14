@@ -1,6 +1,6 @@
-'use client';
+"use client";
 
-import React from 'react';
+import React from "react";
 
 interface StepperControlProps {
   value: number;
@@ -36,7 +36,9 @@ export function StepperControl({
         >
           <span className="material-symbols-outlined text-[18px]">remove</span>
         </button>
-        <span className="text-xl font-bold font-display w-8 text-center text-white">{value}</span>
+        <span className="text-xl font-bold font-display w-8 text-center text-white">
+          {value}
+        </span>
         <button
           onClick={() => onChange(value + step)}
           className="h-10 w-10 rounded-full bg-white text-black hover:bg-accent flex items-center justify-center transition-colors"

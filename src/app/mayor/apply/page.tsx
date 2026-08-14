@@ -1,10 +1,11 @@
-﻿import React from 'react';
-import MayorApplicationClient from '@/features/role-application/components/MayorApplicationClient';
-import { Metadata } from 'next';
+﻿import React from "react";
+import MayorApplicationClient from "@/features/role-application/components/MayorApplicationClient";
+import { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: 'Apply to be a Mayor | FoxPassport',
-  description: 'Apply to become an authorized Space Provider (Mayor) on FoxPassport.',
+  title: "Apply to be a Mayor | FoxPassport",
+  description:
+    "Apply to become an authorized Space Provider (Mayor) on FoxPassport.",
 };
 
 export default function MayorApplicationPage() {

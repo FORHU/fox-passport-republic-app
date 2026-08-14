@@ -12,21 +12,65 @@ import {
 } from "@/features/venue/components/venue-builder";
 import { useHostVenueEdit } from "@/features/venue/hooks/useHostVenueEdit";
 
-interface Props { id: string; }
+interface Props {
+  id: string;
+}
 
 function VenueEditContent({ id }: Props) {
   const {
-    isPrefilling, prefillError,
-    venueName, description, venueType, capacity, location, city, state, country,
-    gallery, cancellationPolicyId, includedItems, addonItems, baseRate, occupancyRate, activeCategory,
-    searchQuery, showGuide, isSubmitting, isDragOver, newItem, filteredResources,
-    revenue, currentCategoryLabel,
-    setVenueName, setDescription, setVenueType, setCapacity, setLocation, setCity,
-    setState, setCountry, setCancellationPolicyId, removeIncludedItem, removeAddonItem, setBaseRate,
-    setOccupancyRate, setActiveCategory, setSearchQuery, setShowGuide, setNewItem,
-    handleDragStart, handleDragOver, handleDragLeave, handleDrop, handleAddCustomItem,
-    handleRemoveCustomResource, addImageToGallery, removeImageFromGallery,
-    handleBack, handleSaveDraft, handlePublish,
+    isPrefilling,
+    prefillError,
+    venueName,
+    description,
+    venueType,
+    capacity,
+    location,
+    city,
+    state,
+    country,
+    gallery,
+    cancellationPolicyId,
+    includedItems,
+    addonItems,
+    baseRate,
+    occupancyRate,
+    activeCategory,
+    searchQuery,
+    showGuide,
+    isSubmitting,
+    isDragOver,
+    newItem,
+    filteredResources,
+    revenue,
+    currentCategoryLabel,
+    setVenueName,
+    setDescription,
+    setVenueType,
+    setCapacity,
+    setLocation,
+    setCity,
+    setState,
+    setCountry,
+    setCancellationPolicyId,
+    removeIncludedItem,
+    removeAddonItem,
+    setBaseRate,
+    setOccupancyRate,
+    setActiveCategory,
+    setSearchQuery,
+    setShowGuide,
+    setNewItem,
+    handleDragStart,
+    handleDragOver,
+    handleDragLeave,
+    handleDrop,
+    handleAddCustomItem,
+    handleRemoveCustomResource,
+    addImageToGallery,
+    removeImageFromGallery,
+    handleBack,
+    handleSaveDraft,
+    handlePublish,
   } = useHostVenueEdit(id);
 
   return (
@@ -47,7 +91,12 @@ function VenueEditContent({ id }: Props) {
               <AlertTriangle className="h-8 w-8 text-red-400" />
               <div className="text-sm font-bold">Unable to load this venue</div>
               <div className="text-xs text-white/50">{prefillError}</div>
-              <button onClick={handleBack} className="mt-4 px-4 py-2 rounded-full border border-white/10 text-xs font-bold hover:bg-white hover:text-black">Back to Venues</button>
+              <button
+                onClick={handleBack}
+                className="mt-4 px-4 py-2 rounded-full border border-white/10 text-xs font-bold hover:bg-white hover:text-black"
+              >
+                Back to Venues
+              </button>
             </div>
           </div>
         </div>
@@ -62,17 +111,84 @@ function VenueEditContent({ id }: Props) {
         </div>
       ) : (
         <div className="fixed inset-0 z-60 bg-[#02040a] text-white flex flex-col font-body">
-          <VenueHeader venueName={venueName} isSubmitting={isSubmitting} onBack={handleBack} onSaveDraft={handleSaveDraft} onPublish={handlePublish} />
+          <VenueHeader
+            venueName={venueName}
+            isSubmitting={isSubmitting}
+            onBack={handleBack}
+            onSaveDraft={handleSaveDraft}
+            onPublish={handlePublish}
+          />
           <div className="flex-1 flex overflow-hidden">
-            <VenueResourcePalette activeCategory={activeCategory} searchQuery={searchQuery} filteredResources={filteredResources} newItem={newItem} currentCategoryLabel={currentCategoryLabel} onCategoryChange={setActiveCategory} onSearchChange={setSearchQuery} onNewItemChange={setNewItem} onAddCustomItem={handleAddCustomItem} onRemoveResource={handleRemoveCustomResource} onDragStart={handleDragStart} />
+            <VenueResourcePalette
+              activeCategory={activeCategory}
+              searchQuery={searchQuery}
+              filteredResources={filteredResources}
+              newItem={newItem}
+              currentCategoryLabel={currentCategoryLabel}
+              onCategoryChange={setActiveCategory}
+              onSearchChange={setSearchQuery}
+              onNewItemChange={setNewItem}
+              onAddCustomItem={handleAddCustomItem}
+              onRemoveResource={handleRemoveCustomResource}
+              onDragStart={handleDragStart}
+            />
             <main className="flex-1 overflow-y-auto p-8 bg-[#02040a] flex gap-8">
               <div className="flex-1 max-w-4xl mx-auto space-y-8">
-                <VenueDetailsForm venueName={venueName} description={description} venueType={venueType} capacity={capacity} location={location} city={city} state={state} country={country} gallery={gallery} showGuide={showGuide} cancellationPolicyId={cancellationPolicyId} onNameChange={setVenueName} onDescriptionChange={setDescription} onTypeChange={setVenueType} onCapacityChange={setCapacity} onLocationChange={setLocation} onCityChange={setCity} onStateChange={setState} onCountryChange={setCountry} onCancellationPolicyChange={setCancellationPolicyId} onAddImage={addImageToGallery} onRemoveImage={removeImageFromGallery} onCloseGuide={() => setShowGuide(false)} />
-                <FeatureDropZone type="included" items={includedItems} isDragOver={isDragOver} onDragOver={handleDragOver} onDragLeave={handleDragLeave} onDrop={handleDrop} onRemoveItem={removeIncludedItem} />
-                <FeatureDropZone type="addon" items={addonItems} isDragOver={isDragOver} onDragOver={handleDragOver} onDragLeave={handleDragLeave} onDrop={handleDrop} onRemoveItem={removeAddonItem} />
+                <VenueDetailsForm
+                  venueName={venueName}
+                  description={description}
+                  venueType={venueType}
+                  capacity={capacity}
+                  location={location}
+                  city={city}
+                  state={state}
+                  country={country}
+                  gallery={gallery}
+                  showGuide={showGuide}
+                  cancellationPolicyId={cancellationPolicyId}
+                  onNameChange={setVenueName}
+                  onDescriptionChange={setDescription}
+                  onTypeChange={setVenueType}
+                  onCapacityChange={setCapacity}
+                  onLocationChange={setLocation}
+                  onCityChange={setCity}
+                  onStateChange={setState}
+                  onCountryChange={setCountry}
+                  onCancellationPolicyChange={setCancellationPolicyId}
+                  onAddImage={addImageToGallery}
+                  onRemoveImage={removeImageFromGallery}
+                  onCloseGuide={() => setShowGuide(false)}
+                />
+                <FeatureDropZone
+                  type="included"
+                  items={includedItems}
+                  isDragOver={isDragOver}
+                  onDragOver={handleDragOver}
+                  onDragLeave={handleDragLeave}
+                  onDrop={handleDrop}
+                  onRemoveItem={removeIncludedItem}
+                />
+                <FeatureDropZone
+                  type="addon"
+                  items={addonItems}
+                  isDragOver={isDragOver}
+                  onDragOver={handleDragOver}
+                  onDragLeave={handleDragLeave}
+                  onDrop={handleDrop}
+                  onRemoveItem={removeAddonItem}
+                />
               </div>
             </main>
-            <RevenueProjector baseRate={baseRate} occupancyRate={occupancyRate} monthlyBase={revenue.monthlyBase} monthlyAddons={revenue.monthlyAddons} total={revenue.total} onBaseRateChange={setBaseRate} onOccupancyRateChange={setOccupancyRate} onPreview={() => {}} />
+            <RevenueProjector
+              baseRate={baseRate}
+              occupancyRate={occupancyRate}
+              monthlyBase={revenue.monthlyBase}
+              monthlyAddons={revenue.monthlyAddons}
+              total={revenue.total}
+              onBaseRateChange={setBaseRate}
+              onOccupancyRateChange={setOccupancyRate}
+              onPreview={() => {}}
+            />
           </div>
         </div>
       )}

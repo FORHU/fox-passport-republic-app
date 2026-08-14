@@ -1,4 +1,7 @@
-import type { EventItem, VenueItem } from "@/features/dashboard/data/dashboardData";
+import type {
+  EventItem,
+  VenueItem,
+} from "@/features/dashboard/data/dashboardData";
 
 function formatDate(value: unknown): string {
   if (!value) return "Date TBD";
@@ -36,8 +39,9 @@ export function mapBackendEventToEventItem(event: unknown): EventItem {
     .toUpperCase();
 
   const totalPrice = ev?.totalPrice ?? ev?.total_price;
-  const revenue =
-    totalPrice ? `₱${(Number(totalPrice) / 1000).toFixed(1)}k` : "₱0";
+  const revenue = totalPrice
+    ? `₱${(Number(totalPrice) / 1000).toFixed(1)}k`
+    : "₱0";
 
   const img =
     ev?.image ??
@@ -83,10 +87,9 @@ export function mapBackendVenueToVenueItem(venue: unknown): VenueItem {
     id: v?.id,
     title: v?.name ?? v?.title ?? "Untitled Venue",
     type: type || "VENUE",
-    loc:
-      v?.city
-        ? `${v.city}, ${v.country || "PH"}`
-        : v?.address ?? "Location TBD",
+    loc: v?.city
+      ? `${v.city}, ${v.country || "PH"}`
+      : (v?.address ?? "Location TBD"),
     cap: v?.capacity ? `${v.capacity} Cap` : "N/A",
     status,
     bookings: v?.bookings ?? "New",
@@ -94,4 +97,3 @@ export function mapBackendVenueToVenueItem(venue: unknown): VenueItem {
     img,
   };
 }
-

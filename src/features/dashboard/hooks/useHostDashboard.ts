@@ -3,7 +3,10 @@
 import { useQuery } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { useCreateVenueModal } from "@/features/venue/hooks/useCreateVenueModal";
-import { useAuthActions, useAuthStore } from "@/features/auth/store/useAuthStore";
+import {
+  useAuthActions,
+  useAuthStore,
+} from "@/features/auth/store/useAuthStore";
 import api from "@/shared/lib/axios";
 
 interface Venue {
@@ -43,7 +46,7 @@ export const useHostDashboard = () => {
     },
     enabled: !!userId, // Only run query if we have a user ID
     refetchInterval: () => {
-      if (typeof document !== 'undefined' && document.hidden) return false;
+      if (typeof document !== "undefined" && document.hidden) return false;
       return 10000; // 10 seconds for host dashboard
     },
     refetchOnWindowFocus: true,

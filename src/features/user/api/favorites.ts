@@ -25,7 +25,7 @@ export const getUserFavorites = async (userId: string): Promise<Favorite[]> => {
 
 export const checkFavorite = async (
   targetId: string,
-  type: string
+  type: string,
 ): Promise<{ isFavorited: boolean; favoriteId?: string }> => {
   const res = await api.get("/favorites/check", { params: { targetId, type } });
   return res.data.data || { isFavorited: false };
@@ -33,7 +33,7 @@ export const checkFavorite = async (
 
 export const addFavorite = async (
   targetId: string,
-  type: "venue" | "event"
+  type: "venue" | "event",
 ): Promise<Favorite> => {
   const res = await api.post("/favorites/add", { targetId, type });
   return res.data.data;
@@ -41,7 +41,7 @@ export const addFavorite = async (
 
 export const removeFavoriteByListing = async (
   targetId: string,
-  type: "venue" | "event"
+  type: "venue" | "event",
 ): Promise<void> => {
   await api.delete("/favorites/remove/listing", { data: { targetId, type } });
 };

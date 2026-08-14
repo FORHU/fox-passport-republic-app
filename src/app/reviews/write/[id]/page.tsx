@@ -1,8 +1,8 @@
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 
-import { getBookingById } from '@/shared/lib/server/data';
-import { notFound } from 'next/navigation';
-import WriteReviewClient from '@/features/review/components/WriteReviewClient';
+import { getBookingById } from "@/shared/lib/server/data";
+import { notFound } from "next/navigation";
+import WriteReviewClient from "@/features/review/components/WriteReviewClient";
 
 export default async function WriteReviewPage({
   params,

@@ -66,7 +66,11 @@ export interface Foxer {
   reviewCount?: number;
 }
 
-export async function fetchFoxers(limit = 9, page = 1, roleType?: string): Promise<Foxer[]> {
+export async function fetchFoxers(
+  limit = 9,
+  page = 1,
+  roleType?: string,
+): Promise<Foxer[]> {
   const params: Record<string, any> = { limit, page };
   if (roleType) params.roleType = roleType;
   const res = await api.get("/users/foxers", { params });

@@ -1,8 +1,12 @@
+/* eslint-disable @next/next/no-img-element */
 "use client";
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { type Foxer, type FoxerSpecialization } from "@/features/user/api/foxers";
+import {
+  type Foxer,
+  type FoxerSpecialization,
+} from "@/features/user/api/foxers";
 
 const FALLBACK_AVATAR =
   "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=400&auto=format&fit=crop";
@@ -12,7 +16,9 @@ function SpecializationChip({ spec }: { spec: FoxerSpecialization }) {
   if (spec.source === "earned") {
     return (
       <span className="inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide bg-yellow-400/15 border border-yellow-400/40 text-yellow-300">
-        <span className="material-symbols-outlined text-[11px] fill-current">star</span>
+        <span className="material-symbols-outlined text-[11px] fill-current">
+          star
+        </span>
         {label}
       </span>
     );
@@ -33,11 +39,30 @@ function getPrimaryRole(foxer: Foxer): string {
   return "";
 }
 
-const ROLE_META: Record<string, { label: string; description: string; color: string }> = {
-  eventFoxer: { label: "Event Foxer", description: "Plans & coordinates your entire event end-to-end", color: "#ff00aa" },
-  gearFoxer: { label: "Gear Foxer", description: "Rents out equipment — sound, lighting & décor", color: "#a78bfa" },
-  serviceFoxer: { label: "Talent Foxer", description: "Provides services like photography, catering & entertainment", color: "#00d2ff" },
-  venueFoxer: { label: "Venue Foxer", description: "Provides the space for your event", color: "#ccff00" },
+const ROLE_META: Record<
+  string,
+  { label: string; description: string; color: string }
+> = {
+  eventFoxer: {
+    label: "Event Foxer",
+    description: "Plans & coordinates your entire event end-to-end",
+    color: "#ff00aa",
+  },
+  gearFoxer: {
+    label: "Gear Foxer",
+    description: "Rents out equipment — sound, lighting & décor",
+    color: "#a78bfa",
+  },
+  serviceFoxer: {
+    label: "Talent Foxer",
+    description: "Provides services like photography, catering & entertainment",
+    color: "#00d2ff",
+  },
+  venueFoxer: {
+    label: "Venue Foxer",
+    description: "Provides the space for your event",
+    color: "#ccff00",
+  },
 };
 
 function getRoleMeta(foxer: Foxer) {
@@ -45,7 +70,11 @@ function getRoleMeta(foxer: Foxer) {
   if (roles.includes("eventFoxer")) return ROLE_META.eventFoxer;
   if (roles.includes("gearFoxer")) return ROLE_META.gearFoxer;
   if (roles.includes("serviceFoxer")) return ROLE_META.serviceFoxer;
-  return { label: "Foxer", description: "FoxPassport verified professional", color: "#ffffff" };
+  return {
+    label: "Foxer",
+    description: "FoxPassport verified professional",
+    color: "#ffffff",
+  };
 }
 
 function FoxerCard({ foxer }: { foxer: Foxer }) {
@@ -56,19 +85,28 @@ function FoxerCard({ foxer }: { foxer: Foxer }) {
 
   const portfolioImages = (
     isHost && hasTemplates
-      ? (foxer.eventTemplates ?? []).flatMap((t) => t.images.map((img) => img.url))
+      ? (foxer.eventTemplates ?? []).flatMap((t) =>
+          t.images.map((img) => img.url),
+        )
       : foxer.services.flatMap((s) => s.images.map((img) => img.url))
-  ).filter(Boolean).slice(0, 3);
+  )
+    .filter(Boolean)
+    .slice(0, 3);
 
-  const tags = (isHost && hasTemplates)
-    ? [...new Set((foxer.eventTemplates ?? []).map((t) => t.category))].slice(0, 4)
-    : [...new Set(foxer.services.flatMap((s) => s.tags))].slice(0, 4);
+  const tags =
+    isHost && hasTemplates
+      ? [...new Set((foxer.eventTemplates ?? []).map((t) => t.category))].slice(
+          0,
+          4,
+        )
+      : [...new Set(foxer.services.flatMap((s) => s.tags))].slice(0, 4);
 
   const roleMeta = getRoleMeta(foxer);
 
-  const bio = (isHost && hasTemplates)
-    ? (foxer.eventTemplates?.[0]?.description ?? null)
-    : (foxer.services[0]?.description ?? null);
+  const bio =
+    isHost && hasTemplates
+      ? (foxer.eventTemplates?.[0]?.description ?? null)
+      : (foxer.services[0]?.description ?? null);
 
   const avatarUrl = foxer.imgId
     ? `https://fox-passport-republic-assets.s3.ap-southeast-1.amazonaws.com/${foxer.imgId}`
@@ -76,7 +114,11 @@ function FoxerCard({ foxer }: { foxer: Foxer }) {
 
   return (
     <div className="group glass-card rounded-[2rem] p-8 transition-all duration-300 card-hover-effect relative flex flex-col">
-      <Link href={`/foxer/${foxer.id}`} className="absolute inset-0 z-0 rounded-[2rem]" aria-label={`View ${foxer.name}'s profile`}>
+      <Link
+        href={`/foxer/${foxer.id}`}
+        className="absolute inset-0 z-0 rounded-[2rem]"
+        aria-label={`View ${foxer.name}'s profile`}
+      >
         <span className="sr-only">View Profile</span>
       </Link>
 
@@ -87,22 +129,33 @@ function FoxerCard({ foxer }: { foxer: Foxer }) {
               src={avatarUrl}
               alt={foxer.name}
               className="h-16 w-16 rounded-full object-cover border-2 border-surface-highlight group-hover:scale-105 transition-transform"
-              onError={(e) => { (e.target as HTMLImageElement).src = FALLBACK_AVATAR; }}
+              onError={(e) => {
+                (e.target as HTMLImageElement).src = FALLBACK_AVATAR;
+              }}
             />
             <div className="absolute bottom-0 right-0 h-4 w-4 rounded-full bg-green-500 border-2 border-surface-highlight ring-2 ring-black" />
           </div>
           <div>
             <div className="flex items-center gap-1 font-display font-bold text-xl text-white">
               {foxer.name}{" "}
-              <span className="material-symbols-outlined text-primary text-[18px] fill-current">verified</span>
+              <span className="material-symbols-outlined text-primary text-[18px] fill-current">
+                verified
+              </span>
             </div>
-            <div className="text-sm font-semibold" style={{ color: roleMeta.color }}>{roleMeta.label}</div>
+            <div
+              className="text-sm font-semibold"
+              style={{ color: roleMeta.color }}
+            >
+              {roleMeta.label}
+            </div>
           </div>
         </div>
         <div className="text-right">
           <div className="flex items-center justify-end gap-1 font-bold text-white">
             5.0{" "}
-            <span className="material-symbols-outlined text-yellow-400 text-[16px] fill-current">star</span>
+            <span className="material-symbols-outlined text-yellow-400 text-[16px] fill-current">
+              star
+            </span>
           </div>
           <div className="text-xs text-text-muted">{foxer.city}</div>
         </div>
@@ -137,11 +190,15 @@ function FoxerCard({ foxer }: { foxer: Foxer }) {
 
       {(() => {
         const primaryRole = getPrimaryRole(foxer);
-        const specs = (foxer.foxerSpecializations ?? []).filter((s) => s.roleType === primaryRole);
+        const specs = (foxer.foxerSpecializations ?? []).filter(
+          (s) => s.roleType === primaryRole,
+        );
         if (specs.length === 0) return null;
         return (
           <div className="flex flex-wrap gap-1.5 mb-6 relative z-10">
-            {specs.map((s, i) => <SpecializationChip key={i} spec={s} />)}
+            {specs.map((s, i) => (
+              <SpecializationChip key={i} spec={s} />
+            ))}
           </div>
         );
       })()}
@@ -153,7 +210,11 @@ function FoxerCard({ foxer }: { foxer: Foxer }) {
               key={idx}
               className="h-20 flex-1 rounded-2xl overflow-hidden border border-white/10 group-hover:scale-105 transition-transform duration-300 first:-rotate-3 last:rotate-3"
             >
-              <img src={img} alt="Work" className="h-full w-full object-cover" />
+              <img
+                src={img}
+                alt="Work"
+                className="h-full w-full object-cover"
+              />
             </div>
           ))}
         </div>
@@ -171,10 +232,15 @@ function FoxerCard({ foxer }: { foxer: Foxer }) {
           Match Me
         </button>
         <button
-          onClick={(e) => { e.preventDefault(); e.stopPropagation(); }}
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+          }}
           className="h-12 w-12 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-gray-400 hover:text-white hover:bg-white/10 transition-colors group/heart cursor-pointer"
         >
-          <span className="material-symbols-outlined group-hover/heart:scale-125 transition-transform">favorite</span>
+          <span className="material-symbols-outlined group-hover/heart:scale-125 transition-transform">
+            favorite
+          </span>
         </button>
       </div>
     </div>
@@ -194,7 +260,9 @@ function SkeletonCard() {
       <div className="h-3 w-full bg-white/5 rounded" />
       <div className="h-3 w-3/4 bg-white/5 rounded" />
       <div className="flex gap-2">
-        {[1, 2, 3].map((j) => <div key={j} className="h-6 w-16 bg-white/5 rounded-lg" />)}
+        {[1, 2, 3].map((j) => (
+          <div key={j} className="h-6 w-16 bg-white/5 rounded-lg" />
+        ))}
       </div>
       <div className="h-12 w-full bg-white/5 rounded-full" />
     </div>
@@ -209,7 +277,13 @@ interface EventFoxersSectionProps {
   onPageChange: (page: number) => void;
 }
 
-export default function EventFoxersSection({ items, isFetching, page, totalPages, onPageChange }: EventFoxersSectionProps) {
+export default function EventFoxersSection({
+  items,
+  isFetching,
+  page,
+  totalPages,
+  onPageChange,
+}: EventFoxersSectionProps) {
   return (
     <section className="space-y-6">
       <div className="flex items-end justify-between">
@@ -235,8 +309,12 @@ export default function EventFoxersSection({ items, isFetching, page, totalPages
         </div>
       ) : items.length === 0 ? (
         <div className="text-center py-16 glass-card rounded-[2rem]">
-          <span className="material-symbols-outlined text-[56px] text-white/20">search_off</span>
-          <h3 className="text-xl font-bold text-white mt-2">No Event Foxers found</h3>
+          <span className="material-symbols-outlined text-[56px] text-white/20">
+            search_off
+          </span>
+          <h3 className="text-xl font-bold text-white mt-2">
+            No Event Foxers found
+          </h3>
           <p className="text-white/60 text-sm max-w-sm mx-auto">
             Try widening your search radius or adjusting the category.
           </p>

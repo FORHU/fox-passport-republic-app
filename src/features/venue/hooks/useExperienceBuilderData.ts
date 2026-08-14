@@ -95,14 +95,20 @@ const ASSET_CAT_TO_TAB: Record<string, string> = {
 
 async function fetchFoxers(): Promise<LiveFoxer[]> {
   const res = await api.get("/users/foxers?roleType=serviceFoxer,gearFoxer");
-  const users: ApiUser[] = Array.isArray(res.data) ? res.data : res.data?.data ?? [];
+  const users: ApiUser[] = Array.isArray(res.data)
+    ? res.data
+    : (res.data?.data ?? []);
   return users.map((u) => {
-    const priceList = [...(u.services ?? []), ...(u.assets ?? [])].map((i) => i.price).filter((p) => p > 0);
+    const priceList = [...(u.services ?? []), ...(u.assets ?? [])]
+      .map((i) => i.price)
+      .filter((p) => p > 0);
     const fee = priceList.length > 0 ? Math.min(...priceList) : 0;
     return {
       id: u.id,
       name: u.name || u.username || "Foxer",
-      role: u.roleType?.includes("serviceFoxer") ? "Talent Foxer" : "Gear Foxer",
+      role: u.roleType?.includes("serviceFoxer")
+        ? "Talent Foxer"
+        : "Gear Foxer",
       fee,
       rating: 0,
       avatar:
@@ -115,7 +121,9 @@ async function fetchFoxers(): Promise<LiveFoxer[]> {
 
 async function fetchServices(): Promise<LiveService[]> {
   const res = await api.get("/service");
-  const services: ApiService[] = Array.isArray(res.data) ? res.data : res.data?.data ?? [];
+  const services: ApiService[] = Array.isArray(res.data)
+    ? res.data
+    : (res.data?.data ?? []);
   return services.map((s) => ({
     id: s.id,
     name: s.name,
@@ -128,7 +136,9 @@ async function fetchServices(): Promise<LiveService[]> {
 
 async function fetchAssets(): Promise<LiveService[]> {
   const res = await api.get("/asset");
-  const assets: ApiAsset[] = Array.isArray(res.data) ? res.data : res.data?.data ?? [];
+  const assets: ApiAsset[] = Array.isArray(res.data)
+    ? res.data
+    : (res.data?.data ?? []);
   return assets.map((a) => ({
     id: a.id,
     name: a.name,
@@ -142,19 +152,25 @@ async function fetchAssets(): Promise<LiveService[]> {
 // ─── Hook ─────────────────────────────────────────────────────────────────────
 
 export function useExperienceBuilderData() {
-  const { data: foxers = [], isLoading: loadingFoxers } = useQuery<LiveFoxer[]>({
-    queryKey: ["experience-builder-foxers"],
-    queryFn: fetchFoxers,
-    staleTime: 1000 * 60 * 5,
-  });
+  const { data: foxers = [], isLoading: loadingFoxers } = useQuery<LiveFoxer[]>(
+    {
+      queryKey: ["experience-builder-foxers"],
+      queryFn: fetchFoxers,
+      staleTime: 1000 * 60 * 5,
+    },
+  );
 
-  const { data: services = [], isLoading: loadingServices } = useQuery<LiveService[]>({
+  const { data: services = [], isLoading: loadingServices } = useQuery<
+    LiveService[]
+  >({
     queryKey: ["experience-builder-services"],
     queryFn: fetchServices,
     staleTime: 1000 * 60 * 5,
   });
 
-  const { data: assets = [], isLoading: loadingAssets } = useQuery<LiveService[]>({
+  const { data: assets = [], isLoading: loadingAssets } = useQuery<
+    LiveService[]
+  >({
     queryKey: ["experience-builder-assets"],
     queryFn: fetchAssets,
     staleTime: 1000 * 60 * 5,

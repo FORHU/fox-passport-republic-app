@@ -15,13 +15,12 @@ interface Venue {
 
 export default function ListingCard({ venue }: { venue: Venue }) {
   const searchParams = useSearchParams();
-  
+
   // Preserve current search params when clicking details
   const detailsLink = `/venues/${venue.id}?${searchParams.toString()}`;
 
   return (
     <Link href={detailsLink} className="group cursor-pointer block w-full">
-      
       {/* Image Container */}
       <div className="relative aspect-square w-full overflow-hidden rounded-md md:rounded-xl bg-gray-200 mb-1.5 md:mb-3">
         <Image
@@ -38,7 +37,6 @@ export default function ListingCard({ venue }: { venue: Venue }) {
 
       {/* Content */}
       <div className="flex flex-col px-0.5">
-        
         {/* Top Row: Title + Rating */}
         <div className="flex justify-between items-start gap-1">
           <div className="min-w-0 flex-1">
@@ -51,21 +49,23 @@ export default function ListingCard({ venue }: { venue: Venue }) {
               {venue.category}
             </p>
           </div>
-          
+
           {/* Rating Star */}
           <div className="flex items-center gap-0.5 md:gap-1 shrink-0">
             <Star className="w-2.5 h-2.5 md:w-3 md:h-3 fill-black text-black" />
-            <span className="text-[9px] md:text-sm font-light">{venue.rating}</span>
+            <span className="text-[9px] md:text-sm font-light">
+              {venue.rating}
+            </span>
           </div>
         </div>
-        
+
         {/* Price Row */}
         <div className="mt-0.5 md:mt-1 flex items-baseline gap-0.5">
           <span className="font-semibold text-gray-900 text-[10px] md:text-base">
             ₱{venue.price.toLocaleString()}
           </span>
           <span className="text-gray-500 text-[8px] md:text-sm font-light">
-             night
+            night
           </span>
         </div>
       </div>

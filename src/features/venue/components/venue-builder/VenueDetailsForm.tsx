@@ -1,9 +1,16 @@
-﻿'use client';
+/* eslint-disable @next/next/no-img-element */
+"use client";
 
-import React, { useRef, useCallback } from 'react';
-import { GalleryItem, VENUE_TYPES } from '@/features/venue/data/venueBuilderData';
-import CancellationPolicyPicker from '@/features/cancellation-policy/components/CancellationPolicyPicker';
-import { MapboxLocationInput, MapboxContextItem } from '@/shared/components/ui/MapboxLocationInput';
+import React, { useRef, useCallback } from "react";
+import {
+  GalleryItem,
+  VENUE_TYPES,
+} from "@/features/venue/data/venueBuilderData";
+import CancellationPolicyPicker from "@/features/cancellation-policy/components/CancellationPolicyPicker";
+import {
+  MapboxLocationInput,
+  MapboxContextItem,
+} from "@/shared/components/ui/MapboxLocationInput";
 
 interface VenueDetailsFormProps {
   venueName: string;
@@ -72,9 +79,9 @@ export function VenueDetailsForm({
       if (files.length > 0) {
         onAddImage(files);
       }
-      e.target.value = '';
+      e.target.value = "";
     },
-    [onAddImage]
+    [onAddImage],
   );
 
   return (
@@ -88,8 +95,9 @@ export function VenueDetailsForm({
           <div>
             <h4 className="font-bold text-white text-sm mb-1">Venue Builder</h4>
             <p className="text-xs text-text-muted">
-              Drag <strong>included features</strong> to &quot;Standard Features&quot;. Drag{' '}
-              <strong>extras</strong> to &quot;Monetized Add-ons&quot;.
+              Drag <strong>included features</strong> to &quot;Standard
+              Features&quot;. Drag <strong>extras</strong> to &quot;Monetized
+              Add-ons&quot;.
             </p>
           </div>
           <button
@@ -111,7 +119,9 @@ export function VenueDetailsForm({
                 Venue Name
               </label>
               <div className="flex items-center gap-2 bg-white/5 px-4 py-3 rounded-xl border border-white/5">
-                <span className="material-symbols-outlined text-white/50 text-[18px]">badge</span>
+                <span className="material-symbols-outlined text-white/50 text-[18px]">
+                  badge
+                </span>
                 <input
                   type="text"
                   value={venueName}
@@ -133,9 +143,13 @@ export function VenueDetailsForm({
                   onChange={(e) => onTypeChange(e.target.value)}
                   className="w-full bg-white/5 border border-white/5 rounded-xl px-4 py-3 text-sm text-white appearance-none cursor-pointer"
                 >
-                  <option value="" className="bg-[#0f111a]">Select...</option>
+                  <option value="" className="bg-[#0f111a]">
+                    Select...
+                  </option>
                   {VENUE_TYPES.map((t) => (
-                    <option key={t} value={t} className="bg-[#0f111a]">{t}</option>
+                    <option key={t} value={t} className="bg-[#0f111a]">
+                      {t}
+                    </option>
                   ))}
                 </select>
               </div>
@@ -144,7 +158,9 @@ export function VenueDetailsForm({
                   Capacity
                 </label>
                 <div className="flex items-center gap-2 bg-white/5 px-4 py-3 rounded-xl border border-white/5">
-                  <span className="material-symbols-outlined text-white/50 text-[18px]">groups</span>
+                  <span className="material-symbols-outlined text-white/50 text-[18px]">
+                    groups
+                  </span>
                   <input
                     value={capacity}
                     onChange={(e) => onCapacityChange(e.target.value)}
@@ -161,7 +177,9 @@ export function VenueDetailsForm({
                 Address
               </label>
               <div className="flex items-center gap-2 bg-white/5 px-4 py-3 rounded-xl border border-white/5">
-                <span className="material-symbols-outlined text-white/50 text-[18px]">location_on</span>
+                <span className="material-symbols-outlined text-white/50 text-[18px]">
+                  location_on
+                </span>
                 <input
                   value={location}
                   onChange={(e) => onLocationChange(e.target.value)}
@@ -194,10 +212,18 @@ export function VenueDetailsForm({
                   onChange={onCityChange}
                   type="place"
                   placeholder="City"
-                  onSelect={(val: string, context?: MapboxContextItem[], center?: [number, number]) => {
+                  onSelect={(
+                    val: string,
+                    context?: MapboxContextItem[],
+                    center?: [number, number],
+                  ) => {
                     onCityChange(val);
-                    const region = context?.find((c) => c.id.startsWith('region'))?.text;
-                    const countryName = context?.find((c) => c.id.startsWith('country'))?.text;
+                    const region = context?.find((c) =>
+                      c.id.startsWith("region"),
+                    )?.text;
+                    const countryName = context?.find((c) =>
+                      c.id.startsWith("country"),
+                    )?.text;
                     if (region) onStateChange(region);
                     if (countryName) onCountryChange(countryName);
                     if (center) onLatLngChange(center[1], center[0]); // center is [lng, lat]
@@ -215,7 +241,9 @@ export function VenueDetailsForm({
                   placeholder="State/Province"
                   onSelect={(val: string, context?: MapboxContextItem[]) => {
                     onStateChange(val);
-                    const countryName = context?.find((c) => c.id.startsWith('country'))?.text;
+                    const countryName = context?.find((c) =>
+                      c.id.startsWith("country"),
+                    )?.text;
                     if (countryName) onCountryChange(countryName);
                   }}
                 />
@@ -259,14 +287,18 @@ export function VenueDetailsForm({
                   <label className="text-[10px] uppercase font-bold text-white/40 tracking-widest mb-1 block">
                     Gallery
                   </label>
-                  <p className="text-[10px] text-text-muted">Upload unique photos of your venue</p>
+                  <p className="text-[10px] text-text-muted">
+                    Upload unique photos of your venue
+                  </p>
                 </div>
                 <button
                   type="button"
                   onClick={openFilePicker}
                   className="text-[10px] font-bold text-accent hover:underline flex items-center gap-1"
                 >
-                  <span className="material-symbols-outlined text-[14px]">add_a_photo</span>
+                  <span className="material-symbols-outlined text-[14px]">
+                    add_a_photo
+                  </span>
                   Upload
                 </button>
               </div>
@@ -285,13 +317,19 @@ export function VenueDetailsForm({
                             Cover
                           </div>
                         )}
-                        <img src={img.url} className="w-full h-full object-cover" alt={img.caption || `Gallery image ${idx + 1}`} />
+                        <img
+                          src={img.url}
+                          className="w-full h-full object-cover"
+                          alt={img.caption || `Gallery image ${idx + 1}`}
+                        />
                         <button
                           type="button"
                           onClick={() => onRemoveImage(img.id)}
                           className="absolute top-2 right-2 p-1.5 bg-black/50 rounded-full opacity-0 group-hover:opacity-100 hover:bg-red-500 transition-all"
                         >
-                          <span className="material-symbols-outlined text-[14px]">close</span>
+                          <span className="material-symbols-outlined text-[14px]">
+                            close
+                          </span>
                         </button>
                       </div>
                     ))}
@@ -301,8 +339,12 @@ export function VenueDetailsForm({
                         onClick={openFilePicker}
                         className="aspect-video border-2 border-dashed border-white/10 rounded-xl flex flex-col items-center justify-center text-white/20 hover:text-white hover:border-accent/40 hover:bg-white/5 transition-colors gap-1"
                       >
-                        <span className="material-symbols-outlined text-xl">add_photo_alternate</span>
-                        <span className="text-[9px] font-bold uppercase tracking-wider">Add More</span>
+                        <span className="material-symbols-outlined text-xl">
+                          add_photo_alternate
+                        </span>
+                        <span className="text-[9px] font-bold uppercase tracking-wider">
+                          Add More
+                        </span>
                       </button>
                     )}
                   </>
@@ -312,9 +354,15 @@ export function VenueDetailsForm({
                     onClick={openFilePicker}
                     className="col-span-full h-40 border-2 border-dashed border-white/10 rounded-2xl flex flex-col items-center justify-center text-white/20 hover:text-white hover:border-accent/40 hover:bg-white/5 transition-colors"
                   >
-                    <span className="material-symbols-outlined text-3xl mb-2">add_a_photo</span>
-                    <span className="text-[10px] font-bold uppercase tracking-wider">Upload Photos from Device</span>
-                    <span className="text-[9px] text-white/20 mt-1">Supports JPG, PNG, WEBP · Max 12 photos</span>
+                    <span className="material-symbols-outlined text-3xl mb-2">
+                      add_a_photo
+                    </span>
+                    <span className="text-[10px] font-bold uppercase tracking-wider">
+                      Upload Photos from Device
+                    </span>
+                    <span className="text-[9px] text-white/20 mt-1">
+                      Supports JPG, PNG, WEBP · Max 12 photos
+                    </span>
                   </button>
                 )}
               </div>

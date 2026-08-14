@@ -1,5 +1,4 @@
-﻿
-export type {
+﻿export type {
   Category,
   CategoriesApiResponse,
   CategoryApiResponse,

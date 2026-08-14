@@ -30,14 +30,14 @@ const KPICard = React.forwardRef<HTMLDivElement, KPICardProps>(
       progressWidth = "70%",
       ...props
     },
-    ref
+    ref,
   ) => {
     return (
       <div
         ref={ref}
         className={cn(
           "glass-card rounded-3xl p-6 relative overflow-hidden group border border-white/5",
-          className
+          className,
         )}
         {...props}
       >
@@ -63,7 +63,7 @@ const KPICard = React.forwardRef<HTMLDivElement, KPICardProps>(
                   "px-2 py-1 rounded-lg font-bold flex items-center gap-1",
                   trend.direction === "up"
                     ? "bg-success/20 text-success"
-                    : "bg-destructive/20 text-destructive"
+                    : "bg-destructive/20 text-destructive",
                 )}
               >
                 <span className="material-symbols-outlined text-[14px]">
@@ -82,13 +82,13 @@ const KPICard = React.forwardRef<HTMLDivElement, KPICardProps>(
         <div
           className={cn(
             "absolute bottom-0 left-0 h-1 shadow-[0_0_10px_currentColor]",
-            progressColor
+            progressColor,
           )}
           style={{ width: progressWidth }}
         />
       </div>
     );
-  }
+  },
 );
 KPICard.displayName = "KPICard";
 

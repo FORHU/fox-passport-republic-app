@@ -10,11 +10,11 @@ interface UseHostDataOptions {
 }
 
 export const useHostData = (
-  type: 'services' | 'assets' | 'events' | 'venues',
+  type: "services" | "assets" | "events" | "venues",
   initialData?: unknown[],
   options?: UseHostDataOptions,
 ) => {
-  const user = useAuthStore(s => s.user);
+  const user = useAuthStore((s) => s.user);
   const userId = user?.id;
   const page = options?.page ?? 1;
   const limit = options?.limit ?? 50;
@@ -30,33 +30,60 @@ export const useHostData = (
       switch (type) {
         case "services":
           endpoint = "/service";
-          params = { ownerId: String(userId), page: String(page), limit: String(limit) };
+          params = {
+            ownerId: String(userId),
+            page: String(page),
+            limit: String(limit),
+          };
           break;
         case "assets":
           endpoint = "/asset";
-          params = { ownerId: String(userId), page: String(page), limit: String(limit) };
+          params = {
+            ownerId: String(userId),
+            page: String(page),
+            limit: String(limit),
+          };
           break;
         case "events":
           endpoint = "/event-templates";
-          params = { ownerId: String(userId), page: String(page), limit: String(limit) };
+          params = {
+            ownerId: String(userId),
+            page: String(page),
+            limit: String(limit),
+          };
           break;
         case "venues":
           endpoint = "/venues";
-          params = { hostId: String(userId), page: String(page), limit: String(limit) };
+          params = {
+            hostId: String(userId),
+            page: String(page),
+            limit: String(limit),
+          };
           break;
         default:
           return { items: [], total: 0 };
       }
 
       const res = await api.get(endpoint, { params });
-      const raw = res.data?.templates ?? res.data?.data ?? res.data?.services ?? res.data?.assets ?? res.data?.venues ?? res.data?.eventTemplates ?? (Array.isArray(res.data) ? res.data : []);
-      const total: number = res.data?.total ?? (Array.isArray(raw) ? raw.length : 0);
+      const raw =
+        res.data?.templates ??
+        res.data?.data ??
+        res.data?.services ??
+        res.data?.assets ??
+        res.data?.venues ??
+        res.data?.eventTemplates ??
+        (Array.isArray(res.data) ? res.data : []);
+      const total: number =
+        res.data?.total ?? (Array.isArray(raw) ? raw.length : 0);
       return { items: Array.isArray(raw) ? raw : [], total };
     },
     enabled: !!userId,
-    initialData: page === 1 && initialData ? { items: initialData, total: initialData.length } : undefined,
+    initialData:
+      page === 1 && initialData
+        ? { items: initialData, total: initialData.length }
+        : undefined,
     refetchInterval: () => {
-      if (typeof document !== 'undefined' && document.hidden) return false;
+      if (typeof document !== "undefined" && document.hidden) return false;
       return 10000;
     },
     refetchOnWindowFocus: true,

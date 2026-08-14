@@ -1,6 +1,6 @@
-﻿export const dynamic = 'force-dynamic';
+﻿export const dynamic = "force-dynamic";
 
-import ItemCheckoutClient from '@/features/booking/components/ItemCheckoutClient';
+import ItemCheckoutClient from "@/features/booking/components/ItemCheckoutClient";
 
 export default function ItemCheckoutPage() {
   return <ItemCheckoutClient />;

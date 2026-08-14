@@ -1,12 +1,19 @@
+/* eslint-disable @next/next/no-img-element */
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen, fireEvent, within } from "@testing-library/react";
 
 vi.mock("next/image", () => ({
-  default: (props: any) => <img src="mock.png" alt={props.alt ?? ""} {...props} />,
+  default: ({ alt, ...props }: React.ComponentProps<"img">) => (
+    <img src="mock.png" alt={alt ?? ""} {...props} />
+  ),
 }));
 
+// DashboardHeader calls usePathname() to mark the active link — omitting it
+// here makes the component throw during render.
 vi.mock("next/navigation", () => ({
   useRouter: () => ({ push: vi.fn(), back: vi.fn() }),
+  usePathname: () => "/creator-dashboard",
+  useSearchParams: () => new URLSearchParams(),
 }));
 
 const mockAccess = {
@@ -24,11 +31,16 @@ vi.mock("@/features/auth/hooks/useRoleAccess", () => ({
   RoleAccess: {},
 }));
 
+const mockAuthState = {
+  user: { name: "Test Creator", email: "t@x.com" },
+  setUser: vi.fn(),
+};
+
+type MockAuthState = typeof mockAuthState;
+
 vi.mock("@/features/auth/store/useAuthStore", () => ({
-  useAuthStore: (selector?: (s: any) => any) => {
-    const state = { user: { name: "Test Creator", email: "t@x.com" }, setUser: vi.fn() };
-    return selector ? selector(state) : state;
-  },
+  useAuthStore: <T,>(selector?: (s: MockAuthState) => T) =>
+    selector ? selector(mockAuthState) : mockAuthState,
 }));
 
 vi.mock("@/features/notifications/components/NotificationBell", () => ({
@@ -53,7 +65,9 @@ describe("DashboardHeader — responsive nav", () => {
   it("opens the mobile drawer containing the nav links when hamburger is clicked", () => {
     const { container } = render(<DashboardHeader />);
 
-    const hamburger = container.querySelector("button.md\\:hidden") as HTMLButtonElement;
+    const hamburger = container.querySelector(
+      "button.md\\:hidden",
+    ) as HTMLButtonElement;
     fireEvent.click(hamburger);
 
     const dialog = screen.getByRole("dialog");

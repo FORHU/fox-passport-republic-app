@@ -17,7 +17,7 @@ api.interceptors.request.use(
     }
     return config;
   },
-  (error) => Promise.reject(error)
+  (error) => Promise.reject(error),
 );
 
 // Response interceptor to handle token refresh
@@ -28,10 +28,10 @@ api.interceptors.response.use(
 
     // If 401 error and not already retried
     if (
-      error.response?.status === 401 && 
-      !originalRequest._retry && 
-      !originalRequest.url?.includes('/auth/refresh-token') &&
-      !originalRequest.url?.includes('/auth/login')
+      error.response?.status === 401 &&
+      !originalRequest._retry &&
+      !originalRequest.url?.includes("/auth/refresh-token") &&
+      !originalRequest.url?.includes("/auth/login")
     ) {
       originalRequest._retry = true;
 
@@ -42,21 +42,23 @@ api.interceptors.response.use(
         console.log("[Axios] Token expired, attempting silent refresh...");
 
         // Use base axios to avoid interceptor loop
-        const { data } = await axios.post(`${config.apiUrl}/auth/refresh-token`, {
-          refreshToken: refreshToken.replace(/"/g, '')
-        });
+        const { data } = await axios.post(
+          `${config.apiUrl}/auth/refresh-token`,
+          {
+            refreshToken: refreshToken.replace(/"/g, ""),
+          },
+        );
 
         const { accessToken, user } = data;
-        
+
         // Save new token
         localStorage.setItem("fox_token", accessToken);
-        
-        // Update user object (including embedded token for legacy compatibility)
+
+        // Profile data only — the token is stored under `fox_token`.
         if (user) {
-          const storedUser = { ...user, accessToken };
-          localStorage.setItem("fox_user", JSON.stringify(storedUser));
+          localStorage.setItem("fox_user", JSON.stringify(user));
         }
-        
+
         // Update Authorization header and retry original request
         originalRequest.headers.Authorization = `Bearer ${accessToken}`;
         return api(originalRequest);
@@ -66,7 +68,7 @@ api.interceptors.response.use(
         localStorage.removeItem("fox_token");
         localStorage.removeItem("fox_refresh_token");
         localStorage.removeItem("fox_user");
-        
+
         if (typeof window !== "undefined") {
           window.location.href = "/?auth=expired";
         }
@@ -75,7 +77,7 @@ api.interceptors.response.use(
     }
 
     return Promise.reject(error);
-  }
+  },
 );
 
 export default api;

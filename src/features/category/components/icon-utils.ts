@@ -78,7 +78,7 @@ export const ICON_MAP: Record<string, LucideIcon> = {
 export const DEFAULT_ICON = Grid3X3;
 
 export function getIconComponent(
-  iconName: string | null | undefined
+  iconName: string | null | undefined,
 ): LucideIcon {
   if (!iconName) return DEFAULT_ICON;
   // Normalize key lookup if needed, but assuming strict match for now based on previous code

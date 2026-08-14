@@ -1,8 +1,12 @@
-﻿import { getCategories, getEventsByCategory, getVenuesByCategory } from '@/shared/lib/server/data';
-import CategoriesClient from '@/features/category/components/CategoriesClient';
+﻿import {
+  getCategories,
+  getEventsByCategory,
+  getVenuesByCategory,
+} from "@/shared/lib/server/data";
+import CategoriesClient from "@/features/category/components/CategoriesClient";
 
 // Skip static generation for this page - it fetches dynamic data
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 
 export default async function CategoriesPage({
   searchParams,

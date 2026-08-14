@@ -1,15 +1,21 @@
-'use client';
+/* eslint-disable react-hooks/exhaustive-deps */
+"use client";
 
-import { useCallback, useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { toast } from 'sonner';
-import { useAuthStore } from '@/features/auth/store/useAuthStore';
-import { useVenueBuilder } from '@/features/venue/hooks/useVenueBuilder';
-import { fetchVenuesByHostId, updateVenue } from '@/features/venue/api/venues';
-import api from '@/shared/lib/axios';
-import { VENUE_TYPES } from '@/features/venue/data/venueBuilderData';
-import type { Id } from '@/shared/lib/api-types';
-import type { Venue, VenueItem, VenueUpdatePayload, VenueImage } from '@/features/venue/types/venue';
+import { useCallback, useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import { toast } from "sonner";
+import { useAuthStore } from "@/features/auth/store/useAuthStore";
+import { useVenueBuilder } from "@/features/venue/hooks/useVenueBuilder";
+import { fetchVenuesByHostId, updateVenue } from "@/features/venue/api/venues";
+import api from "@/shared/lib/axios";
+import { VENUE_TYPES } from "@/features/venue/data/venueBuilderData";
+import type { Id } from "@/shared/lib/api-types";
+import type {
+  Venue,
+  VenueItem,
+  VenueUpdatePayload,
+  VenueImage,
+} from "@/features/venue/types/venue";
 
 function belongsToHost(record: Venue, hostId: Id): boolean {
   const idStr = String(hostId);
@@ -23,27 +29,27 @@ function belongsToHost(record: Venue, hostId: Id): boolean {
     String(record?.host?.id),
   ];
 
-  return candidates.some((c) => c && c !== 'undefined' && c === idStr);
+  return candidates.some((c) => c && c !== "undefined" && c === idStr);
 }
 
 function toTitleCase(value: unknown): string {
-  const s = String(value ?? '').trim();
-  if (!s) return '';
+  const s = String(value ?? "").trim();
+  if (!s) return "";
   return s.charAt(0).toUpperCase() + s.slice(1);
 }
 
 function normalizeVenueStatusToBackend(value: unknown): string {
-  const raw = String(value ?? '')
+  const raw = String(value ?? "")
     .trim()
     .toLowerCase()
-    .replace(/_/g, ' ')
-    .replace(/\s+/g, ' ');
+    .replace(/_/g, " ")
+    .replace(/\s+/g, " ");
 
-  if (!raw) return 'pending';
-  if (raw.includes('draft')) return 'draft';
-  if (raw.includes('archiv')) return 'archived';
-  if (raw.includes('reject')) return 'rejected';
-  return 'pending';
+  if (!raw) return "pending";
+  if (raw.includes("draft")) return "draft";
+  if (raw.includes("archiv")) return "archived";
+  if (raw.includes("reject")) return "rejected";
+  return "pending";
 }
 
 function extractArrayOfNames(maybe: unknown): string[] {
@@ -51,10 +57,13 @@ function extractArrayOfNames(maybe: unknown): string[] {
   if (Array.isArray(maybe)) {
     return maybe
       .map((x) => {
-        if (typeof x === 'string') return x;
-        if (x && typeof x === 'object') {
+        if (typeof x === "string") return x;
+        if (x && typeof x === "object") {
           const obj = x as Record<string, unknown>;
-          return (obj.name as string | undefined) ?? (obj.label as string | undefined);
+          return (
+            (obj.name as string | undefined) ??
+            (obj.label as string | undefined)
+          );
         }
         return undefined;
       })
@@ -65,8 +74,8 @@ function extractArrayOfNames(maybe: unknown): string[] {
 
 function extractImageUrl(img: unknown): string | null {
   if (!img) return null;
-  if (typeof img === 'string') return img;
-  if (img && typeof img === 'object') {
+  if (typeof img === "string") return img;
+  if (img && typeof img === "object") {
     const imgObj = img as VenueImage;
     return imgObj?.url ?? imgObj?.imageUrl ?? imgObj?.image ?? null;
   }
@@ -75,12 +84,12 @@ function extractImageUrl(img: unknown): string | null {
 
 function categoryToIcon(category: string): string {
   const c = category.toLowerCase();
-  if (c === 'spaces') return 'weekend';
-  if (c === 'amenities') return 'wifi';
-  if (c === 'tech') return 'speaker';
-  if (c === 'staff') return 'badge';
-  if (c === 'rules') return 'gavel';
-  return 'star';
+  if (c === "spaces") return "weekend";
+  if (c === "amenities") return "wifi";
+  if (c === "tech") return "speaker";
+  if (c === "staff") return "badge";
+  if (c === "rules") return "gavel";
+  return "star";
 }
 
 interface ErrorResponse {
@@ -100,11 +109,12 @@ export function useHostVenueEdit(venueId: string) {
 
   const builder = useVenueBuilder();
 
-  const backHref = '/creator-dashboard/venues';
+  const backHref = "/creator-dashboard/venues";
 
   const [isPrefilling, setIsPrefilling] = useState(true);
   const [prefillError, setPrefillError] = useState<string | null>(null);
-  const [existingStatus, setExistingStatus] = useState<string>('pending_review');
+  const [existingStatus, setExistingStatus] =
+    useState<string>("pending_review");
 
   const handleBack = useCallback(() => {
     router.push(backHref);
@@ -112,13 +122,13 @@ export function useHostVenueEdit(venueId: string) {
 
   const submitVenue = async (targetStatus: string): Promise<void> => {
     if (!builder.venueName || !builder.venueType) {
-      toast.error('Please fill in the required fields (Name and Type)');
+      toast.error("Please fill in the required fields (Name and Type)");
       return;
     }
 
-    const capacityNum = parseInt(builder.capacity || '0', 10);
+    const capacityNum = parseInt(builder.capacity || "0", 10);
     if (!Number.isFinite(capacityNum) || capacityNum < 1) {
-      toast.error('Capacity must be at least 1');
+      toast.error("Capacity must be at least 1");
       return;
     }
 
@@ -127,7 +137,7 @@ export function useHostVenueEdit(venueId: string) {
       const allItems: any[] = [...builder.includedItems, ...builder.addonItems];
       const payload: VenueUpdatePayload = {
         name: builder.venueName,
-        description: builder.description || 'Venue updated via Studio.',
+        description: builder.description || "Venue updated via Studio.",
         category: builder.venueType.toLowerCase(),
         capacity: capacityNum,
         address: builder.location,
@@ -136,26 +146,26 @@ export function useHostVenueEdit(venueId: string) {
         country: builder.country,
         price: builder.baseRate,
         spaceType: allItems
-          .filter((i) => i.category === 'spaces')
+          .filter((i) => i.category === "spaces")
           .map((i) => i.name),
         amenities: allItems
-          .filter((i) => i.category === 'amenities')
+          .filter((i) => i.category === "amenities")
           .map((i) => i.name),
         techAv: allItems
-          .filter((i) => i.category === 'tech')
+          .filter((i) => i.category === "tech")
           .map((i) => i.name),
         staffing: allItems
-          .filter((i) => i.category === 'staff')
+          .filter((i) => i.category === "staff")
           .map((i) => i.name),
         policies: allItems
-          .filter((i) => i.category === 'rules')
+          .filter((i) => i.category === "rules")
           .map((i) => i.name),
         cancellationPolicyId: builder.cancellationPolicyId || undefined,
         status: normalizeVenueStatusToBackend(targetStatus),
       };
 
       if (!venueId) {
-        toast.error('Invalid venue id.');
+        toast.error("Invalid venue id.");
         builder.setIsSubmitting(false);
         return;
       }
@@ -169,37 +179,49 @@ export function useHostVenueEdit(venueId: string) {
 
       if (galleryFiles.length > 0) {
         const formData = new FormData();
-        galleryFiles.forEach((file) => formData.append('images', file));
+        galleryFiles.forEach((file) => formData.append("images", file));
         await api.post(`/venues/${venueId}/images`, formData);
       }
 
       setExistingStatus(targetStatus);
-      toast.success(targetStatus === 'draft' ? 'Draft saved!' : 'Venue published!');
+      toast.success(
+        targetStatus === "draft" ? "Draft saved!" : "Venue published!",
+      );
       setTimeout(() => {
         builder.reset();
         router.push(backHref);
       }, 500);
     } catch (error) {
-      console.error('Venue update error:', error);
+      console.error("Venue update error:", error);
       const axiosError = error as ErrorResponse;
       const backendMessage =
         axiosError?.response?.data?.message ||
         axiosError?.response?.data?.error ||
-        (typeof axiosError?.response?.data === 'string' ? axiosError.response.data : null);
-      toast.error(backendMessage || axiosError?.message || 'Failed to update venue');
+        (typeof axiosError?.response?.data === "string"
+          ? axiosError.response.data
+          : null);
+      toast.error(
+        backendMessage || axiosError?.message || "Failed to update venue",
+      );
     } finally {
       builder.setIsSubmitting(false);
     }
   };
 
-  const handlePublish = useCallback(() => submitVenue('published'), [builder, router, venueId]);
+  const handlePublish = useCallback(
+    () => submitVenue("published"),
+    [builder, router, venueId],
+  );
 
-  const handleSaveDraft = useCallback(() => submitVenue('draft'), [builder, router, venueId]);
+  const handleSaveDraft = useCallback(
+    () => submitVenue("draft"),
+    [builder, router, venueId],
+  );
 
   useEffect(() => {
     if (!venueId) {
       setIsPrefilling(false);
-      setPrefillError('Invalid venue id.');
+      setPrefillError("Invalid venue id.");
       return;
     }
     if (!hostId) {
@@ -220,39 +242,45 @@ export function useHostVenueEdit(venueId: string) {
         const found = filtered.find((vn) => String(vn?.id) === String(venueId));
 
         if (!found) {
-          if (!cancelled) setPrefillError('Venue not found or not owned by you.');
+          if (!cancelled)
+            setPrefillError("Venue not found or not owned by you.");
           return;
         }
         if (cancelled) return;
 
-        setExistingStatus(normalizeVenueStatusToBackend(found?.status ?? 'pending_review'));
+        setExistingStatus(
+          normalizeVenueStatusToBackend(found?.status ?? "pending_review"),
+        );
 
         builder.reset();
         builder.setShowGuide(false);
 
-        builder.setVenueName(found?.name ?? found?.title ?? '');
-        builder.setDescription(found?.description ?? '');
+        builder.setVenueName(found?.name ?? found?.title ?? "");
+        builder.setDescription(found?.description ?? "");
 
-        const rawType = found?.type ?? found?.venueType ?? '';
+        const rawType = found?.type ?? found?.venueType ?? "";
         const normalizedType = toTitleCase(String(rawType).toLowerCase());
         builder.setVenueType(normalizedType || (VENUE_TYPES[0] as string));
 
-        builder.setCapacity(String(found?.capacity ?? found?.cap ?? ''));
+        builder.setCapacity(String(found?.capacity ?? found?.cap ?? ""));
 
-        const address = found?.address ?? found?.location ?? '';
+        const address = found?.address ?? found?.location ?? "";
         builder.setLocation(address);
 
-        builder.setCity(found?.city ?? '');
-        builder.setState(found?.state ?? '');
-        builder.setCountry(found?.country ?? '');
+        builder.setCity(found?.city ?? "");
+        builder.setState(found?.state ?? "");
+        builder.setCountry(found?.country ?? "");
 
         // Gallery
-        const images = (found?.venueImages ?? found?.images ?? []) as (VenueImage | string)[];
+        const images = (found?.venueImages ?? found?.images ?? []) as (
+          VenueImage | string
+        )[];
         if (Array.isArray(images)) {
           images.forEach((img, idx) => {
             const url = extractImageUrl(img);
             if (!url) return;
-            const imgObj = img && typeof img === 'object' ? (img as VenueImage) : null;
+            const imgObj =
+              img && typeof img === "object" ? (img as VenueImage) : null;
             builder.addGalleryItem({
               id: `venue-img-${found?.id}-${idx}`,
               url,
@@ -262,15 +290,17 @@ export function useHostVenueEdit(venueId: string) {
         }
 
         // Included/addon items
-        const spaceTypes = extractArrayOfNames(found?.spaceType ?? found?.spaceTypes);
+        const spaceTypes = extractArrayOfNames(
+          found?.spaceType ?? found?.spaceTypes,
+        );
         spaceTypes.forEach((name, idx) => {
           const item: VenueItem = {
             id: `space-${name}-${idx}`,
             name,
             value: 0,
-            icon: categoryToIcon('spaces'),
-            desc: '',
-            category: 'spaces',
+            icon: categoryToIcon("spaces"),
+            desc: "",
+            category: "spaces",
           };
           builder.addIncludedItem(item);
         });
@@ -280,9 +310,9 @@ export function useHostVenueEdit(venueId: string) {
             id: `amenity-${name}-${idx}`,
             name,
             value: 0,
-            icon: categoryToIcon('amenities'),
-            desc: '',
-            category: 'amenities',
+            icon: categoryToIcon("amenities"),
+            desc: "",
+            category: "amenities",
           });
         });
 
@@ -291,9 +321,9 @@ export function useHostVenueEdit(venueId: string) {
             id: `tech-${name}-${idx}`,
             name,
             value: 0,
-            icon: categoryToIcon('tech'),
-            desc: '',
-            category: 'tech',
+            icon: categoryToIcon("tech"),
+            desc: "",
+            category: "tech",
           });
         });
 
@@ -302,9 +332,9 @@ export function useHostVenueEdit(venueId: string) {
             id: `staff-${name}-${idx}`,
             name,
             value: 0,
-            icon: categoryToIcon('staff'),
-            desc: '',
-            category: 'staff',
+            icon: categoryToIcon("staff"),
+            desc: "",
+            category: "staff",
           });
         });
 
@@ -313,17 +343,21 @@ export function useHostVenueEdit(venueId: string) {
             id: `policy-${name}-${idx}`,
             name,
             value: 0,
-            icon: categoryToIcon('rules'),
-            desc: '',
-            category: 'rules',
+            icon: categoryToIcon("rules"),
+            desc: "",
+            category: "rules",
           });
         });
 
-        builder.setBaseRate(Number(found?.price ?? found?.baseRate ?? builder.baseRate));
-        builder.setOccupancyRate(Number(found?.occupancyRate ?? found?.occupancy ?? 60));
+        builder.setBaseRate(
+          Number(found?.price ?? found?.baseRate ?? builder.baseRate),
+        );
+        builder.setOccupancyRate(
+          Number(found?.occupancyRate ?? found?.occupancy ?? 60),
+        );
       } catch (err) {
-        console.error('Prefill venue edit failed:', err);
-        if (!cancelled) setPrefillError('Failed to load venue.');
+        console.error("Prefill venue edit failed:", err);
+        if (!cancelled) setPrefillError("Failed to load venue.");
       } finally {
         if (!cancelled) setIsPrefilling(false);
       }

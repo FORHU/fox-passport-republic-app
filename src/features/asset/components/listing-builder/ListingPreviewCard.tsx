@@ -1,7 +1,8 @@
-﻿'use client';
+/* eslint-disable @next/next/no-img-element */
+"use client";
 
-import React, { useRef } from 'react';
-import { ListingType } from '@/features/asset/data/listingBuilderData';
+import React, { useRef } from "react";
+import { ListingType } from "@/features/asset/data/listingBuilderData";
 
 interface ListingPreviewCardProps {
   activeType: ListingType;
@@ -17,8 +18,7 @@ interface ListingPreviewCardProps {
   onTitleChange: (title: string) => void;
   onDescriptionChange: (desc: string) => void;
   onImageUpload: (url: string) => void;
-}  
-
+}
 
 export function ListingPreviewCard({
   activeType,
@@ -70,7 +70,9 @@ export function ListingPreviewCard({
               i
             </div>
             <div>
-              <h4 className="font-bold text-white text-sm mb-1">Listing Details</h4>
+              <h4 className="font-bold text-white text-sm mb-1">
+                Listing Details
+              </h4>
               <p className="text-xs text-text-muted">
                 A clear title and description help find exactly what they need.
               </p>
@@ -79,7 +81,9 @@ export function ListingPreviewCard({
               onClick={onCloseGuide}
               className="absolute top-2 right-2 text-white/30 hover:text-white"
             >
-              <span className="material-symbols-outlined text-[16px]">close</span>
+              <span className="material-symbols-outlined text-[16px]">
+                close
+              </span>
             </button>
           </div>
         )}
@@ -88,13 +92,17 @@ export function ListingPreviewCard({
         <div className="rounded-[2rem] overflow-hidden border border-white/10 bg-[#0f111a] p-8 space-y-8 w-full">
           <div>
             <label className="text-[10px] uppercase font-bold text-white/40 tracking-widest mb-2 block">
-              {activeType === 'inventory' ? 'Item Title' : 'Service Title'}
+              {activeType === "inventory" ? "Item Title" : "Service Title"}
             </label>
             <input
               type="text"
               value={title}
               onChange={(e) => onTitleChange(e.target.value)}
-              placeholder={activeType === 'inventory' ? 'e.g. Pioneer CDJ-3000' : 'e.g. Event Photography'}
+              placeholder={
+                activeType === "inventory"
+                  ? "e.g. Pioneer CDJ-3000"
+                  : "e.g. Event Photography"
+              }
               className="w-full bg-white/5 border border-white/5 rounded-xl p-4 text-sm text-white placeholder-white/30 focus:border-accent/30 outline-none transition-colors"
             />
           </div>
@@ -120,7 +128,9 @@ export function ListingPreviewCard({
             {/* Image Area */}
             <div
               className={`relative aspect-square overflow-hidden bg-black/50 group/img ${
-                !image ? 'flex items-center justify-center border-b border-white/5' : ''
+                !image
+                  ? "flex items-center justify-center border-b border-white/5"
+                  : ""
               }`}
             >
               {image ? (
@@ -141,9 +151,9 @@ export function ListingPreviewCard({
                   <div className="absolute top-3 right-3">
                     <span
                       className={`px-2 py-1 rounded-lg text-[10px] font-bold border ${
-                        status === 'available' || status === 'active'
-                          ? 'bg-green-500/20 text-green-400 border-green-500/30'
-                          : 'bg-white/10 text-white/60 border-white/20'
+                        status === "available" || status === "active"
+                          ? "bg-green-500/20 text-green-400 border-green-500/30"
+                          : "bg-white/10 text-white/60 border-white/20"
                       } uppercase tracking-wider backdrop-blur-md`}
                     >
                       {status}
@@ -156,15 +166,21 @@ export function ListingPreviewCard({
                   className="flex flex-col items-center justify-center gap-3 text-white/30 hover:text-white transition-all group/upload w-full h-full hover:bg-white/5"
                 >
                   <div className="h-16 w-16 rounded-full border-2 border-dashed border-white/20 flex items-center justify-center group-hover/upload:border-accent group-hover/upload:text-accent">
-                    <span className="material-symbols-outlined text-3xl">add_a_photo</span>
+                    <span className="material-symbols-outlined text-3xl">
+                      add_a_photo
+                    </span>
                   </div>
-                  <span className="text-xs font-bold uppercase tracking-widest">Add Listing Photo</span>
+                  <span className="text-xs font-bold uppercase tracking-widest">
+                    Add Listing Photo
+                  </span>
                 </button>
               )}
             </div>
 
             {/* Card Content */}
-            <div className={`p-5 transition-opacity duration-300 ${!image ? 'opacity-50 grayscale' : 'opacity-100'}`}>
+            <div
+              className={`p-5 transition-opacity duration-300 ${!image ? "opacity-50 grayscale" : "opacity-100"}`}
+            >
               <div className="flex justify-between items-start mb-2">
                 <div className="flex-1">
                   <input
@@ -177,11 +193,15 @@ export function ListingPreviewCard({
                 </div>
                 <div
                   className={`h-6 w-6 rounded-full flex items-center justify-center ${
-                    activeType === 'inventory' ? 'bg-primary/20 text-primary' : 'bg-warning/20 text-warning'
+                    activeType === "inventory"
+                      ? "bg-primary/20 text-primary"
+                      : "bg-warning/20 text-warning"
                   }`}
                 >
                   <span className="material-symbols-outlined text-[14px]">
-                    {activeType === 'inventory' ? 'inventory_2' : 'design_services'}
+                    {activeType === "inventory"
+                      ? "inventory_2"
+                      : "design_services"}
                   </span>
                 </div>
               </div>
@@ -193,8 +213,12 @@ export function ListingPreviewCard({
               />
               <div className="flex items-center justify-between pt-4 border-t border-white/5">
                 <div>
-                  <p className="text-[10px] text-text-muted uppercase tracking-wider">{unit}</p>
-                  <p className="text-lg font-mono font-bold text-white">₱{price.toLocaleString()}</p>
+                  <p className="text-[10px] text-text-muted uppercase tracking-wider">
+                    {unit}
+                  </p>
+                  <p className="text-lg font-mono font-bold text-white">
+                    ₱{price.toLocaleString()}
+                  </p>
                 </div>
                 <span className="text-xs font-bold text-white/50 bg-white/5 px-2 py-1 rounded capitalize">
                   {displayCategory}

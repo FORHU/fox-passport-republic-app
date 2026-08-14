@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/set-state-in-effect, @next/next/no-img-element */
 "use client";
 
 import { useState, useRef, useEffect, useCallback } from "react";
@@ -10,7 +11,20 @@ import { config } from "@/shared/lib/config";
 const CATEGORIES = ["Wedding", "Corporate", "Birthday", "Social", "Other"];
 
 const WEEKDAYS = ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"];
-const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+const MONTHS = [
+  "Jan",
+  "Feb",
+  "Mar",
+  "Apr",
+  "May",
+  "Jun",
+  "Jul",
+  "Aug",
+  "Sep",
+  "Oct",
+  "Nov",
+  "Dec",
+];
 
 function toDateStr(year: number, month: number, day: number) {
   return `${year}-${String(month + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
@@ -26,10 +40,10 @@ function CompactCalendar({
   const today = new Date();
   const todayStr = today.toISOString().split("T")[0];
   const [viewYear, setViewYear] = useState(
-    value ? new Date(value + "T00:00:00").getFullYear() : today.getFullYear()
+    value ? new Date(value + "T00:00:00").getFullYear() : today.getFullYear(),
   );
   const [viewMonth, setViewMonth] = useState(
-    value ? new Date(value + "T00:00:00").getMonth() : today.getMonth()
+    value ? new Date(value + "T00:00:00").getMonth() : today.getMonth(),
   );
 
   const dim = new Date(viewYear, viewMonth + 1, 0).getDate();
@@ -41,12 +55,16 @@ function CompactCalendar({
   while (cells.length % 7 !== 0) cells.push(null);
 
   const prevMonth = () => {
-    if (viewMonth === 0) { setViewYear((y) => y - 1); setViewMonth(11); }
-    else setViewMonth((m) => m - 1);
+    if (viewMonth === 0) {
+      setViewYear((y) => y - 1);
+      setViewMonth(11);
+    } else setViewMonth((m) => m - 1);
   };
   const nextMonth = () => {
-    if (viewMonth === 11) { setViewYear((y) => y + 1); setViewMonth(0); }
-    else setViewMonth((m) => m + 1);
+    if (viewMonth === 11) {
+      setViewYear((y) => y + 1);
+      setViewMonth(0);
+    } else setViewMonth((m) => m + 1);
   };
 
   return (
@@ -57,7 +75,9 @@ function CompactCalendar({
           onClick={prevMonth}
           className="h-7 w-7 rounded-lg hover:bg-white/10 flex items-center justify-center text-white/40 hover:text-[#ccff00] active:scale-90 transition-all duration-200"
         >
-          <span className="material-symbols-outlined text-[16px]">chevron_left</span>
+          <span className="material-symbols-outlined text-[16px]">
+            chevron_left
+          </span>
         </button>
         <p className="text-xs font-bold text-[#ccff00] tracking-wide select-none">
           {MONTHS[viewMonth]} {viewYear}
@@ -67,13 +87,18 @@ function CompactCalendar({
           onClick={nextMonth}
           className="h-7 w-7 rounded-lg hover:bg-white/10 flex items-center justify-center text-white/40 hover:text-[#ccff00] active:scale-90 transition-all duration-200"
         >
-          <span className="material-symbols-outlined text-[16px]">chevron_right</span>
+          <span className="material-symbols-outlined text-[16px]">
+            chevron_right
+          </span>
         </button>
       </div>
 
       <div className="grid grid-cols-7 mb-1">
         {WEEKDAYS.map((d) => (
-          <div key={d} className="text-center text-[9px] text-white/60 font-bold py-1 tracking-wider">
+          <div
+            key={d}
+            className="text-center text-[9px] text-white/60 font-bold py-1 tracking-wider"
+          >
             {d}
           </div>
         ))}
@@ -93,10 +118,16 @@ function CompactCalendar({
               onClick={() => onSelect(ds)}
               className={[
                 "h-8 w-full text-[13px] font-semibold transition-all duration-150 flex items-center justify-center",
-                sel ? "bg-[#ccff00] text-black rounded-full z-10 shadow-[0_0_12px_rgba(204,255,0,0.4)] scale-105" : "",
-                !sel && !past ? "text-white/90 hover:bg-white/10 hover:rounded-full hover:scale-105 cursor-pointer active:scale-95" : "",
+                sel
+                  ? "bg-[#ccff00] text-black rounded-full z-10 shadow-[0_0_12px_rgba(204,255,0,0.4)] scale-105"
+                  : "",
+                !sel && !past
+                  ? "text-white/90 hover:bg-white/10 hover:rounded-full hover:scale-105 cursor-pointer active:scale-95"
+                  : "",
                 past ? "text-white/20 cursor-not-allowed" : "",
-              ].filter(Boolean).join(" ")}
+              ]
+                .filter(Boolean)
+                .join(" ")}
             >
               {day}
             </button>
@@ -129,7 +160,8 @@ function DateField({
   useEffect(() => {
     if (!open) return;
     const handler = (e: MouseEvent) => {
-      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+      if (ref.current && !ref.current.contains(e.target as Node))
+        setOpen(false);
     };
     document.addEventListener("mousedown", handler);
     return () => document.removeEventListener("mousedown", handler);
@@ -153,8 +185,13 @@ function DateField({
     : "";
 
   return (
-    <div className="flex-1 min-w-0 md:min-w-[100px] px-1 py-0.5 sm:px-3 sm:py-2 md:px-4 md:py-2.5 text-left cursor-pointer group/item hover:bg-white/10 rounded-2xl transition-colors relative" ref={ref}>
-      <span className="block text-[7px] md:text-[10px] font-extrabold text-white/40 uppercase tracking-widest mb-0.5 ml-1">{label}</span>
+    <div
+      className="flex-1 min-w-0 md:min-w-[100px] px-1 py-0.5 sm:px-3 sm:py-2 md:px-4 md:py-2.5 text-left cursor-pointer group/item hover:bg-white/10 rounded-2xl transition-colors relative"
+      ref={ref}
+    >
+      <span className="block text-[7px] md:text-[10px] font-extrabold text-white/40 uppercase tracking-widest mb-0.5 ml-1">
+        {label}
+      </span>
       <button
         type="button"
         onClick={toggle}
@@ -165,7 +202,9 @@ function DateField({
         {display || "Select"}
       </button>
       {error && (
-        <span className="block text-[7px] md:text-[9px] font-bold text-red-400 mt-0.5 ml-1 animate-pulse truncate">{error}</span>
+        <span className="block text-[7px] md:text-[9px] font-bold text-red-400 mt-0.5 ml-1 animate-pulse truncate">
+          {error}
+        </span>
       )}
 
       {open &&
@@ -184,7 +223,7 @@ function DateField({
               }}
             />
           </div>,
-          document.body
+          document.body,
         )}
     </div>
   );
@@ -210,7 +249,8 @@ function CategoryField({
   useEffect(() => {
     if (!open) return;
     const handler = (e: MouseEvent) => {
-      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+      if (ref.current && !ref.current.contains(e.target as Node))
+        setOpen(false);
     };
     document.addEventListener("mousedown", handler);
     return () => document.removeEventListener("mousedown", handler);
@@ -219,14 +259,23 @@ function CategoryField({
   const toggle = () => {
     if (!open && ref.current) {
       const rect = ref.current.getBoundingClientRect();
-      setPos({ top: rect.bottom + 6, left: rect.left, width: Math.max(160, rect.width) });
+      setPos({
+        top: rect.bottom + 6,
+        left: rect.left,
+        width: Math.max(160, rect.width),
+      });
     }
     setOpen((o) => !o);
   };
 
   return (
-    <div className="flex-1 min-w-0 md:min-w-[100px] px-1 py-0.5 sm:px-3 sm:py-2 md:px-4 md:py-2.5 text-left cursor-pointer group/item hover:bg-white/10 rounded-2xl transition-colors relative" ref={ref}>
-      <span className="block text-[7px] md:text-[10px] font-extrabold text-white/40 uppercase tracking-widest mb-0.5 ml-1">CATEGORY</span>
+    <div
+      className="flex-1 min-w-0 md:min-w-[100px] px-1 py-0.5 sm:px-3 sm:py-2 md:px-4 md:py-2.5 text-left cursor-pointer group/item hover:bg-white/10 rounded-2xl transition-colors relative"
+      ref={ref}
+    >
+      <span className="block text-[7px] md:text-[10px] font-extrabold text-white/40 uppercase tracking-widest mb-0.5 ml-1">
+        CATEGORY
+      </span>
       <button
         type="button"
         onClick={toggle}
@@ -235,12 +284,16 @@ function CategoryField({
         } ${error ? "text-red-400" : ""}`}
       >
         <span className="capitalize truncate">{value || "Select"}</span>
-        <span className={`hidden sm:inline-block material-symbols-outlined text-[16px] text-white/40 shrink-0 transition-transform duration-200 ml-1 ${open ? "rotate-180" : ""}`}>
+        <span
+          className={`hidden sm:inline-block material-symbols-outlined text-[16px] text-white/40 shrink-0 transition-transform duration-200 ml-1 ${open ? "rotate-180" : ""}`}
+        >
           expand_more
         </span>
       </button>
       {error && (
-        <span className="block text-[7px] md:text-[9px] font-bold text-red-400 mt-0.5 ml-1 animate-pulse truncate">{error}</span>
+        <span className="block text-[7px] md:text-[9px] font-bold text-red-400 mt-0.5 ml-1 animate-pulse truncate">
+          {error}
+        </span>
       )}
 
       {open &&
@@ -271,7 +324,7 @@ function CategoryField({
               ))}
             </div>
           </div>,
-          document.body
+          document.body,
         )}
     </div>
   );
@@ -319,13 +372,13 @@ function LocationField({
     }
     const timer = setTimeout(() => {
       fetch(`${config.apiUrl}/locations/search?q=${encodeURIComponent(value)}`)
-        .then(res => res.json())
-        .then(data => {
+        .then((res) => res.json())
+        .then((data) => {
           if (data.status === "success") {
             setCities(data.data.locations);
           }
         })
-        .catch(err => console.error("Failed to fetch locations:", err));
+        .catch((err) => console.error("Failed to fetch locations:", err));
     }, 300);
 
     return () => clearTimeout(timer);
@@ -334,16 +387,33 @@ function LocationField({
   const toggle = () => {
     if (!open && ref.current) {
       const rect = ref.current.getBoundingClientRect();
-      setPos({ top: rect.bottom + 6, left: Math.max(16, rect.left), width: Math.max(180, rect.width) });
+      setPos({
+        top: rect.bottom + 6,
+        left: Math.max(16, rect.left),
+        width: Math.max(180, rect.width),
+      });
     }
     setOpen((o) => !o);
   };
 
-  const locations = ["All Locations", "Baguio", "Manila", "Cebu", "Siargao", "Boracay", "Palawan"];
+  const locations = [
+    "All Locations",
+    "Baguio",
+    "Manila",
+    "Cebu",
+    "Siargao",
+    "Boracay",
+    "Palawan",
+  ];
 
   return (
-    <div className="flex-1 min-w-0 md:min-w-[110px] px-1 py-0.5 sm:px-3 sm:py-2 md:px-4 md:py-2.5 text-left cursor-pointer group/item hover:bg-white/10 rounded-2xl transition-colors relative" ref={ref}>
-      <span className="block text-[7px] md:text-[10px] font-extrabold text-white/40 uppercase tracking-widest mb-0.5 ml-1">LOCATION</span>
+    <div
+      className="flex-1 min-w-0 md:min-w-[110px] px-1 py-0.5 sm:px-3 sm:py-2 md:px-4 md:py-2.5 text-left cursor-pointer group/item hover:bg-white/10 rounded-2xl transition-colors relative"
+      ref={ref}
+    >
+      <span className="block text-[7px] md:text-[10px] font-extrabold text-white/40 uppercase tracking-widest mb-0.5 ml-1">
+        LOCATION
+      </span>
       <div className="flex items-center justify-between w-full">
         <input
           type="text"
@@ -362,13 +432,17 @@ function LocationField({
           onClick={toggle}
           className="bg-transparent border-none outline-none cursor-pointer p-0 shrink-0 text-white/40 hover:text-white transition-colors"
         >
-          <span className={`hidden sm:inline-block material-symbols-outlined text-[16px] transition-transform duration-200 ${open ? "rotate-180" : ""}`}>
+          <span
+            className={`hidden sm:inline-block material-symbols-outlined text-[16px] transition-transform duration-200 ${open ? "rotate-180" : ""}`}
+          >
             expand_more
           </span>
         </button>
       </div>
       {error && (
-        <span className="block text-[7px] md:text-[9px] font-bold text-red-400 mt-0.5 ml-1 animate-pulse truncate">{error}</span>
+        <span className="block text-[7px] md:text-[9px] font-bold text-red-400 mt-0.5 ml-1 animate-pulse truncate">
+          {error}
+        </span>
       )}
 
       {showSuggestions && cities.length > 0 && (
@@ -389,7 +463,8 @@ function LocationField({
         </ul>
       )}
 
-      {open && !showSuggestions &&
+      {open &&
+        !showSuggestions &&
         createPortal(
           <div
             className="fixed z-[101] animate-in fade-in zoom-in-95 duration-150"
@@ -421,7 +496,7 @@ function LocationField({
               })}
             </div>
           </div>,
-          document.body
+          document.body,
         )}
     </div>
   );
@@ -458,7 +533,7 @@ export default function HeroSection() {
 
     const params = new URLSearchParams();
     params.set("category", category.toLowerCase());
-    const parts = locationVal.split(",").map(p => p.trim());
+    const parts = locationVal.split(",").map((p) => p.trim());
     if (parts.length > 1) {
       params.set("country", parts[0]);
       params.set("city", parts.slice(1).join(", "));
@@ -485,12 +560,22 @@ export default function HeroSection() {
             className="lg:col-span-7 flex flex-col gap-10 text-center lg:text-left"
             initial="hidden"
             animate="visible"
-            variants={{ hidden: {}, visible: { transition: { staggerChildren: 0.12 } } }}
+            variants={{
+              hidden: {},
+              visible: { transition: { staggerChildren: 0.12 } },
+            }}
           >
             <div className="space-y-6">
               {/* Badge */}
               <motion.div
-                variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0, transition: { duration: 0.5, ease: [0, 0, 0.2, 1] } } }}
+                variants={{
+                  hidden: { opacity: 0, y: 20 },
+                  visible: {
+                    opacity: 1,
+                    y: 0,
+                    transition: { duration: 0.5, ease: [0, 0, 0.2, 1] },
+                  },
+                }}
                 className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 border border-[#ccff00]/50 shadow-[0_0_25px_rgba(204,255,0,0.3),0_0_50px_rgba(204,255,0,0.1)] mx-auto lg:mx-0 backdrop-blur-sm animate-bounce duration-1000"
               >
                 <span className="flex h-3 w-3 rounded-full bg-[#ccff00] shadow-[0_0_15px_#ccff00,0_0_30px_#ccff00] animate-pulse"></span>
@@ -501,7 +586,14 @@ export default function HeroSection() {
 
               {/* Title */}
               <motion.h1
-                variants={{ hidden: { opacity: 0, y: 24 }, visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: [0, 0, 0.2, 1] } } }}
+                variants={{
+                  hidden: { opacity: 0, y: 24 },
+                  visible: {
+                    opacity: 1,
+                    y: 0,
+                    transition: { duration: 0.6, ease: [0, 0, 0.2, 1] },
+                  },
+                }}
                 className="text-4xl sm:text-7xl lg:text-8xl font-display font-bold tracking-tight text-white leading-tight sm:leading-[0.95] group cursor-default"
               >
                 Find your <br />
@@ -515,26 +607,44 @@ export default function HeroSection() {
 
               {/* Subtitle */}
               <motion.p
-                variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0, transition: { duration: 0.5, ease: [0, 0, 0.2, 1] } } }}
+                variants={{
+                  hidden: { opacity: 0, y: 20 },
+                  visible: {
+                    opacity: 1,
+                    y: 0,
+                    transition: { duration: 0.5, ease: [0, 0, 0.2, 1] },
+                  },
+                }}
                 className="text-xs sm:text-sm lg:text-xl text-text-muted max-w-xl mx-auto lg:mx-0 leading-relaxed font-light"
               >
-                Curated experiences for the main character energy. <br className="block" />
-                Underground gigs, secret spots, and adventures that actually matter.
+                Curated experiences for the main character energy.{" "}
+                <br className="block" />
+                Underground gigs, secret spots, and adventures that actually
+                matter.
               </motion.p>
             </div>
 
             {/* Search Area */}
             <motion.div
-              variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0, transition: { duration: 0.5, ease: [0, 0, 0.2, 1] } } }}
+              variants={{
+                hidden: { opacity: 0, y: 20 },
+                visible: {
+                  opacity: 1,
+                  y: 0,
+                  transition: { duration: 0.5, ease: [0, 0, 0.2, 1] },
+                },
+              }}
               className="w-full max-w-[950px] mx-auto lg:mx-0 flex flex-col gap-4 z-20 relative"
             >
               {/* Search Box Form */}
-              <form onSubmit={handleSearch} className="w-full relative group z-20 px-2 sm:px-0">
+              <form
+                onSubmit={handleSearch}
+                className="w-full relative group z-20 px-2 sm:px-0"
+              >
                 {/* 1. Outer Glow */}
                 <div className="absolute -inset-x-1 sm:-inset-1 bg-linear-to-r from-primary via-purple-600 to-secondary rounded-full sm:rounded-[2.5rem] blur opacity-40 group-hover:opacity-70 transition duration-500 group-hover:duration-200 animate-pulse"></div>
                 {/* Outer Capsule Glass Panel */}
                 <div className="relative glass-panel bg-[#151326]/85 backdrop-blur-2xl p-1 sm:p-2.5 rounded-full sm:rounded-[2.5rem] border border-white/10 group-hover:border-white/20 transition-all shadow-[0_0_35px_rgba(139,92,246,0.3)]">
-
                   {/* Single Unified Horizontal Capsule Pill (Responsive for both Mobile & Desktop) */}
                   <div className="flex flex-row items-center gap-0.5 sm:gap-1 lg:gap-2 px-0.5 sm:px-1">
                     {/* 1. CATEGORY */}
@@ -542,7 +652,9 @@ export default function HeroSection() {
                       value={category}
                       error={errors.category}
                       onChange={setCategory}
-                      onClearError={() => setErrors((prev) => ({ ...prev, category: undefined }))}
+                      onClearError={() =>
+                        setErrors((prev) => ({ ...prev, category: undefined }))
+                      }
                     />
 
                     {/* Divider */}
@@ -555,9 +667,15 @@ export default function HeroSection() {
                       error={errors.startDate}
                       onSelect={(d) => {
                         setStartDate(d);
-                        setErrors((prev) => ({ ...prev, startDate: undefined, endDate: undefined }));
+                        setErrors((prev) => ({
+                          ...prev,
+                          startDate: undefined,
+                          endDate: undefined,
+                        }));
                       }}
-                      onClearError={() => setErrors((prev) => ({ ...prev, startDate: undefined }))}
+                      onClearError={() =>
+                        setErrors((prev) => ({ ...prev, startDate: undefined }))
+                      }
                     />
 
                     {/* Divider */}
@@ -569,7 +687,9 @@ export default function HeroSection() {
                       value={endDate}
                       error={errors.endDate}
                       onSelect={setEndDate}
-                      onClearError={() => setErrors((prev) => ({ ...prev, endDate: undefined }))}
+                      onClearError={() =>
+                        setErrors((prev) => ({ ...prev, endDate: undefined }))
+                      }
                     />
 
                     {/* Divider */}
@@ -580,7 +700,9 @@ export default function HeroSection() {
                       value={locationVal}
                       error={errors.location}
                       onChange={setLocationVal}
-                      onClearError={() => setErrors((prev) => ({ ...prev, location: undefined }))}
+                      onClearError={() =>
+                        setErrors((prev) => ({ ...prev, location: undefined }))
+                      }
                     />
 
                     {/* 5. "Go" Button */}
@@ -602,7 +724,14 @@ export default function HeroSection() {
 
             {/* Social Proof */}
             <motion.div
-              variants={{ hidden: { opacity: 0, y: 16 }, visible: { opacity: 1, y: 0, transition: { duration: 0.5, ease: [0, 0, 0.2, 1] } } }}
+              variants={{
+                hidden: { opacity: 0, y: 16 },
+                visible: {
+                  opacity: 1,
+                  y: 0,
+                  transition: { duration: 0.5, ease: [0, 0, 0.2, 1] },
+                },
+              }}
               className="flex items-center justify-center lg:justify-start gap-6 pt-4"
             >
               <div className="flex -space-x-4 hover:space-x-0 transition-all duration-500">
@@ -627,11 +756,21 @@ export default function HeroSection() {
               </div>
               <div className="text-xs sm:text-sm font-medium text-text-muted group cursor-default">
                 <div className="flex text-[#ccff00] mb-0.5 group-hover:gap-0.5 transition-all">
-                  <span className="material-symbols-outlined text-[14px] sm:text-[18px] fill-current animate-pulse">star</span>
-                  <span className="material-symbols-outlined text-[14px] sm:text-[18px] fill-current animate-pulse delay-75">star</span>
-                  <span className="material-symbols-outlined text-[14px] sm:text-[18px] fill-current animate-pulse delay-100">star</span>
-                  <span className="material-symbols-outlined text-[14px] sm:text-[18px] fill-current animate-pulse delay-150">star</span>
-                  <span className="material-symbols-outlined text-[14px] sm:text-[18px] fill-current animate-pulse delay-200">star</span>
+                  <span className="material-symbols-outlined text-[14px] sm:text-[18px] fill-current animate-pulse">
+                    star
+                  </span>
+                  <span className="material-symbols-outlined text-[14px] sm:text-[18px] fill-current animate-pulse delay-75">
+                    star
+                  </span>
+                  <span className="material-symbols-outlined text-[14px] sm:text-[18px] fill-current animate-pulse delay-100">
+                    star
+                  </span>
+                  <span className="material-symbols-outlined text-[14px] sm:text-[18px] fill-current animate-pulse delay-150">
+                    star
+                  </span>
+                  <span className="material-symbols-outlined text-[14px] sm:text-[18px] fill-current animate-pulse delay-200">
+                    star
+                  </span>
                 </div>
                 Verified by Citizens
               </div>
@@ -654,7 +793,9 @@ export default function HeroSection() {
                     Weddings
                   </span>
                   <div className="absolute top-4 right-4 bg-white/20 backdrop-blur-md rounded-full p-2 opacity-0 group-hover:opacity-100 transition-all duration-300 translate-y-4 group-hover:translate-y-0">
-                    <span className="material-symbols-outlined text-white text-[16px]">arrow_outward</span>
+                    <span className="material-symbols-outlined text-white text-[16px]">
+                      arrow_outward
+                    </span>
                   </div>
                 </div>
                 <div className="relative group rounded-[2rem] overflow-hidden border border-white/10 shadow-2xl rotate-2 hover:rotate-0 hover:scale-105 transition-all duration-500 cursor-pointer">
@@ -696,7 +837,10 @@ export default function HeroSection() {
               </div>
               {/* Book Now Button */}
               <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-30">
-                <Link href="/search" className="bg-[#ccff00] text-black px-6 py-3 rounded-full font-display font-bold uppercase tracking-widest text-base shadow-[0_0_30px_#ccff00] animate-pulse hover:scale-110 transition-transform block text-center">
+                <Link
+                  href="/search"
+                  className="bg-[#ccff00] text-black px-6 py-3 rounded-full font-display font-bold uppercase tracking-widest text-base shadow-[0_0_30px_#ccff00] animate-pulse hover:scale-110 transition-transform block text-center"
+                >
                   Book Now
                 </Link>
               </div>

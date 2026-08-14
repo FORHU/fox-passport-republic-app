@@ -21,15 +21,14 @@ function CategoryDropdown({
   useEffect(() => {
     if (!open) return;
     const handler = (e: MouseEvent) => {
-      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+      if (ref.current && !ref.current.contains(e.target as Node))
+        setOpen(false);
     };
     document.addEventListener("mousedown", handler);
     return () => document.removeEventListener("mousedown", handler);
   }, [open]);
 
-  const selected = value
-    ? CATEGORIES.find((c) => c === value)
-    : "";
+  const selected = value ? CATEGORIES.find((c) => c === value) : "";
 
   return (
     <div ref={ref} className="relative">
@@ -91,7 +90,7 @@ function CategoryDropdown({
               ))}
             </div>
           </div>,
-          document.body
+          document.body,
         )}
 
       <DropdownPositioner triggerRef={ref} open={open} cssVar="cat" />
@@ -125,18 +124,26 @@ export default function SearchFilters() {
 
   const searchParamsStr = searchParams?.toString() || "";
 
-  const [category, setCategory] = useState(() => searchParams?.get("category") || "");
+  const [category, setCategory] = useState(
+    () => searchParams?.get("category") || "",
+  );
   const [city, setCity] = useState(() => searchParams?.get("city") || "");
   const [label, setLabel] = useState(() => searchParams?.get("label") || "");
   const [lat, setLat] = useState<number | undefined>(() =>
-    searchParams?.get("lat") ? Number(searchParams.get("lat")) : undefined
+    searchParams?.get("lat") ? Number(searchParams.get("lat")) : undefined,
   );
   const [lng, setLng] = useState<number | undefined>(() =>
-    searchParams?.get("lng") ? Number(searchParams.get("lng")) : undefined
+    searchParams?.get("lng") ? Number(searchParams.get("lng")) : undefined,
   );
-  const [maxPrice, setMaxPrice] = useState(() => searchParams?.get("maxPrice") || "");
-  const [startDate, setStartDate] = useState(() => searchParams?.get("startDate") || "");
-  const [endDate, setEndDate] = useState(() => searchParams?.get("endDate") || "");
+  const [maxPrice, setMaxPrice] = useState(
+    () => searchParams?.get("maxPrice") || "",
+  );
+  const [startDate, setStartDate] = useState(
+    () => searchParams?.get("startDate") || "",
+  );
+  const [endDate, setEndDate] = useState(
+    () => searchParams?.get("endDate") || "",
+  );
 
   const [prevParamsStr, setPrevParamsStr] = useState(searchParamsStr);
 
@@ -145,8 +152,12 @@ export default function SearchFilters() {
     setCategory(searchParams?.get("category") || "");
     setCity(searchParams?.get("city") || "");
     setLabel(searchParams?.get("label") || "");
-    setLat(searchParams?.get("lat") ? Number(searchParams.get("lat")) : undefined);
-    setLng(searchParams?.get("lng") ? Number(searchParams.get("lng")) : undefined);
+    setLat(
+      searchParams?.get("lat") ? Number(searchParams.get("lat")) : undefined,
+    );
+    setLng(
+      searchParams?.get("lng") ? Number(searchParams.get("lng")) : undefined,
+    );
     setMaxPrice(searchParams?.get("maxPrice") || "");
     setStartDate(searchParams?.get("startDate") || "");
     setEndDate(searchParams?.get("endDate") || "");
@@ -171,12 +182,16 @@ export default function SearchFilters() {
     <div className="bg-[#11121a] border border-white/10 rounded-2xl p-6 space-y-6 h-fit">
       <div className="flex items-center gap-2">
         <span className="h-2 w-2 rounded-full bg-[#ccff00] animate-pulse" />
-        <h3 className="text-lg font-display font-bold tracking-tight text-white">Filters</h3>
+        <h3 className="text-lg font-display font-bold tracking-tight text-white">
+          Filters
+        </h3>
       </div>
 
       {/* Category */}
       <div className="space-y-2">
-        <label className="block text-xs font-bold text-white/50 uppercase tracking-wider">Category Vibe</label>
+        <label className="block text-xs font-bold text-white/50 uppercase tracking-wider">
+          Category Vibe
+        </label>
         <CategoryDropdown
           value={category}
           onChange={(val) => {
@@ -188,13 +203,23 @@ export default function SearchFilters() {
 
       {/* City / Area */}
       <div className="space-y-2">
-        <label className="block text-xs font-bold text-white/50 uppercase tracking-wider">City / Area</label>
+        <label className="block text-xs font-bold text-white/50 uppercase tracking-wider">
+          City / Area
+        </label>
         <input
           type="text"
           value={city}
           onChange={(e) => setCity(e.target.value)}
-          onBlur={(e) => updateParams({ city: e.target.value, label: e.target.value || label })}
-          onKeyDown={(e) => e.key === "Enter" && updateParams({ city: (e.target as HTMLInputElement).value })}
+          onBlur={(e) =>
+            updateParams({
+              city: e.target.value,
+              label: e.target.value || label,
+            })
+          }
+          onKeyDown={(e) =>
+            e.key === "Enter" &&
+            updateParams({ city: (e.target as HTMLInputElement).value })
+          }
           placeholder="e.g. Baguio"
           className={inputClass}
         />
@@ -222,7 +247,8 @@ export default function SearchFilters() {
       {/* Max Price */}
       <div className="space-y-2">
         <label className="block text-xs font-bold text-white/50 uppercase tracking-wider">
-          Max Price: <span className="text-[#ccff00]">₱{maxPrice || "Any"}</span>
+          Max Price:{" "}
+          <span className="text-[#ccff00]">₱{maxPrice || "Any"}</span>
         </label>
         <input
           type="range"
@@ -231,15 +257,31 @@ export default function SearchFilters() {
           step={1000}
           value={maxPrice || 0}
           onChange={(e) => setMaxPrice(e.target.value)}
-          onMouseUp={(e) => updateParams({ maxPrice: (e.target as HTMLInputElement).value === "0" ? "" : (e.target as HTMLInputElement).value })}
-          onTouchEnd={(e) => updateParams({ maxPrice: (e.target as HTMLInputElement).value === "0" ? "" : (e.target as HTMLInputElement).value })}
+          onMouseUp={(e) =>
+            updateParams({
+              maxPrice:
+                (e.target as HTMLInputElement).value === "0"
+                  ? ""
+                  : (e.target as HTMLInputElement).value,
+            })
+          }
+          onTouchEnd={(e) =>
+            updateParams({
+              maxPrice:
+                (e.target as HTMLInputElement).value === "0"
+                  ? ""
+                  : (e.target as HTMLInputElement).value,
+            })
+          }
           className="w-full accent-[#ccff00]"
         />
       </div>
 
       {/* Date Range */}
       <div className="space-y-2">
-        <label className="block text-xs font-bold text-white/50 uppercase tracking-wider">Date Range</label>
+        <label className="block text-xs font-bold text-white/50 uppercase tracking-wider">
+          Date Range
+        </label>
         <DateRangePicker
           startDate={startDate}
           endDate={endDate}
