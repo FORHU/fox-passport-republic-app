@@ -521,12 +521,12 @@ const EventDetailsPage: React.FC = () => {
     <div className="bg-background bg-gradient-dark text-text-main antialiased min-h-screen flex flex-col selection:bg-accent selection:text-black font-body">
 
       {/* Mobile-only redesigned view */}
-      <div className="sm:hidden">
+      <div className="lg:hidden">
         <MobileEventDetail event={template} />
       </div>
 
       {/* Desktop / tablet view */}
-      <div className="hidden sm:contents">
+      <div className="hidden lg:contents">
 
       <CustomExperienceBuilder isOpen={isCustomBookingOpen} onClose={() => setIsCustomBookingOpen(false)} venuePrice={price} />
 

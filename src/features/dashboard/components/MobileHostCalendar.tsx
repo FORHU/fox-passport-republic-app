@@ -1,186 +1,101 @@
 'use client';
 
 import React, { useState } from 'react';
-
-// August 2026: starts on Saturday (day index 6 in Mo-Su grid)
-// So we need 5 leading empty cells before day 1
-const DAYS_IN_MONTH = 31;
-const START_OFFSET = 5; // August 2026 starts on Saturday (index 5 in Mo..Su = Sa)
-
-const BOOKED_DAYS = new Set([5, 12, 19, 26]);
-const BLOCKED_DAYS = new Set([8, 9]);
-const TODAY = 27;
-
-const DAY_LABELS = ['Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa', 'Su'];
+import Image from 'next/image';
+import { useRouter } from 'next/navigation';
+import MobileCreatorBottomNav from './MobileCreatorBottomNav';
 
 const MONTHS = [
   'January', 'February', 'March', 'April', 'May', 'June',
   'July', 'August', 'September', 'October', 'November', 'December',
 ];
 
+const BOOKED_DAYS = new Set([4, 5, 12, 13, 20]);
+const BLOCKED_DAYS = new Set([8, 9]);
+
 function getDayStyle(day: number) {
   if (BOOKED_DAYS.has(day)) {
-    return {
-      background: 'rgba(204,255,0,0.15)',
-      border: '1px solid rgba(204,255,0,0.3)',
-      color: '#ccff00',
-    };
+    return { background: 'rgba(204,255,0,0.18)', border: '1px solid rgba(204,255,0,0.35)', color: '#ccff00' };
   }
   if (BLOCKED_DAYS.has(day)) {
-    return {
-      background: 'rgba(239,68,68,0.1)',
-      border: '1px solid rgba(239,68,68,0.2)',
-      color: '#ef4444',
-    };
+    return { background: 'rgba(239,68,68,0.12)', border: '1px solid rgba(239,68,68,0.25)', color: '#ef4444' };
   }
-  if (day === TODAY) {
-    return {
-      border: '1px solid rgba(255,255,255,0.3)',
-      color: '#fff',
-    };
-  }
-  return {
-    color: 'rgba(255,255,255,0.6)',
-  };
+  return { background: 'rgba(255,255,255,0.04)', color: 'rgba(255,255,255,0.55)' };
 }
 
 export default function MobileHostCalendar() {
-  const [monthIndex, setMonthIndex] = useState(7); // August = index 7
+  const router = useRouter();
+  const [monthIndex, setMonthIndex] = useState(7);
   const [year, setYear] = useState(2026);
 
-  const monthLabel = `${MONTHS[monthIndex]} ${year}`;
+  const daysInMonth = new Date(year, monthIndex + 1, 0).getDate();
 
   const handlePrev = () => {
-    if (monthIndex === 0) {
-      setMonthIndex(11);
-      setYear((y) => y - 1);
-    } else {
-      setMonthIndex((m) => m - 1);
-    }
+    if (monthIndex === 0) { setMonthIndex(11); setYear((y) => y - 1); }
+    else setMonthIndex((m) => m - 1);
   };
-
   const handleNext = () => {
-    if (monthIndex === 11) {
-      setMonthIndex(0);
-      setYear((y) => y + 1);
-    } else {
-      setMonthIndex((m) => m + 1);
-    }
+    if (monthIndex === 11) { setMonthIndex(0); setYear((y) => y + 1); }
+    else setMonthIndex((m) => m + 1);
   };
 
-  // Build grid cells: offset empties + days
-  const cells: (number | null)[] = [
-    ...Array(START_OFFSET).fill(null),
-    ...Array.from({ length: DAYS_IN_MONTH }, (_, i) => i + 1),
-  ];
+  const days = Array.from({ length: daysInMonth }, (_, i) => i + 1);
 
   return (
-    <div style={{ background: '#050608', minHeight: '100vh' }} className="text-white">
-      {/* Header */}
-      <div style={{ paddingTop: '60px', paddingLeft: '20px', paddingRight: '20px', paddingBottom: '8px' }}>
-        <h1 className="font-display" style={{ fontSize: '22px', fontWeight: 700 }}>
-          Availability
-        </h1>
-      </div>
+    <div style={{ background: '#050608', minHeight: '100svh', color: '#fff' }}>
 
-      {/* Month nav */}
-      <div
-        style={{
-          paddingLeft: '20px',
-          paddingRight: '20px',
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          marginBottom: '16px',
-        }}
-      >
+      {/* Standard nav bar */}
+      <div style={{
+        position: 'fixed', top: 62, left: 0, right: 0, height: 64, zIndex: 5,
+        background: 'rgba(5,6,8,0.9)', backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)',
+        borderBottom: '1px solid rgba(255,255,255,0.08)',
+        display: 'flex', alignItems: 'center', padding: '0 16px', gap: 10,
+      }}>
+        <Image src="/foxonlylogo.png" alt="FoxPassport" width={22} height={22} style={{ objectFit: 'contain' }} />
+        <p style={{ flex: 1, fontSize: 14, fontWeight: 700, fontFamily: 'var(--font-display,"Space Grotesk",sans-serif)', margin: 0 }}>Calendar</p>
         <button
-          onClick={handlePrev}
-          style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, lineHeight: 1 }}
-          aria-label="Previous month"
-        >
-          <span className="material-symbols-outlined" style={{ fontSize: '22px', color: 'rgba(255,255,255,0.6)' }}>
-            chevron_left
-          </span>
-        </button>
-
-        <span style={{ fontSize: '15px', fontWeight: 700, color: '#ccff00' }}>{monthLabel}</span>
-
-        <button
-          onClick={handleNext}
-          style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, lineHeight: 1 }}
-          aria-label="Next month"
-        >
-          <span className="material-symbols-outlined" style={{ fontSize: '22px', color: 'rgba(255,255,255,0.6)' }}>
-            chevron_right
-          </span>
-        </button>
-      </div>
-
-      {/* Calendar card */}
-      <div
-        style={{
-          marginLeft: '20px',
-          marginRight: '20px',
-          background: 'rgba(255,255,255,0.04)',
-          border: '1px solid rgba(255,255,255,0.07)',
-          borderRadius: '20px',
-          padding: '16px',
-        }}
-      >
-        {/* Day labels */}
-        <div
+          onClick={() => {}}
           style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(7, 1fr)',
-            gap: '4px',
-            marginBottom: '8px',
+            background: '#ccff00', color: '#000', border: 'none', borderRadius: 999,
+            padding: '8px 14px', fontSize: 10, fontWeight: 800, cursor: 'pointer', whiteSpace: 'nowrap',
           }}
         >
-          {DAY_LABELS.map((d) => (
-            <div
-              key={d}
-              style={{
-                fontSize: '9px',
-                textTransform: 'uppercase',
-                color: 'rgba(255,255,255,0.35)',
-                textAlign: 'center',
-                fontWeight: 600,
-                letterSpacing: '0.5px',
-              }}
-            >
-              {d}
-            </div>
-          ))}
+          + Block Dates
+        </button>
+      </div>
+
+      {/* Content */}
+      <div style={{ padding: '142px 20px 100px' }}>
+
+        {/* Month nav */}
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+          <button
+            onClick={handlePrev}
+            style={{ width: 32, height: 32, borderRadius: 999, background: 'rgba(255,255,255,0.08)', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}
+          >
+            <span className="material-symbols-outlined" style={{ color: 'rgba(255,255,255,0.6)', fontSize: 16 }}>chevron_left</span>
+          </button>
+          <p style={{ fontSize: 13, fontWeight: 700, color: '#ccff00', margin: 0 }}>
+            {MONTHS[monthIndex]} {year}
+          </p>
+          <button
+            onClick={handleNext}
+            style={{ width: 32, height: 32, borderRadius: 999, background: 'rgba(255,255,255,0.08)', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}
+          >
+            <span className="material-symbols-outlined" style={{ color: 'rgba(255,255,255,0.6)', fontSize: 16 }}>chevron_right</span>
+          </button>
         </div>
 
         {/* Day grid */}
-        <div
-          style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(7, 1fr)',
-            gap: '4px',
-          }}
-        >
-          {cells.map((day, idx) => {
-            if (day === null) {
-              return <div key={`empty-${idx}`} style={{ width: '40px', height: '40px' }} />;
-            }
-            const style = getDayStyle(day);
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7,1fr)', gap: 5, marginBottom: 16 }}>
+          {days.map((day) => {
+            const s = getDayStyle(day);
             return (
               <div
                 key={day}
                 style={{
-                  width: '40px',
-                  height: '40px',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  borderRadius: '10px',
-                  fontSize: '12px',
-                  fontWeight: 600,
-                  cursor: 'pointer',
-                  ...style,
+                  aspectRatio: '1', borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  fontSize: 11, fontWeight: 600, cursor: 'pointer', ...s,
                 }}
               >
                 {day}
@@ -190,76 +105,19 @@ export default function MobileHostCalendar() {
         </div>
 
         {/* Legend */}
-        <div style={{ display: 'flex', gap: '16px', marginTop: '14px', flexWrap: 'wrap' }}>
-          <span style={{ fontSize: '11px', color: 'rgba(255,255,255,0.5)', display: 'flex', alignItems: 'center', gap: '4px' }}>
-            <span style={{ color: '#ccff00', fontSize: '14px' }}>●</span> Booked
-          </span>
-          <span style={{ fontSize: '11px', color: 'rgba(255,255,255,0.5)', display: 'flex', alignItems: 'center', gap: '4px' }}>
-            <span style={{ color: '#ef4444', fontSize: '14px' }}>●</span> Blocked
-          </span>
-          <span style={{ fontSize: '11px', color: 'rgba(255,255,255,0.5)', display: 'flex', alignItems: 'center', gap: '4px' }}>
-            <span style={{ color: 'rgba(255,255,255,0.4)', fontSize: '14px' }}>●</span> Available
-          </span>
+        <div style={{ display: 'flex', gap: 16 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+            <div style={{ width: 9, height: 9, borderRadius: 3, background: '#ccff00' }} />
+            <span style={{ fontSize: 10, color: 'rgba(255,255,255,0.4)' }}>Booked</span>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+            <div style={{ width: 9, height: 9, borderRadius: 3, background: '#ef4444' }} />
+            <span style={{ fontSize: 10, color: 'rgba(255,255,255,0.4)' }}>Blocked</span>
+          </div>
         </div>
       </div>
 
-      {/* Summary stats */}
-      <div
-        style={{
-          paddingLeft: '20px',
-          paddingRight: '20px',
-          marginTop: '16px',
-          display: 'flex',
-          gap: '10px',
-        }}
-      >
-        {/* Booked */}
-        <div
-          style={{
-            flex: 1,
-            background: 'rgba(255,255,255,0.04)',
-            border: '1px solid rgba(255,255,255,0.07)',
-            borderRadius: '14px',
-            padding: '12px',
-            textAlign: 'center',
-          }}
-        >
-          <div style={{ fontSize: '18px', fontWeight: 700, color: '#ccff00' }}>8</div>
-          <div style={{ fontSize: '10px', color: 'rgba(255,255,255,0.5)', marginTop: '2px' }}>Booked</div>
-        </div>
-
-        {/* Blocked */}
-        <div
-          style={{
-            flex: 1,
-            background: 'rgba(255,255,255,0.04)',
-            border: '1px solid rgba(255,255,255,0.07)',
-            borderRadius: '14px',
-            padding: '12px',
-            textAlign: 'center',
-          }}
-        >
-          <div style={{ fontSize: '18px', fontWeight: 700, color: '#ef4444' }}>3</div>
-          <div style={{ fontSize: '10px', color: 'rgba(255,255,255,0.5)', marginTop: '2px' }}>Blocked</div>
-        </div>
-
-        {/* Open */}
-        <div
-          style={{
-            flex: 1,
-            background: 'rgba(255,255,255,0.04)',
-            border: '1px solid rgba(255,255,255,0.07)',
-            borderRadius: '14px',
-            padding: '12px',
-            textAlign: 'center',
-          }}
-        >
-          <div style={{ fontSize: '18px', fontWeight: 700, color: 'rgba(255,255,255,0.5)' }}>20</div>
-          <div style={{ fontSize: '10px', color: 'rgba(255,255,255,0.5)', marginTop: '2px' }}>Open</div>
-        </div>
-      </div>
-
-      <div style={{ paddingBottom: '112px' }} />
+      <MobileCreatorBottomNav />
     </div>
   );
 }

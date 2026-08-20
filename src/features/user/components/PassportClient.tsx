@@ -12,7 +12,6 @@ import {
   SheetClose,
   SheetTrigger,
 } from '@/shared/components/ui/sheet';
-import { VisuallyHidden } from '@radix-ui/react-visually-hidden';
 import CircularProgress from '@/features/gamification/components/CircularProgress';
 import { BadgeGrid } from '@/features/gamification/components/BadgeCard';
 import { PassportGrid } from '@/features/gamification/components/PassportStamp';
@@ -205,7 +204,7 @@ const PassportClient: React.FC<PassportClientProps> = ({ user }) => {
         </aside>
 
         <SheetContent side="left" className="w-80 bg-black border-white/5 p-0 [&::-webkit-scrollbar]:hidden overflow-y-auto">
-          <VisuallyHidden><SheetTitle>Navigation</SheetTitle></VisuallyHidden>
+          <SheetTitle className="sr-only">Navigation</SheetTitle>
           <div className="flex flex-col h-full p-8 overflow-y-auto [&::-webkit-scrollbar]:hidden">
             <PassportSidebarContent
               user={user}
@@ -745,21 +744,21 @@ const PassportClient: React.FC<PassportClientProps> = ({ user }) => {
                                <span className="material-symbols-outlined text-[#a855f7] text-sm">domain_add</span>
                                <span className="text-sm text-white/70">List a Venue</span>
                              </div>
-                             <span className="font-mono text-sm text-[#a855f7] font-bold">+{XP_REWARDS.uploadMayorVenue} XP</span>
+                             <span className="font-mono text-sm text-[#a855f7] font-bold">+{XP_REWARDS.uploadVenue} XP</span>
                            </div>
                            <div className="flex justify-between items-center p-4 rounded-2xl bg-white/5 border border-white/5 hover:bg-white/10 transition-all">
                              <div className="flex items-center gap-3">
                                <span className="material-symbols-outlined text-[#a855f7] text-sm">assured_workload</span>
                                <span className="text-sm text-white/70">Venue Approved</span>
                              </div>
-                             <span className="font-mono text-sm text-[#a855f7] font-bold">+{XP_REWARDS.mayorVenueApproved} XP</span>
+                             <span className="font-mono text-sm text-[#a855f7] font-bold">+{XP_REWARDS.venueApproved} XP</span>
                            </div>
                            <div className="flex justify-between items-center p-4 rounded-2xl bg-white/5 border border-white/5 hover:bg-white/10 transition-all">
                              <div className="flex items-center gap-3">
                                <span className="material-symbols-outlined text-[#a855f7] text-sm">star_rate</span>
                                <span className="text-sm text-white/70">Venue Featured</span>
                              </div>
-                             <span className="font-mono text-sm text-[#a855f7] font-bold">+{XP_REWARDS.mayorVenueFeatured} XP</span>
+                             <span className="font-mono text-sm text-[#a855f7] font-bold">+{XP_REWARDS.venueFeatured} XP</span>
                            </div>
                         </div>
                       </div>

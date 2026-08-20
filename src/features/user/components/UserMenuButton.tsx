@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import {
   Heart, Briefcase, MessageSquare, User, Settings, Globe,
-  HelpCircle, UserPlus, Gift, LogOut, Lock, RefreshCw,
+  HelpCircle, UserPlus, Gift, LogOut, Menu, Lock, RefreshCw,
   LayoutDashboard, Building2, ShieldCheck,
 } from 'lucide-react';
 import { useUserMenu } from '@/features/auth/hooks/useUserMenu';
@@ -167,20 +167,12 @@ export default function UserMenuButton({ onSignIn }: UserMenuButtonProps = {}) {
       <div ref={menuRef} className="relative">
         <button
           onClick={(e) => { e.stopPropagation(); toggle(); }}
-          className={`flex items-center gap-2 p-1 rounded-full border border-white/10 bg-white/5 hover:bg-white/10 hover:shadow-[0_0_15px_rgba(204,255,0,0.2)] transition-all duration-300 backdrop-blur-md group cursor-pointer ${
-            isOpen ? 'ring-2 ring-[#ccff00]/50 bg-white/10' : ''
+          className={`h-10 w-10 rounded-full border border-white/10 bg-white/5 hover:bg-white/10 hover:shadow-[0_0_15px_rgba(204,255,0,0.2)] flex items-center justify-center text-white/80 hover:text-white transition-all duration-300 backdrop-blur-md group cursor-pointer ${
+            isOpen ? 'ring-2 ring-[#ccff00]/50 bg-white/10 text-white' : ''
           }`}
           aria-label="User menu"
         >
-          <div className="w-8 h-8 rounded-full overflow-hidden border border-[#ccff00]/50 shadow-sm flex-shrink-0">
-            {avatarUrl ? (
-              <img src={avatarUrl} alt="" className="w-full h-full object-cover" />
-            ) : (
-              <div className="w-full h-full bg-[#ccff00] flex items-center justify-center">
-                <span className="text-black text-xs font-bold">{user ? userInitial : '?'}</span>
-              </div>
-            )}
-          </div>
+          <Menu className="w-5 h-5 transition-transform group-hover:scale-110" />
         </button>
 
         {isOpen && (

@@ -16,7 +16,7 @@ export default function PassportBookletCard({
   citizenNo = 'FX-2026-00481',
 }: PassportBookletCardProps) {
   const name: string = user?.name ?? 'Juan Dela Cruz';
-  const tierLabel = getPathLabel(UserPath.user, level);
+  const tierLabel = getPathLabel('user', level);
   const initial: string = name.charAt(0).toUpperCase();
 
   return (

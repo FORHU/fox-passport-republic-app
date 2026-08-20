@@ -1,250 +1,122 @@
 'use client';
 
 import React from 'react';
+import Image from 'next/image';
+import { useRouter } from 'next/navigation';
 
 type Props = {
   foxer?: {
     name?: string;
-    tags?: string[];
-    rating?: number;
-    reviewCount?: number;
-    eventsHosted?: number;
+    roleLabel?: string;
+    specialization?: string;
+    bio?: string;
     matchScore?: number;
+    imgSrc?: string;
   };
 };
 
 const DEFAULT_FOXER = {
   name: 'Maria Santos',
-  tags: ['Photography', 'DJ'],
-  rating: 4.9,
-  reviewCount: 124,
-  eventsHosted: 62,
-  matchScore: 94,
+  roleLabel: 'Event Foxer',
+  specialization: 'Weddings',
+  bio: 'Specializes in rooftop & garden receptions, 62 events curated',
+  matchScore: 96,
 };
 
-function StarRow({ rating }: { rating: number }) {
-  return (
-    <div className="flex items-center gap-1">
-      {[1, 2, 3, 4, 5].map((i) => (
-        <span
-          key={i}
-          style={{
-            fontSize: 14,
-            color: i <= Math.round(rating) ? '#ccff00' : 'rgba(255,255,255,0.2)',
-          }}
-        >
-          ★
-        </span>
-      ))}
-      <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.4)', marginLeft: 4 }}>
-        ({rating.toFixed(1)})
-      </span>
-    </div>
-  );
-}
-
 export default function MobileFoxerMatch({ foxer }: Props) {
+  const router = useRouter();
+
   const data = {
-    name: foxer?.name ?? DEFAULT_FOXER.name,
-    tags: foxer?.tags ?? DEFAULT_FOXER.tags,
-    rating: foxer?.rating ?? DEFAULT_FOXER.rating,
-    eventsHosted: foxer?.eventsHosted ?? DEFAULT_FOXER.eventsHosted,
-    matchScore: foxer?.matchScore ?? DEFAULT_FOXER.matchScore,
+    name:           foxer?.name           ?? DEFAULT_FOXER.name,
+    roleLabel:      foxer?.roleLabel      ?? DEFAULT_FOXER.roleLabel,
+    specialization: foxer?.specialization ?? DEFAULT_FOXER.specialization,
+    bio:            foxer?.bio            ?? DEFAULT_FOXER.bio,
+    matchScore:     foxer?.matchScore     ?? DEFAULT_FOXER.matchScore,
+    imgSrc:         foxer?.imgSrc,
   };
 
   return (
-    <div
-      className="flex flex-col min-h-screen max-w-md mx-auto"
-      style={{ background: '#050608' }}
-    >
-      {/* Header */}
-      <div className="pt-[60px] text-center pb-5 px-6">
-        <h1
-          className="font-display font-bold text-white"
-          style={{ fontSize: 20 }}
-        >
-          Find a Match
-        </h1>
+    <div style={{ background: '#050608', minHeight: '100svh', position: 'relative', overflow: 'hidden', color: '#fff' }}>
+
+      {/* Nav bar */}
+      <div style={{
+        position: 'absolute', top: 62, left: 0, right: 0, height: 64, zIndex: 5,
+        background: 'rgba(5,6,8,0.9)', backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)',
+        borderBottom: '1px solid rgba(255,255,255,0.08)',
+        display: 'flex', alignItems: 'center', padding: '0 16px', gap: 10,
+      }}>
+        <Image src="/foxonlylogo.png" alt="FoxPassport" width={22} height={22} style={{ objectFit: 'contain' }} />
+        <button onClick={() => router.back()} style={{ width: 36, height: 36, borderRadius: 999, background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', flexShrink: 0 }}>
+          <span className="material-symbols-outlined" style={{ fontSize: 17 }}>arrow_back</span>
+        </button>
+        <p style={{ flex: 1, fontSize: 14, fontWeight: 700, fontFamily: 'var(--font-display,"Space Grotesk",sans-serif)', margin: 0 }}>Find a Foxer</p>
       </div>
 
       {/* Card stack */}
-      <div
-        className="relative px-6"
-        style={{ height: 480 }}
-      >
-        {/* Back card */}
-        <div
-          style={{
-            position: 'absolute',
-            top: 16,
-            left: 40,
-            right: 40,
-            bottom: 0,
-            background: 'rgba(255,255,255,0.04)',
-            border: '1px solid rgba(255,255,255,0.07)',
-            borderRadius: 26,
-            transform: 'rotate(3deg)',
-          }}
-        />
+      <div style={{ marginTop: 144, padding: '0 24px', position: 'relative', height: 398 }}>
+        {/* Back card (depth shadow) */}
+        <div style={{
+          position: 'absolute', top: 20, left: 24, right: 8, bottom: 0,
+          background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)',
+          borderRadius: 26,
+        }} />
 
         {/* Front card */}
-        <div
-          style={{
-            position: 'absolute',
-            inset: 0,
-            margin: '0 24px',
-            border: '1px solid rgba(255,255,255,0.1)',
-            borderRadius: 26,
-            overflow: 'hidden',
-            boxShadow: '0 20px 60px rgba(0,0,0,0.5)',
-            display: 'flex',
-            flexDirection: 'column',
-          }}
-        >
-          {/* Top 60%: stripe bg with avatar */}
-          <div
-            className="stripe relative"
-            style={{
-              height: '60%',
-              flexShrink: 0,
-            }}
-          >
+        <div style={{
+          position: 'absolute', top: 0, left: 0, right: 16, bottom: 20,
+          background: '#101018', border: '1px solid rgba(255,255,255,0.1)',
+          borderRadius: 26, overflow: 'hidden', boxShadow: '0 20px 40px rgba(0,0,0,0.4)',
+          display: 'flex', flexDirection: 'column',
+        }}>
+          {/* Photo area — 60% */}
+          <div className="stripe" style={{ height: '60%', flexShrink: 0, position: 'relative' }}>
+            {data.imgSrc && (
+              <img src={data.imgSrc} alt={data.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> // eslint-disable-line @next/next/no-img-element
+            )}
             {/* Match score badge */}
-            <div
-              style={{
-                position: 'absolute',
-                top: 12,
-                right: 12,
-                background: '#ccff00',
-                borderRadius: 999,
-                padding: '4px 12px',
-                display: 'flex',
-                alignItems: 'center',
-                gap: 4,
-              }}
-            >
-              <span
-                style={{
-                  fontSize: 12,
-                  fontWeight: 700,
-                  color: '#000',
-                }}
-              >
-                {data.matchScore}% Match
-              </span>
-            </div>
-
-            {/* Foxer avatar placeholder */}
-            <div
-              className="stripe"
-              style={{
-                position: 'absolute',
-                bottom: 16,
-                left: 16,
-                width: 60,
-                height: 60,
-                borderRadius: '50%',
-                border: '2px solid rgba(255,255,255,0.2)',
-              }}
-            />
+            <span style={{
+              position: 'absolute', top: 14, right: 14,
+              background: 'rgba(34,197,94,0.85)', color: '#fff',
+              fontSize: 10, fontWeight: 800, padding: '5px 10px', borderRadius: 999,
+            }}>
+              {data.matchScore}% Match
+            </span>
           </div>
 
-          {/* Bottom 40%: info panel */}
-          <div
-            style={{
-              flex: 1,
-              background: '#0d0d14',
-              padding: 20,
-              display: 'flex',
-              flexDirection: 'column',
-              gap: 10,
-            }}
-          >
-            {/* Name */}
-            <h2
-              className="font-display font-bold text-white"
-              style={{ fontSize: 18, lineHeight: '1.2' }}
-            >
+          {/* Info panel */}
+          <div style={{ padding: 18, flex: 1 }}>
+            <h3 style={{ fontFamily: 'var(--font-display,"Space Grotesk",sans-serif)', fontSize: 18, fontWeight: 700, color: '#fff', margin: '0 0 4px' }}>
               {data.name}
-            </h2>
-
-            {/* Tags row */}
-            <div className="flex items-center" style={{ gap: 8 }}>
-              {data.tags.map((tag, i) => (
-                <span
-                  key={tag}
-                  style={{
-                    fontSize: 11,
-                    fontWeight: 700,
-                    padding: '4px 10px',
-                    borderRadius: 999,
-                    background: i === 0 ? '#ccff00' : 'rgba(255,255,255,0.08)',
-                    color: i === 0 ? '#000' : 'rgba(255,255,255,0.7)',
-                  }}
-                >
-                  {tag}
-                </span>
-              ))}
-            </div>
-
-            {/* Stars */}
-            <StarRow rating={data.rating} />
-
-            {/* Events stat */}
-            <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.4)' }}>
-              {data.eventsHosted} Events Hosted
+            </h3>
+            <p style={{ fontSize: 11, color: '#ccff00', fontWeight: 700, margin: '0 0 10px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+              {data.roleLabel} · {data.specialization}
+            </p>
+            <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.4)', margin: 0, lineHeight: 1.5 }}>
+              {data.bio}
             </p>
           </div>
         </div>
       </div>
 
       {/* Action buttons */}
-      <div
-        className="flex justify-center mt-5"
-        style={{ gap: 20 }}
-      >
-        {/* Decline */}
-        <button
-          style={{
-            width: 56,
-            height: 56,
-            borderRadius: '50%',
-            border: '1px solid rgba(255,255,255,0.15)',
-            background: 'rgba(255,255,255,0.05)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            cursor: 'pointer',
-          }}
-        >
-          <span
-            className="material-symbols-outlined"
-            style={{ fontSize: 24, color: 'rgba(255,255,255,0.6)' }}
-          >
-            close
-          </span>
+      <div style={{ display: 'flex', justifyContent: 'center', gap: 20, marginTop: 16 }}>
+        {/* Pass (X) */}
+        <button style={{
+          width: 52, height: 52, borderRadius: 999,
+          background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(239,68,68,0.3)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer',
+        }}>
+          <span className="material-symbols-outlined" style={{ color: '#ef4444', fontSize: 24 }}>close</span>
         </button>
 
-        {/* Accept */}
-        <button
-          style={{
-            width: 56,
-            height: 56,
-            borderRadius: '50%',
-            border: 'none',
-            background: '#ccff00',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            cursor: 'pointer',
-          }}
-        >
-          <span
-            className="material-symbols-outlined"
-            style={{ fontSize: 24, color: '#000', fontVariationSettings: "'wght' 700" }}
-          >
-            check
-          </span>
+        {/* Like (heart) */}
+        <button style={{
+          width: 60, height: 60, borderRadius: 999,
+          background: '#ccff00', border: 'none',
+          display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer',
+          boxShadow: '0 6px 20px rgba(204,255,0,0.35)',
+        }}>
+          <span className="material-symbols-outlined" style={{ color: '#0a0a0c', fontSize: 28, fontVariationSettings: "'FILL' 1" }}>favorite</span>
         </button>
       </div>
     </div>

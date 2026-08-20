@@ -8,7 +8,7 @@ export default function SearchPage() {
   return (
     <>
       <MobileSearchView />
-      <div className="hidden sm:block">
+      <div className="hidden lg:block">
         <Suspense fallback={<div className="min-h-screen bg-[#0c0d14]" />}>
           <SearchClient />
         </Suspense>

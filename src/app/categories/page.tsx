@@ -19,7 +19,7 @@ export default async function CategoriesPage({
   return (
     <>
       <MobileCategoryGrid />
-      <div className="hidden sm:block">
+      <div className="hidden lg:block">
         <CategoriesClient
           initialCategories={categories}
           initialEvents={events}
