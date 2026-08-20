@@ -12,11 +12,11 @@ export default function CheckoutSuccessPage() {
   return (
     <>
       {/* Mobile view */}
-      <div className="sm:hidden">
+      <div className="lg:hidden">
         <MobileBookingSuccess />
       </div>
       {/* Desktop view */}
-      <div className="hidden sm:block">
+      <div className="hidden lg:block">
         <Suspense>
           <CheckoutSuccessClient />
         </Suspense>

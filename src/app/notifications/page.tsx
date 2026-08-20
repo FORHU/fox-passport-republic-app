@@ -14,12 +14,12 @@ export default function NotificationsPage() {
   return (
     <div className="min-h-screen bg-background bg-gradient-dark text-text-main font-body selection:bg-accent selection:text-black">
       {/* Mobile redesigned view */}
-      <div className="sm:hidden">
+      <div className="lg:hidden">
         <MobileNotificationList />
       </div>
 
       {/* Desktop view */}
-      <div className="hidden sm:block">
+      <div className="hidden lg:block">
         <Suspense
           fallback={
             <div className="min-h-screen flex items-center justify-center">

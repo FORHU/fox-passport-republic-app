@@ -1,18 +1,25 @@
 'use client';
 
 import React from 'react';
+import Image from 'next/image';
+import { useRouter } from 'next/navigation';
 
 type Props = {
   ticketCode?: string;
   eventName?: string;
   eventDate?: string;
+  onClose?: () => void;
 };
 
 export default function MobileBookingSuccess({
-  ticketCode = 'BKG-A3F72E8C41',
+  ticketCode = 'FX-98214',
   eventName = 'Neon Nights Reception',
   eventDate = 'Aug 14',
+  onClose,
 }: Props) {
+  const router = useRouter();
+  const handleClose = onClose ?? (() => router.back());
+
   return (
     <div
       className="flex flex-col items-center justify-center min-h-screen px-7 text-center max-w-md mx-auto relative"
@@ -23,10 +30,19 @@ export default function MobileBookingSuccess({
         style={{
           position: 'absolute',
           inset: 0,
-          background: 'radial-gradient(circle 320px at 50% 40%, rgba(204,255,0,0.12) 0%, transparent 70%)',
+          background: 'radial-gradient(circle at 50% 40%, rgba(204,255,0,0.12), transparent 60%)',
           pointerEvents: 'none',
         }}
       />
+
+      {/* Transparent nav bar */}
+      <div style={{ position: 'absolute', top: 62, left: 0, right: 0, height: 64, display: 'flex', alignItems: 'center', padding: '0 16px', gap: 10, zIndex: 5 }}>
+        <Image src="/foxonlylogo.png" alt="FoxPassport" width={22} height={22} style={{ objectFit: 'contain' }} />
+        <p style={{ flex: 1, fontSize: 14, fontWeight: 700, fontFamily: 'var(--font-display,"Space Grotesk",sans-serif)', margin: 0 }}>Booking Confirmed</p>
+        <button onClick={handleClose} style={{ width: 36, height: 36, borderRadius: 999, background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', flexShrink: 0 }}>
+          <span className="material-symbols-outlined" style={{ fontSize: 16 }}>close</span>
+        </button>
+      </div>
 
       <div className="relative z-10 flex flex-col items-center w-full">
         {/* Check circle */}
@@ -77,7 +93,7 @@ export default function MobileBookingSuccess({
           <span style={{ color: 'rgba(255,255,255,0.8)', fontWeight: 600 }}>
             {eventDate}
           </span>{' '}
-          is confirmed. Your Passport stamp will be awarded once the event is completed.
+          is confirmed. A stamp has been added to your Passport.
         </p>
 
         {/* Confirmation row */}
@@ -94,7 +110,7 @@ export default function MobileBookingSuccess({
           <span
             style={{ fontSize: 12, color: 'rgba(255,255,255,0.4)', fontWeight: 500 }}
           >
-            Ticket Code
+            Confirmation
           </span>
           <span
             style={{

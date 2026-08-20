@@ -1,52 +1,161 @@
 'use client';
 
 import React, { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import api from '@/shared/lib/axios';
+import { toast } from 'sonner';
 
-type Role = {
-  id: string;
+// ─── Types ────────────────────────────────────────────────────────────────────
+
+type RoleId = 'citizen' | 'venueFoxer' | 'eventFoxer' | 'gearFoxer' | 'serviceFoxer';
+
+interface Role {
+  id: RoleId;
   label: string;
+  desc: string;
   icon: string;
-  description: string;
-};
+  color: string;
+  iconBg: string;
+}
+
+// ─── Data ─────────────────────────────────────────────────────────────────────
 
 const ROLES: Role[] = [
   {
     id: 'citizen',
     label: 'Citizen',
-    icon: 'person',
-    description: 'Discover events & book venues',
+    desc: 'Discover & book events',
+    icon: 'explore',
+    color: '#ccff00',
+    iconBg: 'rgba(204,255,0,0.2)',
   },
   {
     id: 'venueFoxer',
     label: 'Venue Foxer',
-    icon: 'location_city',
-    description: 'List your space for events',
+    desc: 'List your space',
+    icon: 'apartment',
+    color: '#ec4899',
+    iconBg: 'rgba(236,72,153,0.2)',
   },
   {
     id: 'eventFoxer',
     label: 'Event Foxer',
-    icon: 'celebration',
-    description: 'Create and host events',
+    desc: 'Curate experiences',
+    icon: 'auto_awesome',
+    color: '#a78bfa',
+    iconBg: 'rgba(167,139,250,0.2)',
   },
   {
     id: 'gearFoxer',
     label: 'Gear Foxer',
+    desc: 'Rent out equipment',
     icon: 'inventory_2',
-    description: 'Rent out gear & equipment',
+    color: '#38bdf8',
+    iconBg: 'rgba(56,189,248,0.2)',
   },
   {
     id: 'serviceFoxer',
     label: 'Service Foxer',
+    desc: 'Offer catering, photography & more',
     icon: 'design_services',
-    description: 'Offer catering, photography & more',
+    color: '#34d399',
+    iconBg: 'rgba(52,211,153,0.2)',
   },
 ];
 
-export default function MobileRolePicker() {
-  const [selected, setSelected] = useState<Set<string>>(new Set(['citizen']));
+// ─── Progress Bar ─────────────────────────────────────────────────────────────
 
-  const toggle = (id: string) => {
-    setSelected((prev) => {
+function ProgressBar({ current, total }: { current: number; total: number }) {
+  return (
+    <div style={{ display: 'flex', gap: 6, padding: '20px 20px 0' }}>
+      {Array.from({ length: total }, (_, i) => (
+        <div
+          key={i}
+          style={{
+            flex: 1, height: 4, borderRadius: 999,
+            background: i < current ? '#ccff00' : 'rgba(255,255,255,0.12)',
+            transition: 'background 0.3s',
+          }}
+        />
+      ))}
+    </div>
+  );
+}
+
+// ─── Role Card ────────────────────────────────────────────────────────────────
+
+function RoleCard({ role, selected, onToggle }: { role: Role; selected: boolean; onToggle: () => void }) {
+  return (
+    <button
+      onClick={onToggle}
+      style={{
+        display: 'flex', alignItems: 'center', gap: 14,
+        width: '100%', textAlign: 'left', padding: 16, boxSizing: 'border-box',
+        borderRadius: 18,
+        border: selected ? `1.5px solid ${role.color}` : '1.5px solid rgba(255,255,255,0.1)',
+        background: selected ? `${role.color}0d` : 'rgba(255,255,255,0.03)',
+        cursor: 'pointer', transition: 'all 0.2s',
+      }}
+    >
+      {/* Icon box */}
+      <div style={{
+        width: 44, height: 44, borderRadius: 14, flexShrink: 0,
+        background: selected ? role.iconBg : 'rgba(255,255,255,0.06)',
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        transition: 'all 0.2s',
+      }}>
+        <span className="material-symbols-outlined" style={{ fontSize: 22, color: selected ? role.color : 'rgba(255,255,255,0.4)' }}>
+          {role.icon}
+        </span>
+      </div>
+
+      {/* Text */}
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <p style={{ fontSize: 14, fontWeight: 700, color: '#fff', margin: 0, lineHeight: 1.3 }}>
+          {role.label}
+        </p>
+        <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.45)', margin: '2px 0 0', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+          {role.desc}
+        </p>
+      </div>
+
+      {/* Toggle circle */}
+      <div style={{
+        width: 22, height: 22, borderRadius: '50%', flexShrink: 0,
+        background: selected ? role.color : 'transparent',
+        border: selected ? 'none' : '1.5px solid rgba(255,255,255,0.25)',
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        transition: 'all 0.2s',
+      }}>
+        {selected && (
+          <span className="material-symbols-outlined" style={{ fontSize: 14, color: '#000', fontVariationSettings: "'wght' 700" }}>
+            check
+          </span>
+        )}
+      </div>
+    </button>
+  );
+}
+
+// ─── Main Component ───────────────────────────────────────────────────────────
+
+export default function MobileRolePicker({
+  step = 2,
+  totalSteps = 4,
+  onBack,
+  onContinue,
+}: {
+  step?: number;
+  totalSteps?: number;
+  onBack?: () => void;
+  onContinue?: (selected: RoleId[]) => void;
+}) {
+  const router = useRouter();
+  const [selected, setSelected] = useState<Set<RoleId>>(new Set(['citizen']));
+  const [saving, setSaving] = useState(false);
+
+  const toggle = (id: RoleId) => {
+    setSelected(prev => {
       const next = new Set(prev);
       if (next.has(id)) {
         next.delete(id);
@@ -57,161 +166,92 @@ export default function MobileRolePicker() {
     });
   };
 
+  const handleContinue = async () => {
+    if (selected.size === 0) {
+      toast.error('Please select at least one role.');
+      return;
+    }
+
+    if (onContinue) {
+      onContinue(Array.from(selected));
+      return;
+    }
+
+    // Default: save role preferences to the profile API then go to next step
+    setSaving(true);
+    try {
+      await api.put('/profile', { intendedRoles: Array.from(selected) });
+    } catch {
+      // Non-blocking
+    } finally {
+      setSaving(false);
+    }
+    router.push('/');
+  };
+
   return (
-    <div
-      className="flex flex-col min-h-screen px-5 pt-[60px] pb-10 max-w-md mx-auto"
-      style={{ background: '#050608' }}
-    >
-      {/* Progress dots */}
-      <div className="flex items-center gap-[6px] mb-4">
-        {[0, 1, 2, 3, 4].map((i) => (
-          <div
-            key={i}
-            style={{
-              width: i === 1 ? 24 : 8,
-              height: 8,
-              borderRadius: 999,
-              background: i === 1 ? '#ccff00' : 'rgba(255,255,255,0.15)',
-              transition: 'width 0.3s',
-            }}
-          />
-        ))}
+    <div style={{ background: '#050608', minHeight: '100svh', display: 'flex', flexDirection: 'column', color: '#fff' }}>
+      {/* Progress bar */}
+      <ProgressBar current={step} total={totalSteps} />
+
+      {/* Nav bar */}
+      <div style={{ display: 'flex', alignItems: 'center', padding: '14px 16px 0', gap: 10 }}>
+        <button
+          onClick={onBack ?? (() => router.back())}
+          style={{ width: 36, height: 36, borderRadius: '50%', background: 'rgba(255,255,255,0.07)', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}
+        >
+          <span className="material-symbols-outlined" style={{ fontSize: 20, color: 'rgba(255,255,255,0.7)' }}>arrow_back</span>
+        </button>
+        <p style={{ fontFamily: 'var(--font-display,"Space Grotesk",sans-serif)', fontSize: 15, fontWeight: 700, color: '#fff', margin: 0, flex: 1 }}>Get Started</p>
       </div>
 
-      {/* Step label */}
-      <p
-        className="text-[10px] font-bold tracking-widest uppercase mb-3"
-        style={{ color: '#ccff00' }}
-      >
-        Step 2 of 4
-      </p>
+      {/* Content */}
+      <div style={{ flex: 1, overflowY: 'auto', padding: '28px 20px 0' }}>
+        <p style={{ fontSize: 10, fontWeight: 800, letterSpacing: '0.14em', textTransform: 'uppercase', color: '#ccff00', marginBottom: 10 }}>
+          Step {step} of {totalSteps}
+        </p>
+        <h1 style={{ fontFamily: 'var(--font-display,"Space Grotesk",sans-serif)', fontSize: 28, fontWeight: 700, lineHeight: 1.15, marginBottom: 8, color: '#fff' }}>
+          What brings<br />you here?
+        </h1>
+        <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.45)', marginBottom: 24, lineHeight: 1.5 }}>
+          Pick every role that fits — you can add more later.
+        </p>
 
-      {/* Title */}
-      <h1
-        className="font-display font-bold text-white mb-2"
-        style={{ fontSize: 28, lineHeight: '1.2' }}
-      >
-        What brings you here?
-      </h1>
-
-      {/* Subtitle */}
-      <p className="text-[13px] mb-6" style={{ color: 'rgba(255,255,255,0.45)' }}>
-        Pick every role that fits — you can add more later.
-      </p>
-
-      {/* Role cards */}
-      <div className="flex flex-col" style={{ gap: 12 }}>
-        {ROLES.map((role) => {
-          const isSelected = selected.has(role.id);
-          return (
-            <button
+        {/* Role cards */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 10, paddingBottom: 140 }}>
+          {ROLES.map(role => (
+            <RoleCard
               key={role.id}
-              onClick={() => toggle(role.id)}
-              className="flex items-center text-left w-full"
-              style={{
-                gap: 14,
-                borderRadius: 18,
-                padding: 16,
-                border: isSelected
-                  ? '1.5px solid #ccff00'
-                  : '1.5px solid rgba(255,255,255,0.1)',
-                background: isSelected
-                  ? 'rgba(204,255,0,0.06)'
-                  : 'rgba(255,255,255,0.03)',
-                transition: 'all 0.2s',
-              }}
-            >
-              {/* Icon box */}
-              <div
-                style={{
-                  width: 44,
-                  height: 44,
-                  borderRadius: 14,
-                  background: '#ccff00',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  flexShrink: 0,
-                }}
-              >
-                <span
-                  className="material-symbols-outlined"
-                  style={{ fontSize: 22, color: '#000' }}
-                >
-                  {role.icon}
-                </span>
-              </div>
-
-              {/* Text */}
-              <div className="flex-1 min-w-0">
-                <p
-                  className="font-bold text-white"
-                  style={{ fontSize: 14, lineHeight: '1.3' }}
-                >
-                  {role.label}
-                </p>
-                <p
-                  style={{
-                    fontSize: 11,
-                    color: 'rgba(255,255,255,0.45)',
-                    lineHeight: '1.4',
-                    marginTop: 2,
-                  }}
-                >
-                  {role.description}
-                </p>
-              </div>
-
-              {/* Checkmark circle */}
-              <div
-                style={{
-                  width: 22,
-                  height: 22,
-                  borderRadius: '50%',
-                  background: isSelected ? '#ccff00' : 'transparent',
-                  border: isSelected ? 'none' : '1.5px solid rgba(255,255,255,0.25)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  flexShrink: 0,
-                  transition: 'all 0.2s',
-                }}
-              >
-                {isSelected && (
-                  <span
-                    className="material-symbols-outlined"
-                    style={{ fontSize: 14, color: '#000', fontVariationSettings: "'wght' 700" }}
-                  >
-                    check
-                  </span>
-                )}
-              </div>
-            </button>
-          );
-        })}
+              role={role}
+              selected={selected.has(role.id)}
+              onToggle={() => toggle(role.id)}
+            />
+          ))}
+        </div>
       </div>
 
-      {/* Spacer */}
-      <div className="flex-1" />
-
-      {/* Continue CTA */}
-      <button
-        className="w-full font-bold mt-6"
-        style={{
-          background: '#ccff00',
-          color: '#000',
-          fontSize: 16,
-          borderRadius: 16,
-          padding: '15px 0',
-          border: 'none',
-          cursor: selected.size === 0 ? 'not-allowed' : 'pointer',
-          opacity: selected.size === 0 ? 0.5 : 1,
-          transition: 'opacity 0.2s',
-        }}
-        disabled={selected.size === 0}
-      >
-        Continue
-      </button>
+      {/* Sticky Continue button */}
+      <div style={{
+        position: 'fixed', bottom: 0, left: 0, right: 0,
+        padding: '16px 20px 36px',
+        background: 'linear-gradient(to top, #050608 70%, rgba(5,6,8,0) 100%)',
+        pointerEvents: 'none',
+      }}>
+        <button
+          onClick={handleContinue}
+          disabled={saving || selected.size === 0}
+          style={{
+            width: '100%', background: selected.size > 0 ? '#ccff00' : 'rgba(255,255,255,0.1)',
+            color: selected.size > 0 ? '#000' : 'rgba(255,255,255,0.3)',
+            fontSize: 15, fontWeight: 800, borderRadius: 16, padding: '15px 0',
+            border: 'none', cursor: (saving || selected.size === 0) ? 'not-allowed' : 'pointer',
+            boxShadow: selected.size > 0 ? '0 4px 20px rgba(204,255,0,0.3)' : 'none',
+            transition: 'all 0.2s', pointerEvents: 'auto',
+          }}
+        >
+          {saving ? 'Saving…' : 'Continue'}
+        </button>
+      </div>
     </div>
   );
 }

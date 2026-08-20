@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { Suspense, useState, useRef, useEffect } from "react";
 import Link from "next/link";
@@ -191,8 +191,7 @@ function NavbarContent() {
     await clearAuthCookies();
     // Clear client store
     useAuthStore.getState().logout();
-    // Close menu and redirect
-    setMobileMenuOpen(false);
+    // Redirect
     router.push("/");
   };
 

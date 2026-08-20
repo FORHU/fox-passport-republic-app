@@ -11,7 +11,7 @@ export default async function Dashboard() {
   return (
     <>
       <MobileCreatorHome user={user} />
-      <div className="hidden sm:block">
+      <div className="hidden lg:block">
         <HostDashboardClient initialData={data} />
       </div>
     </>

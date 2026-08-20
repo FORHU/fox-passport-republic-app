@@ -107,10 +107,10 @@ async function HomeContent({ searchParams }: HomePageProps) {
   const featuredTemplates = await getFeaturedEventTemplates(4);
   return (
     <>
-      <div className="sm:hidden">
+      <div className="lg:hidden">
         <MobileHomePage />
       </div>
-      <div className="hidden sm:block">
+      <div className="hidden lg:block">
         <FoxerLandingPage featuredTemplates={featuredTemplates} />
       </div>
     </>

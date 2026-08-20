@@ -27,7 +27,7 @@ export default async function AdminDashboard() {
   return (
     <AdminAuthGuard>
       <MobileAdminView />
-      <div className="hidden sm:flex bg-background bg-gradient-dark text-text-main antialiased min-h-screen selection:bg-accent selection:text-black font-body">
+      <div className="hidden lg:flex bg-background bg-gradient-dark text-text-main antialiased min-h-screen selection:bg-accent selection:text-black font-body">
         <AdminSidebar />
 
         <main className="flex-1 lg:pl-64 min-h-screen flex flex-col">

@@ -36,7 +36,7 @@ const APPROVALS = [
 export default function MobileAdminView() {
   return (
     <div
-      className="sm:hidden"
+      className="lg:hidden"
       style={{
         background: '#050608',
         minHeight: '100svh',
