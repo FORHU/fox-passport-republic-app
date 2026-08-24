@@ -52,7 +52,12 @@ export async function requireAdmin() {
 export async function requireHost() {
   const user = await requireAuth();
   const roleType: string[] = user?.roleType ?? [];
-  const hostRoleTypes = ['eventFoxer', 'venueFoxer', 'gearFoxer', 'serviceFoxer'];
+  const hostRoleTypes = [
+    "eventFoxer",
+    "venueFoxer",
+    "gearFoxer",
+    "serviceFoxer",
+  ];
 
   const hasAccess =
     user?.systemRole === "admin" ||

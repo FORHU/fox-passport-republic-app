@@ -1,18 +1,21 @@
-﻿'use client';
+﻿"use client";
 
-import React, { useEffect, useState, useRef, useMemo } from 'react';
-import Image from 'next/image';
-import Link from 'next/link';
-import { useRouter, useSearchParams } from 'next/navigation';
-import { loadStripe } from '@stripe/stripe-js';
-import { Elements } from '@stripe/react-stripe-js';
-import { toast } from 'sonner';
-import { useAuthStore } from '@/features/auth/store/useAuthStore';
-import { createPaymentIntent, confirmBookingPayment } from '@/features/booking/api/bookings';
-import { ProgressIndicator } from '@/shared/components/ui/ProgressIndicator';
-import StripePaymentForm from './StripePaymentForm';
-import api from '@/shared/lib/axios';
-import { getDashboardPath } from '@/shared/lib/dashboard-path';
+import React, { useEffect, useState, useRef, useMemo } from "react";
+import Image from "next/image";
+import Link from "next/link";
+import { useRouter, useSearchParams } from "next/navigation";
+import { loadStripe } from "@stripe/stripe-js";
+import { Elements } from "@stripe/react-stripe-js";
+import { toast } from "sonner";
+import { useAuthStore } from "@/features/auth/store/useAuthStore";
+import {
+  createPaymentIntent,
+  confirmBookingPayment,
+} from "@/features/booking/api/bookings";
+import { ProgressIndicator } from "@/shared/components/ui/ProgressIndicator";
+import StripePaymentForm from "./StripePaymentForm";
+import api from "@/shared/lib/axios";
+import { getDashboardPath } from "@/shared/lib/dashboard-path";
 
 const stripePromise = loadStripe(
   process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY || "",
@@ -160,9 +163,19 @@ export default function VenueCheckoutClient() {
       <header className="fixed top-6 left-0 right-0 z-50 transition-all duration-300">
         <div className="mx-auto max-w-7xl px-4">
           <div className="glass-panel rounded-full px-6 h-20 flex items-center justify-between shadow-2xl hover:bg-black/40 transition-colors duration-500">
-            <div className="flex items-center gap-3 group cursor-pointer" onClick={() => router.push('/')}>
+            <div
+              className="flex items-center gap-3 group cursor-pointer"
+              onClick={() => router.push("/")}
+            >
               <div className="flex h-10 w-10 items-center justify-center overflow-hidden group-hover:scale-110 transition-transform duration-300">
-                <Image src="/foxonlylogo.png" alt="FoxPassport Logo" width={40} height={40} className="object-contain" priority />
+                <Image
+                  src="/foxonlylogo.png"
+                  alt="FoxPassport Logo"
+                  width={40}
+                  height={40}
+                  className="object-contain"
+                  priority
+                />
               </div>
               <h2 className="text-2xl font-display font-bold tracking-tight text-white group-hover:text-accent transition-colors">
                 FoxPassport
@@ -377,19 +390,27 @@ export default function VenueCheckoutClient() {
                   </div>
 
                   {/* Confirm & Pay Button */}
-                  {!paymentSuccess && email && mobileNumber && !loadingIntent && !intentError && (
-                    <button
-                      type="button"
-                      onClick={() => formRef.current?.submit()}
-                      className="w-full rounded-2xl bg-[#ccff00] py-4 px-6 text-black font-bold text-lg hover:shadow-[0_0_30px_rgba(204,255,0,0.4)] transition-all active:scale-95 flex items-center justify-center gap-2"
-                    >
-                      Confirm & Pay â‚±{totalAmount.toLocaleString()}
-                      <span className="material-symbols-outlined">arrow_forward</span>
-                    </button>
-                  )}
+                  {!paymentSuccess &&
+                    email &&
+                    mobileNumber &&
+                    !loadingIntent &&
+                    !intentError && (
+                      <button
+                        type="button"
+                        onClick={() => formRef.current?.submit()}
+                        className="w-full rounded-2xl bg-[#ccff00] py-4 px-6 text-black font-bold text-lg hover:shadow-[0_0_30px_rgba(204,255,0,0.4)] transition-all active:scale-95 flex items-center justify-center gap-2"
+                      >
+                        Confirm & Pay â‚±{totalAmount.toLocaleString()}
+                        <span className="material-symbols-outlined">
+                          arrow_forward
+                        </span>
+                      </button>
+                    )}
 
                   <div className="flex items-center justify-center gap-2 text-xs text-white/40">
-                    <span className="material-symbols-outlined text-[14px] text-green-500">lock</span>
+                    <span className="material-symbols-outlined text-[14px] text-green-500">
+                      lock
+                    </span>
                     Encrypted & Secure Â· Powered by Stripe
                   </div>
 
@@ -502,7 +523,9 @@ export default function VenueCheckoutClient() {
                         Direct Venue Booking
                       </h3>
                       <p className="text-text-muted text-sm flex items-center gap-1">
-                        <span className="material-symbols-outlined text-[14px]">receipt</span>
+                        <span className="material-symbols-outlined text-[14px]">
+                          receipt
+                        </span>
                         Booking ID: {bookingId.slice(0, 8)}â€¦
                       </p>
                     </div>
@@ -521,7 +544,9 @@ export default function VenueCheckoutClient() {
                         Total
                       </span>
                       <span className="text-3xl font-display font-bold text-accent text-shadow-glow">
-                        {totalAmount > 0 ? `â‚±${totalAmount.toLocaleString()}` : 'Processingâ€¦'}
+                        {totalAmount > 0
+                          ? `â‚±${totalAmount.toLocaleString()}`
+                          : "Processingâ€¦"}
                       </span>
                     </div>
                   </div>
@@ -561,7 +586,9 @@ export default function VenueCheckoutClient() {
                 FoxPassport
               </span>
             </div>
-            <p className="text-xs text-gray-500 font-medium">Â© 2024 FoxPassport Inc. All rights reserved.</p>
+            <p className="text-xs text-gray-500 font-medium">
+              Â© 2024 FoxPassport Inc. All rights reserved.
+            </p>
             <div className="flex gap-6">
               <a
                 className="text-xs text-gray-500 hover:text-white font-medium transition-colors"

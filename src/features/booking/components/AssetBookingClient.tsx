@@ -1,18 +1,21 @@
 /* eslint-disable @typescript-eslint/no-unused-vars, @next/next/no-img-element */
 "use client";
 
-import React, { useState, useEffect, useMemo } from 'react';
-import Image from 'next/image';
-import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import { fetchAssetById } from '@/features/asset/api/assets';
-import { bookAsset, fetchAssetAvailability } from '@/features/booking/api/bookings';
-import { useItemBookingStore } from '@/features/booking/store/useItemBookingStore';
-import { useAuthStore } from '@/features/auth/store/useAuthStore';
-import { toast } from 'sonner';
-import type { BackendAsset } from '@/shared/lib/api-types';
-import AvailabilityCalendar from './AvailabilityCalendar';
-import { getDashboardPath } from '@/shared/lib/dashboard-path';
+import React, { useState, useEffect, useMemo } from "react";
+import Image from "next/image";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { fetchAssetById } from "@/features/asset/api/assets";
+import {
+  bookAsset,
+  fetchAssetAvailability,
+} from "@/features/booking/api/bookings";
+import { useItemBookingStore } from "@/features/booking/store/useItemBookingStore";
+import { useAuthStore } from "@/features/auth/store/useAuthStore";
+import { toast } from "sonner";
+import type { BackendAsset } from "@/shared/lib/api-types";
+import AvailabilityCalendar from "./AvailabilityCalendar";
+import { getDashboardPath } from "@/shared/lib/dashboard-path";
 
 const SERVICE_FEE = 150;
 
@@ -178,9 +181,19 @@ export default function AssetBookingClient({ assetId }: { assetId: string }) {
       <header className="fixed top-6 left-0 right-0 z-50">
         <div className="mx-auto max-w-7xl px-4">
           <div className="glass-panel rounded-full px-6 h-20 flex items-center justify-between shadow-2xl hover:bg-black/40 transition-colors duration-500">
-            <Link href="/" className="flex items-center gap-3 group cursor-pointer">
+            <Link
+              href="/"
+              className="flex items-center gap-3 group cursor-pointer"
+            >
               <div className="flex h-10 w-10 items-center justify-center overflow-hidden group-hover:scale-110 transition-transform duration-300">
-                <Image src="/foxonlylogo.png" alt="FoxPassport Logo" width={40} height={40} className="object-contain" priority />
+                <Image
+                  src="/foxonlylogo.png"
+                  alt="FoxPassport Logo"
+                  width={40}
+                  height={40}
+                  className="object-contain"
+                  priority
+                />
               </div>
               <h2 className="text-2xl font-display font-bold tracking-tight text-white group-hover:text-accent transition-colors">
                 FoxPassport

@@ -1,9 +1,10 @@
-'use client';
+"use client";
 
-import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { checkInBooking } from '@/features/booking/api/bookings';
+import React, { useCallback, useEffect, useRef, useState } from "react";
+import { checkInBooking } from "@/features/booking/api/bookings";
 
-type ScanState = 'idle' | 'scanning' | 'success' | 'error' | 'already_checked_in';
+type ScanState =
+  "idle" | "scanning" | "success" | "error" | "already_checked_in";
 
 interface ScanResult {
   ticketCode: string;
@@ -13,7 +14,7 @@ interface ScanResult {
 export default function QRScannerClient() {
   const scannerRef = useRef<any>(null);
   const containerRef = useRef<HTMLDivElement>(null);
-  const [scanState, setScanState] = useState<ScanState>('idle');
+  const [scanState, setScanState] = useState<ScanState>("idle");
   const [lastResult, setLastResult] = useState<ScanResult | null>(null);
   const [isStarting, setIsStarting] = useState(false);
   const processingRef = useRef(false);
@@ -30,64 +31,81 @@ export default function QRScannerClient() {
     }
   }, []);
 
-  const handleScanSuccess = useCallback(async (decodedText: string) => {
-    if (processingRef.current) return;
-    processingRef.current = true;
+  const handleScanSuccess = useCallback(
+    async (decodedText: string) => {
+      if (processingRef.current) return;
+      processingRef.current = true;
 
-    await stopScanner();
+      await stopScanner();
 
-    const code = decodedText.trim();
-    try {
-      const res = await checkInBooking(code);
-      if (res.payoutTriggered || res.status === 'completed') {
-        setScanState('success');
-        setLastResult({ ticketCode: code, message: 'Checked in — payout released' });
-      } else {
-        setScanState('already_checked_in');
-        setLastResult({ ticketCode: code, message: 'Already checked in' });
+      const code = decodedText.trim();
+      try {
+        const res = await checkInBooking(code);
+        if (res.payoutTriggered || res.status === "completed") {
+          setScanState("success");
+          setLastResult({
+            ticketCode: code,
+            message: "Checked in — payout released",
+          });
+        } else {
+          setScanState("already_checked_in");
+          setLastResult({ ticketCode: code, message: "Already checked in" });
+        }
+      } catch (err: any) {
+        const status = err?.response?.status;
+        let msg = "Invalid ticket";
+        switch (status) {
+          case 400:
+            msg =
+              err?.response?.data?.message ||
+              "Ticket not paid — payment required before check-in";
+            break;
+          case 403:
+            msg =
+              err?.response?.data?.message ||
+              "You are not the authorized check-in manager for this booking";
+            break;
+          case 404:
+            msg = err?.response?.data?.message || "Ticket code not found";
+            break;
+          default:
+            msg = err?.response?.data?.message || "Invalid ticket";
+        }
+        setScanState("error");
+        setLastResult({ ticketCode: code, message: msg });
+      } finally {
+        processingRef.current = false;
       }
-    } catch (err: any) {
-      const status = err?.response?.status;
-      let msg = 'Invalid ticket';
-      switch (status) {
-        case 400:
-          msg = err?.response?.data?.message || 'Ticket not paid — payment required before check-in';
-          break;
-        case 403:
-          msg = err?.response?.data?.message || 'You are not the authorized check-in manager for this booking';
-          break;
-        case 404:
-          msg = err?.response?.data?.message || 'Ticket code not found';
-          break;
-        default:
-          msg = err?.response?.data?.message || 'Invalid ticket';
-      }
-      setScanState('error');
-      setLastResult({ ticketCode: code, message: msg });
-    } finally {
-      processingRef.current = false;
-    }
-  }, [stopScanner]);
+    },
+    [stopScanner],
+  );
 
   const startScanner = useCallback(async () => {
     if (isStarting || scannerRef.current) return;
     setIsStarting(true);
-    setScanState('scanning');
+    setScanState("scanning");
     setLastResult(null);
     processingRef.current = false;
 
     try {
-      const { Html5QrcodeScanner } = await import('html5-qrcode');
+      const { Html5QrcodeScanner } = await import("html5-qrcode");
       const scanner = new Html5QrcodeScanner(
-        'qr-reader',
-        { fps: 10, qrbox: { width: 250, height: 250 }, rememberLastUsedCamera: true },
+        "qr-reader",
+        {
+          fps: 10,
+          qrbox: { width: 250, height: 250 },
+          rememberLastUsedCamera: true,
+        },
         false,
       );
       scannerRef.current = scanner;
       scanner.render(handleScanSuccess, () => {});
     } catch (err) {
-      setScanState('error');
-      setLastResult({ ticketCode: '', message: 'Camera access denied or not available.' });
+      setScanState("error");
+      setLastResult({
+        ticketCode: "",
+        message: "Camera access denied or not available.",
+      });
     } finally {
       setIsStarting(false);
     }
@@ -95,7 +113,7 @@ export default function QRScannerClient() {
 
   const reset = useCallback(async () => {
     await stopScanner();
-    setScanState('idle');
+    setScanState("idle");
     setLastResult(null);
   }, [stopScanner]);
 
@@ -109,33 +127,44 @@ export default function QRScannerClient() {
     <div className="glass-panel rounded-3xl p-8 max-w-lg mx-auto">
       <div className="flex items-center gap-3 mb-6">
         <div className="h-10 w-10 rounded-xl bg-[#ccff00]/10 flex items-center justify-center">
-          <span className="material-symbols-outlined text-[#ccff00] text-[20px]">qr_code_scanner</span>
+          <span className="material-symbols-outlined text-[#ccff00] text-[20px]">
+            qr_code_scanner
+          </span>
         </div>
         <div>
-          <h2 className="text-xl font-display font-bold text-white">QR Check-In</h2>
-          <p className="text-text-muted text-xs">Scan citizen&apos;s entry ticket at the door</p>
+          <h2 className="text-xl font-display font-bold text-white">
+            QR Check-In
+          </h2>
+          <p className="text-text-muted text-xs">
+            Scan citizen&apos;s entry ticket at the door
+          </p>
         </div>
       </div>
 
-      {scanState === 'idle' && (
+      {scanState === "idle" && (
         <div className="flex flex-col items-center gap-6 py-8">
           <div className="h-32 w-32 rounded-2xl border-2 border-dashed border-white/20 flex items-center justify-center">
-            <span className="material-symbols-outlined text-white/20 text-6xl">qr_code_2</span>
+            <span className="material-symbols-outlined text-white/20 text-6xl">
+              qr_code_2
+            </span>
           </div>
           <p className="text-text-muted text-sm text-center">
-            Open camera to scan the QR code shown on the citizen&apos;s booking page.
+            Open camera to scan the QR code shown on the citizen&apos;s booking
+            page.
           </p>
           <button
             onClick={startScanner}
             className="px-8 py-3 rounded-full bg-[#ccff00] text-black font-bold hover:opacity-90 transition-all flex items-center gap-2"
           >
-            <span className="material-symbols-outlined text-[18px]">photo_camera</span>
+            <span className="material-symbols-outlined text-[18px]">
+              photo_camera
+            </span>
             Open Camera
           </button>
         </div>
       )}
 
-      {scanState === 'scanning' && (
+      {scanState === "scanning" && (
         <div className="space-y-4">
           <div
             id="qr-reader"
@@ -151,58 +180,82 @@ export default function QRScannerClient() {
         </div>
       )}
 
-      {scanState === 'success' && (
+      {scanState === "success" && (
         <div className="flex flex-col items-center gap-4 py-8">
           <div className="h-20 w-20 rounded-full bg-green-500/10 border-2 border-green-500/30 flex items-center justify-center">
-            <span className="material-symbols-outlined text-green-400 text-5xl">check_circle</span>
+            <span className="material-symbols-outlined text-green-400 text-5xl">
+              check_circle
+            </span>
           </div>
           <div className="text-center">
-            <p className="text-green-400 font-bold text-xl mb-1">{lastResult?.message || 'Checked In!'}</p>
-            <p className="text-text-muted text-sm font-mono">{lastResult?.ticketCode}</p>
+            <p className="text-green-400 font-bold text-xl mb-1">
+              {lastResult?.message || "Checked In!"}
+            </p>
+            <p className="text-text-muted text-sm font-mono">
+              {lastResult?.ticketCode}
+            </p>
           </div>
           <button
             onClick={reset}
             className="px-8 py-3 rounded-full bg-[#ccff00] text-black font-bold hover:opacity-90 transition-all flex items-center gap-2"
           >
-            <span className="material-symbols-outlined text-[18px]">qr_code_scanner</span>
+            <span className="material-symbols-outlined text-[18px]">
+              qr_code_scanner
+            </span>
             Scan Next
           </button>
         </div>
       )}
 
-      {scanState === 'already_checked_in' && (
+      {scanState === "already_checked_in" && (
         <div className="flex flex-col items-center gap-4 py-8">
           <div className="h-20 w-20 rounded-full bg-yellow-500/10 border-2 border-yellow-500/30 flex items-center justify-center">
-            <span className="material-symbols-outlined text-yellow-400 text-5xl">warning</span>
+            <span className="material-symbols-outlined text-yellow-400 text-5xl">
+              warning
+            </span>
           </div>
           <div className="text-center">
-            <p className="text-yellow-400 font-bold text-xl mb-1">{lastResult?.message || 'Already Checked In'}</p>
-            <p className="text-text-muted text-sm font-mono">{lastResult?.ticketCode}</p>
+            <p className="text-yellow-400 font-bold text-xl mb-1">
+              {lastResult?.message || "Already Checked In"}
+            </p>
+            <p className="text-text-muted text-sm font-mono">
+              {lastResult?.ticketCode}
+            </p>
           </div>
           <button
             onClick={reset}
             className="px-8 py-3 rounded-full border border-white/10 text-white font-bold hover:bg-white/5 transition-all flex items-center gap-2"
           >
-            <span className="material-symbols-outlined text-[18px]">qr_code_scanner</span>
+            <span className="material-symbols-outlined text-[18px]">
+              qr_code_scanner
+            </span>
             Scan Next
           </button>
         </div>
       )}
 
-      {scanState === 'error' && (
+      {scanState === "error" && (
         <div className="flex flex-col items-center gap-4 py-8">
           <div className="h-20 w-20 rounded-full bg-red-500/10 border-2 border-red-500/30 flex items-center justify-center">
-            <span className="material-symbols-outlined text-red-400 text-5xl">cancel</span>
+            <span className="material-symbols-outlined text-red-400 text-5xl">
+              cancel
+            </span>
           </div>
           <div className="text-center">
-            <p className="text-red-400 font-bold text-xl mb-1">Invalid Ticket</p>
-            <p className="text-text-muted text-sm">{lastResult?.message || 'This QR code is not recognized.'}</p>
+            <p className="text-red-400 font-bold text-xl mb-1">
+              Invalid Ticket
+            </p>
+            <p className="text-text-muted text-sm">
+              {lastResult?.message || "This QR code is not recognized."}
+            </p>
           </div>
           <button
             onClick={reset}
             className="px-8 py-3 rounded-full bg-[#ccff00] text-black font-bold hover:opacity-90 transition-all flex items-center gap-2"
           >
-            <span className="material-symbols-outlined text-[18px]">qr_code_scanner</span>
+            <span className="material-symbols-outlined text-[18px]">
+              qr_code_scanner
+            </span>
             Try Again
           </button>
         </div>

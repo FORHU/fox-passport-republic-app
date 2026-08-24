@@ -31,12 +31,15 @@ export function useWriteReview(venueId: string) {
         store.reset();
         router.push(`/venues/${venueId}`);
       } catch (err: any) {
-        toast.error(err?.response?.data?.message || "Failed to submit review. Please try again.");
+        toast.error(
+          err?.response?.data?.message ||
+            "Failed to submit review. Please try again.",
+        );
       } finally {
         setIsSubmitting(false);
       }
     },
-    [router, store, venueId]
+    [router, store, venueId],
   );
 
   const isValid = store.rating > 0 && store.reviewText.length >= 50;

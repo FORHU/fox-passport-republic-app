@@ -1,5 +1,5 @@
-﻿import { ProgressDashboard } from '@/features/user/components/ProgressDashboard';
-import RequireAuth from '@/features/auth/components/RequireAuth';
+﻿import { ProgressDashboard } from "@/features/user/components/ProgressDashboard";
+import RequireAuth from "@/features/auth/components/RequireAuth";
 
 export const dynamic = "force-dynamic";
 

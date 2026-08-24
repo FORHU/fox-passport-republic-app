@@ -22,7 +22,10 @@ interface Venue {
   createdAt: string;
 }
 
-const fetchHostVenues = async (hostId: string, token?: string | null): Promise<Venue[]> => {
+const fetchHostVenues = async (
+  hostId: string,
+  token?: string | null,
+): Promise<Venue[]> => {
   const headers: Record<string, string> = {};
   if (token) headers.Authorization = `Bearer ${token}`;
   const response = await axios.get(
@@ -37,19 +40,29 @@ const fetchOwnerStats = async (token?: string | null): Promise<VenueStats> => {
   if (token) headers.Authorization = `Bearer ${token}`;
   const response = await axios.get(
     `${process.env.NEXT_PUBLIC_API_URL}/venues/owner-stats`,
-    { headers }
+    { headers },
   );
   return response.data.data;
 };
 
-const FALLBACK_STATS: VenueStats = { totalVenues: 0, activeListings: 0, totalRevenue: 0, averageRating: 0 };
+const FALLBACK_STATS: VenueStats = {
+  totalVenues: 0,
+  activeListings: 0,
+  totalRevenue: 0,
+  averageRating: 0,
+};
 
 export const useHostVenues = () => {
   const user = useAuthStore((state) => state.user);
   const accessToken = useAuthStore((state) => state.accessToken);
   const hostId = user?.id as string | undefined;
 
-  const { data: venues = [], isLoading: venuesLoading, error: venuesError, refetch } = useQuery({
+  const {
+    data: venues = [],
+    isLoading: venuesLoading,
+    error: venuesError,
+    refetch,
+  } = useQuery({
     queryKey: ["hostVenues", hostId],
     queryFn: () => fetchHostVenues(hostId!, accessToken),
     enabled: !!hostId,

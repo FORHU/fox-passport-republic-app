@@ -14,8 +14,8 @@ import {
   AdminHeader,
   AdminContent,
   AdminAuthGuard,
-} from '@/features/admin/components';
-import MobileAdminView from '@/features/admin/components/MobileAdminView';
+} from "@/features/admin/components";
+import MobileAdminView from "@/features/admin/components/MobileAdminView";
 
 export const dynamic = "force-dynamic";
 
