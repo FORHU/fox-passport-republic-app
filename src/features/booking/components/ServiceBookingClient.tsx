@@ -1,20 +1,18 @@
 /* eslint-disable @next/next/no-img-element */
 "use client";
 
-import React, { useState, useEffect } from "react";
-import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { fetchServiceById } from "@/features/service/api/services";
-import {
-  bookService,
-  fetchServiceAvailability,
-} from "@/features/booking/api/bookings";
-import { useItemBookingStore } from "@/features/booking/store/useItemBookingStore";
-import { useAuthStore } from "@/features/auth/store/useAuthStore";
-import { toast } from "sonner";
-import type { BackendService } from "@/shared/lib/api-types";
-import AvailabilityCalendar from "./AvailabilityCalendar";
-import { getDashboardPath } from "@/shared/lib/dashboard-path";
+import React, { useState, useEffect } from 'react';
+import Image from 'next/image';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { fetchServiceById } from '@/features/service/api/services';
+import { bookService, fetchServiceAvailability } from '@/features/booking/api/bookings';
+import { useItemBookingStore } from '@/features/booking/store/useItemBookingStore';
+import { useAuthStore } from '@/features/auth/store/useAuthStore';
+import { toast } from 'sonner';
+import type { BackendService } from '@/shared/lib/api-types';
+import AvailabilityCalendar from './AvailabilityCalendar';
+import { getDashboardPath } from '@/shared/lib/dashboard-path';
 
 const SERVICE_FEE = 150;
 
@@ -52,7 +50,6 @@ export default function ServiceBookingClient({
       .then((d) => setBookedDates(d.bookedDates))
       .catch(() => {});
   }, [serviceId]);
-
 
   const unitPrice = Number(service?.price ?? 0);
   const isPerSession =
@@ -184,14 +181,9 @@ export default function ServiceBookingClient({
       <header className="fixed top-6 left-0 right-0 z-50">
         <div className="mx-auto max-w-7xl px-4">
           <div className="glass-panel rounded-full px-6 h-20 flex items-center justify-between shadow-2xl hover:bg-black/40 transition-colors duration-500">
-            <Link
-              href="/"
-              className="flex items-center gap-3 group cursor-pointer"
-            >
-              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-white text-black font-bold shadow-[0_0_15px_rgba(255,255,255,0.3)] group-hover:rotate-180 transition-transform duration-700">
-                <span className="material-symbols-outlined text-[24px]">
-                  explore
-                </span>
+            <Link href="/" className="flex items-center gap-3 group cursor-pointer">
+              <div className="flex h-10 w-10 items-center justify-center overflow-hidden group-hover:scale-110 transition-transform duration-300">
+                <Image src="/foxonlylogo.png" alt="FoxPassport Logo" width={40} height={40} className="object-contain" priority />
               </div>
               <h2 className="text-2xl font-display font-bold tracking-tight text-white group-hover:text-accent transition-colors">
                 FoxPassport
@@ -231,7 +223,7 @@ export default function ServiceBookingClient({
         </div>
       </header>
 
-      <main className="grow pt-32 pb-20">
+      <main className="grow pt-32 pb-28 sm:pb-20">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           {/* Breadcrumb + heading */}
           <div className="mb-8">

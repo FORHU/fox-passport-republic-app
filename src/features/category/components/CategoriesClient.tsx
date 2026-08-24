@@ -144,8 +144,7 @@ function CategoriesContent({
                     No content yet
                   </h3>
                   <p className="text-gray-400 max-w-xs mt-2 text-sm">
-                    No events or venues found for {type}. Create some via the
-                    host dashboard or admin panel!
+                    No events or venues found for {type}. Create some via the creator dashboard or admin panel!
                   </p>
                 </div>
               )}

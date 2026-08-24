@@ -1,6 +1,6 @@
 ---
 domain: Fox Passport Republic
-updated: 2026-08-11
+updated: 2026-07-24
 ---
 
 # Domain Glossary
@@ -14,20 +14,42 @@ When they disagree, the schema wins — see `fox-passport-republic-api/CONTEXT.m
 ## Roles
 
 **Citizen**
-A registered platform user with no approved RoleType yet (`roleType: []`). The default state for every signed-up user.
-RoleType is additive: gaining a role does not stop someone being a citizen.
-Code: `systemRole: "user"`.
+A registered platform user who discovers venues, books events, and collects Passport stamps.
+Code: `systemRole: "user"`, `roleType: []`.
+_Avoid_: Regular user, plain user
 
 **RoleType**
-A supply-side capability a citizen can apply for and be approved to hold: `venueFoxer`, `eventFoxer`, `gearFoxer`, `serviceFoxer`, or `investor`.
-A user may hold several at once. Distinct from `SystemRole`, which governs platform administration rather than marketplace participation.
-
-**Foxer**
-Umbrella term for a `gearFoxer` or `serviceFoxer` — anyone supplying inventory (Assets or Services) into the marketplace.
+A supply-side capability a Citizen can apply for and be approved to hold. Multiple RoleTypes may be held simultaneously — they are additive, not exclusive.
+Values: `venueFoxer`, `eventFoxer`, `gearFoxer`, `serviceFoxer`, `investor`.
+Distinct from `systemRole` (`user`/`admin`/`super_admin`), which governs platform administration.
+_Avoid_: Role (ambiguous with systemRole), permission
 
 **VenueFoxer**
-Role-holder who owns and lists Venues. A Venue is bare space, so unlike an Asset or Service it isn't independently bookable — a VenueFoxer earns only when an EventFoxer selects their Venue into an Event. That is intentional, not a gap.
-Code: `roleType: "venueFoxer"`. _Avoid_: Mayor (old name).
+A Citizen approved to list and manage Venues. A Venue is bare space — VenueFoxers don't sell experiences standalone; they earn only when an EventFoxer selects their Venue into an Event Template.
+Code: `roleType` includes `"venueFoxer"`.
+_Avoid_: Mayor (old name)
+
+**EventFoxer**
+A Citizen approved to assemble Event Templates: attaches an existing Venue (from a VenueFoxer) plus Assets/Services (from GearFoxers/ServiceFoxers), then submits for admin approval. Curates and coordinates — does not supply their own Venue, Assets, or Services.
+Code: `roleType` includes `"eventFoxer"`.
+_Avoid_: Host (old name)
+
+**GearFoxer**
+A Citizen approved to supply physical Assets (equipment, furniture, decorations, sound systems, etc.) into the marketplace for standalone booking or attachment to Event Templates.
+Code: `roleType` includes `"gearFoxer"`.
+_Avoid_: FoxerAsset, Asset Foxer (old names)
+
+**ServiceFoxer**
+A Citizen approved to supply Services (catering, entertainment, design, staffing, etc.) into the marketplace for standalone booking or attachment to Event Templates.
+Code: `roleType` includes `"serviceFoxer"`.
+_Avoid_: FoxerService, Service Foxer (old names)
+
+**Foxer**
+Umbrella term for a GearFoxer or ServiceFoxer — anyone supplying inventory. Used when the distinction between the two doesn't matter.
+
+**Investor**
+A Citizen approved as a financial stakeholder. Application requires proof of funds and an investment range, unlike operational RoleTypes.
+Code: `roleType` includes `"investor"`.
 
 **EventFoxer**
 Role-holder who assembles Events: an Event Template attaches an existing Venue plus Assets/Services, then spawns an Event Request for admin approval. Also acts as program manager, coordinating suppliers to deliver the event.
@@ -41,93 +63,98 @@ Code: `roleType: "gearFoxer"`. _Avoid_: FoxerAsset, Asset Foxer (old names).
 Role-holder who supplies Services (catering, entertainment, staffing) for standalone booking or attachment to Event Templates.
 Code: `roleType: "serviceFoxer"`. _Avoid_: FoxerService, Service Foxer (old names).
 
-**Investor**
-Role-holder who provides funding rather than operational supply. Application requires proof of funds and an investment range.
-Code: `roleType: "investor"`.
-
-**Admin**
-Platform operator who approves content submissions and manages all entities.
-Code: `systemRole: "admin"`.
-There is no `super_admin`: `SystemRole` is exactly `user | admin`. Guards that tested for a super-admin tier could never match and have been removed.
-
 ---
 
 ## Core Concepts
 
+**Citizen ID**
+A permanent, human-readable identifier assigned to every Citizen at signup. Format: `FX-{YYYY}-{5-digit sequential}` (e.g. `FX-2026-00481`). Stored as `citizenId` on the User record. Displayed prominently on the Passport booklet card.
+_Avoid_: User ID (that's the internal UUID), account number
+
 **Passport**
-A Citizen's gamification profile. Tracks stamps collected, badges earned, and events attended. Displayed at `/user/passport`.
+A Citizen's gamification profile. Tracks stamps collected, badges earned, XP earned, and level progress per Path.
+
+**Path**
+A per-RoleType XP progression track. Each Citizen has one Path per role they hold (`user`, `eventFoxer`, `venueFoxer`, `gearFoxer`, `serviceFoxer`, `investor`). Levels and tier labels are independent per Path.
+
+**Level**
+A numeric milestone within a Path, earned by accumulating XP. XP required per level scales by 15% per level (`XP_PER_LEVEL = 1000` base). Each Path has named tier labels at milestone levels:
+
+| Path | Tier sequence |
+|---|---|
+| Citizen (`user`) | Newcomer (1) → Explorer (5) → Adventurer (10) → Trailblazer (15) → VIP Explorer (20) |
+| EventFoxer | Event Starter (1) → Event Planner (3) → Event Pro (7) → Premium Creator (12) → Super Creator (18) |
+| VenueFoxer | Ward Officer (1) → District Head (3) → City Planner (7) → City Leader (12) → Grand Foxer (18) |
+| GearFoxer | Starter Foxer (1) → Social Butterfly (5) → Event Curator (10) → Master Foxer (15) → Elite Foxer (20) |
+| ServiceFoxer | Starter Foxer (1) → Social Butterfly (5) → Event Curator (10) → Master Foxer (15) → Elite Foxer (20) |
+| Investor | Seed Funder (1) → Angel Investor (3) → Venture Partner (6) → Major Stakeholder (10) → Elite Investor (15) |
+
+**Badge**
+A collectible unlocked by completing specific achievements within a Path. Has a rarity tier: Common, Uncommon, Rare, Epic, Legendary. Rarity determines visual treatment (color/glow).
+
+**VIP Status**
+A cross-path prestige tier earned by sustained activity across roles: Bronze → Silver → Gold → Platinum. Distinct from Path Level — it is an aggregate status, not per-Path.
 
 **Stamp**
-A collectible awarded to a Citizen after attending an event or visiting a Venue.
-
-**Event Template**
-A reusable event package created by an EventFoxer. Defines the event type, venue, included Assets/Services, dates, and cost. Citizens book from Event Templates.
-
-**Venue**
-A physical space listed by a VenueFoxer. Has capacity, base rate, location, and gallery.
-
-**Asset**
-Physical equipment (camera, sound system, lighting rig) that a GearFoxer rents out per event.
-
-**Service**
-A professional offering (photography, DJ, catering) that a ServiceFoxer provides per event or per hour.
-
-**Experience**
-A customised event configuration a Citizen assembles on the Venue detail page by selecting add-on Assets and Services before booking.
-
-**Blueprint**
-The financial summary sidebar in the Event Builder.
-
-**Host Markup**
-The percentage an EventFoxer adds on top of the summed prices of a template's attached items — this is how they earn. Set per template by the EventFoxer, not by the platform.
-Code: `hostMarkupPct`. _Avoid_: commission (implies platform-set).
-
-**Platform Fee**
-The percentage the business takes on every transaction, added on top of what the citizen already sees (itemsTotal + Host Markup). It is an extra line item, never carved out of any role's earnings.
-See `docs/adr/0002-stripe-connect-payouts.md` in the API.
+A collectible awarded to a Citizen when a Booking reaches `completed` status. Triggered by event completion, not booking confirmation — a no-show or cancellation does not earn a Stamp.
 
 **Specialization**
-A category tag on a foxer's profile and listings. Either *Claimed* (declared at role-application time, admin-backed, max 3 per role) or *Earned* (auto-granted after 3 completed bookings in that category at 4.0+ average rating, unlimited, never revoked). Each role uses its own vocabulary: EventFoxer → EventCategory, ServiceFoxer → ServiceCategory, GearFoxer → AssetCategory, VenueFoxer → VenueCategory.
+A category tag on a Foxer's profile and listings showing their area of focus. Two forms:
+- *Claimed* — declared at role-application time, admin-backed, capped at 3 per RoleType
+- *Earned* — auto-granted after 3 completed bookings in that category with 4.0+ average rating, unlimited count, never revoked
 
-**Fulfillment**
-The delivery/execution stage after a booking is confirmed.
+**Event Template**
+A reusable event package created by an EventFoxer. Attaches a Venue, Assets, and Services; sets pricing via Host Markup; submitted for admin approval before it becomes bookable.
+
+**Venue**
+A physical space listed by a VenueFoxer. Has capacity, base rate, location, gallery, and feature lists (spaceType, amenities, techAv, staffing, policies).
+
+**Asset**
+A physical item (equipment, furniture, sound system, etc.) listed by a GearFoxer for rental.
+
+**Service**
+A professional offering (photography, DJ, catering, etc.) listed by a ServiceFoxer.
+
+**Venue Studio**
+The venue builder UI used by VenueFoxers to create and configure a Venue. Five palette tabs: Space Types, Tech & AV, Amenities, Staffing, Policies. Tech & AV, Amenities, and Staffing are pre-populated from a server-side catalog (`GET /api/v1/venues/catalog`); Space Types and Policies are manual-only.
+
+**Host Markup**
+The percentage an EventFoxer adds on top of an Event Template's attached items' agreed prices — this is how an EventFoxer earns.
+_Avoid_: Host fee, commission
+
+**Platform Fee**
+The percentage the platform takes on every transaction, added on top of (itemsTotal + Host Markup). Not carved out of any role's earnings.
+
+**Match**
+A confirmed two-way connection between any two platform participants. The same entity covers two collaboration patterns:
+- *Citizen ↔ Foxer* — a Citizen selects and connects with a Foxer; leads toward a Booking.
+- *Foxer ↔ Foxer* — two supply-side participants connect so they can collaborate; an EventFoxer can add a matched GearFoxer or ServiceFoxer directly into their Event Template builder and negotiate pricing within that match.
+
+A Match begins as a Match Request (pending), becomes a Match once both parties accept. The match score (expressed as a percentage) represents compatibility based on specializations and history.
+_Avoid_: Partner, connection, collaboration (use Match)
 
 **Booking**
-A confirmed reservation linking a Citizen, an Event Template (or direct Venue/Asset/Service), dates, and a payment.
-
-**Listing**
-A published Asset or Service created by a Foxer, visible in the marketplace.
+A confirmed reservation linking a Citizen, an Event Template (or direct Venue/Asset/Service), dates, and a payment. Each Booking has a unique `ticketCode` — format `BKG-{10 uppercase hex chars}` (e.g. `BKG-A3F72E8C41`) — used for check-in scanning and receipts.
+_Avoid_: confirmation code, booking code
 
 ---
 
 ## Status States
 
-Status values are sourced from backend Prisma enums — the frontend must mirror these exactly.
-
 | Entity | States |
 |---|---|
-| Venue | `draft` → `pending` (admin review) → `available` / `rejected` / `archived` |
-| Asset | `draft` → `pending` (admin review) → `available` / `reserved` / `rejected` / `archived` |
-| Service | `draft` → `pending` (admin review) → `available` → `paused` / `archived` / `rejected` |
-| Event Template | `draft` → `pending` (admin review) → `published` / `rejected` / `archived` |
+| Venue | `draft` → `pending` → `available` / `rejected` / `archived` |
+| Asset | `draft` → `pending` → `available` / `reserved` / `rejected` / `archived` |
+| Service | `draft` → `pending` → `available` → `paused` / `archived` / `rejected` |
+| Event Template | `draft` → `pending` → `published` / `rejected` / `archived` |
 | Booking | `pending` → `confirmed` → `active` → `completed` / `cancelled` / `disputed` |
 | Role Application | `pending` → `approved` / `rejected` |
 
-Notes:
-- `"paused"` on Service is the Foxer's availability toggle (not a separate field) — only valid after `"available"`
-- `"reserved"` on Asset is system-set when an asset is booked
-- Event Template uses a single `status: EventTemplateStatus` field (`draft/pending/published/rejected/archived`) — not the `EventStatus` enum used by the spawned `Event` model
-- An EventFoxer submits a template via `POST /event-templates/:id/submit` — only valid from `draft`, sets status to `pending`
-
----
-
-## Routing Note
-
-`/host` and `/mayor` are redirect shims kept from the pre-rename vocabulary; the live supply-side surface is `/creator-dashboard`. Use `getDashboardPath()` in `src/shared/lib/dashboard-path.ts` rather than re-deriving a landing route from roles.
+**Note:** KYC (identity and document verification) is not a separate process — it is the document-upload step within a Role Application. The `/kyc` screen is a status view of the same Role Application, not an independent entity.
 
 ---
 
 ## What This Glossary Is NOT
 
 This file does not contain implementation details, file paths, API contracts, or architectural decisions.
-Those belong in `docs/adr/` (Architecture Decision Records) or code comments.
+Those belong in `docs/adr/` or code comments.

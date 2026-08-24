@@ -52,7 +52,7 @@ function SkeletonProfile() {
       <header className="fixed top-0 left-0 right-0 z-50 p-6">
         <div className="h-10 w-36 rounded-full bg-white/5 animate-pulse" />
       </header>
-      <main className="pt-24 pb-20 px-4">
+      <main className="pt-24 pb-28 sm:pb-20 px-4">
         <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-12 animate-pulse">
           <div className="lg:col-span-4 space-y-8">
             <div className="glass-card rounded-[3rem] p-8 flex flex-col items-center gap-4">
@@ -151,8 +151,7 @@ const FoxerProfile: React.FC = () => {
           : foxer.services.map((s) => s.name);
 
   const bio = isHost
-    ? (foxer.eventTemplates?.[0]?.description ??
-      "This host has not added a bio yet.")
+    ? (foxer.eventTemplates?.[0]?.description ?? 'This organizer has not added a bio yet.')
     : isGearFoxer && hasAssets
       ? (foxer.assets?.[0]?.description ??
         "This foxer has not added a bio yet.")
@@ -192,7 +191,7 @@ const FoxerProfile: React.FC = () => {
         </Link>
       </header>
 
-      <main className="pt-24 pb-20 px-4">
+      <main className="pt-24 pb-28 sm:pb-20 px-4">
         <div className="max-w-6xl mx-auto">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
             {/* Left Column */}

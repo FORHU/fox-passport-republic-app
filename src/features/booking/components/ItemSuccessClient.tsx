@@ -1,16 +1,14 @@
 /* eslint-disable react-hooks/purity, @next/next/no-img-element */
 "use client";
 
-import React, { useEffect, useRef, useMemo } from "react";
-import Link from "next/link";
-import { useRouter, useSearchParams } from "next/navigation";
-import { useItemBookingStore } from "@/features/booking/store/useItemBookingStore";
-import { useAuthStore } from "@/features/auth/store/useAuthStore";
-import { getDashboardPath } from "@/shared/lib/dashboard-path";
-import {
-  confirmServiceBooking,
-  confirmAssetBooking,
-} from "@/features/booking/api/bookings";
+import React, { useEffect, useRef, useMemo } from 'react';
+import Image from 'next/image';
+import Link from 'next/link';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { useItemBookingStore } from '@/features/booking/store/useItemBookingStore';
+import { useAuthStore } from '@/features/auth/store/useAuthStore';
+import { confirmServiceBooking, confirmAssetBooking } from '@/features/booking/api/bookings';
+import { getDashboardPath } from '@/shared/lib/dashboard-path';
 
 export default function ItemSuccessClient() {
   const router = useRouter();
@@ -46,7 +44,6 @@ export default function ItemSuccessClient() {
     }
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-
   const isService = itemType === "service";
   const typeLabel = isService ? "Service" : "Equipment Rental";
   const typeIcon = isService ? "build" : "inventory_2";
@@ -72,14 +69,9 @@ export default function ItemSuccessClient() {
       <header className="fixed top-6 left-0 right-0 z-50">
         <div className="mx-auto max-w-7xl px-4">
           <div className="glass-panel rounded-full px-6 h-20 flex items-center justify-between shadow-2xl hover:bg-black/40 transition-colors duration-500">
-            <Link
-              href="/"
-              className="flex items-center gap-3 group cursor-pointer"
-            >
-              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-white text-black font-bold shadow-[0_0_15px_rgba(255,255,255,0.3)] group-hover:rotate-180 transition-transform duration-700">
-                <span className="material-symbols-outlined text-[24px]">
-                  explore
-                </span>
+            <Link href="/" className="flex items-center gap-3 group cursor-pointer">
+              <div className="flex h-10 w-10 items-center justify-center overflow-hidden group-hover:scale-110 transition-transform duration-300">
+                <Image src="/foxonlylogo.png" alt="FoxPassport Logo" width={40} height={40} className="object-contain" priority />
               </div>
               <h2 className="text-2xl font-display font-bold tracking-tight text-white group-hover:text-accent transition-colors">
                 FoxPassport
@@ -119,7 +111,7 @@ export default function ItemSuccessClient() {
         </div>
       </header>
 
-      <main className="flex-grow pt-32 pb-20 relative flex items-center justify-center">
+      <main className="grow pt-32 pb-28 sm:pb-20 relative flex items-center justify-center">
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-accent/10 rounded-full blur-[150px] pointer-events-none animate-pulse-slow mix-blend-screen" />
 
         <div className="w-full max-w-3xl px-4 sm:px-6 lg:px-8 relative z-10 animate-in fade-in slide-in-from-bottom-8 duration-700">

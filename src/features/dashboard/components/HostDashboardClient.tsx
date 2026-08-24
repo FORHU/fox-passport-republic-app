@@ -199,7 +199,7 @@ export default function HostDashboardClient({
     >
       <DashboardHeader />
 
-      <main className="pt-32 pb-20">
+      <main className="pt-32 pb-28 sm:pb-20">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <WelcomeBanner
             isCreateMenuOpen={isCreateMenuOpen}
@@ -238,7 +238,7 @@ export default function HostDashboardClient({
                   title="My Active Events"
                   icon="hub"
                   iconColor="text-[#ccff00]"
-                  requiredRole="Host"
+                  requiredRole="Event Foxer"
                   applyHref="/creator-dashboard/apply"
                 >
                   <EventsSection events={[]} onStatusChange={() => {}} />
@@ -261,8 +261,8 @@ export default function HostDashboardClient({
                   title="My Venues"
                   icon="apartment"
                   iconColor="text-pink-500"
-                  requiredRole="Mayor"
-                  applyHref="/mayor/apply"
+                  requiredRole="Venue Foxer"
+                  applyHref="/venue-foxer/apply"
                 >
                   <VenuesSection venues={[]} onStatusChange={() => {}} />
                 </LockedSection>

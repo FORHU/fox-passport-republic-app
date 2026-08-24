@@ -38,6 +38,9 @@ const nextConfig = {
       { source: '/host/venues/:id/edit',      destination: '/creator-dashboard/venues/:id/edit',      permanent: true },
       { source: '/host/stripe-dashboard',     destination: '/creator-dashboard/stripe-dashboard',     permanent: true },
       { source: '/host/stripe-onboard',       destination: '/creator-dashboard/stripe-onboard',       permanent: true },
+      { source: '/host/bookings/:id',          destination: '/booking/:id',                            permanent: true },
+      { source: '/mayor/apply',               destination: '/venue-foxer/apply',                      permanent: true },
+      { source: '/mayor/create-venue',        destination: '/venue-foxer/create-venue',               permanent: true },
     ];
   },
 

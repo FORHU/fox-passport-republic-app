@@ -1,12 +1,14 @@
 /* eslint-disable @next/next/no-img-element */
 "use client";
 
-import React, { useState, useEffect } from "react";
-import { useParams, useRouter, useSearchParams } from "next/navigation";
-import Link from "next/link";
-import { useEventBuilderStore } from "@/features/event/store/useEventBuilderStore";
-import { LocationMap } from "@/shared/components/ui/LocationMap";
-import { useExperienceBuilderData } from "@/features/venue/hooks/useExperienceBuilderData";
+import React, { useState, useEffect } from 'react';
+import { useParams, useRouter, useSearchParams } from 'next/navigation';
+import Image from 'next/image';
+import Link from 'next/link';
+import { useEventBuilderStore } from '@/features/event/store/useEventBuilderStore';
+import { LocationMap } from '@/shared/components/ui/LocationMap';
+import { useExperienceBuilderData } from '@/features/venue/hooks/useExperienceBuilderData';
+import MobileEventDetail from '@/features/event/components/MobileEventDetail';
 
 const SERVICE_CATEGORIES = [
   { id: "foxer", label: "Curator", icon: "person_search" },
@@ -374,10 +376,8 @@ const CustomExperienceBuilder: React.FC<{
 
         {/* Right Sidebar: Bill of Materials / Summary / Drop Zone */}
         <aside
-          className={`w-80 shrink-0 bg-[#0f111a] border-l border-white/5 flex flex-col shadow-2xl relative z-10 transition-all duration-300 ${
-            isDragOver
-              ? "bg-white/5 border-accent shadow-[inset_0_0_40px_rgba(204,255,0,0.1)]"
-              : ""
+          className={`hidden md:flex flex-col w-80 shrink-0 bg-[#0f111a] border-l border-white/5 shadow-2xl relative z-10 transition-all duration-300 ${
+            isDragOver ? 'bg-white/5 border-accent shadow-[inset_0_0_40px_rgba(204,255,0,0.1)]' : ''
           }`}
           onDragOver={handleDragOver}
           onDragLeave={handleDragLeave}
@@ -528,6 +528,23 @@ const CustomExperienceBuilder: React.FC<{
             </p>
           </div>
         </aside>
+      </div>
+
+      {/* Mobile submit bar — replaces the hidden right sidebar on small screens */}
+      <div className="md:hidden flex items-center justify-between px-4 py-3 bg-[#0f111a] border-t border-white/10 shrink-0">
+        <div>
+          <p className="text-[10px] text-white/40">Total Estimate</p>
+          <span className="text-lg font-display font-bold text-accent">₱{calculateTotal().toLocaleString()}</span>
+        </div>
+        <button
+          onClick={handleSubmit}
+          disabled={isSubmitting}
+          className="px-5 py-2.5 rounded-xl bg-white text-black font-bold text-sm hover:bg-accent transition-colors disabled:opacity-50 flex items-center gap-2"
+        >
+          {isSubmitting
+            ? <span className="material-symbols-outlined animate-spin text-[18px]">progress_activity</span>
+            : 'Request Booking'}
+        </button>
       </div>
     </div>
   );
@@ -753,11 +770,16 @@ const EventDetailsPage: React.FC = () => {
 
   return (
     <div className="bg-background bg-gradient-dark text-text-main antialiased min-h-screen flex flex-col selection:bg-accent selection:text-black font-body">
-      <CustomExperienceBuilder
-        isOpen={isCustomBookingOpen}
-        onClose={() => setIsCustomBookingOpen(false)}
-        venuePrice={price}
-      />
+
+      {/* Mobile-only redesigned view */}
+      <div className="lg:hidden">
+        <MobileEventDetail event={template} />
+      </div>
+
+      {/* Desktop / tablet view */}
+      <div className="hidden lg:contents">
+
+      <CustomExperienceBuilder isOpen={isCustomBookingOpen} onClose={() => setIsCustomBookingOpen(false)} venuePrice={price} />
 
       {/* Draft preview banner */}
       {isPreview && isDraft && (
@@ -823,19 +845,13 @@ const EventDetailsPage: React.FC = () => {
       )}
 
       {/* Nav */}
-      <header
-        className={`fixed left-0 right-0 z-50 bg-background/80 backdrop-blur-md border-b border-white/5 h-20 ${isPreview && isDraft ? "top-9" : "top-0"}`}
-      >
+      <header className={`fixed left-0 right-0 z-50 bg-background/80 backdrop-blur-md border-b border-white/5 h-14 sm:h-20 ${isPreview && isDraft ? 'top-9' : 'top-0'}`}>
         <div className="mx-auto max-w-7xl px-4 h-full flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-3 group">
-            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-white text-black font-bold group-hover:rotate-180 transition-transform duration-700">
-              <span className="material-symbols-outlined text-[24px]">
-                explore
-              </span>
+          <Link href="/" className="flex items-center gap-2 sm:gap-3 group">
+            <div className="flex h-8 w-8 sm:h-10 sm:w-10 items-center justify-center overflow-hidden group-hover:scale-110 transition-transform duration-300">
+              <Image src="/foxonlylogo.png" alt="FoxPassport Logo" width={40} height={40} className="object-contain" priority />
             </div>
-            <h2 className="text-2xl font-display font-bold tracking-tight text-white group-hover:text-accent transition-colors">
-              FoxPassport
-            </h2>
+            <h2 className="text-lg sm:text-2xl font-display font-bold tracking-tight text-white group-hover:text-accent transition-colors">FoxPassport</h2>
           </Link>
           <div className="flex items-center gap-4">
             <button className="hidden sm:flex items-center gap-2 px-4 py-2 rounded-full border border-white/10 hover:bg-white/5 text-sm font-medium text-white">
@@ -860,9 +876,34 @@ const EventDetailsPage: React.FC = () => {
         </div>
       </header>
 
-      <main
-        className={`grow pb-20 px-4 sm:px-6 ${isPreview && isDraft ? "pt-[132px]" : "pt-28"}`}
-      >
+      {/* Mobile sticky booking bar (design: glass card at bottom with price + Reserve CTA) */}
+      {!isPreview && template && (
+        <div
+          className="sm:hidden fixed bottom-5 left-4 right-4 z-40 flex items-center justify-between px-5 py-3 rounded-2xl"
+          style={{
+            background: "rgba(18,18,24,0.92)",
+            backdropFilter: "blur(20px)",
+            border: "1px solid rgba(255,255,255,0.1)",
+            boxShadow: "0 20px 50px rgba(0,0,0,0.5)",
+          }}
+        >
+          <div>
+            <p className="text-[10px] text-white/40 font-bold uppercase tracking-wider">Est. total</p>
+            <p className="text-xl font-display font-bold text-[#ccff00]">
+              {price > 0 ? `₱${price.toLocaleString()}` : "Price on request"}
+            </p>
+          </div>
+          <button
+            onClick={() => router.push(`/booking/config?templateId=${eventId}`)}
+            className="px-6 py-3 rounded-full bg-[#ccff00] text-black font-bold text-sm"
+            style={{ boxShadow: "0 4px 16px rgba(204,255,0,0.35)" }}
+          >
+            Reserve
+          </button>
+        </div>
+      )}
+
+      <main className={`grow pb-28 sm:pb-20 px-4 sm:px-6 ${isPreview && isDraft ? 'pt-26.25 sm:pt-33' : 'pt-20 sm:pt-28'}`}>
         <div className="max-w-7xl mx-auto">
           {/* Title */}
           <div className="mb-6">
@@ -914,34 +955,13 @@ const EventDetailsPage: React.FC = () => {
 
           {/* Gallery */}
           {hasImages ? (
-            <div className="grid grid-cols-4 grid-rows-2 gap-3 h-87.5 md:h-125 rounded-2xl overflow-hidden mb-12 relative">
-              <div
-                className="col-span-2 row-span-2 cursor-pointer group"
-                onClick={() => {
-                  setActiveImageIndex(0);
-                  setGalleryOpen(true);
-                }}
-              >
-                <img
-                  src={templateImages[0]}
-                  className="w-full h-full object-cover group-hover:brightness-110 transition-all duration-500"
-                  alt="Main"
-                />
+            <div className="grid grid-cols-2 sm:grid-cols-4 grid-rows-2 gap-2 sm:gap-3 h-52 sm:h-80 md:h-125 rounded-2xl overflow-hidden mb-8 sm:mb-12 relative">
+              <div className="col-span-2 row-span-2 cursor-pointer group" onClick={() => { setActiveImageIndex(0); setGalleryOpen(true); }}>
+                <img src={templateImages[0]} className="w-full h-full object-cover group-hover:brightness-110 transition-all duration-500" alt="Main" />
               </div>
               {templateImages.slice(1, 5).map((img: string, idx: number) => (
-                <div
-                  key={idx}
-                  className="relative cursor-pointer group"
-                  onClick={() => {
-                    setActiveImageIndex(idx + 1);
-                    setGalleryOpen(true);
-                  }}
-                >
-                  <img
-                    src={img}
-                    className="w-full h-full object-cover group-hover:brightness-110 transition-all duration-500"
-                    alt={`View ${idx + 1}`}
-                  />
+                <div key={idx} className="relative hidden sm:block cursor-pointer group" onClick={() => { setActiveImageIndex(idx + 1); setGalleryOpen(true); }}>
+                  <img src={img} className="w-full h-full object-cover group-hover:brightness-110 transition-all duration-500" alt={`View ${idx + 1}`} />
                   {idx === 3 && templateImages.length > 5 && (
                     <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
                       <span className="text-white font-bold text-lg">
@@ -1196,11 +1216,7 @@ const EventDetailsPage: React.FC = () => {
               <div className="flex gap-6 items-start">
                 <div className="relative shrink-0">
                   {template.owner?.imgId ? (
-                    <img
-                      src={template.owner.imgId}
-                      className="w-16 h-16 rounded-full object-cover border-2 border-white/10"
-                      alt="Host"
-                    />
+                    <img src={template.owner.imgId} className="w-16 h-16 rounded-full object-cover border-2 border-white/10" alt="Event organizer" />
                   ) : (
                     <div className="w-16 h-16 rounded-full bg-accent flex items-center justify-center border-2 border-white/10">
                       <span className="text-black text-2xl font-bold">
@@ -1229,9 +1245,7 @@ const EventDetailsPage: React.FC = () => {
                       Identity Verified
                     </span>
                   </div>
-                  <button className="px-6 py-3 rounded-xl border border-white/10 text-sm font-bold text-white hover:bg-white hover:text-black transition-colors">
-                    Contact Host
-                  </button>
+                  <button className="px-6 py-3 rounded-xl border border-white/10 text-sm font-bold text-white hover:bg-white hover:text-black transition-colors">Contact Organizer</button>
                 </div>
               </div>
 
@@ -1405,6 +1419,7 @@ const EventDetailsPage: React.FC = () => {
           </div>
         </div>
       </footer>
+      </div>{/* end hidden sm:contents */}
     </div>
   );
 };

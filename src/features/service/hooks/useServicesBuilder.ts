@@ -1,12 +1,13 @@
 /* eslint-disable react-hooks/exhaustive-deps, @typescript-eslint/no-unused-vars */
 "use client";
 
-import { useCallback, useMemo, useState, useEffect } from "react";
+import { useCallback, useMemo, useRef, useState, useEffect } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { useListingBuilderStore } from "@/features/asset/store/useListingBuilderStore";
 import api from "@/shared/lib/axios";
-import { createService } from "@/features/service/api/services";
+import { createService, updateService } from "@/features/service/api/services";
+import { toast } from "sonner";
 import type { CreateServicePayload } from "@/shared/lib/api-types";
 import {
   SERVICE_CATEGORIES,
@@ -24,6 +25,7 @@ export function useServicesBuilder() {
   const [isNotification, setIsNotification] = useState(false);
   const [categoryMap, setCategoryMap] = useState<{ [key: string]: string }>({});
   const { uploadFile, isUploading } = useFileUpload();
+  const savedDraftId = useRef<string | null>(null);
 
   // Ensure the shared store is initialized for service mode
   useEffect(() => {
@@ -135,15 +137,51 @@ export function useServicesBuilder() {
     router.push("/creator-dashboard");
   }, [router]);
 
-  const handleSaveDraft = useCallback(() => {
-    console.log("Saving service draft...", {
-      title: store.title,
-      description: store.description,
-      category: store.category,
-      price: store.price,
-      unit: store.unit,
-    });
-  }, [store]);
+  const handleSaveDraft = useCallback(async () => {
+    if (!store.title.trim()) {
+      setError("Add a title before saving a draft");
+      return;
+    }
+    store.setIsSubmitting(true);
+    setError(null);
+    try {
+      const userId = getUserId();
+      if (!userId) throw new Error("Not authenticated");
+
+      const parsedPrice = Number(store.price) || 0;
+
+      if (savedDraftId.current) {
+        await updateService(savedDraftId.current, {
+          name: store.title,
+          description: store.description || undefined,
+          billingRate: BILLING_RATE_MAP[store.unit as ServiceUnit] || "hourly",
+          category: store.category || undefined,
+          price: parsedPrice > 0 ? parsedPrice : undefined,
+          cancellationPolicyId: store.cancellationPolicyId || undefined,
+        } as any);
+      } else {
+        const result = await createService({
+          name: store.title,
+          description: store.description || " ",
+          billingRate: BILLING_RATE_MAP[store.unit as ServiceUnit] || "hourly",
+          category: store.category || "other",
+          price: parsedPrice > 0 ? parsedPrice : 1,
+          city: "N/A",
+          country: "PH",
+          imgIds: [],
+          cancellationPolicyId: store.cancellationPolicyId || undefined,
+        } as any);
+        const newId = (result as any)?.data?.id ?? (result as any)?.id;
+        if (newId) savedDraftId.current = String(newId);
+      }
+      toast.success("Draft saved");
+    } catch (err: any) {
+      const msg = err?.response?.data?.message || err?.message || "Failed to save draft";
+      setError(msg);
+    } finally {
+      store.setIsSubmitting(false);
+    }
+  }, [store, getUserId]);
 
   const handleImageUpload = useCallback(
     (url: string) => {

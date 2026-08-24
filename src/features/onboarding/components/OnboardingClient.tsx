@@ -1,11 +1,11 @@
 "use client";
 
-import { useState } from "react";
-import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { useAuthStore } from "@/features/auth/store/useAuthStore";
-import RequireAuth from "@/features/auth/components/RequireAuth";
-import api from "@/shared/lib/axios";
+import { useState, useEffect } from 'react';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { useAuthStore } from '@/features/auth/store/useAuthStore';
+import RequireAuth from '@/features/auth/components/RequireAuth';
+import api from '@/shared/lib/axios';
 
 type Step = 1 | 2 | 3;
 
@@ -33,14 +33,14 @@ const ROLES = [
     desc: "Rent out sound systems, lighting, furniture, and event equipment.",
   },
   {
-    type: "venue",
-    roleType: "venueFoxer",
-    href: "/mayor/apply",
-    color: "#ccff00",
-    icon: "apartment",
-    tag: "Venue Foxer",
-    title: "Space Provider",
-    desc: "List and manage your venues for others to host memorable events.",
+    type: 'venue',
+    roleType: 'venueFoxer',
+    href: '/venue-foxer/apply',
+    color: '#ccff00',
+    icon: 'apartment',
+    tag: 'Venue Foxer',
+    title: 'Space Provider',
+    desc: 'List and manage your venues for others to host memorable events.',
   },
   {
     type: "event",
@@ -64,13 +64,27 @@ export default function OnboardingClient({ user: serverUser }: { user: any }) {
   );
   const hasExistingRoles = existingRoles.length > 0;
 
-  const [step, setStep] = useState<Step>(1);
-  const [name, setName] = useState(user?.name ?? "");
-  const [city, setCity] = useState("");
+  const [step, setStep] = useState<Step>(hasExistingRoles ? 3 : 1);
+  const [pendingRoles, setPendingRoles] = useState<string[]>([]);
+  const [name, setName] = useState(user?.name ?? '');
+  const [city, setCity] = useState('');
   const [isSaving, setIsSaving] = useState(false);
 
-  const goAfterProfile = () => setStep(hasExistingRoles ? 3 : 2);
-  const goBackFromRoles = () => setStep(hasExistingRoles ? 1 : 2);
+  useEffect(() => {
+    api.get('/role-requests/my')
+      .then((res) => {
+        const pending: string[] = (res.data?.data ?? [])
+          .filter((r: any) => r.status === 'pending')
+          .map((r: any) => r.roleType);
+        setPendingRoles(pending);
+        if (pending.length > 0) setStep(3);
+      })
+      .catch(() => {});
+  }, []);
+
+  const hasCommittedRoles = hasExistingRoles || pendingRoles.length > 0;
+  const goAfterProfile = () => setStep(hasCommittedRoles ? 3 : 2);
+  const goBackFromRoles = () => setStep(hasCommittedRoles ? 1 : 2);
 
   const handleProfileContinue = async () => {
     if (name.trim()) {
@@ -108,22 +122,39 @@ export default function OnboardingClient({ user: serverUser }: { user: any }) {
 
             {/* Step progress */}
             <div className="flex items-center gap-2">
-              {([1, 2, 3] as Step[]).map((s) => {
-                const active = step === s;
-                const done =
-                  step > s || (hasExistingRoles && s === 2 && step === 3);
-                return (
-                  <div
-                    key={s}
-                    className="h-1.5 rounded-full transition-all duration-300"
-                    style={{
-                      width: active ? 32 : 8,
-                      backgroundColor:
-                        active || done ? "#ccff00" : "rgba(255,255,255,0.1)",
-                    }}
-                  />
-                );
-              })}
+              {hasCommittedRoles ? (
+                // 2-step journey: Profile → Roles
+                [1, 3].map((s) => {
+                  const active = step === s;
+                  const done = s === 1 && step === 3;
+                  return (
+                    <div
+                      key={s}
+                      className="h-1.5 rounded-full transition-all duration-300"
+                      style={{
+                        width: active ? 32 : 8,
+                        backgroundColor: active || done ? '#ccff00' : 'rgba(255,255,255,0.1)',
+                      }}
+                    />
+                  );
+                })
+              ) : (
+                // 3-step journey: Profile → Intent → Roles
+                ([1, 2, 3] as Step[]).map((s) => {
+                  const active = step === s;
+                  const done = step > s;
+                  return (
+                    <div
+                      key={s}
+                      className="h-1.5 rounded-full transition-all duration-300"
+                      style={{
+                        width: active ? 32 : 8,
+                        backgroundColor: active || done ? '#ccff00' : 'rgba(255,255,255,0.1)',
+                      }}
+                    />
+                  );
+                })
+              )}
             </div>
 
             {/* spacer to balance the back link */}
@@ -307,18 +338,25 @@ export default function OnboardingClient({ user: serverUser }: { user: any }) {
             <div className="animate-in fade-in duration-300">
               <div className="text-center mb-10">
                 <h2 className="text-4xl font-display font-bold text-white mb-3">
-                  {hasExistingRoles ? "Your roles" : "Choose your role"}
+                  {hasExistingRoles
+                    ? 'Your roles'
+                    : pendingRoles.length > 0
+                      ? 'Application submitted'
+                      : 'Choose your role'}
                 </h2>
                 <p className="text-white/50">
                   {hasExistingRoles
-                    ? "Active roles are shown below. Apply for additional roles anytime."
-                    : "Select how you want to contribute. You can hold multiple roles over time."}
+                    ? 'Active roles are shown below. Apply for additional roles anytime.'
+                    : pendingRoles.length > 0
+                      ? "We're reviewing your application. You'll be notified once approved."
+                      : 'Select how you want to contribute. You can hold multiple roles over time.'}
                 </p>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {ROLES.map((role) => {
                   const isActive = existingRoles.includes(role.roleType);
+                  const isPending = !isActive && pendingRoles.includes(role.roleType);
 
                   if (isActive) {
                     return (
@@ -330,9 +368,7 @@ export default function OnboardingClient({ user: serverUser }: { user: any }) {
                         }}
                       >
                         <span className="absolute top-4 right-4 inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-green-500/15 border border-green-500/30 text-green-400 text-[10px] font-bold uppercase tracking-wider">
-                          <span className="material-symbols-outlined text-[11px] fill-current">
-                            check_circle
-                          </span>
+                          <span className="material-symbols-outlined text-[11px]">check_circle</span>
                           Active
                         </span>
                         <div
@@ -358,6 +394,34 @@ export default function OnboardingClient({ user: serverUser }: { user: any }) {
                         <p className="text-xs text-white/30 mt-auto">
                           {role.desc}
                         </p>
+                      </div>
+                    );
+                  }
+
+                  if (isPending) {
+                    return (
+                      <div
+                        key={role.type}
+                        className="relative bg-[#1a1a24] rounded-[1.5rem] p-6 border border-amber-500/20 flex flex-col"
+                        style={{ boxShadow: 'inset 0 0 0 1px rgba(245,158,11,0.12)' }}
+                      >
+                        <span className="absolute top-4 right-4 inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-400 text-[10px] font-bold uppercase tracking-wider">
+                          <span className="material-symbols-outlined text-[11px]">schedule</span>
+                          Under Review
+                        </span>
+                        <div
+                          className="h-12 w-12 rounded-xl flex items-center justify-center mb-4 opacity-60"
+                          style={{ backgroundColor: `${role.color}15` }}
+                        >
+                          <span className="material-symbols-outlined text-[24px]" style={{ color: role.color }}>
+                            {role.icon}
+                          </span>
+                        </div>
+                        <p className="text-[10px] font-bold uppercase tracking-widest mb-1 opacity-60" style={{ color: role.color }}>
+                          {role.tag}
+                        </p>
+                        <h3 className="text-lg font-display font-bold text-white mb-1">{role.title}</h3>
+                        <p className="text-xs text-white/25 mt-auto">{role.desc}</p>
                       </div>
                     );
                   }
@@ -413,7 +477,11 @@ export default function OnboardingClient({ user: serverUser }: { user: any }) {
                   }
                   className="py-2.5 px-6 rounded-xl border border-white/10 text-white/50 text-sm hover:bg-white/5 transition-colors"
                 >
-                  {hasExistingRoles ? "Go to Dashboard" : "Skip for now"}
+                  {hasExistingRoles
+                    ? 'Go to Dashboard'
+                    : pendingRoles.length > 0
+                      ? 'Back to Home'
+                      : 'Skip for now'}
                 </button>
               </div>
             </div>

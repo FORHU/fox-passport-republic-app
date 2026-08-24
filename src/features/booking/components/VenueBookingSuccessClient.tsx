@@ -1,12 +1,12 @@
-/* eslint-disable react-hooks/purity, @next/next/no-img-element */
-"use client";
+﻿'use client';
 
-import React, { useEffect, useRef, useMemo } from "react";
-import Link from "next/link";
-import { useRouter, useSearchParams } from "next/navigation";
-import { useAuthStore } from "@/features/auth/store/useAuthStore";
-import { confirmBookingPayment } from "@/features/booking/api/bookings";
-import { getDashboardPath } from "@/shared/lib/dashboard-path";
+import React, { useEffect, useRef, useMemo } from 'react';
+import Image from 'next/image';
+import Link from 'next/link';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { useAuthStore } from '@/features/auth/store/useAuthStore';
+import { confirmBookingPayment } from '@/features/booking/api/bookings';
+import { getDashboardPath } from '@/shared/lib/dashboard-path';
 
 export default function VenueBookingSuccessClient() {
   const router = useRouter();
@@ -39,7 +39,6 @@ export default function VenueBookingSuccessClient() {
     }
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-
   const dashboardPath = getDashboardPath(user);
 
   return (
@@ -47,14 +46,9 @@ export default function VenueBookingSuccessClient() {
       <header className="fixed top-6 left-0 right-0 z-50 transition-all duration-300">
         <div className="mx-auto max-w-7xl px-4">
           <div className="glass-panel rounded-full px-6 h-20 flex items-center justify-between shadow-2xl hover:bg-black/40 transition-colors duration-500">
-            <Link
-              href="/"
-              className="flex items-center gap-3 group cursor-pointer"
-            >
-              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-white text-black font-bold shadow-[0_0_15px_rgba(255,255,255,0.3)] group-hover:rotate-180 transition-transform duration-700">
-                <span className="material-symbols-outlined text-[24px]">
-                  explore
-                </span>
+            <Link href="/" className="flex items-center gap-3 group cursor-pointer">
+              <div className="flex h-10 w-10 items-center justify-center overflow-hidden group-hover:scale-110 transition-transform duration-300">
+                <Image src="/foxonlylogo.png" alt="FoxPassport Logo" width={40} height={40} className="object-contain" priority />
               </div>
               <h2 className="text-2xl font-display font-bold tracking-tight text-white group-hover:text-accent transition-colors">
                 FoxPassport
@@ -106,7 +100,7 @@ export default function VenueBookingSuccessClient() {
         </div>
       </header>
 
-      <main className="grow pt-32 pb-20 relative flex items-center justify-center">
+      <main className="grow pt-32 pb-28 sm:pb-20 relative flex items-center justify-center">
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-accent/10 rounded-full blur-[150px] pointer-events-none animate-pulse-slow mix-blend-screen"></div>
 
         <div className="w-full max-w-3xl px-4 sm:px-6 lg:px-8 relative z-10 animate-in fade-in slide-in-from-bottom-8 duration-700">
@@ -151,10 +145,8 @@ export default function VenueBookingSuccessClient() {
                       Reference
                     </p>
                     <p className="text-white font-bold flex items-center gap-2">
-                      <span className="material-symbols-outlined text-[16px] text-accent">
-                        receipt
-                      </span>
-                      {bookingId ? `#${bookingId.slice(0, 12)}` : "—"}
+                      <span className="material-symbols-outlined text-[16px] text-accent">receipt</span>
+                      {bookingId ? `#${bookingId.slice(0, 12)}` : 'â€”'}
                     </p>
                   </div>
                   <div>
@@ -184,10 +176,8 @@ export default function VenueBookingSuccessClient() {
                       Amount Paid
                     </p>
                     <p className="text-white font-bold flex items-center gap-2">
-                      <span className="material-symbols-outlined text-[16px] text-accent">
-                        payments
-                      </span>
-                      ₱{totalAmount.toLocaleString()}
+                      <span className="material-symbols-outlined text-[16px] text-accent">payments</span>
+                      â‚±{totalAmount.toLocaleString()}
                     </p>
                   </div>
                 </div>
@@ -197,9 +187,7 @@ export default function VenueBookingSuccessClient() {
             <div className="border-t border-dashed border-white/20 pt-6 mt-6 flex flex-col sm:flex-row justify-between items-center gap-4">
               <div>
                 <p className="text-text-muted text-sm">Total Charged</p>
-                <span className="text-3xl font-display font-bold text-white">
-                  ₱{totalAmount.toLocaleString()}.00
-                </span>
+                <span className="text-3xl font-display font-bold text-white">â‚±{totalAmount.toLocaleString()}.00</span>
               </div>
               <div className="flex gap-3 w-full sm:w-auto">
                 <Link

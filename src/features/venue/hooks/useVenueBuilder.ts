@@ -1,18 +1,17 @@
 /* eslint-disable @typescript-eslint/no-unused-vars, react-hooks/exhaustive-deps */
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { useVenueBuilderStore } from "@/features/venue/store/useVenueBuilderStore";
-import api from "@/shared/lib/axios";
 import { toast } from "sonner";
 import {
   RESOURCE_CATEGORIES,
   ResourceItem,
 } from "@/features/venue/data/venueBuilderData";
 import { useFileUpload } from "@/shared/hooks/useFileUpload";
-import { fetchVenueCatalog } from "@/features/venue/api/venues";
+import { createVenue, fetchVenueCatalog, updateVenue } from "@/features/venue/api/venues";
 
 type VenueCatalog = { tech: string[]; amenities: string[]; staff: string[] };
 const CATALOG_TABS = new Set(["tech", "amenities", "staff"]);
@@ -22,6 +21,7 @@ export function useVenueBuilder() {
   const queryClient = useQueryClient();
   const store = useVenueBuilderStore();
   const { uploadFile, isUploading } = useFileUpload();
+  const savedDraftId = useRef<string | null>(null);
 
   const [catalog, setCatalog] = useState<VenueCatalog | null>(null);
 
@@ -220,8 +220,14 @@ export function useVenueBuilder() {
         status: "draft",
       };
 
-      await api.post("/venues/create", payload);
-      toast.success("Draft saved!");
+      if (savedDraftId.current) {
+        await updateVenue(savedDraftId.current, payload);
+      } else {
+        const result = await createVenue(payload);
+        const newId = (result as any)?.data?.id ?? (result as any)?.id;
+        if (newId) savedDraftId.current = String(newId);
+      }
+      toast.success("Draft saved");
     } catch (error: any) {
       const msg = error?.response?.data?.message || "Failed to save draft";
       toast.error(msg);
@@ -304,8 +310,12 @@ export function useVenueBuilder() {
         status: "pending",
       };
 
-      const response = await api.post("/venues/create", payload);
-      const createdVenue = response.data.venue;
+      let createdVenue: any;
+      if (savedDraftId.current) {
+        createdVenue = await updateVenue(savedDraftId.current, payload);
+      } else {
+        createdVenue = await createVenue(payload);
+      }
 
       if (createdVenue && createdVenue.id) {
         toast.success("Venue submitted for review!");

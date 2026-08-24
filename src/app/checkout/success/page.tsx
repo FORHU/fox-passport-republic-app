@@ -1,6 +1,7 @@
-﻿import React, { Suspense } from "react";
-import CheckoutSuccessClient from "@/features/booking/components/CheckoutSuccessClient";
-import type { Metadata } from "next";
+﻿import React, { Suspense } from 'react';
+import CheckoutSuccessClient from '@/features/booking/components/CheckoutSuccessClient';
+import MobileBookingSuccess from '@/features/booking/components/MobileBookingSuccess';
+import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
   title: "Booking Confirmed | FoxPassport",
@@ -9,8 +10,17 @@ export const metadata: Metadata = {
 
 export default function CheckoutSuccessPage() {
   return (
-    <Suspense>
-      <CheckoutSuccessClient />
-    </Suspense>
+    <>
+      {/* Mobile view */}
+      <div className="lg:hidden">
+        <MobileBookingSuccess />
+      </div>
+      {/* Desktop view */}
+      <div className="hidden lg:block">
+        <Suspense>
+          <CheckoutSuccessClient />
+        </Suspense>
+      </div>
+    </>
   );
 }
