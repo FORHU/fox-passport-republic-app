@@ -35,7 +35,7 @@ export default function AuthModal() {
         onClick={close}
       ></div>
 
-      <div className="relative w-full max-w-120 transform transition-all">
+      <div className="relative w-full max-w-xl transform transition-all">
         {/* Background Blobs */}
         <div className="absolute -top-20 -left-20 w-56 h-56 bg-[#ccff00] rounded-full blur-[100px] opacity-20 animate-pulse-slow pointer-events-none"></div>
         <div

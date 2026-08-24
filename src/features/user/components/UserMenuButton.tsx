@@ -360,82 +360,86 @@ export default function UserMenuButton({ onSignIn }: UserMenuButtonProps = {}) {
             </div>
 
             {/* Standard links */}
-            <div className="px-2 py-2 border-b border-white/5 space-y-0.5">
-              {[
-                { label: "Wishlists", icon: Heart, href: "/wishlists" },
-                { label: "Trips", icon: Briefcase, href: "/trips" },
-                { label: "My Bookings", icon: Briefcase, href: "/booking" },
-                { label: "Messages", icon: MessageSquare, href: "/messages" },
-                {
-                  label: "Account settings",
-                  icon: Settings,
-                  href: "/user/settings",
-                },
-                {
-                  label: "Languages & currency",
-                  icon: Globe,
-                  href: "/settings/language",
-                },
-                { label: "Help Center", icon: HelpCircle, href: "/help" },
-              ].map((item) => (
-                <button
-                  key={item.label}
-                  onClick={() => {
-                    close();
-                    router.push(item.href);
-                  }}
-                  className="w-full flex items-center gap-3 px-2 py-2.5 rounded-lg hover:bg-white/5 transition-colors group"
-                >
-                  <item.icon className="w-4 h-4 text-white/40 group-hover:text-[#ccff00] transition-colors shrink-0" />
-                  <span className="text-sm text-white/70 group-hover:text-white transition-colors">
-                    {item.label}
-                  </span>
-                </button>
-              ))}
-              {!isAdmin && (
-                <button
-                  onClick={() => {
-                    close();
-                    router.push("/onboarding");
-                  }}
-                  className="w-full flex items-center gap-3 px-2 py-2.5 rounded-lg hover:bg-[#ccff00]/5 transition-colors group"
-                >
-                  <UserPlus className="w-4 h-4 text-[#ccff00]/60 group-hover:text-[#ccff00] transition-colors shrink-0" />
-                  <span className="text-sm text-[#ccff00]/60 group-hover:text-[#ccff00] transition-colors font-medium">
-                    Apply for a Role
-                  </span>
-                </button>
-              )}
-            </div>
+            {user && (
+              <div className="px-2 py-2 border-b border-white/5 space-y-0.5">
+                {[
+                  { label: "Wishlists", icon: Heart, href: "/wishlists" },
+                  { label: "Trips", icon: Briefcase, href: "/trips" },
+                  { label: "My Bookings", icon: Briefcase, href: "/booking" },
+                  { label: "Messages", icon: MessageSquare, href: "/messages" },
+                  {
+                    label: "Account settings",
+                    icon: Settings,
+                    href: "/user/settings",
+                  },
+                  {
+                    label: "Languages & currency",
+                    icon: Globe,
+                    href: "/settings/language",
+                  },
+                  { label: "Help Center", icon: HelpCircle, href: "/help" },
+                ].map((item) => (
+                  <button
+                    key={item.label}
+                    onClick={() => {
+                      close();
+                      router.push(item.href);
+                    }}
+                    className="w-full flex items-center gap-3 px-2 py-2.5 rounded-lg hover:bg-white/5 transition-colors group"
+                  >
+                    <item.icon className="w-4 h-4 text-white/40 group-hover:text-[#ccff00] transition-colors shrink-0" />
+                    <span className="text-sm text-white/70 group-hover:text-white transition-colors">
+                      {item.label}
+                    </span>
+                  </button>
+                ))}
+                {!isAdmin && (
+                  <button
+                    onClick={() => {
+                      close();
+                      router.push("/onboarding");
+                    }}
+                    className="w-full flex items-center gap-3 px-2 py-2.5 rounded-lg hover:bg-[#ccff00]/5 transition-colors group"
+                  >
+                    <UserPlus className="w-4 h-4 text-[#ccff00]/60 group-hover:text-[#ccff00] transition-colors shrink-0" />
+                    <span className="text-sm text-[#ccff00]/60 group-hover:text-[#ccff00] transition-colors font-medium">
+                      Apply for a Role
+                    </span>
+                  </button>
+                )}
+              </div>
+            )}
 
             {/* Sync + Logout */}
-            <div className="px-2 py-2 space-y-0.5">
-              <button
-                onClick={handleSyncSession}
-                disabled={syncing}
-                className="w-full flex items-center gap-3 px-2 py-2.5 rounded-lg hover:bg-white/5 transition-colors group disabled:opacity-50"
-              >
-                <RefreshCw
-                  className={`w-4 h-4 text-white/40 group-hover:text-blue-400 transition-colors shrink-0 ${syncing ? "animate-spin" : ""}`}
-                />
-                <span className="text-sm text-white/50 group-hover:text-blue-400 transition-colors">
-                  {syncing ? "Syncing account…" : "Sync Account"}
-                </span>
-              </button>
-              <button
-                onClick={() => {
-                  close();
-                  useAuthStore.getState().logout();
-                  router.push("/");
-                }}
-                className="w-full flex items-center gap-3 px-2 py-2.5 rounded-lg hover:bg-red-500/10 transition-colors group"
-              >
-                <LogOut className="w-4 h-4 text-white/40 group-hover:text-red-400 transition-colors shrink-0" />
-                <span className="text-sm text-white/50 group-hover:text-red-400 transition-colors">
-                  Log out
-                </span>
-              </button>
-            </div>
+            {user && (
+              <div className="px-2 py-2 space-y-0.5">
+                <button
+                  onClick={handleSyncSession}
+                  disabled={syncing}
+                  className="w-full flex items-center gap-3 px-2 py-2.5 rounded-lg hover:bg-white/5 transition-colors group disabled:opacity-50"
+                >
+                  <RefreshCw
+                    className={`w-4 h-4 text-white/40 group-hover:text-blue-400 transition-colors shrink-0 ${syncing ? "animate-spin" : ""}`}
+                  />
+                  <span className="text-sm text-white/50 group-hover:text-blue-400 transition-colors">
+                    {syncing ? "Syncing account…" : "Sync Account"}
+                  </span>
+                </button>
+                <button
+                  onClick={() => {
+                    close();
+                    useAuthStore.getState().logout();
+                    router.push("/");
+                  }}
+                  className="w-full flex items-center gap-3 px-2 py-2.5 rounded-lg hover:bg-red-500/10 transition-colors group"
+                >
+                  <LogOut className="w-4 h-4 text-white/40 group-hover:text-red-400 transition-colors shrink-0" />
+                  <span className="text-sm text-white/50 group-hover:text-red-400 transition-colors">
+                    Log out
+                  </span>
+                </button>
+              </div>
+            )}
           </div>
         )}
       </div>

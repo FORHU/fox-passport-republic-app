@@ -250,6 +250,11 @@ export function useInventoryBuilder() {
         throw new Error("Failed to upload image. Please try again.");
       }
 
+      // "unavailable" is a UI-only concept; the API's AssetStatus enum has no
+      // such value, so map it to the closest backend equivalent.
+      const statusMap: Record<string, string> = { unavailable: "archived" };
+      const status = statusMap[store.status] ?? store.status;
+
       const assetData: CreateAssetPayload & { cancellationPolicyId?: string } =
         {
           name: store.title,
@@ -264,6 +269,7 @@ export function useInventoryBuilder() {
           lat: store.lat ?? undefined,
           lng: store.lng ?? undefined,
           imgIds: [uploadResult.fileId],
+          status,
           cancellationPolicyId: store.cancellationPolicyId || undefined,
         };
 
