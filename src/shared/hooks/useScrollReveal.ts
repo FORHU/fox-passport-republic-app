@@ -11,7 +11,7 @@ import { useEffect, RefObject } from "react";
  */
 export function useScrollReveal(
   threshold: number = 0.1,
-  rootMargin: string = "0px"
+  rootMargin: string = "0px",
 ) {
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -25,7 +25,7 @@ export function useScrollReveal(
       {
         threshold,
         rootMargin,
-      }
+      },
     );
 
     const elements = document.querySelectorAll(".reveal-on-scroll");
@@ -45,7 +45,7 @@ export function useScrollReveal(
  */
 export function useScrollRevealRef(
   ref: RefObject<HTMLElement>,
-  threshold: number = 0.1
+  threshold: number = 0.1,
 ) {
   useEffect(() => {
     const element = ref.current;
@@ -61,7 +61,7 @@ export function useScrollRevealRef(
       },
       {
         threshold,
-      }
+      },
     );
 
     observer.observe(element);

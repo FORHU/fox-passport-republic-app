@@ -3,7 +3,7 @@ import CategoriesClient from '@/features/category/components/CategoriesClient';
 import MobileCategoryGrid from '@/features/category/components/MobileCategoryGrid';
 
 // Skip static generation for this page - it fetches dynamic data
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 
 export default async function CategoriesPage({
   searchParams,

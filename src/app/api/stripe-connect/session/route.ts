@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { NextRequest, NextResponse } from "next/server";
 import Stripe from "stripe";
 
@@ -42,7 +43,10 @@ export async function POST(req: NextRequest) {
       stripeAccountId,
     });
   } catch (error: unknown) {
-    const msg = error instanceof Error ? error.message : "Failed to create Stripe session";
+    const msg =
+      error instanceof Error
+        ? error.message
+        : "Failed to create Stripe session";
     console.error("[Stripe Session Error]", msg);
     return NextResponse.json({ error: msg }, { status: 500 });
   }

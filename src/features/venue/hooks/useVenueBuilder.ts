@@ -1,4 +1,5 @@
-﻿'use client';
+/* eslint-disable @typescript-eslint/no-unused-vars, react-hooks/exhaustive-deps */
+"use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
@@ -13,8 +14,7 @@ import { useFileUpload } from "@/shared/hooks/useFileUpload";
 import { createVenue, fetchVenueCatalog, updateVenue } from "@/features/venue/api/venues";
 
 type VenueCatalog = { tech: string[]; amenities: string[]; staff: string[] };
-const CATALOG_TABS = new Set(['tech', 'amenities', 'staff']);
-
+const CATALOG_TABS = new Set(["tech", "amenities", "staff"]);
 
 export function useVenueBuilder() {
   const router = useRouter();
@@ -36,18 +36,24 @@ export function useVenueBuilder() {
     if (!catalog || !CATALOG_TABS.has(store.activeCategory)) return [];
     const key = store.activeCategory as keyof VenueCatalog;
     const existing = new Set(
-      (store.resources[store.activeCategory] || []).map((r) => r.name.toLowerCase())
+      (store.resources[store.activeCategory] || []).map((r) =>
+        r.name.toLowerCase(),
+      ),
     );
     const all = catalog[key] || [];
     const visible = store.searchQuery
-      ? all.filter((n) => n.toLowerCase().includes(store.searchQuery.toLowerCase()))
+      ? all.filter((n) =>
+          n.toLowerCase().includes(store.searchQuery.toLowerCase()),
+        )
       : all;
     return visible.filter((n) => !existing.has(n.toLowerCase()));
   }, [catalog, store.activeCategory, store.resources, store.searchQuery]);
 
   const handleAddCatalogItem = useCallback(
     (name: string) => {
-      const catDef = RESOURCE_CATEGORIES.find((c) => c.id === store.activeCategory);
+      const catDef = RESOURCE_CATEGORIES.find(
+        (c) => c.id === store.activeCategory,
+      );
       const newResource: ResourceItem = {
         id: `catalog-${store.activeCategory}-${Date.now()}`,
         name,
@@ -58,7 +64,7 @@ export function useVenueBuilder() {
       };
       store.addCustomResource(store.activeCategory, newResource);
     },
-    [store]
+    [store],
   );
 
   // Get filtered resources based on active category and search
@@ -66,7 +72,7 @@ export function useVenueBuilder() {
     const resources = store.resources[store.activeCategory] || [];
     if (!store.searchQuery) return resources;
     return resources.filter((r) =>
-      r.name.toLowerCase().includes(store.searchQuery.toLowerCase())
+      r.name.toLowerCase().includes(store.searchQuery.toLowerCase()),
     );
   }, [store.resources, store.activeCategory, store.searchQuery]);
 
@@ -95,7 +101,7 @@ export function useVenueBuilder() {
       store.setDraggedItem(item);
       e.dataTransfer.effectAllowed = "copy";
     },
-    [store]
+    [store],
   );
 
   const handleDragOver = useCallback(
@@ -103,7 +109,7 @@ export function useVenueBuilder() {
       e.preventDefault();
       store.setIsDragOver(true);
     },
-    [store]
+    [store],
   );
 
   const handleDragLeave = useCallback(() => {
@@ -123,7 +129,7 @@ export function useVenueBuilder() {
       }
       store.setDraggedItem(null);
     },
-    [store]
+    [store],
   );
 
   // Custom item handlers
@@ -145,21 +151,27 @@ export function useVenueBuilder() {
   }, [store]);
 
   // Gallery handlers
-  const addImageToGallery = useCallback((files: File[]) => {
-    files.forEach(file => {
-      const url = URL.createObjectURL(file);
-      store.addGalleryItem({
-        id: Math.random().toString(36).substr(2, 9),
-        url,
-        caption: file.name,
-        file
+  const addImageToGallery = useCallback(
+    (files: File[]) => {
+      files.forEach((file) => {
+        const url = URL.createObjectURL(file);
+        store.addGalleryItem({
+          id: Math.random().toString(36).substr(2, 9),
+          url,
+          caption: file.name,
+          file,
+        });
       });
-    });
-  }, [store]);
+    },
+    [store],
+  );
 
-  const removeImageFromGallery = useCallback((id: string) => {
-    store.removeGalleryItem(id);
-  }, [store]);
+  const removeImageFromGallery = useCallback(
+    (id: string) => {
+      store.removeGalleryItem(id);
+    },
+    [store],
+  );
 
   // Navigation handlers
   const handleBack = useCallback(() => {
@@ -178,7 +190,9 @@ export function useVenueBuilder() {
       const payload = {
         name: store.venueName,
         description: store.description || undefined,
-        category: store.venueType ? store.venueType.toLowerCase().replace(/\s+/g, "_") : undefined,
+        category: store.venueType
+          ? store.venueType.toLowerCase().replace(/\s+/g, "_")
+          : undefined,
         capacity: parseInt(store.capacity) || undefined,
         address: store.location || undefined,
         city: store.city || undefined,
@@ -187,13 +201,23 @@ export function useVenueBuilder() {
         lat: store.lat ?? undefined,
         lng: store.lng ?? undefined,
         price: store.baseRate || undefined,
-        spaceType: allItems.filter(i => i.category === 'spaces').map(i => i.name),
-        amenities: allItems.filter(i => i.category === 'amenities').map(i => i.name),
-        techAv: allItems.filter(i => i.category === 'tech').map(i => i.name),
-        staffing: allItems.filter(i => i.category === 'staff').map(i => i.name),
-        policies: allItems.filter(i => i.category === 'rules').map(i => i.name),
+        spaceType: allItems
+          .filter((i) => i.category === "spaces")
+          .map((i) => i.name),
+        amenities: allItems
+          .filter((i) => i.category === "amenities")
+          .map((i) => i.name),
+        techAv: allItems
+          .filter((i) => i.category === "tech")
+          .map((i) => i.name),
+        staffing: allItems
+          .filter((i) => i.category === "staff")
+          .map((i) => i.name),
+        policies: allItems
+          .filter((i) => i.category === "rules")
+          .map((i) => i.name),
         cancellationPolicyId: store.cancellationPolicyId || undefined,
-        status: 'draft',
+        status: "draft",
       };
 
       if (savedDraftId.current) {
@@ -235,7 +259,9 @@ export function useVenueBuilder() {
     store.setIsSubmitting(true);
     try {
       const allItems = [...store.includedItems, ...store.addonItems];
-      const galleryFiles = store.gallery.map(item => item.file).filter(file => file !== undefined) as File[];
+      const galleryFiles = store.gallery
+        .map((item) => item.file)
+        .filter((file) => file !== undefined) as File[];
 
       if (galleryFiles.length === 0) {
         toast.error("At least one image is required for your venue.");
@@ -264,14 +290,24 @@ export function useVenueBuilder() {
         lat: store.lat ?? undefined,
         lng: store.lng ?? undefined,
         price: store.baseRate,
-        spaceType: allItems.filter(i => i.category === 'spaces').map(i => i.name),
-        amenities: allItems.filter(i => i.category === 'amenities').map(i => i.name),
-        techAv: allItems.filter(i => i.category === 'tech').map(i => i.name),
-        staffing: allItems.filter(i => i.category === 'staff').map(i => i.name),
-        policies: allItems.filter(i => i.category === 'rules').map(i => i.name),
+        spaceType: allItems
+          .filter((i) => i.category === "spaces")
+          .map((i) => i.name),
+        amenities: allItems
+          .filter((i) => i.category === "amenities")
+          .map((i) => i.name),
+        techAv: allItems
+          .filter((i) => i.category === "tech")
+          .map((i) => i.name),
+        staffing: allItems
+          .filter((i) => i.category === "staff")
+          .map((i) => i.name),
+        policies: allItems
+          .filter((i) => i.category === "rules")
+          .map((i) => i.name),
         cancellationPolicyId: store.cancellationPolicyId || undefined,
         imgIds,
-        status: 'pending',
+        status: "pending",
       };
 
       let createdVenue: any;
@@ -294,8 +330,15 @@ export function useVenueBuilder() {
         }, 1500);
       }
     } catch (error: any) {
-      console.error("Publishing error:", error.response?.data || error.message || error);
-      toast.error(error.response?.data?.message || error.message || "Failed to publish venue");
+      console.error(
+        "Publishing error:",
+        error.response?.data || error.message || error,
+      );
+      toast.error(
+        error.response?.data?.message ||
+          error.message ||
+          "Failed to publish venue",
+      );
     } finally {
       store.setIsSubmitting(false);
     }

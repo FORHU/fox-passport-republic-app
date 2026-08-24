@@ -1,5 +1,11 @@
 import api from "@/shared/lib/axios";
-import { Badge, PassportStamp, PathProgress, PATH_COLORS, BADGE_COLORS } from "../types/gamification";
+import {
+  Badge,
+  PassportStamp,
+  PathProgress,
+  PATH_COLORS,
+  BADGE_COLORS,
+} from "../types/gamification";
 import { getPathLabel, calculateXPForNextLevel } from "../lib/gamification";
 
 export interface ApiPassport {
@@ -105,18 +111,29 @@ export interface LeaderboardEntry {
   user: { id: string; name: string; imgId: string | null; roleType: string[] };
 }
 
-export async function getOutgoingMatchRequests(): Promise<OutgoingMatchGroup[]> {
+export async function getOutgoingMatchRequests(): Promise<
+  OutgoingMatchGroup[]
+> {
   const res = await api.get("/event-template/matches/outgoing");
   return res.data.data;
 }
 
-export async function getIncomingMatchRequests(): Promise<IncomingMatchRequest[]> {
+export async function getIncomingMatchRequests(): Promise<
+  IncomingMatchRequest[]
+> {
   const res = await api.get("/event-template/matches/incoming");
   return res.data.data;
 }
 
-export async function respondToMatch(matchId: string, type: string, status: "accepted" | "declined"): Promise<void> {
-  await api.patch(`/event-template/matches/${matchId}/respond`, { type, status });
+export async function respondToMatch(
+  matchId: string,
+  type: string,
+  status: "accepted" | "declined",
+): Promise<void> {
+  await api.patch(`/event-template/matches/${matchId}/respond`, {
+    type,
+    status,
+  });
 }
 
 export interface MatchRequestItem {
@@ -170,14 +187,28 @@ export interface ClientMatchInboxPage {
   hasMore: boolean;
 }
 
-export async function getClientMatchRequests(limit = 10, offset = 0): Promise<ClientMatchInboxPage> {
-  const res = await api.get("/matches/client-inbox", { params: { limit, offset } });
-  return { data: res.data.data, total: res.data.total, hasMore: res.data.hasMore };
+export async function getClientMatchRequests(
+  limit = 10,
+  offset = 0,
+): Promise<ClientMatchInboxPage> {
+  const res = await api.get("/matches/client-inbox", {
+    params: { limit, offset },
+  });
+  return {
+    data: res.data.data,
+    total: res.data.total,
+    hasMore: res.data.hasMore,
+  };
 }
 
 // Merges all badge definitions with user's earned badges
-export function mapBadges(allBadges: ApiBadge[], userBadges: ApiUserBadge[]): Badge[] {
-  const earnedMap = new Map(userBadges.map((ub) => [ub.badgeId, new Date(ub.earnedAt)]));
+export function mapBadges(
+  allBadges: ApiBadge[],
+  userBadges: ApiUserBadge[],
+): Badge[] {
+  const earnedMap = new Map(
+    userBadges.map((ub) => [ub.badgeId, new Date(ub.earnedAt)]),
+  );
   return allBadges.map((b) => ({
     id: b.id,
     name: b.name,
@@ -185,7 +216,7 @@ export function mapBadges(allBadges: ApiBadge[], userBadges: ApiUserBadge[]): Ba
     rarity: b.rarity as Badge["rarity"],
     icon: b.icon,
     color: b.color ?? BADGE_COLORS[b.rarity as Badge["rarity"]],
-    path: b.path as Badge["path"] ?? undefined,
+    path: (b.path as Badge["path"]) ?? undefined,
     earnedAt: earnedMap.get(b.id),
   }));
 }

@@ -1,4 +1,5 @@
-'use client';
+/* eslint-disable @typescript-eslint/no-unused-vars */
+"use client";
 
 import React, { Suspense } from "react";
 import { useParams } from "next/navigation";
@@ -198,4 +199,3 @@ export default function HostAssetEditPage() {
     </Suspense>
   );
 }
-

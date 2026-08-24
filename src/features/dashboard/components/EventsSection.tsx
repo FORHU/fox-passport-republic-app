@@ -1,12 +1,12 @@
-﻿'use client';
+﻿"use client";
 
-import React from 'react';
-import Link from 'next/link';
-import Image from 'next/image';
-import { EventItem } from '@/features/dashboard/data/dashboardData';
-import { StatusBadge } from './StatusBadge';
-import { EmptyState } from './EmptyState';
-import { PaginationBar } from './PaginationBar';
+import React from "react";
+import Link from "next/link";
+import Image from "next/image";
+import { EventItem } from "@/features/dashboard/data/dashboardData";
+import { StatusBadge } from "./StatusBadge";
+import { EmptyState } from "./EmptyState";
+import { PaginationBar } from "./PaginationBar";
 
 interface EventsSectionProps {
   events: EventItem[];
@@ -31,7 +31,9 @@ export function EventsSection({
   totalPages,
   onPageChange,
 }: EventsSectionProps) {
-  const [confirmDeleteId, setConfirmDeleteId] = React.useState<number | string | null>(null);
+  const [confirmDeleteId, setConfirmDeleteId] = React.useState<
+    number | string | null
+  >(null);
   return (
     <section id="events">
       <div className="flex justify-between items-center mb-6">
@@ -45,7 +47,9 @@ export function EventsSection({
             href={viewAllHref}
           >
             View All
-            <span className="material-symbols-outlined text-[16px]">arrow_forward</span>
+            <span className="material-symbols-outlined text-[16px]">
+              arrow_forward
+            </span>
           </Link>
         )}
       </div>
@@ -54,8 +58,11 @@ export function EventsSection({
           events.map((ev) => (
             <div
               key={ev.id}
-              className={`bg-[#0f111a] border border-white/5 p-5 rounded-3xl hover:bg-white/5 transition-all group border-l-4 ${ev.status === 'Ongoing' ? 'border-l-green-500' : 'border-l-yellow-500'
-                } ${onEdit ? "cursor-pointer" : ""}`}
+              className={`bg-[#0f111a] border border-white/5 p-5 rounded-3xl hover:bg-white/5 transition-all group border-l-4 ${
+                ev.status === "Ongoing"
+                  ? "border-l-green-500"
+                  : "border-l-yellow-500"
+              } ${onEdit ? "cursor-pointer" : ""}`}
               onClick={() => onEdit?.(ev.id)}
               role={onEdit ? "button" : undefined}
               tabIndex={onEdit ? 0 : undefined}
@@ -68,10 +75,13 @@ export function EventsSection({
                 <div className="relative w-full sm:w-36 aspect-video sm:aspect-square rounded-2xl overflow-hidden shrink-0">
                   <Image
                     fill
-                    src={ev.img || '/herobackground.jpg'}
+                    src={ev.img || "/herobackground.jpg"}
                     alt=""
                     className="object-cover group-hover:scale-110 transition-transform duration-700"
-                    onError={(e) => { (e.target as HTMLImageElement).src = '/herobackground.jpg'; }}
+                    onError={(e) => {
+                      (e.target as HTMLImageElement).src =
+                        "/herobackground.jpg";
+                    }}
                   />
                   <div className="absolute top-2 left-2 bg-black/70 backdrop-blur px-2 py-1 rounded text-[10px] font-bold uppercase">
                     {ev.type}
@@ -83,11 +93,15 @@ export function EventsSection({
                       <h3 className="text-xl font-bold mb-2">{ev.title}</h3>
                       <div className="flex items-center gap-4 text-sm text-white/50">
                         <span className="flex items-center gap-1">
-                          <span className="material-symbols-outlined text-[16px]">calendar_today</span>
+                          <span className="material-symbols-outlined text-[16px]">
+                            calendar_today
+                          </span>
                           {ev.date}
                         </span>
                         <span className="flex items-center gap-1">
-                          <span className="material-symbols-outlined text-[16px]">location_on</span>
+                          <span className="material-symbols-outlined text-[16px]">
+                            location_on
+                          </span>
                           {ev.loc}
                         </span>
                       </div>
@@ -98,23 +112,31 @@ export function EventsSection({
                       onStatusChange={(s) => onStatusChange(ev.id, s)}
                     />
                   </div>
-                  {ev.status === 'Ongoing' ? (
+                  {ev.status === "Ongoing" ? (
                     <div className="mt-4 grid grid-cols-3 gap-4 border-t border-white/5 pt-4">
                       <div>
-                        <div className="text-[10px] text-white/40 uppercase mb-1">Booked</div>
+                        <div className="text-[10px] text-white/40 uppercase mb-1">
+                          Booked
+                        </div>
                         <div className="text-sm font-bold">
                           {ev.booked}
-                          <span className="text-white/40 font-normal">/{ev.capacity}</span>
+                          <span className="text-white/40 font-normal">
+                            /{ev.capacity}
+                          </span>
                         </div>
                         <div className="h-1.5 w-full bg-white/10 rounded-full mt-1">
                           <div
                             className="h-full bg-[#ccff00] rounded-full"
-                            style={{ width: `${(ev.booked! / ev.capacity!) * 100}%` }}
+                            style={{
+                              width: `${(ev.booked! / ev.capacity!) * 100}%`,
+                            }}
                           />
                         </div>
                       </div>
                       <div>
-                        <div className="text-[10px] text-white/40 uppercase">Revenue</div>
+                        <div className="text-[10px] text-white/40 uppercase">
+                          Revenue
+                        </div>
                         <div className="text-sm font-bold">{ev.revenue}</div>
                       </div>
                       <div className="flex justify-end gap-2">
@@ -122,35 +144,52 @@ export function EventsSection({
                           className="h-9 w-9 rounded-full bg-white/5 hover:bg-white hover:text-black flex items-center justify-center"
                           onClick={(e) => e.stopPropagation()}
                         >
-                          <span className="material-symbols-outlined text-[18px]">edit</span>
+                          <span className="material-symbols-outlined text-[18px]">
+                            edit
+                          </span>
                         </button>
                         <button
                           className="h-9 w-9 rounded-full bg-white/5 hover:bg-[#ccff00] hover:text-black flex items-center justify-center"
                           onClick={(e) => e.stopPropagation()}
                         >
-                          <span className="material-symbols-outlined text-[18px]">bar_chart</span>
+                          <span className="material-symbols-outlined text-[18px]">
+                            bar_chart
+                          </span>
                         </button>
                       </div>
                     </div>
                   ) : (
                     <div className="mt-4 flex justify-between items-center border-t border-white/5 pt-4">
                       <div className="flex items-center gap-2 text-yellow-400">
-                        <span className="material-symbols-outlined text-[18px]">warning</span>
-                        <span className="text-xs">Missing venue confirmation</span>
+                        <span className="material-symbols-outlined text-[18px]">
+                          warning
+                        </span>
+                        <span className="text-xs">
+                          Missing venue confirmation
+                        </span>
                       </div>
                       <div className="flex items-center gap-2">
                         {confirmDeleteId === ev.id ? (
                           <>
-                            <span className="text-xs text-white/50">Delete this draft?</span>
+                            <span className="text-xs text-white/50">
+                              Delete this draft?
+                            </span>
                             <button
                               className="px-3 py-1.5 rounded-full bg-red-500/20 border border-red-500/30 text-red-400 text-xs font-bold hover:bg-red-500 hover:text-white"
-                              onClick={(e) => { e.stopPropagation(); onDelete?.(ev.id); setConfirmDeleteId(null); }}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                onDelete?.(ev.id);
+                                setConfirmDeleteId(null);
+                              }}
                             >
                               Yes, delete
                             </button>
                             <button
                               className="px-3 py-1.5 rounded-full border border-white/10 text-xs font-bold hover:bg-white/5"
-                              onClick={(e) => { e.stopPropagation(); setConfirmDeleteId(null); }}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setConfirmDeleteId(null);
+                              }}
                             >
                               Cancel
                             </button>
@@ -160,13 +199,21 @@ export function EventsSection({
                             <button
                               className="h-8 w-8 rounded-full border border-white/10 flex items-center justify-center text-white/40 hover:bg-red-500/20 hover:border-red-500/30 hover:text-red-400"
                               title="Delete draft"
-                              onClick={(e) => { e.stopPropagation(); setConfirmDeleteId(ev.id); }}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setConfirmDeleteId(ev.id);
+                              }}
                             >
-                              <span className="material-symbols-outlined text-[16px]">delete</span>
+                              <span className="material-symbols-outlined text-[16px]">
+                                delete
+                              </span>
                             </button>
                             <button
                               className="px-4 py-2 rounded-full border border-white/10 text-xs font-bold hover:bg-white hover:text-black"
-                              onClick={(e) => { e.stopPropagation(); onEdit?.(ev.id); }}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                onEdit?.(ev.id);
+                              }}
                             >
                               Continue Editing
                             </button>
@@ -185,7 +232,11 @@ export function EventsSection({
       </div>
 
       {onPageChange && page !== undefined && totalPages !== undefined && (
-        <PaginationBar page={page} totalPages={totalPages} onPageChange={onPageChange} />
+        <PaginationBar
+          page={page}
+          totalPages={totalPages}
+          onPageChange={onPageChange}
+        />
       )}
     </section>
   );

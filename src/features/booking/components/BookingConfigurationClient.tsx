@@ -10,6 +10,7 @@ import { bookFromTemplate, getPublicTemplate, fetchTemplateAvailability } from '
 import DateRangePicker from '@/shared/components/ui/DateRangePicker';
 import { toast } from 'sonner';
 import WaitlistButton from '@/features/booking/components/WaitlistButton';
+import { getDashboardPath } from '@/shared/lib/dashboard-path';
 
 export default function BookingConfigurationClient() {
   const router = useRouter();
@@ -31,14 +32,7 @@ export default function BookingConfigurationClient() {
       .finally(() => setIsLoadingTemplate(false));
   }, [templateId, searchParams]);
 
-  const getDashboardPath = () => {
-    if (user?.systemRole === "admin" || user?.systemRole === "super_admin") return "/admin";
-    const creatorRoles = ["venueFoxer", "eventFoxer", "gearFoxer", "serviceFoxer"];
-    if (user?.roleType?.some((r) => creatorRoles.includes(r))) return "/creator-dashboard";
-    return "/user";
-  };
-
-  const dashboardPath = getDashboardPath();
+  const dashboardPath = getDashboardPath(user);
 
   // Derived template values
   const templateName = template?.name || venueName || 'Event Package';

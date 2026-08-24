@@ -1,6 +1,10 @@
-﻿import { create } from "zustand";
+/* eslint-disable @typescript-eslint/no-unused-vars */
+import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
-import { ResourceItem, GalleryItem } from "@/features/event/data/eventBuilderData";
+import {
+  ResourceItem,
+  GalleryItem,
+} from "@/features/event/data/eventBuilderData";
 
 interface EventBuilderState {
   // Event Details
@@ -54,7 +58,10 @@ interface EventBuilderState {
   // Actions - Package Items
   addBaseItem: (item: ResourceItem) => void;
   removeBaseItem: (id: string) => void;
-  updateBaseItem: (id: string, patch: Partial<Pick<ResourceItem, 'agreedPrice' | 'isOptional'>>) => void;
+  updateBaseItem: (
+    id: string,
+    patch: Partial<Pick<ResourceItem, "agreedPrice" | "isOptional">>,
+  ) => void;
   setTargetMargin: (margin: number) => void;
 
   // Actions - UI State
@@ -68,8 +75,8 @@ interface EventBuilderState {
   // Draft tracking
   draftId: string | null;
   setDraftId: (id: string | null) => void;
-  saveStatus: 'idle' | 'saving' | 'saved' | 'error';
-  setSaveStatus: (status: 'idle' | 'saving' | 'saved' | 'error') => void;
+  saveStatus: "idle" | "saving" | "saved" | "error";
+  setSaveStatus: (status: "idle" | "saving" | "saved" | "error") => void;
 
   // Actions - Reset
   reset: () => void;
@@ -98,7 +105,7 @@ const initialState = {
   isSubmitting: false,
   isDragOver: false,
   draftId: null as string | null,
-  saveStatus: 'idle' as 'idle' | 'saving' | 'saved' | 'error',
+  saveStatus: "idle" as "idle" | "saving" | "saved" | "error",
 };
 
 export const useEventBuilderStore = create<EventBuilderState>()(
@@ -131,7 +138,9 @@ export const useEventBuilderStore = create<EventBuilderState>()(
         })),
       updateGalleryItemFileId: (id, fileId) =>
         set((state) => ({
-          gallery: state.gallery.map((g) => g.id === id ? { ...g, fileId } : g),
+          gallery: state.gallery.map((g) =>
+            g.id === id ? { ...g, fileId } : g,
+          ),
         })),
 
       // Package Items Actions
@@ -146,7 +155,9 @@ export const useEventBuilderStore = create<EventBuilderState>()(
         })),
       updateBaseItem: (id, patch) =>
         set((state) => ({
-          baseItems: state.baseItems.map((i) => i.id === id ? { ...i, ...patch } : i),
+          baseItems: state.baseItems.map((i) =>
+            i.id === id ? { ...i, ...patch } : i,
+          ),
         })),
       setTargetMargin: (margin) => set({ targetMargin: margin }),
 
@@ -164,12 +175,13 @@ export const useEventBuilderStore = create<EventBuilderState>()(
 
       // Reset — clears localStorage so published events don't bleed into new ones
       reset: () => {
-        if (typeof window !== 'undefined') localStorage.removeItem('fp-event-builder');
+        if (typeof window !== "undefined")
+          localStorage.removeItem("fp-event-builder");
         set(initialState);
       },
     }),
     {
-      name: 'fp-event-builder',
+      name: "fp-event-builder",
       storage: createJSONStorage(() => localStorage),
       // Only persist serializable state — File objects and transient UI state are excluded
       partialize: (state) => ({
@@ -192,8 +204,8 @@ export const useEventBuilderStore = create<EventBuilderState>()(
         // Strip File objects — blob URLs survive same-tab navigation, not hard reloads
         gallery: state.gallery.map(({ file: _file, ...rest }) => rest),
       }),
-    }
-  )
+    },
+  ),
 );
 
 // Selectors

@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuthStore } from '@/features/auth/store/useAuthStore';
 import { confirmBookingPayment } from '@/features/booking/api/bookings';
+import { getDashboardPath } from '@/shared/lib/dashboard-path';
 
 export default function VenueBookingSuccessClient() {
   const router = useRouter();
@@ -13,29 +14,32 @@ export default function VenueBookingSuccessClient() {
   const { user } = useAuthStore();
   const confirmed = useRef(false);
 
-  const bookingId = searchParams.get('bookingId');
-  const totalParam = searchParams.get('total');
-  const paymentIntentId = searchParams.get('payment_intent');
-  const redirectStatus = searchParams.get('redirect_status');
+  const bookingId = searchParams.get("bookingId");
+  const totalParam = searchParams.get("total");
+  const paymentIntentId = searchParams.get("payment_intent");
+  const redirectStatus = searchParams.get("redirect_status");
   const totalAmount = totalParam ? Number(totalParam) : 0;
-  const orderNumber = useMemo(() => Math.floor(10000 + Math.random() * 90000), []);
+  const orderNumber = useMemo(
+    () => Math.floor(10000 + Math.random() * 90000),
+    [],
+  );
 
   useEffect(() => {
     if (confirmed.current) return;
-    if (paymentIntentId && redirectStatus === 'succeeded' && bookingId && totalAmount > 0) {
+    if (
+      paymentIntentId &&
+      redirectStatus === "succeeded" &&
+      bookingId &&
+      totalAmount > 0
+    ) {
       confirmed.current = true;
-      confirmBookingPayment(bookingId, paymentIntentId, totalAmount).catch(() => {});
+      confirmBookingPayment(bookingId, paymentIntentId, totalAmount).catch(
+        () => {},
+      );
     }
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const getDashboardPath = () => {
-    if (user?.systemRole === "admin" || user?.systemRole === "super_admin") return "/admin";
-    const creatorRoles = ["venueFoxer", "eventFoxer", "gearFoxer", "serviceFoxer"];
-    if (user?.roleType?.some((r) => creatorRoles.includes(r))) return "/creator-dashboard";
-    return "/user";
-  };
-
-  const dashboardPath = getDashboardPath();
+  const dashboardPath = getDashboardPath(user);
 
   return (
     <div className="bg-background bg-gradient-dark text-text-main antialiased min-h-screen flex flex-col selection:bg-accent selection:text-black font-body relative overflow-x-hidden">
@@ -46,12 +50,29 @@ export default function VenueBookingSuccessClient() {
               <div className="flex h-10 w-10 items-center justify-center overflow-hidden group-hover:scale-110 transition-transform duration-300">
                 <Image src="/foxonlylogo.png" alt="FoxPassport Logo" width={40} height={40} className="object-contain" priority />
               </div>
-              <h2 className="text-2xl font-display font-bold tracking-tight text-white group-hover:text-accent transition-colors">FoxPassport</h2>
+              <h2 className="text-2xl font-display font-bold tracking-tight text-white group-hover:text-accent transition-colors">
+                FoxPassport
+              </h2>
             </Link>
             <nav className="hidden md:flex items-center gap-2 bg-black/20 p-1.5 rounded-full border border-white/5">
-              <Link href="/" className="px-6 py-2.5 rounded-full text-sm font-medium text-white/70 hover:text-white hover:bg-white/10 transition-all hover:scale-105">Explore</Link>
-              <Link href="/booking" className="px-6 py-2.5 rounded-full text-sm font-bold text-black bg-accent hover:bg-accent/90 hover:shadow-[0_0_15px_rgba(204,255,0,0.5)] transition-all transform hover:-translate-y-0.5">Bookings</Link>
-              <Link href="/passport" className="px-6 py-2.5 rounded-full text-sm font-medium text-white/70 hover:text-white hover:bg-white/10 transition-all hover:scale-105">Community</Link>
+              <Link
+                href="/"
+                className="px-6 py-2.5 rounded-full text-sm font-medium text-white/70 hover:text-white hover:bg-white/10 transition-all hover:scale-105"
+              >
+                Explore
+              </Link>
+              <Link
+                href="/booking"
+                className="px-6 py-2.5 rounded-full text-sm font-bold text-black bg-accent hover:bg-accent/90 hover:shadow-[0_0_15px_rgba(204,255,0,0.5)] transition-all transform hover:-translate-y-0.5"
+              >
+                Bookings
+              </Link>
+              <Link
+                href="/passport"
+                className="px-6 py-2.5 rounded-full text-sm font-medium text-white/70 hover:text-white hover:bg-white/10 transition-all hover:scale-105"
+              >
+                Community
+              </Link>
             </nav>
             <div className="flex items-center gap-4">
               <div className="hidden sm:flex items-center gap-2 text-sm font-medium text-text-muted">
@@ -63,10 +84,14 @@ export default function VenueBookingSuccessClient() {
                 onClick={() => router.push(dashboardPath)}
               >
                 {user?.imgId ? (
-                  <img alt="User" className="h-full w-full object-cover" src={user.imgId} />
+                  <img
+                    alt="User"
+                    className="h-full w-full object-cover"
+                    src={user.imgId}
+                  />
                 ) : (
                   <div className="h-full w-full flex items-center justify-center bg-[#ccff00] text-black font-bold text-sm">
-                    {user?.name?.charAt(0)?.toUpperCase() ?? 'U'}
+                    {user?.name?.charAt(0)?.toUpperCase() ?? "U"}
                   </div>
                 )}
               </div>
@@ -81,11 +106,16 @@ export default function VenueBookingSuccessClient() {
         <div className="w-full max-w-3xl px-4 sm:px-6 lg:px-8 relative z-10 animate-in fade-in slide-in-from-bottom-8 duration-700">
           <div className="text-center mb-10">
             <div className="inline-flex items-center justify-center h-24 w-24 rounded-full bg-accent text-black font-bold shadow-[0_0_50px_rgba(204,255,0,0.4)] mb-6">
-              <span className="material-symbols-outlined text-5xl">check_circle</span>
+              <span className="material-symbols-outlined text-5xl">
+                check_circle
+              </span>
             </div>
-            <h1 className="text-4xl md:text-5xl font-display font-bold text-white tracking-tight mb-4">Venue Booking Confirmed!</h1>
+            <h1 className="text-4xl md:text-5xl font-display font-bold text-white tracking-tight mb-4">
+              Venue Booking Confirmed!
+            </h1>
             <p className="text-lg text-text-muted max-w-lg mx-auto">
-              Your venue reservation is confirmed. We&apos;ve sent the receipt and booking details to your email.
+              Your venue reservation is confirmed. We&apos;ve sent the receipt
+              and booking details to your email.
             </p>
           </div>
 
@@ -95,7 +125,9 @@ export default function VenueBookingSuccessClient() {
             <div className="flex flex-col md:flex-row gap-8 mb-8">
               <div className="h-40 w-40 md:h-48 md:w-48 rounded-3xl overflow-hidden shrink-0 border border-white/10 shadow-lg">
                 <div className="h-full w-full bg-surface-highlight/50 flex items-center justify-center">
-                  <span className="material-symbols-outlined text-white/20 text-[64px]">apartment</span>
+                  <span className="material-symbols-outlined text-white/20 text-[64px]">
+                    apartment
+                  </span>
                 </div>
               </div>
               <div className="grow flex flex-col justify-center">
@@ -109,28 +141,40 @@ export default function VenueBookingSuccessClient() {
 
                 <div className="grid grid-cols-2 gap-y-4 gap-x-8 text-sm">
                   <div>
-                    <p className="text-text-muted text-xs uppercase tracking-wider mb-1">Reference</p>
+                    <p className="text-text-muted text-xs uppercase tracking-wider mb-1">
+                      Reference
+                    </p>
                     <p className="text-white font-bold flex items-center gap-2">
                       <span className="material-symbols-outlined text-[16px] text-accent">receipt</span>
                       {bookingId ? `#${bookingId.slice(0, 12)}` : 'â€”'}
                     </p>
                   </div>
                   <div>
-                    <p className="text-text-muted text-xs uppercase tracking-wider mb-1">Status</p>
+                    <p className="text-text-muted text-xs uppercase tracking-wider mb-1">
+                      Status
+                    </p>
                     <p className="text-white font-bold flex items-center gap-2">
-                      <span className="material-symbols-outlined text-[16px] text-accent">verified</span>
-                      {redirectStatus === 'succeeded' ? 'Paid' : 'Confirmed'}
+                      <span className="material-symbols-outlined text-[16px] text-accent">
+                        verified
+                      </span>
+                      {redirectStatus === "succeeded" ? "Paid" : "Confirmed"}
                     </p>
                   </div>
                   <div>
-                    <p className="text-text-muted text-xs uppercase tracking-wider mb-1">Guests</p>
+                    <p className="text-text-muted text-xs uppercase tracking-wider mb-1">
+                      Guests
+                    </p>
                     <p className="text-white font-bold flex items-center gap-2">
-                      <span className="material-symbols-outlined text-[16px] text-accent">group</span>
+                      <span className="material-symbols-outlined text-[16px] text-accent">
+                        group
+                      </span>
                       See booking details
                     </p>
                   </div>
                   <div>
-                    <p className="text-text-muted text-xs uppercase tracking-wider mb-1">Amount Paid</p>
+                    <p className="text-text-muted text-xs uppercase tracking-wider mb-1">
+                      Amount Paid
+                    </p>
                     <p className="text-white font-bold flex items-center gap-2">
                       <span className="material-symbols-outlined text-[16px] text-accent">payments</span>
                       â‚±{totalAmount.toLocaleString()}
@@ -146,12 +190,20 @@ export default function VenueBookingSuccessClient() {
                 <span className="text-3xl font-display font-bold text-white">â‚±{totalAmount.toLocaleString()}.00</span>
               </div>
               <div className="flex gap-3 w-full sm:w-auto">
-                <Link href="/booking" className="flex-1 sm:flex-none px-6 py-3 rounded-xl border border-white/10 text-white font-bold text-sm hover:bg-white/5 transition-all text-center">
+                <Link
+                  href="/booking"
+                  className="flex-1 sm:flex-none px-6 py-3 rounded-xl border border-white/10 text-white font-bold text-sm hover:bg-white/5 transition-all text-center"
+                >
                   View Bookings
                 </Link>
-                <Link href="/" className="flex-1 sm:flex-none btn-neon rounded-xl bg-accent px-6 py-3 text-black font-bold text-sm hover:shadow-[0_0_20px_rgba(204,255,0,0.4)] transition-all active:scale-95 text-center flex items-center justify-center gap-2">
+                <Link
+                  href="/"
+                  className="flex-1 sm:flex-none btn-neon rounded-xl bg-accent px-6 py-3 text-black font-bold text-sm hover:shadow-[0_0_20px_rgba(204,255,0,0.4)] transition-all active:scale-95 text-center flex items-center justify-center gap-2"
+                >
                   Return Home
-                  <span className="material-symbols-outlined text-[18px]">arrow_forward</span>
+                  <span className="material-symbols-outlined text-[18px]">
+                    arrow_forward
+                  </span>
                 </Link>
               </div>
             </div>
@@ -163,14 +215,35 @@ export default function VenueBookingSuccessClient() {
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col md:flex-row justify-between items-center gap-4">
             <div className="flex items-center gap-2">
-              <span className="material-symbols-outlined text-white">explore</span>
-              <span className="text-xl font-display font-bold text-white">FoxPassport</span>
+              <span className="material-symbols-outlined text-white">
+                explore
+              </span>
+              <span className="text-xl font-display font-bold text-white">
+                FoxPassport
+              </span>
             </div>
-            <p className="text-xs text-gray-500 font-medium">&copy; 2024 FoxPassport Inc. All rights reserved.</p>
+            <p className="text-xs text-gray-500 font-medium">
+              &copy; 2024 FoxPassport Inc. All rights reserved.
+            </p>
             <div className="flex gap-6">
-              <a className="text-xs text-gray-500 hover:text-white font-medium transition-colors" href="#">Privacy</a>
-              <a className="text-xs text-gray-500 hover:text-white font-medium transition-colors" href="#">Terms</a>
-              <a className="text-xs text-gray-500 hover:text-white font-medium transition-colors" href="#">Cookies</a>
+              <a
+                className="text-xs text-gray-500 hover:text-white font-medium transition-colors"
+                href="#"
+              >
+                Privacy
+              </a>
+              <a
+                className="text-xs text-gray-500 hover:text-white font-medium transition-colors"
+                href="#"
+              >
+                Terms
+              </a>
+              <a
+                className="text-xs text-gray-500 hover:text-white font-medium transition-colors"
+                href="#"
+              >
+                Cookies
+              </a>
             </div>
           </div>
         </div>

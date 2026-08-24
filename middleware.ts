@@ -1,4 +1,5 @@
-﻿import { NextRequest, NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
+import { jwtVerify, type JWTPayload } from "jose";
 
 /**
  * Proxy for authentication and authorization checks
@@ -6,8 +7,12 @@
  *
  * Handles:
  * - Auth token validation
- * - Role-based redirects
  * - Protected route access
+ * - Admin route restriction
+ *
+ * Only `/admin` is gated on role here. Every other role check is deferred to
+ * server components so they read live API data — a cookie issued before a role
+ * was approved would otherwise lock the user out until it expired.
  */
 
 // Routes that require authentication
@@ -24,69 +29,83 @@ const PROTECTED_ROUTES = [
   "/reviews",
 ];
 
-// Role-based route restrictions
-const ROLE_ROUTES: Record<string, string[]> = {
-  host: ["/creator-dashboard", "/mayor/create-venue"],
-  admin: ["/admin"],
-  mayor: ["/mayor/create-venue"],
-};
+// Name of the cookie set by `setAuthCookies` in shared/lib/server/auth-actions.
+// These must stay in sync — reading a different name here silently logs
+// everyone out of every protected route.
+const TOKEN_COOKIE = "fox_token";
 
-export default function proxy(request: NextRequest) {
+// No development fallback: a hardcoded default would let anyone forge an
+// admin token signed with a value that is public in this repo. If the secret
+// is missing we fail closed instead.
+const ACCESS_TOKEN_SECRET = process.env.ACCESS_TOKEN_SECRET;
+
+interface SessionUser {
+  userId: string;
+  email?: string;
+  systemRole: string;
+}
+
+function toSessionUser(payload: JWTPayload): SessionUser | null {
+  const userId = payload.userId ?? payload.sub;
+  if (typeof userId !== "string") return null;
+
+  const systemRole =
+    typeof payload.systemRole === "string" ? payload.systemRole : "user";
+
+  return {
+    userId,
+    email: typeof payload.email === "string" ? payload.email : undefined,
+    systemRole,
+  };
+}
+
+export default async function proxy(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
 
-  // Get auth tokens from cookies (set by auth interceptor)
-  const token = request.cookies.get("fox_token")?.value;
-  const userStr = request.cookies.get("fox_user")?.value;
-
-  // Parse user from cookie
-  let user = null;
-  if (userStr) {
-    try {
-      // Decode URI component in case it's encoded
-      const decodedUser = decodeURIComponent(userStr);
-      user = JSON.parse(decodedUser);
-    } catch (e) {
-      try {
-        // Fallback to raw parse if decoding fails
-        user = JSON.parse(userStr);
-      } catch (e2) {
-        console.warn("[Proxy] Failed to parse user cookie:", e2);
-      }
-    }
-  }
-
-  // Check if route is protected
   const isProtectedRoute = PROTECTED_ROUTES.some((route) =>
-    pathname.startsWith(route)
+    pathname.startsWith(route),
   );
 
-  if (isProtectedRoute) {
-    console.log(`[Proxy] Checking protected route: ${pathname}`);
-    
-    // No token = redirect to home + show login
-    if (!token || !user) {
-      console.log(`[Proxy] Redirecting to home: Missing token (${!!token}) or user (${!!user})`);
-      const response = NextResponse.redirect(new URL("/", request.url));
-      // Add header to signal client to open login modal
-      response.headers.set("x-auth-required", "true");
-      return response;
-    }
+  if (!isProtectedRoute) return NextResponse.next();
 
-    console.log(`[Proxy] Authenticated user: ${user.email}, Role: ${user.systemRole}`);
+  if (!ACCESS_TOKEN_SECRET) {
+    console.error(
+      "[Proxy] ACCESS_TOKEN_SECRET is not set — refusing access to protected routes. " +
+        "Set it to the same value the API signs tokens with.",
+    );
+    return redirectToLogin(request);
+  }
 
-    // Only enforce admin routes at the proxy level.
-    // Host/mayor/foxer role checks are deferred to server components
-    // so they always use live API data (handles stale cookies after role approval).
-    const sysRole = (user.systemRole || user.role || "").toLowerCase();
-    const isAdmin = sysRole === "admin" || sysRole === "super_admin";
+  const token = request.cookies.get(TOKEN_COOKIE)?.value;
+  if (!token) return redirectToLogin(request);
 
-    if (pathname.startsWith("/admin") && !isAdmin) {
-      console.log(`[Proxy] Redirecting: Admin role required for ${pathname}`);
-      return NextResponse.redirect(new URL("/", request.url));
-    }
+  let user: SessionUser | null = null;
+  try {
+    const { payload } = await jwtVerify(
+      token,
+      new TextEncoder().encode(ACCESS_TOKEN_SECRET),
+      { algorithms: ["HS256"] },
+    );
+    user = toSessionUser(payload);
+  } catch {
+    // Expired or tampered token — treated the same as no token.
+    user = null;
+  }
+
+  if (!user) return redirectToLogin(request);
+
+  if (pathname.startsWith("/admin") && user.systemRole !== "admin") {
+    return NextResponse.redirect(new URL("/", request.url));
   }
 
   return NextResponse.next();
+}
+
+function redirectToLogin(request: NextRequest) {
+  const response = NextResponse.redirect(new URL("/", request.url));
+  // Signals the client to open the login modal.
+  response.headers.set("x-auth-required", "true");
+  return response;
 }
 
 // Configure which routes this proxy applies to

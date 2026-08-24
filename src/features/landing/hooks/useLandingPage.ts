@@ -7,14 +7,20 @@ import { useCategories } from "@/features/category/hooks/useCategories";
 
 const VENUE_ROLES = ["eventFoxer", "venueFoxer", "gearFoxer", "serviceFoxer"];
 
-const EVENT_CATEGORY_ORDER = ["birthday", "wedding", "corporate", "social", "other"];
+const EVENT_CATEGORY_ORDER = [
+  "birthday",
+  "wedding",
+  "corporate",
+  "social",
+  "other",
+];
 
 const EVENT_CATEGORY_COLORS: Record<string, string> = {
-  birthday:  "#84cc16",
-  wedding:   "#ec4899",
+  birthday: "#84cc16",
+  wedding: "#ec4899",
   corporate: "#06b6d4",
-  social:    "#8b5cf6",
-  other:     "#f97316",
+  social: "#8b5cf6",
+  other: "#f97316",
 };
 
 function userCanSeeVenueCategories(user: any): boolean {
@@ -48,7 +54,13 @@ export function useLandingPage() {
         if (!cat.isEventCategory) return false;
         // Venue-only event categories restricted to foxers/hosts (edge case)
         const s = cat.sources;
-        if (s && s.venues > 0 && s.assets === 0 && s.services === 0 && s.events === 0) {
+        if (
+          s &&
+          s.venues > 0 &&
+          s.assets === 0 &&
+          s.services === 0 &&
+          s.events === 0
+        ) {
           return canSeeVenues;
         }
         return true;
@@ -87,7 +99,7 @@ export function useLandingPage() {
       showAllCategories
         ? categoriesWithDesign
         : categoriesWithDesign.slice(0, 5),
-    [showAllCategories, categoriesWithDesign]
+    [showAllCategories, categoriesWithDesign],
   );
 
   const toggleCategories = () => {

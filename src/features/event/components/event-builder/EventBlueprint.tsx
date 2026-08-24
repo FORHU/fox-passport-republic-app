@@ -1,7 +1,8 @@
-'use client';
+/* eslint-disable @typescript-eslint/no-unused-vars */
+"use client";
 
-import React from 'react';
-import { ResourceItem } from '@/features/event/data/eventBuilderData';
+import React from "react";
+import { ResourceItem } from "@/features/event/data/eventBuilderData";
 
 interface EventBlueprintProps {
   targetMargin: number;
@@ -28,9 +29,13 @@ export function EventBlueprint({
   inDrawer = false,
 }: EventBlueprintProps) {
   return (
-    <aside className={`${inDrawer ? 'flex w-full border-l-0' : 'hidden md:flex w-80'} shrink-0 border-l border-white/5 bg-[#0f111a] flex-col shadow-2xl z-10`}>
+    <aside
+      className={`${inDrawer ? "flex w-full border-l-0" : "hidden md:flex w-80"} shrink-0 border-l border-white/5 bg-[#0f111a] flex-col shadow-2xl z-10`}
+    >
       <div className="p-6 border-b border-white/5">
-        <h3 className="font-display font-bold text-white text-lg">Event Blueprint</h3>
+        <h3 className="font-display font-bold text-white text-lg">
+          Event Blueprint
+        </h3>
         <p className="text-xs text-text-muted">Financial Overview</p>
       </div>
 
@@ -43,16 +48,22 @@ export function EventBlueprint({
           <div className="space-y-3">
             <div className="flex justify-between text-xs">
               <span className="text-text-muted">Venue & Infrastructure</span>
-              <span className="text-white font-mono">₱{venueCost.toLocaleString()}</span>
+              <span className="text-white font-mono">
+                ₱{venueCost.toLocaleString()}
+              </span>
             </div>
             <div className="flex justify-between text-xs">
               <span className="text-text-muted">Talent & Entertainment</span>
-              <span className="text-white font-mono">₱{talentCost.toLocaleString()}</span>
+              <span className="text-white font-mono">
+                ₱{talentCost.toLocaleString()}
+              </span>
             </div>
             <div className="h-px bg-white/10 my-2" />
             <div className="flex justify-between text-sm font-bold">
               <span className="text-white">Total Base Cost</span>
-              <span className="text-white font-mono">₱{baseCost.toLocaleString()}</span>
+              <span className="text-white font-mono">
+                ₱{baseCost.toLocaleString()}
+              </span>
             </div>
           </div>
         </div>
@@ -60,11 +71,15 @@ export function EventBlueprint({
         {/* Pricing Strategy */}
         <div className="bg-[#161b26] rounded-xl p-5 border border-white/5">
           <h4 className="text-[10px] font-bold text-accent uppercase tracking-widest mb-4 flex items-center gap-2">
-            <span className="material-symbols-outlined text-[14px]">price_check</span>
+            <span className="material-symbols-outlined text-[14px]">
+              price_check
+            </span>
             Pricing Strategy
           </h4>
           <div className="mb-4">
-            <label className="text-[10px] text-text-muted block mb-2">Target Margin (%)</label>
+            <label className="text-[10px] text-text-muted block mb-2">
+              Target Margin (%)
+            </label>
             <div className="flex items-center gap-3">
               <input
                 type="range"
@@ -97,7 +112,9 @@ export function EventBlueprint({
             {blueprintHealth}%
           </div>
           <div className="flex-1">
-            <p className="text-[10px] text-text-muted uppercase font-bold mb-1">Blueprint Health</p>
+            <p className="text-[10px] text-text-muted uppercase font-bold mb-1">
+              Blueprint Health
+            </p>
             <div className="h-1.5 w-full bg-white/10 rounded-full overflow-hidden">
               <div
                 className="h-full bg-accent rounded-full transition-all duration-500"
@@ -111,7 +128,9 @@ export function EventBlueprint({
           disabled={!onPreview}
           className="w-full py-3 rounded-xl border border-white/10 hover:bg-white hover:text-black transition-all text-sm font-bold text-white disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2"
         >
-          <span className="material-symbols-outlined text-[16px]">open_in_new</span>
+          <span className="material-symbols-outlined text-[16px]">
+            open_in_new
+          </span>
           Preview Listing
         </button>
       </div>

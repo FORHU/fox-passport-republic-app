@@ -27,7 +27,8 @@ export type CreatePolicyPayload = {
 
 function unwrapList(data: unknown): CancellationPolicy[] {
   const record = data as Record<string, unknown> | undefined;
-  const raw = record?.policies ?? record?.data ?? (Array.isArray(data) ? data : []);
+  const raw =
+    record?.policies ?? record?.data ?? (Array.isArray(data) ? data : []);
   return Array.isArray(raw) ? raw : [];
 }
 
@@ -36,22 +37,31 @@ function unwrapOne(data: unknown): CancellationPolicy {
   return (record?.policy ?? record?.data ?? data) as CancellationPolicy;
 }
 
-export async function fetchCancellationPolicies(): Promise<CancellationPolicy[]> {
+export async function fetchCancellationPolicies(): Promise<
+  CancellationPolicy[]
+> {
   const resp = await api.get("/cancellation-policies");
   return unwrapList(resp.data);
 }
 
-export async function fetchCancellationPolicyById(id: string): Promise<CancellationPolicy> {
+export async function fetchCancellationPolicyById(
+  id: string,
+): Promise<CancellationPolicy> {
   const resp = await api.get(`/cancellation-policies/${id}`);
   return unwrapOne(resp.data);
 }
 
-export async function createCancellationPolicy(payload: CreatePolicyPayload): Promise<CancellationPolicy> {
+export async function createCancellationPolicy(
+  payload: CreatePolicyPayload,
+): Promise<CancellationPolicy> {
   const resp = await api.post("/cancellation-policies", payload);
   return unwrapOne(resp.data);
 }
 
-export async function updateCancellationPolicy(id: string, payload: Partial<CreatePolicyPayload>): Promise<CancellationPolicy> {
+export async function updateCancellationPolicy(
+  id: string,
+  payload: Partial<CreatePolicyPayload>,
+): Promise<CancellationPolicy> {
   const resp = await api.put(`/cancellation-policies/${id}`, payload);
   return unwrapOne(resp.data);
 }

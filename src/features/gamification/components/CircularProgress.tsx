@@ -1,7 +1,7 @@
-﻿'use client';
+﻿"use client";
 
-import React from 'react';
-import { getProgressPercentage } from '@/features/gamification/lib/gamification';
+import React from "react";
+import { getProgressPercentage } from "@/features/gamification/lib/gamification";
 
 interface CircularProgressProps {
   level: number;
@@ -22,7 +22,7 @@ export default function CircularProgress({
   size = 192,
   strokeWidth = 12,
   showLabel = true,
-  className = '',
+  className = "",
 }: CircularProgressProps) {
   const progress = getProgressPercentage(currentXP, requiredXP);
   const radius = (size - strokeWidth) / 2;
@@ -30,7 +30,10 @@ export default function CircularProgress({
   const offset = circumference * (1 - progress / 100);
 
   return (
-    <div className={`relative ${className}`} style={{ width: size, height: size }}>
+    <div
+      className={`relative ${className}`}
+      style={{ width: size, height: size }}
+    >
       <svg className="w-full h-full transform -rotate-90">
         {/* Background circle */}
         <circle

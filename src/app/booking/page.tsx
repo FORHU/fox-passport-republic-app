@@ -3,7 +3,7 @@ import BookingListClient from "@/features/booking/components/BookingListClient";
 import MobileBookingsView from "@/features/booking/components/MobileBookingsView";
 import type { Metadata } from "next";
 
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
   title: "My Bookings | Fox Passport Republic",

@@ -32,7 +32,9 @@ export default function SearchResults() {
   if (error) {
     return (
       <div className="text-center py-20 bg-white/5 rounded-2xl border border-white/10">
-        <h3 className="text-xl font-bold text-white mb-2">Something went wrong</h3>
+        <h3 className="text-xl font-bold text-white mb-2">
+          Something went wrong
+        </h3>
         <p className="text-white/60 text-sm">{error}</p>
       </div>
     );
@@ -41,9 +43,13 @@ export default function SearchResults() {
   if (data.length === 0) {
     return (
       <div className="text-center py-20 bg-white/5 rounded-2xl border border-white/10 flex flex-col items-center gap-4">
-        <span className="material-symbols-outlined text-[56px] text-white/20">search_off</span>
+        <span className="material-symbols-outlined text-[56px] text-white/20">
+          search_off
+        </span>
         <h3 className="text-2xl font-bold text-white">No results found</h3>
-        <p className="text-white/60 max-w-sm">Try adjusting your filters to find what you&apos;re looking for.</p>
+        <p className="text-white/60 max-w-sm">
+          Try adjusting your filters to find what you&apos;re looking for.
+        </p>
       </div>
     );
   }

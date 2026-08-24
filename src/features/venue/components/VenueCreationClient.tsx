@@ -1,9 +1,9 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
-import RequireAuth from '@/features/auth/components/RequireAuth';
-import { useVenueBuilder } from '@/features/venue/hooks/useVenueBuilder';
-import { useVenueBuilderStore } from '@/features/venue/store/useVenueBuilderStore';
+import React, { useState, useEffect } from "react";
+import RequireAuth from "@/features/auth/components/RequireAuth";
+import { useVenueBuilder } from "@/features/venue/hooks/useVenueBuilder";
+import { useVenueBuilderStore } from "@/features/venue/store/useVenueBuilderStore";
 import {
   VenueHeader,
   VenueResourcePalette,
@@ -11,7 +11,7 @@ import {
   FeatureDropZone,
   RevenueProjector,
   VenuePreviewModal,
-} from '@/features/venue/components/venue-builder';
+} from "@/features/venue/components/venue-builder";
 
 export default function VenueCreationClient() {
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
@@ -23,17 +23,62 @@ export default function VenueCreationClient() {
   }, []);
 
   const {
-    venueName, description, venueType, capacity, location, city, state, country,
-    lat, lng,
-    gallery, cancellationPolicyId, includedItems, addonItems, baseRate, occupancyRate, activeCategory,
-    searchQuery, showGuide, isSubmitting, isDragOver, newItem, filteredResources,
-    revenue, currentCategoryLabel,
-    setVenueName, setDescription, setVenueType, setCapacity, setLocation, setCity,
-    setState, setCountry, setLat, setLng, setCancellationPolicyId, removeIncludedItem, removeAddonItem,
-    setBaseRate, setOccupancyRate, setActiveCategory, setSearchQuery, setShowGuide,
-    setNewItem, handleDragStart, handleDragOver, handleDragLeave, handleDrop,
-    handleAddCustomItem, handleAddCatalogItem, handleRemoveCustomResource, addImageToGallery,
-    removeImageFromGallery, handleBack, handleSaveDraft, handlePublish,
+    venueName,
+    description,
+    venueType,
+    capacity,
+    location,
+    city,
+    state,
+    country,
+    lat,
+    lng,
+    gallery,
+    cancellationPolicyId,
+    includedItems,
+    addonItems,
+    baseRate,
+    occupancyRate,
+    activeCategory,
+    searchQuery,
+    showGuide,
+    isSubmitting,
+    isDragOver,
+    newItem,
+    filteredResources,
+    revenue,
+    currentCategoryLabel,
+    setVenueName,
+    setDescription,
+    setVenueType,
+    setCapacity,
+    setLocation,
+    setCity,
+    setState,
+    setCountry,
+    setLat,
+    setLng,
+    setCancellationPolicyId,
+    removeIncludedItem,
+    removeAddonItem,
+    setBaseRate,
+    setOccupancyRate,
+    setActiveCategory,
+    setSearchQuery,
+    setShowGuide,
+    setNewItem,
+    handleDragStart,
+    handleDragOver,
+    handleDragLeave,
+    handleDrop,
+    handleAddCustomItem,
+    handleAddCatalogItem,
+    handleRemoveCustomResource,
+    addImageToGallery,
+    removeImageFromGallery,
+    handleBack,
+    handleSaveDraft,
+    handlePublish,
     catalogItems,
   } = useVenueBuilder();
 
@@ -106,14 +151,33 @@ export default function VenueCreationClient() {
                 onCityChange={setCity}
                 onStateChange={setState}
                 onCountryChange={setCountry}
-                onLatLngChange={(lat, lng) => { setLat(lat); setLng(lng); }}
+                onLatLngChange={(lat, lng) => {
+                  setLat(lat);
+                  setLng(lng);
+                }}
                 onCancellationPolicyChange={setCancellationPolicyId}
                 onAddImage={addImageToGallery}
                 onRemoveImage={removeImageFromGallery}
                 onCloseGuide={() => setShowGuide(false)}
               />
-              <FeatureDropZone type="included" items={includedItems} isDragOver={isDragOver} onDragOver={handleDragOver} onDragLeave={handleDragLeave} onDrop={handleDrop} onRemoveItem={removeIncludedItem} />
-              <FeatureDropZone type="addon" items={addonItems} isDragOver={isDragOver} onDragOver={handleDragOver} onDragLeave={handleDragLeave} onDrop={handleDrop} onRemoveItem={removeAddonItem} />
+              <FeatureDropZone
+                type="included"
+                items={includedItems}
+                isDragOver={isDragOver}
+                onDragOver={handleDragOver}
+                onDragLeave={handleDragLeave}
+                onDrop={handleDrop}
+                onRemoveItem={removeIncludedItem}
+              />
+              <FeatureDropZone
+                type="addon"
+                items={addonItems}
+                isDragOver={isDragOver}
+                onDragOver={handleDragOver}
+                onDragLeave={handleDragLeave}
+                onDrop={handleDrop}
+                onRemoveItem={removeAddonItem}
+              />
             </div>
           </main>
 

@@ -26,7 +26,10 @@ export default function LandingHeader({ onSignIn }: LandingHeaderProps) {
         <div className="mx-auto max-w-7xl px-3 sm:px-4">
           <div className="glass-panel rounded-full px-4 sm:px-6 h-12 sm:h-20 flex items-center justify-between shadow-2xl hover:bg-black/40 transition-colors duration-500">
             {/* Logo */}
-            <Link href="/" className="flex items-center gap-2 sm:gap-3 group cursor-pointer relative">
+            <Link
+              href="/"
+              className="flex items-center gap-2 sm:gap-3 group cursor-pointer relative"
+            >
               <div className="flex h-8 w-8 sm:h-12 sm:w-12 items-center justify-center group-hover:scale-110 transition-transform duration-300 overflow-hidden">
                 <Image
                   src="/foxonlylogo.png"
@@ -73,7 +76,9 @@ export default function LandingHeader({ onSignIn }: LandingHeaderProps) {
                 href="/search"
                 className="flex h-8 w-8 sm:h-10 sm:w-10 items-center justify-center rounded-full border border-white/10 text-white hover:bg-white hover:text-black transition-all hover:rotate-12"
               >
-                <span className="material-symbols-outlined text-[18px] sm:text-[20px]">search</span>
+                <span className="material-symbols-outlined text-[18px] sm:text-[20px]">
+                  search
+                </span>
               </Link>
 
               {/* Desktop-only: Sign In + UserMenuButton */}

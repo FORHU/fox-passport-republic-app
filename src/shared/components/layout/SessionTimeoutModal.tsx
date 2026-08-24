@@ -9,9 +9,13 @@ interface SessionTimeoutModalProps {
   onLogout: () => void;
 }
 
-export default function SessionTimeoutModal({ isOpen, onStayLoggedIn, onLogout }: SessionTimeoutModalProps) {
+export default function SessionTimeoutModal({
+  isOpen,
+  onStayLoggedIn,
+  onLogout,
+}: SessionTimeoutModalProps) {
   const [secondsLeft, setSecondsLeft] = useState(120);
-  const startTimeRef = React.useRef(Date.now());
+  const startTimeRef = React.useRef(0);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -39,14 +43,20 @@ export default function SessionTimeoutModal({ isOpen, onStayLoggedIn, onLogout }
             <Clock className="text-yellow-400" size={20} />
           </div>
           <div>
-            <h2 className="text-white font-bold text-lg leading-tight">Session Expiring Soon</h2>
-            <p className="text-white/40 text-xs">You&apos;ve been inactive for a while</p>
+            <h2 className="text-white font-bold text-lg leading-tight">
+              Session Expiring Soon
+            </h2>
+            <p className="text-white/40 text-xs">
+              You&apos;ve been inactive for a while
+            </p>
           </div>
         </div>
 
         <p className="text-white/60 text-sm leading-relaxed">
           You&apos;ll be automatically logged out in{" "}
-          <span className="text-yellow-400 font-bold tabular-nums">{countdown}</span>{" "}
+          <span className="text-yellow-400 font-bold tabular-nums">
+            {countdown}
+          </span>{" "}
           due to inactivity.
         </p>
 

@@ -1,9 +1,13 @@
-'use client';
+"use client";
 
 import React from "react";
 import { MapPin, ArrowLeft } from "lucide-react";
 import { useWriteReview } from "@/features/review/hooks/useWriteReview";
-import { StarRating, CategoryTags, RecentReviews } from "@/features/review/components";
+import {
+  StarRating,
+  CategoryTags,
+  RecentReviews,
+} from "@/features/review/components";
 
 interface WriteReviewClientProps {
   venue: any;
@@ -43,11 +47,13 @@ export default function WriteReviewClient({ venue }: WriteReviewClientProps) {
             <div className="bg-white rounded-2xl border-2 border-gray-200 p-6 md:p-8">
               {/* Venue Header */}
               <div className="mb-8">
-                <h1 className="text-3xl font-bold text-gray-900 mb-2">{venue.name}</h1>
+                <h1 className="text-3xl font-bold text-gray-900 mb-2">
+                  {venue.name}
+                </h1>
                 <div className="flex items-center gap-2 text-gray-600">
                   <MapPin className="w-5 h-5" />
                   <span>
-                    {venue.city}, {venue.country || 'PH'}
+                    {venue.city}, {venue.country || "PH"}
                   </span>
                 </div>
               </div>

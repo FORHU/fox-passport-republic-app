@@ -1,5 +1,9 @@
 ﻿import api from "@/shared/lib/axios";
-import type { BackendService, CreateServicePayload, Id } from "@/shared/lib/api-types";
+import type {
+  BackendService,
+  CreateServicePayload,
+  Id,
+} from "@/shared/lib/api-types";
 
 function unwrapList(data: any): BackendService[] {
   const raw = data?.services ?? data?.data ?? (Array.isArray(data) ? data : []);
@@ -10,18 +14,27 @@ function unwrapOne(data: any): BackendService {
   return (data?.service ?? data?.data ?? data) as BackendService;
 }
 
-export async function createService(payload: CreateServicePayload): Promise<BackendService> {
+export async function createService(
+  payload: CreateServicePayload,
+): Promise<BackendService> {
   const resp = await api.post("/service/create", payload);
   return unwrapOne(resp.data);
 }
 
-export async function fetchAllServices(params?: { category?: string; status?: string }): Promise<BackendService[]> {
-  const resp = await api.get('/service', { params });
+export async function fetchAllServices(params?: {
+  category?: string;
+  status?: string;
+}): Promise<BackendService[]> {
+  const resp = await api.get("/service", { params });
   return unwrapList(resp.data);
 }
 
-export async function fetchServicesByOwnerId(ownerId: Id): Promise<BackendService[]> {
-  const resp = await api.get("/service", { params: { ownerId: String(ownerId) } });
+export async function fetchServicesByOwnerId(
+  ownerId: Id,
+): Promise<BackendService[]> {
+  const resp = await api.get("/service", {
+    params: { ownerId: String(ownerId) },
+  });
   return unwrapList(resp.data);
 }
 
@@ -30,7 +43,10 @@ export async function fetchServiceById(id: Id): Promise<BackendService> {
   return unwrapOne(resp.data);
 }
 
-export async function updateService(serviceId: Id, payload: Partial<CreateServicePayload> & { status?: string }): Promise<BackendService> {
+export async function updateService(
+  serviceId: Id,
+  payload: Partial<CreateServicePayload> & { status?: string },
+): Promise<BackendService> {
   const resp = await api.put(`/service/${serviceId}`, payload);
   return unwrapOne(resp.data);
 }

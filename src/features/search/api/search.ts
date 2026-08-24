@@ -32,18 +32,22 @@ export interface ProviderRow {
   img?: string;
 }
 
-export function foxersToRows(foxers: Foxer[]): ProviderRow[] {
+export function foxersToRows(
+  foxers: Foxer[],
+  source: "services" | "assets" = "services",
+): ProviderRow[] {
   const rows: ProviderRow[] = [];
   foxers.forEach((f) => {
-    f.services.forEach((s) => {
+    const items = source === "assets" ? (f.assets ?? []) : f.services;
+    items.forEach((item) => {
       rows.push({
         foxerId: f.id,
         name: f.name,
-        itemName: s.name,
-        category: s.category,
-        price: s.price,
-        billingRate: s.billingRate,
-        img: s.images?.[0]?.url,
+        itemName: item.name,
+        category: item.category,
+        price: item.price,
+        billingRate: item.billingRate,
+        img: item.images?.[0]?.url,
       });
     });
   });
@@ -53,7 +57,7 @@ export function foxersToRows(foxers: Foxer[]): ProviderRow[] {
 export async function fetchEventFoxers(
   page = 1,
   limit = 6,
-  filters?: UnifiedSearchFilters
+  filters?: UnifiedSearchFilters,
 ): Promise<SectionResult<Foxer>> {
   const params: Record<string, any> = { page, limit, roleType: "eventFoxer" };
   if (filters?.city) params.city = filters.city;
@@ -73,7 +77,7 @@ export async function fetchEventFoxers(
 export async function fetchEventTemplates(
   page = 1,
   limit = 6,
-  filters?: UnifiedSearchFilters
+  filters?: UnifiedSearchFilters,
 ): Promise<SectionResult<any>> {
   const params: Record<string, any> = { page, limit };
   if (filters?.city) params.city = filters.city;
@@ -93,7 +97,7 @@ export async function fetchEventTemplates(
 export async function fetchGearFoxers(
   page = 1,
   limit = 10,
-  filters?: UnifiedSearchFilters
+  filters?: UnifiedSearchFilters,
 ): Promise<SectionResult<Foxer>> {
   const params: Record<string, any> = { page, limit, roleType: "gearFoxer" };
   if (filters?.city) params.city = filters.city;
@@ -113,7 +117,7 @@ export async function fetchGearFoxers(
 export async function fetchServiceFoxers(
   page = 1,
   limit = 10,
-  filters?: UnifiedSearchFilters
+  filters?: UnifiedSearchFilters,
 ): Promise<SectionResult<Foxer>> {
   const params: Record<string, any> = { page, limit, roleType: "serviceFoxer" };
   if (filters?.city) params.city = filters.city;
@@ -140,7 +144,12 @@ export interface AllSearchSections {
 export async function fetchAllSearchSections(
   page: number,
   filters?: UnifiedSearchFilters,
-  limits?: { eventFoxers?: number; eventTemplates?: number; gearFoxers?: number; serviceFoxers?: number }
+  limits?: {
+    eventFoxers?: number;
+    eventTemplates?: number;
+    gearFoxers?: number;
+    serviceFoxers?: number;
+  },
 ): Promise<AllSearchSections> {
   const [ef, et, gf, sf] = await Promise.all([
     fetchEventFoxers(page, limits?.eventFoxers ?? 6, filters),
@@ -148,5 +157,10 @@ export async function fetchAllSearchSections(
     fetchGearFoxers(page, limits?.gearFoxers ?? 10, filters),
     fetchServiceFoxers(page, limits?.serviceFoxers ?? 10, filters),
   ]);
-  return { eventFoxers: ef, eventTemplates: et, gearFoxers: gf, serviceFoxers: sf };
+  return {
+    eventFoxers: ef,
+    eventTemplates: et,
+    gearFoxers: gf,
+    serviceFoxers: sf,
+  };
 }

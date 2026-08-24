@@ -3,7 +3,10 @@
 import { useQuery } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { useCreateVenueModal } from "@/features/venue/hooks/useCreateVenueModal";
-import { useAuthActions, useAuthStore } from "@/features/auth/store/useAuthStore";
+import {
+  useAuthActions,
+  useAuthStore,
+} from "@/features/auth/store/useAuthStore";
 import api from "@/shared/lib/axios";
 
 interface Venue {

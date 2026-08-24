@@ -1,9 +1,9 @@
-﻿'use client';
+﻿"use client";
 
-import React from 'react';
-import { motion, AnimatePresence } from 'motion/react';
-import { Badge } from '@/features/gamification/types/gamification';
-import { X } from 'lucide-react';
+import React from "react";
+import { motion, AnimatePresence } from "motion/react";
+import { Badge } from "@/features/gamification/types/gamification";
+import { X } from "lucide-react";
 
 interface BadgeModalProps {
   badge: Badge | null;
@@ -11,7 +11,11 @@ interface BadgeModalProps {
   onClose: () => void;
 }
 
-export default function BadgeModal({ badge, isOpen, onClose }: BadgeModalProps) {
+export default function BadgeModal({
+  badge,
+  isOpen,
+  onClose,
+}: BadgeModalProps) {
   if (!badge) return null;
 
   return (
@@ -43,7 +47,7 @@ export default function BadgeModal({ badge, isOpen, onClose }: BadgeModalProps) 
             </button>
 
             {/* Glowing Background Orb */}
-            <div 
+            <div
               className="absolute top-0 left-1/2 -translate-x-1/2 w-64 h-64 blur-[80px] opacity-20 pointer-events-none"
               style={{ backgroundColor: badge.color }}
             />
@@ -51,20 +55,20 @@ export default function BadgeModal({ badge, isOpen, onClose }: BadgeModalProps) 
             <div className="relative z-10 flex flex-col items-center text-center">
               {/* Badge Icon */}
               <div className="h-32 w-32 rounded-full mb-8 flex items-center justify-center relative shadow-2xl">
-                <div 
+                <div
                   className="absolute inset-0 rounded-full blur-xl opacity-40"
                   style={{ backgroundColor: badge.color }}
                 />
-                <div 
+                <div
                   className="relative h-28 w-28 rounded-full flex items-center justify-center border border-white/20 overflow-hidden"
-                  style={{ 
+                  style={{
                     background: `radial-gradient(circle at 30% 30%, ${badge.color}44 0%, ${badge.color}22 100%)`,
                   }}
                 >
                   <div className="absolute inset-0 bg-black/20 backdrop-blur-sm"></div>
-                  <span 
+                  <span
                     className="material-symbols-outlined relative z-10 text-[56px] drop-shadow-[0_0_15px_rgba(255,255,255,0.5)]"
-                    style={{ color: 'white' }}
+                    style={{ color: "white" }}
                   >
                     {badge.icon}
                   </span>
@@ -72,7 +76,7 @@ export default function BadgeModal({ badge, isOpen, onClose }: BadgeModalProps) 
               </div>
 
               {/* Rarity */}
-              <span 
+              <span
                 className="text-xs uppercase tracking-[0.3em] font-black mb-2"
                 style={{ color: badge.color }}
               >

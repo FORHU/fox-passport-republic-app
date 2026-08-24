@@ -1,4 +1,4 @@
-﻿export const dynamic = 'force-dynamic';
+﻿export const dynamic = "force-dynamic";
 
 import FoxerEarningsClient from '@/features/dashboard/components/FoxerEarningsClient';
 import MobileEarningsView from '@/features/dashboard/components/MobileEarningsView';

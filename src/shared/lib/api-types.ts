@@ -57,6 +57,7 @@ export type CreateAssetPayload = {
   lat?: number;
   lng?: number;
   imgIds: string[];
+  status?: string;
 };
 
 export type CreateServicePayload = {

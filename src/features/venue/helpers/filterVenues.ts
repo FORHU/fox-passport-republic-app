@@ -27,7 +27,13 @@ const CATEGORY_FILTER_MAP: Record<string, readonly string[]> = {
     "cabin",
     "glamping",
   ],
-  "event planning & services": ["garden", "function", "events", "historic", "event"],
+  "event planning & services": [
+    "garden",
+    "function",
+    "events",
+    "historic",
+    "event",
+  ],
   restaurants: ["dining", "restaurant"],
   food: ["dining", "restaurant"],
   "arts & entertainment": ["art", "gallery", "museum", "historic"],
@@ -54,7 +60,7 @@ const CATEGORY_FILTER_MAP: Record<string, readonly string[]> = {
 export function filterVenues<T extends FilterableVenue>(
   venues: T[],
   locationQuery?: string,
-  categoryQuery?: string
+  categoryQuery?: string,
 ): T[] {
   let filtered: T[] = venues;
 
@@ -64,7 +70,10 @@ export function filterVenues<T extends FilterableVenue>(
     filtered = filtered.filter((venue) => {
       const location = String(venue.location ?? "").toLowerCase();
       const province = String(venue.province ?? "").toLowerCase();
-      return location.includes(lowerLocationQuery) || province.includes(lowerLocationQuery);
+      return (
+        location.includes(lowerLocationQuery) ||
+        province.includes(lowerLocationQuery)
+      );
     });
   }
 
@@ -72,7 +81,9 @@ export function filterVenues<T extends FilterableVenue>(
   if (categoryQuery?.trim()) {
     const lowerCategoryQuery = categoryQuery.toLowerCase();
     const keywords =
-      CATEGORY_FILTER_MAP[lowerCategoryQuery as keyof typeof CATEGORY_FILTER_MAP];
+      CATEGORY_FILTER_MAP[
+        lowerCategoryQuery as keyof typeof CATEGORY_FILTER_MAP
+      ];
 
     filtered = filtered.filter((venue) => {
       const venueCategory = String(venue.category ?? "").toLowerCase();
@@ -104,7 +115,9 @@ export function getCategoryFilterOptions(): string[] {
  * @returns Array of keywords for that category, or undefined if not found
  */
 export function getCategoryKeywords(
-  category: string
+  category: string,
 ): readonly string[] | undefined {
-  return CATEGORY_FILTER_MAP[category.toLowerCase() as keyof typeof CATEGORY_FILTER_MAP];
+  return CATEGORY_FILTER_MAP[
+    category.toLowerCase() as keyof typeof CATEGORY_FILTER_MAP
+  ];
 }

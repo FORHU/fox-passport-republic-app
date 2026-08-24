@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 import React from 'react';
 import Image from 'next/image';
@@ -9,7 +9,7 @@ interface VenueNavHeaderProps {
   onBack: () => void;
 }
 
-export function VenueNavHeader({ title, onBack }: VenueNavHeaderProps) {
+export function VenueNavHeader({ onBack }: VenueNavHeaderProps) {
   return (
     <header className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-md border-b border-white/5 h-14 sm:h-20 transition-all duration-300">
       <div className="mx-auto max-w-7xl px-4 h-full flex items-center justify-between">
@@ -23,10 +23,14 @@ export function VenueNavHeader({ title, onBack }: VenueNavHeaderProps) {
         </Link>
         <div className="flex items-center gap-4">
           <button className="hidden sm:flex items-center gap-2 px-4 py-2 rounded-full border border-white/10 hover:bg-white/5 transition-colors text-sm font-medium text-white">
-            <span className="material-symbols-outlined text-[18px]">share</span> Share
+            <span className="material-symbols-outlined text-[18px]">share</span>{" "}
+            Share
           </button>
           <button className="hidden sm:flex items-center gap-2 px-4 py-2 rounded-full border border-white/10 hover:bg-white/5 transition-colors text-sm font-medium text-white">
-            <span className="material-symbols-outlined text-[18px]">favorite_border</span> Save
+            <span className="material-symbols-outlined text-[18px]">
+              favorite_border
+            </span>{" "}
+            Save
           </button>
           <button
             onClick={onBack}
@@ -48,13 +52,23 @@ interface VenueHeroProps {
   province: string;
 }
 
-export function VenueHero({ title, rating, reviews, location, province }: VenueHeroProps) {
+export function VenueHero({
+  title,
+  rating,
+  reviews,
+  location,
+  province,
+}: VenueHeroProps) {
   return (
     <div className="mb-6">
-      <h1 className="text-3xl md:text-4xl font-display font-bold text-white mb-3">{title}</h1>
+      <h1 className="text-3xl md:text-4xl font-display font-bold text-white mb-3">
+        {title}
+      </h1>
       <div className="flex flex-wrap items-center gap-4 text-sm text-text-muted">
         <div className="flex items-center gap-1 font-bold text-white">
-          <span className="material-symbols-outlined text-[18px] fill-current text-white">star</span>
+          <span className="material-symbols-outlined text-[18px] fill-current text-white">
+            star
+          </span>
           {rating}
           <span className="text-text-muted font-normal underline decoration-dotted cursor-pointer ml-1">
             {reviews} reviews
@@ -74,7 +88,10 @@ interface VenueGalleryGridProps {
   onOpenGallery: (index: number) => void;
 }
 
-export function VenueGalleryGrid({ images, onOpenGallery }: VenueGalleryGridProps) {
+export function VenueGalleryGrid({
+  images,
+  onOpenGallery,
+}: VenueGalleryGridProps) {
   return (
     <div className="grid grid-cols-2 sm:grid-cols-4 grid-rows-2 gap-2 sm:gap-3 h-52 sm:h-87.5 md:h-125 rounded-2xl overflow-hidden mb-8 sm:mb-12 relative">
       <div

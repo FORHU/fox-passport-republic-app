@@ -1,8 +1,8 @@
-﻿'use client';
+﻿"use client";
 
-import { useState, useEffect, useCallback } from 'react';
-import api from '@/shared/lib/axios';
-import { useAuthStore } from '@/features/auth/store/useAuthStore';
+import { useState, useEffect, useCallback } from "react";
+import api from "@/shared/lib/axios";
+import { useAuthStore } from "@/features/auth/store/useAuthStore";
 
 export interface ProfileData {
   id: string;
@@ -32,8 +32,8 @@ export interface ChangePasswordPayload {
 }
 
 export function useProfile() {
-  const setUser = useAuthStore(state => state.setUser);
-  const storeUser = useAuthStore(state => state.user);
+  const setUser = useAuthStore((state) => state.setUser);
+  const storeUser = useAuthStore((state) => state.user);
 
   const [profile, setProfile] = useState<ProfileData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -43,7 +43,7 @@ export function useProfile() {
     setIsLoading(true);
     setError(null);
     try {
-      const resp = await api.get('/profile');
+      const resp = await api.get("/profile");
       const data: ProfileData = resp.data?.data ?? resp.data;
       setProfile(data);
       // Read current store state directly to avoid adding storeUser as a dep
@@ -53,16 +53,18 @@ export function useProfile() {
         syncUser({ ...currentUser, imgId: data.imgId });
       }
     } catch (err: any) {
-      setError(err?.response?.data?.message ?? 'Failed to load profile');
+      setError(err?.response?.data?.message ?? "Failed to load profile");
     } finally {
       setIsLoading(false);
     }
   }, []);
 
-  useEffect(() => { fetchProfile(); }, [fetchProfile]);
+  useEffect(() => {
+    fetchProfile();
+  }, [fetchProfile]);
 
   const updateProfile = async (payload: UpdateProfilePayload) => {
-    const resp = await api.put('/profile', payload);
+    const resp = await api.put("/profile", payload);
     const updated: ProfileData = resp.data?.data ?? resp.data;
     setProfile(updated);
     // Sync back into the auth store so Navbar/menu reflects the change immediately
@@ -79,13 +81,13 @@ export function useProfile() {
   };
 
   const changePassword = async (payload: ChangePasswordPayload) => {
-    const resp = await api.post('/profile/change-password', payload);
+    const resp = await api.post("/profile/change-password", payload);
     return resp.data;
   };
 
   const deleteAccount = async (password: string) => {
-    const resp = await api.delete('/profile', {
-      data: { password, confirmation: 'DELETE' },
+    const resp = await api.delete("/profile", {
+      data: { password, confirmation: "DELETE" },
     });
     return resp.data;
   };

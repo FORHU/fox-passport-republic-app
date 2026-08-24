@@ -57,8 +57,8 @@ export default function NewsletterSection() {
             </h2>
 
             <p className="text-xs sm:text-xl text-gray-200 mb-5 sm:mb-12 font-light">
-              Get the freshest drops on underground parties, secret pop-ups, and limited adventures
-              straight to your inbox.
+              Get the freshest drops on underground parties, secret pop-ups, and
+              limited adventures straight to your inbox.
             </p>
 
             {status === "success" ? (

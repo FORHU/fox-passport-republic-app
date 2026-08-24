@@ -4,7 +4,11 @@ import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { ArrowRight, MapPin, Heart } from "lucide-react";
-import { checkFavorite, addFavorite, removeFavoriteByListing } from "@/features/user/api/favorites";
+import {
+  checkFavorite,
+  addFavorite,
+  removeFavoriteByListing,
+} from "@/features/user/api/favorites";
 import { useAuthStore } from "@/features/auth/store/useAuthStore";
 import { toast } from "sonner";
 
@@ -23,14 +27,17 @@ function FavoriteHeart({ templateId }: { templateId: string }) {
   useEffect(() => {
     if (!user) return;
     checkFavorite(templateId, "event")
-      .then(r => setLiked(r.isFavorited))
+      .then((r) => setLiked(r.isFavorited))
       .catch(() => {});
   }, [templateId, user]);
 
   const toggle = async (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    if (!user) { toast.error("Sign in to save favorites."); return; }
+    if (!user) {
+      toast.error("Sign in to save favorites.");
+      return;
+    }
     if (loading) return;
     setLoading(true);
     try {
@@ -65,8 +72,11 @@ interface EventPackagesSectionProps {
   category: any;
 }
 
-export const EventPackagesSection: React.FC<EventPackagesSectionProps> = ({ category }) => {
-  const events: Record<string, unknown>[] = (category?.events as Record<string, unknown>[]) ?? [];
+export const EventPackagesSection: React.FC<EventPackagesSectionProps> = ({
+  category,
+}) => {
+  const events: Record<string, unknown>[] =
+    (category?.events as Record<string, unknown>[]) ?? [];
 
   if (events.length === 0) return null;
 
@@ -77,14 +87,20 @@ export const EventPackagesSection: React.FC<EventPackagesSectionProps> = ({ cate
           <h2 className="text-4xl font-bold text-white tracking-tight capitalize">
             {category.name} Packages
           </h2>
-          <p className="text-gray-500 text-sm mt-1">Curated event plans ready to book</p>
+          <p className="text-gray-500 text-sm mt-1">
+            Curated event plans ready to book
+          </p>
         </div>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
         {events.map((template: any, i: number) => {
-          const img = template.images?.[0]?.url ?? FALLBACK_IMAGES[i % FALLBACK_IMAGES.length];
-          const location = [template.targetCity, template.targetState].filter(Boolean).join(", ");
+          const img =
+            template.images?.[0]?.url ??
+            FALLBACK_IMAGES[i % FALLBACK_IMAGES.length];
+          const location = [template.targetCity, template.targetState]
+            .filter(Boolean)
+            .join(", ");
 
           return (
             <Link
@@ -111,7 +127,9 @@ export const EventPackagesSection: React.FC<EventPackagesSectionProps> = ({ cate
                 <h4 className="font-bold text-white text-lg mb-2 group-hover:text-[#ccff00] transition-colors line-clamp-1">
                   {template.name}
                 </h4>
-                <p className="text-gray-400 text-sm mb-4 line-clamp-2">{template.description}</p>
+                <p className="text-gray-400 text-sm mb-4 line-clamp-2">
+                  {template.description}
+                </p>
 
                 <div className="flex flex-col gap-1.5 mb-5 text-xs text-gray-500">
                   {location && (
@@ -127,7 +145,9 @@ export const EventPackagesSection: React.FC<EventPackagesSectionProps> = ({ cate
                 </div>
 
                 <div className="flex items-center justify-between border-t border-white/10 pt-4">
-                  <span className="text-xs text-gray-500">by {template.owner?.name ?? "Organizer"}</span>
+                  <span className="text-xs text-gray-500">
+                    by {template.owner?.name ?? "Organizer"}
+                  </span>
                   <span className="h-8 w-8 rounded-full bg-white/10 flex items-center justify-center text-white group-hover:bg-[#ccff00] group-hover:text-black transition-colors">
                     <ArrowRight className="w-4 h-4" />
                   </span>

@@ -5,8 +5,9 @@ import { requireAuth } from '@/shared/lib/server/auth';
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Onboarding | FoxPassport',
-  description: 'Begin your journey and choose your identity in the FoxPassport ecosystem.',
+  title: "Onboarding | FoxPassport",
+  description:
+    "Begin your journey and choose your identity in the FoxPassport ecosystem.",
 };
 
 export default async function OnboardingPage() {

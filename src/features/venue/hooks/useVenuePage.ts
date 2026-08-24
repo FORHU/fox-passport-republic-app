@@ -127,7 +127,8 @@ export function useVenuePage() {
         // Host Image
         const hostAvatar =
           hostData?.profileImage ||
-          `https://ui-avatars.com/api/?name=${hostData?.name || "User"
+          `https://ui-avatars.com/api/?name=${
+            hostData?.name || "User"
           }&background=random`;
 
         const mappedVenue: Venue = {
@@ -144,8 +145,8 @@ export function useVenuePage() {
             rawImages.length > 0
               ? rawImages
               : [
-                "https://images.unsplash.com/photo-1540575467063-178a50c2df87",
-              ], // Fallback image
+                  "https://images.unsplash.com/photo-1540575467063-178a50c2df87",
+                ], // Fallback image
           description: data.description || "No description available.",
           category: data.category?.name || (isEvent ? "Event" : "Venue"),
           guestCount: isEvent ? data.maxAttendees || 20 : data.capacity || 2,
@@ -210,7 +211,7 @@ export function useVenuePage() {
   const nights = useMemo(() => {
     if (dateRange.start && dateRange.end) {
       const diffTime = Math.abs(
-        dateRange.end.getTime() - dateRange.start.getTime()
+        dateRange.end.getTime() - dateRange.start.getTime(),
       );
       const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
       return diffDays > 0 ? diffDays : 0;
@@ -244,7 +245,7 @@ export function useVenuePage() {
           idx === 0 ? `Welcome to ${venue?.title}.` : `Experience the vibe.`,
         photographer: "Foxer Republic",
       })),
-    [images, venue]
+    [images, venue],
   );
 
   // Keyboard navigation
@@ -257,7 +258,7 @@ export function useVenuePage() {
       if (e.key === "ArrowLeft")
         setPhotoIndex((prev) => (prev - 1 + images.length) % images.length);
     },
-    [isGalleryOpen, images.length]
+    [isGalleryOpen, images.length],
   );
 
   useEffect(() => {
@@ -316,11 +317,11 @@ export function useVenuePage() {
     venue?.activities && venue.activities.length > 0
       ? venue.activities
       : [
-        "Explore local landmarks",
-        "Visit nearby cafes",
-        "Walk around the city center",
-        "Discover hidden gems",
-      ];
+          "Explore local landmarks",
+          "Visit nearby cafes",
+          "Walk around the city center",
+          "Discover hidden gems",
+        ];
 
   const price = venue?.price || 0;
   const stayTotal = price * (nights > 0 ? nights : 1);

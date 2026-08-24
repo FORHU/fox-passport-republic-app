@@ -9,6 +9,7 @@ import { fetchBookingById } from '@/features/booking/api/bookings';
 import { useAuthStore } from '@/features/auth/store/useAuthStore';
 import { toast } from 'sonner';
 import CancelBookingModal from './CancelBookingModal';
+import { getDashboardPath } from '@/shared/lib/dashboard-path';
 
 const STATUS_LABEL: Record<string, { label: string; color: string }> = {
   pending: { label: 'Pending', color: 'text-yellow-400 bg-yellow-500/10' },
@@ -57,13 +58,6 @@ export default function BookingDetailClient({ bookingId }: { bookingId: string }
       })
       .finally(() => setLoading(false));
   }, [bookingId]);
-
-  const getDashboardPath = () => {
-    if (user?.systemRole === "admin" || user?.systemRole === "super_admin") return "/admin";
-    const creatorRoles = ["venueFoxer", "eventFoxer", "gearFoxer", "serviceFoxer"];
-    if (user?.roleType?.some((r) => creatorRoles.includes(r))) return "/creator-dashboard";
-    return "/user";
-  };
 
   if (loading) {
     return (
@@ -128,7 +122,7 @@ export default function BookingDetailClient({ bookingId }: { bookingId: string }
             </nav>
             <div
               className="h-10 w-10 rounded-full border border-white/10 overflow-hidden cursor-pointer hover:border-accent transition-colors"
-              onClick={() => router.push(getDashboardPath())}
+              onClick={() => router.push(getDashboardPath(user))}
             >
               {user?.imgId ? (
                 <img alt="User" className="h-full w-full object-cover" src={user.imgId} />

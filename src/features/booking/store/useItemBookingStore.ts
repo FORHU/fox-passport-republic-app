@@ -1,7 +1,7 @@
 import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
 
-export type ItemBookingType = 'service' | 'asset';
+export type ItemBookingType = "service" | "asset";
 
 interface ItemBookingState {
   itemType: ItemBookingType | null;
@@ -39,10 +39,10 @@ export const useItemBookingStore = create<ItemBookingState>()(
     (set) => ({
       itemType: null,
       itemId: null,
-      itemName: '',
+      itemName: "",
       itemImage: null,
-      providerName: '',
-      billingRate: '',
+      providerName: "",
+      billingRate: "",
       pricePerUnit: 0,
       totalAmount: 0,
       bookingId: null,
@@ -50,42 +50,44 @@ export const useItemBookingStore = create<ItemBookingState>()(
       scheduledDate: null,
       location: null,
 
-      setBookingDetails: (details) => set({
-        itemType: details.itemType,
-        itemId: details.itemId,
-        itemName: details.itemName,
-        itemImage: details.itemImage ?? null,
-        providerName: details.providerName,
-        billingRate: details.billingRate,
-        pricePerUnit: details.pricePerUnit,
-        totalAmount: details.totalAmount,
-        scheduledDate: details.scheduledDate ?? null,
-        location: details.location ?? null,
-        bookingId: null,
-        clientSecret: null,
-      }),
+      setBookingDetails: (details) =>
+        set({
+          itemType: details.itemType,
+          itemId: details.itemId,
+          itemName: details.itemName,
+          itemImage: details.itemImage ?? null,
+          providerName: details.providerName,
+          billingRate: details.billingRate,
+          pricePerUnit: details.pricePerUnit,
+          totalAmount: details.totalAmount,
+          scheduledDate: details.scheduledDate ?? null,
+          location: details.location ?? null,
+          bookingId: null,
+          clientSecret: null,
+        }),
 
       setBookingId: (id) => set({ bookingId: id }),
       setClientSecret: (secret) => set({ clientSecret: secret }),
 
-      reset: () => set({
-        itemType: null,
-        itemId: null,
-        itemName: '',
-        itemImage: null,
-        providerName: '',
-        billingRate: '',
-        pricePerUnit: 0,
-        totalAmount: 0,
-        bookingId: null,
-        clientSecret: null,
-        scheduledDate: null,
-        location: null,
-      }),
+      reset: () =>
+        set({
+          itemType: null,
+          itemId: null,
+          itemName: "",
+          itemImage: null,
+          providerName: "",
+          billingRate: "",
+          pricePerUnit: 0,
+          totalAmount: 0,
+          bookingId: null,
+          clientSecret: null,
+          scheduledDate: null,
+          location: null,
+        }),
     }),
     {
-      name: 'foxpassport-item-booking',
+      name: "foxpassport-item-booking",
       storage: createJSONStorage(() => sessionStorage),
-    }
-  )
+    },
+  ),
 );

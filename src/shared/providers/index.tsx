@@ -11,7 +11,9 @@ export default function Providers({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     if (process.env.NEXT_PUBLIC_API_MOCKING === "enabled") {
       import("@/shared/mocks/browser").then(({ worker }) => {
-        worker.start({ onUnhandledRequest: "bypass" }).then(() => setReady(true));
+        worker
+          .start({ onUnhandledRequest: "bypass" })
+          .then(() => setReady(true));
       });
     } else {
       setReady(true);

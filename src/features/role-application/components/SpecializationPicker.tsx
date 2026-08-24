@@ -37,10 +37,13 @@ export default function SpecializationPicker({
         <label className="text-sm font-bold text-white/80 uppercase tracking-wider flex items-center gap-2">
           <Sparkles size={14} style={{ color: accentColor }} />
           Specializations
-          <span className="text-white/30 normal-case font-normal tracking-normal text-xs">(optional, pick up to {max})</span>
+          <span className="text-white/30 normal-case font-normal tracking-normal text-xs">
+            (optional, pick up to {max})
+          </span>
         </label>
         <p className="text-xs text-white/40 mt-1">
-          These declared specializations help clients find you. You can earn more through your track record.
+          These declared specializations help clients find you. You can earn
+          more through your track record.
         </p>
       </div>
       <div className="flex flex-wrap gap-2">
@@ -56,8 +59,18 @@ export default function SpecializationPicker({
               className="px-3 py-1.5 rounded-full text-sm font-medium border transition-all"
               style={
                 selected
-                  ? { backgroundColor: accentColor + "22", borderColor: accentColor, color: accentColor }
-                  : { backgroundColor: "transparent", borderColor: "rgba(255,255,255,0.12)", color: disabled ? "rgba(255,255,255,0.2)" : "rgba(255,255,255,0.55)" }
+                  ? {
+                      backgroundColor: accentColor + "22",
+                      borderColor: accentColor,
+                      color: accentColor,
+                    }
+                  : {
+                      backgroundColor: "transparent",
+                      borderColor: "rgba(255,255,255,0.12)",
+                      color: disabled
+                        ? "rgba(255,255,255,0.2)"
+                        : "rgba(255,255,255,0.55)",
+                    }
               }
             >
               {opt.label}

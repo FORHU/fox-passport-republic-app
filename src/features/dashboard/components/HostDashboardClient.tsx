@@ -1,10 +1,13 @@
-'use client';
+/* eslint-disable @typescript-eslint/no-unused-vars */
+"use client";
 
-import React, { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { toast } from 'sonner';
-import api from '@/shared/lib/axios';
-import { useDashboard } from '@/features/dashboard/hooks/useDashboard';
+import React, { useState } from "react";
+import { useRouter } from "next/navigation";
+import { useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
+import api from "@/shared/lib/axios";
+import { updateAsset } from "@/features/asset/api/assets";
+import { useDashboard } from "@/features/dashboard/hooks/useDashboard";
 import {
   DashboardHeader,
   WelcomeBanner,
@@ -19,14 +22,17 @@ import {
   CreatorProfile,
   RecentActivity,
   LockedSection,
-} from '@/features/dashboard/components';
-import { useRoleAccess } from '@/features/auth/hooks/useRoleAccess';
-import { useAuthStore } from '@/features/auth/store/useAuthStore';
-import { mapBackendAssetToInventoryItem, mapBackendServiceToServiceItem } from '@/features/dashboard/mappers/listings';
+} from "@/features/dashboard/components";
+import { useRoleAccess } from "@/features/auth/hooks/useRoleAccess";
+import { useAuthStore } from "@/features/auth/store/useAuthStore";
+import {
+  mapBackendAssetToInventoryItem,
+  mapBackendServiceToServiceItem,
+} from "@/features/dashboard/mappers/listings";
 import { useHostData } from "@/features/dashboard/hooks/useHostData";
 import { useFoxerDashboard } from "@/features/dashboard/hooks/useFoxerDashboard";
-import type { EventItem } from '@/features/dashboard/data/dashboardData';
-import StripeConnectSection from '@/features/dashboard/components/StripeConnectSection';
+import type { EventItem } from "@/features/dashboard/data/dashboardData";
+import StripeConnectSection from "@/features/dashboard/components/StripeConnectSection";
 
 interface HostDashboardClientProps {
   initialData: {
@@ -37,13 +43,25 @@ interface HostDashboardClientProps {
   };
 }
 
-const FALLBACK_IMG = '/herobackground.jpg';
+const FALLBACK_IMG = "/herobackground.jpg";
 
 function pickImage(images: unknown[]): string {
   if (!Array.isArray(images) || images.length === 0) return FALLBACK_IMG;
-  const primary = (images as { isPrimary?: boolean; isThumbnail?: boolean; url?: string; imageUrl?: string }[]).find((i) => i?.isPrimary || i?.isThumbnail) ?? images[0];
+  const primary =
+    (
+      images as {
+        isPrimary?: boolean;
+        isThumbnail?: boolean;
+        url?: string;
+        imageUrl?: string;
+      }[]
+    ).find((i) => i?.isPrimary || i?.isThumbnail) ?? images[0];
   if (!primary) return FALLBACK_IMG;
-  const url = typeof primary === 'string' ? primary : (primary as { url?: string; imageUrl?: string })?.url || (primary as { imageUrl?: string })?.imageUrl;
+  const url =
+    typeof primary === "string"
+      ? primary
+      : (primary as { url?: string; imageUrl?: string })?.url ||
+        (primary as { imageUrl?: string })?.imageUrl;
   return url || FALLBACK_IMG;
 }
 
@@ -51,11 +69,14 @@ function mapEvent(e: unknown): EventItem {
   const ev = e as any;
   return {
     id: ev?.id,
-    title: (ev?.title as string) || (ev?.name as string) || 'Untitled Event',
-    date: (ev?.startDate as string) || (ev?.date as string) || '—',
-    loc: (ev?.location as string) || [ev?.city, ev?.country].filter(Boolean).join(', ') || 'Location TBD',
-    type: (ev?.type as string) || (ev?.eventType as string) || 'Event',
-    status: (ev?.status as string) || 'draft',
+    title: (ev?.title as string) || (ev?.name as string) || "Untitled Event",
+    date: (ev?.startDate as string) || (ev?.date as string) || "—",
+    loc:
+      (ev?.location as string) ||
+      [ev?.city, ev?.country].filter(Boolean).join(", ") ||
+      "Location TBD",
+    type: (ev?.type as string) || (ev?.eventType as string) || "Event",
+    status: (ev?.status as string) || "draft",
     booked: (ev?.bookedCount ?? ev?.booked) as number | null,
     capacity: (ev?.capacity as number | null) ?? null,
     revenue: ev?.revenue ? `₱${Number(ev.revenue).toLocaleString()}` : null,
@@ -63,8 +84,11 @@ function mapEvent(e: unknown): EventItem {
   };
 }
 
-export default function HostDashboardClient({ initialData }: HostDashboardClientProps) {
+export default function HostDashboardClient({
+  initialData,
+}: HostDashboardClientProps) {
   const router = useRouter();
+  const queryClient = useQueryClient();
 
   const {
     isCreateMenuOpen,
@@ -85,7 +109,9 @@ export default function HostDashboardClient({ initialData }: HostDashboardClient
   const [venuesPage, setVenuesPage] = useState(1);
   const [assetsPage, setAssetsPage] = useState(1);
   const [servicesPage, setServicesPage] = useState(1);
-  const [deletedEventIds, setDeletedEventIds] = useState<Set<string>>(new Set());
+  const [deletedEventIds, setDeletedEventIds] = useState<Set<string>>(
+    new Set(),
+  );
 
   const handleDeleteEvent = async (id: number | string) => {
     const sid = String(id);
@@ -94,19 +120,67 @@ export default function HostDashboardClient({ initialData }: HostDashboardClient
       await api.delete(`/event-templates/${sid}`);
       toast.success("Draft deleted");
     } catch (err: any) {
-      console.error('[handleDeleteEvent]', err?.response?.status, err?.response?.data);
+      console.error(
+        "[handleDeleteEvent]",
+        err?.response?.status,
+        err?.response?.data,
+      );
       toast.error(err?.response?.data?.message ?? "Failed to delete draft");
-      setDeletedEventIds((prev) => { const next = new Set(prev); next.delete(sid); return next; });
+      setDeletedEventIds((prev) => {
+        const next = new Set(prev);
+        next.delete(sid);
+        return next;
+      });
+    }
+  };
+
+  // "unavailable" is a UI-only concept; the API's AssetStatus enum has no
+  // such value, so map it to the closest backend equivalent.
+  const assetStatusMap: Record<string, string> = { unavailable: "archived" };
+
+  const handleInventoryStatusChange = async (
+    id: number | string,
+    status: string,
+  ) => {
+    try {
+      await updateAsset(id, { status: assetStatusMap[status] ?? status });
+      queryClient.invalidateQueries({ queryKey: ["host-data", "assets"] });
+      toast.success("Status updated");
+    } catch (err: any) {
+      console.error(
+        "[handleInventoryStatusChange]",
+        err?.response?.status,
+        err?.response?.data,
+      );
+      toast.error(err?.response?.data?.message ?? "Failed to update status");
     }
   };
 
   // Reactive data with polling
-  const { data: rawServices, total: totalServices } = useHostData('services', initialData.services, { page: servicesPage, limit: PER_PAGE });
-  const { data: rawAssets, total: totalAssets } = useHostData('assets', initialData.inventory, { page: assetsPage, limit: PER_PAGE });
-  const { data: rawEvents, total: totalEvents } = useHostData('events', initialData.events, { page: eventsPage, limit: PER_PAGE });
-  const { data: rawVenues, total: totalVenues } = useHostData('venues', initialData.venues, { page: venuesPage, limit: PER_PAGE });
+  const { data: rawServices, total: totalServices } = useHostData(
+    "services",
+    initialData.services,
+    { page: servicesPage, limit: PER_PAGE },
+  );
+  const { data: rawAssets, total: totalAssets } = useHostData(
+    "assets",
+    initialData.inventory,
+    { page: assetsPage, limit: PER_PAGE },
+  );
+  const { data: rawEvents, total: totalEvents } = useHostData(
+    "events",
+    initialData.events,
+    { page: eventsPage, limit: PER_PAGE },
+  );
+  const { data: rawVenues, total: totalVenues } = useHostData(
+    "venues",
+    initialData.venues,
+    { page: venuesPage, limit: PER_PAGE },
+  );
 
-  const events = (rawEvents ?? []).map(mapEvent).filter((ev) => !deletedEventIds.has(String(ev.id)));
+  const events = (rawEvents ?? [])
+    .map(mapEvent)
+    .filter((ev) => !deletedEventIds.has(String(ev.id)));
   const venues = rawVenues ?? [];
   const inventory = (rawAssets ?? []).map(mapBackendAssetToInventoryItem);
   const services = (rawServices ?? []).map(mapBackendServiceToServiceItem);
@@ -120,7 +194,7 @@ export default function HostDashboardClient({ initialData }: HostDashboardClient
       className="bg-[#02040a] text-white min-h-screen font-body antialiased"
       style={{
         background:
-          'radial-gradient(circle at 15% 50%, rgba(124,58,237,0.15) 0%, transparent 40%), radial-gradient(circle at 85% 30%, rgba(219,39,119,0.1) 0%, transparent 40%), radial-gradient(circle at 50% 0%, rgba(204,255,0,0.05) 0%, transparent 50%), #02040a',
+          "radial-gradient(circle at 15% 50%, rgba(124,58,237,0.15) 0%, transparent 40%), radial-gradient(circle at 85% 30%, rgba(219,39,119,0.1) 0%, transparent 40%), radial-gradient(circle at 50% 0%, rgba(204,255,0,0.05) 0%, transparent 50%), #02040a",
       }}
     >
       <DashboardHeader />
@@ -147,13 +221,14 @@ export default function HostDashboardClient({ initialData }: HostDashboardClient
 
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
             <div className="lg:col-span-8 space-y-10">
-
               {access.canManageEvents ? (
                 <EventsSection
                   events={events}
                   onStatusChange={() => {}}
                   onDelete={handleDeleteEvent}
-                  onEdit={(id) => router.push(`/creator-dashboard/events/${id}/edit`)}
+                  onEdit={(id) =>
+                    router.push(`/creator-dashboard/events/${id}/edit`)
+                  }
                   page={eventsPage}
                   totalPages={totalEventPages}
                   onPageChange={setEventsPage}
@@ -174,7 +249,9 @@ export default function HostDashboardClient({ initialData }: HostDashboardClient
                 <VenuesSection
                   venues={venues}
                   onStatusChange={() => {}}
-                  onEdit={(id) => router.push(`/creator-dashboard/venues/${id}/edit`)}
+                  onEdit={(id) =>
+                    router.push(`/creator-dashboard/venues/${id}/edit`)
+                  }
                   page={venuesPage}
                   totalPages={totalVenuePages}
                   onPageChange={setVenuesPage}
@@ -194,7 +271,7 @@ export default function HostDashboardClient({ initialData }: HostDashboardClient
               {access.canManageInventory ? (
                 <InventorySection
                   inventory={inventory}
-                  onStatusChange={() => {}}
+                  onStatusChange={handleInventoryStatusChange}
                   page={assetsPage}
                   totalPages={totalAssetPages}
                   onPageChange={setAssetsPage}
@@ -230,19 +307,17 @@ export default function HostDashboardClient({ initialData }: HostDashboardClient
                   <ServicesSection services={[]} onStatusChange={() => {}} />
                 </LockedSection>
               )}
-
             </div>
 
             <div className="lg:col-span-4">
               <div className="sticky top-32 space-y-6">
-                <StripeConnectSection/>
+                <StripeConnectSection />
                 <CalendarWidget />
                 <CreatorProfile />
                 <RecentActivity />
               </div>
             </div>
           </div>
-
         </div>
       </main>
     </div>

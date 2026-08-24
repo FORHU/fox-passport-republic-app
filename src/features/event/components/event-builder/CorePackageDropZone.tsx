@@ -1,7 +1,7 @@
-﻿'use client';
+﻿"use client";
 
-import React from 'react';
-import { ResourceItem } from '@/features/event/data/eventBuilderData';
+import React from "react";
+import { ResourceItem } from "@/features/event/data/eventBuilderData";
 
 interface CorePackageDropZoneProps {
   baseItems: ResourceItem[];
@@ -10,7 +10,10 @@ interface CorePackageDropZoneProps {
   onDragLeave: () => void;
   onDrop: (e: React.DragEvent) => void;
   onRemoveItem: (id: string) => void;
-  onUpdateItem: (id: string, patch: Partial<Pick<ResourceItem, 'agreedPrice' | 'isOptional'>>) => void;
+  onUpdateItem: (
+    id: string,
+    patch: Partial<Pick<ResourceItem, "agreedPrice" | "isOptional">>,
+  ) => void;
 }
 
 export function CorePackageDropZone({
@@ -28,16 +31,22 @@ export function CorePackageDropZone({
       onDragLeave={onDragLeave}
       onDrop={onDrop}
       className={`min-h-[160px] rounded-[2rem] border-2 border-dashed transition-all p-8 relative ${
-        isDragOver ? 'border-accent bg-accent/5' : 'border-white/10 bg-[#0f111a]/30'
+        isDragOver
+          ? "border-accent bg-accent/5"
+          : "border-white/10 bg-[#0f111a]/30"
       }`}
     >
       <div className="flex justify-between items-center mb-6">
         <div>
           <h3 className="text-lg font-bold text-white flex items-center gap-2">
-            <span className="material-symbols-outlined text-accent">package_2</span>
+            <span className="material-symbols-outlined text-accent">
+              package_2
+            </span>
             Core Package
           </h3>
-          <p className="text-xs text-text-muted">Set an agreed price and mark items as optional for clients.</p>
+          <p className="text-xs text-text-muted">
+            Set an agreed price and mark items as optional for clients.
+          </p>
         </div>
         <span className="bg-white/5 text-white/70 px-3 py-1 rounded-full text-xs font-bold border border-white/5">
           {baseItems.length}
@@ -49,7 +58,9 @@ export function CorePackageDropZone({
           <span className="material-symbols-outlined text-3xl mb-2 opacity-30">
             add_circle_outline
           </span>
-          <p className="text-sm opacity-50">Drop venues, talent, services here</p>
+          <p className="text-sm opacity-50">
+            Drop venues, talent, services here
+          </p>
         </div>
       ) : (
         <div className="flex flex-col gap-3">
@@ -62,18 +73,24 @@ export function CorePackageDropZone({
               <div className="flex items-center justify-between mb-3">
                 <div className="flex items-center gap-3">
                   <div className="h-8 w-8 rounded-lg bg-accent/10 text-accent flex items-center justify-center shrink-0">
-                    <span className="material-symbols-outlined text-[18px]">{item.icon}</span>
+                    <span className="material-symbols-outlined text-[18px]">
+                      {item.icon}
+                    </span>
                   </div>
                   <div>
                     <p className="font-bold text-white text-sm">{item.name}</p>
-                    <p className="text-[10px] text-text-muted">Listing price: ₱{item.cost.toLocaleString()}</p>
+                    <p className="text-[10px] text-text-muted">
+                      Listing price: ₱{item.cost.toLocaleString()}
+                    </p>
                   </div>
                 </div>
                 <button
                   onClick={() => onRemoveItem(item.id)}
                   className="text-white/20 hover:text-red-400 p-1.5 rounded-full"
                 >
-                  <span className="material-symbols-outlined text-[16px]">delete</span>
+                  <span className="material-symbols-outlined text-[16px]">
+                    delete
+                  </span>
                 </button>
               </div>
 
@@ -87,9 +104,14 @@ export function CorePackageDropZone({
                     type="number"
                     min={0}
                     placeholder={String(item.cost)}
-                    value={item.agreedPrice ?? ''}
+                    value={item.agreedPrice ?? ""}
                     onChange={(e) =>
-                      onUpdateItem(item.id, { agreedPrice: e.target.value === '' ? undefined : Number(e.target.value) })
+                      onUpdateItem(item.id, {
+                        agreedPrice:
+                          e.target.value === ""
+                            ? undefined
+                            : Number(e.target.value),
+                      })
                     }
                     className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-1.5 text-xs text-white placeholder-white/20 focus:outline-none focus:border-accent/50"
                   />
@@ -97,15 +119,17 @@ export function CorePackageDropZone({
                 <div className="shrink-0 pt-4">
                   <button
                     type="button"
-                    onClick={() => onUpdateItem(item.id, { isOptional: !item.isOptional })}
+                    onClick={() =>
+                      onUpdateItem(item.id, { isOptional: !item.isOptional })
+                    }
                     className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider border transition-all ${
                       item.isOptional
-                        ? 'bg-yellow-400/10 text-yellow-400 border-yellow-400/20'
-                        : 'bg-white/5 text-white/40 border-white/10 hover:text-white/70'
+                        ? "bg-yellow-400/10 text-yellow-400 border-yellow-400/20"
+                        : "bg-white/5 text-white/40 border-white/10 hover:text-white/70"
                     }`}
                   >
                     <span className="material-symbols-outlined text-[14px]">
-                      {item.isOptional ? 'toggle_on' : 'toggle_off'}
+                      {item.isOptional ? "toggle_on" : "toggle_off"}
                     </span>
                     Optional
                   </button>

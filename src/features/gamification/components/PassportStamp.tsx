@@ -1,28 +1,50 @@
-'use client';
+/* eslint-disable @typescript-eslint/no-unused-vars */
+"use client";
 
-import React from 'react';
-import { PassportStamp } from '@/features/gamification/types/gamification';
+import React from "react";
+import { PassportStamp } from "@/features/gamification/types/gamification";
 
-type StampMeta = { icon: string; color: string; label: string; shape: 'circle' | 'rect' | 'hex' };
+type StampMeta = {
+  icon: string;
+  color: string;
+  label: string;
+  shape: "circle" | "rect" | "hex";
+};
 
 function getStampMeta(title: string): StampMeta {
   const t = title.toLowerCase();
-  if (t.includes('wedding'))
-    return { icon: '💍', color: '#ec4899', label: 'CELEBRATION', shape: 'circle' };
-  if (t.includes('birthday') || t.includes('surprise') || t.includes('party'))
-    return { icon: '🎂', color: '#f59e0b', label: 'FESTIVITY', shape: 'rect' };
-  if (t.includes('corporate') || t.includes('summit') || t.includes('demo') || t.includes('startup') || t.includes('acme'))
-    return { icon: '🏢', color: '#3b82f6', label: 'BUSINESS', shape: 'rect' };
-  if (t.includes('social') || t.includes('rooftop') || t.includes('festival') || t.includes('music'))
-    return { icon: '🎊', color: '#10b981', label: 'SOCIAL', shape: 'circle' };
-  if (t.includes('concert') || t.includes('band') || t.includes('live'))
-    return { icon: '🎵', color: '#8b5cf6', label: 'MUSIC', shape: 'circle' };
-  return { icon: '⭐', color: '#ccff00', label: 'EVENT', shape: 'rect' };
+  if (t.includes("wedding"))
+    return {
+      icon: "💍",
+      color: "#ec4899",
+      label: "CELEBRATION",
+      shape: "circle",
+    };
+  if (t.includes("birthday") || t.includes("surprise") || t.includes("party"))
+    return { icon: "🎂", color: "#f59e0b", label: "FESTIVITY", shape: "rect" };
+  if (
+    t.includes("corporate") ||
+    t.includes("summit") ||
+    t.includes("demo") ||
+    t.includes("startup") ||
+    t.includes("acme")
+  )
+    return { icon: "🏢", color: "#3b82f6", label: "BUSINESS", shape: "rect" };
+  if (
+    t.includes("social") ||
+    t.includes("rooftop") ||
+    t.includes("festival") ||
+    t.includes("music")
+  )
+    return { icon: "🎊", color: "#10b981", label: "SOCIAL", shape: "circle" };
+  if (t.includes("concert") || t.includes("band") || t.includes("live"))
+    return { icon: "🎵", color: "#8b5cf6", label: "MUSIC", shape: "circle" };
+  return { icon: "⭐", color: "#ccff00", label: "EVENT", shape: "rect" };
 }
 
 // Extract short city name
 function shortLocation(loc: string) {
-  return loc.split(',')[0].toUpperCase();
+  return loc.split(",")[0].toUpperCase();
 }
 
 // Extract year from date
@@ -39,12 +61,22 @@ interface PassportStampCardProps {
   index?: number;
 }
 
-function CircleStamp({ stamp, meta, rotate }: { stamp: PassportStamp; meta: StampMeta; rotate: number }) {
+function CircleStamp({
+  stamp,
+  meta,
+  rotate,
+}: {
+  stamp: PassportStamp;
+  meta: StampMeta;
+  rotate: number;
+}) {
   const c = meta.color;
   const date = new Date(stamp.eventDate);
-  const day = date.toLocaleDateString('en-US', { day: '2-digit' });
-  const mon = date.toLocaleDateString('en-US', { month: 'short' }).toUpperCase();
-  const yr  = date.getFullYear();
+  const day = date.toLocaleDateString("en-US", { day: "2-digit" });
+  const mon = date
+    .toLocaleDateString("en-US", { month: "short" })
+    .toUpperCase();
+  const yr = date.getFullYear();
 
   return (
     <div className="flex items-center justify-center py-5 px-2">
@@ -94,16 +126,27 @@ function CircleStamp({ stamp, meta, rotate }: { stamp: PassportStamp; meta: Stam
   );
 }
 
-function RectStamp({ stamp, meta, rotate }: { stamp: PassportStamp; meta: StampMeta; rotate: number }) {
+function RectStamp({
+  stamp,
+  meta,
+  rotate,
+}: {
+  stamp: PassportStamp;
+  meta: StampMeta;
+  rotate: number;
+}) {
   const c = meta.color;
   const date = new Date(stamp.eventDate);
-  const mon = date.toLocaleDateString('en-US', { month: 'short' }).toUpperCase();
-  const yr  = date.getFullYear();
+  const mon = date
+    .toLocaleDateString("en-US", { month: "short" })
+    .toUpperCase();
+  const yr = date.getFullYear();
 
   // Truncate long titles
-  const title = stamp.eventTitle.length > 22
-    ? stamp.eventTitle.slice(0, 20).toUpperCase() + '…'
-    : stamp.eventTitle.toUpperCase();
+  const title =
+    stamp.eventTitle.length > 22
+      ? stamp.eventTitle.slice(0, 20).toUpperCase() + "…"
+      : stamp.eventTitle.toUpperCase();
 
   return (
     <div className="flex items-center justify-center py-5 px-2">
@@ -159,7 +202,11 @@ function RectStamp({ stamp, meta, rotate }: { stamp: PassportStamp; meta: StampM
   );
 }
 
-export default function PassportStampCard({ stamp, onClick, index = 0 }: PassportStampCardProps) {
+export default function PassportStampCard({
+  stamp,
+  onClick,
+  index = 0,
+}: PassportStampCardProps) {
   const meta = getStampMeta(stamp.eventTitle);
   const rotate = ROTATIONS[index % ROTATIONS.length];
 
@@ -168,10 +215,11 @@ export default function PassportStampCard({ stamp, onClick, index = 0 }: Passpor
       onClick={onClick}
       className="cursor-pointer hover:scale-105 transition-transform duration-300 flex items-center justify-center"
     >
-      {meta.shape === 'circle'
-        ? <CircleStamp stamp={stamp} meta={meta} rotate={rotate} />
-        : <RectStamp  stamp={stamp} meta={meta} rotate={rotate} />
-      }
+      {meta.shape === "circle" ? (
+        <CircleStamp stamp={stamp} meta={meta} rotate={rotate} />
+      ) : (
+        <RectStamp stamp={stamp} meta={meta} rotate={rotate} />
+      )}
     </div>
   );
 }
@@ -182,7 +230,11 @@ interface PassportGridProps {
   className?: string;
 }
 
-export function PassportGrid({ stamps, onStampClick, className = '' }: PassportGridProps) {
+export function PassportGrid({
+  stamps,
+  onStampClick,
+  className = "",
+}: PassportGridProps) {
   if (stamps.length === 0) {
     return (
       <div className="flex flex-col items-center py-24 opacity-20 text-center">

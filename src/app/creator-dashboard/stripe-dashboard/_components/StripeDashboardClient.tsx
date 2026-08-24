@@ -22,7 +22,9 @@ export default function StripeDashboardClient() {
     useState<StripeConnectInstance | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<"balances" | "payments" | "payouts" | "account">("balances");
+  const [activeTab, setActiveTab] = useState<
+    "balances" | "payments" | "payouts" | "account"
+  >("balances");
 
   useEffect(() => {
     async function initStripe() {
@@ -40,12 +42,19 @@ export default function StripeDashboardClient() {
               body: JSON.stringify({ stripeAccountId: storedId || undefined }),
             });
             if (!res.ok) {
-              const err = await res.json().catch(() => ({ error: "Request failed" }));
+              const err = await res
+                .json()
+                .catch(() => ({ error: "Request failed" }));
               throw new Error(err.error || `HTTP ${res.status}`);
             }
             const data = await res.json();
-            if (!data.clientSecret) throw new Error("No client secret returned");
-            if (data.stripeAccountId) localStorage.setItem("fox_stripe_account_id", data.stripeAccountId);
+            if (!data.clientSecret)
+              throw new Error("No client secret returned");
+            if (data.stripeAccountId)
+              localStorage.setItem(
+                "fox_stripe_account_id",
+                data.stripeAccountId,
+              );
             return data.clientSecret;
           },
           appearance: {
@@ -102,7 +111,9 @@ export default function StripeDashboardClient() {
             <div className="w-10 h-10 rounded-xl bg-[#635bff]/20 border border-[#635bff]/30 flex items-center justify-center">
               <span className="text-lg">💳</span>
             </div>
-            <h1 className="text-2xl font-display font-bold">Payouts Dashboard</h1>
+            <h1 className="text-2xl font-display font-bold">
+              Payouts Dashboard
+            </h1>
           </div>
           <p className="text-white/50 text-sm">
             Manage your balances, payments, and payouts.
