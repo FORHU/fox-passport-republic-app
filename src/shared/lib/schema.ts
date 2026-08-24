@@ -8,22 +8,31 @@ export const loginSchema = z.object({
 
 export type LoginFormData = z.infer<typeof loginSchema>;
 
-export const signupSchema = z.object({
-  email: z.email("Invalid email address"),
-  password: z
-    .string()
-    .min(16, "Password must be at least 16 characters")
-    .regex(/[A-Z]/, "Password must contain at least one uppercase letter")
-    .regex(/[a-z]/, "Password must contain at least one lowercase letter")
-    .regex(/\d/, "Password must contain at least one digit")
-    .regex(/[@$!%*?&]/, "Password must contain at least one special character"),
-  username: z.string().min(3, "Username must be at least 3 characters"),
-  name: z
-    .string()
-    .min(1, "Name is required")
-    .regex(/^[A-Za-z\s'-]+$/, "Name can only contain letters"),
-  mobileNumber: z.string().optional(),
-});
+export const signupSchema = z
+  .object({
+    email: z.email("Invalid email address"),
+    password: z
+      .string()
+      .min(16, "Password must be at least 16 characters")
+      .regex(/[A-Z]/, "Password must contain at least one uppercase letter")
+      .regex(/[a-z]/, "Password must contain at least one lowercase letter")
+      .regex(/\d/, "Password must contain at least one digit")
+      .regex(
+        /[@$!%*?&]/,
+        "Password must contain at least one special character",
+      ),
+    confirmPassword: z.string(),
+    username: z.string().min(3, "Username must be at least 3 characters"),
+    name: z
+      .string()
+      .min(1, "Name is required")
+      .regex(/^[A-Za-z\s'-]+$/, "Name can only contain letters"),
+    mobileNumber: z.string().optional(),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: "Passwords do not match",
+    path: ["confirmPassword"],
+  });
 
 export type SignupFormData = z.infer<typeof signupSchema>;
 

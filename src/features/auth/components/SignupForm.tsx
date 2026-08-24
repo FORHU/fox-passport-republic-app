@@ -67,6 +67,8 @@ const SocialButtons = () => (
 export default function SignupForm() {
   const signupMutation = useSignup();
   const { toggleView } = useAuthStore();
+  const [showPassword, setShowPassword] = React.useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = React.useState(false);
 
   const {
     register,
@@ -93,6 +95,8 @@ export default function SignupForm() {
         formErrors.password.message ??
           "Password must be at least 16 characters long",
       );
+    } else if (formErrors.confirmPassword) {
+      toast.error(formErrors.confirmPassword.message ?? "Passwords do not match");
     }
   };
 
@@ -120,7 +124,7 @@ export default function SignupForm() {
       <form className="space-y-4" onSubmit={handleSubmit(onSignup, onInvalid)}>
         {/* Full Name */}
         <div className="group">
-          <label className="block text-xs font-bold text-white/70 mb-1.5 ml-1 group-focus-within:text-[#ccff00] transition-colors">
+          <label className="block text-xs font-bold text-white/90 tracking-wide mb-1.5 ml-1 group-focus-within:text-[#ccff00] transition-colors">
             FULL NAME
           </label>
           <input
@@ -138,7 +142,7 @@ export default function SignupForm() {
 
         {/* Email Address */}
         <div className="group">
-          <label className="block text-xs font-bold text-white/70 mb-1.5 ml-1 group-focus-within:text-[#ccff00] transition-colors">
+          <label className="block text-xs font-bold text-white/90 tracking-wide mb-1.5 ml-1 group-focus-within:text-[#ccff00] transition-colors">
             EMAIL ADDRESS
           </label>
           <input
@@ -156,7 +160,7 @@ export default function SignupForm() {
 
         {/* Username */}
         <div className="group">
-          <label className="block text-xs font-bold text-white/70 mb-1.5 ml-1 group-focus-within:text-[#ccff00] transition-colors">
+          <label className="block text-xs font-bold text-white/90 tracking-wide mb-1.5 ml-1 group-focus-within:text-[#ccff00] transition-colors">
             USERNAME
           </label>
           <input
@@ -174,18 +178,60 @@ export default function SignupForm() {
 
         {/* Password */}
         <div className="group">
-          <label className="block text-xs font-bold text-white/70 mb-1.5 ml-1 group-focus-within:text-[#ccff00] transition-colors">
+          <label className="block text-xs font-bold text-white/90 tracking-wide mb-1.5 ml-1 group-focus-within:text-[#ccff00] transition-colors">
             PASSWORD
           </label>
-          <input
-            {...register("password")}
-            className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 sm:py-3.5 text-sm text-white placeholder-white/20 focus:outline-none focus:ring-1 focus:ring-[#ccff00] focus:border-[#ccff00]/50 focus:bg-white/10 transition-all font-medium"
-            placeholder="••••••••"
-            type="password"
-          />
+          <div className="relative">
+            <input
+              {...register("password")}
+              className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 sm:py-3.5 pr-12 text-sm text-white placeholder-white/20 focus:outline-none focus:ring-1 focus:ring-[#ccff00] focus:border-[#ccff00]/50 focus:bg-white/10 transition-all font-medium"
+              placeholder="••••••••"
+              type={showPassword ? "text" : "password"}
+            />
+            <button
+              type="button"
+              onClick={() => setShowPassword((prev) => !prev)}
+              className="absolute inset-y-0 right-0 pr-4 flex items-center text-white/30 hover:text-white transition-colors"
+              tabIndex={-1}
+            >
+              <span className="material-symbols-outlined text-[20px]">
+                {showPassword ? "visibility_off" : "visibility"}
+              </span>
+            </button>
+          </div>
           {errors.password && (
             <span className="text-xs text-red-500 ml-1">
               {errors.password.message}
+            </span>
+          )}
+        </div>
+
+        {/* Confirm Password */}
+        <div className="group">
+          <label className="block text-xs font-bold text-white/90 tracking-wide mb-1.5 ml-1 group-focus-within:text-[#ccff00] transition-colors">
+            CONFIRM PASSWORD
+          </label>
+          <div className="relative">
+            <input
+              {...register("confirmPassword")}
+              className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 sm:py-3.5 pr-12 text-sm text-white placeholder-white/20 focus:outline-none focus:ring-1 focus:ring-[#ccff00] focus:border-[#ccff00]/50 focus:bg-white/10 transition-all font-medium"
+              placeholder="••••••••"
+              type={showConfirmPassword ? "text" : "password"}
+            />
+            <button
+              type="button"
+              onClick={() => setShowConfirmPassword((prev) => !prev)}
+              className="absolute inset-y-0 right-0 pr-4 flex items-center text-white/30 hover:text-white transition-colors"
+              tabIndex={-1}
+            >
+              <span className="material-symbols-outlined text-[20px]">
+                {showConfirmPassword ? "visibility_off" : "visibility"}
+              </span>
+            </button>
+          </div>
+          {errors.confirmPassword && (
+            <span className="text-xs text-red-500 ml-1">
+              {errors.confirmPassword.message}
             </span>
           )}
         </div>

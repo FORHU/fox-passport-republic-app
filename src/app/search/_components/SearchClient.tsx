@@ -144,9 +144,12 @@ export default function SearchClient() {
     1,
   );
 
-  const gearRows = useMemo(() => foxersToRows(gearFoxers), [gearFoxers]);
+  const gearRows = useMemo(
+    () => foxersToRows(gearFoxers, "assets"),
+    [gearFoxers],
+  );
   const serviceRows = useMemo(
-    () => foxersToRows(serviceFoxers),
+    () => foxersToRows(serviceFoxers, "services"),
     [serviceFoxers],
   );
 

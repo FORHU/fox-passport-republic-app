@@ -32,18 +32,22 @@ export interface ProviderRow {
   img?: string;
 }
 
-export function foxersToRows(foxers: Foxer[]): ProviderRow[] {
+export function foxersToRows(
+  foxers: Foxer[],
+  source: "services" | "assets" = "services",
+): ProviderRow[] {
   const rows: ProviderRow[] = [];
   foxers.forEach((f) => {
-    f.services.forEach((s) => {
+    const items = source === "assets" ? (f.assets ?? []) : f.services;
+    items.forEach((item) => {
       rows.push({
         foxerId: f.id,
         name: f.name,
-        itemName: s.name,
-        category: s.category,
-        price: s.price,
-        billingRate: s.billingRate,
-        img: s.images?.[0]?.url,
+        itemName: item.name,
+        category: item.category,
+        price: item.price,
+        billingRate: item.billingRate,
+        img: item.images?.[0]?.url,
       });
     });
   });
