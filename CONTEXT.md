@@ -8,6 +8,9 @@ updated: 2026-07-24
 A glossary of canonical terms used across the Fox Passport Republic platform.
 This file is the source of truth for ubiquitous language — code, APIs, and UI copy should align with these definitions.
 
+The role vocabulary here mirrors the API's `RoleType` / `SystemRole` Prisma enums.
+When they disagree, the schema wins — see `fox-passport-republic-api/CONTEXT.md`.
+
 ## Roles
 
 **Citizen**
@@ -48,9 +51,17 @@ Umbrella term for a GearFoxer or ServiceFoxer — anyone supplying inventory. Us
 A Citizen approved as a financial stakeholder. Application requires proof of funds and an investment range, unlike operational RoleTypes.
 Code: `roleType` includes `"investor"`.
 
-**Admin / Super Admin**
-Platform operators who approve content submissions and manage all entities.
-Code: `systemRole: "admin"` or `"super_admin"`.
+**EventFoxer**
+Role-holder who assembles Events: an Event Template attaches an existing Venue plus Assets/Services, then spawns an Event Request for admin approval. Also acts as program manager, coordinating suppliers to deliver the event.
+Code: `roleType: "eventFoxer"`. _Avoid_: Host (old name).
+
+**GearFoxer**
+Role-holder who supplies physical Assets (equipment, furniture, sound systems) for standalone booking or attachment to Event Templates.
+Code: `roleType: "gearFoxer"`. _Avoid_: FoxerAsset, Asset Foxer (old names).
+
+**ServiceFoxer**
+Role-holder who supplies Services (catering, entertainment, staffing) for standalone booking or attachment to Event Templates.
+Code: `roleType: "serviceFoxer"`. _Avoid_: FoxerService, Service Foxer (old names).
 
 ---
 

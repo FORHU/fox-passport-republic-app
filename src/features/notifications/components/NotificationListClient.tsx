@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-img-element */
 "use client";
 
 import React, { useEffect, useState } from "react";
@@ -7,11 +8,9 @@ import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/features/auth/store/useAuthStore";
 import { useNotifications } from "../hooks/useNotifications";
 import { Notification } from "../types";
+import { getDashboardPath } from "@/shared/lib/dashboard-path";
 
-const TYPE_META: Record<
-  string,
-  { icon: string; color: string; bg: string }
-> = {
+const TYPE_META: Record<string, { icon: string; color: string; bg: string }> = {
   BOOKING_CONFIRMED: {
     icon: "check_circle",
     color: "text-green-300",
@@ -59,13 +58,6 @@ export default function NotificationListClient() {
     const t = setTimeout(() => setIsInitial(false), 300);
     return () => clearTimeout(t);
   }, []);
-
-  const getDashboardPath = () => {
-    if (user?.systemRole === "admin" || user?.systemRole === "super_admin") return "/admin";
-    const creatorRoles = ["venueFoxer", "eventFoxer", "gearFoxer", "serviceFoxer"];
-    if (user?.roleType?.some((r) => creatorRoles.includes(r))) return "/creator-dashboard";
-    return "/user";
-  };
 
   const handleItemClick = (n: Notification) => {
     if (!n.isRead) markAsRead(n.id);
@@ -115,7 +107,7 @@ export default function NotificationListClient() {
             </nav>
             <div
               className="h-10 w-10 rounded-full border border-white/10 overflow-hidden cursor-pointer hover:border-accent transition-colors"
-              onClick={() => router.push(getDashboardPath())}
+              onClick={() => router.push(getDashboardPath(user))}
             >
               {user?.imgId ? (
                 <img

@@ -22,7 +22,8 @@ const glassCardVariants = cva("backdrop-blur", {
 });
 
 export interface GlassCardProps
-  extends React.HTMLAttributes<HTMLDivElement>,
+  extends
+    React.HTMLAttributes<HTMLDivElement>,
     VariantProps<typeof glassCardVariants> {}
 
 const GlassCard = React.forwardRef<HTMLDivElement, GlassCardProps>(
@@ -34,7 +35,7 @@ const GlassCard = React.forwardRef<HTMLDivElement, GlassCardProps>(
         {...props}
       />
     );
-  }
+  },
 );
 GlassCard.displayName = "GlassCard";
 

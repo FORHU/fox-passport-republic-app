@@ -8,6 +8,7 @@ import { useAuthStore } from '@/features/auth/store/useAuthStore';
 import { fetchUserBookings } from '@/features/booking/api/bookings';
 import CancelBookingModal from '@/features/booking/components/CancelBookingModal';
 import { toast } from 'sonner';
+import { getDashboardPath } from '@/shared/lib/dashboard-path';
 
 const STATUS_LABEL: Record<string, { label: string; color: string }> = {
   pending: { label: 'Pending', color: 'text-yellow-400 bg-yellow-500/10' },
@@ -52,13 +53,6 @@ export default function BookingListClient() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?.id, user?.userId, page]);
 
-  const getDashboardPath = () => {
-    if (user?.systemRole === "admin" || user?.systemRole === "super_admin") return "/admin";
-    const creatorRoles = ["venueFoxer", "eventFoxer", "gearFoxer", "serviceFoxer"];
-    if (user?.roleType?.some((r) => creatorRoles.includes(r))) return "/creator-dashboard";
-    return "/user";
-  };
-
     if (isInitial) {
       return (
         <div className="min-h-screen flex items-center justify-center">
@@ -84,7 +78,7 @@ export default function BookingListClient() {
               </nav>
               <div
                 className="h-10 w-10 rounded-full border border-white/10 overflow-hidden cursor-pointer hover:border-accent transition-colors"
-                onClick={() => router.push(getDashboardPath())}
+                onClick={() => router.push(getDashboardPath(user))}
               >
                 {user?.imgId ? (
                   <img alt="User" className="h-full w-full object-cover" src={user.imgId} />

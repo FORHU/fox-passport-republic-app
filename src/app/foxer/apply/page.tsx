@@ -4,8 +4,9 @@ import MobileRoleApplicationForm from '@/features/role-application/components/Mo
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Apply to be a Foxer | FoxPassport',
-  description: 'Apply to become an authorized Service or Equipment Provider on FoxPassport.',
+  title: "Apply to be a Foxer | FoxPassport",
+  description:
+    "Apply to become an authorized Service or Equipment Provider on FoxPassport.",
 };
 
 export default async function FoxerApplicationPage({

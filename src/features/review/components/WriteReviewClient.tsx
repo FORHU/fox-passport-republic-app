@@ -1,9 +1,9 @@
 ﻿'use client';
 
-import React, { useState } from 'react';
-import { ArrowLeft, Star, Calendar } from 'lucide-react';
-import { useRouter } from 'next/navigation';
-import { useSubmitReview } from '@/features/review/hooks/useSubmitReview';
+import React, { useState } from "react";
+import { ArrowLeft, Star, Calendar } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useSubmitReview } from "@/features/review/hooks/useSubmitReview";
 
 interface WriteReviewClientProps {
   booking: any;
@@ -15,14 +15,19 @@ export default function WriteReviewClient({ booking }: WriteReviewClientProps) {
 
   const [rating, setRating] = useState(0);
   const [hoveredRating, setHoveredRating] = useState(0);
-  const [comment, setComment] = useState('');
+  const [comment, setComment] = useState("");
 
-  const eventName = booking.event?.name || booking.venueName || 'Venue Booking';
-  const targetId = booking.venueId || booking.event?.venueId || booking.targetId || '';
-  const targetType = booking.targetType || 'venue';
+  const eventName = booking.event?.name || booking.venueName || "Venue Booking";
+  const targetId =
+    booking.venueId || booking.event?.venueId || booking.targetId || "";
+  const targetType = booking.targetType || "venue";
   const startDate = booking.startAt
-    ? new Date(booking.startAt).toLocaleDateString('en-PH', { month: 'short', day: 'numeric', year: 'numeric' })
-    : '';
+    ? new Date(booking.startAt).toLocaleDateString("en-PH", {
+        month: "short",
+        day: "numeric",
+        year: "numeric",
+      })
+    : "";
 
   const isValid = rating > 0 && comment.trim().length >= 10;
 
@@ -52,7 +57,9 @@ export default function WriteReviewClient({ booking }: WriteReviewClientProps) {
               <ArrowLeft className="w-5 h-5" />
               <span className="text-sm font-medium">Back</span>
             </button>
-            <h2 className="text-2xl font-display font-bold tracking-tight text-white">Write a Review</h2>
+            <h2 className="text-2xl font-display font-bold tracking-tight text-white">
+              Write a Review
+            </h2>
             <div className="h-10 w-10" />
           </div>
         </div>
@@ -64,10 +71,14 @@ export default function WriteReviewClient({ booking }: WriteReviewClientProps) {
           <div className="glass-panel rounded-2xl p-6 md:p-8 border border-white/5 mb-8">
             <div className="flex items-start gap-4">
               <div className="h-14 w-14 rounded-xl bg-accent/10 flex items-center justify-center shrink-0">
-                <span className="material-symbols-outlined text-accent text-2xl">apartment</span>
+                <span className="material-symbols-outlined text-accent text-2xl">
+                  apartment
+                </span>
               </div>
               <div className="flex-1 min-w-0">
-                <h1 className="text-2xl font-display font-bold text-white mb-1">{eventName}</h1>
+                <h1 className="text-2xl font-display font-bold text-white mb-1">
+                  {eventName}
+                </h1>
                 <div className="flex flex-wrap items-center gap-3 text-sm text-text-muted">
                   {startDate && (
                     <span className="flex items-center gap-1">
@@ -77,8 +88,11 @@ export default function WriteReviewClient({ booking }: WriteReviewClientProps) {
                   )}
                   {booking.guestCount && (
                     <span className="flex items-center gap-1">
-                      <span className="material-symbols-outlined text-[14px]">group</span>
-                      {booking.guestCount} {booking.guestCount === 1 ? 'guest' : 'guests'}
+                      <span className="material-symbols-outlined text-[14px]">
+                        group
+                      </span>
+                      {booking.guestCount}{" "}
+                      {booking.guestCount === 1 ? "guest" : "guests"}
                     </span>
                   )}
                 </div>
@@ -87,7 +101,10 @@ export default function WriteReviewClient({ booking }: WriteReviewClientProps) {
           </div>
 
           {/* Review Form */}
-          <form onSubmit={handleSubmit} className="glass-panel rounded-2xl p-6 md:p-8 border border-white/5">
+          <form
+            onSubmit={handleSubmit}
+            className="glass-panel rounded-2xl p-6 md:p-8 border border-white/5"
+          >
             {/* Star Rating */}
             <div className="mb-8">
               <h2 className="text-lg font-bold text-white mb-4">
@@ -106,8 +123,8 @@ export default function WriteReviewClient({ booking }: WriteReviewClientProps) {
                     <Star
                       className={`w-10 h-10 md:w-12 md:h-12 ${
                         star <= (hoveredRating || rating)
-                          ? 'fill-yellow-400 text-yellow-400'
-                          : 'text-white/20'
+                          ? "fill-yellow-400 text-yellow-400"
+                          : "text-white/20"
                       }`}
                     />
                   </button>
@@ -115,7 +132,7 @@ export default function WriteReviewClient({ booking }: WriteReviewClientProps) {
               </div>
               {rating > 0 && (
                 <p className="text-sm text-text-muted mt-2">
-                  {rating} star{rating !== 1 ? 's' : ''}
+                  {rating} star{rating !== 1 ? "s" : ""}
                 </p>
               )}
             </div>
@@ -138,9 +155,12 @@ export default function WriteReviewClient({ booking }: WriteReviewClientProps) {
               />
               <div className="flex items-center justify-between mt-2">
                 <p className="text-sm text-text-muted">
-                  {comment.length} character{comment.length !== 1 ? 's' : ''}
+                  {comment.length} character{comment.length !== 1 ? "s" : ""}
                   {comment.trim().length > 0 && comment.trim().length < 30 && (
-                    <span className="text-orange-400"> (minimum 30 required)</span>
+                    <span className="text-orange-400">
+                      {" "}
+                      (minimum 30 required)
+                    </span>
                   )}
                 </p>
                 {comment.trim().length >= 10 && (
@@ -161,7 +181,7 @@ export default function WriteReviewClient({ booking }: WriteReviewClientProps) {
                   Submitting...
                 </>
               ) : (
-                'Submit Review'
+                "Submit Review"
               )}
             </button>
           </form>

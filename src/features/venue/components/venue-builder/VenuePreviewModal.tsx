@@ -1,7 +1,8 @@
-﻿'use client';
+/* eslint-disable @next/next/no-img-element */
+"use client";
 
-import React, { useEffect, useState } from 'react';
-import { GalleryItem } from '@/features/venue/data/venueBuilderData';
+import React, { useEffect, useState } from "react";
+import { GalleryItem } from "@/features/venue/data/venueBuilderData";
 
 interface ResourceItem {
   id: string;
@@ -47,35 +48,41 @@ export function VenuePreviewModal({
 
   useEffect(() => {
     if (isOpen) {
-      document.body.style.overflow = 'hidden';
+      document.body.style.overflow = "hidden";
     } else {
-      document.body.style.overflow = '';
+      document.body.style.overflow = "";
     }
-    return () => { document.body.style.overflow = ''; };
+    return () => {
+      document.body.style.overflow = "";
+    };
   }, [isOpen]);
 
   useEffect(() => {
     const handleKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose();
+      if (e.key === "Escape") onClose();
     };
-    if (isOpen) window.addEventListener('keydown', handleKey);
-    return () => window.removeEventListener('keydown', handleKey);
+    if (isOpen) window.addEventListener("keydown", handleKey);
+    return () => window.removeEventListener("keydown", handleKey);
   }, [isOpen, onClose]);
 
   if (!isOpen) return null;
 
-  const coverImage = gallery[0]?.url || '/herobackground.jpg';
-  const displayName = venueName || 'Untitled Venue';
-  const displayLocation = [location, city, state, country].filter(Boolean).join(', ') || 'Location TBD';
-  const displayType = venueType || 'Venue';
-  const displayCapacity = capacity ? `${capacity} guests` : '—';
+  const coverImage = gallery[0]?.url || "/herobackground.jpg";
+  const displayName = venueName || "Untitled Venue";
+  const displayLocation =
+    [location, city, state, country].filter(Boolean).join(", ") ||
+    "Location TBD";
+  const displayType = venueType || "Venue";
+  const displayCapacity = capacity ? `${capacity} guests` : "—";
 
   return (
     <div className="fixed inset-0 z-[200] flex flex-col bg-[#02040a] text-white overflow-hidden">
       {/* Preview header bar */}
       <div className="shrink-0 h-12 bg-[#ccff00] flex items-center justify-between px-6 z-10">
         <div className="flex items-center gap-2 text-black text-xs font-bold">
-          <span className="material-symbols-outlined text-[16px]">visibility</span>
+          <span className="material-symbols-outlined text-[16px]">
+            visibility
+          </span>
           Preview Mode — This is how your venue page will look
         </div>
         <button
@@ -95,7 +102,9 @@ export function VenuePreviewModal({
             src={coverImage}
             alt={displayName}
             className="w-full h-full object-cover"
-            onError={(e) => { (e.target as HTMLImageElement).src = '/herobackground.jpg'; }}
+            onError={(e) => {
+              (e.target as HTMLImageElement).src = "/herobackground.jpg";
+            }}
           />
           <div className="absolute inset-0 bg-gradient-to-t from-[#02040a] via-transparent to-transparent" />
 
@@ -112,15 +121,21 @@ export function VenuePreviewModal({
               </h1>
               <div className="flex flex-wrap items-center gap-4 text-sm text-white/70">
                 <span className="flex items-center gap-1">
-                  <span className="material-symbols-outlined text-[16px]">location_on</span>
+                  <span className="material-symbols-outlined text-[16px]">
+                    location_on
+                  </span>
                   {displayLocation}
                 </span>
                 <span className="flex items-center gap-1">
-                  <span className="material-symbols-outlined text-[16px]">groups</span>
+                  <span className="material-symbols-outlined text-[16px]">
+                    groups
+                  </span>
                   {displayCapacity}
                 </span>
                 <span className="flex items-center gap-1 text-[#ccff00]">
-                  <span className="material-symbols-outlined text-[16px]">star</span>
+                  <span className="material-symbols-outlined text-[16px]">
+                    star
+                  </span>
                   New listing
                 </span>
               </div>
@@ -137,14 +152,19 @@ export function VenuePreviewModal({
                   key={img.id}
                   onClick={() => setActiveImage(idx)}
                   className={`relative shrink-0 w-28 h-20 rounded-xl overflow-hidden border-2 transition-all ${
-                    activeImage === idx ? 'border-[#ccff00] scale-105' : 'border-white/10 opacity-60 hover:opacity-100'
+                    activeImage === idx
+                      ? "border-[#ccff00] scale-105"
+                      : "border-white/10 opacity-60 hover:opacity-100"
                   }`}
                 >
                   <img
                     src={img.url}
                     alt=""
                     className="w-full h-full object-cover"
-                    onError={(e) => { (e.target as HTMLImageElement).src = '/herobackground.jpg'; }}
+                    onError={(e) => {
+                      (e.target as HTMLImageElement).src =
+                        "/herobackground.jpg";
+                    }}
                   />
                   {idx === 0 && (
                     <div className="absolute top-1 left-1 bg-[#ccff00] text-black text-[8px] font-bold px-1.5 py-0.5 rounded">
@@ -162,7 +182,9 @@ export function VenuePreviewModal({
                   src={gallery[activeImage]?.url}
                   alt=""
                   className="w-full h-full object-cover"
-                  onError={(e) => { (e.target as HTMLImageElement).src = '/herobackground.jpg'; }}
+                  onError={(e) => {
+                    (e.target as HTMLImageElement).src = "/herobackground.jpg";
+                  }}
                 />
               </div>
             )}
@@ -177,7 +199,9 @@ export function VenuePreviewModal({
               {/* Description */}
               {description && (
                 <div>
-                  <h2 className="text-xl font-display font-bold mb-4">About this venue</h2>
+                  <h2 className="text-xl font-display font-bold mb-4">
+                    About this venue
+                  </h2>
                   <p className="text-white/70 text-sm leading-relaxed whitespace-pre-line">
                     {description}
                   </p>
@@ -188,8 +212,12 @@ export function VenuePreviewModal({
               {includedItems.length > 0 && (
                 <div>
                   <div className="h-px bg-white/10 mb-8" />
-                  <h2 className="text-xl font-display font-bold mb-2">What&apos;s included</h2>
-                  <p className="text-xs text-white/40 mb-5">Standard features bundled with every booking</p>
+                  <h2 className="text-xl font-display font-bold mb-2">
+                    What&apos;s included
+                  </h2>
+                  <p className="text-xs text-white/40 mb-5">
+                    Standard features bundled with every booking
+                  </p>
                   <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                     {includedItems.map((item) => (
                       <div
@@ -199,7 +227,9 @@ export function VenuePreviewModal({
                         <span className="material-symbols-outlined text-[#ccff00] text-[18px]">
                           {item.icon}
                         </span>
-                        <span className="text-xs font-medium text-white/80">{item.name}</span>
+                        <span className="text-xs font-medium text-white/80">
+                          {item.name}
+                        </span>
                       </div>
                     ))}
                   </div>
@@ -210,8 +240,12 @@ export function VenuePreviewModal({
               {addonItems.length > 0 && (
                 <div>
                   <div className="h-px bg-white/10 mb-8" />
-                  <h2 className="text-xl font-display font-bold mb-2">Monetized add-ons</h2>
-                  <p className="text-xs text-white/40 mb-5">Optional extras guests can add to their booking</p>
+                  <h2 className="text-xl font-display font-bold mb-2">
+                    Monetized add-ons
+                  </h2>
+                  <p className="text-xs text-white/40 mb-5">
+                    Optional extras guests can add to their booking
+                  </p>
                   <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                     {addonItems.map((item) => (
                       <div
@@ -222,7 +256,9 @@ export function VenuePreviewModal({
                           {item.icon}
                         </span>
                         <div>
-                          <div className="text-xs font-medium text-white/80">{item.name}</div>
+                          <div className="text-xs font-medium text-white/80">
+                            {item.name}
+                          </div>
                           {item.value > 0 && (
                             <div className="text-[10px] text-[#ccff00] font-bold mt-0.5">
                               +₱{item.value.toLocaleString()}
@@ -236,12 +272,18 @@ export function VenuePreviewModal({
               )}
 
               {/* Empty state */}
-              {!description && includedItems.length === 0 && addonItems.length === 0 && (
-                <div className="text-center py-16 text-white/30">
-                  <span className="material-symbols-outlined text-5xl mb-3 block">edit_document</span>
-                  <p className="text-sm">Fill in the form to see your venue details here</p>
-                </div>
-              )}
+              {!description &&
+                includedItems.length === 0 &&
+                addonItems.length === 0 && (
+                  <div className="text-center py-16 text-white/30">
+                    <span className="material-symbols-outlined text-5xl mb-3 block">
+                      edit_document
+                    </span>
+                    <p className="text-sm">
+                      Fill in the form to see your venue details here
+                    </p>
+                  </div>
+                )}
             </div>
 
             {/* Right column — booking card */}
@@ -249,11 +291,15 @@ export function VenuePreviewModal({
               <div className="bg-[#0f111a] border border-white/10 rounded-3xl p-6 shadow-2xl">
                 <div className="mb-5">
                   <div className="text-2xl font-display font-bold text-[#ccff00]">
-                    ₱{baseRate > 0 ? baseRate.toLocaleString() : '—'}
-                    <span className="text-sm font-normal text-white/50 ml-1">/ night</span>
+                    ₱{baseRate > 0 ? baseRate.toLocaleString() : "—"}
+                    <span className="text-sm font-normal text-white/50 ml-1">
+                      / night
+                    </span>
                   </div>
                   <div className="text-xs text-white/40 mt-1 flex items-center gap-1">
-                    <span className="material-symbols-outlined text-[14px]">star</span>
+                    <span className="material-symbols-outlined text-[14px]">
+                      star
+                    </span>
                     New listing · {displayCapacity}
                   </div>
                 </div>
@@ -261,17 +307,29 @@ export function VenuePreviewModal({
                 <div className="space-y-3 mb-5">
                   <div className="grid grid-cols-2 gap-2">
                     <div className="bg-white/5 border border-white/10 rounded-xl p-3">
-                      <div className="text-[9px] text-white/40 uppercase tracking-wider mb-1">Check-in</div>
-                      <div className="text-xs font-bold text-white/60">Add date</div>
+                      <div className="text-[9px] text-white/40 uppercase tracking-wider mb-1">
+                        Check-in
+                      </div>
+                      <div className="text-xs font-bold text-white/60">
+                        Add date
+                      </div>
                     </div>
                     <div className="bg-white/5 border border-white/10 rounded-xl p-3">
-                      <div className="text-[9px] text-white/40 uppercase tracking-wider mb-1">Check-out</div>
-                      <div className="text-xs font-bold text-white/60">Add date</div>
+                      <div className="text-[9px] text-white/40 uppercase tracking-wider mb-1">
+                        Check-out
+                      </div>
+                      <div className="text-xs font-bold text-white/60">
+                        Add date
+                      </div>
                     </div>
                   </div>
                   <div className="bg-white/5 border border-white/10 rounded-xl p-3">
-                    <div className="text-[9px] text-white/40 uppercase tracking-wider mb-1">Guests</div>
-                    <div className="text-xs font-bold text-white/60">Add guests</div>
+                    <div className="text-[9px] text-white/40 uppercase tracking-wider mb-1">
+                      Guests
+                    </div>
+                    <div className="text-xs font-bold text-white/60">
+                      Add guests
+                    </div>
                   </div>
                 </div>
 
@@ -284,7 +342,9 @@ export function VenuePreviewModal({
 
                 <div className="mt-4 space-y-2 text-xs text-white/40">
                   <div className="flex justify-between">
-                    <span>₱{baseRate > 0 ? baseRate.toLocaleString() : '—'} × nights</span>
+                    <span>
+                      ₱{baseRate > 0 ? baseRate.toLocaleString() : "—"} × nights
+                    </span>
                     <span>—</span>
                   </div>
                   <div className="flex justify-between">
@@ -301,14 +361,18 @@ export function VenuePreviewModal({
 
               {/* Venue details summary */}
               <div className="mt-4 bg-[#0f111a] border border-white/10 rounded-2xl p-5 space-y-3 text-xs">
-                <h3 className="font-bold text-white/80 text-sm">Venue Details</h3>
+                <h3 className="font-bold text-white/80 text-sm">
+                  Venue Details
+                </h3>
                 <div className="flex justify-between text-white/50">
                   <span>Type</span>
                   <span className="text-white font-medium">{displayType}</span>
                 </div>
                 <div className="flex justify-between text-white/50">
                   <span>Capacity</span>
-                  <span className="text-white font-medium">{displayCapacity}</span>
+                  <span className="text-white font-medium">
+                    {displayCapacity}
+                  </span>
                 </div>
                 <div className="flex justify-between text-white/50">
                   <span>Location</span>
@@ -318,15 +382,21 @@ export function VenuePreviewModal({
                 </div>
                 <div className="flex justify-between text-white/50">
                   <span>Photos</span>
-                  <span className="text-white font-medium">{gallery.length} uploaded</span>
+                  <span className="text-white font-medium">
+                    {gallery.length} uploaded
+                  </span>
                 </div>
                 <div className="flex justify-between text-white/50">
                   <span>Features</span>
-                  <span className="text-white font-medium">{includedItems.length} included</span>
+                  <span className="text-white font-medium">
+                    {includedItems.length} included
+                  </span>
                 </div>
                 <div className="flex justify-between text-white/50">
                   <span>Add-ons</span>
-                  <span className="text-white font-medium">{addonItems.length} available</span>
+                  <span className="text-white font-medium">
+                    {addonItems.length} available
+                  </span>
                 </div>
               </div>
             </div>

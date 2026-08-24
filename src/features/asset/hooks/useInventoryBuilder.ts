@@ -1,4 +1,5 @@
-﻿'use client';
+/* eslint-disable react-hooks/exhaustive-deps */
+"use client";
 
 import { useCallback, useMemo, useEffect, useRef, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
@@ -33,7 +34,7 @@ export function useInventoryBuilder() {
       typeParam === "service" ? "service" : "inventory";
     store.initializeForType(initialType);
   }, [searchParams]);
-  
+
   // Fetch categories from API to map slugs to IDs
   useEffect(() => {
     const fetchCategories = async () => {
@@ -54,7 +55,6 @@ export function useInventoryBuilder() {
     };
     fetchCategories();
   }, []);
-
 
   // Get categories (Inventory only)
   const categories = ASSET_CATEGORIES;
@@ -98,12 +98,15 @@ export function useInventoryBuilder() {
       const stored = localStorage.getItem("fox_user");
       if (stored) {
         const session = JSON.parse(stored);
-        console.log("[useListingBuilder] Retrieved session from localStorage:", {
-          userId: session.userId || session.id,
-          hasAccessToken: !!session.accessToken,
-          hasToken: !!session.token,
-          keys: Object.keys(session),
-        });
+        console.log(
+          "[useListingBuilder] Retrieved session from localStorage:",
+          {
+            userId: session.userId || session.id,
+            hasAccessToken: !!session.accessToken,
+            hasToken: !!session.token,
+            keys: Object.keys(session),
+          },
+        );
         return session.userId || session.id;
       } else {
         console.warn("[useListingBuilder] No fox_user found in localStorage");
@@ -131,7 +134,7 @@ export function useInventoryBuilder() {
           message: err?.message,
           data,
         });
-        
+
         // Handle specific status codes
         if (status === 401) {
           const message = "Not authenticated. Please log in again.";
@@ -140,11 +143,14 @@ export function useInventoryBuilder() {
         }
 
         if (status === 400) {
-          const message = data?.message || data?.error || "Invalid request. Please check required fields.";
+          const message =
+            data?.message ||
+            data?.error ||
+            "Invalid request. Please check required fields.";
           setError(message);
           throw new Error(message);
         }
-        
+
         const message =
           data?.message ||
           data?.error ||
@@ -154,7 +160,7 @@ export function useInventoryBuilder() {
         throw new Error(message);
       }
     },
-    []
+    [],
   );
 
   // Handlers
@@ -222,10 +228,13 @@ export function useInventoryBuilder() {
     }
   }, [store, getUserId]);
 
-  const handleImageUpload = useCallback((url: string) => {
-    // called by preview card when user selects a file
-    store.setImage(url);
-  }, [store]);
+  const handleImageUpload = useCallback(
+    (url: string) => {
+      // called by preview card when user selects a file
+      store.setImage(url);
+    },
+    [store],
+  );
 
   const handleCategorySelect = useCallback(
     (catId: string) => {
@@ -234,7 +243,7 @@ export function useInventoryBuilder() {
         store.setCustomCategory("");
       }
     },
-    [store]
+    [store],
   );
 
   const handlePublish = useCallback(async () => {
@@ -253,7 +262,7 @@ export function useInventoryBuilder() {
 
     try {
       const userId = getUserId();
-      
+
       if (!userId) {
         throw new Error("User not authenticated");
       }
@@ -266,7 +275,9 @@ export function useInventoryBuilder() {
       };
 
       const parsedPrice =
-        typeof store.price === "string" ? parseFloat(store.price) : Number(store.price);
+        typeof store.price === "string"
+          ? parseFloat(store.price)
+          : Number(store.price);
       if (!Number.isFinite(parsedPrice) || parsedPrice <= 0) {
         throw new Error("Please enter a valid price before publishing");
       }
@@ -283,29 +294,38 @@ export function useInventoryBuilder() {
       // Convert local blob URL to File and upload to S3
       const response = await fetch(store.image);
       const blob = await response.blob();
-      const file = new File([blob], `asset-${Date.now()}.jpg`, { type: blob.type });
+      const file = new File([blob], `asset-${Date.now()}.jpg`, {
+        type: blob.type,
+      });
 
       const uploadResult = await uploadFile(file);
       if (!uploadResult || !uploadResult.fileId) {
         throw new Error("Failed to upload image. Please try again.");
       }
 
-      const assetData: CreateAssetPayload & { cancellationPolicyId?: string } = {
-        name: store.title,
-        description: store.description,
-        condition: store.condition,
-        category: store.category,
-        price: parsedPrice,
-        billingRate: unitMap[store.unit] || "daily",
-        city: store.city || undefined,
-        state: store.state || undefined,
-        country: store.country || undefined,
-        lat: store.lat ?? undefined,
-        lng: store.lng ?? undefined,
-        imgIds: [uploadResult.fileId],
-        cancellationPolicyId: store.cancellationPolicyId || undefined,
-      };
-      
+      // "unavailable" is a UI-only concept; the API's AssetStatus enum has no
+      // such value, so map it to the closest backend equivalent.
+      const statusMap: Record<string, string> = { unavailable: "archived" };
+      const status = statusMap[store.status] ?? store.status;
+
+      const assetData: CreateAssetPayload & { cancellationPolicyId?: string } =
+        {
+          name: store.title,
+          description: store.description,
+          condition: store.condition,
+          category: store.category,
+          price: parsedPrice,
+          billingRate: unitMap[store.unit] || "daily",
+          city: store.city || undefined,
+          state: store.state || undefined,
+          country: store.country || undefined,
+          lat: store.lat ?? undefined,
+          lng: store.lng ?? undefined,
+          imgIds: [uploadResult.fileId],
+          status,
+          cancellationPolicyId: store.cancellationPolicyId || undefined,
+        };
+
       console.log("[ListingBuilder] Publishing asset:", assetData);
       if (savedDraftId.current) {
         await updateAsset(savedDraftId.current, { ...assetData, status: "pending" } as any);

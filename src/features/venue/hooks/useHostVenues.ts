@@ -27,7 +27,7 @@ const fetchHostVenues = async (hostId: string, token?: string | null): Promise<V
   if (token) headers.Authorization = `Bearer ${token}`;
   const response = await axios.get(
     `${process.env.NEXT_PUBLIC_API_URL}/venues?hostId=${hostId}`,
-    { headers }
+    { headers },
   );
   return response.data.venues || [];
 };

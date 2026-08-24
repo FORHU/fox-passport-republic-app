@@ -7,42 +7,44 @@ import { useNotificationStore } from "@/features/notifications/store/useNotifica
 import { toast } from "sonner";
 
 export function SocketProvider({ children }: { children: React.ReactNode }) {
-    const accessToken = useAuthStore((state) => state.accessToken);
-    const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
-    const addNotification = useNotificationStore((state) => state.addNotification);
+  const accessToken = useAuthStore((state) => state.accessToken);
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
+  const addNotification = useNotificationStore(
+    (state) => state.addNotification,
+  );
 
-    useEffect(() => {
-        if (!isAuthenticated || !accessToken) {
-            disconnectSocket();
-            return;
-        }
+  useEffect(() => {
+    if (!isAuthenticated || !accessToken) {
+      disconnectSocket();
+      return;
+    }
 
-        const socket = connectSocket(accessToken);
-        socket.connect();
+    const socket = connectSocket(accessToken);
+    socket.connect();
 
-        socket.on("connect", () => {
-            console.log("Socket connected:", socket.id);
-        });
+    socket.on("connect", () => {
+      console.log("Socket connected:", socket.id);
+    });
 
-        socket.on("new_notification", (notification) => {
-            console.log("Received notification:", notification);
-            addNotification(notification);
-            toast.info(notification.message, {
-                description: notification.description,
-            });
-        });
+    socket.on("new_notification", (notification) => {
+      console.log("Received notification:", notification);
+      addNotification(notification);
+      toast.info(notification.message, {
+        description: notification.description,
+      });
+    });
 
-        socket.on("disconnect", (reason: string) => {
-            console.log("Socket disconnected:", reason);
-        });
+    socket.on("disconnect", (reason: string) => {
+      console.log("Socket disconnected:", reason);
+    });
 
-        return () => {
-            socket.off("connect");
-            socket.off("new_notification");
-            socket.off("disconnect");
-            disconnectSocket();
-        }
-    }, [isAuthenticated, accessToken, addNotification]);
+    return () => {
+      socket.off("connect");
+      socket.off("new_notification");
+      socket.off("disconnect");
+      disconnectSocket();
+    };
+  }, [isAuthenticated, accessToken, addNotification]);
 
-    return <>{children}</>;
-}   
+  return <>{children}</>;
+}

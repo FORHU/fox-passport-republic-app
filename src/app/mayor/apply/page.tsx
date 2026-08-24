@@ -1,6 +1,6 @@
-﻿import React from 'react';
-import MayorApplicationClient from '@/features/role-application/components/MayorApplicationClient';
-import { Metadata } from 'next';
+﻿import React from "react";
+import MayorApplicationClient from "@/features/role-application/components/MayorApplicationClient";
+import { Metadata } from "next";
 
 export const metadata: Metadata = {
   title: 'Apply to be a Venue Foxer | FoxPassport',

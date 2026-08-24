@@ -1,7 +1,10 @@
-﻿'use client';
+﻿"use client";
 
-import React from 'react';
-import { CategoryItem, ListingType } from '@/features/asset/data/listingBuilderData';
+import React from "react";
+import {
+  CategoryItem,
+  ListingType,
+} from "@/features/asset/data/listingBuilderData";
 
 interface ListingStatusPanelProps {
   activeType: ListingType;
@@ -29,14 +32,16 @@ export function ListingStatusPanel({
   previewHref,
 }: ListingStatusPanelProps) {
   const displayCategory =
-    category === 'other' && customCategory
+    category === "other" && customCategory
       ? customCategory
-      : categories.find((c) => c.id === category)?.label || '-';
+      : categories.find((c) => c.id === category)?.label || "-";
 
   return (
     <aside className="w-80 shrink-0 border-l border-white/5 bg-[#0f111a] flex flex-col shadow-2xl z-10">
       <div className="p-6 border-b border-white/5">
-        <h3 className="font-display font-bold text-white text-lg">Listing Status</h3>
+        <h3 className="font-display font-bold text-white text-lg">
+          Listing Status
+        </h3>
         <p className="text-xs text-text-muted">Review & Publish</p>
       </div>
 
@@ -51,7 +56,7 @@ export function ListingStatusPanel({
             />
           </div>
           <p className="text-[10px] text-text-muted">
-            {isReadyToPublish ? 'Ready to publish' : 'Missing photo & fields'}
+            {isReadyToPublish ? "Ready to publish" : "Missing photo & fields"}
           </p>
         </div>
 
@@ -65,7 +70,7 @@ export function ListingStatusPanel({
             <span className="text-text-muted">Category</span>
             <span className="text-white capitalize">{displayCategory}</span>
           </div>
-          {activeType === 'inventory' && (
+          {activeType === "inventory" && (
             <div className="flex justify-between text-sm">
               <span className="text-text-muted">Condition</span>
               <span className="text-white capitalize">{condition}</span>
@@ -78,7 +83,9 @@ export function ListingStatusPanel({
               <span className="block text-lg font-bold text-accent font-mono">
                 ₱{price.toLocaleString()}
               </span>
-              <span className="text-[10px] text-text-muted uppercase">{unit}</span>
+              <span className="text-[10px] text-text-muted uppercase">
+                {unit}
+              </span>
             </div>
           </div>
         </div>

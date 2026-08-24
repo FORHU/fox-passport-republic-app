@@ -1,4 +1,5 @@
-﻿"use client";
+/* eslint-disable @typescript-eslint/no-unused-vars */
+"use client";
 
 import { useState, useCallback } from "react";
 import { Venue, POIResult } from "@/features/venue/types/venue";
@@ -15,11 +16,11 @@ export const useVenueMapLogic = () => {
   // --- Helper: Reverse Geocode ---
   const reverseGeocodeForAddress = async (
     lat: number,
-    lng: number
+    lng: number,
   ): Promise<string> => {
     try {
       const response = await fetch(
-        `https://api.mapbox.com/geocoding/v5/mapbox.places/${lng},${lat}.json?access_token=${config.mapboxToken}&types=address,locality,neighborhood,place&limit=1`
+        `https://api.mapbox.com/geocoding/v5/mapbox.places/${lng},${lat}.json?access_token=${config.mapboxToken}&types=address,locality,neighborhood,place&limit=1`,
       );
       if (response.ok) {
         const data = await response.json();
@@ -95,10 +96,10 @@ export const useVenueMapLogic = () => {
           try {
             const res = await fetch(
               `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(
-                term
+                term,
               )}.json?access_token=${
                 config.mapboxToken
-              }&proximity=${searchLng},${searchLat}&country=PH&types=poi&limit=8`
+              }&proximity=${searchLng},${searchLat}&country=PH&types=poi&limit=8`,
             );
             const data = await res.json();
 
@@ -195,7 +196,7 @@ export const useVenueMapLogic = () => {
         setLoading(false);
       }
     },
-    []
+    [],
   );
 
   return { loading, venues, searchCoordinates, searchForVenues };

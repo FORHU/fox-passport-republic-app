@@ -1,9 +1,15 @@
-﻿'use client';
+﻿"use client";
 
 import React, { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { DashboardHeader, ServicesSection } from "@/features/dashboard/components";
-import { STATUS_OPTIONS, type ServiceItem } from "@/features/dashboard/data/dashboardData";
+import {
+  DashboardHeader,
+  ServicesSection,
+} from "@/features/dashboard/components";
+import {
+  STATUS_OPTIONS,
+  type ServiceItem,
+} from "@/features/dashboard/data/dashboardData";
 
 interface HostServicesClientProps {
   initialServices: ServiceItem[];
@@ -26,7 +32,9 @@ function toTitleCaseStatus(status: string): string {
     .join(" ");
 }
 
-export default function HostServicesClient({ initialServices }: HostServicesClientProps) {
+export default function HostServicesClient({
+  initialServices,
+}: HostServicesClientProps) {
   const router = useRouter();
   const [searchQuery, setSearchQuery] = useState("");
   const [status, setStatus] = useState<"all" | string>("all");
@@ -37,7 +45,9 @@ export default function HostServicesClient({ initialServices }: HostServicesClie
 
     return services.filter((sv) => {
       const statusOk =
-        status === "all" ? true : normalizeValue(sv.status) === normalizeValue(status);
+        status === "all"
+          ? true
+          : normalizeValue(sv.status) === normalizeValue(status);
 
       const searchOk = !q
         ? true
@@ -53,7 +63,7 @@ export default function HostServicesClient({ initialServices }: HostServicesClie
     // ServicesSection expects "Active" (capital A) for its styling logic.
     const label = toTitleCaseStatus(nextStatus);
     setServices((prev) =>
-      prev.map((sv) => (sv.id === id ? { ...sv, status: label } : sv))
+      prev.map((sv) => (sv.id === id ? { ...sv, status: label } : sv)),
     );
   };
 
@@ -88,10 +98,12 @@ export default function HostServicesClient({ initialServices }: HostServicesClie
 
             <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
               <button
-                onClick={() => router.push('/foxer/create-service')}
+                onClick={() => router.push("/foxer/create-service")}
                 className="flex items-center gap-2 px-5 py-2.5 rounded-full bg-[#ccff00] text-black text-sm font-bold hover:opacity-90 transition-opacity shrink-0"
               >
-                <span className="material-symbols-outlined text-[16px]">add</span>
+                <span className="material-symbols-outlined text-[16px]">
+                  add
+                </span>
                 Add Service
               </button>
               <div className="relative w-full sm:w-72">
@@ -112,9 +124,15 @@ export default function HostServicesClient({ initialServices }: HostServicesClie
                   onChange={(e) => setStatus(e.target.value)}
                   className="w-full bg-[#0f111a] text-white border border-white/10 rounded-full px-4 py-2 text-sm focus:outline-none focus:border-[#ccff00]"
                 >
-                  <option className="bg-[#0f111a] text-white" value="all">All Status</option>
+                  <option className="bg-[#0f111a] text-white" value="all">
+                    All Status
+                  </option>
                   {STATUS_OPTIONS.service.map((s) => (
-                    <option className="bg-[#0f111a] text-white" key={s} value={s}>
+                    <option
+                      className="bg-[#0f111a] text-white"
+                      key={s}
+                      value={s}
+                    >
                       {s}
                     </option>
                   ))}

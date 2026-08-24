@@ -1,4 +1,5 @@
-﻿'use client';
+/* eslint-disable @typescript-eslint/no-unused-vars */
+"use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -7,7 +8,12 @@ import { useAuthStore } from "@/features/auth/store/useAuthStore";
 import { useInventoryBuilder } from "@/features/asset/hooks/useInventoryBuilder";
 import { fetchAssetsByOwnerId, updateAsset } from "@/features/asset/api/assets";
 import type { Id } from "@/shared/lib/api-types";
-import { ASSET_CATEGORIES, CONDITIONS, STATUSES, INVENTORY_UNITS } from "@/features/asset/data/listingBuilderData";
+import {
+  ASSET_CATEGORIES,
+  CONDITIONS,
+  STATUSES,
+  INVENTORY_UNITS,
+} from "@/features/asset/data/listingBuilderData";
 
 function belongsToHost(record: any, hostId: Id): boolean {
   const idStr = String(hostId);
@@ -30,7 +36,11 @@ function belongsToHost(record: any, hostId: Id): boolean {
 }
 
 function normalizeLower(value: unknown) {
-  return String(value ?? "").trim().toLowerCase().replace(/_/g, " ").replace(/\s+/g, " ");
+  return String(value ?? "")
+    .trim()
+    .toLowerCase()
+    .replace(/_/g, " ")
+    .replace(/\s+/g, " ");
 }
 
 function mapConditionToAllowed(value: unknown): string {
@@ -47,12 +57,19 @@ function mapStatusToInventory(value: unknown): string {
   return "available";
 }
 
-function mapBillingRateToUnitLabel(billingRate: unknown, unitField: unknown): string {
+function mapBillingRateToUnitLabel(
+  billingRate: unknown,
+  unitField: unknown,
+): string {
   const br = normalizeLower(billingRate);
   const uf = normalizeLower(unitField);
 
   if (br === "daily" || uf.includes("day")) return "Per Item / Day";
-  if (br === "one_time" || uf.includes("event") || uf.includes("item / event")) {
+  if (
+    br === "one_time" ||
+    uf.includes("event") ||
+    uf.includes("item / event")
+  ) {
     if (uf.includes("flat")) return "Flat Rate";
     return "Per Item / Event";
   }
@@ -60,7 +77,10 @@ function mapBillingRateToUnitLabel(billingRate: unknown, unitField: unknown): st
   return "Per Item / Day";
 }
 
-function mapCategoryToInventory(category: any): { slug: string; customCategory: string } {
+function mapCategoryToInventory(category: any): {
+  slug: string;
+  customCategory: string;
+} {
   const allowed = ASSET_CATEGORIES.map((c) => c.id);
   if (!category) return { slug: "other", customCategory: "" };
 
@@ -73,7 +93,10 @@ function mapCategoryToInventory(category: any): { slug: string; customCategory: 
   const slug = category?.slug ?? category?.id ?? category?.name ?? "";
   const s = String(slug);
   if (allowed.includes(s)) return { slug: s, customCategory: "" };
-  return { slug: "other", customCategory: category?.name ? String(category.name) : s };
+  return {
+    slug: "other",
+    customCategory: category?.name ? String(category.name) : s,
+  };
 }
 
 export function useHostAssetEdit(assetId: string) {
@@ -102,7 +125,8 @@ export function useHostAssetEdit(assetId: string) {
         const found = filtered.find((a) => String(a?.id) === String(assetId));
 
         if (!found) {
-          if (!cancelled) setPrefillError("Asset not found or not owned by you.");
+          if (!cancelled)
+            setPrefillError("Asset not found or not owned by you.");
           return;
         }
 
@@ -117,7 +141,9 @@ export function useHostAssetEdit(assetId: string) {
         inventory.setTitle(found?.name ?? "");
         inventory.setDescription(found?.description ?? "");
 
-        const { slug, customCategory } = mapCategoryToInventory(found?.category);
+        const { slug, customCategory } = mapCategoryToInventory(
+          found?.category,
+        );
         inventory.setCategory(slug);
         inventory.setCustomCategory(customCategory);
 
@@ -168,7 +194,9 @@ export function useHostAssetEdit(assetId: string) {
     }
 
     if (!inventory.isReadyToPublish) {
-      inventory.setError("Please complete all required fields before publishing");
+      inventory.setError(
+        "Please complete all required fields before publishing",
+      );
       return;
     }
 
@@ -178,7 +206,9 @@ export function useHostAssetEdit(assetId: string) {
 
     try {
       const parsedPrice =
-        typeof inventory.price === "string" ? parseFloat(inventory.price) : Number(inventory.price);
+        typeof inventory.price === "string"
+          ? parseFloat(inventory.price)
+          : Number(inventory.price);
 
       if (!Number.isFinite(parsedPrice) || parsedPrice <= 0) {
         throw new Error("Please enter a valid price before publishing");
@@ -214,7 +244,11 @@ export function useHostAssetEdit(assetId: string) {
         ...(shouldIncludeImages
           ? {
               images: [
-                { url: inventory.image, isThumbnail: true, altText: inventory.title },
+                {
+                  url: inventory.image,
+                  isThumbnail: true,
+                  altText: inventory.title,
+                },
               ],
             }
           : {}),
@@ -235,7 +269,9 @@ export function useHostAssetEdit(assetId: string) {
         err?.response?.data?.message ||
         err?.response?.data?.error ||
         (typeof err?.response?.data === "string" ? err.response.data : null);
-      inventory.setError(backendMessage || err?.message || "Failed to update asset");
+      inventory.setError(
+        backendMessage || err?.message || "Failed to update asset",
+      );
       inventory.setIsSubmitting(false);
     }
   }, [assetId, backHref, initialImageUrl, inventory, router]);
@@ -250,4 +286,3 @@ export function useHostAssetEdit(assetId: string) {
     handlePublish,
   };
 }
-

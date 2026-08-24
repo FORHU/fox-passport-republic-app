@@ -1,6 +1,6 @@
-'use client';
+"use client";
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState } from "react";
 import {
   CancellationPolicy,
   CancellationRule,
@@ -8,9 +8,9 @@ import {
   createCancellationPolicy,
   updateCancellationPolicy,
   deleteCancellationPolicy,
-} from '@/features/cancellation-policy/api/cancellation-policies';
-import { toast } from 'sonner';
-import { X, Plus, Trash2 } from 'lucide-react';
+} from "@/features/cancellation-policy/api/cancellation-policies";
+import { toast } from "sonner";
+import { X, Plus, Trash2 } from "lucide-react";
 
 function Empty({ label }: { label: string }) {
   return (
@@ -20,7 +20,9 @@ function Empty({ label }: { label: string }) {
       </div>
       <div className="text-center">
         <p className="text-sm text-white/30 font-medium">{label}</p>
-        <p className="text-[11px] text-white/15 mt-1">Create your first policy to set refund rules for bookings.</p>
+        <p className="text-[11px] text-white/15 mt-1">
+          Create your first policy to set refund rules for bookings.
+        </p>
       </div>
     </div>
   );
@@ -40,26 +42,32 @@ function RuleRow({
   const refundColor =
     rule.refundPercent != null
       ? rule.refundPercent >= 100
-        ? 'bg-green-500/20 text-green-400 border-green-500/30'
+        ? "bg-green-500/20 text-green-400 border-green-500/30"
         : rule.refundPercent >= 50
-          ? 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30'
+          ? "bg-yellow-500/20 text-yellow-400 border-yellow-500/30"
           : rule.refundPercent > 0
-            ? 'bg-orange-500/20 text-orange-400 border-orange-500/30'
-            : 'bg-red-500/20 text-red-400 border-red-500/30'
-      : 'bg-white/5 text-white/30 border-white/10';
+            ? "bg-orange-500/20 text-orange-400 border-orange-500/30"
+            : "bg-red-500/20 text-red-400 border-red-500/30"
+      : "bg-white/5 text-white/30 border-white/10";
 
   return (
     <div className="group flex items-center gap-2 p-2.5 rounded-xl bg-white/[0.02] border border-white/[0.04] hover:border-white/10 hover:bg-white/5 transition-all">
       <div className="flex items-center gap-1.5 flex-1 flex-wrap">
         <div className="flex items-center gap-1.5">
-          <span className="text-[10px] font-semibold text-white/30 uppercase tracking-wider w-10">From</span>
+          <span className="text-[10px] font-semibold text-white/30 uppercase tracking-wider w-10">
+            From
+          </span>
           <input
             type="text"
             inputMode="numeric"
-            value={rule.fromHours ?? ''}
+            value={rule.fromHours ?? ""}
             onChange={(e) => {
               const num = Number(e.target.value);
-              onChange(index, { ...rule, fromHours: e.target.value === '' || isNaN(num) ? undefined : num });
+              onChange(index, {
+                ...rule,
+                fromHours:
+                  e.target.value === "" || isNaN(num) ? undefined : num,
+              });
             }}
             placeholder="0"
             className="w-16 bg-white/5 border border-white/10 rounded-lg px-2.5 py-2 text-xs text-white placeholder-white/20 focus:border-accent/40 outline-none text-center font-mono"
@@ -67,19 +75,36 @@ function RuleRow({
           <span className="text-[10px] text-white/20 font-mono">h</span>
         </div>
         <span className="text-white/15 text-xs">
-          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" className="inline-block">
-            <path d="M6 4l4 4-4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+          <svg
+            width="16"
+            height="16"
+            viewBox="0 0 16 16"
+            fill="none"
+            className="inline-block"
+          >
+            <path
+              d="M6 4l4 4-4 4"
+              stroke="currentColor"
+              strokeWidth="1.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
           </svg>
         </span>
         <div className="flex items-center gap-1.5">
-          <span className="text-[10px] font-semibold text-white/30 uppercase tracking-wider w-6">To</span>
+          <span className="text-[10px] font-semibold text-white/30 uppercase tracking-wider w-6">
+            To
+          </span>
           <input
             type="text"
             inputMode="numeric"
-            value={rule.toHours ?? ''}
+            value={rule.toHours ?? ""}
             onChange={(e) => {
               const num = Number(e.target.value);
-              onChange(index, { ...rule, toHours: e.target.value === '' || isNaN(num) ? null : num });
+              onChange(index, {
+                ...rule,
+                toHours: e.target.value === "" || isNaN(num) ? null : num,
+              });
             }}
             placeholder="∞"
             className="w-16 bg-white/5 border border-white/10 rounded-lg px-2.5 py-2 text-xs text-white placeholder-white/20 focus:border-accent/40 outline-none text-center font-mono"
@@ -88,24 +113,34 @@ function RuleRow({
         </div>
         <div className="w-px h-6 bg-white/10 mx-1 hidden sm:block" />
         <div className="flex items-center gap-1.5">
-          <span className="text-[10px] font-semibold text-white/30 uppercase tracking-wider">Refund</span>
+          <span className="text-[10px] font-semibold text-white/30 uppercase tracking-wider">
+            Refund
+          </span>
           <div className="relative">
             <input
               type="text"
               inputMode="numeric"
-              value={rule.refundPercent ?? ''}
+              value={rule.refundPercent ?? ""}
               onChange={(e) => {
                 const num = Number(e.target.value);
-                onChange(index, { ...rule, refundPercent: e.target.value === '' || isNaN(num) ? undefined : num });
+                onChange(index, {
+                  ...rule,
+                  refundPercent:
+                    e.target.value === "" || isNaN(num) ? undefined : num,
+                });
               }}
               placeholder="0"
               className="w-16 bg-white/5 border border-white/10 rounded-lg px-2.5 py-2 text-xs text-white placeholder-white/20 focus:border-accent/40 outline-none text-center font-mono pr-5"
             />
-            <span className="absolute right-2 top-1/2 -translate-y-1/2 text-[10px] text-white/30 font-mono">%</span>
+            <span className="absolute right-2 top-1/2 -translate-y-1/2 text-[10px] text-white/30 font-mono">
+              %
+            </span>
           </div>
         </div>
         {rule.refundPercent != null && !isNaN(rule.refundPercent) && (
-          <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-md border ${refundColor}`}>
+          <span
+            className={`text-[10px] font-bold px-1.5 py-0.5 rounded-md border ${refundColor}`}
+          >
             {rule.refundPercent}%
           </span>
         )}
@@ -128,14 +163,22 @@ function PolicyModal({
 }: {
   policy?: CancellationPolicy | null;
   onClose: () => void;
-  onSave: (data: { name: string; description: string; rules: Partial<CancellationRule>[] }) => void;
+  onSave: (data: {
+    name: string;
+    description: string;
+    rules: Partial<CancellationRule>[];
+  }) => void;
   saving: boolean;
 }) {
-  const [name, setName] = useState(policy?.name ?? '');
-  const [description, setDescription] = useState(policy?.description ?? '');
+  const [name, setName] = useState(policy?.name ?? "");
+  const [description, setDescription] = useState(policy?.description ?? "");
   const [rules, setRules] = useState<Partial<CancellationRule>[]>(
     policy?.rules?.length
-      ? policy.rules.map((r) => ({ fromHours: r.fromHours, toHours: r.toHours, refundPercent: r.refundPercent }))
+      ? policy.rules.map((r) => ({
+          fromHours: r.fromHours,
+          toHours: r.toHours,
+          refundPercent: r.refundPercent,
+        }))
       : [{ fromHours: 48, toHours: null, refundPercent: 100 }],
   );
 
@@ -148,22 +191,25 @@ function PolicyModal({
   };
 
   const handleAddRule = () => {
-    setRules((prev) => [...prev, { fromHours: 0, toHours: null, refundPercent: 50 }]);
+    setRules((prev) => [
+      ...prev,
+      { fromHours: 0, toHours: null, refundPercent: 50 },
+    ]);
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!name.trim()) {
-      toast.error('Policy name is required');
+      toast.error("Policy name is required");
       return;
     }
     if (rules.length === 0) {
-      toast.error('At least one rule is required');
+      toast.error("At least one rule is required");
       return;
     }
     for (const rule of rules) {
       if (rule.fromHours == null || rule.refundPercent == null) {
-        toast.error('All rule fields must be filled');
+        toast.error("All rule fields must be filled");
         return;
       }
     }
@@ -171,21 +217,28 @@ function PolicyModal({
   };
 
   return (
-    <div className="fixed inset-0 z-[999] flex items-center justify-center bg-black/70 backdrop-blur-sm p-4" onClick={onClose}>
+    <div
+      className="fixed inset-0 z-[999] flex items-center justify-center bg-black/70 backdrop-blur-sm p-4"
+      onClick={onClose}
+    >
       <div
         className="bg-[#0f111a] border border-white/10 rounded-2xl p-6 sm:p-8 max-w-xl w-full mx-4 max-h-[90vh] overflow-y-auto"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center gap-4 mb-6">
           <div className="w-10 h-10 rounded-xl bg-accent/10 flex items-center justify-center shrink-0 border border-accent/20">
-            <span className="material-symbols-outlined text-accent text-[20px]">policy</span>
+            <span className="material-symbols-outlined text-accent text-[20px]">
+              policy
+            </span>
           </div>
           <div className="flex-1">
             <h2 className="text-white font-bold text-lg leading-tight">
-              {policy ? 'Edit Policy' : 'Create Policy'}
+              {policy ? "Edit Policy" : "Create Policy"}
             </h2>
             <p className="text-white/40 text-xs leading-tight mt-0.5">
-              {policy ? 'Update the cancellation policy details and refund rules.' : 'Set up a new cancellation policy with refund rules.'}
+              {policy
+                ? "Update the cancellation policy details and refund rules."
+                : "Set up a new cancellation policy with refund rules."}
             </p>
           </div>
           <button
@@ -198,7 +251,9 @@ function PolicyModal({
 
         <form onSubmit={handleSubmit} className="space-y-5">
           <div className="space-y-1">
-            <label className="text-[10px] uppercase font-bold text-white/40 tracking-widest">Policy Name</label>
+            <label className="text-[10px] uppercase font-bold text-white/40 tracking-widest">
+              Policy Name
+            </label>
             <input
               type="text"
               value={name}
@@ -209,7 +264,9 @@ function PolicyModal({
           </div>
 
           <div className="space-y-1">
-            <label className="text-[10px] uppercase font-bold text-white/40 tracking-widest">Description</label>
+            <label className="text-[10px] uppercase font-bold text-white/40 tracking-widest">
+              Description
+            </label>
             <textarea
               value={description}
               onChange={(e) => setDescription(e.target.value)}
@@ -220,7 +277,9 @@ function PolicyModal({
 
           <div>
             <div className="flex items-center justify-between mb-3">
-              <label className="text-[10px] uppercase font-bold text-white/40 tracking-widest">Refund Rules</label>
+              <label className="text-[10px] uppercase font-bold text-white/40 tracking-widest">
+                Refund Rules
+              </label>
               <button
                 type="button"
                 onClick={handleAddRule}
@@ -232,11 +291,19 @@ function PolicyModal({
             </div>
             <div className="space-y-2">
               {rules.map((rule, i) => (
-                <RuleRow key={i} rule={rule} index={i} onChange={handleRuleChange} onRemove={handleRemoveRule} />
+                <RuleRow
+                  key={i}
+                  rule={rule}
+                  index={i}
+                  onChange={handleRuleChange}
+                  onRemove={handleRemoveRule}
+                />
               ))}
               {rules.length === 0 && (
                 <div className="p-6 rounded-xl bg-white/[0.02] border border-dashed border-white/10 text-center">
-                  <p className="text-white/20 text-xs">No rules yet. Click &quot;Add Rule&quot; to create one.</p>
+                  <p className="text-white/20 text-xs">
+                    No rules yet. Click &quot;Add Rule&quot; to create one.
+                  </p>
                 </div>
               )}
             </div>
@@ -261,9 +328,9 @@ function PolicyModal({
                   Saving...
                 </span>
               ) : policy ? (
-                'Update Policy'
+                "Update Policy"
               ) : (
-                'Create Policy'
+                "Create Policy"
               )}
             </button>
           </div>
@@ -286,7 +353,7 @@ export default function AdminCancellationPolicies() {
       const data = await fetchCancellationPolicies();
       setPolicies(data);
     } catch {
-      toast.error('Failed to load cancellation policies.');
+      toast.error("Failed to load cancellation policies.");
     } finally {
       setLoading(false);
     }
@@ -307,32 +374,48 @@ export default function AdminCancellationPolicies() {
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm('Are you sure you want to delete this policy?')) return;
+    if (!confirm("Are you sure you want to delete this policy?")) return;
     try {
       await deleteCancellationPolicy(id);
-      toast.success('Policy deleted.');
+      toast.success("Policy deleted.");
       load();
     } catch {
-      toast.error('Failed to delete policy.');
+      toast.error("Failed to delete policy.");
     }
   };
 
-  const handleSave = async (data: { name: string; description: string; rules: Partial<CancellationRule>[] }) => {
+  const handleSave = async (data: {
+    name: string;
+    description: string;
+    rules: Partial<CancellationRule>[];
+  }) => {
     setSaving(true);
     try {
-      const rules = data.rules.map((r) => ({ fromHours: Number(r.fromHours), toHours: r.toHours ? Number(r.toHours) : null, refundPercent: Number(r.refundPercent) }));
+      const rules = data.rules.map((r) => ({
+        fromHours: Number(r.fromHours),
+        toHours: r.toHours ? Number(r.toHours) : null,
+        refundPercent: Number(r.refundPercent),
+      }));
       if (editPolicy) {
-        await updateCancellationPolicy(editPolicy.id, { name: data.name, description: data.description, rules });
-        toast.success('Policy updated.');
+        await updateCancellationPolicy(editPolicy.id, {
+          name: data.name,
+          description: data.description,
+          rules,
+        });
+        toast.success("Policy updated.");
       } else {
-        await createCancellationPolicy({ name: data.name, description: data.description, rules });
-        toast.success('Policy created.');
+        await createCancellationPolicy({
+          name: data.name,
+          description: data.description,
+          rules,
+        });
+        toast.success("Policy created.");
       }
       setShowModal(false);
       setEditPolicy(null);
       load();
     } catch {
-      toast.error('Failed to save policy.');
+      toast.error("Failed to save policy.");
     } finally {
       setSaving(false);
     }
@@ -350,8 +433,12 @@ export default function AdminCancellationPolicies() {
     <div className="space-y-6">
       <div className="flex items-center justify-between gap-4">
         <div>
-          <h2 className="text-xl font-display font-bold text-white">Cancellation Policies</h2>
-          <p className="text-white/40 text-sm mt-0.5">Define refund rules for bookings based on cancellation timing.</p>
+          <h2 className="text-xl font-display font-bold text-white">
+            Cancellation Policies
+          </h2>
+          <p className="text-white/40 text-sm mt-0.5">
+            Define refund rules for bookings based on cancellation timing.
+          </p>
         </div>
         <button
           onClick={handleCreate}
@@ -374,18 +461,23 @@ export default function AdminCancellationPolicies() {
               <div className="flex items-start justify-between mb-5">
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2.5 flex-wrap">
-                    <h3 className="font-bold text-white text-base truncate">{policy.name}</h3>
+                    <h3 className="font-bold text-white text-base truncate">
+                      {policy.name}
+                    </h3>
                     {policy.isDefault && (
                       <span className="px-2 py-0.5 rounded-md text-[9px] font-bold uppercase tracking-wider bg-accent/10 text-accent border border-accent/20">
                         Default
                       </span>
                     )}
                     <span className="px-2 py-0.5 rounded-md text-[9px] font-bold uppercase tracking-wider bg-white/5 text-white/40 border border-white/10">
-                      {policy.rules.length} {policy.rules.length === 1 ? 'Rule' : 'Rules'}
+                      {policy.rules.length}{" "}
+                      {policy.rules.length === 1 ? "Rule" : "Rules"}
                     </span>
                   </div>
                   {policy.description && (
-                    <p className="text-white/40 text-sm mt-1.5 leading-relaxed line-clamp-2">{policy.description}</p>
+                    <p className="text-white/40 text-sm mt-1.5 leading-relaxed line-clamp-2">
+                      {policy.description}
+                    </p>
                   )}
                 </div>
                 <div className="flex items-center gap-1.5 ml-4 shrink-0">
@@ -394,14 +486,18 @@ export default function AdminCancellationPolicies() {
                     className="p-2 rounded-xl bg-white/5 text-white/40 hover:text-white hover:bg-white/10 transition-all opacity-0 group-hover/card:opacity-100"
                     title="Edit policy"
                   >
-                    <span className="material-symbols-outlined text-[18px]">edit</span>
+                    <span className="material-symbols-outlined text-[18px]">
+                      edit
+                    </span>
                   </button>
                   <button
                     onClick={() => handleDelete(policy.id)}
                     className="p-2 rounded-xl bg-red-500/5 text-red-400/40 hover:text-red-400 hover:bg-red-500/15 transition-all opacity-0 group-hover/card:opacity-100"
                     title="Delete policy"
                   >
-                    <span className="material-symbols-outlined text-[18px]">delete</span>
+                    <span className="material-symbols-outlined text-[18px]">
+                      delete
+                    </span>
                   </button>
                 </div>
               </div>
@@ -414,24 +510,24 @@ export default function AdminCancellationPolicies() {
                       const pct = rule.refundPercent ?? 0;
                       const barColor =
                         pct >= 100
-                          ? 'bg-green-500'
+                          ? "bg-green-500"
                           : pct >= 75
-                            ? 'bg-emerald-500'
+                            ? "bg-emerald-500"
                             : pct >= 50
-                              ? 'bg-yellow-500'
+                              ? "bg-yellow-500"
                               : pct >= 25
-                                ? 'bg-orange-500'
-                                : 'bg-red-500';
+                                ? "bg-orange-500"
+                                : "bg-red-500";
                       const barLabelColor =
                         pct >= 100
-                          ? 'text-green-400'
+                          ? "text-green-400"
                           : pct >= 75
-                            ? 'text-emerald-400'
+                            ? "text-emerald-400"
                             : pct >= 50
-                              ? 'text-yellow-400'
+                              ? "text-yellow-400"
                               : pct >= 25
-                                ? 'text-orange-400'
-                                : 'text-red-400';
+                                ? "text-orange-400"
+                                : "text-red-400";
 
                       return (
                         <div key={rule.id || i}>
@@ -441,19 +537,36 @@ export default function AdminCancellationPolicies() {
                                 {rule.fromHours}h
                               </span>
                               <span className="text-white/20">
-                                <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-                                  <path d="M4.5 2.5l3.5 3.5-3.5 3.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                                <svg
+                                  width="12"
+                                  height="12"
+                                  viewBox="0 0 12 12"
+                                  fill="none"
+                                >
+                                  <path
+                                    d="M4.5 2.5l3.5 3.5-3.5 3.5"
+                                    stroke="currentColor"
+                                    strokeWidth="1.5"
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                  />
                                 </svg>
                               </span>
                               <span className="font-mono text-white/70 font-medium">
-                                {rule.toHours != null ? `${rule.toHours}h` : '∞'}
+                                {rule.toHours != null
+                                  ? `${rule.toHours}h`
+                                  : "∞"}
                               </span>
                             </div>
                             <div className="flex items-center gap-2">
-                              <span className={`text-xs font-bold font-mono ${barLabelColor}`}>
+                              <span
+                                className={`text-xs font-bold font-mono ${barLabelColor}`}
+                              >
                                 {pct}%
                               </span>
-                              <span className="text-[10px] text-white/30 font-medium">refund</span>
+                              <span className="text-[10px] text-white/30 font-medium">
+                                refund
+                              </span>
                             </div>
                           </div>
                           <div className="h-2 rounded-full bg-white/5 overflow-hidden">
@@ -472,7 +585,9 @@ export default function AdminCancellationPolicies() {
               )}
               {policy.rules.length === 0 && (
                 <div className="p-4 rounded-xl bg-white/[0.02] border border-dashed border-white/5 text-center">
-                  <p className="text-white/20 text-xs">No refund rules defined.</p>
+                  <p className="text-white/20 text-xs">
+                    No refund rules defined.
+                  </p>
                 </div>
               )}
             </div>
@@ -483,7 +598,10 @@ export default function AdminCancellationPolicies() {
       {showModal && (
         <PolicyModal
           policy={editPolicy}
-          onClose={() => { setShowModal(false); setEditPolicy(null); }}
+          onClose={() => {
+            setShowModal(false);
+            setEditPolicy(null);
+          }}
           onSave={handleSave}
           saving={saving}
         />

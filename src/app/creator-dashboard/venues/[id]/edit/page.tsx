@@ -1,7 +1,7 @@
 import VenueEditClient from './_components/VenueEditClient';
 import MobileVenueStudio from '@/features/dashboard/components/MobileVenueStudio';
 
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 
 interface Props {
   params: Promise<{ id: string }>;

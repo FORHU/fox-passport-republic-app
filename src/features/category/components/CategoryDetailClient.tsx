@@ -12,7 +12,9 @@ interface CategoryDetailClientProps {
   category: any; // CategoryWithDesign type
 }
 
-export default function CategoryDetailClient({ category }: CategoryDetailClientProps) {
+export default function CategoryDetailClient({
+  category,
+}: CategoryDetailClientProps) {
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);

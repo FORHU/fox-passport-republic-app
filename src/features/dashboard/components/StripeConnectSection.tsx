@@ -19,7 +19,9 @@ function StatusBadge({ enabled, label }: { enabled: boolean; label: string }) {
       ) : (
         <AlertCircle size={14} className="text-white/30" />
       )}
-      <span className={`text-xs ${enabled ? "text-white" : "text-white/40"}`}>{label}</span>
+      <span className={`text-xs ${enabled ? "text-white" : "text-white/40"}`}>
+        {label}
+      </span>
     </div>
   );
 }
@@ -27,7 +29,8 @@ function StatusBadge({ enabled, label }: { enabled: boolean; label: string }) {
 export default function StripeConnectSection() {
   const { status, loading, error } = useStripeConnect();
 
-  const isComplete = status?.stripeOnboardingComplete &&
+  const isComplete =
+    status?.stripeOnboardingComplete &&
     status?.stripeChargesEnabled &&
     status?.stripePayoutsEnabled;
 
@@ -41,7 +44,9 @@ export default function StripeConnectSection() {
           </div>
           <div>
             <h3 className="font-semibold text-white text-sm">Stripe Payouts</h3>
-            <p className="text-xs text-white/40">Receive payments directly to your bank</p>
+            <p className="text-xs text-white/40">
+              Receive payments directly to your bank
+            </p>
           </div>
         </div>
 
@@ -52,11 +57,15 @@ export default function StripeConnectSection() {
               isComplete
                 ? "text-[#ccff00] bg-[#ccff00]/10 border-[#ccff00]/20"
                 : status.hasStripeAccount
-                ? "text-yellow-400 bg-yellow-400/10 border-yellow-400/20"
-                : "text-white/40 bg-white/5 border-white/10"
+                  ? "text-yellow-400 bg-yellow-400/10 border-yellow-400/20"
+                  : "text-white/40 bg-white/5 border-white/10"
             }`}
           >
-            {isComplete ? "Active" : status.hasStripeAccount ? "Pending" : "Not Connected"}
+            {isComplete
+              ? "Active"
+              : status.hasStripeAccount
+                ? "Pending"
+                : "Not Connected"}
           </span>
         )}
       </div>
@@ -76,10 +85,16 @@ export default function StripeConnectSection() {
             <StatusBadge enabled={status.hasStripeAccount} label="Account" />
           </div>
           <div className="bg-white/5 rounded-xl p-3">
-            <StatusBadge enabled={status.stripeChargesEnabled} label="Charges" />
+            <StatusBadge
+              enabled={status.stripeChargesEnabled}
+              label="Charges"
+            />
           </div>
           <div className="bg-white/5 rounded-xl p-3">
-            <StatusBadge enabled={status.stripePayoutsEnabled} label="Payouts" />
+            <StatusBadge
+              enabled={status.stripePayoutsEnabled}
+              label="Payouts"
+            />
           </div>
         </div>
       )}
@@ -101,7 +116,9 @@ export default function StripeConnectSection() {
               className="w-full flex items-center justify-center gap-2 bg-[#635bff] hover:bg-[#5b53f5] text-white text-sm font-semibold py-2.5 rounded-full transition"
             >
               <ExternalLink size={14} />
-              {status?.hasStripeAccount ? "Continue Onboarding" : "Connect Stripe"}
+              {status?.hasStripeAccount
+                ? "Continue Onboarding"
+                : "Connect Stripe"}
             </Link>
           ) : (
             <div className="flex flex-col gap-3">

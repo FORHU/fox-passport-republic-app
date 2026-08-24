@@ -11,15 +11,15 @@ export function usePhilippineLocations() {
     if (!query) return [];
 
     const lowerQuery = query.toLowerCase().trim();
-    
-    return ALL_LOCATIONS.filter((loc) => 
-      loc.searchTerms.includes(lowerQuery)
+
+    return ALL_LOCATIONS.filter((loc) =>
+      loc.searchTerms.includes(lowerQuery),
     ).slice(0, 50);
   }, [query]);
 
   const groupedResults = useMemo(() => {
     const groups: Record<string, LocationItem[]> = {};
-    
+
     filteredList.forEach((loc) => {
       if (!groups[loc.province]) {
         groups[loc.province] = [];
@@ -28,10 +28,15 @@ export function usePhilippineLocations() {
     });
 
     // Sort provinces alphabetically
-    return Object.keys(groups).sort().reduce((acc, province) => {
-      acc[province] = groups[province];
-      return acc;
-    }, {} as Record<string, LocationItem[]>);
+    return Object.keys(groups)
+      .sort()
+      .reduce(
+        (acc, province) => {
+          acc[province] = groups[province];
+          return acc;
+        },
+        {} as Record<string, LocationItem[]>,
+      );
   }, [filteredList]);
 
   return {
@@ -39,6 +44,6 @@ export function usePhilippineLocations() {
     setQuery,
     results: groupedResults,
     hasResults: filteredList.length > 0,
-    isEmpty: query.length > 0 && filteredList.length === 0
+    isEmpty: query.length > 0 && filteredList.length === 0,
   };
 }

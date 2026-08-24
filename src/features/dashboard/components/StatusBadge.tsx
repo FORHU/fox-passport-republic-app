@@ -1,7 +1,10 @@
-﻿'use client';
+﻿"use client";
 
-import React, { useState, useRef, useEffect } from 'react';
-import { STATUS_OPTIONS, StatusType } from '@/features/dashboard/data/dashboardData';
+import React, { useState, useRef, useEffect } from "react";
+import {
+  STATUS_OPTIONS,
+  StatusType,
+} from "@/features/dashboard/data/dashboardData";
 
 interface StatusBadgeProps {
   currentStatus: string;
@@ -10,7 +13,12 @@ interface StatusBadgeProps {
   className?: string;
 }
 
-export function StatusBadge({ currentStatus, type, onStatusChange, className = '' }: StatusBadgeProps) {
+export function StatusBadge({
+  currentStatus,
+  type,
+  onStatusChange,
+  className = "",
+}: StatusBadgeProps) {
   const [isOpen, setIsOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
@@ -20,16 +28,18 @@ export function StatusBadge({ currentStatus, type, onStatusChange, className = '
         setIsOpen(false);
       }
     };
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
   const options = STATUS_OPTIONS[type];
 
   const getDotColor = (status: string) => {
     const lower = (status || "").toLowerCase().replace("_", " ");
-    if (["published", "ongoing", "available", "active"].includes(lower)) return "bg-green-500";
-    if (["draft", "pending review", "paused"].includes(lower)) return "bg-yellow-500";
+    if (["published", "ongoing", "available", "active"].includes(lower))
+      return "bg-green-500";
+    if (["draft", "pending review", "paused"].includes(lower))
+      return "bg-yellow-500";
     if (["rented", "maintenance"].includes(lower)) return "bg-blue-500";
     return "bg-red-500";
   };
@@ -47,11 +57,17 @@ export function StatusBadge({ currentStatus, type, onStatusChange, className = '
 
   const formatStatus = (status: string) => {
     if (!status) return "Unknown";
-    return status.replace("_", " ").split(" ").map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(" ");
+    return status
+      .replace("_", " ")
+      .split(" ")
+      .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(" ");
   };
 
   const lowerCurrent = (currentStatus || "").toLowerCase();
-  const shouldPulse = ["published", "ongoing", "active", "available"].includes(lowerCurrent);
+  const shouldPulse = ["published", "ongoing", "active", "available"].includes(
+    lowerCurrent,
+  );
 
   return (
     <div className={`relative ${className}`} ref={ref}>
@@ -62,9 +78,13 @@ export function StatusBadge({ currentStatus, type, onStatusChange, className = '
         }}
         className={`px-3 py-1.5 rounded-full text-xs font-bold border flex items-center gap-2 ${getBadgeClasses(currentStatus)}`}
       >
-        <span className={`w-1.5 h-1.5 rounded-full ${getDotColor(currentStatus)} ${shouldPulse ? 'animate-pulse' : ''}`} />
+        <span
+          className={`w-1.5 h-1.5 rounded-full ${getDotColor(currentStatus)} ${shouldPulse ? "animate-pulse" : ""}`}
+        />
         {formatStatus(currentStatus)}
-        <span className="material-symbols-outlined text-[14px] opacity-70">expand_more</span>
+        <span className="material-symbols-outlined text-[14px] opacity-70">
+          expand_more
+        </span>
       </button>
 
       {isOpen && (
@@ -78,13 +98,20 @@ export function StatusBadge({ currentStatus, type, onStatusChange, className = '
                   onStatusChange(option);
                   setIsOpen(false);
                 }}
-                className={`w-full text-left px-4 py-2.5 text-xs font-bold hover:bg-white/5 flex items-center gap-2 ${lowerCurrent === option.toLowerCase().replace(" ", "_") ? 'text-white' : 'text-white/60'
-                  }`}
+                className={`w-full text-left px-4 py-2.5 text-xs font-bold hover:bg-white/5 flex items-center gap-2 ${
+                  lowerCurrent === option.toLowerCase().replace(" ", "_")
+                    ? "text-white"
+                    : "text-white/60"
+                }`}
               >
-                <span className={`w-1.5 h-1.5 rounded-full ${getDotColor(option)}`} />
+                <span
+                  className={`w-1.5 h-1.5 rounded-full ${getDotColor(option)}`}
+                />
                 {option}
                 {lowerCurrent === option.toLowerCase().replace(" ", "_") && (
-                  <span className="material-symbols-outlined text-[14px] text-accent ml-auto">check</span>
+                  <span className="material-symbols-outlined text-[14px] text-accent ml-auto">
+                    check
+                  </span>
                 )}
               </button>
             ))}

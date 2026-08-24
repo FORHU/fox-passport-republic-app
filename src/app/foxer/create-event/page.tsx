@@ -1,10 +1,9 @@
-'use client';
+"use client";
 
-
-import { useRouter } from 'next/navigation';
-import RequireAuth from '@/features/auth/components/RequireAuth';
-import { useEventBuilder } from '@/features/event/hooks/useEventBuilder';
-import { useEventBuilderStore } from '@/features/event/store/useEventBuilderStore';
+import { useRouter } from "next/navigation";
+import RequireAuth from "@/features/auth/components/RequireAuth";
+import { useEventBuilder } from "@/features/event/hooks/useEventBuilder";
+import { useEventBuilderStore } from "@/features/event/store/useEventBuilderStore";
 import {
   ResourcePalette,
   EventHeader,
@@ -12,7 +11,7 @@ import {
   EventGallery,
   CorePackageDropZone,
   EventBlueprint,
-} from '@/features/event/components/event-builder';
+} from "@/features/event/components/event-builder";
 
 export default function EventCreationBuilder() {
   const router = useRouter();
@@ -120,7 +119,10 @@ export default function EventCreationBuilder() {
                 onTargetCityChange={setTargetCity}
                 onTargetStateChange={setTargetState}
                 onTargetCountryChange={setTargetCountry}
-                onLatLngChange={(lat, lng) => { setLat(lat); setLng(lng); }}
+                onLatLngChange={(lat, lng) => {
+                  setLat(lat);
+                  setLng(lng);
+                }}
                 onMaxAttendeesChange={setMaxAttendees}
                 onCancellationPolicyChange={setCancellationPolicyId}
                 onCloseGuide={() => setShowGuide(false)}

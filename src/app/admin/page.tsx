@@ -1,5 +1,14 @@
-﻿import { getDashboardStats, getAdminPendingVenues, getAdminAllAssets, getAdminAllServices, getAdminEvents, getCategories, getUsers, getAllBookings } from '@/shared/lib/server/data';
-import { requireAdmin } from '@/shared/lib/server/auth';
+﻿import {
+  getDashboardStats,
+  getAdminPendingVenues,
+  getAdminAllAssets,
+  getAdminAllServices,
+  getAdminEvents,
+  getCategories,
+  getUsers,
+  getAllBookings,
+} from "@/shared/lib/server/data";
+import { requireAdmin } from "@/shared/lib/server/auth";
 import {
   AdminSidebar,
   AdminHeader,
@@ -8,12 +17,21 @@ import {
 } from '@/features/admin/components';
 import MobileAdminView from '@/features/admin/components/MobileAdminView';
 
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 
 export default async function AdminDashboard() {
   await requireAdmin();
 
-  const [stats, venues, events, categories, citizens, assets, services, bookings] = await Promise.all([
+  const [
+    stats,
+    venues,
+    events,
+    categories,
+    citizens,
+    assets,
+    services,
+    bookings,
+  ] = await Promise.all([
     getDashboardStats(),
     getAdminPendingVenues(),
     getAdminEvents(),

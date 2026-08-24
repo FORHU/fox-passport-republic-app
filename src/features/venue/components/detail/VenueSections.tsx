@@ -1,7 +1,7 @@
-'use client';
+/* eslint-disable @next/next/no-img-element */
+"use client";
 
-import React from 'react';
-
+import React from "react";
 
 interface CuratorSectionProps {
   host: {
@@ -24,23 +24,31 @@ export function CuratorSection({ host }: CuratorSectionProps) {
             alt={host.name}
           />
           <div className="absolute -bottom-1 -right-1 bg-accent text-black rounded-full p-1 border-4 border-[#0f111a] flex items-center justify-center shadow-sm">
-            <span className="material-symbols-outlined text-[14px]">verified</span>
+            <span className="material-symbols-outlined text-[14px]">
+              verified
+            </span>
           </div>
         </div>
         <div className="flex-1">
           <div className="flex justify-between items-start">
             <div>
-              <h3 className="font-display font-bold text-white text-lg">Curated by {host.name}</h3>
+              <h3 className="font-display font-bold text-white text-lg">
+                Curated by {host.name}
+              </h3>
               <p className="text-accent text-xs font-bold uppercase tracking-wider mb-2">
                 Visual Director
               </p>
             </div>
             <div className="flex items-center gap-1 text-yellow-400 text-xs font-bold bg-black/40 px-2 py-1 rounded-lg">
-              <span className="material-symbols-outlined text-[14px] fill-current">star</span>{' '}
+              <span className="material-symbols-outlined text-[14px] fill-current">
+                star
+              </span>{" "}
               {host.rating}
             </div>
           </div>
-          <p className="text-sm text-text-muted leading-relaxed">&quot;{host.description}&quot;</p>
+          <p className="text-sm text-text-muted leading-relaxed">
+            &quot;{host.description}&quot;
+          </p>
         </div>
       </div>
     </div>
@@ -51,7 +59,9 @@ export function HighlightsSection() {
   return (
     <div className="space-y-6">
       <div className="flex gap-4 items-start">
-        <span className="material-symbols-outlined text-white text-2xl mt-1">verified</span>
+        <span className="material-symbols-outlined text-white text-2xl mt-1">
+          verified
+        </span>
         <div>
           <h3 className="font-bold text-white text-base">Certified Foxer</h3>
           <p className="text-sm text-text-muted">
@@ -60,7 +70,9 @@ export function HighlightsSection() {
         </div>
       </div>
       <div className="flex gap-4 items-start">
-        <span className="material-symbols-outlined text-white text-2xl mt-1">location_on</span>
+        <span className="material-symbols-outlined text-white text-2xl mt-1">
+          location_on
+        </span>
         <div>
           <h3 className="font-bold text-white text-base">Great Location</h3>
           <p className="text-sm text-text-muted">
@@ -69,10 +81,16 @@ export function HighlightsSection() {
         </div>
       </div>
       <div className="flex gap-4 items-start">
-        <span className="material-symbols-outlined text-white text-2xl mt-1">calendar_today</span>
+        <span className="material-symbols-outlined text-white text-2xl mt-1">
+          calendar_today
+        </span>
         <div>
-          <h3 className="font-bold text-white text-base">Free cancellation for 48 hours</h3>
-          <p className="text-sm text-text-muted">Get a full refund if you change your mind.</p>
+          <h3 className="font-bold text-white text-base">
+            Free cancellation for 48 hours
+          </h3>
+          <p className="text-sm text-text-muted">
+            Get a full refund if you change your mind.
+          </p>
         </div>
       </div>
     </div>
@@ -86,12 +104,17 @@ interface DescriptionSectionProps {
 export function DescriptionSection({ description }: DescriptionSectionProps) {
   return (
     <div>
-      <h3 className="text-2xl font-display font-bold text-white mb-4">About this experience</h3>
+      <h3 className="text-2xl font-display font-bold text-white mb-4">
+        About this experience
+      </h3>
       <p className="text-gray-300 text-base leading-relaxed whitespace-pre-line mb-4">
         {description}
       </p>
       <button className="text-white font-bold underline decoration-accent underline-offset-4 flex items-center gap-1 hover:text-accent transition-colors">
-        Show more <span className="material-symbols-outlined text-[18px]">chevron_right</span>
+        Show more{" "}
+        <span className="material-symbols-outlined text-[18px]">
+          chevron_right
+        </span>
       </button>
     </div>
   );
@@ -102,20 +125,28 @@ interface InclusionsSectionProps {
   onOpenCustomBuilder: () => void;
 }
 
-export function InclusionsSection({ inclusions, onOpenCustomBuilder }: InclusionsSectionProps) {
+export function InclusionsSection({
+  inclusions,
+  onOpenCustomBuilder,
+}: InclusionsSectionProps) {
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
-        <h3 className="text-2xl font-display font-bold text-white">Included in this Build</h3>
+        <h3 className="text-2xl font-display font-bold text-white">
+          Included in this Build
+        </h3>
         <button
           onClick={onOpenCustomBuilder}
           className="text-xs font-bold text-accent hover:text-white transition-colors flex items-center gap-1"
         >
-          <span className="material-symbols-outlined text-[16px]">edit</span> Customize
+          <span className="material-symbols-outlined text-[16px]">edit</span>{" "}
+          Customize
         </button>
       </div>
       {inclusions.length === 0 ? (
-        <p className="text-sm text-text-muted py-4">No specific inclusions listed for this venue.</p>
+        <p className="text-sm text-text-muted py-4">
+          No specific inclusions listed for this venue.
+        </p>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           {inclusions.map((svc, i) => (
@@ -128,18 +159,23 @@ export function InclusionsSection({ inclusions, onOpenCustomBuilder }: Inclusion
               </div>
               <div>
                 <h4 className="font-bold text-white text-sm">{svc.name}</h4>
-                <p className="text-xs text-text-muted mt-1 leading-relaxed">{svc.desc}</p>
+                <p className="text-xs text-text-muted mt-1 leading-relaxed">
+                  {svc.desc}
+                </p>
               </div>
             </div>
           ))}
         </div>
       )}
       <div className="mt-4 bg-accent/5 border border-accent/20 rounded-xl p-4 flex gap-3 items-start">
-        <span className="material-symbols-outlined text-accent shrink-0">info</span>
+        <span className="material-symbols-outlined text-accent shrink-0">
+          info
+        </span>
         <div>
           <p className="text-sm text-white font-bold mb-1">Not your vibe?</p>
           <p className="text-xs text-text-muted">
-            You can swap the curator, upgrade the sound, or add crazy extras like a ramen bar in the
+            You can swap the curator, upgrade the sound, or add crazy extras
+            like a ramen bar in the
             <button
               onClick={onOpenCustomBuilder}
               className="text-white font-bold underline decoration-accent decoration-2 underline-offset-2 ml-1 hover:text-accent transition-colors"
@@ -160,12 +196,12 @@ interface AmenitiesSectionProps {
 
 export function AmenitiesSection({ offers }: AmenitiesSectionProps) {
   const getIcon = (offer: string) => {
-    if (offer.includes('Wifi')) return 'wifi';
-    if (offer.includes('Parking')) return 'local_parking';
-    if (offer.includes('Kitchen')) return 'kitchen';
-    if (offer.includes('Air')) return 'ac_unit';
-    if (offer.includes('Pool')) return 'pool';
-    return 'check_circle';
+    if (offer.includes("Wifi")) return "wifi";
+    if (offer.includes("Parking")) return "local_parking";
+    if (offer.includes("Kitchen")) return "kitchen";
+    if (offer.includes("Air")) return "ac_unit";
+    if (offer.includes("Pool")) return "pool";
+    return "check_circle";
   };
 
   return (

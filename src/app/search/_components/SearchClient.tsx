@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/set-state-in-effect, react-hooks/exhaustive-deps */
 "use client";
 
 import { useSearchParams, useRouter } from "next/navigation";
@@ -54,38 +55,77 @@ export default function SearchClient() {
     return () => clearTimeout(timer);
   }, [searchQuery, searchParams, router]);
 
-  const filters = useMemo(() => ({
-    ...(city && { city }),
-    ...(category && { category }),
-    ...(maxPrice && { maxPrice }),
-    ...(q && { q }),
-    ...(startDate && { startDate }),
-    ...(endDate && { endDate }),
-  }), [city, category, maxPrice, q, startDate, endDate]);
+  const filters = useMemo(
+    () => ({
+      ...(city && { city }),
+      ...(category && { category }),
+      ...(maxPrice && { maxPrice }),
+      ...(q && { q }),
+      ...(startDate && { startDate }),
+      ...(endDate && { endDate }),
+    }),
+    [city, category, maxPrice, q, startDate, endDate],
+  );
 
   const { data: efData, isFetching: efFetching } = useQuery({
-    queryKey: ["eventFoxers", efPage, city, category, maxPrice, q, startDate, endDate],
+    queryKey: [
+      "eventFoxers",
+      efPage,
+      city,
+      category,
+      maxPrice,
+      q,
+      startDate,
+      endDate,
+    ],
     queryFn: () => fetchEventFoxers(efPage, 2, filters),
     staleTime: 1000 * 60 * 5,
     placeholderData: (prev: any) => prev,
   });
 
   const { data: etData, isFetching: etFetching } = useQuery({
-    queryKey: ["eventTemplates", etPage, city, category, maxPrice, q, startDate, endDate],
+    queryKey: [
+      "eventTemplates",
+      etPage,
+      city,
+      category,
+      maxPrice,
+      q,
+      startDate,
+      endDate,
+    ],
     queryFn: () => fetchEventTemplates(etPage, 6, filters),
     staleTime: 1000 * 60 * 5,
     placeholderData: (prev: any) => prev,
   });
 
   const { data: gfData, isFetching: gfFetching } = useQuery({
-    queryKey: ["gearFoxers", gsPage, city, category, maxPrice, q, startDate, endDate],
+    queryKey: [
+      "gearFoxers",
+      gsPage,
+      city,
+      category,
+      maxPrice,
+      q,
+      startDate,
+      endDate,
+    ],
     queryFn: () => fetchGearFoxers(gsPage, 5, filters),
     staleTime: 1000 * 60 * 5,
     placeholderData: (prev: any) => prev,
   });
 
   const { data: sfData, isFetching: sfFetching } = useQuery({
-    queryKey: ["serviceFoxers", gsPage, city, category, maxPrice, q, startDate, endDate],
+    queryKey: [
+      "serviceFoxers",
+      gsPage,
+      city,
+      category,
+      maxPrice,
+      q,
+      startDate,
+      endDate,
+    ],
     queryFn: () => fetchServiceFoxers(gsPage, 5, filters),
     staleTime: 1000 * 60 * 5,
     placeholderData: (prev: any) => prev,
@@ -101,11 +141,17 @@ export default function SearchClient() {
   const gsTotalPages = Math.max(
     gfData?.pagination?.totalPages ?? 1,
     sfData?.pagination?.totalPages ?? 1,
-    1
+    1,
   );
 
-  const gearRows = useMemo(() => foxersToRows(gearFoxers), [gearFoxers]);
-  const serviceRows = useMemo(() => foxersToRows(serviceFoxers), [serviceFoxers]);
+  const gearRows = useMemo(
+    () => foxersToRows(gearFoxers, "assets"),
+    [gearFoxers],
+  );
+  const serviceRows = useMemo(
+    () => foxersToRows(serviceFoxers, "services"),
+    [serviceFoxers],
+  );
 
   const TYPE_CHIPS = [
     { label: "All", value: "" },

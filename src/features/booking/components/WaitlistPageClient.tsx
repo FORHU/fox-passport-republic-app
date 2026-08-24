@@ -1,10 +1,15 @@
 ﻿'use client';
 
-import React from 'react';
-import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import { useUserWaitlist, useWaitlistNotification, useLeaveWaitlist, useClaimSpot } from '@/features/booking/hooks/useWaitlist';
-import { toast } from 'sonner';
+import React from "react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import {
+  useUserWaitlist,
+  useWaitlistNotification,
+  useLeaveWaitlist,
+  useClaimSpot,
+} from "@/features/booking/hooks/useWaitlist";
+import { toast } from "sonner";
 
 export default function WaitlistPageClient() {
   const router = useRouter();
@@ -16,10 +21,12 @@ export default function WaitlistPageClient() {
   const handleLeave = (entryId: string) => {
     leaveMutation.mutate(entryId, {
       onSuccess: () => {
-        toast.success('Removed from waitlist.');
+        toast.success("Removed from waitlist.");
       },
       onError: (err: any) => {
-        toast.error(err?.response?.data?.message || 'Failed to leave waitlist.');
+        toast.error(
+          err?.response?.data?.message || "Failed to leave waitlist.",
+        );
       },
     });
   };
@@ -31,23 +38,38 @@ export default function WaitlistPageClient() {
           {/* Notification Banner */}
           {notification?.hasSpotOpened && (
             <div className="mb-8 rounded-2xl bg-green-500/10 border border-green-500/30 p-6 text-center">
-              <span className="material-symbols-outlined text-green-400 text-4xl mb-2">celebration</span>
-              <h2 className="text-xl font-display font-bold text-white mb-1">A spot just opened up!</h2>
+              <span className="material-symbols-outlined text-green-400 text-4xl mb-2">
+                celebration
+              </span>
+              <h2 className="text-xl font-display font-bold text-white mb-1">
+                A spot just opened up!
+              </h2>
               <p className="text-text-muted mb-4">
-                You&apos;re next in line for <strong className="text-white">{notification.templateName}</strong>.
-                Claim your spot before someone else does.
+                You&apos;re next in line for{" "}
+                <strong className="text-white">
+                  {notification.templateName}
+                </strong>
+                . Claim your spot before someone else does.
               </p>
               <button
                 onClick={() => {
                   claimSpotMutation.mutate(
-                    { templateId: notification.templateId, entryId: notification.entryId },
+                    {
+                      templateId: notification.templateId,
+                      entryId: notification.entryId,
+                    },
                     {
                       onSuccess: () => {
-                        toast.success('Spot claimed! Complete your booking.');
-                        router.push(`/booking/config?templateId=${notification.templateId}&claimed=1`);
+                        toast.success("Spot claimed! Complete your booking.");
+                        router.push(
+                          `/booking/config?templateId=${notification.templateId}&claimed=1`,
+                        );
                       },
                       onError: (err: any) => {
-                        toast.error(err?.response?.data?.message || 'Spot already taken by someone else.');
+                        toast.error(
+                          err?.response?.data?.message ||
+                            "Spot already taken by someone else.",
+                        );
                       },
                     },
                   );
@@ -56,9 +78,17 @@ export default function WaitlistPageClient() {
                 className="inline-flex items-center gap-2 rounded-xl bg-accent px-6 py-3 text-black font-bold hover:brightness-110 transition-all disabled:opacity-60"
               >
                 {claimSpotMutation.isPending ? (
-                  <><span className="h-4 w-4 rounded-full border-2 border-black/20 border-t-black animate-spin" /> Claiming...</>
+                  <>
+                    <span className="h-4 w-4 rounded-full border-2 border-black/20 border-t-black animate-spin" />{" "}
+                    Claiming...
+                  </>
                 ) : (
-                  <><span className="material-symbols-outlined">celebration</span> Claim Your Spot</>
+                  <>
+                    <span className="material-symbols-outlined">
+                      celebration
+                    </span>{" "}
+                    Claim Your Spot
+                  </>
                 )}
               </button>
               <p className="text-[10px] text-white/30 mt-3">This offer expires soon â€” first come, first served.</p>
@@ -68,15 +98,21 @@ export default function WaitlistPageClient() {
           {/* Header */}
           <div className="mb-8">
             <div className="flex items-center gap-2 text-sm text-text-muted mb-4">
-              <Link href="/" className="hover:text-white transition-colors">Home</Link>
-              <span className="material-symbols-outlined text-[14px]">chevron_right</span>
+              <Link href="/" className="hover:text-white transition-colors">
+                Home
+              </Link>
+              <span className="material-symbols-outlined text-[14px]">
+                chevron_right
+              </span>
               <span className="text-accent font-semibold">My Waitlist</span>
             </div>
-            <h1 className="text-4xl md:text-5xl font-display font-bold text-white mb-2">My Waitlist</h1>
+            <h1 className="text-4xl md:text-5xl font-display font-bold text-white mb-2">
+              My Waitlist
+            </h1>
             <p className="text-text-muted">
               {entries && entries.length > 0
-                ? `You're on the waitlist for ${entries.length} ${entries.length === 1 ? 'event' : 'events'}.`
-                : 'Events you join the waitlist for will appear here.'}
+                ? `You're on the waitlist for ${entries.length} ${entries.length === 1 ? "event" : "events"}.`
+                : "Events you join the waitlist for will appear here."}
             </p>
           </div>
 
@@ -91,7 +127,9 @@ export default function WaitlistPageClient() {
           {isError && (
             <div className="rounded-2xl bg-red-500/10 border border-red-500/20 p-6 text-center">
               <p className="text-red-400">
-                {error instanceof Error ? error.message : 'Could not load waitlist.'}
+                {error instanceof Error
+                  ? error.message
+                  : "Could not load waitlist."}
               </p>
             </div>
           )}
@@ -99,10 +137,15 @@ export default function WaitlistPageClient() {
           {/* Empty state */}
           {!isLoading && !isError && entries && entries.length === 0 && (
             <div className="glass-card rounded-[2rem] p-12 border border-white/10 text-center">
-              <span className="material-symbols-outlined text-white/20 text-6xl mb-4">hourglass_empty</span>
-              <h3 className="text-xl font-display font-bold text-white mb-2">No waitlist entries</h3>
+              <span className="material-symbols-outlined text-white/20 text-6xl mb-4">
+                hourglass_empty
+              </span>
+              <h3 className="text-xl font-display font-bold text-white mb-2">
+                No waitlist entries
+              </h3>
               <p className="text-text-muted mb-6 max-w-md mx-auto">
-                When an event you want to attend is at capacity, join the waitlist and you&apos;ll be notified when a spot opens up.
+                When an event you want to attend is at capacity, join the
+                waitlist and you&apos;ll be notified when a spot opens up.
               </p>
               <Link
                 href="/"
@@ -141,7 +184,9 @@ export default function WaitlistPageClient() {
                           {entry.template.name}
                         </h3>
                         <p className="text-sm text-text-muted flex items-center gap-1 mt-1">
-                          <span className="material-symbols-outlined text-[14px]">location_on</span>
+                          <span className="material-symbols-outlined text-[14px]">
+                            location_on
+                          </span>
                           {entry.template.location}
                         </p>
                         <div className="flex items-center gap-4 mt-3">
@@ -154,13 +199,18 @@ export default function WaitlistPageClient() {
                             </span>
                           </div>
                           <div className="text-xs text-white/40">
-                            {entry.template.currentAttendees}/{entry.template.maxAttendees} booked
+                            {entry.template.currentAttendees}/
+                            {entry.template.maxAttendees} booked
                           </div>
                         </div>
                       </div>
                       <div className="flex gap-2 shrink-0">
                         <button
-                          onClick={() => router.push(`/booking/config?templateId=${entry.templateId}`)}
+                          onClick={() =>
+                            router.push(
+                              `/booking/config?templateId=${entry.templateId}`,
+                            )
+                          }
                           className="rounded-xl border border-white/20 px-4 py-2.5 text-sm font-bold text-white hover:bg-white/5 transition-colors"
                         >
                           View Event
@@ -170,7 +220,7 @@ export default function WaitlistPageClient() {
                           disabled={leaveMutation.isPending}
                           className="rounded-xl border border-red-400/30 px-4 py-2.5 text-sm font-bold text-red-400 hover:bg-red-500/10 transition-colors disabled:opacity-50"
                         >
-                          {leaveMutation.isPending ? 'Leaving...' : 'Leave'}
+                          {leaveMutation.isPending ? "Leaving..." : "Leave"}
                         </button>
                       </div>
                     </div>

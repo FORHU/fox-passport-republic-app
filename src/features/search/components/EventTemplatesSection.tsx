@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-img-element */
 "use client";
 
 import Link from "next/link";
@@ -27,19 +28,27 @@ function TemplateCard({ item }: { item: any }) {
         )}
         {item.rating != null && (
           <div className="absolute top-4 right-4 bg-black/60 backdrop-blur-md px-2.5 py-1 rounded-full text-[10px] font-bold text-white flex items-center gap-1">
-            <span className="material-symbols-outlined text-[12px] text-[#ccff00]">star</span>
+            <span className="material-symbols-outlined text-[12px] text-[#ccff00]">
+              star
+            </span>
             {item.rating}
           </div>
         )}
       </div>
       <div className="p-5">
-        <h3 className="text-lg font-bold text-white truncate">{item.name || item.title || "Untitled"}</h3>
+        <h3 className="text-lg font-bold text-white truncate">
+          {item.name || item.title || "Untitled"}
+        </h3>
         {item.description && (
-          <p className="text-white/60 text-sm line-clamp-2 mt-1">{item.description}</p>
+          <p className="text-white/60 text-sm line-clamp-2 mt-1">
+            {item.description}
+          </p>
         )}
         <div className="flex items-center justify-between pt-4 mt-2 border-t border-white/10">
           <span className="text-xs text-white/50 flex items-center gap-1">
-            <span className="material-symbols-outlined text-[14px]">location_on</span>
+            <span className="material-symbols-outlined text-[14px]">
+              location_on
+            </span>
             {item.targetCity || item.city || "Location TBD"}
           </span>
           {item.price && (
@@ -61,7 +70,13 @@ interface EventTemplatesSectionProps {
   onPageChange: (page: number) => void;
 }
 
-export default function EventTemplatesSection({ items, isFetching, page, totalPages, onPageChange }: EventTemplatesSectionProps) {
+export default function EventTemplatesSection({
+  items,
+  isFetching,
+  page,
+  totalPages,
+  onPageChange,
+}: EventTemplatesSectionProps) {
   return (
     <section className="space-y-6">
       <div className="flex items-center gap-4">
@@ -75,15 +90,23 @@ export default function EventTemplatesSection({ items, isFetching, page, totalPa
       {isFetching && items.length === 0 ? (
         <div className="grid grid-cols-3 gap-6">
           {Array.from({ length: 6 }).map((_, i) => (
-            <div key={i} className="bg-[#11121a] border border-white/10 rounded-2xl h-64 animate-pulse" />
+            <div
+              key={i}
+              className="bg-[#11121a] border border-white/10 rounded-2xl h-64 animate-pulse"
+            />
           ))}
         </div>
       ) : items.length === 0 ? (
         <div className="text-center py-16 bg-white/5 rounded-2xl border border-white/10">
-          <span className="material-symbols-outlined text-[56px] text-white/20">auto_awesome</span>
-          <h3 className="text-xl font-bold text-white mt-2">No templates match your criteria</h3>
+          <span className="material-symbols-outlined text-[56px] text-white/20">
+            auto_awesome
+          </span>
+          <h3 className="text-xl font-bold text-white mt-2">
+            No templates match your criteria
+          </h3>
           <p className="text-white/60 text-sm max-w-sm mx-auto">
-            Try expanding your search radius or increasing your budget to discover more themed experiences.
+            Try expanding your search radius or increasing your budget to
+            discover more themed experiences.
           </p>
         </div>
       ) : (

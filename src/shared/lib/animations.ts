@@ -46,7 +46,7 @@ export function getStaggerDelay(index: number, delayMs: number = 100): string {
 export function animationClass(
   animation: string,
   duration?: keyof typeof ANIMATION_TIMINGS,
-  easing?: keyof typeof ANIMATION_EASINGS
+  easing?: keyof typeof ANIMATION_EASINGS,
 ): string {
   const classes = [animation];
 

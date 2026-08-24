@@ -1,8 +1,13 @@
 ﻿"use client";
 
-import React, { useEffect, useState } from 'react';
-import Link from 'next/link';
-import { useAuthStore, useAuthActions, useAuthStatus, useAuthLoading } from '@/features/auth/store/useAuthStore';
+import React, { useEffect, useState } from "react";
+import Link from "next/link";
+import {
+  useAuthStore,
+  useAuthActions,
+  useAuthStatus,
+  useAuthLoading,
+} from "@/features/auth/store/useAuthStore";
 
 interface AdminAuthGuardProps {
   children: React.ReactNode;
@@ -17,9 +22,9 @@ const AdminAuthGuard: React.FC<AdminAuthGuardProps> = ({ children }) => {
   // Check for existing auth on mount
   useEffect(() => {
     setIsClient(true);
-    const storedUser = localStorage.getItem('fox_user');
-    const storedToken = localStorage.getItem('fox_token');
-    const storedRefreshToken = localStorage.getItem('fox_refresh_token');
+    const storedUser = localStorage.getItem("fox_user");
+    const storedToken = localStorage.getItem("fox_token");
+    const storedRefreshToken = localStorage.getItem("fox_refresh_token");
 
     if (storedUser && storedToken) {
       try {
@@ -27,12 +32,12 @@ const AdminAuthGuard: React.FC<AdminAuthGuardProps> = ({ children }) => {
         useAuthStore.getState().login({
           user: userData,
           accessToken: storedToken,
-          refreshToken: storedRefreshToken || ""
+          refreshToken: storedRefreshToken || "",
         });
       } catch {
-        localStorage.removeItem('fox_user');
-        localStorage.removeItem('fox_token');
-        localStorage.removeItem('fox_refresh_token');
+        localStorage.removeItem("fox_user");
+        localStorage.removeItem("fox_token");
+        localStorage.removeItem("fox_refresh_token");
       }
     }
     setLoading(false);
@@ -57,7 +62,9 @@ const AdminAuthGuard: React.FC<AdminAuthGuardProps> = ({ children }) => {
         {/* ... login prompt UI ... */}
         <div className="glass-card rounded-[2rem] p-10 max-w-md w-full text-center border border-white/10 relative overflow-hidden">
           <div className="relative z-10 w-24 h-24 bg-[#ccff00]/30 rounded-full flex items-center justify-center mx-auto mb-8 border-2 border-[#ccff00] shadow-[0_0_60px_#ccff00,0_0_100px_rgba(204,255,0,0.5)]">
-            <span className="material-symbols-outlined text-[48px] text-black drop-shadow-[0_0_15px_#ccff00]">lock</span>
+            <span className="material-symbols-outlined text-[48px] text-black drop-shadow-[0_0_15px_#ccff00]">
+              lock
+            </span>
           </div>
           <h1 className="relative z-10 text-3xl font-display font-bold text-white mb-3">
             Admin Access Required
@@ -78,15 +85,16 @@ const AdminAuthGuard: React.FC<AdminAuthGuardProps> = ({ children }) => {
 
   // Check for admin role
   const user = useAuthStore.getState().user;
-  const userRole = (user?.systemRole ?? user?.role)?.toLowerCase();
-  const isAdmin = ["admin", "super_admin"].includes(userRole as string);
+  const isAdmin = user?.systemRole === "admin";
 
   if (!isAdmin) {
     return (
       <div className="min-h-screen bg-background bg-gradient-dark flex items-center justify-center p-4">
         <div className="glass-card rounded-[2rem] p-10 max-w-md w-full text-center border border-white/10 relative overflow-hidden">
           <div className="relative z-10 w-24 h-24 bg-red-500/30 rounded-full flex items-center justify-center mx-auto mb-8 border-2 border-red-500 shadow-[0_0_60px_rgba(239,68,68,0.3)]">
-            <span className="material-symbols-outlined text-[48px] text-white">block</span>
+            <span className="material-symbols-outlined text-[48px] text-white">
+              block
+            </span>
           </div>
           <h1 className="relative z-10 text-3xl font-display font-bold text-white mb-3">
             Permission Denied

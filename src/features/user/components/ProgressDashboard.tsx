@@ -1,21 +1,22 @@
-'use client';
+/* eslint-disable @typescript-eslint/no-unused-vars */
+"use client";
 
-import React, { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import CircularProgress from '@/features/gamification/components/CircularProgress';
-import { BadgeGrid } from '@/features/gamification/components/BadgeCard';
-import { PassportGrid } from '@/features/gamification/components/PassportStamp';
+import React, { useState } from "react";
+import { useRouter } from "next/navigation";
+import CircularProgress from "@/features/gamification/components/CircularProgress";
+import { BadgeGrid } from "@/features/gamification/components/BadgeCard";
+import { PassportGrid } from "@/features/gamification/components/PassportStamp";
 import {
   UserPath,
   XP_REWARDS,
-} from '@/features/gamification/types/gamification';
+} from "@/features/gamification/types/gamification";
 import {
   calculateMasteryLevel,
   formatXP,
-} from '@/features/gamification/lib/gamification';
-import BadgeModal from '@/features/gamification/components/BadgeModal';
-import { Badge } from '@/features/gamification/types/gamification';
-import { useMyPassport } from '@/features/gamification/hooks/usePassport';
+} from "@/features/gamification/lib/gamification";
+import BadgeModal from "@/features/gamification/components/BadgeModal";
+import { Badge } from "@/features/gamification/types/gamification";
+import { useMyPassport } from "@/features/gamification/hooks/usePassport";
 
 interface ProgressDashboardProps {
   showPassport?: boolean;
@@ -24,7 +25,7 @@ interface ProgressDashboardProps {
 
 export const ProgressDashboard: React.FC<ProgressDashboardProps> = ({
   showPassport = true,
-  showHeader = true
+  showHeader = true,
 }) => {
   const router = useRouter();
   const [_selectedPath, setSelectedPath] = useState<UserPath | null>(null);
@@ -64,12 +65,14 @@ export const ProgressDashboard: React.FC<ProgressDashboardProps> = ({
 
             <h1 className="text-5xl md:text-7xl font-display font-bold text-white tracking-tight leading-[0.85]">
               Progress <br />
-              <span className="text-[#ccff00] underline decoration-[#ccff00]/20">Dashboard</span>
+              <span className="text-[#ccff00] underline decoration-[#ccff00]/20">
+                Dashboard
+              </span>
             </h1>
 
             <p className="text-white/50 text-lg max-w-xl font-light">
-              Track your journey across FoxPassport. Level up your paths to unlock exclusive perks
-              and venue access.
+              Track your journey across FoxPassport. Level up your paths to
+              unlock exclusive perks and venue access.
             </p>
           </div>
 
@@ -83,12 +86,16 @@ export const ProgressDashboard: React.FC<ProgressDashboardProps> = ({
               <span className="text-[#ccff00] text-2xl">⭐</span>
             </div>
 
-            <div className="text-5xl font-display font-bold text-white mb-4">Lvl {masteryLevel}</div>
+            <div className="text-5xl font-display font-bold text-white mb-4">
+              Lvl {masteryLevel}
+            </div>
 
             <div className="w-full bg-white/10 rounded-full h-3 mb-2 overflow-hidden">
               <div
                 className="bg-linear-to-r from-[#ccff00] to-green-500 h-full rounded-full shadow-[0_0_10px_#ccff00]"
-                style={{ width: `${Math.min((totalXP / maxTotalXP) * 100, 100)}%` }}
+                style={{
+                  width: `${Math.min((totalXP / maxTotalXP) * 100, 100)}%`,
+                }}
               ></div>
             </div>
 
@@ -130,7 +137,8 @@ export const ProgressDashboard: React.FC<ProgressDashboardProps> = ({
               </p>
 
               <div className="bg-white/5 rounded-xl px-4 py-2 border border-white/5 font-mono text-[10px] text-white/50 tracking-widest">
-                XP: <span className="text-white">{formatXP(path.currentXP)}</span> /{' '}
+                XP:{" "}
+                <span className="text-white">{formatXP(path.currentXP)}</span> /{" "}
                 {formatXP(path.requiredXP)}
               </div>
             </div>
@@ -146,12 +154,19 @@ export const ProgressDashboard: React.FC<ProgressDashboardProps> = ({
       <section className="space-y-8">
         <div className="flex items-center justify-between">
           <h2 className="text-3xl font-display font-bold text-white flex items-center gap-3">
-            <span className="material-symbols-outlined text-[#ccff00] text-[32px]">award_star</span>
+            <span className="material-symbols-outlined text-[#ccff00] text-[32px]">
+              award_star
+            </span>
             Recent Drops <span className="text-[#ccff00]">&</span> Badges
           </h2>
-          <button onClick={() => router.push('/user/passport')} className="text-sm font-bold text-white/50 hover:text-white transition-colors flex items-center gap-1 group">
+          <button
+            onClick={() => router.push("/user/passport")}
+            className="text-sm font-bold text-white/50 hover:text-white transition-colors flex items-center gap-1 group"
+          >
             View Collection
-            <span className="text-[16px] group-hover:translate-x-1 transition-transform">→</span>
+            <span className="text-[16px] group-hover:translate-x-1 transition-transform">
+              →
+            </span>
           </button>
         </div>
 
@@ -175,18 +190,27 @@ export const ProgressDashboard: React.FC<ProgressDashboardProps> = ({
               <h2 className="text-3xl font-display font-bold text-white mb-2">
                 My <span className="text-[#ccff00]">Passport</span>
               </h2>
-              <p className="text-white/50">Collection of events you&apos;ve attended</p>
+              <p className="text-white/50">
+                Collection of events you&apos;ve attended
+              </p>
             </div>
-            <button onClick={() => router.push('/user/passport')} className="text-sm font-bold text-white/50 hover:text-white transition-colors flex items-center gap-1 group">
+            <button
+              onClick={() => router.push("/user/passport")}
+              className="text-sm font-bold text-white/50 hover:text-white transition-colors flex items-center gap-1 group"
+            >
               View All
-              <span className="text-[16px] group-hover:translate-x-1 transition-transform">→</span>
+              <span className="text-[16px] group-hover:translate-x-1 transition-transform">
+                →
+              </span>
             </button>
           </div>
 
           {stamps.length > 0 ? (
             <PassportGrid stamps={stamps} />
           ) : (
-            <p className="text-white/40 text-sm">Attend events to collect passport stamps.</p>
+            <p className="text-white/40 text-sm">
+              Attend events to collect passport stamps.
+            </p>
           )}
         </section>
       )}

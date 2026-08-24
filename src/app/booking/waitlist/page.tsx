@@ -2,7 +2,7 @@ import React, { Suspense } from "react";
 import WaitlistPageClient from "@/features/booking/components/WaitlistPageClient";
 import type { Metadata } from "next";
 
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
   title: "My Waitlist | Fox Passport Republic",

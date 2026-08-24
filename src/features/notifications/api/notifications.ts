@@ -10,11 +10,14 @@ export const getNotifications = async (): Promise<GetNotificationsResult> => {
   const res = await api.get("/notifications");
   return {
     notifications: res.data.notifications || [],
-    unreadCount: typeof res.data.unreadCount === "number" ? res.data.unreadCount : 0,
+    unreadCount:
+      typeof res.data.unreadCount === "number" ? res.data.unreadCount : 0,
   };
 };
 
-export const markNotificationsAsRead = async (id: string): Promise<Notification> => {
+export const markNotificationsAsRead = async (
+  id: string,
+): Promise<Notification> => {
   const res = await api.patch(`/notifications/${id}/read`);
   return res.data.data;
 };

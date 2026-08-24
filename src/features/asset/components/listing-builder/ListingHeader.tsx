@@ -1,7 +1,7 @@
-﻿'use client';
+﻿"use client";
 
-import React from 'react';
-import { ListingType } from '@/features/asset/data/listingBuilderData';
+import React from "react";
+import { ListingType } from "@/features/asset/data/listingBuilderData";
 
 interface ListingHeaderProps {
   activeType: ListingType;
@@ -38,7 +38,9 @@ export function ListingHeader({
             onClick={onBack}
             className="h-8 w-8 flex items-center justify-center rounded-full hover:bg-white/10"
           >
-            <span className="material-symbols-outlined text-[18px]">arrow_back</span>
+            <span className="material-symbols-outlined text-[18px]">
+              arrow_back
+            </span>
           </button>
           <div>
             <h2 className="font-display font-bold text-lg flex items-center gap-2 capitalize">
@@ -50,10 +52,12 @@ export function ListingHeader({
             <div className="flex items-center gap-2 text-[10px] text-text-muted mt-0.5">
               <span
                 className={`w-1.5 h-1.5 rounded-full ${
-                  activeType === 'inventory' ? 'bg-primary' : 'bg-warning'
+                  activeType === "inventory" ? "bg-primary" : "bg-warning"
                 } animate-pulse`}
               />
-              {title || `New ${activeType === 'inventory' ? 'Item' : 'Service'}`} (Draft)
+              {title ||
+                `New ${activeType === "inventory" ? "Item" : "Service"}`}{" "}
+              (Draft)
             </div>
           </div>
         </div>
@@ -74,7 +78,7 @@ export function ListingHeader({
                 progress_activity
               </span>
             ) : (
-              'Publish Listing'
+              "Publish Listing"
             )}
           </button>
         </div>
@@ -91,7 +95,9 @@ export function ListingHeader({
       {/* Success Notification */}
       {isNotification && (
         <div className="bg-green-500/10 border-b border-green-500/20 text-green-400 px-4 py-2 text-xs flex items-center gap-2">
-          <span className="material-symbols-outlined text-[16px]">check_circle</span>
+          <span className="material-symbols-outlined text-[16px]">
+            check_circle
+          </span>
           {successMessage ?? defaultSuccessMessage}
         </div>
       )}

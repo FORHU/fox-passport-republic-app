@@ -1,4 +1,5 @@
-﻿'use client';
+/* eslint-disable react-hooks/set-state-in-effect, @next/next/no-img-element */
+"use client";
 
 import React, { useEffect, useState } from 'react';
 import Image from 'next/image';
@@ -10,21 +11,24 @@ import { useItemBookingStore } from '@/features/booking/store/useItemBookingStor
 import { useAuthStore } from '@/features/auth/store/useAuthStore';
 import { createPaymentIntent } from '@/features/booking/api/bookings';
 import StripePaymentForm from './StripePaymentForm';
+import { getDashboardPath } from '@/shared/lib/dashboard-path';
 
-const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY || '');
+const stripePromise = loadStripe(
+  process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY || "",
+);
 
 const TYPE_CONFIG = {
   service: {
-    label: 'Service Hire',
-    icon: 'build',
-    color: 'text-orange-400',
-    badge: 'bg-orange-400 text-black',
+    label: "Service Hire",
+    icon: "build",
+    color: "text-orange-400",
+    badge: "bg-orange-400 text-black",
   },
   asset: {
-    label: 'Equipment Rental',
-    icon: 'inventory_2',
-    color: 'text-purple-400',
-    badge: 'bg-purple-400 text-black',
+    label: "Equipment Rental",
+    icon: "inventory_2",
+    color: "text-purple-400",
+    badge: "bg-purple-400 text-black",
   },
 } as const;
 
@@ -47,22 +51,20 @@ export default function ItemCheckoutClient() {
   const [loadingIntent, setLoadingIntent] = useState(false);
   const [intentError, setIntentError] = useState<string | null>(null);
 
-  const getDashboardPath = () => {
-    if (user?.systemRole === "admin" || user?.systemRole === "super_admin") return "/admin";
-    const creatorRoles = ["venueFoxer", "eventFoxer", "gearFoxer", "serviceFoxer"];
-    if (user?.roleType?.some((r) => creatorRoles.includes(r))) return "/creator-dashboard";
-    return "/user";
-  };
-
   const typeConfig = itemType ? TYPE_CONFIG[itemType] : TYPE_CONFIG.service;
 
   const formattedDate = scheduledDate
-    ? new Date(scheduledDate).toLocaleDateString('en-PH', { year: 'numeric', month: 'long', day: 'numeric' })
+    ? new Date(scheduledDate).toLocaleDateString("en-PH", {
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+      })
     : null;
 
-  const successUrl = typeof window !== 'undefined'
-    ? `${window.location.origin}/booking/item-success`
-    : '/booking/item-success';
+  const successUrl =
+    typeof window !== "undefined"
+      ? `${window.location.origin}/booking/item-success`
+      : "/booking/item-success";
 
   useEffect(() => {
     if (clientSecret || totalAmount <= 0) return;
@@ -72,12 +74,17 @@ export default function ItemCheckoutClient() {
 
     createPaymentIntent({
       amount: totalAmount,
-      currency: 'php',
+      currency: "php",
       ...(bookingId ? { bookingId } : {}),
       description: `${typeConfig.label}: ${itemName}`,
     })
       .then(({ clientSecret: secret }) => setClientSecret(secret))
-      .catch((err) => setIntentError(err?.response?.data?.message || 'Could not initialize payment. Please try again.'))
+      .catch((err) =>
+        setIntentError(
+          err?.response?.data?.message ||
+            "Could not initialize payment. Please try again.",
+        ),
+      )
       .finally(() => setLoadingIntent(false));
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -85,11 +92,11 @@ export default function ItemCheckoutClient() {
     ? {
         clientSecret,
         appearance: {
-          theme: 'night' as const,
+          theme: "night" as const,
           variables: {
-            colorPrimary: '#ccff00',
-            colorBackground: '#0d0f1a',
-            colorText: '#ffffff',
+            colorPrimary: "#ccff00",
+            colorBackground: "#0d0f1a",
+            colorText: "#ffffff",
           },
         },
       }
@@ -100,18 +107,21 @@ export default function ItemCheckoutClient() {
     setLoadingIntent(true);
     createPaymentIntent({
       amount: totalAmount,
-      currency: 'php',
+      currency: "php",
       ...(bookingId ? { bookingId } : {}),
       description: `${typeConfig.label}: ${itemName}`,
     })
       .then(({ clientSecret: secret }) => setClientSecret(secret))
-      .catch((err) => setIntentError(err?.response?.data?.message || 'Could not initialize payment.'))
+      .catch((err) =>
+        setIntentError(
+          err?.response?.data?.message || "Could not initialize payment.",
+        ),
+      )
       .finally(() => setLoadingIntent(false));
   };
 
   return (
     <div className="bg-background bg-gradient-dark text-text-main antialiased min-h-screen flex flex-col selection:bg-accent selection:text-black font-body relative overflow-x-hidden grow">
-
       <header className="fixed top-6 left-0 right-0 z-50">
         <div className="mx-auto max-w-7xl px-4">
           <div className="glass-panel rounded-full px-6 h-20 flex items-center justify-between shadow-2xl hover:bg-black/40 transition-colors duration-500">
@@ -119,21 +129,37 @@ export default function ItemCheckoutClient() {
               <div className="flex h-10 w-10 items-center justify-center overflow-hidden group-hover:scale-110 transition-transform duration-300">
                 <Image src="/foxonlylogo.png" alt="FoxPassport Logo" width={40} height={40} className="object-contain" priority />
               </div>
-              <h2 className="text-2xl font-display font-bold tracking-tight text-white group-hover:text-accent transition-colors">FoxPassport</h2>
+              <h2 className="text-2xl font-display font-bold tracking-tight text-white group-hover:text-accent transition-colors">
+                FoxPassport
+              </h2>
             </div>
             <nav className="hidden md:flex items-center gap-2 bg-black/20 p-1.5 rounded-full border border-white/5">
-              <Link href="/" className="px-6 py-2.5 rounded-full text-sm font-medium text-white/70 hover:text-white hover:bg-white/10 transition-all">Explore</Link>
-              <Link href="/booking" className="px-6 py-2.5 rounded-full text-sm font-bold text-black bg-accent hover:bg-accent/90 transition-all">Bookings</Link>
+              <Link
+                href="/"
+                className="px-6 py-2.5 rounded-full text-sm font-medium text-white/70 hover:text-white hover:bg-white/10 transition-all"
+              >
+                Explore
+              </Link>
+              <Link
+                href="/booking"
+                className="px-6 py-2.5 rounded-full text-sm font-bold text-black bg-accent hover:bg-accent/90 transition-all"
+              >
+                Bookings
+              </Link>
             </nav>
             <div
               className="h-10 w-10 rounded-full border border-white/10 overflow-hidden cursor-pointer hover:border-accent transition-colors"
-              onClick={() => router.push(getDashboardPath())}
+              onClick={() => router.push(getDashboardPath(user))}
             >
               {user?.imgId ? (
-                <img alt="User" className="h-full w-full object-cover" src={user.imgId} />
+                <img
+                  alt="User"
+                  className="h-full w-full object-cover"
+                  src={user.imgId}
+                />
               ) : (
                 <div className="h-full w-full bg-[#ccff00] flex items-center justify-center text-black font-bold text-sm">
-                  {user?.name?.charAt(0)?.toUpperCase() ?? 'U'}
+                  {user?.name?.charAt(0)?.toUpperCase() ?? "U"}
                 </div>
               )}
             </div>
@@ -144,29 +170,45 @@ export default function ItemCheckoutClient() {
       <main className="grow pt-32 pb-28 sm:pb-20 relative">
         <div className="absolute top-20 right-0 w-[500px] h-[500px] bg-primary/20 rounded-full blur-[120px] pointer-events-none animate-pulse-slow mix-blend-screen" />
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 relative z-10">
-
           <div className="mb-10">
             <div className="flex items-center gap-2 text-sm text-text-muted mb-4">
-              <Link href="/categories" className="hover:text-white transition-colors">Browse</Link>
-              <span className="material-symbols-outlined text-[14px]">chevron_right</span>
+              <Link
+                href="/categories"
+                className="hover:text-white transition-colors"
+              >
+                Browse
+              </Link>
+              <span className="material-symbols-outlined text-[14px]">
+                chevron_right
+              </span>
               <span className="text-white/60">{typeConfig.label}</span>
-              <span className="material-symbols-outlined text-[14px]">chevron_right</span>
+              <span className="material-symbols-outlined text-[14px]">
+                chevron_right
+              </span>
               <span className="text-accent font-bold">Checkout</span>
             </div>
             <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
               <div>
-                <h1 className="text-4xl md:text-5xl font-display font-bold text-white tracking-tight">Confirm & Pay</h1>
+                <h1 className="text-4xl md:text-5xl font-display font-bold text-white tracking-tight">
+                  Confirm & Pay
+                </h1>
               </div>
               <div className="flex items-center gap-4 bg-surface-highlight/30 px-6 py-3 rounded-full border border-white/5">
                 <div className="flex items-center gap-2 opacity-50">
                   <span className="flex h-6 w-6 items-center justify-center rounded-full bg-white/10 text-white text-xs font-bold">
-                    <span className="material-symbols-outlined text-[14px]">check</span>
+                    <span className="material-symbols-outlined text-[14px]">
+                      check
+                    </span>
                   </span>
-                  <span className="text-sm font-medium text-text-muted">Configure</span>
+                  <span className="text-sm font-medium text-text-muted">
+                    Configure
+                  </span>
                 </div>
                 <div className="w-8 h-px bg-white/10" />
                 <div className="flex items-center gap-2">
-                  <span className="flex h-6 w-6 items-center justify-center rounded-full bg-accent text-black text-xs font-bold shadow-[0_0_10px_#ccff00]">2</span>
+                  <span className="flex h-6 w-6 items-center justify-center rounded-full bg-accent text-black text-xs font-bold shadow-[0_0_10px_#ccff00]">
+                    2
+                  </span>
                   <span className="text-sm font-bold text-white">Pay</span>
                 </div>
               </div>
@@ -174,12 +216,13 @@ export default function ItemCheckoutClient() {
           </div>
 
           <div className="grid lg:grid-cols-12 gap-8 lg:gap-12">
-
             {/* Payment Panel */}
             <div className="lg:col-span-8 space-y-8">
               <div className="glass-panel rounded-[2rem] p-8">
                 <h2 className="text-2xl font-display font-bold text-white mb-6 flex items-center gap-3">
-                  <span className="flex items-center justify-center w-8 h-8 rounded-full bg-primary text-white text-sm">1</span>
+                  <span className="flex items-center justify-center w-8 h-8 rounded-full bg-primary text-white text-sm">
+                    1
+                  </span>
                   Payment
                 </h2>
 
@@ -192,57 +235,79 @@ export default function ItemCheckoutClient() {
 
                 {intentError && (
                   <div className="flex items-start gap-3 bg-red-500/10 border border-red-500/30 rounded-xl p-4 mb-6">
-                    <span className="material-symbols-outlined text-red-400 text-[18px] mt-0.5 shrink-0">error</span>
+                    <span className="material-symbols-outlined text-red-400 text-[18px] mt-0.5 shrink-0">
+                      error
+                    </span>
                     <div>
-                      <p className="text-red-400 text-sm font-medium">{intentError}</p>
-                      <button onClick={retryPaymentIntent} className="mt-2 text-xs text-white/60 hover:text-white underline">
+                      <p className="text-red-400 text-sm font-medium">
+                        {intentError}
+                      </p>
+                      <button
+                        onClick={retryPaymentIntent}
+                        className="mt-2 text-xs text-white/60 hover:text-white underline"
+                      >
                         Try again
                       </button>
                     </div>
                   </div>
                 )}
 
-                {!loadingIntent && !intentError && clientSecret && elementsOptions && (
-                  <Elements stripe={stripePromise} options={elementsOptions}>
-                    <StripePaymentForm
-                      totalAmount={totalAmount}
-                      returnUrl={successUrl}
-                    />
-                  </Elements>
-                )}
+                {!loadingIntent &&
+                  !intentError &&
+                  clientSecret &&
+                  elementsOptions && (
+                    <Elements stripe={stripePromise} options={elementsOptions}>
+                      <StripePaymentForm
+                        totalAmount={totalAmount}
+                        returnUrl={successUrl}
+                      />
+                    </Elements>
+                  )}
 
-                {!loadingIntent && !intentError && !clientSecret && totalAmount <= 0 && (
-                  <div className="py-8 text-center text-white/40">
-                    <p>No booking amount found.</p>
-                    <button onClick={() => router.back()} className="mt-2 inline-block text-sm text-accent hover:underline">
-                      Go back to configure your booking
-                    </button>
-                  </div>
-                )}
+                {!loadingIntent &&
+                  !intentError &&
+                  !clientSecret &&
+                  totalAmount <= 0 && (
+                    <div className="py-8 text-center text-white/40">
+                      <p>No booking amount found.</p>
+                      <button
+                        onClick={() => router.back()}
+                        className="mt-2 inline-block text-sm text-accent hover:underline"
+                      >
+                        Go back to configure your booking
+                      </button>
+                    </div>
+                  )}
               </div>
 
               <div className="glass-panel rounded-[2rem] p-8">
                 <h2 className="text-2xl font-display font-bold text-white mb-6 flex items-center gap-3">
-                  <span className="flex items-center justify-center w-8 h-8 rounded-full bg-white/10 text-white text-sm">2</span>
+                  <span className="flex items-center justify-center w-8 h-8 rounded-full bg-white/10 text-white text-sm">
+                    2
+                  </span>
                   Contact Info
                 </h2>
                 <div className="grid md:grid-cols-2 gap-6">
                   <div className="space-y-2">
-                    <label className="text-xs uppercase tracking-widest text-text-muted font-bold ml-1">Email</label>
+                    <label className="text-xs uppercase tracking-widest text-text-muted font-bold ml-1">
+                      Email
+                    </label>
                     <input
                       className="w-full bg-white/5 border border-white/10 rounded-xl px-5 py-4 font-display text-lg text-white placeholder-white/20 focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent transition-all"
                       placeholder="hello@foxer.com"
                       type="email"
-                      defaultValue={user?.email || ''}
+                      defaultValue={user?.email || ""}
                     />
                   </div>
                   <div className="space-y-2">
-                    <label className="text-xs uppercase tracking-widest text-text-muted font-bold ml-1">Mobile Number</label>
+                    <label className="text-xs uppercase tracking-widest text-text-muted font-bold ml-1">
+                      Mobile Number
+                    </label>
                     <input
                       className="w-full bg-white/5 border border-white/10 rounded-xl px-5 py-4 font-display text-lg text-white placeholder-white/20 focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent transition-all"
                       placeholder="+63 900 000 0000"
                       type="tel"
-                      defaultValue={user?.mobileNumber || ''}
+                      defaultValue={user?.mobileNumber || ""}
                     />
                   </div>
                 </div>
@@ -258,28 +323,44 @@ export default function ItemCheckoutClient() {
                   <div className="flex gap-4 mb-6">
                     <div className="h-24 w-24 rounded-2xl overflow-hidden shrink-0 border border-white/10">
                       {itemImage ? (
-                        <img alt={itemName} className="h-full w-full object-cover" src={itemImage} />
+                        <img
+                          alt={itemName}
+                          className="h-full w-full object-cover"
+                          src={itemImage}
+                        />
                       ) : (
                         <div className="h-full w-full bg-white/5 flex items-center justify-center">
-                          <span className={`material-symbols-outlined text-3xl ${typeConfig.color}`}>{typeConfig.icon}</span>
+                          <span
+                            className={`material-symbols-outlined text-3xl ${typeConfig.color}`}
+                          >
+                            {typeConfig.icon}
+                          </span>
                         </div>
                       )}
                     </div>
                     <div>
-                      <div className={`text-[10px] font-bold mb-1 uppercase tracking-wider ${typeConfig.color}`}>
+                      <div
+                        className={`text-[10px] font-bold mb-1 uppercase tracking-wider ${typeConfig.color}`}
+                      >
                         {typeConfig.label}
                       </div>
-                      <h3 className="font-display font-bold text-white text-lg leading-tight mb-1">{itemName}</h3>
+                      <h3 className="font-display font-bold text-white text-lg leading-tight mb-1">
+                        {itemName}
+                      </h3>
                       <p className="text-text-muted text-sm">{providerName}</p>
                       {formattedDate && (
                         <p className="text-text-muted text-xs mt-1 flex items-center gap-1">
-                          <span className="material-symbols-outlined text-[12px]">event</span>
+                          <span className="material-symbols-outlined text-[12px]">
+                            event
+                          </span>
                           {formattedDate}
                         </p>
                       )}
                       {location && (
                         <p className="text-text-muted text-xs mt-1 flex items-center gap-1 line-clamp-1">
-                          <span className="material-symbols-outlined text-[12px]">location_on</span>
+                          <span className="material-symbols-outlined text-[12px]">
+                            location_on
+                          </span>
                           {location}
                         </p>
                       )}
@@ -288,7 +369,9 @@ export default function ItemCheckoutClient() {
 
                   <div className="border-t border-dashed border-white/20 pt-4">
                     <div className="flex justify-between items-end">
-                      <span className="text-white font-bold font-display">Total</span>
+                      <span className="text-white font-bold font-display">
+                        Total
+                      </span>
                       <span className="text-3xl font-display font-bold text-accent text-shadow-glow">
                         ₱{totalAmount.toLocaleString()}
                       </span>
@@ -298,12 +381,17 @@ export default function ItemCheckoutClient() {
 
                 <div className="bg-surface-highlight/30 rounded-3xl p-6 border border-white/5 flex items-start gap-4">
                   <div className="h-10 w-10 rounded-full bg-white/5 flex items-center justify-center shrink-0 text-primary-glow">
-                    <span className="material-symbols-outlined">shield_lock</span>
+                    <span className="material-symbols-outlined">
+                      shield_lock
+                    </span>
                   </div>
                   <div>
-                    <h4 className="text-white font-bold font-display text-sm mb-1">Escrow Protection</h4>
+                    <h4 className="text-white font-bold font-display text-sm mb-1">
+                      Escrow Protection
+                    </h4>
                     <p className="text-xs text-text-muted leading-relaxed">
-                      Your payment is held securely in escrow and only released to the provider after you confirm arrival or receipt.
+                      Your payment is held securely in escrow and only released
+                      to the provider after you confirm arrival or receipt.
                     </p>
                   </div>
                 </div>
@@ -317,10 +405,16 @@ export default function ItemCheckoutClient() {
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col md:flex-row justify-between items-center gap-4">
             <div className="flex items-center gap-2">
-              <span className="material-symbols-outlined text-white">explore</span>
-              <span className="text-xl font-display font-bold text-white">FoxPassport</span>
+              <span className="material-symbols-outlined text-white">
+                explore
+              </span>
+              <span className="text-xl font-display font-bold text-white">
+                FoxPassport
+              </span>
             </div>
-            <p className="text-xs text-gray-500 font-medium">© 2024 FoxPassport Inc. All rights reserved.</p>
+            <p className="text-xs text-gray-500 font-medium">
+              © 2024 FoxPassport Inc. All rights reserved.
+            </p>
           </div>
         </div>
       </footer>

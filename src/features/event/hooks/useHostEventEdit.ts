@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars, react-hooks/exhaustive-deps */
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
@@ -5,9 +6,17 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { useAuthStore } from "@/features/auth/store/useAuthStore";
 import { useEventBuilder } from "@/features/event/hooks/useEventBuilder";
-import { fetchEventsByHostId, updateEvent, submitEventTemplate } from "@/features/event/api/events";
+import {
+  fetchEventsByHostId,
+  updateEvent,
+  submitEventTemplate,
+} from "@/features/event/api/events";
 import api from "@/shared/lib/axios";
-import { EVENT_CATEGORIES, VENUE_ICONS, TALENT_ICONS } from "@/features/event/data/eventBuilderData";
+import {
+  EVENT_CATEGORIES,
+  VENUE_ICONS,
+  TALENT_ICONS,
+} from "@/features/event/data/eventBuilderData";
 import type { Id } from "@/shared/lib/api-types";
 
 function pad2(n: number) {
@@ -19,12 +28,16 @@ function toDatetimeLocalValue(value: unknown): string {
   const d = new Date(value as string | number | Date);
   if (Number.isNaN(d.getTime())) return "";
   return `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}T${pad2(
-    d.getHours()
+    d.getHours(),
   )}:${pad2(d.getMinutes())}`;
 }
 
 function normalizeLower(value: unknown) {
-  return String(value ?? "").trim().toLowerCase().replace(/_/g, " ").replace(/\s+/g, " ");
+  return String(value ?? "")
+    .trim()
+    .toLowerCase()
+    .replace(/_/g, " ")
+    .replace(/\s+/g, " ");
 }
 
 function normalizeEventStatusToBackend(value: unknown): string {
@@ -94,7 +107,9 @@ function eventAssetToResourceItem(a: any) {
   const desc = asset?.description ?? a?.description ?? "";
   const cost = Number(asset?.price ?? asset?.cost ?? a?.price ?? 0) || 0;
   const catSlug =
-    (typeof asset?.category === "string" ? asset?.category : asset?.category?.slug) ??
+    (typeof asset?.category === "string"
+      ? asset?.category
+      : asset?.category?.slug) ??
     asset?.category?.name ??
     "";
   const slug = normalizeLower(catSlug);
@@ -103,9 +118,15 @@ function eventAssetToResourceItem(a: any) {
   let icon = "work_outline";
   if (slug === "entertainment") icon = "music_note";
   else if (["planning", "catering", "photography"].includes(slug)) {
-    icon = slug === "catering" ? "restaurant" : slug === "photography" ? "camera_alt" : "event_note";
+    icon =
+      slug === "catering"
+        ? "restaurant"
+        : slug === "photography"
+          ? "camera_alt"
+          : "event_note";
   } else if (slug === "equipment") icon = "speaker";
-  else if (["decoration", "furniture"].includes(slug)) icon = slug === "furniture" ? "chair" : "brush";
+  else if (["decoration", "furniture"].includes(slug))
+    icon = slug === "furniture" ? "chair" : "brush";
 
   // Ensure venue + talent icons are compatible with core package calculations.
   // (We only really need this for the venue base item.)
@@ -129,14 +150,18 @@ function eventServiceToResourceItem(s: any) {
   const desc = service?.description ?? s?.description ?? "";
   const cost = Number(service?.price ?? s?.price ?? 0) || 0;
   const catSlug =
-    (typeof service?.category === "string" ? service?.category : service?.category?.slug) ??
+    (typeof service?.category === "string"
+      ? service?.category
+      : service?.category?.slug) ??
     service?.category?.name ??
     "";
   const slug = normalizeLower(catSlug);
 
   let icon = "work_outline";
   if (slug === "entertainment") icon = "music_note";
-  else if (["planning", "catering", "photography", "videography"].includes(slug)) {
+  else if (
+    ["planning", "catering", "photography", "videography"].includes(slug)
+  ) {
     const iconMap: Record<string, string> = {
       catering: "restaurant",
       photography: "camera_alt",
@@ -193,7 +218,10 @@ export function useHostEventEdit(eventId: string) {
         popup: "other",
       };
 
-      const rawCategory = builder.category.toLowerCase().replace(/\s+/g, "_").replace(/_/g, " ");
+      const rawCategory = builder.category
+        .toLowerCase()
+        .replace(/\s+/g, "_")
+        .replace(/_/g, " ");
       const eventType = safeEventTypeMapping[rawCategory] || "other";
 
       const payload: Record<string, unknown> = {
@@ -201,7 +229,8 @@ export function useHostEventEdit(eventId: string) {
         description: builder.description || undefined,
         category: eventType,
         isPublic: false,
-        maxAttendees: builder.maxAttendees > 0 ? builder.maxAttendees : undefined,
+        maxAttendees:
+          builder.maxAttendees > 0 ? builder.maxAttendees : undefined,
         cancellationPolicyId: builder.cancellationPolicyId || undefined,
         targetCity: builder.targetCity || undefined,
         targetState: builder.targetState || undefined,
@@ -214,8 +243,11 @@ export function useHostEventEdit(eventId: string) {
 
       if (targetStatus === "pending") {
         // Attach venue separately if one is in the package
-        const venueItem = builder.baseItems.find((i) => VENUE_ICONS.includes(i.icon));
-        const venueId = venueItem?.id ?? (builder as any).existingVenueId ?? null;
+        const venueItem = builder.baseItems.find((i) =>
+          VENUE_ICONS.includes(i.icon),
+        );
+        const venueId =
+          venueItem?.id ?? (builder as any).existingVenueId ?? null;
         if (venueId) {
           try {
             await api.post(`/event-templates/${eventId}/venues`, {
@@ -230,7 +262,11 @@ export function useHostEventEdit(eventId: string) {
         await submitEventTemplate(eventId);
       }
 
-      toast.success(targetStatus === "draft" ? "Draft saved!" : "Event submitted for review!");
+      toast.success(
+        targetStatus === "draft"
+          ? "Draft saved!"
+          : "Event submitted for review!",
+      );
       if (targetStatus === "pending") {
         setTimeout(() => {
           builder.reset();
@@ -242,24 +278,24 @@ export function useHostEventEdit(eventId: string) {
       const backendMessage =
         error?.response?.data?.message ||
         error?.response?.data?.error ||
-        (typeof error?.response?.data === "string" ? error.response.data : null);
+        (typeof error?.response?.data === "string"
+          ? error.response.data
+          : null);
       toast.error(backendMessage || "Failed to save event");
     } finally {
       builder.setIsSubmitting(false);
     }
   };
 
-  const handlePublish = useCallback(() => submitEvent("pending"), [
-    builder,
-    eventId,
-    router,
-  ]);
+  const handlePublish = useCallback(
+    () => submitEvent("pending"),
+    [builder, eventId, router],
+  );
 
-  const handleSaveDraft = useCallback(() => submitEvent("draft"), [
-    builder,
-    eventId,
-    router,
-  ]);
+  const handleSaveDraft = useCallback(
+    () => submitEvent("draft"),
+    [builder, eventId, router],
+  );
 
   useEffect(() => {
     if (!eventId) {
@@ -291,8 +327,13 @@ export function useHostEventEdit(eventId: string) {
         if (cancelled) return;
 
         // Keep originals for update payload consistency.
-        setExistingEndDatetime(found?.endDatetime ?? found?.end_datetime ?? null);
-        (builder as { existingVenueId?: string | null }).existingVenueId = found?.venueId ?? (found?.venue as Record<string, unknown>)?.id ?? null;
+        setExistingEndDatetime(
+          found?.endDatetime ?? found?.end_datetime ?? null,
+        );
+        (builder as { existingVenueId?: string | null }).existingVenueId =
+          found?.venueId ??
+          (found?.venue as Record<string, unknown>)?.id ??
+          null;
 
         // Prefill store state.
         builder.reset();
@@ -303,24 +344,36 @@ export function useHostEventEdit(eventId: string) {
 
         builder.setEventTitle(found?.name ?? found?.title ?? "Untitled Event");
         builder.setDescription(found?.description ?? "");
-        builder.setCategory(mapEventTypeToCategory(found?.eventType ?? found?.type ?? ""));
-        builder.setDate(toDatetimeLocalValue(found?.startDatetime ?? found?.start_datetime ?? found?.date));
+        builder.setCategory(
+          mapEventTypeToCategory(found?.eventType ?? found?.type ?? ""),
+        );
+        builder.setDate(
+          toDatetimeLocalValue(
+            found?.startDatetime ?? found?.start_datetime ?? found?.date,
+          ),
+        );
         builder.setLocation(
           found?.location ??
             found?.loc ??
             found?.venue?.name ??
             found?.venue?.location ??
-            ""
+            "",
         );
-        builder.setMaxAttendees(Number(found?.maxAttendees ?? found?.capacity ?? 100) || 100);
+        builder.setMaxAttendees(
+          Number(found?.maxAttendees ?? found?.capacity ?? 100) || 100,
+        );
 
         // Prefill gallery (optional).
-        const images = found?.images ?? found?.eventImages ?? (found?.image ? [found?.image] : []);
+        const images =
+          found?.images ??
+          found?.eventImages ??
+          (found?.image ? [found?.image] : []);
         if (Array.isArray(images)) {
           images.forEach((img: any, idx: number) => {
             const url = extractImageUrl(img);
             if (!url) return;
-            const caption = img?.altText ?? img?.caption ?? img?.name ?? `Image ${idx + 1}`;
+            const caption =
+              img?.altText ?? img?.caption ?? img?.name ?? `Image ${idx + 1}`;
             builder.addGalleryItem({
               id: `img-${found?.id}-${idx}`,
               url,
@@ -335,7 +388,10 @@ export function useHostEventEdit(eventId: string) {
           builder.addBaseItem({
             id: venue?.id ?? venue?.venueId ?? `venue-${found?.id}`,
             name: venue?.name ?? venue?.title ?? "Venue",
-            cost: Number(venue?.baseRate ?? venue?.price ?? found?.venuePrice ?? 0) || 0,
+            cost:
+              Number(
+                venue?.baseRate ?? venue?.price ?? found?.venuePrice ?? 0,
+              ) || 0,
             icon: VENUE_ICONS[0],
             desc: venue?.description ?? "",
           });
@@ -365,7 +421,6 @@ export function useHostEventEdit(eventId: string) {
     return () => {
       cancelled = true;
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [eventId, hostId]);
 
   return {
@@ -377,4 +432,3 @@ export function useHostEventEdit(eventId: string) {
     prefillError,
   };
 }
-

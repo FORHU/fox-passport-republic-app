@@ -4,8 +4,8 @@ import MobileBookingSuccess from '@/features/booking/components/MobileBookingSuc
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Booking Confirmed | FoxPassport',
-  description: 'Your premium venue reservation has been confirmed.',
+  title: "Booking Confirmed | FoxPassport",
+  description: "Your premium venue reservation has been confirmed.",
 };
 
 export default function CheckoutSuccessPage() {

@@ -21,6 +21,6 @@ export function useCategoryNavigation() {
   return {
     isMoreOpen,
     selectCategory,
-    closeModal
+    closeModal,
   };
 }

@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-img-element */
 "use client";
 
 import { useState } from "react";
@@ -13,7 +14,8 @@ const CATEGORY_OPTIONS = [
   { label: "Social", value: "social" },
 ] as const;
 
-const FALLBACK_IMG = "https://images.unsplash.com/photo-1492684223066-81342ee5ff30?w=800&auto=format&fit=crop";
+const FALLBACK_IMG =
+  "https://images.unsplash.com/photo-1492684223066-81342ee5ff30?w=800&auto=format&fit=crop";
 
 const CATEGORY_EMOJI: Record<string, string> = {
   birthday: "🎂",
@@ -37,9 +39,16 @@ function SkeletonCard() {
 }
 
 export default function TrendingSection() {
-  const [activeCategory, setActiveCategory] = useState<string | undefined>(undefined);
+  const [activeCategory, setActiveCategory] = useState<string | undefined>(
+    undefined,
+  );
 
-  const { data: templates = [], isLoading, isError, error } = useQuery({
+  const {
+    data: templates = [],
+    isLoading,
+    isError,
+    error,
+  } = useQuery({
     queryKey: ["trending-templates", activeCategory],
     queryFn: () => fetchTrendingTemplates(activeCategory, 8),
     staleTime: 1000 * 60 * 5,
@@ -64,7 +73,9 @@ export default function TrendingSection() {
             <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-display font-bold text-white">
               Trending This Week
             </h2>
-            <p className="text-[10px] sm:text-sm text-text-muted mt-1">Explore hot experiences and events</p>
+            <p className="text-[10px] sm:text-sm text-text-muted mt-1">
+              Explore hot experiences and events
+            </p>
           </div>
           <div className="flex gap-1.5 sm:gap-2 overflow-x-auto hide-scrollbar flex-nowrap w-full pb-1">
             {CATEGORY_OPTIONS.map((opt) => (
@@ -89,7 +100,10 @@ export default function TrendingSection() {
             ? Array.from({ length: 4 }).map((_, i) => <SkeletonCard key={i} />)
             : templates.slice(0, 4).map((t, i) => {
                 const imageUrl = t.images?.[0]?.url ?? FALLBACK_IMG;
-                const city = t.templateVenues?.[0]?.venue?.city ?? t.targetCity ?? "Philippines";
+                const city =
+                  t.templateVenues?.[0]?.venue?.city ??
+                  t.targetCity ??
+                  "Philippines";
                 const price = t.templateVenues?.[0]?.venue?.price;
                 const emoji = CATEGORY_EMOJI[t.category] ?? "✨";
 
@@ -100,7 +114,11 @@ export default function TrendingSection() {
                     initial={{ opacity: 0, y: 24 }}
                     whileInView={{ opacity: 1, y: 0 }}
                     viewport={{ once: true }}
-                    transition={{ duration: 0.45, delay: i * 0.08, ease: [0, 0, 0.2, 1] }}
+                    transition={{
+                      duration: 0.45,
+                      delay: i * 0.08,
+                      ease: [0, 0, 0.2, 1],
+                    }}
                   >
                     <div className="relative aspect-4/3 sm:aspect-4/5 overflow-hidden">
                       <img
@@ -111,11 +129,15 @@ export default function TrendingSection() {
                       <div className="absolute inset-0 bg-linear-to-t from-black via-black/20 to-transparent opacity-60 group-hover:opacity-40 transition-opacity" />
                       <div className="absolute top-3 left-3 sm:top-4 sm:left-4 z-10">
                         <span className="bg-black/50 backdrop-blur-md border border-white/10 text-white text-[10px] sm:text-xs font-bold px-2 py-1 sm:px-3 sm:py-1.5 rounded-full">
-                          {emoji} {t.category.charAt(0).toUpperCase() + t.category.slice(1)}
+                          {emoji}{" "}
+                          {t.category.charAt(0).toUpperCase() +
+                            t.category.slice(1)}
                         </span>
                       </div>
                       <button className="absolute top-3 right-3 sm:top-4 sm:right-4 z-10 h-11 w-11 sm:h-10 sm:w-10 bg-black/30 backdrop-blur-md rounded-full border border-white/10 flex items-center justify-center text-white hover:bg-white hover:text-red-500 transition-colors hover:scale-110">
-                        <span className="material-symbols-outlined text-[18px] sm:text-[20px]">favorite</span>
+                        <span className="material-symbols-outlined text-[18px] sm:text-[20px]">
+                          favorite
+                        </span>
                       </button>
                     </div>
                     <div className="p-2.5 sm:p-6 flex flex-col flex-1">
@@ -131,7 +153,9 @@ export default function TrendingSection() {
                       </div>
                       <div className="mt-auto pt-2 sm:pt-4 flex items-center justify-between border-t border-white/5">
                         <div className="flex items-center text-gray-400 text-[10px] sm:text-sm gap-1 group-hover:text-white transition-colors">
-                          <span className="material-symbols-outlined text-[16px]">location_on</span>
+                          <span className="material-symbols-outlined text-[16px]">
+                            location_on
+                          </span>
                           {city}
                         </div>
                         {price ? (
@@ -151,15 +175,23 @@ export default function TrendingSection() {
 
           {isError && (
             <div className="col-span-4 text-center py-20 text-text-muted">
-              <span className="material-symbols-outlined text-5xl mb-4 block">wifi_off</span>
-              <p className="text-sm font-bold text-red-400">Failed to load events</p>
-              <p className="text-xs mt-1 opacity-60">{(error as any)?.message ?? "Unknown error"}</p>
+              <span className="material-symbols-outlined text-5xl mb-4 block">
+                wifi_off
+              </span>
+              <p className="text-sm font-bold text-red-400">
+                Failed to load events
+              </p>
+              <p className="text-xs mt-1 opacity-60">
+                {(error as any)?.message ?? "Unknown error"}
+              </p>
             </div>
           )}
 
           {!isLoading && !isError && templates.length === 0 && (
             <div className="col-span-4 text-center py-20 text-text-muted">
-              <span className="material-symbols-outlined text-5xl mb-4 block">event_busy</span>
+              <span className="material-symbols-outlined text-5xl mb-4 block">
+                event_busy
+              </span>
               <p>No events in this category yet. Check back soon!</p>
             </div>
           )}
@@ -172,7 +204,9 @@ export default function TrendingSection() {
             <span className="absolute -inset-2 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-[#ccff00]/40 blur-lg" />
             <span className="absolute inset-0 rounded-full border-2 border-white/20 group-hover:border-[#ccff00] group-hover:shadow-[0_0_20px_rgba(204,255,0,0.6),0_0_40px_rgba(204,255,0,0.3)] transition-all duration-300" />
             <span className="absolute inset-0.5 rounded-full bg-[#0a0b0f]" />
-            <span className="relative z-10 group-hover:text-[#ccff00] transition-colors">Load More Vibes</span>
+            <span className="relative z-10 group-hover:text-[#ccff00] transition-colors">
+              Load More Vibes
+            </span>
             <span className="relative z-10 material-symbols-outlined group-hover:text-[#ccff00] animate-bounce">
               arrow_downward
             </span>

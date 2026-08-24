@@ -1,13 +1,14 @@
-'use client';
+/* eslint-disable @next/next/no-img-element */
+"use client";
 
-import React, { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
-import api from '@/shared/lib/axios';
-import { toast } from 'sonner';
-import { useQueryClient } from '@tanstack/react-query';
+import React, { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import api from "@/shared/lib/axios";
+import { toast } from "sonner";
+import { useQueryClient } from "@tanstack/react-query";
 
 interface ServicesTableProps {
-  services: any[];  
+  services: any[];
   isLoading: boolean;
 }
 
@@ -15,17 +16,22 @@ const MIN_REJECTION_REASON_LENGTH = 20;
 const PAGE_SIZE = 5;
 
 function pickImage(images: any): string {
-  if (!images) return '';
-  if (typeof images === 'string') return images;
+  if (!images) return "";
+  if (typeof images === "string") return images;
   if (Array.isArray(images)) {
     const first = images[0];
-    if (!first) return '';
-    return typeof first === 'string' ? first : first?.url || first?.imageUrl || '';
+    if (!first) return "";
+    return typeof first === "string"
+      ? first
+      : first?.url || first?.imageUrl || "";
   }
-  return '';
+  return "";
 }
 
-export const AdminServicesTable: React.FC<ServicesTableProps> = ({ services, isLoading }) => {
+export const AdminServicesTable: React.FC<ServicesTableProps> = ({
+  services,
+  isLoading,
+}) => {
   const router = useRouter();
   const queryClient = useQueryClient();
   const [updatingId, setUpdatingId] = useState<string | null>(null);
@@ -41,35 +47,41 @@ export const AdminServicesTable: React.FC<ServicesTableProps> = ({ services, isL
   useEffect(() => {
     if (currentPage > totalPages) setCurrentPage(totalPages);
   }, [totalPages, currentPage]);
-  const paginatedServices = visibleServices.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
+  const paginatedServices = visibleServices.slice(
+    (currentPage - 1) * PAGE_SIZE,
+    currentPage * PAGE_SIZE,
+  );
 
   // Inline reject-reason state — same file, no separate modal component.
-  const [rejectingService, setRejectingService] = useState<{ id: string; name: string } | null>(null);
-  const [rejectReason, setRejectReason] = useState('');
+  const [rejectingService, setRejectingService] = useState<{
+    id: string;
+    name: string;
+  } | null>(null);
+  const [rejectReason, setRejectReason] = useState("");
 
   const approve = async (id: string) => {
     setUpdatingId(id);
     try {
       await api.patch(`/admin/services/${id}/approve`);
-      toast.success('Service approved');
+      toast.success("Service approved");
       setRemovedIds((prev) => new Set(prev).add(id));
-      queryClient.invalidateQueries({ queryKey: ['admin-data', 'services'] });
+      queryClient.invalidateQueries({ queryKey: ["admin-data", "services"] });
       router.refresh();
     } catch {
-      toast.error('Failed to approve service');
+      toast.error("Failed to approve service");
     } finally {
       setUpdatingId(null);
     }
   };
 
   const openRejectDialog = (id: string, name: string) => {
-    setRejectReason('');
+    setRejectReason("");
     setRejectingService({ id, name });
   };
 
   const closeRejectDialog = () => {
     setRejectingService(null);
-    setRejectReason('');
+    setRejectReason("");
   };
 
   const confirmReject = async () => {
@@ -81,13 +93,13 @@ export const AdminServicesTable: React.FC<ServicesTableProps> = ({ services, isL
     setUpdatingId(id);
     try {
       await api.patch(`/admin/services/${id}/reject`, { reason: trimmed });
-      toast.success('Service rejected');
+      toast.success("Service rejected");
       setRemovedIds((prev) => new Set(prev).add(id));
-      queryClient.invalidateQueries({ queryKey: ['admin-data', 'services'] });
+      queryClient.invalidateQueries({ queryKey: ["admin-data", "services"] });
       router.refresh();
       closeRejectDialog();
     } catch {
-      toast.error('Failed to reject service');
+      toast.error("Failed to reject service");
     } finally {
       setUpdatingId(null);
     }
@@ -97,7 +109,9 @@ export const AdminServicesTable: React.FC<ServicesTableProps> = ({ services, isL
     return (
       <div className="glass-panel p-20 flex flex-col items-center justify-center rounded-[2rem] border border-white/5">
         <div className="w-10 h-10 border-4 border-accent/20 border-t-accent rounded-full animate-spin mb-4" />
-        <p className="text-white/40 font-display text-sm tracking-widest uppercase">Fetching Services...</p>
+        <p className="text-white/40 font-display text-sm tracking-widest uppercase">
+          Fetching Services...
+        </p>
       </div>
     );
   }
@@ -114,9 +128,12 @@ export const AdminServicesTable: React.FC<ServicesTableProps> = ({ services, isL
             className="bg-[#0f111a] border border-white/10 rounded-2xl p-8 max-w-sm w-full mx-4 space-y-4"
             onClick={(e) => e.stopPropagation()}
           >
-            <h3 className="text-white font-bold text-lg">Reject &quot;{rejectingService.name}&quot;</h3>
+            <h3 className="text-white font-bold text-lg">
+              Reject &quot;{rejectingService.name}&quot;
+            </h3>
             <p className="text-white/50 text-sm">
-              Provide a reason for rejection (minimum {MIN_REJECTION_REASON_LENGTH} characters).
+              Provide a reason for rejection (minimum{" "}
+              {MIN_REJECTION_REASON_LENGTH} characters).
             </p>
             <div>
               <textarea
@@ -127,19 +144,26 @@ export const AdminServicesTable: React.FC<ServicesTableProps> = ({ services, isL
                 disabled={updatingId === rejectingService.id}
                 className="w-full bg-white/5 border border-white/10 rounded-xl p-3 text-white text-sm placeholder:text-white/30 focus:outline-none focus:border-red-500/50 resize-none disabled:opacity-50"
               />
-              <p className={`text-[11px] mt-1.5 ${rejectReason.trim().length >= MIN_REJECTION_REASON_LENGTH ? 'text-white/30' : 'text-red-400/80'}`}>
+              <p
+                className={`text-[11px] mt-1.5 ${rejectReason.trim().length >= MIN_REJECTION_REASON_LENGTH ? "text-white/30" : "text-red-400/80"}`}
+              >
                 {rejectReason.trim().length >= MIN_REJECTION_REASON_LENGTH
                   ? `${rejectReason.trim().length} characters`
-                  : `${MIN_REJECTION_REASON_LENGTH - rejectReason.trim().length} more character${MIN_REJECTION_REASON_LENGTH - rejectReason.trim().length === 1 ? '' : 's'} required`}
+                  : `${MIN_REJECTION_REASON_LENGTH - rejectReason.trim().length} more character${MIN_REJECTION_REASON_LENGTH - rejectReason.trim().length === 1 ? "" : "s"} required`}
               </p>
             </div>
             <div className="flex gap-3 pt-1">
               <button
                 onClick={confirmReject}
-                disabled={rejectReason.trim().length < MIN_REJECTION_REASON_LENGTH || updatingId === rejectingService.id}
+                disabled={
+                  rejectReason.trim().length < MIN_REJECTION_REASON_LENGTH ||
+                  updatingId === rejectingService.id
+                }
                 className="flex-1 py-2.5 rounded-xl bg-red-500/80 text-white font-bold text-sm hover:bg-red-500 transition disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-red-500/80"
               >
-                {updatingId === rejectingService.id ? 'Rejecting...' : 'Confirm Rejection'}
+                {updatingId === rejectingService.id
+                  ? "Rejecting..."
+                  : "Confirm Rejection"}
               </button>
               <button
                 onClick={closeRejectDialog}
@@ -156,10 +180,14 @@ export const AdminServicesTable: React.FC<ServicesTableProps> = ({ services, isL
       <div className="glass-panel rounded-[2rem] overflow-hidden border border-white/5 shadow-2xl">
         <div className="p-6 border-b border-white/5 flex justify-between items-center bg-white/2">
           <h3 className="text-xl font-display font-bold text-white flex items-center gap-2">
-            <span className="material-symbols-outlined text-yellow-400">design_services</span>
+            <span className="material-symbols-outlined text-yellow-400">
+              design_services
+            </span>
             Services
           </h3>
-          <span className="text-xs text-white/30">{visibleServices.length} total</span>
+          <span className="text-xs text-white/30">
+            {visibleServices.length} total
+          </span>
         </div>
 
         <div className="overflow-x-auto">
@@ -178,7 +206,12 @@ export const AdminServicesTable: React.FC<ServicesTableProps> = ({ services, isL
             <tbody className="text-sm">
               {paginatedServices.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="p-12 text-center text-white/30 italic">No services submitted yet</td>
+                  <td
+                    colSpan={7}
+                    className="p-12 text-center text-white/30 italic"
+                  >
+                    No services submitted yet
+                  </td>
                 </tr>
               ) : (
                 paginatedServices.map((service, i) => (
@@ -195,43 +228,68 @@ export const AdminServicesTable: React.FC<ServicesTableProps> = ({ services, isL
                               />
                             ) : (
                               <div className="h-full w-full flex items-center justify-center">
-                                <span className="material-symbols-outlined text-white/20 text-[24px]">design_services</span>
+                                <span className="material-symbols-outlined text-white/20 text-[24px]">
+                                  design_services
+                                </span>
                               </div>
                             )}
                           </div>
                           <div>
-                            <p className="font-bold text-white group-hover:text-yellow-400 transition-colors">{service.name}</p>
-                            <p className="text-[10px] text-white/30 font-mono">{service.id?.slice(0, 8)}...</p>
+                            <p className="font-bold text-white group-hover:text-yellow-400 transition-colors">
+                              {service.name}
+                            </p>
+                            <p className="text-[10px] text-white/30 font-mono">
+                              {service.id?.slice(0, 8)}...
+                            </p>
                           </div>
                         </div>
                       </td>
                       <td className="p-6">
-                        <p className="font-bold text-white/90">{service.owner?.name || service.user?.name || '—'}</p>
-                        <p className="text-[10px] text-white/30">ID: {(service.ownerId || service.userId || '').slice(0, 8)}...</p>
+                        <p className="font-bold text-white/90">
+                          {service.owner?.name || service.user?.name || "—"}
+                        </p>
+                        <p className="text-[10px] text-white/30">
+                          ID:{" "}
+                          {(service.ownerId || service.userId || "").slice(
+                            0,
+                            8,
+                          )}
+                          ...
+                        </p>
                       </td>
                       <td className="p-6">
                         <span className="px-2.5 py-1 rounded-full bg-white/5 border border-white/10 text-xs font-bold text-white/70 capitalize">
-                          {service.category || '—'}
+                          {service.category || "—"}
                         </span>
                       </td>
                       <td className="p-6 text-xs text-white/60">
-                        {[service.city, service.country].filter(Boolean).join(', ') || '—'}
+                        {[service.city, service.country]
+                          .filter(Boolean)
+                          .join(", ") || "—"}
                       </td>
                       <td className="p-6 text-green-400 font-bold">
                         ₱{Number(service.price || 0).toLocaleString()}
-                        <span className="text-white/30 font-normal text-[10px] ml-1">/{service.billingRate || 'event'}</span>
+                        <span className="text-white/30 font-normal text-[10px] ml-1">
+                          /{service.billingRate || "event"}
+                        </span>
                       </td>
                       <td className="p-6">
                         <button
-                          onClick={() => setExpandedRow(expandedRow === service.id ? null : service.id)}
+                          onClick={() =>
+                            setExpandedRow(
+                              expandedRow === service.id ? null : service.id,
+                            )
+                          }
                           className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-lg border transition-all text-[10px] font-bold uppercase tracking-widest ${
                             expandedRow === service.id
-                              ? 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30'
-                              : 'bg-white/5 border-white/10 text-white/50 hover:text-white'
+                              ? "bg-yellow-500/20 text-yellow-400 border-yellow-500/30"
+                              : "bg-white/5 border-white/10 text-white/50 hover:text-white"
                           }`}
                         >
-                          {expandedRow === service.id ? 'Close' : 'Details'}
-                          <span className={`material-symbols-outlined text-[14px] transition-transform duration-300 ${expandedRow === service.id ? 'rotate-180' : ''}`}>
+                          {expandedRow === service.id ? "Close" : "Details"}
+                          <span
+                            className={`material-symbols-outlined text-[14px] transition-transform duration-300 ${expandedRow === service.id ? "rotate-180" : ""}`}
+                          >
                             expand_more
                           </span>
                         </button>
@@ -243,7 +301,9 @@ export const AdminServicesTable: React.FC<ServicesTableProps> = ({ services, isL
                           )}
                           <button
                             disabled={!!updatingId}
-                            onClick={() => openRejectDialog(service.id, service.name)}
+                            onClick={() =>
+                              openRejectDialog(service.id, service.name)
+                            }
                             className="px-3 py-1.5 rounded-lg border border-red-500/30 bg-red-500/10 text-red-400 text-[10px] font-bold uppercase tracking-widest hover:bg-red-500/20 disabled:opacity-40 transition-all"
                           >
                             Reject
@@ -261,62 +321,112 @@ export const AdminServicesTable: React.FC<ServicesTableProps> = ({ services, isL
 
                     {expandedRow === service.id && (
                       <tr className="bg-white/1">
-                        <td colSpan={7} className="p-6 border-b border-white/5 animate-in fade-in duration-200">
+                        <td
+                          colSpan={7}
+                          className="p-6 border-b border-white/5 animate-in fade-in duration-200"
+                        >
                           <div className="grid grid-cols-2 md:grid-cols-3 gap-6 p-6 rounded-3xl bg-black/40 border border-white/5">
                             <div className="col-span-2">
-                              <p className="text-[9px] uppercase font-bold text-yellow-400 tracking-[0.2em] mb-2">Description</p>
-                              <p className="text-xs text-white/70 leading-relaxed">{service.description || 'No description provided.'}</p>
+                              <p className="text-[9px] uppercase font-bold text-yellow-400 tracking-[0.2em] mb-2">
+                                Description
+                              </p>
+                              <p className="text-xs text-white/70 leading-relaxed">
+                                {service.description ||
+                                  "No description provided."}
+                              </p>
                             </div>
                             <div>
-                              <p className="text-[9px] uppercase font-bold text-yellow-400 tracking-[0.2em] mb-2">Tags</p>
+                              <p className="text-[9px] uppercase font-bold text-yellow-400 tracking-[0.2em] mb-2">
+                                Tags
+                              </p>
                               <div className="flex flex-wrap gap-1">
-                                {(service.tags || []).length > 0
-                                  ? service.tags.map((tag: string, idx: number) => (
-                                      <span key={idx} className="px-2 py-0.5 rounded-full bg-white/5 text-white/60 text-[10px] border border-white/10">{tag}</span>
-                                    ))
-                                  : <span className="text-white/30 text-xs">—</span>}
+                                {(service.tags || []).length > 0 ? (
+                                  service.tags.map(
+                                    (tag: string, idx: number) => (
+                                      <span
+                                        key={idx}
+                                        className="px-2 py-0.5 rounded-full bg-white/5 text-white/60 text-[10px] border border-white/10"
+                                      >
+                                        {tag}
+                                      </span>
+                                    ),
+                                  )
+                                ) : (
+                                  <span className="text-white/30 text-xs">
+                                    —
+                                  </span>
+                                )}
                               </div>
                             </div>
                             <div className="col-span-3">
                               <p className="text-[9px] uppercase font-bold text-yellow-400 tracking-[0.2em] mb-3">
-                                Uploaded Files ({Array.isArray(service.images) ? service.images.length : 0})
+                                Uploaded Files (
+                                {Array.isArray(service.images)
+                                  ? service.images.length
+                                  : 0}
+                                )
                               </p>
-                              {Array.isArray(service.images) && service.images.length > 0 ? (
+                              {Array.isArray(service.images) &&
+                              service.images.length > 0 ? (
                                 <div className="flex gap-2 flex-wrap">
-                                  {service.images.map((img: any, idx: number) => {
-                                    const src = typeof img === 'string' ? img : img?.url || img?.imageUrl;
-                                    const name = typeof img === 'string' ? null : img?.name;
-                                    const isPdf = name?.toLowerCase().endsWith('.pdf') || src?.toLowerCase().endsWith('.pdf');
+                                  {service.images.map(
+                                    (img: any, idx: number) => {
+                                      const src =
+                                        typeof img === "string"
+                                          ? img
+                                          : img?.url || img?.imageUrl;
+                                      const name =
+                                        typeof img === "string"
+                                          ? null
+                                          : img?.name;
+                                      const isPdf =
+                                        name?.toLowerCase().endsWith(".pdf") ||
+                                        src?.toLowerCase().endsWith(".pdf");
 
-                                    if (!src) return null;
+                                      if (!src) return null;
 
-                                    return isPdf ? (
-                                      <a
-                                        key={idx}
-                                        href={src}
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        className="h-20 w-20 rounded-xl bg-white/5 border border-white/10 flex flex-col items-center justify-center gap-1 hover:border-yellow-400/50 transition group"
-                                      >
-                                        <span className="material-symbols-outlined text-[24px] text-red-400 group-hover:scale-110 transition-transform">picture_as_pdf</span>
-                                        <span className="text-[8px] text-white/40 truncate max-w-[60px]">{name || 'File'}</span>
-                                      </a>
-                                    ) : (
-                                      <a key={idx} href={src} target="_blank" rel="noopener noreferrer" className="relative group">
-                                        <img
-                                          src={src}
-                                          alt=""
-                                          className="h-20 w-20 object-cover rounded-xl border border-white/10 group-hover:border-yellow-400/50 transition"
-                                        />
-                                        <div className="absolute inset-0 rounded-xl bg-black/50 opacity-0 group-hover:opacity-100 transition flex items-center justify-center">
-                                          <span className="material-symbols-outlined text-white text-[18px]">open_in_new</span>
-                                        </div>
-                                      </a>
-                                    );
-                                  })}
+                                      return isPdf ? (
+                                        <a
+                                          key={idx}
+                                          href={src}
+                                          target="_blank"
+                                          rel="noopener noreferrer"
+                                          className="h-20 w-20 rounded-xl bg-white/5 border border-white/10 flex flex-col items-center justify-center gap-1 hover:border-yellow-400/50 transition group"
+                                        >
+                                          <span className="material-symbols-outlined text-[24px] text-red-400 group-hover:scale-110 transition-transform">
+                                            picture_as_pdf
+                                          </span>
+                                          <span className="text-[8px] text-white/40 truncate max-w-[60px]">
+                                            {name || "File"}
+                                          </span>
+                                        </a>
+                                      ) : (
+                                        <a
+                                          key={idx}
+                                          href={src}
+                                          target="_blank"
+                                          rel="noopener noreferrer"
+                                          className="relative group"
+                                        >
+                                          <img
+                                            src={src}
+                                            alt=""
+                                            className="h-20 w-20 object-cover rounded-xl border border-white/10 group-hover:border-yellow-400/50 transition"
+                                          />
+                                          <div className="absolute inset-0 rounded-xl bg-black/50 opacity-0 group-hover:opacity-100 transition flex items-center justify-center">
+                                            <span className="material-symbols-outlined text-white text-[18px]">
+                                              open_in_new
+                                            </span>
+                                          </div>
+                                        </a>
+                                      );
+                                    },
+                                  )}
                                 </div>
                               ) : (
-                                <p className="text-xs text-white/30 italic">No files uploaded</p>
+                                <p className="text-xs text-white/30 italic">
+                                  No files uploaded
+                                </p>
                               )}
                             </div>
                           </div>
