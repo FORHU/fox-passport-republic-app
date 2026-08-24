@@ -1,4 +1,4 @@
-import MobileKYCView from '@/features/role-application/components/MobileKYCView';
+import MobileKYCView from "@/features/role-application/components/MobileKYCView";
 
 export default function KYCPage() {
   return (
@@ -7,7 +7,9 @@ export default function KYCPage() {
         <MobileKYCView />
       </div>
       <div className="hidden lg:flex min-h-screen items-center justify-center bg-[#050608]">
-        <p className="text-white/40 text-sm">Complete document verification via the Role Application page.</p>
+        <p className="text-white/40 text-sm">
+          Complete document verification via the Role Application page.
+        </p>
       </div>
     </>
   );

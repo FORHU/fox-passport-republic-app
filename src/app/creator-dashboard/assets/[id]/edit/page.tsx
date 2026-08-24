@@ -154,7 +154,10 @@ function HostAssetEditPageContent() {
             onCityChange={setCity}
             onStateChange={setState}
             onCountryChange={setCountry}
-            onLatLngChange={(lat, lng) => { setLat(lat); setLng(lng); }}
+            onLatLngChange={(lat, lng) => {
+              setLat(lat);
+              setLng(lng);
+            }}
             onCancellationPolicyChange={setCancellationPolicyId}
           />
 

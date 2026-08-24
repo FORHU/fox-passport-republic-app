@@ -221,7 +221,8 @@ export function useInventoryBuilder() {
       }
       toast.success("Draft saved");
     } catch (err: any) {
-      const msg = err?.response?.data?.message || err?.message || "Failed to save draft";
+      const msg =
+        err?.response?.data?.message || err?.message || "Failed to save draft";
       setError(msg);
     } finally {
       store.setIsSubmitting(false);
@@ -328,7 +329,10 @@ export function useInventoryBuilder() {
 
       console.log("[ListingBuilder] Publishing asset:", assetData);
       if (savedDraftId.current) {
-        await updateAsset(savedDraftId.current, { ...assetData, status: "pending" } as any);
+        await updateAsset(savedDraftId.current, {
+          ...assetData,
+          status: "pending",
+        } as any);
       } else {
         await createAssetWithAPI(assetData);
       }

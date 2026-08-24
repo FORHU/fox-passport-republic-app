@@ -225,14 +225,16 @@ function NavbarContent() {
       <nav className="fixed top-0 left-0 right-0 z-110 transition-all duration-300">
         <div className="mx-auto max-w-7xl px-4">
           <div className="glass-panel rounded-full px-4 sm:px-6 h-14 sm:h-20 flex items-center justify-between shadow-2xl hover:bg-black/40 transition-colors duration-500">
-
             {/* LOGO */}
             <BrandLogo />
 
             {/* DESKTOP MENU */}
             <nav className="hidden md:flex items-center gap-2 bg-black/20 p-1.5 rounded-full border border-white/5">
               <BrowseDropdown />
-              <Link href="/creator-dashboard" className="px-6 py-2.5 rounded-full text-sm font-medium text-white/70 hover:text-white hover:bg-white/10 transition-all hover:scale-105">
+              <Link
+                href="/creator-dashboard"
+                className="px-6 py-2.5 rounded-full text-sm font-medium text-white/70 hover:text-white hover:bg-white/10 transition-all hover:scale-105"
+              >
                 Create
               </Link>
               <Link
@@ -252,7 +254,9 @@ function NavbarContent() {
             <div className="flex items-center gap-3">
               {/* Search — desktop only */}
               <button className="hidden sm:flex h-10 w-10 items-center justify-center rounded-full border border-white/10 text-white hover:bg-white hover:text-black transition-all hover:rotate-12">
-                <span className="material-symbols-outlined text-[20px]">search</span>
+                <span className="material-symbols-outlined text-[20px]">
+                  search
+                </span>
               </button>
               {/* Notification bell — all sizes when authenticated */}
               {isAuthenticated && <NotificationBell />}
@@ -279,10 +283,10 @@ function NavbarContent() {
         onLoginClick={openLogin}
       />
 
-      <HostModal 
-        isOpen={isHostModalOpen} 
-        onClose={() => setHostModalOpen(false)} 
-        onOptionClick={handleHostOptionClick} 
+      <HostModal
+        isOpen={isHostModalOpen}
+        onClose={() => setHostModalOpen(false)}
+        onOptionClick={handleHostOptionClick}
       />
       <AuthModal />
     </>
@@ -290,5 +294,9 @@ function NavbarContent() {
 }
 
 export default function Navbar() {
-  return <Suspense fallback={<div className="h-20" />}><NavbarContent /></Suspense>;
+  return (
+    <Suspense fallback={<div className="h-20" />}>
+      <NavbarContent />
+    </Suspense>
+  );
 }

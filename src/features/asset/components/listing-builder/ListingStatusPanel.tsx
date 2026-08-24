@@ -93,13 +93,19 @@ export function ListingStatusPanel({
 
       <div className="p-6 border-t border-white/5 bg-[#0f111a]">
         <button
-          onClick={previewHref ? () => window.open(previewHref, '_blank') : undefined}
+          onClick={
+            previewHref ? () => window.open(previewHref, "_blank") : undefined
+          }
           disabled={!previewHref}
-          title={previewHref ? 'Open public listing page' : 'Publish or save a draft first'}
+          title={
+            previewHref
+              ? "Open public listing page"
+              : "Publish or save a draft first"
+          }
           className={`w-full py-3 rounded-xl border text-sm font-bold transition-all ${
             previewHref
-              ? 'border-white/10 hover:bg-white hover:text-black text-white cursor-pointer'
-              : 'border-white/5 text-white/20 cursor-not-allowed'
+              ? "border-white/10 hover:bg-white hover:text-black text-white cursor-pointer"
+              : "border-white/5 text-white/20 cursor-not-allowed"
           }`}
         >
           Preview Page

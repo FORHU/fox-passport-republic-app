@@ -1,15 +1,15 @@
 /* eslint-disable @typescript-eslint/no-unused-vars, @next/next/no-img-element */
 "use client";
 
-import React, { useState, useEffect } from 'react';
-import Image from 'next/image';
-import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import { fetchAssetById } from '@/features/asset/api/assets';
-import { useCanPartner } from '@/shared/hooks/useCanPartner';
-import { useAuthStore } from '@/features/auth/store/useAuthStore';
-import { toast } from 'sonner';
-import type { BackendAsset } from '@/shared/lib/api-types';
+import React, { useState, useEffect } from "react";
+import Image from "next/image";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { fetchAssetById } from "@/features/asset/api/assets";
+import { useCanPartner } from "@/shared/hooks/useCanPartner";
+import { useAuthStore } from "@/features/auth/store/useAuthStore";
+import { toast } from "sonner";
+import type { BackendAsset } from "@/shared/lib/api-types";
 
 function getFeatures(asset: BackendAsset) {
   const features = [];
@@ -100,7 +100,14 @@ export default function AssetDetailClient({ assetId }: { assetId: string }) {
         </button>
         <Link href="/" className="flex items-center gap-2 group">
           <div className="flex h-9 w-9 items-center justify-center overflow-hidden group-hover:scale-110 transition-transform duration-300">
-            <Image src="/foxonlylogo.png" alt="FoxPassport Logo" width={36} height={36} className="object-contain" priority />
+            <Image
+              src="/foxonlylogo.png"
+              alt="FoxPassport Logo"
+              width={36}
+              height={36}
+              className="object-contain"
+              priority
+            />
           </div>
           <span className="text-xl font-display font-bold text-white group-hover:text-accent transition-colors">
             FoxPassport

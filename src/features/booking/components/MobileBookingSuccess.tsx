@@ -1,8 +1,8 @@
-'use client';
+"use client";
 
-import React from 'react';
-import Image from 'next/image';
-import { useRouter } from 'next/navigation';
+import React from "react";
+import Image from "next/image";
+import { useRouter } from "next/navigation";
 
 type Props = {
   ticketCode?: string;
@@ -12,9 +12,9 @@ type Props = {
 };
 
 export default function MobileBookingSuccess({
-  ticketCode = 'FX-98214',
-  eventName = 'Neon Nights Reception',
-  eventDate = 'Aug 14',
+  ticketCode = "FX-98214",
+  eventName = "Neon Nights Reception",
+  eventDate = "Aug 14",
   onClose,
 }: Props) {
   const router = useRouter();
@@ -23,24 +23,70 @@ export default function MobileBookingSuccess({
   return (
     <div
       className="flex flex-col items-center justify-center min-h-screen px-7 text-center max-w-md mx-auto relative"
-      style={{ background: '#050608' }}
+      style={{ background: "#050608" }}
     >
       {/* Radial glow */}
       <div
         style={{
-          position: 'absolute',
+          position: "absolute",
           inset: 0,
-          background: 'radial-gradient(circle at 50% 40%, rgba(204,255,0,0.12), transparent 60%)',
-          pointerEvents: 'none',
+          background:
+            "radial-gradient(circle at 50% 40%, rgba(204,255,0,0.12), transparent 60%)",
+          pointerEvents: "none",
         }}
       />
 
       {/* Transparent nav bar */}
-      <div style={{ position: 'absolute', top: 62, left: 0, right: 0, height: 64, display: 'flex', alignItems: 'center', padding: '0 16px', gap: 10, zIndex: 5 }}>
-        <Image src="/foxonlylogo.png" alt="FoxPassport" width={22} height={22} style={{ objectFit: 'contain' }} />
-        <p style={{ flex: 1, fontSize: 14, fontWeight: 700, fontFamily: 'var(--font-display,"Space Grotesk",sans-serif)', margin: 0 }}>Booking Confirmed</p>
-        <button onClick={handleClose} style={{ width: 36, height: 36, borderRadius: 999, background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', flexShrink: 0 }}>
-          <span className="material-symbols-outlined" style={{ fontSize: 16 }}>close</span>
+      <div
+        style={{
+          position: "absolute",
+          top: 62,
+          left: 0,
+          right: 0,
+          height: 64,
+          display: "flex",
+          alignItems: "center",
+          padding: "0 16px",
+          gap: 10,
+          zIndex: 5,
+        }}
+      >
+        <Image
+          src="/foxonlylogo.png"
+          alt="FoxPassport"
+          width={22}
+          height={22}
+          style={{ objectFit: "contain" }}
+        />
+        <p
+          style={{
+            flex: 1,
+            fontSize: 14,
+            fontWeight: 700,
+            fontFamily: 'var(--font-display,"Space Grotesk",sans-serif)',
+            margin: 0,
+          }}
+        >
+          Booking Confirmed
+        </p>
+        <button
+          onClick={handleClose}
+          style={{
+            width: 36,
+            height: 36,
+            borderRadius: 999,
+            background: "rgba(255,255,255,0.08)",
+            border: "1px solid rgba(255,255,255,0.12)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            cursor: "pointer",
+            flexShrink: 0,
+          }}
+        >
+          <span className="material-symbols-outlined" style={{ fontSize: 16 }}>
+            close
+          </span>
         </button>
       </div>
 
@@ -50,18 +96,22 @@ export default function MobileBookingSuccess({
           style={{
             width: 88,
             height: 88,
-            borderRadius: '50%',
-            background: 'rgba(204,255,0,0.12)',
-            border: '2px solid #ccff00',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
+            borderRadius: "50%",
+            background: "rgba(204,255,0,0.12)",
+            border: "2px solid #ccff00",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
             marginBottom: 24,
           }}
         >
           <span
             className="material-symbols-outlined"
-            style={{ fontSize: 40, color: '#ccff00', fontVariationSettings: "'wght' 300" }}
+            style={{
+              fontSize: 40,
+              color: "#ccff00",
+              fontVariationSettings: "'wght' 300",
+            }}
           >
             check
           </span>
@@ -79,20 +129,20 @@ export default function MobileBookingSuccess({
         <p
           style={{
             fontSize: 14,
-            color: 'rgba(255,255,255,0.5)',
-            lineHeight: '1.6',
+            color: "rgba(255,255,255,0.5)",
+            lineHeight: "1.6",
             marginBottom: 28,
             maxWidth: 280,
           }}
         >
-          Your booking for{' '}
-          <span style={{ color: 'rgba(255,255,255,0.8)', fontWeight: 600 }}>
+          Your booking for{" "}
+          <span style={{ color: "rgba(255,255,255,0.8)", fontWeight: 600 }}>
             {eventName}
-          </span>{' '}
-          on{' '}
-          <span style={{ color: 'rgba(255,255,255,0.8)', fontWeight: 600 }}>
+          </span>{" "}
+          on{" "}
+          <span style={{ color: "rgba(255,255,255,0.8)", fontWeight: 600 }}>
             {eventDate}
-          </span>{' '}
+          </span>{" "}
           is confirmed. A stamp has been added to your Passport.
         </p>
 
@@ -100,25 +150,29 @@ export default function MobileBookingSuccess({
         <div
           className="w-full flex justify-between items-center"
           style={{
-            background: 'rgba(255,255,255,0.04)',
-            border: '1px solid rgba(255,255,255,0.07)',
+            background: "rgba(255,255,255,0.04)",
+            border: "1px solid rgba(255,255,255,0.07)",
             borderRadius: 18,
-            padding: '14px 18px',
+            padding: "14px 18px",
             marginBottom: 28,
           }}
         >
           <span
-            style={{ fontSize: 12, color: 'rgba(255,255,255,0.4)', fontWeight: 500 }}
+            style={{
+              fontSize: 12,
+              color: "rgba(255,255,255,0.4)",
+              fontWeight: 500,
+            }}
           >
             Confirmation
           </span>
           <span
             style={{
               fontSize: 13,
-              color: '#fff',
-              fontFamily: 'monospace',
+              color: "#fff",
+              fontFamily: "monospace",
               fontWeight: 700,
-              letterSpacing: '0.05em',
+              letterSpacing: "0.05em",
             }}
           >
             {ticketCode}
@@ -129,13 +183,13 @@ export default function MobileBookingSuccess({
         <button
           className="w-full font-bold"
           style={{
-            background: '#ccff00',
-            color: '#000',
+            background: "#ccff00",
+            color: "#000",
             fontSize: 14,
             borderRadius: 16,
-            padding: '14px 0',
-            border: 'none',
-            cursor: 'pointer',
+            padding: "14px 0",
+            border: "none",
+            cursor: "pointer",
           }}
         >
           View Booking

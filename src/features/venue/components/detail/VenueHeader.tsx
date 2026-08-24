@@ -1,8 +1,8 @@
 "use client";
 
-import React from 'react';
-import Image from 'next/image';
-import Link from 'next/link';
+import React from "react";
+import Image from "next/image";
+import Link from "next/link";
 
 interface VenueNavHeaderProps {
   title: string;
@@ -13,9 +13,19 @@ export function VenueNavHeader({ onBack }: VenueNavHeaderProps) {
   return (
     <header className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-md border-b border-white/5 h-14 sm:h-20 transition-all duration-300">
       <div className="mx-auto max-w-7xl px-4 h-full flex items-center justify-between">
-        <Link href="/" className="flex items-center gap-2 sm:gap-3 group cursor-pointer">
+        <Link
+          href="/"
+          className="flex items-center gap-2 sm:gap-3 group cursor-pointer"
+        >
           <div className="flex h-8 w-8 sm:h-10 sm:w-10 items-center justify-center overflow-hidden group-hover:scale-110 transition-transform duration-300">
-            <Image src="/foxonlylogo.png" alt="FoxPassport Logo" width={40} height={40} className="object-contain" priority />
+            <Image
+              src="/foxonlylogo.png"
+              alt="FoxPassport Logo"
+              width={40}
+              height={40}
+              className="object-contain"
+              priority
+            />
           </div>
           <h2 className="text-lg sm:text-2xl font-display font-bold tracking-tight text-white group-hover:text-accent transition-colors">
             FoxPassport

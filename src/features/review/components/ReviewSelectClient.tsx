@@ -17,8 +17,15 @@ export default function ReviewSelectClient({
     useReviewSelectStore();
 
   const filteredVenues = recentVenues.filter((v) => {
-    const matchesName = !searchQuery || v.title?.toLowerCase().includes(searchQuery.toLowerCase()) || v.name?.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesLocation = !locationQuery || v.city?.toLowerCase().includes(locationQuery.toLowerCase()) || v.country?.toLowerCase().includes(locationQuery.toLowerCase()) || v.province?.toLowerCase().includes(locationQuery.toLowerCase());
+    const matchesName =
+      !searchQuery ||
+      v.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      v.name?.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesLocation =
+      !locationQuery ||
+      v.city?.toLowerCase().includes(locationQuery.toLowerCase()) ||
+      v.country?.toLowerCase().includes(locationQuery.toLowerCase()) ||
+      v.province?.toLowerCase().includes(locationQuery.toLowerCase());
     return matchesName && matchesLocation;
   });
 
@@ -81,7 +88,9 @@ export default function ReviewSelectClient({
                 <ReviewVenueCard key={venue.id} venue={venue} />
               ))
             ) : (
-              <p className="col-span-2 text-center text-gray-400 py-8">No venues found matching your search.</p>
+              <p className="col-span-2 text-center text-gray-400 py-8">
+                No venues found matching your search.
+              </p>
             )}
           </div>
         </div>

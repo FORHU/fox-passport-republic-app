@@ -242,7 +242,9 @@ export const ProgressDashboard: React.FC<ProgressDashboardProps> = ({
           </div>
 
           <div className="space-y-2">
-            <h3 className="text-lg font-bold text-[#ccff00]">Venue Foxer Path</h3>
+            <h3 className="text-lg font-bold text-[#ccff00]">
+              Venue Foxer Path
+            </h3>
             <ul className="space-y-1 text-sm text-white/50">
               <li>• Upload venue: +{XP_REWARDS.uploadVenue} XP</li>
               <li>• Venue booked: +{XP_REWARDS.venueBooked} XP</li>

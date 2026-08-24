@@ -82,7 +82,9 @@ export function InventorySection({
                     className="object-cover group-hover:scale-110 transition-transform duration-500"
                   />
                 ) : (
-                  <span className="material-symbols-outlined text-white/20 text-5xl">inventory_2</span>
+                  <span className="material-symbols-outlined text-white/20 text-5xl">
+                    inventory_2
+                  </span>
                 )}
               </div>
 

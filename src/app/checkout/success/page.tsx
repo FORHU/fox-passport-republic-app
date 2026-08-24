@@ -1,7 +1,7 @@
-﻿import React, { Suspense } from 'react';
-import CheckoutSuccessClient from '@/features/booking/components/CheckoutSuccessClient';
-import MobileBookingSuccess from '@/features/booking/components/MobileBookingSuccess';
-import type { Metadata } from 'next';
+﻿import React, { Suspense } from "react";
+import CheckoutSuccessClient from "@/features/booking/components/CheckoutSuccessClient";
+import MobileBookingSuccess from "@/features/booking/components/MobileBookingSuccess";
+import type { Metadata } from "next";
 
 export const metadata: Metadata = {
   title: "Booking Confirmed | FoxPassport",

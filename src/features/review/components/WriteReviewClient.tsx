@@ -1,4 +1,4 @@
-﻿'use client';
+﻿"use client";
 
 import React, { useState } from "react";
 import { ArrowLeft, Star, Calendar } from "lucide-react";
@@ -164,7 +164,9 @@ export default function WriteReviewClient({ booking }: WriteReviewClientProps) {
                   )}
                 </p>
                 {comment.trim().length >= 10 && (
-                  <span className="text-xs text-green-400">âœ“ Good length</span>
+                  <span className="text-xs text-green-400">
+                    âœ“ Good length
+                  </span>
                 )}
               </div>
             </div>

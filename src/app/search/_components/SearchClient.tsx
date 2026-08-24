@@ -161,14 +161,13 @@ export default function SearchClient() {
     { label: "Services", value: "service" },
   ];
 
-  const [activeChip, setActiveChip] = useState(
-    searchParams?.get("type") || ""
-  );
+  const [activeChip, setActiveChip] = useState(searchParams?.get("type") || "");
 
   const handleChipClick = (val: string) => {
     setActiveChip(val);
     const params = new URLSearchParams(searchParams?.toString() || "");
-    if (val) params.set("type", val); else params.delete("type");
+    if (val) params.set("type", val);
+    else params.delete("type");
     router.replace(`/search?${params.toString()}`);
   };
 
@@ -179,17 +178,27 @@ export default function SearchClient() {
         <div className="max-w-7xl mx-auto px-4 sm:px-8 py-3 sm:py-6">
           {/* Top row */}
           <div className="flex items-center gap-3 sm:gap-8">
-            <Link href="/" className="hidden sm:flex items-center gap-3 group shrink-0">
+            <Link
+              href="/"
+              className="hidden sm:flex items-center gap-3 group shrink-0"
+            >
               <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center group-hover:scale-105 transition-transform shadow-[0_0_15px_rgba(255,255,255,0.3)]">
-                <span className="material-symbols-outlined text-black text-[22px]" style={{ fontVariationSettings: "'FILL' 1" }}>
+                <span
+                  className="material-symbols-outlined text-black text-[22px]"
+                  style={{ fontVariationSettings: "'FILL' 1" }}
+                >
                   explore
                 </span>
               </div>
-              <span className="text-2xl font-black font-display tracking-tight text-white">Discover</span>
+              <span className="text-2xl font-black font-display tracking-tight text-white">
+                Discover
+              </span>
             </Link>
 
             <div className="relative flex-1 max-w-lg">
-              <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-white/30 text-[20px]">search</span>
+              <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-white/30 text-[20px]">
+                search
+              </span>
               <input
                 type="text"
                 value={searchQuery}
@@ -203,11 +212,15 @@ export default function SearchClient() {
             {(category || city) && (
               <div className="hidden sm:flex items-center gap-2 text-xs text-white/50">
                 {category && (
-                  <span className="px-3 py-1 rounded-full bg-white/5 border border-white/10 capitalize">{category}</span>
+                  <span className="px-3 py-1 rounded-full bg-white/5 border border-white/10 capitalize">
+                    {category}
+                  </span>
                 )}
                 {city && (
                   <span className="px-3 py-1 rounded-full bg-white/5 border border-white/10 flex items-center gap-1">
-                    <span className="material-symbols-outlined text-[14px]">location_on</span>
+                    <span className="material-symbols-outlined text-[14px]">
+                      location_on
+                    </span>
                     {city}
                   </span>
                 )}
@@ -223,9 +236,18 @@ export default function SearchClient() {
                 onClick={() => handleChipClick(chip.value)}
                 className="flex-none text-[11px] font-bold px-4 py-2 rounded-full transition-all whitespace-nowrap"
                 style={{
-                  background: activeChip === chip.value ? "#ccff00" : "rgba(255,255,255,0.06)",
-                  color: activeChip === chip.value ? "#000" : "rgba(255,255,255,0.6)",
-                  border: activeChip === chip.value ? "none" : "1px solid rgba(255,255,255,0.1)",
+                  background:
+                    activeChip === chip.value
+                      ? "#ccff00"
+                      : "rgba(255,255,255,0.06)",
+                  color:
+                    activeChip === chip.value
+                      ? "#000"
+                      : "rgba(255,255,255,0.6)",
+                  border:
+                    activeChip === chip.value
+                      ? "none"
+                      : "1px solid rgba(255,255,255,0.1)",
                 }}
               >
                 {chip.label}

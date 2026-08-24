@@ -1,4 +1,4 @@
-import MobileScannerView from '@/features/dashboard/components/MobileScannerView';
+import MobileScannerView from "@/features/dashboard/components/MobileScannerView";
 
 export default function ScannerPage() {
   return (
@@ -7,7 +7,9 @@ export default function ScannerPage() {
         <MobileScannerView />
       </div>
       <div className="hidden lg:flex min-h-screen items-center justify-center bg-[#050608]">
-        <p className="text-white/40 text-sm">QR check-in scanning is available on mobile only.</p>
+        <p className="text-white/40 text-sm">
+          QR check-in scanning is available on mobile only.
+        </p>
       </div>
     </>
   );
