@@ -251,13 +251,13 @@ function ForgotView({ onBack }: { onBack: () => void }) {
       <h1 style={{ fontFamily: 'var(--font-display,"Space Grotesk",sans-serif)', fontSize: 27, fontWeight: 700, color: '#fff', lineHeight: 1.2, marginBottom: 8 }}>
         Forgot your<br />password?
       </h1>
-      <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.4)', marginBottom: 24 }}>Enter your email and we'll send a reset code.</p>
+      <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.4)', marginBottom: 24 }}>Enter your email and we&apos;ll send a reset code.</p>
 
       {sent ? (
         <div style={{ background: 'rgba(204,255,0,0.08)', border: '1px solid rgba(204,255,0,0.25)', borderRadius: 16, padding: '20px 18px', textAlign: 'center' }}>
           <span className="material-symbols-outlined" style={{ fontSize: 32, color: '#ccff00', display: 'block', marginBottom: 10 }}>mark_email_read</span>
           <p style={{ fontSize: 14, fontWeight: 700, color: '#fff', marginBottom: 6 }}>Check your inbox</p>
-          <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.45)', lineHeight: 1.5 }}>We sent a reset code to <strong style={{ color: '#fff' }}>{email}</strong>. Check your spam folder if you don't see it.</p>
+          <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.45)', lineHeight: 1.5 }}>We sent a reset code to <strong style={{ color: '#fff' }}>{email}</strong>. Check your spam folder if you don&apos;t see it.</p>
         </div>
       ) : (
         <form onSubmit={handleSend} style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
@@ -323,7 +323,7 @@ function VerifyView({ onVerified }: { onVerified: () => void }) {
 
       <div style={{ textAlign: 'center', marginTop: 20 }}>
         <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.35)' }}>
-          Didn't receive it?{' '}
+          Didn&apos;t receive it?{' '}
           <button
             onClick={() => pendingEmail && resendMutation.mutate(pendingEmail)}
             disabled={resendMutation.isPending || !pendingEmail}
