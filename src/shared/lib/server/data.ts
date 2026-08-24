@@ -208,29 +208,19 @@ function normalizeVenue(v: any) {
   return {
     ...v,
     hostId: v.hostId ?? v.mayorId ?? mayor?.id ?? null,
-    host: mayor
-      ? {
-          id: mayor.id,
-          name: mayor.name || "Venue Owner",
-          avatar:
-            mayor.imgId ||
-            `https://ui-avatars.com/api/?name=${encodeURIComponent(mayor.name || "Host")}&background=ccff00&color=000`,
-          bio: "",
-          email: mayor.email,
-        }
-      : null,
-    title: v.title || v.name || "Untitled Venue",
-    type: v.type || v.venueType || "Venue",
-    loc:
-      v.location ||
-      [v.city, v.province, v.country].filter(Boolean).join(", ") ||
-      "",
-    cap: v.capacity ? `${v.capacity} guests` : "—",
-    location:
-      v.location ||
-      [v.city, v.province, v.country].filter(Boolean).join(", ") ||
-      "",
-    province: v.province || v.country || "",
+    host: mayor ? {
+      id: mayor.id,
+      name: mayor.name || 'Venue Owner',
+      avatar: mayor.imgId || `https://ui-avatars.com/api/?name=${encodeURIComponent(mayor.name || 'Owner')}&background=ccff00&color=000`,
+      bio: '',
+      email: mayor.email,
+    } : null,
+    title: v.title || v.name || 'Untitled Venue',
+    type: v.type || v.venueType || 'Venue',
+    loc: v.location || [v.city, v.province, v.country].filter(Boolean).join(', ') || '',
+    cap: v.capacity ? `${v.capacity} guests` : '—',
+    location: v.location || [v.city, v.province, v.country].filter(Boolean).join(', ') || '',
+    province: v.province || v.country || '',
     price: Number(v.price || v.pricePerNight || 0),
     rating: Number(v.rating || v.averageRating || 0),
     reviews: Number(v.reviews || v.reviewCount || 0),

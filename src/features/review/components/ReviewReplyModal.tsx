@@ -55,9 +55,7 @@ export default function ReviewReplyModal({
             <X className="w-5 h-5" />
           </button>
 
-          <h3 className="text-lg font-display font-bold text-white mb-4">
-            Host Reply
-          </h3>
+          <h3 className="text-lg font-display font-bold text-white mb-4">Owner Reply</h3>
 
           <div className="bg-white/5 rounded-xl p-4">
             <div className="flex items-center gap-3 mb-3">

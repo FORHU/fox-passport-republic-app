@@ -46,11 +46,11 @@ interface RoleApplication {
 }
 
 const ROLE_LABELS: Record<string, string> = {
-  eventFoxer: "Host",
-  venueFoxer: "Mayor",
-  gearFoxer: "Foxer (Asset)",
-  serviceFoxer: "Foxer (Service)",
-  investor: "Investor",
+  eventFoxer: 'Event Foxer',
+  venueFoxer: 'Venue Foxer',
+  gearFoxer: 'Gear Foxer',
+  serviceFoxer: 'Service Foxer',
+  investor: 'Investor',
 };
 
 const STATUS_STYLES: Record<RoleStatus, string> = {

@@ -35,39 +35,48 @@ export const useHostDashboard = () => {
     router.replace("/");
   };
 
-  const { data: venues = [], isLoading } = useQuery({
+  const { data: venues = [], isLoading: venuesLoading } = useQuery({
     queryKey: ["host-venues", userId],
     queryFn: async () => {
       if (!userId) return [];
-      // Calling GET /api/venues?hostId=...
       const response = await api.get(`/venues?hostId=${userId}`);
-      // Backend returns { success: true, data: [...] }
-      return response.data.data;
+      return response.data.venues ?? [];
     },
-    enabled: !!userId, // Only run query if we have a user ID
+    enabled: !!userId,
     refetchInterval: () => {
-      if (typeof document !== "undefined" && document.hidden) return false;
-      return 10000; // 10 seconds for host dashboard
+      if (typeof document !== 'undefined' && document.hidden) return false;
+      return 10000;
     },
     refetchOnWindowFocus: true,
     staleTime: 5000,
   });
 
-  const stats = {
+  const { data: ownerStats, isLoading: statsLoading } = useQuery({
+    queryKey: ["host-venue-stats", userId],
+    queryFn: async () => {
+      const response = await api.get('/venues/owner-stats');
+      return response.data as {
+        totalVenues: number;
+        activeListings: number;
+        averageRating: number;
+        totalRevenue: number;
+      };
+    },
+    enabled: !!userId,
+    staleTime: 30000,
+  });
+
+  const stats = ownerStats ?? {
     totalVenues: venues.length,
-    activeListings: venues.filter((v: Venue) => v.status === "active").length, // Adjust 'active' based on enum
-    totalRevenue: 0, // Placeholder
-    averageRating:
-      venues.length > 0
-        ? venues.reduce((acc: number, v: Venue) => acc + (v.rating || 0), 0) /
-          venues.length
-        : 0.0,
+    activeListings: venues.filter((v: Venue) => v.status === "available").length,
+    averageRating: 0,
+    totalRevenue: 0,
   };
 
   return {
     handleLogout,
     openModal,
     stats,
-    isLoading,
+    isLoading: venuesLoading || statsLoading,
   };
 };

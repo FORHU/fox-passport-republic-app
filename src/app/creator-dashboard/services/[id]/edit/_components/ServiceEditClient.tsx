@@ -112,51 +112,9 @@ function ServiceEditContent({ id }: Props) {
           onPublish={handlePublish}
         />
         <div className="flex-1 flex overflow-hidden">
-          <ListingSidebar
-            activeType={activeType}
-            categories={categories}
-            currentStatuses={currentStatuses}
-            category={category}
-            customCategory={customCategory}
-            condition={""}
-            price={price}
-            unit={unit}
-            status={status}
-            cancellationPolicyId={cancellationPolicyId}
-            onCategorySelect={handleCategorySelect}
-            onCustomCategoryChange={setCustomCategory}
-            onConditionChange={() => {}}
-            onPriceChange={setPrice}
-            onUnitChange={setUnit}
-            onStatusChange={setStatus}
-            onCancellationPolicyChange={setCancellationPolicyId}
-          />
-          <ListingPreviewCard
-            activeType={activeType}
-            title={title}
-            description={description}
-            price={price}
-            unit={unit}
-            status={status}
-            image={image}
-            displayCategory={displayCategory}
-            showGuide={showGuide}
-            onCloseGuide={() => setShowGuide(false)}
-            onTitleChange={setTitle}
-            onDescriptionChange={setDescription}
-            onImageUpload={handleImageUpload}
-          />
-          <ListingStatusPanel
-            activeType={activeType}
-            categories={categories}
-            category={category}
-            customCategory={customCategory}
-            condition={""}
-            price={price}
-            unit={unit}
-            completionPercentage={completionPercentage}
-            isReadyToPublish={isReadyToPublish}
-          />
+          <ListingSidebar activeType={activeType} categories={categories} currentStatuses={currentStatuses} category={category} customCategory={customCategory} condition={""} price={price} unit={unit} status={status} cancellationPolicyId={cancellationPolicyId} onCategorySelect={handleCategorySelect} onCustomCategoryChange={setCustomCategory} onConditionChange={() => {}} onPriceChange={setPrice} onUnitChange={setUnit} onStatusChange={setStatus} onCancellationPolicyChange={setCancellationPolicyId} />
+          <ListingPreviewCard activeType={activeType} title={title} description={description} price={price} unit={unit} status={status} image={image} displayCategory={displayCategory} showGuide={showGuide} onCloseGuide={() => setShowGuide(false)} onTitleChange={setTitle} onDescriptionChange={setDescription} onImageUpload={handleImageUpload} />
+          <ListingStatusPanel activeType={activeType} categories={categories} category={category} customCategory={customCategory} condition={""} price={price} unit={unit} completionPercentage={completionPercentage} isReadyToPublish={isReadyToPublish} previewHref={`/booking/service/${id}`} />
         </div>
       </div>
     </RequireAuth>

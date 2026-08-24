@@ -179,16 +179,7 @@ function VenueEditContent({ id }: Props) {
                 />
               </div>
             </main>
-            <RevenueProjector
-              baseRate={baseRate}
-              occupancyRate={occupancyRate}
-              monthlyBase={revenue.monthlyBase}
-              monthlyAddons={revenue.monthlyAddons}
-              total={revenue.total}
-              onBaseRateChange={setBaseRate}
-              onOccupancyRateChange={setOccupancyRate}
-              onPreview={() => {}}
-            />
+            <RevenueProjector baseRate={baseRate} occupancyRate={occupancyRate} monthlyBase={revenue.monthlyBase} monthlyAddons={revenue.monthlyAddons} total={revenue.total} onBaseRateChange={setBaseRate} onOccupancyRateChange={setOccupancyRate} onPreview={() => window.open(`/venues/${id}`, '_blank')} />
           </div>
         </div>
       )}

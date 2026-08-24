@@ -358,12 +358,8 @@ export const AdminVenuesTable: React.FC<VenueTableProps> = ({
                         </td>
                         <td className="p-6">
                           <div className="flex flex-col">
-                            <span className="font-bold text-white/90">
-                              {venue.host?.name ?? "Unknown Host"}
-                            </span>
-                            <span className="text-[10px] text-white/30 font-mono tracking-tighter">
-                              ID: {venue.hostId?.slice(0, 8)}…
-                            </span>
+                            <span className="font-bold text-white/90">{venue.host?.name ?? 'Unknown Owner'}</span>
+                            <span className="text-[10px] text-white/30 font-mono tracking-tighter">ID: {venue.hostId?.slice(0, 8)}…</span>
                           </div>
                         </td>
                         <td className="p-6">
@@ -442,7 +438,7 @@ export const AdminVenuesTable: React.FC<VenueTableProps> = ({
                                   {images.length !== 1 ? "s" : ""})
                                 </p>
                                 {images.length > 0 ? (
-                                  <div className="flex gap-3 overflow-x-auto pb-1">
+                                  <div className="flex gap-3 overflow-x-auto no-scrollbar pb-1">
                                     {images.map((url, idx) => (
                                       <button
                                         key={idx}

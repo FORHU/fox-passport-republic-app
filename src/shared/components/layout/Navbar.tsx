@@ -1,8 +1,9 @@
-﻿"use client";
+"use client";
 
 import { Suspense, useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import { BrandLogo } from "@/shared/components/layout/BrandLogo";
+import MobileBottomNav from "@/shared/components/layout/MobileBottomNav";
 import { useRouter } from "next/navigation";
 import {
   X,
@@ -191,8 +192,7 @@ function NavbarContent() {
   const { user } = useAuthStore();
   const isAuthenticated = !!user;
 
-  const { mobileMenuOpen, setMobileMenuOpen, openLogin, openSignup } =
-    useNavbar();
+  const { openLogin, openSignup } = useNavbar();
 
   const handleHostOptionClick = () => {
     setHostModalOpen(false);
@@ -216,8 +216,7 @@ function NavbarContent() {
     await clearAuthCookies();
     // Clear client store
     useAuthStore.getState().logout();
-    // Close menu and redirect
-    setMobileMenuOpen(false);
+    // Redirect
     router.push("/");
   };
 
@@ -225,18 +224,16 @@ function NavbarContent() {
     <>
       <nav className="fixed top-0 left-0 right-0 z-110 transition-all duration-300">
         <div className="mx-auto max-w-7xl px-4">
-          <div className="glass-panel rounded-full px-6 h-20 flex items-center justify-between shadow-2xl hover:bg-black/40 transition-colors duration-500">
+          <div className="glass-panel rounded-full px-4 sm:px-6 h-14 sm:h-20 flex items-center justify-between shadow-2xl hover:bg-black/40 transition-colors duration-500">
+
             {/* LOGO */}
             <BrandLogo />
 
             {/* DESKTOP MENU */}
             <nav className="hidden md:flex items-center gap-2 bg-black/20 p-1.5 rounded-full border border-white/5">
               <BrowseDropdown />
-              <Link
-                href="/creator-dashboard"
-                className="px-6 py-2.5 rounded-full text-sm font-medium text-white/70 hover:text-white hover:bg-white/10 transition-all hover:scale-105"
-              >
-                Host
+              <Link href="/creator-dashboard" className="px-6 py-2.5 rounded-full text-sm font-medium text-white/70 hover:text-white hover:bg-white/10 transition-all hover:scale-105">
+                Create
               </Link>
               <Link
                 href="/user/passport"
@@ -252,13 +249,14 @@ function NavbarContent() {
               </Link>
             </nav>
 
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-3">
+              {/* Search — desktop only */}
               <button className="hidden sm:flex h-10 w-10 items-center justify-center rounded-full border border-white/10 text-white hover:bg-white hover:text-black transition-all hover:rotate-12">
-                <span className="material-symbols-outlined text-[20px]">
-                  search
-                </span>
+                <span className="material-symbols-outlined text-[20px]">search</span>
               </button>
+              {/* Notification bell — all sizes when authenticated */}
               {isAuthenticated && <NotificationBell />}
+              {/* Auth — desktop only */}
               {!isAuthenticated ? (
                 <button
                   onClick={openLogin}
@@ -270,138 +268,21 @@ function NavbarContent() {
               ) : (
                 <UserMenuButton />
               )}
-              <button
-                onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                className="flex sm:hidden h-10 w-10 items-center justify-center rounded-full bg-white text-black"
-              >
-                <span className="material-symbols-outlined">
-                  {mobileMenuOpen ? "close" : "menu"}
-                </span>
-              </button>
             </div>
           </div>
         </div>
-
-        {/* --- MOBILE MENU CONTENT (Compact Dropdown Style) --- */}
-        {mobileMenuOpen && (
-          <div className="absolute top-full left-0 w-full bg-white shadow-lg border-t border-gray-100 md:hidden z-99 animate-in slide-in-from-top-1 duration-200">
-            <div className="px-4 py-3">
-              {/* Navigation Links */}
-              <div className="space-y-1">
-                <p className="px-3 pt-1 pb-0.5 text-[9px] font-black uppercase tracking-widest text-gray-400">
-                  Browse
-                </p>
-                {BROWSE_ITEMS.map((item) => (
-                  <Link
-                    key={item.href}
-                    href={item.href}
-                    onClick={() => setMobileMenuOpen(false)}
-                    className="flex items-center gap-2 text-gray-700 font-medium text-sm hover:text-pink-600 hover:bg-pink-50 transition-colors py-2.5 px-3 rounded-lg"
-                  >
-                    <span className="material-symbols-outlined text-[16px] text-pink-500">
-                      {item.icon}
-                    </span>
-                    {item.label}
-                  </Link>
-                ))}
-                <div className="my-1 border-t border-gray-100" />
-                <button
-                  onClick={() => {
-                    setMobileMenuOpen(false);
-                    setHostModalOpen(true);
-                  }}
-                  className="w-full text-left text-gray-800 font-semibold text-sm hover:text-pink-600 hover:bg-pink-50 transition-colors py-3 px-3 rounded-lg"
-                >
-                  Become a Foxer
-                </button>
-
-                <button
-                  onClick={() => {
-                    handleWriteReview();
-                    setMobileMenuOpen(false);
-                  }}
-                  className="w-full text-left text-gray-600 font-medium text-sm hover:text-pink-600 hover:bg-pink-50 transition-colors py-3 px-3 rounded-lg"
-                >
-                  Write a Review
-                </button>
-
-                <Link
-                  href="/business"
-                  className="block text-gray-600 font-medium text-sm hover:text-pink-600 hover:bg-pink-50 transition-colors py-3 px-3 rounded-lg"
-                  onClick={() => setMobileMenuOpen(false)}
-                >
-                  For Businesses
-                </Link>
-              </div>
-
-              {/* Divider */}
-              <div className="my-3 border-t border-gray-100" />
-
-              {/* Auth Buttons */}
-              {!isAuthenticated ? (
-                <div className="flex gap-2">
-                  <button
-                    onClick={() => {
-                      openLogin();
-                      setMobileMenuOpen(false);
-                    }}
-                    className="flex-1 py-2.5 rounded-lg border border-gray-200 text-gray-700 font-semibold hover:bg-gray-50 transition-all text-sm"
-                  >
-                    Log In
-                  </button>
-                  <button
-                    onClick={() => {
-                      openSignup();
-                      setMobileMenuOpen(false);
-                    }}
-                    className="flex-1 py-2.5 rounded-lg bg-[#E31C79] text-white font-semibold hover:bg-pink-700 shadow-sm transition-all text-sm"
-                  >
-                    Sign Up
-                  </button>
-                </div>
-              ) : (
-                <div
-                  className="fixed inset-0 z-99 backdrop-blur-sm bg-black/50 md:hidden animate-in fade-in duration-300"
-                  onClick={() => setMobileMenuOpen(false)}
-                ></div>
-              )}
-              {isAuthenticated && (
-                <div className="flex gap-2">
-                  <button
-                    onClick={() => {
-                      setMobileMenuOpen(false);
-                      router.push("/user/passport");
-                    }}
-                    className="flex-1 py-2.5 rounded-lg bg-accent text-black font-semibold hover:bg-accent/90 shadow-sm transition-all text-sm"
-                  >
-                    Passport
-                  </button>
-                  <button
-                    onClick={() => {
-                      setMobileMenuOpen(false);
-                      router.push("/user");
-                    }}
-                    className="flex-1 py-2.5 rounded-lg bg-white/10 text-white font-semibold hover:bg-white/20 shadow-sm transition-all text-sm"
-                  >
-                    Profile
-                  </button>
-                  <button
-                    onClick={handleLogout}
-                    className="flex-1 py-2.5 rounded-lg border border-gray-200 text-gray-700 font-semibold hover:bg-gray-50 transition-all text-sm"
-                  >
-                    Log Out
-                  </button>
-                </div>
-              )}
-            </div>
-          </div>
-        )}
       </nav>
 
-      <HostModal
-        isOpen={isHostModalOpen}
-        onClose={() => setHostModalOpen(false)}
-        onOptionClick={handleHostOptionClick}
+      {/* Floating capsule bottom nav — mobile only */}
+      <MobileBottomNav
+        onCreateClick={() => setHostModalOpen(true)}
+        onLoginClick={openLogin}
+      />
+
+      <HostModal 
+        isOpen={isHostModalOpen} 
+        onClose={() => setHostModalOpen(false)} 
+        onOptionClick={handleHostOptionClick} 
       />
       <AuthModal />
     </>
@@ -409,9 +290,5 @@ function NavbarContent() {
 }
 
 export default function Navbar() {
-  return (
-    <Suspense fallback={<div className="h-[80px]" />}>
-      <NavbarContent />
-    </Suspense>
-  );
+  return <Suspense fallback={<div className="h-20" />}><NavbarContent /></Suspense>;
 }

@@ -5,6 +5,7 @@ import { useAuthStore } from "@/features/auth/store/useAuthStore";
 import { Loader2 } from "lucide-react";
 import { useSessionManager } from "@/features/auth/hooks/useSessionManager";
 import SessionTimeoutModal from "@/shared/components/layout/SessionTimeoutModal";
+import { setAuthCookies } from "@/shared/lib/server/auth-actions";
 
 function SessionManager() {
   const [showWarning, setShowWarning] = useState(false);
@@ -35,6 +36,26 @@ export function AuthStoreProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     initialize();
+
+    // Re-sync auth cookies on every mount so server components can read the token.
+    // Handles users who logged in before cookies were introduced, or whose cookies expired.
+    if (typeof window !== "undefined") {
+      const token = localStorage.getItem("fox_token");
+      const refresh = localStorage.getItem("fox_refresh_token");
+      const userStr = localStorage.getItem("fox_user");
+      if (token && userStr) {
+        try {
+          const user = JSON.parse(userStr);
+          setAuthCookies({
+            accessToken: token,
+            refreshToken: refresh ?? "",
+            user,
+          }).catch(() => {});
+        } catch {
+          // ignore malformed localStorage data
+        }
+      }
+    }
   }, [initialize]);
 
   if (isLoading) {
