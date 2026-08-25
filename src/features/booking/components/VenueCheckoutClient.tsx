@@ -1,7 +1,8 @@
-/* eslint-disable @typescript-eslint/no-unused-vars, @next/next/no-img-element */
+﻿/* eslint-disable @next/next/no-img-element */
 "use client";
 
-import React, { useEffect, useState, useRef, useMemo } from "react";
+import React, { useEffect, useState, useRef } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { loadStripe } from "@stripe/stripe-js";
@@ -34,19 +35,13 @@ export default function VenueCheckoutClient() {
   const [loadingIntent, setLoadingIntent] = useState(false);
   const [intentError, setIntentError] = useState<string | null>(null);
   const [paymentSuccess, setPaymentSuccess] = useState(false);
-  const [paymentIntentId, setPaymentIntentId] = useState<string | null>(null);
   const [email, setEmail] = useState(user?.email || "");
   const [mobileNumber, setMobileNumber] = useState(user?.mobileNumber || "");
   const formRef = useRef<{ submit: () => Promise<void> }>(null);
 
   const dashboardPath = getDashboardPath(user);
-  const orderNumber = useMemo(
-    () => Math.floor(10000 + Math.random() * 90000),
-    [],
-  );
 
   const onPaymentSuccess = async (piId: string) => {
-    setPaymentIntentId(piId);
     setPaymentSuccess(true);
     toast.success("Payment successful! Your venue is booked.");
 
@@ -55,14 +50,14 @@ export default function VenueCheckoutClient() {
         await confirmBookingPayment(bookingId, piId, totalAmount);
       }
     } catch {
-      // Booking was already confirmed via webhook — safe to ignore
+      // Booking was already confirmed via webhook â€” safe to ignore
     }
 
     // Save contact info to user's profile
     try {
       await api.put("/profile", { phone: mobileNumber || undefined });
     } catch {
-      // Non-critical — profile update failure shouldn't block success
+      // Non-critical â€” profile update failure shouldn't block success
     }
   };
 
@@ -73,7 +68,6 @@ export default function VenueCheckoutClient() {
     const status = searchParams.get("redirect_status");
     if (pi && status === "succeeded" && bookingId && totalAmount > 0) {
       confirmed.current = true;
-      setPaymentIntentId(pi);
       setPaymentSuccess(true);
       toast.success("Payment successful! Your venue is booked.");
       confirmBookingPayment(bookingId, pi, totalAmount).catch(() => {});
@@ -167,10 +161,15 @@ export default function VenueCheckoutClient() {
               className="flex items-center gap-3 group cursor-pointer"
               onClick={() => router.push("/")}
             >
-              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-white text-black font-bold shadow-[0_0_15px_rgba(255,255,255,0.3)] group-hover:rotate-180 transition-transform duration-700">
-                <span className="material-symbols-outlined text-[24px]">
-                  explore
-                </span>
+              <div className="flex h-10 w-10 items-center justify-center overflow-hidden group-hover:scale-110 transition-transform duration-300">
+                <Image
+                  src="/foxonlylogo.png"
+                  alt="FoxPassport Logo"
+                  width={40}
+                  height={40}
+                  className="object-contain"
+                  priority
+                />
               </div>
               <h2 className="text-2xl font-display font-bold tracking-tight text-white group-hover:text-accent transition-colors">
                 FoxPassport
@@ -220,7 +219,7 @@ export default function VenueCheckoutClient() {
         </div>
       </header>
 
-      <main className="grow pt-32 pb-20 relative">
+      <main className="grow pt-32 pb-28 sm:pb-20 relative">
         <div className="absolute top-20 right-0 w-[500px] h-[500px] bg-primary/20 rounded-full blur-[120px] pointer-events-none animate-pulse-slow mix-blend-screen"></div>
         <div className="absolute bottom-40 left-0 w-[500px] h-[500px] bg-secondary/10 rounded-full blur-[120px] pointer-events-none mix-blend-screen"></div>
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 relative z-10">
@@ -297,7 +296,7 @@ export default function VenueCheckoutClient() {
                     ) : loadingIntent ? (
                       <div className="flex items-center gap-3 py-8 justify-center text-white/50">
                         <span className="h-5 w-5 rounded-full border-2 border-white/20 border-t-white/60 animate-spin" />
-                        Initializing secure payment…
+                        Initializing secure paymentâ€¦
                       </div>
                     ) : (
                       <StripePaymentForm
@@ -395,7 +394,7 @@ export default function VenueCheckoutClient() {
                         onClick={() => formRef.current?.submit()}
                         className="w-full rounded-2xl bg-[#ccff00] py-4 px-6 text-black font-bold text-lg hover:shadow-[0_0_30px_rgba(204,255,0,0.4)] transition-all active:scale-95 flex items-center justify-center gap-2"
                       >
-                        Confirm & Pay ₱{totalAmount.toLocaleString()}
+                        Confirm & Pay â‚±{totalAmount.toLocaleString()}
                         <span className="material-symbols-outlined">
                           arrow_forward
                         </span>
@@ -406,7 +405,7 @@ export default function VenueCheckoutClient() {
                     <span className="material-symbols-outlined text-[14px] text-green-500">
                       lock
                     </span>
-                    Encrypted & Secure · Powered by Stripe
+                    Encrypted & Secure Â· Powered by Stripe
                   </div>
 
                   {paymentSuccess && (
@@ -431,7 +430,7 @@ export default function VenueCheckoutClient() {
                 </Elements>
               ) : (
                 <>
-                  {/* Loading / no clientSecret yet — render panels without Elements */}
+                  {/* Loading / no clientSecret yet â€” render panels without Elements */}
                   <div className="glass-panel rounded-[2rem] p-8">
                     <h2 className="text-2xl font-display font-bold text-white mb-6 flex items-center gap-3">
                       <span className="flex items-center justify-center w-8 h-8 rounded-full bg-primary text-white text-sm">
@@ -442,7 +441,7 @@ export default function VenueCheckoutClient() {
                     {loadingIntent ? (
                       <div className="flex items-center gap-3 py-8 justify-center text-white/50">
                         <span className="h-5 w-5 rounded-full border-2 border-white/20 border-t-white/60 animate-spin" />
-                        Initializing secure payment…
+                        Initializing secure paymentâ€¦
                       </div>
                     ) : (
                       <div className="py-8 text-center text-white/40">
@@ -521,7 +520,7 @@ export default function VenueCheckoutClient() {
                         <span className="material-symbols-outlined text-[14px]">
                           receipt
                         </span>
-                        Booking ID: {bookingId.slice(0, 8)}…
+                        Booking ID: {bookingId.slice(0, 8)}â€¦
                       </p>
                     </div>
                   </div>
@@ -540,8 +539,8 @@ export default function VenueCheckoutClient() {
                       </span>
                       <span className="text-3xl font-display font-bold text-accent text-shadow-glow">
                         {totalAmount > 0
-                          ? `₱${totalAmount.toLocaleString()}`
-                          : "Processing…"}
+                          ? `â‚±${totalAmount.toLocaleString()}`
+                          : "Processingâ€¦"}
                       </span>
                     </div>
                   </div>
@@ -582,7 +581,7 @@ export default function VenueCheckoutClient() {
               </span>
             </div>
             <p className="text-xs text-gray-500 font-medium">
-              © 2024 FoxPassport Inc. All rights reserved.
+              Â© 2024 FoxPassport Inc. All rights reserved.
             </p>
             <div className="flex gap-6">
               <a

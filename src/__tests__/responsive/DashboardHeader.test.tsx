@@ -1,6 +1,7 @@
-/* eslint-disable @next/next/no-img-element */
+/* eslint-disable @next/next/no-img-element -- mocking next/image for jsdom */
+import "@testing-library/jest-dom";
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { render, screen, fireEvent, within } from "@testing-library/react";
+import { render, screen } from "@testing-library/react";
 
 vi.mock("next/image", () => ({
   default: ({ alt, ...props }: React.ComponentProps<"img">) => (
@@ -13,7 +14,6 @@ vi.mock("next/image", () => ({
 vi.mock("next/navigation", () => ({
   useRouter: () => ({ push: vi.fn(), back: vi.fn() }),
   usePathname: () => "/creator-dashboard",
-  useSearchParams: () => new URLSearchParams(),
 }));
 
 const mockAccess = {
@@ -52,28 +52,20 @@ import { DashboardHeader } from "@/features/dashboard/components/DashboardHeader
 describe("DashboardHeader — responsive nav", () => {
   beforeEach(() => vi.clearAllMocks());
 
-  it("renders a mobile hamburger (md:hidden) and a desktop nav (hidden md:flex)", () => {
+  it("renders desktop nav and mobile floating bottom tab bar", () => {
     const { container } = render(<DashboardHeader />);
-
-    const hamburger = container.querySelector("button.md\\:hidden");
-    expect(hamburger).not.toBeNull();
 
     const desktopNav = container.querySelector("nav.hidden.md\\:flex");
     expect(desktopNav).not.toBeNull();
+
+    const mobileNav = container.querySelector("nav.md\\:hidden");
+    expect(mobileNav).not.toBeNull();
   });
 
-  it("opens the mobile drawer containing the nav links when hamburger is clicked", () => {
-    const { container } = render(<DashboardHeader />);
+  it("renders creator studio title and notification bell", () => {
+    render(<DashboardHeader />);
 
-    const hamburger = container.querySelector(
-      "button.md\\:hidden",
-    ) as HTMLButtonElement;
-    fireEvent.click(hamburger);
-
-    const dialog = screen.getByRole("dialog");
-    const drawer = within(dialog);
-    expect(drawer.getByText("Overview")).toBeInTheDocument();
-    expect(drawer.getByText("Venues")).toBeInTheDocument();
-    expect(drawer.getByText("Assets")).toBeInTheDocument();
+    expect(screen.getByText("FoxPassport")).toBeInTheDocument();
+    expect(screen.getByTestId("notification-bell")).toBeInTheDocument();
   });
 });

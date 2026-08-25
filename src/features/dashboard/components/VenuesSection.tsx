@@ -186,7 +186,7 @@ export function VenuesSection({
             </div>
           ))
         ) : (
-          <EmptyState type="venues" href="/mayor/create-venue" />
+          <EmptyState type="venues" href="/venue-foxer/create-venue" />
         )}
       </div>
       {onPageChange && page !== undefined && totalPages !== undefined && (

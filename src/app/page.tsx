@@ -8,6 +8,9 @@ export const dynamic = "force-dynamic";
 // Server component: import leaves directly, not feature barrels, so the whole
 // client graph of each feature doesn't get pulled into this page's bundle.
 import FoxerLandingPage from "@/features/landing/components/FoxerLandingPage";
+import MobileHomePage from "@/features/landing/components/MobileHomePage";
+
+// --- Search Results Components ---
 import ListingCard from "@/features/landing/components/ListingCard";
 import AuthModal from "@/features/auth/components/AuthModal";
 import { filterVenues } from "@/features/venue/helpers/filterVenues";
@@ -73,11 +76,11 @@ async function HomeContent({ searchParams }: HomePageProps) {
               <div className="flex flex-col items-center justify-center py-20 text-center">
                 <div className="text-4xl mb-4">🏛️</div>
                 <h3 className="text-lg font-bold text-gray-900">
-                  Venues are for Hosts &amp; Foxers
+                  Venues are for Venue Foxers &amp; Creators
                 </h3>
                 <p className="text-gray-500 max-w-xs mt-2 text-sm">
-                  Venue listings are only visible to Hosts, Foxers, and Mayors.
-                  Apply for a role to unlock access.
+                  Venue listings are only visible to Venue Foxers and Event
+                  Foxers. Apply for a role to unlock access.
                 </p>
               </div>
             ) : filteredVenues.length > 0 ? (
@@ -121,7 +124,16 @@ async function HomeContent({ searchParams }: HomePageProps) {
 
   // --- NEW FOXERNEW LANDING PAGE (Default) ---
   const featuredTemplates = await getFeaturedEventTemplates(4);
-  return <FoxerLandingPage featuredTemplates={featuredTemplates} />;
+  return (
+    <>
+      <div className="lg:hidden">
+        <MobileHomePage />
+      </div>
+      <div className="hidden lg:block">
+        <FoxerLandingPage featuredTemplates={featuredTemplates} />
+      </div>
+    </>
+  );
 }
 
 export default function Home({ searchParams }: HomePageProps) {

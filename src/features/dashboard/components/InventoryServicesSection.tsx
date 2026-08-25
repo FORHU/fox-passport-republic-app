@@ -72,14 +72,20 @@ export function InventorySection({
                 if (e.key === "Enter" || e.key === " ") onEdit(it.id);
               }}
             >
-              <div className="aspect-square overflow-hidden rounded-lg">
-                <Image
-                  src={it.img}
-                  alt=""
-                  width={400}
-                  height={400}
-                  className="object-cover group-hover:scale-110 transition-transform duration-500"
-                />
+              <div className="aspect-square overflow-hidden rounded-lg bg-white/5 flex items-center justify-center">
+                {it.img ? (
+                  <Image
+                    src={it.img}
+                    alt=""
+                    width={400}
+                    height={400}
+                    className="object-cover group-hover:scale-110 transition-transform duration-500"
+                  />
+                ) : (
+                  <span className="material-symbols-outlined text-white/20 text-5xl">
+                    inventory_2
+                  </span>
+                )}
               </div>
 
               <div className="absolute top-3 left-3 z-50">

@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
@@ -20,45 +20,36 @@ interface Venue {
   isPublished: boolean;
   city: string;
   createdAt: string;
-  // Add other venue fields as needed
 }
 
-// Fetch venues for a specific host
 const fetchHostVenues = async (
   hostId: string,
   token?: string | null,
 ): Promise<Venue[]> => {
-  const headers: any = {};
-  if (token) {
-    headers.Authorization = `Bearer ${token}`;
-  }
-
+  const headers: Record<string, string> = {};
+  if (token) headers.Authorization = `Bearer ${token}`;
   const response = await axios.get(
     `${process.env.NEXT_PUBLIC_API_URL}/venues?hostId=${hostId}`,
     { headers },
   );
-
-  // Backend now returns { venues } instead of { success, data }
   return response.data.venues || [];
 };
 
-// Calculate stats from venues
-const calculateStats = (venues: Venue[]): VenueStats => {
-  const totalVenues = venues.length;
-  const activeListings = venues.filter(
-    (v) => v.status === "active" && v.isPublished,
-  ).length;
+const fetchOwnerStats = async (token?: string | null): Promise<VenueStats> => {
+  const headers: Record<string, string> = {};
+  if (token) headers.Authorization = `Bearer ${token}`;
+  const response = await axios.get(
+    `${process.env.NEXT_PUBLIC_API_URL}/venues/owner-stats`,
+    { headers },
+  );
+  return response.data.data;
+};
 
-  // TODO: Calculate from actual booking/payment data
-  const totalRevenue = 0;
-  const averageRating = 0.0;
-
-  return {
-    totalVenues,
-    activeListings,
-    totalRevenue,
-    averageRating,
-  };
+const FALLBACK_STATS: VenueStats = {
+  totalVenues: 0,
+  activeListings: 0,
+  totalRevenue: 0,
+  averageRating: 0,
 };
 
 export const useHostVenues = () => {
@@ -68,23 +59,28 @@ export const useHostVenues = () => {
 
   const {
     data: venues = [],
-    isLoading,
-    error,
+    isLoading: venuesLoading,
+    error: venuesError,
     refetch,
   } = useQuery({
     queryKey: ["hostVenues", hostId],
     queryFn: () => fetchHostVenues(hostId!, accessToken),
-    enabled: !!hostId, // Only run query if hostId exists
-    staleTime: 30000, // Consider data fresh for 30 seconds
+    enabled: !!hostId,
+    staleTime: 30000,
   });
 
-  const stats = calculateStats(venues);
+  const { data: stats = FALLBACK_STATS, isLoading: statsLoading } = useQuery({
+    queryKey: ["hostVenueStats"],
+    queryFn: () => fetchOwnerStats(accessToken),
+    enabled: !!accessToken,
+    staleTime: 60000,
+  });
 
   return {
     venues,
     stats,
-    isLoading,
-    error,
+    isLoading: venuesLoading || statsLoading,
+    error: venuesError,
     refetch,
   };
 };
