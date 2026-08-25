@@ -2,11 +2,11 @@
 
 import { Suspense, useState } from "react";
 import Link from "next/link";
+import MobileBottomNav from "@/shared/components/layout/MobileBottomNav";
 import { useRouter } from "next/navigation";
 import { BrandLogo } from "@/shared/components/layout/BrandLogo";
 import { BrowseDropdown } from "./navbar/BrowseDropdown";
 import { HostModal } from "./navbar/HostModal";
-import { NavMobileMenu } from "./navbar/NavMobileMenu";
 import { useNavbar } from "@/shared/hooks/useNavbar";
 import { useAuthStore } from "@/features/auth/store/useAuthStore";
 import UserMenuButton from "@/features/user/components/UserMenuButton";
@@ -19,8 +19,7 @@ function NavbarContent() {
   const { user } = useAuthStore();
   const isAuthenticated = !!user;
 
-  const { mobileMenuOpen, setMobileMenuOpen, openLogin, openSignup } =
-    useNavbar();
+  const { openLogin } = useNavbar();
 
   const handleHostOptionClick = () => {
     setHostModalOpen(false);
@@ -35,7 +34,7 @@ function NavbarContent() {
     <>
       <nav className="fixed top-0 left-0 right-0 z-110 transition-all duration-300">
         <div className="mx-auto max-w-7xl px-4">
-          <div className="glass-panel rounded-full px-6 h-20 flex items-center justify-between shadow-2xl hover:bg-black/40 transition-colors duration-500">
+          <div className="glass-panel rounded-full px-4 sm:px-6 h-14 sm:h-20 flex items-center justify-between shadow-2xl hover:bg-black/40 transition-colors duration-500">
             {/* LOGO */}
             <BrandLogo />
 
@@ -46,7 +45,7 @@ function NavbarContent() {
                 href="/creator-dashboard"
                 className="px-6 py-2.5 rounded-full text-sm font-medium text-white/70 hover:text-white hover:bg-white/10 transition-all hover:scale-105"
               >
-                Host
+                Create
               </Link>
               <Link
                 href="/user/passport"
@@ -62,7 +61,8 @@ function NavbarContent() {
               </Link>
             </div>
 
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-3">
+              {/* Search — desktop only */}
               <button
                 className="hidden sm:flex h-10 w-10 items-center justify-center rounded-full border border-white/10 text-white hover:bg-white hover:text-black transition-all hover:rotate-12"
                 aria-label="Search"
@@ -71,9 +71,9 @@ function NavbarContent() {
                   search
                 </span>
               </button>
-
+              {/* Notification bell — all sizes when authenticated */}
               {isAuthenticated && <NotificationBell />}
-
+              {/* Auth — desktop only */}
               {!isAuthenticated ? (
                 <button
                   onClick={openLogin}
@@ -85,29 +85,16 @@ function NavbarContent() {
               ) : (
                 <UserMenuButton />
               )}
-
-              <button
-                onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                className="flex sm:hidden h-10 w-10 items-center justify-center rounded-full bg-white text-black"
-                aria-label="Toggle navigation menu"
-              >
-                <span className="material-symbols-outlined">
-                  {mobileMenuOpen ? "close" : "menu"}
-                </span>
-              </button>
             </div>
           </div>
         </div>
-
-        {/* Modular Mobile Menu */}
-        <NavMobileMenu
-          isOpen={mobileMenuOpen}
-          onClose={() => setMobileMenuOpen(false)}
-          onOpenHostModal={() => setHostModalOpen(true)}
-          onOpenLogin={openLogin}
-          onOpenSignup={openSignup}
-        />
       </nav>
+
+      {/* Floating capsule bottom nav — mobile only */}
+      <MobileBottomNav
+        onCreateClick={() => setHostModalOpen(true)}
+        onLoginClick={openLogin}
+      />
 
       {/* Host Option Modal */}
       <HostModal
@@ -123,7 +110,7 @@ function NavbarContent() {
 
 export default function Navbar() {
   return (
-    <Suspense fallback={<div className="h-[80px]" />}>
+    <Suspense fallback={<div className="h-20" />}>
       <NavbarContent />
     </Suspense>
   );

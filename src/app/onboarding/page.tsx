@@ -1,5 +1,6 @@
-﻿import React from "react";
+import React from "react";
 import OnboardingClient from "@/features/onboarding/components/OnboardingClient";
+import MobileRolePicker from "@/features/onboarding/components/MobileRolePicker";
 import { requireAuth } from "@/shared/lib/server/auth";
 import { Metadata } from "next";
 
@@ -12,5 +13,14 @@ export const metadata: Metadata = {
 export default async function OnboardingPage() {
   const user = await requireAuth();
 
-  return <OnboardingClient user={user} />;
+  return (
+    <>
+      <div className="lg:hidden">
+        <MobileRolePicker />
+      </div>
+      <div className="hidden lg:block">
+        <OnboardingClient user={user} />
+      </div>
+    </>
+  );
 }

@@ -1,7 +1,8 @@
-/* eslint-disable react-hooks/set-state-in-effect, @next/next/no-img-element */
+﻿/* eslint-disable react-hooks/set-state-in-effect, @next/next/no-img-element */
 "use client";
 
 import React, { useEffect, useState } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import QRCode from "react-qr-code";
@@ -133,17 +134,22 @@ export default function BookingDetailClient({
     <>
       <header className="fixed top-6 left-0 right-0 z-50">
         <div className="mx-auto max-w-4xl px-4">
-          <div className="glass-panel rounded-full px-6 h-20 flex items-center justify-between shadow-2xl hover:bg-black/40 transition-colors duration-500">
+          <div className="glass-panel rounded-full px-4 sm:px-6 h-14 sm:h-20 flex items-center justify-between shadow-2xl hover:bg-black/40 transition-colors duration-500">
             <Link
               href="/"
-              className="flex items-center gap-3 group cursor-pointer"
+              className="flex items-center gap-2 sm:gap-3 group cursor-pointer"
             >
-              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-white text-black font-bold shadow-[0_0_15px_rgba(255,255,255,0.3)] group-hover:rotate-180 transition-transform duration-700">
-                <span className="material-symbols-outlined text-[24px]">
-                  explore
-                </span>
+              <div className="flex h-8 w-8 sm:h-10 sm:w-10 items-center justify-center overflow-hidden group-hover:scale-110 transition-transform duration-300">
+                <Image
+                  src="/foxonlylogo.png"
+                  alt="FoxPassport Logo"
+                  width={40}
+                  height={40}
+                  className="object-contain"
+                  priority
+                />
               </div>
-              <h2 className="text-2xl font-display font-bold tracking-tight text-white group-hover:text-accent transition-colors">
+              <h2 className="text-lg sm:text-2xl font-display font-bold tracking-tight text-white group-hover:text-accent transition-colors">
                 FoxPassport
               </h2>
             </Link>
@@ -181,7 +187,7 @@ export default function BookingDetailClient({
         </div>
       </header>
 
-      <main className="grow pt-32 pb-20">
+      <main className="grow pt-24 sm:pt-32 pb-28 sm:pb-20">
         <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
           <div className="flex items-center gap-2 text-sm text-text-muted mb-6">
             <Link href="/" className="hover:text-white transition-colors">
@@ -204,11 +210,11 @@ export default function BookingDetailClient({
             </span>
           </div>
 
-          <div className="glass-panel rounded-3xl p-8 space-y-8">
+          <div className="glass-panel rounded-3xl p-4 sm:p-8 space-y-6 sm:space-y-8">
             <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
               <div>
-                <div className="flex items-center gap-3 mb-2">
-                  <h1 className="text-3xl md:text-4xl font-display font-bold text-white">
+                <div className="flex flex-wrap items-center gap-2 sm:gap-3 mb-2">
+                  <h1 className="text-2xl sm:text-3xl md:text-4xl font-display font-bold text-white">
                     {eventName}
                   </h1>
                   <span
@@ -246,7 +252,7 @@ export default function BookingDetailClient({
                         day: "numeric",
                         year: "numeric",
                       })
-                    : "—"}
+                    : "â€”"}
                 </p>
               </div>
               <div>
@@ -260,7 +266,7 @@ export default function BookingDetailClient({
                         day: "numeric",
                         year: "numeric",
                       })
-                    : "—"}
+                    : "â€”"}
                 </p>
               </div>
               <div>
@@ -268,7 +274,7 @@ export default function BookingDetailClient({
                   Guests
                 </p>
                 <p className="text-white font-semibold">
-                  {booking.guestCount || "—"}
+                  {booking.guestCount || "â€”"}
                 </p>
               </div>
               <div>
@@ -276,7 +282,7 @@ export default function BookingDetailClient({
                   Total Amount
                 </p>
                 <p className="text-accent font-display font-bold text-xl">
-                  ₱{booking.totalAmount?.toLocaleString() || "0"}
+                  â‚±{booking.totalAmount?.toLocaleString() || "0"}
                 </p>
               </div>
             </div>
@@ -285,7 +291,7 @@ export default function BookingDetailClient({
           {booking.ticketCode &&
             !isCancelled &&
             booking.status !== "completed" && (
-              <div className="glass-panel rounded-3xl p-8 mt-6">
+              <div className="glass-panel rounded-3xl p-4 sm:p-8 mt-6">
                 <div className="flex flex-col md:flex-row items-center gap-8">
                   <div className="shrink-0">
                     <div className="p-4 bg-white rounded-2xl">
@@ -307,8 +313,8 @@ export default function BookingDetailClient({
                       </h2>
                     </div>
                     <p className="text-text-muted text-sm mb-4">
-                      Show this QR code to the host at the event entrance. They
-                      will scan it to verify your booking.
+                      Show this QR code to the organizer at the event entrance.
+                      They will scan it to verify your booking.
                     </p>
                     <div className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-white/5 border border-white/10">
                       <span className="material-symbols-outlined text-white/40 text-[16px]">
@@ -334,7 +340,7 @@ export default function BookingDetailClient({
             )}
 
           {payments.length > 0 && (
-            <div className="glass-panel rounded-3xl p-8 mt-6">
+            <div className="glass-panel rounded-3xl p-4 sm:p-8 mt-6">
               <h2 className="text-xl font-display font-bold text-white mb-4">
                 Payment History
               </h2>
@@ -367,12 +373,12 @@ export default function BookingDetailClient({
                                   minute: "2-digit",
                                 },
                               )
-                            : "—"}
+                            : "â€”"}
                         </p>
                       </div>
                       <div className="flex items-center gap-3">
                         <span className="text-white font-bold">
-                          ₱{payment.amount?.toLocaleString() || "0"}
+                          â‚±{payment.amount?.toLocaleString() || "0"}
                         </span>
                         <span
                           className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${pStatus.color}`}
@@ -388,7 +394,7 @@ export default function BookingDetailClient({
                 <div className="flex items-center justify-between pt-4 mt-2 border-t border-white/10">
                   <span className="text-text-muted text-sm">Total Paid</span>
                   <span className="text-accent font-display font-bold text-lg">
-                    ₱{totalPaid.toLocaleString()}
+                    â‚±{totalPaid.toLocaleString()}
                   </span>
                 </div>
               )}

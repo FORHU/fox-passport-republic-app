@@ -37,7 +37,7 @@ const ROLE_TYPE_STYLE: Record<
   { label: string; color: string; icon: string }
 > = {
   eventFoxer: {
-    label: "Host",
+    label: "Event Foxer",
     color: "bg-blue-500/10 text-blue-400 border-blue-500/20",
     icon: "storefront",
   },
@@ -52,7 +52,7 @@ const ROLE_TYPE_STYLE: Record<
     icon: "build",
   },
   venueFoxer: {
-    label: "Mayor",
+    label: "Venue Foxer",
     color: "bg-yellow-500/10 text-yellow-400 border-yellow-500/20",
     icon: "star",
   },

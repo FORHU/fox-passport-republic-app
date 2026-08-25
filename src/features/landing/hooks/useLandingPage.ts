@@ -80,8 +80,9 @@ export function useLandingPage() {
 
         return {
           ...cat,
-          // Map API fields to component expected fields
-          id: cat.slug, // Use slug as id for routing
+          // The /categories endpoint synthesizes summaries with no id/slug field —
+          // `name` is the only unique identifier it actually returns.
+          id: cat.name,
           title: cat.name,
           tagline: tagline,
           image: image,

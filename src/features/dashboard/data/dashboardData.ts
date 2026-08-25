@@ -41,7 +41,7 @@ export interface InventoryItem {
   // category may be string (label or slug) or a structured response from API
   category: string | { name?: string };
   status: string;
-  img: string;
+  img: string | null;
 }
 
 export interface ServiceItem {
