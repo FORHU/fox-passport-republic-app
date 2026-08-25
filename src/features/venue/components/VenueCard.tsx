@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import Link from "next/link";
 import Image from "next/image";
@@ -10,7 +10,7 @@ interface VenueCardProps {
   venue: Venue;
 }
 
-export default function VenueCard({ venue }: VenueCardProps) {
+export function VenueCard({ venue }: VenueCardProps) {
   const primaryImage = venue.images.find((img) => img.isPrimary);
   const imageUrl =
     primaryImage?.imageUrl ||
@@ -26,7 +26,6 @@ export default function VenueCard({ venue }: VenueCardProps) {
       href={`/venues/${venue.id}`}
       className="group block bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 border border-gray-100 hover:border-pink-100"
     >
-      {/* Image */}
       <div className="relative h-56 bg-gray-100 overflow-hidden">
         <Image
           src={imageUrl}
@@ -34,7 +33,6 @@ export default function VenueCard({ venue }: VenueCardProps) {
           fill
           className="object-cover group-hover:scale-105 transition-transform duration-500"
         />
-        {/* Favorite Button */}
         <button
           onClick={(e) => {
             e.preventDefault();
@@ -48,7 +46,6 @@ export default function VenueCard({ venue }: VenueCardProps) {
             className={`w-4 h-4 transition-all ${saved ? "fill-current" : ""}`}
           />
         </button>
-        {/* Status Badge */}
         {venue.status === "active" && venue.isPublished && (
           <div className="absolute top-3 right-3 bg-green-500 text-white text-xs font-semibold px-3 py-1 rounded-full shadow-md">
             Available
@@ -56,9 +53,7 @@ export default function VenueCard({ venue }: VenueCardProps) {
         )}
       </div>
 
-      {/* Content */}
       <div className="p-5">
-        {/* Venue Type & Category */}
         <div className="flex items-center gap-2 mb-2">
           {venue.category && (
             <span className="text-xs font-medium text-pink-600 bg-pink-50 px-2 py-1 rounded-md">
@@ -70,17 +65,14 @@ export default function VenueCard({ venue }: VenueCardProps) {
           </span>
         </div>
 
-        {/* Venue Name */}
         <h3 className="font-bold text-gray-900 text-lg mb-2 line-clamp-1 group-hover:text-pink-600 transition-colors">
           {venue.name}
         </h3>
 
-        {/* Description */}
         <p className="text-sm text-gray-500 mb-3 line-clamp-2">
           {venue.description}
         </p>
 
-        {/* Location & Capacity */}
         <div className="flex items-center gap-4 text-sm text-gray-600 mb-3">
           <div className="flex items-center gap-1">
             <MapPin className="w-4 h-4 text-gray-400" />
@@ -96,7 +88,6 @@ export default function VenueCard({ venue }: VenueCardProps) {
           )}
         </div>
 
-        {/* Host */}
         <div className="flex items-center justify-between pt-3 border-t border-gray-100">
           <div className="flex items-center gap-2">
             <div className="w-8 h-8 rounded-full bg-gradient-to-br from-pink-400 to-purple-500 flex items-center justify-center text-white text-xs font-bold">
@@ -110,7 +101,6 @@ export default function VenueCard({ venue }: VenueCardProps) {
             </div>
           </div>
 
-          {/* Price */}
           <div className="text-right">
             <p className="text-xs text-gray-500">From</p>
             <p className="text-lg font-bold text-pink-600">

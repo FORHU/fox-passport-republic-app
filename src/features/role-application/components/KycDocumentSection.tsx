@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import FileUploader from "./FileUploader";
+import FileUploader from "@/shared/components/layout/FileUploader";
 import { ShieldCheck } from "lucide-react";
 
 interface KycDocumentSectionProps {
@@ -10,7 +10,7 @@ interface KycDocumentSectionProps {
   description?: string;
 }
 
-export default function KycDocumentSection({
+export function KycDocumentSection({
   onUpload,
   title = "Identity Verification",
   description = "Please provide the following documents to verify your identity and business status.",

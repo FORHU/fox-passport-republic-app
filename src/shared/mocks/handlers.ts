@@ -1,6 +1,6 @@
 import { http, HttpResponse } from "msw";
 
-const BASE = "http://localhost:3002/api/v1";
+const BASE = "http://localhost:6002/api/v1";
 
 const MOCK_BOOKING = {
   id: "booking_123",
