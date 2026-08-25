@@ -1,7 +1,8 @@
-/* eslint-disable react-hooks/set-state-in-effect, @next/next/no-img-element */
+﻿/* eslint-disable react-hooks/set-state-in-effect, @next/next/no-img-element */
 "use client";
 
 import React, { useState, useEffect } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useCheckoutStore } from "@/features/booking/store/useCheckoutStore";
@@ -13,6 +14,7 @@ import {
 } from "@/features/booking/api/bookings";
 import DateRangePicker from "@/shared/components/ui/DateRangePicker";
 import { toast } from "sonner";
+import { toastRequireLogin } from "@/shared/lib/toast";
 import WaitlistButton from "@/features/booking/components/WaitlistButton";
 import { getDashboardPath } from "@/shared/lib/dashboard-path";
 
@@ -22,7 +24,7 @@ export default function BookingConfigurationClient() {
   const templateId = searchParams.get("templateId");
   const { venueName, venueImage, guestCount, setConfig, setDraftIds } =
     useCheckoutStore();
-  const { user } = useAuthStore();
+  const { user, isAuthenticated, openLogin } = useAuthStore();
   const [isCreatingBooking, setIsCreatingBooking] = useState(false);
   const [template, setTemplate] = useState<any>(null);
   const [isLoadingTemplate, setIsLoadingTemplate] = useState(!!templateId);
@@ -120,17 +122,22 @@ export default function BookingConfigurationClient() {
     <div className="bg-background bg-gradient-dark text-text-main antialiased min-h-screen flex flex-col selection:bg-accent selection:text-black font-body">
       <header className="fixed top-6 left-0 right-0 z-50 transition-all duration-300">
         <div className="mx-auto max-w-7xl px-4">
-          <div className="glass-panel rounded-full px-6 h-20 flex items-center justify-between shadow-2xl hover:bg-black/40 transition-colors duration-500">
+          <div className="glass-panel rounded-full px-4 sm:px-6 h-14 sm:h-20 flex items-center justify-between shadow-2xl hover:bg-black/40 transition-colors duration-500">
             <Link
               href="/"
-              className="flex items-center gap-3 group cursor-pointer"
+              className="flex items-center gap-2 sm:gap-3 group cursor-pointer"
             >
-              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-white text-black font-bold shadow-[0_0_15px_rgba(255,255,255,0.3)] group-hover:rotate-180 transition-transform duration-700">
-                <span className="material-symbols-outlined text-[24px]">
-                  explore
-                </span>
+              <div className="flex h-8 w-8 sm:h-10 sm:w-10 items-center justify-center overflow-hidden group-hover:scale-110 transition-transform duration-300">
+                <Image
+                  src="/foxonlylogo.png"
+                  alt="FoxPassport Logo"
+                  width={40}
+                  height={40}
+                  className="object-contain"
+                  priority
+                />
               </div>
-              <h2 className="text-2xl font-display font-bold tracking-tight text-white group-hover:text-accent transition-colors">
+              <h2 className="text-lg sm:text-2xl font-display font-bold tracking-tight text-white group-hover:text-accent transition-colors">
                 FoxPassport
               </h2>
             </Link>
@@ -180,7 +187,7 @@ export default function BookingConfigurationClient() {
         </div>
       </header>
 
-      <main className="grow pt-32 pb-20">
+      <main className="grow pt-24 sm:pt-32 pb-28 sm:pb-20">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="mb-8">
             <div className="flex items-center gap-2 text-sm text-text-muted mb-4">
@@ -202,7 +209,7 @@ export default function BookingConfigurationClient() {
             </div>
             <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
               <div>
-                <h1 className="text-4xl md:text-5xl font-display font-bold text-white mb-2">
+                <h1 className="text-2xl sm:text-4xl md:text-5xl font-display font-bold text-white mb-2">
                   Secure Your Spot
                 </h1>
                 <p className="text-text-muted">
@@ -232,7 +239,7 @@ export default function BookingConfigurationClient() {
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 relative">
             <div className="lg:col-span-8 space-y-8">
               {isFull ? (
-                <div className="glass-card rounded-[2rem] p-8 border border-yellow-400/20 text-center">
+                <div className="glass-card rounded-[2rem] p-4 sm:p-8 border border-yellow-400/20 text-center">
                   <div className="flex flex-col items-center gap-4 py-8">
                     <span className="material-symbols-outlined text-yellow-400 text-5xl">
                       hourglass_empty
@@ -249,7 +256,7 @@ export default function BookingConfigurationClient() {
               ) : (
                 <>
                   {/* Calendar Section */}
-                  <div className="glass-card rounded-[2rem] p-8 border border-white/10">
+                  <div className="glass-card rounded-[2rem] p-4 sm:p-8 border border-white/10">
                     <div className="flex items-center gap-3 mb-6">
                       <span className="material-symbols-outlined text-accent text-2xl">
                         calendar_month
@@ -320,7 +327,7 @@ export default function BookingConfigurationClient() {
                   </div>
 
                   {/* Guests Section */}
-                  <div className="glass-card rounded-[2rem] p-8 border border-white/10">
+                  <div className="glass-card rounded-[2rem] p-4 sm:p-8 border border-white/10">
                     <div className="flex items-center gap-3 mb-6">
                       <span className="material-symbols-outlined text-accent text-2xl">
                         group
@@ -339,7 +346,7 @@ export default function BookingConfigurationClient() {
                         <div>
                           <p className="font-bold text-white">Total Guests</p>
                           <p className="text-sm text-text-muted">
-                            Package rate applies
+                            Price scales with guest count
                           </p>
                         </div>
                       </div>
@@ -368,7 +375,7 @@ export default function BookingConfigurationClient() {
                   </div>
 
                   {/* Included Services */}
-                  <div className="glass-card rounded-[2rem] p-8 border border-white/10">
+                  <div className="glass-card rounded-[2rem] p-4 sm:p-8 border border-white/10">
                     <div className="flex items-center gap-3 mb-6">
                       <span className="material-symbols-outlined text-accent text-2xl">
                         diamond
@@ -441,7 +448,7 @@ export default function BookingConfigurationClient() {
 
                   {/* Optional Add-ons */}
                   {allOptionalItems.length > 0 && (
-                    <div className="glass-card rounded-[2rem] p-8 border border-yellow-400/20">
+                    <div className="glass-card rounded-[2rem] p-4 sm:p-8 border border-yellow-400/20">
                       <div className="flex items-center gap-3 mb-2">
                         <span className="material-symbols-outlined text-yellow-400 text-2xl">
                           tune
@@ -512,7 +519,7 @@ export default function BookingConfigurationClient() {
                   )}
 
                   {/* Special Requests */}
-                  <div className="glass-card rounded-[2rem] p-8 border border-white/10">
+                  <div className="glass-card rounded-[2rem] p-4 sm:p-8 border border-white/10">
                     <div className="flex items-center gap-3 mb-6">
                       <span className="material-symbols-outlined text-accent text-2xl">
                         edit_note
@@ -523,7 +530,7 @@ export default function BookingConfigurationClient() {
                     </div>
                     <textarea
                       className="w-full bg-black/20 border border-white/10 rounded-2xl p-4 text-white placeholder-text-muted/50 focus:border-accent focus:ring-1 focus:ring-accent transition-all resize-none h-32 outline-none"
-                      placeholder="Celebrating a birthday? Allergies? Let the host know..."
+                      placeholder="Celebrating a birthday? Allergies? Let the organizer know..."
                     ></textarea>
                   </div>
                 </>
@@ -682,6 +689,14 @@ export default function BookingConfigurationClient() {
 
                             if (!startDate) {
                               setDateError("Please select a check-in date.");
+                              return;
+                            }
+
+                            if (!isAuthenticated) {
+                              toastRequireLogin(
+                                "Please log in to complete your booking.",
+                              );
+                              openLogin();
                               return;
                             }
 

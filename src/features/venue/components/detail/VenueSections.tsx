@@ -209,7 +209,7 @@ export function AmenitiesSection({ offers }: AmenitiesSectionProps) {
       <h3 className="text-2xl font-display font-bold text-white mb-6">
         What this place offers
       </h3>
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
         {offers.map((offer, i) => (
           <div key={i} className="flex items-center gap-3 text-gray-300">
             <span className="material-symbols-outlined text-[24px] text-white/70">

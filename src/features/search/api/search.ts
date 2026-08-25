@@ -32,18 +32,22 @@ export interface ProviderRow {
   img?: string;
 }
 
-export function foxersToRows(foxers: Foxer[]): ProviderRow[] {
+export function foxersToRows(
+  foxers: Foxer[],
+  source: "services" | "assets" = "services",
+): ProviderRow[] {
   const rows: ProviderRow[] = [];
   foxers.forEach((f) => {
-    f.services.forEach((s) => {
+    const items = source === "assets" ? (f.assets ?? []) : f.services;
+    items.forEach((item) => {
       rows.push({
         foxerId: f.id,
         name: f.name,
-        itemName: s.name,
-        category: s.category,
-        price: s.price,
-        billingRate: s.billingRate,
-        img: s.images?.[0]?.url,
+        itemName: item.name,
+        category: item.category,
+        price: item.price,
+        billingRate: item.billingRate,
+        img: item.images?.[0]?.url,
       });
     });
   });
@@ -57,7 +61,7 @@ export async function fetchEventFoxers(
 ): Promise<SectionResult<Foxer>> {
   const params: Record<string, any> = { page, limit, roleType: "eventFoxer" };
   if (filters?.city) params.city = filters.city;
-  if (filters?.category) params.category = filters.category;
+  if (filters?.category) params.specialization = filters.category;
   if (filters?.maxPrice) params.maxPrice = filters.maxPrice;
   if (filters?.q) params.q = filters.q;
   if (filters?.startDate) params.startDate = filters.startDate;
@@ -97,7 +101,8 @@ export async function fetchGearFoxers(
 ): Promise<SectionResult<Foxer>> {
   const params: Record<string, any> = { page, limit, roleType: "gearFoxer" };
   if (filters?.city) params.city = filters.city;
-  if (filters?.category) params.category = filters.category;
+  // Gear Foxer specializations are keyed by asset category (e.g. "sound_system"),
+  // not event vibe, so the vibe filter doesn't apply here.
   if (filters?.maxPrice) params.maxPrice = filters.maxPrice;
   if (filters?.q) params.q = filters.q;
   if (filters?.startDate) params.startDate = filters.startDate;
@@ -117,7 +122,8 @@ export async function fetchServiceFoxers(
 ): Promise<SectionResult<Foxer>> {
   const params: Record<string, any> = { page, limit, roleType: "serviceFoxer" };
   if (filters?.city) params.city = filters.city;
-  if (filters?.category) params.category = filters.category;
+  // Service Foxer specializations are keyed by service category (e.g. "catering"),
+  // not event vibe, so the vibe filter doesn't apply here.
   if (filters?.maxPrice) params.maxPrice = filters.maxPrice;
   if (filters?.q) params.q = filters.q;
   if (filters?.startDate) params.startDate = filters.startDate;

@@ -1,7 +1,8 @@
-/* eslint-disable react-hooks/purity, @next/next/no-img-element */
+﻿/* eslint-disable react-hooks/purity, @next/next/no-img-element */
 "use client";
 
 import React, { useEffect, useRef, useMemo } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useAuthStore } from "@/features/auth/store/useAuthStore";
@@ -50,10 +51,15 @@ export default function VenueBookingSuccessClient() {
               href="/"
               className="flex items-center gap-3 group cursor-pointer"
             >
-              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-white text-black font-bold shadow-[0_0_15px_rgba(255,255,255,0.3)] group-hover:rotate-180 transition-transform duration-700">
-                <span className="material-symbols-outlined text-[24px]">
-                  explore
-                </span>
+              <div className="flex h-10 w-10 items-center justify-center overflow-hidden group-hover:scale-110 transition-transform duration-300">
+                <Image
+                  src="/foxonlylogo.png"
+                  alt="FoxPassport Logo"
+                  width={40}
+                  height={40}
+                  className="object-contain"
+                  priority
+                />
               </div>
               <h2 className="text-2xl font-display font-bold tracking-tight text-white group-hover:text-accent transition-colors">
                 FoxPassport
@@ -105,7 +111,7 @@ export default function VenueBookingSuccessClient() {
         </div>
       </header>
 
-      <main className="grow pt-32 pb-20 relative flex items-center justify-center">
+      <main className="grow pt-32 pb-28 sm:pb-20 relative flex items-center justify-center">
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-accent/10 rounded-full blur-[150px] pointer-events-none animate-pulse-slow mix-blend-screen"></div>
 
         <div className="w-full max-w-3xl px-4 sm:px-6 lg:px-8 relative z-10 animate-in fade-in slide-in-from-bottom-8 duration-700">
@@ -153,7 +159,7 @@ export default function VenueBookingSuccessClient() {
                       <span className="material-symbols-outlined text-[16px] text-accent">
                         receipt
                       </span>
-                      {bookingId ? `#${bookingId.slice(0, 12)}` : "—"}
+                      {bookingId ? `#${bookingId.slice(0, 12)}` : "â€”"}
                     </p>
                   </div>
                   <div>
@@ -186,7 +192,7 @@ export default function VenueBookingSuccessClient() {
                       <span className="material-symbols-outlined text-[16px] text-accent">
                         payments
                       </span>
-                      ₱{totalAmount.toLocaleString()}
+                      â‚±{totalAmount.toLocaleString()}
                     </p>
                   </div>
                 </div>
@@ -197,7 +203,7 @@ export default function VenueBookingSuccessClient() {
               <div>
                 <p className="text-text-muted text-sm">Total Charged</p>
                 <span className="text-3xl font-display font-bold text-white">
-                  ₱{totalAmount.toLocaleString()}.00
+                  â‚±{totalAmount.toLocaleString()}.00
                 </span>
               </div>
               <div className="flex gap-3 w-full sm:w-auto">

@@ -110,18 +110,18 @@ export const PATH_LABELS = {
     20: "Elite Foxer",
   },
   eventFoxer: {
-    1: "New Host",
-    3: "Venue Curator",
-    7: "Established Host",
-    12: "Premium Host",
-    18: "Super Host",
+    1: "Event Starter",
+    3: "Event Planner",
+    7: "Event Pro",
+    12: "Premium Creator",
+    18: "Super Creator",
   },
   venueFoxer: {
     1: "Ward Officer",
     3: "District Head",
     7: "City Planner",
-    12: "City Mayor",
-    18: "Grand Mayor",
+    12: "City Leader",
+    18: "Grand Foxer",
   },
   investor: {
     1: "Seed Funder",
@@ -160,21 +160,18 @@ export const XP_REWARDS = {
   shareEvent: 15,
   referFriend: 200,
 
-  // Foxer path
+  // GearFoxer / ServiceFoxer path
   createListing: 100,
   listingBooked: 150,
   completeEvent: 200,
   receive5StarReview: 50,
 
-  // Host path
+  // VenueFoxer path
   uploadVenue: 75,
   venueBooked: 100,
   venueFeatured: 500,
-
-  // Mayor path
-  uploadMayorVenue: 100,
-  mayorVenueApproved: 200,
-  mayorVenueFeatured: 750,
+  venueApproved: 200,
+  venueFeaturedPremium: 750,
   cityInitiativeApproved: 500,
 
   // Investor path
