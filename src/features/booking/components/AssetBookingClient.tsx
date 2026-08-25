@@ -71,7 +71,6 @@ export default function AssetBookingClient({ assetId }: { assetId: string }) {
     }
   }, [startDate, endDate]);
 
-
   const unitPrice = Number(asset?.price ?? 0);
   const days = useMemo(
     () => diffDays(startDate, endDate),

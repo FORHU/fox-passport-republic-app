@@ -46,7 +46,6 @@ export default function VenueBookingClient({ venueId }: { venueId: string }) {
     }
   }, [startDate, endDate]);
 
-
   const baseRate = Number(venue?.price ?? 0);
   const days = useMemo(
     () => diffDays(startDate, endDate),

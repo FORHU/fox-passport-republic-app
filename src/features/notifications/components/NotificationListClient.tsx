@@ -58,7 +58,6 @@ export default function NotificationListClient() {
     return () => clearTimeout(t);
   }, []);
 
-
   const handleItemClick = (n: Notification) => {
     if (!n.isRead) markAsRead(n.id);
     const link = n.metadata?.link as string | undefined;

@@ -46,7 +46,6 @@ export default function ItemSuccessClient() {
     }
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-
   const isService = itemType === "service";
   const typeLabel = isService ? "Service" : "Equipment Rental";
   const typeIcon = isService ? "build" : "inventory_2";

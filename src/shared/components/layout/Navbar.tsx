@@ -1,189 +1,17 @@
-﻿"use client";
+"use client";
 
-import { Suspense, useState, useRef, useEffect } from "react";
+import { Suspense, useState } from "react";
 import Link from "next/link";
-import { BrandLogo } from "@/shared/components/layout/BrandLogo";
 import { useRouter } from "next/navigation";
-import {
-  X,
-  Home,
-  Tent,
-  ConciergeBell,
-  ArrowRight,
-  ChevronDown,
-} from "lucide-react";
-
-const BROWSE_ITEMS = [
-  {
-    label: "Event Foxers",
-    icon: "celebration",
-    href: "/search?type=event_template",
-  },
-  {
-    label: "Talent & Services",
-    icon: "theater_comedy",
-    href: "/search?type=service",
-  },
-  { label: "Gear & Rentals", icon: "speaker", href: "/search?type=asset" },
-  { label: "Venues", icon: "location_city", href: "/search?type=venue" },
-] as const;
-
-function BrowseDropdown() {
-  const [open, setOpen] = useState(false);
-  const ref = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    function handleClickOutside(e: MouseEvent) {
-      if (ref.current && !ref.current.contains(e.target as Node))
-        setOpen(false);
-    }
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
-
-  return (
-    <div ref={ref} className="relative">
-      <button
-        onClick={() => setOpen((o) => !o)}
-        className="flex items-center gap-1.5 px-6 py-2.5 rounded-full text-sm font-bold text-black bg-accent hover:bg-accent/90 hover:shadow-[0_0_15px_rgba(204,255,0,0.5)] transition-all transform hover:-translate-y-0.5"
-      >
-        Explore
-        <ChevronDown
-          size={14}
-          className={`transition-transform duration-200 ${open ? "rotate-180" : ""}`}
-        />
-      </button>
-
-      {open && (
-        <div className="absolute top-full left-1/2 -translate-x-1/2 mt-3 w-56 bg-[#0f111a] border border-white/10 rounded-2xl shadow-2xl overflow-hidden z-50">
-          <p className="px-4 pt-3 pb-1.5 text-[9px] font-black uppercase tracking-widest text-white/30">
-            Browse by type
-          </p>
-          {BROWSE_ITEMS.map((item) => (
-            <Link
-              key={item.href}
-              href={item.href}
-              onClick={() => setOpen(false)}
-              className="flex items-center gap-3 px-4 py-3 text-sm font-medium text-white/70 hover:text-white hover:bg-white/5 transition-colors"
-            >
-              <span className="material-symbols-outlined text-[18px] text-[#ccff00]">
-                {item.icon}
-              </span>
-              {item.label}
-            </Link>
-          ))}
-        </div>
-      )}
-    </div>
-  );
-}
-
-import AuthModal from "@/features/auth/components/AuthModal";
+import { BrandLogo } from "@/shared/components/layout/BrandLogo";
+import { BrowseDropdown } from "./navbar/BrowseDropdown";
+import { HostModal } from "./navbar/HostModal";
+import { NavMobileMenu } from "./navbar/NavMobileMenu";
 import { useNavbar } from "@/shared/hooks/useNavbar";
 import { useAuthStore } from "@/features/auth/store/useAuthStore";
 import UserMenuButton from "@/features/user/components/UserMenuButton";
-import { clearAuthCookies } from "@/shared/lib/server/auth-actions";
 import NotificationBell from "@/features/notifications/components/NotificationBell";
-
-// --- HOST MODAL (Internal Component) ---
-interface HostModalProps {
-  isOpen: boolean;
-  onClose: () => void;
-  onOptionClick: () => void;
-}
-
-const HostModal = ({ isOpen, onClose, onOptionClick }: HostModalProps) => {
-  const [selectedOption, setSelectedOption] = useState<string | null>(null);
-
-  if (!isOpen) return null;
-
-  const options = [
-    { label: "Home", icon: Home, color: "text-blue-500" },
-    { label: "Experience", icon: Tent, color: "text-orange-500" },
-    { label: "Service", icon: ConciergeBell, color: "text-gray-700" },
-  ];
-
-  const handleNext = () => {
-    if (selectedOption) {
-      onOptionClick();
-    }
-  };
-
-  return (
-    <div className="fixed inset-0 z-100 bg-black/95 backdrop-blur-xl md:hidden flex flex-col items-center justify-center p-8 space-y-8 animate-in fade-in slide-in-from-top-10 duration-300">
-      <div className="relative w-full max-w-sm md:max-w-lg bg-white rounded-2xl shadow-2xl flex flex-col overflow-hidden">
-        {/* Header with X button properly positioned */}
-        <div className="flex items-center justify-between px-4 pt-4 pb-2 md:px-6 md:pt-5">
-          <div className="w-8" /> {/* Spacer for centering */}
-          <h2 className="text-base md:text-xl font-bold text-center text-gray-800 flex-1">
-            What would you like to host?
-          </h2>
-          <button
-            onClick={onClose}
-            className="p-1.5 hover:bg-gray-100 rounded-full transition text-gray-500"
-          >
-            <X size={20} />
-          </button>
-        </div>
-
-        {/* Options Grid */}
-        <div className="grid grid-cols-3 gap-2 md:gap-4 px-4 py-4 md:px-6 md:py-6">
-          {options.map((opt, idx) => {
-            const Icon = opt.icon;
-            const isSelected = selectedOption === opt.label;
-
-            return (
-              <button
-                key={idx}
-                onClick={() => setSelectedOption(opt.label)}
-                className={`group flex flex-col items-center justify-center 
-                  py-3 px-2 md:py-6 md:px-4 border-2 rounded-xl transition-all duration-300 bg-white
-                  ${
-                    isSelected
-                      ? "border-pink-600 bg-pink-50 shadow-md scale-105"
-                      : "border-gray-100 hover:border-gray-300 hover:shadow-lg"
-                  }
-                `}
-              >
-                <div className="mb-2 md:mb-4 transform transition-transform duration-300 group-hover:scale-110">
-                  <Icon
-                    className={`${opt.color} w-6 h-6 md:w-12 md:h-12`}
-                    strokeWidth={1.5}
-                  />
-                </div>
-                <span
-                  className={`text-[11px] md:text-sm font-bold ${isSelected ? "text-pink-600" : "text-gray-800"}`}
-                >
-                  {opt.label}
-                </span>
-              </button>
-            );
-          })}
-        </div>
-
-        {/* Footer with Next button */}
-        <div className="flex justify-end px-4 pb-4 md:px-6 md:pb-5">
-          <button
-            onClick={handleNext}
-            disabled={!selectedOption}
-            className={`px-5 py-2 md:px-6 md:py-2.5 rounded-lg font-bold transition-all flex items-center gap-2 text-sm
-              ${
-                selectedOption
-                  ? "bg-pink-600 text-white hover:bg-pink-700 hover:scale-105 shadow-md cursor-pointer"
-                  : "bg-gray-200 text-gray-400 cursor-not-allowed"
-              }
-            `}
-          >
-            Next
-            <ArrowRight size={14} />
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-};
-
-// --- MAIN NAVBAR CONTENT ---
+import AuthModal from "@/features/auth/components/AuthModal";
 
 function NavbarContent() {
   const router = useRouter();
@@ -203,24 +31,6 @@ function NavbarContent() {
     }
   };
 
-  const handleWriteReview = () => {
-    if (isAuthenticated) {
-      router.push("/reviews/select");
-    } else {
-      openLogin();
-    }
-  };
-
-  const handleLogout = async () => {
-    // Clear cookies on server
-    await clearAuthCookies();
-    // Clear client store
-    useAuthStore.getState().logout();
-    // Close menu and redirect
-    setMobileMenuOpen(false);
-    router.push("/");
-  };
-
   return (
     <>
       <nav className="fixed top-0 left-0 right-0 z-110 transition-all duration-300">
@@ -230,7 +40,7 @@ function NavbarContent() {
             <BrandLogo />
 
             {/* DESKTOP MENU */}
-            <nav className="hidden md:flex items-center gap-2 bg-black/20 p-1.5 rounded-full border border-white/5">
+            <div className="hidden md:flex items-center gap-2 bg-black/20 p-1.5 rounded-full border border-white/5">
               <BrowseDropdown />
               <Link
                 href="/creator-dashboard"
@@ -250,15 +60,20 @@ function NavbarContent() {
               >
                 Bookings
               </Link>
-            </nav>
+            </div>
 
             <div className="flex items-center gap-4">
-              <button className="hidden sm:flex h-10 w-10 items-center justify-center rounded-full border border-white/10 text-white hover:bg-white hover:text-black transition-all hover:rotate-12">
+              <button
+                className="hidden sm:flex h-10 w-10 items-center justify-center rounded-full border border-white/10 text-white hover:bg-white hover:text-black transition-all hover:rotate-12"
+                aria-label="Search"
+              >
                 <span className="material-symbols-outlined text-[20px]">
                   search
                 </span>
               </button>
+
               {isAuthenticated && <NotificationBell />}
+
               {!isAuthenticated ? (
                 <button
                   onClick={openLogin}
@@ -270,9 +85,11 @@ function NavbarContent() {
               ) : (
                 <UserMenuButton />
               )}
+
               <button
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
                 className="flex sm:hidden h-10 w-10 items-center justify-center rounded-full bg-white text-black"
+                aria-label="Toggle navigation menu"
               >
                 <span className="material-symbols-outlined">
                   {mobileMenuOpen ? "close" : "menu"}
@@ -282,127 +99,23 @@ function NavbarContent() {
           </div>
         </div>
 
-        {/* --- MOBILE MENU CONTENT (Compact Dropdown Style) --- */}
-        {mobileMenuOpen && (
-          <div className="absolute top-full left-0 w-full bg-white shadow-lg border-t border-gray-100 md:hidden z-99 animate-in slide-in-from-top-1 duration-200">
-            <div className="px-4 py-3">
-              {/* Navigation Links */}
-              <div className="space-y-1">
-                <p className="px-3 pt-1 pb-0.5 text-[9px] font-black uppercase tracking-widest text-gray-400">
-                  Browse
-                </p>
-                {BROWSE_ITEMS.map((item) => (
-                  <Link
-                    key={item.href}
-                    href={item.href}
-                    onClick={() => setMobileMenuOpen(false)}
-                    className="flex items-center gap-2 text-gray-700 font-medium text-sm hover:text-pink-600 hover:bg-pink-50 transition-colors py-2.5 px-3 rounded-lg"
-                  >
-                    <span className="material-symbols-outlined text-[16px] text-pink-500">
-                      {item.icon}
-                    </span>
-                    {item.label}
-                  </Link>
-                ))}
-                <div className="my-1 border-t border-gray-100" />
-                <button
-                  onClick={() => {
-                    setMobileMenuOpen(false);
-                    setHostModalOpen(true);
-                  }}
-                  className="w-full text-left text-gray-800 font-semibold text-sm hover:text-pink-600 hover:bg-pink-50 transition-colors py-3 px-3 rounded-lg"
-                >
-                  Become a Foxer
-                </button>
-
-                <button
-                  onClick={() => {
-                    handleWriteReview();
-                    setMobileMenuOpen(false);
-                  }}
-                  className="w-full text-left text-gray-600 font-medium text-sm hover:text-pink-600 hover:bg-pink-50 transition-colors py-3 px-3 rounded-lg"
-                >
-                  Write a Review
-                </button>
-
-                <Link
-                  href="/business"
-                  className="block text-gray-600 font-medium text-sm hover:text-pink-600 hover:bg-pink-50 transition-colors py-3 px-3 rounded-lg"
-                  onClick={() => setMobileMenuOpen(false)}
-                >
-                  For Businesses
-                </Link>
-              </div>
-
-              {/* Divider */}
-              <div className="my-3 border-t border-gray-100" />
-
-              {/* Auth Buttons */}
-              {!isAuthenticated ? (
-                <div className="flex gap-2">
-                  <button
-                    onClick={() => {
-                      openLogin();
-                      setMobileMenuOpen(false);
-                    }}
-                    className="flex-1 py-2.5 rounded-lg border border-gray-200 text-gray-700 font-semibold hover:bg-gray-50 transition-all text-sm"
-                  >
-                    Log In
-                  </button>
-                  <button
-                    onClick={() => {
-                      openSignup();
-                      setMobileMenuOpen(false);
-                    }}
-                    className="flex-1 py-2.5 rounded-lg bg-[#E31C79] text-white font-semibold hover:bg-pink-700 shadow-sm transition-all text-sm"
-                  >
-                    Sign Up
-                  </button>
-                </div>
-              ) : (
-                <div
-                  className="fixed inset-0 z-99 backdrop-blur-sm bg-black/50 md:hidden animate-in fade-in duration-300"
-                  onClick={() => setMobileMenuOpen(false)}
-                ></div>
-              )}
-              {isAuthenticated && (
-                <div className="flex gap-2">
-                  <button
-                    onClick={() => {
-                      setMobileMenuOpen(false);
-                      router.push("/user/passport");
-                    }}
-                    className="flex-1 py-2.5 rounded-lg bg-accent text-black font-semibold hover:bg-accent/90 shadow-sm transition-all text-sm"
-                  >
-                    Passport
-                  </button>
-                  <button
-                    onClick={() => {
-                      setMobileMenuOpen(false);
-                      router.push("/user");
-                    }}
-                    className="flex-1 py-2.5 rounded-lg bg-white/10 text-white font-semibold hover:bg-white/20 shadow-sm transition-all text-sm"
-                  >
-                    Profile
-                  </button>
-                  <button
-                    onClick={handleLogout}
-                    className="flex-1 py-2.5 rounded-lg border border-gray-200 text-gray-700 font-semibold hover:bg-gray-50 transition-all text-sm"
-                  >
-                    Log Out
-                  </button>
-                </div>
-              )}
-            </div>
-          </div>
-        )}
+        {/* Modular Mobile Menu */}
+        <NavMobileMenu
+          isOpen={mobileMenuOpen}
+          onClose={() => setMobileMenuOpen(false)}
+          onOpenHostModal={() => setHostModalOpen(true)}
+          onOpenLogin={openLogin}
+          onOpenSignup={openSignup}
+        />
       </nav>
 
+      {/* Host Option Modal */}
       <HostModal
         isOpen={isHostModalOpen}
         onClose={() => setHostModalOpen(false)}
         onOptionClick={handleHostOptionClick}
       />
+
       <AuthModal />
     </>
   );

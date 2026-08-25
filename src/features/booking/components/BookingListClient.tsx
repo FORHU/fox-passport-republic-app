@@ -56,7 +56,6 @@ export default function BookingListClient() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?.id, user?.userId, page]);
 
-
   if (isInitial) {
     return (
       <div className="min-h-screen flex items-center justify-center">
