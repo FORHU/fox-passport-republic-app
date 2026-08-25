@@ -15,13 +15,13 @@ interface UserHeaderProps {
 
 function getRoleLabel(systemRole: string, roleTypes: string[]): string {
   const role = systemRole.toLowerCase();
-  if (role === 'admin' || role === 'super_admin') return 'Admin';
-  if (roleTypes.includes('venueFoxer')) return 'Venue Foxer';
+  if (role === "admin" || role === "super_admin") return "Admin";
+  if (roleTypes.includes("venueFoxer")) return "Venue Foxer";
 
   const active: string[] = [];
-  if (roleTypes.includes('eventFoxer')) active.push('Event Foxer');
-  if (roleTypes.includes('gearFoxer')) active.push('Gear Foxer');
-  if (roleTypes.includes('serviceFoxer')) active.push('Service Foxer');
+  if (roleTypes.includes("eventFoxer")) active.push("Event Foxer");
+  if (roleTypes.includes("gearFoxer")) active.push("Gear Foxer");
+  if (roleTypes.includes("serviceFoxer")) active.push("Service Foxer");
 
   return active.length > 0 ? active.join(" · ") : "Citizen";
 }

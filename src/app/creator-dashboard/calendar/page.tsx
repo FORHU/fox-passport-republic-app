@@ -1,5 +1,5 @@
-﻿import HostCalendarClient from '@/features/dashboard/components/HostCalendarClient';
-import MobileHostCalendar from '@/features/dashboard/components/MobileHostCalendar';
+﻿import HostCalendarClient from "@/features/dashboard/components/HostCalendarClient";
+import MobileHostCalendar from "@/features/dashboard/components/MobileHostCalendar";
 
 export default function HostCalendarPage() {
   return (

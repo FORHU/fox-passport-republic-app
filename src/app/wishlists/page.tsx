@@ -1,7 +1,7 @@
-import WishlistsClient from './WishlistsClient';
-import MobileWishlistView from '@/features/wishlist/components/MobileWishlistView';
+import WishlistsClient from "./WishlistsClient";
+import MobileWishlistView from "@/features/wishlist/components/MobileWishlistView";
 
-export const metadata = { title: 'Wishlists – FoxPassport' };
+export const metadata = { title: "Wishlists – FoxPassport" };
 
 export default function WishlistsPage() {
   return (

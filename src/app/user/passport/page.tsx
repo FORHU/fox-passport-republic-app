@@ -1,11 +1,11 @@
 ﻿export const dynamic = "force-dynamic";
 
-import { requireAuth } from '@/shared/lib/server/auth'
-import PassportClient from '@/features/user/components/PassportClient'
-import MobilePassportView from '@/features/user/components/MobilePassportView'
+import { requireAuth } from "@/shared/lib/server/auth";
+import PassportClient from "@/features/user/components/PassportClient";
+import MobilePassportView from "@/features/user/components/MobilePassportView";
 
 export default async function PassportPage() {
-  const user = await requireAuth()
+  const user = await requireAuth();
   return (
     <>
       <div className="lg:hidden">
@@ -15,5 +15,5 @@ export default async function PassportPage() {
         <PassportClient user={user} />
       </div>
     </>
-  )
+  );
 }

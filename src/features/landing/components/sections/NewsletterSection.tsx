@@ -6,7 +6,9 @@ import api from "@/shared/lib/axios";
 
 export default function NewsletterSection() {
   const [email, setEmail] = useState("");
-  const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
+  const [status, setStatus] = useState<
+    "idle" | "loading" | "success" | "error"
+  >("idle");
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
@@ -63,8 +65,12 @@ export default function NewsletterSection() {
 
             {status === "success" ? (
               <div className="max-w-lg mx-auto py-4 sm:py-6 text-center">
-                <p className="text-[#ccff00] font-bold text-base sm:text-xl mb-1">You&apos;re on the list!</p>
-                <p className="text-white/60 text-xs sm:text-sm">We&apos;ll drop the freshest updates straight to your inbox.</p>
+                <p className="text-[#ccff00] font-bold text-base sm:text-xl mb-1">
+                  You&apos;re on the list!
+                </p>
+                <p className="text-white/60 text-xs sm:text-sm">
+                  We&apos;ll drop the freshest updates straight to your inbox.
+                </p>
               </div>
             ) : (
               <form
@@ -76,7 +82,10 @@ export default function NewsletterSection() {
                   placeholder="your@email.com"
                   type="email"
                   value={email}
-                  onChange={(e) => { setEmail(e.target.value); if (status === "error") setStatus("idle"); }}
+                  onChange={(e) => {
+                    setEmail(e.target.value);
+                    if (status === "error") setStatus("idle");
+                  }}
                   required
                   disabled={status === "loading"}
                 />
@@ -91,7 +100,9 @@ export default function NewsletterSection() {
             )}
 
             {status === "error" && (
-              <p className="mt-2 text-red-400 text-xs sm:text-sm text-center">Something went wrong. Please try again.</p>
+              <p className="mt-2 text-red-400 text-xs sm:text-sm text-center">
+                Something went wrong. Please try again.
+              </p>
             )}
 
             <p className="mt-4 sm:mt-8 text-[10px] sm:text-xs text-white/50 font-medium tracking-wide">

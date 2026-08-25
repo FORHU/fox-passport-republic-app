@@ -10,7 +10,10 @@ interface MobileBottomNavProps {
   onLoginClick?: () => void;
 }
 
-export default function MobileBottomNav({ onCreateClick, onLoginClick }: MobileBottomNavProps) {
+export default function MobileBottomNav({
+  onCreateClick,
+  onLoginClick,
+}: MobileBottomNavProps) {
   const pathname = usePathname();
   const router = useRouter();
   const { user } = useAuthStore();
@@ -39,11 +42,14 @@ export default function MobileBottomNav({ onCreateClick, onLoginClick }: MobileB
 
   const rawImg = user?.imgId;
   const avatarUrl = rawImg
-    ? (rawImg.startsWith("http://") || rawImg.startsWith("https://")
-        ? rawImg
-        : `https://fox-passport-republic-assets.s3.ap-southeast-1.amazonaws.com/${rawImg}`)
+    ? rawImg.startsWith("http://") || rawImg.startsWith("https://")
+      ? rawImg
+      : `https://fox-passport-republic-assets.s3.ap-southeast-1.amazonaws.com/${rawImg}`
     : null;
-  const userInitial = user?.name?.charAt(0).toUpperCase() ?? user?.email?.charAt(0).toUpperCase() ?? "?";
+  const userInitial =
+    user?.name?.charAt(0).toUpperCase() ??
+    user?.email?.charAt(0).toUpperCase() ??
+    "?";
 
   const tabs = [
     { icon: "home", href: "/", label: "Home" },
@@ -52,7 +58,12 @@ export default function MobileBottomNav({ onCreateClick, onLoginClick }: MobileB
 
   const rightTabs = [
     { icon: "confirmation_number", href: "/booking", label: "Bookings" },
-    { icon: "person", href: "/user", label: "Profile", onClick: handleProfileClick },
+    {
+      icon: "person",
+      href: "/user",
+      label: "Profile",
+      onClick: handleProfileClick,
+    },
   ];
 
   const NavIcon = ({
@@ -92,7 +103,9 @@ export default function MobileBottomNav({ onCreateClick, onLoginClick }: MobileB
             height: 26,
             borderRadius: "50%",
             overflow: "hidden",
-            border: active ? "2px solid #ccff00" : "2px solid rgba(255,255,255,0.2)",
+            border: active
+              ? "2px solid #ccff00"
+              : "2px solid rgba(255,255,255,0.2)",
             boxShadow: active ? "0 0 8px rgba(204,255,0,0.5)" : "none",
             background: "rgba(255,255,255,0.08)",
             display: "flex",
@@ -110,7 +123,9 @@ export default function MobileBottomNav({ onCreateClick, onLoginClick }: MobileB
               style={{ width: "100%", height: "100%", objectFit: "cover" }}
             />
           ) : (
-            <span style={{ fontSize: 11, fontWeight: 700, color: "#ccff00" }}>{userInitial}</span>
+            <span style={{ fontSize: 11, fontWeight: 700, color: "#ccff00" }}>
+              {userInitial}
+            </span>
           )}
         </div>
       ) : (
@@ -152,7 +167,8 @@ export default function MobileBottomNav({ onCreateClick, onLoginClick }: MobileB
         WebkitBackdropFilter: "blur(28px)",
         border: "1px solid rgba(255,255,255,0.08)",
         borderRadius: 999,
-        boxShadow: "0 -2px 0 rgba(255,255,255,0.04) inset, 0 16px 48px rgba(0,0,0,0.7)",
+        boxShadow:
+          "0 -2px 0 rgba(255,255,255,0.04) inset, 0 16px 48px rgba(0,0,0,0.7)",
         gridTemplateColumns: "repeat(5, 1fr)",
         alignItems: "center",
       }}
@@ -186,25 +202,37 @@ export default function MobileBottomNav({ onCreateClick, onLoginClick }: MobileB
             alignItems: "center",
             justifyContent: "center",
             transform: "translateY(-16px)",
-            boxShadow: "0 0 0 4px rgba(14,14,20,0.92), 0 0 0 6px rgba(204,255,0,0.2), 0 8px 24px rgba(204,255,0,0.5)",
+            boxShadow:
+              "0 0 0 4px rgba(14,14,20,0.92), 0 0 0 6px rgba(204,255,0,0.2), 0 8px 24px rgba(204,255,0,0.5)",
             border: "none",
             cursor: "pointer",
             transition: "transform 0.15s, box-shadow 0.15s",
           }}
           onMouseDown={(e) => {
-            (e.currentTarget as HTMLButtonElement).style.transform = "translateY(-14px) scale(0.94)";
+            (e.currentTarget as HTMLButtonElement).style.transform =
+              "translateY(-14px) scale(0.94)";
           }}
           onMouseUp={(e) => {
-            (e.currentTarget as HTMLButtonElement).style.transform = "translateY(-16px) scale(1)";
+            (e.currentTarget as HTMLButtonElement).style.transform =
+              "translateY(-16px) scale(1)";
           }}
           onTouchStart={(e) => {
-            (e.currentTarget as HTMLButtonElement).style.transform = "translateY(-14px) scale(0.94)";
+            (e.currentTarget as HTMLButtonElement).style.transform =
+              "translateY(-14px) scale(0.94)";
           }}
           onTouchEnd={(e) => {
-            (e.currentTarget as HTMLButtonElement).style.transform = "translateY(-16px) scale(1)";
+            (e.currentTarget as HTMLButtonElement).style.transform =
+              "translateY(-16px) scale(1)";
           }}
         >
-          <span className="material-symbols-outlined" style={{ color: "#000", fontSize: 26, fontVariationSettings: "'FILL' 1, 'wght' 700" }}>
+          <span
+            className="material-symbols-outlined"
+            style={{
+              color: "#000",
+              fontSize: 26,
+              fontVariationSettings: "'FILL' 1, 'wght' 700",
+            }}
+          >
             add
           </span>
         </button>

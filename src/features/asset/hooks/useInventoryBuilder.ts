@@ -23,8 +23,8 @@ export function useInventoryBuilder() {
   const store = useListingBuilderStore();
   const [error, setError] = useState<string | null>(null);
   const [isNotification, setIsNotification] = useState(false);
-  const [categoryMap, setCategoryMap] = useState<{ [key: string]: string }>({});
-  const { uploadFile, isUploading } = useFileUpload();
+  const [, setCategoryMap] = useState<{ [key: string]: string }>({});
+  const { uploadFile } = useFileUpload();
   const savedDraftId = useRef<string | null>(null);
 
   // Initialize type from URL params
@@ -221,7 +221,8 @@ export function useInventoryBuilder() {
       }
       toast.success("Draft saved");
     } catch (err: any) {
-      const msg = err?.response?.data?.message || err?.message || "Failed to save draft";
+      const msg =
+        err?.response?.data?.message || err?.message || "Failed to save draft";
       setError(msg);
     } finally {
       store.setIsSubmitting(false);
@@ -328,7 +329,10 @@ export function useInventoryBuilder() {
 
       console.log("[ListingBuilder] Publishing asset:", assetData);
       if (savedDraftId.current) {
-        await updateAsset(savedDraftId.current, { ...assetData, status: "pending" } as any);
+        await updateAsset(savedDraftId.current, {
+          ...assetData,
+          status: "pending",
+        } as any);
       } else {
         await createAssetWithAPI(assetData);
       }

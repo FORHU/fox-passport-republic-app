@@ -151,7 +151,8 @@ const FoxerProfile: React.FC = () => {
           : foxer.services.map((s) => s.name);
 
   const bio = isHost
-    ? (foxer.eventTemplates?.[0]?.description ?? 'This organizer has not added a bio yet.')
+    ? (foxer.eventTemplates?.[0]?.description ??
+      "This organizer has not added a bio yet.")
     : isGearFoxer && hasAssets
       ? (foxer.assets?.[0]?.description ??
         "This foxer has not added a bio yet.")

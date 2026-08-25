@@ -82,8 +82,13 @@ export default function VenueDetailClient({
           }}
         >
           <div>
-            <p className="text-[10px] text-white/40 font-bold uppercase tracking-wider">From</p>
-            <p className="text-xl font-display font-bold text-[#ccff00]">₱{venuePrice.toLocaleString()}<span className="text-xs text-white/40 font-normal">/night</span></p>
+            <p className="text-[10px] text-white/40 font-bold uppercase tracking-wider">
+              From
+            </p>
+            <p className="text-xl font-display font-bold text-[#ccff00]">
+              ₱{venuePrice.toLocaleString()}
+              <span className="text-xs text-white/40 font-normal">/night</span>
+            </p>
           </div>
           <button
             onClick={() => router.push(`/booking/venue/${venue.id}`)}
@@ -130,9 +135,15 @@ export default function VenueDetailClient({
                     </div>
                   </div>
                   <div className="flex-1">
-                    <h3 className="font-display font-bold text-white text-lg">Listed by {host.name}</h3>
-                    <p className="text-[#ccff00] text-xs font-bold uppercase tracking-wider mb-2">Venue Foxer · Space Provider</p>
-                    <p className="text-sm text-text-muted leading-relaxed">&quot;{host.bio}&quot;</p>
+                    <h3 className="font-display font-bold text-white text-lg">
+                      Listed by {host.name}
+                    </h3>
+                    <p className="text-[#ccff00] text-xs font-bold uppercase tracking-wider mb-2">
+                      Venue Foxer · Space Provider
+                    </p>
+                    <p className="text-sm text-text-muted leading-relaxed">
+                      &quot;{host.bio}&quot;
+                    </p>
                   </div>
                 </div>
               </div>

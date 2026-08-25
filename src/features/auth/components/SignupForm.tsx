@@ -96,7 +96,9 @@ export default function SignupForm() {
           "Password must be at least 16 characters long",
       );
     } else if (formErrors.confirmPassword) {
-      toast.error(formErrors.confirmPassword.message ?? "Passwords do not match");
+      toast.error(
+        formErrors.confirmPassword.message ?? "Passwords do not match",
+      );
     }
   };
 

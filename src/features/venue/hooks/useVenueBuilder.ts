@@ -11,7 +11,11 @@ import {
   ResourceItem,
 } from "@/features/venue/data/venueBuilderData";
 import { useFileUpload } from "@/shared/hooks/useFileUpload";
-import { createVenue, fetchVenueCatalog, updateVenue } from "@/features/venue/api/venues";
+import {
+  createVenue,
+  fetchVenueCatalog,
+  updateVenue,
+} from "@/features/venue/api/venues";
 
 type VenueCatalog = { tech: string[]; amenities: string[]; staff: string[] };
 const CATALOG_TABS = new Set(["tech", "amenities", "staff"]);

@@ -1,5 +1,5 @@
-import VenueEditClient from './_components/VenueEditClient';
-import MobileVenueStudio from '@/features/dashboard/components/MobileVenueStudio';
+import VenueEditClient from "./_components/VenueEditClient";
+import MobileVenueStudio from "@/features/dashboard/components/MobileVenueStudio";
 
 export const dynamic = "force-dynamic";
 

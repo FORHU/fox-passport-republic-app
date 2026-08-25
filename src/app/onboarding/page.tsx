@@ -1,8 +1,8 @@
-import React from 'react';
-import OnboardingClient from '@/features/onboarding/components/OnboardingClient';
-import MobileRolePicker from '@/features/onboarding/components/MobileRolePicker';
-import { requireAuth } from '@/shared/lib/server/auth';
-import { Metadata } from 'next';
+import React from "react";
+import OnboardingClient from "@/features/onboarding/components/OnboardingClient";
+import MobileRolePicker from "@/features/onboarding/components/MobileRolePicker";
+import { requireAuth } from "@/shared/lib/server/auth";
+import { Metadata } from "next";
 
 export const metadata: Metadata = {
   title: "Onboarding | FoxPassport",
