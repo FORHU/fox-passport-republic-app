@@ -83,7 +83,6 @@ import AuthModal from "@/features/auth/components/AuthModal";
 import { useNavbar } from "@/shared/hooks/useNavbar";
 import { useAuthStore } from "@/features/auth/store/useAuthStore";
 import UserMenuButton from "@/features/user/components/UserMenuButton";
-import { clearAuthCookies } from "@/shared/lib/server/auth-actions";
 import NotificationBell from "@/features/notifications/components/NotificationBell";
 
 // --- HOST MODAL (Internal Component) ---
@@ -192,7 +191,7 @@ function NavbarContent() {
   const { user } = useAuthStore();
   const isAuthenticated = !!user;
 
-  const { openLogin, openSignup } = useNavbar();
+  const { openLogin } = useNavbar();
 
   const handleHostOptionClick = () => {
     setHostModalOpen(false);
@@ -201,23 +200,6 @@ function NavbarContent() {
     } else {
       openLogin();
     }
-  };
-
-  const handleWriteReview = () => {
-    if (isAuthenticated) {
-      router.push("/reviews/select");
-    } else {
-      openLogin();
-    }
-  };
-
-  const handleLogout = async () => {
-    // Clear cookies on server
-    await clearAuthCookies();
-    // Clear client store
-    useAuthStore.getState().logout();
-    // Redirect
-    router.push("/");
   };
 
   return (

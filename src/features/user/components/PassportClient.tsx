@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-img-element */
 "use client";
 
 import React, { useState } from "react";
@@ -9,7 +10,6 @@ import {
   Sheet,
   SheetContent,
   SheetTitle,
-  SheetClose,
   SheetTrigger,
 } from "@/shared/components/ui/sheet";
 import CircularProgress from "@/features/gamification/components/CircularProgress";
@@ -832,7 +832,7 @@ const PassportClient: React.FC<PassportClientProps> = ({ user }) => {
                             <>
                               {/* Rank rows */}
                               <div className="space-y-2">
-                                {pageItems.map((entry, i) => {
+                                {pageItems.map((entry) => {
                                   const isYou = entry.userId === user?.id;
                                   const isTop3 = entry.rank <= 3;
                                   const rankColor =
@@ -840,8 +840,6 @@ const PassportClient: React.FC<PassportClientProps> = ({ user }) => {
                                     (isYou
                                       ? "#ccff00"
                                       : "rgba(255,255,255,0.3)");
-                                  const globalIdx =
-                                    leaderboardPage * RANKS_PER_PAGE + i;
                                   return (
                                     <div
                                       key={entry.userId}

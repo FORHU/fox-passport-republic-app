@@ -2,7 +2,6 @@
 
 import React, { useState } from "react";
 import Image from "next/image";
-import { useRouter } from "next/navigation";
 import MobileCreatorBottomNav from "./MobileCreatorBottomNav";
 
 const MONTHS = [
@@ -45,7 +44,6 @@ function getDayStyle(day: number) {
 }
 
 export default function MobileHostCalendar() {
-  const router = useRouter();
   const [monthIndex, setMonthIndex] = useState(7);
   const [year, setYear] = useState(2026);
 

@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-img-element */
 "use client";
 
 import React from "react";
@@ -129,7 +130,7 @@ export default function MobileWishlistView({ items = PLACEHOLDER }: Props) {
                   height: "100%",
                   objectFit: "cover",
                 }}
-              /> // eslint-disable-line @next/next/no-img-element
+              />
             ) : (
               <div
                 className="stripe"

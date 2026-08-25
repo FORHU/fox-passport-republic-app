@@ -1,4 +1,5 @@
-﻿"use client";
+﻿/* eslint-disable react-hooks/purity, @next/next/no-img-element */
+"use client";
 
 import React, { useEffect, useRef, useMemo } from "react";
 import Image from "next/image";

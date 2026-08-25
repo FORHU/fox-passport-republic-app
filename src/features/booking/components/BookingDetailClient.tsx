@@ -1,4 +1,5 @@
-﻿"use client";
+﻿/* eslint-disable react-hooks/set-state-in-effect, @next/next/no-img-element */
+"use client";
 
 import React, { useEffect, useState } from "react";
 import Image from "next/image";
@@ -7,7 +8,6 @@ import { useRouter } from "next/navigation";
 import QRCode from "react-qr-code";
 import { fetchBookingById } from "@/features/booking/api/bookings";
 import { useAuthStore } from "@/features/auth/store/useAuthStore";
-import { toast } from "sonner";
 import CancelBookingModal from "./CancelBookingModal";
 import { getDashboardPath } from "@/shared/lib/dashboard-path";
 

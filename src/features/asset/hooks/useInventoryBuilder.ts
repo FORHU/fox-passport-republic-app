@@ -23,8 +23,8 @@ export function useInventoryBuilder() {
   const store = useListingBuilderStore();
   const [error, setError] = useState<string | null>(null);
   const [isNotification, setIsNotification] = useState(false);
-  const [categoryMap, setCategoryMap] = useState<{ [key: string]: string }>({});
-  const { uploadFile, isUploading } = useFileUpload();
+  const [, setCategoryMap] = useState<{ [key: string]: string }>({});
+  const { uploadFile } = useFileUpload();
   const savedDraftId = useRef<string | null>(null);
 
   // Initialize type from URL params

@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-img-element */
 "use client";
 
 import React from "react";
@@ -151,7 +152,7 @@ export default function MobileFoxerProfile({ foxer }: MobileFoxerProfileProps) {
               src={foxer.avatar}
               alt={name}
               style={{ width: "100%", height: "100%", objectFit: "cover" }}
-            /> // eslint-disable-line @next/next/no-img-element
+            />
           ) : (
             <div
               className="stripe"

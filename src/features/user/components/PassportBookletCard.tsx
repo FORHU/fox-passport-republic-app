@@ -1,8 +1,8 @@
+/* eslint-disable @next/next/no-img-element */
 "use client";
 
 import React from "react";
 import { getPathLabel } from "@/features/gamification/lib/gamification";
-import { UserPath } from "@/features/gamification/types/gamification";
 
 interface PassportBookletCardProps {
   user: any;
