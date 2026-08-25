@@ -144,69 +144,128 @@ export default function SearchClient() {
     1,
   );
 
-  const gearRows = useMemo(() => foxersToRows(gearFoxers), [gearFoxers]);
+  const gearRows = useMemo(
+    () => foxersToRows(gearFoxers, "assets"),
+    [gearFoxers],
+  );
   const serviceRows = useMemo(
-    () => foxersToRows(serviceFoxers),
+    () => foxersToRows(serviceFoxers, "services"),
     [serviceFoxers],
   );
 
-  return (
-    <div className="min-h-screen bg-[#0c0d14] text-white pt-32 pb-12 px-8 relative">
-      <div className="absolute top-0 left-0 w-full border-b border-white/5 bg-[#0c0d14] z-40">
-        <div className="max-w-7xl mx-auto px-8 py-6 flex items-center gap-8">
-          <Link href="/" className="flex items-center gap-3 group">
-            <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center group-hover:scale-105 transition-transform shadow-[0_0_15px_rgba(255,255,255,0.3)]">
-              <span
-                className="material-symbols-outlined text-black text-[22px]"
-                style={{ fontVariationSettings: "'FILL' 1" }}
-              >
-                explore
-              </span>
-            </div>
-            <span className="text-2xl font-black font-display tracking-tight text-white">
-              Discover
-            </span>
-          </Link>
+  const TYPE_CHIPS = [
+    { label: "All", value: "" },
+    { label: "Event Foxers", value: "event_foxer" },
+    { label: "Events", value: "event_template" },
+    { label: "Gear", value: "gear" },
+    { label: "Services", value: "service" },
+  ];
 
-          <div className="relative">
-            <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-white/30 text-[20px]">
-              search
-            </span>
-            <input
-              type="text"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="SEARCH ANYTHING..."
-              className="w-full max-w-md bg-white/5 border border-white/10 rounded-full py-2.5 pl-11 pr-6 text-sm font-bold text-white placeholder:text-white/30 focus:outline-none focus:border-white/20 focus:bg-white/10 transition-all tracking-wider"
-            />
+  const [activeChip, setActiveChip] = useState(searchParams?.get("type") || "");
+
+  const handleChipClick = (val: string) => {
+    setActiveChip(val);
+    const params = new URLSearchParams(searchParams?.toString() || "");
+    if (val) params.set("type", val);
+    else params.delete("type");
+    router.replace(`/search?${params.toString()}`);
+  };
+
+  return (
+    <div className="min-h-screen bg-[#0c0d14] text-white relative">
+      {/* Sticky header */}
+      <div className="sticky top-0 left-0 right-0 border-b border-white/5 bg-[#0c0d14]/95 backdrop-blur-xl z-40">
+        <div className="max-w-7xl mx-auto px-4 sm:px-8 py-3 sm:py-6">
+          {/* Top row */}
+          <div className="flex items-center gap-3 sm:gap-8">
+            <Link
+              href="/"
+              className="hidden sm:flex items-center gap-3 group shrink-0"
+            >
+              <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center group-hover:scale-105 transition-transform shadow-[0_0_15px_rgba(255,255,255,0.3)]">
+                <span
+                  className="material-symbols-outlined text-black text-[22px]"
+                  style={{ fontVariationSettings: "'FILL' 1" }}
+                >
+                  explore
+                </span>
+              </div>
+              <span className="text-2xl font-black font-display tracking-tight text-white">
+                Discover
+              </span>
+            </Link>
+
+            <div className="relative flex-1 max-w-lg">
+              <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-white/30 text-[20px]">
+                search
+              </span>
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Search anything..."
+                className="w-full bg-white/6 border border-white/10 rounded-full py-2.5 pl-11 pr-4 text-sm font-semibold text-white placeholder:text-white/30 focus:outline-none focus:border-[#ccff00]/40 focus:bg-white/10 transition-all"
+              />
+            </div>
+
+            {/* Active filter badges — desktop */}
+            {(category || city) && (
+              <div className="hidden sm:flex items-center gap-2 text-xs text-white/50">
+                {category && (
+                  <span className="px-3 py-1 rounded-full bg-white/5 border border-white/10 capitalize">
+                    {category}
+                  </span>
+                )}
+                {city && (
+                  <span className="px-3 py-1 rounded-full bg-white/5 border border-white/10 flex items-center gap-1">
+                    <span className="material-symbols-outlined text-[14px]">
+                      location_on
+                    </span>
+                    {city}
+                  </span>
+                )}
+              </div>
+            )}
           </div>
 
-          {(category || city) && (
-            <div className="flex items-center gap-2 ml-auto text-xs text-white/50">
-              {category && (
-                <span className="px-3 py-1 rounded-full bg-white/5 border border-white/10 capitalize">
-                  {category}
-                </span>
-              )}
-              {city && (
-                <span className="px-3 py-1 rounded-full bg-white/5 border border-white/10 flex items-center gap-1">
-                  <span className="material-symbols-outlined text-[14px]">
-                    location_on
-                  </span>
-                  {city}
-                </span>
-              )}
-            </div>
-          )}
+          {/* Horizontal type chips — mobile */}
+          <div className="flex sm:hidden gap-2 overflow-x-auto hide-scrollbar mt-3 pb-0.5">
+            {TYPE_CHIPS.map((chip) => (
+              <button
+                key={chip.value}
+                onClick={() => handleChipClick(chip.value)}
+                className="flex-none text-[11px] font-bold px-4 py-2 rounded-full transition-all whitespace-nowrap"
+                style={{
+                  background:
+                    activeChip === chip.value
+                      ? "#ccff00"
+                      : "rgba(255,255,255,0.06)",
+                  color:
+                    activeChip === chip.value
+                      ? "#000"
+                      : "rgba(255,255,255,0.6)",
+                  border:
+                    activeChip === chip.value
+                      ? "none"
+                      : "1px solid rgba(255,255,255,0.1)",
+                }}
+              >
+                {chip.label}
+              </button>
+            ))}
+          </div>
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto">
-        <div className="flex flex-row gap-8">
-          <aside className="w-80 shrink-0">
+      {/* Body */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-8 pt-6 sm:pt-10 pb-28 sm:pb-12">
+        <div className="flex flex-col sm:flex-row gap-8">
+          {/* Sidebar — desktop only */}
+          <aside className="hidden sm:block w-80 shrink-0">
             <SearchFilters />
           </aside>
-          <main className="flex-1 min-w-0 space-y-16">
+
+          <main className="flex-1 min-w-0 space-y-12 sm:space-y-16">
             <EventFoxersSection
               items={eventFoxers}
               isFetching={efFetching}

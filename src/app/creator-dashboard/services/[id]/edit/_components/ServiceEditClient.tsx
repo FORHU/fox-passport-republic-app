@@ -156,6 +156,7 @@ function ServiceEditContent({ id }: Props) {
             unit={unit}
             completionPercentage={completionPercentage}
             isReadyToPublish={isReadyToPublish}
+            previewHref={`/booking/service/${id}`}
           />
         </div>
       </div>

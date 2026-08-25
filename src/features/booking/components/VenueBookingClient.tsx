@@ -1,7 +1,8 @@
-/* eslint-disable @next/next/no-img-element */
+﻿/* eslint-disable @next/next/no-img-element */
 "use client";
 
 import React, { useState, useEffect, useMemo } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { fetchVenueById } from "@/features/venue/api/venues";
@@ -15,13 +16,14 @@ import DateRangePicker, {
   diffDays,
 } from "@/shared/components/ui/DateRangePicker";
 import { toast } from "sonner";
+import { toastRequireLogin } from "@/shared/lib/toast";
 import { getDashboardPath } from "@/shared/lib/dashboard-path";
 
 const SERVICE_FEE_RATE = 0.1;
 
 export default function VenueBookingClient({ venueId }: { venueId: string }) {
   const router = useRouter();
-  const { user } = useAuthStore();
+  const { user, isAuthenticated, openLogin } = useAuthStore();
 
   const [venue, setVenue] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -66,6 +68,12 @@ export default function VenueBookingClient({ venueId }: { venueId: string }) {
     setErrors({});
     if (!venue) return;
 
+    if (!isAuthenticated) {
+      toastRequireLogin("Please log in to complete your booking.");
+      openLogin();
+      return;
+    }
+
     setIsSubmitting(true);
     try {
       const result = await bookVenueDraft({
@@ -96,7 +104,7 @@ export default function VenueBookingClient({ venueId }: { venueId: string }) {
       <div className="min-h-screen bg-background bg-gradient-dark flex items-center justify-center">
         <div className="flex flex-col items-center gap-4">
           <span className="h-10 w-10 rounded-full border-2 border-white/20 border-t-accent animate-spin" />
-          <p className="text-text-muted text-sm">Loading venue details…</p>
+          <p className="text-text-muted text-sm">Loading venue detailsâ€¦</p>
         </div>
       </div>
     );
@@ -130,10 +138,15 @@ export default function VenueBookingClient({ venueId }: { venueId: string }) {
               href="/"
               className="flex items-center gap-3 group cursor-pointer"
             >
-              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-white text-black font-bold shadow-[0_0_15px_rgba(255,255,255,0.3)] group-hover:rotate-180 transition-transform duration-700">
-                <span className="material-symbols-outlined text-[24px]">
-                  explore
-                </span>
+              <div className="flex h-10 w-10 items-center justify-center overflow-hidden group-hover:scale-110 transition-transform duration-300">
+                <Image
+                  src="/foxonlylogo.png"
+                  alt="FoxPassport Logo"
+                  width={40}
+                  height={40}
+                  className="object-contain"
+                  priority
+                />
               </div>
               <h2 className="text-2xl font-display font-bold tracking-tight text-white group-hover:text-accent transition-colors">
                 FoxPassport
@@ -173,7 +186,7 @@ export default function VenueBookingClient({ venueId }: { venueId: string }) {
         </div>
       </header>
 
-      <main className="grow pt-32 pb-20">
+      <main className="grow pt-32 pb-28 sm:pb-20">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           {/* Breadcrumb + heading */}
           <div className="mb-8">
@@ -292,7 +305,7 @@ export default function VenueBookingClient({ venueId }: { venueId: string }) {
                     <div className="flex justify-between text-sm">
                       <span className="text-text-muted">Rate</span>
                       <span className="text-white font-medium">
-                        ₱{baseRate.toLocaleString()} / guest / day
+                        â‚±{baseRate.toLocaleString()} / guest / day
                       </span>
                     </div>
                     <div className="flex justify-between text-sm">
@@ -304,20 +317,20 @@ export default function VenueBookingClient({ venueId }: { venueId: string }) {
                     <div className="flex justify-between text-sm">
                       <span className="text-text-muted">Guests</span>
                       <span className="text-white font-medium">
-                        × {guestCount}
+                        Ã— {guestCount}
                       </span>
                     </div>
                     <div className="h-px bg-white/10 my-2" />
                     <div className="flex justify-between text-sm">
                       <span className="text-text-muted">Subtotal</span>
                       <span className="text-white">
-                        ₱{subtotal.toLocaleString()}
+                        â‚±{subtotal.toLocaleString()}
                       </span>
                     </div>
                     <div className="flex justify-between text-sm">
                       <span className="text-text-muted">Service Fee (10%)</span>
                       <span className="text-white">
-                        ₱{serviceFee.toLocaleString()}
+                        â‚±{serviceFee.toLocaleString()}
                       </span>
                     </div>
                     <div className="h-px bg-white/10 my-2" />
@@ -326,7 +339,7 @@ export default function VenueBookingClient({ venueId }: { venueId: string }) {
                         Total
                       </span>
                       <span className="text-2xl font-display font-bold text-accent">
-                        ₱{total.toLocaleString()}
+                        â‚±{total.toLocaleString()}
                       </span>
                     </div>
                   </div>
@@ -340,7 +353,7 @@ export default function VenueBookingClient({ venueId }: { venueId: string }) {
                       {isSubmitting ? (
                         <>
                           <span className="h-5 w-5 rounded-full border-2 border-black/20 border-t-black animate-spin" />{" "}
-                          Creating booking…
+                          Creating bookingâ€¦
                         </>
                       ) : (
                         <>
@@ -355,7 +368,7 @@ export default function VenueBookingClient({ venueId }: { venueId: string }) {
                       <span className="material-symbols-outlined text-[12px] align-middle mr-1">
                         lock
                       </span>
-                      Secure encrypted checkout · Funds held in escrow
+                      Secure encrypted checkout Â· Funds held in escrow
                     </p>
                   </div>
                 </div>
@@ -379,7 +392,7 @@ export default function VenueBookingClient({ venueId }: { venueId: string }) {
               </span>
             </div>
             <p className="text-xs text-gray-500 font-medium">
-              © 2024 FoxPassport Inc. All rights reserved.
+              Â© 2024 FoxPassport Inc. All rights reserved.
             </p>
           </div>
         </div>

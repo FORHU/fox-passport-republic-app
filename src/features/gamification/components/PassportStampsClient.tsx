@@ -1,10 +1,10 @@
-/* eslint-disable @next/next/no-img-element, react-hooks/set-state-in-effect */
+﻿/* eslint-disable react-hooks/set-state-in-effect, @next/next/no-img-element */
 "use client";
 
 import React, { useEffect, useState } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import Image from "next/image";
 import { fetchStamps, Stamp } from "@/features/gamification/api/stamps";
 import { useCategories } from "@/features/category/hooks/useCategories";
 
@@ -14,7 +14,7 @@ interface Props {
 
 function formatEarnedAt(iso: string): string {
   const d = new Date(iso);
-  if (isNaN(d.getTime())) return "—";
+  if (isNaN(d.getTime())) return "â€”";
   return d.toLocaleDateString("en-US", {
     month: "short",
     day: "2-digit",
@@ -91,7 +91,7 @@ function StampCard({ stamp, index }: { stamp: Stamp; index: number }) {
           ) : (
             <div className="flex h-full w-full items-center justify-center bg-black">
               <div className="flex h-20 w-20 items-center justify-center rounded-full ring-2 ring-accent/70">
-                {/* Brand fox as a white silhouette on black — always visible */}
+                {/* Brand fox as a white silhouette on black â€” always visible */}
                 <img
                   src="/foxonlylogo.png"
                   alt=""
@@ -150,10 +150,15 @@ export default function PassportStampsClient({ userId }: Props) {
         <div className="mx-auto max-w-7xl px-4">
           <div className="glass-panel rounded-full px-6 h-20 flex items-center justify-between shadow-2xl">
             <Link href="/" className="flex items-center gap-3 group">
-              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-white text-black font-bold group-hover:rotate-180 transition-transform duration-700">
-                <span className="material-symbols-outlined text-[24px]">
-                  explore
-                </span>
+              <div className="flex h-10 w-10 items-center justify-center overflow-hidden group-hover:scale-110 transition-transform duration-300">
+                <Image
+                  src="/foxonlylogo.png"
+                  alt="FoxPassport Logo"
+                  width={40}
+                  height={40}
+                  className="object-contain"
+                  priority
+                />
               </div>
               <h2 className="text-2xl font-display font-bold text-white group-hover:text-accent transition-colors">
                 FoxPassport
@@ -172,7 +177,7 @@ export default function PassportStampsClient({ userId }: Props) {
         </div>
       </header>
 
-      <main className="pt-36 pb-20 px-4">
+      <main className="pt-36 pb-28 sm:pb-20 px-4">
         <div className="mx-auto max-w-5xl">
           {/* Header */}
           <div className="glass-panel rounded-3xl p-8 border border-white/10 mb-6 flex items-center gap-4">
@@ -205,7 +210,7 @@ export default function PassportStampsClient({ userId }: Props) {
                 No stamps yet
               </h3>
               <p className="relative z-10 text-text-muted max-w-md mx-auto mb-8">
-                Your passport is blank — book and attend an event to collect
+                Your passport is blank â€” book and attend an event to collect
                 your first stamp!
               </p>
 

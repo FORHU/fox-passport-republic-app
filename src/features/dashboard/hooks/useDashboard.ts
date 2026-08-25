@@ -39,7 +39,7 @@ export function useDashboard() {
   }, [router, store]);
 
   const handleNavigateToCreateVenue = useCallback(() => {
-    router.push("/mayor/create-venue");
+    router.push("/venue-foxer/create-venue");
     store.setCreateMenuOpen(false);
   }, [router, store]);
 

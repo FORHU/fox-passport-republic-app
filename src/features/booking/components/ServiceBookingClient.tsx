@@ -2,6 +2,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { fetchServiceById } from "@/features/service/api/services";
@@ -12,6 +13,7 @@ import {
 import { useItemBookingStore } from "@/features/booking/store/useItemBookingStore";
 import { useAuthStore } from "@/features/auth/store/useAuthStore";
 import { toast } from "sonner";
+import { toastRequireLogin } from "@/shared/lib/toast";
 import type { BackendService } from "@/shared/lib/api-types";
 import AvailabilityCalendar from "./AvailabilityCalendar";
 import { getDashboardPath } from "@/shared/lib/dashboard-path";
@@ -24,7 +26,7 @@ export default function ServiceBookingClient({
   serviceId: string;
 }) {
   const router = useRouter();
-  const { user } = useAuthStore();
+  const { user, isAuthenticated, openLogin } = useAuthStore();
   const { setBookingDetails, setBookingId } = useItemBookingStore();
 
   const [service, setService] = useState<BackendService | null>(null);
@@ -83,6 +85,12 @@ export default function ServiceBookingClient({
     }
     setErrors({});
     if (!service) return;
+
+    if (!isAuthenticated) {
+      toastRequireLogin("Please log in to complete your booking.");
+      openLogin();
+      return;
+    }
 
     setIsSubmitting(true);
     try {
@@ -187,10 +195,15 @@ export default function ServiceBookingClient({
               href="/"
               className="flex items-center gap-3 group cursor-pointer"
             >
-              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-white text-black font-bold shadow-[0_0_15px_rgba(255,255,255,0.3)] group-hover:rotate-180 transition-transform duration-700">
-                <span className="material-symbols-outlined text-[24px]">
-                  explore
-                </span>
+              <div className="flex h-10 w-10 items-center justify-center overflow-hidden group-hover:scale-110 transition-transform duration-300">
+                <Image
+                  src="/foxonlylogo.png"
+                  alt="FoxPassport Logo"
+                  width={40}
+                  height={40}
+                  className="object-contain"
+                  priority
+                />
               </div>
               <h2 className="text-2xl font-display font-bold tracking-tight text-white group-hover:text-accent transition-colors">
                 FoxPassport
@@ -230,7 +243,7 @@ export default function ServiceBookingClient({
         </div>
       </header>
 
-      <main className="grow pt-32 pb-20">
+      <main className="grow pt-32 pb-28 sm:pb-20">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           {/* Breadcrumb + heading */}
           <div className="mb-8">

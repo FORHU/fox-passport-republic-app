@@ -29,7 +29,7 @@ const FoxerLandingPage: React.FC<FoxerLandingPageProps> = ({
       <LandingHeader onSignIn={() => openAuthModal("login")} />
 
       {/* Main Content */}
-      <main className="flex-grow pb-16 md:pb-0">
+      <main className="flex-grow pb-28 sm:pb-0">
         {/* Hero Section */}
         <HeroSection />
 
