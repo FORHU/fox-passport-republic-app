@@ -44,7 +44,7 @@ export const useHostDashboard = () => {
     },
     enabled: !!userId,
     refetchInterval: () => {
-      if (typeof document !== 'undefined' && document.hidden) return false;
+      if (typeof document !== "undefined" && document.hidden) return false;
       return 10000;
     },
     refetchOnWindowFocus: true,
@@ -54,7 +54,7 @@ export const useHostDashboard = () => {
   const { data: ownerStats, isLoading: statsLoading } = useQuery({
     queryKey: ["host-venue-stats", userId],
     queryFn: async () => {
-      const response = await api.get('/venues/owner-stats');
+      const response = await api.get("/venues/owner-stats");
       return response.data as {
         totalVenues: number;
         activeListings: number;
@@ -68,7 +68,8 @@ export const useHostDashboard = () => {
 
   const stats = ownerStats ?? {
     totalVenues: venues.length,
-    activeListings: venues.filter((v: Venue) => v.status === "available").length,
+    activeListings: venues.filter((v: Venue) => v.status === "available")
+      .length,
     averageRating: 0,
     totalRevenue: 0,
   };

@@ -176,7 +176,8 @@ export function useServicesBuilder() {
       }
       toast.success("Draft saved");
     } catch (err: any) {
-      const msg = err?.response?.data?.message || err?.message || "Failed to save draft";
+      const msg =
+        err?.response?.data?.message || err?.message || "Failed to save draft";
       setError(msg);
     } finally {
       store.setIsSubmitting(false);

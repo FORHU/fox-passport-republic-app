@@ -1,7 +1,7 @@
-﻿import React from 'react';
-import FoxerApplicationClient from '@/features/role-application/components/FoxerApplicationClient';
-import MobileRoleApplicationForm from '@/features/role-application/components/MobileRoleApplicationForm';
-import { Metadata } from 'next';
+﻿import React from "react";
+import FoxerApplicationClient from "@/features/role-application/components/FoxerApplicationClient";
+import MobileRoleApplicationForm from "@/features/role-application/components/MobileRoleApplicationForm";
+import { Metadata } from "next";
 
 export const metadata: Metadata = {
   title: "Apply to be a Foxer | FoxPassport",
@@ -15,7 +15,7 @@ export default async function FoxerApplicationPage({
   searchParams: Promise<{ type?: string }>;
 }) {
   const { type } = await searchParams;
-  const initialType = type === 'asset' ? 'asset' : 'service';
+  const initialType = type === "asset" ? "asset" : "service";
   return (
     <>
       <div className="lg:hidden">

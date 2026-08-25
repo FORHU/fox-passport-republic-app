@@ -77,7 +77,8 @@ export default function MayorApplicationClient() {
               Apply to be a <span className="text-[#ccff00]">Venue Foxer</span>
             </h1>
             <p className="text-white/60">
-              Provide your details below to start listing and managing venues in the FoxPassport ecosystem.
+              Provide your details below to start listing and managing venues in
+              the FoxPassport ecosystem.
             </p>
           </div>
 

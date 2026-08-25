@@ -1,6 +1,6 @@
-﻿import { requireAuth } from '@/shared/lib/server/auth';
-import ProfileSettingsClient from '@/features/user/components/ProfileSettingsClient';
-import MobileSettingsView from '@/features/user/components/MobileSettingsView';
+﻿import { requireAuth } from "@/shared/lib/server/auth";
+import ProfileSettingsClient from "@/features/user/components/ProfileSettingsClient";
+import MobileSettingsView from "@/features/user/components/MobileSettingsView";
 
 export const dynamic = "force-dynamic";
 

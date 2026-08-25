@@ -98,11 +98,17 @@ function CircleStamp({
             className="h-28 w-28 rounded-full flex flex-col items-center justify-center gap-1"
             style={{ border: `1.5px solid ${c}` }}
           >
-            <span className="text-[8px] font-black uppercase tracking-[0.25em]" style={{ color: c }}>
+            <span
+              className="text-[8px] font-black uppercase tracking-[0.25em]"
+              style={{ color: c }}
+            >
               {meta.label}
             </span>
             <span className="text-3xl leading-none">{meta.icon}</span>
-            <span className="text-[7px] font-black tracking-[0.18em]" style={{ color: c }}>
+            <span
+              className="text-[7px] font-black tracking-[0.18em]"
+              style={{ color: c }}
+            >
               {shortLocation(stamp.location)}
             </span>
             <div
@@ -150,10 +156,7 @@ function RectStamp({
 
   return (
     <div className="flex items-center justify-center py-5 px-2">
-      <div
-        className="relative"
-        style={{ transform: `rotate(${rotate}deg)` }}
-      >
+      <div className="relative" style={{ transform: `rotate(${rotate}deg)` }}>
         {/* Perforated outer edge */}
         <div
           className="px-4 py-3.5 rounded-2xl"
@@ -164,10 +167,15 @@ function RectStamp({
             className="px-3.5 py-3 rounded-xl flex flex-col items-center gap-1.5"
             style={{ border: `1.5px solid ${c}`, minWidth: 110 }}
           >
-            <span className="text-[8px] font-black uppercase tracking-[0.22em]" style={{ color: c }}>
+            <span
+              className="text-[8px] font-black uppercase tracking-[0.22em]"
+              style={{ color: c }}
+            >
               {meta.label}
             </span>
-            <span className="text-[8px]" style={{ color: `${c}66` }}>★ ★ ★</span>
+            <span className="text-[8px]" style={{ color: `${c}66` }}>
+              ★ ★ ★
+            </span>
             <span className="text-3xl leading-none">{meta.icon}</span>
             <span
               className="text-[8px] font-black tracking-[0.12em] text-center leading-snug"
@@ -175,16 +183,28 @@ function RectStamp({
             >
               {title}
             </span>
-            <div className="w-full h-px" style={{ backgroundColor: `${c}44` }} />
+            <div
+              className="w-full h-px"
+              style={{ backgroundColor: `${c}44` }}
+            />
             <div className="flex items-center justify-between w-full gap-2">
-              <span className="text-[7px] font-bold tracking-wide" style={{ color: `${c}88` }}>
+              <span
+                className="text-[7px] font-bold tracking-wide"
+                style={{ color: `${c}88` }}
+              >
                 {shortLocation(stamp.location)}
               </span>
-              <span className="text-[7px] font-bold tracking-wide" style={{ color: `${c}88` }}>
+              <span
+                className="text-[7px] font-bold tracking-wide"
+                style={{ color: `${c}88` }}
+              >
                 {mon} {yr}
               </span>
             </div>
-            <span className="text-[7px] font-black tracking-[0.25em]" style={{ color: `${c}55` }}>
+            <span
+              className="text-[7px] font-black tracking-[0.25em]"
+              style={{ color: `${c}55` }}
+            >
               ✓ VERIFIED
             </span>
           </div>
@@ -248,7 +268,9 @@ export function PassportGrid({
   }
 
   return (
-    <div className={`grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 ${className}`}>
+    <div
+      className={`grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 ${className}`}
+    >
       {stamps.map((stamp, i) => (
         <PassportStampCard
           key={stamp.id}
