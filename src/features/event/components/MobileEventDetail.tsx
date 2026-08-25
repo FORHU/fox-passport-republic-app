@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-img-element */
 "use client";
 
 import React from "react";
@@ -62,7 +63,7 @@ export default function MobileEventDetail({ event }: MobileEventDetailProps) {
             objectFit: "cover",
             opacity: 0.6,
           }}
-        /> // eslint-disable-line @next/next/no-img-element
+        />
       ) : (
         <div className="stripe" style={{ height: 420, width: "100%" }} />
       )}

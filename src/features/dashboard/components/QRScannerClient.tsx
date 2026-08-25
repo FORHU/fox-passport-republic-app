@@ -100,7 +100,7 @@ export default function QRScannerClient() {
       );
       scannerRef.current = scanner;
       scanner.render(handleScanSuccess, () => {});
-    } catch (err) {
+    } catch {
       setScanState("error");
       setLastResult({
         ticketCode: "",

@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/set-state-in-effect, @next/next/no-img-element */
 "use client";
 
 import { useState, useEffect, useRef } from "react";
@@ -182,8 +183,7 @@ function TemplateCard({ t }: { t: EventTemplate }) {
             alt={t.name}
             style={{ width: "100%", height: "100%", objectFit: "cover" }}
           />
-        )}{" "}
-        {/* eslint-disable-line @next/next/no-img-element */}
+        )}
         {t.category && (
           <span
             style={{
@@ -269,7 +269,7 @@ function FoxerCard({ f }: { f: Foxer }) {
             src={imgSrc}
             alt={f.name}
             style={{ width: "100%", height: "100%", objectFit: "cover" }}
-          /> // eslint-disable-line @next/next/no-img-element
+          />
         ) : (
           <span style={{ fontSize: 20, fontWeight: 700, color: "#fff" }}>
             {initial}
@@ -1107,7 +1107,7 @@ export default function MobileHomePage() {
                       height: "100%",
                       objectFit: "cover",
                     }}
-                  /> // eslint-disable-line @next/next/no-img-element
+                  />
                 ) : (
                   <div
                     style={{

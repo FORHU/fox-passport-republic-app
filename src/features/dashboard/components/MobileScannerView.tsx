@@ -1,11 +1,8 @@
 "use client";
 
 import React from "react";
-import { useRouter } from "next/navigation";
 
 export default function MobileScannerView() {
-  const router = useRouter();
-
   return (
     <div
       style={{

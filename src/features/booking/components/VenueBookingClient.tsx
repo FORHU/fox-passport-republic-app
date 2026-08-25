@@ -1,4 +1,5 @@
-﻿"use client";
+﻿/* eslint-disable @next/next/no-img-element */
+"use client";
 
 import React, { useState, useEffect, useMemo } from "react";
 import Image from "next/image";

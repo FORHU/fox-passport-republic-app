@@ -1,6 +1,7 @@
-﻿"use client";
+﻿/* eslint-disable @next/next/no-img-element */
+"use client";
 
-import React, { useEffect, useState, useRef, useMemo } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -34,19 +35,13 @@ export default function VenueCheckoutClient() {
   const [loadingIntent, setLoadingIntent] = useState(false);
   const [intentError, setIntentError] = useState<string | null>(null);
   const [paymentSuccess, setPaymentSuccess] = useState(false);
-  const [paymentIntentId, setPaymentIntentId] = useState<string | null>(null);
   const [email, setEmail] = useState(user?.email || "");
   const [mobileNumber, setMobileNumber] = useState(user?.mobileNumber || "");
   const formRef = useRef<{ submit: () => Promise<void> }>(null);
 
   const dashboardPath = getDashboardPath(user);
-  const orderNumber = useMemo(
-    () => Math.floor(10000 + Math.random() * 90000),
-    [],
-  );
 
   const onPaymentSuccess = async (piId: string) => {
-    setPaymentIntentId(piId);
     setPaymentSuccess(true);
     toast.success("Payment successful! Your venue is booked.");
 
@@ -73,7 +68,6 @@ export default function VenueCheckoutClient() {
     const status = searchParams.get("redirect_status");
     if (pi && status === "succeeded" && bookingId && totalAmount > 0) {
       confirmed.current = true;
-      setPaymentIntentId(pi);
       setPaymentSuccess(true);
       toast.success("Payment successful! Your venue is booked.");
       confirmBookingPayment(bookingId, pi, totalAmount).catch(() => {});

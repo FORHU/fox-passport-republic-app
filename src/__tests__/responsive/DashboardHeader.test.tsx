@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-img-element -- mocking next/image for jsdom */
 import "@testing-library/jest-dom";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen } from "@testing-library/react";

@@ -29,7 +29,7 @@ interface Props {
   venueId?: string;
 }
 
-export default function MobileVenueStudio({ venueId }: Props) {
+export default function MobileVenueStudio({}: Props) {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<StudioTab>("Space Types");
   const [selected, setSelected] = useState<Set<string>>(
@@ -39,7 +39,11 @@ export default function MobileVenueStudio({ venueId }: Props) {
   const toggle = (label: string) => {
     setSelected((prev) => {
       const next = new Set(prev);
-      next.has(label) ? next.delete(label) : next.add(label);
+      if (next.has(label)) {
+        next.delete(label);
+      } else {
+        next.add(label);
+      }
       return next;
     });
   };
