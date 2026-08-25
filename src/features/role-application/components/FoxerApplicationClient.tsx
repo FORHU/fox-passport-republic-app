@@ -92,6 +92,34 @@ export default function FoxerApplicationClient({
     setServiceData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
   };
 
+  const SERVICE_DIGIT_FIELD_MAX_LENGTH: Record<string, number> = {
+    nbiClearanceIdNumber: 18,
+    tinNumber: 9,
+  };
+
+  const handleServiceDigitsChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    const digits = value
+      .replace(/\D/g, "")
+      .slice(0, SERVICE_DIGIT_FIELD_MAX_LENGTH[name]);
+    setServiceData((prev) => ({ ...prev, [name]: digits }));
+  };
+
+  const handleAssetTinChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const digits = e.target.value.replace(/\D/g, "").slice(0, 9);
+    setAssetData((prev) => ({ ...prev, tinNumber: digits }));
+  };
+
+  const handleExperienceChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const raw = e.target.value;
+    if (raw === "") {
+      setServiceData((prev) => ({ ...prev, experience: "" }));
+      return;
+    }
+    const clamped = Math.min(100, Math.max(0, Number(raw)));
+    setServiceData((prev) => ({ ...prev, experience: String(clamped) }));
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (providerType === "asset") {
@@ -237,9 +265,10 @@ export default function FoxerApplicationClient({
                       required
                       type="number"
                       min="0"
+                      max="100"
                       name="experience"
                       value={serviceData.experience}
-                      onChange={handleServiceChange}
+                      onChange={handleExperienceChange}
                       className="w-full bg-white/5 border border-white/10 rounded-xl py-3 pl-12 pr-4 text-white placeholder:text-white/30 focus:outline-none focus:border-[#00d2ff]/50 focus:bg-white/10 transition-colors"
                       placeholder="e.g. 3"
                     />
@@ -277,9 +306,11 @@ export default function FoxerApplicationClient({
                     <input
                       required
                       type="text"
+                      inputMode="numeric"
                       name="nbiClearanceIdNumber"
+                      maxLength={18}
                       value={serviceData.nbiClearanceIdNumber}
-                      onChange={handleServiceChange}
+                      onChange={handleServiceDigitsChange}
                       className="w-full bg-white/5 border border-white/10 rounded-xl py-3 pl-12 pr-4 text-white placeholder:text-white/30 focus:outline-none focus:border-[#00d2ff]/50 focus:bg-white/10 transition-colors"
                       placeholder="XXXX-XXXX-XXXX"
                     />
@@ -296,9 +327,11 @@ export default function FoxerApplicationClient({
                     </div>
                     <input
                       type="text"
+                      inputMode="numeric"
                       name="tinNumber"
+                      maxLength={9}
                       value={serviceData.tinNumber}
-                      onChange={handleServiceChange}
+                      onChange={handleServiceDigitsChange}
                       className="w-full bg-white/5 border border-white/10 rounded-xl py-3 pl-12 pr-4 text-white placeholder:text-white/30 focus:outline-none focus:border-[#00d2ff]/50 focus:bg-white/10 transition-colors"
                       placeholder="000-000-000-000"
                     />
@@ -375,9 +408,11 @@ export default function FoxerApplicationClient({
                     <input
                       required
                       type="text"
+                      inputMode="numeric"
                       name="tinNumber"
+                      maxLength={9}
                       value={assetData.tinNumber}
-                      onChange={handleAssetChange}
+                      onChange={handleAssetTinChange}
                       className="w-full bg-white/5 border border-white/10 rounded-xl py-3 pl-12 pr-4 text-white placeholder:text-white/30 focus:outline-none focus:border-[#00d2ff]/50 focus:bg-white/10 transition-colors"
                       placeholder="000-000-000-000"
                     />

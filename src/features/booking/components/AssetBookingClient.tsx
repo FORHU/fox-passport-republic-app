@@ -13,6 +13,7 @@ import {
 import { useItemBookingStore } from "@/features/booking/store/useItemBookingStore";
 import { useAuthStore } from "@/features/auth/store/useAuthStore";
 import { toast } from "sonner";
+import { toastRequireLogin } from "@/shared/lib/toast";
 import type { BackendAsset } from "@/shared/lib/api-types";
 import AvailabilityCalendar from "./AvailabilityCalendar";
 import { getDashboardPath } from "@/shared/lib/dashboard-path";
@@ -27,7 +28,7 @@ function diffDays(start: string, end: string): number {
 
 export default function AssetBookingClient({ assetId }: { assetId: string }) {
   const router = useRouter();
-  const { user } = useAuthStore();
+  const { user, isAuthenticated, openLogin } = useAuthStore();
   const { setBookingDetails, setBookingId } = useItemBookingStore();
 
   const [asset, setAsset] = useState<BackendAsset | null>(null);
@@ -98,6 +99,12 @@ export default function AssetBookingClient({ assetId }: { assetId: string }) {
     }
     setErrors({});
     if (!asset) return;
+
+    if (!isAuthenticated) {
+      toastRequireLogin("Please log in to complete your booking.");
+      openLogin();
+      return;
+    }
 
     setIsSubmitting(true);
     try {
