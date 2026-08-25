@@ -6,12 +6,6 @@ First, run the development server:
 
 ```bash
 pnpm dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
 Open [http://localhost:6001](http://localhost:6001) with your browser to see the result.
