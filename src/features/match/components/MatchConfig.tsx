@@ -7,9 +7,15 @@ import Link from "next/link";
 import { useRouter, useParams } from "next/navigation";
 import { motion, AnimatePresence } from "motion/react";
 import { useCheckoutStore } from "@/features/booking/store/useCheckoutStore";
+import { useAuthStore } from "@/features/auth/store/useAuthStore";
 import { createMatch } from "@/features/match/api/matches";
 import { toast } from "sonner";
+import { toastRequireLogin } from "@/shared/lib/toast";
 import { fetchFoxerById } from "@/features/user/api/foxers";
+import DateRangePicker, {
+  diffDays,
+  formatDate,
+} from "@/shared/components/ui/DateRangePicker";
 
 interface Foxer {
   id: string;
@@ -35,10 +41,12 @@ function getRoleLabel(roleType: string[]): string {
 const MatchConfig: React.FC = () => {
   const router = useRouter();
   const { foxerId } = useParams();
+  const { isAuthenticated, openLogin } = useAuthStore();
   const [step, setStep] = useState(1);
   const [selectedStyle, setSelectedStyle] = useState("");
   const [guests, setGuests] = useState(2);
-  const [date, setDate] = useState("");
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
   const [requestContent, setRequestContent] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [foxer, setFoxer] = useState<Foxer | null>(null);
@@ -284,19 +292,15 @@ const MatchConfig: React.FC = () => {
                   </p>
                 </div>
 
-                <div className="grid md:grid-cols-2 gap-8 items-start">
+                <div className="grid md:grid-cols-2 gap-8 items-stretch">
                   <div className="glass-card p-8 rounded-[2.5rem] space-y-6">
-                    <div>
-                      <label className="block text-sm font-bold text-text-muted uppercase tracking-widest mb-4">
-                        Select Date
-                      </label>
-                      <input
-                        type="date"
-                        value={date}
-                        onChange={(e) => setDate(e.target.value)}
-                        className="w-full bg-black/40 border border-white/10 rounded-2xl p-4 text-white focus:ring-accent focus:border-accent outline-none"
-                      />
-                    </div>
+                    <DateRangePicker
+                      startDate={startDate}
+                      endDate={endDate}
+                      onStartChange={setStartDate}
+                      onEndChange={setEndDate}
+                      stacked
+                    />
                     <div>
                       <label className="block text-sm font-bold text-text-muted uppercase tracking-widest mb-4">
                         Total Guests
@@ -310,9 +314,18 @@ const MatchConfig: React.FC = () => {
                             remove
                           </span>
                         </button>
-                        <span className="text-2xl font-display font-bold text-white">
-                          {guests}
-                        </span>
+                        <input
+                          type="text"
+                          inputMode="numeric"
+                          pattern="[0-9]*"
+                          value={guests}
+                          onChange={(e) => {
+                            const digits = e.target.value.replace(/\D/g, "");
+                            setGuests(digits === "" ? 0 : parseInt(digits, 10));
+                          }}
+                          onBlur={() => setGuests((g) => Math.max(1, g))}
+                          className="w-16 bg-transparent text-center text-lg font-display font-bold text-white outline-none"
+                        />
                         <button
                           onClick={() => setGuests(guests + 1)}
                           className="h-12 w-12 rounded-xl bg-accent text-black flex items-center justify-center hover:opacity-90"
@@ -324,7 +337,7 @@ const MatchConfig: React.FC = () => {
                   </div>
 
                   {selectedStyle ? (
-                    <div className="glass-card p-8 rounded-[2.5rem] bg-accent/5 border border-accent/20 space-y-5">
+                    <div className="glass-card p-8 rounded-[2.5rem] bg-accent/5 border border-accent/20 space-y-5 h-full flex flex-col justify-center">
                       <div>
                         <p className="text-[10px] font-bold uppercase tracking-widest text-accent/70 mb-1">
                           Your Starting Point
@@ -359,7 +372,7 @@ const MatchConfig: React.FC = () => {
                       </ul>
                     </div>
                   ) : (
-                    <div className="glass-card p-8 rounded-[2.5rem] bg-white/3 border border-white/10 space-y-5">
+                    <div className="glass-card p-8 rounded-[2.5rem] bg-white/3 border border-white/10 space-y-5 h-full flex flex-col justify-center">
                       <div>
                         <p className="text-[10px] font-bold uppercase tracking-widest text-white/30 mb-1">
                           Your Path
@@ -393,7 +406,7 @@ const MatchConfig: React.FC = () => {
                     Back
                   </button>
                   <button
-                    disabled={!date}
+                    disabled={!startDate || !endDate}
                     onClick={nextStep}
                     className="btn-neon px-12 py-4 rounded-full bg-accent text-black font-bold disabled:opacity-50"
                   >
@@ -508,7 +521,11 @@ const MatchConfig: React.FC = () => {
                       </div>
                       <div className="flex justify-between">
                         <span className="text-text-muted">Date</span>
-                        <span className="text-white font-bold">{date}</span>
+                        <span className="text-white font-bold text-right">
+                          {startDate === endDate
+                            ? formatDate(startDate)
+                            : `${formatDate(startDate)} → ${formatDate(endDate)}`}
+                        </span>
                       </div>
                       <div className="flex justify-between">
                         <span className="text-text-muted">Citizens</span>
@@ -554,13 +571,19 @@ const MatchConfig: React.FC = () => {
                   <button
                     disabled={isSubmitting}
                     onClick={async () => {
+                      if (!isAuthenticated) {
+                        toastRequireLogin("Please log in to send this request.");
+                        openLogin();
+                        return;
+                      }
                       try {
                         setIsSubmitting(true);
                         // 1. Create the match request on backend
                         const response = await createMatch({
                           foxerId: foxer.id,
                           style: selectedStyle || "Own idea",
-                          date: date,
+                          date: startDate,
+                          endDate: endDate,
                           guestCount: guests,
                           requestContent: requestContent,
                           totalAmount: foxer.basePrice * guests,
@@ -572,9 +595,9 @@ const MatchConfig: React.FC = () => {
                             venueId: foxer.id.toString(),
                             venueName: `${foxer.name} - ${selectedStyle || "Own idea"}`,
                             venueImage: foxer.avatar,
-                            checkInDate: date || null,
+                            checkInDate: startDate || null,
                             checkInTime: "09:00 PM",
-                            nights: 1,
+                            nights: diffDays(startDate, endDate),
                             totalAmount: foxer.basePrice * guests,
                             guestCount: guests,
                           });

@@ -14,6 +14,7 @@ import {
 } from "@/features/booking/api/bookings";
 import DateRangePicker from "@/shared/components/ui/DateRangePicker";
 import { toast } from "sonner";
+import { toastRequireLogin } from "@/shared/lib/toast";
 import WaitlistButton from "@/features/booking/components/WaitlistButton";
 import { getDashboardPath } from "@/shared/lib/dashboard-path";
 
@@ -23,7 +24,7 @@ export default function BookingConfigurationClient() {
   const templateId = searchParams.get("templateId");
   const { venueName, venueImage, guestCount, setConfig, setDraftIds } =
     useCheckoutStore();
-  const { user } = useAuthStore();
+  const { user, isAuthenticated, openLogin } = useAuthStore();
   const [isCreatingBooking, setIsCreatingBooking] = useState(false);
   const [template, setTemplate] = useState<any>(null);
   const [isLoadingTemplate, setIsLoadingTemplate] = useState(!!templateId);
@@ -688,6 +689,14 @@ export default function BookingConfigurationClient() {
 
                             if (!startDate) {
                               setDateError("Please select a check-in date.");
+                              return;
+                            }
+
+                            if (!isAuthenticated) {
+                              toastRequireLogin(
+                                "Please log in to complete your booking.",
+                              );
+                              openLogin();
                               return;
                             }
 

@@ -4,6 +4,7 @@ export const createMatch = async (data: {
   foxerId: string | number;
   style: string;
   date: string;
+  endDate: string;
   guestCount: number;
   requestContent: string;
   totalAmount: number;

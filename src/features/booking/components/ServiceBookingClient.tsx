@@ -13,6 +13,7 @@ import {
 import { useItemBookingStore } from "@/features/booking/store/useItemBookingStore";
 import { useAuthStore } from "@/features/auth/store/useAuthStore";
 import { toast } from "sonner";
+import { toastRequireLogin } from "@/shared/lib/toast";
 import type { BackendService } from "@/shared/lib/api-types";
 import AvailabilityCalendar from "./AvailabilityCalendar";
 import { getDashboardPath } from "@/shared/lib/dashboard-path";
@@ -25,7 +26,7 @@ export default function ServiceBookingClient({
   serviceId: string;
 }) {
   const router = useRouter();
-  const { user } = useAuthStore();
+  const { user, isAuthenticated, openLogin } = useAuthStore();
   const { setBookingDetails, setBookingId } = useItemBookingStore();
 
   const [service, setService] = useState<BackendService | null>(null);
@@ -84,6 +85,12 @@ export default function ServiceBookingClient({
     }
     setErrors({});
     if (!service) return;
+
+    if (!isAuthenticated) {
+      toastRequireLogin("Please log in to complete your booking.");
+      openLogin();
+      return;
+    }
 
     setIsSubmitting(true);
     try {

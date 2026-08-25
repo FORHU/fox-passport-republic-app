@@ -16,13 +16,14 @@ import DateRangePicker, {
   diffDays,
 } from "@/shared/components/ui/DateRangePicker";
 import { toast } from "sonner";
+import { toastRequireLogin } from "@/shared/lib/toast";
 import { getDashboardPath } from "@/shared/lib/dashboard-path";
 
 const SERVICE_FEE_RATE = 0.1;
 
 export default function VenueBookingClient({ venueId }: { venueId: string }) {
   const router = useRouter();
-  const { user } = useAuthStore();
+  const { user, isAuthenticated, openLogin } = useAuthStore();
 
   const [venue, setVenue] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -66,6 +67,12 @@ export default function VenueBookingClient({ venueId }: { venueId: string }) {
     }
     setErrors({});
     if (!venue) return;
+
+    if (!isAuthenticated) {
+      toastRequireLogin("Please log in to complete your booking.");
+      openLogin();
+      return;
+    }
 
     setIsSubmitting(true);
     try {
