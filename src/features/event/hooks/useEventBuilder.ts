@@ -290,8 +290,13 @@ export function useEventBuilder() {
 
   const handleSaveDraft = useCallback(
     async (opts?: { silent?: boolean; syncInclusions?: boolean }) => {
-      if (store.isSubmitting) return;
+      // Read and claim the in-flight flag off live store state, not the render
+      // snapshot: two calls in the same tick both see a stale `false` otherwise,
+      // and the read-then-write inclusion sync below double-attaches resources.
+      if (useEventBuilderStore.getState().isSubmitting) return;
+      useEventBuilderStore.getState().setIsSubmitting(true);
       if (!store.eventTitle) {
+        useEventBuilderStore.getState().setIsSubmitting(false);
         if (!opts?.silent) toast.error("Add an event title before saving");
         return;
       }
@@ -306,7 +311,6 @@ export function useEventBuilder() {
       const rawCategory = store.category.toLowerCase().replace(/\s+/g, "_");
       const eventType = safeEventTypeMapping[rawCategory] || "other";
 
-      store.setIsSubmitting(true);
       store.setSaveStatus("saving");
       try {
         // Upload any gallery images that haven't been uploaded yet
