@@ -53,7 +53,6 @@ export default function ServiceBookingClient({
       .catch(() => {});
   }, [serviceId]);
 
-
   const unitPrice = Number(service?.price ?? 0);
   const isPerSession =
     service?.billingRate === "per_session" ||

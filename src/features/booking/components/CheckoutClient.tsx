@@ -34,7 +34,6 @@ export default function CheckoutClient() {
   const [loadingIntent, setLoadingIntent] = useState(false);
   const [intentError, setIntentError] = useState<string | null>(null);
 
-
   const dashboardPath = getDashboardPath(user);
 
   // Request a PaymentIntent when the component mounts (if not already fetched)

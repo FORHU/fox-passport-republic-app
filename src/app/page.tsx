@@ -4,18 +4,18 @@ import { Suspense } from "react";
 // Skip static generation for this page - it fetches dynamic data
 export const dynamic = "force-dynamic";
 
-// --- New FoxerNew Landing Page ---
+// --- Features ---
+// Server component: import leaves directly, not feature barrels, so the whole
+// client graph of each feature doesn't get pulled into this page's bundle.
 import FoxerLandingPage from "@/features/landing/components/FoxerLandingPage";
-
-// --- Shared Components ---
-import Navbar from "@/shared/components/layout/Navbar";
-import AuthModal from "@/features/auth/components/AuthModal";
-
-// --- Search Results Components ---
 import ListingCard from "@/features/landing/components/ListingCard";
+import AuthModal from "@/features/auth/components/AuthModal";
+import { filterVenues } from "@/features/venue/helpers/filterVenues";
+
+// --- Shared Components & Server Utils ---
+import Navbar from "@/shared/components/layout/Navbar";
 import { getVenues, getFeaturedEventTemplates } from "@/shared/lib/server/data";
 import { getUser } from "@/shared/lib/server/auth";
-import { filterVenues } from "@/features/venue/helpers/filterVenues";
 
 const VENUE_ROLES = ["eventFoxer", "venueFoxer", "gearFoxer", "serviceFoxer"];
 

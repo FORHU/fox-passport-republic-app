@@ -47,7 +47,6 @@ export default function CheckoutSuccessClient() {
     }
   }, []);
 
-
   const dashboardPath = getDashboardPath(user);
 
   return (

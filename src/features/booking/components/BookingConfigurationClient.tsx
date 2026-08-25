@@ -37,7 +37,6 @@ export default function BookingConfigurationClient() {
       .finally(() => setIsLoadingTemplate(false));
   }, [templateId, searchParams]);
 
-
   const dashboardPath = getDashboardPath(user);
 
   // Derived template values

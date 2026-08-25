@@ -50,7 +50,6 @@ export default function ItemCheckoutClient() {
   const [loadingIntent, setLoadingIntent] = useState(false);
   const [intentError, setIntentError] = useState<string | null>(null);
 
-
   const typeConfig = itemType ? TYPE_CONFIG[itemType] : TYPE_CONFIG.service;
 
   const formattedDate = scheduledDate

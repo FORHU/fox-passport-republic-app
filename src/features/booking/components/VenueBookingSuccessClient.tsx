@@ -39,7 +39,6 @@ export default function VenueBookingSuccessClient() {
     }
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-
   const dashboardPath = getDashboardPath(user);
 
   return (

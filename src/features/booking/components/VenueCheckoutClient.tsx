@@ -39,7 +39,6 @@ export default function VenueCheckoutClient() {
   const [mobileNumber, setMobileNumber] = useState(user?.mobileNumber || "");
   const formRef = useRef<{ submit: () => Promise<void> }>(null);
 
-
   const dashboardPath = getDashboardPath(user);
   const orderNumber = useMemo(
     () => Math.floor(10000 + Math.random() * 90000),

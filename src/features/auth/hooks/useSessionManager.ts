@@ -44,11 +44,14 @@ export function useSessionManager(
     },
     enabled: isAuthenticated && !!accessToken,
     retry: false,
-    refetchInterval: (query) => {
+    // Roles change when an admin approves a role application - minutes-scale,
+    // not seconds. Poll slowly and lean on window focus to catch it sooner.
+    refetchInterval: () => {
       if (typeof document !== "undefined" && document.hidden) return false;
-      return 30000; // Refetch profile every 30 seconds
+      return 5 * 60 * 1000;
     },
-    staleTime: 10000,
+    refetchOnWindowFocus: true,
+    staleTime: 60 * 1000,
   });
 
   // Keep callback refs stable so event listeners don't churn

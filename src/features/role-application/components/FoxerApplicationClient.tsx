@@ -16,7 +16,7 @@ import {
 import RequireAuth from "@/features/auth/components/RequireAuth";
 import Link from "next/link";
 import FileUploader from "@/shared/components/layout/FileUploader";
-import KycDocumentSection from "@/shared/components/layout/KycDocumentSection";
+import { KycDocumentSection } from "./KycDocumentSection";
 import SpecializationPicker from "./SpecializationPicker";
 
 const SERVICE_CATEGORY_OPTIONS = [
