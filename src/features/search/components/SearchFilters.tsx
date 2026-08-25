@@ -17,11 +17,18 @@ function CategoryDropdown({
 }) {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
+  const menuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (!open) return;
     const handler = (e: MouseEvent) => {
-      if (ref.current && !ref.current.contains(e.target as Node))
+      const target = e.target as Node;
+      if (
+        ref.current &&
+        !ref.current.contains(target) &&
+        menuRef.current &&
+        !menuRef.current.contains(target)
+      )
         setOpen(false);
     };
     document.addEventListener("mousedown", handler);
@@ -52,6 +59,7 @@ function CategoryDropdown({
       {open &&
         createPortal(
           <div
+            ref={menuRef}
             className="fixed z-[101] w-[var(--cat-w)] animate-in fade-in zoom-in-95 duration-150"
             style={{
               top: "var(--cat-top)",
