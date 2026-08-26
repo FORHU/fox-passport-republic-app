@@ -22,22 +22,17 @@ const AdminAuthGuard: React.FC<AdminAuthGuardProps> = ({ children }) => {
   // Check for existing auth on mount
   useEffect(() => {
     setIsClient(true);
+    // Tokens are httpOnly cookies and unreadable here by design, so a stored
+    // profile is the only client-side signal. It is a display hint, not proof:
+    // middleware.ts verifies the JWT at the edge and the API rejects a bad
+    // token, so a stale `fox_user` cannot grant access to anything.
     const storedUser = localStorage.getItem("fox_user");
-    const storedToken = localStorage.getItem("fox_token");
-    const storedRefreshToken = localStorage.getItem("fox_refresh_token");
 
-    if (storedUser && storedToken) {
+    if (storedUser) {
       try {
-        const userData = JSON.parse(storedUser);
-        useAuthStore.getState().login({
-          user: userData,
-          accessToken: storedToken,
-          refreshToken: storedRefreshToken || "",
-        });
+        useAuthStore.getState().login({ user: JSON.parse(storedUser) });
       } catch {
         localStorage.removeItem("fox_user");
-        localStorage.removeItem("fox_token");
-        localStorage.removeItem("fox_refresh_token");
       }
     }
     setLoading(false);
