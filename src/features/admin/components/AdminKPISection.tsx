@@ -72,36 +72,38 @@ export const AdminKPISection: React.FC<AdminKPISectionProps> = ({ stats }) => {
   ];
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+    <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 lg:gap-6">
       {cards.map((card, i) => (
         <div
           key={i}
-          className={`glass-card rounded-[2rem] p-6 relative overflow-hidden group ${card.hoverBorder} transition-all`}
+          className={`glass-card rounded-2xl sm:rounded-[2rem] p-4 sm:p-5 lg:p-6 relative overflow-hidden group ${card.hoverBorder} transition-all`}
         >
-          <div className="absolute top-0 right-0 p-6 opacity-10 group-hover:opacity-20 transition-opacity">
+          <div className="absolute top-0 right-0 p-3 sm:p-6 opacity-10 group-hover:opacity-20 transition-opacity">
             <span
-              className={`material-symbols-outlined text-[100px] ${card.bgIcon}`}
+              className={`material-symbols-outlined text-[56px] sm:text-[80px] lg:text-[100px] ${card.bgIcon}`}
             >
               {card.icon}
             </span>
           </div>
           <div className="relative z-10">
             <div
-              className={`h-12 w-12 rounded-2xl ${card.bg} flex items-center justify-center ${card.iconColor} mb-4 ${card.shadow}`}
+              className={`h-9 w-9 sm:h-11 sm:w-11 lg:h-12 lg:w-12 rounded-xl sm:rounded-2xl ${card.bg} flex items-center justify-center ${card.iconColor} mb-2 sm:mb-3 lg:mb-4 ${card.shadow}`}
             >
               <span className="material-symbols-outlined">{card.icon}</span>
             </div>
-            <p className="text-text-muted font-medium text-sm">{card.label}</p>
-            <h3 className="text-4xl font-display font-bold text-white mt-1 group-hover:scale-105 origin-left transition-transform">
+            <p className="text-text-muted font-medium text-xs sm:text-sm">
+              {card.label}
+            </p>
+            <h3 className="text-2xl sm:text-3xl lg:text-4xl font-display font-bold text-white mt-0.5 sm:mt-1 group-hover:scale-105 origin-left transition-transform">
               {card.value}
             </h3>
-            <div className="flex items-center gap-1 mt-2 text-sm font-bold">
+            <div className="flex items-center gap-1 mt-1.5 sm:mt-2 text-[11px] sm:text-sm font-bold min-w-0">
               {card.trend === "positive" && (
                 <>
                   <span className="material-symbols-outlined text-[16px] text-accent">
                     trending_up
                   </span>
-                  <span className="text-accent">{card.sub}</span>
+                  <span className="text-accent truncate">{card.sub}</span>
                 </>
               )}
               {card.trend === "warning" && (
@@ -121,7 +123,7 @@ export const AdminKPISection: React.FC<AdminKPISectionProps> = ({ stats }) => {
                 </>
               )}
               {card.trend === null && (
-                <span className="text-white/30">{card.sub}</span>
+                <span className="text-white/30 truncate">{card.sub}</span>
               )}
             </div>
           </div>

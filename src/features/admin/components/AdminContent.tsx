@@ -48,33 +48,51 @@ export const AdminContent: React.FC<Props> = ({
 }) => {
   const activeTab = useUIStore((s) => s.activeAdminTab);
 
-  // Reactive hooks with polling
+  // Only the active tab is rendered, so only the active tab fetches. Every one
+  // of these polls on an interval; left ungated they all ran at once, so the
+  // admin page issued ten requests every five seconds for data that was, at
+  // best, one tab's worth of use. The server-rendered initialData still
+  // populates each cache entry, so switching tabs paints immediately.
   const { data: venues, isLoading: loadingVenues } = useAdminData(
     "venues",
     initialVenues,
+    activeTab === "venues",
   );
   const { data: services, isLoading: loadingServices } = useAdminData(
     "services",
     initialServices,
+    activeTab === "services",
   );
   const { data: assets, isLoading: loadingAssets } = useAdminData(
     "assets",
     initialAssets,
+    activeTab === "assets",
   );
   const { data: events, isLoading: loadingEvents } = useAdminData(
     "events",
     initialEvents,
+    activeTab === "events",
   );
   const { data: citizens, isLoading: loadingCitizens } = useAdminData(
     "citizens",
     initialCitizens,
+    activeTab === "citizens",
   );
   const { data: categories, isLoading: loadingCategories } = useAdminData(
     "categories",
     initialCategories,
+    activeTab === "categories",
   );
-  const { data: adminStats } = useAdminData("stats", stats);
-  const { data: adminBookings } = useAdminData("bookings", initialBookings);
+  const { data: adminStats } = useAdminData(
+    "stats",
+    stats,
+    activeTab === "dashboard",
+  );
+  const { data: adminBookings } = useAdminData(
+    "bookings",
+    initialBookings,
+    activeTab === "bookings",
+  );
   const { venues: pendingVenues, isLoading: loadingPendingVenues } =
     useAdminPendingVenues();
   const { assets: pendingAssets, isLoading: loadingPendingAssets } =
@@ -82,7 +100,7 @@ export const AdminContent: React.FC<Props> = ({
   const { services: pendingServices, isLoading: loadingPendingServices } =
     useAdminPendingServices();
   return (
-    <div className="p-8 space-y-8">
+    <div className="p-4 sm:p-6 lg:p-8 space-y-6 lg:space-y-8">
       {activeTab === "dashboard" && (
         <>
           <AdminKPISection stats={adminStats} />

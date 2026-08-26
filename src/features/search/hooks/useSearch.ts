@@ -1,7 +1,7 @@
 "use client";
 
 import { useSearchParams } from "next/navigation";
-import { useQuery } from "@tanstack/react-query";
+import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import api from "@/shared/lib/axios";
 
 type EndpointConfig = { path: string; extractKey: string };
@@ -91,6 +91,11 @@ export const useSearch = () => {
 
       return results;
     },
+    // The page number is part of the query key, so paging is a cache miss.
+    // Without this the list blanks on every page change; keeping the previous
+    // page visible while the next loads is the difference between a flicker
+    // and a flash of empty state.
+    placeholderData: keepPreviousData,
     staleTime: 1000 * 60 * 5,
   });
 

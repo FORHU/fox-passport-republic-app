@@ -1,8 +1,7 @@
 ﻿"use client";
 
 import { useQuery } from "@tanstack/react-query";
-import axios from "axios";
-import { config } from "@/shared/lib/config";
+import api from "@/shared/lib/axios";
 
 interface VenueImage {
   id: string;
@@ -79,8 +78,10 @@ const fetchVenuesByCategory = async (
     .replace(/\s+/g, "-")
     .replace(/&/g, "");
 
-  const response = await axios.get<AxiosVenuePayload>(
-    `${config.apiUrl}/venues/category/${categorySlug}`,
+  // Shared client, so this goes through the Next proxy and picks up auth from
+  // the httpOnly cookie like every other client call.
+  const response = await api.get<AxiosVenuePayload>(
+    `/venues/category/${categorySlug}`,
   );
 
   return response.data.venues || response.data.data || [];

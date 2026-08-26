@@ -53,6 +53,12 @@ export function MapboxLocationInput({
   }, []);
 
   useEffect(() => {
+    // Debouncing alone only stops requests being *started*. Once one is in
+    // flight a slower earlier response can still resolve after a newer one and
+    // overwrite the dropdown with suggestions for a query the user has already
+    // moved past, so the request is aborted too.
+    const controller = new AbortController();
+
     const fetchSuggestions = async (query: string) => {
       if (!query || query.length < 2) {
         setSuggestions([]);
@@ -61,6 +67,7 @@ export function MapboxLocationInput({
       try {
         const response = await fetch(
           `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(query)}.json?access_token=${config.mapboxToken}&types=${type}&limit=5`,
+          { signal: controller.signal },
         );
         if (response.ok) {
           const data = await response.json();
@@ -68,6 +75,7 @@ export function MapboxLocationInput({
           setShowDropdown(true);
         }
       } catch (e) {
+        if ((e as Error)?.name === "AbortError") return;
         console.warn("Mapbox error:", e);
       }
     };
@@ -77,7 +85,11 @@ export function MapboxLocationInput({
         void fetchSuggestions(value);
       }
     }, 400);
-    return () => clearTimeout(timer);
+
+    return () => {
+      clearTimeout(timer);
+      controller.abort();
+    };
   }, [value, type]);
 
   return (

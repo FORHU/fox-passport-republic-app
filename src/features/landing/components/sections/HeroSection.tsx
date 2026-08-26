@@ -1,4 +1,4 @@
-/* eslint-disable react-hooks/set-state-in-effect, @next/next/no-img-element */
+/* eslint-disable @next/next/no-img-element */
 "use client";
 
 import { useState, useRef, useEffect, useCallback } from "react";
@@ -6,7 +6,7 @@ import { motion } from "motion/react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { createPortal } from "react-dom";
-import { config } from "@/shared/lib/config";
+import { useLocationSearch } from "@/features/landing/hooks/useLocationSearch";
 
 const CATEGORIES = ["Wedding", "Corporate", "Birthday", "Social", "Other"];
 
@@ -344,8 +344,8 @@ function LocationField({
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
   const [pos, setPos] = useState({ top: 0, left: 0, width: 0 });
-  const [cities, setCities] = useState<string[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
+  const cities = useLocationSearch(value);
 
   const close = useCallback(() => {
     setOpen(false);
@@ -364,25 +364,6 @@ function LocationField({
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, []);
-
-  useEffect(() => {
-    if (!value || value.length < 2) {
-      setCities([]);
-      return;
-    }
-    const timer = setTimeout(() => {
-      fetch(`${config.apiUrl}/locations/search?q=${encodeURIComponent(value)}`)
-        .then((res) => res.json())
-        .then((data) => {
-          if (data.status === "success") {
-            setCities(data.data.locations);
-          }
-        })
-        .catch((err) => console.error("Failed to fetch locations:", err));
-    }, 300);
-
-    return () => clearTimeout(timer);
-  }, [value]);
 
   const toggle = () => {
     if (!open && ref.current) {
