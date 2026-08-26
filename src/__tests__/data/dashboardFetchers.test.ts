@@ -14,7 +14,9 @@ vi.mock("next/headers", () => ({
   cookies: async () => ({ get: () => ({ value: "test-token" }) }),
 }));
 vi.mock("next/navigation", () => ({ redirect: vi.fn() }));
-vi.mock("@/shared/lib/server/auth", () => ({ requireAuth: vi.fn(async () => ({ id: "host-1" })) }));
+vi.mock("@/shared/lib/server/auth", () => ({
+  requireAuth: vi.fn(async () => ({ id: "host-1" })),
+}));
 
 const urls = () =>
   (globalThis.fetch as ReturnType<typeof vi.fn>).mock.calls.map((c) =>
@@ -97,7 +99,9 @@ describe("pages fetch only what the branch they render actually uses", () => {
   it("the landing page fetches in parallel, not as a waterfall", () => {
     const src = read("src/app/page.tsx");
     expect(src).toMatch(/await Promise\.all\(/);
-    expect(src).not.toMatch(/const featuredTemplates = await getFeaturedEventTemplates/);
+    expect(src).not.toMatch(
+      /const featuredTemplates = await getFeaturedEventTemplates/,
+    );
   });
 
   it("the categories page batches its three independent fetches", () => {
