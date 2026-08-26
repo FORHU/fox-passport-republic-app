@@ -1,7 +1,7 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { useAuthStore } from "@/features/auth/store/useAuthStore";
@@ -108,6 +108,18 @@ export function useHostVenueEdit(venueId: string) {
   const hostId = user?.id;
 
   const builder = useVenueBuilder();
+
+  // `useVenueBuilder` returns a fresh object literal on every render (it spreads
+  // the store and rebuilds handlers, and the return itself is not memoised), so
+  // its identity always changes. The prefill effect below calls builder.setX(),
+  // which updates the store and triggers a render, which produces a new builder
+  // object - so listing `builder` in that effect's deps made it re-run forever,
+  // refetching GET /venues?hostId=... on every pass.
+  //
+  // Read it through a ref instead: the effect gets the current builder without
+  // depending on an identity that changes every render.
+  const builderRef = useRef(builder);
+  builderRef.current = builder;
 
   const backHref = "/creator-dashboard/venues";
 
@@ -219,6 +231,11 @@ export function useHostVenueEdit(venueId: string) {
   );
 
   useEffect(() => {
+    // Shadows the outer `builder` for the whole effect body, so every
+    // builder.setX() below acts on the current instance without this effect
+    // depending on that instance's identity.
+    const builder = builderRef.current;
+
     if (!venueId) {
       setIsPrefilling(false);
       setPrefillError("Invalid venue id.");
@@ -366,7 +383,7 @@ export function useHostVenueEdit(venueId: string) {
     return () => {
       cancelled = true;
     };
-  }, [hostId, venueId, builder]);
+  }, [hostId, venueId]);
 
   return {
     ...builder,
