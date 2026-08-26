@@ -9,6 +9,19 @@ import { LoginResponse } from "@/features/auth/types/auth";
  * Server action to set authentication cookies
  * Called after successful login from client
  */
+/**
+ * Cookie lifetimes are derived from the tokens they carry, not picked
+ * independently. They used to disagree - the access cookie lived 7 days while
+ * its JWT expired in 15 minutes, and the refresh cookie lived 30 days while its
+ * JWT lasted 7 - which left the browser holding credentials the server had
+ * already stopped honouring.
+ *
+ * The refresh cookie is the one that defines how long a session survives; the
+ * access cookie matches it because the proxy silently refreshes an expired
+ * access token, so there is no value in expiring the cookie sooner.
+ */
+const SESSION_MAX_AGE = 7 * 24 * 60 * 60; // must match REFRESH_TOKEN_EXPIRY
+
 export async function setAuthCookies(loginResponse: LoginResponse) {
   const cookieStore = await cookies();
 
@@ -19,7 +32,7 @@ export async function setAuthCookies(loginResponse: LoginResponse) {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
     sameSite: "lax",
-    maxAge: 7 * 24 * 60 * 60, // 7 days
+    maxAge: SESSION_MAX_AGE,
     path: "/",
   });
 
@@ -29,7 +42,7 @@ export async function setAuthCookies(loginResponse: LoginResponse) {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       sameSite: "lax",
-      maxAge: 30 * 24 * 60 * 60, // 30 days
+      maxAge: SESSION_MAX_AGE,
       path: "/",
     });
   }
@@ -41,7 +54,7 @@ export async function setAuthCookies(loginResponse: LoginResponse) {
   cookieStore.set("fox_user", JSON.stringify(user), {
     secure: process.env.NODE_ENV === "production",
     sameSite: "lax",
-    maxAge: 7 * 24 * 60 * 60, // 7 days
+    maxAge: SESSION_MAX_AGE,
     path: "/",
   });
 
@@ -77,7 +90,7 @@ export async function refreshUserSession(): Promise<Record<
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       sameSite: "lax",
-      maxAge: 7 * 24 * 60 * 60,
+      maxAge: SESSION_MAX_AGE,
       path: "/",
     });
 
@@ -96,7 +109,7 @@ export async function refreshUserSession(): Promise<Record<
     cookieStore.set("fox_user", JSON.stringify(freshUser), {
       secure: process.env.NODE_ENV === "production",
       sameSite: "lax",
-      maxAge: 7 * 24 * 60 * 60,
+      maxAge: SESSION_MAX_AGE,
       path: "/",
     });
     return freshUser;
@@ -110,6 +123,23 @@ export async function refreshUserSession(): Promise<Record<
  */
 export async function clearAuthCookies() {
   const cookieStore = await cookies();
+  const refreshToken = cookieStore.get("fox_refresh_token")?.value;
+
+  // Revoke server-side before dropping the cookie. Logging out used to delete
+  // cookies and nothing else - the API's /auth/logout was never called by
+  // anything - so the refresh token stayed valid for its full lifetime and a
+  // copy of it could keep minting access tokens after the user had "logged
+  // out". This is the only place that still holds the token, since it is
+  // httpOnly and the browser cannot read it.
+  if (refreshToken) {
+    try {
+      await axios.post(`${appConfig.apiUrl}/auth/logout`, { refreshToken });
+    } catch {
+      // Never block logout on the network. The cookies are cleared regardless,
+      // so the session ends locally either way; the token simply expires on its
+      // own if the call did not land.
+    }
+  }
 
   cookieStore.delete("fox_token");
   cookieStore.delete("fox_refresh_token");

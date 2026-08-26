@@ -24,7 +24,13 @@ interface AuthState {
   close: () => void;
   toggleView: () => void;
   setLoading: (loading: boolean) => void;
-  login: (loginResponse: LoginResponse) => void;
+  /**
+   * Takes the login response but reads only `user` from it: the tokens in that
+   * payload are persisted as httpOnly cookies by the `setAuthCookies` server
+   * action, never client-side. Accepting `{ user }` alone also lets a rehydrate
+   * path pass a stored profile without inventing fake tokens.
+   */
+  login: (loginResponse: Pick<LoginResponse, "user">) => void;
   setUser: (user: User) => void;
   logout: () => void;
 }
@@ -43,15 +49,15 @@ export const useAuthStore = create<AuthState>((set) => ({
     if (typeof window === "undefined") return;
 
     try {
+      // Tokens live in httpOnly cookies and are deliberately unreadable here.
+      // `fox_user` is profile display data only, so presence of a stored user
+      // is what rehydrates the session optimistically; the first proxied
+      // request settles whether the cookie is still valid.
       const storedUser = localStorage.getItem("fox_user");
-      const initialToken = localStorage.getItem("fox_token");
-      const initialRefresh = localStorage.getItem("fox_refresh_token");
 
-      if (storedUser && initialToken) {
+      if (storedUser) {
         set({
           user: JSON.parse(storedUser),
-          accessToken: initialToken,
-          refreshToken: initialRefresh,
           isAuthenticated: true,
           isLoading: false,
         });
@@ -84,26 +90,24 @@ export const useAuthStore = create<AuthState>((set) => ({
   },
 
   login: (loginResponse) => {
-    const { accessToken, refreshToken, user } = loginResponse;
+    const { user } = loginResponse;
 
+    // Only profile data. The access and refresh tokens are written as httpOnly
+    // cookies by the `setAuthCookies` server action - putting copies here is
+    // what previously handed the whole session to any XSS on the page.
     localStorage.setItem("fox_user", JSON.stringify(user));
-    localStorage.setItem("fox_token", accessToken);
-    localStorage.setItem("fox_refresh_token", refreshToken);
 
     set({
       isAuthenticated: true,
       user,
-      accessToken,
-      refreshToken,
       isOpen: false,
       isLoading: false,
     });
   },
 
   logout: () => {
+    // Cookies are cleared by the `clearAuthCookies` server action.
     localStorage.removeItem("fox_user");
-    localStorage.removeItem("fox_token");
-    localStorage.removeItem("fox_refresh_token");
     set({
       isAuthenticated: false,
       user: null,
