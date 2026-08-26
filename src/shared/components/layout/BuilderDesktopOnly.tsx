@@ -7,10 +7,19 @@ import Link from "next/link";
  * by HTML5 drag-and-drop (`draggable` / `onDragStart` / `onDrop`), which does
  * not fire on touch devices. See `docs/responsive-plan.md` section 4.
  *
- * This overlay covers the builder shell on small screens so users hit an
- * explanation instead of a dead page. It is deliberately CSS-only (`md:hidden`)
- * rather than `useIsMobile` so it renders correctly on the server and never
- * flashes the broken builder during hydration.
+ * This overlay covers the builder shell so users hit an explanation instead of a
+ * dead page.
+ *
+ * The condition is `md:pointer-fine:hidden` - it hides only when the viewport is
+ * wide AND the pointer is a mouse. Guarding on width alone (`md:hidden`) was
+ * wrong: a tablet at 1024px clears `md` but is still touch, so it would have
+ * been handed the same dead builder. Drag-and-drop fails on the input axis, not
+ * the width axis (see docs/responsive-plan.md section 5.1).
+ *
+ * Deliberately CSS-only rather than `useIsMobile` so it renders correctly on the
+ * server and never flashes the broken builder during hydration. Written so that
+ * the overlay is shown by default and only hidden by a more specific condition -
+ * an ordering surprise leaves users with the explanation, not a dead page.
  *
  * Remove this once the builders accept pointer/touch input (plan section 4,
  * Option A).
@@ -24,7 +33,7 @@ export function BuilderDesktopOnly({
     <div
       role="alertdialog"
       aria-labelledby="builder-desktop-only-title"
-      className="md:hidden absolute inset-0 z-100 flex flex-col items-center justify-center gap-5 bg-[#02040a] px-6 text-center"
+      className="md:pointer-fine:hidden absolute inset-0 z-100 flex flex-col items-center justify-center gap-5 bg-[#02040a] px-6 text-center"
     >
       <span
         aria-hidden="true"

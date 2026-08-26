@@ -51,9 +51,13 @@ describe("Builders are guarded below md", () => {
     expect(read(path)).toMatch(/<BuilderDesktopOnly\b/);
   });
 
-  it("the guard hides itself at md and covers the shell below it", () => {
+  it("covers the shell whenever the pointer is coarse, at any width", () => {
     const guard = read("src/shared/components/layout/BuilderDesktopOnly.tsx");
-    expect(guard).toMatch(/md:hidden/);
     expect(guard).toMatch(/absolute inset-0/);
+    // Must hide only on wide AND mouse. A bare `md:hidden` would uncover the
+    // dead builder on a 1024px touch tablet - drag-and-drop fails on the input
+    // axis, not the width axis.
+    expect(guard).toMatch(/md:pointer-fine:hidden/);
+    expect(guard).not.toMatch(/className="md:hidden/);
   });
 });
