@@ -444,7 +444,7 @@ const CustomExperienceBuilder: React.FC<{
                 </span>
                 <button
                   onClick={() => setSelectedFoxer(null)}
-                  className="absolute -right-2 -top-2 opacity-0 group-hover:opacity-100 p-1 text-red-400 hover:text-red-300 transition-opacity"
+                  className="absolute -right-2 -top-2 opacity-100 pointer-fine:opacity-0 pointer-fine:group-hover:opacity-100 p-1 text-red-400 hover:text-red-300 transition-opacity"
                 >
                   <span className="material-symbols-outlined text-[16px]">
                     cancel
@@ -485,7 +485,7 @@ const CustomExperienceBuilder: React.FC<{
                       </span>
                       <button
                         onClick={() => handleServiceToggle(s.id)}
-                        className="absolute -right-2 top-0 opacity-0 group-hover:opacity-100 p-1 text-red-400 hover:text-red-300 transition-opacity"
+                        className="absolute -right-2 top-0 opacity-100 pointer-fine:opacity-0 pointer-fine:group-hover:opacity-100 p-1 text-red-400 hover:text-red-300 transition-opacity"
                       >
                         <span className="material-symbols-outlined text-[16px]">
                           cancel

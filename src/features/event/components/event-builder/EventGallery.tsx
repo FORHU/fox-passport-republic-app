@@ -70,7 +70,7 @@ export function EventGallery({
               </div>
               <button
                 onClick={() => onRemoveImage(gallery[0].id)}
-                className="absolute top-2 right-2 p-1.5 bg-black/50 text-white rounded-full opacity-0 group-hover:opacity-100 hover:bg-red-500 z-20"
+                className="absolute top-2 right-2 p-1.5 bg-black/50 text-white rounded-full opacity-100 pointer-fine:opacity-0 pointer-fine:group-hover:opacity-100 hover:bg-red-500 z-20"
               >
                 <span className="material-symbols-outlined text-[14px]">
                   close
@@ -102,7 +102,7 @@ export function EventGallery({
               <Image fill src={img.url} alt="" className="object-cover" />
               <button
                 onClick={() => onRemoveImage(img.id)}
-                className="absolute top-2 right-2 p-1.5 bg-black/50 text-white rounded-full opacity-0 group-hover:opacity-100 hover:bg-red-500 z-20"
+                className="absolute top-2 right-2 p-1.5 bg-black/50 text-white rounded-full opacity-100 pointer-fine:opacity-0 pointer-fine:group-hover:opacity-100 hover:bg-red-500 z-20"
               >
                 <span className="material-symbols-outlined text-[14px]">
                   close
