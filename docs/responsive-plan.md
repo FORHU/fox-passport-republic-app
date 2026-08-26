@@ -174,6 +174,38 @@ built for this — only the host page is missing.
 
 Pick `md` (768) as *the* mobile/desktop line and make everything agree.
 
+### 3.4 Supabase is dead code — remove it
+
+Supabase is fully orphaned. Nothing in the app reaches it: the real data layer is
+`src/shared/lib/server/data.ts` (axios against `NEXT_PUBLIC_API_URL`) and auth is
+cookie/JWT based (`server/auth.ts`, `jose`).
+
+| Artifact | Reality |
+|---|---|
+| `src/shared/lib/supabase.ts` | browser client — **0 importers** |
+| `src/shared/lib/server/supabase.ts` | server client — imported only by `business.ts` |
+| `src/shared/lib/server/business.ts` | `createEvent` / `createVenue` / `cancelBooking` — **0 importers**, not re-exported by `server/index.ts` |
+| `@supabase/ssr`, `@supabase/supabase-js` | 2 deps in `package.json` |
+| `NEXT_PUBLIC_SUPABASE_URL` / `_ANON_KEY` | placeholder values in `.github/workflows/ci.yml:20-21` |
+
+`business.ts` is also unsafe if anyone ever wired it up — `data: any` params and a
+null deref on `booking.user_id` when the row is missing. Deleting it is strictly
+better than fixing it.
+
+**Fix:** delete the three files, `pnpm remove @supabase/ssr @supabase/supabase-js`,
+drop the two CI env lines. No runtime behaviour changes. Not responsive work, but
+it is three files off the 145-file unhandled count and removes a second, phantom
+auth path that will confuse anyone touching `server/`.
+
+**The API had the same dead footprint** (found while checking the Stripe return
+URLs, see 8.2): `fox-passport-republic-api/src/utils/supabase.ts` held three
+storage-upload helpers with **no importers** — real uploads go through S3
+(`utils/s3.ts`, `services/s3.service.ts`). Its `createClient(...)` ran at module
+load against env vars that are commented out, so importing it at all would have
+crashed the server on boot. Removed along with the three `config.ts` exports, the
+`@supabase/supabase-js` dep, and the env entries in `.env` / `.env.docker`.
+Supabase is now gone from **both** repos.
+
 ---
 
 ## 4. The hard problem: the builders are touch-dead
@@ -227,23 +259,89 @@ Tailwind defaults, documented so people stop guessing. Only `2xl` is customised
 | `xl` | 1280 | Laptop / desktop | Three-pane builders. Full blueprint sidebar. |
 | `2xl` | 1400 | Large desktop | Cap content width; do not let line lengths run away. |
 
-Rules:
+Rules — width:
 
 1. `md` is the only place a layout may change from "stacked" to "docked".
 2. Any fixed `w-[Npx]` or `w-80` must have a `max-w-full` or a breakpoint guard.
 3. Anything wider than its container scrolls **inside itself** (`overflow-x-auto`),
    never on `body`. The admin tables already do this — match them.
 
+### 5.1 The second axis: input, not width
+
+Width is only half of responsive, and the half this document was originally built
+to measure. A component can score perfectly on breakpoint coverage and still be
+unusable on a phone, because prefix-counting measures whether someone *thought
+about* small screens — not whether the thing works on one.
+
+`ExperienceBuilder.tsx` is the proof: 13 breakpoint prefixes, carefully built
+`grid-cols-1 md:grid-cols-2 xl:grid-cols-3` layouts, **not named anywhere in the
+original audit** — and completely non-functional on touch, because its core
+interaction is HTML5 drag-and-drop. It looks right and does nothing. See section 4.
+
+Tailwind v4 ships `pointer-coarse:` / `pointer-fine:` variants, so this axis is
+expressible in the same place as everything else. **Zero of the 267 files used
+them before this plan.**
+
+Rules — input:
+
+4. **No control may be revealed only on `hover:`.** Pair it with a pointer
+   variant. Write the base state as visible and restrict the reveal to fine
+   pointers, not the other way round:
+
+   ```
+   opacity-100 pointer-fine:opacity-0 pointer-fine:group-hover:opacity-100
+   ```
+
+   Written this way, an ordering surprise leaves the control *visible*. The
+   inverse (`... pointer-coarse:opacity-100` appended) fails *hidden* — which is
+   the bug being fixed. Note `opacity-0` still receives taps, so a hover-gated
+   button on touch is not dead, it is **invisible but tappable**: undiscoverable,
+   and hit by accident.
+5. **Any drag interaction needs a tap path.** HTML5 drag-and-drop
+   (`draggable` / `onDragStart` / `onDrop`) never fires on touch — this is a
+   property of the API, not a bug. A drag-only affordance is desktop-only by
+   construction.
+6. **Interactive targets are >=44px on coarse pointers.** `TrendingSection.tsx:137`
+   already does this (`h-11 w-11 sm:h-10 sm:w-10`) — match it.
+
+Why this was never caught: it produces no crash, no console error and no layout
+break, and **checking a breakpoint by resizing the browser window keeps the
+mouse**. Every routine check exercises width and none exercise input. The durable
+fix is a Playwright project with `hasTouch: true` — `@playwright/test` is already
+a devDependency with no config file (see Phase 4).
+
 ---
 
 ## 6. Phased work
 
-### Phase 0 — Defects and dedup (small, do first)
+### Phase 0 — Defects and dedup (small, do first) — **DONE**
 
-- [ ] Navbar hamburger `sm:hidden` to `md:hidden` (3.1)
-- [ ] Align `useIsMobile` / navbar / docs on `md` = 768 (3.3)
-- [ ] Interstitial below `md` for both builders (4, Option B)
-- [ ] Deduplicate `/host/stripe-*` and decide on `/mayor/*` (2.6)
+- [x] Navbar dead zone (3.1) — all three toggles moved to `md`, not just the
+      hamburger: the search and Sign In buttons were also `hidden sm:flex` and
+      are redundant below `md` because `NavMobileMenu` already carries Log In /
+      Sign Up. One breakpoint now, per section 5 rule 1.
+- [x] Align `useIsMobile` / navbar / docs on `md` = 768 (3.3) — `useMobile.ts`
+      was **already** 768; only the navbar disagreed. No hook change needed.
+- [x] Interstitial below `md` for all **three** builder shells (4, Option B) —
+      `shared/components/layout/BuilderDesktopOnly.tsx`. The plan said "both
+      builders"; there are three host pages sharing one `fixed inset-0` shell:
+      `foxer/create-event`, `mayor/create-venue`, `creator-dashboard/venues/[id]/edit`.
+      CSS-only (`md:hidden`), not `useIsMobile` — renders on the server and never
+      flashes the broken builder during hydration.
+- [x] Deduplicate `/host/stripe-*` (2.6) — both byte-identical copies replaced
+      with redirect shims. Redirect rather than delete, so any Stripe Connect
+      `return_url` generated server-side still lands. `/host` is now 100% shims,
+      which is what `CONTEXT.md` always claimed.
+- [x] Decide on `/mayor/*` (2.6) — **keep as real pages.** They are the only
+      implementation of those two flows and are linked from six call sites in
+      `dashboard`, `onboarding` and `venue`. `CONTEXT.md` line 126 was wrong and
+      has been corrected so nobody "cleans them up" into redirects later.
+- [x] Remove Supabase — 3 dead files, 2 deps, 2 CI env vars (3.4)
+- [x] Regression test — `src/__tests__/responsive/Navbar.test.tsx` locks the
+      breakpoint agreement and the builder guards so 3.1 cannot silently return.
+
+Verified after: `tsc --noEmit` clean, `eslint src/` clean, `next build` clean,
+14/14 responsive tests pass.
 
 ### Phase 1 — Shared primitives (highest leverage)
 
@@ -285,3 +383,92 @@ Rules:
 - Native apps, PWA, or offline support
 - Cesium map touch handling — vendor surface, needs its own investigation
 - Admin below `lg` (see 2.3)
+
+
+---
+
+## 8. Open items — tracked
+
+Everything found so far that is not yet closed. Phase 0 is done (see section 6);
+these are what remain.
+
+### 8.1 Decisions that need an owner — not mine to make
+
+- [ ] **Touch support for the builders (section 4).** Option B shipped, so
+      phone-only Foxers now get "open this on a larger screen" with no date
+      attached. Decide whether that stands or Option A gets scheduled.
+      `@dnd-kit/core` is **not** currently a dependency, so A is a new dep plus a
+      refactor of `useEventBuilder`, `ResourceCard` and `CorePackageDropZone`.
+- [ ] **Finish the `/mayor` rename, or keep the old vocabulary in URLs.**
+      `/mayor/apply` and `/mayor/create-venue` are kept (2.6) because they are the
+      only implementation of those flows, but they keep pre-rename wording in
+      user-visible URLs. Migrating them to `/creator-dashboard/*` with shims left
+      behind is its own ticket — not a responsive change.
+- [ ] **Commit and branch.** Frontend work sits staged on
+      `chore/dedupe-data-fetching`; API work is unstaged on `main`. The API changes
+      are unrelated to that branch's subject and probably want their own.
+
+### 8.2 Cross-repo defects found on the way — fixed
+
+- [x] **Stripe Connect onboarding could not complete.**
+      `STRIPE_CONNECT_RETURN_URL` / `_REFRESH_URL` were read with a bare
+      `as string` cast in `api/src/config.ts` and were **not set in `.env`**, so
+      `undefined` reached `stripe.accountLinks.create` in
+      `services/stripe-connect.service.ts` (both call sites). The cast is what hid
+      it from the typechecker. Now defaulted off the existing `FRONTEND_URL`.
+- [x] **The only documented sample pointed at routes that do not exist.**
+      `api/.env.docker` used `/dashboard/payouts/return` and `/refresh`; the
+      frontend has no `/dashboard` segment and no `payouts` route. Anyone copying
+      that sample sent providers to a 404 at the end of Stripe-hosted onboarding.
+      Repointed at `/creator-dashboard/stripe-dashboard` and `/stripe-onboard`.
+- [x] **Supabase removed from the API too** — see 3.4.
+
+### 8.2b Input-modality sweep — the blind spot in section 1's metric
+
+Section 1 counts breakpoint prefixes. That metric cannot see whether a component
+works on touch (section 5.1). Swept the whole tree for the class it misses:
+
+| Class | Result |
+|---|---|
+| Right-click / double-click affordances | **0** |
+| Mouse-event-driven state | 2 files |
+| Hover-reveal | 18 files — nearly all decorative (glows, badges, several `pointer-events-none`) |
+| **Hover-gated actual controls** | **4 buttons in 2 files** |
+
+The class is small and bounded — it is the drag-and-drop surfaces plus four
+buttons, not systemic rot.
+
+- [x] Four hover-gated remove/cancel controls fixed with `pointer-fine:`
+      (`EventGallery.tsx:73,105`, `event/[eventId]/page.tsx:447,488`). All were
+      `opacity-0 group-hover:opacity-100` — invisible but tappable on touch.
+- [x] Section 5 extended with the input axis (rules 4-6).
+- [ ] **`CustomExperienceBuilder` exists twice, in two separate implementations.**
+      `src/app/event/[eventId]/page.tsx:19` defines one locally; `VenueDetailClient`
+      imports a different one from
+      `src/features/venue/components/detail/ExperienceBuilder.tsx`. Same flow, two
+      copies — the same trap as the Stripe pages in 2.6. **Deduplicate before**
+      doing tap-to-place (8.1), or the work gets done twice and the copies drift.
+- [ ] **Playwright touch harness.** `@playwright/test` is a devDependency with no
+      config file. A project with `hasTouch: true` covering the three DnD surfaces
+      makes this entire class catchable in CI, and is the same harness Phase 4
+      needs for the `scrollWidth` check — an argument for pulling it forward.
+- [ ] Sweep for the remaining modality-dependent affordances not covered here:
+      keyboard-only focus traps, and the 2 files with mouse-driven state.
+
+### 8.3 Nits from verifying this document
+
+- [ ] `SearchFilters.tsx:268` has a lone `onTouchEnd`, so the "0 touch handlers"
+      figure in section 1 is really 1. Does not change the argument — the builders
+      still have none — but the number should be corrected if this doc is reused.
+- [x] Route count is 65, not 66.
+
+### 8.4 Remaining phases
+
+- [ ] Phase 1 — shared primitives (`FormSection`, `StepperControl`, `input`,
+      `glass-card`, then the other 14, then map surfaces)
+- [ ] Phase 2 — citizen-facing, `search` first
+- [ ] Phase 3 — supply-side, including wiring the `inDrawer` drawers that already
+      exist and `QRScannerClient`
+- [ ] Phase 4 — wide screens, `max-w-full` audit, Playwright viewport smoke test
+      (note: `@playwright/test` is a devDependency but there is **no Playwright
+      config yet** — that task is a harness setup, not an incremental test add)
