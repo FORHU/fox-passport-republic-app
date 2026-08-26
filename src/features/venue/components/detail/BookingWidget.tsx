@@ -29,19 +29,22 @@ export function BookingWidget({
   const rateLabel = billingRate === "hour" ? "hr" : "day";
 
   return (
-    <div className="relative top-24">
-      <div className="absolute inset-0 bg-purple-500/10 blur-[50px] rounded-2xl pointer-events-none transform scale-105" />
-      <div className="glass-card rounded-2xl border border-white/10 p-6 shadow-[0_0_40px_rgba(128,90,213,0.15)] relative overflow-hidden">
+    <div className="relative lg:top-8 w-full max-w-lg mx-auto lg:max-w-none">
+      <div className="absolute inset-0 bg-purple-500/10 blur-[50px] rounded-3xl pointer-events-none transform scale-105" />
+      <div className="glass-card rounded-3xl border border-white/10 p-5 sm:p-7 shadow-[0_0_40px_rgba(128,90,213,0.15)] relative overflow-hidden">
         <div className="absolute top-0 right-0 w-40 h-40 bg-accent/10 rounded-full blur-[50px] pointer-events-none" />
         <div className="absolute bottom-0 left-0 w-40 h-40 bg-purple-500/10 rounded-full blur-[50px] pointer-events-none" />
 
         {/* Price Header */}
-        <div className="flex justify-between items-end mb-6 relative z-10">
+        <div className="flex justify-between items-end mb-5 sm:mb-6 relative z-10">
           <div>
-            <span className="text-2xl font-display font-bold text-white">
+            <span className="text-2xl sm:text-3xl font-display font-bold text-white">
               ₱{price.toLocaleString()}
             </span>
-            <span className="text-sm text-text-muted"> / {rateLabel}</span>
+            <span className="text-xs sm:text-sm text-text-muted">
+              {" "}
+              / {rateLabel}
+            </span>
           </div>
           <div className="flex items-center gap-1 text-xs text-white font-bold">
             <span className="material-symbols-outlined text-[14px] fill-current text-yellow-400">

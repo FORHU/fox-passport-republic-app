@@ -25,6 +25,7 @@ export function CustomExperienceBuilder({
   venuePrice,
 }: ExperienceBuilderProps) {
   const { foxers, itemsByCategory, isLoading } = useExperienceBuilderData();
+  const [mobileSummaryOpen, setMobileSummaryOpen] = React.useState(false);
 
   const {
     activeCategory,
@@ -491,6 +492,114 @@ export function CustomExperienceBuilder({
             </p>
           </div>
         </aside>
+
+        {/* Mobile & Tablet Floating Bottom Bar (Hidden on lg+) */}
+        <div className="lg:hidden fixed bottom-0 left-0 right-0 z-30 bg-[#0f111a]/95 backdrop-blur-xl border-t border-white/10 p-4 flex items-center justify-between shadow-2xl">
+          <div>
+            <p className="text-[10px] text-text-muted uppercase tracking-wider font-bold">
+              Total Estimate
+            </p>
+            <p className="text-xl font-display font-bold text-accent">
+              ₱{total.toLocaleString()}
+            </p>
+          </div>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => setMobileSummaryOpen(true)}
+              className="px-3.5 py-2.5 rounded-xl bg-white/10 text-white font-bold text-xs hover:bg-white/20 transition-all flex items-center gap-1.5 active:scale-95"
+            >
+              <span className="material-symbols-outlined text-[16px]">
+                receipt_long
+              </span>
+              Review
+            </button>
+            <button
+              type="button"
+              onClick={handleSubmit}
+              disabled={isSubmitting}
+              className="px-5 py-2.5 rounded-xl bg-accent text-black font-extrabold text-xs hover:bg-accent/90 shadow-md transition-all active:scale-95 flex items-center gap-1"
+            >
+              Book Now
+            </button>
+          </div>
+        </div>
+
+        {/* Mobile Slide-Over Blueprint Drawer */}
+        {mobileSummaryOpen && (
+          <div className="lg:hidden fixed inset-0 z-50 bg-black/70 backdrop-blur-md flex flex-col justify-end animate-in fade-in duration-200">
+            <div className="bg-[#0f111a] border-t border-white/10 rounded-t-3xl max-h-[85vh] flex flex-col p-6 shadow-2xl animate-in slide-in-from-bottom duration-300">
+              <div className="flex items-center justify-between pb-4 border-b border-white/10">
+                <div>
+                  <h3 className="font-display font-bold text-white text-lg">
+                    Your Build Summary
+                  </h3>
+                  <p className="text-xs text-text-muted">
+                    Selected venue, talent & gear
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setMobileSummaryOpen(false)}
+                  className="h-9 w-9 rounded-full bg-white/10 flex items-center justify-center text-white"
+                >
+                  <span className="material-symbols-outlined text-[18px]">
+                    close
+                  </span>
+                </button>
+              </div>
+
+              <div className="overflow-y-auto py-4 space-y-4 flex-1">
+                <div className="flex justify-between text-sm">
+                  <span className="text-white/80">Venue Base (2 Nights)</span>
+                  <span className="font-bold text-white">
+                    ₱{(venuePrice * 2).toLocaleString()}
+                  </span>
+                </div>
+                {selectedFoxerData && (
+                  <div className="flex justify-between text-sm">
+                    <span className="text-white/80">
+                      {selectedFoxerData.name} (Curator)
+                    </span>
+                    <span className="font-bold text-white">
+                      ₱{selectedFoxerData.fee.toLocaleString()}
+                    </span>
+                  </div>
+                )}
+                {selectedServicesData.map((s) => (
+                  <div key={s.id} className="flex justify-between text-sm">
+                    <span className="text-white/80">{s.name}</span>
+                    <span className="font-bold text-white">
+                      ₱{s.price.toLocaleString()}
+                    </span>
+                  </div>
+                ))}
+              </div>
+
+              <div className="pt-4 border-t border-white/10 space-y-3">
+                <div className="flex justify-between items-center">
+                  <span className="text-sm font-bold text-text-muted">
+                    Total
+                  </span>
+                  <span className="text-2xl font-display font-bold text-accent">
+                    ₱{total.toLocaleString()}
+                  </span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setMobileSummaryOpen(false);
+                    handleSubmit();
+                  }}
+                  disabled={isSubmitting}
+                  className="w-full py-3.5 rounded-2xl bg-accent text-black font-extrabold text-sm hover:bg-accent/90 transition-all flex items-center justify-center gap-2 active:scale-98 shadow-[0_0_20px_rgba(204,255,0,0.3)]"
+                >
+                  Confirm & Request Booking
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
