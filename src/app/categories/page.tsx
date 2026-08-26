@@ -15,9 +15,13 @@ export default async function CategoriesPage({
 }) {
   const params = await searchParams;
   const type = params.type;
-  const categories = await getCategories();
-  const events = type ? await getEventsByCategory(type) : [];
-  const venues = type ? await getVenuesByCategory(type) : [];
+  // Independent of each other, so awaiting them in sequence made three round
+  // trips wait on each other for no reason.
+  const [categories, events, venues] = await Promise.all([
+    getCategories(),
+    type ? getEventsByCategory(type) : Promise.resolve([]),
+    type ? getVenuesByCategory(type) : Promise.resolve([]),
+  ]);
 
   return (
     <CategoriesClient

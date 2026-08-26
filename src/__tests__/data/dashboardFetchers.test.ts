@@ -1,4 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { readFileSync } from "node:fs";
 
 /**
  * Guards the fix for dashboard over-fetching.
@@ -74,10 +75,34 @@ describe("pages do not reach for the aggregate to render one list", () => {
     ["src/app/creator-dashboard/assets/page.tsx", "getAssetsByHostId"],
     ["src/app/creator-dashboard/venues/page.tsx", "getVenuesByHostId"],
   ])("%s uses %s", async (file, expected) => {
-    const { readFileSync } = await import("node:fs");
     const src = readFileSync(file, "utf-8");
 
     expect(src).toContain(expected);
     expect(src).not.toContain("getHostDashboard");
+  });
+});
+
+describe("pages fetch only what the branch they render actually uses", () => {
+  const read = (f: string) => readFileSync(f, "utf-8");
+
+  it("the landing page does not fetch venues unconditionally", () => {
+    const src = read("src/app/page.tsx");
+
+    // The default branch renders FoxerLandingPage, which takes no venues, so an
+    // unconditional fetch here is wasted work on the most visited route.
+    expect(src).toMatch(/isSearchMode \? getVenues\(\)/);
+    expect(src).not.toMatch(/const venues = await getVenues\(\)/);
+  });
+
+  it("the landing page fetches in parallel, not as a waterfall", () => {
+    const src = read("src/app/page.tsx");
+    expect(src).toMatch(/await Promise\.all\(/);
+    expect(src).not.toMatch(/const featuredTemplates = await getFeaturedEventTemplates/);
+  });
+
+  it("the categories page batches its three independent fetches", () => {
+    const src = read("src/app/categories/page.tsx");
+    expect(src).toMatch(/await Promise\.all\(/);
+    expect(src).not.toMatch(/const categories = await getCategories\(\)/);
   });
 });
