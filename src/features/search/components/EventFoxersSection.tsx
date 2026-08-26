@@ -7,6 +7,7 @@ import {
   type Foxer,
   type FoxerSpecialization,
 } from "@/features/user/api/foxers";
+import SearchPagination from "./SearchPagination";
 
 const FALLBACK_AVATAR =
   "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=400&auto=format&fit=crop";
@@ -113,7 +114,7 @@ function FoxerCard({ foxer }: { foxer: Foxer }) {
     : FALLBACK_AVATAR;
 
   return (
-    <div className="group glass-card rounded-[2rem] p-8 transition-all duration-300 card-hover-effect relative flex flex-col">
+    <div className="group glass-card rounded-[2rem] p-8 h-130 overflow-hidden transition-all duration-300 card-hover-effect relative flex flex-col">
       <Link
         href={`/foxer/${foxer.id}`}
         className="absolute inset-0 z-0 rounded-[2rem]"
@@ -249,7 +250,7 @@ function FoxerCard({ foxer }: { foxer: Foxer }) {
 
 function SkeletonCard() {
   return (
-    <div className="glass-card rounded-[2rem] p-8 animate-pulse space-y-4">
+    <div className="glass-card rounded-[2rem] p-8 h-130 animate-pulse space-y-4">
       <div className="flex gap-4">
         <div className="h-16 w-16 rounded-full bg-white/10" />
         <div className="flex-1 space-y-2 pt-2">
@@ -327,40 +328,11 @@ export default function EventFoxersSection({
         </div>
       )}
 
-      {totalPages > 1 && (
-        <div className="flex items-center justify-center gap-2 pt-4">
-          <button
-            onClick={() => onPageChange(Math.max(1, page - 1))}
-            disabled={page <= 1}
-            className="px-4 py-2 rounded-full bg-white/5 border border-white/10 text-white text-sm font-bold disabled:opacity-30 hover:bg-white/10 transition-all"
-          >
-            Previous
-          </button>
-          {Array.from({ length: totalPages }).map((_, i) => {
-            const p = i + 1;
-            return (
-              <button
-                key={p}
-                onClick={() => onPageChange(p)}
-                className={`h-9 w-9 rounded-full text-sm font-bold transition-all ${
-                  p === page
-                    ? "bg-white text-black"
-                    : "bg-white/5 border border-white/10 text-white/60 hover:bg-white/10"
-                }`}
-              >
-                {p}
-              </button>
-            );
-          })}
-          <button
-            onClick={() => onPageChange(Math.min(totalPages, page + 1))}
-            disabled={page >= totalPages}
-            className="px-4 py-2 rounded-full bg-white/5 border border-white/10 text-white text-sm font-bold disabled:opacity-30 hover:bg-white/10 transition-all"
-          >
-            Next
-          </button>
-        </div>
-      )}
+      <SearchPagination
+        page={page}
+        totalPages={totalPages}
+        onPageChange={onPageChange}
+      />
     </section>
   );
 }
