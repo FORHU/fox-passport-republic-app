@@ -889,8 +889,12 @@ export default function MobileHomePage() {
       >
         <BrandLogo logoSize={32} textSize="text-lg" />
         <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-          {user && <NotificationBell />}
-          <UserMenuButton />
+          {user && (
+            <>
+              <NotificationBell />
+              <UserMenuButton />
+            </>
+          )}
         </div>
       </div>
 

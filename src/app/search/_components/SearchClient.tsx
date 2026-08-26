@@ -14,7 +14,6 @@ import {
   fetchEventTemplates,
   fetchGearFoxers,
   fetchServiceFoxers,
-  foxersToRows,
 } from "@/features/search/api/search";
 
 export default function SearchClient() {
@@ -133,8 +132,8 @@ export default function SearchClient() {
 
   const eventFoxers = efData?.items ?? [];
   const eventTemplates = etData?.items ?? [];
-  const gearFoxers = gfData?.items ?? [];
-  const serviceFoxers = sfData?.items ?? [];
+  const gearRows = gfData?.items ?? [];
+  const serviceRows = sfData?.items ?? [];
 
   const efTotalPages = efData?.pagination?.totalPages ?? 1;
   const etTotalPages = etData?.pagination?.totalPages ?? 1;
@@ -142,15 +141,6 @@ export default function SearchClient() {
     gfData?.pagination?.totalPages ?? 1,
     sfData?.pagination?.totalPages ?? 1,
     1,
-  );
-
-  const gearRows = useMemo(
-    () => foxersToRows(gearFoxers, "assets"),
-    [gearFoxers],
-  );
-  const serviceRows = useMemo(
-    () => foxersToRows(serviceFoxers, "services"),
-    [serviceFoxers],
   );
 
   const TYPE_CHIPS = [
