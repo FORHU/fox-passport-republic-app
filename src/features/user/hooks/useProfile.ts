@@ -1,8 +1,9 @@
 ﻿"use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import api from "@/shared/lib/axios";
 import { useAuthStore } from "@/features/auth/store/useAuthStore";
+import type { RoleType, SystemRole } from "@/features/auth/types/auth";
 
 export interface ProfileData {
   id: string;
@@ -11,8 +12,11 @@ export interface ProfileData {
   name: string;
   phone: string;
   imgId: string;
-  systemRole: string;
-  roleType: string[];
+  // Narrowed to the same unions the auth store uses. These were `string` /
+  // `string[]`, which meant a profile could not be merged into the store's User
+  // without a cast - and a cast here would only have hidden the mismatch.
+  systemRole: SystemRole;
+  roleType: RoleType[];
   createdAt: string;
   updatedAt: string;
 }
@@ -31,42 +35,56 @@ export interface ChangePasswordPayload {
   confirmPassword: string;
 }
 
+// The single definition of "fetch the current profile".
+//
+// useSessionManager polls this same endpoint for role changes. Both hooks used
+// to hit GET /profile independently - this one through a raw useEffect React
+// Query could not see - so any page using both fetched the profile twice and
+// the copies could disagree. They now share one key AND one fetcher: sharing
+// only the key would mean whichever hook happened to run its own queryFn first
+// decided the behaviour.
+export const PROFILE_QUERY_KEY = ["me"] as const;
+
+export async function fetchProfile(): Promise<ProfileData> {
+  const resp = await api.get("/profile");
+  const data: ProfileData = resp.data?.data ?? resp.data;
+
+  // Sync the whole user, not just the avatar: roleType changes when an admin
+  // approves a role application, and the navbar and route guards read it from
+  // the store. Read current state directly rather than closing over it, so this
+  // does not depend on the state it writes.
+  const { user: currentUser, setUser } = useAuthStore.getState();
+  if (data) {
+    setUser(currentUser ? { ...currentUser, ...data } : data);
+  }
+  return data;
+}
+
 export function useProfile() {
   const setUser = useAuthStore((state) => state.setUser);
   const storeUser = useAuthStore((state) => state.user);
+  const queryClient = useQueryClient();
 
-  const [profile, setProfile] = useState<ProfileData | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const {
+    data: profile = null,
+    isLoading,
+    error: queryError,
+    refetch,
+  } = useQuery<ProfileData>({
+    queryKey: PROFILE_QUERY_KEY,
+    queryFn: fetchProfile,
+  });
 
-  const fetchProfile = useCallback(async () => {
-    setIsLoading(true);
-    setError(null);
-    try {
-      const resp = await api.get("/profile");
-      const data: ProfileData = resp.data?.data ?? resp.data;
-      setProfile(data);
-      // Read current store state directly to avoid adding storeUser as a dep
-      // (which would cause an infinite loop: setUser → storeUser changes → re-fetch)
-      const { user: currentUser, setUser: syncUser } = useAuthStore.getState();
-      if (currentUser && data.imgId !== undefined) {
-        syncUser({ ...currentUser, imgId: data.imgId });
-      }
-    } catch (err: any) {
-      setError(err?.response?.data?.message ?? "Failed to load profile");
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    fetchProfile();
-  }, [fetchProfile]);
+  const error = queryError
+    ? ((queryError as any)?.response?.data?.message ?? "Failed to load profile")
+    : null;
 
   const updateProfile = async (payload: UpdateProfilePayload) => {
     const resp = await api.put("/profile", payload);
     const updated: ProfileData = resp.data?.data ?? resp.data;
-    setProfile(updated);
+    // Write through the shared cache so useSessionManager sees the new profile
+    // too, instead of holding a stale copy under the same key.
+    queryClient.setQueryData(PROFILE_QUERY_KEY, updated);
     // Sync back into the auth store so Navbar/menu reflects the change immediately
     if (storeUser) {
       setUser({
@@ -96,7 +114,7 @@ export function useProfile() {
     profile,
     isLoading,
     error,
-    refetch: fetchProfile,
+    refetch,
     updateProfile,
     changePassword,
     deleteAccount,

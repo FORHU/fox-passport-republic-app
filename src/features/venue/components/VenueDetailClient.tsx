@@ -287,7 +287,7 @@ export default function VenueDetailClient({
             </div>
 
             {/* Right Column: Venue Booking Widget */}
-            <div className="lg:sticky lg:top-32 lg:h-fit">
+            <div className="lg:sticky lg:top-32 lg:h-fit pb-16 lg:pb-0">
               <BookingWidget
                 venueId={venue.id}
                 price={venuePrice}
@@ -302,6 +302,48 @@ export default function VenueDetailClient({
           </div>
         </div>
       </main>
+
+      {/* Floating Mobile Booking Footer (Hidden on lg+) */}
+      <div className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-[#0f111a]/95 backdrop-blur-xl border-t border-white/10 px-5 py-3.5 flex items-center justify-between shadow-[0_-10px_30px_rgba(0,0,0,0.8)]">
+        <div>
+          <div className="flex items-baseline gap-1">
+            <span className="text-xl font-display font-bold text-white">
+              ₱{venuePrice.toLocaleString()}
+            </span>
+            <span className="text-xs text-text-muted">
+              / {venue.billingRate === "hour" ? "hr" : "day"}
+            </span>
+          </div>
+          <div className="flex items-center gap-1 text-[11px] text-white/70">
+            <span className="material-symbols-outlined text-[13px] text-yellow-400 fill-current">
+              star
+            </span>
+            <span>{venue.rating || 0}</span>
+            <span>·</span>
+            <span>{venue.reviews || 0} reviews</span>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={() => setIsCustomBookingOpen(true)}
+            className="p-2.5 rounded-xl bg-white/10 text-white hover:bg-white/20 transition-all flex items-center justify-center active:scale-95"
+            title="Custom Experience"
+          >
+            <span className="material-symbols-outlined text-[20px] text-accent">
+              design_services
+            </span>
+          </button>
+          <button
+            type="button"
+            onClick={() => router.push(`/booking/venue/${venue.id}`)}
+            className="px-6 py-3 rounded-xl bg-accent text-black font-extrabold text-sm hover:bg-accent/90 shadow-[0_0_15px_rgba(204,255,0,0.3)] transition-all active:scale-95"
+          >
+            Book Now
+          </button>
+        </div>
+      </div>
     </div>
   );
 }

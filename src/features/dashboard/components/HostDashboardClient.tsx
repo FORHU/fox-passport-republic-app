@@ -157,25 +157,32 @@ export default function HostDashboardClient({
   };
 
   // Reactive data with polling
+  // Each of these is gated on the same role check that decides whether the
+  // section renders at all. Without the gate a Foxer with one role still polled
+  // all four resources every 10 seconds to fill three locked sections.
   const { data: rawServices, total: totalServices } = useHostData(
     "services",
     initialData.services,
-    { page: servicesPage, limit: PER_PAGE },
+    {
+      page: servicesPage,
+      limit: PER_PAGE,
+      enabled: access.canManageServices,
+    },
   );
   const { data: rawAssets, total: totalAssets } = useHostData(
     "assets",
     initialData.inventory,
-    { page: assetsPage, limit: PER_PAGE },
+    { page: assetsPage, limit: PER_PAGE, enabled: access.canManageInventory },
   );
   const { data: rawEvents, total: totalEvents } = useHostData(
     "events",
     initialData.events,
-    { page: eventsPage, limit: PER_PAGE },
+    { page: eventsPage, limit: PER_PAGE, enabled: access.canManageEvents },
   );
   const { data: rawVenues, total: totalVenues } = useHostData(
     "venues",
     initialData.venues,
-    { page: venuesPage, limit: PER_PAGE },
+    { page: venuesPage, limit: PER_PAGE, enabled: access.canManageVenues },
   );
 
   const events = (rawEvents ?? [])

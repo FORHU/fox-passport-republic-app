@@ -1,5 +1,4 @@
 ﻿import { cookies } from "next/headers";
-import { redirect } from "next/navigation";
 import { config } from "@/shared/lib/config";
 import { requireAuth } from "./auth";
 
@@ -66,10 +65,21 @@ async function tryRefreshToken(): Promise<string | null> {
   }
 }
 
-async function clearAuthAndRedirect() {
-  // Cookie deletion is only allowed in Server Actions/Route Handlers, not Server Components.
-  // The client-side auth store clears localStorage on the next request after a 401.
-  redirect("/login");
+/**
+ * Deliberately does NOT redirect.
+ *
+ * `redirect()` signals by throwing, and every one of the 27 fetchers in this
+ * file wraps `serverFetch` in a try/catch - so a redirect raised here was caught
+ * as if it were a fetch failure, logged as "Failed to fetch ...", and swallowed.
+ * The page then rendered with empty data and returned 200 instead of sending the
+ * user anywhere. It also targeted `/login`, which is not a route in this app.
+ *
+ * Authentication belongs to the page-level guards (`requireAuth` / `requireHost`
+ * / `requireAdmin`), which run before any of this and are not inside a catch.
+ */
+function authFailed(): null {
+  console.warn("[API] 401 and refresh failed — treating as unauthenticated");
+  return null;
 }
 
 async function serverFetch(
@@ -116,7 +126,7 @@ async function serverFetch(
         return null;
       }
     } else {
-      await clearAuthAndRedirect();
+      return authFailed();
     }
   }
 
@@ -150,7 +160,14 @@ export async function getServerApi() {
       },
       cache: "no-store",
     });
-    if (!res.ok) throw new Error(`${res.status} ${res.statusText}`);
+    if (!res.ok) {
+      // Attach the status so getUser can distinguish an authoritative 401 from
+      // a transport failure - they call for opposite behaviour.
+      const err = Object.assign(new Error(`${res.status} ${res.statusText}`), {
+        status: res.status,
+      });
+      throw err;
+    }
     const body = await res.json();
     return { data: body };
   };
@@ -450,27 +467,46 @@ export async function getServicesByHostId(hostId: string) {
   }
 }
 
+export async function getAssetsByHostId(ownerId: string) {
+  try {
+    const body = await serverFetch("/asset", { ownerId });
+    return extractList(body);
+  } catch (error) {
+    console.error("Failed to fetch assets:", error);
+    return [];
+  }
+}
+
+export async function getVenuesByHostId(hostId: string) {
+  try {
+    const body = await serverFetch("/venues", { hostId });
+    return extractList(body).map(normalizeVenue);
+  } catch (error) {
+    console.error("Failed to fetch venues:", error);
+    return [];
+  }
+}
+
+// The aggregate for the dashboard landing page, which genuinely renders all four
+// resources. Pages that show only one should call the single-resource fetcher
+// above instead - calling this for one list costs four requests and discards
+// three of them.
+//
+// Composed from those same fetchers so each resource has one definition of its
+// endpoint, params and shaping. Each already returns [] on failure, so a single
+// dead resource degrades that section rather than blanking the dashboard, which
+// the previous per-call `.catch(() => ({}))` was doing by hand.
 export async function getHostDashboard(userId: string) {
   await requireAuth();
-  try {
-    const [eventsBody, venuesBody, assetsBody, servicesBody] =
-      await Promise.all([
-        serverFetch("/event-templates", { ownerId: userId }).catch(() => ({})),
-        serverFetch("/venues", { hostId: userId }).catch(() => ({})),
-        serverFetch("/asset", { ownerId: userId }).catch(() => ({})),
-        serverFetch("/service", { ownerId: userId }).catch(() => ({})),
-      ]);
 
-    return {
-      events: extractList(eventsBody),
-      venues: extractList(venuesBody).map(normalizeVenue),
-      inventory: extractList(assetsBody),
-      services: extractList(servicesBody),
-    };
-  } catch (error) {
-    console.error("Failed to fetch host dashboard:", error);
-    return { events: [], venues: [], inventory: [], services: [] };
-  }
+  const [events, venues, inventory, services] = await Promise.all([
+    getEvents(userId),
+    getVenuesByHostId(userId),
+    getAssetsByHostId(userId),
+    getServicesByHostId(userId),
+  ]);
+
+  return { events, venues, inventory, services };
 }
 
 export async function getBookingById(id: string) {

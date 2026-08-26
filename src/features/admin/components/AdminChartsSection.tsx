@@ -36,15 +36,15 @@ export const AdminChartsSection: React.FC<Props> = ({
   const isEmpty = bookingsByDay.every((v) => v === 0);
 
   return (
-    <div className="grid lg:grid-cols-3 gap-8">
+    <div className="grid lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
       {/* Bar chart — bookings per day of week */}
-      <div className="lg:col-span-2 glass-panel rounded-[2rem] p-8 border border-white/5">
-        <div className="flex justify-between items-center mb-8">
+      <div className="lg:col-span-2 glass-panel rounded-2xl sm:rounded-[2rem] p-4 sm:p-6 lg:p-8 border border-white/5">
+        <div className="flex flex-wrap gap-2 justify-between items-center mb-5 sm:mb-8">
           <div>
-            <h3 className="text-xl font-display font-bold text-white">
+            <h3 className="text-lg sm:text-xl font-display font-bold text-white">
               Booking Activity
             </h3>
-            <p className="text-sm text-text-muted">
+            <p className="text-xs sm:text-sm text-text-muted">
               Bookings by day of week (last 30 days)
             </p>
           </div>
@@ -63,7 +63,7 @@ export const AdminChartsSection: React.FC<Props> = ({
             <p className="text-sm">Bookings will appear here once recorded.</p>
           </div>
         ) : (
-          <div className="h-64 flex items-end justify-between gap-4 px-2">
+          <div className="h-48 sm:h-64 flex items-end justify-between gap-1.5 sm:gap-3 lg:gap-4 px-1 sm:px-2">
             {bookingsByDay.map((count, i) => {
               const pct =
                 maxDay > 0
@@ -102,7 +102,7 @@ export const AdminChartsSection: React.FC<Props> = ({
       </div>
 
       {/* Category distribution */}
-      <div className="glass-panel rounded-[2rem] p-8 border border-white/5 flex flex-col h-full">
+      <div className="glass-panel rounded-2xl sm:rounded-[2rem] p-4 sm:p-6 lg:p-8 border border-white/5 flex flex-col h-full">
         <h3 className="text-xl font-display font-bold text-white mb-6">
           Event Categories
         </h3>
@@ -117,7 +117,7 @@ export const AdminChartsSection: React.FC<Props> = ({
             </p>
           </div>
         ) : (
-          <div className="space-y-6 flex-1">
+          <div className="space-y-4 sm:space-y-6 flex-1">
             {topCats.map((cat, i) => {
               const pct = Math.round((cat.count / totalCatBookings) * 100);
               const color = CATEGORY_COLORS[i % CATEGORY_COLORS.length];

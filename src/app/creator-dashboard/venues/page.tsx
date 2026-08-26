@@ -1,14 +1,13 @@
 ﻿export const dynamic = "force-dynamic";
 
 import { requireAuth } from "@/shared/lib/server/auth";
-import { getHostDashboard } from "@/shared/lib/server/data";
+import { getVenuesByHostId } from "@/shared/lib/server/data";
 import HostVenuesClient from "@/features/dashboard/components/HostVenuesClient";
 import MobileMyListingsView from "@/features/dashboard/components/MobileMyListingsView";
 
 export default async function HostVenuesPage() {
   const user = await requireAuth();
-  const dashboard = await getHostDashboard(user.id);
-  const venues = dashboard.venues;
+  const venues = await getVenuesByHostId(user.id);
 
   return (
     <>

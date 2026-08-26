@@ -103,40 +103,77 @@ export function VenueGalleryGrid({
   images,
   onOpenGallery,
 }: VenueGalleryGridProps) {
+  const displayImages =
+    images.length > 0
+      ? images
+      : [
+          "https://images.unsplash.com/photo-1519741497674-611481863552?w=800&auto=format&fit=crop",
+        ];
+
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-4 grid-rows-2 gap-2 sm:gap-3 h-52 sm:h-87.5 md:h-125 rounded-2xl overflow-hidden mb-8 sm:mb-12 relative">
+    <div className="relative mb-8 sm:mb-12">
+      {/* Mobile Single Hero (hidden on md+) */}
       <div
-        className="col-span-2 row-span-2 relative cursor-pointer group"
+        className="block md:hidden relative h-[260px] sm:h-[320px] rounded-2xl overflow-hidden cursor-pointer group"
         onClick={() => onOpenGallery(0)}
       >
         <img
-          src={images[0]}
-          className="w-full h-full object-cover group-hover:brightness-110 transition-all duration-500"
-          alt="Main"
+          src={displayImages[0]}
+          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+          alt="Venue Main"
         />
-        <div className="absolute inset-0 bg-black/10 group-hover:bg-transparent transition-colors" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            onOpenGallery(0);
+          }}
+          className="absolute bottom-4 right-4 bg-black/60 backdrop-blur-md border border-white/20 text-white text-xs font-bold px-3 py-2 rounded-xl flex items-center gap-1.5 shadow-lg active:scale-95"
+        >
+          <span className="material-symbols-outlined text-[16px]">
+            grid_view
+          </span>
+          {displayImages.length} Photos
+        </button>
       </div>
-      {images.slice(1, 5).map((img, idx) => (
+
+      {/* Tablet & Desktop Bento Grid (hidden on <md) */}
+      <div className="hidden md:grid grid-cols-4 grid-rows-2 gap-3 h-[380px] lg:h-[480px] rounded-3xl overflow-hidden relative">
         <div
-          key={idx}
-          className="relative hidden sm:block cursor-pointer group"
-          onClick={() => onOpenGallery(idx + 1)}
+          className="col-span-2 row-span-2 relative cursor-pointer group overflow-hidden"
+          onClick={() => onOpenGallery(0)}
         >
           <img
-            src={img}
-            className="w-full h-full object-cover group-hover:brightness-110 transition-all duration-500"
-            alt={`View ${idx}`}
+            src={displayImages[0]}
+            className="w-full h-full object-cover group-hover:scale-105 group-hover:brightness-110 transition-all duration-500"
+            alt="Main"
           />
           <div className="absolute inset-0 bg-black/10 group-hover:bg-transparent transition-colors" />
         </div>
-      ))}
-      <button
-        onClick={() => onOpenGallery(0)}
-        className="absolute bottom-6 right-6 bg-white/10 backdrop-blur-md border border-white/20 text-white text-sm font-bold px-4 py-2.5 rounded-lg hover:bg-white hover:text-black transition-all flex items-center gap-2 shadow-lg"
-      >
-        <span className="material-symbols-outlined text-[18px]">grid_view</span>
-        Show all photos
-      </button>
+        {displayImages.slice(1, 5).map((img, idx) => (
+          <div
+            key={idx}
+            className="relative cursor-pointer group overflow-hidden"
+            onClick={() => onOpenGallery(idx + 1)}
+          >
+            <img
+              src={img}
+              className="w-full h-full object-cover group-hover:scale-105 group-hover:brightness-110 transition-all duration-500"
+              alt={`View ${idx + 1}`}
+            />
+            <div className="absolute inset-0 bg-black/10 group-hover:bg-transparent transition-colors" />
+          </div>
+        ))}
+        <button
+          onClick={() => onOpenGallery(0)}
+          className="absolute bottom-6 right-6 bg-black/60 backdrop-blur-md border border-white/20 text-white text-sm font-bold px-4 py-2.5 rounded-2xl hover:bg-white hover:text-black transition-all flex items-center gap-2 shadow-lg hover:scale-105 active:scale-95"
+        >
+          <span className="material-symbols-outlined text-[18px]">
+            grid_view
+          </span>
+          Show all photos
+        </button>
+      </div>
     </div>
   );
 }

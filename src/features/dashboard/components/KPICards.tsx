@@ -45,21 +45,23 @@ export function KPICards({ stats, isLoading }: KPICardsProps = {}) {
   });
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+    <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 lg:gap-6 mb-6 lg:mb-8">
       {resolvedData.map((kpi) => (
         <div
           key={kpi.id}
-          className="bg-[#0f111a]/80 backdrop-blur border border-white/5 rounded-3xl p-6 relative overflow-hidden group"
+          className="bg-[#0f111a]/80 backdrop-blur border border-white/5 rounded-2xl sm:rounded-3xl p-4 sm:p-5 lg:p-6 relative overflow-hidden group"
         >
-          <div className="absolute top-4 right-4 opacity-20 group-hover:opacity-30 transition-opacity">
+          <div className="absolute top-3 right-3 sm:top-4 sm:right-4 opacity-20 group-hover:opacity-30 transition-opacity">
             <span
-              className={`material-symbols-outlined text-5xl ${kpi.iconColor}`}
+              className={`material-symbols-outlined text-3xl sm:text-4xl lg:text-5xl ${kpi.iconColor}`}
             >
               {kpi.icon}
             </span>
           </div>
-          <p className="text-white/50 text-sm mb-1">{kpi.label}</p>
-          <h3 className="text-3xl font-display font-bold mb-3">{kpi.value}</h3>
+          <p className="text-white/50 text-xs sm:text-sm mb-1">{kpi.label}</p>
+          <h3 className="text-2xl sm:text-3xl font-display font-bold mb-2 sm:mb-3">
+            {kpi.value}
+          </h3>
 
           {kpi.isRating ? (
             <div className="flex items-center gap-1 text-xs text-white/30">
@@ -69,7 +71,7 @@ export function KPICards({ stats, isLoading }: KPICardsProps = {}) {
               <span>No reviews yet</span>
             </div>
           ) : (
-            <div className="flex items-center gap-2 text-xs">
+            <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 text-[11px] sm:text-xs min-w-0">
               <span
                 className={`${
                   kpi.trendType === "flat"
@@ -82,7 +84,7 @@ export function KPICards({ stats, isLoading }: KPICardsProps = {}) {
                 </span>
                 {kpi.trend}
               </span>
-              <span className="text-white/40">{kpi.trendLabel}</span>
+              <span className="text-white/40 truncate">{kpi.trendLabel}</span>
             </div>
           )}
 
