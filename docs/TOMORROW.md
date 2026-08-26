@@ -29,18 +29,6 @@ bypassed review, and one of them (`purge legacy tokens`) is security-relevant.
 
 ---
 
-## 0b. Before anything else
-
-- [ ] **Commit the 13 uncommitted files.** They include a real security fix —
-      `AuthStoreProvider` purging legacy tokens out of `localStorage` — plus the
-      deabstraction pass, the 401-masking fix, `.gitattributes` for both repos,
-      and the mobile reject-reason field. Nothing here is committed, and the app
-      has 3 unpushed commits on top.
-- [ ] **Push both branches.** App is on `perf/dedupe-dashboard-fetching`, API on
-      `fix/stripe-connect-onboarding-urls`.
-
----
-
 ## 1. Verification — the largest real gap
 
 Everything below passed `tsc`, lint, build and unit tests. **Almost none of it
