@@ -133,6 +133,22 @@ body {
   }
 }
 
+@utility no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+.stripe {
+  background-image: repeating-linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.05) 0 10px,
+    rgba(255, 255, 255, 0.02) 10px 20px
+  );
+}
+
 .dark {
   --background: oklch(0.145 0 0);
   --foreground: oklch(0.985 0 0);
@@ -412,6 +428,25 @@ body {
   border-color: rgba(124, 58, 237, 0.5);
 }
 
+/* Stripe texture pattern — used in placeholder image areas */
+.stripe {
+  background-image: repeating-linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.05) 0 10px,
+    rgba(255, 255, 255, 0.02) 10px 20px
+  );
+}
+
+/* QR scanner sweep animation */
+@keyframes scanLine {
+  0%, 100% { top: 0; }
+  50% { top: calc(100% - 2px); }
+}
+
+.scan-animate {
+  animation: scanLine 2s ease-in-out infinite;
+}
+
 /* Category item animations */
 .category-item {
   transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
@@ -534,3 +569,4 @@ body {
   filter: brightness(1.2);
   box-shadow: 0 0 15px rgba(255,255,255,0.3);
 }
+

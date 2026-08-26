@@ -3,10 +3,12 @@
 
 import React, { useState, useEffect } from "react";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
+import Image from "next/image";
 import Link from "next/link";
 import { useEventBuilderStore } from "@/features/event/store/useEventBuilderStore";
 import { LocationMap } from "@/shared/components/ui/LocationMap";
 import { useExperienceBuilderData } from "@/features/venue/hooks/useExperienceBuilderData";
+import MobileEventDetail from "@/features/event/components/MobileEventDetail";
 
 const SERVICE_CATEGORIES = [
   { id: "foxer", label: "Curator", icon: "person_search" },
@@ -374,7 +376,7 @@ const CustomExperienceBuilder: React.FC<{
 
         {/* Right Sidebar: Bill of Materials / Summary / Drop Zone */}
         <aside
-          className={`w-80 shrink-0 bg-[#0f111a] border-l border-white/5 flex flex-col shadow-2xl relative z-10 transition-all duration-300 ${
+          className={`hidden md:flex flex-col w-80 shrink-0 bg-[#0f111a] border-l border-white/5 shadow-2xl relative z-10 transition-all duration-300 ${
             isDragOver
               ? "bg-white/5 border-accent shadow-[inset_0_0_40px_rgba(204,255,0,0.1)]"
               : ""
@@ -528,6 +530,29 @@ const CustomExperienceBuilder: React.FC<{
             </p>
           </div>
         </aside>
+      </div>
+
+      {/* Mobile submit bar — replaces the hidden right sidebar on small screens */}
+      <div className="md:hidden flex items-center justify-between px-4 py-3 bg-[#0f111a] border-t border-white/10 shrink-0">
+        <div>
+          <p className="text-[10px] text-white/40">Total Estimate</p>
+          <span className="text-lg font-display font-bold text-accent">
+            ₱{calculateTotal().toLocaleString()}
+          </span>
+        </div>
+        <button
+          onClick={handleSubmit}
+          disabled={isSubmitting}
+          className="px-5 py-2.5 rounded-xl bg-white text-black font-bold text-sm hover:bg-accent transition-colors disabled:opacity-50 flex items-center gap-2"
+        >
+          {isSubmitting ? (
+            <span className="material-symbols-outlined animate-spin text-[18px]">
+              progress_activity
+            </span>
+          ) : (
+            "Request Booking"
+          )}
+        </button>
       </div>
     </div>
   );
@@ -753,245 +778,496 @@ const EventDetailsPage: React.FC = () => {
 
   return (
     <div className="bg-background bg-gradient-dark text-text-main antialiased min-h-screen flex flex-col selection:bg-accent selection:text-black font-body">
-      <CustomExperienceBuilder
-        isOpen={isCustomBookingOpen}
-        onClose={() => setIsCustomBookingOpen(false)}
-        venuePrice={price}
-      />
+      {/* Mobile-only redesigned view */}
+      <div className="lg:hidden">
+        <MobileEventDetail event={template} />
+      </div>
 
-      {/* Draft preview banner */}
-      {isPreview && isDraft && (
-        <div className="fixed top-0 left-0 right-0 z-200 h-9 bg-yellow-500/95 backdrop-blur-sm text-black text-xs font-bold text-center px-4 flex items-center justify-center gap-2">
-          <span className="material-symbols-outlined text-[14px]">
-            visibility
-          </span>
-          Draft Preview — this is how your listing will look when published
-          <button
-            onClick={() => router.back()}
-            className="ml-4 underline opacity-70 hover:opacity-100"
-          >
-            ← Back to builder
-          </button>
-        </div>
-      )}
+      {/* Desktop / tablet view */}
+      <div className="hidden lg:contents">
+        <CustomExperienceBuilder
+          isOpen={isCustomBookingOpen}
+          onClose={() => setIsCustomBookingOpen(false)}
+          venuePrice={price}
+        />
 
-      {/* Lightbox */}
-      {galleryOpen && hasImages && (
-        <div className="fixed inset-0 z-100 bg-black/95 backdrop-blur-md flex flex-col animate-in fade-in duration-200">
-          <div className="flex justify-between items-center px-6 py-4 border-b border-white/10 bg-black/50">
-            <h3 className="font-display font-bold text-white">
-              {template.name}
-            </h3>
-            <button
-              onClick={() => setGalleryOpen(false)}
-              className="p-2 hover:bg-white/10 rounded-full"
-            >
-              <span className="material-symbols-outlined text-white">
-                close
-              </span>
-            </button>
-          </div>
-          <div className="flex-1 relative flex items-center justify-center p-4">
-            <img
-              src={templateImages[activeImageIndex]}
-              alt="Gallery"
-              className="max-h-[80vh] max-w-full object-contain shadow-2xl rounded-lg"
-            />
-            <button
-              onClick={() =>
-                setActiveImageIndex(
-                  (activeImageIndex - 1 + templateImages.length) %
-                    templateImages.length,
-                )
-              }
-              className="absolute left-4 p-4 rounded-full bg-black/50 hover:bg-white/20 text-white border border-white/10"
-            >
-              <span className="material-symbols-outlined">chevron_left</span>
-            </button>
-            <button
-              onClick={() =>
-                setActiveImageIndex(
-                  (activeImageIndex + 1) % templateImages.length,
-                )
-              }
-              className="absolute right-4 p-4 rounded-full bg-black/50 hover:bg-white/20 text-white border border-white/10"
-            >
-              <span className="material-symbols-outlined">chevron_right</span>
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* Nav */}
-      <header
-        className={`fixed left-0 right-0 z-50 bg-background/80 backdrop-blur-md border-b border-white/5 h-20 ${isPreview && isDraft ? "top-9" : "top-0"}`}
-      >
-        <div className="mx-auto max-w-7xl px-4 h-full flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-3 group">
-            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-white text-black font-bold group-hover:rotate-180 transition-transform duration-700">
-              <span className="material-symbols-outlined text-[24px]">
-                explore
-              </span>
-            </div>
-            <h2 className="text-2xl font-display font-bold tracking-tight text-white group-hover:text-accent transition-colors">
-              FoxPassport
-            </h2>
-          </Link>
-          <div className="flex items-center gap-4">
-            <button className="hidden sm:flex items-center gap-2 px-4 py-2 rounded-full border border-white/10 hover:bg-white/5 text-sm font-medium text-white">
-              <span className="material-symbols-outlined text-[18px]">
-                share
-              </span>{" "}
-              Share
-            </button>
-            <button className="hidden sm:flex items-center gap-2 px-4 py-2 rounded-full border border-white/10 hover:bg-white/5 text-sm font-medium text-white">
-              <span className="material-symbols-outlined text-[18px]">
-                favorite_border
-              </span>{" "}
-              Save
-            </button>
+        {/* Draft preview banner */}
+        {isPreview && isDraft && (
+          <div className="fixed top-0 left-0 right-0 z-200 h-9 bg-yellow-500/95 backdrop-blur-sm text-black text-xs font-bold text-center px-4 flex items-center justify-center gap-2">
+            <span className="material-symbols-outlined text-[14px]">
+              visibility
+            </span>
+            Draft Preview — this is how your listing will look when published
             <button
               onClick={() => router.back()}
-              className="h-10 w-10 flex items-center justify-center rounded-full bg-white/5 hover:bg-white hover:text-black transition-all text-white"
+              className="ml-4 underline opacity-70 hover:opacity-100"
             >
-              <span className="material-symbols-outlined">close</span>
+              ← Back to builder
             </button>
           </div>
-        </div>
-      </header>
+        )}
 
-      <main
-        className={`grow pb-20 px-4 sm:px-6 ${isPreview && isDraft ? "pt-[132px]" : "pt-28"}`}
-      >
-        <div className="max-w-7xl mx-auto">
-          {/* Title */}
-          <div className="mb-6">
-            <div className="flex flex-wrap items-center gap-2 mb-3">
-              {category && (
-                <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-accent/10 border border-accent/20 text-accent text-[10px] font-bold uppercase tracking-wider">
-                  <span className="material-symbols-outlined text-[12px]">
-                    {CATEGORY_ICONS[category] ?? "celebration"}
-                  </span>
-                  {category}
+        {/* Lightbox */}
+        {galleryOpen && hasImages && (
+          <div className="fixed inset-0 z-100 bg-black/95 backdrop-blur-md flex flex-col animate-in fade-in duration-200">
+            <div className="flex justify-between items-center px-6 py-4 border-b border-white/10 bg-black/50">
+              <h3 className="font-display font-bold text-white">
+                {template.name}
+              </h3>
+              <button
+                onClick={() => setGalleryOpen(false)}
+                className="p-2 hover:bg-white/10 rounded-full"
+              >
+                <span className="material-symbols-outlined text-white">
+                  close
                 </span>
-              )}
-              {isPreview && isDraft && (
-                <span className="px-2.5 py-1 rounded-full bg-yellow-500/10 border border-yellow-500/20 text-yellow-400 text-[10px] font-bold uppercase tracking-wider">
-                  Draft
-                </span>
-              )}
+              </button>
             </div>
-            <h1 className="text-3xl md:text-4xl font-display font-bold text-white mb-3">
-              {template.name || "Untitled Event"}
-            </h1>
-            <div className="flex flex-wrap items-center gap-4 text-sm text-white/60">
-              {location && (
-                <span className="flex items-center gap-1">
-                  <span className="material-symbols-outlined text-[15px] text-white/30">
-                    location_on
-                  </span>
-                  {location}
-                </span>
-              )}
-              {eventDate && (
-                <span className="flex items-center gap-1">
-                  <span className="material-symbols-outlined text-[15px] text-white/30">
-                    calendar_today
-                  </span>
-                  {eventDate}
-                </span>
-              )}
-              {maxAttendees && (
-                <span className="flex items-center gap-1">
-                  <span className="material-symbols-outlined text-[15px] text-white/30">
-                    group
-                  </span>
-                  Up to {maxAttendees} guests
-                </span>
-              )}
+            <div className="flex-1 relative flex items-center justify-center p-4">
+              <img
+                src={templateImages[activeImageIndex]}
+                alt="Gallery"
+                className="max-h-[80vh] max-w-full object-contain shadow-2xl rounded-lg"
+              />
+              <button
+                onClick={() =>
+                  setActiveImageIndex(
+                    (activeImageIndex - 1 + templateImages.length) %
+                      templateImages.length,
+                  )
+                }
+                className="absolute left-4 p-4 rounded-full bg-black/50 hover:bg-white/20 text-white border border-white/10"
+              >
+                <span className="material-symbols-outlined">chevron_left</span>
+              </button>
+              <button
+                onClick={() =>
+                  setActiveImageIndex(
+                    (activeImageIndex + 1) % templateImages.length,
+                  )
+                }
+                className="absolute right-4 p-4 rounded-full bg-black/50 hover:bg-white/20 text-white border border-white/10"
+              >
+                <span className="material-symbols-outlined">chevron_right</span>
+              </button>
             </div>
           </div>
+        )}
 
-          {/* Gallery */}
-          {hasImages ? (
-            <div className="grid grid-cols-4 grid-rows-2 gap-3 h-87.5 md:h-125 rounded-2xl overflow-hidden mb-12 relative">
-              <div
-                className="col-span-2 row-span-2 cursor-pointer group"
-                onClick={() => {
-                  setActiveImageIndex(0);
-                  setGalleryOpen(true);
-                }}
-              >
-                <img
-                  src={templateImages[0]}
-                  className="w-full h-full object-cover group-hover:brightness-110 transition-all duration-500"
-                  alt="Main"
+        {/* Nav */}
+        <header
+          className={`fixed left-0 right-0 z-50 bg-background/80 backdrop-blur-md border-b border-white/5 h-14 sm:h-20 ${isPreview && isDraft ? "top-9" : "top-0"}`}
+        >
+          <div className="mx-auto max-w-7xl px-4 h-full flex items-center justify-between">
+            <Link href="/" className="flex items-center gap-2 sm:gap-3 group">
+              <div className="flex h-8 w-8 sm:h-10 sm:w-10 items-center justify-center overflow-hidden group-hover:scale-110 transition-transform duration-300">
+                <Image
+                  src="/foxonlylogo.png"
+                  alt="FoxPassport Logo"
+                  width={40}
+                  height={40}
+                  className="object-contain"
+                  priority
                 />
               </div>
-              {templateImages.slice(1, 5).map((img: string, idx: number) => (
+              <h2 className="text-lg sm:text-2xl font-display font-bold tracking-tight text-white group-hover:text-accent transition-colors">
+                FoxPassport
+              </h2>
+            </Link>
+            <div className="flex items-center gap-4">
+              <button className="hidden sm:flex items-center gap-2 px-4 py-2 rounded-full border border-white/10 hover:bg-white/5 text-sm font-medium text-white">
+                <span className="material-symbols-outlined text-[18px]">
+                  share
+                </span>{" "}
+                Share
+              </button>
+              <button className="hidden sm:flex items-center gap-2 px-4 py-2 rounded-full border border-white/10 hover:bg-white/5 text-sm font-medium text-white">
+                <span className="material-symbols-outlined text-[18px]">
+                  favorite_border
+                </span>{" "}
+                Save
+              </button>
+              <button
+                onClick={() => router.back()}
+                className="h-10 w-10 flex items-center justify-center rounded-full bg-white/5 hover:bg-white hover:text-black transition-all text-white"
+              >
+                <span className="material-symbols-outlined">close</span>
+              </button>
+            </div>
+          </div>
+        </header>
+
+        {/* Mobile sticky booking bar (design: glass card at bottom with price + Reserve CTA) */}
+        {!isPreview && template && (
+          <div
+            className="sm:hidden fixed bottom-5 left-4 right-4 z-40 flex items-center justify-between px-5 py-3 rounded-2xl"
+            style={{
+              background: "rgba(18,18,24,0.92)",
+              backdropFilter: "blur(20px)",
+              border: "1px solid rgba(255,255,255,0.1)",
+              boxShadow: "0 20px 50px rgba(0,0,0,0.5)",
+            }}
+          >
+            <div>
+              <p className="text-[10px] text-white/40 font-bold uppercase tracking-wider">
+                Est. total
+              </p>
+              <p className="text-xl font-display font-bold text-[#ccff00]">
+                {price > 0 ? `₱${price.toLocaleString()}` : "Price on request"}
+              </p>
+            </div>
+            <button
+              onClick={() =>
+                router.push(`/booking/config?templateId=${eventId}`)
+              }
+              className="px-6 py-3 rounded-full bg-[#ccff00] text-black font-bold text-sm"
+              style={{ boxShadow: "0 4px 16px rgba(204,255,0,0.35)" }}
+            >
+              Reserve
+            </button>
+          </div>
+        )}
+
+        <main
+          className={`grow pb-28 sm:pb-20 px-4 sm:px-6 ${isPreview && isDraft ? "pt-26.25 sm:pt-33" : "pt-20 sm:pt-28"}`}
+        >
+          <div className="max-w-7xl mx-auto">
+            {/* Title */}
+            <div className="mb-6">
+              <div className="flex flex-wrap items-center gap-2 mb-3">
+                {category && (
+                  <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-accent/10 border border-accent/20 text-accent text-[10px] font-bold uppercase tracking-wider">
+                    <span className="material-symbols-outlined text-[12px]">
+                      {CATEGORY_ICONS[category] ?? "celebration"}
+                    </span>
+                    {category}
+                  </span>
+                )}
+                {isPreview && isDraft && (
+                  <span className="px-2.5 py-1 rounded-full bg-yellow-500/10 border border-yellow-500/20 text-yellow-400 text-[10px] font-bold uppercase tracking-wider">
+                    Draft
+                  </span>
+                )}
+              </div>
+              <h1 className="text-3xl md:text-4xl font-display font-bold text-white mb-3">
+                {template.name || "Untitled Event"}
+              </h1>
+              <div className="flex flex-wrap items-center gap-4 text-sm text-white/60">
+                {location && (
+                  <span className="flex items-center gap-1">
+                    <span className="material-symbols-outlined text-[15px] text-white/30">
+                      location_on
+                    </span>
+                    {location}
+                  </span>
+                )}
+                {eventDate && (
+                  <span className="flex items-center gap-1">
+                    <span className="material-symbols-outlined text-[15px] text-white/30">
+                      calendar_today
+                    </span>
+                    {eventDate}
+                  </span>
+                )}
+                {maxAttendees && (
+                  <span className="flex items-center gap-1">
+                    <span className="material-symbols-outlined text-[15px] text-white/30">
+                      group
+                    </span>
+                    Up to {maxAttendees} guests
+                  </span>
+                )}
+              </div>
+            </div>
+
+            {/* Gallery */}
+            {hasImages ? (
+              <div className="grid grid-cols-2 sm:grid-cols-4 grid-rows-2 gap-2 sm:gap-3 h-52 sm:h-80 md:h-125 rounded-2xl overflow-hidden mb-8 sm:mb-12 relative">
                 <div
-                  key={idx}
-                  className="relative cursor-pointer group"
-                  onClick={() => {
-                    setActiveImageIndex(idx + 1);
-                    setGalleryOpen(true);
-                  }}
-                >
-                  <img
-                    src={img}
-                    className="w-full h-full object-cover group-hover:brightness-110 transition-all duration-500"
-                    alt={`View ${idx + 1}`}
-                  />
-                  {idx === 3 && templateImages.length > 5 && (
-                    <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
-                      <span className="text-white font-bold text-lg">
-                        +{templateImages.length - 5}
-                      </span>
-                    </div>
-                  )}
-                </div>
-              ))}
-              {templateImages.length > 1 && (
-                <button
+                  className="col-span-2 row-span-2 cursor-pointer group"
                   onClick={() => {
                     setActiveImageIndex(0);
                     setGalleryOpen(true);
                   }}
-                  className="absolute bottom-6 right-6 bg-white/10 backdrop-blur-md border border-white/20 text-white text-sm font-bold px-4 py-2.5 rounded-lg hover:bg-white hover:text-black transition-all flex items-center gap-2"
                 >
-                  <span className="material-symbols-outlined text-[18px]">
-                    grid_view
-                  </span>{" "}
-                  Show all photos
-                </button>
-              )}
-            </div>
-          ) : (
-            <div className="h-65 md:h-90 rounded-2xl mb-12 bg-white/3 border border-white/5 flex flex-col items-center justify-center gap-3 text-white/20">
-              <span className="material-symbols-outlined text-5xl">
-                photo_library
-              </span>
-              <p className="text-sm font-medium">No gallery images yet</p>
-              {isPreview && (
-                <p className="text-xs text-white/15">
-                  Add photos in the Event Gallery section of the builder
-                </p>
-              )}
-            </div>
-          )}
+                  <img
+                    src={templateImages[0]}
+                    className="w-full h-full object-cover group-hover:brightness-110 transition-all duration-500"
+                    alt="Main"
+                  />
+                </div>
+                {templateImages.slice(1, 5).map((img: string, idx: number) => (
+                  <div
+                    key={idx}
+                    className="relative hidden sm:block cursor-pointer group"
+                    onClick={() => {
+                      setActiveImageIndex(idx + 1);
+                      setGalleryOpen(true);
+                    }}
+                  >
+                    <img
+                      src={img}
+                      className="w-full h-full object-cover group-hover:brightness-110 transition-all duration-500"
+                      alt={`View ${idx + 1}`}
+                    />
+                    {idx === 3 && templateImages.length > 5 && (
+                      <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
+                        <span className="text-white font-bold text-lg">
+                          +{templateImages.length - 5}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                ))}
+                {templateImages.length > 1 && (
+                  <button
+                    onClick={() => {
+                      setActiveImageIndex(0);
+                      setGalleryOpen(true);
+                    }}
+                    className="absolute bottom-6 right-6 bg-white/10 backdrop-blur-md border border-white/20 text-white text-sm font-bold px-4 py-2.5 rounded-lg hover:bg-white hover:text-black transition-all flex items-center gap-2"
+                  >
+                    <span className="material-symbols-outlined text-[18px]">
+                      grid_view
+                    </span>{" "}
+                    Show all photos
+                  </button>
+                )}
+              </div>
+            ) : (
+              <div className="h-65 md:h-90 rounded-2xl mb-12 bg-white/3 border border-white/5 flex flex-col items-center justify-center gap-3 text-white/20">
+                <span className="material-symbols-outlined text-5xl">
+                  photo_library
+                </span>
+                <p className="text-sm font-medium">No gallery images yet</p>
+                {isPreview && (
+                  <p className="text-xs text-white/15">
+                    Add photos in the Event Gallery section of the builder
+                  </p>
+                )}
+              </div>
+            )}
 
-          <div className="grid lg:grid-cols-[1.8fr_1fr] gap-16">
-            {/* Left */}
-            <div className="space-y-10">
-              {/* Host card */}
-              <div className="bg-surface-highlight/30 border border-white/5 rounded-3xl p-6 relative overflow-hidden">
-                <div className="flex items-start gap-4">
+            <div className="grid lg:grid-cols-[1.8fr_1fr] gap-16">
+              {/* Left */}
+              <div className="space-y-10">
+                {/* Host card */}
+                <div className="bg-surface-highlight/30 border border-white/5 rounded-3xl p-6 relative overflow-hidden">
+                  <div className="flex items-start gap-4">
+                    <div className="relative shrink-0">
+                      {template.owner?.imgId ? (
+                        <img
+                          src={template.owner.imgId}
+                          className="w-16 h-16 rounded-full object-cover border-2 border-white/10"
+                          alt={ownerName}
+                        />
+                      ) : (
+                        <div className="w-16 h-16 rounded-full bg-accent flex items-center justify-center border-2 border-white/10">
+                          <span className="text-black text-2xl font-bold">
+                            {ownerInitial}
+                          </span>
+                        </div>
+                      )}
+                      <div className="absolute -bottom-1 -right-1 bg-[#7c3aed] text-white rounded-full p-1 border-4 border-[#0f111a] flex items-center justify-center shadow-sm">
+                        <span className="material-symbols-outlined text-[14px]">
+                          verified
+                        </span>
+                      </div>
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="font-display font-bold text-white text-lg">
+                        Curated by {ownerName}
+                      </h3>
+                      <p className="text-accent text-xs font-bold uppercase tracking-wider">
+                        Event Organizer
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Real event details */}
+                {(eventDate || maxAttendees || location) && (
+                  <div className="space-y-5">
+                    {eventDate && (
+                      <div className="flex gap-4 items-start">
+                        <span className="material-symbols-outlined text-white text-2xl mt-0.5">
+                          calendar_today
+                        </span>
+                        <div>
+                          <h3 className="font-bold text-white text-base">
+                            Event Date
+                          </h3>
+                          <p className="text-sm text-text-muted">{eventDate}</p>
+                        </div>
+                      </div>
+                    )}
+                    {maxAttendees && (
+                      <div className="flex gap-4 items-start">
+                        <span className="material-symbols-outlined text-white text-2xl mt-0.5">
+                          group
+                        </span>
+                        <div>
+                          <h3 className="font-bold text-white text-base">
+                            Guest Capacity
+                          </h3>
+                          <p className="text-sm text-text-muted">
+                            Up to {maxAttendees} guests
+                          </p>
+                        </div>
+                      </div>
+                    )}
+                    {location && (
+                      <div className="flex gap-4 items-start">
+                        <span className="material-symbols-outlined text-white text-2xl mt-0.5">
+                          location_on
+                        </span>
+                        <div>
+                          <h3 className="font-bold text-white text-base">
+                            Location
+                          </h3>
+                          <p className="text-sm text-text-muted">{location}</p>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {(eventDate || maxAttendees || location) && (
+                  <div className="h-px bg-white/10 w-full" />
+                )}
+
+                {/* Description */}
+                <div>
+                  <h3 className="text-2xl font-display font-bold text-white mb-4">
+                    About this experience
+                  </h3>
+                  {template.description ? (
+                    <p className="text-gray-300 text-base leading-relaxed whitespace-pre-line">
+                      {template.description}
+                    </p>
+                  ) : (
+                    <p className="text-white/20 italic text-sm">
+                      No description added yet.
+                    </p>
+                  )}
+                </div>
+
+                <div className="h-px bg-white/10 w-full" />
+
+                {/* Inclusions */}
+                {inclusions.length > 0 ? (
+                  <div>
+                    <div className="flex items-center justify-between mb-6">
+                      <h3 className="text-2xl font-display font-bold text-white">
+                        Included in this Build
+                      </h3>
+                      <button
+                        onClick={() => setIsCustomBookingOpen(true)}
+                        className="text-xs font-bold text-accent flex items-center gap-1"
+                      >
+                        <span className="material-symbols-outlined text-[16px]">
+                          edit
+                        </span>{" "}
+                        Customize
+                      </button>
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      {inclusions.map((svc, i) => (
+                        <div
+                          key={i}
+                          className="flex items-start gap-4 p-4 rounded-2xl bg-white/5 border border-white/5"
+                        >
+                          {svc.imageUrl ? (
+                            <img
+                              src={svc.imageUrl}
+                              alt={svc.name}
+                              className="h-10 w-10 rounded-xl object-cover shrink-0"
+                            />
+                          ) : (
+                            <div className="h-10 w-10 rounded-xl bg-surface-highlight flex items-center justify-center text-white/80 shrink-0">
+                              <span className="material-symbols-outlined">
+                                {svc.icon}
+                              </span>
+                            </div>
+                          )}
+                          <div>
+                            <h4 className="font-bold text-white text-sm">
+                              {svc.name}
+                            </h4>
+                            <p className="text-xs text-text-muted mt-1 leading-relaxed">
+                              {svc.desc}
+                            </p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ) : isPreview ? (
+                  <div>
+                    <h3 className="text-2xl font-display font-bold text-white mb-4">
+                      Included in this Build
+                    </h3>
+                    <div className="rounded-2xl border border-dashed border-white/10 p-8 text-center">
+                      <span className="material-symbols-outlined text-4xl text-white/15 block mb-2">
+                        inventory_2
+                      </span>
+                      <p className="text-sm text-white/25">
+                        No venues, gear, or services added yet.
+                      </p>
+                      <p className="text-xs text-white/15 mt-1">
+                        Drag items into the builder to include them.
+                      </p>
+                    </div>
+                  </div>
+                ) : null}
+
+                {(inclusions.length > 0 || isPreview) && (
+                  <div className="h-px bg-white/10 w-full" />
+                )}
+
+                {/* Map */}
+                <div>
+                  <h3 className="text-2xl font-display font-bold text-white mb-2">
+                    Where you&apos;ll be
+                  </h3>
+                  {location && (
+                    <p className="text-text-muted text-sm mb-6">{location}</p>
+                  )}
+                  {mapLat && mapLng ? (
+                    <div className="relative rounded-2xl overflow-hidden border border-white/10">
+                      <LocationMap
+                        lat={mapLat}
+                        lng={mapLng}
+                        className="h-80 w-full"
+                      />
+                      <div className="absolute bottom-3 left-1/2 -translate-x-1/2">
+                        <span className="bg-black/80 backdrop-blur-md text-white text-xs font-bold px-3 py-1.5 rounded-full border border-white/10">
+                          Exact location provided after booking
+                        </span>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="h-52 rounded-2xl bg-white/3 border border-white/5 flex flex-col items-center justify-center gap-2 text-white/20">
+                      <span className="material-symbols-outlined text-3xl">
+                        location_off
+                      </span>
+                      <p className="text-sm">
+                        Set a location in the builder to show the map
+                      </p>
+                    </div>
+                  )}
+                </div>
+
+                <div className="h-px bg-white/10 w-full" />
+
+                {/* Host bio */}
+                <div className="flex gap-6 items-start">
                   <div className="relative shrink-0">
                     {template.owner?.imgId ? (
                       <img
                         src={template.owner.imgId}
                         className="w-16 h-16 rounded-full object-cover border-2 border-white/10"
-                        alt={ownerName}
+                        alt="Event organizer"
                       />
                     ) : (
                       <div className="w-16 h-16 rounded-full bg-accent flex items-center justify-center border-2 border-white/10">
@@ -1000,411 +1276,206 @@ const EventDetailsPage: React.FC = () => {
                         </span>
                       </div>
                     )}
-                    <div className="absolute -bottom-1 -right-1 bg-[#7c3aed] text-white rounded-full p-1 border-4 border-[#0f111a] flex items-center justify-center shadow-sm">
+                    <div className="absolute -bottom-1 -right-1 bg-[#7c3aed] text-white rounded-full p-1 border-4 border-[#0f111a] shadow-sm flex items-center justify-center">
                       <span className="material-symbols-outlined text-[14px]">
                         verified
                       </span>
                     </div>
                   </div>
-                  <div className="flex-1">
-                    <h3 className="font-display font-bold text-white text-lg">
-                      Curated by {ownerName}
+                  <div>
+                    <h3 className="text-xl font-bold text-white mb-1">
+                      Hosted by {ownerName}
                     </h3>
-                    <p className="text-accent text-xs font-bold uppercase tracking-wider">
-                      Event Organizer
+                    <p className="text-text-muted text-sm mb-4">
+                      FoxPassport Organizer
                     </p>
-                  </div>
-                </div>
-              </div>
-
-              {/* Real event details */}
-              {(eventDate || maxAttendees || location) && (
-                <div className="space-y-5">
-                  {eventDate && (
-                    <div className="flex gap-4 items-start">
-                      <span className="material-symbols-outlined text-white text-2xl mt-0.5">
-                        calendar_today
+                    <div className="flex gap-4 text-sm text-white mb-4">
+                      <span className="flex items-center gap-1">
+                        <span className="material-symbols-outlined text-[16px] text-accent">
+                          verified
+                        </span>{" "}
+                        Identity Verified
                       </span>
-                      <div>
-                        <h3 className="font-bold text-white text-base">
-                          Event Date
-                        </h3>
-                        <p className="text-sm text-text-muted">{eventDate}</p>
-                      </div>
                     </div>
-                  )}
-                  {maxAttendees && (
-                    <div className="flex gap-4 items-start">
-                      <span className="material-symbols-outlined text-white text-2xl mt-0.5">
-                        group
-                      </span>
-                      <div>
-                        <h3 className="font-bold text-white text-base">
-                          Guest Capacity
-                        </h3>
-                        <p className="text-sm text-text-muted">
-                          Up to {maxAttendees} guests
-                        </p>
-                      </div>
-                    </div>
-                  )}
-                  {location && (
-                    <div className="flex gap-4 items-start">
-                      <span className="material-symbols-outlined text-white text-2xl mt-0.5">
-                        location_on
-                      </span>
-                      <div>
-                        <h3 className="font-bold text-white text-base">
-                          Location
-                        </h3>
-                        <p className="text-sm text-text-muted">{location}</p>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              )}
-
-              {(eventDate || maxAttendees || location) && (
-                <div className="h-px bg-white/10 w-full" />
-              )}
-
-              {/* Description */}
-              <div>
-                <h3 className="text-2xl font-display font-bold text-white mb-4">
-                  About this experience
-                </h3>
-                {template.description ? (
-                  <p className="text-gray-300 text-base leading-relaxed whitespace-pre-line">
-                    {template.description}
-                  </p>
-                ) : (
-                  <p className="text-white/20 italic text-sm">
-                    No description added yet.
-                  </p>
-                )}
-              </div>
-
-              <div className="h-px bg-white/10 w-full" />
-
-              {/* Inclusions */}
-              {inclusions.length > 0 ? (
-                <div>
-                  <div className="flex items-center justify-between mb-6">
-                    <h3 className="text-2xl font-display font-bold text-white">
-                      Included in this Build
-                    </h3>
-                    <button
-                      onClick={() => setIsCustomBookingOpen(true)}
-                      className="text-xs font-bold text-accent flex items-center gap-1"
-                    >
-                      <span className="material-symbols-outlined text-[16px]">
-                        edit
-                      </span>{" "}
-                      Customize
+                    <button className="px-6 py-3 rounded-xl border border-white/10 text-sm font-bold text-white hover:bg-white hover:text-black transition-colors">
+                      Contact Organizer
                     </button>
                   </div>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    {inclusions.map((svc, i) => (
-                      <div
-                        key={i}
-                        className="flex items-start gap-4 p-4 rounded-2xl bg-white/5 border border-white/5"
-                      >
-                        {svc.imageUrl ? (
-                          <img
-                            src={svc.imageUrl}
-                            alt={svc.name}
-                            className="h-10 w-10 rounded-xl object-cover shrink-0"
-                          />
-                        ) : (
-                          <div className="h-10 w-10 rounded-xl bg-surface-highlight flex items-center justify-center text-white/80 shrink-0">
-                            <span className="material-symbols-outlined">
-                              {svc.icon}
-                            </span>
-                          </div>
-                        )}
-                        <div>
-                          <h4 className="font-bold text-white text-sm">
-                            {svc.name}
-                          </h4>
-                          <p className="text-xs text-text-muted mt-1 leading-relaxed">
-                            {svc.desc}
-                          </p>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
                 </div>
-              ) : isPreview ? (
-                <div>
-                  <h3 className="text-2xl font-display font-bold text-white mb-4">
-                    Included in this Build
-                  </h3>
-                  <div className="rounded-2xl border border-dashed border-white/10 p-8 text-center">
-                    <span className="material-symbols-outlined text-4xl text-white/15 block mb-2">
-                      inventory_2
-                    </span>
-                    <p className="text-sm text-white/25">
-                      No venues, gear, or services added yet.
-                    </p>
-                    <p className="text-xs text-white/15 mt-1">
-                      Drag items into the builder to include them.
-                    </p>
-                  </div>
-                </div>
-              ) : null}
 
-              {(inclusions.length > 0 || isPreview) && (
                 <div className="h-px bg-white/10 w-full" />
-              )}
 
-              {/* Map */}
-              <div>
-                <h3 className="text-2xl font-display font-bold text-white mb-2">
-                  Where you&apos;ll be
-                </h3>
-                {location && (
-                  <p className="text-text-muted text-sm mb-6">{location}</p>
-                )}
-                {mapLat && mapLng ? (
-                  <div className="relative rounded-2xl overflow-hidden border border-white/10">
-                    <LocationMap
-                      lat={mapLat}
-                      lng={mapLng}
-                      className="h-80 w-full"
-                    />
-                    <div className="absolute bottom-3 left-1/2 -translate-x-1/2">
-                      <span className="bg-black/80 backdrop-blur-md text-white text-xs font-bold px-3 py-1.5 rounded-full border border-white/10">
-                        Exact location provided after booking
-                      </span>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="h-52 rounded-2xl bg-white/3 border border-white/5 flex flex-col items-center justify-center gap-2 text-white/20">
-                    <span className="material-symbols-outlined text-3xl">
-                      location_off
-                    </span>
-                    <p className="text-sm">
-                      Set a location in the builder to show the map
-                    </p>
-                  </div>
-                )}
-              </div>
-
-              <div className="h-px bg-white/10 w-full" />
-
-              {/* Host bio */}
-              <div className="flex gap-6 items-start">
-                <div className="relative shrink-0">
-                  {template.owner?.imgId ? (
-                    <img
-                      src={template.owner.imgId}
-                      className="w-16 h-16 rounded-full object-cover border-2 border-white/10"
-                      alt="Host"
-                    />
-                  ) : (
-                    <div className="w-16 h-16 rounded-full bg-accent flex items-center justify-center border-2 border-white/10">
-                      <span className="text-black text-2xl font-bold">
-                        {ownerInitial}
-                      </span>
-                    </div>
-                  )}
-                  <div className="absolute -bottom-1 -right-1 bg-[#7c3aed] text-white rounded-full p-1 border-4 border-[#0f111a] shadow-sm flex items-center justify-center">
-                    <span className="material-symbols-outlined text-[14px]">
-                      verified
-                    </span>
-                  </div>
-                </div>
+                {/* Things to know */}
                 <div>
-                  <h3 className="text-xl font-bold text-white mb-1">
-                    Hosted by {ownerName}
+                  <h3 className="text-2xl font-display font-bold text-white mb-6">
+                    Things to know
                   </h3>
-                  <p className="text-text-muted text-sm mb-4">
-                    FoxPassport Organizer
-                  </p>
-                  <div className="flex gap-4 text-sm text-white mb-4">
-                    <span className="flex items-center gap-1">
-                      <span className="material-symbols-outlined text-[16px] text-accent">
-                        verified
-                      </span>{" "}
-                      Identity Verified
-                    </span>
-                  </div>
-                  <button className="px-6 py-3 rounded-xl border border-white/10 text-sm font-bold text-white hover:bg-white hover:text-black transition-colors">
-                    Contact Host
-                  </button>
-                </div>
-              </div>
-
-              <div className="h-px bg-white/10 w-full" />
-
-              {/* Things to know */}
-              <div>
-                <h3 className="text-2xl font-display font-bold text-white mb-6">
-                  Things to know
-                </h3>
-                <div className="grid md:grid-cols-2 gap-8">
-                  <div>
-                    <h4 className="font-bold text-white text-sm mb-3">
-                      Event Info
-                    </h4>
-                    <div className="space-y-2 text-sm text-text-muted">
-                      {maxAttendees && <p>Maximum {maxAttendees} guests</p>}
-                      {category && (
-                        <p>
-                          Category:{" "}
-                          {category.charAt(0).toUpperCase() + category.slice(1)}
-                        </p>
-                      )}
-                      {!maxAttendees && !category && (
-                        <p className="italic text-white/20">
-                          No details set yet.
-                        </p>
-                      )}
-                    </div>
-                  </div>
-                  <div>
-                    <h4 className="font-bold text-white text-sm mb-3">
-                      Cancellation Policy
-                    </h4>
-                    <div className="space-y-2 text-sm text-text-muted">
-                      {cancellationPolicy ? (
-                        <>
-                          <p className="font-semibold text-white/80">
-                            {cancellationPolicy.name}
+                  <div className="grid md:grid-cols-2 gap-8">
+                    <div>
+                      <h4 className="font-bold text-white text-sm mb-3">
+                        Event Info
+                      </h4>
+                      <div className="space-y-2 text-sm text-text-muted">
+                        {maxAttendees && <p>Maximum {maxAttendees} guests</p>}
+                        {category && (
+                          <p>
+                            Category:{" "}
+                            {category.charAt(0).toUpperCase() +
+                              category.slice(1)}
                           </p>
-                          {cancellationPolicy.description && (
-                            <p>{cancellationPolicy.description}</p>
-                          )}
-                        </>
-                      ) : template?.cancellationPolicyId ? (
-                        <p>Loading policy…</p>
-                      ) : (
-                        <p>
-                          Default policy: full refund if cancelled within 48
-                          hours of booking.
-                        </p>
-                      )}
+                        )}
+                        {!maxAttendees && !category && (
+                          <p className="italic text-white/20">
+                            No details set yet.
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                    <div>
+                      <h4 className="font-bold text-white text-sm mb-3">
+                        Cancellation Policy
+                      </h4>
+                      <div className="space-y-2 text-sm text-text-muted">
+                        {cancellationPolicy ? (
+                          <>
+                            <p className="font-semibold text-white/80">
+                              {cancellationPolicy.name}
+                            </p>
+                            {cancellationPolicy.description && (
+                              <p>{cancellationPolicy.description}</p>
+                            )}
+                          </>
+                        ) : template?.cancellationPolicyId ? (
+                          <p>Loading policy…</p>
+                        ) : (
+                          <p>
+                            Default policy: full refund if cancelled within 48
+                            hours of booking.
+                          </p>
+                        )}
+                      </div>
                     </div>
                   </div>
                 </div>
               </div>
-            </div>
 
-            {/* Right: Booking widget */}
-            <div className="relative">
-              <div className="sticky top-24">
-                <div className="glass-card rounded-2xl border border-white/10 p-6 shadow-glow relative overflow-hidden">
-                  <div className="absolute top-0 right-0 w-32 h-32 bg-accent/10 rounded-full blur-2xl pointer-events-none" />
-                  <div className="mb-6 relative z-10">
-                    {price > 0 ? (
-                      <>
-                        <span className="text-2xl font-display font-bold text-white">
-                          ₱{price.toLocaleString()}
-                        </span>
+              {/* Right: Booking widget */}
+              <div className="relative">
+                <div className="sticky top-24">
+                  <div className="glass-card rounded-2xl border border-white/10 p-6 shadow-glow relative overflow-hidden">
+                    <div className="absolute top-0 right-0 w-32 h-32 bg-accent/10 rounded-full blur-2xl pointer-events-none" />
+                    <div className="mb-6 relative z-10">
+                      {price > 0 ? (
+                        <>
+                          <span className="text-2xl font-display font-bold text-white">
+                            ₱{price.toLocaleString()}
+                          </span>
+                          <span className="text-sm text-text-muted">
+                            {" "}
+                            est. total
+                          </span>
+                        </>
+                      ) : (
                         <span className="text-sm text-text-muted">
-                          {" "}
-                          est. total
+                          Price on request
                         </span>
-                      </>
+                      )}
+                    </div>
+
+                    {isPreview ? (
+                      <div className="w-full rounded-xl border border-dashed border-white/15 py-3.5 text-white/30 text-sm font-bold text-center mb-4 relative z-10">
+                        Booking available after publishing
+                      </div>
                     ) : (
-                      <span className="text-sm text-text-muted">
-                        Price on request
-                      </span>
+                      <>
+                        <button
+                          onClick={() =>
+                            router.push(`/booking/config?templateId=${eventId}`)
+                          }
+                          className="w-full btn-neon rounded-xl bg-accent py-3.5 text-black font-bold text-lg hover:shadow-[0_0_20px_rgba(204,255,0,0.4)] transition-all active:scale-95 mb-4 relative z-10"
+                        >
+                          Reserve
+                        </button>
+                        <button
+                          onClick={() => setIsCustomBookingOpen(true)}
+                          className="w-full rounded-xl border border-white/20 py-3.5 text-white font-bold text-sm hover:bg-white hover:text-black transition-all active:scale-95 mb-4 relative z-10 flex items-center justify-center gap-2 group"
+                        >
+                          <span className="material-symbols-outlined text-accent group-hover:text-black transition-colors">
+                            design_services
+                          </span>
+                          Design Custom Experience
+                        </button>
+                        <p className="text-center text-xs text-text-muted mb-6 relative z-10">
+                          You won&apos;t be charged yet
+                        </p>
+                      </>
+                    )}
+
+                    {price > 0 && (
+                      <>
+                        <div className="space-y-3 text-sm text-gray-300 relative z-10 pb-4">
+                          <div className="flex justify-between">
+                            <span>Package estimate</span>
+                            <span>₱{price.toLocaleString()}</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span>Service fee</span>
+                            <span>₱150</span>
+                          </div>
+                        </div>
+                        <div className="h-px bg-white/10 mb-4 relative z-10" />
+                        <div className="flex justify-between items-center text-white font-bold text-lg relative z-10">
+                          <span>Total</span>
+                          <span>₱{(price + 150).toLocaleString()}</span>
+                        </div>
+                      </>
                     )}
                   </div>
-
-                  {isPreview ? (
-                    <div className="w-full rounded-xl border border-dashed border-white/15 py-3.5 text-white/30 text-sm font-bold text-center mb-4 relative z-10">
-                      Booking available after publishing
-                    </div>
-                  ) : (
-                    <>
-                      <button
-                        onClick={() =>
-                          router.push(`/booking/config?templateId=${eventId}`)
-                        }
-                        className="w-full btn-neon rounded-xl bg-accent py-3.5 text-black font-bold text-lg hover:shadow-[0_0_20px_rgba(204,255,0,0.4)] transition-all active:scale-95 mb-4 relative z-10"
-                      >
-                        Reserve
-                      </button>
-                      <button
-                        onClick={() => setIsCustomBookingOpen(true)}
-                        className="w-full rounded-xl border border-white/20 py-3.5 text-white font-bold text-sm hover:bg-white hover:text-black transition-all active:scale-95 mb-4 relative z-10 flex items-center justify-center gap-2 group"
-                      >
-                        <span className="material-symbols-outlined text-accent group-hover:text-black transition-colors">
-                          design_services
-                        </span>
-                        Design Custom Experience
-                      </button>
-                      <p className="text-center text-xs text-text-muted mb-6 relative z-10">
-                        You won&apos;t be charged yet
-                      </p>
-                    </>
-                  )}
-
-                  {price > 0 && (
-                    <>
-                      <div className="space-y-3 text-sm text-gray-300 relative z-10 pb-4">
-                        <div className="flex justify-between">
-                          <span>Package estimate</span>
-                          <span>₱{price.toLocaleString()}</span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span>Service fee</span>
-                          <span>₱150</span>
-                        </div>
-                      </div>
-                      <div className="h-px bg-white/10 mb-4 relative z-10" />
-                      <div className="flex justify-between items-center text-white font-bold text-lg relative z-10">
-                        <span>Total</span>
-                        <span>₱{(price + 150).toLocaleString()}</span>
-                      </div>
-                    </>
-                  )}
                 </div>
               </div>
             </div>
           </div>
-        </div>
-      </main>
+        </main>
 
-      <footer className="bg-black pt-20 pb-10 border-t border-white/10">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-col md:flex-row justify-between items-center gap-4">
-            <div className="flex items-center gap-2">
-              <span className="material-symbols-outlined text-white">
-                explore
-              </span>
-              <span className="text-xl font-display font-bold text-white">
-                FoxPassport
-              </span>
-            </div>
-            <p className="text-xs text-gray-500">
-              © 2024 FoxPassport Republic. All rights reserved.
-            </p>
-            <div className="flex gap-6">
-              <a
-                className="text-xs text-gray-500 hover:text-white transition-colors"
-                href="#"
-              >
-                Privacy
-              </a>
-              <a
-                className="text-xs text-gray-500 hover:text-white transition-colors"
-                href="#"
-              >
-                Terms
-              </a>
-              <a
-                className="text-xs text-gray-500 hover:text-white transition-colors"
-                href="#"
-              >
-                Cookies
-              </a>
+        <footer className="bg-black pt-20 pb-10 border-t border-white/10">
+          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            <div className="flex flex-col md:flex-row justify-between items-center gap-4">
+              <div className="flex items-center gap-2">
+                <span className="material-symbols-outlined text-white">
+                  explore
+                </span>
+                <span className="text-xl font-display font-bold text-white">
+                  FoxPassport
+                </span>
+              </div>
+              <p className="text-xs text-gray-500">
+                © 2024 FoxPassport Republic. All rights reserved.
+              </p>
+              <div className="flex gap-6">
+                <a
+                  className="text-xs text-gray-500 hover:text-white transition-colors"
+                  href="#"
+                >
+                  Privacy
+                </a>
+                <a
+                  className="text-xs text-gray-500 hover:text-white transition-colors"
+                  href="#"
+                >
+                  Terms
+                </a>
+                <a
+                  className="text-xs text-gray-500 hover:text-white transition-colors"
+                  href="#"
+                >
+                  Cookies
+                </a>
+              </div>
             </div>
           </div>
-        </div>
-      </footer>
+        </footer>
+      </div>
+      {/* end hidden sm:contents */}
     </div>
   );
 };

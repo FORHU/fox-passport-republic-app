@@ -157,6 +157,12 @@ export function useHostAssetEdit(assetId: string) {
 
         inventory.setStatus(mapStatusToInventory(found?.status));
 
+        inventory.setCity((found as any)?.city ?? "");
+        inventory.setState((found as any)?.state ?? "");
+        inventory.setCountry((found as any)?.country ?? "");
+        inventory.setLat((found as any)?.lat ?? null);
+        inventory.setLng((found as any)?.lng ?? null);
+
         const firstImg = found?.images?.[0];
         const url = firstImg?.url ?? firstImg?.imageUrl ?? "";
         inventory.setImage(url);
@@ -227,7 +233,14 @@ export function useHostAssetEdit(assetId: string) {
         name: inventory.title,
         description: inventory.description,
         categorySlug: inventory.category,
+        condition: inventory.condition || undefined,
         price: parsedPrice,
+        billingRate: unitMap[inventory.unit] || "daily",
+        city: inventory.city || undefined,
+        state: inventory.state || undefined,
+        country: inventory.country || undefined,
+        lat: inventory.lat ?? undefined,
+        lng: inventory.lng ?? undefined,
         ...(shouldIncludeImages
           ? {
               images: [

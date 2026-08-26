@@ -9,6 +9,7 @@ import { motion, AnimatePresence } from "motion/react";
 import {
   Sheet,
   SheetContent,
+  SheetTitle,
   SheetTrigger,
 } from "@/shared/components/ui/sheet";
 import CircularProgress from "@/features/gamification/components/CircularProgress";
@@ -115,7 +116,7 @@ const PERK_META: Record<string, { title: string; desc: string; icon: string }> =
       icon: "workspace_premium",
     },
     host_support: {
-      title: "Host Support",
+      title: "Creator Support",
       desc: "24/7 dedicated event manager",
       icon: "support_agent",
     },
@@ -141,7 +142,7 @@ const PERK_META: Record<string, { title: string; desc: string; icon: string }> =
     },
     city_badge: {
       title: "City Badge",
-      desc: "Verified mayor status in your city",
+      desc: "Verified Venue Foxer status in your city",
       icon: "account_balance",
     },
     venue_spotlight: {
@@ -150,8 +151,8 @@ const PERK_META: Record<string, { title: string; desc: string; icon: string }> =
       icon: "auto_awesome",
     },
     mayor_verified: {
-      title: "Mayor Verified",
-      desc: "Highest tier city authority",
+      title: "Venue Verified",
+      desc: "Highest tier venue authority",
       icon: "verified_user",
     },
     gear_verified: {
@@ -203,6 +204,8 @@ const PassportClient: React.FC<PassportClientProps> = ({ user }) => {
   const [expandedPath, setExpandedPath] = useState<string | null>(null);
   const [perkTab, setPerkTab] = useState<"unlocked" | "locked">("unlocked");
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
+  const [leaderboardPage, setLeaderboardPage] = useState(0);
+  const RANKS_PER_PAGE = 10;
 
   const {
     paths: apiPaths,
@@ -292,7 +295,7 @@ const PassportClient: React.FC<PassportClientProps> = ({ user }) => {
   const userInitials = userName.charAt(0).toUpperCase();
 
   return (
-    <div className="min-h-screen bg-[#0a0a0a] p-6 lg:p-10 relative">
+    <div className="min-h-screen bg-[#0a0a0a] p-3 sm:p-6 lg:p-10 relative pb-28 sm:pb-6 lg:pb-10">
       {/* Background Grid Pattern */}
       <div
         className="fixed inset-0 opacity-[0.03] pointer-events-none"
@@ -339,29 +342,32 @@ const PassportClient: React.FC<PassportClientProps> = ({ user }) => {
             side="left"
             className="w-80 bg-black border-white/5 p-0 [&::-webkit-scrollbar]:hidden overflow-y-auto"
           >
-            <PassportSidebarContent
-              user={user}
-              userName={userName}
-              userInitials={userInitials}
-              activePathTypes={activePathTypes}
-              totalXP={totalXP}
-              maxTotalXP={maxTotalXP}
-              expandedPath={expandedPath}
-              setExpandedPath={setExpandedPath}
-              perkTab={perkTab}
-              setPerkTab={setPerkTab}
-              activeTab={activeTab}
-              setActiveTab={setActiveTab}
-              earnedPerkKeys={earnedPerkKeys}
-              onTabSelect={() => setMobileNavOpen(false)}
-            />
+            <SheetTitle className="sr-only">Navigation</SheetTitle>
+            <div className="flex flex-col h-full p-8 overflow-y-auto [&::-webkit-scrollbar]:hidden">
+              <PassportSidebarContent
+                user={user}
+                userName={userName}
+                userInitials={userInitials}
+                activePathTypes={activePathTypes}
+                totalXP={totalXP}
+                maxTotalXP={maxTotalXP}
+                expandedPath={expandedPath}
+                setExpandedPath={setExpandedPath}
+                perkTab={perkTab}
+                setPerkTab={setPerkTab}
+                activeTab={activeTab}
+                setActiveTab={setActiveTab}
+                earnedPerkKeys={earnedPerkKeys}
+                onTabSelect={() => setMobileNavOpen(false)}
+              />
+            </div>
           </SheetContent>
         </Sheet>
         {/* Main Content Area */}
         <main className="grow relative bg-[#050505] z-10">
           <div className="fixed top-0 right-0 w-[50%] h-[50%] bg-[#ccff00]/5 rounded-full blur-[120px] -mr-32 -mt-32 pointer-events-none"></div>
 
-          <div className="p-12 flex flex-col">
+          <div className="p-4 sm:p-8 lg:p-12 flex flex-col">
             <div className="relative z-20 mb-12 flex justify-between items-start">
               <div>
                 <h2 className="text-4xl md:text-5xl font-display font-bold text-white mb-2 tracking-tight capitalize">
@@ -399,12 +405,12 @@ const PassportClient: React.FC<PassportClientProps> = ({ user }) => {
                   exit={{ opacity: 0, x: -20 }}
                   className="relative z-20 space-y-12"
                 >
-                  <div className="flex justify-center">
-                    <div className="bg-white/5 p-1 rounded-full border border-white/10 flex">
+                  <div className="flex justify-center overflow-x-auto no-scrollbar px-2">
+                    <div className="bg-white/5 p-1 rounded-full border border-white/10 flex shrink-0">
                       {isEventFoxer && (
                         <button
                           onClick={() => setMatchSubTab("client-inbox")}
-                          className={`px-8 py-2 rounded-full font-bold text-xs transition-all ${matchSubTab === "client-inbox" ? "bg-[#ccff00] text-black shadow-glow-accent" : "text-white/40 hover:text-white"}`}
+                          className={`px-3 sm:px-8 py-2 rounded-full font-bold text-xs transition-all ${matchSubTab === "client-inbox" ? "bg-[#ccff00] text-black shadow-glow-accent" : "text-white/40 hover:text-white"}`}
                         >
                           Client Inbox
                           {(clientInboxPage?.total ?? 0) > 0 && (
@@ -417,7 +423,7 @@ const PassportClient: React.FC<PassportClientProps> = ({ user }) => {
                       {isEventFoxer && (
                         <button
                           onClick={() => setMatchSubTab("outgoing")}
-                          className={`px-8 py-2 rounded-full font-bold text-xs transition-all ${matchSubTab === "outgoing" ? "bg-[#ccff00] text-black shadow-glow-accent" : "text-white/40 hover:text-white"}`}
+                          className={`px-3 sm:px-8 py-2 rounded-full font-bold text-xs transition-all ${matchSubTab === "outgoing" ? "bg-[#ccff00] text-black shadow-glow-accent" : "text-white/40 hover:text-white"}`}
                         >
                           My Requests
                         </button>
@@ -425,125 +431,183 @@ const PassportClient: React.FC<PassportClientProps> = ({ user }) => {
                       {isProvider && (
                         <button
                           onClick={() => setMatchSubTab("incoming")}
-                          className={`px-8 py-2 rounded-full font-bold text-xs transition-all ${matchSubTab === "incoming" ? "bg-[#ccff00] text-black shadow-glow-accent" : "text-white/40 hover:text-white"}`}
+                          className={`px-3 sm:px-8 py-2 rounded-full font-bold text-xs transition-all ${matchSubTab === "incoming" ? "bg-[#ccff00] text-black shadow-glow-accent" : "text-white/40 hover:text-white"}`}
                         >
                           Incoming
                         </button>
                       )}
                       <button
                         onClick={() => setMatchSubTab("ranks")}
-                        className={`px-8 py-2 rounded-full font-bold text-xs transition-all ${matchSubTab === "ranks" ? "bg-[#ccff00] text-black shadow-glow-accent" : "text-white/40 hover:text-white"}`}
+                        className={`px-3 sm:px-8 py-2 rounded-full font-bold text-xs transition-all ${matchSubTab === "ranks" ? "bg-[#ccff00] text-black shadow-glow-accent" : "text-white/40 hover:text-white"}`}
                       >
                         Global Ranks
                       </button>
                     </div>
                   </div>
 
+                  {/* ── Client Inbox ── */}
                   {matchSubTab === "client-inbox" && (
-                    <div className="space-y-4">
-                      {clientInboxLoading ? (
-                        <div className="text-center py-16 text-white/30 text-sm">
-                          Loading requests…
-                        </div>
-                      ) : clientInboxAll.length === 0 ? (
-                        <div className="flex flex-col items-center py-24 opacity-20 text-center">
-                          <span className="material-symbols-outlined text-8xl mb-4">
+                    <div className="space-y-3">
+                      {clientInboxLoading && clientInboxAll.length === 0 ? (
+                        <div className="flex flex-col items-center py-20 gap-3 opacity-30">
+                          <span className="material-symbols-outlined text-6xl animate-pulse">
                             person_search
                           </span>
-                          <p className="font-display font-bold text-xl text-white">
+                          <p className="text-sm text-white/60">
+                            Loading requests…
+                          </p>
+                        </div>
+                      ) : clientInboxAll.length === 0 ? (
+                        <div className="flex flex-col items-center py-20 gap-3 opacity-20 text-center">
+                          <span className="material-symbols-outlined text-6xl">
+                            person_search
+                          </span>
+                          <p className="font-display font-bold text-lg text-white">
                             No client requests yet
                           </p>
-                          <p className="text-sm mt-1 text-white/60">
+                          <p className="text-sm text-white/50">
                             When someone matches with you, their request will
                             appear here.
                           </p>
                         </div>
                       ) : (
                         <>
-                          {clientInboxAll.map((req: ClientMatchRequest) => (
-                            <div
-                              key={req.id}
-                              className="flex items-center justify-between p-5 bg-white/3 border border-white/5 rounded-[1.5rem] hover:bg-white/5 transition-all"
-                            >
-                              <div className="flex items-center gap-4">
-                                <div className="h-11 w-11 rounded-xl bg-white/10 flex items-center justify-center text-sm font-bold text-white/40 overflow-hidden shrink-0">
-                                  {req.client?.imgId ? (
-                                    <img
-                                      src={`https://fox-passport-republic-assets.s3.ap-southeast-1.amazonaws.com/${req.client.imgId}`}
-                                      className="h-full w-full object-cover"
-                                      alt=""
-                                    />
-                                  ) : (
-                                    (req.client?.name?.charAt(0) ?? "?")
-                                  )}
-                                </div>
-                                <div>
-                                  <p className="text-sm font-bold text-white">
-                                    {req.client?.name}
-                                  </p>
-                                  <p className="text-[10px] text-white/30 uppercase tracking-widest">
-                                    {req.name} · {req.guestCount} guests ·{" "}
-                                    {new Date(req.startAt).toLocaleDateString()}
-                                  </p>
-                                  {req.template && (
-                                    <p className="text-[10px] text-accent/60 mt-0.5">
-                                      Based on: {req.template.name}
-                                    </p>
-                                  )}
-                                </div>
-                              </div>
-                              <div className="flex items-center gap-3">
-                                {req.totalAmount > 0 && (
-                                  <span className="text-xs font-bold text-white/50">
-                                    ₱{req.totalAmount.toLocaleString()}
-                                  </span>
-                                )}
-                                <span
-                                  className="text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-full border"
-                                  style={{
-                                    color: statusColor(req.requestStatus),
-                                    borderColor: `${statusColor(req.requestStatus)}30`,
-                                    backgroundColor: `${statusColor(req.requestStatus)}10`,
-                                  }}
-                                >
-                                  {statusLabel(req.requestStatus)}
-                                </span>
-                              </div>
-                            </div>
-                          ))}
-                          {clientInboxPage?.hasMore && (
-                            <div className="flex justify-center pt-2">
-                              <button
-                                onClick={() =>
-                                  setClientInboxOffset((o) => o + 10)
-                                }
-                                disabled={clientInboxLoading}
-                                className="px-8 py-3 rounded-full border border-white/10 text-white/50 hover:text-white hover:bg-white/5 text-xs font-bold uppercase tracking-widest transition-all disabled:opacity-30"
+                          {clientInboxAll.map((req: ClientMatchRequest) => {
+                            const sc = statusColor(req.requestStatus);
+                            return (
+                              <div
+                                key={req.id}
+                                className="group relative rounded-2xl border overflow-hidden transition-all hover:scale-[1.01]"
+                                style={{
+                                  borderColor: `${sc}20`,
+                                  background: `linear-gradient(135deg, rgba(255,255,255,0.04) 0%, rgba(255,255,255,0.02) 100%)`,
+                                }}
                               >
-                                {clientInboxLoading ? "Loading…" : "Load More"}
-                              </button>
-                            </div>
+                                {/* Color accent strip */}
+                                <div
+                                  className="absolute left-0 top-0 bottom-0 w-1 rounded-l-2xl"
+                                  style={{ backgroundColor: sc }}
+                                />
+                                <div className="pl-5 pr-4 py-4 flex items-center gap-4">
+                                  {/* Avatar */}
+                                  <div className="h-12 w-12 rounded-2xl bg-white/10 border border-white/10 flex items-center justify-center text-sm font-black text-white/50 overflow-hidden shrink-0">
+                                    {req.client?.imgId ? (
+                                      <img
+                                        src={`https://fox-passport-republic-assets.s3.ap-southeast-1.amazonaws.com/${req.client.imgId}`}
+                                        className="h-full w-full object-cover"
+                                        alt=""
+                                      />
+                                    ) : (
+                                      (req.client?.name
+                                        ?.charAt(0)
+                                        ?.toUpperCase() ?? "?")
+                                    )}
+                                  </div>
+                                  {/* Info */}
+                                  <div className="flex-1 min-w-0">
+                                    <p className="font-bold text-white text-sm leading-tight truncate">
+                                      {req.client?.name}
+                                    </p>
+                                    <p className="text-[10px] text-white/40 font-medium truncate mt-0.5">
+                                      {req.name}
+                                    </p>
+                                    <div className="flex items-center gap-2 mt-1 flex-wrap">
+                                      <span className="text-[9px] font-black text-white/25 uppercase tracking-widest">
+                                        {req.guestCount} guests
+                                      </span>
+                                      <span className="text-white/10">·</span>
+                                      <span className="text-[9px] font-black text-white/25 uppercase tracking-widest">
+                                        {new Date(
+                                          req.startAt,
+                                        ).toLocaleDateString("en-US", {
+                                          month: "short",
+                                          day: "numeric",
+                                          year: "numeric",
+                                        })}
+                                      </span>
+                                    </div>
+                                    {req.template && (
+                                      <p
+                                        className="text-[9px] mt-1"
+                                        style={{ color: `${sc}99` }}
+                                      >
+                                        Based on: {req.template.name}
+                                      </p>
+                                    )}
+                                  </div>
+                                  {/* Right side */}
+                                  <div className="flex flex-col items-end gap-2 shrink-0">
+                                    {req.totalAmount > 0 && (
+                                      <span className="text-sm font-black text-white">
+                                        ₱{req.totalAmount.toLocaleString()}
+                                      </span>
+                                    )}
+                                    <span
+                                      className="text-[9px] font-black uppercase tracking-widest px-2.5 py-1 rounded-full"
+                                      style={{
+                                        color: sc,
+                                        backgroundColor: `${sc}18`,
+                                        border: `1px solid ${sc}30`,
+                                      }}
+                                    >
+                                      {statusLabel(req.requestStatus)}
+                                    </span>
+                                  </div>
+                                </div>
+                              </div>
+                            );
+                          })}
+                          {clientInboxPage?.hasMore && (
+                            <button
+                              onClick={() =>
+                                setClientInboxOffset((o) => o + 10)
+                              }
+                              disabled={clientInboxLoading}
+                              className="w-full py-3.5 rounded-2xl border border-white/10 text-white/40 hover:text-white hover:border-white/20 hover:bg-white/5 text-xs font-black uppercase tracking-widest transition-all disabled:opacity-30 flex items-center justify-center gap-2"
+                            >
+                              {clientInboxLoading ? (
+                                <>
+                                  <span className="material-symbols-outlined text-base animate-spin">
+                                    autorenew
+                                  </span>{" "}
+                                  Loading…
+                                </>
+                              ) : (
+                                <>
+                                  <span className="material-symbols-outlined text-base">
+                                    expand_more
+                                  </span>{" "}
+                                  Load More
+                                </>
+                              )}
+                            </button>
                           )}
                         </>
                       )}
                     </div>
                   )}
 
+                  {/* ── My Requests (Outgoing) ── */}
                   {matchSubTab === "outgoing" && (
                     <div className="space-y-4">
                       {outgoingLoading ? (
-                        <div className="text-center py-16 text-white/30 text-sm">
-                          Loading requests…
-                        </div>
-                      ) : outgoingGroups.length === 0 ? (
-                        <div className="flex flex-col items-center py-24 opacity-20 text-center">
-                          <span className="material-symbols-outlined text-8xl mb-4">
+                        <div className="flex flex-col items-center py-20 gap-3 opacity-30">
+                          <span className="material-symbols-outlined text-6xl animate-pulse">
                             handshake
                           </span>
-                          <p className="font-display font-bold text-xl text-white">
+                          <p className="text-sm text-white/60">
+                            Loading requests…
+                          </p>
+                        </div>
+                      ) : outgoingGroups.length === 0 ? (
+                        <div className="flex flex-col items-center py-20 gap-3 opacity-20 text-center">
+                          <span className="material-symbols-outlined text-6xl">
+                            handshake
+                          </span>
+                          <p className="font-display font-bold text-lg text-white">
                             No match requests yet
                           </p>
-                          <p className="text-sm mt-1 text-white/60">
+                          <p className="text-sm text-white/50">
                             Match providers to your event templates to get
                             started.
                           </p>
@@ -552,17 +616,19 @@ const PassportClient: React.FC<PassportClientProps> = ({ user }) => {
                         outgoingGroups.map((group: OutgoingMatchGroup) => (
                           <div
                             key={group.templateId}
-                            className="bg-white/3 border border-white/5 rounded-[2rem] p-6"
+                            className="rounded-2xl border border-white/5 overflow-hidden"
+                            style={{ background: "rgba(255,255,255,0.02)" }}
                           >
-                            <div className="flex items-center gap-3 mb-4">
-                              <span className="material-symbols-outlined text-[#ccff00] text-lg">
+                            {/* Template header */}
+                            <div className="flex items-center gap-3 px-5 py-3.5 border-b border-white/5 bg-[#ccff00]/5">
+                              <span className="material-symbols-outlined text-[#ccff00] text-base">
                                 event
                               </span>
-                              <div>
-                                <p className="font-bold text-white">
+                              <div className="min-w-0">
+                                <p className="font-bold text-white text-sm truncate">
                                   {group.templateName}
                                 </p>
-                                <p className="text-[10px] text-white/30 uppercase tracking-widest">
+                                <p className="text-[9px] text-white/30 uppercase tracking-widest">
                                   {group.targetCity}
                                   {group.targetState
                                     ? `, ${group.targetState}`
@@ -571,14 +637,16 @@ const PassportClient: React.FC<PassportClientProps> = ({ user }) => {
                                 </p>
                               </div>
                             </div>
-                            <div className="space-y-3">
-                              {group.requests.map((req) => (
-                                <div
-                                  key={req.id}
-                                  className="flex items-center justify-between p-4 rounded-xl bg-white/5 border border-white/5"
-                                >
-                                  <div className="flex items-center gap-3">
-                                    <div className="h-9 w-9 rounded-xl bg-white/10 flex items-center justify-center text-sm font-bold text-white/40 overflow-hidden">
+                            {/* Requests */}
+                            <div className="divide-y divide-white/5">
+                              {group.requests.map((req) => {
+                                const sc = statusColor(req.matchRequestStatus);
+                                return (
+                                  <div
+                                    key={req.id}
+                                    className="flex items-center gap-3 px-5 py-3.5 hover:bg-white/3 transition-colors"
+                                  >
+                                    <div className="h-9 w-9 rounded-xl bg-white/10 flex items-center justify-center text-xs font-black text-white/40 overflow-hidden shrink-0">
                                       {req.provider?.imgId ? (
                                         <img
                                           src={req.provider.imgId}
@@ -586,32 +654,32 @@ const PassportClient: React.FC<PassportClientProps> = ({ user }) => {
                                           alt=""
                                         />
                                       ) : (
-                                        (req.provider?.name?.charAt(0) ?? "?")
+                                        (req.provider?.name
+                                          ?.charAt(0)
+                                          ?.toUpperCase() ?? "?")
                                       )}
                                     </div>
-                                    <div>
-                                      <p className="text-sm font-bold text-white">
+                                    <div className="flex-1 min-w-0">
+                                      <p className="text-sm font-bold text-white truncate">
                                         {req.provider?.name ?? "Unknown"}
                                       </p>
-                                      <p className="text-[10px] text-white/30 uppercase tracking-widest">
+                                      <p className="text-[9px] text-white/30 uppercase tracking-widest">
                                         {req.item?.name} · {req.type}
                                       </p>
                                     </div>
+                                    <span
+                                      className="text-[9px] font-black uppercase tracking-widest px-2.5 py-1 rounded-full shrink-0"
+                                      style={{
+                                        color: sc,
+                                        backgroundColor: `${sc}18`,
+                                        border: `1px solid ${sc}30`,
+                                      }}
+                                    >
+                                      {statusLabel(req.matchRequestStatus)}
+                                    </span>
                                   </div>
-                                  <span
-                                    className="text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-full border"
-                                    style={{
-                                      color: statusColor(
-                                        req.matchRequestStatus,
-                                      ),
-                                      borderColor: `${statusColor(req.matchRequestStatus)}30`,
-                                      backgroundColor: `${statusColor(req.matchRequestStatus)}10`,
-                                    }}
-                                  >
-                                    {statusLabel(req.matchRequestStatus)}
-                                  </span>
-                                </div>
-                              ))}
+                                );
+                              })}
                             </div>
                           </div>
                         ))
@@ -619,164 +687,315 @@ const PassportClient: React.FC<PassportClientProps> = ({ user }) => {
                     </div>
                   )}
 
+                  {/* ── Incoming ── */}
                   {matchSubTab === "incoming" && (
                     <div className="space-y-3">
                       {incomingLoading ? (
-                        <div className="text-center py-16 text-white/30 text-sm">
-                          Loading requests…
-                        </div>
-                      ) : incomingRequests.length === 0 ? (
-                        <div className="flex flex-col items-center py-24 opacity-20 text-center">
-                          <span className="material-symbols-outlined text-8xl mb-4">
+                        <div className="flex flex-col items-center py-20 gap-3 opacity-30">
+                          <span className="material-symbols-outlined text-6xl animate-pulse">
                             inbox
                           </span>
-                          <p className="font-display font-bold text-xl text-white">
+                          <p className="text-sm text-white/60">
+                            Loading requests…
+                          </p>
+                        </div>
+                      ) : incomingRequests.length === 0 ? (
+                        <div className="flex flex-col items-center py-20 gap-3 opacity-20 text-center">
+                          <span className="material-symbols-outlined text-6xl">
+                            inbox
+                          </span>
+                          <p className="font-display font-bold text-lg text-white">
                             No incoming requests
                           </p>
-                          <p className="text-sm mt-1 text-white/60">
+                          <p className="text-sm text-white/50">
                             Event Foxers will appear here when they match your
                             listings.
                           </p>
                         </div>
                       ) : (
-                        incomingRequests.map((req: IncomingMatchRequest) => (
-                          <div
-                            key={req.id}
-                            className="flex items-center justify-between p-5 bg-white/3 border border-white/5 rounded-[1.5rem] hover:bg-white/5 transition-all"
-                          >
-                            <div className="flex items-center gap-4">
-                              <div className="h-11 w-11 rounded-xl bg-white/10 flex items-center justify-center text-sm font-bold text-white/40 overflow-hidden shrink-0">
-                                {req.template.owner?.imgId ? (
-                                  <img
-                                    src={req.template.owner.imgId}
-                                    className="h-full w-full object-cover"
-                                    alt=""
-                                  />
+                        incomingRequests.map((req: IncomingMatchRequest) => {
+                          const sc = statusColor(req.matchRequestStatus);
+                          return (
+                            <div
+                              key={req.id}
+                              className="group relative rounded-2xl border overflow-hidden transition-all hover:scale-[1.01]"
+                              style={{
+                                borderColor: `${sc}20`,
+                                background: "rgba(255,255,255,0.03)",
+                              }}
+                            >
+                              <div
+                                className="absolute left-0 top-0 bottom-0 w-1 rounded-l-2xl"
+                                style={{ backgroundColor: sc }}
+                              />
+                              <div className="pl-5 pr-4 py-4 flex items-center gap-4">
+                                <div className="h-12 w-12 rounded-2xl bg-white/10 border border-white/10 flex items-center justify-center text-sm font-black text-white/50 overflow-hidden shrink-0">
+                                  {req.template.owner?.imgId ? (
+                                    <img
+                                      src={req.template.owner.imgId}
+                                      className="h-full w-full object-cover"
+                                      alt=""
+                                    />
+                                  ) : (
+                                    (req.template.owner?.name
+                                      ?.charAt(0)
+                                      ?.toUpperCase() ?? "?")
+                                  )}
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                  <p className="font-bold text-white text-sm truncate">
+                                    {req.template.owner?.name}
+                                  </p>
+                                  <p className="text-[10px] text-white/40 truncate mt-0.5">
+                                    {req.template.name}
+                                  </p>
+                                  <p className="text-[9px] text-white/25 uppercase tracking-widest mt-0.5">
+                                    {req.item?.name}
+                                  </p>
+                                </div>
+                                {req.matchRequestStatus === "pending" ? (
+                                  <div className="flex flex-col gap-1.5 shrink-0">
+                                    <button
+                                      onClick={() =>
+                                        respondMutation.mutate({
+                                          matchId: req.id,
+                                          type: req.type,
+                                          status: "accepted",
+                                        })
+                                      }
+                                      disabled={respondMutation.isPending}
+                                      className="px-3 py-1.5 rounded-xl bg-[#22c55e]/10 border border-[#22c55e]/30 text-[#22c55e] text-[10px] font-black hover:bg-[#22c55e]/20 transition-all disabled:opacity-50"
+                                    >
+                                      Accept
+                                    </button>
+                                    <button
+                                      onClick={() =>
+                                        respondMutation.mutate({
+                                          matchId: req.id,
+                                          type: req.type,
+                                          status: "declined",
+                                        })
+                                      }
+                                      disabled={respondMutation.isPending}
+                                      className="px-3 py-1.5 rounded-xl bg-white/5 border border-white/10 text-white/40 text-[10px] font-black hover:text-white hover:bg-white/10 transition-all disabled:opacity-50"
+                                    >
+                                      Decline
+                                    </button>
+                                  </div>
                                 ) : (
-                                  (req.template.owner?.name?.charAt(0) ?? "?")
+                                  <span
+                                    className="text-[9px] font-black uppercase tracking-widest px-2.5 py-1 rounded-full shrink-0"
+                                    style={{
+                                      color: sc,
+                                      backgroundColor: `${sc}18`,
+                                      border: `1px solid ${sc}30`,
+                                    }}
+                                  >
+                                    {statusLabel(req.matchRequestStatus)}
+                                  </span>
                                 )}
                               </div>
-                              <div>
-                                <p className="text-sm font-bold text-white">
-                                  {req.template.owner?.name}
-                                </p>
-                                <p className="text-[10px] text-white/30 uppercase tracking-widest">
-                                  {req.template.name} · {req.item?.name}
-                                </p>
-                              </div>
                             </div>
-                            {req.matchRequestStatus === "pending" ? (
-                              <div className="flex gap-2">
-                                <button
-                                  onClick={() =>
-                                    respondMutation.mutate({
-                                      matchId: req.id,
-                                      type: req.type,
-                                      status: "accepted",
-                                    })
-                                  }
-                                  disabled={respondMutation.isPending}
-                                  className="px-4 py-2 rounded-xl bg-[#22c55e]/10 border border-[#22c55e]/30 text-[#22c55e] text-xs font-bold hover:bg-[#22c55e]/20 transition-all disabled:opacity-50"
-                                >
-                                  Accept
-                                </button>
-                                <button
-                                  onClick={() =>
-                                    respondMutation.mutate({
-                                      matchId: req.id,
-                                      type: req.type,
-                                      status: "declined",
-                                    })
-                                  }
-                                  disabled={respondMutation.isPending}
-                                  className="px-4 py-2 rounded-xl bg-white/5 border border-white/10 text-white/40 text-xs font-bold hover:text-white hover:bg-white/10 transition-all disabled:opacity-50"
-                                >
-                                  Decline
-                                </button>
-                              </div>
-                            ) : (
-                              <span
-                                className="text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-full border"
-                                style={{
-                                  color: statusColor(req.matchRequestStatus),
-                                  borderColor: `${statusColor(req.matchRequestStatus)}30`,
-                                  backgroundColor: `${statusColor(req.matchRequestStatus)}10`,
-                                }}
-                              >
-                                {statusLabel(req.matchRequestStatus)}
-                              </span>
-                            )}
-                          </div>
-                        ))
+                          );
+                        })
                       )}
                     </div>
                   )}
 
-                  {matchSubTab === "ranks" && (
-                    <div className="bg-white/3 border border-white/5 rounded-[3rem] overflow-hidden">
-                      {leaderboardLoading ? (
-                        <div className="text-center py-16 text-white/30 text-sm">
-                          Loading leaderboard…
-                        </div>
-                      ) : (
-                        <table className="w-full text-left">
-                          <thead>
-                            <tr className="border-b border-white/5">
-                              <th className="px-8 py-6 text-[10px] font-black uppercase text-white/20 tracking-[0.2em]">
-                                Rank
-                              </th>
-                              <th className="px-8 py-6 text-[10px] font-black uppercase text-white/20 tracking-[0.2em]">
-                                Citizen
-                              </th>
-                              <th className="px-8 py-6 text-[10px] font-black uppercase text-white/20 tracking-[0.2em] text-right">
-                                Total XP
-                              </th>
-                            </tr>
-                          </thead>
-                          <tbody className="divide-y divide-white/5">
-                            {leaderboard.map((entry) => (
-                              <tr
-                                key={entry.userId}
-                                className="hover:bg-white/2 transition-colors"
-                              >
-                                <td className="px-8 py-5 text-xl font-display font-bold text-[#ccff00]">
-                                  #{entry.rank}
-                                </td>
-                                <td className="px-8 py-5">
-                                  <div className="flex items-center gap-4">
-                                    <div className="h-10 w-10 rounded-xl bg-white/10 flex items-center justify-center text-sm font-bold text-white/40 overflow-hidden shrink-0">
-                                      {entry.user.imgId ? (
-                                        <img
-                                          src={entry.user.imgId}
-                                          className="h-full w-full object-cover"
-                                          alt=""
-                                        />
-                                      ) : (
-                                        entry.user.name?.charAt(0)
-                                      )}
+                  {/* ── Global Ranks ── */}
+                  {matchSubTab === "ranks" &&
+                    (() => {
+                      const totalPages = Math.ceil(
+                        leaderboard.length / RANKS_PER_PAGE,
+                      );
+                      const pageItems = leaderboard.slice(
+                        leaderboardPage * RANKS_PER_PAGE,
+                        (leaderboardPage + 1) * RANKS_PER_PAGE,
+                      );
+                      const rankColors: Record<number, string> = {
+                        1: "#FFD700",
+                        2: "#C0C0C0",
+                        3: "#CD7F32",
+                      };
+                      return (
+                        <div className="space-y-3">
+                          {leaderboardLoading ? (
+                            <div className="flex flex-col items-center py-20 gap-3 opacity-30">
+                              <span className="material-symbols-outlined text-6xl animate-pulse">
+                                leaderboard
+                              </span>
+                              <p className="text-sm text-white/60">
+                                Loading leaderboard…
+                              </p>
+                            </div>
+                          ) : (
+                            <>
+                              {/* Rank rows */}
+                              <div className="space-y-2">
+                                {pageItems.map((entry) => {
+                                  const isYou = entry.userId === user?.id;
+                                  const isTop3 = entry.rank <= 3;
+                                  const rankColor =
+                                    rankColors[entry.rank] ??
+                                    (isYou
+                                      ? "#ccff00"
+                                      : "rgba(255,255,255,0.3)");
+                                  return (
+                                    <div
+                                      key={entry.userId}
+                                      className="flex items-center gap-4 px-4 py-3.5 rounded-2xl border transition-all"
+                                      style={{
+                                        background: isYou
+                                          ? "rgba(204,255,0,0.06)"
+                                          : isTop3
+                                            ? `${rankColors[entry.rank]}08`
+                                            : "rgba(255,255,255,0.02)",
+                                        borderColor: isYou
+                                          ? "rgba(204,255,0,0.2)"
+                                          : isTop3
+                                            ? `${rankColors[entry.rank]}20`
+                                            : "rgba(255,255,255,0.05)",
+                                      }}
+                                    >
+                                      {/* Rank number */}
+                                      <div className="w-8 text-center shrink-0">
+                                        {isTop3 ? (
+                                          <span
+                                            className="text-lg font-black"
+                                            style={{ color: rankColor }}
+                                          >
+                                            #{entry.rank}
+                                          </span>
+                                        ) : (
+                                          <span className="text-sm font-bold text-white/30">
+                                            #{entry.rank}
+                                          </span>
+                                        )}
+                                      </div>
+                                      {/* Avatar */}
+                                      <div
+                                        className="h-10 w-10 rounded-xl flex items-center justify-center text-sm font-black overflow-hidden shrink-0"
+                                        style={{
+                                          background: isTop3
+                                            ? `${rankColors[entry.rank]}20`
+                                            : "rgba(255,255,255,0.08)",
+                                          border: `1px solid ${isTop3 ? rankColors[entry.rank] + "30" : "rgba(255,255,255,0.08)"}`,
+                                        }}
+                                      >
+                                        {entry.user.imgId ? (
+                                          <img
+                                            src={entry.user.imgId}
+                                            className="h-full w-full object-cover"
+                                            alt=""
+                                          />
+                                        ) : (
+                                          <span
+                                            style={{
+                                              color: isTop3
+                                                ? rankColors[entry.rank]
+                                                : "rgba(255,255,255,0.3)",
+                                            }}
+                                          >
+                                            {entry.user.name?.charAt(0)}
+                                          </span>
+                                        )}
+                                      </div>
+                                      {/* Name */}
+                                      <div className="flex-1 min-w-0">
+                                        <div className="flex items-center gap-2">
+                                          <span className="font-bold text-white text-sm truncate">
+                                            {entry.user.name}
+                                          </span>
+                                          {isYou && (
+                                            <span className="text-[8px] font-black text-[#ccff00] uppercase tracking-widest bg-[#ccff00]/10 px-2 py-0.5 rounded-full shrink-0">
+                                              You
+                                            </span>
+                                          )}
+                                        </div>
+                                      </div>
+                                      {/* XP */}
+                                      <div className="text-right shrink-0">
+                                        <span
+                                          className="font-mono text-sm font-black"
+                                          style={{
+                                            color: isTop3
+                                              ? rankColors[entry.rank]
+                                              : isYou
+                                                ? "#ccff00"
+                                                : "rgba(255,255,255,0.5)",
+                                          }}
+                                        >
+                                          {formatXP(entry.totalXP)}
+                                        </span>
+                                        <p className="text-[8px] text-white/20 font-black uppercase tracking-widest">
+                                          XP
+                                        </p>
+                                      </div>
                                     </div>
-                                    <span className="font-bold text-white">
-                                      {entry.user.name}
-                                    </span>
-                                    {entry.userId === user?.id && (
-                                      <span className="text-[9px] font-black text-[#ccff00] uppercase tracking-widest bg-[#ccff00]/10 px-2 py-0.5 rounded-full">
-                                        You
-                                      </span>
+                                  );
+                                })}
+                              </div>
+
+                              {/* Pagination */}
+                              {totalPages > 1 && (
+                                <div className="flex items-center justify-between pt-2">
+                                  <button
+                                    onClick={() =>
+                                      setLeaderboardPage((p) =>
+                                        Math.max(0, p - 1),
+                                      )
+                                    }
+                                    disabled={leaderboardPage === 0}
+                                    className="flex items-center gap-1.5 px-4 py-2 rounded-xl border border-white/10 text-white/40 hover:text-white hover:border-white/20 hover:bg-white/5 text-xs font-black uppercase tracking-widest transition-all disabled:opacity-20"
+                                  >
+                                    <span className="material-symbols-outlined text-base">
+                                      chevron_left
+                                    </span>{" "}
+                                    Prev
+                                  </button>
+                                  <div className="flex items-center gap-1.5">
+                                    {Array.from(
+                                      { length: totalPages },
+                                      (_, i) => (
+                                        <button
+                                          key={i}
+                                          onClick={() => setLeaderboardPage(i)}
+                                          className="h-2 rounded-full transition-all"
+                                          style={{
+                                            width:
+                                              leaderboardPage === i ? 20 : 8,
+                                            backgroundColor:
+                                              leaderboardPage === i
+                                                ? "#ccff00"
+                                                : "rgba(255,255,255,0.15)",
+                                          }}
+                                        />
+                                      ),
                                     )}
                                   </div>
-                                </td>
-                                <td className="px-8 py-5 text-right">
-                                  <span className="font-mono text-sm text-[#ccff00] font-bold">
-                                    {formatXP(entry.totalXP)} XP
-                                  </span>
-                                </td>
-                              </tr>
-                            ))}
-                          </tbody>
-                        </table>
-                      )}
-                    </div>
-                  )}
+                                  <button
+                                    onClick={() =>
+                                      setLeaderboardPage((p) =>
+                                        Math.min(totalPages - 1, p + 1),
+                                      )
+                                    }
+                                    disabled={
+                                      leaderboardPage === totalPages - 1
+                                    }
+                                    className="flex items-center gap-1.5 px-4 py-2 rounded-xl border border-white/10 text-white/40 hover:text-white hover:border-white/20 hover:bg-white/5 text-xs font-black uppercase tracking-widest transition-all disabled:opacity-20"
+                                  >
+                                    Next{" "}
+                                    <span className="material-symbols-outlined text-base">
+                                      chevron_right
+                                    </span>
+                                  </button>
+                                </div>
+                              )}
+                            </>
+                          )}
+                        </div>
+                      );
+                    })()}
                 </motion.div>
               ) : activeTab === "progress" ? (
                 <motion.div
@@ -787,91 +1006,90 @@ const PassportClient: React.FC<PassportClientProps> = ({ user }) => {
                   className="relative z-20 space-y-12"
                 >
                   <div
-                    className={`grid grid-cols-1 ${filteredPaths.length > 1 ? "sm:grid-cols-2" : ""} gap-6`}
+                    className={`grid ${filteredPaths.length > 1 ? "grid-cols-2" : "grid-cols-1 max-w-sm mx-auto w-full"} gap-3`}
                   >
-                    {filteredPaths.map((path) => (
-                      <div
-                        key={path.path}
-                        className="bg-white/3 border border-white/5 rounded-[3rem] p-8 flex flex-col items-center text-center group hover:bg-white/5 transition-all relative overflow-hidden"
-                      >
-                        <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full blur-[60px] -mr-16 -mt-16"></div>
-                        <CircularProgress
-                          level={path.level}
-                          currentXP={path.currentXP}
-                          requiredXP={path.requiredXP}
-                          color={path.color}
-                          size={160}
-                          strokeWidth={10}
-                          className="mb-6"
-                        />
-                        <h4 className="text-2xl font-display font-bold text-white mb-1 capitalize tracking-tight">
-                          {path.path === "user"
-                            ? "Citizen"
-                            : path.path === "gearFoxer"
-                              ? "Gear Foxer"
-                              : path.path === "serviceFoxer"
-                                ? "Service Foxer"
-                                : path.path === "eventFoxer"
-                                  ? "Event Foxer"
-                                  : path.path === "venueFoxer"
-                                    ? "Venue Foxer"
-                                    : path.path}{" "}
-                          Path
-                        </h4>
-                        <p
-                          className="text-xs font-black uppercase tracking-[0.3em] mb-6"
-                          style={{ color: path.color }}
+                    {filteredPaths.map((path) => {
+                      const pathName =
+                        path.path === "user"
+                          ? "Citizen"
+                          : path.path === "gearFoxer"
+                            ? "Gear Foxer"
+                            : path.path === "serviceFoxer"
+                              ? "Service Foxer"
+                              : path.path === "eventFoxer"
+                                ? "Event Foxer"
+                                : path.path === "venueFoxer"
+                                  ? "Venue Foxer"
+                                  : path.path;
+                      const pct = Math.min(
+                        100,
+                        Math.round((path.currentXP / path.requiredXP) * 100),
+                      );
+                      return (
+                        <div
+                          key={path.path}
+                          className="relative flex flex-col items-center text-center rounded-3xl overflow-hidden p-5 gap-3"
+                          style={{
+                            background: `radial-gradient(ellipse at 50% 0%, ${path.color}18 0%, transparent 70%), rgba(255,255,255,0.03)`,
+                            border: `1px solid ${path.color}22`,
+                          }}
                         >
-                          {path.label}
-                        </p>
-                        <div className="w-full space-y-3">
-                          <div className="w-full bg-white/5 rounded-full h-1.5 overflow-hidden">
-                            <div
-                              className="h-full transition-all duration-1000"
-                              style={{
-                                width: `${(path.currentXP / path.requiredXP) * 100}%`,
-                                backgroundColor: path.color,
-                              }}
-                            ></div>
-                          </div>
-                          <div className="flex justify-between items-center">
-                            <div className="text-[9px] text-white/20 font-mono tracking-widest">
-                              {formatXP(path.currentXP)} /{" "}
-                              {formatXP(path.requiredXP)} XP
-                            </div>
-                            <div
-                              className="flex items-center gap-1.5 px-2.5 py-0.5 rounded-full border"
-                              style={{
-                                backgroundColor: `${path.color}10`,
-                                borderColor: `${path.color}30`,
-                              }}
+                          {/* Glow orb */}
+                          <div
+                            className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 w-24 h-24 rounded-full blur-2xl opacity-30 pointer-events-none"
+                            style={{ backgroundColor: path.color }}
+                          />
+
+                          {/* Circular progress */}
+                          <CircularProgress
+                            level={path.level}
+                            currentXP={path.currentXP}
+                            requiredXP={path.requiredXP}
+                            color={path.color}
+                            size={96}
+                            strokeWidth={7}
+                          />
+
+                          {/* Path name + tier */}
+                          <div className="space-y-0.5">
+                            <p className="text-[11px] font-black text-white tracking-tight leading-none">
+                              {pathName}
+                            </p>
+                            <p
+                              className="text-[8px] font-black uppercase tracking-[0.2em]"
+                              style={{ color: path.color }}
                             >
+                              {path.label}
+                            </p>
+                          </div>
+
+                          {/* XP bar */}
+                          <div className="w-full space-y-1.5">
+                            <div className="w-full bg-white/5 rounded-full h-1 overflow-hidden">
                               <div
-                                className="w-1.5 h-1.5 rounded-full"
-                                style={{ backgroundColor: path.color }}
-                              ></div>
+                                className="h-full rounded-full transition-all duration-1000"
+                                style={{
+                                  width: `${pct}%`,
+                                  backgroundColor: path.color,
+                                  boxShadow: `0 0 6px ${path.color}80`,
+                                }}
+                              />
+                            </div>
+                            <div className="flex justify-between items-center">
+                              <span className="text-[8px] font-mono text-white/30">
+                                {formatXP(path.currentXP)} XP
+                              </span>
                               <span
-                                className="text-[9px] font-black uppercase tracking-widest"
+                                className="text-[8px] font-black"
                                 style={{ color: path.color }}
                               >
-                                Lvl {path.level} •{" "}
-                                {path.path === "user"
-                                  ? "Citizen"
-                                  : path.path === "gearFoxer"
-                                    ? "Gear Foxer"
-                                    : path.path === "serviceFoxer"
-                                      ? "Service Foxer"
-                                      : path.path === "eventFoxer"
-                                        ? "Event Foxer"
-                                        : path.path === "venueFoxer"
-                                          ? "Venue Foxer"
-                                          : path.path}
+                                {pct}%
                               </span>
                             </div>
                           </div>
                         </div>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
 
                   <section>
@@ -998,24 +1216,24 @@ const PassportClient: React.FC<PassportClientProps> = ({ user }) => {
                         </div>
                       )}
 
-                      {/* Host Path Guide */}
+                      {/* Event Foxer Path Guide */}
                       {activePathTypes.includes("eventFoxer") && (
                         <div className="space-y-4">
                           <p className="text-[10px] font-black text-[#3b82f6] uppercase tracking-widest opacity-60">
-                            Host Career
+                            Event Foxer Career
                           </p>
                           <div className="space-y-3">
                             <div className="flex justify-between items-center p-4 rounded-2xl bg-white/5 border border-white/5 hover:bg-white/10 transition-all">
                               <div className="flex items-center gap-3">
                                 <span className="material-symbols-outlined text-[#3b82f6] text-sm">
-                                  apartment
+                                  celebration
                                 </span>
                                 <span className="text-sm text-white/70">
-                                  Upload Venue
+                                  Complete an Event
                                 </span>
                               </div>
                               <span className="font-mono text-sm text-[#3b82f6] font-bold">
-                                +{XP_REWARDS.uploadVenue} XP
+                                +{XP_REWARDS.completeEvent} XP
                               </span>
                             </div>
                             <div className="flex justify-between items-center p-4 rounded-2xl bg-white/5 border border-white/5 hover:bg-white/10 transition-all">
@@ -1024,22 +1242,22 @@ const PassportClient: React.FC<PassportClientProps> = ({ user }) => {
                                   star_rate
                                 </span>
                                 <span className="text-sm text-white/70">
-                                  Venue Featured
+                                  Earn a 5-Star Review
                                 </span>
                               </div>
                               <span className="font-mono text-sm text-[#3b82f6] font-bold">
-                                +{XP_REWARDS.venueFeatured} XP
+                                +{XP_REWARDS.receive5StarReview} XP
                               </span>
                             </div>
                           </div>
                         </div>
                       )}
 
-                      {/* Mayor Path Guide */}
+                      {/* Venue Foxer Path Guide */}
                       {activePathTypes.includes("venueFoxer") && (
                         <div className="space-y-4">
                           <p className="text-[10px] font-black text-[#a855f7] uppercase tracking-widest opacity-60">
-                            Mayor Career
+                            Venue Foxer Career
                           </p>
                           <div className="space-y-3">
                             <div className="flex justify-between items-center p-4 rounded-2xl bg-white/5 border border-white/5 hover:bg-white/10 transition-all">
@@ -1052,7 +1270,7 @@ const PassportClient: React.FC<PassportClientProps> = ({ user }) => {
                                 </span>
                               </div>
                               <span className="font-mono text-sm text-[#a855f7] font-bold">
-                                +{XP_REWARDS.uploadMayorVenue} XP
+                                +{XP_REWARDS.uploadVenue} XP
                               </span>
                             </div>
                             <div className="flex justify-between items-center p-4 rounded-2xl bg-white/5 border border-white/5 hover:bg-white/10 transition-all">
@@ -1065,7 +1283,7 @@ const PassportClient: React.FC<PassportClientProps> = ({ user }) => {
                                 </span>
                               </div>
                               <span className="font-mono text-sm text-[#a855f7] font-bold">
-                                +{XP_REWARDS.mayorVenueApproved} XP
+                                +{XP_REWARDS.venueApproved} XP
                               </span>
                             </div>
                             <div className="flex justify-between items-center p-4 rounded-2xl bg-white/5 border border-white/5 hover:bg-white/10 transition-all">
@@ -1078,7 +1296,7 @@ const PassportClient: React.FC<PassportClientProps> = ({ user }) => {
                                 </span>
                               </div>
                               <span className="font-mono text-sm text-[#a855f7] font-bold">
-                                +{XP_REWARDS.mayorVenueFeatured} XP
+                                +{XP_REWARDS.venueFeatured} XP
                               </span>
                             </div>
                           </div>

@@ -70,7 +70,37 @@ export default function VenueDetailClient({
 
       <VenueNavHeader title={venue.title} onBack={handleBack} />
 
-      <main className="grow pt-28 pb-20 px-4 sm:px-6">
+      {/* Mobile sticky bottom bar — design: "From ₱X/night  [Book Now]" */}
+      {venuePrice > 0 && (
+        <div
+          className="lg:hidden fixed bottom-5 left-4 right-4 z-40 flex items-center justify-between px-5 py-3 rounded-2xl"
+          style={{
+            background: "rgba(18,18,24,0.92)",
+            backdropFilter: "blur(20px)",
+            border: "1px solid rgba(255,255,255,0.1)",
+            boxShadow: "0 20px 50px rgba(0,0,0,0.5)",
+          }}
+        >
+          <div>
+            <p className="text-[10px] text-white/40 font-bold uppercase tracking-wider">
+              From
+            </p>
+            <p className="text-xl font-display font-bold text-[#ccff00]">
+              ₱{venuePrice.toLocaleString()}
+              <span className="text-xs text-white/40 font-normal">/night</span>
+            </p>
+          </div>
+          <button
+            onClick={() => router.push(`/booking/venue/${venue.id}`)}
+            className="px-6 py-3 rounded-full bg-[#ccff00] text-black font-bold text-sm"
+            style={{ boxShadow: "0 4px 16px rgba(204,255,0,0.35)" }}
+          >
+            Book Now
+          </button>
+        </div>
+      )}
+
+      <main className="grow pt-20 sm:pt-28 pb-28 sm:pb-20 px-4 sm:px-6">
         <div className="max-w-7xl mx-auto">
           <VenueHero
             title={venue.title}
@@ -109,7 +139,7 @@ export default function VenueDetailClient({
                       Listed by {host.name}
                     </h3>
                     <p className="text-[#ccff00] text-xs font-bold uppercase tracking-wider mb-2">
-                      Mayor · Space Provider
+                      Venue Foxer · Space Provider
                     </p>
                     <p className="text-sm text-text-muted leading-relaxed">
                       &quot;{host.bio}&quot;

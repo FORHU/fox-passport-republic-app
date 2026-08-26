@@ -58,8 +58,10 @@ const realResendOtp = async (email: string) => {
 };
 
 const realSignup = async (data: SignupFormData) => {
+  const rest: Partial<SignupFormData> = { ...data };
+  delete rest.confirmPassword;
   const payload = {
-    ...data,
+    ...rest,
     name: data.name || undefined,
     mobileNumber: data.mobileNumber || undefined,
   };

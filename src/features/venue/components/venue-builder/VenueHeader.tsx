@@ -32,7 +32,7 @@ export function VenueHeader({
           <h2 className="font-display font-bold text-lg flex items-center gap-2">
             Venue Studio
             <span className="px-1.5 py-0.5 rounded bg-accent/20 text-accent text-[9px] font-bold uppercase">
-              Mayor
+              Venue Foxer
             </span>
           </h2>
           <div className="flex items-center gap-2 text-[10px] text-text-muted mt-0.5">

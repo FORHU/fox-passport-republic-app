@@ -35,10 +35,7 @@ export function mapBackendAssetToInventoryItem(
         ? statusRaw.charAt(0).toUpperCase() + statusRaw.slice(1)
         : "Available";
 
-  const img =
-    asset.images?.[0]?.url ||
-    asset.images?.[0]?.imageUrl ||
-    "/placeholder-inventory.jpg";
+  const img = asset.images?.[0]?.url || asset.images?.[0]?.imageUrl || null;
 
   return {
     id: asset.id,

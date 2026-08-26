@@ -5,6 +5,7 @@ import Image from "next/image";
 import { motion } from "motion/react";
 import { useAuthStore } from "@/features/auth/store/useAuthStore";
 import UserMenuButton from "@/features/user/components/UserMenuButton";
+import MobileBottomNav from "@/shared/components/layout/MobileBottomNav";
 
 interface LandingHeaderProps {
   onSignIn: () => void;
@@ -98,67 +99,8 @@ export default function LandingHeader({ onSignIn }: LandingHeaderProps) {
         </div>
       </motion.header>
 
-      {/* Mobile Bottom Navigation Bar — full-width tab bar */}
-      <motion.div
-        className="md:hidden fixed bottom-0 left-0 right-0 z-50"
-        initial={{ y: 60, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        transition={{ duration: 0.45, delay: 0.15, ease: [0, 0, 0.2, 1] }}
-      >
-        <nav className="bg-black/95 backdrop-blur-2xl border-t border-white/10 shadow-[0_-4px_20px_rgba(0,0,0,0.6)] flex items-center">
-          {/* Explore */}
-          <a
-            href="#"
-            className="flex flex-col items-center justify-center gap-0.5 flex-1 py-3 text-[#ccff00]"
-          >
-            <span className="material-symbols-outlined text-[22px]">
-              explore
-            </span>
-            <span className="text-[9px] font-bold tracking-wide">Explore</span>
-          </a>
-
-          {/* Foxers */}
-          <Link
-            href="/search"
-            className="flex flex-col items-center justify-center gap-0.5 flex-1 py-3 text-white/40 hover:text-white transition-colors"
-          >
-            <span className="material-symbols-outlined text-[22px]">group</span>
-            <span className="text-[9px] font-bold tracking-wide">Foxers</span>
-          </Link>
-
-          {/* Community */}
-          <Link
-            href="/passport"
-            className="flex flex-col items-center justify-center gap-0.5 flex-1 py-3 text-white/40 hover:text-white transition-colors"
-          >
-            <span className="material-symbols-outlined text-[22px]">
-              diversity_3
-            </span>
-            <span className="text-[9px] font-bold tracking-wide">
-              Community
-            </span>
-          </Link>
-
-          {/* Account / Sign In */}
-          {isAuthenticated ? (
-            <div className="flex-1 flex items-center justify-center py-2">
-              <UserMenuButton onSignIn={onSignIn} />
-            </div>
-          ) : (
-            <button
-              onClick={onSignIn}
-              className="flex flex-col items-center justify-center gap-0.5 flex-1 py-3 text-white/40 hover:text-white transition-colors"
-            >
-              <span className="material-symbols-outlined text-[22px]">
-                login
-              </span>
-              <span className="text-[9px] font-bold tracking-wide">
-                Sign In
-              </span>
-            </button>
-          )}
-        </nav>
-      </motion.div>
+      {/* Mobile floating capsule bottom nav */}
+      <MobileBottomNav onLoginClick={onSignIn} />
     </>
   );
 }

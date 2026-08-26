@@ -139,8 +139,8 @@ export function useVenuePage() {
             ? details?.state || details?.country || ""
             : data.state || data.country,
           price: Number(pricing.basePrice || pricing.pricePerDay || 0),
-          rating: 4.8, // Placeholder until reviews are aggregated
-          reviews: data._count?.reviews || 0,
+          rating: data.averageRating ?? 0,
+          reviews: data.reviewCount ?? data._count?.reviews ?? 0,
           images:
             rawImages.length > 0
               ? rawImages

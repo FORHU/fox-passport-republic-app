@@ -79,57 +79,50 @@ function CircleStamp({
   const yr = date.getFullYear();
 
   return (
-    <div className="flex items-center justify-center p-6">
+    <div className="flex items-center justify-center py-5 px-2">
       <div
         className="relative flex items-center justify-center"
         style={{ transform: `rotate(${rotate}deg)` }}
       >
         {/* Outer ring */}
         <div
-          className="h-44 w-44 rounded-full flex items-center justify-center"
+          className="h-36 w-36 rounded-full flex items-center justify-center"
           style={{
-            border: `3px solid ${c}`,
+            border: `2.5px solid ${c}`,
             opacity: 0.9,
-            boxShadow: `0 0 0 6px transparent, 0 0 0 8px ${c}22`,
+            boxShadow: `0 0 0 5px transparent, 0 0 0 7px ${c}22`,
           }}
         >
           {/* Inner ring */}
           <div
-            className="h-36 w-36 rounded-full flex flex-col items-center justify-center gap-1"
-            style={{ border: `2px solid ${c}` }}
+            className="h-28 w-28 rounded-full flex flex-col items-center justify-center gap-1"
+            style={{ border: `1.5px solid ${c}` }}
           >
-            {/* Top arc label */}
             <span
-              className="text-[9px] font-black uppercase tracking-[0.3em]"
+              className="text-[8px] font-black uppercase tracking-[0.25em]"
               style={{ color: c }}
             >
               {meta.label}
             </span>
-
-            {/* Icon */}
             <span className="text-3xl leading-none">{meta.icon}</span>
-
-            {/* City */}
             <span
-              className="text-[8px] font-black tracking-[0.2em]"
+              className="text-[7px] font-black tracking-[0.18em]"
               style={{ color: c }}
             >
               {shortLocation(stamp.location)}
             </span>
-
-            {/* Date line */}
             <div
-              className="flex items-center gap-1 text-[8px] font-bold px-3 py-0.5 rounded-full mt-0.5"
+              className="flex items-center gap-0.5 text-[7px] font-bold px-2 py-0.5 rounded-full"
               style={{ border: `1px solid ${c}44`, color: `${c}99` }}
             >
-              {day} · {mon} · {yr}
+              {day}·{mon}·{yr}
             </div>
           </div>
         </div>
 
         {/* XP badge */}
         <div
-          className="absolute -top-1 -right-1 text-[8px] font-black px-1.5 py-0.5 rounded-full text-black"
+          className="absolute -top-1 -right-1 text-[8px] font-black px-1.5 py-0.5 rounded-full text-black leading-none"
           style={{ backgroundColor: c }}
         >
           +{stamp.xpEarned}XP
@@ -162,70 +155,54 @@ function RectStamp({
       : stamp.eventTitle.toUpperCase();
 
   return (
-    <div className="flex items-center justify-center p-6">
+    <div className="flex items-center justify-center py-5 px-2">
       <div className="relative" style={{ transform: `rotate(${rotate}deg)` }}>
-        {/* Perforated outer edge using dashed border */}
+        {/* Perforated outer edge */}
         <div
-          className="px-5 py-4 rounded-2xl"
-          style={{
-            border: `3px dashed ${c}`,
-            opacity: 0.92,
-          }}
+          className="px-4 py-3.5 rounded-2xl"
+          style={{ border: `2.5px dashed ${c}`, opacity: 0.92 }}
         >
           {/* Inner solid border */}
           <div
-            className="px-4 py-3 rounded-xl flex flex-col items-center gap-1.5 min-w-[140px]"
-            style={{ border: `2px solid ${c}` }}
+            className="px-3.5 py-3 rounded-xl flex flex-col items-center gap-1.5"
+            style={{ border: `1.5px solid ${c}`, minWidth: 110 }}
           >
-            {/* Top label */}
             <span
-              className="text-[8px] font-black uppercase tracking-[0.25em]"
+              className="text-[8px] font-black uppercase tracking-[0.22em]"
               style={{ color: c }}
             >
               {meta.label}
             </span>
-
-            {/* Divider stars */}
             <span className="text-[8px]" style={{ color: `${c}66` }}>
               ★ ★ ★
             </span>
-
-            {/* Icon */}
-            <span className="text-2xl leading-none">{meta.icon}</span>
-
-            {/* Event title */}
+            <span className="text-3xl leading-none">{meta.icon}</span>
             <span
-              className="text-[9px] font-black tracking-[0.15em] text-center leading-tight max-w-[120px]"
-              style={{ color: c }}
+              className="text-[8px] font-black tracking-[0.12em] text-center leading-snug"
+              style={{ color: c, maxWidth: 110 }}
             >
               {title}
             </span>
-
-            {/* Divider */}
             <div
               className="w-full h-px"
               style={{ backgroundColor: `${c}44` }}
             />
-
-            {/* Location + Date */}
             <div className="flex items-center justify-between w-full gap-2">
               <span
-                className="text-[7px] font-bold tracking-wider"
+                className="text-[7px] font-bold tracking-wide"
                 style={{ color: `${c}88` }}
               >
                 {shortLocation(stamp.location)}
               </span>
               <span
-                className="text-[7px] font-bold tracking-wider"
+                className="text-[7px] font-bold tracking-wide"
                 style={{ color: `${c}88` }}
               >
                 {mon} {yr}
               </span>
             </div>
-
-            {/* Verified */}
             <span
-              className="text-[7px] font-black tracking-[0.3em] mt-0.5"
+              className="text-[7px] font-black tracking-[0.25em]"
               style={{ color: `${c}55` }}
             >
               ✓ VERIFIED
@@ -235,7 +212,7 @@ function RectStamp({
 
         {/* XP badge */}
         <div
-          className="absolute -top-2 -right-2 text-[8px] font-black px-1.5 py-0.5 rounded-full text-black"
+          className="absolute -top-2 -right-2 text-[8px] font-black px-1.5 py-0.5 rounded-full text-black leading-none"
           style={{ backgroundColor: c }}
         >
           +{stamp.xpEarned}XP
@@ -292,7 +269,7 @@ export function PassportGrid({
 
   return (
     <div
-      className={`grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 ${className}`}
+      className={`grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 ${className}`}
     >
       {stamps.map((stamp, i) => (
         <PassportStampCard

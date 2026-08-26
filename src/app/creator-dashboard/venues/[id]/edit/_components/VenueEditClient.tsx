@@ -187,7 +187,7 @@ function VenueEditContent({ id }: Props) {
               total={revenue.total}
               onBaseRateChange={setBaseRate}
               onOccupancyRateChange={setOccupancyRate}
-              onPreview={() => {}}
+              onPreview={() => window.open(`/venues/${id}`, "_blank")}
             />
           </div>
         </div>

@@ -16,6 +16,19 @@ export default function ReviewSelectClient({
   const { searchQuery, locationQuery, setSearchQuery, setLocationQuery } =
     useReviewSelectStore();
 
+  const filteredVenues = recentVenues.filter((v) => {
+    const matchesName =
+      !searchQuery ||
+      v.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      v.name?.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesLocation =
+      !locationQuery ||
+      v.city?.toLowerCase().includes(locationQuery.toLowerCase()) ||
+      v.country?.toLowerCase().includes(locationQuery.toLowerCase()) ||
+      v.province?.toLowerCase().includes(locationQuery.toLowerCase());
+    return matchesName && matchesLocation;
+  });
+
   return (
     <RequireAuth>
       <div className="min-h-screen bg-gray-50">
@@ -70,9 +83,15 @@ export default function ReviewSelectClient({
 
           {/* Venue Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {recentVenues.map((venue) => (
-              <ReviewVenueCard key={venue.id} venue={venue} />
-            ))}
+            {filteredVenues.length > 0 ? (
+              filteredVenues.map((venue) => (
+                <ReviewVenueCard key={venue.id} venue={venue} />
+              ))
+            ) : (
+              <p className="col-span-2 text-center text-gray-400 py-8">
+                No venues found matching your search.
+              </p>
+            )}
           </div>
         </div>
       </div>

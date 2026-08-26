@@ -23,7 +23,7 @@ export default function CategoryDetailClient({
     <div className="bg-[#0a0a0a] text-white antialiased min-h-screen flex flex-col selection:bg-[#ccff00] selection:text-black font-sans">
       <CategoryHeader category={category} />
 
-      <main className="grow pt-28 sm:pt-40 px-4 pb-20">
+      <main className="grow pt-28 sm:pt-40 px-4 pb-28 sm:pb-20">
         <div className="mx-auto max-w-7xl">
           <CategoryHero category={category} />
           <EventPackagesSection category={category} />
