@@ -185,14 +185,14 @@ Applied by hand twice (admin tabs, host role locks). A third will appear.
 
 ### 3.3 Duplicate `useVenuesByCategory`
 
-- [ ] Deduplicate `features/category/hooks` vs `features/venue/hooks`
+- [x] Duplicate deleted. See 4.7.
 
 Two near-identical copies of the same hook and endpoint. Same trap as the Stripe
 pages: fix one, the other drifts.
 
 ### 3.4 Login masks infrastructure errors as bad credentials
 
-- [ ] Distinguish auth failure from server failure in `auth.controller.ts`
+- [x] Done. See 4.8.
 
 Its catch-all returns `401 Invalid credentials` for *any* throw from
 `AuthSvc.login`, including database errors. That is what made a missing table
@@ -415,7 +415,7 @@ Reviewed and found correct, for the record:
 
 ### 3.4d Line endings churn on every `format`
 
-- [ ] Add `.gitattributes` with `* text=auto eol=lf`
+- [x] Added to both repos. See 4.8.
 
 `npm run format` rewrote **199 files**; only 38 had real changes. The other 156
 were pure line-ending churn — prettier forces LF, the repo runs
@@ -438,7 +438,7 @@ widths, which it is largely capable of (drawer sidebar, `lg:pl-64` offset,
 
 ### 3.4f Mobile reject sends a canned reason
 
-- [ ] Give the mobile approve/reject flow a real reason input
+- [x] Inline reason field added. See 4.8.
 
 The desktop flow prompts for a rejection reason; the mobile row has no room, so
 it sends `"Rejected from mobile admin"`. If that string is ever shown to the
@@ -454,6 +454,80 @@ for, and it is the right answer for shared-credential abuse — but it is a
 noticeable change for anyone who genuinely works across two devices. Enabling it
 also signs out every session that existed beforehand, the first time each user
 signs in.
+
+### 4.6 Token storage — the gap that survived the proxy work
+
+- [x] `AuthStoreProvider` no longer resurrects tokens from `localStorage`
+- [x] Legacy tokens are actively purged from existing users' browsers
+- [ ] **Login still passes tokens through client JavaScript for one tick**
+
+Section 2.6 claimed tokens were fully out of `localStorage`. **That was wrong.**
+`shared/providers/AuthStoreProvider.tsx` was still reading `fox_token` and
+`fox_refresh_token` from `localStorage` and pushing them **back into cookies on
+every mount** - migration code from before the tokens moved. Two problems:
+
+1. It re-admitted a token to the cookie jar from a script-readable source, which
+   is precisely what the httpOnly move existed to stop.
+2. **Every user who signed in before the change still had both tokens in their
+   browser**, readable by any script, with nothing to remove them.
+
+It now removes those two keys instead, so old copies disappear on each user's
+next visit rather than lingering until something overwrites them. `fox_user` is
+left alone: profile data, no token, and it is what rehydrates the session.
+
+**How the earlier check missed it:** the verification grep used
+`localStorage.\(get\|set\)Item` — BRE alternation without `-E`, which matches
+nothing and reads as a pass. Re-running with `-E` found it immediately. A false
+negative reported as verified; worth remembering when a "no results" grep is used
+as evidence.
+
+**Residual, still open.** `useAuth.ts:87` receives the login response in client
+JavaScript and hands it to the `setAuthCookies` server action. The tokens are
+never *stored* client-side, but they exist in memory for that tick. Closing it
+means moving login behind a route handler that sets the cookies directly so the
+response body never reaches the browser. Smaller exposure than persistent
+storage was, but it is the last place a token touches the client.
+
+Current state, for reference:
+
+| Store | Contents | Script-readable |
+|---|---|---|
+| `fox_token` cookie | access token, 15m | no (httpOnly) |
+| `fox_refresh_token` cookie | refresh token, 7d | no (httpOnly) |
+| `fox_user` cookie | profile only | yes, deliberately |
+| `localStorage` | `fox_user` only | yes, profile only |
+| `sessionStorage` | checkout/booking drafts | yes, no tokens |
+
+### 4.7 Deabstraction
+
+- [x] Deleted the duplicate `useVenuesByCategory` outright
+
+First attempt left a re-export shim, which is indirection with extra steps - two
+files to read instead of one, and the implementation somewhere else. Deleted
+properly; the three import sites now point at the venue copy, which has the
+superset `Venue` type.
+
+- [x] Deleted 5 barrels with **zero** importers
+
+`features/{category,dashboard,landing,role-application}/index.ts` and
+`shared/lib/server/index.ts`. The 7 barrels with real importers (1-4 each) were
+kept - removing those would mean rewriting call sites to drop a convention the
+codebase uses deliberately, which is churn rather than simplification.
+
+One of the deleted five was self-inflicted: exports had been added to
+`features/landing/index.ts` during the landing refactor, to a barrel nothing
+imported.
+
+### 4.8 Closed since the last pass
+
+- [x] `.gitattributes` added to both repos (`* text=auto eol=lf`), so `format`
+      stops churning 156 files' line endings. Added without `--renormalize`, so
+      files normalise as they are touched rather than in one mass commit that
+      would conflict with every open branch.
+- [x] Login no longer masks server errors as `401`. Only a genuine credential
+      mismatch returns 401; anything else is a 500.
+- [x] Mobile reject collects a real reason inline (confirm/cancel, Enter/Escape)
+      instead of sending a canned string.
 
 ### 3.5 The proxy is unverified end to end
 
