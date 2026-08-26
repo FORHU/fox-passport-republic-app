@@ -1,4 +1,4 @@
-import VenueCreationClient from "./_components/VenueCreationClient";
+import VenueCreationClient from "@/features/venue/components/VenueCreationClient";
 
 export default function VenueCreationPage() {
   return <VenueCreationClient />;

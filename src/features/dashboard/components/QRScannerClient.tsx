@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 "use client";
 
 import React, { useCallback, useEffect, useRef, useState } from "react";
@@ -64,7 +63,7 @@ export default function QRScannerClient() {
           case 403:
             msg =
               err?.response?.data?.message ||
-              "You are not the host for this booking";
+              "You are not the authorized check-in manager for this booking";
             break;
           case 404:
             msg = err?.response?.data?.message || "Ticket code not found";
@@ -101,7 +100,7 @@ export default function QRScannerClient() {
       );
       scannerRef.current = scanner;
       scanner.render(handleScanSuccess, () => {});
-    } catch (err) {
+    } catch {
       setScanState("error");
       setLastResult({
         ticketCode: "",

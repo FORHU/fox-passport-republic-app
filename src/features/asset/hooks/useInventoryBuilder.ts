@@ -1,12 +1,13 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 "use client";
 
-import { useCallback, useMemo, useEffect, useState } from "react";
+import { useCallback, useMemo, useEffect, useRef, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useListingBuilderStore } from "@/features/asset/store/useListingBuilderStore";
 import api from "@/shared/lib/axios";
-import { createAsset } from "@/features/asset/api/assets";
+import { createAsset, updateAsset } from "@/features/asset/api/assets";
+import { toast } from "sonner";
 import type { CreateAssetPayload } from "@/shared/lib/api-types";
 import {
   ASSET_CATEGORIES,
@@ -24,6 +25,7 @@ export function useInventoryBuilder() {
   const [isNotification, setIsNotification] = useState(false);
   const [, setCategoryMap] = useState<{ [key: string]: string }>({});
   const { uploadFile } = useFileUpload();
+  const savedDraftId = useRef<string | null>(null);
 
   // Initialize type from URL params
   useEffect(() => {
@@ -166,14 +168,66 @@ export function useInventoryBuilder() {
     router.push("/creator-dashboard");
   }, [router]);
 
-  const handleSaveDraft = useCallback(() => {
-    console.log("Saving draft...", {
-      type: store.activeType,
-      title: store.title,
-      description: store.description,
-      category: store.category,
-    });
-  }, [store]);
+  const handleSaveDraft = useCallback(async () => {
+    if (!store.title.trim()) {
+      setError("Add a title before saving a draft");
+      return;
+    }
+    store.setIsSubmitting(true);
+    setError(null);
+    try {
+      const userId = getUserId();
+      if (!userId) throw new Error("Not authenticated");
+
+      const unitMap: Record<string, string> = {
+        "Per Item / Day": "daily",
+        "Per Item / Event": "one_time",
+        "Flat Rate": "one_time",
+      };
+      const parsedPrice = Number(store.price) || 0;
+
+      if (savedDraftId.current) {
+        await updateAsset(savedDraftId.current, {
+          name: store.title,
+          description: store.description || undefined,
+          condition: store.condition || undefined,
+          price: parsedPrice > 0 ? parsedPrice : undefined,
+          billingRate: unitMap[store.unit] || "daily",
+          city: store.city || undefined,
+          state: store.state || undefined,
+          country: store.country || undefined,
+          lat: store.lat ?? undefined,
+          lng: store.lng ?? undefined,
+          cancellationPolicyId: store.cancellationPolicyId || undefined,
+        } as any);
+      } else {
+        const result = await createAsset({
+          name: store.title,
+          description: store.description || " ",
+          condition: store.condition || "good",
+          category: store.category || "other",
+          price: parsedPrice > 0 ? parsedPrice : 1,
+          billingRate: unitMap[store.unit] || "daily",
+          city: store.city || undefined,
+          state: store.state || undefined,
+          country: store.country || undefined,
+          lat: store.lat ?? undefined,
+          lng: store.lng ?? undefined,
+          imgIds: [],
+          cancellationPolicyId: store.cancellationPolicyId || undefined,
+        } as any);
+        const newId = (result as any)?.data?.id ?? (result as any)?.id;
+        if (newId) savedDraftId.current = String(newId);
+      }
+      toast.success("Draft saved");
+    } catch (err: any) {
+      const msg =
+        err?.response?.data?.message || err?.message || "Failed to save draft";
+      setError(msg);
+    } finally {
+      store.setIsSubmitting(false);
+    }
+  }, [store, getUserId]);
 
   const handleImageUpload = useCallback(
     (url: string) => {
@@ -250,6 +304,11 @@ export function useInventoryBuilder() {
         throw new Error("Failed to upload image. Please try again.");
       }
 
+      // "unavailable" is a UI-only concept; the API's AssetStatus enum has no
+      // such value, so map it to the closest backend equivalent.
+      const statusMap: Record<string, string> = { unavailable: "archived" };
+      const status = statusMap[store.status] ?? store.status;
+
       const assetData: CreateAssetPayload & { cancellationPolicyId?: string } =
         {
           name: store.title,
@@ -264,11 +323,19 @@ export function useInventoryBuilder() {
           lat: store.lat ?? undefined,
           lng: store.lng ?? undefined,
           imgIds: [uploadResult.fileId],
+          status,
           cancellationPolicyId: store.cancellationPolicyId || undefined,
         };
 
       console.log("[ListingBuilder] Publishing asset:", assetData);
-      await createAssetWithAPI(assetData);
+      if (savedDraftId.current) {
+        await updateAsset(savedDraftId.current, {
+          ...assetData,
+          status: "pending",
+        } as any);
+      } else {
+        await createAssetWithAPI(assetData);
+      }
 
       // Invalidate queries to ensure real-time update
       queryClient.invalidateQueries({ queryKey: ["host-data", "assets"] });

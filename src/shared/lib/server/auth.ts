@@ -58,7 +58,7 @@ export async function requireAdmin() {
 export async function requireHost() {
   const user = await requireAuth();
   const roleType: string[] = user?.roleType ?? [];
-  const supplyRoleTypes = [
+  const hostRoleTypes = [
     "eventFoxer",
     "venueFoxer",
     "gearFoxer",
@@ -67,7 +67,7 @@ export async function requireHost() {
 
   const hasAccess =
     user?.systemRole === "admin" ||
-    roleType.some((r) => supplyRoleTypes.includes(r));
+    roleType.some((r) => hostRoleTypes.includes(r));
 
   if (!hasAccess) {
     redirect("/");

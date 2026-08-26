@@ -3,8 +3,10 @@
 
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import api from "@/shared/lib/axios";
+import { updateAsset } from "@/features/asset/api/assets";
 import { useDashboard } from "@/features/dashboard/hooks/useDashboard";
 import {
   DashboardHeader,
@@ -86,6 +88,7 @@ export default function HostDashboardClient({
   initialData,
 }: HostDashboardClientProps) {
   const router = useRouter();
+  const queryClient = useQueryClient();
 
   const {
     isCreateMenuOpen,
@@ -128,6 +131,28 @@ export default function HostDashboardClient({
         next.delete(sid);
         return next;
       });
+    }
+  };
+
+  // "unavailable" is a UI-only concept; the API's AssetStatus enum has no
+  // such value, so map it to the closest backend equivalent.
+  const assetStatusMap: Record<string, string> = { unavailable: "archived" };
+
+  const handleInventoryStatusChange = async (
+    id: number | string,
+    status: string,
+  ) => {
+    try {
+      await updateAsset(id, { status: assetStatusMap[status] ?? status });
+      queryClient.invalidateQueries({ queryKey: ["host-data", "assets"] });
+      toast.success("Status updated");
+    } catch (err: any) {
+      console.error(
+        "[handleInventoryStatusChange]",
+        err?.response?.status,
+        err?.response?.data,
+      );
+      toast.error(err?.response?.data?.message ?? "Failed to update status");
     }
   };
 
@@ -174,7 +199,7 @@ export default function HostDashboardClient({
     >
       <DashboardHeader />
 
-      <main className="pt-32 pb-20">
+      <main className="pt-32 pb-28 sm:pb-20">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <WelcomeBanner
             isCreateMenuOpen={isCreateMenuOpen}
@@ -213,7 +238,7 @@ export default function HostDashboardClient({
                   title="My Active Events"
                   icon="hub"
                   iconColor="text-[#ccff00]"
-                  requiredRole="Host"
+                  requiredRole="Event Foxer"
                   applyHref="/creator-dashboard/apply"
                 >
                   <EventsSection events={[]} onStatusChange={() => {}} />
@@ -236,8 +261,8 @@ export default function HostDashboardClient({
                   title="My Venues"
                   icon="apartment"
                   iconColor="text-pink-500"
-                  requiredRole="Mayor"
-                  applyHref="/mayor/apply"
+                  requiredRole="Venue Foxer"
+                  applyHref="/venue-foxer/apply"
                 >
                   <VenuesSection venues={[]} onStatusChange={() => {}} />
                 </LockedSection>
@@ -246,7 +271,7 @@ export default function HostDashboardClient({
               {access.canManageInventory ? (
                 <InventorySection
                   inventory={inventory}
-                  onStatusChange={() => {}}
+                  onStatusChange={handleInventoryStatusChange}
                   page={assetsPage}
                   totalPages={totalAssetPages}
                   onPageChange={setAssetsPage}

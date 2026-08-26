@@ -2,6 +2,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/features/auth/store/useAuthStore";
@@ -83,10 +84,15 @@ export default function NotificationListClient() {
               href="/"
               className="flex items-center gap-3 group cursor-pointer"
             >
-              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-white text-black font-bold shadow-[0_0_15px_rgba(255,255,255,0.3)] group-hover:rotate-180 transition-transform duration-700">
-                <span className="material-symbols-outlined text-[24px]">
-                  explore
-                </span>
+              <div className="flex h-10 w-10 items-center justify-center overflow-hidden group-hover:scale-110 transition-transform duration-300">
+                <Image
+                  src="/foxonlylogo.png"
+                  alt="FoxPassport Logo"
+                  width={40}
+                  height={40}
+                  className="object-contain"
+                  priority
+                />
               </div>
               <h2 className="text-2xl font-display font-bold tracking-tight text-white group-hover:text-accent transition-colors">
                 FoxPassport
@@ -129,10 +135,10 @@ export default function NotificationListClient() {
         </div>
       </header>
 
-      <main className="grow pt-32 pb-20">
+      <main className="grow pt-28 sm:pt-32 pb-28 sm:pb-20">
         <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
-          <div className="mb-8">
-            <div className="flex items-center gap-2 text-sm text-text-muted mb-4">
+          <div className="mb-6 sm:mb-8">
+            <div className="hidden sm:flex items-center gap-2 text-sm text-text-muted mb-4">
               <Link href="/" className="hover:text-white transition-colors">
                 Home
               </Link>
@@ -143,7 +149,7 @@ export default function NotificationListClient() {
             </div>
             <div className="flex items-center justify-between gap-4">
               <div className="flex items-center gap-3">
-                <h1 className="text-4xl md:text-5xl font-display font-bold text-white">
+                <h1 className="text-3xl sm:text-4xl md:text-5xl font-display font-bold text-white">
                   Notifications
                 </h1>
                 {unreadCount > 0 && (
@@ -155,9 +161,9 @@ export default function NotificationListClient() {
               {unreadCount > 0 && (
                 <button
                   onClick={() => markAllAsRead()}
-                  className="px-4 py-2 rounded-xl bg-white/5 text-white/70 font-bold text-xs hover:bg-white/10 hover:text-white transition-all"
+                  className="px-4 py-2 rounded-xl bg-white/5 text-white/70 font-bold text-xs hover:bg-white/10 hover:text-white transition-all whitespace-nowrap"
                 >
-                  Mark all as read
+                  Mark all read
                 </button>
               )}
             </div>
