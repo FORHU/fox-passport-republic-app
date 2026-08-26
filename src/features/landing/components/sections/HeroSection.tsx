@@ -1,4 +1,4 @@
-/* eslint-disable react-hooks/set-state-in-effect, @next/next/no-img-element */
+/* eslint-disable @next/next/no-img-element */
 "use client";
 
 import { useState, useRef, useEffect, useCallback } from "react";
@@ -6,8 +6,7 @@ import { motion } from "motion/react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { createPortal } from "react-dom";
-import axios from "axios";
-import api from "@/shared/lib/axios";
+import { useLocationSearch } from "@/features/landing/hooks/useLocationSearch";
 
 const CATEGORIES = ["Wedding", "Corporate", "Birthday", "Social", "Other"];
 
@@ -345,8 +344,8 @@ function LocationField({
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
   const [pos, setPos] = useState({ top: 0, left: 0, width: 0 });
-  const [cities, setCities] = useState<string[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
+  const cities = useLocationSearch(value);
 
   const close = useCallback(() => {
     setOpen(false);
@@ -365,38 +364,6 @@ function LocationField({
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, []);
-
-  useEffect(() => {
-    if (!value || value.length < 2) {
-      setCities([]);
-      return;
-    }
-    const controller = new AbortController();
-    const timer = setTimeout(() => {
-      api
-        .get("/locations/search", {
-          params: { q: value },
-          signal: controller.signal,
-        })
-        .then(({ data }) => {
-          if (data.status === "success") {
-            setCities(data.data.locations);
-          }
-        })
-        .catch((err) => {
-          if (axios.isCancel(err)) return;
-          console.error("Failed to fetch locations:", err);
-        });
-    }, 300);
-
-    return () => {
-      clearTimeout(timer);
-      // Drop a response that is already in flight when the query changes, so a
-      // slow earlier request cannot land after a newer one and show stale
-      // suggestions.
-      controller.abort();
-    };
-  }, [value]);
 
   const toggle = () => {
     if (!open && ref.current) {
