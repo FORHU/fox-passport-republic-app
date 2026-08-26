@@ -123,7 +123,13 @@ Notes:
 
 ## Routing Note
 
-`/host` and `/mayor` are redirect shims kept from the pre-rename vocabulary; the live supply-side surface is `/creator-dashboard`. Use `getDashboardPath()` in `src/shared/lib/dashboard-path.ts` rather than re-deriving a landing route from roles.
+`/host` is entirely redirect shims kept from the pre-rename vocabulary; the live
+supply-side dashboard is `/creator-dashboard`. Use `getDashboardPath()` in
+`src/shared/lib/dashboard-path.ts` rather than re-deriving a landing route from roles.
+
+`/mayor` is **not** a shim. `/mayor/apply` and `/mayor/create-venue` are the real,
+only implementations of those two flows and are linked from six places across
+`dashboard`, `onboarding` and `venue`. Do not "clean them up" into redirects.
 
 ---
 

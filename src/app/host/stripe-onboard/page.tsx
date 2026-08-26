@@ -1,5 +1,5 @@
-import StripeOnboardClient from "./_components/StripeOnboardClient";
+import { redirect } from "next/navigation";
 
-export default function StripeOnboardPage() {
-  return <StripeOnboardClient />;
+export default function Redirect() {
+  redirect("/creator-dashboard/stripe-onboard");
 }

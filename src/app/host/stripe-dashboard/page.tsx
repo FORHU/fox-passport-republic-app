@@ -1,5 +1,5 @@
-import StripeDashboardClient from "./_components/StripeDashboardClient";
+import { redirect } from "next/navigation";
 
-export default function StripeDashboardPage() {
-  return <StripeDashboardClient />;
+export default function Redirect() {
+  redirect("/creator-dashboard/stripe-dashboard");
 }
