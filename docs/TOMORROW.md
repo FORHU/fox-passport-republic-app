@@ -6,7 +6,30 @@ stay the detailed record; this is the running order.
 
 ---
 
-## 0. Before anything else
+## 0. Read this first — where the work actually is
+
+Both PRs were merged during the session (app #? / api #59) and both repos were
+switched to `staging`. That was not noticed, so the last commits went onto
+`staging` directly rather than onto a feature branch.
+
+| | State |
+|---|---|
+| **API** | `fix(auth): stop reporting server errors as invalid credentials` is **already pushed to `origin/staging`** |
+| **App** | 6 commits on local `staging`, **not pushed** — token purge, deabstraction, mobile reject reason, 3 docs commits |
+| `perf/dedupe-dashboard-fetching` | still exists, but has **0 commits** beyond staging — everything was merged |
+
+Nothing is lost and both repos build and test clean. But the app's six commits
+bypassed review, and one of them (`purge legacy tokens`) is security-relevant.
+
+- [ ] **Decide how to land the app's 6 commits.** Either move them to a feature
+      branch (`git branch <name>` from staging, then `git reset --hard
+      origin/staging`, push the branch, open a PR) or push to staging to match
+      where the API commit already sits. The first keeps review discipline; the
+      second is consistent with what already happened on the API side.
+
+---
+
+## 0b. Before anything else
 
 - [ ] **Commit the 13 uncommitted files.** They include a real security fix —
       `AuthStoreProvider` purging legacy tokens out of `localStorage` — plus the
