@@ -12,6 +12,7 @@ import {
   CorePackageDropZone,
   EventBlueprint,
 } from "@/features/event/components/event-builder";
+import { BuilderDesktopOnly } from "@/shared/components/layout/BuilderDesktopOnly";
 
 export default function EventCreationBuilder() {
   const router = useRouter();
@@ -81,6 +82,8 @@ export default function EventCreationBuilder() {
   return (
     <RequireAuth>
       <div className="fixed inset-0 z-60 bg-[#02040a] text-white flex flex-col font-body">
+        <BuilderDesktopOnly backHref="/creator-dashboard/events" />
+
         <EventHeader
           eventTitle={eventTitle}
           isSubmitting={isSubmitting}

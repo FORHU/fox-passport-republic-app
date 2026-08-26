@@ -11,6 +11,7 @@ import {
   RevenueProjector,
 } from "@/features/venue/components/venue-builder";
 import { useHostVenueEdit } from "@/features/venue/hooks/useHostVenueEdit";
+import { BuilderDesktopOnly } from "@/shared/components/layout/BuilderDesktopOnly";
 
 interface Props {
   id: string;
@@ -111,6 +112,8 @@ function VenueEditContent({ id }: Props) {
         </div>
       ) : (
         <div className="fixed inset-0 z-60 bg-[#02040a] text-white flex flex-col font-body">
+          <BuilderDesktopOnly backHref="/creator-dashboard/venues" />
+
           <VenueHeader
             venueName={venueName}
             isSubmitting={isSubmitting}

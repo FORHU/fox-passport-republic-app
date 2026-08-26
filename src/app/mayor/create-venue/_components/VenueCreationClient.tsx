@@ -12,6 +12,7 @@ import {
   RevenueProjector,
   VenuePreviewModal,
 } from "@/features/venue/components/venue-builder";
+import { BuilderDesktopOnly } from "@/shared/components/layout/BuilderDesktopOnly";
 
 export default function VenueCreationClient() {
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
@@ -102,6 +103,8 @@ export default function VenueCreationClient() {
       />
 
       <div className="fixed inset-0 z-60 bg-[#02040a] text-white flex flex-col font-body">
+        <BuilderDesktopOnly backHref="/creator-dashboard/venues" />
+
         <VenueHeader
           venueName={venueName}
           isSubmitting={isSubmitting}
