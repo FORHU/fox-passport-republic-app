@@ -32,27 +32,6 @@ export interface ProviderRow {
   img?: string;
 }
 
-export function foxersToRows(
-  foxers: Foxer[],
-  source: "services" | "assets" = "services",
-): ProviderRow[] {
-  const rows: ProviderRow[] = [];
-  foxers.forEach((f) => {
-    const items = source === "assets" ? (f.assets ?? []) : f.services;
-    items.forEach((item) => {
-      rows.push({
-        foxerId: f.id,
-        name: f.name,
-        itemName: item.name,
-        category: item.category,
-        price: item.price,
-        billingRate: item.billingRate,
-        img: item.images?.[0]?.url,
-      });
-    });
-  });
-  return rows;
-}
 
 export async function fetchEventFoxers(
   page = 1,
@@ -94,23 +73,35 @@ export async function fetchEventTemplates(
   };
 }
 
+function itemsToRows(items: any[]): ProviderRow[] {
+  return items.map((item) => ({
+    foxerId: item.owner?.id,
+    name: item.owner?.name,
+    itemName: item.name,
+    category: item.category,
+    price: item.price,
+    billingRate: item.billingRate,
+    img: item.images?.[0]?.url,
+  }));
+}
+
+// Item-level pagination (one row per asset/service) so every page holds exactly
+// `limit` rows, instead of paginating over Foxers and nesting up to 3 items each
+// — which left pages with an inconsistent, often mostly-empty item count.
 export async function fetchGearFoxers(
   page = 1,
   limit = 10,
   filters?: UnifiedSearchFilters,
-): Promise<SectionResult<Foxer>> {
-  const params: Record<string, any> = { page, limit, roleType: "gearFoxer" };
+): Promise<SectionResult<ProviderRow>> {
+  const params: Record<string, any> = { page, limit };
   if (filters?.city) params.city = filters.city;
   // Gear Foxer specializations are keyed by asset category (e.g. "sound_system"),
   // not event vibe, so the vibe filter doesn't apply here.
   if (filters?.maxPrice) params.maxPrice = filters.maxPrice;
-  if (filters?.q) params.q = filters.q;
-  if (filters?.startDate) params.startDate = filters.startDate;
-  if (filters?.endDate) params.endDate = filters.endDate;
-  const res = await api.get("/users/foxers", { params });
+  const res = await api.get("/asset/browse", { params });
   const body = res.data ?? {};
   return {
-    items: Array.isArray(body.data) ? body.data : [],
+    items: itemsToRows(Array.isArray(body.data) ? body.data : []),
     pagination: body.pagination ?? { page, limit, total: 0, totalPages: 0 },
   };
 }
@@ -119,19 +110,16 @@ export async function fetchServiceFoxers(
   page = 1,
   limit = 10,
   filters?: UnifiedSearchFilters,
-): Promise<SectionResult<Foxer>> {
-  const params: Record<string, any> = { page, limit, roleType: "serviceFoxer" };
+): Promise<SectionResult<ProviderRow>> {
+  const params: Record<string, any> = { page, limit };
   if (filters?.city) params.city = filters.city;
   // Service Foxer specializations are keyed by service category (e.g. "catering"),
   // not event vibe, so the vibe filter doesn't apply here.
   if (filters?.maxPrice) params.maxPrice = filters.maxPrice;
-  if (filters?.q) params.q = filters.q;
-  if (filters?.startDate) params.startDate = filters.startDate;
-  if (filters?.endDate) params.endDate = filters.endDate;
-  const res = await api.get("/users/foxers", { params });
+  const res = await api.get("/service/browse", { params });
   const body = res.data ?? {};
   return {
-    items: Array.isArray(body.data) ? body.data : [],
+    items: itemsToRows(Array.isArray(body.data) ? body.data : []),
     pagination: body.pagination ?? { page, limit, total: 0, totalPages: 0 },
   };
 }
@@ -139,8 +127,8 @@ export async function fetchServiceFoxers(
 export interface AllSearchSections {
   eventFoxers: SectionResult<Foxer>;
   eventTemplates: SectionResult<any>;
-  gearFoxers: SectionResult<Foxer>;
-  serviceFoxers: SectionResult<Foxer>;
+  gearFoxers: SectionResult<ProviderRow>;
+  serviceFoxers: SectionResult<ProviderRow>;
 }
 
 export async function fetchAllSearchSections(
