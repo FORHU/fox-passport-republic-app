@@ -1,10 +1,20 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
 import api from "@/shared/lib/axios";
 
-export const useAdminData = (type: string, initialData?: any) => {
+const POLL_INTERVAL_MS = 5000;
+
+/**
+ * @param enabled  Pass false to keep the query idle. AdminContent mounts one of
+ *   these per admin tab but renders only the active one, so without this every
+ *   tab polls in the background - including the seven the user cannot see.
+ */
+export const useAdminData = (
+  type: string,
+  initialData?: any,
+  enabled = true,
+) => {
   const { data, isLoading, refetch } = useQuery({
     queryKey: ["admin-data", type],
     queryFn: async () => {
@@ -76,15 +86,18 @@ export const useAdminData = (type: string, initialData?: any) => {
         return [];
       }
     },
-    enabled: type !== "dashboard",
+    enabled: enabled && type !== "dashboard",
     initialData,
-    refetchInterval: (query) => {
-      // Only poll if tab is active to save resources
+    refetchInterval: () => {
+      // Only poll while the browser tab is actually visible.
       if (typeof document !== "undefined" && document.hidden) return false;
-      return 5000; // 5 seconds
+      return POLL_INTERVAL_MS;
     },
     refetchOnWindowFocus: true,
-    staleTime: 1000, // Data becomes stale after 1 second to allow polling
+    // Matches the poll interval. At 1s the server-rendered initialData was
+    // already stale by the time the client mounted, so every page load and tab
+    // switch fired an immediate refetch for data it had just been handed.
+    staleTime: POLL_INTERVAL_MS,
   });
 
   return {
