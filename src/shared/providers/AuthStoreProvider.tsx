@@ -5,7 +5,6 @@ import { useAuthStore } from "@/features/auth/store/useAuthStore";
 import { Loader2 } from "lucide-react";
 import { useSessionManager } from "@/features/auth/hooks/useSessionManager";
 import SessionTimeoutModal from "@/shared/components/layout/SessionTimeoutModal";
-import { setAuthCookies } from "@/shared/lib/server/auth-actions";
 
 function SessionManager() {
   const [showWarning, setShowWarning] = useState(false);
@@ -37,24 +36,23 @@ export function AuthStoreProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     initialize();
 
-    // Re-sync auth cookies on every mount so server components can read the token.
-    // Handles users who logged in before cookies were introduced, or whose cookies expired.
+    // Purge legacy tokens.
+    //
+    // This used to read fox_token / fox_refresh_token out of localStorage and
+    // push them back into cookies on every mount. That made sense when the
+    // client held the tokens; it does not now, and it would quietly re-admit a
+    // token to the cookie jar from a script-readable source.
+    //
+    // Anyone who signed in before tokens moved to httpOnly cookies still has
+    // them sitting in their browser, readable by any script on the page, with
+    // nothing to remove them. Clearing here means those copies disappear on the
+    // user's next visit rather than lingering until the keys are overwritten.
+    //
+    // fox_user is deliberately left alone: it is profile display data, carries
+    // no token, and is what rehydrates the session optimistically.
     if (typeof window !== "undefined") {
-      const token = localStorage.getItem("fox_token");
-      const refresh = localStorage.getItem("fox_refresh_token");
-      const userStr = localStorage.getItem("fox_user");
-      if (token && userStr) {
-        try {
-          const user = JSON.parse(userStr);
-          setAuthCookies({
-            accessToken: token,
-            refreshToken: refresh ?? "",
-            user,
-          }).catch(() => {});
-        } catch {
-          // ignore malformed localStorage data
-        }
-      }
+      localStorage.removeItem("fox_token");
+      localStorage.removeItem("fox_refresh_token");
     }
   }, [initialize]);
 
