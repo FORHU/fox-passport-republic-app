@@ -50,6 +50,10 @@ export default function MapboxLocationPicker({
       setSuggestions([]);
       return;
     }
+    // Debouncing only stops requests being started; an in-flight one can still
+    // resolve after a newer query and overwrite the dropdown, so abort it too.
+    const controller = new AbortController();
+
     const timer = setTimeout(async () => {
       if (!config.mapboxToken) return;
       setLoading(true);
@@ -58,6 +62,7 @@ export default function MapboxLocationPicker({
           `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(
             query,
           )}.json?access_token=${config.mapboxToken}&types=place,locality,neighborhood,address&limit=5`,
+          { signal: controller.signal },
         );
         if (res.ok) {
           const data = await res.json();
@@ -65,12 +70,19 @@ export default function MapboxLocationPicker({
           setShowDropdown(true);
         }
       } catch (e) {
+        if ((e as Error)?.name === "AbortError") return;
         console.warn("Mapbox geocode error:", e);
       } finally {
-        setLoading(false);
+        // An aborted request leaves this component unmounted or superseded; the
+        // guard above returns first, so only a real settle clears the spinner.
+        if (!controller.signal.aborted) setLoading(false);
       }
     }, 400);
-    return () => clearTimeout(timer);
+
+    return () => {
+      clearTimeout(timer);
+      controller.abort();
+    };
   }, [query]);
 
   return (
