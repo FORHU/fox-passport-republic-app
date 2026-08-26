@@ -21,11 +21,17 @@ switched to `staging`. That was not noticed, so the last commits went onto
 Nothing is lost and both repos build and test clean. But the app's six commits
 bypassed review, and one of them (`purge legacy tokens`) is security-relevant.
 
-- [ ] **Decide how to land the app's 6 commits.** Either move them to a feature
-      branch (`git branch <name>` from staging, then `git reset --hard
-      origin/staging`, push the branch, open a PR) or push to staging to match
-      where the API commit already sits. The first keeps review discipline; the
-      second is consistent with what already happened on the API side.
+**Resolved:** the work is pushed as **`fix/auth-hardening-and-cleanup`**, branched
+from local `staging`. A PR can be opened at
+`https://github.com/FORHU/fox-passport-republic-app/pull/new/fix/auth-hardening-and-cleanup`.
+Nothing was pushed to shared `staging`, so review is preserved.
+
+- [ ] **Local `staging` still carries those 8 commits.** Once the PR is merged,
+      reset it: `git checkout staging && git reset --hard origin/staging`.
+      Until then the two are identical, so nothing is wrong - it is just a
+      duplicate that will look confusing later.
+- [ ] The API's one commit **is** already on `origin/staging` and did not get the
+      same treatment. Leave it or revert-and-reapply for consistency.
 
 ---
 
