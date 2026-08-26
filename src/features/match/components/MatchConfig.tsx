@@ -51,6 +51,7 @@ const MatchConfig: React.FC = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [foxer, setFoxer] = useState<Foxer | null>(null);
   const [isLoadingFoxers, setIsLoadingFoxers] = useState(true);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
 
   useEffect(() => {
     if (!foxerId) return;
@@ -616,10 +617,7 @@ const MatchConfig: React.FC = () => {
                           router.push("/checkout");
                         } else {
                           // Price TBD — match request sent, foxer will follow up
-                          toast.success(
-                            "Match request sent! The foxer will reach out with a custom quote.",
-                          );
-                          router.push("/");
+                          setShowSuccessModal(true);
                         }
                       } catch (error: any) {
                         toast.error(
@@ -644,6 +642,53 @@ const MatchConfig: React.FC = () => {
           </AnimatePresence>
         </div>
       </main>
+
+      <AnimatePresence>
+        {showSuccessModal && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-999 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4"
+            onClick={() => {
+              setShowSuccessModal(false);
+              router.push("/");
+            }}
+          >
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 10 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 10 }}
+              onClick={(e) => e.stopPropagation()}
+              className="bg-[#0f111a] border border-white/10 rounded-[2rem] p-8 max-w-md w-full space-y-6 text-center"
+            >
+              <div className="mx-auto h-16 w-16 rounded-full bg-accent/10 border border-accent/20 flex items-center justify-center">
+                <span className="material-symbols-outlined text-accent text-4xl">
+                  check_circle
+                </span>
+              </div>
+              <div className="space-y-2">
+                <h3 className="text-2xl font-display font-bold text-white">
+                  Match Request Sent!
+                </h3>
+                <p className="text-text-muted text-sm leading-relaxed">
+                  {foxer.name} will review your request and reach out with a
+                  custom quote.
+                </p>
+              </div>
+              <button
+                onClick={() => {
+                  setShowSuccessModal(false);
+                  router.push("/");
+                }}
+                className="btn-neon w-full py-4 rounded-full bg-accent text-black font-bold hover:opacity-90 active:scale-95 transition-all"
+              >
+                Done
+              </button>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };

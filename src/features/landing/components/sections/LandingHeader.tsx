@@ -5,6 +5,7 @@ import Image from "next/image";
 import { motion } from "motion/react";
 import { useAuthStore } from "@/features/auth/store/useAuthStore";
 import UserMenuButton from "@/features/user/components/UserMenuButton";
+import NotificationBell from "@/features/notifications/components/NotificationBell";
 import MobileBottomNav from "@/shared/components/layout/MobileBottomNav";
 
 interface LandingHeaderProps {
@@ -91,9 +92,12 @@ export default function LandingHeader({ onSignIn }: LandingHeaderProps) {
                   <div className="absolute inset-0 bg-white translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-out z-0"></div>
                 </button>
               )}
-              <div className="hidden md:block">
-                <UserMenuButton onSignIn={onSignIn} />
-              </div>
+              {isAuthenticated && (
+                <div className="hidden md:flex items-center gap-2 sm:gap-3">
+                  <NotificationBell />
+                  <UserMenuButton onSignIn={onSignIn} />
+                </div>
+              )}
             </div>
           </div>
         </div>

@@ -1,11 +1,13 @@
 /* eslint-disable @next/next/no-page-custom-font */
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import "cesium/Build/Cesium/Widgets/widgets.css";
 import "./globals.css";
 import { Toaster } from "sonner";
 
 // Import the Modal Component
 import AuthModal from "@/features/auth/components/AuthModal";
+import SessionExpiredToast from "@/features/auth/components/SessionExpiredToast";
 
 // Import the Master Provider
 import Providers from "@/shared/providers";
@@ -45,6 +47,9 @@ export default function RootLayout({
 
           {/* 3. Your Auth Modal sits here */}
           <AuthModal />
+          <Suspense fallback={null}>
+            <SessionExpiredToast />
+          </Suspense>
           <main className="grow overflow-x-hidden">{children}</main>
         </Providers>
       </body>
