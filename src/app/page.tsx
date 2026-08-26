@@ -38,16 +38,24 @@ async function HomeContent({ searchParams }: HomePageProps) {
   const categoryQuery =
     typeof params.category === "string" ? params.category : undefined;
 
-  const user = await getUser();
-  const canSeeVenues = userCanSeeVenues(user);
+  const isSearchMode = Boolean(locationQuery || categoryQuery);
 
-  // Fetch venues from API
-  const venues = await getVenues();
+  // The two views need different data, so only fetch what the branch we are
+  // about to render actually uses. `getVenues()` used to run unconditionally and
+  // was then discarded on the default landing page - the most visited route in
+  // the app - because that branch renders FoxerLandingPage, which takes no
+  // venues. Fetching in parallel with the profile also removes the waterfall:
+  // neither depends on the other.
+  const [user, venues, featuredTemplates] = await Promise.all([
+    getUser(),
+    isSearchMode ? getVenues() : Promise.resolve([]),
+    isSearchMode ? Promise.resolve([]) : getFeaturedEventTemplates(4),
+  ]);
+
+  const canSeeVenues = userCanSeeVenues(user);
 
   // --- FILTERING LOGIC ---
   const filteredVenues = filterVenues(venues, locationQuery, categoryQuery);
-
-  const isSearchMode = locationQuery || categoryQuery;
 
   // --- SEARCH/FILTER RESULTS VIEW ---
   if (isSearchMode) {
@@ -120,7 +128,6 @@ async function HomeContent({ searchParams }: HomePageProps) {
   }
 
   // --- NEW FOXERNEW LANDING PAGE (Default) ---
-  const featuredTemplates = await getFeaturedEventTemplates(4);
   return <FoxerLandingPage featuredTemplates={featuredTemplates} />;
 }
 
