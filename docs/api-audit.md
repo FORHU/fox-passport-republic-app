@@ -16,6 +16,12 @@ version keeps coming back otherwise.
 
 ---
 
+> **Tomorrow's queue:** [`mapanytime-comparison.md`](./mapanytime-comparison.md)
+> evaluates what to adopt from the mapanytime codebase. Short version: **do not**
+> copy its token storage (sessionStorage — its own comment says that is not XSS
+> protection, and the Flutter constraint forcing it does not apply here), **do**
+> take refresh-token rotation and Zod response contracts.
+
 ## 1. Corrections to the source audit
 
 Read this section before re-litigating anything.
