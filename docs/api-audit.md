@@ -201,7 +201,8 @@ errors, 401 only for a genuine credential mismatch.
 
 ### 3.4b Untracked money-precision migration
 
-- [ ] Commit `20260826034741_re_name`, or decide it should not exist
+- [x] Committed as `chore(db): track the money-precision migration`. The
+      caution below still applies to any environment with real rows.
 
 Not mine — it appeared during this session. It converts **every money column**
 (`Booking`, `Event`, `Payment`, `payouts`, `refunds`, asset/service bookings, all
@@ -390,12 +391,14 @@ before stashing, and both stashes applied cleanly afterwards.
       through from the request.
 - [x] Removed a dead reassignment in the proxy (`accessToken = refreshedToken`
       was never read again); `accessToken` is now `const`.
-- [ ] **`NavMobileMenu.tsx` is dead code — and has 117 lines of uncommitted edits
-      against it.** Nothing renders it, on this branch **or on `main` or
-      `staging`**. Mobile navigation is `MobileBottomNav` (`lg:hidden fixed
-      bottom-4`). Not caused by the merge resolution — verified against both
-      upstream branches. Either wire it up or delete it, but the edits currently
-      go nowhere.
+- [x] **`NavMobileMenu.tsx` was orphaned — now reconnected.** Nothing rendered it
+      on this branch, `main` or `staging`. Partly self-inflicted: resolving the
+      `Navbar` merge conflict I took upstream's side, which had dropped the
+      hamburger in favour of `MobileBottomNav`, and read the menu as dead rather
+      than as half of a feature mid-assembly. They are complementary —
+      `MobileBottomNav` carries four primary destinations plus Create, the panel
+      carries browse categories and the secondary/auth links that do not fit in
+      a five-slot bar. Hamburger restored at `lg:hidden`, panel rendered.
 
 Reviewed and found correct, for the record:
 
@@ -410,9 +413,55 @@ Reviewed and found correct, for the record:
 - The proxy is same-origin, so client calls no longer generate CORS preflights —
   the paired `OPTIONS` requests visible in DevTools earlier should disappear.
 
+### 3.4d Line endings churn on every `format`
+
+- [ ] Add `.gitattributes` with `* text=auto eol=lf`
+
+`npm run format` rewrote **199 files**; only 38 had real changes. The other 156
+were pure line-ending churn — prettier forces LF, the repo runs
+`core.autocrlf=true` and has **no `.gitattributes`**. That was unpicked by hand
+this time. Until the file exists, every format run produces a 156-file noise
+diff that collides with everyone else's branches, and the next person will not
+know to unpick it.
+
+### 3.4e Two admin UIs now have to be kept in step
+
+- [ ] Decide whether `MobileAdminView` earns its keep
+
+`MobileAdminView` is a hand-built mobile overview; `AdminContent` is the real
+dashboard. They are now both wired to real data, but they are two
+implementations of the same screen. The mockup had **already** drifted into
+pure placeholder content once — that is exactly the failure mode to expect
+again. The alternative is dropping it and letting the real admin render at all
+widths, which it is largely capable of (drawer sidebar, `lg:pl-64` offset,
+`overflow-x` on all eight tables).
+
+### 3.4f Mobile reject sends a canned reason
+
+- [ ] Give the mobile approve/reject flow a real reason input
+
+The desktop flow prompts for a rejection reason; the mobile row has no room, so
+it sends `"Rejected from mobile admin"`. If that string is ever shown to the
+Foxer whose listing was rejected, it needs to become a real input.
+
+### 3.4g Single-session logs people out across their own devices
+
+- [ ] Confirm this is the intended trade
+
+Login revokes every other session for that account, so a user with a phone and a
+laptop is signed out of one whenever they use the other. That is what was asked
+for, and it is the right answer for shared-credential abuse — but it is a
+noticeable change for anyone who genuinely works across two devices. Enabling it
+also signs out every session that existed beforehand, the first time each user
+signs in.
+
 ### 3.5 The proxy is unverified end to end
 
-- [ ] Run the app against a live API and confirm login → authed call → logout
+- [x] Login verified through the proxy against a live API and browser.
+- [ ] Still unexercised in a browser: mobile admin (drawer, approve/reject),
+      the venue mobile booking bars, the reconnected `NavMobileMenu`, password
+      change/reset revocation, and the proxy's multipart and
+      401-refresh-replay paths.
 
 Types, lint, build and unit tests pass, but **no request has actually gone
 through the proxy** — there is no running backend here. Multipart, redirects and
