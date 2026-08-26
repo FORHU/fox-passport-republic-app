@@ -6,7 +6,8 @@ import { motion } from "motion/react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { createPortal } from "react-dom";
-import { config } from "@/shared/lib/config";
+import axios from "axios";
+import api from "@/shared/lib/axios";
 
 const CATEGORIES = ["Wedding", "Corporate", "Birthday", "Social", "Other"];
 
@@ -370,18 +371,31 @@ function LocationField({
       setCities([]);
       return;
     }
+    const controller = new AbortController();
     const timer = setTimeout(() => {
-      fetch(`${config.apiUrl}/locations/search?q=${encodeURIComponent(value)}`)
-        .then((res) => res.json())
-        .then((data) => {
+      api
+        .get("/locations/search", {
+          params: { q: value },
+          signal: controller.signal,
+        })
+        .then(({ data }) => {
           if (data.status === "success") {
             setCities(data.data.locations);
           }
         })
-        .catch((err) => console.error("Failed to fetch locations:", err));
+        .catch((err) => {
+          if (axios.isCancel(err)) return;
+          console.error("Failed to fetch locations:", err);
+        });
     }, 300);
 
-    return () => clearTimeout(timer);
+    return () => {
+      clearTimeout(timer);
+      // Drop a response that is already in flight when the query changes, so a
+      // slow earlier request cannot land after a newer one and show stale
+      // suggestions.
+      controller.abort();
+    };
   }, [value]);
 
   const toggle = () => {
