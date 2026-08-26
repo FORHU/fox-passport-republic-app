@@ -1,49 +1,156 @@
 "use client";
 
-const KPI_CARDS = [
-  {
-    label: "Revenue",
-    value: "₱0",
-    icon: "payments",
-    valueColor: "#ccff00",
-    iconColor: "#ccff00",
-    iconBg: "rgba(204,255,0,0.12)",
-  },
-  {
-    label: "Bookings",
-    value: "0",
-    icon: "event_available",
-    valueColor: "#3b82f6",
-    iconColor: "#3b82f6",
-    iconBg: "rgba(59,130,246,0.15)",
-  },
-  {
-    label: "Citizens",
-    value: "0",
-    icon: "people",
-    valueColor: "#22c55e",
-    iconColor: "#22c55e",
-    iconBg: "rgba(34,197,94,0.15)",
-  },
-];
+import { useMemo, useState } from "react";
+import { toast } from "sonner";
+import api from "@/shared/lib/axios";
+import { useUIStore } from "@/shared/store/useUIStore";
+import { useAdminPendingVenues } from "@/features/admin/hooks/useAdminPendingVenues";
+import { useAdminPendingAssets } from "@/features/admin/hooks/useAdminPendingAssets";
+import { useAdminPendingServices } from "@/features/admin/hooks/useAdminPendingServices";
 
-const APPROVALS = [
-  {
-    id: 1,
-    name: "Luna Events Space",
-    type: "Venue application",
-    time: "1h ago",
-  },
-  {
-    id: 2,
-    name: "Rico Santos",
-    type: "Event Foxer role request",
-    time: "3h ago",
-  },
-  { id: 3, name: "Gear Up PH", type: "Gear listing review", time: "6h ago" },
-];
+/**
+ * The mobile admin overview.
+ *
+ * This was a static mockup: hardcoded KPI values, three invented approvals
+ * ("Luna Events Space", "Rico Santos", "Gear Up PH"), a hamburger with no
+ * onClick and approve/reject buttons that did nothing. It rendered below `lg`
+ * while the real dashboard sat behind `hidden lg:flex`, so on a phone the whole
+ * admin area was placeholder content.
+ *
+ * It now takes real stats, lists real pending items from the same hooks the
+ * desktop tables use, and its buttons hit the same endpoints.
+ */
 
-export default function MobileAdminView() {
+export interface MobileAdminStats {
+  totalUsers?: number;
+  totalBookings?: number;
+  totalRevenue?: number;
+  pendingApprovals?: number;
+}
+
+function formatCurrency(value: number) {
+  if (value >= 1_000_000) return `₱${(value / 1_000_000).toFixed(1)}M`;
+  if (value >= 1_000) return `₱${(value / 1_000).toFixed(1)}K`;
+  return `₱${value.toLocaleString()}`;
+}
+
+type PendingKind = "venue" | "asset" | "service";
+
+interface PendingItem {
+  id: string;
+  name: string;
+  type: string;
+  kind: PendingKind;
+}
+
+// Each kind approves and rejects through its own endpoint - the same ones the
+// desktop tables call.
+const ENDPOINTS: Record<PendingKind, string> = {
+  venue: "/admin/venues",
+  asset: "/admin/assets",
+  service: "/admin/services",
+};
+
+export default function MobileAdminView({
+  stats,
+}: {
+  stats?: MobileAdminStats;
+}) {
+  const setSidebarOpen = useUIStore((s) => s.setSidebarOpen);
+  const [busyId, setBusyId] = useState<string | null>(null);
+  const [handled, setHandled] = useState<Set<string>>(new Set());
+
+  const { venues: pendingVenues, refetch: refetchVenues } =
+    useAdminPendingVenues();
+  const { assets: pendingAssets, refetch: refetchAssets } =
+    useAdminPendingAssets();
+  const { services: pendingServices, refetch: refetchServices } =
+    useAdminPendingServices();
+
+  const KPI_CARDS = [
+    {
+      label: "Revenue",
+      value: formatCurrency(stats?.totalRevenue ?? 0),
+      icon: "payments",
+      valueColor: "#ccff00",
+      iconColor: "#ccff00",
+      iconBg: "rgba(204,255,0,0.12)",
+    },
+    {
+      label: "Bookings",
+      value: (stats?.totalBookings ?? 0).toLocaleString(),
+      icon: "event_available",
+      valueColor: "#3b82f6",
+      iconColor: "#3b82f6",
+      iconBg: "rgba(59,130,246,0.15)",
+    },
+    {
+      label: "Citizens",
+      value: (stats?.totalUsers ?? 0).toLocaleString(),
+      icon: "people",
+      valueColor: "#22c55e",
+      iconColor: "#22c55e",
+      iconBg: "rgba(34,197,94,0.15)",
+    },
+  ];
+
+  const APPROVALS = useMemo<PendingItem[]>(() => {
+    const rows: PendingItem[] = [
+      ...(pendingVenues ?? []).map((v: any) => ({
+        id: String(v.id),
+        name: v.title ?? v.name ?? "Untitled venue",
+        type: "Venue application",
+        kind: "venue" as const,
+      })),
+      ...(pendingAssets ?? []).map((a: any) => ({
+        id: String(a.id),
+        name: a.name ?? "Untitled asset",
+        type: "Gear listing review",
+        kind: "asset" as const,
+      })),
+      ...(pendingServices ?? []).map((sv: any) => ({
+        id: String(sv.id),
+        name: sv.name ?? "Untitled service",
+        type: "Service listing review",
+        kind: "service" as const,
+      })),
+    ];
+    // Hide rows already actioned in this session so the list responds instantly
+    // rather than waiting on a refetch.
+    return rows.filter((r) => !handled.has(`${r.kind}:${r.id}`));
+  }, [pendingVenues, pendingAssets, pendingServices, handled]);
+
+  const refetchFor = (kind: PendingKind) => {
+    if (kind === "venue") return refetchVenues();
+    if (kind === "asset") return refetchAssets();
+    return refetchServices();
+  };
+
+  const review = async (item: PendingItem, action: "approve" | "reject") => {
+    const key = `${item.kind}:${item.id}`;
+    setBusyId(key);
+    try {
+      if (action === "approve") {
+        await api.patch(`${ENDPOINTS[item.kind]}/${item.id}/approve`);
+      } else {
+        // The desktop flow collects a reason; there is no room for a prompt
+        // here, so send a clear default rather than an empty string.
+        await api.patch(`${ENDPOINTS[item.kind]}/${item.id}/reject`, {
+          reason: "Rejected from mobile admin",
+        });
+      }
+      setHandled((prev) => new Set(prev).add(key));
+      toast.success(
+        `${item.name} ${action === "approve" ? "approved" : "rejected"}`,
+      );
+      await refetchFor(item.kind);
+    } catch {
+      toast.error(`Could not ${action} ${item.name}`);
+    } finally {
+      setBusyId(null);
+    }
+  };
+
   return (
     <div
       className="lg:hidden"
@@ -64,6 +171,8 @@ export default function MobileAdminView() {
         }}
       >
         <button
+          onClick={() => setSidebarOpen(true)}
+          aria-label="Open admin navigation"
           style={{
             width: 36,
             height: 36,
@@ -73,6 +182,7 @@ export default function MobileAdminView() {
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
+            cursor: "pointer",
           }}
         >
           <span
@@ -192,6 +302,14 @@ export default function MobileAdminView() {
           Pending Approvals
         </p>
 
+        {APPROVALS.length === 0 && (
+          <p
+            style={{ fontSize: 13, color: "rgba(255,255,255,0.35)", margin: 0 }}
+          >
+            Nothing waiting for review.
+          </p>
+        )}
+
         <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
           {APPROVALS.map((item) => (
             <div
@@ -247,12 +365,15 @@ export default function MobileAdminView() {
                     margin: 0,
                   }}
                 >
-                  {item.type} · {item.time}
+                  {item.type}
                 </p>
               </div>
               {/* Action buttons */}
               <div style={{ display: "flex", gap: 8, flexShrink: 0 }}>
                 <button
+                  onClick={() => review(item, "approve")}
+                  disabled={busyId === `${item.kind}:${item.id}`}
+                  aria-label={`Approve ${item.name}`}
                   style={{
                     width: 32,
                     height: 32,
@@ -263,6 +384,7 @@ export default function MobileAdminView() {
                     alignItems: "center",
                     justifyContent: "center",
                     cursor: "pointer",
+                    opacity: busyId === `${item.kind}:${item.id}` ? 0.4 : 1,
                   }}
                 >
                   <span
@@ -273,6 +395,9 @@ export default function MobileAdminView() {
                   </span>
                 </button>
                 <button
+                  onClick={() => review(item, "reject")}
+                  disabled={busyId === `${item.kind}:${item.id}`}
+                  aria-label={`Reject ${item.name}`}
                   style={{
                     width: 32,
                     height: 32,
@@ -283,6 +408,7 @@ export default function MobileAdminView() {
                     alignItems: "center",
                     justifyContent: "center",
                     cursor: "pointer",
+                    opacity: busyId === `${item.kind}:${item.id}` ? 0.4 : 1,
                   }}
                 >
                   <span
