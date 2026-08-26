@@ -1,5 +1,4 @@
 ﻿import { cookies } from "next/headers";
-import { redirect } from "next/navigation";
 import { config } from "@/shared/lib/config";
 import { requireAuth } from "./auth";
 
@@ -66,10 +65,21 @@ async function tryRefreshToken(): Promise<string | null> {
   }
 }
 
-async function clearAuthAndRedirect() {
-  // Cookie deletion is only allowed in Server Actions/Route Handlers, not Server Components.
-  // The client-side auth store clears localStorage on the next request after a 401.
-  redirect("/login");
+/**
+ * Deliberately does NOT redirect.
+ *
+ * `redirect()` signals by throwing, and every one of the 27 fetchers in this
+ * file wraps `serverFetch` in a try/catch - so a redirect raised here was caught
+ * as if it were a fetch failure, logged as "Failed to fetch ...", and swallowed.
+ * The page then rendered with empty data and returned 200 instead of sending the
+ * user anywhere. It also targeted `/login`, which is not a route in this app.
+ *
+ * Authentication belongs to the page-level guards (`requireAuth` / `requireHost`
+ * / `requireAdmin`), which run before any of this and are not inside a catch.
+ */
+function authFailed(): null {
+  console.warn("[API] 401 and refresh failed — treating as unauthenticated");
+  return null;
 }
 
 async function serverFetch(
@@ -116,7 +126,7 @@ async function serverFetch(
         return null;
       }
     } else {
-      await clearAuthAndRedirect();
+      return authFailed();
     }
   }
 
@@ -150,7 +160,14 @@ export async function getServerApi() {
       },
       cache: "no-store",
     });
-    if (!res.ok) throw new Error(`${res.status} ${res.statusText}`);
+    if (!res.ok) {
+      // Attach the status so getUser can distinguish an authoritative 401 from
+      // a transport failure - they call for opposite behaviour.
+      const err = Object.assign(new Error(`${res.status} ${res.statusText}`), {
+        status: res.status,
+      });
+      throw err;
+    }
     const body = await res.json();
     return { data: body };
   };
