@@ -1,7 +1,13 @@
+import { cache } from "react";
 import { redirect } from "next/navigation";
 import { getServerApi } from "./data";
 
-export async function getUser() {
+// Memoised per render pass. requireAuth/requireHost are called by a page and
+// then again inside the data helpers it calls, so the profile lookup - a
+// network round trip plus a cookie-parsing fallback - would otherwise run
+// several times to answer the same question. `cache` collapses that to one
+// resolution per request without changing any call site.
+export const getUser = cache(async () => {
   try {
     const api = await getServerApi();
     const { data } = await api.get("/profile");
@@ -17,7 +23,7 @@ export async function getUser() {
     }
     return null;
   }
-}
+});
 
 export async function requireAuth() {
   const user = await getUser();
