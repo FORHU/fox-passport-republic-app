@@ -56,7 +56,7 @@ export default function NotificationBell() {
       </button>
 
       {isOpen && (
-        <div className="absolute right-0 top-full mt-2 w-80 max-h-96 overflow-y-auto rounded-2xl border border-white/10 bg-[#0f111a] shadow-2xl z-50 animate-in fade-in slide-in-from-top-2 duration-200">
+        <div className="absolute right-0 top-full mt-2 w-80 max-h-96 overflow-y-auto hide-scrollbar rounded-2xl border border-white/10 bg-[#0f111a] shadow-2xl z-50 animate-in fade-in slide-in-from-top-2 duration-200">
           <div className="flex items-center justify-between px-4 py-3 border-b border-white/5">
             <h3 className="text-sm font-bold text-white">Notifications</h3>
             {unreadCount > 0 && (
@@ -90,7 +90,7 @@ export default function NotificationBell() {
                     onClick={() => handleItemClick(n)}
                     className={`px-4 py-3 cursor-pointer hover:bg-white/5 transition-all duration-200 ${
                       !n.isRead ? "bg-white/3" : ""
-                    } ${isExpanded ? "bg-white/6 border-l-2 border-[#ccff00]" : ""}`}
+                    } ${isExpanded ? "bg-[#ccff00]/5 ring-1 ring-inset ring-[#ccff00]/40" : ""}`}
                   >
                     <div className="flex items-start gap-2">
                       {!n.isRead && (

@@ -281,6 +281,14 @@ export default function SearchFilters() {
                   : (e.target as HTMLInputElement).value,
             })
           }
+          onKeyUp={(e) =>
+            updateParams({
+              maxPrice:
+                (e.target as HTMLInputElement).value === "0"
+                  ? ""
+                  : (e.target as HTMLInputElement).value,
+            })
+          }
           className="w-full accent-[#ccff00]"
         />
       </div>
