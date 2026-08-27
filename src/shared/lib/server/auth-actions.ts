@@ -3,7 +3,7 @@
 import { cookies } from "next/headers";
 import axios from "axios";
 import { config as appConfig } from "@/shared/lib/config";
-import { LoginResponse } from "@/features/auth/types/auth";
+import { LoginResponse, User } from "@/features/auth/types/auth";
 
 /**
  * Server action to set authentication cookies
@@ -59,6 +59,34 @@ export async function setAuthCookies(loginResponse: LoginResponse) {
   });
 
   return true;
+}
+
+/**
+ * Server action that finishes the Google OAuth redirect flow.
+ *
+ * The API hands the browser a fresh access/refresh token pair as URL params
+ * on `/auth/google/callback` (it cannot set httpOnly cookies for this app's
+ * origin — it runs on a different port). This exchanges those tokens for the
+ * user's profile and writes the same cookies `setAuthCookies` would, so the
+ * rest of the app can't tell a Google session from a password one.
+ */
+export async function completeGoogleAuth(
+  accessToken: string,
+  refreshToken: string,
+): Promise<User | null> {
+  try {
+    const { data: profileData } = await axios.get(
+      `${appConfig.apiUrl}/profile`,
+      { headers: { Authorization: `Bearer ${accessToken}` } },
+    );
+    const user: User | undefined = profileData?.data || profileData;
+    if (!user) return null;
+
+    await setAuthCookies({ accessToken, refreshToken, user });
+    return user;
+  } catch {
+    return null;
+  }
 }
 
 /**
