@@ -1,7 +1,8 @@
 # Responsive Plan — Mobile / Tablet / Laptop
 
-Status: proposed
+Status: proposed — baseline re-measured 27 August 2026 at `ccfcf75`
 Scope: `fox-passport-republic-app`
+Role: input to [`TOMORROW.md`](./TOMORROW.md), which holds the running order.
 
 This plan is written against the current code, not a generic checklist. Every
 claim below was verified in the tree.
@@ -10,17 +11,23 @@ claim below was verified in the tree.
 
 ## 1. Where we actually are
 
-| Signal | Value |
-|---|---|
-| Routes (`page.tsx`) | 66 |
-| `.tsx` files in `src/` | 267 |
-| Files with **no** breakpoint prefix at all | **145 (54%)** |
-| `sm:` / `md:` / `lg:` / `xl:` / `2xl:` usages | 524 / 296 / 177 / **7** / **0** |
-| Admin tables with `overflow-x` guards | 10 of 10 |
-| Touch / pointer event handlers in the whole app | **0** |
+Re-measured 27 August 2026. The original figures (26 Aug, in brackets) were taken
+against a tree that has since grown ~15%, so the *proportions* below are the part
+worth trusting — not any single count.
 
-The `xl` / `2xl` numbers are the story: layouts are built for one desktop width
-and one phone width, with very little in between and nothing above ~1280px.
+| Signal | Value | Was |
+|---|---|---|
+| Routes (`page.tsx`) | **71** | 66 |
+| `.tsx` files in `src/` | **308** | 267 |
+| Files with **no** breakpoint prefix at all | **159 (52%)** | 145 (54%) |
+| `sm:` / `md:` / `lg:` / `xl:` / `2xl:` usages | 683 / 292 / 261 / **7** / **0** | 524 / 296 / 177 / 7 / 0 |
+| Admin tables with `overflow-x` guards | 8 of 8 | *"10 of 10" — miscounted; there are eight `Admin*Table.tsx` files* |
+| Touch / pointer event handlers in the whole app | **1 file** | 0 |
+
+The `xl` / `2xl` numbers are still the story, and a month of work has not moved
+them: layouts are built for one desktop width and one phone width, with very
+little in between and **nothing at all above ~1280px**. The growth since the
+first pass went into `sm:` and `lg:`, not the wide end.
 
 ---
 
@@ -68,15 +75,50 @@ mobile-native workflow in the product.
 
 `asset` at 4/5 is effectively an unstyled-for-mobile feature.
 
-### 2.3 Admin — desktop-only is an acceptable answer
+### 2.3 Admin — mobile-*capable*, but not a mobile *target*
+
+> **Corrected 27 August 2026.** This section previously read *"desktop-only is an
+> acceptable answer"* and recommended scoping admin to `lg` and above. **That was
+> wrong.** It was inferred from counting breakpoint prefixes per file — the same
+> metric that missed the experience builder entirely (see §4.2). Checked directly,
+> admin was already ~90% mobile-capable, so adopting the old advice would have
+> meant **deleting working code**. Full workings in
+> [`api-audit.md`](./api-audit.md) §3.4c.
 
 | Feature | Files w/o breakpoints | Notes |
 |---|---|---|
 | `admin` | 3 / 16 | `AdminBookingsTable`, `AdminContent`, `AdminAuthGuard` |
 
-All 10 admin tables already have `overflow-x` guards. Admin is in better shape
-than most citizen-facing features. Recommend explicitly scoping admin to
-`lg` and above rather than spending effort here.
+What was already true before any work:
+
+| Piece | State |
+|---|---|
+| Sidebar | Already an off-canvas drawer (`-translate-x-full` / `lg:translate-x-0`) |
+| Content offset | `lg:pl-64` correctly drops the gutter below `lg` |
+| Tables | All 8 table files carry `overflow-x` guards |
+| Charts | Percentage-based CSS bars, not fixed SVG — they scale |
+| **KPI cards** | **The one genuinely broken piece** — fixed, see below |
+
+`AdminKPISection` was `grid-cols-1` at base with full desktop sizing (`p-6`, a
+48px icon block, `text-4xl` values, a 100px decorative glyph), so four short
+numbers each took a ~180px full-width row. One component made the whole page look
+unbuilt.
+
+**The guidance:** admin stays mobile-*capable* — the layout must not break at any
+width, which is cheap and already true — but it is not a mobile *target*. Do not
+optimise the data-dense tables for phones; a nine-column bookings table on a
+400px screen scrolls horizontally whatever you do, and that is fine for a
+spot-check.
+
+Already done, both KPI rows (the Foxer dashboard's `KPICards` was worse — it did
+not go 2-up until `md`, so even a large phone in landscape got one column):
+
+- [x] `AdminKPISection` — 2-up at base, padding/type/icons scale up rather than
+      starting at desktop size
+- [x] `KPICards` — same treatment, so the two KPI rows behave identically
+- [x] `AdminContent` page padding `p-8` → `p-4 sm:p-6 lg:p-8`
+- [x] `AdminChartsSection` — card padding, gaps and bar-chart gutters scaled;
+      seven bars with 16px gutters was mostly gutter on a phone
 
 ### 2.4 Shared primitives — fix these first, they lift everything
 
@@ -116,8 +158,9 @@ pattern, apply it four times.
 
 ### 2.6 Duplicated work warning
 
-`CONTEXT.md` states `/host` and `/mayor` are redirect shims. That is only
-partly true:
+`/host` and `/mayor` are widely assumed to be redirect shims — the assumption was
+attributed to `CONTEXT.md` here, which does not in fact mention routes at all.
+Whatever its source, it is only partly true:
 
 | Route | Reality |
 |---|---|
@@ -129,23 +172,38 @@ partly true:
 Deduplicate these **before** the responsive sweep, or the same layout work gets
 done twice and the copies drift.
 
+> **Still true on 27 August, with one wrinkle.** The two Stripe clients are still
+> content-identical, but they no longer compare equal: the `/host` pair is CRLF
+> and the `/creator-dashboard` pair is LF, so `diff` reports every line as
+> changed. That is fallout from the `.gitattributes` added without
+> `--renormalize` ([`api-audit.md`](./api-audit.md) §4.8) — files normalise as
+> they are touched. Compare with `diff --strip-trailing-cr` until both sides have
+> been rewritten, or the duplication looks like divergence.
+
 ---
 
 ## 3. Bugs to fix before any new work
 
 Defects, not gaps. Cheap, and they should land first.
 
-### 3.1 Navbar has a dead zone at 640–767px
+### 3.1 Navbar dead zone at 640–767px
 
-- Desktop menu is `hidden md:flex` → appears at **>=768px** — `src/shared/components/layout/Navbar.tsx:43`
-- Hamburger is `flex sm:hidden` → disappears at **>=640px** — `src/shared/components/layout/Navbar.tsx:91`
+- [x] **Fixed — but at `lg`, not the `md` this section prescribed.**
 
-Between 640px and 767px **there is no navigation at all**. That band covers
-small tablets and most phones in landscape. The mobile menu panel itself is
-`md:hidden` (`navbar/NavMobileMenu.tsx:47`), so the panel already agrees with
-`md` — only the toggle button is wrong.
+The defect as found: the hamburger was `flex sm:hidden` (gone at >=640px) while
+the menu panel was `md:hidden`, so between 640px and 767px there was **no
+navigation at all** — a band covering small tablets and most phones in landscape.
 
-**Fix:** change the hamburger to `md:hidden`. One-word change.
+The fix that shipped moved *both* sides to `lg` rather than both to `md`:
+
+| | Now | Line |
+|---|---|---|
+| Hamburger | `flex lg:hidden` | `src/shared/components/layout/Navbar.tsx:97` |
+| Menu panel | `lg:hidden` | `navbar/NavMobileMenu.tsx:47` |
+
+They agree, so the dead zone is gone. But that decision moved the navigation
+breakpoint to **1024**, which is what §3.3 is now about — do not "re-fix" this
+one to `md` without reading that first.
 
 ### 3.2 Event builder sidebars vanish with no way to reopen them
 
@@ -164,15 +222,26 @@ page becomes a dead form.
 toggle buttons in `EventHeader`, passing `inDrawer`. The components are already
 built for this — only the host page is missing.
 
-### 3.3 Breakpoint semantics disagree with each other
+### 3.3 Breakpoint semantics still disagree — the numbers just changed
 
-| Source | Mobile cutoff |
-|---|---|
-| `src/shared/hooks/useMobile.ts` | 768 (`md`) |
-| Navbar hamburger | 640 (`sm`) |
-| `tailwind.config.ts` `2xl` | overridden to 1400px |
+- [ ] **Decide: is the mobile/desktop line `md` (768) or `lg` (1024)?**
 
-Pick `md` (768) as *the* mobile/desktop line and make everything agree.
+| Source | Mobile cutoff | Was (26 Aug) |
+|---|---|---|
+| `src/shared/hooks/useMobile.ts:5` | 768 (`md`) | 768 (`md`) |
+| Navbar hamburger + `NavMobileMenu` | **1024 (`lg`)** | 640 (`sm`) |
+| `MobileBottomNav` | 1024 (`lg`) | — |
+| `tailwind.config.ts` `2xl` | overridden to 1400px | same |
+
+Fixing §3.1 closed the gap between the hamburger and its own panel, but it did
+so by moving navigation to `lg` — so the disagreement with `useMobile` survived
+and only its numbers changed. §5 below still declares `md` "the mobile/desktop
+line", which the shipped navbar now contradicts.
+
+This is a real decision, not a defect: `lg` is defensible for a nav bar with this
+many items, and `MobileBottomNav` already assumes it. Either move `useMobile` and
+§5 to `lg`, or move the navbar back to `md`. **Do not leave two answers in the
+tree** — that is what produced the original dead zone.
 
 ---
 
@@ -211,6 +280,25 @@ Unlike the event builder, the venue builder panes are hardcoded:
 for the canvas. Needs the same `inDrawer` treatment the event builder already
 has — copy that pattern rather than inventing a second one.
 
+### 4.2 The experience builder — the one on the citizen path
+
+Added 27 August 2026. The original sweep missed this entirely: it counts
+breakpoint prefixes per file, and this component has twelve, so it scored as
+"handled". It is drag-and-drop, so it does nothing under a finger — and unlike
+the event and venue builders, **a citizen hits it while browsing a venue**.
+
+It exists twice, and neither copy is a file named `CustomExperienceBuilder`, so
+grepping that name finds nothing and reads as "already done":
+
+- `src/features/venue/components/detail/ExperienceBuilder.tsx` — the component,
+  rendered from `VenueDetailClient`
+- `CustomExperienceBuilder` — declared **inline** at
+  `src/app/event/[eventId]/page.tsx:21`, inside a 1,483-line page, with its own
+  `draggable` / `onDragStart` handlers
+
+Dedupe before fixing, or the touch work gets done twice. Same Option A / Option B
+choice as §4 above applies once there is one copy.
+
 ---
 
 ## 5. Breakpoint contract
@@ -222,7 +310,7 @@ Tailwind defaults, documented so people stop guessing. Only `2xl` is customised
 |---|---|---|---|
 | *(base)* | 0 | Phone portrait | Single column. Drawers, not sidebars. Bottom-anchored primary actions. |
 | `sm` | 640 | Phone landscape / small tablet | Still single column; allow 2-up cards. |
-| `md` | 768 | Tablet portrait | **The mobile/desktop line.** Sidebars may dock. Nav switches here. |
+| `md` | 768 | Tablet portrait | **The mobile/desktop line.** Sidebars may dock. ~~Nav switches here.~~ — nav now switches at `lg`; see §3.3, undecided. |
 | `lg` | 1024 | Tablet landscape / small laptop | Two-pane layouts. Tables stop scrolling horizontally. |
 | `xl` | 1280 | Laptop / desktop | Three-pane builders. Full blueprint sidebar. |
 | `2xl` | 1400 | Large desktop | Cap content width; do not let line lengths run away. |
@@ -240,8 +328,10 @@ Rules:
 
 ### Phase 0 — Defects and dedup (small, do first)
 
-- [ ] Navbar hamburger `sm:hidden` to `md:hidden` (3.1)
-- [ ] Align `useIsMobile` / navbar / docs on `md` = 768 (3.3)
+- [x] Navbar hamburger dead zone closed — shipped as `lg:hidden` on both the
+      toggle and the panel, not the `md` originally prescribed (3.1)
+- [ ] Align `useMobile` / navbar / §5 on one line — `md` (768) or `lg` (1024).
+      Still two answers in the tree (3.3)
 - [ ] Interstitial below `md` for both builders (4, Option B)
 - [ ] Deduplicate `/host/stripe-*` and decide on `/mayor/*` (2.6)
 
@@ -284,4 +374,5 @@ Rules:
 - Rewriting the drag-and-drop engine (section 4, Option A) — sized on its own
 - Native apps, PWA, or offline support
 - Cesium map touch handling — vendor surface, needs its own investigation
-- Admin below `lg` (see 2.3)
+- ~~Admin below `lg`~~ — that advice was wrong and has been replaced; admin is
+  mobile-*capable* and stays that way (see 2.3)
