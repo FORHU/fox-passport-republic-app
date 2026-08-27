@@ -151,12 +151,13 @@ async function fetchAssets(): Promise<LiveService[]> {
 
 // ─── Hook ─────────────────────────────────────────────────────────────────────
 
-export function useExperienceBuilderData() {
+export function useExperienceBuilderData(enabled = true) {
   const { data: foxers = [], isLoading: loadingFoxers } = useQuery<LiveFoxer[]>(
     {
       queryKey: ["experience-builder-foxers"],
       queryFn: fetchFoxers,
       staleTime: 1000 * 60 * 5,
+      enabled,
     },
   );
 
@@ -166,6 +167,7 @@ export function useExperienceBuilderData() {
     queryKey: ["experience-builder-services"],
     queryFn: fetchServices,
     staleTime: 1000 * 60 * 5,
+    enabled,
   });
 
   const { data: assets = [], isLoading: loadingAssets } = useQuery<
@@ -174,6 +176,7 @@ export function useExperienceBuilderData() {
     queryKey: ["experience-builder-assets"],
     queryFn: fetchAssets,
     staleTime: 1000 * 60 * 5,
+    enabled,
   });
 
   // Merge services + assets into one flat pool, keyed by sidebar tab

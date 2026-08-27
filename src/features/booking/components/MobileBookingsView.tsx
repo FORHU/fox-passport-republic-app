@@ -1,83 +1,49 @@
 "use client";
 
-import React from "react";
+import React, { useEffect, useState } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
+import { useAuthStore } from "@/features/auth/store/useAuthStore";
+import { fetchUserBookings } from "@/features/booking/api/bookings";
 
-type BookingStatus = "confirmed" | "waitlisted" | "completed" | "cancelled";
-
-interface BookingItem {
-  id: string;
-  name: string;
-  meta: string;
-  status: BookingStatus;
-}
-
-const STATUS_STYLE: Record<
-  BookingStatus,
-  { bg: string; color: string; label: string }
-> = {
-  confirmed: {
-    bg: "rgba(204,255,0,0.12)",
-    color: "#ccff00",
-    label: "Confirmed",
-  },
-  waitlisted: {
-    bg: "rgba(234,179,8,0.12)",
-    color: "#facc15",
-    label: "Waitlisted",
-  },
+const STATUS_STYLE: Record<string, { bg: string; color: string; label: string }> = {
+  pending: { bg: "rgba(234,179,8,0.12)", color: "#facc15", label: "Pending" },
+  confirmed: { bg: "rgba(204,255,0,0.12)", color: "#ccff00", label: "Confirmed" },
+  active: { bg: "rgba(74,222,128,0.12)", color: "#4ade80", label: "Active" },
   completed: {
     bg: "rgba(255,255,255,0.08)",
     color: "rgba(255,255,255,0.5)",
     label: "Completed",
   },
-  cancelled: {
-    bg: "rgba(239,68,68,0.12)",
-    color: "#f87171",
-    label: "Cancelled",
+  cancelled: { bg: "rgba(239,68,68,0.12)", color: "#f87171", label: "Cancelled" },
+  disputed: { bg: "rgba(249,115,22,0.12)", color: "#fb923c", label: "Disputed" },
+  refunded: { bg: "rgba(168,85,247,0.12)", color: "#c084fc", label: "Refunded" },
+  refund_failed: {
+    bg: "rgba(249,115,22,0.12)",
+    color: "#fb923c",
+    label: "Refund Failed",
   },
 };
 
-const PLACEHOLDER: BookingItem[] = [
-  {
-    id: "1",
-    name: "Neon Nights Reception",
-    meta: "Aug 14 · Venue booking",
-    status: "confirmed",
-  },
-  {
-    id: "2",
-    name: "DJ Marco — Live Set",
-    meta: "Aug 14 · Service add-on",
-    status: "confirmed",
-  },
-  {
-    id: "3",
-    name: "Garden Pavilion",
-    meta: "Sep 2 · Venue booking",
-    status: "waitlisted",
-  },
-  {
-    id: "4",
-    name: "Pro Sound Rig",
-    meta: "Jul 20 · Asset rental",
-    status: "completed",
-  },
-  {
-    id: "5",
-    name: "Skyline Loft",
-    meta: "Jul 2 · Venue booking",
-    status: "cancelled",
-  },
-];
-
-interface Props {
-  bookings?: BookingItem[];
-}
-
-export default function MobileBookingsView({ bookings = PLACEHOLDER }: Props) {
+export default function MobileBookingsView() {
   const router = useRouter();
+  const { user, isLoading: authLoading } = useAuthStore();
+  const [bookings, setBookings] = useState<any[]>([]);
+  const [isInitial, setIsInitial] = useState(true);
+
+  useEffect(() => {
+    if (authLoading) return;
+
+    const userId = user?.id || user?.userId;
+    if (!userId) {
+      router.replace("/");
+      return;
+    }
+
+    fetchUserBookings(userId, 1, 20)
+      .then((res) => setBookings(res.bookings))
+      .finally(() => setIsInitial(false));
+  }, [authLoading, user?.id, user?.userId, router]);
 
   return (
     <div
@@ -136,74 +102,115 @@ export default function MobileBookingsView({ bookings = PLACEHOLDER }: Props) {
           gap: 10,
         }}
       >
-        {bookings.map((b) => {
-          const s = STATUS_STYLE[b.status];
-          return (
-            <button
-              key={b.id}
+        {isInitial || authLoading ? (
+          <div
+            style={{ display: "flex", justifyContent: "center", padding: "60px 0" }}
+          >
+            <span
               style={{
-                display: "flex",
-                gap: 12,
-                textAlign: "left",
-                width: "100%",
-                background: "rgba(255,255,255,0.04)",
-                border: "1px solid rgba(255,255,255,0.07)",
-                borderRadius: 16,
-                padding: 12,
-                cursor: "pointer",
+                width: 32,
+                height: 32,
+                borderRadius: "50%",
+                border: "2px solid rgba(255,255,255,0.15)",
+                borderTopColor: "#ccff00",
+                animation: "spin 0.8s linear infinite",
               }}
-              onClick={() => router.push(`/booking/${b.id}`)}
+            />
+            <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+          </div>
+        ) : bookings.length === 0 ? (
+          <div style={{ textAlign: "center", padding: "60px 20px" }}>
+            <span
+              className="material-symbols-outlined"
+              style={{ fontSize: 48, color: "rgba(255,255,255,0.2)" }}
             >
-              {/* Thumbnail */}
-              <div
-                className="stripe"
-                style={{
-                  width: 52,
-                  height: 52,
-                  borderRadius: 12,
-                  flexShrink: 0,
-                }}
-              />
+              book_online
+            </span>
+            <p style={{ fontSize: 13, fontWeight: 700, margin: "12px 0 4px" }}>
+              No bookings yet
+            </p>
+            <p style={{ fontSize: 11, color: "rgba(255,255,255,0.4)" }}>
+              Start by exploring venues and booking your next event.
+            </p>
+          </div>
+        ) : (
+          bookings.map((b) => {
+            const s = STATUS_STYLE[b.status] ?? STATUS_STYLE.pending;
+            const startDate = b.startAt
+              ? new Date(b.startAt).toLocaleDateString("en-PH", {
+                  month: "short",
+                  day: "numeric",
+                })
+              : "—";
+            const eventName = b.event?.name || "Venue Booking";
 
-              {/* Info */}
-              <div style={{ flex: 1, minWidth: 0 }}>
-                <p
+            return (
+              <button
+                key={b.id}
+                style={{
+                  display: "flex",
+                  gap: 12,
+                  textAlign: "left",
+                  width: "100%",
+                  background: "rgba(255,255,255,0.04)",
+                  border: "1px solid rgba(255,255,255,0.07)",
+                  borderRadius: 16,
+                  padding: 12,
+                  cursor: "pointer",
+                }}
+                onClick={() => router.push(`/booking/${b.id}`)}
+              >
+                {/* Thumbnail */}
+                <div
+                  className="stripe"
                   style={{
-                    fontSize: 12,
-                    fontWeight: 700,
-                    color: "#fff",
-                    margin: 0,
+                    width: 52,
+                    height: 52,
+                    borderRadius: 12,
+                    flexShrink: 0,
                   }}
-                >
-                  {b.name}
-                </p>
-                <p
-                  style={{
-                    fontSize: 10,
-                    color: "rgba(255,255,255,0.4)",
-                    margin: "3px 0 6px",
-                  }}
-                >
-                  {b.meta}
-                </p>
-                <span
-                  style={{
-                    fontSize: 9,
-                    fontWeight: 800,
-                    textTransform: "uppercase",
-                    letterSpacing: "0.5px",
-                    padding: "3px 9px",
-                    borderRadius: 999,
-                    background: s.bg,
-                    color: s.color,
-                  }}
-                >
-                  {s.label}
-                </span>
-              </div>
-            </button>
-          );
-        })}
+                />
+
+                {/* Info */}
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <p
+                    style={{
+                      fontSize: 12,
+                      fontWeight: 700,
+                      color: "#fff",
+                      margin: 0,
+                    }}
+                  >
+                    {eventName}
+                  </p>
+                  <p
+                    style={{
+                      fontSize: 10,
+                      color: "rgba(255,255,255,0.4)",
+                      margin: "3px 0 6px",
+                    }}
+                  >
+                    {startDate} · ₱{b.totalAmount?.toLocaleString() ?? "0"}
+                  </p>
+                  <span
+                    style={{
+                      fontSize: 9,
+                      fontWeight: 800,
+                      textTransform: "uppercase",
+                      letterSpacing: "0.5px",
+                      padding: "3px 9px",
+                      borderRadius: 999,
+                      background: s.bg,
+                      color: s.color,
+                    }}
+                  >
+                    {s.label}
+                  </span>
+                </div>
+              </button>
+            );
+          })
+        )}
       </div>
     </div>
   );
