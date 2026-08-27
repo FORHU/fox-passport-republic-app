@@ -19,6 +19,7 @@ import {
   SignupFormData,
 } from "@/shared/lib/schema";
 import { useAuthStore } from "@/features/auth/store/useAuthStore";
+import { config } from "@/shared/lib/config";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -105,7 +106,9 @@ function GoogleButton({ disabled }: { disabled?: boolean }) {
         cursor: "pointer",
         boxSizing: "border-box",
       }}
-      onClick={() => toast.info("Google sign-in coming soon.")}
+      onClick={() => {
+        window.location.href = `${config.apiUrl}/auth/google`;
+      }}
     >
       <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
         <path

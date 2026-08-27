@@ -8,7 +8,7 @@ function TemplateCard({ item }: { item: any }) {
   return (
     <Link
       href={`/event/${item.id}`}
-      className="group bg-[#11121a] border border-white/10 rounded-2xl overflow-hidden hover:border-[#ccff00]/50 transition-colors"
+      className="group bg-[#11121a] border border-white/10 rounded-2xl overflow-hidden hover:border-[#ccff00]/50 transition-colors shrink-0 w-[70vw] max-w-64 sm:w-auto sm:max-w-none snap-center"
     >
       <div className="h-44 bg-white/5 relative overflow-hidden">
         {item.images && item.images.length > 0 ? (
@@ -52,11 +52,11 @@ function TemplateCard({ item }: { item: any }) {
             </span>
             {item.targetCity || item.city || "Location TBD"}
           </span>
-          {item.price && (
+          {item.price ? (
             <span className="font-bold text-[#ccff00] text-sm">
               ₱{item.price}
             </span>
-          )}
+          ) : null}
         </div>
       </div>
     </Link>
@@ -89,11 +89,11 @@ export default function EventTemplatesSection({
       </div>
 
       {isFetching && items.length === 0 ? (
-        <div className="grid grid-cols-3 gap-6">
+        <div className="flex overflow-x-auto gap-4 pb-4 snap-x snap-mandatory hide-scrollbar sm:grid sm:grid-cols-2 lg:grid-cols-3 sm:gap-6 sm:pb-0 sm:overflow-visible">
           {Array.from({ length: 6 }).map((_, i) => (
             <div
               key={i}
-              className="bg-[#11121a] border border-white/10 rounded-2xl h-64 animate-pulse"
+              className="bg-[#11121a] border border-white/10 rounded-2xl h-64 animate-pulse shrink-0 w-[70vw] max-w-64 sm:w-auto sm:max-w-none snap-center"
             />
           ))}
         </div>
@@ -112,7 +112,7 @@ export default function EventTemplatesSection({
         </div>
       ) : (
         <>
-          <div className="grid grid-cols-3 gap-6">
+          <div className="flex overflow-x-auto gap-4 pb-4 snap-x snap-mandatory hide-scrollbar sm:grid sm:grid-cols-2 lg:grid-cols-3 sm:gap-6 sm:pb-0 sm:overflow-visible">
             {items.map((item: any) => (
               <TemplateCard key={item.id} item={item} />
             ))}
