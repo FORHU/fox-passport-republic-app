@@ -50,7 +50,7 @@ export default function RootLayout({
           <Suspense fallback={null}>
             <SessionExpiredToast />
           </Suspense>
-          <main className="grow overflow-x-hidden">{children}</main>
+          <main className="grow overflow-x-clip">{children}</main>
         </Providers>
       </body>
     </html>

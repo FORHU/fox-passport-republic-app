@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import Image from "next/image";
+import { usePathname } from "next/navigation";
 import { motion } from "motion/react";
 import { useAuthStore } from "@/features/auth/store/useAuthStore";
 import UserMenuButton from "@/features/user/components/UserMenuButton";
@@ -10,10 +11,25 @@ import MobileBottomNav from "@/shared/components/layout/MobileBottomNav";
 
 interface LandingHeaderProps {
   onSignIn: () => void;
+  /** When provided, renders an inline search input in place of the search icon. */
+  search?: {
+    value: string;
+    onChange: (value: string) => void;
+    placeholder?: string;
+  };
 }
 
-export default function LandingHeader({ onSignIn }: LandingHeaderProps) {
+const NAV_TABS = [
+  { label: "Explore", href: "/" },
+  { label: "Foxers", href: "/search" },
+  { label: "Community", href: "/user/passport" },
+];
+
+export default function LandingHeader({ onSignIn, search }: LandingHeaderProps) {
   const { isAuthenticated } = useAuthStore();
+  const pathname = usePathname();
+  const isTabActive = (href: string) =>
+    href === "/" ? pathname === "/" : pathname?.startsWith(href);
 
   return (
     <>
@@ -29,9 +45,9 @@ export default function LandingHeader({ onSignIn }: LandingHeaderProps) {
             {/* Logo */}
             <Link
               href="/"
-              className="flex items-center gap-2 sm:gap-3 group cursor-pointer relative"
+              className="flex items-center gap-2 sm:gap-3 group cursor-pointer relative shrink-0"
             >
-              <div className="flex h-8 w-8 sm:h-12 sm:w-12 items-center justify-center group-hover:scale-110 transition-transform duration-300 overflow-hidden">
+              <div className="flex h-8 w-8 sm:h-12 sm:w-12 items-center justify-center group-hover:scale-110 transition-transform duration-300 overflow-hidden shrink-0">
                 <Image
                   src="/foxonlylogo.png"
                   alt="FoxPassport Logo"
@@ -41,7 +57,7 @@ export default function LandingHeader({ onSignIn }: LandingHeaderProps) {
                 />
               </div>
               <div className="relative">
-                <h2 className="text-base sm:text-2xl font-display font-bold tracking-tight text-white group-hover:text-[#ccff00] transition-colors">
+                <h2 className="text-sm sm:text-2xl font-display font-bold tracking-tight text-white group-hover:text-[#ccff00] transition-colors">
                   FoxPassport
                 </h2>
                 <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-[#ccff00] group-hover:w-full transition-all duration-300"></span>
@@ -50,37 +66,50 @@ export default function LandingHeader({ onSignIn }: LandingHeaderProps) {
 
             {/* Desktop Navigation */}
             <nav className="hidden md:flex items-center gap-2 bg-black/20 p-1.5 rounded-full border border-white/5">
-              <a
-                className="px-6 py-2.5 rounded-full text-sm font-bold text-black bg-[#ccff00] hover:bg-[#b8e600] hover:shadow-[0_0_15px_rgba(204,255,0,0.5)] transition-all transform hover:-translate-y-0.5"
-                href="#"
-              >
-                Explore
-              </a>
-              <Link
-                href="/search"
-                className="px-6 py-2.5 rounded-full text-sm font-medium text-white/70 hover:text-white hover:bg-white/10 transition-all hover:scale-105"
-              >
-                Foxers
-              </Link>
-              <Link
-                href="/passport"
-                className="px-6 py-2.5 rounded-full text-sm font-medium text-white/70 hover:text-white hover:bg-white/10 transition-all hover:scale-105"
-              >
-                Community
-              </Link>
+              {NAV_TABS.map((tab) => {
+                const active = isTabActive(tab.href);
+                return (
+                  <Link
+                    key={tab.href}
+                    href={tab.href}
+                    className={
+                      active
+                        ? "px-6 py-2.5 rounded-full text-sm font-bold text-black bg-[#ccff00] hover:bg-[#b8e600] hover:shadow-[0_0_15px_rgba(204,255,0,0.5)] transition-all transform hover:-translate-y-0.5"
+                        : "px-6 py-2.5 rounded-full text-sm font-medium text-white/70 hover:text-white hover:bg-white/10 transition-all hover:scale-105"
+                    }
+                  >
+                    {tab.label}
+                  </Link>
+                );
+              })}
             </nav>
 
             {/* Actions */}
-            <div className="flex items-center gap-2 sm:gap-3">
-              {/* Search — visible on all sizes */}
-              <Link
-                href="/search"
-                className="flex h-8 w-8 sm:h-10 sm:w-10 items-center justify-center rounded-full border border-white/10 text-white hover:bg-white hover:text-black transition-all hover:rotate-12"
-              >
-                <span className="material-symbols-outlined text-[18px] sm:text-[20px]">
-                  search
-                </span>
-              </Link>
+            <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+              {/* Search — inline input when integrated (e.g. /search), icon-link otherwise */}
+              {search ? (
+                <div className="relative flex-1 min-w-0 sm:max-w-55 md:max-w-xs">
+                  <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-white/30 text-[16px] pointer-events-none">
+                    search
+                  </span>
+                  <input
+                    type="text"
+                    value={search.value}
+                    onChange={(e) => search.onChange(e.target.value)}
+                    placeholder={search.placeholder ?? "Search anything..."}
+                    className="w-full bg-white/6 border border-white/10 rounded-full py-1.5 sm:py-2 pl-10 pr-3 text-xs sm:text-sm font-semibold text-white placeholder:text-white/30 focus:outline-none focus:border-[#ccff00]/40 focus:bg-white/10 transition-all"
+                  />
+                </div>
+              ) : (
+                <Link
+                  href="/search"
+                  className="flex h-8 w-8 sm:h-10 sm:w-10 items-center justify-center rounded-full border border-white/10 text-white hover:bg-white hover:text-black transition-all hover:rotate-12"
+                >
+                  <span className="material-symbols-outlined text-[18px] sm:text-[20px]">
+                    search
+                  </span>
+                </Link>
+              )}
 
               {/* Desktop-only: Sign In + UserMenuButton */}
               {!isAuthenticated && (

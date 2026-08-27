@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation";
 
 interface MobileEventDetailProps {
   event?: any;
+  isPreview?: boolean;
 }
 
 const CATEGORY_PILL: Record<string, { bg: string; color: string }> = {
@@ -19,7 +20,10 @@ const CATEGORY_PILL: Record<string, { bg: string; color: string }> = {
 
 const AVATAR_COLORS = ["#7c3aed", "#db2777", "#f97316", "#3b82f6"];
 
-export default function MobileEventDetail({ event }: MobileEventDetailProps) {
+export default function MobileEventDetail({
+  event,
+  isPreview,
+}: MobileEventDetailProps) {
   const router = useRouter();
 
   const name = event?.name ?? "Neon Nights: Rooftop Reception";
@@ -272,20 +276,27 @@ export default function MobileEventDetail({ event }: MobileEventDetailProps) {
             </p>
           </div>
           <button
+            disabled={isPreview}
+            onClick={() => {
+              if (isPreview || !event?.id) return;
+              router.push(`/booking/config?templateId=${event.id}`);
+            }}
             style={{
-              background: "#ccff00",
+              background: isPreview ? "rgba(204,255,0,0.3)" : "#ccff00",
               color: "#000",
               fontWeight: 800,
               fontSize: 13,
               borderRadius: 999,
               padding: "14px 28px",
               border: "none",
-              cursor: "pointer",
-              boxShadow: "0 4px 16px rgba(204,255,0,0.35)",
+              cursor: isPreview ? "not-allowed" : "pointer",
+              boxShadow: isPreview
+                ? "none"
+                : "0 4px 16px rgba(204,255,0,0.35)",
               whiteSpace: "nowrap",
             }}
           >
-            Reserve
+            {isPreview ? "Preview only" : "Reserve"}
           </button>
         </div>
       </div>

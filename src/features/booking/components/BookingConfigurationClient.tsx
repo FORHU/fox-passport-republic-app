@@ -239,12 +239,12 @@ export default function BookingConfigurationClient() {
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 relative">
             <div className="lg:col-span-8 space-y-8">
               {isFull ? (
-                <div className="glass-card rounded-[2rem] p-4 sm:p-8 border border-yellow-400/20 text-center">
+                <div className="glass-card rounded-2xl sm:rounded-[2rem] p-3 sm:p-8 border border-yellow-400/20 text-center">
                   <div className="flex flex-col items-center gap-4 py-8">
-                    <span className="material-symbols-outlined text-yellow-400 text-5xl">
+                    <span className="material-symbols-outlined text-yellow-400 text-4xl sm:text-5xl">
                       hourglass_empty
                     </span>
-                    <h3 className="text-2xl font-display font-bold text-white">
+                    <h3 className="text-lg sm:text-2xl font-display font-bold text-white">
                       This event is at capacity
                     </h3>
                     <p className="text-text-muted max-w-md">
@@ -256,12 +256,12 @@ export default function BookingConfigurationClient() {
               ) : (
                 <>
                   {/* Calendar Section */}
-                  <div className="glass-card rounded-[2rem] p-4 sm:p-8 border border-white/10">
-                    <div className="flex items-center gap-3 mb-6">
-                      <span className="material-symbols-outlined text-accent text-2xl">
+                  <div className="glass-card rounded-2xl sm:rounded-[2rem] p-3 sm:p-8 border border-white/10">
+                    <div className="flex items-center gap-2 sm:gap-3 mb-3 sm:mb-6">
+                      <span className="material-symbols-outlined text-accent text-lg sm:text-2xl">
                         calendar_month
                       </span>
-                      <h3 className="text-xl font-display font-bold text-white">
+                      <h3 className="text-base sm:text-xl font-display font-bold text-white">
                         Select Date & Time
                       </h3>
                     </div>
@@ -327,46 +327,48 @@ export default function BookingConfigurationClient() {
                   </div>
 
                   {/* Guests Section */}
-                  <div className="glass-card rounded-[2rem] p-4 sm:p-8 border border-white/10">
-                    <div className="flex items-center gap-3 mb-6">
-                      <span className="material-symbols-outlined text-accent text-2xl">
+                  <div className="glass-card rounded-2xl sm:rounded-[2rem] p-3 sm:p-8 border border-white/10">
+                    <div className="flex items-center gap-2 sm:gap-3 mb-3 sm:mb-6">
+                      <span className="material-symbols-outlined text-accent text-lg sm:text-2xl">
                         group
                       </span>
-                      <h3 className="text-xl font-display font-bold text-white">
+                      <h3 className="text-base sm:text-xl font-display font-bold text-white">
                         Who&apos;s Coming?
                       </h3>
                     </div>
-                    <div className="flex items-center justify-between bg-black/20 p-4 rounded-2xl border border-white/5">
-                      <div className="flex items-center gap-4">
-                        <div className="h-12 w-12 rounded-full bg-surface-highlight flex items-center justify-center text-white">
-                          <span className="material-symbols-outlined">
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4 bg-black/20 p-3 sm:p-4 rounded-2xl border border-white/5">
+                      <div className="flex items-center gap-3 sm:gap-4">
+                        <div className="h-9 w-9 sm:h-12 sm:w-12 shrink-0 rounded-full bg-surface-highlight flex items-center justify-center text-white">
+                          <span className="material-symbols-outlined text-[18px] sm:text-base">
                             person
                           </span>
                         </div>
                         <div>
-                          <p className="font-bold text-white">Total Guests</p>
-                          <p className="text-sm text-text-muted">
+                          <p className="text-sm sm:text-base font-bold text-white">
+                            Total Guests
+                          </p>
+                          <p className="text-xs sm:text-sm text-text-muted">
                             Price scales with guest count
                           </p>
                         </div>
                       </div>
-                      <div className="flex items-center gap-4 bg-surface rounded-full p-1 border border-white/10">
+                      <div className="flex items-center gap-3 sm:gap-4 bg-surface rounded-full p-1 border border-white/10 self-center sm:self-auto">
                         <button
                           onClick={() => setGuests(Math.max(1, guests - 1))}
-                          className="h-10 w-10 rounded-full bg-surface-highlight text-white hover:bg-white/10 flex items-center justify-center transition-colors"
+                          className="h-8 w-8 sm:h-10 sm:w-10 rounded-full bg-surface-highlight text-white hover:bg-white/10 flex items-center justify-center transition-colors"
                         >
-                          <span className="material-symbols-outlined text-[18px]">
+                          <span className="material-symbols-outlined text-[16px] sm:text-[18px]">
                             remove
                           </span>
                         </button>
-                        <span className="text-xl font-bold font-display w-8 text-center text-white">
+                        <span className="text-lg sm:text-xl font-bold font-display w-6 sm:w-8 text-center text-white">
                           {guests}
                         </span>
                         <button
                           onClick={() => setGuests(guests + 1)}
-                          className="h-10 w-10 rounded-full bg-white text-black hover:bg-accent flex items-center justify-center transition-colors"
+                          className="h-8 w-8 sm:h-10 sm:w-10 rounded-full bg-white text-black hover:bg-accent flex items-center justify-center transition-colors"
                         >
-                          <span className="material-symbols-outlined text-[18px]">
+                          <span className="material-symbols-outlined text-[16px] sm:text-[18px]">
                             add
                           </span>
                         </button>
@@ -375,12 +377,12 @@ export default function BookingConfigurationClient() {
                   </div>
 
                   {/* Included Services */}
-                  <div className="glass-card rounded-[2rem] p-4 sm:p-8 border border-white/10">
-                    <div className="flex items-center gap-3 mb-6">
-                      <span className="material-symbols-outlined text-accent text-2xl">
+                  <div className="glass-card rounded-2xl sm:rounded-[2rem] p-3 sm:p-8 border border-white/10">
+                    <div className="flex items-center gap-2 sm:gap-3 mb-3 sm:mb-6">
+                      <span className="material-symbols-outlined text-accent text-lg sm:text-2xl">
                         diamond
                       </span>
-                      <h3 className="text-xl font-display font-bold text-white">
+                      <h3 className="text-base sm:text-xl font-display font-bold text-white">
                         What&apos;s Included
                       </h3>
                     </div>
@@ -448,12 +450,12 @@ export default function BookingConfigurationClient() {
 
                   {/* Optional Add-ons */}
                   {allOptionalItems.length > 0 && (
-                    <div className="glass-card rounded-[2rem] p-4 sm:p-8 border border-yellow-400/20">
-                      <div className="flex items-center gap-3 mb-2">
-                        <span className="material-symbols-outlined text-yellow-400 text-2xl">
+                    <div className="glass-card rounded-2xl sm:rounded-[2rem] p-3 sm:p-8 border border-yellow-400/20">
+                      <div className="flex items-center gap-2 sm:gap-3 mb-2">
+                        <span className="material-symbols-outlined text-yellow-400 text-lg sm:text-2xl">
                           tune
                         </span>
-                        <h3 className="text-xl font-display font-bold text-white">
+                        <h3 className="text-base sm:text-xl font-display font-bold text-white">
                           Optional Add-ons
                         </h3>
                       </div>
@@ -519,17 +521,17 @@ export default function BookingConfigurationClient() {
                   )}
 
                   {/* Special Requests */}
-                  <div className="glass-card rounded-[2rem] p-4 sm:p-8 border border-white/10">
-                    <div className="flex items-center gap-3 mb-6">
-                      <span className="material-symbols-outlined text-accent text-2xl">
+                  <div className="glass-card rounded-2xl sm:rounded-[2rem] p-3 sm:p-8 border border-white/10">
+                    <div className="flex items-center gap-2 sm:gap-3 mb-3 sm:mb-6">
+                      <span className="material-symbols-outlined text-accent text-lg sm:text-2xl">
                         edit_note
                       </span>
-                      <h3 className="text-xl font-display font-bold text-white">
+                      <h3 className="text-base sm:text-xl font-display font-bold text-white">
                         Special Requests
                       </h3>
                     </div>
                     <textarea
-                      className="w-full bg-black/20 border border-white/10 rounded-2xl p-4 text-white placeholder-text-muted/50 focus:border-accent focus:ring-1 focus:ring-accent transition-all resize-none h-32 outline-none"
+                      className="w-full bg-black/20 border border-white/10 rounded-2xl p-3 sm:p-4 text-sm sm:text-base text-white placeholder-text-muted/50 focus:border-accent focus:ring-1 focus:ring-accent transition-all resize-none h-24 sm:h-32 outline-none"
                       placeholder="Celebrating a birthday? Allergies? Let the organizer know..."
                     ></textarea>
                   </div>

@@ -332,13 +332,13 @@ function FoxerCard({ foxer }: { foxer: Foxer }) {
       </div>
 
       {/* Role description */}
-      <p className="text-xs text-white/50 mb-3 sm:mb-5 relative z-10 pointer-events-none pl-1">
+      <p className="text-xs text-white/50 mb-3 sm:mb-5 relative z-10 pointer-events-none pl-1 text-left">
         {roleMeta.description}
       </p>
 
       {/* Bio */}
       {bio && (
-        <p className="text-xs sm:text-sm text-text-muted leading-relaxed mb-3 sm:mb-4 relative z-10 pointer-events-none line-clamp-2">
+        <p className="text-xs sm:text-sm text-text-muted leading-snug mb-3 sm:mb-4 relative z-10 pointer-events-none line-clamp-2 text-left">
           {bio}
         </p>
       )}

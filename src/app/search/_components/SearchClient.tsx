@@ -4,8 +4,13 @@
 import { useSearchParams, useRouter } from "next/navigation";
 import { useEffect, useState, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
-import Link from "next/link";
 import SearchFilters from "@/features/search/components/SearchFilters";
+import {
+  Sheet,
+  SheetContent,
+  SheetTitle,
+  SheetTrigger,
+} from "@/shared/components/ui/sheet";
 import EventFoxersSection from "@/features/search/components/EventFoxersSection";
 import EventTemplatesSection from "@/features/search/components/EventTemplatesSection";
 import GearServiceBento from "@/features/search/components/GearServiceBento";
@@ -15,6 +20,8 @@ import {
   fetchGearFoxers,
   fetchServiceFoxers,
 } from "@/features/search/api/search";
+import LandingHeader from "@/features/landing/components/sections/LandingHeader";
+import { useAuthStore } from "@/features/auth/store/useAuthStore";
 
 export default function SearchClient() {
   const searchParams = useSearchParams();
@@ -24,10 +31,9 @@ export default function SearchClient() {
   const category = searchParams?.get("category") || "";
   const city = searchParams?.get("label") || searchParams?.get("city") || "";
   const maxPrice = searchParams?.get("maxPrice") || "";
-  const startDate = searchParams?.get("startDate") || "";
-  const endDate = searchParams?.get("endDate") || "";
 
   const [searchQuery, setSearchQuery] = useState(q);
+  const [filtersOpen, setFiltersOpen] = useState(false);
   const [efPage, setEfPage] = useState(1);
   const [etPage, setEtPage] = useState(1);
   const [gsPage, setGsPage] = useState(1);
@@ -36,7 +42,7 @@ export default function SearchClient() {
     setEfPage(1);
     setEtPage(1);
     setGsPage(1);
-  }, [q, category, city, maxPrice, startDate, endDate]);
+  }, [q, category, city, maxPrice]);
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -60,10 +66,8 @@ export default function SearchClient() {
       ...(category && { category }),
       ...(maxPrice && { maxPrice }),
       ...(q && { q }),
-      ...(startDate && { startDate }),
-      ...(endDate && { endDate }),
     }),
-    [city, category, maxPrice, q, startDate, endDate],
+    [city, category, maxPrice, q],
   );
 
   const { data: efData, isFetching: efFetching } = useQuery({
@@ -74,8 +78,6 @@ export default function SearchClient() {
       category,
       maxPrice,
       q,
-      startDate,
-      endDate,
     ],
     queryFn: () => fetchEventFoxers(efPage, 2, filters),
     staleTime: 1000 * 60 * 5,
@@ -90,8 +92,6 @@ export default function SearchClient() {
       category,
       maxPrice,
       q,
-      startDate,
-      endDate,
     ],
     queryFn: () => fetchEventTemplates(etPage, 6, filters),
     staleTime: 1000 * 60 * 5,
@@ -106,8 +106,6 @@ export default function SearchClient() {
       category,
       maxPrice,
       q,
-      startDate,
-      endDate,
     ],
     queryFn: () => fetchGearFoxers(gsPage, 5, filters),
     staleTime: 1000 * 60 * 5,
@@ -122,8 +120,6 @@ export default function SearchClient() {
       category,
       maxPrice,
       q,
-      startDate,
-      endDate,
     ],
     queryFn: () => fetchServiceFoxers(gsPage, 5, filters),
     staleTime: 1000 * 60 * 5,
@@ -163,63 +159,46 @@ export default function SearchClient() {
 
   return (
     <div className="min-h-screen bg-[#0c0d14] text-white relative">
-      {/* Sticky header */}
-      <div className="sticky top-0 left-0 right-0 border-b border-white/5 bg-[#0c0d14]/95 backdrop-blur-xl z-40">
-        <div className="max-w-7xl mx-auto px-4 sm:px-8 py-3 sm:py-6">
-          {/* Top row */}
-          <div className="flex items-center gap-3 sm:gap-8">
-            <Link
-              href="/"
-              className="hidden sm:flex items-center gap-3 group shrink-0"
-            >
-              <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center group-hover:scale-105 transition-transform shadow-[0_0_15px_rgba(255,255,255,0.3)]">
-                <span
-                  className="material-symbols-outlined text-black text-[22px]"
-                  style={{ fontVariationSettings: "'FILL' 1" }}
-                >
-                  explore
+      <LandingHeader
+        onSignIn={() => useAuthStore.getState().openLogin()}
+        search={{ value: searchQuery, onChange: setSearchQuery }}
+      />
+
+      {/* Body — top padding clears the fixed nav above */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-8 pt-16 sm:pt-28 pb-28 sm:pb-12">
+        {/* Active filter badges */}
+        {(category || city) && (
+          <div className="flex flex-wrap items-center gap-2 text-xs text-white/50 mb-4">
+            {category && (
+              <span className="px-3 py-1 rounded-full bg-white/5 border border-white/10 capitalize">
+                {category}
+              </span>
+            )}
+            {city && (
+              <span className="px-3 py-1 rounded-full bg-white/5 border border-white/10 flex items-center gap-1">
+                <span className="material-symbols-outlined text-[14px]">
+                  location_on
                 </span>
-              </div>
-              <span className="text-2xl font-black font-display tracking-tight text-white">
-                Discover
+                {city}
               </span>
-            </Link>
-
-            <div className="relative flex-1 max-w-lg">
-              <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-white/30 text-[20px]">
-                search
-              </span>
-              <input
-                type="text"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search anything..."
-                className="w-full bg-white/6 border border-white/10 rounded-full py-2.5 pl-11 pr-4 text-sm font-semibold text-white placeholder:text-white/30 focus:outline-none focus:border-[#ccff00]/40 focus:bg-white/10 transition-all"
-              />
-            </div>
-
-            {/* Active filter badges — desktop */}
-            {(category || city) && (
-              <div className="hidden sm:flex items-center gap-2 text-xs text-white/50">
-                {category && (
-                  <span className="px-3 py-1 rounded-full bg-white/5 border border-white/10 capitalize">
-                    {category}
-                  </span>
-                )}
-                {city && (
-                  <span className="px-3 py-1 rounded-full bg-white/5 border border-white/10 flex items-center gap-1">
-                    <span className="material-symbols-outlined text-[14px]">
-                      location_on
-                    </span>
-                    {city}
-                  </span>
-                )}
-              </div>
             )}
           </div>
+        )}
 
-          {/* Horizontal type chips — mobile */}
-          <div className="flex sm:hidden gap-2 overflow-x-auto hide-scrollbar mt-3 pb-0.5">
+        <Sheet open={filtersOpen} onOpenChange={setFiltersOpen}>
+          {/* Horizontal type chips + mobile Filters trigger */}
+          <div className="flex sm:hidden items-center gap-2 overflow-x-auto hide-scrollbar mb-6 pb-0.5">
+            <SheetTrigger asChild>
+              <button className="flex-none flex items-center gap-1.5 text-[11px] font-bold px-4 py-2 rounded-full transition-all whitespace-nowrap bg-white/6 border border-white/10 text-white">
+                <span className="material-symbols-outlined text-[14px]">
+                  tune
+                </span>
+                Filters
+                {(category || city || maxPrice) && (
+                  <span className="h-1.5 w-1.5 rounded-full bg-[#ccff00]" />
+                )}
+              </button>
+            </SheetTrigger>
             {TYPE_CHIPS.map((chip) => (
               <button
                 key={chip.value}
@@ -244,14 +223,19 @@ export default function SearchClient() {
               </button>
             ))}
           </div>
-        </div>
-      </div>
 
-      {/* Body */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-8 pt-6 sm:pt-10 pb-28 sm:pb-12">
+          <SheetContent
+            side="bottom"
+            className="bg-[#0c0d14] border-white/10 h-[75vh] max-h-[85vh] overflow-y-auto rounded-t-3xl p-4"
+          >
+            <SheetTitle className="sr-only">Filters</SheetTitle>
+            <SearchFilters />
+          </SheetContent>
+        </Sheet>
+
         <div className="flex flex-col sm:flex-row gap-8">
           {/* Sidebar — desktop only */}
-          <aside className="hidden sm:block w-80 shrink-0">
+          <aside className="hidden sm:block w-80 shrink-0 self-start sticky top-36">
             <SearchFilters />
           </aside>
 
