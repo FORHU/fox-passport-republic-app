@@ -30,6 +30,14 @@ export default function MobileBottomNav({
     }
   };
 
+  const handleBookingsClick = () => {
+    if (isAuthenticated) {
+      router.push("/booking");
+    } else {
+      onLoginClick?.();
+    }
+  };
+
   const handleCreateClick = () => {
     if (isAuthenticated) {
       onCreateClick?.();
@@ -57,7 +65,12 @@ export default function MobileBottomNav({
   ];
 
   const rightTabs = [
-    { icon: "confirmation_number", href: "/booking", label: "Bookings" },
+    {
+      icon: "confirmation_number",
+      href: "/booking",
+      label: "Bookings",
+      onClick: handleBookingsClick,
+    },
     {
       icon: "person",
       href: "/user",

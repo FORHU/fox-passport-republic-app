@@ -24,7 +24,8 @@ export function CustomExperienceBuilder({
   onClose,
   venuePrice,
 }: ExperienceBuilderProps) {
-  const { foxers, itemsByCategory, isLoading } = useExperienceBuilderData();
+  const { foxers, itemsByCategory, isLoading } =
+    useExperienceBuilderData(isOpen);
   const [mobileSummaryOpen, setMobileSummaryOpen] = React.useState(false);
 
   const {
