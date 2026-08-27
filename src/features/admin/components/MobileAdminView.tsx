@@ -58,6 +58,11 @@ export default function MobileAdminView({
 }) {
   const setSidebarOpen = useUIStore((s) => s.setSidebarOpen);
   const [busyId, setBusyId] = useState<string | null>(null);
+  // Which row is currently asking for a rejection reason, and what has been
+  // typed. Desktop opens a modal for this; a row on a phone has no room, so the
+  // controls swap inline instead of sending a canned string.
+  const [rejectingKey, setRejectingKey] = useState<string | null>(null);
+  const [rejectReason, setRejectReason] = useState("");
   const [handled, setHandled] = useState<Set<string>>(new Set());
 
   const { venues: pendingVenues, refetch: refetchVenues } =
@@ -126,20 +131,24 @@ export default function MobileAdminView({
     return refetchServices();
   };
 
-  const review = async (item: PendingItem, action: "approve" | "reject") => {
+  const review = async (
+    item: PendingItem,
+    action: "approve" | "reject",
+    reason?: string,
+  ) => {
     const key = `${item.kind}:${item.id}`;
     setBusyId(key);
     try {
       if (action === "approve") {
         await api.patch(`${ENDPOINTS[item.kind]}/${item.id}/approve`);
       } else {
-        // The desktop flow collects a reason; there is no room for a prompt
-        // here, so send a clear default rather than an empty string.
         await api.patch(`${ENDPOINTS[item.kind]}/${item.id}/reject`, {
-          reason: "Rejected from mobile admin",
+          reason: reason?.trim() || "No reason given",
         });
       }
       setHandled((prev) => new Set(prev).add(key));
+      setRejectingKey(null);
+      setRejectReason("");
       toast.success(
         `${item.name} ${action === "approve" ? "approved" : "rejected"}`,
       );
@@ -369,7 +378,14 @@ export default function MobileAdminView({
                 </p>
               </div>
               {/* Action buttons */}
-              <div style={{ display: "flex", gap: 8, flexShrink: 0 }}>
+              <div
+                style={{
+                  display:
+                    rejectingKey === `${item.kind}:${item.id}` ? "none" : "flex",
+                  gap: 8,
+                  flexShrink: 0,
+                }}
+              >
                 <button
                   onClick={() => review(item, "approve")}
                   disabled={busyId === `${item.kind}:${item.id}`}
@@ -395,7 +411,10 @@ export default function MobileAdminView({
                   </span>
                 </button>
                 <button
-                  onClick={() => review(item, "reject")}
+                  onClick={() => {
+                    setRejectingKey(`${item.kind}:${item.id}`);
+                    setRejectReason("");
+                  }}
                   disabled={busyId === `${item.kind}:${item.id}`}
                   aria-label={`Reject ${item.name}`}
                   style={{
@@ -419,6 +438,89 @@ export default function MobileAdminView({
                   </span>
                 </button>
               </div>
+
+              {/* Reason field — replaces the buttons for the row being
+                  rejected, so the phone gets the same "why" the desktop modal
+                  collects instead of a canned string. */}
+              {rejectingKey === `${item.kind}:${item.id}` && (
+                <div
+                  style={{
+                    display: "flex",
+                    gap: 6,
+                    flexShrink: 0,
+                    alignItems: "center",
+                  }}
+                >
+                  <input
+                    autoFocus
+                    value={rejectReason}
+                    onChange={(e) => setRejectReason(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") review(item, "reject", rejectReason);
+                      if (e.key === "Escape") setRejectingKey(null);
+                    }}
+                    placeholder="Reason"
+                    aria-label={`Reason for rejecting ${item.name}`}
+                    style={{
+                      width: 108,
+                      background: "rgba(255,255,255,0.06)",
+                      border: "1px solid rgba(255,255,255,0.12)",
+                      borderRadius: 10,
+                      padding: "7px 10px",
+                      fontSize: 12,
+                      color: "#fff",
+                      outline: "none",
+                    }}
+                  />
+                  <button
+                    onClick={() => review(item, "reject", rejectReason)}
+                    disabled={busyId === `${item.kind}:${item.id}`}
+                    aria-label="Confirm rejection"
+                    style={{
+                      width: 32,
+                      height: 32,
+                      borderRadius: "50%",
+                      background: "rgba(239,68,68,0.2)",
+                      border: "1px solid rgba(239,68,68,0.3)",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      cursor: "pointer",
+                      flexShrink: 0,
+                    }}
+                  >
+                    <span
+                      className="material-symbols-outlined"
+                      style={{ fontSize: 16, color: "#ef4444" }}
+                    >
+                      send
+                    </span>
+                  </button>
+                  <button
+                    onClick={() => setRejectingKey(null)}
+                    aria-label="Cancel rejection"
+                    style={{
+                      width: 32,
+                      height: 32,
+                      borderRadius: "50%",
+                      background: "rgba(255,255,255,0.06)",
+                      border: "1px solid rgba(255,255,255,0.1)",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      cursor: "pointer",
+                      flexShrink: 0,
+                    }}
+                  >
+                    <span
+                      className="material-symbols-outlined"
+                      style={{ fontSize: 16, color: "rgba(255,255,255,0.5)" }}
+                    >
+                      close
+                    </span>
+                  </button>
+                </div>
+              )}
             </div>
           ))}
         </div>

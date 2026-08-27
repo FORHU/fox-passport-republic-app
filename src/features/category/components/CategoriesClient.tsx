@@ -5,7 +5,7 @@ import { useSearchParams, useRouter } from "next/navigation";
 import Navbar from "@/shared/components/layout/Navbar";
 import { useCategories } from "@/features/category/hooks/useCategories";
 import { useEventsByCategory } from "@/features/category/hooks/useEventsByCategory";
-import { useVenuesByCategory } from "@/features/category/hooks/useVenuesByCategory";
+import { useVenuesByCategory } from "@/features/venue/hooks/useVenuesByCategory";
 import { EventCard } from "@/features/event";
 import { VenueCard } from "@/features/venue";
 import { ArrowLeft, Loader2, AlertCircle } from "lucide-react";
