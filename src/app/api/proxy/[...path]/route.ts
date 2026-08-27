@@ -36,20 +36,63 @@ const cookieOpts = {
   path: "/",
 };
 
-/** Exchange the refresh cookie for a new access token, or null if it cannot. */
-async function refreshAccessToken(refreshToken: string) {
-  const res = await fetch(`${config.apiUrl}/auth/refresh-token`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ refreshToken }),
-    cache: "no-store",
-  });
-  if (!res.ok) return null;
+// Must match SESSION_MAX_AGE in auth-actions.ts, which derives it from
+// REFRESH_TOKEN_EXPIRY. A refreshed cookie that outlives the token inside it
+// puts the browser back to holding a credential the server stopped honouring.
+const SESSION_MAX_AGE = 7 * 24 * 60 * 60;
 
-  const body = await res.json().catch(() => null);
-  const accessToken: string | undefined =
-    body?.accessToken ?? body?.data?.accessToken;
-  return accessToken ?? null;
+interface RefreshResult {
+  accessToken: string;
+  /** Rotation makes refresh tokens single-use, so this is always a new one. */
+  refreshToken: string | null;
+}
+
+/**
+ * In-flight refreshes, keyed by the refresh token being spent.
+ *
+ * Refresh tokens are single-use. Two parallel requests that both 401 would
+ * otherwise both spend the same token — the first rotates it, the second
+ * presents one that is already dead. The API tolerates that inside a 60-second
+ * window rather than treating it as theft, but relying on the grace window for
+ * something this predictable is wrong: collapse the race here instead, so each
+ * token is spent exactly once per process.
+ *
+ * Process-local. It cannot cover two instances refreshing at the same instant —
+ * that case is what the API's grace window is actually for.
+ */
+const inFlight = new Map<string, Promise<RefreshResult | null>>();
+
+/** Exchange the refresh cookie for a new token pair, or null if it cannot. */
+async function refreshAccessToken(
+  refreshToken: string,
+): Promise<RefreshResult | null> {
+  const existing = inFlight.get(refreshToken);
+  if (existing) return existing;
+
+  const pending = (async (): Promise<RefreshResult | null> => {
+    const res = await fetch(`${config.apiUrl}/auth/refresh-token`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ refreshToken }),
+      cache: "no-store",
+    });
+    if (!res.ok) return null;
+
+    const body = await res.json().catch(() => null);
+    const accessToken: string | undefined =
+      body?.accessToken ?? body?.data?.accessToken;
+    if (!accessToken) return null;
+
+    return {
+      accessToken,
+      refreshToken: body?.refreshToken ?? body?.data?.refreshToken ?? null,
+    };
+  })().finally(() => {
+    inFlight.delete(refreshToken);
+  });
+
+  inFlight.set(refreshToken, pending);
+  return pending;
 }
 
 async function handler(
@@ -92,14 +135,14 @@ async function handler(
   };
 
   let upstream = await forward(accessToken);
-  let refreshedToken: string | null = null;
+  let refreshed: RefreshResult | null = null;
 
   if (upstream.status === 401) {
     const refreshToken = cookieStore.get(REFRESH_COOKIE)?.value;
     if (refreshToken) {
-      refreshedToken = await refreshAccessToken(refreshToken);
-      if (refreshedToken) {
-        upstream = await forward(refreshedToken);
+      refreshed = await refreshAccessToken(refreshToken);
+      if (refreshed) {
+        upstream = await forward(refreshed.accessToken);
       }
     }
   }
@@ -117,12 +160,21 @@ async function handler(
 
   // Persist a refresh here rather than dropping it. This is what a Server
   // Component could not do, and why SSR previously re-refreshed on every load.
-  if (refreshedToken) {
-    response.cookies.set(ACCESS_COOKIE, refreshedToken, {
+  //
+  // Both cookies must be written. Refresh tokens are single-use since rotation
+  // landed, so keeping the old one would leave the browser holding a token the
+  // API has already revoked — the session would die at the next refresh.
+  if (refreshed) {
+    response.cookies.set(ACCESS_COOKIE, refreshed.accessToken, {
       ...cookieOpts,
-      // Matches the session lifetime set at login (see auth-actions.ts).
-      maxAge: 7 * 24 * 60 * 60,
+      maxAge: SESSION_MAX_AGE,
     });
+    if (refreshed.refreshToken) {
+      response.cookies.set(REFRESH_COOKIE, refreshed.refreshToken, {
+        ...cookieOpts,
+        maxAge: SESSION_MAX_AGE,
+      });
+    }
   }
 
   return response;
