@@ -61,18 +61,25 @@ mapanytime rotates the refresh token on every refresh
 (`newRefreshToken = data?.refreshToken || existingRefreshToken`). FoxPassport
 reuses the same refresh token for its full 7 days.
 
-- [ ] **Rotate refresh tokens on use.**
+- [x] **Rotate refresh tokens on use.** Done 27 Aug — see
+      [`api-audit.md`](./api-audit.md) §4.9. Went further than mapanytime's
+      version: reuse of a rotated token revokes every session for the account,
+      which is the part that turns rotation from hygiene into detection.
 
-This is now cheap: the `RefreshToken` table added on 26 Aug already stores a jti
-per issued token, so rotation is "revoke the old jti, issue a new one" inside the
-existing `verifyRefreshToken` path.
+This was cheap, as predicted: the `RefreshToken` table added on 26 Aug already
+stored a jti per issued token, so rotation was "revoke the old jti, issue a new
+one" alongside the existing `verifyRefreshToken` path.
 
 It also closes the loop on two things already recorded in `api-audit.md`:
 
 - §2.2 kept a note that the concurrent-refresh mutex "becomes load-bearing the
-  moment refresh tokens become single-use". Rotation is that moment. The proxy
-  serialises refreshes server-side, so we are covered — but it stops being an
-  optimisation and starts being required.
+  moment refresh tokens become single-use". Rotation is that moment — and the
+  claim attached to it, that "the proxy serialises refreshes server-side", was
+  **wrong**. The proxy had no lock: two parallel 401s each called
+  `/auth/refresh-token` independently. Harmless while refresh was idempotent,
+  a logout bug the moment it was not. Closed on 27 Aug from both ends — an
+  in-flight map in the proxy, and a 60-second grace window on the API so a race
+  that slips through is not mistaken for theft.
 - §4.1's caveat (a displaced session's access token stays valid up to 15m)
   is unaffected, but rotation means a **stolen refresh token is detectable**:
   if a revoked jti is presented, that is evidence of theft, not just expiry.
