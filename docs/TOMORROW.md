@@ -1,37 +1,49 @@
 # Tomorrow — consolidated
 
-One list, in priority order, pulled from `api-audit.md` (7 open),
-`mapanytime-comparison.md` (9 open) and `responsive-plan.md` (21 open). Those
-stay the detailed record; this is the running order.
+**This is the running order.** When the trackers disagree about what to do next,
+this file wins; when they disagree about a fact, the tracker wins.
+
+| Document | Role |
+|---|---|
+| `TOMORROW.md` (this file) | **The running order.** What to do next, in priority order. |
+| `api-audit.md` | **The record.** API, data-fetching and auth — what was found, what was fixed, what is open. Cited by everything else. |
+| `responsive-plan.md` | Input — responsive and touch backlog. |
+| `mapanytime-comparison.md` | Input — what to adopt from the mapanytime codebase. |
+| `session-report-2026-08-26.md` | Closed record of the 26 Aug session. Not a tracker. |
+| `AUDIT_REPORT.md` | **Superseded.** The external audit; its fixes are refuted in `api-audit.md` §1. Do not apply them. |
+
+Counts at the last consolidation: `api-audit.md` 7 open,
+`mapanytime-comparison.md` 9 open, `responsive-plan.md` 21 open.
 
 ---
 
 ## 0. Read this first — where the work actually is
 
-Both PRs were merged during the session (app #? / api #59) and both repos were
-switched to `staging`. That was not noticed, so the last commits went onto
-`staging` directly rather than onto a feature branch.
+Verified 27 August 2026, at app `ccfcf75` / api `2b5e63c`.
+
+**The auth work is on shared `staging` in both repos.** An earlier version of
+this section said the opposite — that nothing had reached `staging` and review
+was preserved. That was wrong, and the branch it pointed at is now redundant.
 
 | | State |
 |---|---|
-| **API** | `fix(auth): stop reporting server errors as invalid credentials` is **already pushed to `origin/staging`** |
-| **App** | 6 commits on local `staging`, **not pushed** — token purge, deabstraction, mobile reject reason, 3 docs commits |
-| `perf/dedupe-dashboard-fetching` | still exists, but has **0 commits** beyond staging — everything was merged |
+| **App** | local `staging` is **level with `origin/staging`** (0 ahead, 0 behind). `origin/staging` carries `9995312 feat(auth): keep tokens out of localStorage behind a Next proxy` and `9843a20 fix(auth): purge legacy tokens left in localStorage` |
+| **API** | local `staging` is **level with `origin/staging`**, HEAD `2b5e63c fix(auth): stop reporting server errors as invalid credentials` |
+| `fix/auth-hardening-and-cleanup` | on the remote, but **fully contained in `staging`** — one commit behind it, nothing of its own. A PR from it would show an empty diff. |
+| `perf/dedupe-dashboard-fetching` | merged as app PR #36; **0 commits** beyond staging |
 
-Nothing is lost and both repos build and test clean. But the app's six commits
-bypassed review, and one of them (`purge legacy tokens`) is security-relevant.
+Both working trees are clean. Nothing is lost and both repos build and test
+clean — but the app commits reached shared `staging` without review, and one of
+them (`purge legacy tokens`) is security-relevant.
 
-**Resolved:** the work is pushed as **`fix/auth-hardening-and-cleanup`**, branched
-from local `staging`. A PR can be opened at
-`https://github.com/FORHU/fox-passport-republic-app/pull/new/fix/auth-hardening-and-cleanup`.
-Nothing was pushed to shared `staging`, so review is preserved.
-
-- [ ] **Local `staging` still carries those 8 commits.** Once the PR is merged,
-      reset it: `git checkout staging && git reset --hard origin/staging`.
-      Until then the two are identical, so nothing is wrong - it is just a
-      duplicate that will look confusing later.
-- [ ] The API's one commit **is** already on `origin/staging` and did not get the
-      same treatment. Leave it or revert-and-reapply for consistency.
+- [ ] **Decide what to do about the unreviewed range.** It is on
+      `origin/staging` already, so the options are a retrospective review of
+      `9995312..ccfcf75` or accepting it as-is. Do not wait on a PR from
+      `fix/auth-hardening-and-cleanup` — there is nothing in it to review.
+- [ ] **Delete `fix/auth-hardening-and-cleanup`** once that is settled. It has no
+      commits of its own and will only mislead the next person.
+- [ ] The API's one commit had the same treatment. Leave it or revert-and-reapply
+      for consistency.
 
 ---
 
@@ -61,6 +73,11 @@ Login through the proxy *is* browser-confirmed. That is the only part that is.
 - [ ] **Poll cadence.** Admin 5s, host 10s, user 15–30s. Gating cut the volume
       4–10×, but nobody has decided what freshness these actually need.
       Socket.io already exists, so event-driven invalidation is a real option.
+      **Partly addressed 27 Aug:** the client-wide `staleTime` is now 30s and
+      `refetchOnWindowFocus` is off by default ([`api-audit.md`](./api-audit.md)
+      §4.14), which removed the refetch-on-every-focus noise. The deliberate
+      `refetchInterval` values are untouched and still undecided — and 30s is a
+      first guess, not a researched number.
 - [ ] **Does `MobileAdminView` earn its keep?** It and `AdminContent` are now two
       implementations of one screen. The mockup had *already* drifted into pure
       placeholder content once — expect that again. The alternative is deleting
@@ -78,9 +95,11 @@ Login through the proxy *is* browser-confirmed. That is the only part that is.
 
 ## 3. Security follow-ups
 
-- [ ] **Rotate refresh tokens on use** (`mapanytime-comparison.md` §2). Cheap now
-      that the jti table exists. Makes a stolen token *detectable*: a revoked jti
-      presented later is evidence of theft, not just expiry.
+- [x] **Rotate refresh tokens on use** — done 27 Aug, verified against a live API
+      and database. See [`api-audit.md`](./api-audit.md) §4.9. A rotated token
+      replayed outside a 60-second race window revokes every session for the
+      account, so a stolen refresh token is now *detectable* rather than merely
+      time-limited.
 - [ ] **Move login behind a route handler.** Tokens still transit client
       JavaScript for one tick (`useAuth.ts:87`) before reaching `setAuthCookies`.
       Never stored, but present in memory — the last place a token touches the
@@ -89,6 +108,21 @@ Login through the proxy *is* browser-confirmed. That is the only part that is.
       version is stronger and explains why.
 - [ ] **`has_session` cookie marker** so middleware can gate routes without
       touching the credential.
+- [x] **Review update/delete had no ownership check** — any authenticated user
+      could rewrite or delete any review, and inflate the ratings that grant
+      never-revoked Earned Specializations. Fixed and verified 27 Aug;
+      [`api-audit.md`](./api-audit.md) §4.10.
+- [ ] **Decide what to do about `requireOwnerOrAdmin`** — zero call sites, but
+      cited as an enforced control. Every resource hand-rolls ownership its own
+      way, which is exactly how the review hole stayed invisible. §4.11.
+- [ ] **Fail fast on missing secrets at boot.** No fallback secrets exist (good),
+      but nothing validates presence, so a missing `ACCESS_TOKEN_SECRET` 500s
+      every login instead of refusing to start. §4.12.
+- [x] **Guard the seed** — done 27 Aug. `prisma/seed.ts` now refuses unless
+      `NODE_ENV` is development/test **and** `DATABASE_URL` is a local host;
+      `ALLOW_SEED=1` overrides deliberately. The seeder still creates
+      `admin@example.com` with a password committed to the repo, which is fine
+      precisely because the seed can no longer reach a shared database. §4.13.
 
 ---
 
@@ -114,11 +148,16 @@ Declining unless enforcement comes with it: feature manifests
 `responsive-plan.md` has **21 open items** — Phases 1–4, largely untouched. The
 one item that is not cosmetic:
 
-- [ ] **`CustomExperienceBuilder` is drag-and-drop, on the citizen path, and
-      silently broken on touch.** It looks perfectly responsive (13 breakpoint
-      prefixes) and does nothing under a finger. It also exists **twice**, in two
-      separate implementations — dedupe before fixing, or the work gets done
-      twice.
+- [ ] **The experience builder is drag-and-drop, on the citizen path, and
+      silently broken on touch.** It looks responsive (12 breakpoint prefixes)
+      and does nothing under a finger. It exists **twice**, and neither copy is a
+      file named `CustomExperienceBuilder` — grepping that name finds nothing and
+      reads as "already done". The two are:
+      - `src/features/venue/components/detail/ExperienceBuilder.tsx`
+      - `CustomExperienceBuilder`, declared **inline** at
+        `src/app/event/[eventId]/page.tsx:21`, inside a 1,483-line page
+
+      Dedupe before fixing, or the work gets done twice.
 - [ ] Fold the admin-responsive correction into `responsive-plan.md` §2.3. That
       section says "desktop-only is an acceptable answer" for admin, which is
       wrong — following it would mean deleting working code.
