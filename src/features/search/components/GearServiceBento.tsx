@@ -18,7 +18,7 @@ function BentoColumn({
 }) {
   const router = useRouter();
   return (
-    <div className="bg-[#0f1018] border border-white/10 rounded-3xl p-5 space-y-3">
+    <div className="bg-[#0f1018] border border-white/10 rounded-3xl p-5 space-y-3 shrink-0 w-[85vw] max-w-85 sm:w-auto sm:max-w-none snap-center">
       <div className="flex items-center gap-2 pb-2 border-b border-white/10">
         <span className="material-symbols-outlined text-[#ccff00] text-[20px]">
           {icon}
@@ -105,7 +105,7 @@ export default function GearServiceBento({
         <div className="h-px flex-1 bg-white/10" />
       </div>
 
-      <div className="grid grid-cols-2 gap-6">
+      <div className="flex overflow-x-auto gap-4 pb-4 snap-x snap-mandatory hide-scrollbar sm:grid sm:grid-cols-2 sm:gap-6 sm:pb-0 sm:overflow-visible">
         <BentoColumn
           title="Gear Foxers"
           icon="audio_file"

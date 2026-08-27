@@ -8,14 +8,15 @@ import { Loader2 } from "lucide-react";
 import { useSignup } from "@/features/auth/hooks/useAuth";
 import { signupSchema, SignupFormData } from "@/shared/lib/schema";
 import { useAuthStore } from "@/features/auth/store/useAuthStore";
+import { config } from "@/shared/lib/config";
 
 import { toast } from "sonner";
 
 // Social buttons component
 const SocialButtons = () => (
   <div className="grid grid-cols-2 gap-3 mb-4 sm:mb-6">
-    <button
-      type="button"
+    <a
+      href={`${config.apiUrl}/auth/google`}
       className="group flex items-center justify-center gap-2 sm:gap-3 py-2 sm:py-3 px-3 sm:px-4 rounded-xl bg-white/5 border border-white/10 hover:bg-white hover:text-black hover:border-white transition-all duration-300"
     >
       <svg
@@ -42,19 +43,23 @@ const SocialButtons = () => (
         ></path>
       </svg>
       <span className="font-bold text-sm">Google</span>
-    </button>
+    </a>
     <button
       type="button"
-      className="group flex items-center justify-center gap-2 sm:gap-3 py-2 sm:py-3 px-3 sm:px-4 rounded-xl bg-white/5 border border-white/10 hover:bg-[#1877F2] hover:text-white hover:border-[#1877F2] transition-all duration-300"
+      disabled
+      title="Facebook sign-in coming soon"
+      className="relative flex items-center justify-center gap-2 sm:gap-3 py-2 sm:py-3 px-3 sm:px-4 rounded-xl bg-white/5 border border-white/10 opacity-50 cursor-not-allowed"
     >
+      <span className="absolute -top-2 -right-2 rounded-full bg-amber-400 text-black text-[9px] font-bold px-1.5 py-0.5 leading-none whitespace-nowrap">
+        Soon
+      </span>
       <svg
-        className="w-4 h-4 sm:w-5 sm:h-5 group-hover:scale-110 transition-transform"
+        className="w-4 h-4 sm:w-5 sm:h-5"
         fill="currentColor"
         viewBox="0 0 24 24"
         xmlns="http://www.w3.org/2000/svg"
       >
         <path
-          className="group-hover:fill-white transition-colors"
           d="M24 12.073C24 5.405 18.627 0 12 0S0 5.405 0 12.073C0 18.1 4.388 23.094 10.125 24V15.563H7.078V12.073H10.125V9.429C10.125 6.423 11.916 4.761 14.656 4.761C15.968 4.761 17.344 4.995 17.344 4.995V7.948H15.83C14.34 7.948 13.875 8.873 13.875 9.822V12.073H17.203L16.671 15.563H13.875V24C19.612 23.094 24 18.1 24 12.073Z"
           fill="#1877F2"
         ></path>
