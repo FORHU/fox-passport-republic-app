@@ -112,6 +112,24 @@ Login through the proxy *is* browser-confirmed. That is the only part that is.
       could rewrite or delete any review, and inflate the ratings that grant
       never-revoked Earned Specializations. Fixed and verified 27 Aug;
       [`api-audit.md`](./api-audit.md) §4.10.
+- [x] **`GET /users/:id` published the password hash to anyone** — no auth, and
+      a bare `findUnique` that returned the whole row. Fixed 27 Aug: the Prisma
+      client now omits `User.password` globally, the lookup selects an explicit
+      field list, and the route is authenticated. §4.15.
+- [x] **`GET /bookings` was public and leaked every customer's name and email**,
+      with Prisma filter operators taken from the query string. Fixed: auth,
+      a filter allow-list, and results scoped to what the caller is party to.
+      §4.16.
+- [x] **Verified §4.15 and §4.16 against a running stack** — 27 Aug, once
+      Postgres and Redis were back up. Anonymous requests to both endpoints
+      return 401; an authenticated user lookup returns twelve fields with no
+      password, phone, address or Stripe ids; an admin sees all 19 bookings
+      while a citizen sees only their own 4; and neither a `userId` filter nor
+      Prisma bracket-syntax injection widens that scope.
+- [x] **Docker stack corrected.** `docker-compose.yml` had no `api` service
+      despite `DOCKER_SETUP.md` being written around one, and neither service
+      had the healthchecks the doc claimed. Both rewritten on the pattern used
+      in `mapanytime-api`; existing volumes and ports preserved. §4.18.
 - [ ] **Decide what to do about `requireOwnerOrAdmin`** — zero call sites, but
       cited as an enforced control. Every resource hand-rolls ownership its own
       way, which is exactly how the review hole stayed invisible. §4.11.
