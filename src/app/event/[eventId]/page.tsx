@@ -31,7 +31,7 @@ const CustomExperienceBuilder: React.FC<{
   const [isSuccess, setIsSuccess] = useState(false);
   const [isDragOver, setIsDragOver] = useState(false);
 
-  const { foxers, itemsByCategory } = useExperienceBuilderData();
+  const { foxers, itemsByCategory } = useExperienceBuilderData(isOpen);
 
   // Prevent background scroll when open
   useEffect(() => {
@@ -780,7 +780,7 @@ const EventDetailsPage: React.FC = () => {
     <div className="bg-background bg-gradient-dark text-text-main antialiased min-h-screen flex flex-col selection:bg-accent selection:text-black font-body">
       {/* Mobile-only redesigned view */}
       <div className="lg:hidden">
-        <MobileEventDetail event={template} />
+        <MobileEventDetail event={template} isPreview={isPreview} />
       </div>
 
       {/* Desktop / tablet view */}

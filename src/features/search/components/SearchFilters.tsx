@@ -4,7 +4,6 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useState, useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
 import MapboxLocationPicker from "./MapboxLocationPicker";
-import DateRangePicker from "@/shared/components/ui/DateRangePicker";
 
 const CATEGORIES = ["wedding", "corporate", "birthday", "social", "other"];
 
@@ -146,12 +145,6 @@ export default function SearchFilters() {
   const [maxPrice, setMaxPrice] = useState(
     () => searchParams?.get("maxPrice") || "",
   );
-  const [startDate, setStartDate] = useState(
-    () => searchParams?.get("startDate") || "",
-  );
-  const [endDate, setEndDate] = useState(
-    () => searchParams?.get("endDate") || "",
-  );
 
   const [prevParamsStr, setPrevParamsStr] = useState(searchParamsStr);
 
@@ -167,8 +160,6 @@ export default function SearchFilters() {
       searchParams?.get("lng") ? Number(searchParams.get("lng")) : undefined,
     );
     setMaxPrice(searchParams?.get("maxPrice") || "");
-    setStartDate(searchParams?.get("startDate") || "");
-    setEndDate(searchParams?.get("endDate") || "");
   }
 
   const updateParams = (updates: Record<string, string | undefined>) => {
@@ -180,7 +171,25 @@ export default function SearchFilters() {
         params.delete(key);
       }
     });
-    router.push(`/search?${params.toString()}`);
+    router.push(`/search?${params.toString()}`, { scroll: false });
+  };
+
+  const commitMaxPrice = (raw: string) => {
+    const clamped =
+      raw === "" ? "" : String(Math.min(500000, Math.max(0, Number(raw))));
+    setMaxPrice(clamped === "0" ? "" : clamped);
+    updateParams({ maxPrice: clamped === "0" ? "" : clamped });
+  };
+
+  // Debounce while typing so filtering updates live without needing Enter/blur
+  const maxPriceDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(
+    null,
+  );
+  const onMaxPriceInput = (raw: string) => {
+    setMaxPrice(raw);
+    if (maxPriceDebounceRef.current)
+      clearTimeout(maxPriceDebounceRef.current);
+    maxPriceDebounceRef.current = setTimeout(() => commitMaxPrice(raw), 400);
   };
 
   const inputClass =
@@ -256,8 +265,32 @@ export default function SearchFilters() {
       <div className="space-y-2">
         <label className="block text-xs font-bold text-white/50 uppercase tracking-wider">
           Max Price:{" "}
-          <span className="text-[#ccff00]">₱{maxPrice || "Any"}</span>
+          <span className="text-[#ccff00]">
+            {maxPrice ? `₱${maxPrice}` : "Any"}
+          </span>
         </label>
+        <input
+          type="number"
+          min={0}
+          max={500000}
+          step={1000}
+          value={maxPrice}
+          placeholder="Any"
+          onChange={(e) => onMaxPriceInput(e.target.value)}
+          onBlur={(e) => {
+            if (maxPriceDebounceRef.current)
+              clearTimeout(maxPriceDebounceRef.current);
+            commitMaxPrice(e.target.value);
+          }}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") {
+              if (maxPriceDebounceRef.current)
+                clearTimeout(maxPriceDebounceRef.current);
+              commitMaxPrice((e.target as HTMLInputElement).value);
+            }
+          }}
+          className={`${inputClass} [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none`}
+        />
         <input
           type="range"
           min={0}
@@ -266,53 +299,15 @@ export default function SearchFilters() {
           value={maxPrice || 0}
           onChange={(e) => setMaxPrice(e.target.value)}
           onMouseUp={(e) =>
-            updateParams({
-              maxPrice:
-                (e.target as HTMLInputElement).value === "0"
-                  ? ""
-                  : (e.target as HTMLInputElement).value,
-            })
+            commitMaxPrice((e.target as HTMLInputElement).value)
           }
           onTouchEnd={(e) =>
-            updateParams({
-              maxPrice:
-                (e.target as HTMLInputElement).value === "0"
-                  ? ""
-                  : (e.target as HTMLInputElement).value,
-            })
+            commitMaxPrice((e.target as HTMLInputElement).value)
           }
           onKeyUp={(e) =>
-            updateParams({
-              maxPrice:
-                (e.target as HTMLInputElement).value === "0"
-                  ? ""
-                  : (e.target as HTMLInputElement).value,
-            })
+            commitMaxPrice((e.target as HTMLInputElement).value)
           }
           className="w-full accent-[#ccff00]"
-        />
-      </div>
-
-      {/* Date Range */}
-      <div className="space-y-2">
-        <label className="block text-xs font-bold text-white/50 uppercase tracking-wider">
-          Date Range
-        </label>
-        <DateRangePicker
-          startDate={startDate}
-          endDate={endDate}
-          onStartChange={(d) => {
-            setStartDate(d);
-            updateParams({ startDate: d });
-          }}
-          onEndChange={(d) => {
-            setEndDate(d);
-            updateParams({ endDate: d });
-          }}
-          startLabel="Start Date"
-          endLabel="End Date"
-          showSummary={false}
-          stacked
         />
       </div>
 
@@ -324,8 +319,6 @@ export default function SearchFilters() {
           setLat(undefined);
           setLng(undefined);
           setMaxPrice("");
-          setStartDate("");
-          setEndDate("");
           updateParams({
             category: "",
             city: "",
@@ -333,8 +326,6 @@ export default function SearchFilters() {
             lat: undefined,
             lng: undefined,
             maxPrice: "",
-            startDate: "",
-            endDate: "",
           });
         }}
         className="w-full py-2.5 rounded-xl bg-white/5 border border-white/10 text-white/60 text-sm font-bold hover:bg-white/10 hover:text-white transition-all"
