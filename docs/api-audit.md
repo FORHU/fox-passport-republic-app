@@ -1,20 +1,29 @@
 # API, Data-Fetching and Auth Audit
 
-Status: in progress
+Status: open — last verified 27 August 2026 (app `ccfcf75`, api `2b5e63c`)
 Scope: `fox-passport-republic-app` + `fox-passport-republic-api`
+Role: **the record.** `TOMORROW.md` is the running order; this is what was found,
+what was fixed, and what is still open. Sections 1–2 and 4 are closed history —
+section 3 is the live list.
 
 Every claim below was checked against the code. Where an external audit report
 was wrong, the correction is recorded rather than quietly dropped — the wrong
 version keeps coming back otherwise.
 
 > **This is not the only tracker.** Responsive and touch-input work lives in
-> `docs/responsive-plan.md`, which exists **only on the `chore/responsive-phase-0`
-> branch** — it is not visible from here. Neither document shows the whole
-> picture until those branches merge. Open items there include builder
-> tap-to-place, the duplicated `CustomExperienceBuilder`, the Playwright touch
+> [`responsive-plan.md`](./responsive-plan.md), in this folder. Neither document
+> shows the whole picture on its own. Open items there include the builder
+> tap-to-place fallback, the duplicated experience builder (one component file,
+> one inline copy at `src/app/event/[eventId]/page.tsx:21`), the Playwright touch
 > harness, and the `/mayor` rename decision.
 
 ---
+
+> **Tomorrow's queue:** [`mapanytime-comparison.md`](./mapanytime-comparison.md)
+> evaluates what to adopt from the mapanytime codebase. Short version: **do not**
+> copy its token storage (sessionStorage — its own comment says that is not XSS
+> protection, and the Flutter constraint forcing it does not apply here), **do**
+> take refresh-token rotation and Zod response contracts.
 
 ## 1. Corrections to the source audit
 
@@ -35,7 +44,7 @@ Read this section before re-litigating anything.
 
 ---
 
-## 2. Fixed — uncommitted on `perf/dedupe-dashboard-fetching`
+## 2. Fixed — merged via `perf/dedupe-dashboard-fetching` (app PR #36)
 
 ### 2.1 Infinite `GET /venues` loop — `useHostVenueEdit.ts`
 
@@ -185,14 +194,14 @@ Applied by hand twice (admin tabs, host role locks). A third will appear.
 
 ### 3.3 Duplicate `useVenuesByCategory`
 
-- [ ] Deduplicate `features/category/hooks` vs `features/venue/hooks`
+- [x] Duplicate deleted. See 4.7.
 
 Two near-identical copies of the same hook and endpoint. Same trap as the Stripe
 pages: fix one, the other drifts.
 
 ### 3.4 Login masks infrastructure errors as bad credentials
 
-- [ ] Distinguish auth failure from server failure in `auth.controller.ts`
+- [x] Done. See 4.8.
 
 Its catch-all returns `401 Invalid credentials` for *any* throw from
 `AuthSvc.login`, including database errors. That is what made a missing table
@@ -201,7 +210,8 @@ errors, 401 only for a genuine credential mismatch.
 
 ### 3.4b Untracked money-precision migration
 
-- [ ] Commit `20260826034741_re_name`, or decide it should not exist
+- [x] Committed as `chore(db): track the money-precision migration`. The
+      caution below still applies to any environment with real rows.
 
 Not mine — it appeared during this session. It converts **every money column**
 (`Booking`, `Event`, `Payment`, `payouts`, `refunds`, asset/service bookings, all
@@ -209,7 +219,7 @@ Not mine — it appeared during this session. It converts **every money column**
 already declared `Decimal` in 28 places and was committed that way, so this is
 the migration that closes drift the schema had already asserted. Floats for money
 is a real bug and this is the right direction — it matters directly for the
-Stripe Connect payout maths in `docs/adr/0002`.
+Stripe Connect payout maths in `fox-passport-republic-api/docs/adr/0002-stripe-connect-payouts.md`.
 
 Two cautions:
 
@@ -264,6 +274,113 @@ did not go 2-up until `md`, so even a large phone in landscape got one column):
 - [x] `AdminContent` page padding `p-8` → `p-4 sm:p-6 lg:p-8`
 - [x] `AdminChartsSection` — card padding, gaps and bar-chart gutters scaled;
       seven bars with 16px gutters was mostly gutter on a phone
+
+### 3.4d Line endings churn on every `format`
+
+- [x] Added to both repos. See 4.8.
+
+`npm run format` rewrote **199 files**; only 38 had real changes. The other 156
+were pure line-ending churn — prettier forces LF, the repo runs
+`core.autocrlf=true` and has **no `.gitattributes`**. That was unpicked by hand
+this time. Until the file exists, every format run produces a 156-file noise
+diff that collides with everyone else's branches, and the next person will not
+know to unpick it.
+
+### 3.4e Two admin UIs now have to be kept in step
+
+- [ ] Decide whether `MobileAdminView` earns its keep
+
+`MobileAdminView` is a hand-built mobile overview; `AdminContent` is the real
+dashboard. They are now both wired to real data, but they are two
+implementations of the same screen. The mockup had **already** drifted into
+pure placeholder content once — that is exactly the failure mode to expect
+again. The alternative is dropping it and letting the real admin render at all
+widths, which it is largely capable of (drawer sidebar, `lg:pl-64` offset,
+`overflow-x` on all eight tables).
+
+### 3.4f Mobile reject sends a canned reason
+
+- [x] Inline reason field added. See 4.8.
+
+The desktop flow prompts for a rejection reason; the mobile row has no room, so
+it sends `"Rejected from mobile admin"`. If that string is ever shown to the
+Foxer whose listing was rejected, it needs to become a real input.
+
+### 3.4g Single-session logs people out across their own devices
+
+- [ ] Confirm this is the intended trade
+
+Login revokes every other session for that account, so a user with a phone and a
+laptop is signed out of one whenever they use the other. That is what was asked
+for, and it is the right answer for shared-credential abuse — but it is a
+noticeable change for anyone who genuinely works across two devices. Enabling it
+also signs out every session that existed beforehand, the first time each user
+signs in.
+
+### 3.5 The proxy is unverified end to end
+
+- [x] Login verified through the proxy against a live API and browser.
+- [ ] Still unexercised in a browser: mobile admin (drawer, approve/reject),
+      the venue mobile booking bars, the reconnected `NavMobileMenu`, password
+      change/reset revocation, and the proxy's multipart and
+      401-refresh-replay paths.
+
+Types, lint, build and unit tests pass, but **no request has actually gone
+through the proxy** — there is no running backend here. Multipart, redirects and
+the 401-refresh-replay path are reasoned about, not observed. Verify before
+merging.
+
+## 4. Sessions can now be revoked
+
+- [x] `RefreshToken` model, issuance, verification and revocation
+- [x] Migration written and applied (`20260826141631_add_refresh_token`)
+- [x] **Verified end to end against a live API and database**
+
+Refresh was a stateless `jwt.verify` with nothing persisted, `POST /auth/logout`
+returned 200 and did nothing, and **the frontend never called it at all**. A
+leaked refresh token was valid 30 days with no way to revoke it.
+
+**Fix (API):**
+- `RefreshToken` model — stores the **jti only**, never the token: enough to
+  revoke, useless to anyone who reads the table. Indexed on `userId`/`expiresAt`,
+  cascade-deleted with the user.
+- `services/refresh-token.service.ts` — `issueRefreshToken`, `verifyRefreshToken`
+  (signature **and** revocation), `revokeRefreshToken`, `revokeAllForUser`.
+- Refresh tokens no longer embed role/email — those were never read on refresh,
+  since the user is re-fetched.
+- A jti missing from the table is invalid. That deliberately invalidates tokens
+  minted before this table existed, rather than letting them bypass revocation.
+- `AuthSvc.logout` never throws on a bad token: logout must always succeed.
+
+**Fix (app):** `clearAuthCookies` now reads the httpOnly refresh cookie and POSTs
+it to `/auth/logout` before deleting — it is the only place that still holds the
+token. Failures are swallowed so the network can never block logging out.
+
+> **Migration applied.** Purely additive — one `CREATE TABLE`, three indexes,
+> one FK. No existing table altered, no data touched. Written via
+> `migrate diff --script` and applied with `migrate deploy` rather than
+> `migrate dev`, because `deploy` can never prompt to reset the database.
+> `migrate diff` now reports "No difference detected".
+>
+> **Regression this caused, and the lesson:** adding `issueRefreshToken` to the
+> login path before the table existed made every login fail — and
+> `auth.controller.ts` turns *any* error from `AuthSvc.login` into
+> `401 Invalid credentials`, so a missing table was indistinguishable from a
+> wrong password. Schema-dependent code and its migration have to land together.
+> That the controller masks infrastructure failures as auth failures is worth
+> fixing separately (see 3.4).
+>
+> Verified against a live API and seeded database:
+>
+> | Step | Result |
+> |---|---|
+> | `POST /auth/login` | **200** — access + refresh token returned |
+> | `POST /auth/refresh-token` before logout | **200** |
+> | `POST /auth/logout` | **200** |
+> | `POST /auth/refresh-token` after logout | **401 "Invalid refresh token"** |
+>
+> The last row is the whole point: a refresh token that used to stay valid for
+> 30 days after logout is now dead the moment the user signs out.
 
 ### 4.1 One active session per account
 
@@ -390,12 +507,14 @@ before stashing, and both stashes applied cleanly afterwards.
       through from the request.
 - [x] Removed a dead reassignment in the proxy (`accessToken = refreshedToken`
       was never read again); `accessToken` is now `const`.
-- [ ] **`NavMobileMenu.tsx` is dead code — and has 117 lines of uncommitted edits
-      against it.** Nothing renders it, on this branch **or on `main` or
-      `staging`**. Mobile navigation is `MobileBottomNav` (`lg:hidden fixed
-      bottom-4`). Not caused by the merge resolution — verified against both
-      upstream branches. Either wire it up or delete it, but the edits currently
-      go nowhere.
+- [x] **`NavMobileMenu.tsx` was orphaned — now reconnected.** Nothing rendered it
+      on this branch, `main` or `staging`. Partly self-inflicted: resolving the
+      `Navbar` merge conflict I took upstream's side, which had dropped the
+      hamburger in favour of `MobileBottomNav`, and read the menu as dead rather
+      than as half of a feature mid-assembly. They are complementary —
+      `MobileBottomNav` carries four primary destinations plus Create, the panel
+      carries browse categories and the secondary/auth links that do not fit in
+      a five-slot bar. Hamburger restored at `lg:hidden`, panel rendered.
 
 Reviewed and found correct, for the record:
 
@@ -410,66 +529,331 @@ Reviewed and found correct, for the record:
 - The proxy is same-origin, so client calls no longer generate CORS preflights —
   the paired `OPTIONS` requests visible in DevTools earlier should disappear.
 
-### 3.5 The proxy is unverified end to end
+### 4.6 Token storage — the gap that survived the proxy work
 
-- [ ] Run the app against a live API and confirm login → authed call → logout
+- [x] `AuthStoreProvider` no longer resurrects tokens from `localStorage`
+- [x] Legacy tokens are actively purged from existing users' browsers
+- [ ] **Login still passes tokens through client JavaScript for one tick**
 
-Types, lint, build and unit tests pass, but **no request has actually gone
-through the proxy** — there is no running backend here. Multipart, redirects and
-the 401-refresh-replay path are reasoned about, not observed. Verify before
-merging.
+Section 2.6 claimed tokens were fully out of `localStorage`. **That was wrong.**
+`shared/providers/AuthStoreProvider.tsx` was still reading `fox_token` and
+`fox_refresh_token` from `localStorage` and pushing them **back into cookies on
+every mount** - migration code from before the tokens moved. Two problems:
 
-## 4. Sessions can now be revoked
+1. It re-admitted a token to the cookie jar from a script-readable source, which
+   is precisely what the httpOnly move existed to stop.
+2. **Every user who signed in before the change still had both tokens in their
+   browser**, readable by any script, with nothing to remove them.
 
-- [x] `RefreshToken` model, issuance, verification and revocation
-- [x] Migration written and applied (`20260826141631_add_refresh_token`)
-- [x] **Verified end to end against a live API and database**
+It now removes those two keys instead, so old copies disappear on each user's
+next visit rather than lingering until something overwrites them. `fox_user` is
+left alone: profile data, no token, and it is what rehydrates the session.
 
-Refresh was a stateless `jwt.verify` with nothing persisted, `POST /auth/logout`
-returned 200 and did nothing, and **the frontend never called it at all**. A
-leaked refresh token was valid 30 days with no way to revoke it.
+**How the earlier check missed it:** the verification grep used
+`localStorage.\(get\|set\)Item` — BRE alternation without `-E`, which matches
+nothing and reads as a pass. Re-running with `-E` found it immediately. A false
+negative reported as verified; worth remembering when a "no results" grep is used
+as evidence.
 
-**Fix (API):**
-- `RefreshToken` model — stores the **jti only**, never the token: enough to
-  revoke, useless to anyone who reads the table. Indexed on `userId`/`expiresAt`,
-  cascade-deleted with the user.
-- `services/refresh-token.service.ts` — `issueRefreshToken`, `verifyRefreshToken`
-  (signature **and** revocation), `revokeRefreshToken`, `revokeAllForUser`.
-- Refresh tokens no longer embed role/email — those were never read on refresh,
-  since the user is re-fetched.
-- A jti missing from the table is invalid. That deliberately invalidates tokens
-  minted before this table existed, rather than letting them bypass revocation.
-- `AuthSvc.logout` never throws on a bad token: logout must always succeed.
+**Residual, still open.** `useAuth.ts:87` receives the login response in client
+JavaScript and hands it to the `setAuthCookies` server action. The tokens are
+never *stored* client-side, but they exist in memory for that tick. Closing it
+means moving login behind a route handler that sets the cookies directly so the
+response body never reaches the browser. Smaller exposure than persistent
+storage was, but it is the last place a token touches the client.
 
-**Fix (app):** `clearAuthCookies` now reads the httpOnly refresh cookie and POSTs
-it to `/auth/logout` before deleting — it is the only place that still holds the
-token. Failures are swallowed so the network can never block logging out.
+Current state, for reference:
 
-> **Migration applied.** Purely additive — one `CREATE TABLE`, three indexes,
-> one FK. No existing table altered, no data touched. Written via
-> `migrate diff --script` and applied with `migrate deploy` rather than
-> `migrate dev`, because `deploy` can never prompt to reset the database.
-> `migrate diff` now reports "No difference detected".
->
-> **Regression this caused, and the lesson:** adding `issueRefreshToken` to the
-> login path before the table existed made every login fail — and
-> `auth.controller.ts` turns *any* error from `AuthSvc.login` into
-> `401 Invalid credentials`, so a missing table was indistinguishable from a
-> wrong password. Schema-dependent code and its migration have to land together.
-> That the controller masks infrastructure failures as auth failures is worth
-> fixing separately (see 3.5).
->
-> Verified against a live API and seeded database:
+| Store | Contents | Script-readable |
+|---|---|---|
+| `fox_token` cookie | access token, 15m | no (httpOnly) |
+| `fox_refresh_token` cookie | refresh token, 7d | no (httpOnly) |
+| `fox_user` cookie | profile only | yes, deliberately |
+| `localStorage` | `fox_user` only | yes, profile only |
+| `sessionStorage` | checkout/booking drafts | yes, no tokens |
+
+### 4.7 Deabstraction
+
+- [x] Deleted the duplicate `useVenuesByCategory` outright
+
+First attempt left a re-export shim, which is indirection with extra steps - two
+files to read instead of one, and the implementation somewhere else. Deleted
+properly; the three import sites now point at the venue copy, which has the
+superset `Venue` type.
+
+- [x] Deleted 5 barrels with **zero** importers
+
+`features/{category,dashboard,landing,role-application}/index.ts` and
+`shared/lib/server/index.ts`. The 7 barrels with real importers (1-4 each) were
+kept - removing those would mean rewriting call sites to drop a convention the
+codebase uses deliberately, which is churn rather than simplification.
+
+One of the deleted five was self-inflicted: exports had been added to
+`features/landing/index.ts` during the landing refactor, to a barrel nothing
+imported.
+
+### 4.8 Closed since the last pass
+
+- [x] `.gitattributes` added to both repos (`* text=auto eol=lf`), so `format`
+      stops churning 156 files' line endings. Added without `--renormalize`, so
+      files normalise as they are touched rather than in one mass commit that
+      would conflict with every open branch.
+- [x] Login no longer masks server errors as `401`. Only a genuine credential
+      mismatch returns 401; anything else is a 500.
+- [x] Mobile reject collects a real reason inline (confirm/cancel, Enter/Escape)
+      instead of sending a canned string.
+
+### 4.9 Refresh tokens rotate on use
+
+- [x] Implemented and **verified against a live API and database**
+
+Refresh tokens were reusable for their full 7 days. Revocation existed (§4), but
+nothing distinguished the real holder from someone with a copy: both tokens were
+the same token, and both worked until expiry. Rotation makes them single-use, so
+the two copies diverge the moment either is spent — and the loser presenting a
+dead token is the evidence.
+
+**API.** `rotateRefreshToken()` in `refresh-token.service.ts` replaces the plain
+verify on the refresh path. Three outcomes:
+
+| Presented token | Result |
+|---|---|
+| Live | Revoked, successor issued, linked via `replacedByJti` |
+| Rotated < 60s ago | A parallel-request race — successor issued anyway |
+| Rotated > 60s ago | **Reuse.** `revokeAllForUser`, then 401 |
+| Revoked by logout / password change | Ordinary 401. Never trips theft detection |
+
+Two schema columns carry that distinction: `rotatedAt` and `replacedByJti`
+(migration `20260827090000_add_refresh_token_rotation`, purely additive — two
+nullable columns, applied with `migrate deploy`). `revokedAt` **without**
+`rotatedAt` still means logout, which is why a stale tab cannot end a user's
+other sessions.
+
+The rotation is claimed with a conditional `updateMany` on `revokedAt: null`, so
+of N concurrent callers exactly one wins and the rest fall through to the grace
+path. Reuse is logged in `auth.controller.ts` — it is the only place that signal
+exists.
+
+**Controller.** The refresh endpoint no longer flattens every failure into 401.
+`RefreshTokenError` → 401, anything else → 500. Same correction as §3.4: an
+infrastructure fault must not present as an auth failure.
+
+**App — three call sites, two of which would have killed sessions silently.**
+
+- `api/proxy/[...path]/route.ts` now persists **both** cookies. Persisting only
+  the access token would have left the browser holding a revoked refresh token.
+- It also collapses concurrent refreshes in a process-local in-flight map.
+  §2.2 assumed "the proxy serialises refreshes server-side" — **it did not**,
+  there was no lock. Two parallel 401s each spent the same token. Idempotent
+  before rotation, a logout bug after it.
+- `auth-actions.ts` `refreshUserSession` persists the rotated token too.
+- **`server/data.ts` no longer refreshes at all.** It never could persist —
+  a Server Component may not write cookies, so the write threw and was swallowed
+  (§2.6). Wasteful before; with rotation it would spend the live token and drop
+  its successor. On a protected route `middleware.ts` has already rejected an
+  expired access token before this code runs, so a 401 here means the session is
+  genuinely over.
+
+> **Verified end to end** against the API on :6002 and the dev database:
 >
 > | Step | Result |
 > |---|---|
-> | `POST /auth/login` | **200** — access + refresh token returned |
-> | `POST /auth/refresh-token` before logout | **200** |
-> | `POST /auth/logout` | **200** |
-> | `POST /auth/refresh-token` after logout | **401 "Invalid refresh token"** |
+> | Login, then refresh with `T1` | **200**, and a **new** refresh token `T2` is returned |
+> | Replay `T1` immediately (race window) | **200** — not treated as theft |
+> | Refresh with `T2` | **200** → `T3` |
+> | Replay `T1` with its `rotatedAt` backdated 10 min | **401**, reuse logged |
+> | Refresh with `T3` — the legitimate live token | **401** — every session revoked |
 >
-> The last row is the whole point: a refresh token that used to stay valid for
-> 30 days after logout is now dead the moment the user signs out.
+> The last two rows are the point: replaying a superseded token ends the account's
+> sessions rather than quietly minting more.
+>
+> Unit tests: `tests/refresh-token.rotation.spec.ts`, 7 cases including the
+> parallel-rotation race and the logout-is-not-theft distinction.
+
+**Known consequence.** Reuse detection signs out the legitimate user too — that
+is the intended trade (a copy exists; end everything and make them re-authenticate),
+but it means a client that drops a rotated token will look like an attack. All
+three persisters were fixed for exactly that reason.
+
+### 4.10 Any authenticated user could edit or delete any review
+
+- [x] Fixed and **verified against a live API**
+
+`PUT /api/v1/reviews/:id` and `DELETE /api/v1/reviews/:id` required a token but
+never asked *whose*. No layer checked:
+
+| Layer | Before |
+|---|---|
+| `review.routes.ts:17-18` | `authenticate` only — no role, no owner guard |
+| `review.controller.ts` | Took `:id`, forwarded `req.body`, **never read `req.user`** |
+| `review.service.ts` | `updateReview(id, data)` — no requester parameter existed |
+| `review.repository.ts:247` | `prisma.review.update({ where: { id }, data })` with `data` = raw body |
+
+Two problems stacked: an ownership hole, and — because the body reached Prisma
+unvalidated and no Joi schema existed on the route — mass assignment on every
+column of `Review`.
+
+**Why it is not cosmetic.** `rating` feeds `specialization.service.ts:51`
+(`_avg.rating >= EARNED_MIN_RATING`). Earned Specializations are auto-granted at
+three completed bookings with a 4.0+ average and, per `CONTEXT.md`, **never
+revoked**. Deleting the bad reviews and inflating the rest was enough to mint a
+permanent badge.
+
+**Why it reads as an oversight rather than a design gap.** Every neighbour in the
+same file already did the check: `createReview` verifies the booking belongs to
+the reviewer and is not pending or cancelled, and `replyToReview` verifies
+author-or-host. Only these two were skipped.
+
+**Fix.** `assertCanMutate` in the service — author or admin, else `Unauthorized`;
+a Joi schema on the controller restricted to `rating` (1–5) and `comment`; the
+service narrows the patch again so a future caller that skips the schema still
+cannot mass-assign; and `reviewMutationStatus` maps `Unauthorized → 403`,
+`Review not found → 404`, rather than collapsing everything into 400 (§3.4 again).
+
+> Verified against the API on :6002 and the dev database:
+>
+> | Attempt | Result |
+> |---|---|
+> | Non-author `PUT` on someone else's review | **403** |
+> | Non-author `DELETE` | **403** |
+> | Admin `PUT` (moderation must keep working) | **200**, other fields untouched |
+> | Body carrying `userId` / `entityId` | **400** `"userId" is not allowed` |
+> | `rating: 99` | **400** out of range |
+> | Unknown review id | **404** |
+>
+> The seeded review used for the test was restored to its exact seeder value.
+>
+> Unit tests: `tests/review.authorization.spec.ts`, 6 cases. The refusal cases
+> assert the repository was **not called at all**, not merely that the response
+> was an error.
+
+### 4.11 `requireOwnerOrAdmin` has no call sites
+
+- [ ] Decide: adopt it, or delete it
+
+The middleware exists and is documented, and `AUDIT_REPORT.md` §3 cites it as an
+enforced RBAC control. **Nothing calls it.** Ownership is hand-rolled per
+resource instead — venue compares `mayorId` in the service, asset, service and
+event-template each read `ownerId` in the controller and pass it down. All of
+them are correct; all of them are different.
+
+That is the conditions that produced §4.10: there is no single mechanism to
+forget, so forgetting is invisible. Either route the resources through
+`requireOwnerOrAdmin` where the owner id is derivable from the path, or delete
+it so it stops implying a guarantee that is not there.
+
+### 4.12 No boot-time validation of required environment variables
+
+- [ ] Fail fast on missing secrets
+
+`config.ts` reads 13 values as `process.env.X as string`. There are **no
+hardcoded fallback secrets** — checked specifically, and that part is right —
+but nothing validates presence either, so a missing `ACCESS_TOKEN_SECRET` lets
+the API boot and then fail every login at signing time.
+
+The app already does this correctly and says why: `middleware.ts` refuses to
+serve protected routes without the secret rather than defaulting. The API should
+match it. Related: `SERVICE_ACCOUNT` (`config.ts:55`) is exported and imported
+nowhere.
+
+### 4.13 The seed could mint a public-password admin, and nothing stopped it running in production
+
+- [x] Fixed and verified
+
+`prisma/seeder/user.seeder.ts:59-60` creates `admin@example.com` with
+`systemRole: "admin"` and the password `Adminjun1234567890!`, committed in the
+repository. Five other accounts follow the same pattern (`mayor@`, `host@`,
+`servicefoxer@`, and the `*@foxers.ph` batch).
+
+**There is no environment guard.** `prisma/seed.ts` reads `DATABASE_URL` and
+runs; the only `process.exit(1)` in it is an error handler, not a check. So
+`pnpm prisma db seed` pointed at a production connection string creates a
+working admin login whose password is public. `DOCKER_SETUP.md` lists the seed
+as a routine step, which makes the mistake an easy one to make.
+
+Two things limit the blast radius, and neither is a fix:
+
+- The upsert's `update` branch does **not** write `password`, so re-seeding a
+  database that already has these accounts will not reset anyone's password. The
+  risk is a fresh or partially-populated database, where `create` runs.
+- The hashes are PBKDF2 (`1000` iterations, sha512) — the legacy format
+  `utils/password.ts` treats as read-only and transparently re-hashes to bcrypt
+  on first login. Seeded users therefore start on the weaker algorithm. 1000
+  iterations is far below anything current; it is acceptable only because these
+  are meant to be throwaway dev accounts, which is exactly the assumption the
+  missing guard breaks.
+
+**Fixed 27 Aug** — `assertSafeToSeed()` in `prisma/seed.ts` refuses to run
+unless *both* hold:
+
+- `NODE_ENV` is `development` or `test`, **and**
+- `DATABASE_URL` points at a local host (`localhost`, `127.0.0.1`, `::1`, or the
+  docker service names `postgres` / `local_postgres`)
+
+`ALLOW_SEED=1` overrides, deliberately and per-invocation, with a warning. The
+host check matters more than the `NODE_ENV` one: the realistic accident is not
+someone setting `NODE_ENV=production` and seeding anyway, it is a developer with
+`NODE_ENV` unset whose `DATABASE_URL` points at staging.
+
+Both refusals verified by running the seed with each condition violated.
+
+> **The passwords stay in the file, deliberately.** A first pass also made all
+> eleven env-overridable (`SEED_ADMIN_PASSWORD` and friends). That was reverted:
+> once the seed cannot reach a non-local database, these are ordinary dev
+> fixtures, and fixtures belong in the fixture file. Eleven environment
+> variables nobody will set is machinery that obscures the data without adding
+> protection the guard does not already provide.
+>
+> Still true and still worth knowing: the hashes are PBKDF2 at 1000 iterations,
+> the legacy format `utils/password.ts` re-hashes to bcrypt on first login. That
+> is acceptable only for throwaway local accounts — which the guard is now what
+> guarantees.
+
+### 4.14 The QueryClient had no defaults, so 15 queries refetched on every focus
+
+- [x] Fixed
+
+Reported as "events are fetching every time" — a burst of `/admin/*/pending` and
+`/events` requests on the admin page. The cause was not on the admin page.
+
+`shared/providers/QueryProvider.tsx` constructed `new QueryClient()` bare, so
+React Query's own defaults applied app-wide: **`staleTime: 0`** and
+**`refetchOnWindowFocus: true`**. Every query was stale the instant it resolved,
+so any query without its own `staleTime` refetched on every mount *and* every
+time the window regained focus — clicking into devtools, alt-tabbing, clicking
+back into the page.
+
+**15 of 36 `useQuery` call sites** relied on that default, including all three
+admin approval queues (`useAdminPendingVenues` / `Assets` / `Services`). On
+`/admin` that landed on top of the deliberate 5s `/events` poll in
+`useAdminData`, producing the interleaved `pending pending pending events`
+pattern.
+
+This is §2.3 repeating. That entry records raising `staleTime` *inside*
+`useAdminData` for exactly this reason — but the global those hooks were all
+working around was never set, so each new hook started broken again and had to
+be fixed by hand. Twenty-one had been; fifteen had not.
+
+**Fix.** `staleTime: 30_000` and `refetchOnWindowFocus: false` as client
+defaults. Deliberate behaviour still wins: `refetchInterval` is untouched, and
+the seven hooks that explicitly set `refetchOnWindowFocus: true` keep it.
+`retry` was left at the React Query default — unrelated to this bug, and
+changing it would alter failure behaviour everywhere for no reason.
+
+Checked and **not** the cause: `AdminContent` and `MobileAdminView` both mount
+the same three pending hooks, but they share query keys, so React Query dedupes
+them into one request. (It is still two components rendering one screen — §3.4e.)
+
+> `src/__tests__/data/queryDefaults.test.ts` pins the defaults. Confirmed to
+> fail against the pre-fix file and pass after, rather than assumed to.
+>
+> These are source assertions and therefore weak — they would survive a
+> behaviour-preserving rewrite. Noted because the first version of that test
+> **failed against correct code**: it scanned for `new QueryClient()` and
+> `staleTime: 0`, and matched the comment explaining the fix. It now strips
+> comments first. A source-scanning test can be wrong in both directions.
+
+---
 
 ## 5. What is verified, and how
 

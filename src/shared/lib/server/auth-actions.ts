@@ -94,6 +94,20 @@ export async function refreshUserSession(): Promise<Record<
       path: "/",
     });
 
+    // Step 2b: store the rotated refresh token. Refresh tokens are single-use —
+    // the one just spent is revoked, so failing to save its successor here
+    // would end the session at the next refresh rather than extending it.
+    const newRefreshToken: string | undefined = tokenData.refreshToken;
+    if (newRefreshToken) {
+      cookieStore.set("fox_refresh_token", newRefreshToken, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "lax",
+        maxAge: SESSION_MAX_AGE,
+        path: "/",
+      });
+    }
+
     // Step 3: fetch fresh profile using the new token
     const { data: profileData } = await axios.get(
       `${appConfig.apiUrl}/profile`,

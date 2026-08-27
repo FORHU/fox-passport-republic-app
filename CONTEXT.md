@@ -1,6 +1,6 @@
 ---
 domain: Fox Passport Republic
-updated: 2026-07-24
+updated: 2026-08-27
 ---
 
 # Domain Glossary
@@ -21,7 +21,8 @@ _Avoid_: Regular user, plain user
 **RoleType**
 A supply-side capability a Citizen can apply for and be approved to hold. Multiple RoleTypes may be held simultaneously — they are additive, not exclusive.
 Values: `venueFoxer`, `eventFoxer`, `gearFoxer`, `serviceFoxer`, `investor`.
-Distinct from `systemRole` (`user`/`admin`/`super_admin`), which governs platform administration.
+Distinct from `systemRole` (`user`/`admin`), which governs platform administration.
+There is no `super_admin` — `enum SystemRole` in `schema.prisma` has exactly two values.
 _Avoid_: Role (ambiguous with systemRole), permission
 
 **VenueFoxer**
@@ -30,7 +31,7 @@ Code: `roleType` includes `"venueFoxer"`.
 _Avoid_: Mayor (old name)
 
 **EventFoxer**
-A Citizen approved to assemble Event Templates: attaches an existing Venue (from a VenueFoxer) plus Assets/Services (from GearFoxers/ServiceFoxers), then submits for admin approval. Curates and coordinates — does not supply their own Venue, Assets, or Services.
+A Citizen approved to assemble Event Templates: attaches an existing Venue (from a VenueFoxer) plus Assets/Services (from GearFoxers/ServiceFoxers), then submits for admin approval. Curates and coordinates — does not supply their own Venue, Assets, or Services. Also acts as program manager for the event, coordinating all suppliers (decorations, catering, etc.) to deliver the full experience.
 Code: `roleType` includes `"eventFoxer"`.
 _Avoid_: Host (old name)
 
@@ -50,18 +51,6 @@ Umbrella term for a GearFoxer or ServiceFoxer — anyone supplying inventory. Us
 **Investor**
 A Citizen approved as a financial stakeholder. Application requires proof of funds and an investment range, unlike operational RoleTypes.
 Code: `roleType` includes `"investor"`.
-
-**EventFoxer**
-Role-holder who assembles Events: an Event Template attaches an existing Venue plus Assets/Services, then spawns an Event Request for admin approval. Also acts as program manager, coordinating suppliers to deliver the event.
-Code: `roleType: "eventFoxer"`. _Avoid_: Host (old name).
-
-**GearFoxer**
-Role-holder who supplies physical Assets (equipment, furniture, sound systems) for standalone booking or attachment to Event Templates.
-Code: `roleType: "gearFoxer"`. _Avoid_: FoxerAsset, Asset Foxer (old names).
-
-**ServiceFoxer**
-Role-holder who supplies Services (catering, entertainment, staffing) for standalone booking or attachment to Event Templates.
-Code: `roleType: "serviceFoxer"`. _Avoid_: FoxerService, Service Foxer (old names).
 
 ---
 
@@ -157,4 +146,11 @@ _Avoid_: confirmation code, booking code
 ## What This Glossary Is NOT
 
 This file does not contain implementation details, file paths, API contracts, or architectural decisions.
-Those belong in `docs/adr/` or code comments.
+Those belong in code comments, or in the ADRs — which live in the **API** repo at
+`fox-passport-republic-api/docs/adr/`, not here:
+
+- `0001-host-markup-and-server-computed-event-total.md`
+- `0002-stripe-connect-payouts.md`
+
+Ongoing engineering trackers are in [`docs/`](./docs/); start at
+[`docs/TOMORROW.md`](./docs/TOMORROW.md).
