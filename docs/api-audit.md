@@ -853,6 +853,90 @@ them into one request. (It is still two components rendering one screen — §3.
 > `staleTime: 0`, and matched the comment explaining the fix. It now strips
 > comments first. A source-scanning test can be wrong in both directions.
 
+### 4.15 `GET /users/:id` published the password hash, unauthenticated
+
+- [x] Fixed
+
+Four hops, nothing guarding any of them:
+
+| Layer | Before |
+|---|---|
+| `users.routes.ts:16` | `router.get("/:id", UsersCtrl.getUserById)` — **no `authenticate`** |
+| `users.controller.ts:88` | `res.json(user)`, verbatim |
+| `users.service.ts:38` | passed through unchanged |
+| `users.repository.ts:319` | `prisma.user.findUnique({ where: { id } })` — **no `select`, no `omit`** |
+
+A bare `findUnique` returns every scalar, and `User.password` is a required
+field (`schema.prisma:12`). There was no global `omit` in `prisma.config.js`, in
+the schema, or on the `PrismaClient` — checked all three. So an anonymous
+request with a user id returned the password hash along with `email`, `phone`,
+`address`, `city`, `state`, `stripeCustomerId` and `stripeAccountId`.
+
+Hashes are bcrypt cost 12 for anyone who has logged in since the re-hash landed,
+but seeded and never-logged-in accounts are still PBKDF2 at 1000 iterations.
+
+**Fix, in two layers.**
+
+1. **Default-deny at the client.** `utils/prisma.ts` now sets
+   `omit: { user: { password: true } }`, so no query returns the hash unless it
+   asks. Exactly three call sites need it — login, change password, delete
+   account — and they opt in explicitly. A new query can no longer leak the hash
+   by forgetting a `select`; only by deliberately asking, which is reviewable.
+2. **An allow-list at the endpoint.** `findUserById` selects twelve public
+   fields rather than the row. The omit stops the hash; it does not stop phone,
+   address and Stripe ids, and a profile lookup has no business publishing those.
+
+The route is authenticated now too. It has no caller in the app — the client
+uses `/users/foxers/:id` for public profiles — so locking it down breaks nothing.
+
+### 4.16 `GET /bookings` was public, and its filters came from the query string
+
+- [x] Fixed
+
+`booking.routes.ts:46` had no `authenticate`, and `BookingRepo.findAll` includes
+`user: { select: { name: true, email: true } }` — so it enumerated every
+customer's name and email address, twenty per page.
+
+Worse, `filters` was `req.query` spread straight into a `Prisma.BookingWhereInput`.
+Express parses bracket syntax into nested objects by default, so
+`?user[email][contains]=@gmail.com` was a Prisma operator the caller controlled.
+
+**Fix.** The route requires a session. The service allow-lists the filters it
+accepts (`status`, `eventId`, `userId`, `ticketCode`, `checkedIn`, `hostId`) and
+coerces them, and scopes the result to what the caller is party to: admins see
+everything, anyone else sees bookings they made or bookings on events they
+organise. The scope is `AND`-ed over the requested filters so a filter cannot
+widen it.
+
+Noticed while mapping the filters: **`hostId` is not a column on `Booking`** —
+the host is the event's organiser. `useCalendarBookings.ts:132` has been sending
+`params: { hostId: user.id }`, which reached Prisma as an unknown field. It is
+mapped to `event: { organizerId }` now.
+
+> `tests/public-exposure.spec.ts` parses the route files and asserts the
+> middleware chain, plus the client-level omit and the `findUserById` field
+> list. All five confirmed to fail against the pre-fix code and pass after.
+>
+> **Not verified at runtime.** Postgres (`localhost:5433`) and Redis were both
+> down while this was written, so unlike §4.10 and §4.9 there is no live
+> request/response evidence here — only the code path and the tests.
+
+### 4.17 Correction: my own route audit missed every GET
+
+- [x] Recorded
+
+§4.11 reported "all 122 mutating routes carry `authenticate`". That was true and
+also beside the point: the sweep only looked at POST/PUT/PATCH/DELETE, so it
+never examined a single GET — and both §4.15 and §4.16 are GETs.
+
+There are **35 unauthenticated GET routes**. Most are legitimately public
+marketplace browse (venues, assets, services, categories, search, locations,
+badges, leaderboard) and `event-request GET /` is `listApproved`, deliberately
+public for the landing page. Two were not.
+
+Worth remembering when a sweep reports clean: the finding is only as broad as
+the filter that produced it.
+
 ---
 
 ## 5. What is verified, and how

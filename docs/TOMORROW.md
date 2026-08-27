@@ -112,6 +112,17 @@ Login through the proxy *is* browser-confirmed. That is the only part that is.
       could rewrite or delete any review, and inflate the ratings that grant
       never-revoked Earned Specializations. Fixed and verified 27 Aug;
       [`api-audit.md`](./api-audit.md) §4.10.
+- [x] **`GET /users/:id` published the password hash to anyone** — no auth, and
+      a bare `findUnique` that returned the whole row. Fixed 27 Aug: the Prisma
+      client now omits `User.password` globally, the lookup selects an explicit
+      field list, and the route is authenticated. §4.15.
+- [x] **`GET /bookings` was public and leaked every customer's name and email**,
+      with Prisma filter operators taken from the query string. Fixed: auth,
+      a filter allow-list, and results scoped to what the caller is party to.
+      §4.16.
+- [ ] **Verify §4.15 and §4.16 against a running stack.** Unlike the rotation
+      and review fixes, these were written while Postgres and Redis were down,
+      so there is no live request evidence — only the code path and tests.
 - [ ] **Decide what to do about `requireOwnerOrAdmin`** — zero call sites, but
       cited as an enforced control. Every resource hand-rolls ownership its own
       way, which is exactly how the review hole stayed invisible. §4.11.
