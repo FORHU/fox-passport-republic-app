@@ -120,9 +120,16 @@ Login through the proxy *is* browser-confirmed. That is the only part that is.
       with Prisma filter operators taken from the query string. Fixed: auth,
       a filter allow-list, and results scoped to what the caller is party to.
       §4.16.
-- [ ] **Verify §4.15 and §4.16 against a running stack.** Unlike the rotation
-      and review fixes, these were written while Postgres and Redis were down,
-      so there is no live request evidence — only the code path and tests.
+- [x] **Verified §4.15 and §4.16 against a running stack** — 27 Aug, once
+      Postgres and Redis were back up. Anonymous requests to both endpoints
+      return 401; an authenticated user lookup returns twelve fields with no
+      password, phone, address or Stripe ids; an admin sees all 19 bookings
+      while a citizen sees only their own 4; and neither a `userId` filter nor
+      Prisma bracket-syntax injection widens that scope.
+- [x] **Docker stack corrected.** `docker-compose.yml` had no `api` service
+      despite `DOCKER_SETUP.md` being written around one, and neither service
+      had the healthchecks the doc claimed. Both rewritten on the pattern used
+      in `mapanytime-api`; existing volumes and ports preserved. §4.18.
 - [ ] **Decide what to do about `requireOwnerOrAdmin`** — zero call sites, but
       cited as an enforced control. Every resource hand-rolls ownership its own
       way, which is exactly how the review hole stayed invisible. §4.11.

@@ -937,6 +937,59 @@ public for the landing page. Two were not.
 Worth remembering when a sweep reports clean: the finding is only as broad as
 the filter that produced it.
 
+### 4.18 Correction: `DOCKER_SETUP.md` was not sound, and the compose file was missing half the stack
+
+- [x] Both rewritten and verified
+
+The doc audit graded `DOCKER_SETUP.md` **"Sound — the one genuinely usable
+onboarding document in the tree."** That was wrong, and wrong in the same shape
+as §4.17: the check confirmed every *file, script and port* it named existed,
+and never opened `docker-compose.yml` to see whether the *services* it was built
+around existed.
+
+They did not. Compose defined `postgres`, `pgadmin` and `redis` — **there was no
+`api` service** — while the doc was written around one:
+
+| Doc claimed | Reality |
+|---|---|
+| `docker-compose build` builds the API image | nothing to build |
+| `docker-compose exec api …` (seven times) | no such service |
+| API on `localhost:6002` after `up -d` | not started by compose |
+| `fox_postgres` / `fox_redis` / `fox_api` | `local_postgres` / `local_redis` / `local_pgadmin` |
+| Postgres `5432`, Redis `6379` | **5433**, **6378** |
+| user `postgres`, db `fox_passport_db` | user `admin`, db `foxpassportrepublic` |
+| Redis password `redis_password` | no `requirepass` at all |
+| `Up (healthy)`, "healthcheck every 10s" | **no healthchecks defined** |
+| — | pgAdmin on 5050, undocumented |
+
+**Compose rewritten**, following the pattern in `mapanytime-api` — which does
+this better and was worth copying:
+
+- Every credential and port is `${VAR:-default}` rather than hardcoded. The
+  defaults are the values this project already used, so an existing `.env` and
+  an existing `pgdata` volume keep working untouched.
+- The `api` service exists, and overrides `DATABASE_URL` and `REDIS_HOST` to the
+  compose **service names**. mapanytime carries a comment explaining exactly
+  why; inside a container `localhost` is that container, which is the single
+  most common way a working local setup breaks once containerised.
+- It sits behind a `--profile app` so a bare `up -d` still starts services only
+  and does not fight `pnpm dev` for port 6002.
+- Real healthchecks (`pg_isready`, `redis-cli ping`), which the doc had been
+  claiming for months. `api` waits on both via `condition: service_healthy`.
+
+One thing **not** copied: mapanytime has no healthchecks either. The doc's claim
+was the reason to add them rather than delete the claim.
+
+> Verified by running the rewritten doc's own checklist end to end: `compose ps`
+> shows both services `(healthy)`, `pg_isready` accepts connections, `redis-cli
+> ping` returns PONG, `migrate status` is up to date, `/api/health` returns 200
+> with Redis connected, and the suite is 68/68. The 147 seeded users survived
+> the container recreate — the named volumes were deliberately left unchanged.
+
+**Two audit lessons now recorded twice** (§4.17, and here): a sweep is only as
+broad as the filter that produced it, and "every file it names exists" is not
+the same as "everything it describes exists".
+
 ---
 
 ## 5. What is verified, and how
