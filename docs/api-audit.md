@@ -853,6 +853,143 @@ them into one request. (It is still two components rendering one screen — §3.
 > `staleTime: 0`, and matched the comment explaining the fix. It now strips
 > comments first. A source-scanning test can be wrong in both directions.
 
+### 4.15 `GET /users/:id` published the password hash, unauthenticated
+
+- [x] Fixed
+
+Four hops, nothing guarding any of them:
+
+| Layer | Before |
+|---|---|
+| `users.routes.ts:16` | `router.get("/:id", UsersCtrl.getUserById)` — **no `authenticate`** |
+| `users.controller.ts:88` | `res.json(user)`, verbatim |
+| `users.service.ts:38` | passed through unchanged |
+| `users.repository.ts:319` | `prisma.user.findUnique({ where: { id } })` — **no `select`, no `omit`** |
+
+A bare `findUnique` returns every scalar, and `User.password` is a required
+field (`schema.prisma:12`). There was no global `omit` in `prisma.config.js`, in
+the schema, or on the `PrismaClient` — checked all three. So an anonymous
+request with a user id returned the password hash along with `email`, `phone`,
+`address`, `city`, `state`, `stripeCustomerId` and `stripeAccountId`.
+
+Hashes are bcrypt cost 12 for anyone who has logged in since the re-hash landed,
+but seeded and never-logged-in accounts are still PBKDF2 at 1000 iterations.
+
+**Fix, in two layers.**
+
+1. **Default-deny at the client.** `utils/prisma.ts` now sets
+   `omit: { user: { password: true } }`, so no query returns the hash unless it
+   asks. Exactly three call sites need it — login, change password, delete
+   account — and they opt in explicitly. A new query can no longer leak the hash
+   by forgetting a `select`; only by deliberately asking, which is reviewable.
+2. **An allow-list at the endpoint.** `findUserById` selects twelve public
+   fields rather than the row. The omit stops the hash; it does not stop phone,
+   address and Stripe ids, and a profile lookup has no business publishing those.
+
+The route is authenticated now too. It has no caller in the app — the client
+uses `/users/foxers/:id` for public profiles — so locking it down breaks nothing.
+
+### 4.16 `GET /bookings` was public, and its filters came from the query string
+
+- [x] Fixed
+
+`booking.routes.ts:46` had no `authenticate`, and `BookingRepo.findAll` includes
+`user: { select: { name: true, email: true } }` — so it enumerated every
+customer's name and email address, twenty per page.
+
+Worse, `filters` was `req.query` spread straight into a `Prisma.BookingWhereInput`.
+Express parses bracket syntax into nested objects by default, so
+`?user[email][contains]=@gmail.com` was a Prisma operator the caller controlled.
+
+**Fix.** The route requires a session. The service allow-lists the filters it
+accepts (`status`, `eventId`, `userId`, `ticketCode`, `checkedIn`, `hostId`) and
+coerces them, and scopes the result to what the caller is party to: admins see
+everything, anyone else sees bookings they made or bookings on events they
+organise. The scope is `AND`-ed over the requested filters so a filter cannot
+widen it.
+
+Noticed while mapping the filters: **`hostId` is not a column on `Booking`** —
+the host is the event's organiser. `useCalendarBookings.ts:132` has been sending
+`params: { hostId: user.id }`, which reached Prisma as an unknown field. It is
+mapped to `event: { organizerId }` now.
+
+> `tests/public-exposure.spec.ts` parses the route files and asserts the
+> middleware chain, plus the client-level omit and the `findUserById` field
+> list. All five confirmed to fail against the pre-fix code and pass after.
+>
+> **Not verified at runtime.** Postgres (`localhost:5433`) and Redis were both
+> down while this was written, so unlike §4.10 and §4.9 there is no live
+> request/response evidence here — only the code path and the tests.
+
+### 4.17 Correction: my own route audit missed every GET
+
+- [x] Recorded
+
+§4.11 reported "all 122 mutating routes carry `authenticate`". That was true and
+also beside the point: the sweep only looked at POST/PUT/PATCH/DELETE, so it
+never examined a single GET — and both §4.15 and §4.16 are GETs.
+
+There are **35 unauthenticated GET routes**. Most are legitimately public
+marketplace browse (venues, assets, services, categories, search, locations,
+badges, leaderboard) and `event-request GET /` is `listApproved`, deliberately
+public for the landing page. Two were not.
+
+Worth remembering when a sweep reports clean: the finding is only as broad as
+the filter that produced it.
+
+### 4.18 Correction: `DOCKER_SETUP.md` was not sound, and the compose file was missing half the stack
+
+- [x] Both rewritten and verified
+
+The doc audit graded `DOCKER_SETUP.md` **"Sound — the one genuinely usable
+onboarding document in the tree."** That was wrong, and wrong in the same shape
+as §4.17: the check confirmed every *file, script and port* it named existed,
+and never opened `docker-compose.yml` to see whether the *services* it was built
+around existed.
+
+They did not. Compose defined `postgres`, `pgadmin` and `redis` — **there was no
+`api` service** — while the doc was written around one:
+
+| Doc claimed | Reality |
+|---|---|
+| `docker-compose build` builds the API image | nothing to build |
+| `docker-compose exec api …` (seven times) | no such service |
+| API on `localhost:6002` after `up -d` | not started by compose |
+| `fox_postgres` / `fox_redis` / `fox_api` | `local_postgres` / `local_redis` / `local_pgadmin` |
+| Postgres `5432`, Redis `6379` | **5433**, **6378** |
+| user `postgres`, db `fox_passport_db` | user `admin`, db `foxpassportrepublic` |
+| Redis password `redis_password` | no `requirepass` at all |
+| `Up (healthy)`, "healthcheck every 10s" | **no healthchecks defined** |
+| — | pgAdmin on 5050, undocumented |
+
+**Compose rewritten**, following the pattern in `mapanytime-api` — which does
+this better and was worth copying:
+
+- Every credential and port is `${VAR:-default}` rather than hardcoded. The
+  defaults are the values this project already used, so an existing `.env` and
+  an existing `pgdata` volume keep working untouched.
+- The `api` service exists, and overrides `DATABASE_URL` and `REDIS_HOST` to the
+  compose **service names**. mapanytime carries a comment explaining exactly
+  why; inside a container `localhost` is that container, which is the single
+  most common way a working local setup breaks once containerised.
+- It sits behind a `--profile app` so a bare `up -d` still starts services only
+  and does not fight `pnpm dev` for port 6002.
+- Real healthchecks (`pg_isready`, `redis-cli ping`), which the doc had been
+  claiming for months. `api` waits on both via `condition: service_healthy`.
+
+One thing **not** copied: mapanytime has no healthchecks either. The doc's claim
+was the reason to add them rather than delete the claim.
+
+> Verified by running the rewritten doc's own checklist end to end: `compose ps`
+> shows both services `(healthy)`, `pg_isready` accepts connections, `redis-cli
+> ping` returns PONG, `migrate status` is up to date, `/api/health` returns 200
+> with Redis connected, and the suite is 68/68. The 147 seeded users survived
+> the container recreate — the named volumes were deliberately left unchanged.
+
+**Two audit lessons now recorded twice** (§4.17, and here): a sweep is only as
+broad as the filter that produced it, and "every file it names exists" is not
+the same as "everything it describes exists".
+
 ---
 
 ## 5. What is verified, and how
