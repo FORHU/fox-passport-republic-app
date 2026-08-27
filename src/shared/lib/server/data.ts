@@ -10,60 +10,25 @@ async function getAuthToken(): Promise<string | null> {
   return cookieStore.get("fox_token")?.value ?? null;
 }
 
-// Calls the backend refresh endpoint and updates cookies. Returns new access token or null.
-async function tryRefreshToken(): Promise<string | null> {
-  const cookieStore = await cookies();
-  const refreshToken = cookieStore.get("fox_refresh_token")?.value;
-  if (!refreshToken) return null;
-
-  try {
-    const res = await fetch(`${config.apiUrl}/auth/refresh-token`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ refreshToken }),
-      cache: "no-store",
-    });
-
-    if (!res.ok) return null;
-
-    const body = await res.json();
-    const newAccessToken: string = body?.accessToken ?? body?.data?.accessToken;
-    const newRefreshToken: string =
-      body?.refreshToken ?? body?.data?.refreshToken;
-
-    if (!newAccessToken) return null;
-
-    const cookieOpts = {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "lax" as const,
-      path: "/",
-    };
-
-    // Cookie writes are only allowed in Server Actions/Route Handlers — skip silently in Server Components
-    try {
-      cookieStore.set("fox_token", newAccessToken, {
-        ...cookieOpts,
-        maxAge: 7 * 24 * 60 * 60,
-      });
-      if (newRefreshToken) {
-        cookieStore.set("fox_refresh_token", newRefreshToken, {
-          ...cookieOpts,
-          maxAge: 30 * 24 * 60 * 60,
-        });
-      }
-      // `fox_user` holds profile data only and carries no token, so a refresh
-      // does not need to rewrite it.
-    } catch {
-      // Cannot persist refreshed token in a Server Component context — the client will re-sync on next load
-    }
-
-    console.log("[Auth] Token refreshed successfully");
-    return newAccessToken;
-  } catch {
-    return null;
-  }
-}
+/**
+ * This module deliberately does NOT refresh.
+ *
+ * It used to: on a 401 it called `/auth/refresh-token` and tried to write the
+ * result back. But most callers here are Server Components, and a Server
+ * Component may not set cookies — the write threw and was swallowed, so every
+ * SSR load after a client refresh burned a refresh call that could never
+ * persist.
+ *
+ * Rotation turned that from wasteful into destructive. Refresh tokens are now
+ * single-use: refreshing here would revoke the live token and then drop its
+ * successor on the floor, ending the session on the next request.
+ *
+ * Refreshing belongs to the two places that can actually persist the result:
+ * `app/api/proxy/[...path]/route.ts` for client calls, and `refreshUserSession`
+ * in `auth-actions.ts` for server actions. On a protected route `middleware.ts`
+ * has already rejected an expired access token before any of this runs, so a
+ * 401 reaching here means the session is genuinely over.
+ */
 
 /**
  * Deliberately does NOT redirect.
@@ -116,18 +81,10 @@ async function serverFetch(
   }
 
   if (res.status === 401) {
-    // Access token expired — try to silently refresh
-    const newToken = await tryRefreshToken();
-    if (newToken) {
-      try {
-        res = await doFetch(newToken);
-      } catch {
-        console.warn(`[API] Network error on retry ${url}`);
-        return null;
-      }
-    } else {
-      return authFailed();
-    }
+    // No refresh attempt here — see the note at the top of this file. Nothing
+    // in a Server Component can persist a rotated token, so trying would spend
+    // the session's only refresh token and lose its replacement.
+    return authFailed();
   }
 
   if (!res.ok) {
