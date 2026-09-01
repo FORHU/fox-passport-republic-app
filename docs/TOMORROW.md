@@ -10,7 +10,8 @@ this file wins; when they disagree about a fact, the tracker wins.
 | `responsive-plan.md` | Input — responsive and touch backlog. |
 | `mapanytime-comparison.md` | Input — what to adopt from the mapanytime codebase. |
 
-Open counts, measured 1 Sep 2026: `api-audit.md` 9, `responsive-plan.md` 21,
+Open counts, measured 1 Sep 2026: this file 32,
+`api-audit.md` 9, `responsive-plan.md` 21,
 `mapanytime-comparison.md` 8.
 
 ---
@@ -78,14 +79,10 @@ Login through the proxy *is* browser-confirmed. That is the only part that is.
 
 ## 2. Decisions only you can make
 
-- [ ] **Poll cadence.** Admin 5s, host 10s, user 15–30s. Gating cut the volume
-      4–10×, but nobody has decided what freshness these actually need.
-      Socket.io already exists, so event-driven invalidation is a real option.
-      **Partly addressed 27 Aug:** the client-wide `staleTime` is now 30s and
-      `refetchOnWindowFocus` is off by default ([`api-audit.md`](./api-audit.md)
-      §4.14), which removed the refetch-on-every-focus noise. The deliberate
-      `refetchInterval` values are untouched and still undecided — and 30s is a
-      first guess, not a researched number.
+- [x] **Poll cadence — resolved 1 Sep by removing polling's role, not by tuning
+      it.** See §3b. Every data query now runs on one 60s fallback and the socket
+      carries normal operation, so the question "what freshness do these need"
+      no longer has to be answered per screen.
 - [ ] **Does `MobileAdminView` earn its keep?** It and `AdminContent` are now two
       implementations of one screen. The mockup had *already* drifted into pure
       placeholder content once — expect that again. The alternative is deleting
@@ -245,6 +242,191 @@ one §3 has been hardening all along.
       validation (`config.ts:87-88`), and `GOOGLE_CALLBACK_URL` silently falls
       back to `localhost:${PORT}`. Same class as the fail-fast item in §3 —
       fold them into that fix rather than treating them separately.
+
+---
+
+## 3b. Polling → Socket.IO — the migration, 1 Sep
+
+Branches: app `perf/poll-cadence`, api `perf/socket-driven-invalidation`.
+**Uncommitted at time of writing.** App 60 tests, API 115, tsc and lint clean.
+
+**§2's premise was wrong, and that was the real finding.** "Socket.io already
+exists, so event-driven invalidation is a real option" — it did not exist in any
+working sense. `SocketProvider` required an `accessToken` from the client auth
+store, and that store has held `null` permanently since tokens moved to httpOnly
+cookies, so it returned before ever calling `connectSocket`. The socket has not
+connected since that change. **Realtime notifications were silently dead too**,
+not just polling — nobody noticed, because a socket that never connects looks
+exactly like a quiet one. This is the same class of bug the codebase already
+caught once in `useSessionManager`, whose comment says the same condition "would
+have silently switched role polling off"; the fix was never applied here.
+
+- [x] **Socket authentication rebuilt on tickets.** `POST /auth/socket-ticket`
+      mints a 60-second, single-use ticket in Redis; the handshake presents that.
+      A cookie cannot do this job — the access cookie belongs to the app's origin
+      and the socket connects to the API's — so this is the same shape as the
+      Google exchange code in §3a. `auth` is passed to socket.io as a *function*,
+      not a value: single-use tickets and socket.io's reconnect-replay are
+      otherwise incompatible, and a captured ticket would authenticate once then
+      fail every reconnection, which is exactly when reconnecting matters.
+- [x] **Admins get a room.** `role:admin`, because approval queues are shared
+      state rather than per-user state.
+- [x] **60 emit sites across six topics** — `admin:pending`, `venues`, `events`,
+      `bookings`, `waitlist` and `roles` — covering user submissions,
+      not just admin actions: create/update/delete on venues, assets, services and
+      templates; `submitTemplate`; `verifyEmail`; `createBooking`; waitlist
+      join/leave; and every approve/reject. Owner ids came from the `update()`
+      return, which carries the full row. Emits are best-effort and wrapped: a
+      socket failure cannot fail a write that already succeeded.
+- [x] **Every interval replaced with one shared fallback.** `pollWhileVisible`
+      from `src/shared/lib/realtime.ts`, 60s, documented against its actual job —
+      dropped connection, event missed while the tab was closed, Redis down. Admin
+      5s, host 10s, user 15s/30s and both waitlist queries all now use it; the
+      waitlist pair also gained visibility gating it never had. Session-role
+      polling stays at 5min because it is not socket-driven.
+- [x] **Role approvals are live too.** `RoleRequestController.review` emits
+      `roles` to the applicant, mapped to the shared `["me"]` profile key that
+      `useProfile` and `useSessionManager` both read — so a newly granted role
+      reaches the UI immediately instead of waiting out the 5-minute profile
+      poll. That interval is now the recovery path, not the mechanism, and its
+      comment says so.
+- [x] **Room and event names extracted to `socket.constants.ts`**, mirrored in the
+      app's `realtime.ts` and pinned by a test. These strings are the contract
+      between the two repos, and a typo on either side fails *silently* — no error,
+      no dropped connection, just a screen that never updates. Nothing retypes them
+      now.
+- [x] **The topic → query-key mapping is enforced by tests, not care.** 16 tests
+      assert every server topic has a mapping, that the map holds nothing the
+      server cannot emit, that each formerly-polled key is reachable from some
+      topic, and **that no hook has reintroduced a literal interval** — a fast
+      interval creeping back would make polling the mechanism again while the
+      socket rots unnoticed.
+- [ ] **Browser-verify — this now blocks release, and more than §3a does.** With
+      polling demoted to 60s, a broken socket means screens that update once a
+      minute instead of live, and no test can tell the difference. Needs: two
+      sessions side by side (citizen submits, admin queue updates with no
+      refresh); network killed and restored, confirming reconnection takes a
+      *fresh* ticket and rejoins the room; a non-admin confirmed never to receive
+      `admin:pending`; and Redis stopped, confirming the fallback carries the
+      screen.
+- [x] **Should draft edits notify admins? — no; submission is the boundary.**
+      `attachAsset` / `attachService` / `attachVenue` and their `remove` pairs
+      edit a template nobody has been asked to review yet, and a builder attaching
+      six assets would emit six times for a draft no admin can act on.
+      `submitTemplate` is the moment it enters the queue and is wired; `create`,
+      `update` and `delete` are wired because they change a row the admin list
+      already shows. Reversible in one line each if the queue turns out to want
+      draft activity.
+- [x] **Does the citizens tab show unverified users? — yes, and the first
+      assumption was wrong.** `UsersRepo.getAllUsers` filters only on `roleType`;
+      there is no `isEmailVerified` condition anywhere in the listing, so an
+      unverified signup appears in the admin tab immediately. Emitting only on
+      `verifyEmail` would have left those rows up to a minute late. `register`
+      now emits as well, and `verifyEmail` still does — the row changes twice and
+      the admin should see both.
+- [x] **What feeds the categories tab? — admin action only.** `POST /categories/create`,
+      `PUT /categories/:id` and `DELETE /categories/:id` are all `requireAdmin`;
+      there is no user-facing path. All three now emit, so one admin's change
+      reaches every other admin's screen live.
+- [x] **In-app notifications on approval decisions — the duplication had already
+      cost something.** Invalidation tells a screen to refetch; it does not tell a
+      person anything. Notifications existed for bookings, matches, refunds, role
+      requests and waitlist, but not for venue/asset/service/template decisions —
+      and tracing that turned up worse: the resource-level routes send an approval
+      **email**, while the `/admin/*` routes every screen actually calls sent
+      **neither email nor notification**. An owner approved through the admin
+      console learned about it by going and looking. `notifyDecision` now writes a
+      notification from all ten `AdminCtrl` handlers, fire-and-forget so a failed
+      write cannot fail a decision already committed; rejections carry the reason
+      the admin gave.
+- [x] **The admin path now sends the email too.** `sendDecisionEmail` reuses the
+      existing `sendApprovedEmail` / `sendRejectedEmail` templates rather than
+      writing new ones, so both approval paths say the same thing. Each model keeps
+      its owner under a different relation — `mayor`, `owner`, `client` — so the
+      recipient lookup is spelled out per entity rather than generalised, since a
+      generic lookup is exactly the kind of thing that would pick the wrong person
+      silently. Fire-and-forget like the notification: a slow mail provider must
+      not fail a decision that is already committed. Rejections carry the admin's
+      reason, falling back to "No reason given."; approvals carry none.
+- [ ] **Approve/reject exists twice, and this app only uses one.** `AdminCtrl`
+      serves `/admin/venues/:id/approve`; `VenueCtrl` serves `/venues/:id/approve`.
+      Both mounted, both `requireAdmin`, both working. Every call site in the app —
+      `AdminVenuesTable`, `AdminAssetsTable`, `AdminServicesTable`,
+      `AdminEventsTable`, `MobileAdminView` — hits `/admin/*`; the resource-level
+      pair is unused by this frontend. Both are instrumented so behaviour is
+      correct either way. Deleting the unused pair is the obvious cleanup, but it
+      is an API removal and something outside this repo could be calling it, so it
+      needs a decision rather than a commit. **No longer hypothetical drift:** the
+      notification gap above is exactly it — the two paths had already diverged on
+      whether the owner gets told anything, and nobody noticed because both
+      "work". Same shape as the review-ownership hole in §3.
+- [x] **`favorites` has no server topic, deliberately.** It changes only through
+      the viewer's own favourite/unfavourite, which `useFavorites` already
+      invalidates locally (`useFavorites.ts:68`). Nothing server-side moves it, so
+      a topic would never fire. Recorded in the map itself so the absence reads as
+      a decision, not an oversight.
+
+**New operational dependency:** realtime now requires Redis, on top of the
+requirement Google sign-in added in §3a. With Redis down the socket cannot
+authenticate and every screen falls back to its 60s poll — deliberate, since the
+alternative was passing a real token through client JavaScript.
+
+---
+
+## 3c. `admin_secretary` and permission-based access, 1 Sep
+
+Same branches as §3b. **Uncommitted.** API 143 tests, app 73, tsc and lint clean.
+
+A third `SystemRole`, granted the approval queues and nothing else. The point of
+the role is what it *cannot* see — the citizens list, role applications, and
+category management — so those absences are asserted, not merely unlisted.
+
+- [x] **Fixed the silent downgrade first, because nothing else was testable
+      without it.** `toAuthenticatedUser` narrowed every token claim through
+      `claims.systemRole === "admin" ? "admin" : "user"`, so a valid
+      `admin_secretary` token would have been rewritten to `user` on every
+      request — no error, no log, just a person quietly missing permissions. It
+      now parses against a `Record<SystemRole, true>`, which **fails to compile**
+      the day a fourth role is added rather than failing at runtime. Unknown
+      roles are denied, not defaulted.
+- [x] **A grant table replaced 26 hand-rolled role comparisons.**
+      `src/types/permissions.ts` names seven capabilities — `admin:access`,
+      `queue:read`, `queue:decide`, `users:read`, `roles:manage`,
+      `categories:manage`, `bookings:read:all` — and `can(role, permission)`
+      answers every question that used to be asked as `systemRole === "admin"`.
+      Adding a role is now an edit to one table instead of an audit of both
+      repos.
+- [x] **`requirePermission` guards the routes.** 21 of the 35 `/admin/*` routes —
+      the queue reads and decisions — now gate on capability; the other 14
+      (bookings, disputes, refunds) stay admin-only, which is the safe default
+      for a new role. `requireAdmin` survives, marked deprecated, with a note
+      that it excludes the secretary by design.
+- [x] **Tokens carry a `permissions` claim** so the app's edge middleware can gate
+      `/admin` without a round trip. The API never trusts it — `can()` always
+      re-derives from the role — it is a convenience for the client.
+- [x] **The admin nav is capability-driven.** Each item in `AdminSidebar` names
+      the permission it needs and is filtered out otherwise, so a secretary sees
+      Dashboard, Events, Venues, Assets and Services and nothing else. Hiding is
+      courtesy; the API refuses those routes regardless.
+- [x] **41 tests pin the boundary** — 28 server-side, 13 client — including that
+      the four converted gates no longer compare `systemRole` to a literal, and
+      that every nav item declares a permission.
+- [x] **Found and removed dead `super_admin` references.** `useLandingPage.ts`
+      and `UserMenuButton.tsx` both branched on a role that has never existed in
+      the schema. Someone had planned a third tier before; those branches would
+      have started behaving differently the moment one was added.
+- [ ] **Nobody has this role yet.** Adding it to the enum does not grant it —
+      an existing admin has to be changed to `admin_secretary` in the database,
+      and there is no UI for that (`roles:manage` covers role *applications*, not
+      system roles). Decide whether that is a seeder, a migration, or a screen.
+- [ ] **The migration adds an enum value and is not reversible in place.**
+      `ALTER TYPE ... ADD VALUE` cannot be rolled back inside a transaction on
+      Postgres. It is additive and safe, but a rollback means a new migration,
+      not a `migrate resolve`.
+- [ ] **Browser-verify the role** alongside §3b: sign in as `admin_secretary`,
+      confirm the console opens, the queues work, and Citizens/Bookings/
+      Categories/Disputes/Policies/Settings are absent — then confirm a direct
+      `GET /api/v1/users` still 403s, because that is the control.
 
 ---
 
