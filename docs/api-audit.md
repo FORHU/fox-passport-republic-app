@@ -731,7 +731,7 @@ cannot mass-assign; and `reviewMutationStatus` maps `Unauthorized → 403`,
 
 - [ ] Decide: adopt it, or delete it
 
-The middleware exists and is documented, and `AUDIT_REPORT.md` §3 cites it as an
+The middleware exists and is documented, and the external audit cited it as an
 enforced RBAC control. **Nothing calls it.** Ownership is hand-rolled per
 resource instead — venue compares `mayorId` in the service, asset, service and
 event-template each read `ownerId` in the controller and pass it down. All of

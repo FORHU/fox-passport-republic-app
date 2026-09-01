@@ -9,17 +9,17 @@ this file wins; when they disagree about a fact, the tracker wins.
 | `api-audit.md` | **The record.** API, data-fetching and auth — what was found, what was fixed, what is open. Cited by everything else. |
 | `responsive-plan.md` | Input — responsive and touch backlog. |
 | `mapanytime-comparison.md` | Input — what to adopt from the mapanytime codebase. |
-| `session-report-2026-08-26.md` | Closed record of the 26 Aug session. Not a tracker. |
-| `AUDIT_REPORT.md` | **Superseded.** The external audit; its fixes are refuted in `api-audit.md` §1. Do not apply them. |
 
-Counts at the last consolidation: `api-audit.md` 7 open,
-`mapanytime-comparison.md` 9 open, `responsive-plan.md` 21 open.
+Open counts, measured 1 Sep 2026: `api-audit.md` 9, `responsive-plan.md` 21,
+`mapanytime-comparison.md` 8.
 
 ---
 
 ## 0. Read this first — where the work actually is
 
-Verified 27 August 2026, at app `ccfcf75` / api `2b5e63c`.
+Verified 27 August 2026 at app `ccfcf75` / api `2b5e63c`; **re-checked 1 Sep
+2026 and the branch picture below has moved on** — see the note after the
+table.
 
 **The auth work is on shared `staging` in both repos.** An earlier version of
 this section said the opposite — that nothing had reached `staging` and review
@@ -35,6 +35,14 @@ was preserved. That was wrong, and the branch it pointed at is now redundant.
 Both working trees are clean. Nothing is lost and both repos build and test
 clean — but the app commits reached shared `staging` without review, and one of
 them (`purge legacy tokens`) is security-relevant.
+
+**Update, 1 Sep 2026.** The table above describes `staging`; that range is now
+on `main` in both repos, merged through app PRs #39/#40 and api PRs #62/#63.
+`ccfcf75`, `9995312` and `9843a20` are all ancestors of app `main`, and
+`2b5e63c` is an ancestor of api `origin/main`. So the decision below is no
+longer "what do we do before this merges" but "do we review it retrospectively
+now that it has". Note also that the local `main` in the **api** checkout is
+behind `origin/main` — pull before drawing conclusions from it.
 
 - [ ] **Decide what to do about the unreviewed range.** It is on
       `origin/staging` already, so the options are a retrospective review of
@@ -141,6 +149,102 @@ Login through the proxy *is* browser-confirmed. That is the only part that is.
       `ALLOW_SEED=1` overrides deliberately. The seeder still creates
       `admin@example.com` with a password committed to the repo, which is fine
       precisely because the seed can no longer reach a shared database. §4.13.
+
+---
+
+## 3a. Google OAuth — landed after the last consolidation, never reviewed
+
+Arrived 27 Aug in api `30eb362` and app `bc68d02`, after this file was last
+consolidated, so nothing below was ever tracked. Verified against the code
+1 Sep 2026. Both commits reached `main` through PRs #62 / #39 with no security
+review, and the flow adds a **second, weaker** way to obtain a session than the
+one §3 has been hardening all along.
+
+- [x] **No `state` parameter — the flow was open to login CSRF.** Fixed 1 Sep.
+      `getAuthUrl` took no `state` and `googleCallback` read only `code` and
+      `error`, so nothing tied a callback to the browser that started it: an
+      attacker could feed a victim a callback URL bearing the attacker's own
+      `code` and silently sign the victim into the attacker's account.
+      `GoogleAuthSvc.createState()` now mints 32 random bytes, the redirect
+      stores them in a `g_oauth_state` cookie — httpOnly, `secure` outside dev,
+      `SameSite=Lax` because `Strict` would be stripped on the top-level return
+      from Google — and the callback compares the echoed `state` against that
+      cookie in constant time before touching the code. The cookie is cleared on
+      every path, success or failure. The API mounts no cookie parser, so the
+      one cookie it now needs is read straight off the header rather than
+      pulling in app-wide middleware.
+- [x] **Access *and* refresh token were handed over in the URL query string.**
+      Fixed 1 Sep with a one-time exchange code. The callback built
+      `?accessToken=…&refreshToken=…` and redirected the browser to it, which
+      put a **refresh token** — the long-lived credential §3 rotates and treats
+      as detectable-on-theft — into browser history, the `Referer` on the next
+      request, server and proxy access logs, and anything reading
+      `window.location`. It was strictly worse than the one-tick exposure at
+      `useAuth.ts:87` that §3 is still open on.
+
+      What crosses now is `?xc=<32 random bytes>`: `stashSession` parks the real
+      pair in Redis for 60 seconds, and the app's `completeGoogleAuth` — which
+      runs server-side — POSTs the reference to `POST /auth/google/exchange`,
+      gets the tokens, and puts them straight into the same httpOnly cookies a
+      password login uses. `getDel` makes redemption atomic and single-use, the
+      same way the OTP helper does it. Redis is optional elsewhere in the API;
+      here sign-in fails closed rather than falling back to a URL.
+
+      **Note for deploys:** Google sign-in now has a hard Redis dependency.
+- [x] **`email_verified` was never checked, and an existing account was linked
+      on email alone.** Fixed 1 Sep. `handleCallback` read only `sub`, `email`
+      and `name`; nothing in the API looked at `payload.email_verified`. Since
+      an unmatched `googleId` falls through to an email lookup and
+      `AuthRepo.linkGoogleId`, anyone able to present a Google identity carrying
+      a victim's address inherited the victim's password account — and
+      `createGoogleUser` then wrote `isEmailVerified: true` on a claim it had
+      not verified. On a Workspace domain an administrator can set an address
+      arbitrarily, so this was reachable. `handleCallback` now refuses unless
+      `payload.email_verified === true`, before either branch; a missing claim
+      counts as unverified.
+- [ ] **Decide whether silent account linking is acceptable at all.** With the
+      check above, a *verified* Google address still merges into an existing
+      password account with no confirmation from the account holder. That is the
+      common behaviour and is defensible, but it is a choice nobody has made
+      here — the alternative is asking the user to confirm the link, or
+      requiring them to sign in with the password once first.
+- [x] **`?googleAuthError=1` was never handled.** Fixed 1 Sep. Every failure
+      path redirects to `${FRONTEND_URL}/?googleAuthError=1` and nothing in the
+      app read the param, so a failed sign-in dropped the user on the landing
+      page looking exactly like a successful sign-in that had forgotten them.
+      `GoogleAuthErrorToast` (mounted on `/` in its own Suspense boundary) now
+      raises a toast and strips the param, so a refresh does not re-raise it.
+- [x] **No tests on the API side.** Fixed 1 Sep: `google-oauth.state.spec.ts`
+      (16) pins the CSRF property — a callback reaches `handleCallback` only
+      when the echoed `state` matches the cookie — plus the exchange endpoint
+      and an assertion that no token appears in the redirect URL.
+      `google-oauth.identity.spec.ts` (14) pins the verification gate, the
+      link/create/known-identity branches, and that an exchange code is
+      single-use and fails closed without Redis. Both mock at the module
+      boundary and need no database, following `refresh-token.rotation.spec.ts`.
+      Full API suite: 98 passing.
+- [ ] **The app side is still uncovered.** `src/app/auth/google/callback/page.tsx`
+      and `completeGoogleAuth` have no tests. Worth doing together with whatever
+      replaces the token-in-URL handover, since that rewrites both.
+- [ ] **Google sign-in does not enforce the single-session rule that password
+      sign-in does.** `AuthSvc.login` calls `revokeAllForUser` before issuing
+      (`auth.service.ts:183`), which is what makes "one account, one session"
+      true. `GoogleAuthSvc.handleCallback` calls `issueRefreshToken` directly
+      with no revocation, so signing in with Google leaves every other session
+      alive. Two ways in, two different security properties, and
+      `fox-passport-republic-api/README.md` states the single-session behaviour
+      as a property of the system — it is now false for one of the two paths.
+      Which way this should resolve depends on the open decision in §2; the
+      README is wrong either way until it does.
+- [ ] **Browser-verify the flow end to end** — new account, existing-email
+      account, cancelled consent, a tampered `state`, and a replayed `xc`. Same
+      gap as §1: the fixes above pass `tsc`, lint and 98 unit tests, and have
+      not been through a browser. Needs Redis up and a Google client configured.
+      **This is the next thing to do on this section.**
+- [ ] `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` are `as string` casts with no
+      validation (`config.ts:87-88`), and `GOOGLE_CALLBACK_URL` silently falls
+      back to `localhost:${PORT}`. Same class as the fail-fast item in §3 —
+      fold them into that fix rather than treating them separately.
 
 ---
 
