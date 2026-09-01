@@ -64,17 +64,29 @@ export async function setAuthCookies(loginResponse: LoginResponse) {
 /**
  * Server action that finishes the Google OAuth redirect flow.
  *
- * The API hands the browser a fresh access/refresh token pair as URL params
- * on `/auth/google/callback` (it cannot set httpOnly cookies for this app's
- * origin — it runs on a different port). This exchanges those tokens for the
- * user's profile and writes the same cookies `setAuthCookies` would, so the
- * rest of the app can't tell a Google session from a password one.
+ * The API cannot set httpOnly cookies for this app's origin — it runs
+ * elsewhere — so something has to cross the gap. It used to be the tokens
+ * themselves, as query parameters on the redirect, which wrote a *refresh*
+ * token into browser history, the `Referer` of the next request, and every
+ * access log on the path. What crosses now is an opaque single-use code with a
+ * sixty-second life; this runs server-side, redeems it for the real pair, and
+ * writes the same cookies `setAuthCookies` would, so the rest of the app cannot
+ * tell a Google session from a password one.
  */
 export async function completeGoogleAuth(
-  accessToken: string,
-  refreshToken: string,
-): Promise<User | null> {
+  exchangeCode: string,
+): Promise<{ user: User; isNewUser: boolean } | null> {
   try {
+    const { data: exchanged } = await axios.post(
+      `${appConfig.apiUrl}/auth/google/exchange`,
+      { code: exchangeCode },
+    );
+
+    const session = exchanged?.data ?? exchanged;
+    const accessToken: string | undefined = session?.accessToken;
+    const refreshToken: string | undefined = session?.refreshToken;
+    if (!accessToken || !refreshToken) return null;
+
     const { data: profileData } = await axios.get(
       `${appConfig.apiUrl}/profile`,
       { headers: { Authorization: `Bearer ${accessToken}` } },
@@ -83,7 +95,7 @@ export async function completeGoogleAuth(
     if (!user) return null;
 
     await setAuthCookies({ accessToken, refreshToken, user });
-    return user;
+    return { user, isNewUser: Boolean(session?.isNewUser) };
   } catch {
     return null;
   }

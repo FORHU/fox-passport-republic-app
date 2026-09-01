@@ -13,6 +13,7 @@ import MobileHomePage from "@/features/landing/components/MobileHomePage";
 // --- Search Results Components ---
 import ListingCard from "@/features/landing/components/ListingCard";
 import AuthModal from "@/features/auth/components/AuthModal";
+import GoogleAuthErrorToast from "@/features/auth/components/GoogleAuthErrorToast";
 import { filterVenues } from "@/features/venue/helpers/filterVenues";
 
 // --- Shared Components & Server Utils ---
@@ -145,14 +146,19 @@ async function HomeContent({ searchParams }: HomePageProps) {
 
 export default function Home({ searchParams }: HomePageProps) {
   return (
-    <Suspense
-      fallback={
-        <div className="min-h-screen flex items-center justify-center">
-          Loading...
-        </div>
-      }
-    >
-      <HomeContent searchParams={searchParams} />
-    </Suspense>
+    <>
+      <Suspense fallback={null}>
+        <GoogleAuthErrorToast />
+      </Suspense>
+      <Suspense
+        fallback={
+          <div className="min-h-screen flex items-center justify-center">
+            Loading...
+          </div>
+        }
+      >
+        <HomeContent searchParams={searchParams} />
+      </Suspense>
+    </>
   );
 }

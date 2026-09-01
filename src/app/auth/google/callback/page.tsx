@@ -18,22 +18,25 @@ export default function GoogleAuthCallbackPage() {
     if (ranOnce.current) return;
     ranOnce.current = true;
 
-    const accessToken = searchParams.get("accessToken");
-    const refreshToken = searchParams.get("refreshToken");
-    const isNewUser = searchParams.get("isNewUser") === "true";
+    // An opaque, single-use reference — never a token. `isNewUser` comes back
+    // with the redeemed session rather than from the URL, so nothing here is
+    // caller-controlled.
+    const exchangeCode = searchParams.get("xc");
 
-    if (!accessToken || !refreshToken) {
+    if (!exchangeCode) {
       toast.error("Google sign-in failed. Please try again.");
       router.replace("/");
       return;
     }
 
-    completeGoogleAuth(accessToken, refreshToken).then((user) => {
-      if (!user) {
+    completeGoogleAuth(exchangeCode).then((session) => {
+      if (!session) {
         toast.error("Google sign-in failed. Please try again.");
         router.replace("/");
         return;
       }
+
+      const { user, isNewUser } = session;
 
       login({ user });
       toast.success(`Welcome${isNewUser ? "" : " back"}!`);
