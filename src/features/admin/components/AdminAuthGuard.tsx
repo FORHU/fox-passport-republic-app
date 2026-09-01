@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
+import { canAccessAdmin } from "@/shared/lib/permissions";
 import {
   useAuthStore,
   useAuthActions,
@@ -78,9 +79,9 @@ const AdminAuthGuard: React.FC<AdminAuthGuardProps> = ({ children }) => {
     );
   }
 
-  // Check for admin role
+  // Capability rather than role — admin_secretary belongs here too.
   const user = useAuthStore.getState().user;
-  const isAdmin = user?.systemRole === "admin";
+  const isAdmin = canAccessAdmin(user);
 
   if (!isAdmin) {
     return (

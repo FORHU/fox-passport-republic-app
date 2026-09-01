@@ -10,6 +10,7 @@ import { UserJourney } from "@/features/user/components/citizen/UserJourney";
 import { UserWallet } from "@/features/user/components/citizen/UserWallet";
 import { UserSavedVibes } from "@/features/user/components/citizen/UserSavedVibes";
 import { UserFooter } from "@/features/user/components/citizen/UserFooter";
+import { hasPermission } from "@/shared/lib/permissions";
 
 interface UserDashboardClientProps {
   user: any;
@@ -43,7 +44,8 @@ function UserDashboardContent({
     ""
   ).toLowerCase();
   const canSeeVenues =
-    systemRole === "admin" || roleType.some((r) => VENUE_ROLES.includes(r));
+    hasPermission({ systemRole }, "queue:read") ||
+    roleType.some((r) => VENUE_ROLES.includes(r));
 
   return (
     <div className="bg-background bg-gradient-dark text-text-main antialiased min-h-screen flex flex-col selection:bg-accent selection:text-black font-body">

@@ -1,4 +1,5 @@
 import type { RoleType, User } from "@/features/auth/types/auth";
+import { canAccessAdmin } from "@/shared/lib/permissions";
 
 /** RoleTypes that grant access to the supply-side dashboard. */
 const SUPPLY_ROLE_TYPES: RoleType[] = [
@@ -22,7 +23,7 @@ export function getDashboardPath(
   user: Pick<User, "systemRole" | "roleType"> | null | undefined,
 ): string {
   if (!user) return "/user";
-  if (user.systemRole === "admin") return "/admin";
+  if (canAccessAdmin(user)) return "/admin";
 
   const roleTypes = user.roleType ?? [];
   if (roleTypes.some((role) => SUPPLY_ROLE_TYPES.includes(role))) {

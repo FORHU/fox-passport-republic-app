@@ -2,8 +2,12 @@
 
 import { useQuery } from "@tanstack/react-query";
 import api from "@/shared/lib/axios";
+import {
+  pollWhileVisible,
+  SOCKET_FALLBACK_POLL_MS,
+} from "@/shared/lib/realtime";
 
-const POLL_INTERVAL_MS = 5000;
+
 
 /**
  * @param enabled  Pass false to keep the query idle. AdminContent mounts one of
@@ -88,16 +92,12 @@ export const useAdminData = (
     },
     enabled: enabled && type !== "dashboard",
     initialData,
-    refetchInterval: () => {
-      // Only poll while the browser tab is actually visible.
-      if (typeof document !== "undefined" && document.hidden) return false;
-      return POLL_INTERVAL_MS;
-    },
+    refetchInterval: pollWhileVisible,
     refetchOnWindowFocus: true,
     // Matches the poll interval. At 1s the server-rendered initialData was
     // already stale by the time the client mounted, so every page load and tab
     // switch fired an immediate refetch for data it had just been handed.
-    staleTime: POLL_INTERVAL_MS,
+    staleTime: SOCKET_FALLBACK_POLL_MS,
   });
 
   return {

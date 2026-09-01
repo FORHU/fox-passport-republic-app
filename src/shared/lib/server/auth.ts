@@ -1,6 +1,7 @@
 import { cache } from "react";
 import { redirect } from "next/navigation";
 import { getServerApi } from "./data";
+import { hasPermission, canAccessAdmin } from "@/shared/lib/permissions";
 
 // Memoised per render pass. requireAuth/requireHost are called by a page and
 // then again inside the data helpers it calls, so the profile lookup - a
@@ -50,8 +51,9 @@ export async function checkRole(_userId: string, role: string) {
 
 export async function requireAdmin() {
   const user = await requireAuth();
-  // `SystemRole` is only `user | admin` — there is no `super_admin` tier.
-  if (user?.systemRole !== "admin") {
+  // Capability, not role: admin_secretary reaches the console; what they may
+  // do inside it is enforced per route by the API.
+  if (!canAccessAdmin(user)) {
     redirect("/");
   }
   return user;
@@ -75,8 +77,10 @@ export async function requireHost() {
     "serviceFoxer",
   ];
 
+  // Host areas are an admin override over someone else's data, which the
+  // secretary deliberately does not have.
   const hasAccess =
-    user?.systemRole === "admin" ||
+    hasPermission(user, "bookings:read:all") ||
     roleType.some((r) => hostRoleTypes.includes(r));
 
   if (!hasAccess) {

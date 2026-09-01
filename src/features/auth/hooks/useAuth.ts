@@ -8,6 +8,7 @@ import { useAuthStore } from "@/features/auth/store/useAuthStore";
 import { LoginFormData, SignupFormData } from "@/shared/lib/schema";
 import { LoginResponse } from "@/features/auth/types/auth";
 import { config } from "@/shared/lib/config";
+import { canAccessAdmin } from "@/shared/lib/permissions";
 import {
   setAuthCookies,
   clearAuthCookies,
@@ -90,7 +91,7 @@ export const useLogin = () => {
 
       // Close modal and redirect based on role
       close();
-      if (data.user?.systemRole === "admin") {
+      if (canAccessAdmin(data.user)) {
         router.push("/admin");
       } else if (
         typeof window !== "undefined" &&

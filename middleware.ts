@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { jwtVerify, type JWTPayload } from "jose";
+import { canAccessAdmin } from "@/shared/lib/permissions";
 
 /**
  * Proxy for authentication and authorization checks
@@ -43,6 +44,7 @@ interface SessionUser {
   userId: string;
   email?: string;
   systemRole: string;
+  permissions?: string[];
 }
 
 function toSessionUser(payload: JWTPayload): SessionUser | null {
@@ -56,6 +58,9 @@ function toSessionUser(payload: JWTPayload): SessionUser | null {
     userId,
     email: typeof payload.email === "string" ? payload.email : undefined,
     systemRole,
+    permissions: Array.isArray(payload.permissions)
+      ? payload.permissions.filter((p): p is string => typeof p === "string")
+      : undefined,
   };
 }
 
@@ -94,7 +99,9 @@ export default async function proxy(request: NextRequest) {
 
   if (!user) return redirectToLogin(request);
 
-  if (pathname.startsWith("/admin") && user.systemRole !== "admin") {
+  // Capability, not role: `admin_secretary` reaches the console too, and the
+  // API still enforces what they may do once inside it.
+  if (pathname.startsWith("/admin") && !canAccessAdmin(user)) {
     return NextResponse.redirect(new URL("/", request.url));
   }
 
