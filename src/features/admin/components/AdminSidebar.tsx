@@ -5,25 +5,42 @@ import React from "react";
 import { useUIStore } from "@/shared/store/useUIStore";
 import { useAuthStore } from "@/features/auth/store/useAuthStore";
 import { BrandLogo } from "@/shared/components/layout/BrandLogo";
+import { hasPermission, type Permission } from "@/shared/lib/permissions";
 
+/**
+ * Each item names the capability it needs. `admin_secretary` holds only the
+ * queue permissions, so Citizens, Bookings, Categories, Disputes, Policies and
+ * Settings simply do not render for them — and the API refuses those routes
+ * anyway, so hiding them is courtesy rather than the control.
+ */
 const NAV_ITEMS = [
-  { label: "Dashboard", icon: "dashboard", id: "dashboard" },
-  { label: "Bookings", icon: "confirmation_number", id: "bookings" },
-  { label: "Citizens", icon: "group", id: "citizens" },
-  { label: "Events", icon: "event", id: "events", section: "Manage" },
-  { label: "Categories", icon: "category", id: "categories" },
-  { label: "Venues", icon: "storefront", id: "venues" },
-  { label: "Assets", icon: "inventory_2", id: "assets", section: "Listings" },
-  { label: "Services", icon: "build", id: "services" },
-  { label: "Disputes", icon: "gavel", id: "disputes", section: "System" },
-  { label: "Policies", icon: "policy", id: "policies" },
-  { label: "Settings", icon: "settings", id: "settings" },
-] as const;
+  { label: "Dashboard", icon: "dashboard", id: "dashboard", permission: "admin:access" },
+  { label: "Bookings", icon: "confirmation_number", id: "bookings", permission: "bookings:read:all" },
+  { label: "Citizens", icon: "group", id: "citizens", permission: "users:read" },
+  { label: "Events", icon: "event", id: "events", section: "Manage", permission: "queue:read" },
+  { label: "Categories", icon: "category", id: "categories", permission: "categories:manage" },
+  { label: "Venues", icon: "storefront", id: "venues", permission: "queue:read" },
+  { label: "Assets", icon: "inventory_2", id: "assets", section: "Listings", permission: "queue:read" },
+  { label: "Services", icon: "build", id: "services", permission: "queue:read" },
+  { label: "Disputes", icon: "gavel", id: "disputes", section: "System", permission: "bookings:read:all" },
+  { label: "Policies", icon: "policy", id: "policies", permission: "bookings:read:all" },
+  { label: "Settings", icon: "settings", id: "settings", permission: "categories:manage" },
+] as const satisfies readonly {
+  label: string;
+  icon: string;
+  id: string;
+  section?: string;
+  permission: Permission;
+}[];
 
 export const AdminSidebar: React.FC = () => {
   const { sidebarOpen, setSidebarOpen, activeAdminTab, setActiveAdminTab } =
     useUIStore();
   const user = useAuthStore((s) => s.user);
+
+  const navItems = NAV_ITEMS.filter((item) =>
+    hasPermission(user, item.permission),
+  );
 
   const displayName = user?.name ?? "Admin";
   const displayEmail = user?.email ?? "";
@@ -50,7 +67,7 @@ export const AdminSidebar: React.FC = () => {
         </div>
 
         <nav className="flex-1 py-6 px-4 space-y-1 overflow-y-auto hide-scrollbar">
-          {NAV_ITEMS.map((item) => (
+          {navItems.map((item) => (
             <React.Fragment key={item.id}>
               {"section" in item && item.section && (
                 <div className="px-4 pt-5 pb-1.5 text-[10px] font-bold text-white/25 uppercase tracking-widest">

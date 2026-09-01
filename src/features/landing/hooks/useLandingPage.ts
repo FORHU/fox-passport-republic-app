@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import { useScrollReveal } from "@/shared/hooks/useScrollReveal";
 import { useAuthStore } from "@/features/auth/store/useAuthStore";
 import { useCategories } from "@/features/category/hooks/useCategories";
+import { hasPermission } from "@/shared/lib/permissions";
 
 const VENUE_ROLES = ["eventFoxer", "venueFoxer", "gearFoxer", "serviceFoxer"];
 
@@ -25,8 +26,7 @@ const EVENT_CATEGORY_COLORS: Record<string, string> = {
 
 function userCanSeeVenueCategories(user: any): boolean {
   if (!user) return false;
-  const systemRole = (user?.systemRole ?? user?.role ?? "").toLowerCase();
-  if (systemRole === "admin" || systemRole === "super_admin") return true;
+  if (hasPermission(user, "queue:read")) return true;
   const roleType: string[] = user?.roleType ?? [];
   return roleType.some((r) => VENUE_ROLES.includes(r));
 }

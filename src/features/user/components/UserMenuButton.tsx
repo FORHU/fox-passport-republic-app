@@ -50,7 +50,7 @@ const ROLE_DEFS: RoleDef[] = [
     icon: LayoutDashboard,
     emoji: "🏙️",
     roleTypes: [],
-    systemRoles: ["user", "admin", "super_admin"],
+    systemRoles: ["user", "admin", "admin_secretary"],
   },
   {
     key: "host",
