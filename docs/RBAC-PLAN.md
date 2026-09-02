@@ -7,26 +7,37 @@ Everything below was counted, not remembered: a parser walked every
 `router.<verb>(...)` block in `api/src/routes/*.ts`, including the multi-line
 ones a grep misses.
 
-## Status — nothing is implemented
-
-**No code has changed.** This is a plan, and it stays a plan until someone says
-otherwise. The API tree is untouched: 62 routes still authorize by role name and
-`permissions.ts` still holds the original seven permissions.
+## Status
 
 | Phase | State |
 |---|---|
-| 0 — decide `RoleType` | **Settled on paper.** It authorises today, so the plan moves it into the table. |
-| 1 — SystemRole side | not started |
-| 2 — RoleType side | not started |
+| 0 — decide `RoleType` | **Settled.** It authorises today, so it moves into the table. |
+| 1 — SystemRole side | **Done.** 5 permissions added, 37 routes converted, the app's grant table deleted. api 156 tests, app 92, both clean. |
+| 2 — RoleType side | not started — 25 routes still on `requireRole`/`requireHost` |
 | 3 — delete the old guards | not started |
 | 4 — tests | not started |
 | 5 — app side | not started |
 | 6 — role assignment | not started — the only phase that changes what anyone can do in production, so it needs an explicit decision of its own |
 
-One sequencing note for whoever starts: Phases 1 and 2 both edit
-`api/src/types/permissions.ts`. Splitting that file across two commits leaves the
-permission list and its grants disagreeing in between, so land the table changes
-together even though the route conversions can be split.
+**What Phase 1 actually changed**
+
+- `PERMISSIONS` gains `users:manage`, `policies:manage`, `payments:read:all`,
+  `disputes:resolve`, `refunds:manage` — granted to `admin`, none to
+  `admin_secretary`, so no role's surface moved.
+- All 37 `requireAdmin` routes across 11 files now call `requirePermission`.
+  `requireAdmin` has zero references left under `src/routes/`.
+- The API serves the derived list everywhere it hands over a user: login,
+  refresh, the Google exchange, and `/profile`. Refresh previously returned a
+  thinner user than login; it no longer does.
+- **The app's grant table is gone.** `shared/lib/permissions.ts` holds the
+  vocabulary and `hasPermission(user, p) → user.permissions?.includes(p)`.
+  It cannot compute a permission any more, only be told one.
+- `UserDashboardClient` was calling `hasPermission({ systemRole }, …)` with a
+  synthesised subject, which would have answered `false` to everything the
+  moment the fallback went. It passes the real user now.
+
+API first, then the app — deleting the app's table before `/profile` served
+permissions would have closed the admin console for admins.
 
 ## What is actually in the way
 
@@ -184,12 +195,23 @@ deprecated `can(role, permission)` overload and a migration of ~30 call sites.
 One function over a union is better, and avoids the migration entirely:
 
 ```ts
+export interface AuthorizationSubject {
+  systemRole?: string | null;
+  roleType?: readonly string[] | null;
+}
+
 export type PermissionSubject =
-  | string | null | undefined
-  | { systemRole?: string | null; roleType?: readonly string[] | null };
+  | string
+  | null
+  | undefined
+  | AuthorizationSubject;
 
 export function can(subject: PermissionSubject, permission: Permission): boolean;
 ```
+
+The object form is named rather than inlined: it is the authorization contract,
+and it gets reused by `permissionsForUser`, `requirePermission` and the socket
+gateway.
 
 A bare role string answers from `GRANTS` alone; a user answers from both tables.
 That means **no call-site migration and no deprecation window** — the 19 existing
@@ -218,6 +240,23 @@ the next refresh. Worth knowing, not worth blocking on.
 one place where a supply permission does reach admin, and it is deliberate.
 
 ## Invariants — what must stay true afterwards
+
+### I0. One authorization model, two grant inputs
+
+The phrase "one grant table" stops being true the moment `RoleType` joins, and
+saying it anyway would contradict the code. The accurate claim, and the one the
+architecture doc should carry:
+
+```text
+SystemRole ──┐
+             ├──> permissionsForUser() ──> Permission[] ──> can() ──> requirePermission()
+RoleType[] ──┘
+```
+
+**One permission vocabulary, one authorization API, one server-side authority —
+with `SystemRole` and `RoleType` as two inputs resolving into the same set.**
+`permissionsForUser()` is the canonical resolver; `permissionsFor(role)` stays
+as the lower-level `SystemRole` helper its existing callers use.
 
 Each of these is a test in Phase 4, not a paragraph anyone has to remember.
 
@@ -419,7 +458,12 @@ Scope, if it is built:
 
 Changing someone's `SystemRole` is the most security-sensitive write in the
 system, so it should leave a record: actor, target, previous role, new role,
-timestamp, outcome.
+timestamp, outcome — and, where the project's logging policy allows, request id,
+IP and user agent.
+
+**Record refusals as well as successes.** "Admin A tried to promote User B and
+was denied" is the line that makes an escalation attempt visible; a log of
+successes only shows you what worked.
 
 **There is nowhere to put it today.** The schema has no `AuditLog` model — 41
 models, none of them an audit trail — and `winston` is in `package.json` with
