@@ -2,6 +2,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
+import { FOXER_ROLES } from "@/shared/constants/roles";
 import { useRouter } from "next/navigation";
 import {
   Heart,
@@ -60,7 +61,7 @@ const ROLE_DEFS: RoleDef[] = [
     description: "Manage your venues & events",
     icon: Building2,
     emoji: "🏠",
-    roleTypes: ["eventFoxer", "venueFoxer", "gearFoxer", "serviceFoxer"],
+    roleTypes: [...FOXER_ROLES],
   },
 ];
 

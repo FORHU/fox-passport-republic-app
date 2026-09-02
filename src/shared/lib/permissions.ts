@@ -1,61 +1,43 @@
+import { PERMISSIONS, type Permission } from "@/shared/constants/permissions";
+
 /**
- * What the signed-in person is allowed to do.
+ * What the signed-in person is allowed to do — as the **server** decided it.
  *
- * Mirrors the grant table in
- * `fox-passport-republic-api/src/types/permissions.ts`. The server is the only
- * thing that *enforces* these — every guarded route re-derives them from the
- * role — so this copy decides what to render, never what is permitted. Getting
- * it wrong shows someone a button that then 403s; it cannot grant them
- * anything.
+ * The vocabulary lives in `shared/constants/permissions.ts`; this file is only
+ * the question. It used to carry a second copy of the API's grant table and
+ * fall back to it whenever a user arrived without a `permissions` array, which
+ * meant two hand-maintained answers to one question. The API is now the only
+ * place a grant is written: `permissionsForUser()` derives the list, and every
+ * path that hands this app a user carries it.
  *
- * Access tokens now carry a `permissions` claim, so where a caller has the
- * user's own list it is preferred over this table; the table is the fallback
- * for a profile fetched before that claim existed.
+ * So the app can no longer *compute* a permission. It can only be told one.
+ * Getting a name wrong shows someone a control that then 403s; it cannot grant
+ * them anything, because the API re-derives every guard from the role.
  */
 
-export const PERMISSIONS = [
-  "admin:access",
-  "queue:read",
-  "queue:decide",
-  "users:read",
-  "roles:manage",
-  "categories:manage",
-  "bookings:read:all",
-] as const;
+export { PERMISSIONS };
+export type { Permission };
 
-export type Permission = (typeof PERMISSIONS)[number];
-
-const GRANTS: Record<string, readonly Permission[]> = {
-  user: [],
-  // Works the approval queues without seeing who anyone is: no citizens list,
-  // no role applications, no category management.
-  admin_secretary: ["admin:access", "queue:read", "queue:decide"],
-  admin: [...PERMISSIONS],
-};
-
-interface RoleBearer {
+/**
+ * Anything the app might have in hand for the current person. `permissions` is
+ * the only field consulted — `systemRole` is display data here, never an input
+ * to an authorization answer.
+ */
+export interface PermissionBearer {
   systemRole?: string | null;
-  permissions?: string[] | null;
-}
-
-export function permissionsFor(role: string | null | undefined): Permission[] {
-  if (!role) return [];
-  return [...(GRANTS[role] ?? [])];
+  permissions?: readonly string[] | null;
 }
 
 export function hasPermission(
-  user: RoleBearer | null | undefined,
+  user: PermissionBearer | null | undefined,
   permission: Permission,
 ): boolean {
-  if (!user) return false;
-  // The user's own list wins when the token or profile carried one.
-  if (Array.isArray(user.permissions)) {
-    return user.permissions.includes(permission);
-  }
-  return permissionsFor(user.systemRole).includes(permission);
+  return user?.permissions?.includes(permission) ?? false;
 }
 
-/** True for any role that may open the admin console at all. */
-export function canAccessAdmin(user: RoleBearer | null | undefined): boolean {
+/** True for any role the server says may open the admin console at all. */
+export function canAccessAdmin(
+  user: PermissionBearer | null | undefined,
+): boolean {
   return hasPermission(user, "admin:access");
 }

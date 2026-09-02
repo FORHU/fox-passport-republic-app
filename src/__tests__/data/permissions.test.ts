@@ -1,70 +1,104 @@
 import { describe, it, expect } from "vitest";
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import {
   hasPermission,
   canAccessAdmin,
-  permissionsFor,
   PERMISSIONS,
 } from "@/shared/lib/permissions";
 
 /**
- * This table decides what renders, never what is permitted — the API re-derives
- * every guard from the role. But getting it wrong shows someone a screen that
- * then 403s, so the secretary's boundary is pinned here as well as server-side.
+ * The app is told its permissions; it does not work them out.
+ *
+ * There used to be a copy of the API's grant table here, consulted whenever a
+ * user arrived without a `permissions` array. Two hand-maintained answers to
+ * one question is the shape that drifts — mapanytime's client copy drifted so
+ * far that none of its role names or permission codes exist in its own API.
+ * The API now derives the list on login, refresh, the Google exchange and
+ * `/profile`, and this file holds only the vocabulary.
  */
 
 const read = (rel: string) => readFileSync(join(process.cwd(), rel), "utf-8");
 
-describe("admin_secretary", () => {
-  const secretary = { systemRole: "admin_secretary" };
-
-  it("reaches the admin console", () => {
+describe("permissions come from the server", () => {
+  it("reads the user's list and nothing else", () => {
+    const secretary = {
+      systemRole: "admin_secretary",
+      permissions: ["admin:access", "queue:read", "queue:decide"],
+    };
     expect(canAccessAdmin(secretary)).toBe(true);
-  });
-
-  it("works the queues", () => {
-    expect(hasPermission(secretary, "queue:read")).toBe(true);
     expect(hasPermission(secretary, "queue:decide")).toBe(true);
-  });
-
-  it("cannot see who anyone is, or change it", () => {
     expect(hasPermission(secretary, "users:read")).toBe(false);
-    expect(hasPermission(secretary, "roles:manage")).toBe(false);
-    expect(hasPermission(secretary, "bookings:read:all")).toBe(false);
-    expect(hasPermission(secretary, "categories:manage")).toBe(false);
-  });
-});
-
-describe("the other roles", () => {
-  it("admin holds everything", () => {
-    for (const p of PERMISSIONS) {
-      expect(hasPermission({ systemRole: "admin" }, p)).toBe(true);
-    }
+    expect(hasPermission(secretary, "refunds:manage")).toBe(false);
   });
 
-  it("a citizen holds nothing, and cannot reach admin", () => {
-    expect(permissionsFor("user")).toEqual([]);
-    expect(canAccessAdmin({ systemRole: "user" })).toBe(false);
+  it("never infers anything from the role name", () => {
+    // The most important case in this file. An admin with no list from the
+    // server holds nothing here — because the app is not entitled to guess,
+    // and the API would refuse anyway.
+    expect(canAccessAdmin({ systemRole: "admin" })).toBe(false);
+    expect(hasPermission({ systemRole: "admin" }, "users:read")).toBe(false);
   });
 
-  it("denies unknown roles rather than defaulting them", () => {
-    for (const role of ["super_admin", "moderator", "", null, undefined]) {
-      expect(canAccessAdmin({ systemRole: role as string })).toBe(false);
-    }
+  it("treats an empty list as empty", () => {
+    expect(canAccessAdmin({ systemRole: "admin", permissions: [] })).toBe(false);
+  });
+
+  it("denies a missing user", () => {
     expect(canAccessAdmin(null)).toBe(false);
+    expect(canAccessAdmin(undefined)).toBe(false);
+    expect(hasPermission({}, "queue:read")).toBe(false);
   });
 });
 
-describe("the user's own list wins over the table", () => {
-  it("uses permissions from the token when present", () => {
-    const withClaim = { systemRole: "user", permissions: ["admin:access"] };
-    expect(canAccessAdmin(withClaim)).toBe(true);
+describe("the app owns no grant decision", () => {
+  it.each([
+    "src/shared/lib/permissions.ts",
+    "src/shared/constants/permissions.ts",
+    "src/shared/constants/roles.ts",
+  ])("%s holds no role-to-permission map", (path) => {
+    const source = read(path);
+    expect(source).not.toMatch(/GRANTS/);
+    expect(source).not.toMatch(/admin_secretary["']?\s*:/);
+    expect(source).not.toMatch(/permissionsFor\s*\(/);
   });
 
-  it("and an empty claim means empty, not fall back", () => {
-    const stripped = { systemRole: "admin", permissions: [] };
-    expect(canAccessAdmin(stripped)).toBe(false);
+  it("keeps the vocabulary in constants, not beside the logic", () => {
+    // The names are shared with role lists and nav items; the question
+    // `hasPermission` answers is not. Splitting them keeps a future import of
+    // the vocabulary from dragging in the auth helpers.
+    expect(read("src/shared/lib/permissions.ts")).toMatch(
+      /from "@\/shared\/constants\/permissions"/,
+    );
+  });
+});
+
+describe("the vocabulary matches the API's", () => {
+  // The API is a sibling checkout in this workspace. Skipped rather than
+  // failed when it is absent, so CI on this repo alone stays green — the check
+  // is here to catch drift on a developer's machine, where both are present.
+  const apiPermissions = join(
+    process.cwd(),
+    "..",
+    "fox-passport-republic-api",
+    "src",
+    "types",
+    "permissions.ts",
+  );
+
+  it("is declared once, in shared/constants", () => {
+    // Anywhere else re-declaring it would be a second vocabulary to keep in
+    // step, which is the thing this file exists to prevent.
+    const lib = read("src/shared/lib/permissions.ts");
+    expect(lib).not.toMatch(/export const PERMISSIONS = \[/);
+  });
+
+  it.runIf(existsSync(apiPermissions))("same names, same order", () => {
+    const source = readFileSync(apiPermissions, "utf-8");
+    const block = source.match(/export const PERMISSIONS = \[([\s\S]*?)\] as const;/);
+    expect(block, "could not find PERMISSIONS in the API").not.toBeNull();
+    const names = [...block![1].matchAll(/"([^"]+)"/g)].map((m) => m[1]);
+    expect(names).toEqual([...PERMISSIONS]);
   });
 });
 
@@ -75,8 +109,7 @@ describe("the gates are expressed as capabilities", () => {
     "src/features/admin/components/AdminAuthGuard.tsx",
     "src/shared/lib/dashboard-path.ts",
   ])("%s no longer compares systemRole to a literal", (path) => {
-    const source = read(path);
-    expect(source).not.toMatch(/systemRole\s*[!=]==\s*["']admin["']/);
+    expect(read(path)).not.toMatch(/systemRole\s*[!=]==\s*["']admin["']/);
   });
 
   it("every admin nav item names the permission it needs", () => {
