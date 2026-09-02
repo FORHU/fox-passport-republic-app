@@ -1,12 +1,11 @@
 /* eslint-disable @typescript-eslint/no-unused-vars, @next/next/no-img-element */
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
+import { useAdminCitizens } from "@/features/admin/hooks/useAdminCitizens";
 
 interface CitizenTableProps {
-  citizens: any[];
-  isLoading: boolean;
-  refetch?: () => void;
+  initialCitizens?: any[];
 }
 
 // systemRole: 'user' | 'admin'
@@ -91,11 +90,28 @@ function fmt(date: string) {
 }
 
 export const AdminCitizenTable: React.FC<CitizenTableProps> = ({
-  citizens,
-  isLoading,
+  initialCitizens,
 }) => {
   const [expandedRow, setExpandedRow] = useState<string | null>(null);
+  const [searchInput, setSearchInput] = useState("");
   const [search, setSearch] = useState("");
+  const [page, setPage] = useState(1);
+
+  // Debounce so typing doesn't fire a request per keystroke; reset to page 1
+  // whenever the effective search term changes.
+  useEffect(() => {
+    const handle = setTimeout(() => {
+      setSearch(searchInput);
+      setPage(1);
+    }, 350);
+    return () => clearTimeout(handle);
+  }, [searchInput]);
+
+  const { citizens, pagination, isLoading, isFetching } = useAdminCitizens(
+    page,
+    search,
+    initialCitizens,
+  );
 
   if (isLoading) {
     return (
@@ -108,13 +124,7 @@ export const AdminCitizenTable: React.FC<CitizenTableProps> = ({
     );
   }
 
-  const filtered = citizens.filter(
-    (c) =>
-      !search ||
-      c.name?.toLowerCase().includes(search.toLowerCase()) ||
-      c.email?.toLowerCase().includes(search.toLowerCase()) ||
-      c.username?.toLowerCase().includes(search.toLowerCase()),
-  );
+  const filtered = citizens;
 
   return (
     <div className="glass-panel rounded-[2rem] overflow-hidden border border-white/5">
@@ -129,7 +139,7 @@ export const AdminCitizenTable: React.FC<CitizenTableProps> = ({
               Citizen Directory
             </h2>
             <p className="text-xs text-white/30 mt-0.5">
-              {citizens.length} registered users
+              {pagination?.total ?? citizens.length} registered users
             </p>
           </div>
         </div>
@@ -138,8 +148,8 @@ export const AdminCitizenTable: React.FC<CitizenTableProps> = ({
             search
           </span>
           <input
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
+            value={searchInput}
+            onChange={(e) => setSearchInput(e.target.value)}
             placeholder="Search by name or email…"
             className="bg-white/5 border border-white/10 rounded-xl pl-9 pr-4 py-2 text-xs text-white placeholder-white/20 focus:outline-none focus:border-accent/50 w-56"
           />
@@ -370,17 +380,45 @@ export const AdminCitizenTable: React.FC<CitizenTableProps> = ({
         </table>
       </div>
 
-      <div className="px-8 py-4 border-t border-white/5 flex justify-between items-center">
+      <div className="px-8 py-4 border-t border-white/5 flex flex-col sm:flex-row justify-between items-center gap-3">
         <span className="text-[10px] text-white/20 uppercase tracking-widest">
           FoxPassport Administration
         </span>
-        <span className="text-[10px] text-white/40">
-          Showing {filtered.length}
-          {filtered.length !== citizens.length
-            ? ` of ${citizens.length}`
-            : ""}{" "}
-          users
-        </span>
+        {pagination && pagination.totalPages > 1 ? (
+          <div className="flex items-center gap-3">
+            <span className="text-[10px] text-white/40">
+              {isFetching
+                ? "Loading…"
+                : `Page ${pagination.page} of ${pagination.totalPages} · ${pagination.total} users`}
+            </span>
+            <div className="flex items-center gap-1.5">
+              <button
+                onClick={() => setPage((p) => Math.max(1, p - 1))}
+                disabled={page <= 1}
+                className="h-8 w-8 rounded-lg bg-white/5 flex items-center justify-center text-white/60 hover:text-white hover:bg-white/10 transition-all disabled:opacity-30 disabled:pointer-events-none"
+              >
+                <span className="material-symbols-outlined text-[16px]">
+                  chevron_left
+                </span>
+              </button>
+              <button
+                onClick={() =>
+                  setPage((p) => Math.min(pagination.totalPages, p + 1))
+                }
+                disabled={page >= pagination.totalPages}
+                className="h-8 w-8 rounded-lg bg-white/5 flex items-center justify-center text-white/60 hover:text-white hover:bg-white/10 transition-all disabled:opacity-30 disabled:pointer-events-none"
+              >
+                <span className="material-symbols-outlined text-[16px]">
+                  chevron_right
+                </span>
+              </button>
+            </div>
+          </div>
+        ) : (
+          <span className="text-[10px] text-white/40">
+            Showing {filtered.length} users
+          </span>
+        )}
       </div>
     </div>
   );

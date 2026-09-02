@@ -38,10 +38,10 @@ interface RoleApplication {
   createdAt: string;
   rejectionReason?: string;
   user: { id: string; name: string; email: string };
-  hostApplication?: ApplicationData;
-  mayorApplication?: ApplicationData;
-  foxerAssetApplication?: ApplicationData;
-  foxerServiceApplication?: ApplicationData;
+  venueFoxerApplication?: ApplicationData;
+  eventFoxerApplication?: ApplicationData;
+  gearFoxerApplication?: ApplicationData;
+  serviceFoxerApplication?: ApplicationData;
   investorApplication?: ApplicationData;
 }
 
@@ -67,10 +67,10 @@ const STATUS_ICONS: Record<RoleStatus, string> = {
 
 function getAppData(app: RoleApplication): ApplicationData | null {
   return (
-    app.hostApplication ??
-    app.mayorApplication ??
-    app.foxerAssetApplication ??
-    app.foxerServiceApplication ??
+    app.venueFoxerApplication ??
+    app.eventFoxerApplication ??
+    app.gearFoxerApplication ??
+    app.serviceFoxerApplication ??
     app.investorApplication ??
     null
   );
@@ -79,9 +79,11 @@ function getAppData(app: RoleApplication): ApplicationData | null {
 function DocPreview({
   label,
   file,
+  onPreview,
 }: {
   label: string;
   file?: FileRecord | null;
+  onPreview: (file: FileRecord, label: string) => void;
 }) {
   if (!file)
     return (
@@ -103,11 +105,10 @@ function DocPreview({
         {label}
       </p>
       {isPdf ? (
-        <a
-          href={file.url}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="h-24 rounded-xl bg-white/5 border border-white/10 flex flex-col items-center justify-center gap-2 hover:border-[#ccff00]/40 hover:bg-white/10 transition group"
+        <button
+          type="button"
+          onClick={() => onPreview(file, label)}
+          className="w-full h-24 rounded-xl bg-white/5 border border-white/10 flex flex-col items-center justify-center gap-2 hover:border-[#ccff00]/40 hover:bg-white/10 transition group"
         >
           <span className="material-symbols-outlined text-[32px] text-red-400 group-hover:scale-110 transition-transform">
             picture_as_pdf
@@ -115,13 +116,12 @@ function DocPreview({
           <span className="text-[10px] text-white/40 group-hover:text-white/70 truncate max-w-[120px]">
             {file.name}
           </span>
-        </a>
+        </button>
       ) : (
-        <a
-          href={file.url}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="block relative group"
+        <button
+          type="button"
+          onClick={() => onPreview(file, label)}
+          className="block relative group w-full"
         >
           <img
             src={file.url}
@@ -130,11 +130,78 @@ function DocPreview({
           />
           <div className="absolute inset-0 rounded-xl bg-black/50 opacity-0 group-hover:opacity-100 transition flex items-center justify-center">
             <span className="material-symbols-outlined text-white text-[24px]">
-              open_in_new
+              zoom_in
             </span>
           </div>
-        </a>
+        </button>
       )}
+    </div>
+  );
+}
+
+function FilePreviewModal({
+  file,
+  label,
+  onClose,
+}: {
+  file: FileRecord;
+  label: string;
+  onClose: () => void;
+}) {
+  const isPdf = file.type === "application/pdf" || file.name?.endsWith(".pdf");
+
+  return (
+    <div
+      className="fixed inset-0 z-1000 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 sm:p-8"
+      onClick={onClose}
+    >
+      <div
+        className="w-full h-full max-w-4xl bg-[#0d0f18] border border-white/10 rounded-2xl flex flex-col overflow-hidden"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="p-4 border-b border-white/5 flex items-center justify-between gap-4 shrink-0">
+          <div className="min-w-0">
+            <p className="text-[10px] text-white/30 uppercase tracking-wider">
+              {label}
+            </p>
+            <p className="text-white text-sm font-medium truncate">
+              {file.name}
+            </p>
+          </div>
+          <div className="flex items-center gap-2 shrink-0">
+            <a
+              href={file.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="p-1.5 rounded-lg hover:bg-white/10 text-white/40 hover:text-white transition"
+              title="Open in new tab"
+            >
+              <span className="material-symbols-outlined text-[20px]">
+                open_in_new
+              </span>
+            </a>
+            <button
+              onClick={onClose}
+              className="p-1.5 rounded-lg hover:bg-white/10 text-white/40 hover:text-white transition"
+            >
+              <span className="material-symbols-outlined text-[20px]">
+                close
+              </span>
+            </button>
+          </div>
+        </div>
+        <div className="flex-1 min-h-0 bg-black/40">
+          {isPdf ? (
+            <iframe src={file.url} title={label} className="w-full h-full" />
+          ) : (
+            <img
+              src={file.url}
+              alt={label}
+              className="w-full h-full object-contain"
+            />
+          )}
+        </div>
+      </div>
     </div>
   );
 }
@@ -153,6 +220,10 @@ function ApplicationDetailDrawer({
   processing: boolean;
 }) {
   const data = getAppData(app);
+  const [previewFile, setPreviewFile] = useState<{
+    file: FileRecord;
+    label: string;
+  } | null>(null);
 
   return (
     <div
@@ -288,15 +359,25 @@ function ApplicationDetailDrawer({
                   Verify these documents carefully
                 </p>
                 <div className="grid grid-cols-2 gap-3">
-                  <DocPreview label="Primary Valid ID" file={data.validId1} />
-                  <DocPreview label="NBI Clearance" file={data.nbiFile} />
+                  <DocPreview
+                    label="Primary Valid ID"
+                    file={data.validId1}
+                    onPreview={(file, label) => setPreviewFile({ file, label })}
+                  />
+                  <DocPreview
+                    label="NBI Clearance"
+                    file={data.nbiFile}
+                    onPreview={(file, label) => setPreviewFile({ file, label })}
+                  />
                   <DocPreview
                     label="TIN ID / Certificate"
                     file={data.tinIdFile}
+                    onPreview={(file, label) => setPreviewFile({ file, label })}
                   />
                   <DocPreview
                     label="BIR 2303 / Permit"
                     file={data.birPermitFile}
+                    onPreview={(file, label) => setPreviewFile({ file, label })}
                   />
                 </div>
               </div>
@@ -306,11 +387,13 @@ function ApplicationDetailDrawer({
                 <DocPreview
                   label="Verification Selfie"
                   file={data.selfieFile}
+                  onPreview={(file, label) => setPreviewFile({ file, label })}
                 />
                 {data.portfolioFile !== undefined && (
                   <DocPreview
                     label="Portfolio / Resume"
                     file={data.portfolioFile}
+                    onPreview={(file, label) => setPreviewFile({ file, label })}
                   />
                 )}
               </div>
@@ -349,6 +432,14 @@ function ApplicationDetailDrawer({
           </div>
         )}
       </div>
+
+      {previewFile && (
+        <FilePreviewModal
+          file={previewFile.file}
+          label={previewFile.label}
+          onClose={() => setPreviewFile(null)}
+        />
+      )}
     </div>
   );
 }
@@ -491,8 +582,7 @@ export const AdminSubmissionsTable: React.FC = () => {
                   <th className="p-6 font-medium">Applicant</th>
                   <th className="p-6 font-medium">Role</th>
                   <th className="p-6 font-medium">Submitted</th>
-                  <th className="p-6 font-medium">Status</th>
-                  <th className="p-6 font-medium text-right">Actions</th>
+                  <th className="p-6 font-medium text-right">Status</th>
                 </tr>
               </thead>
               <tbody className="text-sm">
@@ -522,7 +612,7 @@ export const AdminSubmissionsTable: React.FC = () => {
                         year: "numeric",
                       })}
                     </td>
-                    <td className="p-6">
+                    <td className="p-6 text-right">
                       <span
                         className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold border ${STATUS_STYLES[app.status]}`}
                       >
@@ -532,35 +622,6 @@ export const AdminSubmissionsTable: React.FC = () => {
                         {app.status.charAt(0).toUpperCase() +
                           app.status.slice(1)}
                       </span>
-                    </td>
-                    <td
-                      className="p-6 text-right"
-                      onClick={(e) => e.stopPropagation()}
-                    >
-                      {app.status === "pending" ? (
-                        <div className="flex items-center justify-end gap-2">
-                          <button
-                            onClick={() => handleApprove(app.id)}
-                            disabled={processingId === app.id}
-                            className="px-3 py-1.5 rounded-lg bg-green-500/20 text-green-400 text-xs font-bold hover:bg-green-500/30 transition disabled:opacity-50"
-                          >
-                            Approve
-                          </button>
-                          <button
-                            onClick={() => setRejectModal({ id: app.id })}
-                            disabled={processingId === app.id}
-                            className="px-3 py-1.5 rounded-lg bg-red-500/20 text-red-400 text-xs font-bold hover:bg-red-500/30 transition disabled:opacity-50"
-                          >
-                            Reject
-                          </button>
-                        </div>
-                      ) : (
-                        <span className="text-xs text-white/20 italic">
-                          {app.status === "rejected" && app.rejectionReason
-                            ? `"${app.rejectionReason}"`
-                            : "—"}
-                        </span>
-                      )}
                     </td>
                   </tr>
                 ))}

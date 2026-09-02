@@ -114,14 +114,14 @@ export interface LeaderboardEntry {
 export async function getOutgoingMatchRequests(): Promise<
   OutgoingMatchGroup[]
 > {
-  const res = await api.get("/event-template/matches/outgoing");
+  const res = await api.get("/event-templates/matches/outgoing");
   return res.data.data;
 }
 
 export async function getIncomingMatchRequests(): Promise<
   IncomingMatchRequest[]
 > {
-  const res = await api.get("/event-template/matches/incoming");
+  const res = await api.get("/event-templates/matches/incoming");
   return res.data.data;
 }
 
@@ -130,7 +130,7 @@ export async function respondToMatch(
   type: string,
   status: "accepted" | "declined",
 ): Promise<void> {
-  await api.patch(`/event-template/matches/${matchId}/respond`, {
+  await api.patch(`/event-templates/matches/${matchId}/respond`, {
     type,
     status,
   });
@@ -177,6 +177,8 @@ export interface ClientMatchRequest {
   requestStatus: string;
   eventStatus: string;
   createdAt: string;
+  bookingId: string | null;
+  bookingStatus: string | null;
   client: { id: string; name: string; imgId: string | null };
   template: { id: string; name: string; category: string } | null;
 }

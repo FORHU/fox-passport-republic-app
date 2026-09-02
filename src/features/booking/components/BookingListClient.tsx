@@ -1,7 +1,7 @@
 /* eslint-disable @next/next/no-img-element */
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -24,6 +24,13 @@ const STATUS_LABEL: Record<string, { label: string; color: string }> = {
     color: "text-orange-400 bg-orange-500/10",
   },
 };
+
+/** Mirrors the backend sweep's own idea of "overdue unpaid" (BookingReminderService.cancelOverdueUnpaid) — kept in sync as a client-side fallback for the window before that job catches up. */
+function isPastDueUnpaid(booking: any) {
+  return (
+    booking.status === "pending" && new Date(booking.startAt) < new Date()
+  );
+}
 
 export default function BookingListClient() {
   const router = useRouter();
@@ -56,6 +63,12 @@ export default function BookingListClient() {
     loadBookings();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?.id, user?.userId, page]);
+
+  const { attentionBookings, otherBookings } = useMemo(() => {
+    const attention = bookings.filter(isPastDueUnpaid);
+    const others = bookings.filter((b) => !isPastDueUnpaid(b));
+    return { attentionBookings: attention, otherBookings: others };
+  }, [bookings]);
 
   if (isInitial) {
     return (
@@ -159,98 +172,44 @@ export default function BookingListClient() {
                 </Link>
               </div>
             ) : (
-              <div className="grid gap-4">
-                {bookings.map((booking) => {
-                  const statusInfo =
-                    STATUS_LABEL[booking.status] || STATUS_LABEL.pending;
-                  const eventName = booking.event?.name || "Venue Booking";
-                  const startDate = booking.startAt
-                    ? new Date(booking.startAt).toLocaleDateString("en-PH", {
-                        month: "short",
-                        day: "numeric",
-                        year: "numeric",
-                      })
-                    : "—";
-                  const isCompleted = booking.status === "completed";
-                  const canCancel =
-                    booking.status === "pending" ||
-                    booking.status === "confirmed";
-                  const noReview = !booking.hasReview;
-
-                  return (
-                    <div
-                      key={booking.id}
-                      className="glass-panel rounded-2xl p-6 border border-white/5 hover:border-accent/30 transition-all"
-                    >
-                      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                        <Link
-                          href={`/booking/${booking.id}`}
-                          className="flex items-start gap-4 flex-1 min-w-0 group"
-                        >
-                          <div className="h-14 w-14 rounded-xl bg-white/5 flex items-center justify-center shrink-0 group-hover:bg-accent/10 transition-colors">
-                            <span className="material-symbols-outlined text-white/40 group-hover:text-accent text-2xl transition-colors">
-                              apartment
-                            </span>
-                          </div>
-                          <div>
-                            <h3 className="font-display font-bold text-white text-lg">
-                              {eventName}
-                            </h3>
-                            <p className="text-text-muted text-sm mt-1 flex items-center gap-2">
-                              <span className="material-symbols-outlined text-[14px]">
-                                calendar_today
-                              </span>
-                              {startDate}
-                              <span className="material-symbols-outlined text-[14px] ml-1">
-                                group
-                              </span>
-                              {booking.guestCount}{" "}
-                              {booking.guestCount === 1 ? "guest" : "guests"}
-                            </p>
-                            <p className="text-text-muted text-xs mt-1 font-mono">
-                              #{booking.id.slice(0, 12)}
-                            </p>
-                          </div>
-                        </Link>
-                        <div className="flex items-center gap-4 md:text-right shrink-0">
-                          <span
-                            className={`px-3 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider ${statusInfo.color}`}
-                          >
-                            {statusInfo.label}
-                          </span>
-                          <span className="text-xl font-display font-bold text-accent">
-                            ₱{booking.totalAmount?.toLocaleString() || "0"}
-                          </span>
-                        </div>
-                      </div>
-                      <div className="mt-4 pt-4 border-t border-white/5 flex justify-end gap-3">
-                        <Link
-                          href={`/booking/${booking.id}`}
-                          className="px-5 py-2.5 rounded-xl bg-white/5 text-white/70 font-bold text-xs hover:bg-white/10 hover:text-white transition-all"
-                        >
-                          View Details
-                        </Link>
-                        {isCompleted && noReview && (
-                          <Link
-                            href={`/reviews/write/${booking.id}`}
-                            className="px-5 py-2.5 rounded-xl bg-accent text-black font-bold text-xs hover:shadow-[0_0_20px_rgba(204,255,0,0.4)] transition-all"
-                          >
-                            Leave a Review
-                          </Link>
-                        )}
-                        {canCancel && (
-                          <button
-                            onClick={() => setCancelTargetId(booking.id)}
-                            className="px-5 py-2.5 rounded-xl border border-red-400/30 text-red-400 font-bold text-xs hover:bg-red-500/10 transition-all"
-                          >
-                            Cancel
-                          </button>
-                        )}
-                      </div>
+              <>
+                {attentionBookings.length > 0 && (
+                  <div className="mb-8">
+                    <div className="flex items-center gap-2 mb-4">
+                      <span className="material-symbols-outlined text-orange-400 text-xl">
+                        error
+                      </span>
+                      <h2 className="text-lg font-bold text-white">
+                        Needs Attention
+                      </h2>
                     </div>
-                  );
-                })}
-              </div>
+                    <p className="text-text-muted text-sm mb-4">
+                      These bookings&apos; dates have passed without payment.
+                      They&apos;ll be cancelled automatically.
+                    </p>
+                    <div className="grid gap-4">
+                      {attentionBookings.map((booking) => (
+                        <BookingCard
+                          key={booking.id}
+                          booking={booking}
+                          onCancel={setCancelTargetId}
+                          pastDueUnpaid
+                        />
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                <div className="grid gap-4">
+                  {otherBookings.map((booking) => (
+                    <BookingCard
+                      key={booking.id}
+                      booking={booking}
+                      onCancel={setCancelTargetId}
+                    />
+                  ))}
+                </div>
+              </>
             )}
 
             {isFetching && (
@@ -311,6 +270,112 @@ export default function BookingListClient() {
           }}
         />
       )}
+    </div>
+  );
+}
+
+function BookingCard({
+  booking,
+  onCancel,
+  pastDueUnpaid = false,
+}: {
+  booking: any;
+  onCancel: (id: string) => void;
+  pastDueUnpaid?: boolean;
+}) {
+  const statusInfo = STATUS_LABEL[booking.status] || STATUS_LABEL.pending;
+  const eventName = booking.event?.name || "Venue Booking";
+  const startDate = booking.startAt
+    ? new Date(booking.startAt).toLocaleDateString("en-PH", {
+        month: "short",
+        day: "numeric",
+        year: "numeric",
+      })
+    : "—";
+  const isCompleted = booking.status === "completed";
+  // Cancelling here would just race the auto-cancel sweep — nothing to offer but the notice above.
+  const canCancel =
+    !pastDueUnpaid &&
+    (booking.status === "pending" || booking.status === "confirmed");
+  const noReview = !booking.hasReview;
+
+  return (
+    <div
+      className={`glass-panel rounded-2xl p-6 border transition-all ${
+        pastDueUnpaid
+          ? "border-orange-500/30 hover:border-orange-500/50"
+          : "border-white/5 hover:border-accent/30"
+      }`}
+    >
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <Link
+          href={`/booking/${booking.id}`}
+          className="flex items-start gap-4 flex-1 min-w-0 group"
+        >
+          <div className="h-14 w-14 rounded-xl bg-white/5 flex items-center justify-center shrink-0 group-hover:bg-accent/10 transition-colors">
+            <span className="material-symbols-outlined text-white/40 group-hover:text-accent text-2xl transition-colors">
+              apartment
+            </span>
+          </div>
+          <div>
+            <h3 className="font-display font-bold text-white text-lg">
+              {eventName}
+            </h3>
+            <p className="text-text-muted text-sm mt-1 flex items-center gap-2">
+              <span className="material-symbols-outlined text-[14px]">
+                calendar_today
+              </span>
+              {startDate}
+              <span className="material-symbols-outlined text-[14px] ml-1">
+                group
+              </span>
+              {booking.guestCount}{" "}
+              {booking.guestCount === 1 ? "guest" : "guests"}
+            </p>
+            <p className="text-text-muted text-xs mt-1 font-mono">
+              #{booking.id.slice(0, 12)}
+            </p>
+          </div>
+        </Link>
+        <div className="flex items-center gap-4 md:text-right shrink-0">
+          <span
+            className={`px-3 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider ${
+              pastDueUnpaid
+                ? "text-orange-400 bg-orange-500/10"
+                : statusInfo.color
+            }`}
+          >
+            {pastDueUnpaid ? "Unpaid & Expired" : statusInfo.label}
+          </span>
+          <span className="text-xl font-display font-bold text-accent">
+            ₱{booking.totalAmount?.toLocaleString() || "0"}
+          </span>
+        </div>
+      </div>
+      <div className="mt-4 pt-4 border-t border-white/5 flex justify-end gap-3">
+        <Link
+          href={`/booking/${booking.id}`}
+          className="px-5 py-2.5 rounded-xl bg-white/5 text-white/70 font-bold text-xs hover:bg-white/10 hover:text-white transition-all"
+        >
+          View Details
+        </Link>
+        {isCompleted && noReview && (
+          <Link
+            href={`/reviews/write/${booking.id}`}
+            className="px-5 py-2.5 rounded-xl bg-accent text-black font-bold text-xs hover:shadow-[0_0_20px_rgba(204,255,0,0.4)] transition-all"
+          >
+            Leave a Review
+          </Link>
+        )}
+        {canCancel && (
+          <button
+            onClick={() => onCancel(booking.id)}
+            className="px-5 py-2.5 rounded-xl border border-red-400/30 text-red-400 font-bold text-xs hover:bg-red-500/10 transition-all"
+          >
+            Cancel
+          </button>
+        )}
+      </div>
     </div>
   );
 }

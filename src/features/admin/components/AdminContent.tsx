@@ -73,11 +73,6 @@ export const AdminContent: React.FC<Props> = ({
     initialEvents,
     activeTab === "events",
   );
-  const { data: citizens, isLoading: loadingCitizens } = useAdminData(
-    "citizens",
-    initialCitizens,
-    activeTab === "citizens",
-  );
   const { data: categories, isLoading: loadingCategories } = useAdminData(
     "categories",
     initialCategories,
@@ -139,7 +134,7 @@ export const AdminContent: React.FC<Props> = ({
       )}
 
       {activeTab === "citizens" && (
-        <AdminCitizenTable citizens={citizens} isLoading={loadingCitizens} />
+        <AdminCitizenTable initialCitizens={initialCitizens} />
       )}
 
       {activeTab === "events" && (
