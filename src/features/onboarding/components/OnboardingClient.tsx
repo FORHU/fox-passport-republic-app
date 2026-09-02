@@ -6,10 +6,10 @@ import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/features/auth/store/useAuthStore";
 import RequireAuth from "@/features/auth/components/RequireAuth";
 import api from "@/shared/lib/axios";
+import { isFoxerRole } from "@/shared/constants/roles";
 
 type Step = 1 | 2 | 3;
 
-const FOXER_ROLES = ["eventFoxer", "venueFoxer", "serviceFoxer", "gearFoxer"];
 
 const ROLES = [
   {
@@ -59,9 +59,7 @@ export default function OnboardingClient({ user: serverUser }: { user: any }) {
   const { user: clientUser, setUser } = useAuthStore();
   const user = clientUser || serverUser;
 
-  const existingRoles: string[] = (user?.roleType ?? []).filter((r: string) =>
-    FOXER_ROLES.includes(r),
-  );
+  const existingRoles: string[] = (user?.roleType ?? []).filter(isFoxerRole);
   const hasExistingRoles = existingRoles.length > 0;
 
   const [step, setStep] = useState<Step>(hasExistingRoles ? 3 : 1);

@@ -810,36 +810,43 @@ Every protected navigation item declares a permission.
 # 22. Final Authorization Architecture
 
 ```text
-                         ┌──────────────┐
-                         │     User     │
-                         └──────┬───────┘
+                              User
+                                │
+                     ┌──────────┴──────────┐
+                     ▼                     ▼
+                SystemRole             RoleType[]
+                     │                     │
+                     ▼                     ▼
+             SystemRole grants      RoleType grants
+                     │                     │
+                     └──────────┬──────────┘
+                                ▼
+                      permissionsForUser()
                                 │
                                 ▼
-                         ┌──────────────┐
-                         │ SystemRole   │
-                         └──────┬───────┘
+                          Permission[]
+                                │
+              ┌─────────────────┼─────────────────┐
+              ▼                 ▼                 ▼
+           REST API           Pages            Socket
+              │                 │                 │
+              └─────────────────┼─────────────────┘
+                                ▼
+                    Server-side authorization
                                 │
                                 ▼
-                         ┌──────────────┐
-                         │ Grant Table  │
-                         └──────┬───────┘
+                     Resource authorization
                                 │
                                 ▼
-                         ┌──────────────┐
-                         │ Permissions  │
-                         └──────┬───────┘
+                         Business rules
                                 │
-             ┌──────────────────┼──────────────────┐
-             ▼                  ▼                  ▼
-          REST API            Pages              Socket
-             │                  │                  │
-             ▼                  ▼                  ▼
-        Authorization      Authorization      Authorization
-             │                  │                  │
-             └──────────────────┼──────────────────┘
                                 ▼
-                         Server-side truth
+                           Operation
 ```
+
+Two inputs, one resolver, one answer. The branches at the top are the part the
+earlier diagram omitted, and omitting it is what made "one grant table" sound
+true.
 
 ## Target State
 
@@ -859,7 +866,12 @@ Business Rules
 Operation
 ```
 
-There should be **one RBAC implementation, one permission vocabulary, one grant table, and one server-side authorization authority**.
+There should be **one RBAC implementation, one permission vocabulary, one
+authorization API, and one server-side authorization authority** — with
+`SystemRole` and `RoleType` as two grant *inputs* that resolve into the same
+permission set through `permissionsForUser()`. "One grant table" was the earlier
+wording and it stops being accurate the moment `RoleType` becomes an input; two
+grant maps behind one resolver is not two authorization systems.
 
 The Next.js application, UI, and Socket.IO layer may consume the same permission model for user experience, but none of them can bypass the API's authorization boundary.
 

@@ -21,14 +21,14 @@ import Navbar from "@/shared/components/layout/Navbar";
 import { getVenues, getFeaturedEventTemplates } from "@/shared/lib/server/data";
 import { getUser } from "@/shared/lib/server/auth";
 import { hasPermission } from "@/shared/lib/permissions";
+import { isFoxer } from "@/shared/constants/roles";
 
-const VENUE_ROLES = ["eventFoxer", "venueFoxer", "gearFoxer", "serviceFoxer"];
 
 function userCanSeeVenues(user: any): boolean {
   if (!user) return true; // unauthenticated visitors see venues freely
   if (hasPermission(user, "queue:read")) return true;
   const roleType: string[] = user?.roleType ?? [];
-  return roleType.some((r) => VENUE_ROLES.includes(r));
+  return isFoxer(roleType);
 }
 
 interface HomePageProps {
