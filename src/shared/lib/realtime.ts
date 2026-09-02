@@ -51,7 +51,19 @@ export const TOPIC_QUERY_KEYS: Record<string, string[][]> = {
   "admin:pending": [["admin-data"]],
   venues: [["host-venues"], ["host-venue-stats"], ["host-data"]],
   events: [["user-upcoming-events"], ["host-data"], ["admin-data"]],
-  bookings: [["host-data"], ["user-upcoming-events"], ["admin-data"]],
+  // `user-bookings` is the citizen's own list at /booking. It was the last
+  // screen still fetching in a `useEffect`, which put it outside the cache and
+  // out of reach of every emit above it.
+  bookings: [
+    ["host-data"],
+    ["user-upcoming-events"],
+    ["admin-data"],
+    ["user-bookings"],
+  ],
+  // The admin disputes and refunds tables. React Query matches keys by prefix,
+  // so this one entry also covers the per-type tables keyed
+  // ["admin", "disputes", "asset" | "service"].
+  disputes: [["admin", "disputes"]],
   waitlist: [["waitlist"]],
   // An admin approving a role application changes what the applicant may do.
   // `["me"]` is the shared profile key `useProfile` and `useSessionManager` both
