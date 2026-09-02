@@ -111,12 +111,12 @@ export default function FoxerApplicationClient({
   };
 
   const handleExperienceChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const raw = e.target.value;
-    if (raw === "") {
+    const digits = e.target.value.replace(/\D/g, "");
+    if (digits === "") {
       setServiceData((prev) => ({ ...prev, experience: "" }));
       return;
     }
-    const clamped = Math.min(100, Math.max(0, Number(raw)));
+    const clamped = Math.min(100, Math.max(0, Number(digits)));
     setServiceData((prev) => ({ ...prev, experience: String(clamped) }));
   };
 
@@ -263,9 +263,9 @@ export default function FoxerApplicationClient({
                     </div>
                     <input
                       required
-                      type="number"
-                      min="0"
-                      max="100"
+                      type="text"
+                      inputMode="numeric"
+                      pattern="[0-9]*"
                       name="experience"
                       value={serviceData.experience}
                       onChange={handleExperienceChange}

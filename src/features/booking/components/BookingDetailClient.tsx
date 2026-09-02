@@ -10,6 +10,7 @@ import { fetchBookingById } from "@/features/booking/api/bookings";
 import { useAuthStore } from "@/features/auth/store/useAuthStore";
 import CancelBookingModal from "./CancelBookingModal";
 import { getDashboardPath } from "@/shared/lib/dashboard-path";
+import MessageButton from "@/features/messages/components/MessageButton";
 
 const STATUS_LABEL: Record<string, { label: string; color: string }> = {
   pending: { label: "Pending", color: "text-yellow-400 bg-yellow-500/10" },
@@ -21,14 +22,10 @@ const STATUS_LABEL: Record<string, { label: string; color: string }> = {
 };
 
 const PAYMENT_STATUS_LABEL: Record<string, { label: string; color: string }> = {
-  succeeded: { label: "Paid", color: "text-green-400 bg-green-500/10" },
+  completed: { label: "Paid", color: "text-green-400 bg-green-500/10" },
   pending: { label: "Pending", color: "text-yellow-400 bg-yellow-500/10" },
   failed: { label: "Failed", color: "text-red-400 bg-red-500/10" },
   refunded: { label: "Refunded", color: "text-purple-400 bg-purple-500/10" },
-  refund_failed: {
-    label: "Refund Failed",
-    color: "text-orange-400 bg-orange-500/10",
-  },
   cancelled: { label: "Cancelled", color: "text-white/50 bg-white/5" },
 };
 
@@ -127,8 +124,24 @@ export default function BookingDetailClient({
   const eventName = booking.event?.name || "Venue Booking";
   const payments = booking.payments || [];
   const totalPaid = payments
-    .filter((p: any) => p.status === "succeeded")
+    .filter((p: any) => p.status === "completed")
     .reduce((sum: number, p: any) => sum + (p.amount || 0), 0);
+
+  // Only the citizen who made the booking can cancel it — the host/organizer
+  // viewing the same booking gets "Unauthorized" from the API if they try.
+  const isOwner = !!user?.id && user.id === booking.userId;
+  const otherParty = isOwner ? booking.event?.host : booking.user;
+  const hasStarted = booking.startAt
+    ? new Date(booking.startAt).getTime() <= Date.now()
+    : false;
+  const canCancel = isOwner && isActiveStatus && !hasStarted;
+
+  // The event's match request can be approved by the host while the booking
+  // itself is still "pending" — that just means payment hasn't gone through
+  // yet. Surface both so "Pending" doesn't read as the host rejecting it.
+  const requestStatus = booking.event?.requestStatus;
+  const showRequestNote =
+    requestStatus === "approved" && booking.status === "pending";
 
   return (
     <>
@@ -189,25 +202,36 @@ export default function BookingDetailClient({
 
       <main className="grow pt-24 sm:pt-32 pb-28 sm:pb-20">
         <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center gap-2 text-sm text-text-muted mb-6">
-            <Link href="/" className="hover:text-white transition-colors">
-              Home
-            </Link>
-            <span className="material-symbols-outlined text-[14px]">
-              chevron_right
-            </span>
-            <Link
-              href="/booking"
-              className="hover:text-white transition-colors"
+          <div className="flex items-center justify-between mb-6 gap-4">
+            <button
+              onClick={() => router.back()}
+              className="flex items-center gap-2 text-sm text-text-muted hover:text-white transition-colors shrink-0"
             >
-              My Bookings
-            </Link>
-            <span className="material-symbols-outlined text-[14px]">
-              chevron_right
-            </span>
-            <span className="text-accent font-semibold truncate max-w-50">
-              #{bookingId.slice(0, 12)}
-            </span>
+              <span className="material-symbols-outlined text-[18px]">
+                arrow_back
+              </span>
+              Back
+            </button>
+            <div className="flex items-center gap-2 text-sm text-text-muted min-w-0">
+              <Link href="/" className="hover:text-white transition-colors">
+                Home
+              </Link>
+              <span className="material-symbols-outlined text-[14px]">
+                chevron_right
+              </span>
+              <Link
+                href="/booking"
+                className="hover:text-white transition-colors"
+              >
+                My Bookings
+              </Link>
+              <span className="material-symbols-outlined text-[14px]">
+                chevron_right
+              </span>
+              <span className="text-accent font-semibold truncate max-w-50">
+                #{bookingId.slice(0, 12)}
+              </span>
+            </div>
           </div>
 
           <div className="glass-panel rounded-3xl p-4 sm:p-8 space-y-6 sm:space-y-8">
@@ -220,24 +244,37 @@ export default function BookingDetailClient({
                   <span
                     className={`px-3 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider ${statusInfo.color}`}
                   >
-                    {statusInfo.label}
+                    {showRequestNote ? "Pending Payment" : statusInfo.label}
                   </span>
                 </div>
                 <p className="text-text-muted text-sm font-mono">
                   Booking #{bookingId}
                 </p>
               </div>
-              {isActiveStatus && (
-                <button
-                  onClick={() => setShowCancelModal(true)}
-                  className="flex items-center gap-2 px-5 py-2.5 rounded-xl border border-red-500/30 text-red-400 text-sm font-semibold hover:bg-red-500/10 hover:border-red-500/50 transition-all shrink-0"
-                >
-                  <span className="material-symbols-outlined text-[16px]">
-                    cancel
-                  </span>
-                  Cancel Booking
-                </button>
-              )}
+              <div className="flex items-center gap-2 shrink-0">
+                {otherParty?.id && (
+                  <MessageButton
+                    otherUserId={otherParty.id}
+                    otherUserName={otherParty.name}
+                    otherUserImgId={otherParty.imgId}
+                    contextType="booking"
+                    contextId={bookingId}
+                    contextLabel={eventName}
+                    label={isOwner ? "Message Foxer" : "Message User"}
+                  />
+                )}
+                {canCancel && (
+                  <button
+                    onClick={() => setShowCancelModal(true)}
+                    className="flex items-center gap-2 px-5 py-2.5 rounded-xl border border-red-500/30 text-red-400 text-sm font-semibold hover:bg-red-500/10 hover:border-red-500/50 transition-all shrink-0"
+                  >
+                    <span className="material-symbols-outlined text-[16px]">
+                      cancel
+                    </span>
+                    Cancel Booking
+                  </button>
+                )}
+              </div>
             </div>
 
             <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
@@ -252,7 +289,7 @@ export default function BookingDetailClient({
                         day: "numeric",
                         year: "numeric",
                       })
-                    : "â€”"}
+                    : "—"}
                 </p>
               </div>
               <div>
@@ -266,7 +303,7 @@ export default function BookingDetailClient({
                         day: "numeric",
                         year: "numeric",
                       })
-                    : "â€”"}
+                    : "—"}
                 </p>
               </div>
               <div>
@@ -274,7 +311,7 @@ export default function BookingDetailClient({
                   Guests
                 </p>
                 <p className="text-white font-semibold">
-                  {booking.guestCount || "â€”"}
+                  {booking.guestCount || "—"}
                 </p>
               </div>
               <div>
@@ -282,7 +319,7 @@ export default function BookingDetailClient({
                   Total Amount
                 </p>
                 <p className="text-accent font-display font-bold text-xl">
-                  â‚±{booking.totalAmount?.toLocaleString() || "0"}
+                  ₱{booking.totalAmount?.toLocaleString() || "0"}
                 </p>
               </div>
             </div>
@@ -373,12 +410,12 @@ export default function BookingDetailClient({
                                   minute: "2-digit",
                                 },
                               )
-                            : "â€”"}
+                            : "—"}
                         </p>
                       </div>
                       <div className="flex items-center gap-3">
                         <span className="text-white font-bold">
-                          â‚±{payment.amount?.toLocaleString() || "0"}
+                          ₱{payment.amount?.toLocaleString() || "0"}
                         </span>
                         <span
                           className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${pStatus.color}`}
@@ -394,7 +431,7 @@ export default function BookingDetailClient({
                 <div className="flex items-center justify-between pt-4 mt-2 border-t border-white/10">
                   <span className="text-text-muted text-sm">Total Paid</span>
                   <span className="text-accent font-display font-bold text-lg">
-                    â‚±{totalPaid.toLocaleString()}
+                    ₱{totalPaid.toLocaleString()}
                   </span>
                 </div>
               )}

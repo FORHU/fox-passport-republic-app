@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { createPortal } from "react-dom";
 import { useLocationSearch } from "@/features/landing/hooks/useLocationSearch";
+import { MAJOR_CITIES } from "@/shared/data/majorCities";
 
 const CATEGORIES = ["Wedding", "Corporate", "Birthday", "Social", "Other"];
 
@@ -374,18 +375,17 @@ function LocationField({
         width: Math.max(180, rect.width),
       });
     }
+    // Focusing the input to click the chevron leaves showSuggestions stuck
+    // true from onFocus, which hides this quick-pick list underneath the
+    // (empty, query-too-short) type-ahead suggestions. Force it off so the
+    // chevron always opens the full list.
+    setShowSuggestions(false);
     setOpen((o) => !o);
   };
 
-  const locations = [
-    "All Locations",
-    "Baguio",
-    "Manila",
-    "Cebu",
-    "Siargao",
-    "Boracay",
-    "Palawan",
-  ];
+  // Same city list the /search page books against, so this quick-pick isn't
+  // a narrower stand-in for what's actually available.
+  const locations = ["All Locations", ...MAJOR_CITIES];
 
   return (
     <div
@@ -452,7 +452,7 @@ function LocationField({
             style={{ top: pos.top, left: pos.left, width: pos.width }}
             onMouseDown={(e) => e.stopPropagation()}
           >
-            <div className="glass-card rounded-xl border border-white/10 p-1.5 shadow-[0_0_30px_rgba(0,0,0,0.5)] bg-[#11121a]">
+            <div className="glass-card rounded-xl border border-white/10 p-1.5 shadow-[0_0_30px_rgba(0,0,0,0.5)] bg-[#11121a] max-h-64 overflow-y-auto">
               {locations.map((loc) => {
                 const val = loc === "All Locations" ? "" : loc;
                 const isSelected = value === val;

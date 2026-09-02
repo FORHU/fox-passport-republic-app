@@ -43,9 +43,6 @@ export const useAdminData = (
           case "categories":
             endpoint = "/categories";
             break;
-          case "citizens":
-            endpoint = "/users";
-            break;
           case "stats":
             endpoint = "/admin/stats";
             break;
