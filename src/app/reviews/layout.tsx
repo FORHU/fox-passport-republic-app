@@ -1,8 +1,7 @@
 import { requireAuth } from "@/shared/lib/server/auth";
 
 /**
- * Signed-in only: a person's bookings, the item and venue checkout steps,
- * and their confirmation screens.
+ * Signed-in only: choosing a booking to review, and writing the review.
  *
  * `middleware.ts` only checks that a session cookie is *present* - it verifies
  * nothing, by design, so this app need not hold the API's signing key. The real
@@ -13,7 +12,7 @@ import { requireAuth } from "@/shared/lib/server/auth";
  * instead of by each page remembering. `getUser` is memoised per render pass,
  * so this adds no round trip to a page that already calls it.
  */
-export default async function BookingLayout({
+export default async function ReviewsLayout({
   children,
 }: {
   children: React.ReactNode;

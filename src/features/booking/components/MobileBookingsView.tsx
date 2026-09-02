@@ -1,10 +1,12 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
+import { useQuery } from "@tanstack/react-query";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/features/auth/store/useAuthStore";
 import { fetchUserBookings } from "@/features/booking/api/bookings";
+import { pollWhileVisible } from "@/shared/lib/realtime";
 
 const STATUS_STYLE: Record<string, { bg: string; color: string; label: string }> = {
   pending: { bg: "rgba(234,179,8,0.12)", color: "#facc15", label: "Pending" },
@@ -28,22 +30,27 @@ const STATUS_STYLE: Record<string, { bg: string; color: string; label: string }>
 export default function MobileBookingsView() {
   const router = useRouter();
   const { user, isLoading: authLoading } = useAuthStore();
-  const [bookings, setBookings] = useState<any[]>([]);
-  const [isInitial, setIsInitial] = useState(true);
+  const userId = user?.id || user?.userId;
 
   useEffect(() => {
-    if (authLoading) return;
+    if (!authLoading && !userId) router.replace("/");
+  }, [authLoading, userId, router]);
 
-    const userId = user?.id || user?.userId;
-    if (!userId) {
-      router.replace("/");
-      return;
-    }
+  /**
+   * Same key prefix as `BookingListClient`, for the same reason: `bookings` is
+   * mapped onto `["user-bookings"]`, and React Query matches by prefix, so the
+   * server's invalidation reaches this view too. It fetched in an effect and
+   * held rows in state before, which left it outside the cache and outside
+   * anything the socket could refresh.
+   */
+  const { data, isPending } = useQuery({
+    queryKey: ["user-bookings", userId, 1, 20],
+    queryFn: () => fetchUserBookings(userId as string, 1, 20),
+    enabled: Boolean(userId) && !authLoading,
+    refetchInterval: pollWhileVisible,
+  });
 
-    fetchUserBookings(userId, 1, 20)
-      .then((res) => setBookings(res.bookings))
-      .finally(() => setIsInitial(false));
-  }, [authLoading, user?.id, user?.userId, router]);
+  const bookings = data?.bookings ?? [];
 
   return (
     <div
@@ -102,7 +109,7 @@ export default function MobileBookingsView() {
           gap: 10,
         }}
       >
-        {isInitial || authLoading ? (
+        {isPending || authLoading ? (
           <div
             style={{ display: "flex", justifyContent: "center", padding: "60px 0" }}
           >

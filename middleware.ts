@@ -1,19 +1,32 @@
 import { NextRequest, NextResponse } from "next/server";
-import { jwtVerify, type JWTPayload } from "jose";
-import { canAccessAdmin } from "@/shared/lib/permissions";
 
 /**
- * Proxy for authentication and authorization checks
- * Runs before pages/API routes are accessed
+ * Navigation guard. Runs before pages are rendered.
  *
- * Handles:
- * - Auth token validation
- * - Protected route access
- * - Admin route restriction
+ * This checks one thing: whether a session cookie is present. It is a redirect
+ * for people who are not signed in, not an authorization boundary, and nothing
+ * here should be read as proof of anything.
  *
- * Only `/admin` is gated on role here. Every other role check is deferred to
- * server components so they read live API data — a cookie issued before a role
- * was approved would otherwise lock the user out until it expired.
+ * It used to verify the JWT itself with `jwtVerify`, which meant this app held
+ * a copy of the API's `ACCESS_TOKEN_SECRET`. HS256 is symmetric: the key that
+ * checks a token also signs one, so verifying here gave the frontend the
+ * ability to mint admin tokens for its own API. That capability is gone, and
+ * the secret with it.
+ *
+ * What actually enforces access, unchanged:
+ *   - the API verifies the token, checks expiry, loads the user and applies
+ *     `requirePermission` per route, answering 401/403;
+ *   - `requireAuth` / `requireAdmin` / `requireHost` in
+ *     `shared/lib/server/auth.ts` redirect from the page itself, off a live
+ *     `/profile` call rather than a cookie claim.
+ *
+ * So a present-but-expired cookie reaches the page and is turned away there,
+ * and a non-admin reaching `/admin` is redirected by `requireAdmin()` in
+ * `app/admin/page.tsx` - on fresher information than this file ever had.
+ *
+ * If cryptographic verification is ever wanted here, the way to get it is
+ * RS256/ES256 signing in the API, so this app can hold a public key that
+ * verifies without being able to sign. Not a change to make in passing.
  */
 
 // Routes that require authentication
@@ -35,35 +48,6 @@ const PROTECTED_ROUTES = [
 // everyone out of every protected route.
 const TOKEN_COOKIE = "fox_token";
 
-// No development fallback: a hardcoded default would let anyone forge an
-// admin token signed with a value that is public in this repo. If the secret
-// is missing we fail closed instead.
-const ACCESS_TOKEN_SECRET = process.env.ACCESS_TOKEN_SECRET;
-
-interface SessionUser {
-  userId: string;
-  email?: string;
-  systemRole: string;
-  permissions?: string[];
-}
-
-function toSessionUser(payload: JWTPayload): SessionUser | null {
-  const userId = payload.userId ?? payload.sub;
-  if (typeof userId !== "string") return null;
-
-  const systemRole =
-    typeof payload.systemRole === "string" ? payload.systemRole : "user";
-
-  return {
-    userId,
-    email: typeof payload.email === "string" ? payload.email : undefined,
-    systemRole,
-    permissions: Array.isArray(payload.permissions)
-      ? payload.permissions.filter((p): p is string => typeof p === "string")
-      : undefined,
-  };
-}
-
 export default async function proxy(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
 
@@ -73,37 +57,11 @@ export default async function proxy(request: NextRequest) {
 
   if (!isProtectedRoute) return NextResponse.next();
 
-  if (!ACCESS_TOKEN_SECRET) {
-    console.error(
-      "[Proxy] ACCESS_TOKEN_SECRET is not set — refusing access to protected routes. " +
-        "Set it to the same value the API signs tokens with.",
-    );
-    return redirectToLogin(request);
-  }
-
-  const token = request.cookies.get(TOKEN_COOKIE)?.value;
-  if (!token) return redirectToLogin(request);
-
-  let user: SessionUser | null = null;
-  try {
-    const { payload } = await jwtVerify(
-      token,
-      new TextEncoder().encode(ACCESS_TOKEN_SECRET),
-      { algorithms: ["HS256"] },
-    );
-    user = toSessionUser(payload);
-  } catch {
-    // Expired or tampered token — treated the same as no token.
-    user = null;
-  }
-
-  if (!user) return redirectToLogin(request);
-
-  // Capability, not role: `admin_secretary` reaches the console too, and the
-  // API still enforces what they may do once inside it.
-  if (pathname.startsWith("/admin") && !canAccessAdmin(user)) {
-    return NextResponse.redirect(new URL("/", request.url));
-  }
+  // Presence only. The contents are not read, decoded, or trusted - an expired
+  // or forged cookie gets past this line by design, and is refused by the API
+  // and by the page's own `requireAuth`/`requireAdmin` a moment later.
+  const hasSession = Boolean(request.cookies.get(TOKEN_COOKIE)?.value);
+  if (!hasSession) return redirectToLogin(request);
 
   return NextResponse.next();
 }

@@ -1,27 +1,24 @@
-﻿"use client";
-
-import React from "react";
-import CreateVenueWizard from "@/features/venue/components/CreateVenueWizard";
-import { useCreateVenueModal } from "@/features/venue/hooks/useCreateVenueModal";
-import RequireAuth from "@/features/auth/components/RequireAuth";
+import { requireAuth } from "@/shared/lib/server/auth";
+import CreatorDashboardShell from "@/features/dashboard/components/CreatorDashboardShell";
 
 /**
- * Host layout - wraps all host dashboard pages
+ * Host layout - wraps every creator dashboard page.
  *
- * Auth & role checks are handled by proxy.ts
- * This layout only manages UI state (create venue modal)
+ * The guard used to be `RequireAuth` alone, client-side against the auth store,
+ * with a comment claiming `middleware.ts` handled auth and roles. It did once;
+ * it now checks only that a session cookie exists, so that this app need not
+ * hold the API's signing key. `requireAuth` here resolves the session against a
+ * live `/profile` call before anything renders.
+ *
+ * Deliberately `requireAuth` and not `requireHost`: `/creator-dashboard/apply`
+ * is how someone becomes a host. The five pages that need the stronger check
+ * call `requireHost()` themselves, and the API enforces it regardless.
  */
-export default function HostLayout({
+export default async function HostLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const { isOpen } = useCreateVenueModal();
-
-  return (
-    <RequireAuth>
-      <div className="pb-16 md:pb-0">{children}</div>
-      {isOpen && <CreateVenueWizard />}
-    </RequireAuth>
-  );
+  await requireAuth();
+  return <CreatorDashboardShell>{children}</CreatorDashboardShell>;
 }
