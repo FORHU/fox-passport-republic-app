@@ -69,7 +69,7 @@ export default function BookingListClient() {
     refetchInterval: pollWhileVisible,
   });
 
-  const bookings = data?.bookings ?? [];
+  const bookings = useMemo(() => data?.bookings ?? [], [data?.bookings]);
   const totalPages = data?.pagination.totalPages || 1;
 
   const { attentionBookings, otherBookings } = useMemo(() => {
@@ -167,7 +167,7 @@ export default function BookingListClient() {
             </h1>
           </div>
 
-          <div className="relative min-h-[520px]">
+          <div className="relative min-h-130">
             {bookings.length === 0 ? (
               <div className="text-center py-20">
                 <span className="material-symbols-outlined text-white/20 text-6xl mb-4">

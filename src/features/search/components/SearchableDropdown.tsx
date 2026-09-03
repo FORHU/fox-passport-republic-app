@@ -84,10 +84,19 @@ export default function SearchableDropdown({
     if (asyncSearch) return asyncResults;
     const list = options ?? [];
     const q = query.trim().toLowerCase();
-    const matches = q
-      ? list.filter((o) => o.toLowerCase().includes(q))
-      : list;
-    return matches.slice(0, 150);
+    if (!q) return list.slice(0, 150);
+
+    // Cities starting with what was typed lead the list; cities that merely
+    // contain it elsewhere (e.g. "Anchorage" for "c") trail behind instead of
+    // burying the prefix match the user actually typed toward.
+    const starts: string[] = [];
+    const contains: string[] = [];
+    for (const o of list) {
+      const lower = o.toLowerCase();
+      if (lower.startsWith(q)) starts.push(o);
+      else if (lower.includes(q)) contains.push(o);
+    }
+    return [...starts, ...contains].slice(0, 150);
   }, [options, query, asyncSearch, asyncResults]);
 
   return (
@@ -114,7 +123,7 @@ export default function SearchableDropdown({
         createPortal(
           <div
             ref={menuRef}
-            className="fixed z-[101] animate-in fade-in zoom-in-95 duration-150"
+            className="fixed z-101 animate-in fade-in zoom-in-95 duration-150"
             style={{
               top: rect.top,
               left: rect.left,

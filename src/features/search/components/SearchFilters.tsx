@@ -22,6 +22,12 @@ const STATIC_CITY_LISTS: Record<string, string[]> = {
   ...CITY_DATA_BY_COUNTRY,
 };
 
+// Shown when no country is picked yet, so "All countries" doesn't silently
+// behave like one specific country was already selected.
+const ALL_STATIC_CITIES = Array.from(
+  new Set(Object.values(STATIC_CITY_LISTS).flat()),
+).sort();
+
 async function searchCitiesInCountry(
   query: string,
   countryCode: string,
@@ -79,7 +85,7 @@ function CategoryDropdown({
           {selected || "All categories"}
         </span>
         <span
-          className={`material-symbols-outlined text-[18px] text-white/40 transition-transform duration-200 ${
+          className={`material-symbols-outlined text-lg text-white/40 transition-transform duration-200 ${
             open ? "rotate-180" : ""
           }`}
         >
@@ -91,7 +97,7 @@ function CategoryDropdown({
         createPortal(
           <div
             ref={menuRef}
-            className="fixed z-[101] w-[var(--cat-w)] animate-in fade-in zoom-in-95 duration-150"
+            className="fixed z-101 w-(--cat-w) animate-in fade-in zoom-in-95 duration-150"
             style={{
               top: "var(--cat-top)",
               left: "var(--cat-left)",
@@ -170,7 +176,9 @@ export default function SearchFilters() {
     () => searchParams?.get("country") || "",
   );
   const [city, setCity] = useState(() => searchParams?.get("city") || "");
-  const staticCityList = STATIC_CITY_LISTS[country || "Philippines"];
+  const staticCityList = country
+    ? STATIC_CITY_LISTS[country]
+    : ALL_STATIC_CITIES;
   const usesStaticCities = Boolean(staticCityList);
   const countryCode = country ? COUNTRY_CODES[country] : undefined;
   const [label, setLabel] = useState(() => searchParams?.get("label") || "");

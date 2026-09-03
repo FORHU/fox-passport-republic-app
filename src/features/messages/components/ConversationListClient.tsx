@@ -1,7 +1,7 @@
 /* eslint-disable @next/next/no-img-element */
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useConversations } from "../hooks/useMessages";
 import ChatPanel from "./ChatPanel";
@@ -13,12 +13,21 @@ export default function ConversationListClient() {
   const { data: conversations = [], isLoading } = useConversations();
   const [active, setActive] = useState<Conversation | null>(null);
 
-  useEffect(() => {
-    const conversationId = searchParams.get("conversationId");
-    if (!conversationId) return;
-    const match = conversations.find((c) => c.id === conversationId);
-    if (match) setActive(match);
-  }, [searchParams, conversations]);
+  // Opens the conversation named by ?conversationId once it's in the list —
+  // adjusted during render (see SearchFilters.tsx for the same technique)
+  // rather than in an effect, so a still-loading `conversations` naturally
+  // retries on the next render instead of needing a second effect run.
+  const conversationIdParam = searchParams.get("conversationId");
+  const [appliedConversationId, setAppliedConversationId] = useState<
+    string | null
+  >(null);
+  if (conversationIdParam && conversationIdParam !== appliedConversationId) {
+    const match = conversations.find((c) => c.id === conversationIdParam);
+    if (match) {
+      setAppliedConversationId(conversationIdParam);
+      setActive(match);
+    }
+  }
 
   return (
     <div className="min-h-screen bg-[#0a0a0a] p-4 sm:p-8">

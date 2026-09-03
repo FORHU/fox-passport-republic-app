@@ -217,7 +217,7 @@ export const AdminCitizenTable: React.FC<CitizenTableProps> = ({
                             <p className="font-bold text-white text-xs">
                               {citizen.name ?? "Anonymous"}
                             </p>
-                            <p className="text-[10px] text-white/25 font-mono truncate max-w-[140px]">
+                            <p className="text-[10px] text-white/25 font-mono truncate max-w-35">
                               {citizen.id}
                             </p>
                           </div>
