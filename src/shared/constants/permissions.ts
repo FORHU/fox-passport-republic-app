@@ -25,6 +25,7 @@ export const PERMISSIONS = [
   "users:read",
   "users:manage",
   "roles:manage",
+  "roles:assign",
   "categories:manage",
   "policies:manage",
 

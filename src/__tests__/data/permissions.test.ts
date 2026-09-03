@@ -119,3 +119,29 @@ describe("the gates are expressed as capabilities", () => {
     expect(perms.length).toBe(items.length);
   });
 });
+
+/**
+ * `/admin` fetched eight things in one `Promise.all` for every admin, including
+ * `/users`, which needs `users:read`. `admin_secretary` does not hold it, the
+ * API answered 403, `serverFetch` throws on a non-ok response, and the whole
+ * page went down — so the role could not open the console at all.
+ *
+ * Nothing caught it: 41 tests pinned the grant table and the nav, and none of
+ * them rendered a page. Found by signing in as the role for the first time.
+ */
+describe("the admin page asks only for what the viewer may read", () => {
+  const page = read("src/app/admin/page.tsx");
+
+  it.each([
+    ["getUsers", "users:read"],
+    ["getAllBookings", "bookings:read:all"],
+  ])("%s is gated on %s", (fetcher, permission) => {
+    const call = page.indexOf(`${fetcher}()`);
+    expect(call, `${fetcher}() is not called on the admin page`).toBeGreaterThan(-1);
+    const guard = page.lastIndexOf(`hasPermission(user, "${permission}")`, call);
+    expect(
+      guard,
+      `${fetcher}() is not guarded by ${permission} — a role without it cannot open /admin`,
+    ).toBeGreaterThan(-1);
+  });
+});
