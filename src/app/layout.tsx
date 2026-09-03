@@ -8,6 +8,7 @@ import { Toaster } from "sonner";
 // Import the Modal Component
 import AuthModal from "@/features/auth/components/AuthModal";
 import SessionExpiredToast from "@/features/auth/components/SessionExpiredToast";
+import NavigationOverlay from "@/shared/components/ui/NavigationOverlay";
 
 // Import the Master Provider
 import Providers from "@/shared/providers";
@@ -42,6 +43,10 @@ export default function RootLayout({
       </head>
       <body className="antialiased font-body text-text-main bg-background flex flex-col min-h-screen bg-gradient-dark">
         <Providers>
+          <Suspense fallback={null}>
+            <NavigationOverlay />
+          </Suspense>
+
           {/* 2. Add the Toaster here. 'richColors' gives you green for success/red for error automatically. */}
           <Toaster position="top-center" richColors />
 

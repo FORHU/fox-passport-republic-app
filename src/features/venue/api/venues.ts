@@ -42,3 +42,27 @@ export async function fetchVenueCatalog(): Promise<{
   const resp = await api.get("/venues/catalog");
   return resp.data;
 }
+
+export interface ReferenceBoundary {
+  id: string;
+  name: string;
+  lat: number | null;
+  lng: number | null;
+  boundary: [number, number][] | null;
+  category: string | null;
+  image: string | null;
+}
+
+// Read-only reference layer for the map picker: every other live venue's
+// location — a drawn shape where it has one, otherwise just its pin — so a
+// host can see what they'd overlap (and what's around generally) while
+// drawing. `excludeId` omits the venue currently being edited.
+export async function fetchReferenceBoundaries(
+  excludeId?: Id,
+): Promise<ReferenceBoundary[]> {
+  const resp = await api.get("/venues/boundaries", {
+    params: excludeId ? { excludeId: String(excludeId) } : undefined,
+  });
+  const raw = resp.data?.boundaries;
+  return Array.isArray(raw) ? raw : [];
+}

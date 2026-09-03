@@ -13,6 +13,7 @@ const NAV_ITEMS = [
   { label: "Events", icon: "event", id: "events", section: "Manage" },
   { label: "Categories", icon: "category", id: "categories" },
   { label: "Venues", icon: "storefront", id: "venues" },
+  { label: "Map", icon: "map", id: "map" },
   { label: "Assets", icon: "inventory_2", id: "assets", section: "Listings" },
   { label: "Services", icon: "build", id: "services" },
   { label: "Disputes", icon: "gavel", id: "disputes", section: "System" },

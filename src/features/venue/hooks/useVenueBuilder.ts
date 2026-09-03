@@ -202,8 +202,7 @@ export function useVenueBuilder() {
         city: store.city || undefined,
         state: store.state || undefined,
         country: store.country || undefined,
-        lat: store.lat ?? undefined,
-        lng: store.lng ?? undefined,
+        boundary: store.boundary ?? undefined,
         price: store.baseRate || undefined,
         spaceType: allItems
           .filter((i) => i.category === "spaces")
@@ -248,6 +247,9 @@ export function useVenueBuilder() {
     if (!store.location) missing.push("Address");
     if (!store.city) missing.push("City");
     if (!store.country) missing.push("Country");
+    if (!store.boundary || store.boundary.length < 3) {
+      missing.push("Service Area (draw a shape on the map)");
+    }
 
     if (missing.length > 0) {
       toast.error(`Please fill in: ${missing.join(", ")}`);
@@ -291,8 +293,7 @@ export function useVenueBuilder() {
         city: store.city,
         state: store.state || undefined,
         country: store.country,
-        lat: store.lat ?? undefined,
-        lng: store.lng ?? undefined,
+        boundary: store.boundary ?? undefined,
         price: store.baseRate,
         spaceType: allItems
           .filter((i) => i.category === "spaces")

@@ -27,6 +27,12 @@ function belongsToHost(record: Venue, hostId: Id): boolean {
     String(record?.user_id),
     String(record?.creatorId),
     String(record?.host?.id),
+    // The raw API venue record carries `mayorId`/`mayor`, not `hostId`/
+    // `host` — those only appear after the server-side `normalizeVenue()`
+    // pass, which this client-side fetch never goes through. Without these,
+    // every real venue fails ownership matching regardless of who owns it.
+    String((record as any)?.mayorId),
+    String((record as any)?.mayor?.id),
   ];
 
   return candidates.some((c) => c && c !== "undefined" && c === idStr);
@@ -144,6 +150,15 @@ export function useHostVenueEdit(venueId: string) {
       return;
     }
 
+    const normalizedTarget = normalizeVenueStatusToBackend(targetStatus);
+    if (
+      normalizedTarget !== "draft" &&
+      (!builder.boundary || builder.boundary.length < 3)
+    ) {
+      toast.error("Draw a service-area shape on the map before publishing");
+      return;
+    }
+
     builder.setIsSubmitting(true);
     try {
       const allItems: any[] = [...builder.includedItems, ...builder.addonItems];
@@ -156,6 +171,7 @@ export function useHostVenueEdit(venueId: string) {
         city: builder.city,
         state: builder.state || undefined,
         country: builder.country,
+        boundary: builder.boundary ?? undefined,
         price: builder.baseRate,
         spaceType: allItems
           .filter((i) => i.category === "spaces")
@@ -173,7 +189,7 @@ export function useHostVenueEdit(venueId: string) {
           .filter((i) => i.category === "rules")
           .map((i) => i.name),
         cancellationPolicyId: builder.cancellationPolicyId || undefined,
-        status: normalizeVenueStatusToBackend(targetStatus),
+        status: normalizedTarget,
       };
 
       if (!venueId) {
@@ -287,6 +303,11 @@ export function useHostVenueEdit(venueId: string) {
         builder.setCity(found?.city ?? "");
         builder.setState(found?.state ?? "");
         builder.setCountry(found?.country ?? "");
+        builder.setLat(found?.lat != null ? Number(found.lat) : null);
+        builder.setLng(found?.lng != null ? Number(found.lng) : null);
+        builder.setBoundary(
+          Array.isArray(found?.boundary) ? found.boundary : null,
+        );
 
         // Gallery
         const images = (found?.venueImages ?? found?.images ?? []) as (
