@@ -9,6 +9,7 @@
   getAllBookings,
 } from "@/shared/lib/server/data";
 import { requireAdmin } from "@/shared/lib/server/auth";
+import { hasPermission } from "@/shared/lib/permissions";
 import { AdminBody } from "@/features/admin/components/AdminBody";
 import {
   AdminSidebar,
@@ -21,7 +22,7 @@ import MobileAdminView from "@/features/admin/components/MobileAdminView";
 export const dynamic = "force-dynamic";
 
 export default async function AdminDashboard() {
-  await requireAdmin();
+  const user = await requireAdmin();
 
   const [
     stats,
@@ -37,10 +38,26 @@ export default async function AdminDashboard() {
     getAdminPendingVenues(),
     getAdminEvents(),
     getCategories(),
-    getUsers(),
+    // Only fetched when the viewer may read it. `admin_secretary` holds
+    // `admin:access` and `queue:read` but not `users:read`, so this call 403s
+    // for them — and `serverFetch` throws on a non-ok response, which rejects
+    // the whole `Promise.all` and takes the console down. The role could not
+    // open the page at all: the permission model was right and the page asked
+    // for something it was not entitled to anyway.
+    hasPermission(user, "users:read") ? getUsers() : Promise.resolve([]),
     getAdminAllAssets(),
     getAdminAllServices(),
-    getAllBookings(),
+    // Same rule. `/bookings` scopes its results rather than refusing, so this
+    // one would not have crashed — but asking for every booking without
+    // `bookings:read:all` is still asking for something we may not have, and
+    // the Bookings tab is hidden from anyone who cannot.
+    hasPermission(user, "bookings:read:all")
+      ? getAllBookings()
+      : Promise.resolve({
+          serviceBookings: [],
+          assetBookings: [],
+          eventBookings: [],
+        }),
   ]);
 
   return (
