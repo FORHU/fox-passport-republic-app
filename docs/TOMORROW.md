@@ -16,21 +16,22 @@ them is ever needed.
 
 ---
 
-## 0. In flight — uncommitted as of 2 Sep
+## 0. In flight — committed and pushed, no PR open, as of 3 Sep
 
-Everything below is written and green. It exists only in working trees.
+Everything below is written, green and on its remote branch. Neither branch has
+a PR, so none of it is on `main`.
 
-- **api `feat/role-assignment`** — `roles:assign`, the `AuditLog` model and its
-  migration (**already applied locally**), `audit.service.ts`,
-  `role-assignment.service.ts`, and `PATCH /admin/users/:id/system-role` +
-  `/role-types`. 194 tests.
-- **app `fix/secretary-admin-console`** — one *committed and pushed* fix (the
-  `/admin` crash), plus the uncommitted role-assignment UI:
-  `RoleAssignmentControls`, `features/admin/api/roles.ts`, `roles:assign` in the
-  vocabulary. 102 tests.
+- **api `feat/role-assignment`** (2 commits) — `roles:assign`, the `AuditLog`
+  model and its migration (**already applied locally, nowhere else**),
+  `audit.service.ts`, `role-assignment.service.ts`, and
+  `PATCH /v1/admin/users/:id/system-role` + `/role-types`. 194 tests, 16 files.
+- **app `fix/secretary-admin-console`** (2 commits) — the `/admin` crash fix,
+  and the role-assignment UI: `RoleAssignmentControls`,
+  `features/admin/api/roles.ts`, `roles:assign` in the vocabulary. 102 tests,
+  13 files.
 
-Also sitting on the api branch and **unrelated to role assignment** — worth
-splitting into its own commit, or cherry-picking to `main` on its own:
+Also on the api branch and **unrelated to role assignment**, already isolated as
+its own commit (`3bc9cfc`) so it can be reverted or cherry-picked alone:
 
 - **Seven read-only list+count pairs moved off `$transaction`.** `browsePublic`
   and friends wrapped a list and its count in `prisma.$transaction([...])`.
@@ -41,10 +42,13 @@ splitting into its own commit, or cherry-picking to `main` on its own:
   insert; a 500 on a browse page is the worse trade. The three remaining
   `$transaction` calls are genuine multi-table writes and stay.
 
-- [ ] **Open the PR for `fix/secretary-admin-console`.** It is pushed. Without
-      it, `admin_secretary` cannot open the console on `main` at all.
-- [ ] **Commit and PR the role-assignment work**, API first — the UI calls
-      endpoints that do not exist on `main` yet.
+- [ ] **Open the api PR for `feat/role-assignment` first.** The app UI calls two
+      endpoints that 404 on `main` until it merges.
+- [ ] **Then the app PR for `fix/secretary-admin-console`.** Without it,
+      `admin_secretary` cannot open the console on `main` at all.
+- [ ] **`gh` is not installed here**, so both are browser-only. Compare links:
+      `.../compare/main...feat/role-assignment` and
+      `.../compare/main...fix/secretary-admin-console`.
 
 ---
 
@@ -112,6 +116,19 @@ none of them rendered a page.
 
 ## 4. Keyboard work, roughly by cost of ignoring it
 
+- [ ] **Close the test suite's blind spot — this is the highest-leverage item
+      here.** Twice on 2 Sep a feature was entirely broken while its tests
+      passed: the socket had been dead for weeks, and 41 tests pinned the
+      `admin_secretary` boundary while the role could not open the console at
+      all. Both times the tests asserted *structure* — grant tables, source
+      text, nav item lists — and none of them rendered a page or made a request.
+      Those tests are cheap and have caught real regressions, so keep them; but
+      they buy less confidence than their pass rate suggests, and this codebase
+      has now been fooled by them twice in a day.
+      Concretely: RBAC Phase 4's per-route 401/403/2xx triads are worth more
+      than another ten table tests, and any feature whose only coverage is a
+      source scan should get one behavioural test that exercises it the way a
+      person would.
 - [ ] **`GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` are `as string` casts** with
       no validation, while every other secret goes through `requireSecret`. A
       missing Google secret fails at first sign-in rather than at boot.
@@ -147,6 +164,13 @@ none of them rendered a page.
 
 ## 5. Traps
 
+- **Every number in these docs drifts. Re-derive, never re-read.** The route
+  count in `RBAC-PLAN.md` said 39 when it was 62 — a grep counting lines rather
+  than routes — and `RBAC.md` was headed "as built" while a third of it was
+  target state. Both were caught by a reviewer, not by the author. There are
+  eight documents here now, roughly 3,500 lines, and they carry real reasoning
+  rather than summaries, which is worth the upkeep — but anything in them that
+  is a *count* should be recomputed before it is quoted.
 - **Migrations are a separate step, and today proved it.**
   `add_admin_secretary_role` had never been applied locally, so the Postgres
   enum had no `admin_secretary`, and the seeder aborted mid-run with a confusing
