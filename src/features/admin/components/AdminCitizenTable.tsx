@@ -368,6 +368,11 @@ export const AdminCitizenTable: React.FC<CitizenTableProps> = ({
                                 </span>
                               </p>
                             </div>
+
+                            {/* Renders nothing without `roles:assign`, which
+                                only `admin` holds — a secretary sees the row
+                                exactly as before. */}
+                            <RoleAssignmentControls citizen={citizen} />
                           </div>
                         </td>
                       </tr>
