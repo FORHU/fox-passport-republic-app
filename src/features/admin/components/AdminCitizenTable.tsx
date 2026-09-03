@@ -3,6 +3,7 @@
 
 import React, { useEffect, useState } from "react";
 import { useAdminCitizens } from "@/features/admin/hooks/useAdminCitizens";
+import { RoleAssignmentControls } from "@/features/admin/components/RoleAssignmentControls";
 
 interface CitizenTableProps {
   initialCitizens?: any[];
