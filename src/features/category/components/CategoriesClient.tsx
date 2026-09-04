@@ -2,7 +2,8 @@
 
 import { Suspense, useState, useMemo } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
-import Navbar from "@/shared/components/layout/Navbar";
+import LandingHeader from "@/features/landing/components/sections/LandingHeader";
+import { useAuthStore } from "@/features/auth/store/useAuthStore";
 import { useCategories } from "@/features/category/hooks/useCategories";
 import { useEventsByCategory } from "@/features/category/hooks/useEventsByCategory";
 import { useVenuesByCategory } from "@/features/venue/hooks/useVenuesByCategory";
@@ -27,6 +28,7 @@ function CategoriesContent({
 }: CategoriesClientProps) {
   const searchParams = useSearchParams();
   const router = useRouter();
+  const openLogin = useAuthStore((s) => s.openLogin);
   const type = searchParams.get("type") || initialType || "all";
   const {
     categories,
@@ -79,7 +81,7 @@ function CategoriesContent({
   if (type) {
     return (
       <div className="min-h-screen bg-[#0a0a0a] flex flex-col">
-        <Navbar />
+        <LandingHeader onSignIn={openLogin} />
 
         <div className="flex-1 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 pt-24">
           {/* Header */}
@@ -160,7 +162,7 @@ function CategoriesContent({
   if (categoriesLoading && displayCategories.length === 0) {
     return (
       <div className="min-h-screen bg-[#0a0a0a]">
-        <Navbar />
+        <LandingHeader onSignIn={openLogin} />
         <div className="pt-24 pb-16 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col items-center justify-center min-h-[60vh]">
           <Loader2 className="w-10 h-10 text-[#ccff00] animate-spin mb-4" />
           <p className="text-gray-400">Loading categories...</p>
@@ -173,7 +175,7 @@ function CategoriesContent({
   if (categoriesError || displayCategories.length === 0) {
     return (
       <div className="min-h-screen bg-[#0a0a0a]">
-        <Navbar />
+        <LandingHeader onSignIn={openLogin} />
         <div className="pt-24 pb-16 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col items-center justify-center min-h-[60vh]">
           <AlertCircle className="w-12 h-12 text-red-500 mb-4" />
           <h2 className="text-xl font-bold text-white mb-2">
@@ -193,7 +195,7 @@ function CategoriesContent({
   // --- VIEW: ALL CATEGORIES LIST ---
   return (
     <div className="min-h-screen bg-[#0a0a0a] flex flex-col">
-      <Navbar />
+      <LandingHeader onSignIn={openLogin} />
 
       <main className="flex-grow container mx-auto px-6 lg:px-20 py-10">
         <CategoryListHero

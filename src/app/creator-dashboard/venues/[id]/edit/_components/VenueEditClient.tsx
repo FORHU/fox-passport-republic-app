@@ -28,6 +28,9 @@ function VenueEditContent({ id }: Props) {
     city,
     state,
     country,
+    lat,
+    lng,
+    boundary,
     gallery,
     cancellationPolicyId,
     includedItems,
@@ -51,6 +54,9 @@ function VenueEditContent({ id }: Props) {
     setCity,
     setState,
     setCountry,
+    setLat,
+    setLng,
+    setBoundary,
     setCancellationPolicyId,
     removeIncludedItem,
     removeAddonItem,
@@ -143,6 +149,10 @@ function VenueEditContent({ id }: Props) {
                   city={city}
                   state={state}
                   country={country}
+                  lat={lat}
+                  lng={lng}
+                  boundary={boundary}
+                  excludeVenueId={id}
                   gallery={gallery}
                   showGuide={showGuide}
                   cancellationPolicyId={cancellationPolicyId}
@@ -154,6 +164,11 @@ function VenueEditContent({ id }: Props) {
                   onCityChange={setCity}
                   onStateChange={setState}
                   onCountryChange={setCountry}
+                  onLatLngChange={(lat, lng) => {
+                    setLat(lat);
+                    setLng(lng);
+                  }}
+                  onBoundaryChange={setBoundary}
                   onCancellationPolicyChange={setCancellationPolicyId}
                   onAddImage={addImageToGallery}
                   onRemoveImage={removeImageFromGallery}

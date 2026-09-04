@@ -52,6 +52,7 @@ export interface Venue {
   spaceType?: string[];
   lat?: number | null;
   lng?: number | null;
+  boundary?: [number, number][] | null;
   category: VenueCategory | null;
   pricing: VenuePricing[];
   images: VenueImage[];

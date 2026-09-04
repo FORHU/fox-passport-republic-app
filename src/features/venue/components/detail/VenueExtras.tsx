@@ -536,9 +536,16 @@ interface VenueMapProps {
   province: string;
   lat?: number | null;
   lng?: number | null;
+  boundary?: [number, number][] | null;
 }
 
-export function VenueMap({ location, province, lat, lng }: VenueMapProps) {
+export function VenueMap({
+  location,
+  province,
+  lat,
+  lng,
+  boundary,
+}: VenueMapProps) {
   return (
     <div>
       <h3 className="text-2xl font-display font-bold text-white mb-2">
@@ -549,7 +556,12 @@ export function VenueMap({ location, province, lat, lng }: VenueMapProps) {
       </p>
       {lat && lng ? (
         <div className="relative rounded-2xl overflow-hidden border border-white/10">
-          <LocationMap lat={lat} lng={lng} className="h-80 w-full" />
+          <LocationMap
+            lat={lat}
+            lng={lng}
+            boundary={boundary}
+            className="h-80 w-full"
+          />
           <div className="absolute bottom-3 left-1/2 -translate-x-1/2">
             <span className="bg-black/80 backdrop-blur-md text-white text-xs font-bold px-3 py-1.5 rounded-full border border-white/10">
               Exact location provided after booking
