@@ -20,6 +20,7 @@ const NAV_ITEMS = [
   { label: "Events", icon: "event", id: "events", section: "Manage", permission: "queue:read" },
   { label: "Categories", icon: "category", id: "categories", permission: "categories:manage" },
   { label: "Venues", icon: "storefront", id: "venues", permission: "queue:read" },
+  { label: "Map", icon: "map", id: "map", permission: "queue:read" },
   { label: "Assets", icon: "inventory_2", id: "assets", section: "Listings", permission: "queue:read" },
   { label: "Services", icon: "build", id: "services", permission: "queue:read" },
   { label: "Disputes", icon: "gavel", id: "disputes", section: "System", permission: "bookings:read:all" },

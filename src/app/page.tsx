@@ -17,7 +17,7 @@ import GoogleAuthErrorToast from "@/features/auth/components/GoogleAuthErrorToas
 import { filterVenues } from "@/features/venue/helpers/filterVenues";
 
 // --- Shared Components & Server Utils ---
-import Navbar from "@/shared/components/layout/Navbar";
+import LandingHeader from "@/features/landing/components/sections/LandingHeader";
 import { getVenues, getFeaturedEventTemplates } from "@/shared/lib/server/data";
 import { getUser } from "@/shared/lib/server/auth";
 import { hasPermission } from "@/shared/lib/permissions";
@@ -65,7 +65,7 @@ async function HomeContent({ searchParams }: HomePageProps) {
   if (isSearchMode) {
     return (
       <main className="min-h-screen bg-white pt-[60px] md:pt-[70px] pb-20">
-        <Navbar />
+        <LandingHeader />
         <AuthModal />
 
         <div className="max-w-[1600px] mx-auto px-2 md:px-6 grid grid-cols-1 lg:grid-cols-[1.2fr_0.8fr] gap-8 h-[calc(100vh-140px)]">

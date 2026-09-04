@@ -11,6 +11,7 @@ import {
   MapboxLocationInput,
   MapboxContextItem,
 } from "@/shared/components/ui/MapboxLocationInput";
+import { VenuePolygonMapPicker } from "@/shared/components/ui/VenuePolygonMapPicker";
 
 interface VenueDetailsFormProps {
   venueName: string;
@@ -23,6 +24,8 @@ interface VenueDetailsFormProps {
   country: string;
   lat?: number | null;
   lng?: number | null;
+  boundary?: [number, number][] | null;
+  excludeVenueId?: string;
   gallery: GalleryItem[];
   showGuide: boolean;
   cancellationPolicyId: string | null;
@@ -35,6 +38,7 @@ interface VenueDetailsFormProps {
   onStateChange: (state: string) => void;
   onCountryChange: (country: string) => void;
   onLatLngChange?: (lat: number, lng: number) => void;
+  onBoundaryChange?: (boundary: [number, number][] | null) => void;
   onCancellationPolicyChange: (policyId: string | null) => void;
   onAddImage: (files: File[]) => void;
   onRemoveImage: (id: string) => void;
@@ -50,6 +54,10 @@ export function VenueDetailsForm({
   city,
   state,
   country,
+  lat = null,
+  lng = null,
+  boundary = null,
+  excludeVenueId,
   gallery,
   showGuide,
   cancellationPolicyId,
@@ -62,6 +70,7 @@ export function VenueDetailsForm({
   onStateChange,
   onCountryChange,
   onLatLngChange = () => {},
+  onBoundaryChange = () => {},
   onCancellationPolicyChange,
   onAddImage,
   onRemoveImage,
@@ -248,6 +257,20 @@ export function VenueDetailsForm({
                   }}
                 />
               </div>
+            </div>
+
+            {/* Service Area */}
+            <div>
+              <label className="text-[10px] uppercase font-bold text-white/40 tracking-widest mb-2 block">
+                Service Area
+              </label>
+              <VenuePolygonMapPicker
+                boundary={boundary}
+                focusLat={lat}
+                focusLng={lng}
+                excludeVenueId={excludeVenueId}
+                onChange={onBoundaryChange}
+              />
             </div>
 
             {/* Cancellation Policy */}

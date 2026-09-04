@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import api from "@/shared/lib/axios";
 import { toast } from "sonner";
 import { useQueryClient } from "@tanstack/react-query";
+import { LocationMap } from "@/shared/components/ui/LocationMap";
 
 interface VenueTableProps {
   venues: any[];
@@ -557,6 +558,23 @@ export const AdminVenuesTable: React.FC<VenueTableProps> = ({
                                   </span>
                                 </div>
                               </div>
+
+                              {/* Location — the drawn service-area shape, not
+                                  just the text address above, so a reviewer
+                                  can actually see what they're approving. */}
+                              {venue.lat != null && venue.lng != null && (
+                                <div className="p-6 border-b border-white/5">
+                                  <p className="text-[9px] uppercase font-bold text-[#ccff00] tracking-[0.2em] mb-3">
+                                    Service Area
+                                  </p>
+                                  <LocationMap
+                                    lat={venue.lat}
+                                    lng={venue.lng}
+                                    boundary={venue.boundary}
+                                    className="h-[28rem] w-full rounded-xl border border-white/10"
+                                  />
+                                </div>
+                              )}
 
                               {/* Features */}
                               {(spaceTypes.length > 0 ||

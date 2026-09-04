@@ -39,8 +39,11 @@ interface VenueBuilderState {
   draggedItem: ResourceItem | null;
   newItem: { name: string; value: string; desc: string };
 
+  // `lat`/`lng` are only a "recenter the map here" hint (e.g. from picking a
+  // city in the address autocomplete); the actual service area is `boundary`.
   lat: number | null;
   lng: number | null;
+  boundary: [number, number][] | null;
 
   // Actions - Venue Details
   setVenueName: (name: string) => void;
@@ -53,6 +56,7 @@ interface VenueBuilderState {
   setState: (s: string) => void;
   setLat: (lat: number | null) => void;
   setLng: (lng: number | null) => void;
+  setBoundary: (boundary: [number, number][] | null) => void;
 
   // Actions - Gallery
   addGalleryItem: (item: GalleryItem) => void;
@@ -101,6 +105,7 @@ const initialData = {
   state: "",
   lat: null as number | null,
   lng: null as number | null,
+  boundary: null as [number, number][] | null,
   gallery: [] as GalleryItem[],
   cancellationPolicyId: null as string | null,
   includedItems: [] as ResourceItem[],
@@ -131,6 +136,7 @@ export const useVenueBuilderStore = create<VenueBuilderState>((set) => ({
   setState: (s) => set({ state: s }),
   setLat: (lat) => set({ lat }),
   setLng: (lng) => set({ lng }),
+  setBoundary: (boundary) => set({ boundary }),
 
   // Gallery Actions
   addGalleryItem: (item) =>

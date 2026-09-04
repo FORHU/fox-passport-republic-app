@@ -8,6 +8,7 @@ import {
   AdminSubmissionsTable,
   AdminBookingsTable,
   AdminVenuesTable,
+  AdminVenuesMap,
   AdminEventsTable,
   AdminCategoriesTable,
   AdminCitizenTable,
@@ -56,7 +57,7 @@ export const AdminContent: React.FC<Props> = ({
   const { data: venues, isLoading: loadingVenues } = useAdminData(
     "venues",
     initialVenues,
-    activeTab === "venues",
+    activeTab === "venues" || activeTab === "map",
   );
   const { data: services, isLoading: loadingServices } = useAdminData(
     "services",
@@ -150,6 +151,10 @@ export const AdminContent: React.FC<Props> = ({
 
       {activeTab === "venues" && (
         <AdminVenuesTable venues={venues} isLoading={loadingVenues} />
+      )}
+
+      {activeTab === "map" && (
+        <AdminVenuesMap venues={venues} isLoading={loadingVenues} />
       )}
 
       {activeTab === "assets" && (
