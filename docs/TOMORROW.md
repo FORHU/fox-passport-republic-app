@@ -19,6 +19,86 @@ needed.
 
 ---
 
+## 0·0. Picking this up on another machine
+
+Written 4 Sep. **Read this before cloning anywhere new.** The repositories carry
+the code; they do not carry the two things most likely to waste your first hour.
+
+### Where the work lives
+
+| Repository | Branch | Ahead of `main` |
+|---|---|---|
+| api | `refactor/api-structure` | 7 commits — schema split, 31 modules, table renames, the validator, GOTCHAS |
+| app | `refactor/app-structure` | 1 commit — `shared/auth`, the realtime bus, the two new docs |
+
+Both are pushed. Neither has a PR open. `main` is untouched in both.
+
+There is also an empty `docs/role-model` branch in the app — it holds nothing
+and can be deleted. The doc work it was created for ended up on
+`refactor/app-structure`, because the changes were still uncommitted when that
+branch was cut.
+
+### What does not travel
+
+- **The database.** A clone has no data. `prisma migrate deploy` then
+  `pnpm exec tsx prisma/seed.ts` gives you 148 users, 78 venues, 128 assets,
+  298 services, and both an `admin` and an `admin_secretary` — which the RBAC
+  boundary work needs.
+- **`.env`.** Gitignored in both repos, and `.env.example` does not carry
+  secrets. The API refuses to start on a missing or weak token secret, which is
+  deliberate, so this fails loudly rather than quietly.
+- **`node_modules` and `.next`.** Expected — but note a **stale `.next` makes
+  `tsc` report errors that are not real**, naming a route group deleted weeks
+  ago. `rm -rf .next` clears it. See §5.
+
+### A fresh clone is the *safe* case for migrations
+
+Worth stating plainly, because the opposite is true of the machine this was
+written on. The migration sequence is order-dependent: main's older migrations
+reference pre-rename table names, so a database that applied
+`20260904140000_rename_tables_to_snake_case` *before* them breaks.
+
+A fresh database replays all 58 in order and lands correctly — verified against
+a throwaway database. **So a new machine is fine.** Only a database that was
+mid-refactor can be in the broken state, and `prisma migrate reset` fixes it.
+
+### First commands
+
+```
+# api
+pnpm install
+pnpm exec prisma generate          # the client is not committed
+pnpm exec prisma migrate deploy
+pnpm exec tsx prisma/seed.ts
+pnpm validate && pnpm test         # expect: boundaries intact, 198 passing
+
+# app
+pnpm install
+pnpm type-check && pnpm test       # expect: clean, 102 passing
+node tools/validate-architecture.mjs   # expect: 72 violations, all one rule
+```
+
+**Do not reach for `pnpm db:setup`.** It is
+`prisma generate && prisma migrate dev`, and `migrate dev` is the command that
+offers to reset the database when it sees drift — it wiped 148 users and
+everything else on 4 Sep. It is harmless against a genuinely empty database, but
+the explicit commands above never prompt, so use them and keep the habit.
+
+**72 is the expected number in the app, not a regression.** The baseline was
+150; the shared-kernel rule is at zero and stays there. If that number goes
+*up*, something regressed — `app-architecture.md` has the breakdown.
+
+### Read first, in this order
+
+1. `api/docs/GOTCHAS.md` — ten things that fail quietly, one of which drops 26
+   tables. Before touching migrations, the schema, or moving files.
+2. This document, §1 onward — the running order.
+
+Everything else is lookup. `api-audit.md`, `RBAC.md` and `RBAC-PLAN.md` are
+records rather than instructions; grep them, do not read them.
+
+---
+
 ## 0. In flight — as of 4 Sep
 
 Role assignment **shipped**. Both PRs are merged and everything §0 asked for on
