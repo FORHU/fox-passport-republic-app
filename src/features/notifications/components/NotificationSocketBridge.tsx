@@ -3,7 +3,7 @@
 import { useEffect } from "react";
 import { toast } from "sonner";
 import { SOCKET_EVENTS, subscribeRealtime } from "@/shared/lib/realtime";
-import { useNotificationStore } from "@/features/notifications/store/useNotificationStore";
+import { useNotificationStore } from "@/shared/store/useNotificationStore";
 import type { Notification } from "@/features/notifications/types";
 
 /**
@@ -51,7 +51,11 @@ export default function NotificationSocketBridge() {
         (payload) => {
           // `title` is absent from the socket payload; the list renders
           // `message`, so an empty string is honest rather than inventing one.
-          addNotification({ title: "", userId: "", ...payload } as Notification);
+          addNotification({
+            title: "",
+            userId: "",
+            ...payload,
+          } as Notification);
 
           // The previous version passed `description: notification.description`.
           // No such field exists on either side of the contract, so that option
