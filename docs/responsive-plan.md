@@ -124,7 +124,13 @@ not go 2-up until `md`, so even a large phone in landscape got one column):
 
 18 of 26 files in `src/shared/components` have no breakpoint prefix:
 
-**Layout:** `BrandLogo`, `FileUploader`, `SessionTimeoutModal`, `navbar/BrowseDropdown`
+**Layout:** `BrandLogo`, `FileUploader`, `SessionTimeoutModal`
+
+**Tally is stale as of 3 Sep** and not re-counted here. `navbar/BrowseDropdown`
+was on the Layout line and `feat/map` deleted it with the rest of the navbar;
+the same commit added `VenuesMap`, `VenuePolygonMapPicker`, `NavigationOverlay`
+and `PageLoader`, none of which have been audited for breakpoints. The directory
+now holds 27 files. Re-count before working this section.
 
 **UI:** `input`, `avatar`, `separator`, `collapsible`, `dropdown-menu`,
 `glass-card`, `kpi-card`, `FormSection`, `StepperControl`, `ProgressIndicator`,
@@ -196,14 +202,24 @@ navigation at all** — a band covering small tablets and most phones in landsca
 
 The fix that shipped moved *both* sides to `lg` rather than both to `md`:
 
-| | Now | Line |
+| | Then | Line |
 |---|---|---|
 | Hamburger | `flex lg:hidden` | `src/shared/components/layout/Navbar.tsx:97` |
 | Menu panel | `lg:hidden` | `navbar/NavMobileMenu.tsx:47` |
 
-They agree, so the dead zone is gone. But that decision moved the navigation
+They agreed, so the dead zone was gone. But that decision moved the navigation
 breakpoint to **1024**, which is what §3.3 is now about — do not "re-fix" this
 one to `md` without reading that first.
+
+**Overtaken 3 Sep, and the defect has inverted.** `feat/map` (#47) deleted both
+files in that table along with the rest of the navbar, and `LandingHeader` took
+over as the navigation component. Its desktop nav is `hidden md:flex` — visible
+from **768** up — while `MobileBottomNav` is still `lg:hidden`, visible below
+**1024**. So where 640–767 once had *no* navigation, **768–1023 now has two at
+once**. Same root cause as the original defect: two halves of one navigation
+disagreeing about where mobile ends. See `TOMORROW.md` §0a; the fix is a
+one-line breakpoint change, but §3.3 below decides which line. Do not treat the
+table above as current state.
 
 ### 3.2 Event builder sidebars vanish with no way to reopen them
 
@@ -229,14 +245,25 @@ built for this — only the host page is missing.
 | Source | Mobile cutoff | Was (26 Aug) |
 |---|---|---|
 | `src/shared/hooks/useMobile.ts:5` | 768 (`md`) | 768 (`md`) |
-| Navbar hamburger + `NavMobileMenu` | **1024 (`lg`)** | 640 (`sm`) |
-| `MobileBottomNav` | 1024 (`lg`) | — |
+| `MobileBottomNav:175` | 1024 (`lg`) | — |
 | `tailwind.config.ts` `2xl` | overridden to 1400px | same |
+| ~~Navbar hamburger + `NavMobileMenu`~~ | *deleted 3 Sep* | 640 (`sm`) |
 
 Fixing §3.1 closed the gap between the hamburger and its own panel, but it did
 so by moving navigation to `lg` — so the disagreement with `useMobile` survived
 and only its numbers changed. §5 below still declares `md` "the mobile/desktop
-line", which the shipped navbar now contradicts.
+line", which `MobileBottomNav` still contradicts.
+
+The navbar's deletion did not settle this — it made it worse. The replacement,
+`LandingHeader`, put its desktop nav at `md` while `MobileBottomNav` stayed at
+`lg`, so the two halves of the current navigation now disagree by a full
+breakpoint and both render between 768 and 1023 (§3.1). `useMobile` at 768 makes
+three voices, two of which are live in the same component tree.
+
+This is now the blocking item rather than a tidy-up: **§3.1 cannot be fixed
+without answering it**, because the one-line fix is choosing which of `md` or
+`lg` both halves move to. Answer it here, then apply it in `LandingHeader` and
+`MobileBottomNav` together.
 
 This is a real decision, not a defect: `lg` is defensible for a nav bar with this
 many items, and `MobileBottomNav` already assumes it. Either move `useMobile` and
