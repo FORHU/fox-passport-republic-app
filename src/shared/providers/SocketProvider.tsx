@@ -11,7 +11,6 @@ import {
   publishRealtime,
 } from "@/shared/lib/realtime";
 
-
 export function SocketProvider({ children }: { children: React.ReactNode }) {
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
   const queryClient = useQueryClient();

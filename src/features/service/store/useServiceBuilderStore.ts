@@ -1,5 +1,6 @@
-﻿import { create } from "zustand";
-import { ListingType } from "@/features/asset/data/listingBuilderData";
+import { create } from "zustand";
+import { ListingType } from "@/shared/data/listingBuilderData";
+
 
 interface ServiceBuilderState {
   // Listing Type

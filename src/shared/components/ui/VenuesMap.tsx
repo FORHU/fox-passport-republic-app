@@ -264,12 +264,7 @@ export function VenuesMap({
                 SELECTED_COLOR,
                 categoryColorExpression() as any,
               ],
-              "fill-opacity": [
-                "case",
-                ["get", "selected"],
-                0.25,
-                0.12,
-              ],
+              "fill-opacity": ["case", ["get", "selected"], 0.25, 0.12],
             },
           });
           map.addLayer({
@@ -341,7 +336,9 @@ export function VenuesMap({
         if (fitToContent) {
           const points: [number, number][] = [
             ...withBoundary.flatMap((v) => v.boundary as [number, number][]),
-            ...withPin.map((v) => [v.lng as number, v.lat as number] as [number, number]),
+            ...withPin.map(
+              (v) => [v.lng as number, v.lat as number] as [number, number],
+            ),
           ];
           if (points.length > 0) {
             let minLng = points[0][0];

@@ -46,13 +46,7 @@ export default function BookingListClient() {
    * `bookings` onto; React Query matches by prefix, so one emit refreshes
    * whichever page is open here and the mobile view besides.
    */
-  const {
-    data,
-    isPending,
-    isFetching,
-    isError,
-    refetch,
-  } = useQuery({
+  const { data, isPending, isFetching, isError, refetch } = useQuery({
     queryKey: ["user-bookings", userId, page, limit],
     queryFn: () => fetchUserBookings(userId as string, page, limit),
     enabled: Boolean(userId),

@@ -1,11 +1,11 @@
-﻿"use client";
+"use client";
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useProfile } from "@/features/user/hooks/useProfile";
+import { useLogout } from "@/shared/auth/useLogout";
 import { useAuthStore } from "@/shared/auth/useAuthStore";
-import { useLogout } from "@/features/auth/hooks/useAuth";
 import AvatarUploader from "@/features/user/components/AvatarUploader";
 
 type Section = "profile" | "security" | "danger";

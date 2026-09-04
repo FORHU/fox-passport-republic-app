@@ -43,7 +43,7 @@ vi.mock("@/shared/auth/useAuthStore", () => ({
     selector ? selector(mockAuthState) : mockAuthState,
 }));
 
-vi.mock("@/features/notifications/components/NotificationBell", () => ({
+vi.mock("@/shared/components/layout/NotificationBell", () => ({
   default: () => <div data-testid="notification-bell" />,
 }));
 

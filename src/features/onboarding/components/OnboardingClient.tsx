@@ -10,7 +10,6 @@ import { isFoxerRole } from "@/shared/constants/roles";
 
 type Step = 1 | 2 | 3;
 
-
 const ROLES = [
   {
     type: "service",

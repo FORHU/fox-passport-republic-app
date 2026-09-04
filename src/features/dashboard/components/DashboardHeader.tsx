@@ -4,10 +4,11 @@ import React from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useRoleAccess, RoleAccess } from "@/features/auth/hooks/useRoleAccess";
+import { useRoleAccess, RoleAccess } from "@/shared/auth/useRoleAccess";
+
 import { useAuthStore } from "@/shared/auth/useAuthStore";
-import UserMenuButton from "@/features/user/components/UserMenuButton";
-import NotificationBell from "@/features/notifications/components/NotificationBell";
+import UserMenuButton from "@/shared/components/layout/UserMenuButton";
+import NotificationBell from "@/shared/components/layout/NotificationBell";
 
 const NAV_ICONS: Record<string, string> = {
   Overview: "dashboard",

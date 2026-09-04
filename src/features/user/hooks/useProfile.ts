@@ -29,7 +29,6 @@ export interface ChangePasswordPayload {
   confirmPassword: string;
 }
 
-
 export function useProfile() {
   const setUser = useAuthStore((state) => state.setUser);
   const storeUser = useAuthStore((state) => state.user);

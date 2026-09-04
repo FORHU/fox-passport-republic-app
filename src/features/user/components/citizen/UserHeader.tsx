@@ -6,7 +6,7 @@ import Link from "next/link";
 import Image from "next/image";
 import UserMenuButton from "@/features/user/components/UserMenuButton";
 import { useAuthStore } from "@/shared/auth/useAuthStore";
-import NotificationBell from "@/features/notifications/components/NotificationBell";
+import NotificationBell from "@/shared/components/layout/NotificationBell";
 
 interface UserHeaderProps {
   isAuthenticated: boolean;

@@ -6,7 +6,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter, useParams } from "next/navigation";
 import { motion, AnimatePresence } from "motion/react";
-import { useCheckoutStore } from "@/features/booking/store/useCheckoutStore";
+import { useCheckoutStore } from "@/shared/store/useCheckoutStore";
 import { useAuthStore } from "@/shared/auth/useAuthStore";
 import { createMatch } from "@/features/match/api/matches";
 import { toast } from "sonner";
@@ -573,7 +573,9 @@ const MatchConfig: React.FC = () => {
                     disabled={isSubmitting}
                     onClick={async () => {
                       if (!isAuthenticated) {
-                        toastRequireLogin("Please log in to send this request.");
+                        toastRequireLogin(
+                          "Please log in to send this request.",
+                        );
                         openLogin();
                         return;
                       }

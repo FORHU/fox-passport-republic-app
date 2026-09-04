@@ -1,7 +1,7 @@
-﻿import React from "react";
+import React from "react";
 import { requireHost } from "@/shared/lib/server/auth";
 import { getHostDashboard } from "@/shared/lib/server/data";
-import HostDashboardClient from "@/features/dashboard/components/HostDashboardClient";
+import HostDashboardClient from "./_components/HostDashboardClient";
 import MobileCreatorHome from "@/features/dashboard/components/MobileCreatorHome";
 
 export default async function Dashboard() {

@@ -14,18 +14,81 @@ import { hasPermission, type Permission } from "@/shared/lib/permissions";
  * anyway, so hiding them is courtesy rather than the control.
  */
 const NAV_ITEMS = [
-  { label: "Dashboard", icon: "dashboard", id: "dashboard", permission: "admin:access" },
-  { label: "Bookings", icon: "confirmation_number", id: "bookings", permission: "bookings:read:all" },
-  { label: "Citizens", icon: "group", id: "citizens", permission: "users:read" },
-  { label: "Events", icon: "event", id: "events", section: "Manage", permission: "queue:read" },
-  { label: "Categories", icon: "category", id: "categories", permission: "categories:manage" },
-  { label: "Venues", icon: "storefront", id: "venues", permission: "queue:read" },
-  { label: "Map", icon: "map", id: "map", permission: "queue:read" },
-  { label: "Assets", icon: "inventory_2", id: "assets", section: "Listings", permission: "queue:read" },
-  { label: "Services", icon: "build", id: "services", permission: "queue:read" },
-  { label: "Disputes", icon: "gavel", id: "disputes", section: "System", permission: "bookings:read:all" },
-  { label: "Policies", icon: "policy", id: "policies", permission: "bookings:read:all" },
-  { label: "Settings", icon: "settings", id: "settings", permission: "categories:manage" },
+  {
+    label: "Dashboard",
+    icon: "dashboard",
+    id: "dashboard",
+    permission: "admin:access",
+  },
+  {
+    label: "Bookings",
+    icon: "confirmation_number",
+    id: "bookings",
+    permission: "bookings:read:all",
+  },
+  {
+    label: "Citizens",
+    icon: "group",
+    id: "citizens",
+    permission: "users:read",
+  },
+  {
+    label: "Events",
+    icon: "event",
+    id: "events",
+    section: "Manage",
+    permission: "queue:read",
+  },
+  {
+    label: "Categories",
+    icon: "category",
+    id: "categories",
+    permission: "categories:manage",
+  },
+  {
+    label: "Venues",
+    icon: "storefront",
+    id: "venues",
+    permission: "queue:read",
+  },
+  {
+    label: "Map",
+    icon: "map",
+    id: "map",
+    permission: "queue:read",
+  },
+  {
+    label: "Assets",
+    icon: "inventory_2",
+    id: "assets",
+    section: "Listings",
+    permission: "queue:read",
+  },
+  {
+    label: "Services",
+    icon: "build",
+    id: "services",
+    permission: "queue:read",
+  },
+  {
+    label: "Disputes",
+    icon: "gavel",
+    id: "disputes",
+    section: "System",
+    permission: "bookings:read:all",
+  },
+  {
+    label: "Policies",
+    icon: "policy",
+    id: "policies",
+    permission: "bookings:read:all",
+  },
+  {
+    label: "Settings",
+    icon: "settings",
+    id: "settings",
+    permission: "categories:manage",
+  },
 ] as const satisfies readonly {
   label: string;
   icon: string;

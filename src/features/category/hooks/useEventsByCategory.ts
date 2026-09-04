@@ -1,8 +1,8 @@
-﻿"use client";
+"use client";
 
 import { useState, useEffect, useCallback } from "react";
 import api from "@/shared/lib/axios";
-import { Event, EventsApiResponse } from "@/features/event/types/event";
+import type { Event, EventsApiResponse } from "@/shared/types/event";
 
 interface UseEventsByCategoryReturn {
   events: Event[];

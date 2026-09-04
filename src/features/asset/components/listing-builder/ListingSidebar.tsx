@@ -7,9 +7,10 @@ import {
   CONDITIONS,
   INVENTORY_UNITS,
   ListingType,
-} from "@/features/asset/data/listingBuilderData";
-import { SERVICE_UNITS } from "@/features/service/data/serviceBuilderData";
-import CancellationPolicyPicker from "@/features/cancellation-policy/components/CancellationPolicyPicker";
+  SERVICE_UNITS,
+} from "@/shared/data/listingBuilderData";
+
+import CancellationPolicyPicker from "@/shared/components/ui/CancellationPolicyPicker";
 import {
   MapboxLocationInput,
   MapboxContextItem,

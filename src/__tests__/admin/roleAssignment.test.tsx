@@ -54,7 +54,9 @@ describe("RoleAssignmentControls", () => {
   it("shows the controls to an admin holding roles:assign", () => {
     renderFor({ id: "admin-1", permissions: ["admin:access", "roles:assign"] });
     expect(screen.getByLabelText(/system role/i)).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /apply roles/i })).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: /apply roles/i }),
+    ).toBeInTheDocument();
   });
 
   it("refuses to offer a viewer their own row", () => {
@@ -63,6 +65,8 @@ describe("RoleAssignmentControls", () => {
       { ...citizen, id: "admin-1" },
     );
     expect(screen.queryByLabelText(/system role/i)).not.toBeInTheDocument();
-    expect(screen.getByText(/nobody changes their own access/i)).toBeInTheDocument();
+    expect(
+      screen.getByText(/nobody changes their own access/i),
+    ).toBeInTheDocument();
   });
 });

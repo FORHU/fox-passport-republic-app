@@ -23,7 +23,6 @@ import { getUser } from "@/shared/lib/server/auth";
 import { hasPermission } from "@/shared/lib/permissions";
 import { isFoxer } from "@/shared/constants/roles";
 
-
 function userCanSeeVenues(user: any): boolean {
   if (!user) return true; // unauthenticated visitors see venues freely
   if (hasPermission(user, "queue:read")) return true;

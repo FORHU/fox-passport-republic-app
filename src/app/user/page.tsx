@@ -1,7 +1,7 @@
-﻿import React from "react";
+import React from "react";
 import { requireAuth } from "@/shared/lib/server/auth";
 import { getUserDashboard, getVenues } from "@/shared/lib/server/data";
-import UserDashboardClient from "@/features/user/components/UserDashboardClient";
+import UserDashboardClient from "./_components/UserDashboardClient";
 
 export const dynamic = "force-dynamic";
 

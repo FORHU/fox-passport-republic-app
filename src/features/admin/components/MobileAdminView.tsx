@@ -381,7 +381,9 @@ export default function MobileAdminView({
               <div
                 style={{
                   display:
-                    rejectingKey === `${item.kind}:${item.id}` ? "none" : "flex",
+                    rejectingKey === `${item.kind}:${item.id}`
+                      ? "none"
+                      : "flex",
                   gap: 8,
                   flexShrink: 0,
                 }}
@@ -456,7 +458,8 @@ export default function MobileAdminView({
                     value={rejectReason}
                     onChange={(e) => setRejectReason(e.target.value)}
                     onKeyDown={(e) => {
-                      if (e.key === "Enter") review(item, "reject", rejectReason);
+                      if (e.key === "Enter")
+                        review(item, "reject", rejectReason);
                       if (e.key === "Escape") setRejectingKey(null);
                     }}
                     placeholder="Reason"

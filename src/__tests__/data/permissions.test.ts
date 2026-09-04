@@ -41,7 +41,9 @@ describe("permissions come from the server", () => {
   });
 
   it("treats an empty list as empty", () => {
-    expect(canAccessAdmin({ systemRole: "admin", permissions: [] })).toBe(false);
+    expect(canAccessAdmin({ systemRole: "admin", permissions: [] })).toBe(
+      false,
+    );
   });
 
   it("denies a missing user", () => {
@@ -95,7 +97,9 @@ describe("the vocabulary matches the API's", () => {
 
   it.runIf(existsSync(apiPermissions))("same names, same order", () => {
     const source = readFileSync(apiPermissions, "utf-8");
-    const block = source.match(/export const PERMISSIONS = \[([\s\S]*?)\] as const;/);
+    const block = source.match(
+      /export const PERMISSIONS = \[([\s\S]*?)\] as const;/,
+    );
     expect(block, "could not find PERMISSIONS in the API").not.toBeNull();
     const names = [...block![1].matchAll(/"([^"]+)"/g)].map((m) => m[1]);
     expect(names).toEqual([...PERMISSIONS]);
@@ -114,7 +118,7 @@ describe("the gates are expressed as capabilities", () => {
 
   it("every admin nav item names the permission it needs", () => {
     const sidebar = read("src/features/admin/components/AdminSidebar.tsx");
-    const items = sidebar.match(/\{ label: "/g) ?? [];
+    const items = sidebar.match(/label: "/g) ?? [];
     const perms = sidebar.match(/permission: "/g) ?? [];
     expect(perms.length).toBe(items.length);
   });
@@ -137,8 +141,14 @@ describe("the admin page asks only for what the viewer may read", () => {
     ["getAllBookings", "bookings:read:all"],
   ])("%s is gated on %s", (fetcher, permission) => {
     const call = page.indexOf(`${fetcher}()`);
-    expect(call, `${fetcher}() is not called on the admin page`).toBeGreaterThan(-1);
-    const guard = page.lastIndexOf(`hasPermission(user, "${permission}")`, call);
+    expect(
+      call,
+      `${fetcher}() is not called on the admin page`,
+    ).toBeGreaterThan(-1);
+    const guard = page.lastIndexOf(
+      `hasPermission(user, "${permission}")`,
+      call,
+    );
     expect(
       guard,
       `${fetcher}() is not guarded by ${permission} — a role without it cannot open /admin`,

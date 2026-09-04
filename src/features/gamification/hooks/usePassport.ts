@@ -14,7 +14,8 @@ import {
   getClientMatchRequests,
   respondToMatch,
 } from "../api/passport";
-import { acceptMatch, declineMatch } from "@/features/match/api/matches";
+import { acceptMatch, declineMatch } from "@/shared/api/matches";
+
 
 export function useMyPassport() {
   const passportQuery = useQuery({

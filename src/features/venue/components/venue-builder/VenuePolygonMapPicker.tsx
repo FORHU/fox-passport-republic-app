@@ -383,7 +383,8 @@ export function VenuePolygonMapPicker({
           const dy = screen.y - candidateScreen.y;
           const distSq = dx * dx + dy * dy;
           if (distSq <= SNAP_RADIUS_PX * SNAP_RADIUS_PX) {
-            if (!closest || distSq < closest.distSq) closest = { point: pt, distSq };
+            if (!closest || distSq < closest.distSq)
+              closest = { point: pt, distSq };
           }
         };
 
@@ -696,7 +697,10 @@ export function VenuePolygonMapPicker({
           </p>
           {closed && !warning && (
             <p className="text-[11px] text-[#ccff00]/70">
-              ~{areaKm2 < 1 ? `${Math.round(areaKm2 * 1_000_000).toLocaleString()} m²` : `${areaKm2.toFixed(2)} km²`}
+              ~
+              {areaKm2 < 1
+                ? `${Math.round(areaKm2 * 1_000_000).toLocaleString()} m²`
+                : `${areaKm2.toFixed(2)} km²`}
             </p>
           )}
           {warning && (

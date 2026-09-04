@@ -1,7 +1,5 @@
-"use client";
-
 import { useSearchParams } from "next/navigation";
-import { useInventoryBuilder } from "./useInventoryBuilder";
+import { useInventoryBuilder } from "@/features/asset/hooks/useInventoryBuilder";
 import { useServicesBuilder } from "@/features/service/hooks/useServicesBuilder";
 
 /**

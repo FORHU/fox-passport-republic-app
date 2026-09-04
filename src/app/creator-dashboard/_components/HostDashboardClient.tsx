@@ -12,8 +12,6 @@ import {
   DashboardHeader,
   WelcomeBanner,
   KPICards,
-  OccupancyChart,
-  PendingRequests,
   EventsSection,
   VenuesSection,
   InventorySection,
@@ -23,7 +21,12 @@ import {
   RecentActivity,
   LockedSection,
 } from "@/features/dashboard/components";
-import { useRoleAccess } from "@/features/auth/hooks/useRoleAccess";
+import {
+  OccupancyChart,
+  PendingRequests,
+} from "./OccupancySection";
+import { useRoleAccess } from "@/shared/auth/useRoleAccess";
+
 import { useAuthStore } from "@/shared/auth/useAuthStore";
 import {
   mapBackendAssetToInventoryItem,

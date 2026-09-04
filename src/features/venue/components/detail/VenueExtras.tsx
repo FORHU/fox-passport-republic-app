@@ -7,10 +7,10 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   getReviewsByListing,
   postReviewReply,
-  Review,
-  ReviewReply,
-} from "@/features/review/api/reviews";
-import ReviewReplyModal from "@/features/review/components/ReviewReplyModal";
+} from "@/shared/api/reviews";
+import type { Review, ReviewReply } from "@/shared/types/review";
+import ReviewReplyModal from "@/shared/components/ui/ReviewReplyModal";
+
 import { useAuthStore } from "@/shared/auth/useAuthStore";
 import { toast } from "sonner";
 

@@ -2,7 +2,8 @@
 
 import React, { Suspense } from "react";
 import RequireAuth from "@/shared/auth/RequireAuth";
-import { useListingBuilder } from "@/features/asset/hooks/useListingBuilder";
+import { useListingBuilder } from "./useListingBuilder";
+
 import {
   ListingHeader,
   ListingSidebar,

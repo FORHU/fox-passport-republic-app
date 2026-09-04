@@ -37,7 +37,7 @@ const POLLING_HOOKS = [
   "src/features/booking/components/MobileBookingsView.tsx",
   "src/features/dashboard/hooks/useHostDashboard.ts",
   "src/features/dashboard/hooks/useHostData.ts",
-  "src/features/dashboard/hooks/useUserDashboard.ts",
+  "src/features/user/hooks/useUserDashboard.ts",
   "src/features/booking/hooks/useWaitlist.ts",
 ];
 

@@ -11,7 +11,6 @@ import {
   CATEGORY_COLORS,
   CATEGORY_LABELS,
 } from "@/shared/components/ui/VenuesMap";
-import LandingHeader from "@/features/landing/components/sections/LandingHeader";
 
 interface VenuesMapPageClientProps {
   venues: any[];
@@ -257,8 +256,6 @@ export function VenuesMapPageClient({ venues }: VenuesMapPageClientProps) {
 
   return (
     <div className="h-screen w-full bg-[#02040a] text-white font-body flex flex-col overflow-hidden">
-      <LandingHeader />
-
       <div className="flex-1 w-full flex min-h-0 pt-16 sm:pt-28">
         {/* Left: scrollable venue list */}
         <div className="w-full sm:w-[400px] lg:w-[440px] shrink-0 flex flex-col border-r border-white/10 min-h-0">

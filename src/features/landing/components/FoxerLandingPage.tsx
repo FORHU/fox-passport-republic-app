@@ -12,7 +12,7 @@ import FoxersMatchSection from "./sections/FoxersMatchSection";
 import FeaturesSection from "./sections/FeaturesSection";
 import NewsletterSection from "./sections/NewsletterSection";
 import LandingFooter from "./sections/LandingFooter";
-import AuthModal from "@/features/auth/components/AuthModal";
+
 
 interface FoxerLandingPageProps {
   featuredTemplates?: any[];
@@ -51,9 +51,6 @@ const FoxerLandingPage: React.FC<FoxerLandingPageProps> = ({
 
       {/* Footer */}
       <LandingFooter />
-
-      {/* Auth Modal */}
-      <AuthModal />
     </div>
   );
 };

@@ -97,7 +97,9 @@ export default function FoxerApplicationClient({
     tinNumber: 9,
   };
 
-  const handleServiceDigitsChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleServiceDigitsChange = (
+    e: React.ChangeEvent<HTMLInputElement>,
+  ) => {
     const { name, value } = e.target;
     const digits = value
       .replace(/\D/g, "")

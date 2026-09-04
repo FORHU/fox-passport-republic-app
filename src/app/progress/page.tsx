@@ -1,4 +1,4 @@
-import { ProgressDashboard } from "@/features/user/components/ProgressDashboard";
+import { ProgressDashboard } from "@/features/gamification/components/ProgressDashboard";
 import RequireAuth from "@/shared/auth/RequireAuth";
 import LandingHeader from "@/features/landing/components/sections/LandingHeader";
 

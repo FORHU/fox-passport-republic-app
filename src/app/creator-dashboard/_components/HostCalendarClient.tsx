@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import React, { useState, useMemo } from "react";
 import Link from "next/link";
@@ -9,7 +9,8 @@ import {
   getBgColor,
   getIcon,
   getDotColor,
-} from "@/features/booking/hooks/useCalendarBookings";
+} from "@/shared/hooks/useCalendarBookings";
+
 
 export default function HostCalendarClient() {
   const [currentDate, setCurrentDate] = useState(new Date());

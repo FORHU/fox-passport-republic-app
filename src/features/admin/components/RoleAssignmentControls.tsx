@@ -21,7 +21,8 @@ const SYSTEM_ROLE_LABEL: Record<SystemRole, string> = {
 
 const SYSTEM_ROLE_HINT: Record<SystemRole, string> = {
   user: "No console access.",
-  admin_secretary: "Works the approval queues. Cannot see citizens, bookings, disputes or categories.",
+  admin_secretary:
+    "Works the approval queues. Cannot see citizens, bookings, disputes or categories.",
   admin: "Everything, including handing out roles.",
 };
 
@@ -48,7 +49,12 @@ const ROLE_TYPE_LABEL: Record<RoleType, string> = {
 export function RoleAssignmentControls({
   citizen,
 }: {
-  citizen: { id: string; email?: string; systemRole?: string; roleType?: string[] };
+  citizen: {
+    id: string;
+    email?: string;
+    systemRole?: string;
+    roleType?: string[];
+  };
 }) {
   const viewer = useAuthStore((s) => s.user);
   const queryClient = useQueryClient();
@@ -95,8 +101,7 @@ export function RoleAssignmentControls({
   const roleDirty = systemRole !== (citizen.systemRole ?? "user");
   const current = new Set(citizen.roleType ?? []);
   const typesDirty =
-    roleTypes.length !== current.size ||
-    roleTypes.some((r) => !current.has(r));
+    roleTypes.length !== current.size || roleTypes.some((r) => !current.has(r));
 
   const toggle = (role: RoleType) =>
     setRoleTypes((prev) =>

@@ -1,12 +1,12 @@
-﻿"use client";
+"use client";
 
 import React from "react";
-import { useUserDashboard } from "@/features/dashboard/hooks/useUserDashboard";
+import { useUserDashboard } from "@/features/user/hooks/useUserDashboard";
 import { UserHeader } from "@/features/user/components/citizen/UserHeader";
 import { UserWelcome } from "@/features/user/components/citizen/UserWelcome";
 import { UserNextUp } from "@/features/user/components/citizen/UserNextUp";
 import { UserForYou } from "@/features/user/components/citizen/UserForYou";
-import { UserJourney } from "@/features/user/components/citizen/UserJourney";
+import { UserJourney } from "@/features/gamification/components/UserJourney";
 import { UserWallet } from "@/features/user/components/citizen/UserWallet";
 import { UserSavedVibes } from "@/features/user/components/citizen/UserSavedVibes";
 import { UserFooter } from "@/features/user/components/citizen/UserFooter";
@@ -41,9 +41,7 @@ function UserDashboardContent({
   // The whole user, not a `{ systemRole }` synthesised from it: permissions
   // come from the server on the user object now, and a subject carrying only a
   // role name answers `false` to everything.
-  const canSeeVenues =
-    hasPermission(user, "queue:read") ||
-    isFoxer(roleType);
+  const canSeeVenues = hasPermission(user, "queue:read") || isFoxer(roleType);
 
   return (
     <div className="bg-background bg-gradient-dark text-text-main antialiased min-h-screen flex flex-col selection:bg-accent selection:text-black font-body">

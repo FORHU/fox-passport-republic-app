@@ -1,4 +1,4 @@
-﻿/* eslint-disable react-hooks/set-state-in-effect, @next/next/no-img-element */
+/* eslint-disable react-hooks/set-state-in-effect, @next/next/no-img-element */
 "use client";
 
 import React, { useEffect, useState } from "react";
@@ -6,7 +6,8 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { fetchStamps, Stamp } from "@/features/gamification/api/stamps";
-import { useCategories } from "@/features/category/hooks/useCategories";
+import { useCategories } from "@/shared/hooks/useCategories";
+
 
 interface Props {
   userId: string;

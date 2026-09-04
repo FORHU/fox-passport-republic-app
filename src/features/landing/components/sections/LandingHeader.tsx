@@ -5,8 +5,8 @@ import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { motion } from "motion/react";
 import { useAuthStore } from "@/shared/auth/useAuthStore";
-import UserMenuButton from "@/features/user/components/UserMenuButton";
-import NotificationBell from "@/features/notifications/components/NotificationBell";
+import UserMenuButton from "@/shared/components/layout/UserMenuButton";
+import NotificationBell from "@/shared/components/layout/NotificationBell";
 import MobileBottomNav from "@/shared/components/layout/MobileBottomNav";
 
 interface LandingHeaderProps {
@@ -30,7 +30,10 @@ const NAV_TABS = [
   { label: "Community", href: "/user/passport" },
 ];
 
-export default function LandingHeader({ onSignIn, search }: LandingHeaderProps) {
+export default function LandingHeader({
+  onSignIn,
+  search,
+}: LandingHeaderProps) {
   const { isAuthenticated, openLogin } = useAuthStore();
   const handleSignIn = onSignIn ?? openLogin;
   const pathname = usePathname();
@@ -71,7 +74,7 @@ export default function LandingHeader({ onSignIn, search }: LandingHeaderProps) 
             </Link>
 
             {/* Desktop Navigation */}
-            <nav className="hidden md:flex items-center gap-2 bg-black/20 p-1.5 rounded-full border border-white/5">
+            <nav className="hidden lg:flex items-center gap-2 bg-black/20 p-1.5 rounded-full border border-white/5">
               {NAV_TABS.map((tab) => {
                 const active = isTabActive(tab.href);
                 return (
@@ -121,14 +124,14 @@ export default function LandingHeader({ onSignIn, search }: LandingHeaderProps) 
               {!isAuthenticated && (
                 <button
                   onClick={handleSignIn}
-                  className="hidden md:flex items-center gap-2 rounded-full bg-white/5 border border-white/10 px-6 py-2.5 text-sm font-bold text-white hover:bg-white hover:text-black hover:shadow-[0_0_20px_rgba(255,255,255,0.3)] transition-all duration-300 group overflow-hidden relative"
+                  className="hidden lg:flex items-center gap-2 rounded-full bg-white/5 border border-white/10 px-6 py-2.5 text-sm font-bold text-white hover:bg-white hover:text-black hover:shadow-[0_0_20px_rgba(255,255,255,0.3)] transition-all duration-300 group overflow-hidden relative"
                 >
                   <span className="relative z-10">Sign In</span>
                   <div className="absolute inset-0 bg-white translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-out z-0"></div>
                 </button>
               )}
               {isAuthenticated && (
-                <div className="hidden md:flex items-center gap-2 sm:gap-3">
+                <div className="hidden lg:flex items-center gap-2 sm:gap-3">
                   <NotificationBell />
                   <UserMenuButton onSignIn={handleSignIn} />
                 </div>

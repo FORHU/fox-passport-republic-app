@@ -6,7 +6,7 @@ import {
   GalleryItem,
   VENUE_TYPES,
 } from "@/features/venue/data/venueBuilderData";
-import CancellationPolicyPicker from "@/features/cancellation-policy/components/CancellationPolicyPicker";
+import CancellationPolicyPicker from "@/shared/components/ui/CancellationPolicyPicker";
 import {
   MapboxLocationInput,
   MapboxContextItem,

@@ -90,8 +90,7 @@ export function ringSelfIntersects(ring: LngLat[]): boolean {
 
   for (let i = 0; i < edgeCount; i++) {
     for (let j = i + 1; j < edgeCount; j++) {
-      const adjacent =
-        j === i + 1 || (i === 0 && j === edgeCount - 1);
+      const adjacent = j === i + 1 || (i === 0 && j === edgeCount - 1);
       if (adjacent) continue;
       if (
         segmentsIntersect(closed[i], closed[i + 1], closed[j], closed[j + 1])
@@ -128,8 +127,7 @@ export function isDegenerate(ring: LngLat[]): boolean {
  */
 export function approximateAreaKm2(ring: LngLat[]): number {
   if (ring.length < 3) return 0;
-  const meanLat =
-    ring.reduce((sum, [, lat]) => sum + lat, 0) / ring.length;
+  const meanLat = ring.reduce((sum, [, lat]) => sum + lat, 0) / ring.length;
   const latRad = (meanLat * Math.PI) / 180;
   const metersPerDegLat = 111320;
   const metersPerDegLng = 111320 * Math.cos(latRad);
@@ -142,11 +140,7 @@ export function approximateAreaKm2(ring: LngLat[]): number {
 }
 
 /** Closest point to `p` on segment (a, b), clamped to the segment. */
-export function nearestPointOnSegment(
-  p: LngLat,
-  a: LngLat,
-  b: LngLat,
-): LngLat {
+export function nearestPointOnSegment(p: LngLat, a: LngLat, b: LngLat): LngLat {
   const [px, py] = p;
   const [ax, ay] = a;
   const [bx, by] = b;

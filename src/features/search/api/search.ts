@@ -30,7 +30,6 @@ export interface ProviderRow {
   img?: string;
 }
 
-
 export async function fetchEventFoxers(
   page = 1,
   limit = 6,

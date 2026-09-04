@@ -2,10 +2,7 @@
 
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
-import {
-  useAuthActions,
-  useAuthStore,
-} from "@/shared/auth/useAuthStore";
+import { useAuthActions, useAuthStore } from "@/shared/auth/useAuthStore";
 import { useQuery } from "@tanstack/react-query";
 import api from "@/shared/lib/axios";
 import { pollWhileVisible } from "@/shared/lib/realtime";
@@ -70,10 +67,7 @@ export const useUserDashboard = () => {
   // User ID for queries
   const userId = user?.id;
 
-  // 1. Fetch User Profile / Stats (Optional if not in auth store)
-  // const { data: userStats } = useQuery({ queryKey: ['user-stats', userId], ... })
-
-  // 2. Fetch Upcoming Events
+  // 1. Fetch Upcoming Events
   const { data: upcomingEvents = [], isLoading: isLoadingEvents } = useQuery({
     queryKey: ["user-upcoming-events", userId],
     queryFn: async () => {
@@ -87,7 +81,7 @@ export const useUserDashboard = () => {
     staleTime: 10000,
   });
 
-  // 3. Fetch Saved Vibes (Favorites) — GET /favorites/user/:userId
+  // 2. Fetch Saved Vibes (Favorites) — GET /favorites/user/:userId
   const { data: savedVibes = [], isLoading: isLoadingSaved } = useQuery({
     queryKey: ["favorites", userId],
     queryFn: async () => {
@@ -118,7 +112,7 @@ export const useUserDashboard = () => {
     staleTime: 1000 * 60 * 5,
   });
 
-  // 4. Fetch Recommendations (For You)
+  // 3. Fetch Recommendations (For You)
   const { data: recommendations = [], isLoading: isLoadingRecs } = useQuery({
     queryKey: ["user-recommendations", userId],
     queryFn: async () => {

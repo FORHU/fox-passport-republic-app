@@ -18,7 +18,7 @@ import type {
   LiveFoxer,
   LiveService,
 } from "@/features/venue/hooks/useExperienceBuilderData";
-import { useCheckoutStore } from "@/features/booking/store/useCheckoutStore";
+import { useCheckoutStore } from "@/shared/store/useCheckoutStore";
 
 export function useVenueDetail(venueData?: any) {
   const router = useRouter();

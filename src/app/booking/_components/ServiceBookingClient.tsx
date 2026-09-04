@@ -6,6 +6,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { fetchServiceById } from "@/features/service/api/services";
+import type { BackendService } from "@/shared/lib/api-types";
 import {
   bookService,
   fetchServiceAvailability,
@@ -14,8 +15,7 @@ import { useItemBookingStore } from "@/features/booking/store/useItemBookingStor
 import { useAuthStore } from "@/shared/auth/useAuthStore";
 import { toast } from "sonner";
 import { toastRequireLogin } from "@/shared/lib/toast";
-import type { BackendService } from "@/shared/lib/api-types";
-import AvailabilityCalendar from "./AvailabilityCalendar";
+import AvailabilityCalendar from "@/features/booking/components/AvailabilityCalendar";
 import { getDashboardPath } from "@/shared/lib/dashboard-path";
 
 const SERVICE_FEE = 150;

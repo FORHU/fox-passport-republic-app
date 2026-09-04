@@ -7,8 +7,6 @@ import {
   SOCKET_FALLBACK_POLL_MS,
 } from "@/shared/lib/realtime";
 
-
-
 /**
  * @param enabled  Pass false to keep the query idle. AdminContent mounts one of
  *   these per admin tab but renders only the active one, so without this every

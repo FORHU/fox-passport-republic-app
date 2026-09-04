@@ -8,18 +8,37 @@ import { useAuthStore } from "@/shared/auth/useAuthStore";
 import { fetchUserBookings } from "@/features/booking/api/bookings";
 import { pollWhileVisible } from "@/shared/lib/realtime";
 
-const STATUS_STYLE: Record<string, { bg: string; color: string; label: string }> = {
+const STATUS_STYLE: Record<
+  string,
+  { bg: string; color: string; label: string }
+> = {
   pending: { bg: "rgba(234,179,8,0.12)", color: "#facc15", label: "Pending" },
-  confirmed: { bg: "rgba(204,255,0,0.12)", color: "#ccff00", label: "Confirmed" },
+  confirmed: {
+    bg: "rgba(204,255,0,0.12)",
+    color: "#ccff00",
+    label: "Confirmed",
+  },
   active: { bg: "rgba(74,222,128,0.12)", color: "#4ade80", label: "Active" },
   completed: {
     bg: "rgba(255,255,255,0.08)",
     color: "rgba(255,255,255,0.5)",
     label: "Completed",
   },
-  cancelled: { bg: "rgba(239,68,68,0.12)", color: "#f87171", label: "Cancelled" },
-  disputed: { bg: "rgba(249,115,22,0.12)", color: "#fb923c", label: "Disputed" },
-  refunded: { bg: "rgba(168,85,247,0.12)", color: "#c084fc", label: "Refunded" },
+  cancelled: {
+    bg: "rgba(239,68,68,0.12)",
+    color: "#f87171",
+    label: "Cancelled",
+  },
+  disputed: {
+    bg: "rgba(249,115,22,0.12)",
+    color: "#fb923c",
+    label: "Disputed",
+  },
+  refunded: {
+    bg: "rgba(168,85,247,0.12)",
+    color: "#c084fc",
+    label: "Refunded",
+  },
   refund_failed: {
     bg: "rgba(249,115,22,0.12)",
     color: "#fb923c",
@@ -111,7 +130,11 @@ export default function MobileBookingsView() {
       >
         {isPending || authLoading ? (
           <div
-            style={{ display: "flex", justifyContent: "center", padding: "60px 0" }}
+            style={{
+              display: "flex",
+              justifyContent: "center",
+              padding: "60px 0",
+            }}
           >
             <span
               style={{

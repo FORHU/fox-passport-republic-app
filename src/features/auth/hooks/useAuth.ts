@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useMutation } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
@@ -9,10 +9,7 @@ import { LoginFormData, SignupFormData } from "@/shared/lib/schema";
 import { LoginResponse } from "@/shared/auth/types";
 import { config } from "@/shared/lib/config";
 import { canAccessAdmin } from "@/shared/lib/permissions";
-import {
-  setAuthCookies,
-  clearAuthCookies,
-} from "@/shared/lib/server/auth-actions";
+import { setAuthCookies } from "@/shared/lib/server/auth-actions";
 
 // --- AXIOS SETUP ---
 const api = axios.create({
@@ -203,18 +200,5 @@ export const useResendOtp = () => {
   });
 };
 
-export const useLogout = () => {
-  const router = useRouter();
-  const { logout } = useAuthStore();
+export { useLogout } from "@/shared/auth/useLogout";
 
-  return async () => {
-    // Clear cookies on server
-    await clearAuthCookies();
-
-    // Clear client store
-    logout();
-
-    // Redirect to home
-    router.push("/");
-  };
-};

@@ -1,12 +1,11 @@
-﻿"use client";
+"use client";
 
 import { useState, useMemo } from "react";
 import { useScrollReveal } from "@/shared/hooks/useScrollReveal";
 import { useAuthStore } from "@/shared/auth/useAuthStore";
-import { useCategories } from "@/features/category/hooks/useCategories";
+import { useCategories } from "@/shared/hooks/useCategories";
 import { hasPermission } from "@/shared/lib/permissions";
 import { isFoxer } from "@/shared/constants/roles";
-
 
 const EVENT_CATEGORY_ORDER = [
   "birthday",

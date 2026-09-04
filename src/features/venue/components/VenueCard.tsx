@@ -4,7 +4,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { MapPin, Users, Heart } from "lucide-react";
 import { Venue } from "@/features/venue/hooks/useVenuesByCategory";
-import { useFavorites } from "@/features/user/hooks/useFavorites";
+import { useFavorites } from "@/shared/hooks/useFavorites";
 
 interface VenueCardProps {
   venue: Venue;
