@@ -321,9 +321,10 @@ signs in.
 
 - [x] Login verified through the proxy against a live API and browser.
 - [ ] Still unexercised in a browser: mobile admin (drawer, approve/reject),
-      the venue mobile booking bars, the reconnected `NavMobileMenu`, password
-      change/reset revocation, and the proxy's multipart and
-      401-refresh-replay paths.
+      the venue mobile booking bars, password change/reset revocation, and the
+      proxy's multipart and 401-refresh-replay paths. `NavMobileMenu` was on
+      this list too; `feat/map` deleted it on 3 Sep before it was ever exercised,
+      so it can never be — see the note at §4.5.
 
 Types, lint, build and unit tests pass, but **no request has actually gone
 through the proxy** — there is no running backend here. Multipart, redirects and
@@ -479,7 +480,7 @@ a mechanical resolution:
 | File | Resolution | Why |
 |---|---|---|
 | `app/page.tsx` | **Both** | main split the landing into `MobileHomePage` / `FoxerLandingPage`; this branch hoisted fetching into a branch-aware `Promise.all`. Kept the split, fed from the parallel batch instead of a sequential re-fetch. |
-| `Navbar.tsx` | **Upstream** (+ local gap scale) | Upstream replaced the hamburger with `MobileBottomNav` (`lg:hidden fixed bottom-4`) and no longer renders `NavMobileMenu`. The local hamburger would have toggled a panel that does not exist. Kept the local `gap-2 sm:gap-3 lg:gap-4`. |
+| `Navbar.tsx` | **Upstream** (+ local gap scale) | Upstream replaced the hamburger with `MobileBottomNav` (`lg:hidden fixed bottom-4`) and no longer renders `NavMobileMenu`. The local hamburger would have toggled a panel that does not exist. Kept the local `gap-2 sm:gap-3 lg:gap-4`. *(Moot since 3 Sep — the file was deleted by `feat/map`.)* |
 | `VenueHeader.tsx` | **Local** | The local version is a coherent mobile-hero + desktop-bento split, and the unconflicted code below already implements it. Upstream's fragment carried a `key={idx}` on a div not inside a `.map()`. |
 | `SearchClient.tsx` | **Upstream** | Newer, carries the `TYPE_CHIPS` filter the local side lacked, and its `pb-28 sm:pb-12` is clearance for `MobileBottomNav` — consistent with the Navbar decision. |
 
@@ -515,6 +516,11 @@ before stashing, and both stashes applied cleanly afterwards.
       `MobileBottomNav` carries four primary destinations plus Create, the panel
       carries browse categories and the secondary/auth links that do not fit in
       a five-slot bar. Hamburger restored at `lg:hidden`, panel rendered.
+      **Superseded 3 Sep:** `feat/map` (#47) deleted `Navbar.tsx`,
+      `NavMobileMenu.tsx`, `BrowseDropdown.tsx`, `HostModal.tsx`, `useNavbar.ts`
+      and the `(main)` layout that rendered them. The reconnection above was
+      never seen in a browser and the files no longer exist. Whether that
+      deletion was intended is open — `TOMORROW.md` §0a.
 
 Reviewed and found correct, for the record:
 

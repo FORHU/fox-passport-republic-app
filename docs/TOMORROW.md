@@ -1,8 +1,9 @@
 # Tomorrow
 
-**The running order.** Rewritten 2 Sep 2026 — the previous 916-line version had
-47 completed items in it and is in git history if the reasoning behind any of
-them is ever needed.
+**The running order.** Rewritten 2 Sep 2026, revised 4 Sep after `main` took
+role assignment and `feat/map` — the previous 916-line version had 47 completed
+items in it and is in git history if the reasoning behind any of them is ever
+needed.
 
 | Document | Role |
 |---|---|
@@ -16,39 +17,102 @@ them is ever needed.
 
 ---
 
-## 0. In flight — committed and pushed, no PR open, as of 3 Sep
+## 0. In flight — as of 4 Sep
 
-Everything below is written, green and on its remote branch. Neither branch has
-a PR, so none of it is on `main`.
+Role assignment **shipped**. Both PRs are merged and everything §0 asked for on
+3 Sep is on `main`:
 
-- **api `feat/role-assignment`** (2 commits) — `roles:assign`, the `AuditLog`
-  model and its migration (**already applied locally, nowhere else**),
-  `audit.service.ts`, `role-assignment.service.ts`, and
-  `PATCH /v1/admin/users/:id/system-role` + `/role-types`. 194 tests, 16 files.
-- **app `fix/secretary-admin-console`** (2 commits) — the `/admin` crash fix,
-  and the role-assignment UI: `RoleAssignmentControls`,
-  `features/admin/api/roles.ts`, `roles:assign` in the vocabulary. 102 tests,
-  13 files.
+| | PR | |
+|---|---|---|
+| api `feat/role-assignment` | #69 | merged |
+| app `fix/secretary-admin-console` | #45 | merged |
 
-Also on the api branch and **unrelated to role assignment**, already isolated as
-its own commit (`3bc9cfc`) so it can be reverted or cherry-picked alone:
+So `roles:assign`, `AuditLog`, `audit.service.ts`, `role-assignment.service.ts`,
+`PATCH /v1/admin/users/:id/system-role` + `/role-types`, and the
+`RoleAssignmentControls` UI that calls them are all live on `main`. The
+`$transaction` fix (`3bc9cfc`) went with them.
 
-- **Seven read-only list+count pairs moved off `$transaction`.** `browsePublic`
-  and friends wrapped a list and its count in `prisma.$transaction([...])`.
-  Prisma must acquire a connection to *start* a transaction and gives up after
-  ~2s, so under a burst the browse endpoints 500 with "Unable to start a
-  transaction in the given time". `Promise.all` runs the same two queries with
-  no transaction to start. The count can now shift by one against a concurrent
-  insert; a 500 on a browse page is the worse trade. The three remaining
-  `$transaction` calls are genuine multi-table writes and stay.
+**`feat/map` merged in the same window** — app #47, api #70 — and no document
+here covers it. It brought `VenuesMap`, `VenuePolygonMapPicker`,
+`AdminVenuesMap`, `polygonGeo.ts`, venue boundary polygons in the API, and the
+navbar deletion in §0a below. `mapbox-gl` was already a dependency and
+`NEXT_PUBLIC_MAPBOX_TOKEN` is set in `.env` and documented in `.env.example`, so
+there is no new setup.
 
-- [ ] **Open the api PR for `feat/role-assignment` first.** The app UI calls two
-      endpoints that 404 on `main` until it merges.
-- [ ] **Then the app PR for `fix/secretary-admin-console`.** Without it,
-      `admin_secretary` cannot open the console on `main` at all.
-- [ ] **`gh` is not installed here**, so both are browser-only. Compare links:
-      `.../compare/main...feat/role-assignment` and
-      `.../compare/main...fix/secretary-admin-console`.
+Both branches still exist and each still holds one commit that is **not** on
+`main`. They are now misnamed for what is left in them:
+
+- [ ] **api `feat/role-assignment` — `05590bd`, the seed preflight guard.**
+      `prisma/preflight.ts`, `prisma/seed.ts`, `tests/preflight.spec.ts`. Needs
+      its own PR under its own name; nothing about it relates to role
+      assignment.
+- [ ] **app `fix/secretary-admin-console` — `8bc3586`, this document.** Docs
+      only.
+
+### Migrations, which is the part that bites
+
+- [x] **Local is caught up.** It was two behind on the morning of 4 Sep —
+      `20260902052721_add_venue_radius` and
+      `20260902060356_venue_boundary_polygon`, both from `feat/map`. All 55 are
+      applied now, `venues.boundary` and `audit_logs` are both present, and
+      `migrate diff` against the datasource reports no difference. Note the
+      second of those two migrations *drops* `radius` and adds `boundary` in its
+      place, so the pair only makes sense applied together.
+- **Audit logs are parked — not being pursued for now (decided 4 Sep).** The
+      `AuditLog` model, `audit.service.ts` and the write-on-every-attempt
+      behaviour are already merged and live on `main`; nothing is being removed,
+      it is simply not work anyone is carrying forward. The one loose end, left
+      here deliberately rather than ticked: `20260902085449_add_audit_log` was
+      applied locally and nowhere else while it sat unmerged, so **whenever
+      staging or prod next deploy, they need `migrate deploy`** or the table
+      will be missing under code that writes to it. That is a deploy-time
+      concern, not a task for this list, and it cannot be checked from this
+      machine.
+
+The preflight guard still sitting unmerged on the api branch is exactly the
+check that turns "invalid input value for enum" an hour into the seed run into
+"you have an unapplied migration" before it starts. Local no longer needs it,
+which is precisely why it should be merged now rather than after the next
+environment hits the same wall.
+
+### 0a. The navbar was replaced, not just deleted — and the replacement overlaps
+
+`34c6e50` deleted the global navigation:
+
+- `shared/components/layout/Navbar.tsx`, `navbar/NavMobileMenu.tsx`,
+  `navbar/BrowseDropdown.tsx`, `navbar/HostModal.tsx`, `shared/hooks/useNavbar.ts`
+- `src/app/(main)/layout.tsx` — the only thing that rendered `<Navbar />`
+
+It looks deliberate rather than a merge casualty. `LandingHeader` is the
+replacement and it is a full navigation component — a desktop `<nav>` plus
+`MobileBottomNav` — and `/progress`, the only page `(main)` ever held, was given
+`LandingHeader` explicitly in the same commit as it moved to `src/app/progress/`.
+No source file imports any of the deleted modules; the deletion is clean.
+
+What changed is the *mechanism*: navigation moved from a layout every child
+inherited to a component each page opts into. That has two consequences nobody
+has signed off on.
+
+- [ ] **The 768–1023px band now shows two navigations at once.** `LandingHeader`
+      renders its desktop nav at `hidden md:flex` — visible from **768** up —
+      while `MobileBottomNav` is `lg:hidden`, visible below **1024**. Between
+      them both are on screen. `MobileBottomNav` has no other visibility guard,
+      so this is unconditional on every page that renders `LandingHeader`.
+
+      This is the exact inverse of the §3.1 defect in `responsive-plan.md`: that
+      one was a 640–767 band with *no* navigation, and the fix moved both sides
+      to `lg` so they agreed. The old `Navbar` hamburger was `flex lg:hidden`,
+      which matched `MobileBottomNav` at 1024. `LandingHeader`'s nav sits at
+      `md`, and the agreement is gone. Fixing it is a one-line breakpoint change
+      once §3.3 decides whether the line is 768 or 1024 — do that first.
+
+- [ ] **Navigation is now opt-in per page.** 73 `page.tsx` files; `LandingHeader`
+      is rendered from 7 files, 3 of them under `src/app` (`/`, `/progress`,
+      `/search`). Many of the rest carry their own feature headers
+      (`DashboardHeader`, `AdminHeader`, `VenueHeader` and friends), so this is
+      **not** 70 pages with no navigation — but no single thing guarantees a
+      page has any, which the `(main)` layout used to do for whatever sat under
+      it. Worth an audit of which trees genuinely have no way out.
 
 ---
 
@@ -80,9 +144,10 @@ none of them rendered a page.
       been tuned against it.
 - [ ] **§3a Google sign-in** end to end: new account, existing-email collision,
       and an account created by password then signed in with Google.
-- [ ] **Mobile**: `/admin` narrow (drawer, approve, reject with a reason),
-      venue detail's sticky bar, `NavMobileMenu` — orphaned, reconnected, never
-      seen open.
+- [ ] **Mobile**: `/admin` narrow (drawer, approve, reject with a reason), and
+      venue detail's sticky bar. `NavMobileMenu` was on this list for weeks as
+      "orphaned, reconnected, never seen open" — `feat/map` deleted it before
+      it was ever seen open, so it comes off. See §0a.
 - [ ] **Password change and reset** revoke all sessions — confirm the user is
       signed out and can sign back in.
 - [ ] **Proxy edge cases**: a multipart upload, and 401 → refresh → replay.
@@ -91,6 +156,24 @@ none of them rendered a page.
 
 ## 3. Decisions only you can make
 
+- [ ] **Is the mobile/desktop line 768 (`md`) or 1024 (`lg`)?** This one now
+      blocks a live defect rather than a tidy-up, so it goes first.
+      `LandingHeader`'s desktop nav is `hidden md:flex` and `MobileBottomNav` is
+      `lg:hidden`, so **768–1023 renders both navigations at once** on every
+      page using `LandingHeader`. The fix is one line in each file — but which
+      line depends entirely on this answer, and `useMobile.ts` (768) is a third
+      voice that should end up agreeing with whatever you pick. Full working in
+      `responsive-plan.md` §3.1 and §3.3; §0a above has the discovery.
+- [ ] **Is the navbar replacement finished?** `feat/map` deleted the global
+      `Navbar` and the `(main)` layout, and `LandingHeader` took over. That much
+      is clearly deliberate — `/progress` was handed `LandingHeader` in the same
+      commit, and nothing imports the deleted modules. What is not established
+      is whether it is *complete*: navigation is now opt-in per page rather than
+      inherited from a layout, and no single thing guarantees a page has any.
+      73 `page.tsx` files, `LandingHeader` rendered from 7 files (3 under
+      `src/app`), most of the rest carrying their own feature headers. **Not
+      audited page by page** — that audit is the work, once you say whether the
+      opt-in model is the intended end state or a way-point.
 - [ ] **The 11 widened routes.** The resource-level approve/reject twins moved
       from `requireAdmin` to `queue:decide`, so `admin_secretary` reaches them
       now. Their `/admin/*` counterparts already did, so the two paths agree for
@@ -179,6 +262,12 @@ none of them rendered a page.
 - **`npm run format` still churns line endings** on any branch lacking the new
   `.gitattributes`. Expect a ~150-file diff, and note the API currently reports
   ~3,000 prettier errors from this in files nobody has touched.
+- **A stale `.next` cache reports type errors that do not exist.** After
+  `feat/map` removed the `(main)` route group, `npx tsc --noEmit` returned four
+  `TS2307 Cannot find module '../../src/app/(main)/…'` errors — all of them in
+  generated files under `.next/types` and `.next/dev/types`, none in `src`. The
+  source tree was clean the whole time. `rm -rf .next` clears it. Worth knowing
+  before someone spends an afternoon on a route group that no longer exists.
 - **`api/.env` edits are local-only** and gitignored. The dead Supabase vars
   were removed here but remain in everyone else's env.
 - **Editing `api/src` restarts your dev server.** Requests landing in that
