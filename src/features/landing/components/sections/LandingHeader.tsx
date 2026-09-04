@@ -4,7 +4,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { motion } from "motion/react";
-import { useAuthStore } from "@/features/auth/store/useAuthStore";
+import { useAuthStore } from "@/shared/auth/useAuthStore";
 import UserMenuButton from "@/features/user/components/UserMenuButton";
 import NotificationBell from "@/features/notifications/components/NotificationBell";
 import MobileBottomNav from "@/shared/components/layout/MobileBottomNav";

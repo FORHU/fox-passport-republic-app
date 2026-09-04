@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import api from "@/shared/lib/axios";
-import { useAuthStore } from "@/features/auth/store/useAuthStore";
+import { useAuthStore } from "@/shared/auth/useAuthStore";
 
 export interface CalendarBooking {
   id: string;

@@ -23,7 +23,7 @@ import {
   ShieldCheck,
 } from "lucide-react";
 import { useUserMenu } from "@/features/auth/hooks/useUserMenu";
-import { useAuthStore } from "@/features/auth/store/useAuthStore";
+import { useAuthStore } from "@/shared/auth/useAuthStore";
 import { refreshUserSession } from "@/shared/lib/server/auth-actions";
 import { toast } from "sonner";
 

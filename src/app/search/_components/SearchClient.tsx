@@ -21,7 +21,7 @@ import {
   fetchServiceFoxers,
 } from "@/features/search/api/search";
 import LandingHeader from "@/features/landing/components/sections/LandingHeader";
-import { useAuthStore } from "@/features/auth/store/useAuthStore";
+import { useAuthStore } from "@/shared/auth/useAuthStore";
 
 export default function SearchClient() {
   const searchParams = useSearchParams();

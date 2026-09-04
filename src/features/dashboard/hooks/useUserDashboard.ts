@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import {
   useAuthActions,
   useAuthStore,
-} from "@/features/auth/store/useAuthStore";
+} from "@/shared/auth/useAuthStore";
 import { useQuery } from "@tanstack/react-query";
 import api from "@/shared/lib/axios";
 import { pollWhileVisible } from "@/shared/lib/realtime";

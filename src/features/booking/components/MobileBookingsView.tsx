@@ -4,7 +4,7 @@ import React, { useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { useAuthStore } from "@/features/auth/store/useAuthStore";
+import { useAuthStore } from "@/shared/auth/useAuthStore";
 import { fetchUserBookings } from "@/features/booking/api/bookings";
 import { pollWhileVisible } from "@/shared/lib/realtime";
 

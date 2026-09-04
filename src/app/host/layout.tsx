@@ -3,7 +3,7 @@
 import React from "react";
 import CreateVenueWizard from "@/features/venue/components/CreateVenueWizard";
 import { useCreateVenueModal } from "@/features/venue/hooks/useCreateVenueModal";
-import RequireAuth from "@/features/auth/components/RequireAuth";
+import RequireAuth from "@/shared/auth/RequireAuth";
 
 /**
  * Host layout - wraps all host dashboard pages

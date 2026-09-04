@@ -1,6 +1,6 @@
 ﻿"use client";
 
-import { useAuthStore } from "@/features/auth/store/useAuthStore";
+import { useAuthStore } from "@/shared/auth/useAuthStore";
 
 export interface RoleAccess {
   canManageVenues: boolean; // venueFoxer only

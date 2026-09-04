@@ -11,7 +11,7 @@ import {
   fetchAssetAvailability,
 } from "@/features/booking/api/bookings";
 import { useItemBookingStore } from "@/features/booking/store/useItemBookingStore";
-import { useAuthStore } from "@/features/auth/store/useAuthStore";
+import { useAuthStore } from "@/shared/auth/useAuthStore";
 import { toast } from "sonner";
 import { toastRequireLogin } from "@/shared/lib/toast";
 import type { BackendAsset } from "@/shared/lib/api-types";

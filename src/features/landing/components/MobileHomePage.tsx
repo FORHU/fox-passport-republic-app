@@ -8,9 +8,9 @@ import {
   fetchTrendingTemplates,
   EventTemplate,
 } from "@/features/event/api/event-templates";
-import { fetchFoxers, Foxer } from "@/features/user/api/foxers";
+import { fetchFoxers, Foxer } from "@/shared/api/foxers";
 import { useLandingPage } from "@/features/landing/hooks/useLandingPage";
-import { useAuthStore } from "@/features/auth/store/useAuthStore";
+import { useAuthStore } from "@/shared/auth/useAuthStore";
 import NotificationBell from "@/features/notifications/components/NotificationBell";
 import UserMenuButton from "@/features/user/components/UserMenuButton";
 import MobileBottomNav from "@/shared/components/layout/MobileBottomNav";

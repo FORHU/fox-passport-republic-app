@@ -3,7 +3,7 @@
 
 import React from "react";
 import { useUIStore } from "@/shared/store/useUIStore";
-import { useAuthStore } from "@/features/auth/store/useAuthStore";
+import { useAuthStore } from "@/shared/auth/useAuthStore";
 import { BrandLogo } from "@/shared/components/layout/BrandLogo";
 import { hasPermission, type Permission } from "@/shared/lib/permissions";
 

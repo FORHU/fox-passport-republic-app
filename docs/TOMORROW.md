@@ -14,6 +14,8 @@ needed.
 | `api-audit.md` | The record: API, data-fetching and auth findings. 9 open. |
 | `responsive-plan.md` | Responsive and touch backlog. 21 open. |
 | `mapanytime-comparison.md` | What to adopt from the mapanytime codebase. 8 open. |
+| `roles-and-spaces.md` | The Foxer role model and the page split. 13 open. |
+| `app-architecture.md` | Boundary violations + template gaps. 19 open, 150 -> 72. |
 
 ---
 

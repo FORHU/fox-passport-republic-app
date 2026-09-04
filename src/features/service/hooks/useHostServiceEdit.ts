@@ -4,7 +4,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { useAuthStore } from "@/features/auth/store/useAuthStore";
+import { useAuthStore } from "@/shared/auth/useAuthStore";
 import { useServicesBuilder } from "@/features/service/hooks/useServicesBuilder";
 import {
   fetchServicesByOwnerId,

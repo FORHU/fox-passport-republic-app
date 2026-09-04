@@ -5,7 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useRoleAccess, RoleAccess } from "@/features/auth/hooks/useRoleAccess";
-import { useAuthStore } from "@/features/auth/store/useAuthStore";
+import { useAuthStore } from "@/shared/auth/useAuthStore";
 import UserMenuButton from "@/features/user/components/UserMenuButton";
 import NotificationBell from "@/features/notifications/components/NotificationBell";
 

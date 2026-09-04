@@ -6,7 +6,7 @@ import { useCreateVenueModal } from "@/features/venue/hooks/useCreateVenueModal"
 import {
   useAuthActions,
   useAuthStore,
-} from "@/features/auth/store/useAuthStore";
+} from "@/shared/auth/useAuthStore";
 import api from "@/shared/lib/axios";
 import { pollWhileVisible } from "@/shared/lib/realtime";
 

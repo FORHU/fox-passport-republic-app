@@ -6,7 +6,7 @@ import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useAuthStore } from "@/features/auth/store/useAuthStore";
+import { useAuthStore } from "@/shared/auth/useAuthStore";
 import { fetchUserBookings } from "@/features/booking/api/bookings";
 import CancelBookingModal from "@/features/booking/components/CancelBookingModal";
 import { toast } from "sonner";

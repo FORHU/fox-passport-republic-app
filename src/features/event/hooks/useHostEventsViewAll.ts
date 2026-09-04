@@ -2,7 +2,7 @@
 
 import { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { useAuthStore } from "@/features/auth/store/useAuthStore";
+import { useAuthStore } from "@/shared/auth/useAuthStore";
 import { fetchEventsByHostId } from "@/features/event/api/events";
 import { mapBackendEventToEventItem } from "@/features/dashboard/mappers/hostDashboard";
 import type { EventItem } from "@/features/dashboard/data/dashboardData";

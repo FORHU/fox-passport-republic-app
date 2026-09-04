@@ -2,7 +2,7 @@
 
 import { useEffect } from "react";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
-import { useAuthStore } from "@/features/auth/store/useAuthStore";
+import { useAuthStore } from "@/shared/auth/useAuthStore";
 import { toastRequireLogin } from "@/shared/lib/toast";
 
 // Surfaces a message when the app hard-redirects here with `?auth=expired`

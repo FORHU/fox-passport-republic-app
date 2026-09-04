@@ -4,9 +4,9 @@ import { useMutation } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import axios from "axios";
 import { toast } from "sonner";
-import { useAuthStore } from "@/features/auth/store/useAuthStore";
+import { useAuthStore } from "@/shared/auth/useAuthStore";
 import { LoginFormData, SignupFormData } from "@/shared/lib/schema";
-import { LoginResponse } from "@/features/auth/types/auth";
+import { LoginResponse } from "@/shared/auth/types";
 import { config } from "@/shared/lib/config";
 import { canAccessAdmin } from "@/shared/lib/permissions";
 import {

@@ -10,7 +10,7 @@ import {
   fetchFoxerById,
   type Foxer,
   type FoxerSpecialization,
-} from "@/features/user/api/foxers";
+} from "@/shared/api/foxers";
 
 function ProfileSpecializationChip({ spec }: { spec: FoxerSpecialization }) {
   const label = spec.category.replace(/_/g, " ");

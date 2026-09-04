@@ -3,7 +3,7 @@
 import { Suspense, useState, useMemo } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import LandingHeader from "@/features/landing/components/sections/LandingHeader";
-import { useAuthStore } from "@/features/auth/store/useAuthStore";
+import { useAuthStore } from "@/shared/auth/useAuthStore";
 import { useCategories } from "@/features/category/hooks/useCategories";
 import { useEventsByCategory } from "@/features/category/hooks/useEventsByCategory";
 import { useVenuesByCategory } from "@/features/venue/hooks/useVenuesByCategory";

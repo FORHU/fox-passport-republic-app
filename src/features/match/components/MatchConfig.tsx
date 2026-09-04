@@ -7,11 +7,11 @@ import Link from "next/link";
 import { useRouter, useParams } from "next/navigation";
 import { motion, AnimatePresence } from "motion/react";
 import { useCheckoutStore } from "@/features/booking/store/useCheckoutStore";
-import { useAuthStore } from "@/features/auth/store/useAuthStore";
+import { useAuthStore } from "@/shared/auth/useAuthStore";
 import { createMatch } from "@/features/match/api/matches";
 import { toast } from "sonner";
 import { toastRequireLogin } from "@/shared/lib/toast";
-import { fetchFoxerById } from "@/features/user/api/foxers";
+import { fetchFoxerById } from "@/shared/api/foxers";
 import DateRangePicker, {
   diffDays,
   formatDate,

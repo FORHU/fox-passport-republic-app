@@ -11,7 +11,7 @@ import {
   ReviewReply,
 } from "@/features/review/api/reviews";
 import ReviewReplyModal from "@/features/review/components/ReviewReplyModal";
-import { useAuthStore } from "@/features/auth/store/useAuthStore";
+import { useAuthStore } from "@/shared/auth/useAuthStore";
 import { toast } from "sonner";
 
 interface VenueCalendarProps {

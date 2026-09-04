@@ -13,7 +13,7 @@ import { RoleAssignmentControls } from "@/features/admin/components/RoleAssignme
 
 const viewer = vi.hoisted(() => ({ current: null as unknown }));
 
-vi.mock("@/features/auth/store/useAuthStore", () => ({
+vi.mock("@/shared/auth/useAuthStore", () => ({
   useAuthStore: (selector: (s: { user: unknown }) => unknown) =>
     selector({ user: viewer.current }),
 }));

@@ -8,7 +8,7 @@ import {
   useAuthActions,
   useAuthStatus,
   useAuthLoading,
-} from "@/features/auth/store/useAuthStore";
+} from "@/shared/auth/useAuthStore";
 
 interface AdminAuthGuardProps {
   children: React.ReactNode;

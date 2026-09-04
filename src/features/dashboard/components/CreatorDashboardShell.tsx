@@ -3,7 +3,7 @@
 import React from "react";
 import CreateVenueWizard from "@/features/venue/components/CreateVenueWizard";
 import { useCreateVenueModal } from "@/features/venue/hooks/useCreateVenueModal";
-import RequireAuth from "@/features/auth/components/RequireAuth";
+import RequireAuth from "@/shared/auth/RequireAuth";
 
 /**
  * The client half of the creator dashboard layout: the create-venue modal

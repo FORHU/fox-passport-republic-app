@@ -2,7 +2,7 @@
 
 import React, { useState, useMemo } from "react";
 import Link from "next/link";
-import RequireAuth from "@/features/auth/components/RequireAuth";
+import RequireAuth from "@/shared/auth/RequireAuth";
 import {
   useCalendarBookings,
   toMonthItems,

@@ -8,7 +8,7 @@ import { useRouter } from "next/navigation";
 import { loadStripe } from "@stripe/stripe-js";
 import { Elements } from "@stripe/react-stripe-js";
 import { useCheckoutStore } from "@/features/booking/store/useCheckoutStore";
-import { useAuthStore } from "@/features/auth/store/useAuthStore";
+import { useAuthStore } from "@/shared/auth/useAuthStore";
 import { createPaymentIntent } from "@/features/booking/api/bookings";
 import StripePaymentForm from "./StripePaymentForm";
 import { getDashboardPath } from "@/shared/lib/dashboard-path";

@@ -2,7 +2,7 @@
 
 import React, { Suspense } from "react";
 import { useRouter } from "next/navigation";
-import RequireAuth from "@/features/auth/components/RequireAuth";
+import RequireAuth from "@/shared/auth/RequireAuth";
 import { Loader2, AlertTriangle } from "lucide-react";
 import {
   ResourcePalette,

@@ -5,7 +5,7 @@ import React from "react";
 import Link from "next/link";
 import Image from "next/image";
 import UserMenuButton from "@/features/user/components/UserMenuButton";
-import { useAuthStore } from "@/features/auth/store/useAuthStore";
+import { useAuthStore } from "@/shared/auth/useAuthStore";
 import NotificationBell from "@/features/notifications/components/NotificationBell";
 
 interface UserHeaderProps {

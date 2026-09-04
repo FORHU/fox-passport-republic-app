@@ -1,13 +1,13 @@
 ﻿"use client";
 
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useAuthStore } from "@/features/auth/store/useAuthStore";
+import { useAuthStore } from "@/shared/auth/useAuthStore";
 import {
   getUserFavorites,
   addFavorite,
   removeFavoriteByListing,
   Favorite,
-} from "@/features/user/api/favorites";
+} from "@/shared/api/favorites";
 import { toast } from "sonner";
 
 export const useFavorites = () => {

@@ -4,7 +4,7 @@
 import React, { Suspense } from "react";
 import { useParams } from "next/navigation";
 import { Loader2, AlertTriangle } from "lucide-react";
-import RequireAuth from "@/features/auth/components/RequireAuth";
+import RequireAuth from "@/shared/auth/RequireAuth";
 import {
   ListingHeader,
   ListingSidebar,

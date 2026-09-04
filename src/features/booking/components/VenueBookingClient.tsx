@@ -7,7 +7,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { fetchVenueById } from "@/features/venue/api/venues";
 import { bookVenueDraft } from "@/features/booking/api/bookings";
-import { useAuthStore } from "@/features/auth/store/useAuthStore";
+import { useAuthStore } from "@/shared/auth/useAuthStore";
 import { StepperControl } from "@/shared/components/ui/StepperControl";
 import { ProgressIndicator } from "@/shared/components/ui/ProgressIndicator";
 import { FormSection } from "@/shared/components/ui/FormSection";

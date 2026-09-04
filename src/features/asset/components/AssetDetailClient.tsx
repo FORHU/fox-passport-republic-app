@@ -7,7 +7,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { fetchAssetById } from "@/features/asset/api/assets";
 import { useCanPartner } from "@/shared/hooks/useCanPartner";
-import { useAuthStore } from "@/features/auth/store/useAuthStore";
+import { useAuthStore } from "@/shared/auth/useAuthStore";
 import { toast } from "sonner";
 import type { BackendAsset } from "@/shared/lib/api-types";
 

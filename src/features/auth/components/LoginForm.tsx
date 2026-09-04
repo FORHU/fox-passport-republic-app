@@ -7,7 +7,7 @@ import { Loader2 } from "lucide-react";
 
 import { useLogin } from "@/features/auth/hooks/useAuth";
 import { loginSchema, LoginFormData } from "@/shared/lib/schema";
-import { useAuthStore } from "@/features/auth/store/useAuthStore";
+import { useAuthStore } from "@/shared/auth/useAuthStore";
 import { config } from "@/shared/lib/config";
 
 import { toast } from "sonner";

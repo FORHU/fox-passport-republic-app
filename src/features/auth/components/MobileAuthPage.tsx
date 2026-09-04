@@ -18,7 +18,7 @@ import {
   signupSchema,
   SignupFormData,
 } from "@/shared/lib/schema";
-import { useAuthStore } from "@/features/auth/store/useAuthStore";
+import { useAuthStore } from "@/shared/auth/useAuthStore";
 import { config } from "@/shared/lib/config";
 
 // ─── Types ────────────────────────────────────────────────────────────────────

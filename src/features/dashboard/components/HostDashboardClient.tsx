@@ -24,7 +24,7 @@ import {
   LockedSection,
 } from "@/features/dashboard/components";
 import { useRoleAccess } from "@/features/auth/hooks/useRoleAccess";
-import { useAuthStore } from "@/features/auth/store/useAuthStore";
+import { useAuthStore } from "@/shared/auth/useAuthStore";
 import {
   mapBackendAssetToInventoryItem,
   mapBackendServiceToServiceItem,

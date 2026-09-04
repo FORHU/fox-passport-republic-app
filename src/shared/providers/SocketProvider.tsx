@@ -2,19 +2,18 @@
 
 import { useCallback, useEffect } from "react";
 import { useQueryClient } from "@tanstack/react-query";
-import { useAuthStore } from "@/features/auth/store/useAuthStore";
+import { useAuthStore } from "@/shared/auth/useAuthStore";
 import { disconnectSocket, connectSocket } from "@/shared/lib/socket";
-import { useNotificationStore } from "@/features/notifications/store/useNotificationStore";
 import api from "@/shared/lib/axios";
-import { SOCKET_EVENTS, TOPIC_QUERY_KEYS } from "@/shared/lib/realtime";
-import { toast } from "sonner";
+import {
+  SOCKET_EVENTS,
+  TOPIC_QUERY_KEYS,
+  publishRealtime,
+} from "@/shared/lib/realtime";
 
 
 export function SocketProvider({ children }: { children: React.ReactNode }) {
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
-  const addNotification = useNotificationStore(
-    (state) => state.addNotification,
-  );
   const queryClient = useQueryClient();
 
   /**
@@ -42,11 +41,11 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
     const socket = connectSocket(fetchTicket);
     socket.connect();
 
+    // Published rather than handled here. What a notification *means* -- the
+    // store it lands in, the toast it raises -- belongs to
+    // features/notifications, and this provider must not import a feature.
     socket.on(SOCKET_EVENTS.NEW_NOTIFICATION, (notification) => {
-      addNotification(notification);
-      toast.info(notification.message, {
-        description: notification.description,
-      });
+      publishRealtime(SOCKET_EVENTS.NEW_NOTIFICATION, notification);
     });
 
     socket.on(SOCKET_EVENTS.DATA_INVALIDATE, ({ topic }: { topic: string }) => {
@@ -62,7 +61,7 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
       socket.off(SOCKET_EVENTS.DATA_INVALIDATE);
       disconnectSocket();
     };
-  }, [isAuthenticated, addNotification, queryClient, fetchTicket]);
+  }, [isAuthenticated, queryClient, fetchTicket]);
 
   return <>{children}</>;
 }

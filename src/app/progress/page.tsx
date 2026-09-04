@@ -1,5 +1,5 @@
 import { ProgressDashboard } from "@/features/user/components/ProgressDashboard";
-import RequireAuth from "@/features/auth/components/RequireAuth";
+import RequireAuth from "@/shared/auth/RequireAuth";
 import LandingHeader from "@/features/landing/components/sections/LandingHeader";
 
 export const dynamic = "force-dynamic";

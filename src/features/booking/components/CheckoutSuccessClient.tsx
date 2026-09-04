@@ -6,7 +6,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useCheckoutStore } from "@/features/booking/store/useCheckoutStore";
-import { useAuthStore } from "@/features/auth/store/useAuthStore";
+import { useAuthStore } from "@/shared/auth/useAuthStore";
 import { confirmBookingPayment } from "@/features/booking/api/bookings";
 import { getDashboardPath } from "@/shared/lib/dashboard-path";
 

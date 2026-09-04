@@ -2,7 +2,7 @@
 
 import { useState, useMemo } from "react";
 import { useScrollReveal } from "@/shared/hooks/useScrollReveal";
-import { useAuthStore } from "@/features/auth/store/useAuthStore";
+import { useAuthStore } from "@/shared/auth/useAuthStore";
 import { useCategories } from "@/features/category/hooks/useCategories";
 import { hasPermission } from "@/shared/lib/permissions";
 import { isFoxer } from "@/shared/constants/roles";

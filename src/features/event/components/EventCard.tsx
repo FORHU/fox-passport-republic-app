@@ -8,7 +8,7 @@ import { Event } from "@/features/event/types/event";
 import {
   addFavorite,
   removeFavoriteByListing,
-} from "@/features/user/api/favorites";
+} from "@/shared/api/favorites";
 
 interface EventCardProps {
   event: Event;

@@ -1,7 +1,7 @@
 ﻿"use client";
 
 import React, { useEffect } from "react";
-import { useAuthStore } from "@/features/auth/store/useAuthStore";
+import { useAuthStore } from "@/shared/auth/useAuthStore";
 import LoginForm from "@/features/auth/components/LoginForm";
 import SignupForm from "@/features/auth/components/SignupForm";
 import ForgotPasswordForm from "@/features/auth/components/ForgotPasswordForm";

@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import { User, LoginResponse } from "@/features/auth/types/auth";
+import { User, LoginResponse } from "@/shared/auth/types";
 
 type AuthView =
   "login" | "signup" | "forgot-password" | "reset-password" | "verify-email";

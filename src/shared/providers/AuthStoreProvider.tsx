@@ -1,9 +1,9 @@
 ﻿"use client";
 
 import React, { useEffect, useState } from "react";
-import { useAuthStore } from "@/features/auth/store/useAuthStore";
+import { useAuthStore } from "@/shared/auth/useAuthStore";
 import { Loader2 } from "lucide-react";
-import { useSessionManager } from "@/features/auth/hooks/useSessionManager";
+import { useSessionManager } from "@/shared/auth/useSessionManager";
 import SessionTimeoutModal from "@/shared/components/layout/SessionTimeoutModal";
 
 function SessionManager() {

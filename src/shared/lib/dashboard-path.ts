@@ -1,4 +1,4 @@
-import type { RoleType, User } from "@/features/auth/types/auth";
+import type { RoleType, User } from "@/shared/auth/types";
 import { canAccessAdmin } from "@/shared/lib/permissions";
 
 /** RoleTypes that grant access to the supply-side dashboard. */

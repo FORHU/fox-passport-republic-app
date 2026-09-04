@@ -11,7 +11,7 @@ import {
   MapboxLocationInput,
   MapboxContextItem,
 } from "@/shared/components/ui/MapboxLocationInput";
-import { VenuePolygonMapPicker } from "@/shared/components/ui/VenuePolygonMapPicker";
+import { VenuePolygonMapPicker } from "@/features/venue/components/venue-builder/VenuePolygonMapPicker";
 
 interface VenueDetailsFormProps {
   venueName: string;

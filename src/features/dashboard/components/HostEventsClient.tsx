@@ -6,7 +6,7 @@ import {
   DashboardHeader,
   EventsSection,
 } from "@/features/dashboard/components";
-import RequireAuth from "@/features/auth/components/RequireAuth";
+import RequireAuth from "@/shared/auth/RequireAuth";
 import { STATUS_OPTIONS } from "@/features/dashboard/data/dashboardData";
 import api from "@/shared/lib/axios";
 import { toast } from "sonner";

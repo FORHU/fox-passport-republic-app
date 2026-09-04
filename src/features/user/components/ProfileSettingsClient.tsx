@@ -4,7 +4,7 @@ import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useProfile } from "@/features/user/hooks/useProfile";
-import { useAuthStore } from "@/features/auth/store/useAuthStore";
+import { useAuthStore } from "@/shared/auth/useAuthStore";
 import { useLogout } from "@/features/auth/hooks/useAuth";
 import AvatarUploader from "@/features/user/components/AvatarUploader";
 

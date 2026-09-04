@@ -7,6 +7,7 @@ import { Toaster } from "sonner";
 
 // Import the Modal Component
 import AuthModal from "@/features/auth/components/AuthModal";
+import NotificationSocketBridge from "@/features/notifications/components/NotificationSocketBridge";
 import SessionExpiredToast from "@/features/auth/components/SessionExpiredToast";
 import NavigationOverlay from "@/shared/components/ui/NavigationOverlay";
 
@@ -55,6 +56,9 @@ export default function RootLayout({
           <Suspense fallback={null}>
             <SessionExpiredToast />
           </Suspense>
+          {/* Socket -> notifications. Composed here because the app layer may
+              import features; SocketProvider, in shared/, may not. */}
+          <NotificationSocketBridge />
           <main className="grow overflow-x-clip">{children}</main>
         </Providers>
       </body>

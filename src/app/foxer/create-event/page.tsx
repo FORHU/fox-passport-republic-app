@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import RequireAuth from "@/features/auth/components/RequireAuth";
+import RequireAuth from "@/shared/auth/RequireAuth";
 import { useEventBuilder } from "@/features/event/hooks/useEventBuilder";
 import { useEventBuilderStore } from "@/features/event/store/useEventBuilderStore";
 import {

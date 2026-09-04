@@ -2,7 +2,7 @@
 "use client";
 
 import React from "react";
-import RequireAuth from "@/features/auth/components/RequireAuth";
+import RequireAuth from "@/shared/auth/RequireAuth";
 import { useServicesBuilder } from "@/features/service/hooks/useServicesBuilder";
 import {
   ListingHeader,

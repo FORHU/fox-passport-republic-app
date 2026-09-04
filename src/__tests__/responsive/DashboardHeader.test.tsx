@@ -38,7 +38,7 @@ const mockAuthState = {
 
 type MockAuthState = typeof mockAuthState;
 
-vi.mock("@/features/auth/store/useAuthStore", () => ({
+vi.mock("@/shared/auth/useAuthStore", () => ({
   useAuthStore: <T,>(selector?: (s: MockAuthState) => T) =>
     selector ? selector(mockAuthState) : mockAuthState,
 }));

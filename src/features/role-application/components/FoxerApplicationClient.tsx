@@ -13,7 +13,7 @@ import {
   Link as LinkIcon,
   BadgeCheck,
 } from "lucide-react";
-import RequireAuth from "@/features/auth/components/RequireAuth";
+import RequireAuth from "@/shared/auth/RequireAuth";
 import Link from "next/link";
 import FileUploader from "@/shared/components/layout/FileUploader";
 import { KycDocumentSection } from "./KycDocumentSection";

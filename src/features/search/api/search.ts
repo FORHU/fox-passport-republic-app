@@ -1,5 +1,5 @@
 import api from "@/shared/lib/axios";
-import type { Foxer } from "@/features/user/api/foxers";
+import type { Foxer } from "@/shared/api/foxers";
 
 export interface PaginationMeta {
   page: number;

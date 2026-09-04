@@ -6,7 +6,7 @@ import {
   useAuthLoading,
   useAuthStatus,
   useAuthStore,
-} from "@/features/auth/store/useAuthStore"; // Import store
+} from "@/shared/auth/useAuthStore"; // Import store
 import { Loader2 } from "lucide-react";
 
 interface RequireAuthProps {

@@ -8,8 +8,10 @@
     "build": "next build",
     "start": "next start -p 6001",
     "lint": "node --max-old-space-size=4096 node_modules/eslint/bin/eslint.js src/",
+    "type-check": "tsc --noEmit",
+    "validate": "node tools/validate-architecture.mjs",
     "format": "pnpm exec prettier --write \"src/**/*.{ts,tsx}\"",
-    "test": "vitest",
+    "test": "vitest run",
     "test:watch": "vitest --watch",
     "test:ui": "vitest --ui"
   },

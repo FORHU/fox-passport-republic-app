@@ -6,7 +6,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Loader2 } from "lucide-react";
 import { useVerifyEmail, useResendOtp } from "@/features/auth/hooks/useAuth";
 import { verifyEmailSchema, VerifyEmailFormData } from "@/shared/lib/schema";
-import { useAuthStore } from "@/features/auth/store/useAuthStore";
+import { useAuthStore } from "@/shared/auth/useAuthStore";
 
 export default function VerifyEmailForm() {
   const verifyEmailMutation = useVerifyEmail();
