@@ -42,7 +42,10 @@ export default function RootLayout({
           rel="stylesheet"
         />
       </head>
-      <body className="antialiased font-body text-text-main bg-background flex flex-col min-h-screen bg-gradient-dark">
+      <body
+        className="antialiased font-body text-text-main bg-background flex flex-col min-h-screen bg-gradient-dark"
+        suppressHydrationWarning
+      >
         <Providers>
           <Suspense fallback={null}>
             <NavigationOverlay />
