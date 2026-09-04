@@ -20,7 +20,7 @@ export {
 } from "./hooks/useAuth";
 export { useRoleAccess } from "./hooks/useRoleAccess";
 export { useSessionManager } from "@/shared/auth/useSessionManager";
-export { useUserMenu } from "./hooks/useUserMenu";
+export { useUserMenu } from "@/shared/auth/useUserMenu";
 
 // Types
 export * from "@/shared/auth/types";
