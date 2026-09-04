@@ -29,8 +29,9 @@ export function useSessionManager(
     // that condition would have silently switched role polling off.
     enabled: isAuthenticated,
     retry: false,
-    // Roles change when an admin approves a role application - minutes-scale,
-    // not seconds. Poll slowly and lean on window focus to catch it sooner.
+    // Roles change when an admin approves a role application, and the server now
+    // emits `roles` to that user the moment it happens - this interval is the
+    // recovery path for a dropped socket, not how the change arrives.
     refetchInterval: () => {
       if (typeof document !== "undefined" && document.hidden) return false;
       return 5 * 60 * 1000;

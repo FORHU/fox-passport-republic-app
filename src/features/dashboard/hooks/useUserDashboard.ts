@@ -8,6 +8,7 @@ import {
 } from "@/features/auth/store/useAuthStore";
 import { useQuery } from "@tanstack/react-query";
 import api from "@/shared/lib/axios";
+import { pollWhileVisible } from "@/shared/lib/realtime";
 
 interface UserDashboardData {
   userName: string;
@@ -81,10 +82,7 @@ export const useUserDashboard = () => {
       return res.data.data || [];
     },
     enabled: !!userId,
-    refetchInterval: () => {
-      if (typeof document !== "undefined" && document.hidden) return false;
-      return 15000; // 15 seconds for user events
-    },
+    refetchInterval: pollWhileVisible,
     refetchOnWindowFocus: true,
     staleTime: 10000,
   });
@@ -115,10 +113,7 @@ export const useUserDashboard = () => {
       });
     },
     enabled: !!userId,
-    refetchInterval: () => {
-      if (typeof document !== "undefined" && document.hidden) return false;
-      return 30000; // 30 seconds for favorites
-    },
+    refetchInterval: pollWhileVisible,
     refetchOnWindowFocus: true,
     staleTime: 1000 * 60 * 5,
   });

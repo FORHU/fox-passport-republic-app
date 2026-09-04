@@ -3,6 +3,7 @@
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import api from "@/shared/lib/axios";
 import { useAuthStore } from "@/features/auth/store/useAuthStore";
+import { pollWhileVisible } from "@/shared/lib/realtime";
 
 interface UseHostDataOptions {
   page?: number;
@@ -90,10 +91,7 @@ export const useHostData = (
       page === 1 && initialData
         ? { items: initialData, total: initialData.length }
         : undefined,
-    refetchInterval: () => {
-      if (typeof document !== "undefined" && document.hidden) return false;
-      return 10000;
-    },
+    refetchInterval: pollWhileVisible,
     refetchOnWindowFocus: true,
     // The page number is part of the query key, so paging is a cache miss.
     // Without this the list blanks on every page change; keeping the previous

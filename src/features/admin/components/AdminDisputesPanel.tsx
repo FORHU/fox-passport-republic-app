@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import api from "@/shared/lib/axios";
 import toast from "react-hot-toast";
+import { pollWhileVisible } from "@/shared/lib/realtime";
 
 // ── Shared helpers ────────────────────────────────────────────────────────────
 
@@ -38,6 +39,11 @@ function RefundDisputesTab() {
   const { data: disputes = [], isLoading } = useQuery<any[]>({
     queryKey: ["admin", "disputes"],
     queryFn: () => api.get("/admin/disputes").then((r) => r.data.data),
+    // The `disputes` topic is how this table stays current; this is the
+    // recovery path for a dropped socket, and until it was added the table
+    // refreshed on mount and after its own mutation and never otherwise - two
+    // admins working the same queue could not see each other's resolutions.
+    refetchInterval: pollWhileVisible,
   });
 
   const resolve = useMutation({
@@ -165,6 +171,9 @@ function BookingDisputesTab({ type }: { type: "asset" | "service" }) {
   const { data: bookings = [], isLoading } = useQuery<any[]>({
     queryKey: ["admin", "disputes", type],
     queryFn: () => api.get(endpoint).then((r) => r.data.data),
+    // As above. The `disputes` topic invalidates ["admin", "disputes"], which
+    // matches this key by prefix, so both tables move on one emit.
+    refetchInterval: pollWhileVisible,
   });
 
   const resolve = useMutation({

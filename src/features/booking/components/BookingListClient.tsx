@@ -2,6 +2,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
+import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -10,6 +11,7 @@ import { fetchUserBookings } from "@/features/booking/api/bookings";
 import CancelBookingModal from "@/features/booking/components/CancelBookingModal";
 import { toast } from "sonner";
 import { getDashboardPath } from "@/shared/lib/dashboard-path";
+import { pollWhileVisible } from "@/shared/lib/realtime";
 
 const STATUS_LABEL: Record<string, { label: string; color: string }> = {
   pending: { label: "Pending", color: "text-yellow-400 bg-yellow-500/10" },
@@ -28,36 +30,49 @@ const STATUS_LABEL: Record<string, { label: string; color: string }> = {
 export default function BookingListClient() {
   const router = useRouter();
   const { user } = useAuthStore();
-  const [bookings, setBookings] = useState<any[]>([]);
   const [page, setPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
-  const [isInitial, setIsInitial] = useState(true);
-  const [isFetching, setIsFetching] = useState(false);
   const [cancelTargetId, setCancelTargetId] = useState<string | null>(null);
   const limit = 4;
+  const userId = user?.id || user?.userId;
 
-  const loadBookings = () => {
-    const userId = user?.id || user?.userId;
-    if (!userId) return;
-    if (!isInitial) setIsFetching(true);
-    fetchUserBookings(userId, page, limit)
-      .then((res) => {
-        setBookings(res.bookings);
-        setTotalPages(res.pagination.totalPages || 1);
-      })
-      .catch(() => toast.error("Could not load bookings."))
-      .finally(() => {
-        setIsInitial(false);
-        setIsFetching(false);
-      });
-  };
+  /**
+   * This list used to fetch in a `useEffect` and hold its rows in component
+   * state, which put it outside React Query entirely - so the `bookings` topic
+   * the server emits on every booking change reached the dashboards and the
+   * admin tab but never this screen, the one belonging to the person the
+   * booking is for. They saw a confirmed booking by reloading.
+   *
+   * The key is prefixed `user-bookings`, which is what `TOPIC_QUERY_KEYS` maps
+   * `bookings` onto; React Query matches by prefix, so one emit refreshes
+   * whichever page is open here and the mobile view besides.
+   */
+  const {
+    data,
+    isPending,
+    isFetching,
+    isError,
+    refetch,
+  } = useQuery({
+    queryKey: ["user-bookings", userId, page, limit],
+    queryFn: () => fetchUserBookings(userId as string, page, limit),
+    enabled: Boolean(userId),
+    // Paging replaced the whole list with a spinner before; this keeps the
+    // previous page on screen under the overlay while the next one loads.
+    placeholderData: keepPreviousData,
+    refetchInterval: pollWhileVisible,
+  });
+
+  const bookings = data?.bookings ?? [];
+  const totalPages = data?.pagination.totalPages || 1;
 
   useEffect(() => {
-    loadBookings();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user?.id, user?.userId, page]);
+    if (isError) toast.error("Could not load bookings.");
+  }, [isError]);
 
-  if (isInitial) {
+  // No user id means the query never runs, which is the same dead-end the
+  // effect version reached - the layout's `requireAuth` is what turns those
+  // people away.
+  if (isPending || !userId) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <span className="h-10 w-10 rounded-full border-2 border-white/20 border-t-accent animate-spin" />
@@ -253,7 +268,7 @@ export default function BookingListClient() {
               </div>
             )}
 
-            {isFetching && (
+            {isFetching && !isPending && (
               <div className="absolute inset-0 flex items-center justify-center bg-black/30 backdrop-blur-sm rounded-2xl">
                 <span className="h-8 w-8 rounded-full border-2 border-white/20 border-t-accent animate-spin" />
               </div>
@@ -307,7 +322,7 @@ export default function BookingListClient() {
             toast.success(
               "Booking cancelled. Refund (if any) will appear in 5–10 business days.",
             );
-            loadBookings();
+            refetch();
           }}
         />
       )}

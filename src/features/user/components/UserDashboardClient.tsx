@@ -10,6 +10,8 @@ import { UserJourney } from "@/features/user/components/citizen/UserJourney";
 import { UserWallet } from "@/features/user/components/citizen/UserWallet";
 import { UserSavedVibes } from "@/features/user/components/citizen/UserSavedVibes";
 import { UserFooter } from "@/features/user/components/citizen/UserFooter";
+import { hasPermission } from "@/shared/lib/permissions";
+import { isFoxer } from "@/shared/constants/roles";
 
 interface UserDashboardClientProps {
   user: any;
@@ -35,15 +37,13 @@ function UserDashboardContent({
   const displayUserName = userName || user?.name || "User";
   const displayDashboardData = dashboardData;
 
-  const VENUE_ROLES = ["eventFoxer", "venueFoxer", "gearFoxer", "serviceFoxer"];
   const roleType: string[] = user?.roleType ?? [];
-  const systemRole: string = (
-    user?.systemRole ??
-    user?.role ??
-    ""
-  ).toLowerCase();
+  // The whole user, not a `{ systemRole }` synthesised from it: permissions
+  // come from the server on the user object now, and a subject carrying only a
+  // role name answers `false` to everything.
   const canSeeVenues =
-    systemRole === "admin" || roleType.some((r) => VENUE_ROLES.includes(r));
+    hasPermission(user, "queue:read") ||
+    isFoxer(roleType);
 
   return (
     <div className="bg-background bg-gradient-dark text-text-main antialiased min-h-screen flex flex-col selection:bg-accent selection:text-black font-body">
