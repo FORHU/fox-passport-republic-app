@@ -73,6 +73,9 @@ export interface Venue {
   province?: string;
   latitude?: number;
   longitude?: number;
+  lat?: number | null;
+  lng?: number | null;
+  boundary?: [number, number][] | null;
   image?: string;
   images?: string[];
   rating?: number;
@@ -118,6 +121,7 @@ export interface VenueUpdatePayload {
   city?: string;
   state?: string;
   country?: string;
+  boundary?: [number, number][];
   price: number;
   spaceType: string[];
   amenities: string[];

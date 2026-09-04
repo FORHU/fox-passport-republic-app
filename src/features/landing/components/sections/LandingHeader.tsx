@@ -10,7 +10,11 @@ import NotificationBell from "@/features/notifications/components/NotificationBe
 import MobileBottomNav from "@/shared/components/layout/MobileBottomNav";
 
 interface LandingHeaderProps {
-  onSignIn: () => void;
+  /** Optional — defaults to the auth store's own `openLogin`, so a server
+   * component can render this with no props at all (it can't pass a
+   * closure across the server/client boundary the way a caller that's
+   * already a client component can). */
+  onSignIn?: () => void;
   /** When provided, renders an inline search input in place of the search icon. */
   search?: {
     value: string;
@@ -22,11 +26,13 @@ interface LandingHeaderProps {
 const NAV_TABS = [
   { label: "Explore", href: "/" },
   { label: "Foxers", href: "/search" },
+  { label: "Map", href: "/venues/map" },
   { label: "Community", href: "/user/passport" },
 ];
 
 export default function LandingHeader({ onSignIn, search }: LandingHeaderProps) {
-  const { isAuthenticated } = useAuthStore();
+  const { isAuthenticated, openLogin } = useAuthStore();
+  const handleSignIn = onSignIn ?? openLogin;
   const pathname = usePathname();
   const isTabActive = (href: string) =>
     href === "/" ? pathname === "/" : pathname?.startsWith(href);
@@ -114,7 +120,7 @@ export default function LandingHeader({ onSignIn, search }: LandingHeaderProps) 
               {/* Desktop-only: Sign In + UserMenuButton */}
               {!isAuthenticated && (
                 <button
-                  onClick={onSignIn}
+                  onClick={handleSignIn}
                   className="hidden md:flex items-center gap-2 rounded-full bg-white/5 border border-white/10 px-6 py-2.5 text-sm font-bold text-white hover:bg-white hover:text-black hover:shadow-[0_0_20px_rgba(255,255,255,0.3)] transition-all duration-300 group overflow-hidden relative"
                 >
                   <span className="relative z-10">Sign In</span>
@@ -124,7 +130,7 @@ export default function LandingHeader({ onSignIn, search }: LandingHeaderProps) 
               {isAuthenticated && (
                 <div className="hidden md:flex items-center gap-2 sm:gap-3">
                   <NotificationBell />
-                  <UserMenuButton onSignIn={onSignIn} />
+                  <UserMenuButton onSignIn={handleSignIn} />
                 </div>
               )}
             </div>
@@ -133,7 +139,7 @@ export default function LandingHeader({ onSignIn, search }: LandingHeaderProps) 
       </motion.header>
 
       {/* Mobile floating capsule bottom nav */}
-      <MobileBottomNav onLoginClick={onSignIn} />
+      <MobileBottomNav onLoginClick={handleSignIn} />
     </>
   );
 }

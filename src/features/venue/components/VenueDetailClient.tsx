@@ -269,6 +269,7 @@ export default function VenueDetailClient({
                 province={venue.province}
                 lat={venue.lat}
                 lng={venue.lng}
+                boundary={venue.boundary}
               />
               <div className="h-px bg-white/10 w-full" />
 

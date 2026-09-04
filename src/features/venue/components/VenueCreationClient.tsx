@@ -33,6 +33,7 @@ export default function VenueCreationClient() {
     country,
     lat,
     lng,
+    boundary,
     gallery,
     cancellationPolicyId,
     includedItems,
@@ -58,6 +59,7 @@ export default function VenueCreationClient() {
     setCountry,
     setLat,
     setLng,
+    setBoundary,
     setCancellationPolicyId,
     removeIncludedItem,
     removeAddonItem,
@@ -140,6 +142,7 @@ export default function VenueCreationClient() {
                 country={country}
                 lat={lat}
                 lng={lng}
+                boundary={boundary}
                 gallery={gallery}
                 showGuide={showGuide}
                 cancellationPolicyId={cancellationPolicyId}
@@ -155,6 +158,7 @@ export default function VenueCreationClient() {
                   setLat(lat);
                   setLng(lng);
                 }}
+                onBoundaryChange={setBoundary}
                 onCancellationPolicyChange={setCancellationPolicyId}
                 onAddImage={addImageToGallery}
                 onRemoveImage={removeImageFromGallery}

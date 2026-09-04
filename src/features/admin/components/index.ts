@@ -6,6 +6,7 @@ export { AdminKPISection } from "./AdminKPISection";
 export { AdminChartsSection } from "./AdminChartsSection";
 export { AdminSubmissionsTable } from "./AdminSubmissionsTable";
 export { AdminVenuesTable } from "./AdminVenuesTable";
+export { AdminVenuesMap } from "./AdminVenuesMap";
 export { AdminEventsTable } from "./AdminEventsTable";
 export { AdminCategoriesTable } from "./AdminCategoriesTable";
 export { AdminCitizenTable } from "./AdminCitizenTable";
