@@ -13,7 +13,6 @@ needed.
 | `RBAC.md` / `ARCHITECTURE.md` | Target state, and the system as built. |
 | `api-audit.md` | The record: API, data-fetching and auth findings. 9 open. |
 | `responsive-plan.md` | Responsive and touch backlog. 21 open. |
-| `mapanytime-comparison.md` | What to adopt from the mapanytime codebase. 8 open. |
 | `roles-and-spaces.md` | The Foxer role model and the page split. 13 open. |
 | `app-architecture.md` | Boundary violations + template gaps. 19 open, 150 -> 72. |
 
@@ -116,10 +115,58 @@ So `roles:assign`, `AuditLog`, `audit.service.ts`, `role-assignment.service.ts`,
 
 **`feat/map` merged in the same window** — app #47, api #70 — and no document
 here covers it. It brought `VenuesMap`, `VenuePolygonMapPicker`,
-`AdminVenuesMap`, `polygonGeo.ts`, venue boundary polygons in the API, and the
-navbar deletion in §0a below. `mapbox-gl` was already a dependency and
-`NEXT_PUBLIC_MAPBOX_TOKEN` is set in `.env` and documented in `.env.example`, so
-there is no new setup.
+`AdminVenuesMap`, the app's `shared/lib/polygonGeo.ts` (a client-side mirror of
+the API's `utils/geo.ts`, used only for live UI feedback — the API is the real
+source of truth), venue boundary polygons, and the navbar deletion in §0a
+below. `mapbox-gl` was already a dependency and `NEXT_PUBLIC_MAPBOX_TOKEN` is
+set in `.env` and documented in `.env.example`, so there is no new setup.
+
+**Audited 5 Sep — real integration, but four gaps worth tracking:**
+
+- [ ] **Zero test coverage**, on either repo, for any of it. No test exercises
+      the polygon math (`geo.ts` / `polygonGeo.ts`), the overlap-rejection
+      logic (`assertNoOverlap`), or renders `VenuesMap` /
+      `VenuePolygonMapPicker` / `AdminVenuesMap`.
+- [x] **`features/venue/hooks/useVenueMapLogic.ts` deleted.** Exported from
+      the feature barrel with zero call sites, and its own logic was worse
+      than dead: when a live Mapbox geocoding search returned fewer than 15
+      results it fabricated fake venues — placeholder `picsum.photos` images,
+      random prices/ratings/capacities, names drawn from a five-item hardcoded
+      list. Looked like an abandoned prototype for venue discovery, superseded
+      by the real `/venues/near` + `VenuesMap` flow, never removed.
+- [ ] **`GET /venues/near` has no frontend caller.** Implemented correctly
+      (point-in-polygon search, public, no auth) but currently orphaned —
+      nothing in the app repo calls it.
+- [ ] **Two silent failure modes.** A missing Mapbox token renders an empty
+      `<div>` with no error message in `VenuesMap`, `VenuePolygonMapPicker` and
+      `LocationMap` alike. And `VenuePolygonMapPicker`'s reference-boundary
+      fetch is `.catch(() => {})` — a host drawing a new venue's boundary gets
+      no reference layer and no warning if it fails to load, and only
+      discovers an overlap at submit time, which defeats the reference
+      layer's documented purpose.
+- [x] **`/venues/map` was unusable below `sm` (640px) — fixed 5 Sep.** The
+      right column (map, pins, the floating detail card) was `hidden sm:block`
+      with nothing replacing it: a phone-width visitor saw only a plain venue
+      list with no map, no indication one existed, and no way to reach it. The
+      page also had no back control anywhere, at any width — `LandingHeader`
+      above it is site-wide nav, not a page-specific way out, so the only way
+      off the page was the browser's own back button. Fixed both:
+      `router.back()` behind an `arrow_back` button (the same pattern
+      `VenueHeader.tsx` already uses) next to the "Venues Map" title, and a
+      List/Map toggle pill (fixed above `MobileBottomNav`, which is 68px tall
+      anchored at `bottom-4`) that shows one panel at a time below `sm`
+      instead of the map just disappearing. `VenuesMap`'s existing
+      `ResizeObserver` already calls `map.resize()` on becoming visible, so
+      the toggle doesn't produce a blank map. `AdminVenuesMap` doesn't have
+      this problem — it stacks list-above-map at `lg:` instead of hiding
+      either, and it lives inside the admin console's own layout rather than
+      as a standalone route, so no back control is needed there.
+      **Still open:** `responsive-plan.md` also flags `VenuePolygonMapPicker`
+      as never audited for breakpoints — the drawing tool itself, not the
+      browse page, and not covered by this fix.
+- [ ] **Never manually verified in a browser.** The fix above was made by
+      reading the code, not by rendering the page — still consistent with
+      this project's broader admitted pattern (see §2 below).
 
 Both branches still exist and each still holds one commit that is **not** on
 `main`. They are now misnamed for what is left in them:
@@ -261,13 +308,17 @@ none of them rendered a page.
       now. Their `/admin/*` counterparts already did, so the two paths agree for
       the first time — but it is a real behaviour change. Keep, or give those 11
       an admin-only permission for strict parity.
-- [ ] **Seven page trees** sit outside `PROTECTED_ROUTES` and any guard:
+- [x] **Seven page trees** sat outside `PROTECTED_ROUTES` and any guard:
       `/kyc`, `/notifications`, `/scanner`, `/wishlists`, `/host` (13 pages),
-      `/match`, `/venue-foxer`. Which are signed-in only? An hour once decided.
-- [ ] **Approve/reject exists twice** — `AdminCtrl` and the resource-level pair.
-      This app only calls `/admin/*`. Deleting the unused pair is the obvious
-      cleanup, but it is an API removal and something outside this repo may call
-      it.
+      `/match`, `/venue-foxer`. All seven are signed-in only — decided and
+      shipped: added to `middleware.ts`'s `PROTECTED_ROUTES`, and each tree got
+      a server-side `requireAuth()` layout. `/host` was the worst of the seven:
+      a full parallel dashboard (assets, events, services, venues + edit
+      routes, Stripe onboarding) guarded only by the client-side `RequireAuth`
+      component, with a comment claiming `middleware.ts` ("proxy.ts") handled
+      it — it never did, `/host` was not in the array. The modal-state logic
+      that lived in that layout moved to `host/_components/HostShell.tsx` so
+      the layout itself could become a server component calling `requireAuth`.
 - [ ] **Silent Google account linking** — an existing email signing in with
       Google is linked without a challenge. Acceptable, or not?
 - [ ] **Single-session across a person's own devices.** Signing in on a phone
@@ -312,10 +363,22 @@ none of them rendered a page.
       broken under a finger, and duplicated: `ExperienceBuilder.tsx` and an
       inline `CustomExperienceBuilder` in a 1,483-line page. Dedupe first or the
       work happens twice.
-- [ ] **`x-auth-required` is set by `middleware.ts:72` and read by nothing.** A
-      response header on a redirect is invisible to the page that lands;
-      `RequireAuth` opens the modal client-side. Wire it through a query param
-      or delete it.
+- [x] **`x-auth-required` was set by `middleware.ts` and read by nothing.** A
+      response header on a redirect is invisible to the page that lands — not
+      just unwired, unreadable, since the destination page never sees the
+      headers of the response that redirected it there. Replaced with
+      `?auth=required`, handled by `SessionExpiredToast` (already global in
+      the root layout, already doing this for `?auth=expired`) which now opens
+      the login modal with a "Please sign in to continue" toast and strips the
+      param.
+- [ ] **Approve/reject no longer exists twice.** The resource-level pair
+      (`venue`/`asset`/`service`/`event-template` `.routes.ts` +
+      `.controller.ts`) had diverged from `AdminCtrl`'s version — no XP/badge
+      award, no socket announce — and this app only ever called `/admin/*`.
+      Deleted the resource-level routes and controller methods; `AdminCtrl`'s
+      versions (which already did everything the deleted ones did, plus more)
+      are now the only implementation. Worth knowing if anything outside this
+      repo called the old `PATCH /venues/:id/approve`-style paths directly.
 - [ ] **`/progress` is in `PROTECTED_ROUTES` and has no pages.**
 - [ ] **`jose` is unused**, and removing it is blocked on the pnpm mismatch
       below.

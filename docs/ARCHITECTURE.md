@@ -79,12 +79,17 @@ Two independent role axes on `User`:
 - **`SystemRole`** — `user`, `admin_secretary`, `admin`. Runs through the
   permission table below.
 - **`RoleType[]`** — `venueFoxer`, `eventFoxer`, `gearFoxer`, `serviceFoxer`,
-  `investor`. The supply side, granted through role applications. It has **no**
-  grant table; it is still checked by role name through `requireRole`.
+  `investor`. The supply side, granted through role applications. RoleType
+  grants are merged with SystemRole grants by `permissionsForUser()`.
+
+The platform is one community ecosystem, not separate marketplaces. A person
+may remain a Citizen while holding several capabilities at once. Capability,
+ownership, and event participation are separate concepts and must not be
+inferred from one another.
 
 ## RBAC — how it is actually implemented
 
-**One table, in one file.** `api/src/types/permissions.ts`:
+**The grant tables are centralized in one file.** `api/src/types/permissions.ts`:
 
 ```ts
 export const PERMISSIONS = [
@@ -98,8 +103,16 @@ const GRANTS: Record<SystemRole, readonly Permission[]> = {
   admin: [ ...all seven... ],
 };
 
-export function can(role: string | null | undefined, p: Permission): boolean
-export function permissionsFor(role: string | null | undefined): Permission[]
+const ROLE_TYPE_GRANTS: Record<RoleType, readonly Permission[]> = {
+  venueFoxer: ["venue:manage", "payouts:onboard"],
+  eventFoxer: ["template:manage", "booking:check-in", "payouts:onboard"],
+  gearFoxer: ["asset:manage", "payouts:onboard"],
+  serviceFoxer: ["service:manage", "payouts:onboard"],
+  investor: [],
+};
+
+export function can(subject: AuthorizationSubject, p: Permission): boolean
+export function permissionsForUser(subject: AuthorizationSubject): Permission[]
 ```
 
 Typed `Record<SystemRole, …>` on purpose: a fourth role added to the Prisma enum
@@ -128,12 +141,12 @@ repos.
    secretary sees Dashboard, Events, Venues, Assets, Services and nothing else.
    Hiding is courtesy; the API refuses those routes regardless.
 
-**How the client knows.** Access tokens carry a `permissions` claim, stamped at
-sign-in, refresh and Google exchange with `permissionsFor(user.systemRole)`
-(`auth.service.ts:89,172,273`, `google-auth.service.ts:146`). The app mirrors
-the grant table in `app/src/shared/lib/permissions.ts`, and `hasPermission()`
-prefers the user's own claim when present, falling back to the table for a
-profile fetched before the claim existed.
+**How the client knows.** Access tokens and profile responses carry a
+server-derived `permissions` claim, stamped at sign-in, refresh, and Google
+exchange with `permissionsForUser(user)`. The app mirrors the permission names
+in `app/src/shared/constants/permissions.ts`; `hasPermission()` checks the
+permissions carried by the current user and never invents a grant from a role
+name.
 
 **The API never trusts that claim.** `toAuthenticatedUser` (`api/src/types/auth.ts`)
 validates the verified payload and keeps only `userId`, `email`, `systemRole`
@@ -214,6 +227,74 @@ Global query defaults: `staleTime: 30s`, no refetch on window focus.
 - **Money** — `Payment`, `Payout`, `Refund`, `StripeEvent`
 - **Social** — `Review`, `ReviewReply`, `Favorite`, `Notification`
 
+## Product Domain Model
+
+Fox Passport Republic is a community-powered event ecosystem and marketplace.
+The core relationship is:
+
+```text
+Person
+  -> Citizen capability
+  -> optional Event/Venue/Gear/Service Foxer capabilities
+  -> optional Investor capability
+```
+
+An Event Foxer orchestrates an event but does not automatically own every
+resource involved. The system must distinguish:
+
+```text
+Capability != Ownership != Participation
+```
+
+An EventTemplate is a reusable event design. An Event is a concrete occurrence
+created from that design and records the actual date, location, resources,
+providers, participants, bookings, and transactions. One template may produce
+many events with different arrangements.
+
+The foundational event rule is:
+
+```text
+Event location = required
+Venue Foxer = optional
+```
+
+Locations may be marketplace venues, public places, private or external venues,
+organizer-owned locations, or custom locations. Gear and Service Foxers are
+optional contributors. An Event Foxer may use their own resources without
+creating artificial marketplace transactions with themselves.
+
+Ownership remains separate from participation: owning a venue, asset, or
+service does not make a person the Event Foxer, and participating in an event
+does not grant ownership or edit permission.
+
+Investment and support are separate from ordinary booking and payment flows.
+Real-money investment requires its own legal, compliance, financial, and
+authorization domain; it must not be represented by overloading `Booking`,
+`Payment`, or `Payout`.
+
+## Product Implementation Direction
+
+The architecture is refined in this order:
+
+1. **Done.** Fix frontend creator-dashboard gates to use server-derived
+  permissions so Gear Foxers see asset tools and Service Foxers see service
+  tools — `shared/auth/useRoleAccess.ts` now derives every field from
+  `hasPermission()` instead of comparing role names.
+2. Add a flexible EventLocation model and require a location before publishing
+  or booking an Event.
+3. Keep template resource joins separate from concrete event transactions.
+4. Make organizer-owned, public, and external resources first-class event
+  arrangements without fake marketplace ownership or transactions.
+5. Add explicit event participation records that can represent Foxers,
+  Citizens, external people, and organizations.
+6. Keep the creator route shared only while every section is filtered by the
+  exact permission it requires.
+7. Define the legal and financial meaning of support before implementing an
+  Investor domain.
+
+The API must enforce capability, permission, ownership, participation, resource
+status, and business rules. The frontend reflects those decisions for UX.
+
 Totals are always server-computed, never accepted from the client
 (`docs/adr/0001`). Payouts go through Stripe Connect (`docs/adr/0002`).
 
@@ -221,14 +302,25 @@ Totals are always server-computed, never accepted from the client
 
 Stripe (payments + Connect payouts; the webhook is mounted with a raw body
 parser *before* `express.json`), Resend / nodemailer with Handlebars templates,
-AWS S3 for uploads, Redis for socket tickets, Mapbox and Cesium in the client.
+AWS S3 for uploads, Redis for socket tickets, Mapbox in the client.
+
+Mapbox GL is real, wired end-to-end: venue browsing/admin maps, the
+boundary-polygon drawing tool, and the boundary-overlap validation on the API
+side (`venue.service.ts`'s `assertNoOverlap`) are working code, not stubs.
+**Cesium is not** — it is a dependency, a webpack external, a CSS import in
+`app/layout.tsx`, a static bundle under `public/cesium/`, and an env token
+(`NEXT_PUBLIC_CESIUM_ION_TOKEN`), but there is no `Cesium.Viewer` or any
+component that uses it anywhere in `src/`. Scaffolded, not built.
 
 ## Where this is fragile
 
+- Flexible event locations, organizer-owned resources, and explicit event
+  participation are planned but not yet implemented.
+- Investor approval exists, but investor support or investment functionality is
+  not implemented.
+
 - Nothing in the realtime path has been verified in a browser
   (`TOMORROW.md` §3d.5). A dead socket and a quiet one look identical.
-- `PROTECTED_ROUTES` is opt-in and has drifted: seven trees, ~20 pages, sit
-  outside both it and any guard (§7).
 - Approve/reject exists twice — `/admin/*` and the resource-level routes. Only
   the first is used by this app, and they have already diverged once.
 - `extractList()` guesses between eight response envelope keys, which fails

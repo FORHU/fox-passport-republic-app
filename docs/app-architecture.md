@@ -268,13 +268,13 @@ Recorded so nobody "fixes" these by accident.
 
 - [ ] **`store/` vs `stores/`** is cosmetic. Rename only if something enforces
       it; otherwise it is 9 folders of churn for nothing.
-- [ ] **Zod contracts are worth adopting** and `mapanytime-comparison.md` §3
-      already argues for it independently — the same conclusion reached twice
-      from different directions is worth acting on.
-- [ ] **Feature manifests: decline.** `mapanytime-comparison.md` §4 rejected
-      them because nothing enforces them, and that reasoning holds here. The
-      template's own validator only checks that a manifest is never *imported* —
-      it never checks that one is accurate.
+- [ ] **Zod contracts are worth adopting** — the now-removed
+      `mapanytime-comparison.md` argued for it independently, from the API side;
+      the same conclusion reached twice from different directions is worth
+      acting on. See `api-audit.md`'s note on that file's removal.
+- [ ] **Feature manifests: decline.** Nothing enforces them, and the template's
+      own validator only checks that a manifest is never *imported* — it never
+      checks that one is accurate.
 
 **The template's doc and its code disagree**, the same way the backend
 template's did. `SYSTEM_ARCHITECTURE.md` specifies `api/`, `components/`,
@@ -418,6 +418,5 @@ and `commitlint.config.mjs`. This app has none of the three.
 ### Not recommended
 
 - **`feature.manifest.ts`.** The template has them; decline, for the reason
-  already given in `mapanytime-comparison.md` §4 and repeated in §4 above —
-  nothing enforces them. The template's own validator only checks that a
-  manifest is never *imported*, never that one is accurate.
+  repeated in §4 above — nothing enforces them. The template's own validator
+  only checks that a manifest is never *imported*, never that one is accurate.

@@ -19,11 +19,14 @@ version keeps coming back otherwise.
 
 ---
 
-> **Tomorrow's queue:** [`mapanytime-comparison.md`](./mapanytime-comparison.md)
-> evaluates what to adopt from the mapanytime codebase. Short version: **do not**
-> copy its token storage (sessionStorage — its own comment says that is not XSS
-> protection, and the Flutter constraint forcing it does not apply here), **do**
-> take refresh-token rotation and Zod response contracts.
+> **`mapanytime-comparison.md` has been removed** — it evaluated what to adopt
+> from the mapanytime codebase; its conclusions were **do not** copy its token
+> storage (sessionStorage — its own comment says that is not XSS protection,
+> and the Flutter constraint forcing it does not apply here), **do** take
+> refresh-token rotation and Zod response contracts. Refresh-token rotation is
+> done (§4.9 below); Zod response contracts are still open, tracked in
+> `app-architecture.md`. Anything else the removed file argued for is in git
+> history (`git log -- docs/mapanytime-comparison.md`), not here.
 
 ## 1. Corrections to the source audit
 
