@@ -1,4 +1,3 @@
-/* eslint-disable @next/next/no-img-element */
 "use client";
 
 import React, { useEffect, useRef, useState, useCallback } from "react";
@@ -35,7 +34,6 @@ export default function InvestmentLocationPicker({
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<any>(null);
   const markerRef = useRef<any>(null);
-  const radiusSourceRef = useRef<any>(null);
 
   const {
     coords: detectedCoords,
@@ -51,8 +49,10 @@ export default function InvestmentLocationPicker({
   const [isSearching, setIsSearching] = useState(false);
 
   // Sync initial detected position if current value is default/empty
+  const hasSyncedDetectedRef = useRef(false);
   useEffect(() => {
-    if (isDetected && value.lat === 14.5995 && value.lng === 120.9842) {
+    if (!hasSyncedDetectedRef.current && isDetected && value.lat === 14.5995 && value.lng === 120.9842) {
+      hasSyncedDetectedRef.current = true;
       onChange({
         ...value,
         lat: detectedCoords[1],
@@ -71,7 +71,7 @@ export default function InvestmentLocationPicker({
         }
       }
     }
-  }, [isDetected, detectedCoords, detectedCountry, detectedCity]);
+  }, [isDetected, detectedCoords, detectedCountry, detectedCity, value, onChange]);
 
   // Reverse geocode a dragged pin coordinate
   const reverseGeocodePin = useCallback(
@@ -182,6 +182,14 @@ export default function InvestmentLocationPicker({
     }
   };
 
+  const initialCenterRef = useRef<[number, number]>(
+    value.lng != null && value.lat != null
+      ? [value.lng, value.lat]
+      : detectedCoords,
+  );
+  const reverseGeocodePinRef = useRef(reverseGeocodePin);
+  reverseGeocodePinRef.current = reverseGeocodePin;
+
   // Mount Mapbox Map
   useEffect(() => {
     if (!containerRef.current) return;
@@ -192,10 +200,7 @@ export default function InvestmentLocationPicker({
 
       mapboxgl.accessToken = getEffectiveMapboxToken();
 
-      const initialCenter: [number, number] =
-        value.lng != null && value.lat != null
-          ? [value.lng, value.lat]
-          : detectedCoords;
+      const initialCenter = initialCenterRef.current;
 
       const map = new mapboxgl.Map({
         container: containerRef.current,
@@ -237,12 +242,12 @@ export default function InvestmentLocationPicker({
 
       marker.on("dragend", () => {
         const lngLat = marker.getLngLat();
-        reverseGeocodePin(lngLat.lng, lngLat.lat);
+        reverseGeocodePinRef.current(lngLat.lng, lngLat.lat);
       });
 
       map.on("click", (e) => {
         marker.setLngLat(e.lngLat);
-        reverseGeocodePin(e.lngLat.lng, e.lngLat.lat);
+        reverseGeocodePinRef.current(e.lngLat.lng, e.lngLat.lat);
       });
     });
 

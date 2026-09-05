@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
 import { Menu } from "lucide-react";
 import { AnimatePresence } from "motion/react";
 import {
@@ -35,7 +34,6 @@ interface PassportClientProps {
 }
 
 export const PassportClient: React.FC<PassportClientProps> = ({ user }) => {
-  const router = useRouter();
   const [activeTab, setActiveTab] = useState<"progress" | "stamps" | "matches">(
     "matches",
   );
@@ -75,6 +73,7 @@ export const PassportClient: React.FC<PassportClientProps> = ({ user }) => {
   useEffect(() => {
     if (clientInboxPage?.data) {
       if (clientInboxOffset === 0) {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setClientInboxAll(clientInboxPage.data);
       } else {
         setClientInboxAll((prev) => [...prev, ...clientInboxPage.data]);

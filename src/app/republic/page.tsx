@@ -458,7 +458,7 @@ function RepublicFeedContent() {
                       <span className="material-symbols-outlined text-[15px] text-lime-400">
                         check_circle
                       </span>
-                      You're all caught up on this stream
+                      You&apos;re all caught up on this stream
                     </span>
                   </div>
                 )}

@@ -17,7 +17,6 @@ interface CommentSectionProps {
 
 export function CommentSection({
   postId,
-  commentsCount: initialCount,
   onCommentAdded,
 }: CommentSectionProps) {
   const { user } = useAuthStore();

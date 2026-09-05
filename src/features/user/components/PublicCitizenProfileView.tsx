@@ -4,7 +4,7 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
-import { motion, AnimatePresence } from "motion/react";
+import { motion } from "motion/react";
 import { useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
 import {

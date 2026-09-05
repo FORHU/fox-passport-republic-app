@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useEffect, useRef, useState } from "react";
-import { config } from "@/shared/lib/config";
 import {
   getEffectiveMapboxToken,
   getMapStyle,

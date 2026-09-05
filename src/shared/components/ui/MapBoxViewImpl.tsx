@@ -75,6 +75,19 @@ export function MapBoxViewImpl({
   const onMapReadyRef = useRef(onMapReady);
   onMapReadyRef.current = onMapReady;
 
+  // Capture initial map options in a ref so the mount effect only runs once
+  // without needing reactive props in the dependency array.
+  const initialOptionsRef = useRef({
+    center,
+    zoom,
+    minZoom,
+    maxZoom,
+    interactive,
+    doubleClickZoom,
+    showNavigation,
+    showGeolocate,
+  });
+
   // Mount Map
   useEffect(() => {
     if (!containerRef.current) return;
@@ -83,35 +96,46 @@ export function MapBoxViewImpl({
     import("mapbox-gl").then(({ default: mapboxgl }) => {
       if (isCancelled || !containerRef.current) return;
 
+      const {
+        center: initCenter,
+        zoom: initZoom,
+        minZoom: initMinZoom,
+        maxZoom: initMaxZoom,
+        interactive: initInteractive,
+        doubleClickZoom: initDoubleClickZoom,
+        showNavigation: initShowNavigation,
+        showGeolocate: initShowGeolocate,
+      } = initialOptionsRef.current;
+
       mapboxglRef.current = mapboxgl;
       mapboxgl.accessToken = getEffectiveMapboxToken();
 
       const map = new mapboxgl.Map({
         container: containerRef.current,
         style: getMapStyle() as any,
-        center,
-        zoom,
-        minZoom,
-        maxZoom,
-        interactive,
+        center: initCenter,
+        zoom: initZoom,
+        minZoom: initMinZoom,
+        maxZoom: initMaxZoom,
+        interactive: initInteractive,
         attributionControl: false,
       });
 
       mapRef.current = map;
       setupMapboxFallback(map);
 
-      if (!doubleClickZoom) {
+      if (!initDoubleClickZoom) {
         map.doubleClickZoom.disable();
       }
 
-      if (showNavigation) {
+      if (initShowNavigation) {
         map.addControl(
           new mapboxgl.NavigationControl({ showCompass: false }),
           "top-right",
         );
       }
 
-      if (showGeolocate) {
+      if (initShowGeolocate) {
         const geolocate = new mapboxgl.GeolocateControl({
           positionOptions: { enableHighAccuracy: true },
           trackUserLocation: false,
@@ -170,13 +194,15 @@ export function MapBoxViewImpl({
       };
     });
 
+    const markerInstances = markerInstancesRef.current;
+
     return () => {
       isCancelled = true;
       if (mapRef.current) {
         mapRef.current.remove();
         mapRef.current = null;
       }
-      markerInstancesRef.current.clear();
+      markerInstances.clear();
       setIsLoaded(false);
     };
   }, []); // Mount once

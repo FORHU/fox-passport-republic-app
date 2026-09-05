@@ -1,8 +1,6 @@
-/* eslint-disable @next/next/no-img-element */
 "use client";
 
-import React, { useEffect, useRef, useState } from "react";
-import { config } from "@/shared/lib/config";
+import React, { useEffect, useRef, useState, useCallback } from "react";
 import { useUserLocation } from "@/shared/hooks/useUserLocation";
 import {
   PartnerInvestment,
@@ -48,13 +46,21 @@ export default function PartnerInventoryMap({
   const [selectedPin, setSelectedPin] = useState<PartnerInvestment | null>(
     null,
   );
-  const [activeCategory, setActiveCategory] = useState<string>("all");
+  const [activeCategory, setActiveCategory] = useState<string>(
+    selectedCategory || "all",
+  );
   const [loading, setLoading] = useState(false);
   const [mapReady, setMapReady] = useState(false);
   // Captured once for the map's initial center — later `coords` updates
   // (geolocation resolving, "Fly to My Location") are applied via setCenter
   // in the effect below instead of tearing down and recreating the map.
   const initialCoordsRef = useRef(coords);
+
+  useEffect(() => {
+    if (selectedCategory) {
+      setActiveCategory(selectedCategory);
+    }
+  }, [selectedCategory]);
 
   // Fetch map pins
   useEffect(() => {
@@ -89,6 +95,56 @@ export default function PartnerInventoryMap({
     activeCategoryRef.current = activeCategory;
   }, [activeCategory]);
 
+  const investmentsRef = useRef(investments);
+  investmentsRef.current = investments;
+
+  // Update pins when data changes
+  const renderPins = useCallback(
+    (mapboxgl: any, map: any, items: PartnerInvestment[]) => {
+      markersRef.current.forEach((m) => m.remove());
+      markersRef.current = [];
+
+      items.forEach((item) => {
+        if (item.lat == null || item.lng == null) return;
+
+        const iconName = item.inventoryCategory
+          ? CATEGORY_ICONS[item.inventoryCategory] || "inventory_2"
+          : "inventory_2";
+
+        const pin = document.createElement("div");
+        pin.className = "group relative cursor-pointer";
+        pin.innerHTML = `
+          <div class="relative flex items-center justify-center">
+            <div class="w-10 h-10 rounded-full bg-gradient-to-tr from-amber-400 to-yellow-500 border-2 border-white shadow-[0_0_20px_rgba(245,158,11,0.6)] flex items-center justify-center text-black font-bold transition-transform group-hover:scale-110">
+              <span class="material-symbols-outlined text-[20px]">${iconName}</span>
+            </div>
+            ${
+              item.quantityAvailable
+                ? `<span class="absolute -bottom-2 bg-zinc-950 border border-amber-400 text-amber-300 text-[10px] font-black px-1.5 py-0.2 rounded-full shadow">${item.quantityAvailable}x</span>`
+                : ""
+            }
+          </div>
+        `;
+
+        pin.addEventListener("click", () => {
+          setSelectedPin(item);
+          if (onSelectInvestment) onSelectInvestment(item);
+          map.flyTo({ center: [item.lng, item.lat], zoom: 14, essential: true });
+        });
+
+        const marker = new mapboxgl.Marker({ element: pin, anchor: "center" })
+          .setLngLat([item.lng, item.lat])
+          .addTo(map);
+
+        markersRef.current.push(marker);
+      });
+    },
+    [onSelectInvestment],
+  );
+
+  const renderPinsRef = useRef(renderPins);
+  renderPinsRef.current = renderPins;
+
   // Mount Mapbox
   useEffect(() => {
     if (!containerRef.current) return;
@@ -122,7 +178,7 @@ export default function PartnerInventoryMap({
 
       const onMapReady = () => {
         if (!alive) return;
-        renderPins(mapboxgl, map, investments);
+        renderPinsRef.current(mapboxgl, map, investmentsRef.current);
       };
 
       if (map.isStyleLoaded()) {
@@ -132,7 +188,6 @@ export default function PartnerInventoryMap({
         map.on("style.load", onMapReady);
       }
 
-      // Fetch only what's on the screen
       const fetchForViewport = () => {
         try {
           const b = map.getBounds();
@@ -149,11 +204,15 @@ export default function PartnerInventoryMap({
             maxLng: b.getEast(),
           })
             .then((data) => {
-              if (alive) setInvestments(data);
+              if (alive) {
+                setInvestments(data);
+              }
             })
-            .catch(() => {});
-        } catch {
-          // ignore if map canvas not ready
+            .catch((err) => {
+              console.warn("Could not query viewport investments:", err);
+            });
+        } catch (e) {
+          console.warn("getBounds error:", e);
         }
       };
 
@@ -163,7 +222,10 @@ export default function PartnerInventoryMap({
         fetchForViewport();
       }
 
-      // Auto container resize observation
+      map.on("error", (e: any) => {
+        console.warn("Mapbox territory warning:", e?.error?.message);
+      });
+
       const resizeObserver = new ResizeObserver(() => {
         if (map && alive) {
           map.resize();
@@ -186,15 +248,8 @@ export default function PartnerInventoryMap({
       }
       setMapReady(false);
     };
-    // Mount once — later coords changes recenter the existing map instead
-    // of tearing it down (see the effect below).
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Recenter the existing map (without remounting) whenever coords change
-  // *after* the initial mount — e.g. geolocation resolving a moment later,
-  // or "Fly to My Location". Skips the transition where mapReady first
-  // becomes true, since the map was just created centered on those coords.
   const hasCenteredRef = useRef(false);
   useEffect(() => {
     if (!mapReady || !mapRef.current) return;
@@ -205,60 +260,22 @@ export default function PartnerInventoryMap({
     mapRef.current.flyTo({ center: coords, zoom: 12, essential: true });
   }, [coords, mapReady]);
 
-  // Update pins when data changes
-  const renderPins = (mapboxgl: any, map: any, items: PartnerInvestment[]) => {
-    markersRef.current.forEach((m) => m.remove());
-    markersRef.current = [];
-
-    items.forEach((item) => {
-      if (item.lat == null || item.lng == null) return;
-
-      const iconName = item.inventoryCategory
-        ? CATEGORY_ICONS[item.inventoryCategory] || "inventory_2"
-        : "inventory_2";
-
-      const pin = document.createElement("div");
-      pin.className = "group relative cursor-pointer";
-      pin.innerHTML = `
-        <div class="relative flex items-center justify-center">
-          <div class="w-10 h-10 rounded-full bg-gradient-to-tr from-amber-400 to-yellow-500 border-2 border-white shadow-[0_0_20px_rgba(245,158,11,0.6)] flex items-center justify-center text-black font-bold transition-transform group-hover:scale-110">
-            <span class="material-symbols-outlined text-[20px]">${iconName}</span>
-          </div>
-          ${
-            item.quantityAvailable
-              ? `<span class="absolute -bottom-2 bg-zinc-950 border border-amber-400 text-amber-300 text-[10px] font-black px-1.5 py-0.2 rounded-full shadow">${item.quantityAvailable}x</span>`
-              : ""
-          }
-        </div>
-      `;
-
-      pin.addEventListener("click", () => {
-        setSelectedPin(item);
-        if (onSelectInvestment) onSelectInvestment(item);
-        map.flyTo({ center: [item.lng, item.lat], zoom: 14, essential: true });
-      });
-
-      const marker = new mapboxgl.Marker({ element: pin, anchor: "center" })
-        .setLngLat([item.lng, item.lat])
-        .addTo(map);
-
-      markersRef.current.push(marker);
-    });
-  };
-
   useEffect(() => {
     if (!mapRef.current) return;
     import("mapbox-gl").then(({ default: mapboxgl }) => {
       renderPins(mapboxgl, mapRef.current, investments);
     });
-  }, [investments]);
+  }, [investments, renderPins]);
 
   return (
     <div className="space-y-4">
-      {/* Top Filter Bar & Country Banner */}
       <div className="flex flex-wrap items-center justify-between gap-3 p-3.5 rounded-3xl bg-zinc-950/80 border border-zinc-800 backdrop-blur-xl text-xs">
         <div className="flex items-center gap-2">
-          <span className="w-2.5 h-2.5 rounded-full bg-lime-400 animate-pulse" />
+          {loading ? (
+            <span className="w-2.5 h-2.5 rounded-full border-2 border-amber-400 border-t-transparent animate-spin" />
+          ) : (
+            <span className="w-2.5 h-2.5 rounded-full bg-lime-400 animate-pulse" />
+          )}
           <span className="text-zinc-400">Inventory Map Territory:</span>
           <span className="font-extrabold text-white uppercase tracking-wider">
             {country} ({countryCode})

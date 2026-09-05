@@ -306,7 +306,14 @@ export function CustomExperienceBuilderModal({
         </main>
 
         {/* Right sidebar: Your Build */}
-        <aside className="hidden md:flex w-80 border-l border-white/5 bg-[#080b14] flex-col">
+        <aside
+          onDragOver={handleDragOver}
+          onDragLeave={handleDragLeave}
+          onDrop={handleDrop}
+          className={`hidden md:flex w-80 border-l border-white/5 bg-[#080b14] flex-col transition-all ${
+            isDragOver ? "bg-accent/5 ring-2 ring-accent/40" : ""
+          }`}
+        >
           <div className="p-6 border-b border-white/5">
             <h3 className="font-display font-bold text-white text-lg">
               Your Build

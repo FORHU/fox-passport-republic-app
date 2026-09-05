@@ -14,7 +14,7 @@ interface PostCardProps {
   onPostDeleted?: (id: string) => void;
 }
 
-export function PostCard({ post, onPostDeleted }: PostCardProps) {
+export function PostCard({ post }: PostCardProps) {
   const router = useRouter();
   const { user } = useAuthStore();
   const [liked, setLiked] = useState(post.isLikedByMe ?? false);

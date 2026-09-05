@@ -22,7 +22,6 @@ export default function QRScannerClient() {
     containerRef,
     fileInputRef,
     startScanner,
-    stopScanner,
     reset,
     switchTab,
     handleManualSubmit,
