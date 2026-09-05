@@ -67,6 +67,8 @@ export interface VenuesMapProps {
    * to this venue and highlights its pin/shape. */
   selectedVenueId?: string | null;
   onVenueClick?: (id: string) => void;
+  /** Callback when a building cluster with multiple venues/events is clicked */
+  onBuildingClick?: (venues: MapVenue[]) => void;
   onViewportChange?: (bounds: {
     north: number;
     south: number;
@@ -77,6 +79,33 @@ export interface VenuesMapProps {
 }
 
 let pinIdCounter = 0;
+
+/**
+ * Custom pin element for building complexes or locations hosting multiple
+ * spaces/events at the same coordinate. Displays building icon and count badge.
+ */
+export function createBuildingClusterPinElement(
+  count: number,
+  selected = false,
+): HTMLDivElement {
+  const glow = selected
+    ? `drop-shadow(0 0 12px rgba(204,255,0,0.85))`
+    : `drop-shadow(0 0 6px rgba(0,0,0,0.75))`;
+  const el = document.createElement("div");
+  el.style.cssText = `cursor: pointer; filter: ${glow}; transition: transform 0.2s;`;
+
+  el.innerHTML = `
+    <div style="display:inline-flex;align-items:center;background:#09090e;border:2px solid ${selected ? "#ccff00" : "#f59e0b"};border-radius:999px;padding:3px 8px 3px 6px;box-shadow:0 6px 18px rgba(0,0,0,0.85);gap:5px;transform:translateY(-10px);">
+      <div style="width:20px;height:20px;border-radius:50%;background:${selected ? "#ccff00" : "rgba(245,158,11,0.25)"};color:${selected ? "#000" : "#f59e0b"};display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:900;">
+        🏢
+      </div>
+      <span style="font-size:11px;font-weight:800;color:#fff;letter-spacing:0.02em;white-space:nowrap;">
+        ${count} <span style="font-size:9px;color:${selected ? "#ccff00" : "#f59e0b"};text-transform:uppercase;font-weight:900;">spaces/events</span>
+      </span>
+    </div>
+  `;
+  return el;
+}
 
 // One consistent pin design, shared everywhere a venue needs a point marker
 // instead of a drawn shape. Solid-fill in the venue's category color (not
@@ -176,26 +205,30 @@ export function VenuesMap({
   zoom = 6,
   selectedVenueId,
   onVenueClick,
+  onBuildingClick,
   onViewportChange,
   className = "h-96 w-full rounded-2xl overflow-hidden",
 }: VenuesMapProps) {
   const mapRef = useRef<any>(null);
   const mapboxglRef = useRef<any>(null);
   const markersRef = useRef<any[]>([]);
+  const spiderMarkersRef = useRef<any[]>([]);
 
   // Read inside callbacks via refs so venues/selection updates don't tear down
   // the entire map canvas.
   const venuesRef = useRef(venues);
   const selectedIdRef = useRef(selectedVenueId);
   const onVenueClickRef = useRef(onVenueClick);
+  const onBuildingClickRef = useRef(onBuildingClick);
   const onViewportChangeRef = useRef(onViewportChange);
   const everSelectedRef = useRef(false);
 
   useEffect(() => {
     venuesRef.current = venues;
     onVenueClickRef.current = onVenueClick;
+    onBuildingClickRef.current = onBuildingClick;
     onViewportChangeRef.current = onViewportChange;
-  }, [venues, onVenueClick, onViewportChange]);
+  }, [venues, onVenueClick, onBuildingClick, onViewportChange]);
 
   const handleMapReady = useCallback(
     (map: any, mapboxgl: any) => {
@@ -214,11 +247,71 @@ export function VenuesMap({
           .addTo(map);
       };
 
+      const openBuildingPopup = (cluster: { lat: number; lng: number; venues: MapVenue[] }) => {
+        const popupContent = document.createElement("div");
+        popupContent.style.cssText =
+          "font-family:inherit;min-width:230px;max-width:280px;padding:4px;";
+
+        const itemsHtml = cluster.venues
+          .map(
+            (v) => `
+          <div class="building-popup-item" data-id="${escapeHtml(v.id)}" style="display:flex;align-items:center;justify-content:space-between;gap:8px;padding:6px 8px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.08);border-radius:10px;cursor:pointer;margin-bottom:4px;transition:background 0.15s;">
+            <div style="min-width:0;flex:1;">
+              <div style="font-weight:800;font-size:12px;color:#fff;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${escapeHtml(v.name)}</div>
+              ${v.subtitle ? `<div style="font-size:10px;color:#a1a1aa;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${escapeHtml(v.subtitle)}</div>` : ""}
+            </div>
+            <span style="font-size:10px;font-weight:800;color:#ccff00;background:rgba(204,255,0,0.12);padding:2px 7px;border-radius:6px;border:1px solid rgba(204,255,0,0.3);white-space:nowrap;">View</span>
+          </div>`,
+          )
+          .join("");
+
+        popupContent.innerHTML = `
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:6px;padding-bottom:6px;border-bottom:1px solid rgba(255,255,255,0.1);margin-bottom:8px;">
+            <div style="display:flex;align-items:center;gap:5px;">
+              <span style="font-size:14px;">🏢</span>
+              <span style="font-size:11px;font-weight:900;text-transform:uppercase;color:#ccff00;">Building Complex</span>
+            </div>
+            <span style="font-size:10px;font-weight:800;background:#27272a;color:#f59e0b;padding:1px 6px;border-radius:99px;">${cluster.venues.length} spaces/events</span>
+          </div>
+          <div style="max-height:180px;overflow-y:auto;padding-right:2px;">
+            ${itemsHtml}
+          </div>
+        `;
+
+        popupContent.querySelectorAll(".building-popup-item").forEach((el) => {
+          el.addEventListener("click", () => {
+            const id = el.getAttribute("data-id");
+            if (id) {
+              onVenueClickRef.current?.(id);
+            }
+          });
+        });
+
+        new mapboxgl.Popup({ closeButton: true, offset: 14 })
+          .setLngLat([cluster.lng, cluster.lat])
+          .setDOMContent(popupContent)
+          .addTo(map);
+      };
+
+      // Defined once (not inside `render`) and bound to the map exactly
+      // once below — `render` re-runs on every venues/selection change, and
+      // a listener created fresh each time can never be `off()`'d by a
+      // later render (different function reference), so redefining it
+      // inside `render` would leak one more permanent click listener per
+      // re-render for the life of the map.
+      const clearSpiderMarkers = () => {
+        spiderMarkersRef.current.forEach((m) => m.remove());
+        spiderMarkersRef.current = [];
+      };
+      map.on("click", clearSpiderMarkers);
+
       const render = () => {
         if (!map.isStyleLoaded()) return;
 
         markersRef.current.forEach((m) => m.remove());
         markersRef.current = [];
+        spiderMarkersRef.current.forEach((m) => m.remove());
+        spiderMarkersRef.current = [];
 
         const selectedId = selectedIdRef.current;
         const withBoundary = venuesRef.current.filter(
@@ -309,23 +402,118 @@ export function VenuesMap({
           );
         }
 
+        // Group pins that share the same building/coordinate (threshold ~15 meters)
+        interface LocationCluster {
+          lat: number;
+          lng: number;
+          venues: MapVenue[];
+        }
+        const clusters: LocationCluster[] = [];
         withPin.forEach((venue) => {
-          const isSelected = venue.id === selectedId;
-          const marker = new mapboxgl.Marker({
-            element: createPinElement(
-              getCategoryColor(venue.category),
-              venue.imageUrl,
+          const vLat = venue.lat as number;
+          const vLng = venue.lng as number;
+          const match = clusters.find(
+            (c) =>
+              Math.abs(c.lat - vLat) < 0.00015 &&
+              Math.abs(c.lng - vLng) < 0.00015,
+          );
+          if (match) {
+            match.venues.push(venue);
+          } else {
+            clusters.push({ lat: vLat, lng: vLng, venues: [venue] });
+          }
+        });
+
+        clusters.forEach((cluster) => {
+          if (cluster.venues.length === 1) {
+            const venue = cluster.venues[0];
+            const isSelected = venue.id === selectedId;
+            const marker = new mapboxgl.Marker({
+              element: createPinElement(
+                getCategoryColor(venue.category),
+                venue.imageUrl,
+                isSelected,
+              ),
+              anchor: "bottom",
+            })
+              .setLngLat([cluster.lng, cluster.lat])
+              .addTo(map);
+            marker.getElement().addEventListener("click", (e: any) => {
+              e.stopPropagation();
+              clearSpiderMarkers();
+              openPopup(venue, [cluster.lng, cluster.lat]);
+              onVenueClickRef.current?.(venue.id);
+            });
+            markersRef.current.push(marker);
+          } else {
+            // Multi-item / building complex cluster!
+            const isSelected = cluster.venues.some((v) => v.id === selectedId);
+            const clusterPin = createBuildingClusterPinElement(
+              cluster.venues.length,
               isSelected,
-            ),
-            anchor: "bottom",
-          })
-            .setLngLat([venue.lng as number, venue.lat as number])
-            .addTo(map);
-          marker.getElement().addEventListener("click", () => {
-            openPopup(venue, [venue.lng as number, venue.lat as number]);
-            onVenueClickRef.current?.(venue.id);
-          });
-          markersRef.current.push(marker);
+            );
+
+            const clusterMarker = new mapboxgl.Marker({
+              element: clusterPin,
+              anchor: "bottom",
+            })
+              .setLngLat([cluster.lng, cluster.lat])
+              .addTo(map);
+
+            clusterMarker.getElement().addEventListener("click", (e: any) => {
+              e.stopPropagation();
+              clearSpiderMarkers();
+
+              // 1. Spiderfy satellite markers around building location
+              const count = cluster.venues.length;
+              const radius = 0.00042; // ~45m visual separation
+              cluster.venues.forEach((v, idx) => {
+                const angle = (idx / count) * 2 * Math.PI - Math.PI / 2;
+                const sLng =
+                  cluster.lng +
+                  (radius * Math.cos(angle)) /
+                    Math.cos((cluster.lat * Math.PI) / 180);
+                const sLat = cluster.lat + radius * Math.sin(angle);
+                const isItemSel = v.id === selectedId;
+
+                const spiderMarker = new mapboxgl.Marker({
+                  element: createPinElement(
+                    getCategoryColor(v.category),
+                    v.imageUrl,
+                    isItemSel,
+                  ),
+                  anchor: "bottom",
+                })
+                  .setLngLat([sLng, sLat])
+                  .addTo(map);
+
+                spiderMarker.getElement().addEventListener("click", (ev: any) => {
+                  ev.stopPropagation();
+                  openPopup(v, [sLng, sLat]);
+                  onVenueClickRef.current?.(v.id);
+                });
+
+                spiderMarkersRef.current.push(spiderMarker);
+              });
+
+              // 2. Open building popup with full list
+              openBuildingPopup(cluster);
+
+              // 3. Notify listeners
+              onBuildingClickRef.current?.(cluster.venues);
+              onVenueClickRef.current?.(cluster.venues[0].id);
+
+              if (map.getZoom() < 15) {
+                map.flyTo({
+                  center: [cluster.lng, cluster.lat],
+                  zoom: 15,
+                  essential: true,
+                });
+              }
+            });
+
+            markersRef.current.push(clusterMarker);
+          }
         });
 
         if (fitToContent) {
@@ -448,6 +636,8 @@ export function VenuesMap({
     return () => {
       markersRef.current.forEach((m) => m.remove());
       markersRef.current = [];
+      spiderMarkersRef.current.forEach((m) => m.remove());
+      spiderMarkersRef.current = [];
     };
   }, []);
 

@@ -166,9 +166,13 @@ function VenueListCard({
 function VenueDetailCard({
   venue,
   onClose,
+  buildingCompanions = [],
+  onSelectCompanion,
 }: {
   venue: ListVenue;
   onClose: () => void;
+  buildingCompanions?: ListVenue[];
+  onSelectCompanion?: (id: string) => void;
 }) {
   const detailImage = resolveVenueImage(venue);
 
@@ -243,6 +247,35 @@ function VenueDetailCard({
           <p className="text-xs text-white/50 leading-relaxed line-clamp-2">
             {venue.description}
           </p>
+        )}
+
+        {/* Same Building / Complex Companions */}
+        {buildingCompanions && buildingCompanions.length > 0 && (
+          <div className="pt-2.5 border-t border-white/10 space-y-1.5">
+            <div className="flex items-center gap-1.5 text-[11px] font-bold text-amber-400">
+              <span>🏢</span>
+              <span>
+                Also in this building ({buildingCompanions.length + 1} spaces/events):
+              </span>
+            </div>
+            <div className="flex gap-1.5 overflow-x-auto pb-1 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
+              {buildingCompanions.map((comp) => (
+                <button
+                  type="button"
+                  key={comp.id}
+                  onClick={() => onSelectCompanion?.(comp.id)}
+                  className="shrink-0 flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-left text-xs transition-colors cursor-pointer group"
+                >
+                  <span className="font-bold text-white truncate max-w-[130px] group-hover:text-[#ccff00] transition-colors">
+                    {comp.name}
+                  </span>
+                  <span className="text-[10px] text-lime-400 font-bold">
+                    ₱{comp.price.toLocaleString()}
+                  </span>
+                </button>
+              ))}
+            </div>
+          </div>
         )}
 
         <div className="flex items-center justify-between pt-2 border-t border-white/10">
@@ -322,6 +355,23 @@ export function VenuesMapPageClient({
     () => listVenues.find((v) => v.id === selectedId) ?? null,
     [listVenues, selectedId],
   );
+
+  // All venues/events sharing the exact same building/coordinate with selected venue
+  const buildingCompanions = useMemo(() => {
+    if (!selectedVenue || selectedVenue.lat == null || selectedVenue.lng == null) {
+      return [];
+    }
+    const selLat = selectedVenue.lat;
+    const selLng = selectedVenue.lng;
+    return listVenues.filter(
+      (v) =>
+        v.id !== selectedVenue.id &&
+        v.lat != null &&
+        v.lng != null &&
+        Math.abs(v.lat - selLat) < 0.00015 &&
+        Math.abs(v.lng - selLng) < 0.00015,
+    );
+  }, [selectedVenue, listVenues]);
 
   // When camera moves, query the screen bounding box
   const handleViewportChange = useCallback((bounds: ViewportBounds) => {
@@ -544,6 +594,11 @@ export function VenuesMapPageClient({
             zoom={6}
             selectedVenueId={selectedId}
             onVenueClick={handleMapVenueClick}
+            onBuildingClick={(clusterVenues) => {
+              if (clusterVenues.length > 0) {
+                setSelectedId(clusterVenues[0].id);
+              }
+            }}
             onViewportChange={handleViewportChange}
             className="h-full w-full rounded-[2rem] border border-white/10 overflow-hidden shadow-2xl"
           />
@@ -555,6 +610,8 @@ export function VenuesMapPageClient({
                 key={selectedVenue.id}
                 venue={selectedVenue}
                 onClose={() => setSelectedId(null)}
+                buildingCompanions={buildingCompanions}
+                onSelectCompanion={setSelectedId}
               />
             )}
           </AnimatePresence>
