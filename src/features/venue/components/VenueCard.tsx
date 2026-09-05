@@ -13,8 +13,14 @@ interface VenueCardProps {
 export function VenueCard({ venue }: VenueCardProps) {
   const primaryImage = venue.images.find((img) => img.isPrimary);
   const imageUrl =
-    (typeof primaryImage?.imageUrl === "string" && primaryImage.imageUrl.trim().length > 0 ? primaryImage.imageUrl.trim() : null) ||
-    (typeof venue.images?.[0]?.imageUrl === "string" && venue.images[0].imageUrl.trim().length > 0 ? venue.images[0].imageUrl.trim() : null) ||
+    (typeof primaryImage?.imageUrl === "string" &&
+    primaryImage.imageUrl.trim().length > 0
+      ? primaryImage.imageUrl.trim()
+      : null) ||
+    (typeof venue.images?.[0]?.imageUrl === "string" &&
+    venue.images[0].imageUrl.trim().length > 0
+      ? venue.images[0].imageUrl.trim()
+      : null) ||
     "/herobackground.jpg";
   const pricePerDay = venue.pricing[0]?.pricePerDay || 0;
   const currency = venue.pricing[0]?.currency || "PHP";

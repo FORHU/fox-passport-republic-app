@@ -2,7 +2,11 @@
 
 import { useState, useEffect } from "react";
 import { PostComment } from "../types";
-import { getPostComments, addPostComment, deletePostComment } from "@/shared/api/feed";
+import {
+  getPostComments,
+  addPostComment,
+  deletePostComment,
+} from "@/shared/api/feed";
 import { useAuthStore } from "@/shared/auth/useAuthStore";
 
 interface CommentSectionProps {
@@ -76,7 +80,9 @@ export function CommentSection({
     <div className="pt-3 border-t border-zinc-800/80 mt-3 space-y-3">
       {/* Existing flat comments */}
       {loading ? (
-        <div className="py-2 text-center text-xs text-zinc-500">Loading comments...</div>
+        <div className="py-2 text-center text-xs text-zinc-500">
+          Loading comments...
+        </div>
       ) : comments.length === 0 ? (
         <div className="py-2 text-center text-xs text-zinc-500">
           No comments yet. Be the first to chime in!
@@ -84,8 +90,11 @@ export function CommentSection({
       ) : (
         <div className="space-y-2.5 max-h-72 overflow-y-auto pr-1">
           {comments.map((c) => {
-            const isMyComment = user?.userId === c.authorId || user?.id === c.authorId;
-            const initial = c.author.name ? c.author.name.charAt(0).toUpperCase() : "?";
+            const isMyComment =
+              user?.userId === c.authorId || user?.id === c.authorId;
+            const initial = c.author.name
+              ? c.author.name.charAt(0).toUpperCase()
+              : "?";
             const dateStr = new Date(c.createdAt).toLocaleDateString("en-US", {
               month: "short",
               day: "numeric",
@@ -104,8 +113,12 @@ export function CommentSection({
                   </div>
                   <div>
                     <div className="flex items-center gap-1.5">
-                      <span className="font-semibold text-white">{c.author.name}</span>
-                      <span className="text-[10px] text-zinc-500">{dateStr}</span>
+                      <span className="font-semibold text-white">
+                        {c.author.name}
+                      </span>
+                      <span className="text-[10px] text-zinc-500">
+                        {dateStr}
+                      </span>
                     </div>
                     <p className="text-zinc-300 mt-0.5 whitespace-pre-wrap leading-relaxed">
                       {c.content}
@@ -119,7 +132,9 @@ export function CommentSection({
                     title="Delete comment"
                     className="text-zinc-500 hover:text-rose-400 transition-colors p-1"
                   >
-                    <span className="material-symbols-outlined text-[14px]">delete</span>
+                    <span className="material-symbols-outlined text-[14px]">
+                      delete
+                    </span>
                   </button>
                 )}
               </div>

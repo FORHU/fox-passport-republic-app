@@ -32,7 +32,8 @@ export default function RepublicInvestmentsMapPage() {
               Equipment Depots & Capital Map
             </h1>
             <p className="text-xs text-zinc-400 mt-1 max-w-xl">
-              Interactive supply chain map connecting Partner Foxer equipment hubs (chairs, staging, audio, power) to venues in need.
+              Interactive supply chain map connecting Partner Foxer equipment
+              hubs (chairs, staging, audio, power) to venues in need.
             </p>
           </div>
 

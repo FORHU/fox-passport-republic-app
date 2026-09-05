@@ -15,9 +15,9 @@ import {
 
 export default function VenueCreationClient() {
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
-  const [mobileTab, setMobileTab] = useState<"details" | "resources" | "revenue">(
-    "details",
-  );
+  const [mobileTab, setMobileTab] = useState<
+    "details" | "resources" | "revenue"
+  >("details");
   const resetStore = useVenueBuilderStore((s) => s.reset);
 
   useEffect(() => {
@@ -138,7 +138,9 @@ export default function VenueCreationClient() {
                 : "text-white/60 hover:text-white"
             }`}
           >
-            <span className="material-symbols-outlined text-[16px]">category</span>
+            <span className="material-symbols-outlined text-[16px]">
+              category
+            </span>
             <span>Resources</span>
           </button>
           <button
@@ -150,7 +152,9 @@ export default function VenueCreationClient() {
                 : "text-white/60 hover:text-white"
             }`}
           >
-            <span className="material-symbols-outlined text-[16px]">payments</span>
+            <span className="material-symbols-outlined text-[16px]">
+              payments
+            </span>
             <span>Pricing</span>
           </button>
         </div>

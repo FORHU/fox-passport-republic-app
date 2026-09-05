@@ -9,7 +9,6 @@ import {
   getDotColor,
 } from "@/shared/hooks/useCalendarBookings";
 
-
 export function CalendarWidget() {
   const now = new Date();
   const year = now.getFullYear();

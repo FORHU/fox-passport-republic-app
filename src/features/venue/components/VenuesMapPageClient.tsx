@@ -1,6 +1,12 @@
 "use client";
 
-import React, { useMemo, useRef, useState, useCallback, useEffect } from "react";
+import React, {
+  useMemo,
+  useRef,
+  useState,
+  useCallback,
+  useEffect,
+} from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
@@ -256,7 +262,9 @@ function VenueDetailCard({
   );
 }
 
-export function VenuesMapPageClient({ venues: initialVenues }: VenuesMapPageClientProps) {
+export function VenuesMapPageClient({
+  venues: initialVenues,
+}: VenuesMapPageClientProps) {
   const router = useRouter();
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [mobileView, setMobileView] = useState<"list" | "map">("list");
@@ -264,9 +272,13 @@ export function VenuesMapPageClient({ venues: initialVenues }: VenuesMapPageClie
 
   // Viewport-bounded state: only load what is on the screen!
   const [rawVenues, setRawVenues] = useState<any[]>(initialVenues ?? []);
-  const [totalCount, setTotalCount] = useState<number>(initialVenues?.length ?? 0);
+  const [totalCount, setTotalCount] = useState<number>(
+    initialVenues?.length ?? 0,
+  );
   const [page, setPage] = useState<number>(1);
-  const [currentBounds, setCurrentBounds] = useState<ViewportBounds | null>(null);
+  const [currentBounds, setCurrentBounds] = useState<ViewportBounds | null>(
+    null,
+  );
   const [isLoadingViewport, setIsLoadingViewport] = useState<boolean>(false);
   const [isLoadingMore, setIsLoadingMore] = useState<boolean>(false);
 
@@ -341,7 +353,8 @@ export function VenuesMapPageClient({ venues: initialVenues }: VenuesMapPageClie
   const hasMore = rawVenues.length < totalCount;
 
   const loadMore = useCallback(async () => {
-    if (!hasMore || isLoadingMore || isLoadingViewport || !currentBounds) return;
+    if (!hasMore || isLoadingMore || isLoadingViewport || !currentBounds)
+      return;
     setIsLoadingMore(true);
 
     try {
@@ -425,12 +438,15 @@ export function VenuesMapPageClient({ venues: initialVenues }: VenuesMapPageClie
               <p className="text-white/40">
                 {isLoadingViewport ? (
                   <span className="flex items-center gap-1.5 text-[#ccff00] font-mono">
-                    <Loader2 className="w-3 h-3 animate-spin" /> Scanning viewport...
+                    <Loader2 className="w-3 h-3 animate-spin" /> Scanning
+                    viewport...
                   </span>
                 ) : (
                   <span>
-                    Showing <strong className="text-white">{listVenues.length}</strong> of{" "}
-                    <strong className="text-white">{totalCount}</strong> venues on screen
+                    Showing{" "}
+                    <strong className="text-white">{listVenues.length}</strong>{" "}
+                    of <strong className="text-white">{totalCount}</strong>{" "}
+                    venues on screen
                   </span>
                 )}
               </p>
@@ -478,7 +494,8 @@ export function VenuesMapPageClient({ venues: initialVenues }: VenuesMapPageClie
                   No venues in this screen area
                 </p>
                 <p className="text-xs text-white/40 max-w-xs">
-                  Pan or zoom the map to discover venues across other regions or cities.
+                  Pan or zoom the map to discover venues across other regions or
+                  cities.
                 </p>
               </div>
             ) : (

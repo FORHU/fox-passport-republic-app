@@ -25,7 +25,10 @@ export function formatEventDate(dateStr: string | null | undefined) {
   );
 }
 
-export function useEventDetail(eventId: string | undefined, isPreview: boolean) {
+export function useEventDetail(
+  eventId: string | undefined,
+  isPreview: boolean,
+) {
   const router = useRouter();
   const [template, setTemplate] = useState<any>(null);
   const [loadError, setLoadError] = useState<string | null>(null);

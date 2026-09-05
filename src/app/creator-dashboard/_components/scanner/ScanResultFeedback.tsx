@@ -63,9 +63,7 @@ export function ScanResultFeedback({
           onClick={onReset}
           className="px-8 py-3 rounded-full border border-white/20 text-white font-bold text-xs hover:bg-white/10 transition-all flex items-center gap-2 cursor-pointer"
         >
-          <span className="material-symbols-outlined text-[16px]">
-            refresh
-          </span>
+          <span className="material-symbols-outlined text-[16px]">refresh</span>
           Try Another Code
         </button>
       </div>
@@ -97,9 +95,7 @@ export function ScanResultFeedback({
           onClick={onReset}
           className="px-8 py-3 rounded-full bg-[#ccff00] text-black font-black text-xs hover:bg-[#b8e600] transition-all flex items-center gap-2 shadow-md cursor-pointer"
         >
-          <span className="material-symbols-outlined text-[16px]">
-            refresh
-          </span>
+          <span className="material-symbols-outlined text-[16px]">refresh</span>
           Try Again
         </button>
       </div>

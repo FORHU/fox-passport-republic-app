@@ -52,7 +52,9 @@ export default function RepublicHeader() {
       <nav className="hidden md:flex items-center gap-1.5 bg-zinc-900/80 p-1 rounded-full border border-zinc-800/80">
         {navLinks.map((tab) => {
           const active =
-            tab.href === "/" ? pathname === "/" : pathname?.startsWith(tab.href);
+            tab.href === "/"
+              ? pathname === "/"
+              : pathname?.startsWith(tab.href);
           return (
             <Link
               key={tab.href}

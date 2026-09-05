@@ -12,10 +12,14 @@ export default function ScannerPage() {
           href="/creator-dashboard"
           className="inline-flex items-center gap-1.5 text-xs text-white/60 hover:text-white transition-colors py-1 px-2.5 rounded-lg bg-white/5 border border-white/10"
         >
-          <span className="material-symbols-outlined text-[14px]">arrow_back</span>
+          <span className="material-symbols-outlined text-[14px]">
+            arrow_back
+          </span>
           Dashboard
         </Link>
-        <span className="text-[11px] font-mono text-[#ccff00]">FoxCheck v2.4</span>
+        <span className="text-[11px] font-mono text-[#ccff00]">
+          FoxCheck v2.4
+        </span>
       </div>
 
       <div className="flex-1 flex items-center justify-center">

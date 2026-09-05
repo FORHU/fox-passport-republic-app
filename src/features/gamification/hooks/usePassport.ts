@@ -16,7 +16,6 @@ import {
 } from "../api/passport";
 import { acceptMatch, declineMatch } from "@/shared/api/matches";
 
-
 export function useMyPassport() {
   const passportQuery = useQuery({
     queryKey: ["passport", "me"],

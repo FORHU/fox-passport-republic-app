@@ -27,7 +27,8 @@ export function LiveCameraScanner({
           </span>
         </div>
         <p className="text-white/50 text-xs max-w-xs">
-          Use your laptop webcam or attached camera to scan the physical or screen-displayed QR ticket.
+          Use your laptop webcam or attached camera to scan the physical or
+          screen-displayed QR ticket.
         </p>
         <button
           onClick={onStartScanner}

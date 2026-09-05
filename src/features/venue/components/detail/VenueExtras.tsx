@@ -4,10 +4,7 @@
 import React from "react";
 import { LocationMap } from "@/shared/components/ui/LocationMap";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import {
-  getReviewsByListing,
-  postReviewReply,
-} from "@/shared/api/reviews";
+import { getReviewsByListing, postReviewReply } from "@/shared/api/reviews";
 import type { Review, ReviewReply } from "@/shared/types/review";
 import ReviewReplyModal from "@/shared/components/ui/ReviewReplyModal";
 

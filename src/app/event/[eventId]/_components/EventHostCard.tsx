@@ -90,9 +90,7 @@ export function EventHostCard({
         <h3 className="text-xl font-bold text-white mb-1">
           Hosted by {ownerName}
         </h3>
-        <p className="text-text-muted text-sm mb-4">
-          FoxPassport Organizer
-        </p>
+        <p className="text-text-muted text-sm mb-4">FoxPassport Organizer</p>
         <div className="flex gap-4 text-sm text-white mb-4">
           <span className="flex items-center gap-1">
             <span className="material-symbols-outlined text-[16px] text-accent">

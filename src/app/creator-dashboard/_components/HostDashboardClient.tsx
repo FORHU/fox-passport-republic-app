@@ -21,10 +21,7 @@ import {
   RecentActivity,
   LockedSection,
 } from "@/features/dashboard/components";
-import {
-  OccupancyChart,
-  PendingRequests,
-} from "./OccupancySection";
+import { OccupancyChart, PendingRequests } from "./OccupancySection";
 import { useRoleAccess } from "@/shared/auth/useRoleAccess";
 
 import { useAuthStore } from "@/shared/auth/useAuthStore";

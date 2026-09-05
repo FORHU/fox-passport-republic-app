@@ -1,7 +1,6 @@
 import { requireAuth } from "@/shared/lib/server/auth";
 import CreatorDashboardShell from "./_components/CreatorDashboardShell";
 
-
 /**
  * Host layout - wraps every creator dashboard page.
  *

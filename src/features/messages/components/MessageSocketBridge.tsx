@@ -40,7 +40,9 @@ export default function MessageSocketBridge() {
             action: {
               label: "View",
               onClick: () =>
-                router.push(`/messages?conversationId=${message.conversationId}`),
+                router.push(
+                  `/messages?conversationId=${message.conversationId}`,
+                ),
             },
           });
         }

@@ -30,9 +30,7 @@ export function UserMenuRoleSection({
             key={def.key}
             onClick={() => onSelectRole(def, unlocked)}
             className={`w-full flex items-center gap-3 px-2 py-2.5 rounded-lg transition-all group cursor-pointer ${
-              unlocked
-                ? "hover:bg-white/5"
-                : "opacity-50 hover:opacity-70"
+              unlocked ? "hover:bg-white/5" : "opacity-50 hover:opacity-70"
             }`}
           >
             <div
@@ -51,7 +49,9 @@ export function UserMenuRoleSection({
             <div className="flex-1 text-left min-w-0">
               <p
                 className={`text-sm font-medium truncate ${
-                  unlocked ? "text-white group-hover:text-[#ccff00]" : "text-white/40"
+                  unlocked
+                    ? "text-white group-hover:text-[#ccff00]"
+                    : "text-white/40"
                 }`}
               >
                 {def.label}
@@ -80,9 +80,7 @@ export function UserMenuRoleSection({
             <p className="text-sm font-medium text-white group-hover:text-red-400">
               Admin Dashboard
             </p>
-            <p className="text-[10px] text-white/30">
-              Platform management
-            </p>
+            <p className="text-[10px] text-white/30">Platform management</p>
           </div>
         </button>
       )}

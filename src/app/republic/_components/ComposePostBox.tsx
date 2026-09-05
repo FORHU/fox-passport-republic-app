@@ -87,26 +87,29 @@ export function ComposePostBox({ onPostCreated }: ComposePostBoxProps) {
   // Looked up and fetched unconditionally (rules of hooks) even before the
   // `!user` early return below — `enabled` gates the actual network call.
   const resourceConfig = RESOURCE_CONFIG[type];
-  const { data: resourceOptions = [], isLoading: resourceLoading } = useQuery(
-    {
-      queryKey: ["compose-resource", resourceConfig?.field, user?.id],
-      queryFn: () => resourceConfig!.fetcher(user!.id),
-      enabled: !!user?.id && !!resourceConfig,
-      staleTime: 30_000,
-    },
-  );
+  const { data: resourceOptions = [], isLoading: resourceLoading } = useQuery({
+    queryKey: ["compose-resource", resourceConfig?.field, user?.id],
+    queryFn: () => resourceConfig!.fetcher(user!.id),
+    enabled: !!user?.id && !!resourceConfig,
+    staleTime: 30_000,
+  });
 
   if (!user) {
     return (
       <div className="w-full rounded-2xl bg-gradient-to-r from-zinc-900 via-zinc-800 to-zinc-900 border border-zinc-800 p-4 sm:p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-lg">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-full bg-lime-400/10 border border-lime-400/30 flex items-center justify-center text-lime-400">
-            <span className="material-symbols-outlined text-[20px]">campaign</span>
+            <span className="material-symbols-outlined text-[20px]">
+              campaign
+            </span>
           </div>
           <div>
-            <h4 className="text-sm font-bold text-white">Join Republic Foxer</h4>
+            <h4 className="text-sm font-bold text-white">
+              Join Republic Foxer
+            </h4>
             <p className="text-xs text-zinc-400">
-              Share your venue experiences, gear offerings, and earn Passport XP.
+              Share your venue experiences, gear offerings, and earn Passport
+              XP.
             </p>
           </div>
         </div>
@@ -131,19 +134,49 @@ export function ComposePostBox({ onPostCreated }: ComposePostBoxProps) {
     { type: "citizen_experience", label: "Citizen Story", icon: "edit_note" },
     { type: "review_share", label: "Share Review", icon: "reviews" },
     ...(isVenueFoxer
-      ? [{ type: "venue_spotlight" as PostType, label: "Spotlight Venue", icon: "location_on" }]
+      ? [
+          {
+            type: "venue_spotlight" as PostType,
+            label: "Spotlight Venue",
+            icon: "location_on",
+          },
+        ]
       : []),
     ...(isGearFoxer
-      ? [{ type: "gear_offering" as PostType, label: "Offer Gear", icon: "speaker" }]
+      ? [
+          {
+            type: "gear_offering" as PostType,
+            label: "Offer Gear",
+            icon: "speaker",
+          },
+        ]
       : []),
     ...(isServiceFoxer
-      ? [{ type: "service_offering" as PostType, label: "Offer Service", icon: "handyman" }]
+      ? [
+          {
+            type: "service_offering" as PostType,
+            label: "Offer Service",
+            icon: "handyman",
+          },
+        ]
       : []),
     ...(isEventFoxer
-      ? [{ type: "event_announcement" as PostType, label: "Announce Event", icon: "festival" }]
+      ? [
+          {
+            type: "event_announcement" as PostType,
+            label: "Announce Event",
+            icon: "festival",
+          },
+        ]
       : []),
     ...(isPartner
-      ? [{ type: "partner_announcement" as PostType, label: "Partner Backing", icon: "handshake" }]
+      ? [
+          {
+            type: "partner_announcement" as PostType,
+            label: "Partner Backing",
+            icon: "handshake",
+          },
+        ]
       : []),
   ];
 
@@ -234,7 +267,9 @@ export function ComposePostBox({ onPostCreated }: ComposePostBoxProps) {
                     : "bg-zinc-800/80 text-zinc-400 hover:text-white hover:bg-zinc-700"
                 }`}
               >
-                <span className="material-symbols-outlined text-[15px]">{opt.icon}</span>
+                <span className="material-symbols-outlined text-[15px]">
+                  {opt.icon}
+                </span>
                 <span>{opt.label}</span>
               </button>
             );
@@ -251,7 +286,9 @@ export function ComposePostBox({ onPostCreated }: ComposePostBoxProps) {
               </p>
             ) : resourceOptions.length === 0 ? (
               <div className="flex items-center justify-between gap-2 text-xs bg-zinc-800/40 border border-zinc-700/60 rounded-xl px-3 py-2.5">
-                <span className="text-zinc-400">{resourceConfig.emptyMessage}</span>
+                <span className="text-zinc-400">
+                  {resourceConfig.emptyMessage}
+                </span>
                 <Link
                   href={resourceConfig.createHref}
                   className="text-lime-400 font-bold hover:underline shrink-0"
@@ -287,8 +324,8 @@ export function ComposePostBox({ onPostCreated }: ComposePostBoxProps) {
             type === "partner_announcement"
               ? "Share co-production opportunities, funding terms, or packages..."
               : type === "venue_spotlight"
-              ? "Tell citizens about your space, upcoming weekend slots, and amenities..."
-              : "What's happening in the Republic? Share an experience, tip, or story..."
+                ? "Tell citizens about your space, upcoming weekend slots, and amenities..."
+                : "What's happening in the Republic? Share an experience, tip, or story..."
           }
           rows={isExpanded ? 3 : 2}
           className="w-full bg-zinc-800/60 border border-zinc-700/60 rounded-xl p-3 text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-lime-400/60 transition-all resize-none"
@@ -333,13 +370,19 @@ export function ComposePostBox({ onPostCreated }: ComposePostBoxProps) {
               disabled={uploading}
               className="flex items-center gap-1 text-xs text-zinc-400 hover:text-lime-400 transition-colors py-1 px-2 rounded-lg hover:bg-zinc-800/60"
             >
-              <span className="material-symbols-outlined text-[18px]">photo_library</span>
-              <span className="text-xs">{uploading ? "Uploading..." : "Add Photos"}</span>
+              <span className="material-symbols-outlined text-[18px]">
+                photo_library
+              </span>
+              <span className="text-xs">
+                {uploading ? "Uploading..." : "Add Photos"}
+              </span>
             </button>
 
             {/* XP Award Pill */}
             <span className="hidden sm:inline-flex items-center gap-1 text-[11px] font-bold text-amber-400 bg-amber-500/10 border border-amber-500/20 px-2 py-0.5 rounded-full">
-              <span className="material-symbols-outlined text-[12px]">bolt</span>
+              <span className="material-symbols-outlined text-[12px]">
+                bolt
+              </span>
               +15 XP for posting
             </span>
           </div>

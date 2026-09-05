@@ -22,9 +22,7 @@ export function KycDocumentSection({
 }: KycDocumentSectionProps) {
   // Tracks the file picked for each slot so the same document can't be reused
   // across two different required uploads (e.g. ID photo also submitted as the selfie).
-  const [usedFiles, setUsedFiles] = useState<Record<string, FileSignature>>(
-    {},
-  );
+  const [usedFiles, setUsedFiles] = useState<Record<string, FileSignature>>({});
 
   const validateAgainstOtherSlots = (key: string) => (file: File) => {
     const duplicate = Object.entries(usedFiles).find(

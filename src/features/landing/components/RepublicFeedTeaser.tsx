@@ -54,7 +54,9 @@ export function RepublicFeedTeaser() {
           className="text-xs font-bold text-lime-400 hover:text-lime-300 flex items-center gap-0.5 transition-colors"
         >
           <span>View All</span>
-          <span className="material-symbols-outlined text-[15px]">arrow_forward</span>
+          <span className="material-symbols-outlined text-[15px]">
+            arrow_forward
+          </span>
         </Link>
       </div>
 
@@ -112,11 +114,15 @@ export function RepublicFeedTeaser() {
                     </span>
                     <div className="flex items-center gap-2">
                       <span className="flex items-center gap-0.5 text-zinc-400">
-                        <span className="material-symbols-outlined text-[13px]">favorite</span>
+                        <span className="material-symbols-outlined text-[13px]">
+                          favorite
+                        </span>
                         {post.likesCount}
                       </span>
                       <span className="flex items-center gap-0.5 text-zinc-400">
-                        <span className="material-symbols-outlined text-[13px]">chat_bubble</span>
+                        <span className="material-symbols-outlined text-[13px]">
+                          chat_bubble
+                        </span>
                         {post.commentsCount}
                       </span>
                     </div>

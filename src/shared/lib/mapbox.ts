@@ -66,7 +66,9 @@ export function setupMapboxFallback(map: any): void {
       msg.includes("Token") ||
       msg.includes("Forbidden")
     ) {
-      console.warn("Mapbox style authorization failed — switching to high-definition dark tile provider");
+      console.warn(
+        "Mapbox style authorization failed — switching to high-definition dark tile provider",
+      );
       try {
         map.setStyle(CARTO_DARK_STYLE);
       } catch (err) {

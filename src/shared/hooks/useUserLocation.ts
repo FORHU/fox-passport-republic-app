@@ -17,7 +17,10 @@ export interface UserLocationState {
 }
 
 // Fallback centroids per country code if GPS is denied or offline
-const COUNTRY_CENTROIDS: Record<string, { coords: [number, number]; name: string }> = {
+const COUNTRY_CENTROIDS: Record<
+  string,
+  { coords: [number, number]; name: string }
+> = {
   PH: { coords: [120.9842, 14.5995], name: "Philippines" },
   US: { coords: [-98.5795, 39.8283], name: "United States" },
   SG: { coords: [103.8198, 1.3521], name: "Singapore" },
@@ -43,52 +46,49 @@ export function useUserLocation(): UserLocationState {
   const [isDetected, setIsDetected] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
 
-  const reverseGeocode = useCallback(
-    async (lng: number, lat: number) => {
-      if (!config.mapboxToken) {
-        setIsLoading(false);
-        return;
-      }
+  const reverseGeocode = useCallback(async (lng: number, lat: number) => {
+    if (!config.mapboxToken) {
+      setIsLoading(false);
+      return;
+    }
 
-      try {
-        const url = `https://api.mapbox.com/geocoding/v5/mapbox.places/${lng},${lat}.json?types=country,place,region&access_token=${config.mapboxToken}`;
-        const res = await fetch(url);
-        if (!res.ok) throw new Error("Geocoding failed");
-        const data = await res.json();
+    try {
+      const url = `https://api.mapbox.com/geocoding/v5/mapbox.places/${lng},${lat}.json?types=country,place,region&access_token=${config.mapboxToken}`;
+      const res = await fetch(url);
+      if (!res.ok) throw new Error("Geocoding failed");
+      const data = await res.json();
 
-        let detectedCountry = "Philippines";
-        let detectedCode = "PH";
-        let detectedCity = "";
-        let detectedRegion = "";
+      let detectedCountry = "Philippines";
+      let detectedCode = "PH";
+      let detectedCity = "";
+      let detectedRegion = "";
 
-        if (data.features && data.features.length > 0) {
-          for (const feature of data.features) {
-            if (feature.place_type.includes("country")) {
-              detectedCountry = feature.text;
-              detectedCode = (
-                feature.properties?.short_code || "PH"
-              ).toUpperCase();
-            } else if (feature.place_type.includes("place")) {
-              detectedCity = feature.text;
-            } else if (feature.place_type.includes("region")) {
-              detectedRegion = feature.text;
-            }
+      if (data.features && data.features.length > 0) {
+        for (const feature of data.features) {
+          if (feature.place_type.includes("country")) {
+            detectedCountry = feature.text;
+            detectedCode = (
+              feature.properties?.short_code || "PH"
+            ).toUpperCase();
+          } else if (feature.place_type.includes("place")) {
+            detectedCity = feature.text;
+          } else if (feature.place_type.includes("region")) {
+            detectedRegion = feature.text;
           }
         }
-
-        setCountry(detectedCountry);
-        setCountryCode(detectedCode);
-        setCity(detectedCity);
-        setRegion(detectedRegion);
-        setIsDetected(true);
-      } catch (err: any) {
-        console.warn("Reverse geocode fallback:", err);
-      } finally {
-        setIsLoading(false);
       }
-    },
-    [],
-  );
+
+      setCountry(detectedCountry);
+      setCountryCode(detectedCode);
+      setCity(detectedCity);
+      setRegion(detectedRegion);
+      setIsDetected(true);
+    } catch (err: any) {
+      console.warn("Reverse geocode fallback:", err);
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
 
   const detectLocation = useCallback(() => {
     setIsLoading(true);
@@ -103,7 +103,10 @@ export function useUserLocation(): UserLocationState {
           reverseGeocode(lng, lat);
         },
         (err) => {
-          console.log("Geolocation permission not granted, using fallback:", err.message);
+          console.log(
+            "Geolocation permission not granted, using fallback:",
+            err.message,
+          );
           setError(err.message);
 
           // Fallback: Check user profile country
@@ -115,7 +118,8 @@ export function useUserLocation(): UserLocationState {
               ) || "PH"
             : "PH";
 
-          const fallback = COUNTRY_CENTROIDS[userCountryCode] || COUNTRY_CENTROIDS.PH;
+          const fallback =
+            COUNTRY_CENTROIDS[userCountryCode] || COUNTRY_CENTROIDS.PH;
           setCoords(fallback.coords);
           setCountry(user?.country || fallback.name);
           setCountryCode(userCountryCode);

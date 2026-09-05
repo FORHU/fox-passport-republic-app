@@ -1,6 +1,12 @@
 export const STRIPE_BG = `repeating-linear-gradient(135deg,rgba(255,255,255,0.03) 0px,rgba(255,255,255,0.03) 1px,transparent 1px,transparent 12px)`;
 
-export const CATEGORIES = ["Wedding", "Corporate", "Birthday", "Social", "Other"];
+export const CATEGORIES = [
+  "Wedding",
+  "Corporate",
+  "Birthday",
+  "Social",
+  "Other",
+];
 
 export const CATEGORY_EMOJI: Record<string, string> = {
   birthday: "🎂",

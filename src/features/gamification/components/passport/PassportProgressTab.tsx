@@ -212,9 +212,7 @@ export function PassportProgressTab({
                   <span className="material-symbols-outlined text-[#ccff00] text-sm">
                     local_activity
                   </span>
-                  <span className="text-sm text-white/70">
-                    Attend an Event
-                  </span>
+                  <span className="text-sm text-white/70">Attend an Event</span>
                 </div>
                 <span className="font-mono text-sm text-[#ccff00] font-bold">
                   +{XP_REWARDS.attendEvent} XP
@@ -310,9 +308,7 @@ export function PassportProgressTab({
                     <span className="material-symbols-outlined text-[#a855f7] text-sm">
                       domain_add
                     </span>
-                    <span className="text-sm text-white/70">
-                      List a Venue
-                    </span>
+                    <span className="text-sm text-white/70">List a Venue</span>
                   </div>
                   <span className="font-mono text-sm text-[#a855f7] font-bold">
                     +{XP_REWARDS.uploadVenue} XP

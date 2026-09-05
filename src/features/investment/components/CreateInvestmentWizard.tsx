@@ -34,7 +34,11 @@ interface WizardFormState {
   broadcastToFeed: boolean;
 }
 
-const CATEGORY_OPTIONS: { id: InventoryCategory; label: string; icon: string }[] = [
+const CATEGORY_OPTIONS: {
+  id: InventoryCategory;
+  label: string;
+  icon: string;
+}[] = [
   { id: "furniture_seating", label: "Chairs & Seating", icon: "chair" },
   { id: "tables_staging", label: "Tables & Staging", icon: "table_restaurant" },
   { id: "audio_visual", label: "Audio & AV Systems", icon: "speaker" },
@@ -49,7 +53,8 @@ export default function CreateInvestmentWizard() {
   const [step, setStep] = useState<number>(1);
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [uploadingImage, setUploadingImage] = useState<boolean>(false);
-  const [showComingSoonNotice, setShowComingSoonNotice] = useState<boolean>(false);
+  const [showComingSoonNotice, setShowComingSoonNotice] =
+    useState<boolean>(false);
 
   const [form, setForm] = useState<WizardFormState>({
     title: "",
@@ -104,11 +109,15 @@ export default function CreateInvestmentWizard() {
 
   const handleSubmit = async () => {
     if (!form.title.trim()) {
-      toast.error("Please provide an equipment name (e.g. 500 Chiavari Chairs).");
+      toast.error(
+        "Please provide an equipment name (e.g. 500 Chiavari Chairs).",
+      );
       return;
     }
     if (!form.description.trim() || form.description.length < 10) {
-      toast.error("Please provide a description with specifications (at least 10 characters).");
+      toast.error(
+        "Please provide a description with specifications (at least 10 characters).",
+      );
       return;
     }
 
@@ -138,7 +147,9 @@ export default function CreateInvestmentWizard() {
       toast.success("Equipment Inventory Hub registered & published on map!");
       router.push("/republic?tab=partners");
     } catch (err: any) {
-      toast.error(err?.response?.data?.message || "Failed to create equipment hub");
+      toast.error(
+        err?.response?.data?.message || "Failed to create equipment hub",
+      );
     } finally {
       setIsSubmitting(false);
     }
@@ -150,14 +161,17 @@ export default function CreateInvestmentWizard() {
         {/* Top Header */}
         <div>
           <div className="flex items-center gap-2 text-xs font-black uppercase tracking-wider text-amber-400 mb-2">
-            <span className="material-symbols-outlined text-[16px]">inventory_2</span>
+            <span className="material-symbols-outlined text-[16px]">
+              inventory_2
+            </span>
             Partner Resource Pooling
           </div>
           <h1 className="text-2xl sm:text-4xl font-black text-white tracking-tight">
             Register Partner Investment
           </h1>
           <p className="text-zinc-400 text-sm mt-1">
-            Deploy physical tools and supplies stored at your depot to power venues and events across the Republic.
+            Deploy physical tools and supplies stored at your depot to power
+            venues and events across the Republic.
           </p>
         </div>
 
@@ -177,8 +191,8 @@ export default function CreateInvestmentWizard() {
                 step === s.num
                   ? "border-amber-400 text-amber-400 font-bold"
                   : step > s.num
-                  ? "border-lime-400 text-lime-400"
-                  : "border-transparent text-zinc-600"
+                    ? "border-lime-400 text-lime-400"
+                    : "border-transparent text-zinc-600"
               }`}
             >
               <div className="text-[10px] uppercase tracking-wider font-extrabold">
@@ -197,7 +211,9 @@ export default function CreateInvestmentWizard() {
             className="space-y-6"
           >
             <div className="flex items-center justify-between">
-              <h2 className="text-lg font-bold text-white">Choose Investment Stream</h2>
+              <h2 className="text-lg font-bold text-white">
+                Choose Investment Stream
+              </h2>
               <span className="text-[11px] text-zinc-400">
                 Active & Upcoming Modalities
               </span>
@@ -215,13 +231,18 @@ export default function CreateInvestmentWizard() {
 
                 <div>
                   <div className="w-12 h-12 rounded-2xl bg-amber-400/15 border border-amber-400/30 flex items-center justify-center text-amber-300 mb-4">
-                    <span className="material-symbols-outlined text-2xl">chair</span>
+                    <span className="material-symbols-outlined text-2xl">
+                      chair
+                    </span>
                   </div>
                   <h3 className="text-base font-black text-white mb-2">
                     Physical Equipment & Inventory Hub
                   </h3>
                   <p className="text-xs text-zinc-400 leading-relaxed">
-                    Store and pool physical tools (chairs, tables, staging, sound, generators, LED walls) at your local depot. Nearby partner venues can discover and request dispatch on the interactive map.
+                    Store and pool physical tools (chairs, tables, staging,
+                    sound, generators, LED walls) at your local depot. Nearby
+                    partner venues can discover and request dispatch on the
+                    interactive map.
                   </p>
                 </div>
 
@@ -240,20 +261,26 @@ export default function CreateInvestmentWizard() {
               >
                 <div className="absolute top-4 right-4">
                   <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-amber-500/10 text-amber-400 border border-amber-500/30 shadow-sm">
-                    <span className="material-symbols-outlined text-[12px]">schedule</span>
+                    <span className="material-symbols-outlined text-[12px]">
+                      schedule
+                    </span>
                     Coming Soon
                   </span>
                 </div>
 
                 <div>
                   <div className="w-12 h-12 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center text-zinc-400 group-hover:text-amber-300 transition-colors mb-4">
-                    <span className="material-symbols-outlined text-2xl">payments</span>
+                    <span className="material-symbols-outlined text-2xl">
+                      payments
+                    </span>
                   </div>
                   <h3 className="text-base font-black text-zinc-300 group-hover:text-white transition-colors mb-2">
                     Financial Capital & Venue Equity
                   </h3>
                   <p className="text-xs text-zinc-500 leading-relaxed">
-                    Direct cash injection, venue renovation funds, and event pre-production co-financing with revenue-share or equity contracts.
+                    Direct cash injection, venue renovation funds, and event
+                    pre-production co-financing with revenue-share or equity
+                    contracts.
                   </p>
                 </div>
 
@@ -281,7 +308,10 @@ export default function CreateInvestmentWizard() {
                     Financial Capital & Equity Pool is Coming Soon
                   </h4>
                   <p className="text-zinc-300 leading-relaxed">
-                    We are currently refining the legal agreements, escrow frameworks, and securities compliance for monetary investments. In the meantime, **Physical Equipment & Inventory Resource Pooling** is fully live and ready!
+                    We are currently refining the legal agreements, escrow
+                    frameworks, and securities compliance for monetary
+                    investments. In the meantime, **Physical Equipment &
+                    Inventory Resource Pooling** is fully live and ready!
                   </p>
                 </div>
                 <button
@@ -289,7 +319,9 @@ export default function CreateInvestmentWizard() {
                   onClick={() => setShowComingSoonNotice(false)}
                   className="text-zinc-400 hover:text-white"
                 >
-                  <span className="material-symbols-outlined text-[16px]">close</span>
+                  <span className="material-symbols-outlined text-[16px]">
+                    close
+                  </span>
                 </button>
               </motion.div>
             )}
@@ -301,7 +333,9 @@ export default function CreateInvestmentWizard() {
                 className="px-6 py-3 rounded-xl bg-gradient-to-r from-amber-400 to-yellow-500 hover:from-amber-300 hover:to-yellow-400 text-black font-black text-xs flex items-center gap-1.5 shadow-lg transition-all cursor-pointer"
               >
                 Continue to Equipment Details
-                <span className="material-symbols-outlined text-[16px]">arrow_forward</span>
+                <span className="material-symbols-outlined text-[16px]">
+                  arrow_forward
+                </span>
               </button>
             </div>
           </motion.div>
@@ -338,7 +372,9 @@ export default function CreateInvestmentWizard() {
                   <button
                     key={cat.id}
                     type="button"
-                    onClick={() => setForm({ ...form, inventoryCategory: cat.id })}
+                    onClick={() =>
+                      setForm({ ...form, inventoryCategory: cat.id })
+                    }
                     className={`p-3 rounded-xl border text-left flex items-center gap-2.5 transition-all text-xs font-bold ${
                       form.inventoryCategory === cat.id
                         ? "bg-amber-400/15 border-amber-400 text-amber-300 shadow-sm"
@@ -377,7 +413,9 @@ export default function CreateInvestmentWizard() {
                 </label>
                 <select
                   value={form.itemCondition}
-                  onChange={(e) => setForm({ ...form, itemCondition: e.target.value })}
+                  onChange={(e) =>
+                    setForm({ ...form, itemCondition: e.target.value })
+                  }
                   className="w-full px-4 py-2.5 rounded-xl bg-zinc-950 border border-zinc-800 text-white focus:outline-none focus:border-amber-400 text-sm"
                 >
                   <option value="mint">Brand New / Mint Condition</option>
@@ -396,7 +434,9 @@ export default function CreateInvestmentWizard() {
                 <input
                   type="text"
                   value={form.usageTerms}
-                  onChange={(e) => setForm({ ...form, usageTerms: e.target.value })}
+                  onChange={(e) =>
+                    setForm({ ...form, usageTerms: e.target.value })
+                  }
                   placeholder="e.g. Free for verified partner venues"
                   className="w-full px-4 py-2.5 rounded-xl bg-zinc-950 border border-zinc-800 text-white focus:outline-none focus:border-amber-400 text-sm"
                 />
@@ -413,9 +453,15 @@ export default function CreateInvestmentWizard() {
                   }
                   className="w-full px-4 py-2.5 rounded-xl bg-zinc-950 border border-zinc-800 text-white focus:outline-none focus:border-amber-400 text-sm"
                 >
-                  <option value="self_pickup">Self-Pickup by Venue / Organizer</option>
-                  <option value="partner_delivers_free">Partner Delivers (Free within radius)</option>
-                  <option value="partner_delivers_fee">Partner Delivers (Flat Logistics Fee)</option>
+                  <option value="self_pickup">
+                    Self-Pickup by Venue / Organizer
+                  </option>
+                  <option value="partner_delivers_free">
+                    Partner Delivers (Free within radius)
+                  </option>
+                  <option value="partner_delivers_fee">
+                    Partner Delivers (Flat Logistics Fee)
+                  </option>
                 </select>
               </div>
             </div>
@@ -428,7 +474,9 @@ export default function CreateInvestmentWizard() {
               <textarea
                 rows={4}
                 value={form.description}
-                onChange={(e) => setForm({ ...form, description: e.target.value })}
+                onChange={(e) =>
+                  setForm({ ...form, description: e.target.value })
+                }
                 placeholder="Include dimensions, stackability, power specs, or handling notes..."
                 className="w-full px-4 py-3 rounded-xl bg-zinc-950 border border-zinc-800 text-white placeholder:text-zinc-600 focus:outline-none focus:border-amber-400 text-sm"
               />
@@ -448,7 +496,9 @@ export default function CreateInvestmentWizard() {
                 className="px-6 py-3 rounded-xl bg-gradient-to-r from-amber-400 to-yellow-500 hover:from-amber-300 hover:to-yellow-400 text-black font-black text-xs flex items-center gap-1.5 shadow-lg transition-all cursor-pointer"
               >
                 Set Location on Map
-                <span className="material-symbols-outlined text-[16px]">arrow_forward</span>
+                <span className="material-symbols-outlined text-[16px]">
+                  arrow_forward
+                </span>
               </button>
             </div>
           </motion.div>
@@ -466,7 +516,9 @@ export default function CreateInvestmentWizard() {
                 Depot / Warehouse Location
               </h2>
               <p className="text-xs text-zinc-400 mt-0.5">
-                The map automatically centers on your territory. Drag the gold pin to where your inventory is stored so nearby venues can find it when they lack tools.
+                The map automatically centers on your territory. Drag the gold
+                pin to where your inventory is stored so nearby venues can find
+                it when they lack tools.
               </p>
             </div>
 
@@ -490,7 +542,9 @@ export default function CreateInvestmentWizard() {
                 className="px-6 py-3 rounded-xl bg-gradient-to-r from-amber-400 to-yellow-500 hover:from-amber-300 hover:to-yellow-400 text-black font-black text-xs flex items-center gap-1.5 shadow-lg transition-all cursor-pointer"
               >
                 Review & Photos
-                <span className="material-symbols-outlined text-[16px]">arrow_forward</span>
+                <span className="material-symbols-outlined text-[16px]">
+                  arrow_forward
+                </span>
               </button>
             </div>
           </motion.div>
@@ -504,9 +558,12 @@ export default function CreateInvestmentWizard() {
             className="space-y-6"
           >
             <div>
-              <h2 className="text-lg font-bold text-white">Photos & Feed Broadcast</h2>
+              <h2 className="text-lg font-bold text-white">
+                Photos & Feed Broadcast
+              </h2>
               <p className="text-xs text-zinc-400 mt-0.5">
-                Upload real photos of your equipment depot or tools to build trust with organizers.
+                Upload real photos of your equipment depot or tools to build
+                trust with organizers.
               </p>
             </div>
 
@@ -518,18 +575,26 @@ export default function CreateInvestmentWizard() {
                     key={i}
                     className="relative w-24 h-24 rounded-2xl overflow-hidden border border-zinc-800 group"
                   >
-                    <img src={url} alt="Upload" className="w-full h-full object-cover" />
+                    <img
+                      src={url}
+                      alt="Upload"
+                      className="w-full h-full object-cover"
+                    />
                     <button
                       type="button"
                       onClick={() =>
                         setForm({
                           ...form,
-                          mediaUrls: form.mediaUrls.filter((_, idx) => idx !== i),
+                          mediaUrls: form.mediaUrls.filter(
+                            (_, idx) => idx !== i,
+                          ),
                         })
                       }
                       className="absolute top-1 right-1 w-6 h-6 rounded-full bg-black/80 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
                     >
-                      <span className="material-symbols-outlined text-[14px]">close</span>
+                      <span className="material-symbols-outlined text-[14px]">
+                        close
+                      </span>
                     </button>
                   </div>
                 ))}
@@ -562,7 +627,8 @@ export default function CreateInvestmentWizard() {
                   Broadcast to Republic Foxer Partners Feed
                 </div>
                 <p className="text-[11px] text-zinc-400">
-                  Instantly publish an announcement card in the Partners feed and earn +50 Partner XP.
+                  Instantly publish an announcement card in the Partners feed
+                  and earn +50 Partner XP.
                 </p>
               </div>
               <input
@@ -594,14 +660,19 @@ export default function CreateInvestmentWizard() {
                   </span>
                 </div>
                 <div>
-                  Condition: <span className="text-white capitalize">{form.itemCondition}</span>
+                  Condition:{" "}
+                  <span className="text-white capitalize">
+                    {form.itemCondition}
+                  </span>
                 </div>
                 <div>
-                  Territory: <span className="text-white">{form.location.country}</span>
+                  Territory:{" "}
+                  <span className="text-white">{form.location.country}</span>
                 </div>
                 {form.location.city && (
                   <div>
-                    City: <span className="text-white">{form.location.city}</span>
+                    City:{" "}
+                    <span className="text-white">{form.location.city}</span>
                   </div>
                 )}
                 <div>
@@ -634,7 +705,9 @@ export default function CreateInvestmentWizard() {
                 className="px-8 py-3.5 rounded-xl bg-gradient-to-r from-amber-400 to-yellow-500 hover:from-amber-300 hover:to-yellow-400 text-black font-black text-sm flex items-center gap-2 shadow-[0_0_25px_rgba(245,158,11,0.4)] transition-all disabled:opacity-50 cursor-pointer"
               >
                 {isSubmitting ? "Deploying Hub..." : "Deploy Equipment to Map"}
-                <span className="material-symbols-outlined text-[18px]">rocket_launch</span>
+                <span className="material-symbols-outlined text-[18px]">
+                  rocket_launch
+                </span>
               </button>
             </div>
           </motion.div>

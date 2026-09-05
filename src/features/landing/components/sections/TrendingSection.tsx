@@ -6,7 +6,6 @@ import { motion } from "motion/react";
 import { useQuery } from "@tanstack/react-query";
 import { fetchTrendingTemplates } from "@/shared/api/event-templates";
 
-
 const CATEGORY_OPTIONS = [
   { label: "All", value: undefined },
   { label: "Birthday", value: "birthday" },

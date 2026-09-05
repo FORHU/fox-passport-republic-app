@@ -18,11 +18,14 @@ export function CitizenProfileSidebarCard() {
           </div>
           <div>
             <h3 className="text-sm font-black text-white">Welcome, Guest</h3>
-            <p className="text-[11px] text-zinc-400">Join the Republic network</p>
+            <p className="text-[11px] text-zinc-400">
+              Join the Republic network
+            </p>
           </div>
         </div>
         <p className="text-xs text-zinc-400 leading-relaxed">
-          Sign in to interact, publish offerings, connect with partner venues, and earn Passport XP.
+          Sign in to interact, publish offerings, connect with partner venues,
+          and earn Passport XP.
         </p>
         <button
           onClick={openLogin}
@@ -76,7 +79,9 @@ export function CitizenProfileSidebarCard() {
           </p>
           {user.city && (
             <p className="text-[10px] text-zinc-500 truncate flex items-center gap-0.5 mt-0.5">
-              <span className="material-symbols-outlined text-[11px]">location_on</span>
+              <span className="material-symbols-outlined text-[11px]">
+                location_on
+              </span>
               {user.city}, {user.country || "Republic"}
             </p>
           )}

@@ -256,7 +256,9 @@ export default function BookingDetailClient({
                     href={`/messages?userId=${encodeURIComponent(otherParty.id)}&contextType=booking&contextId=${encodeURIComponent(bookingId)}&contextLabel=${encodeURIComponent(eventName)}`}
                     className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-white text-xs font-semibold transition-colors border border-zinc-700/50"
                   >
-                    <span className="material-symbols-outlined text-[16px] text-amber-400">chat</span>
+                    <span className="material-symbols-outlined text-[16px] text-amber-400">
+                      chat
+                    </span>
                     <span>{isOwner ? "Message Foxer" : "Message User"}</span>
                   </Link>
                 )}

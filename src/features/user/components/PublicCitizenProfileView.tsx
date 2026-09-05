@@ -25,7 +25,10 @@ function getAvatarUrl(imgId?: string | null): string {
   return `https://fox-passport-republic-assets.s3.ap-southeast-1.amazonaws.com/${imgId}`;
 }
 
-const RARITY_COLORS: Record<string, { badge: string; text: string; border: string }> = {
+const RARITY_COLORS: Record<
+  string,
+  { badge: string; text: string; border: string }
+> = {
   legendary: {
     badge: "bg-gradient-to-r from-amber-500/20 to-yellow-500/20",
     text: "text-amber-300",
@@ -91,7 +94,8 @@ export default function PublicCitizenProfileView() {
         </div>
         <h1 className="text-xl font-bold mb-2">Citizen Profile Not Found</h1>
         <p className="text-zinc-400 text-sm max-w-md mb-6">
-          This citizen may not exist, has changed their handle, or their passport is private.
+          This citizen may not exist, has changed their handle, or their
+          passport is private.
         </p>
         <button
           onClick={() => router.push("/republic")}
@@ -108,7 +112,10 @@ export default function PublicCitizenProfileView() {
   const citizenLevel = citizenPath?.level ?? 1;
   const currentXP = citizenPath?.currentXP ?? 0;
   const nextLevelXP = citizenLevel * 200;
-  const xpPercentage = Math.min(100, Math.round((currentXP / nextLevelXP) * 100));
+  const xpPercentage = Math.min(
+    100,
+    Math.round((currentXP / nextLevelXP) * 100),
+  );
 
   const stamps = profile.passport?.stamps ?? [];
   const badges = profile.passport?.userBadges ?? [];
@@ -136,7 +143,9 @@ export default function PublicCitizenProfileView() {
             onClick={() => router.back()}
             className="inline-flex items-center gap-2 text-xs font-semibold text-zinc-400 hover:text-white transition-colors"
           >
-            <span className="material-symbols-outlined text-[16px]">arrow_back</span>
+            <span className="material-symbols-outlined text-[16px]">
+              arrow_back
+            </span>
             Back
           </button>
           <button
@@ -194,7 +203,9 @@ export default function PublicCitizenProfileView() {
                 </h1>
                 {isPartner && (
                   <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-black bg-gradient-to-r from-amber-500/25 to-yellow-500/25 text-amber-300 border border-amber-500/40 shadow-sm">
-                    <span className="material-symbols-outlined text-[14px]">verified</span>
+                    <span className="material-symbols-outlined text-[14px]">
+                      verified
+                    </span>
                     Partner Foxer
                   </span>
                 )}
@@ -208,12 +219,16 @@ export default function PublicCitizenProfileView() {
                 )}
                 {(profile.city || profile.country) && (
                   <span className="flex items-center gap-1 text-zinc-400">
-                    <span className="material-symbols-outlined text-[14px]">location_on</span>
+                    <span className="material-symbols-outlined text-[14px]">
+                      location_on
+                    </span>
                     {[profile.city, profile.country].filter(Boolean).join(", ")}
                   </span>
                 )}
                 <span className="flex items-center gap-1 text-zinc-400">
-                  <span className="material-symbols-outlined text-[14px]">calendar_today</span>
+                  <span className="material-symbols-outlined text-[14px]">
+                    calendar_today
+                  </span>
                   Citizen since {new Date(profile.createdAt).getFullYear()}
                 </span>
               </div>
@@ -253,7 +268,9 @@ export default function PublicCitizenProfileView() {
                   href={`/messages?userId=${profile.id}&contextType=profile&contextId=${profile.id}&contextLabel=${encodeURIComponent(profile.name)}`}
                   className="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-gradient-to-r from-lime-400 to-emerald-400 hover:from-lime-300 hover:to-emerald-300 text-black font-black text-xs flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(163,230,53,0.3)] transition-all cursor-pointer"
                 >
-                  <span className="material-symbols-outlined text-[16px]">chat</span>
+                  <span className="material-symbols-outlined text-[16px]">
+                    chat
+                  </span>
                   <span>Message Citizen</span>
                 </Link>
               )}
@@ -262,7 +279,9 @@ export default function PublicCitizenProfileView() {
                   href="/user"
                   className="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-white font-bold text-xs flex items-center justify-center gap-2 transition-colors"
                 >
-                  <span className="material-symbols-outlined text-[16px]">manage_accounts</span>
+                  <span className="material-symbols-outlined text-[16px]">
+                    manage_accounts
+                  </span>
                   My Dashboard
                 </Link>
               )}
@@ -292,31 +311,45 @@ export default function PublicCitizenProfileView() {
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           <div className="rounded-2xl bg-zinc-950/60 border border-zinc-800/80 p-4 text-center">
             <div className="flex items-center justify-center gap-1.5 text-lime-400 text-xs font-bold uppercase tracking-wider mb-1">
-              <span className="material-symbols-outlined text-[16px]">military_tech</span>
+              <span className="material-symbols-outlined text-[16px]">
+                military_tech
+              </span>
               Level
             </div>
-            <div className="text-2xl font-black text-white">L{citizenLevel}</div>
+            <div className="text-2xl font-black text-white">
+              L{citizenLevel}
+            </div>
           </div>
 
           <div className="rounded-2xl bg-zinc-950/60 border border-zinc-800/80 p-4 text-center">
             <div className="flex items-center justify-center gap-1.5 text-amber-400 text-xs font-bold uppercase tracking-wider mb-1">
-              <span className="material-symbols-outlined text-[16px]">verified</span>
+              <span className="material-symbols-outlined text-[16px]">
+                verified
+              </span>
               Venue Stamps
             </div>
-            <div className="text-2xl font-black text-white">{stamps.length}</div>
+            <div className="text-2xl font-black text-white">
+              {stamps.length}
+            </div>
           </div>
 
           <div className="rounded-2xl bg-zinc-950/60 border border-zinc-800/80 p-4 text-center">
             <div className="flex items-center justify-center gap-1.5 text-purple-400 text-xs font-bold uppercase tracking-wider mb-1">
-              <span className="material-symbols-outlined text-[16px]">award_star</span>
+              <span className="material-symbols-outlined text-[16px]">
+                award_star
+              </span>
               Badges
             </div>
-            <div className="text-2xl font-black text-white">{badges.length}</div>
+            <div className="text-2xl font-black text-white">
+              {badges.length}
+            </div>
           </div>
 
           <div className="rounded-2xl bg-zinc-950/60 border border-zinc-800/80 p-4 text-center">
             <div className="flex items-center justify-center gap-1.5 text-sky-400 text-xs font-bold uppercase tracking-wider mb-1">
-              <span className="material-symbols-outlined text-[16px]">forum</span>
+              <span className="material-symbols-outlined text-[16px]">
+                forum
+              </span>
               Feed Posts
             </div>
             <div className="text-2xl font-black text-white">
@@ -330,10 +363,14 @@ export default function PublicCitizenProfileView() {
           <button
             onClick={() => setActiveTab("stamps")}
             className={`pb-3 flex items-center gap-2 transition-colors relative ${
-              activeTab === "stamps" ? "text-lime-400" : "text-zinc-400 hover:text-white"
+              activeTab === "stamps"
+                ? "text-lime-400"
+                : "text-zinc-400 hover:text-white"
             }`}
           >
-            <span className="material-symbols-outlined text-[18px]">verified</span>
+            <span className="material-symbols-outlined text-[18px]">
+              verified
+            </span>
             Venue Stamps ({stamps.length})
             {activeTab === "stamps" && (
               <motion.div
@@ -346,10 +383,14 @@ export default function PublicCitizenProfileView() {
           <button
             onClick={() => setActiveTab("badges")}
             className={`pb-3 flex items-center gap-2 transition-colors relative ${
-              activeTab === "badges" ? "text-lime-400" : "text-zinc-400 hover:text-white"
+              activeTab === "badges"
+                ? "text-lime-400"
+                : "text-zinc-400 hover:text-white"
             }`}
           >
-            <span className="material-symbols-outlined text-[18px]">military_tech</span>
+            <span className="material-symbols-outlined text-[18px]">
+              military_tech
+            </span>
             Milestone Badges ({badges.length})
             {activeTab === "badges" && (
               <motion.div
@@ -362,10 +403,14 @@ export default function PublicCitizenProfileView() {
           <button
             onClick={() => setActiveTab("activity")}
             className={`pb-3 flex items-center gap-2 transition-colors relative ${
-              activeTab === "activity" ? "text-lime-400" : "text-zinc-400 hover:text-white"
+              activeTab === "activity"
+                ? "text-lime-400"
+                : "text-zinc-400 hover:text-white"
             }`}
           >
-            <span className="material-symbols-outlined text-[18px]">dynamic_feed</span>
+            <span className="material-symbols-outlined text-[18px]">
+              dynamic_feed
+            </span>
             Republic Activity ({posts.length})
             {activeTab === "activity" && (
               <motion.div
@@ -379,10 +424,14 @@ export default function PublicCitizenProfileView() {
             <button
               onClick={() => setActiveTab("offerings")}
               className={`pb-3 flex items-center gap-2 transition-colors relative ${
-                activeTab === "offerings" ? "text-lime-400" : "text-zinc-400 hover:text-white"
+                activeTab === "offerings"
+                  ? "text-lime-400"
+                  : "text-zinc-400 hover:text-white"
               }`}
             >
-              <span className="material-symbols-outlined text-[18px]">storefront</span>
+              <span className="material-symbols-outlined text-[18px]">
+                storefront
+              </span>
               Offerings
               {activeTab === "offerings" && (
                 <motion.div
@@ -402,13 +451,16 @@ export default function PublicCitizenProfileView() {
               {stamps.length === 0 ? (
                 <div className="rounded-3xl bg-zinc-950/40 border border-zinc-800/80 p-12 text-center">
                   <div className="w-16 h-16 rounded-full bg-zinc-900 border border-zinc-800 flex items-center justify-center text-zinc-500 mx-auto mb-3">
-                    <span className="material-symbols-outlined text-3xl">verified</span>
+                    <span className="material-symbols-outlined text-3xl">
+                      verified
+                    </span>
                   </div>
                   <h3 className="text-base font-bold text-white mb-1">
                     No Venue Stamps Yet
                   </h3>
                   <p className="text-xs text-zinc-400 max-w-sm mx-auto">
-                    Attending events at verified Republic partner venues unlocks authentic collectible passport stamps.
+                    Attending events at verified Republic partner venues unlocks
+                    authentic collectible passport stamps.
                   </p>
                 </div>
               ) : (
@@ -439,7 +491,9 @@ export default function PublicCitizenProfileView() {
                               {stamp.venue?.name ?? stamp.eventName}
                             </h4>
                             <p className="text-xs text-zinc-400 truncate">
-                              {stamp.venue?.city || stamp.location || "Republic Venue"}
+                              {stamp.venue?.city ||
+                                stamp.location ||
+                                "Republic Venue"}
                             </p>
                             <span className="inline-flex items-center gap-1 text-[10px] font-extrabold text-lime-400 bg-lime-400/10 px-2 py-0.5 rounded-full mt-1">
                               +{stamp.xpEarned} XP
@@ -450,11 +504,14 @@ export default function PublicCitizenProfileView() {
                         <div className="mt-auto pt-2 border-t border-zinc-900 flex items-center justify-between text-[11px] text-zinc-500">
                           <span>{stamp.eventName}</span>
                           <span>
-                            {new Date(stamp.eventDate).toLocaleDateString("en-US", {
-                              month: "short",
-                              day: "numeric",
-                              year: "numeric",
-                            })}
+                            {new Date(stamp.eventDate).toLocaleDateString(
+                              "en-US",
+                              {
+                                month: "short",
+                                day: "numeric",
+                                year: "numeric",
+                              },
+                            )}
                           </span>
                         </div>
 
@@ -479,20 +536,24 @@ export default function PublicCitizenProfileView() {
               {badges.length === 0 ? (
                 <div className="rounded-3xl bg-zinc-950/40 border border-zinc-800/80 p-12 text-center">
                   <div className="w-16 h-16 rounded-full bg-zinc-900 border border-zinc-800 flex items-center justify-center text-zinc-500 mx-auto mb-3">
-                    <span className="material-symbols-outlined text-3xl">military_tech</span>
+                    <span className="material-symbols-outlined text-3xl">
+                      military_tech
+                    </span>
                   </div>
                   <h3 className="text-base font-bold text-white mb-1">
                     No Badges Earned Yet
                   </h3>
                   <p className="text-xs text-zinc-400 max-w-sm mx-auto">
-                    Milestone badges are awarded for exploring multiple venues, creating community posts, and climbing citizen tiers.
+                    Milestone badges are awarded for exploring multiple venues,
+                    creating community posts, and climbing citizen tiers.
                   </p>
                 </div>
               ) : (
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
                   {badges.map((ub: CitizenBadge) => {
                     const rarity = ub.badge.rarity?.toLowerCase() || "common";
-                    const styling = RARITY_COLORS[rarity] || RARITY_COLORS.common;
+                    const styling =
+                      RARITY_COLORS[rarity] || RARITY_COLORS.common;
 
                     return (
                       <div
@@ -544,13 +605,16 @@ export default function PublicCitizenProfileView() {
               {posts.length === 0 ? (
                 <div className="rounded-3xl bg-zinc-950/40 border border-zinc-800/80 p-12 text-center">
                   <div className="w-16 h-16 rounded-full bg-zinc-900 border border-zinc-800 flex items-center justify-center text-zinc-500 mx-auto mb-3">
-                    <span className="material-symbols-outlined text-3xl">chat</span>
+                    <span className="material-symbols-outlined text-3xl">
+                      chat
+                    </span>
                   </div>
                   <h3 className="text-base font-bold text-white mb-1">
                     No Republic Posts Yet
                   </h3>
                   <p className="text-xs text-zinc-400 max-w-sm mx-auto">
-                    This citizen hasn&apos;t shared any experiences or announcements in the Republic Foxer feed yet.
+                    This citizen hasn&apos;t shared any experiences or
+                    announcements in the Republic Foxer feed yet.
                   </p>
                 </div>
               ) : (
@@ -565,11 +629,14 @@ export default function PublicCitizenProfileView() {
                           {post.type.replace(/_/g, " ")}
                         </span>
                         <span>
-                          {new Date(post.createdAt).toLocaleDateString("en-US", {
-                            month: "short",
-                            day: "numeric",
-                            year: "numeric",
-                          })}
+                          {new Date(post.createdAt).toLocaleDateString(
+                            "en-US",
+                            {
+                              month: "short",
+                              day: "numeric",
+                              year: "numeric",
+                            },
+                          )}
                         </span>
                       </div>
 
@@ -595,11 +662,15 @@ export default function PublicCitizenProfileView() {
                       <div className="flex items-center justify-between pt-2.5 border-t border-zinc-900 text-xs text-zinc-400">
                         <div className="flex items-center gap-4">
                           <span className="flex items-center gap-1">
-                            <span className="material-symbols-outlined text-[16px]">favorite</span>
+                            <span className="material-symbols-outlined text-[16px]">
+                              favorite
+                            </span>
                             {post.likesCount}
                           </span>
                           <span className="flex items-center gap-1">
-                            <span className="material-symbols-outlined text-[16px]">chat_bubble</span>
+                            <span className="material-symbols-outlined text-[16px]">
+                              chat_bubble
+                            </span>
                             {post.commentsCount}
                           </span>
                         </div>
@@ -624,7 +695,9 @@ export default function PublicCitizenProfileView() {
               {(profile.venues?.length ?? 0) > 0 && (
                 <div className="space-y-3">
                   <h3 className="text-sm font-bold text-zinc-300 uppercase tracking-wider flex items-center gap-1.5">
-                    <span className="material-symbols-outlined text-[16px]">domain</span>
+                    <span className="material-symbols-outlined text-[16px]">
+                      domain
+                    </span>
                     Venues Hosted
                   </h3>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -643,7 +716,9 @@ export default function PublicCitizenProfileView() {
                             />
                           ) : (
                             <div className="w-full h-full flex items-center justify-center text-zinc-600">
-                              <span className="material-symbols-outlined">domain</span>
+                              <span className="material-symbols-outlined">
+                                domain
+                              </span>
                             </div>
                           )}
                         </div>
@@ -653,7 +728,8 @@ export default function PublicCitizenProfileView() {
                           </h4>
                           <p className="text-xs text-zinc-400">{v.city}</p>
                           <p className="text-xs font-bold text-lime-400 mt-1">
-                            ₱{Number(v.price).toLocaleString()} / {v.billingRate}
+                            ₱{Number(v.price).toLocaleString()} /{" "}
+                            {v.billingRate}
                           </p>
                         </div>
                       </Link>
@@ -666,7 +742,9 @@ export default function PublicCitizenProfileView() {
               {(profile.services?.length ?? 0) > 0 && (
                 <div className="space-y-3">
                   <h3 className="text-sm font-bold text-zinc-300 uppercase tracking-wider flex items-center gap-1.5">
-                    <span className="material-symbols-outlined text-[16px]">stars</span>
+                    <span className="material-symbols-outlined text-[16px]">
+                      stars
+                    </span>
                     Talent & Services
                   </h3>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -684,7 +762,9 @@ export default function PublicCitizenProfileView() {
                             />
                           ) : (
                             <div className="w-full h-full flex items-center justify-center text-zinc-600">
-                              <span className="material-symbols-outlined">work</span>
+                              <span className="material-symbols-outlined">
+                                work
+                              </span>
                             </div>
                           )}
                         </div>
@@ -696,7 +776,8 @@ export default function PublicCitizenProfileView() {
                             {s.category.replace(/_/g, " ")}
                           </p>
                           <p className="text-xs font-bold text-lime-400 mt-1">
-                            ₱{Number(s.price).toLocaleString()} / {s.billingRate}
+                            ₱{Number(s.price).toLocaleString()} /{" "}
+                            {s.billingRate}
                           </p>
                         </div>
                       </div>
@@ -709,7 +790,9 @@ export default function PublicCitizenProfileView() {
               {(profile.assets?.length ?? 0) > 0 && (
                 <div className="space-y-3">
                   <h3 className="text-sm font-bold text-zinc-300 uppercase tracking-wider flex items-center gap-1.5">
-                    <span className="material-symbols-outlined text-[16px]">devices</span>
+                    <span className="material-symbols-outlined text-[16px]">
+                      devices
+                    </span>
                     Gear & Equipment
                   </h3>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -727,7 +810,9 @@ export default function PublicCitizenProfileView() {
                             />
                           ) : (
                             <div className="w-full h-full flex items-center justify-center text-zinc-600">
-                              <span className="material-symbols-outlined">videocam</span>
+                              <span className="material-symbols-outlined">
+                                videocam
+                              </span>
                             </div>
                           )}
                         </div>
@@ -739,7 +824,8 @@ export default function PublicCitizenProfileView() {
                             {a.category.replace(/_/g, " ")}
                           </p>
                           <p className="text-xs font-bold text-lime-400 mt-1">
-                            ₱{Number(a.price).toLocaleString()} / {a.billingRate}
+                            ₱{Number(a.price).toLocaleString()} /{" "}
+                            {a.billingRate}
                           </p>
                         </div>
                       </div>

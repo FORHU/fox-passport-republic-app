@@ -93,7 +93,9 @@ export default function HostVenuesClient({
                   href="/venue-foxer/create-venue"
                   className="w-full sm:w-auto px-5 py-2.5 rounded-full bg-[#ccff00] hover:bg-[#b8e600] text-black font-bold text-xs flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(204,255,0,0.3)] transition-all cursor-pointer shrink-0"
                 >
-                  <span className="material-symbols-outlined text-[18px]">polyline</span>
+                  <span className="material-symbols-outlined text-[18px]">
+                    polyline
+                  </span>
                   <span>+ Draw & Add Venue</span>
                 </Link>
 

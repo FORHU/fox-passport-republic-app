@@ -24,16 +24,10 @@ export function UserMenuProfileHeader({ user }: UserMenuProfileHeaderProps) {
     <div className="px-4 py-3 border-b border-white/5 flex items-center gap-3">
       <div className="w-10 h-10 rounded-xl overflow-hidden shrink-0">
         {avatarUrl ? (
-          <img
-            src={avatarUrl}
-            alt=""
-            className="w-full h-full object-cover"
-          />
+          <img src={avatarUrl} alt="" className="w-full h-full object-cover" />
         ) : (
           <div className="w-full h-full bg-[#ccff00] flex items-center justify-center">
-            <span className="text-black text-sm font-bold">
-              {userInitial}
-            </span>
+            <span className="text-black text-sm font-bold">{userInitial}</span>
           </div>
         )}
       </div>

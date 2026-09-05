@@ -16,9 +16,7 @@ export type InventoryCategory =
   | "other";
 
 export type TransportPolicy =
-  | "self_pickup"
-  | "partner_delivers_free"
-  | "partner_delivers_fee";
+  "self_pickup" | "partner_delivers_free" | "partner_delivers_fee";
 
 export interface PartnerInvestment {
   id: string;

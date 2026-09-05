@@ -151,20 +151,27 @@ function RepublicFeedContent() {
               onClick={() => setMobileComposeOpen((prev) => !prev)}
               className="flex-1 py-2 px-3 rounded-xl bg-lime-400 hover:bg-lime-300 text-black font-black text-xs flex items-center justify-center gap-1.5 shadow-md transition-all cursor-pointer"
             >
-              <span className="material-symbols-outlined text-[16px]">edit_note</span>
+              <span className="material-symbols-outlined text-[16px]">
+                edit_note
+              </span>
               {mobileComposeOpen ? "Close Composer" : "+ Create Post"}
             </button>
             <Link
               href="/republic/investments"
               className="py-2 px-3 rounded-xl bg-zinc-900 border border-zinc-800 hover:border-zinc-700 text-amber-300 font-black text-xs flex items-center gap-1.5 transition-colors"
             >
-              <span className="material-symbols-outlined text-[16px]">inventory_2</span>
+              <span className="material-symbols-outlined text-[16px]">
+                inventory_2
+              </span>
               Depots Map
             </Link>
           </div>
 
           {/* Search Bar Locked Inside Top Bar on Mobile */}
-          <form onSubmit={handleSearchSubmit} className="relative flex items-center">
+          <form
+            onSubmit={handleSearchSubmit}
+            className="relative flex items-center"
+          >
             <span className="material-symbols-outlined absolute left-3 text-zinc-400 text-[18px]">
               search
             </span>
@@ -241,7 +248,9 @@ function RepublicFeedContent() {
             {/* On Medium screens (md to xl), also tuck the Partner Hub here if the 3rd column is hidden */}
             <div className="xl:hidden space-y-3">
               <PartnerEquipmentDepotCard
-                mapSlot={<PartnerInventoryMap className="h-[360px] w-full rounded-2xl overflow-hidden" />}
+                mapSlot={
+                  <PartnerInventoryMap className="h-[360px] w-full rounded-2xl overflow-hidden" />
+                }
               />
             </div>
 
@@ -299,7 +308,10 @@ function RepublicFeedContent() {
           <main className="flex-1 min-w-0 max-w-2xl xl:max-w-2xl space-y-5 w-full min-h-[85vh]">
             {/* Floating Search Bar in the Middle (Desktop only: md:block) */}
             <div className="hidden md:block sticky top-20 z-30 backdrop-blur-xl bg-zinc-950/90 border border-zinc-800/90 rounded-2xl p-2 sm:p-2.5 shadow-[0_10px_35px_rgba(0,0,0,0.7)] transition-all">
-              <form onSubmit={handleSearchSubmit} className="relative flex items-center">
+              <form
+                onSubmit={handleSearchSubmit}
+                className="relative flex items-center"
+              >
                 <span className="material-symbols-outlined absolute left-3.5 text-zinc-400 text-[18px]">
                   search
                 </span>
@@ -344,7 +356,9 @@ function RepublicFeedContent() {
                       onClick={() => setMobileComposeOpen(false)}
                       className="p-1 rounded-full text-zinc-400 hover:text-white cursor-pointer"
                     >
-                      <span className="material-symbols-outlined text-[18px]">close</span>
+                      <span className="material-symbols-outlined text-[18px]">
+                        close
+                      </span>
                     </button>
                   </div>
                   <ComposePostBox
@@ -362,9 +376,13 @@ function RepublicFeedContent() {
                 >
                   <span className="flex items-center gap-2.5 truncate">
                     <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-lime-400/10 text-lime-400 group-hover:scale-110 transition-transform">
-                      <span className="material-symbols-outlined text-[16px]">edit_note</span>
+                      <span className="material-symbols-outlined text-[16px]">
+                        edit_note
+                      </span>
                     </span>
-                    <span className="truncate">Share an update, offer gear, or tell a story...</span>
+                    <span className="truncate">
+                      Share an update, offer gear, or tell a story...
+                    </span>
                   </span>
                   <span className="shrink-0 px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider bg-lime-400 text-black font-bold">
                     Post
@@ -427,7 +445,9 @@ function RepublicFeedContent() {
                 {loadingMore && (
                   <div className="flex items-center justify-center gap-2 py-6 text-zinc-400 text-xs">
                     <span className="w-5 h-5 rounded-full border-2 border-lime-400 border-t-transparent animate-spin" />
-                    <span>Fetching more Republic updates (10 at a time)...</span>
+                    <span>
+                      Fetching more Republic updates (10 at a time)...
+                    </span>
                   </div>
                 )}
 
@@ -450,7 +470,9 @@ function RepublicFeedContent() {
           <aside className="hidden xl:block w-80 xl:w-96 shrink-0 xl:sticky xl:top-20 xl:self-start xl:max-h-[calc(100vh-6rem)] xl:overflow-y-auto space-y-5 h-fit [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
             {/* Top Right: Partner Equipment Depots & Capital Pool */}
             <PartnerEquipmentDepotCard
-              mapSlot={<PartnerInventoryMap className="h-[380px] w-full rounded-2xl overflow-hidden" />}
+              mapSlot={
+                <PartnerInventoryMap className="h-[380px] w-full rounded-2xl overflow-hidden" />
+              }
             />
 
             {/* Below Partner Equipment Depots: The Uploading (ComposePostBox) */}
@@ -459,7 +481,9 @@ function RepublicFeedContent() {
                 <span>Publish Update</span>
                 <span className="text-lime-400 font-bold">+15 XP / Post</span>
               </div>
-              <ComposePostBox onPostCreated={() => fetchPosts(activeTab, search)} />
+              <ComposePostBox
+                onPostCreated={() => fetchPosts(activeTab, search)}
+              />
             </div>
           </aside>
         </div>

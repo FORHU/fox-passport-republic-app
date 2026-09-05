@@ -1,9 +1,5 @@
 export type ScanState =
-  | "idle"
-  | "scanning"
-  | "success"
-  | "error"
-  | "already_checked_in";
+  "idle" | "scanning" | "success" | "error" | "already_checked_in";
 
 export type ModeTab = "manual" | "camera" | "upload";
 

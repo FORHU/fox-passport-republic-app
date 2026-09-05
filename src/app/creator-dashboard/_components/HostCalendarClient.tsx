@@ -11,7 +11,6 @@ import {
   getDotColor,
 } from "@/shared/hooks/useCalendarBookings";
 
-
 export default function HostCalendarClient() {
   const [currentDate, setCurrentDate] = useState(new Date());
   const { bookings, isLoading } = useCalendarBookings();

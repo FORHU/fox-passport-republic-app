@@ -49,8 +49,7 @@ export function PendingRequests() {
   const requests: ClientMatchRequest[] = page?.data ?? [];
   const pendingAll = requests.filter((r) => r.requestStatus === "pending");
   const confirmedAll = requests.filter(
-    (r) =>
-      r.requestStatus === "approved" || r.requestStatus === "accepted",
+    (r) => r.requestStatus === "approved" || r.requestStatus === "accepted",
   );
   const visible = (tab === "pending" ? pendingAll : confirmedAll).slice(0, 4);
   const totalPending = pendingAll.length;

@@ -45,7 +45,9 @@ export default function PartnerInventoryMap({
 
   const { coords, country, countryCode, city, locateMe } = useUserLocation();
   const [investments, setInvestments] = useState<PartnerInvestment[]>([]);
-  const [selectedPin, setSelectedPin] = useState<PartnerInvestment | null>(null);
+  const [selectedPin, setSelectedPin] = useState<PartnerInvestment | null>(
+    null,
+  );
   const [activeCategory, setActiveCategory] = useState<string>("all");
   const [loading, setLoading] = useState(false);
   const [mapReady, setMapReady] = useState(false);
@@ -62,7 +64,9 @@ export default function PartnerInventoryMap({
     fetchInvestmentsOnMap({
       type: "physical_inventory",
       category:
-        activeCategory !== "all" ? (activeCategory as InventoryCategory) : undefined,
+        activeCategory !== "all"
+          ? (activeCategory as InventoryCategory)
+          : undefined,
     })
       .then((data) => {
         if (alive) {
@@ -105,7 +109,10 @@ export default function PartnerInventoryMap({
       setMapReady(true);
       setupMapboxFallback(map);
 
-      map.addControl(new mapboxgl.NavigationControl({ showCompass: false }), "top-right");
+      map.addControl(
+        new mapboxgl.NavigationControl({ showCompass: false }),
+        "top-right",
+      );
       const geolocate = new mapboxgl.GeolocateControl({
         positionOptions: { enableHighAccuracy: true },
         trackUserLocation: false,
@@ -265,7 +272,11 @@ export default function PartnerInventoryMap({
             onClick={() => {
               locateMe();
               if (mapRef.current) {
-                mapRef.current.flyTo({ center: coords, zoom: 12, essential: true });
+                mapRef.current.flyTo({
+                  center: coords,
+                  zoom: 12,
+                  essential: true,
+                });
               }
             }}
             className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-zinc-900 hover:bg-zinc-800 text-zinc-300 hover:text-white font-semibold transition-colors cursor-pointer border border-zinc-800"
@@ -283,7 +294,11 @@ export default function PartnerInventoryMap({
         {[
           { id: "all", label: "All Equipment Supplies", icon: "widgets" },
           { id: "furniture_seating", label: "Chairs & Seating", icon: "chair" },
-          { id: "tables_staging", label: "Tables & Staging", icon: "table_restaurant" },
+          {
+            id: "tables_staging",
+            label: "Tables & Staging",
+            icon: "table_restaurant",
+          },
           { id: "audio_visual", label: "Audio & AV", icon: "speaker" },
           { id: "lighting_rigging", label: "Lighting", icon: "light" },
           { id: "power_climate", label: "Power & Gen", icon: "bolt" },
@@ -297,7 +312,9 @@ export default function PartnerInventoryMap({
                 : "bg-zinc-950/70 border-zinc-800 text-zinc-400 hover:text-white hover:border-zinc-700"
             }`}
           >
-            <span className="material-symbols-outlined text-[16px]">{cat.icon}</span>
+            <span className="material-symbols-outlined text-[16px]">
+              {cat.icon}
+            </span>
             <span>{cat.label}</span>
           </button>
         ))}
@@ -308,12 +325,14 @@ export default function PartnerInventoryMap({
           onClick={() => {
             toast.info(
               "Financial Capital & Venue Equity investments are coming soon! Physical equipment & inventory hubs are currently live on the map.",
-              { duration: 4000 }
+              { duration: 4000 },
             );
           }}
           className="px-3 py-2 rounded-xl flex items-center gap-1.5 shrink-0 transition-all border bg-zinc-950/40 border-amber-500/20 text-zinc-500 hover:text-amber-300 hover:border-amber-500/40 cursor-pointer"
         >
-          <span className="material-symbols-outlined text-[16px]">payments</span>
+          <span className="material-symbols-outlined text-[16px]">
+            payments
+          </span>
           <span>Financial Capital</span>
           <span className="px-1.5 py-0.5 rounded text-[9px] font-black uppercase tracking-wider bg-amber-500/20 text-amber-400 border border-amber-500/30">
             Coming Soon
@@ -322,7 +341,9 @@ export default function PartnerInventoryMap({
       </div>
 
       {/* Mapbox Canvas */}
-      <div className={`relative border border-zinc-800 shadow-2xl bg-zinc-950 ${className}`}>
+      <div
+        className={`relative border border-zinc-800 shadow-2xl bg-zinc-950 ${className}`}
+      >
         <div ref={containerRef} className="w-full h-full" />
 
         {/* Selected Hub Details Card (Bottom Overlay) */}
@@ -331,7 +352,8 @@ export default function PartnerInventoryMap({
             <div className="flex items-start justify-between gap-3 mb-2">
               <div className="flex items-center gap-2">
                 <span className="px-2 py-0.5 rounded-md bg-amber-400/20 border border-amber-400/30 text-amber-300 text-[10px] font-black uppercase tracking-wider">
-                  {selectedPin.inventoryCategory?.replace(/_/g, " ") ?? "Inventory Hub"}
+                  {selectedPin.inventoryCategory?.replace(/_/g, " ") ??
+                    "Inventory Hub"}
                 </span>
                 <span className="text-[11px] font-bold text-lime-400">
                   {selectedPin.quantityAvailable} units ready
@@ -341,7 +363,9 @@ export default function PartnerInventoryMap({
                 onClick={() => setSelectedPin(null)}
                 className="text-zinc-500 hover:text-white transition-colors"
               >
-                <span className="material-symbols-outlined text-[18px]">close</span>
+                <span className="material-symbols-outlined text-[18px]">
+                  close
+                </span>
               </button>
             </div>
 
@@ -357,7 +381,9 @@ export default function PartnerInventoryMap({
               <div>
                 <span className="text-zinc-500 block">Depot Location:</span>
                 <span className="text-white font-medium truncate block">
-                  {selectedPin.city || selectedPin.country || "Republic Warehouse"}
+                  {selectedPin.city ||
+                    selectedPin.country ||
+                    "Republic Warehouse"}
                 </span>
               </div>
               <div>
@@ -374,7 +400,9 @@ export default function PartnerInventoryMap({
                   href={`/messages?userId=${selectedPin.partner.id}&contextType=investment&contextId=${selectedPin.id}&contextLabel=${encodeURIComponent(selectedPin.title)}`}
                   className="flex-1 px-4 py-2.5 rounded-xl bg-gradient-to-r from-amber-400 to-yellow-500 hover:from-amber-300 hover:to-yellow-400 text-black font-black text-xs flex items-center justify-center gap-1.5 shadow-lg transition-all cursor-pointer"
                 >
-                  <span className="material-symbols-outlined text-[16px]">chat</span>
+                  <span className="material-symbols-outlined text-[16px]">
+                    chat
+                  </span>
                   <span>Request Tool Dispatch</span>
                 </Link>
               )}

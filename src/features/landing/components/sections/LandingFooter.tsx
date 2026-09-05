@@ -53,16 +53,18 @@ export default function LandingFooter() {
               Discover
             </h3>
             <ul className="space-y-2 sm:space-y-4">
-              {["Events", "Adventures", "Venues", "Republic Foxer"].map((item) => (
-                <li key={item}>
-                  <a
-                    className="text-xs text-gray-400 hover:text-[#ccff00] font-medium transition-colors"
-                    href={item === "Republic Foxer" ? "/republic" : "#"}
-                  >
-                    {item}
-                  </a>
-                </li>
-              ))}
+              {["Events", "Adventures", "Venues", "Republic Foxer"].map(
+                (item) => (
+                  <li key={item}>
+                    <a
+                      className="text-xs text-gray-400 hover:text-[#ccff00] font-medium transition-colors"
+                      href={item === "Republic Foxer" ? "/republic" : "#"}
+                    >
+                      {item}
+                    </a>
+                  </li>
+                ),
+              )}
             </ul>
           </div>
 

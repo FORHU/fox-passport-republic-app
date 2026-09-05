@@ -73,7 +73,9 @@ export function AuthorPassportPopover({
             </Link>
             {isPartner && (
               <span className="inline-flex items-center gap-0.5 px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-gradient-to-r from-amber-500/20 to-yellow-500/20 text-amber-300 border border-amber-500/40 shadow-sm">
-                <span className="material-symbols-outlined text-[12px]">verified</span>
+                <span className="material-symbols-outlined text-[12px]">
+                  verified
+                </span>
                 Partner Foxer
               </span>
             )}
@@ -93,7 +95,9 @@ export function AuthorPassportPopover({
               <>
                 <span>•</span>
                 <span className="inline-flex items-center gap-1 text-[11px] text-amber-400 font-medium">
-                  <span className="material-symbols-outlined text-[13px]">military_tech</span>
+                  <span className="material-symbols-outlined text-[13px]">
+                    military_tech
+                  </span>
                   {stampsCount} {stampsCount === 1 ? "Stamp" : "Stamps"}
                 </span>
               </>

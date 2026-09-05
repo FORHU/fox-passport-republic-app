@@ -37,8 +37,14 @@ export default function InvestmentLocationPicker({
   const markerRef = useRef<any>(null);
   const radiusSourceRef = useRef<any>(null);
 
-  const { coords: detectedCoords, country: detectedCountry, countryCode, city: detectedCity, isDetected, locateMe } =
-    useUserLocation();
+  const {
+    coords: detectedCoords,
+    country: detectedCountry,
+    countryCode,
+    city: detectedCity,
+    isDetected,
+    locateMe,
+  } = useUserLocation();
 
   const [searchQuery, setSearchQuery] = useState("");
   const [suggestions, setSuggestions] = useState<any[]>([]);
@@ -121,7 +127,9 @@ export default function InvestmentLocationPicker({
 
     setIsSearching(true);
     try {
-      const countryFilter = countryCode ? `&country=${countryCode.toLowerCase()}` : "";
+      const countryFilter = countryCode
+        ? `&country=${countryCode.toLowerCase()}`
+        : "";
       const proximity =
         value.lng != null && value.lat != null
           ? `&proximity=${value.lng},${value.lat}`
@@ -200,7 +208,10 @@ export default function InvestmentLocationPicker({
       setupMapboxFallback(map);
 
       // Add navigation and geolocate controls
-      map.addControl(new mapboxgl.NavigationControl({ showCompass: false }), "top-right");
+      map.addControl(
+        new mapboxgl.NavigationControl({ showCompass: false }),
+        "top-right",
+      );
       const geolocate = new mapboxgl.GeolocateControl({
         positionOptions: { enableHighAccuracy: true },
         trackUserLocation: false,
@@ -263,13 +274,20 @@ export default function InvestmentLocationPicker({
           onClick={() => {
             locateMe();
             if (mapRef.current) {
-              mapRef.current.flyTo({ center: detectedCoords, zoom: 13, essential: true });
-              if (markerRef.current) markerRef.current.setLngLat(detectedCoords);
+              mapRef.current.flyTo({
+                center: detectedCoords,
+                zoom: 13,
+                essential: true,
+              });
+              if (markerRef.current)
+                markerRef.current.setLngLat(detectedCoords);
             }
           }}
           className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-zinc-800 hover:bg-zinc-700 text-white font-semibold transition-colors cursor-pointer"
         >
-          <span className="material-symbols-outlined text-[14px]">my_location</span>
+          <span className="material-symbols-outlined text-[14px]">
+            my_location
+          </span>
           Center on Me
         </button>
       </div>
@@ -341,7 +359,9 @@ export default function InvestmentLocationPicker({
         </div>
 
         <div>
-          <label className="text-zinc-400 font-semibold mb-1 block">City / Municipality</label>
+          <label className="text-zinc-400 font-semibold mb-1 block">
+            City / Municipality
+          </label>
           <input
             type="text"
             value={value.city}
@@ -352,7 +372,9 @@ export default function InvestmentLocationPicker({
         </div>
 
         <div>
-          <label className="text-zinc-400 font-semibold mb-1 block">Country</label>
+          <label className="text-zinc-400 font-semibold mb-1 block">
+            Country
+          </label>
           <input
             type="text"
             value={value.country}
@@ -389,7 +411,9 @@ export default function InvestmentLocationPicker({
             className="w-full accent-amber-400 cursor-pointer"
           />
           <p className="text-[11px] text-zinc-500">
-            Partner venues and event organizers located within {value.deliveryRadiusKm} km of this warehouse will see these supplies as available for dispatch.
+            Partner venues and event organizers located within{" "}
+            {value.deliveryRadiusKm} km of this warehouse will see these
+            supplies as available for dispatch.
           </p>
         </div>
       )}

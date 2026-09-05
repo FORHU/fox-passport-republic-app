@@ -7,7 +7,10 @@ interface PartnerEquipmentDepotCardProps {
   mapSlot?: React.ReactNode;
 }
 
-export function PartnerEquipmentDepotCard({ onMapToggled, mapSlot }: PartnerEquipmentDepotCardProps) {
+export function PartnerEquipmentDepotCard({
+  onMapToggled,
+  mapSlot,
+}: PartnerEquipmentDepotCardProps) {
   const [showInlineMap, setShowInlineMap] = useState(false);
 
   const toggleMap = () => {
@@ -25,7 +28,9 @@ export function PartnerEquipmentDepotCard({ onMapToggled, mapSlot }: PartnerEqui
       <div className="flex items-start justify-between gap-2">
         <div className="space-y-1">
           <div className="flex items-center gap-1.5 text-[10px] font-black uppercase tracking-wider text-amber-400">
-            <span className="material-symbols-outlined text-[16px]">inventory_2</span>
+            <span className="material-symbols-outlined text-[16px]">
+              inventory_2
+            </span>
             Partner Resource Pool
           </div>
           <h3 className="text-base font-black text-white tracking-tight">
@@ -38,7 +43,8 @@ export function PartnerEquipmentDepotCard({ onMapToggled, mapSlot }: PartnerEqui
       </div>
 
       <p className="text-xs text-zinc-400 leading-relaxed">
-        Access pooled event tools (banquet chairs, concert audio, stage trusses, silent generators) stored at partner depots.
+        Access pooled event tools (banquet chairs, concert audio, stage trusses,
+        silent generators) stored at partner depots.
       </p>
 
       {/* Action Buttons */}
@@ -72,7 +78,9 @@ export function PartnerEquipmentDepotCard({ onMapToggled, mapSlot }: PartnerEqui
           href="/foxer/create-investment"
           className="px-3 py-2.5 rounded-xl bg-gradient-to-r from-amber-400 to-yellow-500 hover:from-amber-300 hover:to-yellow-400 text-black font-black text-xs flex items-center justify-center gap-1.5 shadow-md transition-all truncate"
         >
-          <span className="material-symbols-outlined text-[16px]">add_circle</span>
+          <span className="material-symbols-outlined text-[16px]">
+            add_circle
+          </span>
           Add Tools
         </Link>
       </div>
@@ -86,7 +94,10 @@ export function PartnerEquipmentDepotCard({ onMapToggled, mapSlot }: PartnerEqui
               href="/republic/investments"
               className="text-[11px] font-bold text-amber-400 hover:underline flex items-center gap-1"
             >
-              Open Full Partner Hub <span className="material-symbols-outlined text-[14px]">arrow_forward</span>
+              Open Full Partner Hub{" "}
+              <span className="material-symbols-outlined text-[14px]">
+                arrow_forward
+              </span>
             </Link>
           </div>
         </div>

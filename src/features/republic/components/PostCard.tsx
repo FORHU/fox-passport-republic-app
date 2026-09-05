@@ -84,7 +84,9 @@ export function PostCard({ post, onPostDeleted }: PostCardProps) {
       {/* Top Banner for Pinned or Partner Posts */}
       {post.isPinned && (
         <div className="flex items-center gap-1.5 text-xs text-lime-400 font-bold mb-3 pb-2 border-b border-zinc-800/60">
-          <span className="material-symbols-outlined text-[16px]">push_pin</span>
+          <span className="material-symbols-outlined text-[16px]">
+            push_pin
+          </span>
           <span>Featured in Republic</span>
         </div>
       )}
@@ -108,7 +110,9 @@ export function PostCard({ post, onPostDeleted }: PostCardProps) {
               className="w-5 h-5 rounded-full object-cover ring-1 ring-amber-400/50"
             />
           ) : (
-            <span className="material-symbols-outlined text-[16px]">military_tech</span>
+            <span className="material-symbols-outlined text-[16px]">
+              military_tech
+            </span>
           )}
           <span className="font-bold">Verified Venue Stamp:</span>
           <span>{post.stamp.venue?.name || post.stamp.eventName}</span>
@@ -125,8 +129,8 @@ export function PostCard({ post, onPostDeleted }: PostCardProps) {
             post.mediaUrls.length === 1
               ? "grid-cols-1"
               : post.mediaUrls.length === 2
-              ? "grid-cols-2"
-              : "grid-cols-2 sm:grid-cols-3"
+                ? "grid-cols-2"
+                : "grid-cols-2 sm:grid-cols-3"
           }`}
         >
           {post.mediaUrls.map((url, idx) => (
@@ -200,7 +204,8 @@ export function PostCard({ post, onPostDeleted }: PostCardProps) {
               <span>📍 {post.venue.city}</span>
               <span>👥 Up to {post.venue.capacity} guests</span>
               <span className="text-lime-400 font-bold">
-                ₱{Number(post.venue.price).toLocaleString()} / {post.venue.billingRate}
+                ₱{Number(post.venue.price).toLocaleString()} /{" "}
+                {post.venue.billingRate}
               </span>
             </div>
           </div>
@@ -217,7 +222,9 @@ export function PostCard({ post, onPostDeleted }: PostCardProps) {
               title="Chat with Venue Foxer"
               className="px-3 py-2 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-zinc-200 font-bold text-xs flex items-center gap-1 border border-zinc-700 transition-all"
             >
-              <span className="material-symbols-outlined text-[15px]">chat</span>
+              <span className="material-symbols-outlined text-[15px]">
+                chat
+              </span>
               <span className="hidden sm:inline">Message</span>
             </button>
           </div>
@@ -237,7 +244,8 @@ export function PostCard({ post, onPostDeleted }: PostCardProps) {
               </span>
             </div>
             <p className="text-xs text-lime-400 font-bold mt-1">
-              ₱{Number(post.asset.price).toLocaleString()} / {post.asset.billingRate}
+              ₱{Number(post.asset.price).toLocaleString()} /{" "}
+              {post.asset.billingRate}
             </p>
           </div>
 
@@ -253,7 +261,9 @@ export function PostCard({ post, onPostDeleted }: PostCardProps) {
               title="Chat with Gear Foxer"
               className="px-3 py-2 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-zinc-200 font-bold text-xs flex items-center gap-1 border border-zinc-700 transition-all"
             >
-              <span className="material-symbols-outlined text-[15px]">chat</span>
+              <span className="material-symbols-outlined text-[15px]">
+                chat
+              </span>
               <span className="hidden sm:inline">Message</span>
             </button>
           </div>
@@ -275,7 +285,8 @@ export function PostCard({ post, onPostDeleted }: PostCardProps) {
             <div className="flex items-center gap-2 text-xs text-zinc-400 mt-1">
               <span>📍 {post.service.city}</span>
               <span className="text-lime-400 font-bold">
-                ₱{Number(post.service.price).toLocaleString()} / {post.service.billingRate}
+                ₱{Number(post.service.price).toLocaleString()} /{" "}
+                {post.service.billingRate}
               </span>
             </div>
           </div>
@@ -292,7 +303,9 @@ export function PostCard({ post, onPostDeleted }: PostCardProps) {
               title="Chat with Service Foxer"
               className="px-3 py-2 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-zinc-200 font-bold text-xs flex items-center gap-1 border border-zinc-700 transition-all"
             >
-              <span className="material-symbols-outlined text-[15px]">chat</span>
+              <span className="material-symbols-outlined text-[15px]">
+                chat
+              </span>
               <span className="hidden sm:inline">Message</span>
             </button>
           </div>
@@ -312,7 +325,9 @@ export function PostCard({ post, onPostDeleted }: PostCardProps) {
               </span>
             </div>
             <div className="flex items-center gap-2 text-xs text-zinc-400 mt-1">
-              <span>📅 {new Date(post.event.startAt).toLocaleDateString()}</span>
+              <span>
+                📅 {new Date(post.event.startAt).toLocaleDateString()}
+              </span>
               <span>👥 {post.event.guestCount} Guests</span>
             </div>
           </div>
@@ -329,7 +344,9 @@ export function PostCard({ post, onPostDeleted }: PostCardProps) {
               title="Chat with Event Organizer"
               className="px-3 py-2 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-zinc-200 font-bold text-xs flex items-center gap-1 border border-zinc-700 transition-all"
             >
-              <span className="material-symbols-outlined text-[15px]">chat</span>
+              <span className="material-symbols-outlined text-[15px]">
+                chat
+              </span>
               <span className="hidden sm:inline">Message</span>
             </button>
           </div>
@@ -341,7 +358,9 @@ export function PostCard({ post, onPostDeleted }: PostCardProps) {
         <div className="mt-4 p-4 rounded-xl bg-gradient-to-r from-amber-500/15 via-yellow-500/10 to-transparent border border-amber-500/40 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
           <div>
             <span className="text-xs font-extrabold text-amber-300 flex items-center gap-1">
-              <span className="material-symbols-outlined text-[15px]">handshake</span>
+              <span className="material-symbols-outlined text-[15px]">
+                handshake
+              </span>
               Official Partner Foxer Opportunity
             </span>
             <p className="text-[11px] text-zinc-400 mt-0.5">
@@ -390,7 +409,9 @@ export function PostCard({ post, onPostDeleted }: PostCardProps) {
                 : "text-zinc-400 hover:text-white hover:bg-zinc-800/60"
             }`}
           >
-            <span className="material-symbols-outlined text-[18px]">chat_bubble</span>
+            <span className="material-symbols-outlined text-[18px]">
+              chat_bubble
+            </span>
             <span>{commentsCount}</span>
           </button>
 
@@ -400,7 +421,9 @@ export function PostCard({ post, onPostDeleted }: PostCardProps) {
             className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-zinc-400 hover:text-white hover:bg-zinc-800/60 transition-colors"
           >
             <span className="material-symbols-outlined text-[18px]">share</span>
-            <span className="hidden sm:inline">{copied ? "Copied!" : "Share"}</span>
+            <span className="hidden sm:inline">
+              {copied ? "Copied!" : "Share"}
+            </span>
           </button>
         </div>
       </div>
