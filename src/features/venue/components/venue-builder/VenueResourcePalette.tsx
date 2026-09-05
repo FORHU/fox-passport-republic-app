@@ -68,21 +68,21 @@ export function VenueResourcePalette({
   return (
     <>
       {/* Category Navigation */}
-      <nav className="w-24 shrink-0 bg-[#0f111a] border-r border-white/5 flex flex-col items-center py-6 gap-6 overflow-y-auto hide-scrollbar z-20">
+      <nav className="w-16 sm:w-20 md:w-24 shrink-0 bg-[#0f111a] border-r border-white/5 flex flex-col items-center py-4 sm:py-6 gap-3 sm:gap-6 overflow-y-auto hide-scrollbar z-20">
         {RESOURCE_CATEGORIES.map((cat) => (
           <button
             key={cat.id}
             onClick={() => onCategoryChange(cat.id)}
-            className={`flex flex-col items-center justify-center w-16 h-16 rounded-xl transition-all ${
+            className={`flex flex-col items-center justify-center w-12 h-12 sm:w-16 sm:h-16 rounded-xl transition-all ${
               activeCategory === cat.id
                 ? "bg-accent text-black font-bold shadow-[0_0_15px_rgba(204,255,0,0.4)] scale-105"
                 : "text-text-muted hover:text-white hover:bg-white/5"
             }`}
           >
-            <span className="material-symbols-outlined text-[28px] mb-1">
+            <span className="material-symbols-outlined text-[22px] sm:text-[28px] mb-0.5 sm:mb-1">
               {cat.icon}
             </span>
-            <span className="text-[9px] uppercase tracking-wider">
+            <span className="text-[8px] sm:text-[9px] uppercase tracking-wider truncate max-w-[48px] sm:max-w-none text-center">
               {cat.label}
             </span>
           </button>
@@ -90,7 +90,7 @@ export function VenueResourcePalette({
       </nav>
 
       {/* Resource List */}
-      <aside className="w-80 shrink-0 border-r border-white/5 bg-[#0f111a] flex flex-col relative z-10">
+      <aside className="flex-1 min-w-0 sm:w-72 md:w-80 shrink-0 border-r border-white/5 bg-[#0f111a] flex flex-col relative z-10">
         <div className="p-6 pb-2">
           <h3 className="font-display font-bold text-lg text-white mb-1">
             {currentCategoryLabel}

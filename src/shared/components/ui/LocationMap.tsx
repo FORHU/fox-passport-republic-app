@@ -1,9 +1,8 @@
 "use client";
 
-import React, { useRef, useEffect } from "react";
-import { config } from "@/shared/lib/config";
+import React, { useMemo, useCallback } from "react";
+import { MapBoxView, MapMarkerItem } from "@/shared/components/ui/MapBoxView";
 import { createPinElement } from "@/shared/components/ui/VenuesMap";
-import "mapbox-gl/dist/mapbox-gl.css";
 
 const BOUNDARY_SOURCE_ID = "location-map-boundary";
 const ACCENT_COLOR = "#ccff00";
@@ -23,53 +22,39 @@ export function LocationMap({
   boundary,
   className = "h-80 w-full rounded-2xl overflow-hidden",
 }: LocationMapProps) {
-  const containerRef = useRef<HTMLDivElement>(null);
-  const mapRef = useRef<any>(null);
+  const hasBoundary = Array.isArray(boundary) && boundary.length >= 3;
 
-  useEffect(() => {
-    if (!containerRef.current || !config.mapboxToken) return;
-    let alive = true;
-    const hasBoundary = Array.isArray(boundary) && boundary.length >= 3;
+  const markers: MapMarkerItem[] = useMemo(
+    () => [
+      {
+        id: "location-pin",
+        lng,
+        lat,
+        element: typeof window !== "undefined" ? createPinElement() : undefined,
+      },
+    ],
+    [lng, lat],
+  );
 
-    import("mapbox-gl").then(({ default: mapboxgl }) => {
-      if (!alive || !containerRef.current) return;
+  const handleMapReady = useCallback(
+    (map: any) => {
+      if (!hasBoundary || !boundary) return;
+      const ring = [...boundary];
+      const closedRing =
+        ring[0][0] === ring[ring.length - 1][0] &&
+        ring[0][1] === ring[ring.length - 1][1]
+          ? ring
+          : [...ring, ring[0]];
 
-      mapboxgl.accessToken = config.mapboxToken;
-      const map = new mapboxgl.Map({
-        container: containerRef.current,
-        style: "mapbox://styles/mapbox/dark-v11",
-        center: [lng, lat],
-        zoom: hasBoundary ? 13 : 12,
-        attributionControl: false,
-      });
-      mapRef.current = map;
+      const data = {
+        type: "Feature" as const,
+        properties: {},
+        geometry: { type: "Polygon" as const, coordinates: [closedRing] },
+      };
 
-      map.addControl(
-        new mapboxgl.NavigationControl({ showCompass: false }),
-        "top-right",
-      );
-
-      new mapboxgl.Marker({ element: createPinElement(), anchor: "bottom" })
-        .setLngLat([lng, lat])
-        .addTo(map);
-
-      if (!hasBoundary) return;
-
-      map.on("load", () => {
-        if (!alive) return;
-        const ring = [...(boundary as [number, number][])];
-        const closedRing =
-          ring[0][0] === ring[ring.length - 1][0] &&
-          ring[0][1] === ring[ring.length - 1][1]
-            ? ring
-            : [...ring, ring[0]];
-
-        const data = {
-          type: "Feature" as const,
-          properties: {},
-          geometry: { type: "Polygon" as const, coordinates: [closedRing] },
-        };
-
+      if (map.getSource(BOUNDARY_SOURCE_ID)) {
+        (map.getSource(BOUNDARY_SOURCE_ID) as any).setData(data);
+      } else {
         map.addSource(BOUNDARY_SOURCE_ID, { type: "geojson", data });
         map.addLayer({
           id: `${BOUNDARY_SOURCE_ID}-fill`,
@@ -77,8 +62,7 @@ export function LocationMap({
           source: BOUNDARY_SOURCE_ID,
           paint: { "fill-color": ACCENT_COLOR, "fill-opacity": 0.12 },
         });
-        // Dark halo under the bright outline so it stays legible over
-        // street labels — same technique as the venue-builder map picker.
+        // Dark halo under the bright outline so it stays legible over street labels
         map.addLayer({
           id: `${BOUNDARY_SOURCE_ID}-halo`,
           type: "line",
@@ -97,34 +81,36 @@ export function LocationMap({
           paint: { "line-color": ACCENT_COLOR, "line-width": 2 },
           layout: { "line-join": "round", "line-cap": "round" },
         });
+      }
 
-        let minLng = ring[0][0];
-        let maxLng = ring[0][0];
-        let minLat = ring[0][1];
-        let maxLat = ring[0][1];
-        for (const [pLng, pLat] of ring) {
-          minLng = Math.min(minLng, pLng);
-          maxLng = Math.max(maxLng, pLng);
-          minLat = Math.min(minLat, pLat);
-          maxLat = Math.max(maxLat, pLat);
-        }
-        map.fitBounds(
-          [
-            [minLng, minLat],
-            [maxLng, maxLat],
-          ],
-          { padding: 50, duration: 0, maxZoom: 16 },
-        );
-      });
-    });
+      let minLng = ring[0][0];
+      let maxLng = ring[0][0];
+      let minLat = ring[0][1];
+      let maxLat = ring[0][1];
+      for (const [pLng, pLat] of ring) {
+        minLng = Math.min(minLng, pLng);
+        maxLng = Math.max(maxLng, pLng);
+        minLat = Math.min(minLat, pLat);
+        maxLat = Math.max(maxLat, pLat);
+      }
+      map.fitBounds(
+        [
+          [minLng, minLat],
+          [maxLng, maxLat],
+        ],
+        { padding: 50, duration: 0, maxZoom: 16 },
+      );
+    },
+    [boundary, hasBoundary],
+  );
 
-    return () => {
-      alive = false;
-      mapRef.current?.remove();
-      mapRef.current = null;
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [lat, lng]);
-
-  return <div ref={containerRef} className={className} />;
+  return (
+    <MapBoxView
+      center={[lng, lat]}
+      zoom={hasBoundary ? 13 : 12}
+      markers={markers}
+      className={className}
+      onMapReady={handleMapReady}
+    />
+  );
 }

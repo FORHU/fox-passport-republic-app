@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useMemo, useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import RequireAuth from "@/shared/auth/RequireAuth";
 import {
@@ -87,8 +88,16 @@ export default function HostVenuesClient({
                 </p>
               </div>
 
-              <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
-                <div className="relative w-full sm:w-72">
+              <div className="flex flex-col sm:flex-row items-center gap-3 w-full sm:w-auto">
+                <Link
+                  href="/venue-foxer/create-venue"
+                  className="w-full sm:w-auto px-5 py-2.5 rounded-full bg-[#ccff00] hover:bg-[#b8e600] text-black font-bold text-xs flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(204,255,0,0.3)] transition-all cursor-pointer shrink-0"
+                >
+                  <span className="material-symbols-outlined text-[18px]">polyline</span>
+                  <span>+ Draw & Add Venue</span>
+                </Link>
+
+                <div className="relative w-full sm:w-64">
                   <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-white/40 text-[18px]">
                     search
                   </span>

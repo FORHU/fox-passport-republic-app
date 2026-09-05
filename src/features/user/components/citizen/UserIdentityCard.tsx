@@ -12,7 +12,7 @@ const ROLE_BADGE: Record<RoleType, { label: string; color: string }> = {
   eventFoxer: { label: "Event Foxer", color: "#a78bfa" },
   gearFoxer: { label: "Gear Foxer", color: "#38bdf8" },
   serviceFoxer: { label: "Service Foxer", color: "#34d399" },
-  investor: { label: "Investor", color: "#10b981" },
+  investor: { label: "Partner Foxer", color: "#10b981" },
 };
 
 /**

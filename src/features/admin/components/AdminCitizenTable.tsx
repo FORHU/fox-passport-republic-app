@@ -24,6 +24,11 @@ const SYSTEM_ROLE_STYLE: Record<
     color: "bg-red-500/10 text-red-400 border-red-500/20",
     icon: "shield",
   },
+  admin_secretary: {
+    label: "Queue Secretary",
+    color: "bg-amber-500/10 text-amber-400 border-amber-500/20",
+    icon: "assignment_ind",
+  },
   user: {
     label: "Citizen",
     color: "bg-white/5 text-white/40 border-white/10",
@@ -57,7 +62,7 @@ const ROLE_TYPE_STYLE: Record<
     icon: "star",
   },
   investor: {
-    label: "Investor",
+    label: "Partner Foxer",
     color: "bg-emerald-500/10 text-emerald-400 border-emerald-500/20",
     icon: "payments",
   },
@@ -334,7 +339,9 @@ export const AdminCitizenTable: React.FC<CitizenTableProps> = ({
                               <p className="text-[10px] text-white/25 mt-2">
                                 {citizen.systemRole === "admin"
                                   ? "Full platform access"
-                                  : "Standard access"}
+                                  : citizen.systemRole === "admin_secretary"
+                                    ? "Works the approval queues"
+                                    : "Standard access"}
                               </p>
                             </div>
                             <div>

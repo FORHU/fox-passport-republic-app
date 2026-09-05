@@ -24,7 +24,7 @@ export function RevenueProjector({
   onPreview,
 }: RevenueProjectorProps) {
   return (
-    <aside className="w-80 shrink-0 border-l border-white/5 bg-[#0f111a] flex flex-col shadow-2xl z-10">
+    <aside className="w-full xl:w-80 shrink-0 border-l border-white/5 bg-[#0f111a] flex flex-col shadow-2xl z-10">
       <div className="p-6 border-b border-white/5">
         <h3 className="font-display font-bold text-white text-lg">
           Revenue Projector

@@ -3,7 +3,7 @@ import type { Permission } from "@/shared/constants/permissions";
 // Authentication related types
 
 /** Mirrors the API's `SystemRole` Prisma enum — there is no `super_admin` tier. */
-export type SystemRole = "user" | "admin";
+export type SystemRole = "user" | "admin_secretary" | "admin";
 
 /** Mirrors the API's `RoleType` Prisma enum. */
 export type RoleType =
@@ -24,6 +24,8 @@ export interface User {
   mobileNumber?: string;
   isEmailVerified?: boolean;
   imgId?: string; // profile image URL (CloudFront)
+  city?: string;
+  country?: string;
 }
 
 export interface LoginResponse {
