@@ -396,7 +396,7 @@ export const AdminServicesTable: React.FC<ServicesTableProps> = ({
                                           <span className="material-symbols-outlined text-[24px] text-red-400 group-hover:scale-110 transition-transform">
                                             picture_as_pdf
                                           </span>
-                                          <span className="text-[8px] text-white/40 truncate max-w-[60px]">
+                                          <span className="text-[8px] text-white/40 truncate max-w-15">
                                             {name || "File"}
                                           </span>
                                         </a>

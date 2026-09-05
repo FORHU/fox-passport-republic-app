@@ -4,6 +4,7 @@
 import React, { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { Menu } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import {
@@ -39,6 +40,7 @@ import type {
   IncomingMatchRequest,
   ClientMatchRequest,
 } from "@/features/gamification/api/passport";
+import MessageButton from "@/features/messages/components/MessageButton";
 
 interface PassportClientProps {
   user: any;
@@ -188,6 +190,7 @@ const PERK_META: Record<string, { title: string; desc: string; icon: string }> =
   };
 
 const PassportClient: React.FC<PassportClientProps> = ({ user }) => {
+  const router = useRouter();
   const [activeTab, setActiveTab] = useState<"progress" | "stamps" | "matches">(
     "matches",
   );
@@ -319,7 +322,7 @@ const PassportClient: React.FC<PassportClientProps> = ({ user }) => {
             </SheetTrigger>
           </div>
 
-          <aside className="hidden md:flex w-80 bg-black border-r border-white/5 p-8 flex-col z-20 sticky top-6 lg:top-10 self-start h-[calc(100vh-3rem)] lg:h-[calc(100vh-5rem)] overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+          <aside className="hidden md:flex w-80 bg-black border-r border-white/5 p-6 flex-col z-20 sticky top-6 lg:top-10 self-start h-[calc(100vh-3rem)] lg:h-[calc(100vh-5rem)] overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
             <PassportSidebarContent
               user={user}
               userName={userName}
@@ -343,7 +346,7 @@ const PassportClient: React.FC<PassportClientProps> = ({ user }) => {
             className="w-80 bg-black border-white/5 p-0 [&::-webkit-scrollbar]:hidden overflow-y-auto"
           >
             <SheetTitle className="sr-only">Navigation</SheetTitle>
-            <div className="flex flex-col h-full p-8 overflow-y-auto [&::-webkit-scrollbar]:hidden">
+            <div className="flex flex-col h-full p-6 overflow-y-auto [&::-webkit-scrollbar]:hidden">
               <PassportSidebarContent
                 user={user}
                 userName={userName}
@@ -473,11 +476,22 @@ const PassportClient: React.FC<PassportClientProps> = ({ user }) => {
                       ) : (
                         <>
                           {clientInboxAll.map((req: ClientMatchRequest) => {
-                            const sc = statusColor(req.requestStatus);
+                            const awaitingPayment =
+                              req.requestStatus === "approved" &&
+                              req.bookingStatus === "pending";
+                            const sc = awaitingPayment
+                              ? "#f97316"
+                              : statusColor(req.requestStatus);
                             return (
                               <div
                                 key={req.id}
-                                className="group relative rounded-2xl border overflow-hidden transition-all hover:scale-[1.01]"
+                                role={req.bookingId ? "button" : undefined}
+                                tabIndex={req.bookingId ? 0 : undefined}
+                                onClick={() =>
+                                  req.bookingId &&
+                                  router.push(`/booking/${req.bookingId}`)
+                                }
+                                className={`group relative rounded-2xl border overflow-hidden transition-all hover:scale-[1.01] ${req.bookingId ? "cursor-pointer" : ""}`}
                                 style={{
                                   borderColor: `${sc}20`,
                                   background: `linear-gradient(135deg, rgba(255,255,255,0.04) 0%, rgba(255,255,255,0.02) 100%)`,
@@ -535,6 +549,22 @@ const PassportClient: React.FC<PassportClientProps> = ({ user }) => {
                                       </p>
                                     )}
                                   </div>
+                                  {req.client?.id && (
+                                    <div
+                                      onClick={(e) => e.stopPropagation()}
+                                      className="shrink-0"
+                                    >
+                                      <MessageButton
+                                        otherUserId={req.client.id}
+                                        otherUserName={req.client.name}
+                                        contextType="booking"
+                                        contextId={req.bookingId ?? req.id}
+                                        contextLabel={req.name}
+                                        label=""
+                                        className="h-8 w-8 rounded-full bg-white/5 border border-white/10 text-white/50 hover:text-white hover:bg-white/10 flex items-center justify-center transition-all"
+                                      />
+                                    </div>
+                                  )}
                                   {/* Right side */}
                                   <div className="flex flex-col items-end gap-2 shrink-0">
                                     {req.totalAmount > 0 && (
@@ -550,7 +580,9 @@ const PassportClient: React.FC<PassportClientProps> = ({ user }) => {
                                         border: `1px solid ${sc}30`,
                                       }}
                                     >
-                                      {statusLabel(req.requestStatus)}
+                                      {awaitingPayment
+                                        ? "Awaiting Payment"
+                                        : statusLabel(req.requestStatus)}
                                     </span>
                                   </div>
                                 </div>
@@ -667,6 +699,20 @@ const PassportClient: React.FC<PassportClientProps> = ({ user }) => {
                                         {req.item?.name} · {req.type}
                                       </p>
                                     </div>
+                                    {req.provider?.id && (
+                                      <MessageButton
+                                        otherUserId={req.provider.id}
+                                        otherUserName={req.provider.name}
+                                        otherUserImgId={req.provider.imgId}
+                                        contextType="match"
+                                        contextId={req.id}
+                                        contextLabel={
+                                          req.item?.name ?? group.templateName
+                                        }
+                                        label=""
+                                        className="h-7 w-7 rounded-full bg-white/5 border border-white/10 text-white/50 hover:text-white hover:bg-white/10 flex items-center justify-center transition-all shrink-0"
+                                      />
+                                    )}
                                     <span
                                       className="text-[9px] font-black uppercase tracking-widest px-2.5 py-1 rounded-full shrink-0"
                                       style={{
@@ -753,6 +799,18 @@ const PassportClient: React.FC<PassportClientProps> = ({ user }) => {
                                     {req.item?.name}
                                   </p>
                                 </div>
+                                {req.template.owner?.id && (
+                                  <MessageButton
+                                    otherUserId={req.template.owner.id}
+                                    otherUserName={req.template.owner.name}
+                                    otherUserImgId={req.template.owner.imgId}
+                                    contextType="match"
+                                    contextId={req.id}
+                                    contextLabel={req.template.name}
+                                    label=""
+                                    className="h-8 w-8 rounded-full bg-white/5 border border-white/10 text-white/50 hover:text-white hover:bg-white/10 flex items-center justify-center transition-all shrink-0"
+                                  />
+                                )}
                                 {req.matchRequestStatus === "pending" ? (
                                   <div className="flex flex-col gap-1.5 shrink-0">
                                     <button
@@ -1392,34 +1450,48 @@ const PassportSidebarContent: React.FC<PassportSidebarContentProps> = ({
   earnedPerkKeys,
   onTabSelect,
 }) => {
+  const router = useRouter();
+
   return (
     <>
-      <Link
-        href="/"
-        className="flex items-center gap-3 mb-12 group cursor-pointer hover:opacity-80 transition-opacity"
-      >
-        <div className="h-10 w-10 flex items-center justify-center group-hover:scale-105 transition-transform">
-          <Image
-            src="/foxonlylogo.png"
-            alt="FoxPassport Logo"
-            width={40}
-            height={40}
-            className="object-contain"
-            priority
-          />
-        </div>
-        <div className="relative">
-          <span className="font-display font-bold text-xl tracking-tight text-white group-hover:text-[#ccff00] transition-colors">
-            FoxPassport
+      <div className="flex items-center justify-between mb-6">
+        <Link
+          href="/"
+          className="flex items-center gap-3 group cursor-pointer hover:opacity-80 transition-opacity"
+        >
+          <div className="h-10 w-10 flex items-center justify-center group-hover:scale-105 transition-transform">
+            <Image
+              src="/foxonlylogo.png"
+              alt="FoxPassport Logo"
+              width={40}
+              height={40}
+              className="object-contain"
+              priority
+            />
+          </div>
+          <div className="relative">
+            <span className="font-display font-bold text-xl tracking-tight text-white group-hover:text-[#ccff00] transition-colors">
+              FoxPassport
+            </span>
+            <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-[#ccff00] group-hover:w-full transition-all duration-300"></span>
+          </div>
+        </Link>
+        <button
+          onClick={() => router.back()}
+          aria-label="Go back"
+          title="Back"
+          className="h-9 w-9 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-white/50 hover:text-white hover:bg-white/10 transition-all shrink-0"
+        >
+          <span className="material-symbols-outlined text-[18px]">
+            arrow_back
           </span>
-          <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-[#ccff00] group-hover:w-full transition-all duration-300"></span>
-        </div>
-      </Link>
+        </button>
+      </div>
 
-      <div className="flex flex-col items-center text-center mb-10">
-        <div className="relative mb-6">
-          <div className="h-28 w-28 rounded-[2rem] bg-white/5 border border-white/10 p-2 group transition-all duration-500 hover:border-[#ccff00]/30">
-            <div className="h-full w-full rounded-[1.5rem] bg-white/10 flex items-center justify-center text-4xl font-display font-bold text-white/20 overflow-hidden relative">
+      <div className="flex flex-col items-center text-center mb-6">
+        <div className="relative mb-4">
+          <div className="h-20 w-20 rounded-[1.5rem] bg-white/5 border border-white/10 p-2 group transition-all duration-500 hover:border-[#ccff00]/30">
+            <div className="h-full w-full rounded-xl bg-white/10 flex items-center justify-center text-3xl font-display font-bold text-white/20 overflow-hidden relative">
               {user?.imgId ? (
                 <img
                   src={user.imgId}
@@ -1431,14 +1503,14 @@ const PassportSidebarContent: React.FC<PassportSidebarContentProps> = ({
               )}
             </div>
           </div>
-          <div className="absolute -bottom-2 -right-2 h-8 w-8 bg-[#ccff00] rounded-full border-4 border-black flex items-center justify-center shadow-lg">
-            <span className="material-symbols-outlined text-black text-[18px] font-bold">
+          <div className="absolute -bottom-1.5 -right-1.5 h-6 w-6 bg-[#ccff00] rounded-full border-[3px] border-black flex items-center justify-center shadow-lg">
+            <span className="material-symbols-outlined text-black text-[14px] font-bold">
               verified
             </span>
           </div>
         </div>
 
-        <h2 className="text-2xl font-display font-bold text-white mb-1 tracking-tight">
+        <h2 className="text-xl font-display font-bold text-white mb-1 tracking-tight">
           {userName}
         </h2>
         <p className="text-[10px] text-white/30 uppercase tracking-[0.2em] font-black">
@@ -1658,15 +1730,15 @@ const PassportSidebarContent: React.FC<PassportSidebarContentProps> = ({
         })()}
       </div>
 
-      <div className="mt-auto pt-8 flex flex-col gap-3">
+      <div className="mt-auto pt-4 flex flex-col gap-2">
         <button
           onClick={() => {
             setActiveTab("matches");
             onTabSelect();
           }}
-          className={`w-full py-4 rounded-2xl font-bold text-sm transition-all flex items-center justify-center gap-3 ${activeTab === "matches" ? "bg-[#ccff00] text-black shadow-[0_0_20px_rgba(204,255,0,0.3)]" : "bg-white/5 text-white/60 hover:text-white hover:bg-white/10 border border-white/5"}`}
+          className={`w-full py-2.5 rounded-xl font-bold text-xs transition-all flex items-center justify-center gap-2 ${activeTab === "matches" ? "bg-[#ccff00] text-black shadow-[0_0_20px_rgba(204,255,0,0.3)]" : "bg-white/5 text-white/60 hover:text-white hover:bg-white/10 border border-white/5"}`}
         >
-          <span className="material-symbols-outlined text-[20px]">
+          <span className="material-symbols-outlined text-[16px]">
             handshake
           </span>{" "}
           Match Status
@@ -1676,9 +1748,9 @@ const PassportSidebarContent: React.FC<PassportSidebarContentProps> = ({
             setActiveTab("progress");
             onTabSelect();
           }}
-          className={`w-full py-4 rounded-2xl font-bold text-sm transition-all flex items-center justify-center gap-3 ${activeTab === "progress" ? "bg-[#ccff00] text-black shadow-[0_0_20px_rgba(204,255,0,0.3)]" : "bg-white/5 text-white/60 hover:text-white hover:bg-white/10 border border-white/5"}`}
+          className={`w-full py-2.5 rounded-xl font-bold text-xs transition-all flex items-center justify-center gap-2 ${activeTab === "progress" ? "bg-[#ccff00] text-black shadow-[0_0_20px_rgba(204,255,0,0.3)]" : "bg-white/5 text-white/60 hover:text-white hover:bg-white/10 border border-white/5"}`}
         >
-          <span className="material-symbols-outlined text-[20px]">
+          <span className="material-symbols-outlined text-[16px]">
             analytics
           </span>{" "}
           Mastery
@@ -1688,9 +1760,9 @@ const PassportSidebarContent: React.FC<PassportSidebarContentProps> = ({
             setActiveTab("stamps");
             onTabSelect();
           }}
-          className={`w-full py-4 rounded-2xl font-bold text-sm transition-all flex items-center justify-center gap-3 ${activeTab === "stamps" ? "bg-[#ccff00] text-black shadow-[0_0_20px_rgba(204,255,0,0.3)]" : "bg-white/5 text-white/60 hover:text-white hover:bg-white/10 border border-white/5"}`}
+          className={`w-full py-2.5 rounded-xl font-bold text-xs transition-all flex items-center justify-center gap-2 ${activeTab === "stamps" ? "bg-[#ccff00] text-black shadow-[0_0_20px_rgba(204,255,0,0.3)]" : "bg-white/5 text-white/60 hover:text-white hover:bg-white/10 border border-white/5"}`}
         >
-          <span className="material-symbols-outlined text-[20px]">
+          <span className="material-symbols-outlined text-[16px]">
             menu_book
           </span>{" "}
           Passport

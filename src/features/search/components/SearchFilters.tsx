@@ -4,6 +4,44 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useState, useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
 import MapboxLocationPicker from "./MapboxLocationPicker";
+import SearchableDropdown from "./SearchableDropdown";
+import { COUNTRIES, COUNTRY_CODES } from "@/shared/data/countries";
+import { MAJOR_CITIES } from "@/shared/data/majorCities";
+import { CITY_DATA_BY_COUNTRY } from "@/shared/data/usEuropeCities";
+import { config } from "@/shared/lib/config";
+
+interface MapboxFeature {
+  text: string;
+}
+
+// Curated static city lists we actually have data for: the Philippines plus
+// the US and core European markets. Any other country falls back to live
+// Mapbox place search scoped to the chosen country.
+const STATIC_CITY_LISTS: Record<string, string[]> = {
+  Philippines: MAJOR_CITIES,
+  ...CITY_DATA_BY_COUNTRY,
+};
+
+// Shown when no country is picked yet, so "All countries" doesn't silently
+// behave like one specific country was already selected.
+const ALL_STATIC_CITIES = Array.from(
+  new Set(Object.values(STATIC_CITY_LISTS).flat()),
+).sort();
+
+async function searchCitiesInCountry(
+  query: string,
+  countryCode: string,
+): Promise<string[]> {
+  if (!config.mapboxToken) return [];
+  const res = await fetch(
+    `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(
+      query,
+    )}.json?access_token=${config.mapboxToken}&types=place&country=${countryCode}&limit=8`,
+  );
+  if (!res.ok) return [];
+  const data = await res.json();
+  return ((data.features as MapboxFeature[]) || []).map((f) => f.text);
+}
 
 const CATEGORIES = ["wedding", "corporate", "birthday", "social", "other"];
 
@@ -47,7 +85,7 @@ function CategoryDropdown({
           {selected || "All categories"}
         </span>
         <span
-          className={`material-symbols-outlined text-[18px] text-white/40 transition-transform duration-200 ${
+          className={`material-symbols-outlined text-lg text-white/40 transition-transform duration-200 ${
             open ? "rotate-180" : ""
           }`}
         >
@@ -59,7 +97,7 @@ function CategoryDropdown({
         createPortal(
           <div
             ref={menuRef}
-            className="fixed z-[101] w-[var(--cat-w)] animate-in fade-in zoom-in-95 duration-150"
+            className="fixed z-101 w-(--cat-w) animate-in fade-in zoom-in-95 duration-150"
             style={{
               top: "var(--cat-top)",
               left: "var(--cat-left)",
@@ -134,7 +172,15 @@ export default function SearchFilters() {
   const [category, setCategory] = useState(
     () => searchParams?.get("category") || "",
   );
+  const [country, setCountry] = useState(
+    () => searchParams?.get("country") || "",
+  );
   const [city, setCity] = useState(() => searchParams?.get("city") || "");
+  const staticCityList = country
+    ? STATIC_CITY_LISTS[country]
+    : ALL_STATIC_CITIES;
+  const usesStaticCities = Boolean(staticCityList);
+  const countryCode = country ? COUNTRY_CODES[country] : undefined;
   const [label, setLabel] = useState(() => searchParams?.get("label") || "");
   const [lat, setLat] = useState<number | undefined>(() =>
     searchParams?.get("lat") ? Number(searchParams.get("lat")) : undefined,
@@ -151,6 +197,7 @@ export default function SearchFilters() {
   if (searchParamsStr !== prevParamsStr) {
     setPrevParamsStr(searchParamsStr);
     setCategory(searchParams?.get("category") || "");
+    setCountry(searchParams?.get("country") || "");
     setCity(searchParams?.get("city") || "");
     setLabel(searchParams?.get("label") || "");
     setLat(
@@ -222,22 +269,35 @@ export default function SearchFilters() {
         <label className="block text-xs font-bold text-white/50 uppercase tracking-wider">
           City / Area
         </label>
-        <input
-          type="text"
+        <SearchableDropdown
+          value={country}
+          options={COUNTRIES}
+          placeholder="All countries"
+          searchPlaceholder="Search countries..."
+          onChange={(val) => {
+            setCountry(val);
+            setCity("");
+            updateParams({ country: val, city: "", label: "" });
+          }}
+        />
+        <SearchableDropdown
+          key={country || "philippines"}
           value={city}
-          onChange={(e) => setCity(e.target.value)}
-          onBlur={(e) =>
-            updateParams({
-              city: e.target.value,
-              label: e.target.value || label,
-            })
+          options={usesStaticCities ? staticCityList : undefined}
+          asyncSearch={
+            !usesStaticCities && countryCode
+              ? (q) => searchCitiesInCountry(q, countryCode)
+              : undefined
           }
-          onKeyDown={(e) =>
-            e.key === "Enter" &&
-            updateParams({ city: (e.target as HTMLInputElement).value })
+          asyncHint="Type at least 2 letters..."
+          placeholder="All cities"
+          searchPlaceholder={
+            usesStaticCities ? "Search cities..." : "Type a city name..."
           }
-          placeholder="e.g. Baguio"
-          className={inputClass}
+          onChange={(val) => {
+            setCity(val);
+            updateParams({ city: val, label: val || label });
+          }}
         />
       </div>
 
@@ -311,6 +371,7 @@ export default function SearchFilters() {
       <button
         onClick={() => {
           setCategory("");
+          setCountry("");
           setCity("");
           setLabel("");
           setLat(undefined);
@@ -318,6 +379,7 @@ export default function SearchFilters() {
           setMaxPrice("");
           updateParams({
             category: "",
+            country: "",
             city: "",
             label: "",
             lat: undefined,

@@ -127,24 +127,7 @@ export function useCalendarBookings() {
       }
     } catch {}
 
-    // 2. Host: bookings on their venues
-    try {
-      const resp = await api.get("/bookings", { params: { hostId: user.id } });
-      for (const b of extractList(resp)) {
-        const start = b.checkIn ?? b.startDatetime ?? b.startDate;
-        if (!start) continue;
-        results.push({
-          id: `venue-booking-${b.id}`,
-          title:
-            b.venue?.title ?? b.venue?.name ?? b.event?.name ?? "Venue Booking",
-          startDate: new Date(start),
-          endDate: new Date(b.checkOut ?? b.endDatetime ?? b.endDate ?? start),
-          type: "venue",
-        });
-      }
-    } catch {}
-
-    // 3. Asset/equipment bookings
+    // 2. Asset/equipment bookings
     try {
       const resp = await api.get("/asset/bookings", {
         params: { ownerId: user.id },
@@ -162,7 +145,7 @@ export function useCalendarBookings() {
       }
     } catch {}
 
-    // 4. Service bookings
+    // 3. Service bookings
     try {
       const resp = await api.get("/service/bookings", {
         params: { ownerId: user.id },
@@ -180,7 +163,7 @@ export function useCalendarBookings() {
       }
     } catch {}
 
-    // 5. Creator's own scheduled event templates
+    // 4. Creator's own scheduled event templates
     try {
       const resp = await api.get("/event-templates", {
         params: { ownerId: user.id },

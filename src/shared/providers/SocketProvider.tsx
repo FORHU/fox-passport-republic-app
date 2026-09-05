@@ -55,9 +55,19 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
       }
     });
 
+    // Same publish-only pattern as NEW_NOTIFICATION: deciding what a message
+    // means (the store it lands in, the toast, the click-through to
+    // /messages) belongs to features/messages, subscribed via
+    // MessageSocketBridge. Not yet routed through DATA_INVALIDATE — see the
+    // comment on SOCKET_EVENTS.NEW_MESSAGE.
+    socket.on(SOCKET_EVENTS.NEW_MESSAGE, (message) => {
+      publishRealtime(SOCKET_EVENTS.NEW_MESSAGE, message);
+    });
+
     return () => {
       socket.off(SOCKET_EVENTS.NEW_NOTIFICATION);
       socket.off(SOCKET_EVENTS.DATA_INVALIDATE);
+      socket.off(SOCKET_EVENTS.NEW_MESSAGE);
       disconnectSocket();
     };
   }, [isAuthenticated, queryClient, fetchTicket]);

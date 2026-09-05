@@ -9,6 +9,10 @@
 export const SOCKET_EVENTS = {
   NEW_NOTIFICATION: "new_notification",
   DATA_INVALIDATE: "data:invalidate",
+  // Carries the full message, unlike DATA_INVALIDATE: chat has no REST
+  // endpoint to refetch "just the new one" from, so the payload has to travel
+  // with the event. Not yet folded into the topic system on the server.
+  NEW_MESSAGE: "new_message",
 } as const;
 
 /**

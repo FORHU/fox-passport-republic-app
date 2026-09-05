@@ -3,6 +3,7 @@
 
 import React from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import {
   useClientMatchRequests,
   useAcceptMatch,
@@ -40,27 +41,41 @@ function statusColor(s: string) {
 }
 
 export function PendingRequests() {
+  const router = useRouter();
+  const [tab, setTab] = React.useState<"pending" | "confirmed">("pending");
   const { data: page, isLoading } = useClientMatchRequests(0, true);
   const acceptMutation = useAcceptMatch();
   const declineMutation = useDeclineMatch();
   const requests: ClientMatchRequest[] = page?.data ?? [];
-  const pendingOnly = requests
-    .filter((r) => r.requestStatus === "pending")
-    .slice(0, 4);
-  const totalPending = requests.filter(
-    (r) => r.requestStatus === "pending",
-  ).length;
+  const pendingAll = requests.filter((r) => r.requestStatus === "pending");
+  const confirmedAll = requests.filter(
+    (r) =>
+      r.requestStatus === "approved" || r.requestStatus === "accepted",
+  );
+  const visible = (tab === "pending" ? pendingAll : confirmedAll).slice(0, 4);
+  const totalPending = pendingAll.length;
 
   return (
     <div className="lg:col-span-4 bg-[#0f111a]/80 backdrop-blur border border-white/5 rounded-[2rem] p-6 flex flex-col">
       <div className="flex justify-between items-center mb-4">
-        <div className="flex items-center gap-2">
-          <h3 className="font-display font-bold text-lg">Pending</h3>
-          {totalPending > 0 && (
-            <span className="inline-flex items-center justify-center h-5 w-5 rounded-full bg-[#ff00aa] text-white text-[9px] font-black">
-              {totalPending}
-            </span>
-          )}
+        <div className="flex items-center gap-1 bg-white/5 p-1 rounded-full border border-white/10">
+          <button
+            onClick={() => setTab("pending")}
+            className={`px-3 py-1 rounded-full text-xs font-bold transition-all flex items-center gap-1.5 ${tab === "pending" ? "bg-[#ccff00] text-black" : "text-white/40 hover:text-white"}`}
+          >
+            Pending
+            {totalPending > 0 && (
+              <span className="inline-flex items-center justify-center h-4 w-4 rounded-full bg-[#ff00aa] text-white text-[9px] font-black">
+                {totalPending}
+              </span>
+            )}
+          </button>
+          <button
+            onClick={() => setTab("confirmed")}
+            className={`px-3 py-1 rounded-full text-xs font-bold transition-all ${tab === "confirmed" ? "bg-[#ccff00] text-black" : "text-white/40 hover:text-white"}`}
+          >
+            Confirmed
+          </button>
         </div>
         <button className="h-6 w-6 rounded-full bg-white/5 flex items-center justify-center hover:bg-white hover:text-black">
           <span className="material-symbols-outlined text-[14px]">
@@ -74,21 +89,30 @@ export function PendingRequests() {
           <div className="flex items-center justify-center py-8 text-white/20 text-xs">
             Loading…
           </div>
-        ) : pendingOnly.length === 0 ? (
+        ) : visible.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-8 text-center">
             <span className="material-symbols-outlined text-3xl text-white/10 mb-2">
               inbox
             </span>
-            <p className="text-xs text-white/20">No pending requests</p>
+            <p className="text-xs text-white/20">
+              {tab === "pending"
+                ? "No pending requests"
+                : "No confirmed bookings yet"}
+            </p>
           </div>
         ) : (
-          pendingOnly.map((req) => {
+          visible.map((req) => {
             const isActing =
               acceptMutation.isPending || declineMutation.isPending;
             return (
               <div
                 key={req.id}
-                className="flex items-center gap-3 p-2.5 rounded-xl hover:bg-white/5 transition-colors"
+                role={req.bookingId ? "button" : undefined}
+                tabIndex={req.bookingId ? 0 : undefined}
+                onClick={() =>
+                  req.bookingId && router.push(`/booking/${req.bookingId}`)
+                }
+                className={`flex items-center gap-3 p-2.5 rounded-xl hover:bg-white/5 transition-colors ${req.bookingId ? "cursor-pointer" : ""}`}
               >
                 <div className="h-9 w-9 rounded-full bg-white/10 flex items-center justify-center text-sm font-bold text-white/40 shrink-0 overflow-hidden">
                   {req.client?.imgId ? (
@@ -118,28 +142,44 @@ export function PendingRequests() {
                     </p>
                   )}
                 </div>
-                <div className="flex gap-1 shrink-0">
-                  <button
-                    disabled={isActing}
-                    onClick={() => acceptMutation.mutate(req.id)}
-                    title="Accept"
-                    className="h-7 w-7 rounded-full bg-green-500/20 text-green-400 hover:bg-green-500 hover:text-white transition-colors flex items-center justify-center disabled:opacity-40 disabled:cursor-not-allowed"
-                  >
-                    <span className="material-symbols-outlined text-[14px]">
-                      check
-                    </span>
-                  </button>
-                  <button
-                    disabled={isActing}
-                    onClick={() => declineMutation.mutate(req.id)}
-                    title="Decline"
-                    className="h-7 w-7 rounded-full bg-red-500/20 text-red-400 hover:bg-red-500 hover:text-white transition-colors flex items-center justify-center disabled:opacity-40 disabled:cursor-not-allowed"
-                  >
-                    <span className="material-symbols-outlined text-[14px]">
-                      close
-                    </span>
-                  </button>
-                </div>
+                {tab === "pending" ? (
+                  <div className="flex gap-1 shrink-0">
+                    <button
+                      disabled={isActing}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        acceptMutation.mutate(req.id);
+                      }}
+                      title="Accept"
+                      className="h-7 w-7 rounded-full bg-green-500/20 text-green-400 hover:bg-green-500 hover:text-white transition-colors flex items-center justify-center disabled:opacity-40 disabled:cursor-not-allowed"
+                    >
+                      <span className="material-symbols-outlined text-[14px]">
+                        check
+                      </span>
+                    </button>
+                    <button
+                      disabled={isActing}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        declineMutation.mutate(req.id);
+                      }}
+                      title="Decline"
+                      className="h-7 w-7 rounded-full bg-red-500/20 text-red-400 hover:bg-red-500 hover:text-white transition-colors flex items-center justify-center disabled:opacity-40 disabled:cursor-not-allowed"
+                    >
+                      <span className="material-symbols-outlined text-[14px]">
+                        close
+                      </span>
+                    </button>
+                  </div>
+                ) : req.bookingStatus === "pending" ? (
+                  <span className="text-[9px] font-black uppercase tracking-widest px-2.5 py-1 rounded-full text-orange-400 bg-orange-500/10 border border-orange-500/30 shrink-0 text-center">
+                    Awaiting Payment
+                  </span>
+                ) : (
+                  <span className="text-[9px] font-black uppercase tracking-widest px-2.5 py-1 rounded-full text-[#22c55e] bg-[#22c55e]/10 border border-[#22c55e]/30 shrink-0">
+                    Approved
+                  </span>
+                )}
               </div>
             );
           })

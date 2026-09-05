@@ -42,6 +42,11 @@ export default function HostApplicationClient() {
     setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
   };
 
+  const handleExperienceChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const digits = e.target.value.replace(/\D/g, "");
+    setFormData((prev) => ({ ...prev, experience: digits }));
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     applyRole({
@@ -119,11 +124,12 @@ export default function HostApplicationClient() {
                     <ShieldCheck size={18} />
                   </div>
                   <input
-                    type="number"
-                    min="0"
+                    type="text"
+                    inputMode="numeric"
+                    pattern="[0-9]*"
                     name="experience"
                     value={formData.experience}
-                    onChange={handleChange}
+                    onChange={handleExperienceChange}
                     className="w-full bg-white/5 border border-white/10 rounded-xl py-3 pl-12 pr-4 text-white placeholder:text-white/30 focus:outline-none focus:border-[#ff00aa]/50 focus:bg-white/10 transition-colors"
                     placeholder="e.g. 5"
                   />

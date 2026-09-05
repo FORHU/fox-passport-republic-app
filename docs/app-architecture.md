@@ -37,6 +37,19 @@ fixed, and the count is **84**.
 | Shared kernel | 9 | **0** |
 | **Total** | **150** | **72** |
 
+**Regressed to 74 merging `main`, 5 Sep — not yet fixed.** `main` added a
+messaging feature (`features/messages/`) whose `MessageButton` is imported
+directly by `booking` (`BookingDetailClient.tsx`, 1 call site) and
+`gamification` (`PassportClient.tsx`, 4 call sites, all inside nested
+list-rendering JSX for match requests). Neither is a filing error like §2a's
+cases — `MessageButton` pulls in `ChatPanel` and `useStartConversation` from
+its own feature, so moving it to `shared/` would just relocate the whole
+messaging UI there, the exact trade §2a already rejected for similar cases.
+The real fix is composing it from the `app` layer per this doc's own
+recurring conclusion, but with 5 call sites inside nested list rendering
+that is real restructuring work, not a quick move. Deferred rather than
+rushed.
+
 **Four of the five rules now pass.** Everything remaining is one rule: a feature
 importing a sibling. §2 lists all 80, grouped by the fix each needs.
 

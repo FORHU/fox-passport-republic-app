@@ -1,8 +1,8 @@
 ﻿"use client";
 
 import { useMutation } from "@tanstack/react-query";
-import api from "@/shared/lib/axios";
 import { toast } from "sonner";
+import api from "@/shared/lib/axios";
 import { useRouter } from "next/navigation";
 
 export type RoleType =

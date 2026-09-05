@@ -7,6 +7,7 @@ import {
   getNotifications,
   markNotificationsAsRead,
   markAllNotificationsAsRead,
+  type GetNotificationsResult,
 } from "@/shared/api/notifications";
 import { useNotificationStore } from "@/shared/store/useNotificationStore";
 import { toast } from "sonner";
@@ -44,6 +45,21 @@ export const useNotifications = () => {
     mutationFn: markNotificationsAsRead,
     onMutate: (id: string) => {
       storeMarkAsRead(id);
+      // Keep the query cache in sync with the optimistic store update too —
+      // otherwise a remount within `staleTime` (e.g. navigating away and
+      // back) re-runs the sync effect above with the old cached `data` and
+      // stomps the store's read state right back to unread.
+      queryClient.setQueryData<GetNotificationsResult>(
+        ["notifications", userId],
+        (old) =>
+          old && {
+            ...old,
+            notifications: old.notifications.map((n) =>
+              n.id === id ? { ...n, isRead: true } : n,
+            ),
+            unreadCount: Math.max(0, old.unreadCount - 1),
+          },
+      );
     },
     onError: () => {
       toast.error("Could not mark notification as read");
@@ -55,6 +71,18 @@ export const useNotifications = () => {
     mutationFn: markAllNotificationsAsRead,
     onMutate: () => {
       storeMarkAllAsRead();
+      queryClient.setQueryData<GetNotificationsResult>(
+        ["notifications", userId],
+        (old) =>
+          old && {
+            ...old,
+            notifications: old.notifications.map((n) => ({
+              ...n,
+              isRead: true,
+            })),
+            unreadCount: 0,
+          },
+      );
     },
     onError: () => {
       toast.error("Could not mark all notifications as read");
