@@ -3,13 +3,12 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useAuthStore } from "@/features/auth/store/useAuthStore";
-import RequireAuth from "@/features/auth/components/RequireAuth";
+import { useAuthStore } from "@/shared/auth/useAuthStore";
+import RequireAuth from "@/shared/auth/RequireAuth";
 import api from "@/shared/lib/axios";
 import { isFoxerRole } from "@/shared/constants/roles";
 
 type Step = 1 | 2 | 3;
-
 
 const ROLES = [
   {

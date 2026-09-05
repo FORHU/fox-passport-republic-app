@@ -290,9 +290,7 @@ export default function MobileEventDetail({
               padding: "14px 28px",
               border: "none",
               cursor: isPreview ? "not-allowed" : "pointer",
-              boxShadow: isPreview
-                ? "none"
-                : "0 4px 16px rgba(204,255,0,0.35)",
+              boxShadow: isPreview ? "none" : "0 4px 16px rgba(204,255,0,0.35)",
               whiteSpace: "nowrap",
             }}
           >

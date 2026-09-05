@@ -1,9 +1,9 @@
-﻿import {
+import {
   getCategories,
   getEventsByCategory,
   getVenuesByCategory,
 } from "@/shared/lib/server/data";
-import CategoriesClient from "@/features/category/components/CategoriesClient";
+import CategoriesClient from "./_components/CategoriesClient";
 import MobileCategoryGrid from "@/features/category/components/MobileCategoryGrid";
 
 // Skip static generation for this page - it fetches dynamic data

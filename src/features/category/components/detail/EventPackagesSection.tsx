@@ -8,8 +8,8 @@ import {
   checkFavorite,
   addFavorite,
   removeFavoriteByListing,
-} from "@/features/user/api/favorites";
-import { useAuthStore } from "@/features/auth/store/useAuthStore";
+} from "@/shared/api/favorites";
+import { useAuthStore } from "@/shared/auth/useAuthStore";
 import { toast } from "sonner";
 
 const FALLBACK_IMAGES = [

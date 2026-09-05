@@ -13,7 +13,7 @@ vi.mock("sonner", () => ({
   toast: { success: vi.fn(), error: vi.fn() },
 }));
 
-vi.mock("@/features/auth/store/useAuthStore", () => ({
+vi.mock("@/shared/auth/useAuthStore", () => ({
   useAuthStore: (selector: (state: { user: { id: string } }) => unknown) =>
     selector({ user: { id: "host-001" } }),
 }));

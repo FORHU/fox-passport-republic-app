@@ -2,7 +2,7 @@
 
 import React from "react";
 import { Search, MapPin } from "lucide-react";
-import RequireAuth from "@/features/auth/components/RequireAuth";
+import RequireAuth from "@/shared/auth/RequireAuth";
 import { useReviewSelectStore } from "@/features/review/store/useReviewsStore";
 import { ReviewVenueCard } from "@/features/review/components";
 

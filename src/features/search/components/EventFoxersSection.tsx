@@ -3,10 +3,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import {
-  type Foxer,
-  type FoxerSpecialization,
-} from "@/features/user/api/foxers";
+import { type Foxer, type FoxerSpecialization } from "@/shared/api/foxers";
 import SearchPagination from "./SearchPagination";
 
 const FALLBACK_AVATAR =

@@ -3,7 +3,7 @@
 import { cookies } from "next/headers";
 import axios from "axios";
 import { config as appConfig } from "@/shared/lib/config";
-import { LoginResponse, User } from "@/features/auth/types/auth";
+import { LoginResponse, User } from "@/shared/auth/types";
 
 /**
  * Server action to set authentication cookies

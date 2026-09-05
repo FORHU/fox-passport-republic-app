@@ -400,6 +400,9 @@ Rules:
 
 - Rewriting the drag-and-drop engine (section 4, Option A) — sized on its own
 - Native apps, PWA, or offline support
-- Cesium map touch handling — vendor surface, needs its own investigation
+- ~~Cesium map touch handling~~ — dropped, not deferred: there is no Cesium
+  component anywhere in `src/`, only an unused dependency, webpack external,
+  CSS import and env token. Nothing to give touch handling to yet. See
+  `ARCHITECTURE.md`'s "External services" section.
 - ~~Admin below `lg`~~ — that advice was wrong and has been replaced; admin is
   mobile-*capable* and stays that way (see 2.3)

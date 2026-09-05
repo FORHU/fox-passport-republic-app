@@ -6,12 +6,12 @@ import {
   GalleryItem,
   VENUE_TYPES,
 } from "@/features/venue/data/venueBuilderData";
-import CancellationPolicyPicker from "@/features/cancellation-policy/components/CancellationPolicyPicker";
+import CancellationPolicyPicker from "@/shared/components/ui/CancellationPolicyPicker";
 import {
   MapboxLocationInput,
   MapboxContextItem,
 } from "@/shared/components/ui/MapboxLocationInput";
-import { VenuePolygonMapPicker } from "@/shared/components/ui/VenuePolygonMapPicker";
+import { VenuePolygonMapPicker } from "@/features/venue/components/venue-builder/VenuePolygonMapPicker";
 
 interface VenueDetailsFormProps {
   venueName: string;

@@ -13,7 +13,7 @@ import {
   Link as LinkIcon,
   BadgeCheck,
 } from "lucide-react";
-import RequireAuth from "@/features/auth/components/RequireAuth";
+import RequireAuth from "@/shared/auth/RequireAuth";
 import Link from "next/link";
 import FileUploader from "@/shared/components/layout/FileUploader";
 import { KycDocumentSection } from "./KycDocumentSection";
@@ -97,7 +97,9 @@ export default function FoxerApplicationClient({
     tinNumber: 9,
   };
 
-  const handleServiceDigitsChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleServiceDigitsChange = (
+    e: React.ChangeEvent<HTMLInputElement>,
+  ) => {
     const { name, value } = e.target;
     const digits = value
       .replace(/\D/g, "")

@@ -2,7 +2,7 @@ export const dynamic = "force-dynamic";
 
 import React from "react";
 import { DashboardHeader } from "@/features/dashboard/components/DashboardHeader";
-import QRScannerClient from "@/features/dashboard/components/QRScannerClient";
+import QRScannerClient from "../_components/QRScannerClient";
 
 export default function CheckInPage() {
   return (

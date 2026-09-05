@@ -234,8 +234,7 @@ export default function SearchFilters() {
   );
   const onMaxPriceInput = (raw: string) => {
     setMaxPrice(raw);
-    if (maxPriceDebounceRef.current)
-      clearTimeout(maxPriceDebounceRef.current);
+    if (maxPriceDebounceRef.current) clearTimeout(maxPriceDebounceRef.current);
     maxPriceDebounceRef.current = setTimeout(() => commitMaxPrice(raw), 400);
   };
 
@@ -364,9 +363,7 @@ export default function SearchFilters() {
           onTouchEnd={(e) =>
             commitMaxPrice((e.target as HTMLInputElement).value)
           }
-          onKeyUp={(e) =>
-            commitMaxPrice((e.target as HTMLInputElement).value)
-          }
+          onKeyUp={(e) => commitMaxPrice((e.target as HTMLInputElement).value)}
           className="w-full accent-[#ccff00]"
         />
       </div>

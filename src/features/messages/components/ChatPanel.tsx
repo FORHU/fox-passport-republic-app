@@ -9,7 +9,7 @@ import {
   SheetTitle,
   SheetFooter,
 } from "@/shared/components/ui/sheet";
-import { useAuthStore } from "@/features/auth/store/useAuthStore";
+import { useAuthStore } from "@/shared/auth/useAuthStore";
 import {
   useMessagesForConversation,
   useSendMessage,

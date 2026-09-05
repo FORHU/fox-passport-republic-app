@@ -286,8 +286,8 @@ export const AdminVenuesMap: React.FC<AdminVenuesMapProps> = ({
             Venues Map
           </h3>
           <p className="text-xs text-white/40 mt-1">
-            {listVenues.length} of {total} venue{total === 1 ? "" : "s"} have
-            a location — click one to see it on the map.
+            {listVenues.length} of {total} venue{total === 1 ? "" : "s"} have a
+            location — click one to see it on the map.
           </p>
           <div className="flex flex-wrap gap-x-3 gap-y-1.5 mt-3">
             {Object.entries(CATEGORY_LABELS).map(([key, label]) => (

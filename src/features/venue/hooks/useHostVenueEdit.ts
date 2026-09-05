@@ -4,7 +4,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { useAuthStore } from "@/features/auth/store/useAuthStore";
+import { useAuthStore } from "@/shared/auth/useAuthStore";
 import { useVenueBuilder } from "@/features/venue/hooks/useVenueBuilder";
 import { fetchVenuesByHostId, updateVenue } from "@/features/venue/api/venues";
 import api from "@/shared/lib/axios";

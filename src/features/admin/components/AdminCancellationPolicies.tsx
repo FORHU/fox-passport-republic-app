@@ -8,7 +8,8 @@ import {
   createCancellationPolicy,
   updateCancellationPolicy,
   deleteCancellationPolicy,
-} from "@/features/cancellation-policy/api/cancellation-policies";
+} from "@/shared/api/cancellation-policies";
+
 import { toast } from "sonner";
 import { X, Plus, Trash2 } from "lucide-react";
 

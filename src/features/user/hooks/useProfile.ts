@@ -2,24 +2,18 @@
 
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import api from "@/shared/lib/axios";
-import { useAuthStore } from "@/features/auth/store/useAuthStore";
-import type { RoleType, SystemRole } from "@/features/auth/types/auth";
+import { useAuthStore } from "@/shared/auth/useAuthStore";
+import {
+  PROFILE_QUERY_KEY,
+  fetchProfile,
+  type ProfileData,
+} from "@/shared/auth/profile";
 
-export interface ProfileData {
-  id: string;
-  email: string;
-  username: string;
-  name: string;
-  phone: string;
-  imgId: string;
-  // Narrowed to the same unions the auth store uses. These were `string` /
-  // `string[]`, which meant a profile could not be merged into the store's User
-  // without a cast - and a cast here would only have hidden the mismatch.
-  systemRole: SystemRole;
-  roleType: RoleType[];
-  createdAt: string;
-  updatedAt: string;
-}
+// Re-exported so existing importers keep working. The definitions moved to
+// shared/auth because GET /profile is the session identity endpoint, not a
+// profile-screen concern -- see the note there.
+export { PROFILE_QUERY_KEY, fetchProfile };
+export type { ProfileData };
 
 export interface UpdateProfilePayload {
   name?: string;
@@ -33,31 +27,6 @@ export interface ChangePasswordPayload {
   currentPassword: string;
   newPassword: string;
   confirmPassword: string;
-}
-
-// The single definition of "fetch the current profile".
-//
-// useSessionManager polls this same endpoint for role changes. Both hooks used
-// to hit GET /profile independently - this one through a raw useEffect React
-// Query could not see - so any page using both fetched the profile twice and
-// the copies could disagree. They now share one key AND one fetcher: sharing
-// only the key would mean whichever hook happened to run its own queryFn first
-// decided the behaviour.
-export const PROFILE_QUERY_KEY = ["me"] as const;
-
-export async function fetchProfile(): Promise<ProfileData> {
-  const resp = await api.get("/profile");
-  const data: ProfileData = resp.data?.data ?? resp.data;
-
-  // Sync the whole user, not just the avatar: roleType changes when an admin
-  // approves a role application, and the navbar and route guards read it from
-  // the store. Read current state directly rather than closing over it, so this
-  // does not depend on the state it writes.
-  const { user: currentUser, setUser } = useAuthStore.getState();
-  if (data) {
-    setUser(currentUser ? { ...currentUser, ...data } : data);
-  }
-  return data;
 }
 
 export function useProfile() {

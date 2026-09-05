@@ -83,7 +83,11 @@ export function LocationMap({
           id: `${BOUNDARY_SOURCE_ID}-halo`,
           type: "line",
           source: BOUNDARY_SOURCE_ID,
-          paint: { "line-color": "#0b0d14", "line-width": 5, "line-opacity": 0.6 },
+          paint: {
+            "line-color": "#0b0d14",
+            "line-width": 5,
+            "line-opacity": 0.6,
+          },
           layout: { "line-join": "round", "line-cap": "round" },
         });
         map.addLayer({

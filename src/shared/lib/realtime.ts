@@ -74,3 +74,43 @@ export const TOPIC_QUERY_KEYS: Record<string, string[][]> = {
   // read, so the new role reaches the UI without waiting out the 5-minute poll.
   roles: [["me"]],
 };
+
+/**
+ * A one-way bus from the socket transport to whichever feature owns an event.
+ *
+ * `SocketProvider` lives in `shared/` and owns the connection, but the meaning
+ * of a `new_notification` belongs to `features/notifications` — the store it
+ * lands in, and the toast it raises. Importing that feature from `shared/`
+ * inverts the dependency the architecture scan exists to protect, so the
+ * provider publishes here instead and the feature subscribes.
+ *
+ * Deliberately tiny. Not an app-wide event system: the socket is the only
+ * publisher, and anything with a real owner should be a hook in that feature
+ * rather than another string on this bus.
+ */
+type Listener = (payload: never) => void;
+
+const listeners = new Map<string, Set<Listener>>();
+
+/** Publish a socket payload to whoever owns this event. Transport side. */
+export function publishRealtime<T>(event: string, payload: T): void {
+  const set = listeners.get(event);
+  if (!set) return;
+  // Copied before iterating: a listener that unsubscribes itself while handling
+  // would otherwise mutate the set mid-loop.
+  for (const fn of [...set]) (fn as (p: T) => void)(payload);
+}
+
+/** Subscribe to a socket event. Returns the unsubscribe. Feature side. */
+export function subscribeRealtime<T>(
+  event: string,
+  fn: (payload: T) => void,
+): () => void {
+  const set = listeners.get(event) ?? new Set<Listener>();
+  listeners.set(event, set);
+  set.add(fn as Listener);
+  return () => {
+    set.delete(fn as Listener);
+    if (set.size === 0) listeners.delete(event);
+  };
+}

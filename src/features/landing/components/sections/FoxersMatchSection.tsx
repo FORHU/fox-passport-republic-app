@@ -10,7 +10,7 @@ import {
   fetchFoxers,
   type Foxer,
   type FoxerSpecialization,
-} from "@/features/user/api/foxers";
+} from "@/shared/api/foxers";
 
 const FALLBACK_AVATAR =
   "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=400&auto=format&fit=crop";

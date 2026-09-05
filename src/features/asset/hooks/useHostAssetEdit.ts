@@ -4,7 +4,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { useAuthStore } from "@/features/auth/store/useAuthStore";
+import { useAuthStore } from "@/shared/auth/useAuthStore";
 import { useInventoryBuilder } from "@/features/asset/hooks/useInventoryBuilder";
 import { fetchAssetsByOwnerId, updateAsset } from "@/features/asset/api/assets";
 import type { Id } from "@/shared/lib/api-types";

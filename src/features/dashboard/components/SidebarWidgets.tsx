@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import React from "react";
 import Link from "next/link";
@@ -7,7 +7,8 @@ import {
   useCalendarBookings,
   toMonthItems,
   getDotColor,
-} from "@/features/booking/hooks/useCalendarBookings";
+} from "@/shared/hooks/useCalendarBookings";
+
 
 export function CalendarWidget() {
   const now = new Date();

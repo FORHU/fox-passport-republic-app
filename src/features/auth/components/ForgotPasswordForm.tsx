@@ -9,7 +9,7 @@ import {
   forgotPasswordSchema,
   ForgotPasswordFormData,
 } from "@/shared/lib/schema";
-import { useAuthStore } from "@/features/auth/store/useAuthStore";
+import { useAuthStore } from "@/shared/auth/useAuthStore";
 
 export default function ForgotPasswordForm() {
   const forgotPasswordMutation = useForgotPassword();

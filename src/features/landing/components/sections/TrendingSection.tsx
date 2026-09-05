@@ -4,7 +4,8 @@
 import { useState } from "react";
 import { motion } from "motion/react";
 import { useQuery } from "@tanstack/react-query";
-import { fetchTrendingTemplates } from "@/features/event/api/event-templates";
+import { fetchTrendingTemplates } from "@/shared/api/event-templates";
+
 
 const CATEGORY_OPTIONS = [
   { label: "All", value: undefined },

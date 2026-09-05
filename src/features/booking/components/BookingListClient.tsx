@@ -6,7 +6,7 @@ import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useAuthStore } from "@/features/auth/store/useAuthStore";
+import { useAuthStore } from "@/shared/auth/useAuthStore";
 import { fetchUserBookings } from "@/features/booking/api/bookings";
 import CancelBookingModal from "@/features/booking/components/CancelBookingModal";
 import { toast } from "sonner";
@@ -53,13 +53,7 @@ export default function BookingListClient() {
    * `bookings` onto; React Query matches by prefix, so one emit refreshes
    * whichever page is open here and the mobile view besides.
    */
-  const {
-    data,
-    isPending,
-    isFetching,
-    isError,
-    refetch,
-  } = useQuery({
+  const { data, isPending, isFetching, isError, refetch } = useQuery({
     queryKey: ["user-bookings", userId, page, limit],
     queryFn: () => fetchUserBookings(userId as string, page, limit),
     enabled: Boolean(userId),

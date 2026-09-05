@@ -1,5 +1,7 @@
 import React, { Suspense } from "react";
-import VenueBookingClient from "@/features/booking/components/VenueBookingClient";
+import VenueBookingClient from "@/app/booking/_components/VenueBookingClient";
+
+
 import type { Metadata } from "next";
 
 export const dynamic = "force-dynamic";

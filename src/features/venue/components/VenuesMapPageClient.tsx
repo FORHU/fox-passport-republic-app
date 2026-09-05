@@ -3,6 +3,7 @@
 import React, { useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 import { Star, Users, X } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import {
@@ -11,7 +12,6 @@ import {
   CATEGORY_COLORS,
   CATEGORY_LABELS,
 } from "@/shared/components/ui/VenuesMap";
-import LandingHeader from "@/features/landing/components/sections/LandingHeader";
 
 interface VenuesMapPageClientProps {
   venues: any[];
@@ -198,7 +198,12 @@ function VenueDetailCard({
 }
 
 export function VenuesMapPageClient({ venues }: VenuesMapPageClientProps) {
+  const router = useRouter();
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  // Below `sm` the list and map can't sit side by side, and the map used to
+  // just disappear with `hidden sm:block` — no toggle, no indication it
+  // existed at all. This makes "which one is showing" explicit instead.
+  const [mobileView, setMobileView] = useState<"list" | "map">("list");
   const cardRefs = useRef<Record<string, HTMLDivElement | null>>({});
 
   const listVenues: ListVenue[] = useMemo(
@@ -257,13 +262,22 @@ export function VenuesMapPageClient({ venues }: VenuesMapPageClientProps) {
 
   return (
     <div className="h-screen w-full bg-[#02040a] text-white font-body flex flex-col overflow-hidden">
-      <LandingHeader />
-
       <div className="flex-1 w-full flex min-h-0 pt-16 sm:pt-28">
         {/* Left: scrollable venue list */}
-        <div className="w-full sm:w-[400px] lg:w-[440px] shrink-0 flex flex-col border-r border-white/10 min-h-0">
+        <div
+          className={`${mobileView === "map" ? "hidden" : "flex"} sm:flex w-full sm:w-[400px] lg:w-[440px] shrink-0 flex-col border-r border-white/10 min-h-0`}
+        >
           <div className="px-4 sm:px-6 py-4 shrink-0">
             <h1 className="text-xl font-display font-bold flex items-center gap-2">
+              <button
+                onClick={() => router.back()}
+                aria-label="Back"
+                className="h-8 w-8 -ml-1.5 flex items-center justify-center rounded-full hover:bg-white/10 transition-colors shrink-0"
+              >
+                <span className="material-symbols-outlined text-[20px]">
+                  arrow_back
+                </span>
+              </button>
               <span className="material-symbols-outlined text-[#ccff00]">
                 map
               </span>
@@ -317,7 +331,9 @@ export function VenuesMapPageClient({ venues }: VenuesMapPageClientProps) {
         </div>
 
         {/* Right: map, fills the rest of the viewport */}
-        <div className="hidden sm:block relative flex-1 min-w-0 p-4">
+        <div
+          className={`${mobileView === "map" ? "block" : "hidden"} sm:block relative flex-1 min-w-0 p-4`}
+        >
           <VenuesMap
             venues={listVenues}
             fitToContent={false}
@@ -335,6 +351,32 @@ export function VenuesMapPageClient({ venues }: VenuesMapPageClientProps) {
               />
             )}
           </AnimatePresence>
+        </div>
+      </div>
+
+      {/* Mobile-only List/Map toggle. Sits above MobileBottomNav (68px tall,
+          anchored at bottom-4) rather than below `sm` only relying on the
+          left column always winning. */}
+      <div className="sm:hidden fixed bottom-24 left-1/2 -translate-x-1/2 z-40">
+        <div className="flex items-center gap-1 rounded-full bg-black/80 backdrop-blur-xl border border-white/10 p-1 shadow-2xl">
+          <button
+            onClick={() => setMobileView("list")}
+            className={`px-4 py-2 rounded-full text-xs font-bold uppercase tracking-wider transition-colors ${
+              mobileView === "list"
+                ? "bg-[#ccff00] text-black"
+                : "text-white/60"
+            }`}
+          >
+            List
+          </button>
+          <button
+            onClick={() => setMobileView("map")}
+            className={`px-4 py-2 rounded-full text-xs font-bold uppercase tracking-wider transition-colors ${
+              mobileView === "map" ? "bg-[#ccff00] text-black" : "text-white/60"
+            }`}
+          >
+            Map
+          </button>
         </div>
       </div>
     </div>

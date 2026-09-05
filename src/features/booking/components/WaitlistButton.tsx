@@ -8,7 +8,7 @@ import {
   useLeaveWaitlist,
 } from "@/features/booking/hooks/useWaitlist";
 import { toast } from "sonner";
-import { useAuthStore } from "@/features/auth/store/useAuthStore";
+import { useAuthStore } from "@/shared/auth/useAuthStore";
 
 export interface WaitlistButtonProps {
   templateId: string;

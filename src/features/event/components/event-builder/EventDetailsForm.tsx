@@ -1,8 +1,8 @@
-﻿"use client";
+"use client";
 
 import React from "react";
 import { EVENT_CATEGORIES } from "@/features/event/data/eventBuilderData";
-import CancellationPolicyPicker from "@/features/cancellation-policy/components/CancellationPolicyPicker";
+import CancellationPolicyPicker from "@/shared/components/ui/CancellationPolicyPicker";
 import {
   MapboxLocationInput,
   MapboxContextItem,

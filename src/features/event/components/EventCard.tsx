@@ -5,10 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { Heart, Star, MapPin } from "lucide-react";
 import { Event } from "@/features/event/types/event";
-import {
-  addFavorite,
-  removeFavoriteByListing,
-} from "@/features/user/api/favorites";
+import { addFavorite, removeFavoriteByListing } from "@/shared/api/favorites";
 
 interface EventCardProps {
   event: Event;

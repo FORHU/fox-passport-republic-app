@@ -1,8 +1,9 @@
 "use client";
 
 import React, { Suspense } from "react";
-import RequireAuth from "@/features/auth/components/RequireAuth";
-import { useListingBuilder } from "@/features/asset/hooks/useListingBuilder";
+import RequireAuth from "@/shared/auth/RequireAuth";
+import { useListingBuilder } from "./useListingBuilder";
+
 import {
   ListingHeader,
   ListingSidebar,

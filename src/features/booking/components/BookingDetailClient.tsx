@@ -7,7 +7,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import QRCode from "react-qr-code";
 import { fetchBookingById } from "@/features/booking/api/bookings";
-import { useAuthStore } from "@/features/auth/store/useAuthStore";
+import { useAuthStore } from "@/shared/auth/useAuthStore";
 import CancelBookingModal from "./CancelBookingModal";
 import { getDashboardPath } from "@/shared/lib/dashboard-path";
 import MessageButton from "@/features/messages/components/MessageButton";

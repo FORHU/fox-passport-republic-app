@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import RequireAuth from "@/features/auth/components/RequireAuth";
+import RequireAuth from "@/shared/auth/RequireAuth";
 import { useVenueBuilder } from "@/features/venue/hooks/useVenueBuilder";
 import { useVenueBuilderStore } from "@/features/venue/store/useVenueBuilderStore";
 import {

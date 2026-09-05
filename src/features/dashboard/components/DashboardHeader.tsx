@@ -4,10 +4,11 @@ import React from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useRoleAccess, RoleAccess } from "@/features/auth/hooks/useRoleAccess";
-import { useAuthStore } from "@/features/auth/store/useAuthStore";
-import UserMenuButton from "@/features/user/components/UserMenuButton";
-import NotificationBell from "@/features/notifications/components/NotificationBell";
+import { useRoleAccess, RoleAccess } from "@/shared/auth/useRoleAccess";
+
+import { useAuthStore } from "@/shared/auth/useAuthStore";
+import UserMenuButton from "@/shared/components/layout/UserMenuButton";
+import NotificationBell from "@/shared/components/layout/NotificationBell";
 
 const NAV_ICONS: Record<string, string> = {
   Overview: "dashboard",
@@ -47,7 +48,7 @@ export function DashboardHeader() {
       label: "Services",
       href: "/creator-dashboard/services",
     },
-    (access.canManageEvents || access.isMayor) && {
+    access.isHost && {
       label: "Check In",
       href: "/creator-dashboard/check-in",
     },

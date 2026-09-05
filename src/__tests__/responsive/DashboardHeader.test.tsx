@@ -26,7 +26,7 @@ const mockAccess = {
   canManageServices: true,
 };
 
-vi.mock("@/features/auth/hooks/useRoleAccess", () => ({
+vi.mock("@/shared/auth/useRoleAccess", () => ({
   useRoleAccess: () => mockAccess,
   RoleAccess: {},
 }));
@@ -38,12 +38,12 @@ const mockAuthState = {
 
 type MockAuthState = typeof mockAuthState;
 
-vi.mock("@/features/auth/store/useAuthStore", () => ({
+vi.mock("@/shared/auth/useAuthStore", () => ({
   useAuthStore: <T,>(selector?: (s: MockAuthState) => T) =>
     selector ? selector(mockAuthState) : mockAuthState,
 }));
 
-vi.mock("@/features/notifications/components/NotificationBell", () => ({
+vi.mock("@/shared/components/layout/NotificationBell", () => ({
   default: () => <div data-testid="notification-bell" />,
 }));
 

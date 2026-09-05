@@ -7,12 +7,12 @@ import { useQuery } from "@tanstack/react-query";
 import {
   fetchTrendingTemplates,
   EventTemplate,
-} from "@/features/event/api/event-templates";
-import { fetchFoxers, Foxer } from "@/features/user/api/foxers";
+} from "@/shared/api/event-templates";
+import { fetchFoxers, Foxer } from "@/shared/api/foxers";
 import { useLandingPage } from "@/features/landing/hooks/useLandingPage";
-import { useAuthStore } from "@/features/auth/store/useAuthStore";
-import NotificationBell from "@/features/notifications/components/NotificationBell";
-import UserMenuButton from "@/features/user/components/UserMenuButton";
+import { useAuthStore } from "@/shared/auth/useAuthStore";
+import NotificationBell from "@/shared/components/layout/NotificationBell";
+import UserMenuButton from "@/shared/components/layout/UserMenuButton";
 import MobileBottomNav from "@/shared/components/layout/MobileBottomNav";
 import { BrandLogo } from "@/shared/components/layout/BrandLogo";
 import api from "@/shared/lib/axios";

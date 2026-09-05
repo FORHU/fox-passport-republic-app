@@ -2,7 +2,7 @@
 "use client";
 
 import { motion } from "motion/react";
-import { Category } from "@/features/category/types/category";
+import type { Category } from "@/shared/types/category";
 import Link from "next/link";
 
 // Default image for categories without images

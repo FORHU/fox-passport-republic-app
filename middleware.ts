@@ -41,6 +41,13 @@ const PROTECTED_ROUTES = [
   "/mayor",
   "/foxer",
   "/reviews",
+  "/kyc",
+  "/notifications",
+  "/scanner",
+  "/wishlists",
+  "/host",
+  "/match",
+  "/venue-foxer",
 ];
 
 // Name of the cookie set by `setAuthCookies` in shared/lib/server/auth-actions.
@@ -67,10 +74,13 @@ export default async function proxy(request: NextRequest) {
 }
 
 function redirectToLogin(request: NextRequest) {
-  const response = NextResponse.redirect(new URL("/", request.url));
-  // Signals the client to open the login modal.
-  response.headers.set("x-auth-required", "true");
-  return response;
+  // `?auth=required` rather than a response header: this redirect is a normal
+  // browser navigation, and client JS on the destination page has no way to
+  // read the headers of the response that produced it. A header here used to
+  // be set and never read for exactly that reason. `SessionExpiredToast`
+  // (mounted in the root layout) watches this query param the same way it
+  // already watches `?auth=expired`, and strips it once shown.
+  return NextResponse.redirect(new URL("/?auth=required", request.url));
 }
 
 // Configure which routes this proxy applies to
