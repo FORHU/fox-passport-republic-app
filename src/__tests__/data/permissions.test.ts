@@ -112,6 +112,7 @@ describe("the gates are expressed as capabilities", () => {
     "src/shared/lib/server/auth.ts",
     "src/features/admin/components/AdminAuthGuard.tsx",
     "src/shared/lib/dashboard-path.ts",
+    "src/shared/auth/useRoleAccess.ts",
   ])("%s no longer compares systemRole to a literal", (path) => {
     expect(read(path)).not.toMatch(/systemRole\s*[!=]==\s*["']admin["']/);
   });

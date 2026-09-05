@@ -3,6 +3,7 @@
 import api from "@/shared/lib/axios";
 import { useAuthStore } from "@/shared/auth/useAuthStore";
 import type { RoleType, SystemRole } from "@/shared/auth/types";
+import type { Permission } from "@/shared/constants/permissions";
 
 /**
  * The signed-in person as the server describes them.
@@ -28,6 +29,7 @@ export interface ProfileData {
   // without a cast - and a cast here would only have hidden the mismatch.
   systemRole: SystemRole;
   roleType: RoleType[];
+  permissions: readonly Permission[];
   createdAt: string;
   updatedAt: string;
 }

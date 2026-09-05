@@ -48,7 +48,7 @@ export function DashboardHeader() {
       label: "Services",
       href: "/creator-dashboard/services",
     },
-    (access.canManageEvents || access.isMayor) && {
+    access.isHost && {
       label: "Check In",
       href: "/creator-dashboard/check-in",
     },

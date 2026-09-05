@@ -26,7 +26,7 @@ const mockAccess = {
   canManageServices: true,
 };
 
-vi.mock("@/features/auth/hooks/useRoleAccess", () => ({
+vi.mock("@/shared/auth/useRoleAccess", () => ({
   useRoleAccess: () => mockAccess,
   RoleAccess: {},
 }));

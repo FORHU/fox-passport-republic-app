@@ -1,3 +1,5 @@
+import type { Permission } from "@/shared/constants/permissions";
+
 // Authentication related types
 
 /** Mirrors the API's `SystemRole` Prisma enum — there is no `super_admin` tier. */
@@ -15,6 +17,9 @@ export interface User {
   name: string;
   systemRole: SystemRole;
   roleType?: RoleType[];
+  // Server-derived, carried on login, refresh, the Google exchange and
+  // /profile. `hasPermission()` is the only thing that reads this.
+  permissions?: readonly Permission[];
   isEventFoxer?: boolean;
   mobileNumber?: string;
   isEmailVerified?: boolean;
