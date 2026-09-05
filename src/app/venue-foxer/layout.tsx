@@ -1,0 +1,25 @@
+import { requireAuth } from "@/shared/lib/server/auth";
+
+/**
+ * Signed-in only: applying to be a Venue Foxer, and creating a venue.
+ *
+ * `middleware.ts` only checks that a session cookie is *present* - it verifies
+ * nothing, by design, so this app need not hold the API's signing key. The real
+ * check is here: `requireAuth` resolves the session against a live `/profile`
+ * call and redirects when there is nothing behind the cookie.
+ *
+ * A layout rather than a page, so the whole tree is covered by one guard
+ * instead of by each page remembering.
+ *
+ * `requireAuth` and not `requireHost`: `/venue-foxer/apply` is how someone
+ * becomes one, so gating it on already being one would lock out the people
+ * it is for.
+ */
+export default async function VenueFoxerLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  await requireAuth();
+  return <>{children}</>;
+}
