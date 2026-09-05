@@ -1,5 +1,4 @@
-/* eslint-disable @next/next/no-page-custom-font */
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Suspense } from "react";
 import "cesium/Build/Cesium/Widgets/widgets.css";
 import "./globals.css";
@@ -18,6 +17,13 @@ import Providers from "@/shared/providers";
 export const metadata: Metadata = {
   title: "FoxPassport - Let's Make Life an Event",
   description: "FoxPassport returns the power of Happiness & Experience to You",
+};
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 5,
+  themeColor: "#09090b",
 };
 
 export default function RootLayout({

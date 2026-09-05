@@ -27,7 +27,7 @@ const NAV_TABS = [
   { label: "Explore", href: "/" },
   { label: "Foxers", href: "/search" },
   { label: "Map", href: "/venues/map" },
-  { label: "Community", href: "/user/passport" },
+  { label: "Republic", href: "/republic" },
 ];
 
 export default function LandingHeader({
@@ -120,18 +120,18 @@ export default function LandingHeader({
                 </Link>
               )}
 
-              {/* Desktop-only: Sign In + UserMenuButton */}
+              {/* Sign In + UserMenuButton (Visible across all screens: mobile, tablet, desktop) */}
               {!isAuthenticated && (
                 <button
                   onClick={handleSignIn}
-                  className="hidden lg:flex items-center gap-2 rounded-full bg-white/5 border border-white/10 px-6 py-2.5 text-sm font-bold text-white hover:bg-white hover:text-black hover:shadow-[0_0_20px_rgba(255,255,255,0.3)] transition-all duration-300 group overflow-hidden relative"
+                  className="flex items-center gap-1.5 sm:gap-2 rounded-full bg-white/10 sm:bg-white/5 border border-white/15 px-3.5 sm:px-6 py-1.5 sm:py-2.5 text-xs sm:text-sm font-bold text-white hover:bg-white hover:text-black hover:shadow-[0_0_20px_rgba(255,255,255,0.3)] transition-all duration-300 group overflow-hidden relative cursor-pointer"
                 >
                   <span className="relative z-10">Sign In</span>
                   <div className="absolute inset-0 bg-white translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-out z-0"></div>
                 </button>
               )}
               {isAuthenticated && (
-                <div className="hidden lg:flex items-center gap-2 sm:gap-3">
+                <div className="flex items-center gap-2 sm:gap-3">
                   <NotificationBell />
                   <UserMenuButton onSignIn={handleSignIn} />
                 </div>

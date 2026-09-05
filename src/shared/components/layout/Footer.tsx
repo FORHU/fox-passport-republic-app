@@ -19,7 +19,7 @@ export default function Footer() {
               </li>
               <li>
                 <a href="#" className="hover:underline hover:text-gray-900">
-                  Investors
+                  Partner Foxers
                 </a>
               </li>
               <li>
@@ -34,6 +34,14 @@ export default function Footer() {
           <div className="flex flex-col">
             <h4 className="font-bold text-gray-900 mb-3 md:mb-4">Community</h4>
             <ul className="space-y-2">
+              <li>
+                <a
+                  href="/republic"
+                  className="hover:underline hover:text-gray-900 font-medium text-emerald-600"
+                >
+                  Republic Foxer Feed
+                </a>
+              </li>
               <li>
                 <a href="#" className="hover:underline hover:text-gray-900">
                   Travel Blog

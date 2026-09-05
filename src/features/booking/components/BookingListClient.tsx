@@ -29,9 +29,7 @@ const STATUS_LABEL: Record<string, { label: string; color: string }> = {
 
 /** Mirrors the backend sweep's own idea of "overdue unpaid" (BookingReminderService.cancelOverdueUnpaid) — kept in sync as a client-side fallback for the window before that job catches up. */
 function isPastDueUnpaid(booking: any) {
-  return (
-    booking.status === "pending" && new Date(booking.startAt) < new Date()
-  );
+  return booking.status === "pending" && new Date(booking.startAt) < new Date();
 }
 
 export default function BookingListClient() {

@@ -13,7 +13,6 @@ import FeaturesSection from "./sections/FeaturesSection";
 import NewsletterSection from "./sections/NewsletterSection";
 import LandingFooter from "./sections/LandingFooter";
 
-
 interface FoxerLandingPageProps {
   featuredTemplates?: any[];
 }

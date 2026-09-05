@@ -1,30 +1,76 @@
 /* eslint-disable @next/next/no-img-element */
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useConversations } from "../hooks/useMessages";
+import { useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
+import { useConversations, useStartConversation } from "../hooks/useMessages";
 import ChatPanel from "./ChatPanel";
 import type { Conversation } from "../types";
 
 export default function ConversationListClient() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const queryClient = useQueryClient();
   const { data: conversations = [], isLoading } = useConversations();
   const [active, setActive] = useState<Conversation | null>(null);
 
-  // Opens the conversation named by ?conversationId once it's in the list —
-  // adjusted during render (see SearchFilters.tsx for the same technique)
-  // rather than in an effect, so a still-loading `conversations` naturally
+  // Get-or-creates a conversation for ?userId=, the link shape used by
+  // PostCard, PartnerInventoryMap, PublicCitizenProfileView, and the
+  // Message Foxer/Client/Provider/Organizer links across the app. This is
+  // a real network call, so it runs in an effect rather than during render;
+  // startConversation only returns the new id, so once it resolves we fold
+  // it into the same conversationId-matching flow below.
+  const userIdParam = searchParams.get("userId");
+  const contextTypeParam = searchParams.get("contextType") ?? undefined;
+  const contextIdParam = searchParams.get("contextId") ?? undefined;
+  const contextLabelParam = searchParams.get("contextLabel") ?? undefined;
+  const [startedUserId, setStartedUserId] = useState<string | null>(null);
+  const [pendingConversationId, setPendingConversationId] = useState<
+    string | null
+  >(null);
+  const startConversation = useStartConversation();
+  useEffect(() => {
+    if (!userIdParam || userIdParam === startedUserId) return;
+    setStartedUserId(userIdParam);
+    startConversation.mutate(
+      {
+        otherUserId: userIdParam,
+        contextType: contextTypeParam,
+        contextId: contextIdParam,
+        contextLabel: contextLabelParam,
+      },
+      {
+        onSuccess: (conversation) => {
+          queryClient.invalidateQueries({ queryKey: ["conversations"] });
+          setPendingConversationId(conversation.id);
+        },
+        onError: (error: any) => {
+          toast.error(
+            error?.response?.data?.message ||
+              "Could not start this conversation.",
+          );
+        },
+      },
+    );
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [userIdParam, startedUserId]);
+
+  // Opens the conversation named by ?conversationId, or the one just
+  // started for ?userId=, once it's in the list — adjusted during render
+  // (see SearchFilters.tsx for the same technique) rather than in an
+  // effect, so a still-loading/still-refetching `conversations` naturally
   // retries on the next render instead of needing a second effect run.
-  const conversationIdParam = searchParams.get("conversationId");
+  const targetConversationId =
+    searchParams.get("conversationId") ?? pendingConversationId;
   const [appliedConversationId, setAppliedConversationId] = useState<
     string | null
   >(null);
-  if (conversationIdParam && conversationIdParam !== appliedConversationId) {
-    const match = conversations.find((c) => c.id === conversationIdParam);
+  if (targetConversationId && targetConversationId !== appliedConversationId) {
+    const match = conversations.find((c) => c.id === targetConversationId);
     if (match) {
-      setAppliedConversationId(conversationIdParam);
+      setAppliedConversationId(targetConversationId);
       setActive(match);
     }
   }

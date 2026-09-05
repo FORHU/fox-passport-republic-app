@@ -1,7 +1,11 @@
 "use client";
 
 import React, { useEffect, useRef, useState } from "react";
-import { config } from "@/shared/lib/config";
+import {
+  getEffectiveMapboxToken,
+  getMapStyle,
+  setupMapboxFallback,
+} from "@/shared/lib/mapbox";
 import {
   fetchReferenceBoundaries,
   ReferenceBoundary,
@@ -166,23 +170,24 @@ export function VenuePolygonMapPicker({
   const [canUndo, setCanUndo] = useState(false);
 
   useEffect(() => {
-    if (!containerRef.current || !config.mapboxToken) return;
+    if (!containerRef.current) return;
     let alive = true;
 
     import("mapbox-gl").then(({ default: mapboxgl }) => {
       if (!alive || !containerRef.current) return;
 
-      mapboxgl.accessToken = config.mapboxToken;
+      mapboxgl.accessToken = getEffectiveMapboxToken();
       const initCenter = verticesRef.current[0] ?? DEFAULT_CENTER;
 
       const map = new mapboxgl.Map({
         container: containerRef.current,
-        style: "mapbox://styles/mapbox/dark-v11",
+        style: getMapStyle() as any,
         center: initCenter,
         zoom: 13,
         attributionControl: false,
       });
       mapRef.current = map;
+      setupMapboxFallback(map);
       map.doubleClickZoom.disable(); // repurposed: double-click closes the shape
 
       map.addControl(
@@ -619,6 +624,12 @@ export function VenuePolygonMapPicker({
 
       (map as any).__renderReferenceLayer = renderReferenceLayer;
 
+      if (containerRef.current && "ResizeObserver" in window) {
+        const observer = new ResizeObserver(() => map.resize());
+        observer.observe(containerRef.current);
+        (map as any).__resizeObserver = observer;
+      }
+
       const handleKeyDown = (e: KeyboardEvent) => {
         if (e.key === "Escape") undo();
       };
@@ -629,6 +640,7 @@ export function VenuePolygonMapPicker({
 
     return () => {
       alive = false;
+      mapRef.current?.__resizeObserver?.disconnect();
       markersRef.current.forEach((m) => m.remove());
       referenceMarkersRef.current.forEach((m) => m.remove());
       mapRef.current?.__cleanupKeydown?.();
@@ -684,7 +696,7 @@ export function VenuePolygonMapPicker({
   return (
     <div className="space-y-3">
       <div ref={containerRef} className={className} />
-      <div className="flex items-center justify-between gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div className="space-y-1">
           <p className="text-[11px] text-white/40">
             {closed

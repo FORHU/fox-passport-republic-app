@@ -27,9 +27,11 @@ export default function SearchableDropdown({
   const [query, setQuery] = useState("");
   const [asyncResults, setAsyncResults] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
-  const [rect, setRect] = useState<{ top: number; left: number; width: number } | null>(
-    null,
-  );
+  const [rect, setRect] = useState<{
+    top: number;
+    left: number;
+    width: number;
+  } | null>(null);
   const ref = useRef<HTMLDivElement>(null);
   const menuRef = useRef<HTMLDivElement>(null);
 

@@ -8,7 +8,6 @@ import { useRouter } from "next/navigation";
 import { fetchStamps, Stamp } from "@/features/gamification/api/stamps";
 import { useCategories } from "@/shared/hooks/useCategories";
 
-
 interface Props {
   userId: string;
 }

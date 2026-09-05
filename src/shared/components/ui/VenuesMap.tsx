@@ -1,7 +1,7 @@
 "use client";
 
-import React, { useEffect, useRef } from "react";
-import { config } from "@/shared/lib/config";
+import React, { useEffect, useRef, useCallback } from "react";
+import { MapBoxView } from "@/shared/components/ui/MapBoxView";
 import "mapbox-gl/dist/mapbox-gl.css";
 
 const POLYGON_SOURCE_ID = "venues-map-polygons";
@@ -54,7 +54,7 @@ export interface MapVenue {
   subtitle?: string;
 }
 
-interface VenuesMapProps {
+export interface VenuesMapProps {
   venues: MapVenue[];
   /** Fit the camera to every venue's extent. Off by default for a general
    * "browse everything" view — fitting tight to whatever's in the list
@@ -67,6 +67,12 @@ interface VenuesMapProps {
    * to this venue and highlights its pin/shape. */
   selectedVenueId?: string | null;
   onVenueClick?: (id: string) => void;
+  onViewportChange?: (bounds: {
+    north: number;
+    south: number;
+    east: number;
+    west: number;
+  }) => void;
   className?: string;
 }
 
@@ -160,46 +166,31 @@ export function VenuesMap({
   zoom = 6,
   selectedVenueId,
   onVenueClick,
+  onViewportChange,
   className = "h-96 w-full rounded-2xl overflow-hidden",
 }: VenuesMapProps) {
-  const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<any>(null);
+  const mapboxglRef = useRef<any>(null);
   const markersRef = useRef<any[]>([]);
-  const resizeObserverRef = useRef<ResizeObserver | null>(null);
-  // Read inside the effect via refs so venues/selection updates don't have
-  // to sit in the mount effect's deps and rebuild the whole map — render()
-  // and the click handlers always see the current value without a
-  // re-subscribe, and are re-invoked explicitly (below) when either changes.
+
+  // Read inside callbacks via refs so venues/selection updates don't tear down
+  // the entire map canvas.
   const venuesRef = useRef(venues);
   const selectedIdRef = useRef(selectedVenueId);
   const onVenueClickRef = useRef(onVenueClick);
+  const onViewportChangeRef = useRef(onViewportChange);
   const everSelectedRef = useRef(false);
+
   useEffect(() => {
     venuesRef.current = venues;
     onVenueClickRef.current = onVenueClick;
-  }, [venues, onVenueClick]);
+    onViewportChangeRef.current = onViewportChange;
+  }, [venues, onVenueClick, onViewportChange]);
 
-  useEffect(() => {
-    if (!containerRef.current || !config.mapboxToken) return;
-    let alive = true;
-
-    import("mapbox-gl").then(({ default: mapboxgl }) => {
-      if (!alive || !containerRef.current) return;
-
-      mapboxgl.accessToken = config.mapboxToken;
-      const map = new mapboxgl.Map({
-        container: containerRef.current,
-        style: "mapbox://styles/mapbox/dark-v11",
-        center: center ?? DEFAULT_CENTER,
-        zoom,
-        attributionControl: false,
-      });
+  const handleMapReady = useCallback(
+    (map: any, mapboxgl: any) => {
       mapRef.current = map;
-
-      map.addControl(
-        new mapboxgl.NavigationControl({ showCompass: false }),
-        "top-right",
-      );
+      mapboxglRef.current = mapboxgl;
 
       const openPopup = (venue: MapVenue, lngLat: [number, number]) => {
         new mapboxgl.Popup({ closeButton: true, offset: 12 })
@@ -223,12 +214,6 @@ export function VenuesMap({
         const withBoundary = venuesRef.current.filter(
           (v) => Array.isArray(v.boundary) && v.boundary.length >= 3,
         );
-        // A pin marks every venue with a location — including ones that also
-        // have a drawn boundary, the same way Google Maps shows a marker on
-        // top of a highlighted building outline rather than the outline
-        // standing in for it. Without this, a boundary venue had no visible
-        // "here it is" point at all, just an outline easy to miss when
-        // zoomed out or panned slightly off it.
         const withPin = venuesRef.current.filter(
           (v) => v.lat != null && v.lng != null,
         );
@@ -394,49 +379,45 @@ export function VenuesMap({
         }
       };
 
-      // Where the camera started, so re-clicking a selected venue (which
-      // clears the selection) has somewhere to go back to instead of just
-      // sitting wherever the last flyTo left it.
       const initialCenter = center ?? DEFAULT_CENTER;
       const initialZoom = zoom;
       const flyToInitial = () => {
         map.flyTo({ center: initialCenter, zoom: initialZoom, duration: 800 });
       };
 
-      map.on("load", render);
+      const emitBounds = () => {
+        try {
+          const b = map.getBounds();
+          if (b && onViewportChangeRef.current) {
+            onViewportChangeRef.current({
+              north: b.getNorth(),
+              south: b.getSouth(),
+              east: b.getEast(),
+              west: b.getWest(),
+            });
+          }
+        } catch {
+          // ignore if map canvas not ready
+        }
+      };
+
+      map.on("moveend", emitBounds);
+      map.on("load", () => {
+        render();
+        emitBounds();
+      });
+      map.on("style.load", render);
       (map as any).__rerender = render;
       (map as any).__flyToVenue = flyToVenue;
       (map as any).__flyToInitial = flyToInitial;
 
-      // In a flex/grid layout, the container's final size is often only
-      // known *after* Mapbox has already measured it once (e.g. this runs
-      // inside an async dynamic import, and CSS/flex layout can still shift
-      // after that first paint). Without this, the canvas can get stuck at
-      // whatever narrow width it happened to see first, leaving the rest of
-      // the container visibly blank even though the DOM element itself is
-      // sized correctly.
-      if (containerRef.current && "ResizeObserver" in window) {
-        const observer = new ResizeObserver(() => map.resize());
-        observer.observe(containerRef.current);
-        resizeObserverRef.current = observer;
+      render();
+      if (map.isStyleLoaded()) {
+        emitBounds();
       }
-    });
-
-    return () => {
-      alive = false;
-      resizeObserverRef.current?.disconnect();
-      resizeObserverRef.current = null;
-      markersRef.current.forEach((m) => m.remove());
-      mapRef.current?.remove();
-      mapRef.current = null;
-      markersRef.current = [];
-    };
-    // Deliberately mount-once: `venues`/`selectedVenueId` are read live via
-    // refs inside render()/flyToVenue(), re-invoked below whenever they
-    // actually change, without tearing down and rebuilding the whole
-    // map/camera.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+    },
+    [center, fitToContent, zoom],
+  );
 
   useEffect(() => {
     mapRef.current?.__rerender?.();
@@ -449,14 +430,25 @@ export function VenuesMap({
       everSelectedRef.current = true;
       mapRef.current?.__flyToVenue?.(selectedVenueId);
     } else if (everSelectedRef.current) {
-      // Only fly back once something was actually selected before — on
-      // first mount `selectedVenueId` starts out falsy too, and that's not
-      // a "re-click to deselect," it's just the initial render.
       mapRef.current?.__flyToInitial?.();
     }
   }, [selectedVenueId]);
 
-  return <div ref={containerRef} className={className} />;
+  useEffect(() => {
+    return () => {
+      markersRef.current.forEach((m) => m.remove());
+      markersRef.current = [];
+    };
+  }, []);
+
+  return (
+    <MapBoxView
+      center={center ?? DEFAULT_CENTER}
+      zoom={zoom}
+      className={className}
+      onMapReady={handleMapReady}
+    />
+  );
 }
 
 function escapeHtml(s: string): string {

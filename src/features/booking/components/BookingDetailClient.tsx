@@ -1,4 +1,4 @@
-﻿/* eslint-disable react-hooks/purity, @next/next/no-img-element */
+/* eslint-disable react-hooks/purity, @next/next/no-img-element */
 "use client";
 
 import React, { useEffect, useState } from "react";
@@ -10,7 +10,6 @@ import { fetchBookingById } from "@/features/booking/api/bookings";
 import { useAuthStore } from "@/shared/auth/useAuthStore";
 import CancelBookingModal from "./CancelBookingModal";
 import { getDashboardPath } from "@/shared/lib/dashboard-path";
-import MessageButton from "@/features/messages/components/MessageButton";
 
 const STATUS_LABEL: Record<string, { label: string; color: string }> = {
   pending: { label: "Pending", color: "text-yellow-400 bg-yellow-500/10" },
@@ -253,15 +252,15 @@ export default function BookingDetailClient({
               </div>
               <div className="flex items-center gap-2 shrink-0">
                 {otherParty?.id && (
-                  <MessageButton
-                    otherUserId={otherParty.id}
-                    otherUserName={otherParty.name}
-                    otherUserImgId={otherParty.imgId}
-                    contextType="booking"
-                    contextId={bookingId}
-                    contextLabel={eventName}
-                    label={isOwner ? "Message Foxer" : "Message User"}
-                  />
+                  <Link
+                    href={`/messages?userId=${encodeURIComponent(otherParty.id)}&contextType=booking&contextId=${encodeURIComponent(bookingId)}&contextLabel=${encodeURIComponent(eventName)}`}
+                    className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-white text-xs font-semibold transition-colors border border-zinc-700/50"
+                  >
+                    <span className="material-symbols-outlined text-[16px] text-amber-400">
+                      chat
+                    </span>
+                    <span>{isOwner ? "Message Foxer" : "Message User"}</span>
+                  </Link>
                 )}
                 {canCancel && (
                   <button

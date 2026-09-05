@@ -161,7 +161,9 @@ export default function ChatPanel({
             />
             <button
               onClick={handleSend}
-              disabled={!conversationId || !content.trim() || sendMutation.isPending}
+              disabled={
+                !conversationId || !content.trim() || sendMutation.isPending
+              }
               className="h-10 w-10 rounded-xl bg-[#ccff00] text-black flex items-center justify-center disabled:opacity-30 disabled:cursor-not-allowed shrink-0"
             >
               <span className="material-symbols-outlined text-[20px]">

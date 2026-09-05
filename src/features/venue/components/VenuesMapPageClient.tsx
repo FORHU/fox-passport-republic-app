@@ -1,10 +1,16 @@
 "use client";
 
-import React, { useMemo, useRef, useState } from "react";
+import React, {
+  useMemo,
+  useRef,
+  useState,
+  useCallback,
+  useEffect,
+} from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { Star, Users, X } from "lucide-react";
+import { Star, Users, X, Loader2 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import {
   VenuesMap,
@@ -12,6 +18,10 @@ import {
   CATEGORY_COLORS,
   CATEGORY_LABELS,
 } from "@/shared/components/ui/VenuesMap";
+import {
+  fetchVenuesByViewport,
+  ViewportBounds,
+} from "@/features/venue/api/venues";
 
 interface VenuesMapPageClientProps {
   venues: any[];
@@ -28,6 +38,39 @@ interface ListVenue extends MapVenue {
   category: string;
 }
 
+const FALLBACK_VENUE_IMG = "/herobackground.jpg";
+
+function resolveVenueImage(v: any): string {
+  if (typeof v === "string" && v.trim().length > 0) {
+    return v.trim();
+  }
+  if (!v || typeof v !== "object") {
+    return FALLBACK_VENUE_IMG;
+  }
+  if (typeof v.imageUrl === "string" && v.imageUrl.trim().length > 0) {
+    return v.imageUrl.trim();
+  }
+  if (typeof v.image === "string" && v.image.trim().length > 0) {
+    return v.image.trim();
+  }
+  if (typeof v.img === "string" && v.img.trim().length > 0) {
+    return v.img.trim();
+  }
+  if (Array.isArray(v.images) && v.images.length > 0) {
+    const first = v.images[0];
+    if (typeof first === "string" && first.trim().length > 0) {
+      return first.trim();
+    }
+    if (first && typeof first === "object") {
+      const u = first.url || first.imageUrl || first.secure_url;
+      if (typeof u === "string" && u.trim().length > 0) {
+        return u.trim();
+      }
+    }
+  }
+  return FALLBACK_VENUE_IMG;
+}
+
 function VenueListCard({
   venue,
   selected,
@@ -37,29 +80,45 @@ function VenueListCard({
   selected: boolean;
   onSelect: () => void;
 }) {
+  const imageSrc = resolveVenueImage(venue);
+
   return (
     <div
       onClick={onSelect}
       className={`group cursor-pointer rounded-2xl border transition-all overflow-hidden bg-white/5 hover:bg-white/10 ${
         selected
-          ? "border-[#ccff00] ring-1 ring-[#ccff00]"
+          ? "border-[#ccff00] ring-1 ring-[#ccff00] bg-white/10 shadow-[0_0_20px_rgba(204,255,0,0.15)]"
           : "border-white/10 hover:border-white/20"
       }`}
     >
       <div className="flex gap-3 p-3">
         <div className="relative h-24 w-28 shrink-0 rounded-xl overflow-hidden bg-white/5">
           <Image
-            src={venue.image}
-            alt={venue.name}
+            src={imageSrc || FALLBACK_VENUE_IMG}
+            alt={venue.name || "Venue"}
             fill
             sizes="112px"
-            className="object-cover"
+            className="object-cover group-hover:scale-105 transition-transform duration-300"
           />
         </div>
         <div className="flex-1 min-w-0 flex flex-col">
-          <h3 className="text-sm font-bold text-white truncate">
-            {venue.name}
-          </h3>
+          <div className="flex items-start justify-between gap-1">
+            <h3 className="text-sm font-bold text-white truncate">
+              {venue.name}
+            </h3>
+            {venue.category && (
+              <span
+                className="text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full shrink-0"
+                style={{
+                  backgroundColor: `${CATEGORY_COLORS[venue.category] ?? "#ccff00"}20`,
+                  color: CATEGORY_COLORS[venue.category] ?? "#ccff00",
+                  border: `1px solid ${CATEGORY_COLORS[venue.category] ?? "#ccff00"}40`,
+                }}
+              >
+                {CATEGORY_LABELS[venue.category] ?? venue.category}
+              </span>
+            )}
+          </div>
           {venue.location && (
             <p className="text-xs text-white/40 truncate mt-0.5">
               {venue.location}
@@ -103,10 +162,7 @@ function VenueListCard({
   );
 }
 
-// Floating detail card over the map — the Airbnb/Google Maps pattern of
-// "click a pin, a card appears over the map with more than the list row
-// shows" (full description, category, a bigger picture) rather than making
-// the user bounce back to the list to see anything beyond the summary.
+// Floating detail card over the map — appears when a pin is selected on the screen.
 function VenueDetailCard({
   venue,
   onClose,
@@ -114,18 +170,20 @@ function VenueDetailCard({
   venue: ListVenue;
   onClose: () => void;
 }) {
+  const detailImage = resolveVenueImage(venue);
+
   return (
     <motion.div
-      initial={{ x: -40, opacity: 0 }}
-      animate={{ x: 0, opacity: 1 }}
-      exit={{ x: -40, opacity: 0 }}
-      transition={{ duration: 0.3, ease: [0, 0, 0.2, 1] }}
-      className="absolute bottom-6 left-6 z-20 w-[calc(100%-3rem)] max-w-sm rounded-[2rem] border border-white/10 bg-[#0b0d14]/95 backdrop-blur-xl shadow-2xl overflow-hidden"
+      initial={{ y: 20, opacity: 0 }}
+      animate={{ y: 0, opacity: 1 }}
+      exit={{ y: 20, opacity: 0 }}
+      transition={{ duration: 0.25, ease: [0, 0, 0.2, 1] }}
+      className="absolute bottom-6 left-6 z-20 w-[calc(100%-3rem)] sm:max-w-sm rounded-[2rem] border border-[#ccff00]/30 bg-[#0b0d14]/95 backdrop-blur-xl shadow-[0_0_40px_rgba(0,0,0,0.8)] overflow-hidden"
     >
       <div className="relative h-40 w-full bg-white/5">
         <Image
-          src={venue.image}
-          alt={venue.name}
+          src={detailImage || FALLBACK_VENUE_IMG}
+          alt={venue.name || "Venue"}
           fill
           sizes="384px"
           className="object-cover"
@@ -133,13 +191,20 @@ function VenueDetailCard({
         <button
           onClick={onClose}
           aria-label="Close"
-          className="absolute top-3 right-3 h-8 w-8 rounded-full bg-black/50 hover:bg-black/70 text-white flex items-center justify-center transition-colors"
+          className="absolute top-3 right-3 h-8 w-8 rounded-full bg-black/60 hover:bg-black/90 text-white flex items-center justify-center transition-colors cursor-pointer"
         >
           <X className="w-4 h-4" />
         </button>
         {venue.category && (
-          <span className="absolute top-3 left-3 text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full bg-black/50 text-[#ccff00]">
-            {venue.category}
+          <span
+            className="absolute top-3 left-3 text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full backdrop-blur-md shadow"
+            style={{
+              backgroundColor: `${CATEGORY_COLORS[venue.category] ?? "#ccff00"}30`,
+              color: CATEGORY_COLORS[venue.category] ?? "#ccff00",
+              border: `1px solid ${CATEGORY_COLORS[venue.category] ?? "#ccff00"}50`,
+            }}
+          >
+            {CATEGORY_LABELS[venue.category] ?? venue.category}
           </span>
         )}
       </div>
@@ -169,19 +234,19 @@ function VenueDetailCard({
           {venue.capacity > 0 && (
             <span className="flex items-center gap-1">
               <Users className="w-3.5 h-3.5" />
-              Up to {venue.capacity}
+              Up to {venue.capacity} guests
             </span>
           )}
         </div>
 
         {venue.description && (
-          <p className="text-xs text-white/50 leading-relaxed line-clamp-3">
+          <p className="text-xs text-white/50 leading-relaxed line-clamp-2">
             {venue.description}
           </p>
         )}
 
         <div className="flex items-center justify-between pt-2 border-t border-white/10">
-          <p className="text-lg font-bold text-white">
+          <p className="text-base font-bold text-white">
             ₱{venue.price.toLocaleString()}
             <span className="text-xs font-normal text-white/40">/night</span>
           </p>
@@ -197,44 +262,60 @@ function VenueDetailCard({
   );
 }
 
-export function VenuesMapPageClient({ venues }: VenuesMapPageClientProps) {
+export function VenuesMapPageClient({
+  venues: initialVenues,
+}: VenuesMapPageClientProps) {
   const router = useRouter();
   const [selectedId, setSelectedId] = useState<string | null>(null);
-  // Below `sm` the list and map can't sit side by side, and the map used to
-  // just disappear with `hidden sm:block` — no toggle, no indication it
-  // existed at all. This makes "which one is showing" explicit instead.
   const [mobileView, setMobileView] = useState<"list" | "map">("list");
   const cardRefs = useRef<Record<string, HTMLDivElement | null>>({});
 
+  // Viewport-bounded state: only load what is on the screen!
+  const [rawVenues, setRawVenues] = useState<any[]>(initialVenues ?? []);
+  const [totalCount, setTotalCount] = useState<number>(
+    initialVenues?.length ?? 0,
+  );
+  const [page, setPage] = useState<number>(1);
+  const [currentBounds, setCurrentBounds] = useState<ViewportBounds | null>(
+    null,
+  );
+  const [isLoadingViewport, setIsLoadingViewport] = useState<boolean>(false);
+  const [isLoadingMore, setIsLoadingMore] = useState<boolean>(false);
+
+  // Debounce viewport queries (350ms) to prevent API spam while actively dragging
+  const debounceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const sentinelRef = useRef<HTMLDivElement>(null);
+
+  const normalizeListVenue = useCallback((v: any): ListVenue => {
+    const resolvedImg = resolveVenueImage(v);
+    return {
+      id: v.id,
+      name: v.title ?? v.name ?? "Untitled venue",
+      lat: v.lat,
+      lng: v.lng,
+      boundary: v.boundary,
+      subtitle: v.loc ?? v.location ?? undefined,
+      imageUrl: resolvedImg !== FALLBACK_VENUE_IMG ? resolvedImg : null,
+      image: resolvedImg,
+      location: v.loc ?? v.location ?? "",
+      price: Number(v.price) || 0,
+      rating: Number(v.rating) || 0,
+      reviews: Number(v.reviews) || 0,
+      capacity: Number(v.guestCount ?? v.capacity) || 0,
+      description: v.description ?? "",
+      category:
+        typeof v.category === "object"
+          ? (v.category?.name ?? v.category?.slug ?? "")
+          : (v.category ?? ""),
+    };
+  }, []);
+
   const listVenues: ListVenue[] = useMemo(
     () =>
-      (venues ?? [])
+      (rawVenues ?? [])
         .filter((v) => v.lat != null && v.lng != null)
-        .map((v) => ({
-          id: v.id,
-          name: v.title ?? v.name ?? "Untitled venue",
-          lat: v.lat,
-          lng: v.lng,
-          boundary: v.boundary,
-          subtitle: v.loc ?? v.location ?? undefined,
-          // The pin's circular photo — no fallback image, unlike `image`
-          // below: a venue with no real upload should read as "no photo"
-          // (a plain colored dot), not show the same generic stock photo
-          // on every pin with nothing uploaded yet.
-          imageUrl: v.img || v.images?.[0] || null,
-          image: v.img || v.images?.[0] || "/herobackground.jpg",
-          location: v.loc ?? v.location ?? "",
-          price: Number(v.price) || 0,
-          rating: Number(v.rating) || 0,
-          reviews: Number(v.reviews) || 0,
-          capacity: Number(v.guestCount ?? v.capacity) || 0,
-          description: v.description ?? "",
-          category:
-            typeof v.category === "object"
-              ? (v.category?.name ?? v.category?.slug ?? "")
-              : (v.category ?? ""),
-        })),
-    [venues],
+        .map(normalizeListVenue),
+    [rawVenues, normalizeListVenue],
   );
 
   const selectedVenue = useMemo(
@@ -242,18 +323,86 @@ export function VenuesMapPageClient({ venues }: VenuesMapPageClientProps) {
     [listVenues, selectedId],
   );
 
-  // Re-clicking the already-selected venue deselects it, which VenuesMap
-  // reads as "pan back to where the camera started" instead of leaving it
-  // sitting on the last-viewed venue.
+  // When camera moves, query the screen bounding box
+  const handleViewportChange = useCallback((bounds: ViewportBounds) => {
+    setCurrentBounds(bounds);
+    if (debounceTimerRef.current) {
+      clearTimeout(debounceTimerRef.current);
+    }
+
+    debounceTimerRef.current = setTimeout(async () => {
+      setIsLoadingViewport(true);
+      try {
+        const resp = await fetchVenuesByViewport({
+          ...bounds,
+          page: 1,
+          limit: 12,
+        });
+        setRawVenues(resp.venues);
+        setTotalCount(resp.total);
+        setPage(1);
+      } catch (err) {
+        console.warn("Could not query viewport venues:", err);
+      } finally {
+        setIsLoadingViewport(false);
+      }
+    }, 350);
+  }, []);
+
+  // Infinite loader: load next page for current screen view
+  const hasMore = rawVenues.length < totalCount;
+
+  const loadMore = useCallback(async () => {
+    if (!hasMore || isLoadingMore || isLoadingViewport || !currentBounds)
+      return;
+    setIsLoadingMore(true);
+
+    try {
+      const nextPage = page + 1;
+      const resp = await fetchVenuesByViewport({
+        ...currentBounds,
+        page: nextPage,
+        limit: 12,
+      });
+
+      setRawVenues((prev) => {
+        const existingIds = new Set(prev.map((v) => v.id));
+        const newItems = resp.venues.filter((v) => !existingIds.has(v.id));
+        return [...prev, ...newItems];
+      });
+      setTotalCount(resp.total);
+      setPage(nextPage);
+    } catch (err) {
+      console.warn("Error loading more viewport venues:", err);
+    } finally {
+      setIsLoadingMore(false);
+    }
+  }, [hasMore, isLoadingMore, isLoadingViewport, currentBounds, page]);
+
+  // Observer for sentinel div at bottom of sidebar
+  useEffect(() => {
+    const el = sentinelRef.current;
+    if (!el) return;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting) {
+          loadMore();
+        }
+      },
+      { rootMargin: "200px" },
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [loadMore]);
+
+  // Selection handlers: bidirectional sync between map pin & sidebar card
   const handleSelect = (id: string) => {
     setSelectedId((prev) => (prev === id ? null : id));
   };
 
-  // Map click selects too — scroll that card into view in the list, same as
-  // clicking a card flies the map (kept bidirectional on purpose, matching
-  // the Airbnb/Google Maps pattern this is modeled on).
   const handleMapVenueClick = (id: string) => {
     setSelectedId((prev) => (prev === id ? null : id));
+    // Scroll card into view
     cardRefs.current[id]?.scrollIntoView({
       behavior: "smooth",
       block: "nearest",
@@ -272,7 +421,7 @@ export function VenuesMapPageClient({ venues }: VenuesMapPageClientProps) {
               <button
                 onClick={() => router.back()}
                 aria-label="Back"
-                className="h-8 w-8 -ml-1.5 flex items-center justify-center rounded-full hover:bg-white/10 transition-colors shrink-0"
+                className="h-8 w-8 -ml-1.5 flex items-center justify-center rounded-full hover:bg-white/10 transition-colors shrink-0 cursor-pointer"
               >
                 <span className="material-symbols-outlined text-[20px]">
                   arrow_back
@@ -283,10 +432,32 @@ export function VenuesMapPageClient({ venues }: VenuesMapPageClientProps) {
               </span>
               Venues Map
             </h1>
-            <p className="text-xs text-white/40 mt-1">
-              {listVenues.length} venue{listVenues.length === 1 ? "" : "s"} —
-              click one to see it on the map.
-            </p>
+
+            {/* Screen-Scoped Counter */}
+            <div className="flex items-center justify-between mt-1 text-xs">
+              <p className="text-white/40">
+                {isLoadingViewport ? (
+                  <span className="flex items-center gap-1.5 text-[#ccff00] font-mono">
+                    <Loader2 className="w-3 h-3 animate-spin" /> Scanning
+                    viewport...
+                  </span>
+                ) : (
+                  <span>
+                    Showing{" "}
+                    <strong className="text-white">{listVenues.length}</strong>{" "}
+                    of <strong className="text-white">{totalCount}</strong>{" "}
+                    venues on screen
+                  </span>
+                )}
+              </p>
+              {currentBounds && (
+                <span className="text-[10px] font-mono text-[#ccff00]/60 bg-[#ccff00]/10 px-2 py-0.5 rounded-full border border-[#ccff00]/20">
+                  Live Viewport
+                </span>
+              )}
+            </div>
+
+            {/* Category Badges */}
             <div className="flex flex-wrap gap-x-3 gap-y-1.5 mt-3">
               {Object.entries(CATEGORY_LABELS).map(([key, label]) => (
                 <span
@@ -303,34 +474,67 @@ export function VenuesMapPageClient({ venues }: VenuesMapPageClientProps) {
             </div>
           </div>
 
-          <div className="flex-1 overflow-y-auto px-4 sm:px-6 pb-6 space-y-3">
-            {listVenues.length === 0 ? (
-              <div className="rounded-2xl border border-white/10 bg-white/5 py-16 flex flex-col items-center justify-center gap-2 text-white/30">
-                <span className="material-symbols-outlined text-[36px]">
-                  location_off
+          {/* List Container with Infinite Scroll */}
+          <div className="flex-1 overflow-y-auto px-4 sm:px-6 pb-6 space-y-3 scrollbar-none">
+            {isLoadingViewport && listVenues.length === 0 ? (
+              <div className="space-y-3 py-4">
+                {[1, 2, 3].map((n) => (
+                  <div
+                    key={n}
+                    className="h-28 rounded-2xl border border-white/10 bg-white/5 animate-pulse"
+                  />
+                ))}
+              </div>
+            ) : listVenues.length === 0 ? (
+              <div className="rounded-2xl border border-white/10 bg-white/5 py-16 flex flex-col items-center justify-center gap-2 text-white/30 text-center px-4">
+                <span className="material-symbols-outlined text-[36px] text-white/20">
+                  travel_explore
                 </span>
-                <p className="text-sm">No venues with a location yet</p>
+                <p className="text-sm font-semibold text-white/60">
+                  No venues in this screen area
+                </p>
+                <p className="text-xs text-white/40 max-w-xs">
+                  Pan or zoom the map to discover venues across other regions or
+                  cities.
+                </p>
               </div>
             ) : (
-              listVenues.map((venue) => (
-                <div
-                  key={venue.id}
-                  ref={(el) => {
-                    cardRefs.current[venue.id] = el;
-                  }}
-                >
-                  <VenueListCard
-                    venue={venue}
-                    selected={venue.id === selectedId}
-                    onSelect={() => handleSelect(venue.id)}
-                  />
+              <>
+                {listVenues.map((venue) => (
+                  <div
+                    key={venue.id}
+                    ref={(el) => {
+                      cardRefs.current[venue.id] = el;
+                    }}
+                  >
+                    <VenueListCard
+                      venue={venue}
+                      selected={venue.id === selectedId}
+                      onSelect={() => handleSelect(venue.id)}
+                    />
+                  </div>
+                ))}
+
+                {/* Infinite Scroll Sentinel */}
+                <div ref={sentinelRef} className="py-4 text-center">
+                  {isLoadingMore && (
+                    <div className="flex items-center justify-center gap-2 text-xs text-white/50 font-mono py-2">
+                      <Loader2 className="w-4 h-4 animate-spin text-[#ccff00]" />
+                      <span>Loading more venues in view...</span>
+                    </div>
+                  )}
+                  {!hasMore && listVenues.length > 0 && (
+                    <p className="text-[11px] text-white/30 font-mono tracking-wider uppercase py-2">
+                      All {totalCount} venues in this area loaded
+                    </p>
+                  )}
                 </div>
-              ))
+              </>
             )}
           </div>
         </div>
 
-        {/* Right: map, fills the rest of the viewport */}
+        {/* Right: Map fills viewport */}
         <div
           className={`${mobileView === "map" ? "block" : "hidden"} sm:block relative flex-1 min-w-0 p-4`}
         >
@@ -340,8 +544,11 @@ export function VenuesMapPageClient({ venues }: VenuesMapPageClientProps) {
             zoom={6}
             selectedVenueId={selectedId}
             onVenueClick={handleMapVenueClick}
+            onViewportChange={handleViewportChange}
             className="h-full w-full rounded-[2rem] border border-white/10 overflow-hidden shadow-2xl"
           />
+
+          {/* Floating Selected Card over Map */}
           <AnimatePresence>
             {selectedVenue && (
               <VenueDetailCard
@@ -354,24 +561,22 @@ export function VenuesMapPageClient({ venues }: VenuesMapPageClientProps) {
         </div>
       </div>
 
-      {/* Mobile-only List/Map toggle. Sits above MobileBottomNav (68px tall,
-          anchored at bottom-4) rather than below `sm` only relying on the
-          left column always winning. */}
+      {/* Mobile Toggle Button */}
       <div className="sm:hidden fixed bottom-24 left-1/2 -translate-x-1/2 z-40">
         <div className="flex items-center gap-1 rounded-full bg-black/80 backdrop-blur-xl border border-white/10 p-1 shadow-2xl">
           <button
             onClick={() => setMobileView("list")}
-            className={`px-4 py-2 rounded-full text-xs font-bold uppercase tracking-wider transition-colors ${
+            className={`px-4 py-2 rounded-full text-xs font-bold uppercase tracking-wider transition-colors cursor-pointer ${
               mobileView === "list"
                 ? "bg-[#ccff00] text-black"
                 : "text-white/60"
             }`}
           >
-            List
+            List ({listVenues.length})
           </button>
           <button
             onClick={() => setMobileView("map")}
-            className={`px-4 py-2 rounded-full text-xs font-bold uppercase tracking-wider transition-colors ${
+            className={`px-4 py-2 rounded-full text-xs font-bold uppercase tracking-wider transition-colors cursor-pointer ${
               mobileView === "map" ? "bg-[#ccff00] text-black" : "text-white/60"
             }`}
           >

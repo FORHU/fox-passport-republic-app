@@ -1,7 +1,6 @@
 import { create } from "zustand";
 import { ListingType } from "@/shared/data/listingBuilderData";
 
-
 interface ServiceBuilderState {
   // Listing Type
   activeType: ListingType;

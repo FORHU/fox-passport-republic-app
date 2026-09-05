@@ -26,15 +26,11 @@ const square: LngLat[] = [
 
 describe("segmentsIntersect", () => {
   it("is true for two crossing segments", () => {
-    expect(
-      segmentsIntersect([0, 0], [1, 1], [0, 1], [1, 0]),
-    ).toBe(true);
+    expect(segmentsIntersect([0, 0], [1, 1], [0, 1], [1, 0])).toBe(true);
   });
 
   it("is false for two parallel, non-touching segments", () => {
-    expect(
-      segmentsIntersect([0, 0], [1, 0], [0, 1], [1, 1]),
-    ).toBe(false);
+    expect(segmentsIntersect([0, 0], [1, 0], [0, 1], [1, 1])).toBe(false);
   });
 });
 
@@ -94,7 +90,13 @@ describe("ringSelfIntersects", () => {
   });
 
   it("is false with fewer than 4 points — nothing to cross yet", () => {
-    expect(ringSelfIntersects([[0, 0], [1, 1], [0, 1]])).toBe(false);
+    expect(
+      ringSelfIntersects([
+        [0, 0],
+        [1, 1],
+        [0, 1],
+      ]),
+    ).toBe(false);
   });
 });
 
@@ -127,7 +129,12 @@ describe("approximateAreaKm2", () => {
   });
 
   it("is 0 for fewer than 3 points", () => {
-    expect(approximateAreaKm2([[0, 0], [1, 1]])).toBe(0);
+    expect(
+      approximateAreaKm2([
+        [0, 0],
+        [1, 1],
+      ]),
+    ).toBe(0);
   });
 });
 

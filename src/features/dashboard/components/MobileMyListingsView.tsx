@@ -96,7 +96,7 @@ export default function MobileMyListingsView() {
           My Listings
         </p>
         <button
-          onClick={() => router.push("/creator-dashboard/new")}
+          onClick={() => router.push("/venue-foxer/create-venue")}
           style={{
             width: 34,
             height: 34,

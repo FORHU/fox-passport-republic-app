@@ -1,4 +1,4 @@
-﻿import api from "@/shared/lib/axios";
+import api from "@/shared/lib/axios";
 import type { Id } from "@/shared/lib/api-types";
 
 function unwrapList(data: any): any[] {
@@ -65,4 +65,28 @@ export async function fetchReferenceBoundaries(
   });
   const raw = resp.data?.boundaries;
   return Array.isArray(raw) ? raw : [];
+}
+
+export interface ViewportBounds {
+  north: number;
+  south: number;
+  east: number;
+  west: number;
+}
+
+export interface FetchVenuesQuery extends Partial<ViewportBounds> {
+  page?: number;
+  limit?: number;
+  category?: string;
+  mayorId?: string;
+}
+
+export async function fetchVenuesByViewport(
+  params: FetchVenuesQuery,
+): Promise<{ venues: any[]; total: number }> {
+  const resp = await api.get("/venues", { params });
+  return {
+    venues: unwrapList(resp.data),
+    total: resp.data?.total ?? 0,
+  };
 }
