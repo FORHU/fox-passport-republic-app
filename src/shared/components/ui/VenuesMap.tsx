@@ -102,9 +102,19 @@ export function createPinElement(
   const el = document.createElement("div");
   el.style.cssText = `width: ${w}px; height: ${h}px; cursor: pointer; filter: ${glow};`;
 
-  const photo = imageUrl
+  let safeUrl: string | null = null;
+  if (typeof imageUrl === "string" && imageUrl.trim().length > 0) {
+    safeUrl = imageUrl.trim();
+  } else if (imageUrl && typeof imageUrl === "object") {
+    const candidate = (imageUrl as any).url || (imageUrl as any).imageUrl;
+    if (typeof candidate === "string" && candidate.trim().length > 0) {
+      safeUrl = candidate.trim();
+    }
+  }
+
+  const photo = safeUrl
     ? `<clipPath id="${clipId}"><circle cx="14" cy="13.5" r="8"/></clipPath>
-       <image href="${escapeHtml(imageUrl)}" x="6" y="5.5" width="16" height="16"
+       <image href="${escapeHtml(safeUrl)}" x="6" y="5.5" width="16" height="16"
          preserveAspectRatio="xMidYMid slice" clip-path="url(#${clipId})"/>
        <circle cx="14" cy="13.5" r="8" fill="none" stroke="#0b0d14" stroke-width="1"/>`
     : `<circle cx="14" cy="13.5" r="5" fill="#0b0d14"/>`;
@@ -451,8 +461,17 @@ export function VenuesMap({
   );
 }
 
-function escapeHtml(s: string): string {
-  return s
+function escapeHtml(s: unknown): string {
+  if (s == null) return "";
+  const str =
+    typeof s === "string"
+      ? s
+      : typeof (s as any)?.url === "string"
+        ? (s as any).url
+        : typeof (s as any)?.name === "string"
+          ? (s as any).name
+          : String(s);
+  return str
     .replace(/&/g, "&amp;")
     .replace(/</g, "&lt;")
     .replace(/>/g, "&gt;")

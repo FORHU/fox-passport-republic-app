@@ -109,14 +109,14 @@ export function RepublicTabs({
 
   return (
     <div className="w-full bg-zinc-900/90 backdrop-blur-md border border-zinc-800/80 rounded-2xl p-1.5 shadow-xl">
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-1.5">
+      <div className="flex sm:grid sm:grid-cols-4 gap-1.5 overflow-x-auto [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden py-0.5">
         {tabs.map((tab) => {
           const isActive = activeTab === tab.id;
           return (
             <button
               key={tab.id}
               onClick={() => onTabChange(tab.id)}
-              className={`relative flex flex-col sm:flex-row items-center justify-center gap-1.5 py-2 px-2.5 rounded-xl transition-all duration-200 cursor-pointer ${
+              className={`relative shrink-0 flex items-center justify-center gap-1.5 py-2 px-3 sm:px-2.5 rounded-xl transition-all duration-200 cursor-pointer whitespace-nowrap ${
                 isActive
                   ? "bg-zinc-800 text-white shadow-lg border border-lime-400/40"
                   : "text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/40"
