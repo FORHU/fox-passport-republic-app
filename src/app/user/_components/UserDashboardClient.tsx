@@ -3,6 +3,7 @@
 import React from "react";
 import { useUserDashboard } from "@/features/user/hooks/useUserDashboard";
 import { UserHeader } from "@/features/user/components/citizen/UserHeader";
+import { UserIdentityCard } from "@/features/user/components/citizen/UserIdentityCard";
 import { UserWelcome } from "@/features/user/components/citizen/UserWelcome";
 import { UserNextUp } from "@/features/user/components/citizen/UserNextUp";
 import { UserForYou } from "@/features/user/components/citizen/UserForYou";
@@ -52,6 +53,8 @@ function UserDashboardContent({
 
       <main className="grow pt-28 sm:pt-36 px-4 pb-28 sm:pb-20">
         <div className="mx-auto max-w-7xl">
+          <UserIdentityCard />
+
           <UserWelcome
             upcomingEventsCount={displayDashboardData.upcomingEvents}
             recommendationsCount={displayDashboardData.recommendations}
