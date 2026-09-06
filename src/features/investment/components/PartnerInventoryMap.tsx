@@ -129,7 +129,11 @@ export default function PartnerInventoryMap({
         pin.addEventListener("click", () => {
           setSelectedPin(item);
           if (onSelectInvestment) onSelectInvestment(item);
-          map.flyTo({ center: [item.lng, item.lat], zoom: 14, essential: true });
+          map.flyTo({
+            center: [item.lng, item.lat],
+            zoom: 14,
+            essential: true,
+          });
         });
 
         const marker = new mapboxgl.Marker({ element: pin, anchor: "center" })

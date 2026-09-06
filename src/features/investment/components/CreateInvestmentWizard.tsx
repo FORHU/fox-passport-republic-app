@@ -156,9 +156,40 @@ export default function CreateInvestmentWizard() {
   };
 
   return (
-    <div className="min-h-screen bg-[#09090b] text-white pt-24 pb-28 px-4 sm:px-6 selection:bg-amber-400 selection:text-black">
-      <div className="max-w-3xl mx-auto space-y-8">
-        {/* Top Header */}
+    <div className="min-h-screen bg-[#09090b] text-white pb-28 selection:bg-amber-400 selection:text-black">
+      {/* Sticky flow header — same structure as the Venue Studio header used
+          in /mayor/create-venue (back button, tool name + role badge, draft
+          status), so the Mayor and Partner creation flows read as the same
+          tool instead of one having a header and the other just blank
+          padding at the top. */}
+      <header className="h-16 border-b border-white/5 flex items-center justify-between px-4 sm:px-6 bg-[#0f111a] sticky top-0 z-20">
+        <div className="flex items-center gap-4 min-w-0">
+          <button
+            type="button"
+            onClick={() => router.back()}
+            className="h-8 w-8 shrink-0 flex items-center justify-center rounded-full hover:bg-white/10 cursor-pointer"
+          >
+            <span className="material-symbols-outlined text-[18px]">
+              arrow_back
+            </span>
+          </button>
+          <div className="min-w-0">
+            <h2 className="font-display font-bold text-lg flex items-center gap-2 truncate">
+              Investment Studio
+              <span className="px-1.5 py-0.5 rounded bg-amber-400/20 text-amber-400 text-[9px] font-bold uppercase shrink-0">
+                Partner Foxer
+              </span>
+            </h2>
+            <div className="flex items-center gap-2 text-[10px] text-zinc-500 mt-0.5 truncate">
+              <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse shrink-0" />
+              {form.title || "New Equipment Hub"} (Draft)
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <div className="max-w-3xl mx-auto space-y-8 pt-8 px-4 sm:px-6">
+        {/* Page intro */}
         <div>
           <div className="flex items-center gap-2 text-xs font-black uppercase tracking-wider text-amber-400 mb-2">
             <span className="material-symbols-outlined text-[16px]">

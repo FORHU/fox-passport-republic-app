@@ -4,7 +4,11 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { X } from "lucide-react";
-import { getFollowers, getFollowing, type FollowListPage } from "../api/follows";
+import {
+  getFollowers,
+  getFollowing,
+  type FollowListPage,
+} from "../api/follows";
 import { FollowButton } from "./FollowButton";
 
 type FollowTab = "followers" | "following";
@@ -98,7 +102,10 @@ export function FollowListModal({
             </p>
           ) : (
             users.map((u) => (
-              <div key={u.id} className="flex items-center justify-between gap-2">
+              <div
+                key={u.id}
+                className="flex items-center justify-between gap-2"
+              >
                 <Link
                   href={`/user/${u.id}`}
                   onClick={onClose}
@@ -128,7 +135,11 @@ export function FollowListModal({
                       {u.name || "Unknown Citizen"}
                     </span>
                     <span className="text-xs text-zinc-500 truncate">
-                      @{u.username || (u.name ? u.name.toLowerCase().replace(/\s/g, "") : "citizen")}
+                      @
+                      {u.username ||
+                        (u.name
+                          ? u.name.toLowerCase().replace(/\s/g, "")
+                          : "citizen")}
                     </span>
                   </div>
                 </Link>

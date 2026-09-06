@@ -19,7 +19,16 @@ const NAV_ICONS: Record<string, string> = {
   "Check In": "qr_code_scanner",
 };
 
-export function DashboardHeader() {
+interface DashboardHeaderProps {
+  /** The caller already renders its own mobile bottom nav (e.g.
+   * MobileCreatorHome's MobileCreatorBottomNav, which has a different tab
+   * set) — skip this one's so mobile doesn't end up with two. */
+  hideMobileBottomNav?: boolean;
+}
+
+export function DashboardHeader({
+  hideMobileBottomNav = false,
+}: DashboardHeaderProps = {}) {
   const user = useAuthStore((s) => s.user);
   const access = useRoleAccess();
   const pathname = usePathname();
@@ -56,12 +65,15 @@ export function DashboardHeader() {
 
   return (
     <>
-      <header className="fixed top-6 left-0 right-0 z-50">
-        <div className="mx-auto max-w-7xl px-4">
-          <div className="bg-black/60 backdrop-blur-xl border border-white/10 rounded-full px-6 h-20 flex items-center justify-between shadow-2xl">
+      <header className="fixed top-2 sm:top-6 left-0 right-0 z-50">
+        <div className="mx-auto max-w-7xl px-3 sm:px-4">
+          <div className="bg-black/60 backdrop-blur-xl border border-white/10 rounded-full px-4 sm:px-6 h-14 sm:h-20 flex items-center justify-between shadow-2xl">
             {/* Logo */}
-            <Link href="/" className="flex items-center gap-3 group">
-              <div className="flex h-10 w-10 items-center justify-center overflow-hidden group-hover:scale-110 transition-transform duration-300">
+            <Link
+              href="/"
+              className="flex items-center gap-2 sm:gap-3 group min-w-0"
+            >
+              <div className="flex h-8 w-8 sm:h-10 sm:w-10 items-center justify-center overflow-hidden shrink-0 group-hover:scale-110 transition-transform duration-300">
                 <Image
                   src="/foxonlylogo.png"
                   alt="FoxPassport Logo"
@@ -71,11 +83,11 @@ export function DashboardHeader() {
                   priority
                 />
               </div>
-              <div className="flex flex-col">
-                <h2 className="text-xl font-display font-bold text-white group-hover:text-[#ccff00] transition-colors">
+              <div className="flex flex-col min-w-0">
+                <h2 className="text-sm sm:text-xl font-display font-bold text-white group-hover:text-[#ccff00] transition-colors truncate">
                   FoxPassport
                 </h2>
-                <span className="text-[10px] text-white/50 uppercase tracking-widest font-bold">
+                <span className="hidden sm:block text-[10px] text-white/50 uppercase tracking-widest font-bold">
                   Creator Dashboard
                 </span>
               </div>
@@ -105,9 +117,9 @@ export function DashboardHeader() {
             </nav>
 
             {/* Right Side — real user */}
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2 sm:gap-4">
               {user && <NotificationBell />}
-              <div className="flex items-center gap-3 pl-3 border-l border-white/10">
+              <div className="flex items-center gap-2 sm:gap-3 pl-2 sm:pl-3 border-l border-white/10">
                 <div className="text-right hidden sm:block">
                   <div className="text-sm font-bold">
                     {user?.name || user?.email || "Creator"}
@@ -124,52 +136,54 @@ export function DashboardHeader() {
       </header>
 
       {/* Mobile floating capsule bottom tab bar */}
-      <nav
-        className="md:hidden fixed bottom-5 left-5 right-5 z-50 flex items-center justify-around px-4"
-        style={{
-          height: 64,
-          background: "rgba(20,20,26,0.88)",
-          backdropFilter: "blur(24px)",
-          WebkitBackdropFilter: "blur(24px)",
-          border: "1px solid rgba(255,255,255,0.1)",
-          borderRadius: 999,
-          boxShadow: "0 10px 40px rgba(0,0,0,0.55)",
-        }}
-      >
-        {navLinks.map((link) => {
-          const isActive =
-            link.href === "/creator-dashboard"
-              ? pathname === "/creator-dashboard"
-              : pathname.startsWith(link.href);
-          const icon = NAV_ICONS[link.label] ?? "circle";
-          return (
-            <Link
-              key={link.label}
-              href={link.href}
-              className="flex flex-1 flex-col items-center justify-center gap-0.5"
-            >
-              <span
-                className="material-symbols-outlined"
-                style={{
-                  fontSize: 22,
-                  color: isActive ? "#ccff00" : "rgba(255,255,255,0.4)",
-                  fontVariationSettings: isActive ? "'FILL' 1" : "'FILL' 0",
-                }}
+      {!hideMobileBottomNav && (
+        <nav
+          className="md:hidden fixed bottom-5 left-5 right-5 z-50 flex items-center justify-around px-4"
+          style={{
+            height: 64,
+            background: "rgba(20,20,26,0.88)",
+            backdropFilter: "blur(24px)",
+            WebkitBackdropFilter: "blur(24px)",
+            border: "1px solid rgba(255,255,255,0.1)",
+            borderRadius: 999,
+            boxShadow: "0 10px 40px rgba(0,0,0,0.55)",
+          }}
+        >
+          {navLinks.map((link) => {
+            const isActive =
+              link.href === "/creator-dashboard"
+                ? pathname === "/creator-dashboard"
+                : pathname.startsWith(link.href);
+            const icon = NAV_ICONS[link.label] ?? "circle";
+            return (
+              <Link
+                key={link.label}
+                href={link.href}
+                className="flex flex-1 flex-col items-center justify-center gap-0.5"
               >
-                {icon}
-              </span>
-              <span
-                className="text-[9px] font-bold whitespace-nowrap"
-                style={{
-                  color: isActive ? "#ccff00" : "rgba(255,255,255,0.4)",
-                }}
-              >
-                {link.label}
-              </span>
-            </Link>
-          );
-        })}
-      </nav>
+                <span
+                  className="material-symbols-outlined"
+                  style={{
+                    fontSize: 22,
+                    color: isActive ? "#ccff00" : "rgba(255,255,255,0.4)",
+                    fontVariationSettings: isActive ? "'FILL' 1" : "'FILL' 0",
+                  }}
+                >
+                  {icon}
+                </span>
+                <span
+                  className="text-[9px] font-bold whitespace-nowrap"
+                  style={{
+                    color: isActive ? "#ccff00" : "rgba(255,255,255,0.4)",
+                  }}
+                >
+                  {link.label}
+                </span>
+              </Link>
+            );
+          })}
+        </nav>
+      )}
     </>
   );
 }

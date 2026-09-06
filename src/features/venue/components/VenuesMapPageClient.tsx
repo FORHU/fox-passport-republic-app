@@ -255,7 +255,8 @@ function VenueDetailCard({
             <div className="flex items-center gap-1.5 text-[11px] font-bold text-amber-400">
               <span>🏢</span>
               <span>
-                Also in this building ({buildingCompanions.length + 1} spaces/events):
+                Also in this building ({buildingCompanions.length + 1}{" "}
+                spaces/events):
               </span>
             </div>
             <div className="flex gap-1.5 overflow-x-auto pb-1 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
@@ -381,7 +382,11 @@ export function VenuesMapPageClient({
 
   // All venues/events sharing the exact same building/coordinate with selected venue
   const buildingCompanions = useMemo(() => {
-    if (!selectedVenue || selectedVenue.lat == null || selectedVenue.lng == null) {
+    if (
+      !selectedVenue ||
+      selectedVenue.lat == null ||
+      selectedVenue.lng == null
+    ) {
       return [];
     }
     const selLat = selectedVenue.lat;
@@ -397,52 +402,55 @@ export function VenuesMapPageClient({
   }, [selectedVenue, mapVenues]);
 
   // When camera moves, query the screen bounding box
-  const handleViewportChange = useCallback((bounds: ViewportBounds) => {
-    setCurrentBounds(bounds);
-    if (debounceTimerRef.current) {
-      clearTimeout(debounceTimerRef.current);
-    }
-
-    debounceTimerRef.current = setTimeout(async () => {
-      setIsLoadingViewport(true);
-      const seq = ++viewportFetchSeqRef.current;
-      try {
-        // Fetch max 1000 for the map (lightweight)
-        fetchVenuesByViewport({
-          ...bounds,
-          page: 1,
-          limit: 1000,
-          lightweight: true,
-          search: debouncedSearch || undefined,
-        })
-          .then((resp) => {
-            if (seq === viewportFetchSeqRef.current) {
-              setMapRawVenues(resp.venues);
-            }
-          })
-          .catch(() => {});
-
-        // Fetch 12 for the list
-        const resp = await fetchVenuesByViewport({
-          ...bounds,
-          page: 1,
-          limit: 12,
-          search: debouncedSearch || undefined,
-        });
-        if (seq !== viewportFetchSeqRef.current) return;
-        setRawVenues(resp.venues);
-        setTotalCount(resp.total);
-        setPage(1);
-        listParentRef.current?.scrollTo({ top: 0, behavior: "smooth" });
-      } catch (err) {
-        console.warn("Could not query viewport venues:", err);
-      } finally {
-        if (seq === viewportFetchSeqRef.current) {
-          setIsLoadingViewport(false);
-        }
+  const handleViewportChange = useCallback(
+    (bounds: ViewportBounds) => {
+      setCurrentBounds(bounds);
+      if (debounceTimerRef.current) {
+        clearTimeout(debounceTimerRef.current);
       }
-    }, 350);
-  }, [debouncedSearch]);
+
+      debounceTimerRef.current = setTimeout(async () => {
+        setIsLoadingViewport(true);
+        const seq = ++viewportFetchSeqRef.current;
+        try {
+          // Fetch max 1000 for the map (lightweight)
+          fetchVenuesByViewport({
+            ...bounds,
+            page: 1,
+            limit: 1000,
+            lightweight: true,
+            search: debouncedSearch || undefined,
+          })
+            .then((resp) => {
+              if (seq === viewportFetchSeqRef.current) {
+                setMapRawVenues(resp.venues);
+              }
+            })
+            .catch(() => {});
+
+          // Fetch 12 for the list
+          const resp = await fetchVenuesByViewport({
+            ...bounds,
+            page: 1,
+            limit: 12,
+            search: debouncedSearch || undefined,
+          });
+          if (seq !== viewportFetchSeqRef.current) return;
+          setRawVenues(resp.venues);
+          setTotalCount(resp.total);
+          setPage(1);
+          listParentRef.current?.scrollTo({ top: 0, behavior: "smooth" });
+        } catch (err) {
+          console.warn("Could not query viewport venues:", err);
+        } finally {
+          if (seq === viewportFetchSeqRef.current) {
+            setIsLoadingViewport(false);
+          }
+        }
+      }, 350);
+    },
+    [debouncedSearch],
+  );
 
   // Refetch when search changes
   useEffect(() => {
@@ -455,30 +463,45 @@ export function VenuesMapPageClient({
   const hasNextPage = page < totalPages;
   const hasPrevPage = page > 1;
 
-  const handlePageChange = useCallback(async (newPage: number) => {
-    if (isLoadingMore || isLoadingViewport || !currentBounds || newPage < 1 || newPage > totalPages)
-      return;
-    setIsLoadingMore(true);
-    
-    try {
-      const resp = await fetchVenuesByViewport({
-        ...currentBounds,
-        page: newPage,
-        limit: 12,
-        search: debouncedSearch || undefined,
-      });
-      // Replace entirely for pagination instead of appending
-      setRawVenues(resp.venues);
-      setTotalCount(resp.total);
-      setPage(newPage);
-      // Scroll to top
-      listParentRef.current?.scrollTo({ top: 0, behavior: "smooth" });
-    } catch (err) {
-      console.warn("Error loading page:", err);
-    } finally {
-      setIsLoadingMore(false);
-    }
-  }, [isLoadingMore, isLoadingViewport, currentBounds, totalPages, debouncedSearch]);
+  const handlePageChange = useCallback(
+    async (newPage: number) => {
+      if (
+        isLoadingMore ||
+        isLoadingViewport ||
+        !currentBounds ||
+        newPage < 1 ||
+        newPage > totalPages
+      )
+        return;
+      setIsLoadingMore(true);
+
+      try {
+        const resp = await fetchVenuesByViewport({
+          ...currentBounds,
+          page: newPage,
+          limit: 12,
+          search: debouncedSearch || undefined,
+        });
+        // Replace entirely for pagination instead of appending
+        setRawVenues(resp.venues);
+        setTotalCount(resp.total);
+        setPage(newPage);
+        // Scroll to top
+        listParentRef.current?.scrollTo({ top: 0, behavior: "smooth" });
+      } catch (err) {
+        console.warn("Error loading page:", err);
+      } finally {
+        setIsLoadingMore(false);
+      }
+    },
+    [
+      isLoadingMore,
+      isLoadingViewport,
+      currentBounds,
+      totalPages,
+      debouncedSearch,
+    ],
+  );
 
   // Observer for sentinel div at bottom of sidebar (Auto-Pagination)
   const sentinelBottomRef = useRef<HTMLDivElement>(null);
@@ -682,7 +705,7 @@ export function VenuesMapPageClient({
                     </button>
                   </div>
                 )}
-                
+
                 {/* Auto-Pagination Sentinel */}
                 <div ref={sentinelBottomRef} className="h-1 w-full" />
               </>

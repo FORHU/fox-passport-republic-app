@@ -14,7 +14,12 @@ interface FollowButtonProps {
   initialIsFollowing?: boolean;
 }
 
-export function FollowButton({ targetId, className = "", compact = false, initialIsFollowing }: FollowButtonProps) {
+export function FollowButton({
+  targetId,
+  className = "",
+  compact = false,
+  initialIsFollowing,
+}: FollowButtonProps) {
   const { user, openLogin } = useAuthStore();
   const { data: status, isLoading } = useFollowStatus(
     user ? targetId : undefined,
@@ -40,8 +45,8 @@ export function FollowButton({ targetId, className = "", compact = false, initia
     });
   };
 
-  const defaultClasses = compact 
-    ? "h-8 px-3 rounded-lg text-xs" 
+  const defaultClasses = compact
+    ? "h-8 px-3 rounded-lg text-xs"
     : "h-9 px-4 rounded-xl text-sm";
 
   return (
@@ -54,7 +59,7 @@ export function FollowButton({ targetId, className = "", compact = false, initia
           : "bg-lime-400 text-black hover:bg-lime-300 shadow-[0_0_15px_rgba(204,255,0,0.15)] hover:shadow-[0_0_20px_rgba(204,255,0,0.3)]"
       } ${className}`}
     >
-      {(isLoading || isPending) ? (
+      {isLoading || isPending ? (
         <Loader2 className="w-4 h-4 animate-spin" />
       ) : isFollowing ? (
         <UserCheck className="w-4 h-4" />

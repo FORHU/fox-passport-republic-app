@@ -1,11 +1,19 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { toggleFollow, getFollowStatus, getFollowCounts, getFollowSuggestions } from "./follows";
+import {
+  toggleFollow,
+  getFollowStatus,
+  getFollowCounts,
+  getFollowSuggestions,
+} from "./follows";
 import { useAuthStore } from "@/shared/auth/useAuthStore";
 
 // `initialIsFollowing` lets a caller that already knows the answer (e.g. the
 // feed response embeds `isFollowingAuthor` per post) skip the network round
 // trip entirely instead of firing one GET per distinct author on the page.
-export function useFollowStatus(targetId?: string, initialIsFollowing?: boolean) {
+export function useFollowStatus(
+  targetId?: string,
+  initialIsFollowing?: boolean,
+) {
   return useQuery({
     queryKey: ["followStatus", targetId],
     queryFn: () => getFollowStatus(targetId!),

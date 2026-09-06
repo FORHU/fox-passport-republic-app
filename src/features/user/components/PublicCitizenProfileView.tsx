@@ -244,13 +244,19 @@ export default function PublicCitizenProfileView() {
                       onClick={() => setFollowListTab("followers")}
                       className="flex items-center gap-1 hover:text-white transition-colors cursor-pointer"
                     >
-                      <strong className="text-white">{followCounts.followers}</strong> Followers
+                      <strong className="text-white">
+                        {followCounts.followers}
+                      </strong>{" "}
+                      Followers
                     </button>
                     <button
                       onClick={() => setFollowListTab("following")}
                       className="flex items-center gap-1 hover:text-white transition-colors cursor-pointer"
                     >
-                      <strong className="text-white">{followCounts.following}</strong> Following
+                      <strong className="text-white">
+                        {followCounts.following}
+                      </strong>{" "}
+                      Following
                     </button>
                   </span>
                 )}
@@ -288,7 +294,10 @@ export default function PublicCitizenProfileView() {
             <div className="flex sm:flex-col gap-2 w-full sm:w-auto shrink-0 pt-2 sm:pt-0">
               {!isMe && (
                 <>
-                  <FollowButton targetId={profile.id} className="w-full sm:w-auto" />
+                  <FollowButton
+                    targetId={profile.id}
+                    className="w-full sm:w-auto"
+                  />
                   <Link
                     href={`/messages?userId=${profile.id}&contextType=profile&contextId=${profile.id}&contextLabel=${encodeURIComponent(profile.name)}`}
                     className="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-gradient-to-r from-lime-400 to-emerald-400 hover:from-lime-300 hover:to-emerald-300 text-black font-black text-xs flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(163,230,53,0.3)] transition-all cursor-pointer"
@@ -385,7 +394,7 @@ export default function PublicCitizenProfileView() {
         </div>
 
         {/* ── INTERACTIVE TABS HEADER ────────────────────────────────── */}
-        <div className="flex border-b border-zinc-800/80 gap-6 overflow-x-auto scrollbar-none text-sm font-bold">
+        <div className="sticky top-0 z-20 flex border-b border-zinc-800/80 gap-6 overflow-x-auto scrollbar-none text-sm font-bold bg-[#09090b]/95 backdrop-blur-xl pt-2">
           <button
             onClick={() => setActiveTab("stamps")}
             className={`pb-3 flex items-center gap-2 transition-colors relative ${

@@ -42,7 +42,10 @@ export function SuggestedCitizensWidget() {
 
       <div className="space-y-4">
         {suggestions.map((user) => (
-          <div key={user.id} className="flex items-center justify-between gap-2">
+          <div
+            key={user.id}
+            className="flex items-center justify-between gap-2"
+          >
             <Link
               href={`/user/${user.id}`}
               className="flex items-center gap-3 min-w-0 group"
@@ -70,11 +73,15 @@ export function SuggestedCitizensWidget() {
                   {user.name || "Unknown Citizen"}
                 </span>
                 <span className="text-[10px] text-zinc-500 truncate">
-                  @{user.username || (user.name ? user.name.toLowerCase().replace(/\s/g, "") : "citizen")}
+                  @
+                  {user.username ||
+                    (user.name
+                      ? user.name.toLowerCase().replace(/\s/g, "")
+                      : "citizen")}
                 </span>
               </div>
             </Link>
-            
+
             <FollowButton targetId={user.id} compact />
           </div>
         ))}

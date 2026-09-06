@@ -262,7 +262,11 @@ export function VenuesMap({
           .addTo(map);
       };
 
-      const openBuildingPopup = (cluster: { lat: number; lng: number; venues: MapVenue[] }) => {
+      const openBuildingPopup = (cluster: {
+        lat: number;
+        lng: number;
+        venues: MapVenue[];
+      }) => {
         const popupContent = document.createElement("div");
         popupContent.style.cssText =
           "font-family:inherit;min-width:230px;max-width:280px;padding:4px;";
@@ -436,7 +440,10 @@ export function VenuesMap({
           const geojsonPoints = withPin.map((v) => ({
             type: "Feature" as const,
             properties: { venue: v },
-            geometry: { type: "Point" as const, coordinates: [v.lng as number, v.lat as number] },
+            geometry: {
+              type: "Point" as const,
+              coordinates: [v.lng as number, v.lat as number],
+            },
           }));
           clusterIndexRef.current.load(geojsonPoints);
           venuesDirtyRef.current = false;
@@ -450,7 +457,10 @@ export function VenuesMap({
           bounds.getNorth(),
         ];
         const currentZoom = Math.floor(map.getZoom());
-        const clusteredFeatures = clusterIndexRef.current.getClusters(bbox, currentZoom);
+        const clusteredFeatures = clusterIndexRef.current.getClusters(
+          bbox,
+          currentZoom,
+        );
 
         const clusters: LocationCluster[] = [];
         const superclusters: any[] = [];
@@ -489,7 +499,10 @@ export function VenuesMap({
 
           clusterMarker.getElement().addEventListener("click", (e: any) => {
             e.stopPropagation();
-            const expansionZoom = clusterIndexRef.current.getClusterExpansionZoom(cluster.properties.cluster_id);
+            const expansionZoom =
+              clusterIndexRef.current.getClusterExpansionZoom(
+                cluster.properties.cluster_id,
+              );
             map.flyTo({ center: [lng, lat], zoom: expansionZoom });
           });
           markersRef.current.push(clusterMarker);
@@ -558,11 +571,13 @@ export function VenuesMap({
                   .setLngLat([sLng, sLat])
                   .addTo(map);
 
-                spiderMarker.getElement().addEventListener("click", (ev: any) => {
-                  ev.stopPropagation();
-                  openPopup(v, [sLng, sLat]);
-                  onVenueClickRef.current?.(v.id);
-                });
+                spiderMarker
+                  .getElement()
+                  .addEventListener("click", (ev: any) => {
+                    ev.stopPropagation();
+                    openPopup(v, [sLng, sLat]);
+                    onVenueClickRef.current?.(v.id);
+                  });
 
                 spiderMarkersRef.current.push(spiderMarker);
               });

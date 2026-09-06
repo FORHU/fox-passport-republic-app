@@ -81,12 +81,33 @@ export default function NavigationOverlay() {
     const originalPush = router.push.bind(router);
     const originalReplace = router.replace.bind(router);
 
+    // A push/replace to the URL the browser is already on never changes
+    // pathname/searchParams, so the "navigation completed" effect above
+    // never fires and the overlay would otherwise sit blocking every click
+    // for the full MAX_VISIBLE_MS safety window instead of the real ~200ms.
+    // Skipping `start()` entirely for a same-URL call (e.g. re-clicking an
+    // already-active filter tab) avoids ever showing it for a navigation
+    // that was never going anywhere.
+    const isSameUrl = (href: string) => {
+      try {
+        const target = new URL(href, window.location.href);
+        return (
+          target.pathname + target.search ===
+          window.location.pathname + window.location.search
+        );
+      } catch {
+        return false;
+      }
+    };
+
     router.push = ((...args: Parameters<typeof originalPush>) => {
-      start();
+      const href = args[0];
+      if (typeof href !== "string" || !isSameUrl(href)) start();
       return originalPush(...args);
     }) as typeof router.push;
     router.replace = ((...args: Parameters<typeof originalReplace>) => {
-      start();
+      const href = args[0];
+      if (typeof href !== "string" || !isSameUrl(href)) start();
       return originalReplace(...args);
     }) as typeof router.replace;
 
