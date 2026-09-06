@@ -8,6 +8,7 @@ import Link from "next/link";
 import FileUploader from "@/shared/components/layout/FileUploader";
 import { KycDocumentSection } from "./KycDocumentSection";
 import SpecializationPicker from "./SpecializationPicker";
+import { ApplicationFlowHeader } from "./ApplicationFlowHeader";
 
 const EVENT_CATEGORY_OPTIONS = [
   { value: "corporate", label: "Corporate" },
@@ -60,6 +61,7 @@ export default function HostApplicationClient() {
 
   return (
     <RequireAuth>
+      <ApplicationFlowHeader />
       <div className="min-h-screen bg-[#0f111a] flex flex-col items-center justify-center p-4 pt-24 pb-12 font-body">
         <div className="w-full max-w-2xl bg-[#1a1a24] rounded-[2.5rem] p-8 md:p-12 border border-white/5 shadow-2xl relative overflow-hidden">
           {/* Background Glow */}

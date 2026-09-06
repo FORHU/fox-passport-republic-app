@@ -15,6 +15,9 @@ import {
 } from "@/shared/api/citizen";
 import { useAuthStore } from "@/shared/auth/useAuthStore";
 import { isPartnerUser } from "@/shared/auth/roles";
+import { FollowButton } from "@/features/follow/components/FollowButton";
+import { FollowListModal } from "@/features/follow/components/FollowListModal";
+import { useFollowCounts } from "@/features/follow/api/useFollow";
 
 const FALLBACK_AVATAR =
   "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=400&auto=format&fit=crop";
@@ -58,6 +61,10 @@ export default function PublicCitizenProfileView() {
   const router = useRouter();
   const { user: currentUser } = useAuthStore();
   const [activeTab, setActiveTab] = useState<ProfileTab>("stamps");
+  const [followListTab, setFollowListTab] = useState<
+    "followers" | "following" | null
+  >(null);
+  const { data: followCounts } = useFollowCounts(id);
 
   const {
     data: profile,
@@ -231,6 +238,28 @@ export default function PublicCitizenProfileView() {
                   </span>
                   Citizen since {new Date(profile.createdAt).getFullYear()}
                 </span>
+                {followCounts && (
+                  <span className="flex items-center gap-2 text-zinc-400 pl-1 border-l border-zinc-700 ml-1">
+                    <button
+                      onClick={() => setFollowListTab("followers")}
+                      className="flex items-center gap-1 hover:text-white transition-colors cursor-pointer"
+                    >
+                      <strong className="text-white">
+                        {followCounts.followers}
+                      </strong>{" "}
+                      Followers
+                    </button>
+                    <button
+                      onClick={() => setFollowListTab("following")}
+                      className="flex items-center gap-1 hover:text-white transition-colors cursor-pointer"
+                    >
+                      <strong className="text-white">
+                        {followCounts.following}
+                      </strong>{" "}
+                      Following
+                    </button>
+                  </span>
+                )}
               </div>
 
               {/* Role Badges */}
@@ -264,15 +293,21 @@ export default function PublicCitizenProfileView() {
             {/* CTAs */}
             <div className="flex sm:flex-col gap-2 w-full sm:w-auto shrink-0 pt-2 sm:pt-0">
               {!isMe && (
-                <Link
-                  href={`/messages?userId=${profile.id}&contextType=profile&contextId=${profile.id}&contextLabel=${encodeURIComponent(profile.name)}`}
-                  className="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-gradient-to-r from-lime-400 to-emerald-400 hover:from-lime-300 hover:to-emerald-300 text-black font-black text-xs flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(163,230,53,0.3)] transition-all cursor-pointer"
-                >
-                  <span className="material-symbols-outlined text-[16px]">
-                    chat
-                  </span>
-                  <span>Message Citizen</span>
-                </Link>
+                <>
+                  <FollowButton
+                    targetId={profile.id}
+                    className="w-full sm:w-auto"
+                  />
+                  <Link
+                    href={`/messages?userId=${profile.id}&contextType=profile&contextId=${profile.id}&contextLabel=${encodeURIComponent(profile.name)}`}
+                    className="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-gradient-to-r from-lime-400 to-emerald-400 hover:from-lime-300 hover:to-emerald-300 text-black font-black text-xs flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(163,230,53,0.3)] transition-all cursor-pointer"
+                  >
+                    <span className="material-symbols-outlined text-[16px]">
+                      chat
+                    </span>
+                    <span>Message Citizen</span>
+                  </Link>
+                </>
               )}
               {isMe && (
                 <Link
@@ -359,7 +394,7 @@ export default function PublicCitizenProfileView() {
         </div>
 
         {/* ── INTERACTIVE TABS HEADER ────────────────────────────────── */}
-        <div className="flex border-b border-zinc-800/80 gap-6 overflow-x-auto scrollbar-none text-sm font-bold">
+        <div className="sticky top-0 z-20 flex border-b border-zinc-800/80 gap-6 overflow-x-auto scrollbar-none text-sm font-bold bg-[#09090b]/95 backdrop-blur-xl pt-2">
           <button
             onClick={() => setActiveTab("stamps")}
             className={`pb-3 flex items-center gap-2 transition-colors relative ${
@@ -837,6 +872,14 @@ export default function PublicCitizenProfileView() {
           )}
         </div>
       </div>
+
+      {followListTab && profile && (
+        <FollowListModal
+          userId={profile.id}
+          initialTab={followListTab}
+          onClose={() => setFollowListTab(null)}
+        />
+      )}
     </div>
   );
 }

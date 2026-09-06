@@ -51,7 +51,12 @@ export default function InvestmentLocationPicker({
   // Sync initial detected position if current value is default/empty
   const hasSyncedDetectedRef = useRef(false);
   useEffect(() => {
-    if (!hasSyncedDetectedRef.current && isDetected && value.lat === 14.5995 && value.lng === 120.9842) {
+    if (
+      !hasSyncedDetectedRef.current &&
+      isDetected &&
+      value.lat === 14.5995 &&
+      value.lng === 120.9842
+    ) {
       hasSyncedDetectedRef.current = true;
       onChange({
         ...value,
@@ -71,7 +76,14 @@ export default function InvestmentLocationPicker({
         }
       }
     }
-  }, [isDetected, detectedCoords, detectedCountry, detectedCity, value, onChange]);
+  }, [
+    isDetected,
+    detectedCoords,
+    detectedCountry,
+    detectedCity,
+    value,
+    onChange,
+  ]);
 
   // Reverse geocode a dragged pin coordinate
   const reverseGeocodePin = useCallback(

@@ -19,6 +19,7 @@ export const getFeed = async (params: {
   search?: string;
   limit?: number;
   cursor?: string;
+  mode?: "recent" | "top";
 }): Promise<FeedResponse> => {
   const queryParams = { ...params };
   if (queryParams.tab === "all") {

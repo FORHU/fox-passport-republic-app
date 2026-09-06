@@ -1,8 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import Image from "next/image";
-import { useRouter } from "next/navigation";
+import { ApplicationFlowHeader } from "./ApplicationFlowHeader";
 
 type RoleType = "venueFoxer" | "eventFoxer" | "gearFoxer" | "serviceFoxer";
 
@@ -46,7 +45,6 @@ const EXPERIENCE_OPTIONS = [
 export default function MobileRoleApplicationForm({
   roleType = "venueFoxer",
 }: Props) {
-  const router = useRouter();
   const [activeRole, setActiveRole] = useState<RoleType>(roleType);
   const [businessName, setBusinessName] = useState("");
   const [experience, setExperience] = useState("");
@@ -55,66 +53,10 @@ export default function MobileRoleApplicationForm({
 
   return (
     <div style={{ background: "#050608", minHeight: "100svh", color: "#fff" }}>
-      {/* Standard nav bar */}
-      <div
-        style={{
-          position: "fixed",
-          top: 62,
-          left: 0,
-          right: 0,
-          height: 64,
-          zIndex: 5,
-          background: "rgba(5,6,8,0.9)",
-          backdropFilter: "blur(20px)",
-          WebkitBackdropFilter: "blur(20px)",
-          borderBottom: "1px solid rgba(255,255,255,0.08)",
-          display: "flex",
-          alignItems: "center",
-          padding: "0 16px",
-          gap: 10,
-        }}
-      >
-        <Image
-          src="/foxonlylogo.png"
-          alt="FoxPassport"
-          width={22}
-          height={22}
-          style={{ objectFit: "contain" }}
-        />
-        <button
-          onClick={() => router.back()}
-          style={{
-            width: 36,
-            height: 36,
-            borderRadius: 999,
-            background: "rgba(255,255,255,0.08)",
-            border: "1px solid rgba(255,255,255,0.12)",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            cursor: "pointer",
-            flexShrink: 0,
-          }}
-        >
-          <span className="material-symbols-outlined" style={{ fontSize: 17 }}>
-            arrow_back
-          </span>
-        </button>
-        <p
-          style={{
-            flex: 1,
-            fontSize: 14,
-            fontWeight: 700,
-            fontFamily: 'var(--font-display,"Space Grotesk",sans-serif)',
-            margin: 0,
-          }}
-        >
-          Apply as a Foxer
-        </p>
-      </div>
+      <ApplicationFlowHeader />
 
       {/* Content */}
-      <div style={{ padding: "142px 20px 40px" }}>
+      <div style={{ padding: "80px 20px 40px" }}>
         {/* Role variant chips */}
         <div
           className="no-scrollbar"

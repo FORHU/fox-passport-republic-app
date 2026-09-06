@@ -3,6 +3,16 @@
 
 import React from "react";
 
+import {
+  MapPin,
+  Calendar,
+  Wrench,
+  Briefcase,
+  DollarSign,
+  Shield,
+  User,
+} from "lucide-react";
+
 interface UserMenuProfileHeaderProps {
   user: {
     name?: string | null;
@@ -11,6 +21,18 @@ interface UserMenuProfileHeaderProps {
     roleType?: string[];
   } | null;
 }
+
+const roleIcons: Record<string, React.ReactNode> = {
+  venuefoxer: <MapPin className="w-3.5 h-3.5" />,
+  eventfoxer: <Calendar className="w-3.5 h-3.5" />,
+  gearfoxer: <Wrench className="w-3.5 h-3.5" />,
+  servicefoxer: <Briefcase className="w-3.5 h-3.5" />,
+  investor: <DollarSign className="w-3.5 h-3.5" />,
+  admin: <Shield className="w-3.5 h-3.5" />,
+};
+
+const getRoleIcon = (role: string) =>
+  roleIcons[role.toLowerCase()] || <User className="w-3.5 h-3.5" />;
 
 export function UserMenuProfileHeader({ user }: UserMenuProfileHeaderProps) {
   const userInitial =
@@ -37,14 +59,20 @@ export function UserMenuProfileHeader({ user }: UserMenuProfileHeaderProps) {
         </p>
         <p className="text-white/40 text-xs truncate">{user?.email}</p>
         {roleTypes.length > 0 && (
-          <div className="flex flex-wrap gap-1 mt-1.5">
+          <div className="flex flex-wrap gap-1.5 mt-2">
             {roleTypes.map((r) => (
-              <span
+              <button
                 key={r}
-                className="px-2 py-0.5 rounded-full bg-[#ccff00]/10 text-[#ccff00] text-[10px] font-bold border border-[#ccff00]/20 capitalize"
+                type="button"
+                title={r}
+                aria-label={r}
+                className="group relative flex items-center justify-center w-6 h-6 rounded-full bg-[#ccff00]/10 text-[#ccff00] border border-[#ccff00]/20 cursor-pointer hover:bg-[#ccff00]/20 focus:bg-[#ccff00]/20 active:bg-[#ccff00]/20 transition-colors"
               >
-                {r}
-              </span>
+                {getRoleIcon(r)}
+                <div className="pointer-events-none absolute bottom-full mb-1.5 opacity-0 group-hover:opacity-100 group-focus:opacity-100 group-active:opacity-100 transition-opacity whitespace-nowrap bg-black border border-white/10 text-white text-[10px] font-bold tracking-wider px-2 py-1 rounded shadow-xl z-50 capitalize">
+                  {r}
+                </div>
+              </button>
             ))}
           </div>
         )}

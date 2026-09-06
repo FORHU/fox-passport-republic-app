@@ -78,11 +78,20 @@ export const useLogin = () => {
     onSuccess: async (data) => {
       console.log("Login Success:", data);
 
+      // Cookies before the store update, not after: `login(data)` flips
+      // `isAuthenticated` synchronously, and every component gated on that
+      // (NotificationBell, UserMenuButton's session sync, any query with
+      // `enabled: !!user`) can fire its request through the proxy the
+      // instant it re-renders. The proxy reads `fox_token` from the cookie
+      // jar — if one of those requests lands before this Server Action's
+      // Set-Cookie has actually been committed, the proxy forwards it
+      // unauthenticated, the backend 401s, and the global axios interceptor
+      // reads that 401 as "session expired" and force-logs the user right
+      // back out seconds after they logged in.
+      await setAuthCookies(data);
+
       // Save user to store
       login(data);
-
-      // Set cookies on server so middleware can read them
-      await setAuthCookies(data);
 
       toast.success("Welcome back!");
 

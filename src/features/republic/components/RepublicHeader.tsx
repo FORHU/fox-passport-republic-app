@@ -70,15 +70,8 @@ export default function RepublicHeader() {
         })}
       </nav>
 
-      {/* ── RIGHT: Search, Notifications & Hamburger Menu (Always visible) ── */}
+      {/* ── RIGHT: Notifications & Hamburger Menu (Always visible) ── */}
       <div className="flex items-center gap-2 sm:gap-3">
-        <Link
-          href="/search"
-          className="flex h-9 w-9 items-center justify-center rounded-full border border-zinc-800 text-zinc-400 hover:text-white hover:bg-zinc-800/80 transition-all"
-        >
-          <span className="material-symbols-outlined text-[18px]">search</span>
-        </Link>
-
         {isAuthenticated ? (
           <div className="flex items-center gap-2">
             <NotificationBell />

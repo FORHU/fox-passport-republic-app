@@ -1,9 +1,8 @@
 "use client";
 
 import React from "react";
-import Image from "next/image";
-import { useRouter } from "next/navigation";
 import MobileCreatorBottomNav from "./MobileCreatorBottomNav";
+import { DashboardHeader } from "./DashboardHeader";
 
 const STRIPE_BG = `repeating-linear-gradient(135deg,rgba(255,255,255,0.03) 0px,rgba(255,255,255,0.03) 1px,transparent 1px,transparent 12px)`;
 
@@ -34,7 +33,6 @@ interface MobileCreatorHomeProps {
 }
 
 export default function MobileCreatorHome({ user }: MobileCreatorHomeProps) {
-  const router = useRouter();
   const firstName = user?.firstName || user?.name?.split(" ")[0] || "Creator";
 
   return (
@@ -42,66 +40,15 @@ export default function MobileCreatorHome({ user }: MobileCreatorHomeProps) {
       className="lg:hidden"
       style={{ background: "#050608", minHeight: "100svh", color: "#fff" }}
     >
-      {/* Standard nav bar — no back button, top-level creator page */}
-      <div
-        style={{
-          position: "fixed",
-          top: 62,
-          left: 0,
-          right: 0,
-          height: 64,
-          zIndex: 5,
-          background: "rgba(5,6,8,0.9)",
-          backdropFilter: "blur(20px)",
-          WebkitBackdropFilter: "blur(20px)",
-          borderBottom: "1px solid rgba(255,255,255,0.08)",
-          display: "flex",
-          alignItems: "center",
-          padding: "0 16px",
-          gap: 10,
-        }}
-      >
-        <Image
-          src="/foxonlylogo.png"
-          alt="FoxPassport"
-          width={22}
-          height={22}
-          style={{ objectFit: "contain" }}
-        />
-        <p
-          style={{
-            flex: 1,
-            fontSize: 14,
-            fontWeight: 700,
-            fontFamily: 'var(--font-display,"Space Grotesk",sans-serif)',
-            margin: 0,
-          }}
-        >
-          Creator Studio
-        </p>
-        <button
-          onClick={() => router.push("/notifications")}
-          style={{
-            width: 36,
-            height: 36,
-            borderRadius: 999,
-            background: "rgba(255,255,255,0.08)",
-            border: "1px solid rgba(255,255,255,0.12)",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            cursor: "pointer",
-            flexShrink: 0,
-          }}
-        >
-          <span className="material-symbols-outlined" style={{ fontSize: 18 }}>
-            notifications
-          </span>
-        </button>
-      </div>
+      {/* Same DashboardHeader the desktop creator dashboard uses — MobileCreatorHome
+          used to draw its own bespoke top bar here, which meant "Creator Studio"
+          looked like a different app depending on screen size. Bottom nav comes
+          from MobileCreatorBottomNav below instead, since it has a different tab
+          set than DashboardHeader's own. */}
+      <DashboardHeader hideMobileBottomNav />
 
       {/* Scrollable content */}
-      <div style={{ padding: "142px 20px 112px" }}>
+      <div style={{ padding: "80px 20px 112px" }}>
         {/* Greeting */}
         <div style={{ marginBottom: 24 }}>
           <p

@@ -92,7 +92,11 @@ export function PostCard({ post }: PostCardProps) {
       )}
 
       {/* Author Header */}
-      <AuthorPassportPopover author={post.author} createdAt={post.createdAt} />
+      <AuthorPassportPopover
+        author={post.author}
+        createdAt={post.createdAt}
+        isFollowingAuthor={post.isFollowingAuthor}
+      />
 
       {/* Post Text Content */}
       <div className="mt-3 text-sm text-zinc-200 whitespace-pre-wrap leading-relaxed">

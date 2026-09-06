@@ -95,8 +95,9 @@ export default function LandingHeader({
 
             {/* Actions */}
             <div className="flex items-center gap-2 sm:gap-3 min-w-0">
-              {/* Search — inline input when integrated (e.g. /search), icon-link otherwise */}
-              {search ? (
+              {/* Inline search input — only rendered where a caller (e.g.
+                  /search) actually integrates it via the `search` prop. */}
+              {search && (
                 <div className="relative flex-1 min-w-0 sm:max-w-55 md:max-w-xs">
                   <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-white/30 text-[16px] pointer-events-none">
                     search
@@ -109,15 +110,6 @@ export default function LandingHeader({
                     className="w-full bg-white/6 border border-white/10 rounded-full py-1.5 sm:py-2 pl-10 pr-3 text-xs sm:text-sm font-semibold text-white placeholder:text-white/30 focus:outline-none focus:border-[#ccff00]/40 focus:bg-white/10 transition-all"
                   />
                 </div>
-              ) : (
-                <Link
-                  href="/search"
-                  className="flex h-8 w-8 sm:h-10 sm:w-10 items-center justify-center rounded-full border border-white/10 text-white hover:bg-white hover:text-black transition-all hover:rotate-12"
-                >
-                  <span className="material-symbols-outlined text-[18px] sm:text-[20px]">
-                    search
-                  </span>
-                </Link>
               )}
 
               {/* Sign In + UserMenuButton (Visible across all screens: mobile, tablet, desktop) */}
