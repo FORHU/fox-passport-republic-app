@@ -1,6 +1,23 @@
 import { create } from "zustand";
 import { User, LoginResponse } from "@/shared/auth/types";
 
+/**
+ * Reads the `fox_user` cookie `setAuthCookies` sets alongside the httpOnly
+ * token cookies. Non-httpOnly by design (see `setAuthCookies`), specifically
+ * so this can read it back — it is the server's own record of who's
+ * signed in, not a client-side echo of it.
+ */
+function readFoxUserCookie(): string | null {
+  if (typeof document === "undefined") return null;
+  const match = document.cookie.match(/(?:^|; )fox_user=([^;]*)/);
+  if (!match) return null;
+  try {
+    return decodeURIComponent(match[1]);
+  } catch {
+    return null;
+  }
+}
+
 type AuthView =
   "login" | "signup" | "forgot-password" | "reset-password" | "verify-email";
 
@@ -53,7 +70,16 @@ export const useAuthStore = create<AuthState>((set) => ({
       // `fox_user` is profile display data only, so presence of a stored user
       // is what rehydrates the session optimistically; the first proxied
       // request settles whether the cookie is still valid.
-      const storedUser = localStorage.getItem("fox_user");
+      //
+      // The cookie is checked first, not localStorage: it's the same value
+      // the server just set (or re-set on every refresh), so it can't drift
+      // from what the httpOnly cookies actually represent the way a
+      // separately-written localStorage copy can — e.g. a privacy tool that
+      // clears site storage but not cookies would otherwise show "logged
+      // out" here despite the session still being live. localStorage stays
+      // as a fallback for the same-tab case right after login, before this
+      // cookie would even be visible to a fresh read.
+      const storedUser = readFoxUserCookie() ?? localStorage.getItem("fox_user");
 
       if (storedUser) {
         set({

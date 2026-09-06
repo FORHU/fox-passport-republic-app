@@ -6,6 +6,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { useConversations, useStartConversation } from "../hooks/useMessages";
+import { useAuthStore } from "@/shared/auth/useAuthStore";
 import ChatPanel from "./ChatPanel";
 import type { Conversation } from "../types";
 
@@ -13,6 +14,7 @@ export default function ConversationListClient() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const queryClient = useQueryClient();
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
   const { data: conversations = [], isLoading } = useConversations();
   const [active, setActive] = useState<Conversation | null>(null);
 
@@ -32,7 +34,14 @@ export default function ConversationListClient() {
   >(null);
   const startConversation = useStartConversation();
   useEffect(() => {
-    if (!userIdParam || userIdParam === startedUserId) return;
+    // Unlike `useConversations` (gated on `isAuthenticated` in its own
+    // `enabled`), this fired unconditionally on mount — on a fresh page
+    // load, auth rehydration and this effect can run in either order, so a
+    // request could go out before the store (and the request it depends on
+    // downstream) is actually ready. Waiting for `isAuthenticated` here
+    // means the effect re-fires once auth settles instead of racing it.
+    if (!isAuthenticated || !userIdParam || userIdParam === startedUserId)
+      return;
     setStartedUserId(userIdParam);
     startConversation.mutate(
       {
@@ -55,7 +64,7 @@ export default function ConversationListClient() {
       },
     );
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [userIdParam, startedUserId]);
+  }, [isAuthenticated, userIdParam, startedUserId]);
 
   // Opens the conversation named by ?conversationId, or the one just
   // started for ?userId=, once it's in the list — adjusted during render

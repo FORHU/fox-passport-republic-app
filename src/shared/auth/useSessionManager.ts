@@ -6,6 +6,7 @@ import { useQuery } from "@tanstack/react-query";
 import api from "@/shared/lib/axios";
 import { useAuthStore } from "@/shared/auth/useAuthStore";
 import { PROFILE_QUERY_KEY, fetchProfile } from "@/shared/auth/profile";
+import { clearAuthCookies } from "@/shared/lib/server/auth-actions";
 
 const IDLE_WARN_MS = 2 * 60 * 60 * 1000; // show warning at 2 hours idle
 const IDLE_LOGOUT_MS = 24 * 60 * 60 * 1000; // auto-logout at 24 hours idle (effectively disabled)
@@ -61,8 +62,14 @@ export function useSessionManager(
     }
   }, []);
 
-  const doLogout = useCallback(() => {
+  const doLogout = useCallback(async () => {
     clearIdleTimers();
+    // Awaited before navigating away: `window.location.href` unloads the
+    // page immediately after, which can abort an in-flight fire-and-forget
+    // request before the server action's own fetch to /auth/logout
+    // completes — leaving the httpOnly cookies (and the refresh token they
+    // carry) alive despite the UI already showing signed-out.
+    await clearAuthCookies().catch(() => {});
     useAuthStore.getState().logout();
     window.location.href = "/?auth=expired";
   }, [clearIdleTimers]);

@@ -5,6 +5,7 @@ import { useAuthStore } from "@/shared/auth/useAuthStore";
 import { Loader2 } from "lucide-react";
 import { useSessionManager } from "@/shared/auth/useSessionManager";
 import SessionTimeoutModal from "@/shared/components/layout/SessionTimeoutModal";
+import { clearAuthCookies } from "@/shared/lib/server/auth-actions";
 
 function SessionManager() {
   const [showWarning, setShowWarning] = useState(false);
@@ -14,8 +15,12 @@ function SessionManager() {
     () => setShowWarning(false),
   );
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
     setShowWarning(false);
+    // Same reasoning as the other forced-logout paths: without this, the
+    // httpOnly cookies (and the refresh token inside them) outlive the
+    // session the UI just showed the door to.
+    await clearAuthCookies().catch(() => {});
     useAuthStore.getState().logout();
     window.location.href = "/";
   };
