@@ -304,6 +304,7 @@ export function VenuesMapPageClient({
   const cardRefs = useRef<Record<string, HTMLDivElement | null>>({});
 
   // Viewport-bounded state: only load what is on the screen!
+  const [mapRawVenues, setMapRawVenues] = useState<any[]>(initialVenues ?? []);
   const [rawVenues, setRawVenues] = useState<any[]>(initialVenues ?? []);
   const [totalCount, setTotalCount] = useState<number>(
     initialVenues?.length ?? 0,
@@ -312,12 +313,26 @@ export function VenuesMapPageClient({
   const [currentBounds, setCurrentBounds] = useState<ViewportBounds | null>(
     null,
   );
+  const [searchQuery, setSearchQuery] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearch(searchQuery);
+    }, 400);
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
+
   const [isLoadingViewport, setIsLoadingViewport] = useState<boolean>(false);
   const [isLoadingMore, setIsLoadingMore] = useState<boolean>(false);
 
   // Debounce viewport queries (350ms) to prevent API spam while actively dragging
   const debounceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const sentinelRef = useRef<HTMLDivElement>(null);
+  // Bumped on every viewport/search fetch so a slower, now-stale response
+  // (e.g. an earlier viewport before a quick pan) can't clobber a newer one.
+  const viewportFetchSeqRef = useRef(0);
+
+  const listParentRef = useRef<HTMLDivElement>(null);
 
   const normalizeListVenue = useCallback((v: any): ListVenue => {
     const resolvedImg = resolveVenueImage(v);
@@ -343,6 +358,14 @@ export function VenuesMapPageClient({
     };
   }, []);
 
+  const mapVenues: ListVenue[] = useMemo(
+    () =>
+      (mapRawVenues ?? [])
+        .filter((v) => v.lat != null && v.lng != null)
+        .map(normalizeListVenue),
+    [mapRawVenues, normalizeListVenue],
+  );
+
   const listVenues: ListVenue[] = useMemo(
     () =>
       (rawVenues ?? [])
@@ -352,8 +375,8 @@ export function VenuesMapPageClient({
   );
 
   const selectedVenue = useMemo(
-    () => listVenues.find((v) => v.id === selectedId) ?? null,
-    [listVenues, selectedId],
+    () => mapVenues.find((v) => v.id === selectedId) ?? null,
+    [mapVenues, selectedId],
   );
 
   // All venues/events sharing the exact same building/coordinate with selected venue
@@ -363,7 +386,7 @@ export function VenuesMapPageClient({
     }
     const selLat = selectedVenue.lat;
     const selLng = selectedVenue.lng;
-    return listVenues.filter(
+    return mapVenues.filter(
       (v) =>
         v.id !== selectedVenue.id &&
         v.lat != null &&
@@ -371,7 +394,7 @@ export function VenuesMapPageClient({
         Math.abs(v.lat - selLat) < 0.00015 &&
         Math.abs(v.lng - selLng) < 0.00015,
     );
-  }, [selectedVenue, listVenues]);
+  }, [selectedVenue, mapVenues]);
 
   // When camera moves, query the screen bounding box
   const handleViewportChange = useCallback((bounds: ViewportBounds) => {
@@ -382,68 +405,110 @@ export function VenuesMapPageClient({
 
     debounceTimerRef.current = setTimeout(async () => {
       setIsLoadingViewport(true);
+      const seq = ++viewportFetchSeqRef.current;
       try {
+        // Fetch max 1000 for the map (lightweight)
+        fetchVenuesByViewport({
+          ...bounds,
+          page: 1,
+          limit: 1000,
+          lightweight: true,
+          search: debouncedSearch || undefined,
+        })
+          .then((resp) => {
+            if (seq === viewportFetchSeqRef.current) {
+              setMapRawVenues(resp.venues);
+            }
+          })
+          .catch(() => {});
+
+        // Fetch 12 for the list
         const resp = await fetchVenuesByViewport({
           ...bounds,
           page: 1,
           limit: 12,
+          search: debouncedSearch || undefined,
         });
+        if (seq !== viewportFetchSeqRef.current) return;
         setRawVenues(resp.venues);
         setTotalCount(resp.total);
         setPage(1);
+        listParentRef.current?.scrollTo({ top: 0, behavior: "smooth" });
       } catch (err) {
         console.warn("Could not query viewport venues:", err);
       } finally {
-        setIsLoadingViewport(false);
+        if (seq === viewportFetchSeqRef.current) {
+          setIsLoadingViewport(false);
+        }
       }
     }, 350);
-  }, []);
+  }, [debouncedSearch]);
 
-  // Infinite loader: load next page for current screen view
-  const hasMore = rawVenues.length < totalCount;
+  // Refetch when search changes
+  useEffect(() => {
+    if (currentBounds) {
+      handleViewportChange(currentBounds);
+    }
+  }, [debouncedSearch, handleViewportChange]);
 
-  const loadMore = useCallback(async () => {
-    if (!hasMore || isLoadingMore || isLoadingViewport || !currentBounds)
+  const totalPages = Math.ceil(totalCount / 12);
+  const hasNextPage = page < totalPages;
+  const hasPrevPage = page > 1;
+
+  const handlePageChange = useCallback(async (newPage: number) => {
+    if (isLoadingMore || isLoadingViewport || !currentBounds || newPage < 1 || newPage > totalPages)
       return;
     setIsLoadingMore(true);
-
+    
     try {
-      const nextPage = page + 1;
       const resp = await fetchVenuesByViewport({
         ...currentBounds,
-        page: nextPage,
+        page: newPage,
         limit: 12,
+        search: debouncedSearch || undefined,
       });
-
-      setRawVenues((prev) => {
-        const existingIds = new Set(prev.map((v) => v.id));
-        const newItems = resp.venues.filter((v) => !existingIds.has(v.id));
-        return [...prev, ...newItems];
-      });
+      // Replace entirely for pagination instead of appending
+      setRawVenues(resp.venues);
       setTotalCount(resp.total);
-      setPage(nextPage);
+      setPage(newPage);
+      // Scroll to top
+      listParentRef.current?.scrollTo({ top: 0, behavior: "smooth" });
     } catch (err) {
-      console.warn("Error loading more viewport venues:", err);
+      console.warn("Error loading page:", err);
     } finally {
       setIsLoadingMore(false);
     }
-  }, [hasMore, isLoadingMore, isLoadingViewport, currentBounds, page]);
+  }, [isLoadingMore, isLoadingViewport, currentBounds, totalPages, debouncedSearch]);
 
-  // Observer for sentinel div at bottom of sidebar
+  // Observer for sentinel div at bottom of sidebar (Auto-Pagination)
+  const sentinelBottomRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
-    const el = sentinelRef.current;
+    const el = sentinelBottomRef.current;
     if (!el) return;
+    // IntersectionObserver reports the sentinel's *current* visibility as
+    // soon as observe() is called, before any real scrolling happens. If a
+    // page's cards don't fill the sidebar's visible height (short pages,
+    // the last partial page, a tall viewport), that first callback alone
+    // would advance the page — whose new sentinel then does the same,
+    // cascading through every remaining page with no user interaction.
+    // Skipping that one synchronous callback and only acting on a later,
+    // genuine visibility change fixes it without affecting real scrolling.
+    let isInitialCallback = true;
     const observer = new IntersectionObserver(
       (entries) => {
-        if (entries[0].isIntersecting) {
-          loadMore();
+        if (isInitialCallback) {
+          isInitialCallback = false;
+          return;
+        }
+        if (entries[0].isIntersecting && page < totalPages) {
+          handlePageChange(page + 1);
         }
       },
-      { rootMargin: "200px" },
+      { rootMargin: "100px" },
     );
     observer.observe(el);
     return () => observer.disconnect();
-  }, [loadMore]);
+  }, [handlePageChange, page, totalPages]);
 
   // Selection handlers: bidirectional sync between map pin & sidebar card
   const handleSelect = (id: string) => {
@@ -482,6 +547,22 @@ export function VenuesMapPageClient({
               </span>
               Venues Map
             </h1>
+
+            {/* Search Bar */}
+            <div className="mt-4 mb-2">
+              <div className="relative">
+                <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-white/40 text-[18px]">
+                  search
+                </span>
+                <input
+                  type="text"
+                  placeholder="Search venues or location..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full bg-white/5 border border-white/10 rounded-xl py-2 pl-9 pr-4 text-sm text-white placeholder:text-white/30 focus:outline-none focus:border-[#ccff00] focus:ring-1 focus:ring-[#ccff00]/50 transition-all"
+                />
+              </div>
+            </div>
 
             {/* Screen-Scoped Counter */}
             <div className="flex items-center justify-between mt-1 text-xs">
@@ -525,7 +606,10 @@ export function VenuesMapPageClient({
           </div>
 
           {/* List Container with Infinite Scroll */}
-          <div className="flex-1 overflow-y-auto px-4 sm:px-6 pb-6 space-y-3 scrollbar-none">
+          <div
+            ref={listParentRef}
+            className="flex-1 overflow-y-auto px-4 sm:px-6 pb-6 space-y-3"
+          >
             {isLoadingViewport && listVenues.length === 0 ? (
               <div className="space-y-3 py-4">
                 {[1, 2, 3].map((n) => (
@@ -550,35 +634,57 @@ export function VenuesMapPageClient({
               </div>
             ) : (
               <>
-                {listVenues.map((venue) => (
-                  <div
-                    key={venue.id}
-                    ref={(el) => {
-                      cardRefs.current[venue.id] = el;
-                    }}
-                  >
-                    <VenueListCard
-                      venue={venue}
-                      selected={venue.id === selectedId}
-                      onSelect={() => handleSelect(venue.id)}
-                    />
-                  </div>
-                ))}
-
-                {/* Infinite Scroll Sentinel */}
-                <div ref={sentinelRef} className="py-4 text-center">
-                  {isLoadingMore && (
-                    <div className="flex items-center justify-center gap-2 text-xs text-white/50 font-mono py-2">
-                      <Loader2 className="w-4 h-4 animate-spin text-[#ccff00]" />
-                      <span>Loading more venues in view...</span>
+                <div className="relative w-full space-y-3 pb-4">
+                  {listVenues.map((venue) => (
+                    <div
+                      key={venue.id}
+                      ref={(el) => {
+                        cardRefs.current[venue.id] = el;
+                      }}
+                    >
+                      <VenueListCard
+                        venue={venue}
+                        selected={venue.id === selectedId}
+                        onSelect={() => handleSelect(venue.id)}
+                      />
                     </div>
-                  )}
-                  {!hasMore && listVenues.length > 0 && (
-                    <p className="text-[11px] text-white/30 font-mono tracking-wider uppercase py-2">
-                      All {totalCount} venues in this area loaded
-                    </p>
-                  )}
+                  ))}
                 </div>
+
+                {/* Pagination Controls */}
+                {totalPages > 1 && (
+                  <div className="flex items-center justify-between gap-3 py-4 border-t border-white/10 mt-4 shrink-0">
+                    <button
+                      type="button"
+                      onClick={() => handlePageChange(page - 1)}
+                      disabled={!hasPrevPage || isLoadingMore}
+                      className="text-[11px] font-bold uppercase tracking-wider px-3 py-1.5 rounded-full border border-white/10 text-white/60 hover:text-white hover:border-white/30 transition-colors disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
+                    >
+                      ← Prev
+                    </button>
+                    {isLoadingMore ? (
+                      <div className="flex items-center gap-2 text-xs text-[#ccff00] font-mono">
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                        <span>Loading...</span>
+                      </div>
+                    ) : (
+                      <span className="text-[11px] font-mono text-white/30 uppercase tracking-wider">
+                        Page {page} of {totalPages}
+                      </span>
+                    )}
+                    <button
+                      type="button"
+                      onClick={() => handlePageChange(page + 1)}
+                      disabled={!hasNextPage || isLoadingMore}
+                      className="text-[11px] font-bold uppercase tracking-wider px-3 py-1.5 rounded-full border border-white/10 text-white/60 hover:text-white hover:border-white/30 transition-colors disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
+                    >
+                      Next →
+                    </button>
+                  </div>
+                )}
+                
+                {/* Auto-Pagination Sentinel */}
+                <div ref={sentinelBottomRef} className="h-1 w-full" />
               </>
             )}
           </div>
@@ -589,7 +695,7 @@ export function VenuesMapPageClient({
           className={`${mobileView === "map" ? "block" : "hidden"} sm:block relative flex-1 min-w-0 p-4`}
         >
           <VenuesMap
-            venues={listVenues}
+            venues={mapVenues}
             fitToContent={false}
             zoom={6}
             selectedVenueId={selectedId}

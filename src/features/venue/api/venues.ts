@@ -79,6 +79,8 @@ export interface FetchVenuesQuery extends Partial<ViewportBounds> {
   limit?: number;
   category?: string;
   mayorId?: string;
+  lightweight?: boolean;
+  search?: string;
 }
 
 export async function fetchVenuesByViewport(

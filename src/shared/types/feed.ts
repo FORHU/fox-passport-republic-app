@@ -59,6 +59,7 @@ export interface FeedPost {
   sharesCount: number;
   isPinned: boolean;
   isLikedByMe?: boolean;
+  isFollowingAuthor?: boolean;
   createdAt: string;
   author: FeedAuthor;
   venue?: {

@@ -198,6 +198,8 @@ function polygonFeature(ring: [number, number][], properties: object) {
   };
 }
 
+import Supercluster from "supercluster";
+
 export function VenuesMap({
   venues,
   fitToContent = false,
@@ -214,6 +216,14 @@ export function VenuesMap({
   const markersRef = useRef<any[]>([]);
   const spiderMarkersRef = useRef<any[]>([]);
 
+  // Supercluster for zoom-based clustering of huge areas
+  const clusterIndexRef = useRef(
+    new Supercluster({
+      radius: 60,
+      maxZoom: 13,
+    }),
+  );
+
   // Read inside callbacks via refs so venues/selection updates don't tear down
   // the entire map canvas.
   const venuesRef = useRef(venues);
@@ -222,12 +232,17 @@ export function VenuesMap({
   const onBuildingClickRef = useRef(onBuildingClick);
   const onViewportChangeRef = useRef(onViewportChange);
   const everSelectedRef = useRef(false);
+  // Set whenever `venues` changes so `render()` knows to rebuild the
+  // Supercluster index; a selection-only re-render (same venue set) can then
+  // skip re-indexing every pin from scratch.
+  const venuesDirtyRef = useRef(true);
 
   useEffect(() => {
     venuesRef.current = venues;
     onVenueClickRef.current = onVenueClick;
     onBuildingClickRef.current = onBuildingClick;
     onViewportChangeRef.current = onViewportChange;
+    venuesDirtyRef.current = true;
   }, [venues, onVenueClick, onBuildingClick, onViewportChange]);
 
   const handleMapReady = useCallback(
@@ -305,13 +320,21 @@ export function VenuesMap({
       };
       map.on("click", clearSpiderMarkers);
 
-      const render = () => {
+      // `preserveSpiderMarkers` is set by the selection-only re-render below
+      // — clicking a building cluster fans it out AND selects its first
+      // venue, and that selection change itself triggers a re-render here.
+      // Without this flag, that self-triggered re-render would wipe the fan
+      // out from under the click that just opened it, a frame or two after
+      // it appeared.
+      const render = (opts: { preserveSpiderMarkers?: boolean } = {}) => {
         if (!map.isStyleLoaded()) return;
 
         markersRef.current.forEach((m) => m.remove());
         markersRef.current = [];
-        spiderMarkersRef.current.forEach((m) => m.remove());
-        spiderMarkersRef.current = [];
+        if (!opts.preserveSpiderMarkers) {
+          spiderMarkersRef.current.forEach((m) => m.remove());
+          spiderMarkersRef.current = [];
+        }
 
         const selectedId = selectedIdRef.current;
         const withBoundary = venuesRef.current.filter(
@@ -408,20 +431,68 @@ export function VenuesMap({
           lng: number;
           venues: MapVenue[];
         }
+
+        if (venuesDirtyRef.current) {
+          const geojsonPoints = withPin.map((v) => ({
+            type: "Feature" as const,
+            properties: { venue: v },
+            geometry: { type: "Point" as const, coordinates: [v.lng as number, v.lat as number] },
+          }));
+          clusterIndexRef.current.load(geojsonPoints);
+          venuesDirtyRef.current = false;
+        }
+
+        const bounds = map.getBounds();
+        const bbox: [number, number, number, number] = [
+          bounds.getWest(),
+          bounds.getSouth(),
+          bounds.getEast(),
+          bounds.getNorth(),
+        ];
+        const currentZoom = Math.floor(map.getZoom());
+        const clusteredFeatures = clusterIndexRef.current.getClusters(bbox, currentZoom);
+
         const clusters: LocationCluster[] = [];
-        withPin.forEach((venue) => {
-          const vLat = venue.lat as number;
-          const vLng = venue.lng as number;
-          const match = clusters.find(
-            (c) =>
-              Math.abs(c.lat - vLat) < 0.00015 &&
-              Math.abs(c.lng - vLng) < 0.00015,
-          );
-          if (match) {
-            match.venues.push(venue);
+        const superclusters: any[] = [];
+
+        clusteredFeatures.forEach((feature: any) => {
+          if (feature.properties.cluster) {
+            superclusters.push(feature);
           } else {
-            clusters.push({ lat: vLat, lng: vLng, venues: [venue] });
+            const venue = feature.properties.venue;
+            const vLat = venue.lat as number;
+            const vLng = venue.lng as number;
+            const match = clusters.find(
+              (c) =>
+                Math.abs(c.lat - vLat) < 0.00015 &&
+                Math.abs(c.lng - vLng) < 0.00015,
+            );
+            if (match) {
+              match.venues.push(venue);
+            } else {
+              clusters.push({ lat: vLat, lng: vLng, venues: [venue] });
+            }
           }
+        });
+
+        // 1. Render massive superclusters
+        superclusters.forEach((cluster) => {
+          const [lng, lat] = cluster.geometry.coordinates;
+          const count = cluster.properties.point_count;
+          const clusterPin = createBuildingClusterPinElement(count, false); // Reuse style
+          const clusterMarker = new mapboxgl.Marker({
+            element: clusterPin,
+            anchor: "bottom",
+          })
+            .setLngLat([lng, lat])
+            .addTo(map);
+
+          clusterMarker.getElement().addEventListener("click", (e: any) => {
+            e.stopPropagation();
+            const expansionZoom = clusterIndexRef.current.getClusterExpansionZoom(cluster.properties.cluster_id);
+            map.flyTo({ center: [lng, lat], zoom: expansionZoom });
+          });
+          markersRef.current.push(clusterMarker);
         });
 
         clusters.forEach((cluster) => {
@@ -623,7 +694,7 @@ export function VenuesMap({
 
   useEffect(() => {
     selectedIdRef.current = selectedVenueId;
-    mapRef.current?.__rerender?.();
+    mapRef.current?.__rerender?.({ preserveSpiderMarkers: true });
     if (selectedVenueId) {
       everSelectedRef.current = true;
       mapRef.current?.__flyToVenue?.(selectedVenueId);

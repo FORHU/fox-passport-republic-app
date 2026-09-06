@@ -100,6 +100,16 @@ body {
   font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; /* Classic, sharper font */
 }
 
+/* Hide scrollbar globally across the entire app, except where .custom-scrollbar
+   opts back in to a visible styled scrollbar (its own rules below need to win). */
+*:not(.custom-scrollbar)::-webkit-scrollbar {
+  display: none;
+}
+*:not(.custom-scrollbar) {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
 /* Custom Scrollbar Utility */
 .custom-scrollbar::-webkit-scrollbar {
   width: 6px;

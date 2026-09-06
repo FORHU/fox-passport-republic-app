@@ -10,6 +10,7 @@ import { ComposePostBox } from "./_components/ComposePostBox";
 import { PostCard } from "@/features/republic/components/PostCard";
 import { CitizenProfileSidebarCard } from "@/features/republic/components/CitizenProfileSidebarCard";
 import { PartnerEquipmentDepotCard } from "@/features/republic/components/PartnerEquipmentDepotCard";
+import { SuggestedCitizensWidget } from "@/features/republic/components/SuggestedCitizensWidget";
 import PartnerInventoryMap from "@/features/investment/components/PartnerInventoryMap";
 import RepublicHeader from "@/features/republic/components/RepublicHeader";
 import MobileBottomNav from "@/shared/components/layout/MobileBottomNav";
@@ -24,13 +25,16 @@ function RepublicFeedContent() {
     tabParam && VALID_TABS.includes(tabParam) ? tabParam : "all";
 
   const [activeTab, setActiveTab] = useState<FeedTab>(initialTab);
+  const [mode, setMode] = useState<"recent" | "top">("recent");
   const [search, setSearch] = useState("");
   const [searchInput, setSearchInput] = useState("");
   const [posts, setPosts] = useState<FeedPost[]>([]);
   const [loading, setLoading] = useState(true);
   const [nextCursor, setNextCursor] = useState<string | null>(null);
   const [loadingMore, setLoadingMore] = useState(false);
+  const [page, setPage] = useState(1);
   const [mobileComposeOpen, setMobileComposeOpen] = useState(false);
+  const postsListRef = useRef<HTMLDivElement>(null);
 
   // Sync activeTab when URL query changes (e.g. navigation from menu)
   useEffect(() => {
@@ -48,14 +52,24 @@ function RepublicFeedContent() {
     } else {
       router.replace(`/republic?tab=${tab}`, { scroll: false });
     }
+    // A tab switch is a deliberate action, not the scroll sentinel — jumping
+    // back to the top of the (about-to-change) list is the right call here,
+    // unlike auto-pagination further down.
+    postsListRef.current?.scrollIntoView({
+      behavior: "smooth",
+      block: "start",
+    });
   };
 
-  // Sentinel ref for infinite scrolling
+  // Sentinel ref for auto-pagination
   const sentinelRef = useRef<HTMLDivElement>(null);
 
-  // Fetch 10 posts at a time
+  // Fetch 10 posts per page — replaces the visible page rather than
+  // accumulating everything ever loaded, same pagination model as
+  // /venues/map: bounded DOM per page, page resets to 1 on a fresh load
+  // (no cursor), advances on an explicit "load next page" call.
   const fetchPosts = useCallback(
-    async (tab: FeedTab, term: string, cursor?: string) => {
+    async (tab: FeedTab, term: string, currentMode: "recent" | "top", cursor?: string) => {
       try {
         if (!cursor) setLoading(true);
         const res = await getFeed({
@@ -63,14 +77,12 @@ function RepublicFeedContent() {
           search: term.trim().length > 0 ? term.trim() : undefined,
           cursor,
           limit: 10,
+          mode: currentMode,
         });
 
-        if (cursor) {
-          setPosts((prev) => [...prev, ...res.data]);
-        } else {
-          setPosts(res.data);
-        }
+        setPosts(res.data);
         setNextCursor(res.nextCursor ?? null);
+        if (!cursor) setPage(1);
       } catch (err) {
         console.error("Failed to load feed posts:", err);
       } finally {
@@ -82,27 +94,52 @@ function RepublicFeedContent() {
   );
 
   useEffect(() => {
-    fetchPosts(activeTab, search);
-  }, [activeTab, search, fetchPosts]);
+    fetchPosts(activeTab, search, mode);
+  }, [activeTab, search, mode, fetchPosts]);
 
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setSearch(searchInput);
+    postsListRef.current?.scrollIntoView({
+      behavior: "smooth",
+      block: "start",
+    });
   };
 
+  // Unlike /venues/map's page buttons, this fires from the scroll sentinel
+  // itself — the whole point is to let scrolling down keep surfacing more
+  // posts. Snapping back to the top of the list on every trigger (as the
+  // map does) would fight that: the user scrolls down, gets yanked to the
+  // top, and has to scroll all the way back down just to reach the sentinel
+  // for the *next* page. So no scroll reset here — the replaced page's
+  // content simply continues in place.
   const handleLoadMore = useCallback(() => {
     if (!nextCursor || loadingMore || loading) return;
     setLoadingMore(true);
-    fetchPosts(activeTab, search, nextCursor);
-  }, [nextCursor, loadingMore, loading, activeTab, search, fetchPosts]);
+    setPage((p) => p + 1);
+    fetchPosts(activeTab, search, mode, nextCursor);
+  }, [nextCursor, loadingMore, loading, activeTab, search, mode, fetchPosts]);
 
-  // ── Intersection Observer for Infinite Scrolling ─────────────────────────
+  // ── Auto-pagination sentinel ──────────────────────────────────────────────
+  // IntersectionObserver reports the sentinel's *current* visibility as soon
+  // as observe() runs, before any real scrolling — with only ~10 posts per
+  // page (replaced, not accumulated), a page can easily be shorter than the
+  // viewport, and that first synchronous callback alone would advance to the
+  // next page, whose sentinel does the same, cascading through every page
+  // with no user interaction. Skipping that one callback and only acting on
+  // a later, genuine visibility change fixes it (same issue and fix as
+  // /venues/map's pagination).
   useEffect(() => {
     const sentinel = sentinelRef.current;
     if (!sentinel) return;
 
+    let isInitialCallback = true;
     const observer = new IntersectionObserver(
       (entries) => {
+        if (isInitialCallback) {
+          isInitialCallback = false;
+          return;
+        }
         const [entry] = entries;
         if (entry.isIntersecting && nextCursor && !loadingMore && !loading) {
           handleLoadMore();
@@ -297,6 +334,37 @@ function RepublicFeedContent() {
                 </div>
               </form>
             </div>
+            {/* Feed Sort Toggle */}
+            <div className="flex items-center gap-1.5 p-1.5 bg-zinc-950 border border-zinc-800 rounded-xl w-full sm:w-max mx-auto sm:mx-0 shadow-sm">
+              <button
+                onClick={() => setMode("recent")}
+                className={`flex-1 sm:flex-none px-6 py-2 rounded-lg text-[11px] font-black uppercase tracking-wider transition-all ${
+                  mode === "recent"
+                    ? "bg-zinc-800 text-white shadow-sm"
+                    : "text-zinc-500 hover:text-zinc-300 hover:bg-zinc-900/50"
+                }`}
+              >
+                Recent
+              </button>
+              <button
+                onClick={() => setMode("top")}
+                className={`flex-1 sm:flex-none px-6 py-2 rounded-lg text-[11px] font-black uppercase tracking-wider transition-all flex items-center justify-center gap-1.5 ${
+                  mode === "top"
+                    ? "bg-gradient-to-r from-lime-500/20 to-emerald-500/20 text-lime-400 border border-lime-500/30 shadow-[0_0_15px_rgba(163,230,53,0.15)]"
+                    : "text-zinc-500 hover:text-zinc-300 hover:bg-zinc-900/50"
+                }`}
+              >
+                <span className="material-symbols-outlined text-[14px]">
+                  hotel_class
+                </span>
+                Top Posts
+              </button>
+            </div>
+
+            {/* Mobile-only Suggested Citizens (Horizontal/hidden on desktop) */}
+            <div className="xl:hidden w-full overflow-x-auto snap-x snap-mandatory pb-2 -mx-3 px-3 sm:mx-0 sm:px-0">
+              <SuggestedCitizensWidget />
+            </div>
 
             {/* Mobile-only Quick Depots Map Link */}
             <div className="md:hidden flex items-center justify-between px-3.5 py-2.5 rounded-2xl bg-gradient-to-r from-amber-500/10 via-zinc-900/90 to-zinc-900 border border-amber-500/20 text-xs shadow-md">
@@ -337,7 +405,7 @@ function RepublicFeedContent() {
                   <ComposePostBox
                     onPostCreated={() => {
                       setMobileComposeOpen(false);
-                      fetchPosts(activeTab, search);
+                      fetchPosts(activeTab, search, mode);
                     }}
                   />
                 </div>
@@ -400,7 +468,7 @@ function RepublicFeedContent() {
                 )}
               </div>
             ) : (
-              <div className="space-y-4">
+              <div ref={postsListRef} className="space-y-4 scroll-mt-24">
                 {posts.map((post) => (
                   <PostCard
                     key={post.id}
@@ -411,29 +479,32 @@ function RepublicFeedContent() {
                   />
                 ))}
 
-                {/* Sentinel for Infinite Scrolling */}
-                <div ref={sentinelRef} className="h-4 w-full" />
+                {/* Auto-Pagination Sentinel */}
+                <div ref={sentinelRef} className="h-1 w-full" />
 
-                {/* Loading indicator during infinite scroll */}
-                {loadingMore && (
+                {/* Loading indicator while the next page fetches */}
+                {loadingMore ? (
                   <div className="flex items-center justify-center gap-2 py-6 text-zinc-400 text-xs">
                     <span className="w-5 h-5 rounded-full border-2 border-lime-400 border-t-transparent animate-spin" />
-                    <span>
-                      Fetching more Republic updates (10 at a time)...
+                    <span>Loading page {page}...</span>
+                  </div>
+                ) : nextCursor ? (
+                  <div className="text-center py-6">
+                    <span className="text-[11px] font-mono text-zinc-500 uppercase tracking-wider">
+                      Page {page} · Scroll for more
                     </span>
                   </div>
-                )}
-
-                {/* Caught up end indicator */}
-                {!nextCursor && posts.length > 0 && !loading && (
-                  <div className="text-center py-8">
-                    <span className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-zinc-900/80 border border-zinc-800 text-[11px] font-bold text-zinc-500">
-                      <span className="material-symbols-outlined text-[15px] text-lime-400">
-                        check_circle
+                ) : (
+                  posts.length > 0 && (
+                    <div className="text-center py-8">
+                      <span className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-zinc-900/80 border border-zinc-800 text-[11px] font-bold text-zinc-500">
+                        <span className="material-symbols-outlined text-[15px] text-lime-400">
+                          check_circle
+                        </span>
+                        You&apos;re all caught up on this stream
                       </span>
-                      You&apos;re all caught up on this stream
-                    </span>
-                  </div>
+                    </div>
+                  )
                 )}
               </div>
             )}
@@ -455,9 +526,12 @@ function RepublicFeedContent() {
                 <span className="text-lime-400 font-bold">+15 XP / Post</span>
               </div>
               <ComposePostBox
-                onPostCreated={() => fetchPosts(activeTab, search)}
+                onPostCreated={() => fetchPosts(activeTab, search, mode)}
               />
             </div>
+
+            {/* Suggested Citizens Discovery Layer */}
+            <SuggestedCitizensWidget />
           </aside>
         </div>
       </div>

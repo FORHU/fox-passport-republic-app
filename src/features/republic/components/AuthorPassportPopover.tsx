@@ -1,15 +1,18 @@
 import Link from "next/link";
 import { FeedAuthor } from "../types";
 import { isPartnerUser } from "@/shared/auth/roles";
+import { FollowButton } from "@/features/follow/components/FollowButton";
 
 interface AuthorPassportPopoverProps {
   author: FeedAuthor;
   createdAt: string;
+  isFollowingAuthor?: boolean;
 }
 
 export function AuthorPassportPopover({
   author,
   createdAt,
+  isFollowingAuthor,
 }: AuthorPassportPopoverProps) {
   const citizenPath = author.passport?.paths?.find((p) => p.path === "user");
   const citizenLevel = citizenPath?.level ?? 1;
@@ -106,22 +109,29 @@ export function AuthorPassportPopover({
         </div>
       </div>
 
-      {/* Badges preview */}
-      {badges.length > 0 && (
-        <div className="hidden sm:flex items-center gap-1">
-          {badges.slice(0, 2).map((b) => (
-            <span
-              key={b.id}
-              title={b.name}
-              className="w-6 h-6 rounded-full bg-zinc-800/80 border border-zinc-700 flex items-center justify-center text-amber-400 text-xs shadow-inner"
-            >
-              <span className="material-symbols-outlined text-[14px]">
-                {b.icon || "star"}
+      {/* Badges preview & Follow */}
+      <div className="flex items-center gap-3">
+        {badges.length > 0 && (
+          <div className="hidden sm:flex items-center gap-1">
+            {badges.slice(0, 2).map((b) => (
+              <span
+                key={b.id}
+                title={b.name}
+                className="w-6 h-6 rounded-full bg-zinc-800/80 border border-zinc-700 flex items-center justify-center text-amber-400 text-xs shadow-inner"
+              >
+                <span className="material-symbols-outlined text-[14px]">
+                  {b.icon || "star"}
+                </span>
               </span>
-            </span>
-          ))}
-        </div>
-      )}
+            ))}
+          </div>
+        )}
+        <FollowButton
+          targetId={author.id}
+          compact={true}
+          initialIsFollowing={isFollowingAuthor}
+        />
+      </div>
     </div>
   );
 }
