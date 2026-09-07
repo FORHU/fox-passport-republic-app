@@ -1,9 +1,9 @@
 # Tomorrow
 
 **The running order.** Rewritten 2 Sep 2026, revised 4 Sep after `main` took
-role assignment and `feat/map` — the previous 916-line version had 47 completed
-items in it and is in git history if the reasoning behind any of them is ever
-needed.
+role assignment and `feat/map`, and again 7 Sep for the auth hardening chain —
+the previous 916-line version had 47 completed items in it and is in git history
+if the reasoning behind any of them is ever needed.
 
 | Document | Role |
 |---|---|
@@ -25,17 +25,15 @@ the code; they do not carry the two things most likely to waste your first hour.
 
 ### Where the work lives
 
-| Repository | Branch | Ahead of `main` |
-|---|---|---|
-| api | `refactor/api-structure` | 7 commits — schema split, 31 modules, table renames, the validator, GOTCHAS |
-| app | `refactor/app-structure` | 1 commit — `shared/auth`, the realtime bus, the two new docs |
+**See §0 for the current branches.** As of 7 Sep the live work is the auth
+hardening chain, on six local branches across the two repos, **none of them
+pushed** — so a fresh clone gets `main` and none of it. That is the first thing
+to check before assuming something is missing.
 
-Both are pushed. Neither has a PR open. `main` is untouched in both.
-
-There is also an empty `docs/role-model` branch in the app — it holds nothing
-and can be deleted. The doc work it was created for ended up on
-`refactor/app-structure`, because the changes were still uncommitted when that
-branch was cut.
+The `refactor/api-structure` / `refactor/app-structure` branches this section
+used to name are **merged**, as are `feat/role-assignment` and
+`fix/secretary-admin-console`. The empty `docs/role-model` branch in the app
+still holds nothing and can still be deleted.
 
 ### What does not travel
 
@@ -98,7 +96,66 @@ records rather than instructions; grep them, do not read them.
 
 ---
 
-## 0. In flight — as of 4 Sep
+## 0. In flight — as of 7 Sep
+
+**Auth hardening. Resume at AUTH-05.** The tracked list is
+[`AUTH_HARDENING.md`](./AUTH_HARDENING.md); this is only the pointer.
+
+Order is `AUTH-01 → AUTH-02 → AUTH-03 → AUTH-05 → AUTH-04 → AUTH-06`, then the
+auth architecture is **frozen**. AUTH-01, 02, 03 and 04 are done — 04 fell out of
+03 rather than being worked. **Two left, both in the api repo:**
+
+- [ ] **AUTH-05** — Google sign-in never calls `revokeAllForUser`, so it is the
+      one entry path that escapes one-session-per-account. Roughly one line in
+      `google-auth.service.ts`, matching `auth.service.ts:197`.
+- [ ] **AUTH-06** — two OTP problems found while doing AUTH-01. The plaintext
+      code is logged whenever the mail send fails (`auth.service.ts` lines 81,
+      334, 405) — inside `catch` blocks, labelled `[DEV]`, with **no `isDev`
+      guard**, so it happens in production, next to the address it belongs to.
+      And `generateOTP` uses `Math.random()`; `crypto` is already imported in
+      `otp.utils.ts` with an eslint-disable for being unused.
+
+### Nothing is pushed. Six local branches, stacked.
+
+| Repo | Branch | Holds |
+|---|---|---|
+| api | `feat/auth-01-rate-limiting` (off `main`) | AUTH-01 |
+| api | `feat/auth-03-api-cookies` (off the above) | AUTH-03, api half |
+| app | `fix/session-end-consolidation` (off `main`) | endSession consolidation, AdminAuthGuard cleanup, `AUTH_HARDENING.md` |
+| app | `feat/auth-02-proxy-login` (off `main`) | AUTH-02 |
+| app | `feat/auth-03-api-cookies` (off the above) | AUTH-03, app half |
+| app | `docs/auth-hardening-tracking` (off `main`) | this section + `AUTH_HARDENING.md` |
+
+api 227 tests green, app 132 green, no lint errors either side. The only
+type-check errors are the two pre-existing `.next/types/validator.ts` ones.
+
+### Three things to know before merging any of it
+
+1. **None of AUTH-02 or AUTH-03 has been run in a browser.** A cookie relay is
+   precisely what unit tests cannot vindicate. `VERIFY.md` and the end-to-end
+   sequence in `AUTH_HARDENING.md` matter more here than usual — especially
+   watching the rotated cookie values actually change in the Application tab.
+2. **Merge `fix/session-end-consolidation` before the AUTH-03 branch.** Both
+   rewrite `shared/lib/axios.ts` and the proxy route heavily; taking them in the
+   other order means resolving that collision twice.
+3. **Land this docs branch early.** It carries `AUTH_HARDENING.md`, which is
+   otherwise stranded on `fix/session-end-consolidation` — which is why AUTH-02
+   and 03 are done but unticked there.
+
+### Decisions already made — do not re-open
+
+Recorded with reasoning in `AUTH_HARDENING.md`. Rejected: `tokenHash` (the
+refresh token is a signed JWT and only the jti is stored, which beats storing a
+hash), refresh-token **families** and the **sessions UI** (one session per
+account means one live chain, so `revokeAllForUser` already is family
+revocation), and MapAnytime's `activeSessionId` (immediate revocation, at the
+price of a database lookup on every authenticated request). The ≤15-minute
+window in which a signed-out access token still works is an **accepted
+consequence** of the stateless model, not an oversight.
+
+---
+
+## 0b. Landed 4 Sep — open follow-ups from it
 
 Role assignment **shipped**. Both PRs are merged and everything §0 asked for on
 3 Sep is on `main`:
