@@ -5,6 +5,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useAuthStore } from "@/shared/auth/useAuthStore";
 import {
   getConversations,
+  getCanMessage,
   startConversation,
   getMessages,
   sendMessage,
@@ -27,6 +28,16 @@ export function useConversations() {
     queryFn: getConversations,
     enabled: !!userId && isAuthenticated,
     staleTime: 1000 * 30,
+  });
+}
+
+export function useCanMessage(targetId?: string) {
+  const { user } = useAuthStore();
+
+  return useQuery({
+    queryKey: ["canMessage", targetId],
+    queryFn: () => getCanMessage(targetId!),
+    enabled: !!targetId && !!user && user.id !== targetId,
   });
 }
 

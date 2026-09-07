@@ -18,6 +18,9 @@ import { isPartnerUser } from "@/shared/auth/roles";
 import { FollowButton } from "@/features/follow/components/FollowButton";
 import { FollowListModal } from "@/features/follow/components/FollowListModal";
 import { useFollowCounts } from "@/features/follow/api/useFollow";
+import { BlockMenuButton } from "@/features/block/components/BlockMenuButton";
+import { useBlockStatus } from "@/features/block/api/useBlock";
+import { useCanMessage } from "@/features/messages/hooks/useMessages";
 
 const FALLBACK_AVATAR =
   "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=400&auto=format&fit=crop";
@@ -65,6 +68,10 @@ export default function PublicCitizenProfileView() {
     "followers" | "following" | null
   >(null);
   const { data: followCounts } = useFollowCounts(id);
+  const { data: blockStatus } = useBlockStatus(id);
+  const isBlocked = blockStatus?.blockedByMe || blockStatus?.blockedMe;
+  const { data: canMessageData } = useCanMessage(id);
+  const canMessage = canMessageData?.canMessage ?? true;
 
   const {
     data: profile,
@@ -291,22 +298,26 @@ export default function PublicCitizenProfileView() {
             </div>
 
             {/* CTAs */}
-            <div className="flex sm:flex-col gap-2 w-full sm:w-auto shrink-0 pt-2 sm:pt-0">
+            <div className="flex flex-wrap items-center gap-2 shrink-0 pt-2 sm:pt-1 sm:self-start">
               {!isMe && (
                 <>
-                  <FollowButton
-                    targetId={profile.id}
-                    className="w-full sm:w-auto"
-                  />
-                  <Link
-                    href={`/messages?userId=${profile.id}&contextType=profile&contextId=${profile.id}&contextLabel=${encodeURIComponent(profile.name)}`}
-                    className="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-gradient-to-r from-lime-400 to-emerald-400 hover:from-lime-300 hover:to-emerald-300 text-black font-black text-xs flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(163,230,53,0.3)] transition-all cursor-pointer"
-                  >
-                    <span className="material-symbols-outlined text-[16px]">
-                      chat
-                    </span>
-                    <span>Message Citizen</span>
-                  </Link>
+                  {!isBlocked && (
+                    <>
+                      <FollowButton targetId={profile.id} />
+                      {canMessage && (
+                        <Link
+                          href={`/messages?userId=${profile.id}&contextType=profile&contextId=${profile.id}&contextLabel=${encodeURIComponent(profile.name)}`}
+                          className="h-9 px-5 rounded-xl bg-gradient-to-r from-lime-400 to-emerald-400 hover:from-lime-300 hover:to-emerald-300 text-black font-black text-xs flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(163,230,53,0.3)] transition-all cursor-pointer"
+                        >
+                          <span className="material-symbols-outlined text-[16px]">
+                            chat
+                          </span>
+                          <span>Message Citizen</span>
+                        </Link>
+                      )}
+                    </>
+                  )}
+                  <BlockMenuButton targetId={profile.id} />
                 </>
               )}
               {isMe && (

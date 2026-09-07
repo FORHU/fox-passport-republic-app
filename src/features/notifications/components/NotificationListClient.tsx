@@ -31,6 +31,21 @@ const TYPE_META: Record<string, { icon: string; color: string; bg: string }> = {
     color: "text-red-300",
     bg: "bg-red-500/10",
   },
+  follow_request: {
+    icon: "person_add",
+    color: "text-lime-300",
+    bg: "bg-lime-500/10",
+  },
+  new_follower: {
+    icon: "person_add",
+    color: "text-lime-300",
+    bg: "bg-lime-500/10",
+  },
+  follow_request_accepted: {
+    icon: "how_to_reg",
+    color: "text-green-300",
+    bg: "bg-green-500/10",
+  },
 };
 
 const fallbackMeta = {

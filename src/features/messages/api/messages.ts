@@ -6,6 +6,13 @@ export const getConversations = async (): Promise<Conversation[]> => {
   return res.data.data ?? [];
 };
 
+export const getCanMessage = async (
+  userId: string,
+): Promise<{ canMessage: boolean }> => {
+  const res = await api.get(`/conversations/can-message/${userId}`);
+  return res.data.data;
+};
+
 export const startConversation = async (
   input: StartConversationInput,
 ): Promise<{ id: string }> => {

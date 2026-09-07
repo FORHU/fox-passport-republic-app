@@ -3,13 +3,13 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useInfiniteQuery } from "@tanstack/react-query";
-import { X } from "lucide-react";
+import { X, ArrowUpRight } from "lucide-react";
 import {
   getFollowers,
   getFollowing,
   type FollowListPage,
 } from "../api/follows";
-import { FollowButton } from "./FollowButton";
+import { FollowUserRow } from "./FollowUserRow";
 
 type FollowTab = "followers" | "following";
 
@@ -75,12 +75,22 @@ export function FollowListModal({
               Following
             </button>
           </div>
-          <button
-            onClick={onClose}
-            className="text-zinc-500 hover:text-white transition-colors"
-          >
-            <X className="w-5 h-5" />
-          </button>
+          <div className="flex items-center gap-3">
+            <Link
+              href={`/user/${userId}/connections?tab=${tab}`}
+              onClick={onClose}
+              className="flex items-center gap-1 text-xs font-bold text-zinc-500 hover:text-lime-400 transition-colors"
+            >
+              Full page
+              <ArrowUpRight className="w-3.5 h-3.5" />
+            </Link>
+            <button
+              onClick={onClose}
+              className="text-zinc-500 hover:text-white transition-colors"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          </div>
         </div>
 
         <div className="overflow-y-auto flex-1 p-4 space-y-3">
@@ -102,49 +112,7 @@ export function FollowListModal({
             </p>
           ) : (
             users.map((u) => (
-              <div
-                key={u.id}
-                className="flex items-center justify-between gap-2"
-              >
-                <Link
-                  href={`/user/${u.id}`}
-                  onClick={onClose}
-                  className="flex items-center gap-3 min-w-0 group"
-                >
-                  <div className="w-10 h-10 rounded-full overflow-hidden bg-zinc-800 shrink-0 border border-zinc-700/50 group-hover:border-lime-500/50 transition-colors">
-                    {u.imgId ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img
-                        src={
-                          u.imgId.startsWith("http://") ||
-                          u.imgId.startsWith("https://")
-                            ? u.imgId
-                            : `https://fox-passport-republic-assets.s3.ap-southeast-1.amazonaws.com/${u.imgId}`
-                        }
-                        alt={u.name || "User"}
-                        className="w-full h-full object-cover"
-                      />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center text-xs font-bold text-zinc-500">
-                        {u.name ? u.name.charAt(0).toUpperCase() : "?"}
-                      </div>
-                    )}
-                  </div>
-                  <div className="flex flex-col min-w-0">
-                    <span className="text-sm font-bold text-zinc-200 truncate group-hover:text-lime-400 transition-colors">
-                      {u.name || "Unknown Citizen"}
-                    </span>
-                    <span className="text-xs text-zinc-500 truncate">
-                      @
-                      {u.username ||
-                        (u.name
-                          ? u.name.toLowerCase().replace(/\s/g, "")
-                          : "citizen")}
-                    </span>
-                  </div>
-                </Link>
-                <FollowButton targetId={u.id} compact />
-              </div>
+              <FollowUserRow key={u.id} user={u} onNavigate={onClose} />
             ))
           )}
 
