@@ -1,11 +1,10 @@
 ﻿"use client";
 
-import React, { useEffect, useState } from "react";
+import React from "react";
 import Link from "next/link";
 import { canAccessAdmin } from "@/shared/lib/permissions";
 import {
   useAuthStore,
-  useAuthActions,
   useAuthStatus,
   useAuthLoading,
 } from "@/shared/auth/useAuthStore";
@@ -14,33 +13,43 @@ interface AdminAuthGuardProps {
   children: React.ReactNode;
 }
 
+/**
+ * A display gate over store state, not an access boundary.
+ *
+ * It renders one of three things - a loading frame, a sign-in prompt, or the
+ * console - from whatever the auth store already holds. It hydrates nothing:
+ * `AuthStoreProvider` is mounted globally and blocks its children until
+ * `initialize()` has settled, so the store is populated before this mounts.
+ *
+ * What actually enforces admin access is `await requireAdmin()` at the top of
+ * `app/admin/page.tsx`, off a live /profile call, and `requirePermission` on
+ * every admin route in the API. Nothing reaches this component without passing
+ * the first of those.
+ *
+ * This used to run its own `localStorage` hydration on mount. That predated the
+ * global provider and had drifted into a second source of truth: it called
+ * `login({ user })`, which *writes* `fox_user` back to localStorage, and it
+ * read localStorage directly, so it missed the `fox_user` cookie fallback
+ * `initialize` has - with site storage cleared but cookies intact, the rest of
+ * the app was signed in and only this screen said "Admin Access Required".
+ */
 const AdminAuthGuard: React.FC<AdminAuthGuardProps> = ({ children }) => {
   const isAuthenticated = useAuthStatus();
   const isLoading = useAuthLoading();
-  const { openLogin, setLoading } = useAuthActions();
-  const [isClient, setIsClient] = useState(false);
+  const openLogin = useAuthStore((state) => state.openLogin);
+  // Subscribed rather than read through `getState()`, so a role granted
+  // mid-session by the profile poll re-renders this gate instead of waiting
+  // for something else to redraw the tree.
+  const user = useAuthStore((state) => state.user);
 
-  // Check for existing auth on mount
-  useEffect(() => {
-    setIsClient(true);
-    // Tokens are httpOnly cookies and unreadable here by design, so a stored
-    // profile is the only client-side signal. It is a display hint, not proof:
-    // middleware.ts verifies the JWT at the edge and the API rejects a bad
-    // token, so a stale `fox_user` cannot grant access to anything.
-    const storedUser = localStorage.getItem("fox_user");
-
-    if (storedUser) {
-      try {
-        useAuthStore.getState().login({ user: JSON.parse(storedUser) });
-      } catch {
-        localStorage.removeItem("fox_user");
-      }
-    }
-    setLoading(false);
-  }, [setLoading]);
-
-  // Show loading state
-  if (!isClient || isLoading) {
+  // Show loading state.
+  //
+  // There used to be an `isClient` flag beside this to hold the first paint
+  // back until the store had hydrated. It is redundant: `AuthStoreProvider`
+  // renders its own loader until `isLoading` is false, so this component never
+  // renders on the server and its first client render already has the store.
+  // `isLoading` starts `true`, so it covers that case on its own anyway.
+  if (isLoading) {
     return (
       <div className="min-h-screen bg-background bg-gradient-dark flex items-center justify-center">
         <div className="flex flex-col items-center gap-4">
@@ -80,7 +89,6 @@ const AdminAuthGuard: React.FC<AdminAuthGuardProps> = ({ children }) => {
   }
 
   // Capability rather than role — admin_secretary belongs here too.
-  const user = useAuthStore.getState().user;
   const isAdmin = canAccessAdmin(user);
 
   if (!isAdmin) {
