@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { Menu } from "lucide-react";
 import { useUserMenu } from "@/shared/auth/useUserMenu";
 import { useAuthStore } from "@/shared/auth/useAuthStore";
-import { refreshUserSession } from "@/shared/lib/server/auth-actions";
+import { refreshSession } from "@/shared/auth/session-api";
 import { toast } from "sonner";
 import { RoleDef } from "./user-menu/types";
 import { RoleLockDialog } from "./user-menu/RoleLockDialog";
@@ -34,7 +34,7 @@ export default function UserMenuButton({ onSignIn }: UserMenuButtonProps = {}) {
   useEffect(() => {
     if (!user || hasSyncedRef.current) return;
     hasSyncedRef.current = true;
-    refreshUserSession()
+    refreshSession()
       .then((freshUser) => {
         if (freshUser) setUser(freshUser as any);
       })
@@ -53,7 +53,7 @@ export default function UserMenuButton({ onSignIn }: UserMenuButtonProps = {}) {
     setSyncing(true);
     close();
     try {
-      const freshUser = await refreshUserSession();
+      const freshUser = await refreshSession();
       if (freshUser) {
         setUser(freshUser as any);
         toast.success("Account synced — your latest roles are now active");

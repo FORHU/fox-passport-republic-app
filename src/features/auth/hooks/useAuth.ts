@@ -8,7 +8,6 @@ import { useAuthStore } from "@/shared/auth/useAuthStore";
 import { LoginFormData, SignupFormData } from "@/shared/lib/schema";
 import { LoginResponse } from "@/shared/auth/types";
 import { canAccessAdmin } from "@/shared/lib/permissions";
-import { setAuthCookies } from "@/shared/lib/server/auth-actions";
 
 // These used to go through a private axios instance pointed straight at
 // `config.apiUrl` - the one place the browser talked to the API directly, and
@@ -76,17 +75,17 @@ export const useLogin = () => {
     onSuccess: async (data) => {
       console.log("Login Success:", data);
 
-      // Cookies before the store update, not after: `login(data)` flips
-      // `isAuthenticated` synchronously, and every component gated on that
-      // (NotificationBell, UserMenuButton's session sync, any query with
-      // `enabled: !!user`) can fire its request through the proxy the
-      // instant it re-renders. The proxy reads `fox_token` from the cookie
-      // jar — if one of those requests lands before this Server Action's
-      // Set-Cookie has actually been committed, the proxy forwards it
-      // unauthenticated, the backend 401s, and the global axios interceptor
-      // reads that 401 as "session expired" and force-logs the user right
-      // back out seconds after they logged in.
-      await setAuthCookies(data);
+      // No cookie write here any more. The API sets them on its own login
+      // response and the proxy relays those headers, so they are committed by
+      // the browser before this callback runs at all.
+      //
+      // The ordering this replaces was load-bearing and worth remembering:
+      // `login(data)` flips `isAuthenticated` synchronously, and everything
+      // gated on that fires immediately. When the cookies were written by a
+      // separate Server Action afterwards, those requests could reach the proxy
+      // before the Set-Cookie was committed - the proxy forwarded them
+      // unauthenticated, the API answered 401, and the interceptor read that as
+      // an expired session and signed the user out seconds after signing in.
 
       // Save user to store
       login(data);

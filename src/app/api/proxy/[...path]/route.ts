@@ -30,22 +30,20 @@ const HOP_BY_HOP = new Set([
 const ACCESS_COOKIE = "fox_token";
 const REFRESH_COOKIE = "fox_refresh_token";
 
-const cookieOpts = {
-  httpOnly: true,
-  secure: process.env.NODE_ENV === "production",
-  sameSite: "lax" as const,
-  path: "/",
-};
-
-// Must match SESSION_MAX_AGE in auth-actions.ts, which derives it from
-// REFRESH_TOKEN_EXPIRY. A refreshed cookie that outlives the token inside it
-// puts the browser back to holding a credential the server stopped honouring.
-const SESSION_MAX_AGE = 7 * 24 * 60 * 60;
-
 interface RefreshResult {
   accessToken: string;
   /** Rotation makes refresh tokens single-use, so this is always a new one. */
   refreshToken: string | null;
+  /**
+   * The API's own `Set-Cookie` headers from the refresh, passed straight
+   * through to the browser.
+   *
+   * This route used to compose its own cookies here, with a `SESSION_MAX_AGE`
+   * that had to be kept equal by hand to a value in the API's environment.
+   * Relaying what the API sent means the lifetime, flags and names are decided
+   * in exactly one place and cannot drift.
+   */
+  setCookies: string[];
 }
 
 /**
@@ -87,6 +85,7 @@ async function refreshAccessToken(
     return {
       accessToken,
       refreshToken: body?.refreshToken ?? body?.data?.refreshToken ?? null,
+      setCookies: res.headers.getSetCookie(),
     };
   })().finally(() => {
     inFlight.delete(refreshToken);
@@ -113,6 +112,29 @@ async function handler(
       ? undefined
       : await request.arrayBuffer();
 
+  /**
+   * An explicit refresh asked for by the browser - "sync my account", after a
+   * role changes - rather than one this route decided to do on a 401.
+   *
+   * The caller cannot supply the token: it is httpOnly, which is the entire
+   * point. This route is the only place that holds it, so it fills the body in.
+   * Without this the client would need a readable copy of the refresh token,
+   * which is what the httpOnly cookies exist to prevent.
+   */
+  const isExplicitRefresh = path.join("/") === "auth/refresh-token";
+  let injectedBody: string | null = null;
+
+  if (isExplicitRefresh) {
+    const refreshToken = cookieStore.get(REFRESH_COOKIE)?.value;
+    if (!refreshToken) {
+      return NextResponse.json(
+        { success: false, message: "Invalid refresh token" },
+        { status: 401 },
+      );
+    }
+    injectedBody = JSON.stringify({ refreshToken });
+  }
+
   const forward = (token: string | null) => {
     const headers = new Headers();
     request.headers.forEach((value, key) => {
@@ -125,11 +147,14 @@ async function handler(
       }
     });
     if (token) headers.set("Authorization", `Bearer ${token}`);
+    if (injectedBody) headers.set("Content-Type", "application/json");
 
     return fetch(target, {
       method: request.method,
       headers,
-      body: rawBody && rawBody.byteLength > 0 ? rawBody : undefined,
+      body:
+        injectedBody ??
+        (rawBody && rawBody.byteLength > 0 ? rawBody : undefined),
       cache: "no-store",
       redirect: "manual",
     });
@@ -155,8 +180,22 @@ async function handler(
 
   const responseHeaders = new Headers();
   upstream.headers.forEach((value, key) => {
-    if (!HOP_BY_HOP.has(key.toLowerCase())) responseHeaders.set(key, value);
+    const name = key.toLowerCase();
+    // `set-cookie` is handled below. `forEach` yields it as a single
+    // comma-joined string when the response carries more than one, and
+    // `Headers.set` would then write that back as one malformed header - a
+    // login response setting three cookies would arrive as none the browser
+    // could parse.
+    if (name !== "set-cookie" && !HOP_BY_HOP.has(name)) {
+      responseHeaders.set(key, value);
+    }
   });
+
+  // The one accessor that keeps them separate. Each value is appended, never
+  // set, so the browser receives one Set-Cookie header per cookie.
+  for (const cookie of upstream.headers.getSetCookie()) {
+    responseHeaders.append("set-cookie", cookie);
+  }
 
   const response = new NextResponse(upstream.body, {
     status: upstream.status,
@@ -167,19 +206,14 @@ async function handler(
   // Persist a refresh here rather than dropping it. This is what a Server
   // Component could not do, and why SSR previously re-refreshed on every load.
   //
-  // Both cookies must be written. Refresh tokens are single-use since rotation
-  // landed, so keeping the old one would leave the browser holding a token the
-  // API has already revoked — the session would die at the next refresh.
+  // The refresh happened over an internal fetch, so the API's Set-Cookie landed
+  // on this server rather than on the browser. Forwarding those headers is what
+  // carries the rotated pair the rest of the way - dropping them would leave the
+  // browser holding a token the API has already revoked, and the session would
+  // die at the next refresh.
   if (refreshed) {
-    response.cookies.set(ACCESS_COOKIE, refreshed.accessToken, {
-      ...cookieOpts,
-      maxAge: SESSION_MAX_AGE,
-    });
-    if (refreshed.refreshToken) {
-      response.cookies.set(REFRESH_COOKIE, refreshed.refreshToken, {
-        ...cookieOpts,
-        maxAge: SESSION_MAX_AGE,
-      });
+    for (const cookie of refreshed.setCookies) {
+      response.headers.append("set-cookie", cookie);
     }
   }
 
