@@ -1,7 +1,10 @@
 # FoxPassport — architecture
 
-As built, 2 Sep 2026, on `fix/socket-emit-gaps` in both repos.
+As built, 2 Sep 2026; auth revised 7 Sep on the AUTH-02/03 branches.
 Written from the code, not from intent.
+
+Auth is moving. `AUTH_HARDENING.md` tracks what is open and what was decided
+against; this file describes the system as it stands.
 
 ## Two repos, one system
 
@@ -9,8 +12,8 @@ Written from the code, not from intent.
 |---|---|---|
 | Stack | Express 4 + TypeScript, Prisma 7, Postgres | Next 16 (App Router), React 19, TypeScript |
 | Port | 6002, everything under `/api/v1` | 6001 |
-| Owns | data, auth, authorization, money, mail | rendering, session cookies, realtime client |
-| Tests | vitest, 146 | vitest + testing-library, 94 |
+| Owns | data, auth, authorization, money, mail, **session cookie policy** | rendering, cookie **relay**, realtime client |
+| Tests | vitest, 227 | vitest + testing-library, 132 |
 
 The API is the only authority on who may do what. The app holds no signing key
 and cannot mint a token — it verifies nothing and asks.
@@ -43,13 +46,17 @@ tickets cannot be issued, so realtime falls back to a 60s poll.
    → API. The proxy reads the httpOnly cookie server-side and attaches the
    header, so the token never touches client JavaScript. It also handles
    401 → refresh → replay, and dedupes concurrent refreshes in a process-local
-   `inFlight` map because refresh tokens are single-use.
+   `inFlight` map because refresh tokens are single-use. It also **relays the
+   API's `Set-Cookie` headers** — with `getSetCookie()`, one header per cookie,
+   since folding them into a comma-joined value produces something no browser
+   can parse.
 3. **Socket push** — the API emits, the client invalidates, React Query refetches
    through path 2. The socket carries no data of its own.
 
 ## Auth
 
-Cookies, all set by `shared/lib/server/auth-actions.ts`:
+Cookies, all defined and emitted by the API
+(`modules/auth/auth.cookies.ts`), relayed to the browser by the proxy:
 
 | Cookie | httpOnly | Holds |
 |---|---|---|
@@ -57,9 +64,38 @@ Cookies, all set by `shared/lib/server/auth-actions.ts`:
 | `fox_refresh_token` | yes | refresh token, rotated on use |
 | `fox_user` | no | display data only — never proof of anything |
 
-Sign-in paths: password, and Google (an exchange code, because the API cannot
-set cookies for the app's origin). Password change and reset revoke all
-sessions; Google sign-in does not yet.
+**Revised 7 Sep (AUTH-03).** The app used to compose these in
+`shared/lib/server/auth-actions.ts`, with a `SESSION_MAX_AGE` written out three
+times and kept equal by hand to `REFRESH_TOKEN_EXPIRY` in the API's environment.
+They drifted once: the access cookie lived seven days while the JWT inside it
+expired in fifteen minutes. Lifetime, flags and names are now decided in one
+place and derive from `refreshTokenTtlMs()`, the same function that sets the
+token's own expiry.
+
+**The API sets no `Domain`, deliberately.** The browser never talks to it — it
+talks to this app, whose proxy relays the headers onward — and a host-only cookie
+binds to whoever relayed it. That is the assumption the arrangement rests on, and
+it is the first thing to break if a direct browser-to-API call is ever added.
+There is a test on it rather than a comment.
+
+`clearAuthCookies` is the one exception still on the app side, and stays that
+way: logout needs the httpOnly refresh token to revoke it, which the Next server
+can read and the browser cannot. Relaying it would mean the API reading cookies.
+
+Sign-in paths: password and Google, both through `/api/proxy/*` since 7 Sep
+(AUTH-02) — nothing browser-side calls the API directly for an authenticated
+concern any more. Google still crosses back with a single-use exchange code
+rather than tokens. Password change, password reset and admin role assignment
+revoke all sessions; **Google sign-in does not yet** (AUTH-05).
+
+An explicit refresh — "sync my account" after a role changes — cannot carry its
+own token, since it is httpOnly. The proxy holds it and fills the body in, so the
+browser can ask for a refresh without ever seeing the credential that performs
+it.
+
+Rate limits sit on every credential endpoint, on two axes — per IP for stuffing,
+per account for a distributed brute force — and stay enabled in development. See
+`AUTH_HARDENING.md`.
 
 **The app holds no `ACCESS_TOKEN_SECRET`.** `middleware.ts` used to verify the
 JWT, which meant a copy of the API's HS256 key lived here — and HS256 is
