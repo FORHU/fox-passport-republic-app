@@ -2,23 +2,21 @@
 
 import { useMutation } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
-import axios from "axios";
 import { toast } from "sonner";
+import api from "@/shared/lib/axios";
 import { useAuthStore } from "@/shared/auth/useAuthStore";
 import { LoginFormData, SignupFormData } from "@/shared/lib/schema";
 import { LoginResponse } from "@/shared/auth/types";
-import { config } from "@/shared/lib/config";
 import { canAccessAdmin } from "@/shared/lib/permissions";
 import { setAuthCookies } from "@/shared/lib/server/auth-actions";
 
-// --- AXIOS SETUP ---
-const api = axios.create({
-  baseURL: config.apiUrl,
-  withCredentials: true,
-  headers: {
-    "Content-Type": "application/json",
-  },
-});
+// These used to go through a private axios instance pointed straight at
+// `config.apiUrl` - the one place the browser talked to the API directly, and
+// the one that establishes the session. They share the proxy client with every
+// other request now, so there is a single browser-facing auth boundary.
+//
+// `withCredentials` went with it: /api/proxy is same-origin, so cookies ride
+// along without being asked to.
 
 // --- REAL API FUNCTIONS ---
 

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { config } from "@/shared/lib/config";
+import { isPreSessionAuthPath } from "@/shared/auth/public-endpoints";
 
 /**
  * Authenticated pass-through to the backend API.
@@ -137,7 +138,12 @@ async function handler(
   let upstream = await forward(accessToken);
   let refreshed: RefreshResult | null = null;
 
-  if (upstream.status === 401) {
+  // A 401 from the pre-session endpoints is "those credentials are wrong", not
+  // "this access token is stale". Refreshing on one would spend a single-use
+  // refresh token to no purpose and then replay the request — submitting a
+  // failed sign-in a second time, which the API's per-account rate limit counts
+  // as two attempts for one click.
+  if (upstream.status === 401 && !isPreSessionAuthPath(path.join("/"))) {
     const refreshToken = cookieStore.get(REFRESH_COOKIE)?.value;
     if (refreshToken) {
       refreshed = await refreshAccessToken(refreshToken);

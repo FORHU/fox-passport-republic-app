@@ -1,5 +1,6 @@
 // src/lib/axios.ts
 import axios from "axios";
+import { isPreSessionAuthPath } from "@/shared/auth/public-endpoints";
 
 /**
  * Client-side API access.
@@ -31,8 +32,11 @@ api.interceptors.response.use(
     const url: string = error.config?.url ?? "";
     if (
       error.response?.status === 401 &&
-      !url.includes("/auth/refresh-token") &&
-      !url.includes("/auth/login") &&
+      // Sign-in and the rest of the pre-session surface now come through here
+      // too. A 401 from those is a wrong password, not a dead session; reading
+      // it as one would throw the user out of the login modal rather than show
+      // them the error.
+      !isPreSessionAuthPath(url) &&
       typeof window !== "undefined" &&
       !window.location.pathname.startsWith("/?auth=expired")
     ) {
