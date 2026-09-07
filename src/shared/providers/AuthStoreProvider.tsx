@@ -5,10 +5,11 @@ import { useAuthStore } from "@/shared/auth/useAuthStore";
 import { Loader2 } from "lucide-react";
 import { useSessionManager } from "@/shared/auth/useSessionManager";
 import SessionTimeoutModal from "@/shared/components/layout/SessionTimeoutModal";
-import { clearAuthCookies } from "@/shared/lib/server/auth-actions";
+import { endSession } from "@/shared/auth/endSession";
 
 function SessionManager() {
   const [showWarning, setShowWarning] = useState(false);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
 
   useSessionManager(
     () => setShowWarning(true),
@@ -16,18 +17,19 @@ function SessionManager() {
   );
 
   const handleLogout = async () => {
-    setShowWarning(false);
-    // Same reasoning as the other forced-logout paths: without this, the
-    // httpOnly cookies (and the refresh token inside them) outlive the
-    // session the UI just showed the door to.
-    await clearAuthCookies().catch(() => {});
-    useAuthStore.getState().logout();
+    // The modal stays up, in a pending state, rather than closing first: this
+    // awaits a round trip to /auth/logout, and dismissing the dialog before it
+    // returns left the user looking at an unchanged page with nothing to say
+    // the click had registered.
+    setIsLoggingOut(true);
+    await endSession();
     window.location.href = "/";
   };
 
   return (
     <SessionTimeoutModal
       isOpen={showWarning}
+      isLoggingOut={isLoggingOut}
       onStayLoggedIn={() => setShowWarning(false)}
       onLogout={handleLogout}
     />
