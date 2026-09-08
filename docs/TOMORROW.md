@@ -38,7 +38,7 @@ still holds nothing and can still be deleted.
 ### What does not travel
 
 - **The database.** A clone has no data. `prisma migrate deploy` then
-  `pnpm exec tsx prisma/seed.ts` gives you 148 users, 78 venues, 128 assets,
+  `pnpm exec tsx prisma/seed.ts` gives you 148 users, 128 venues, 128 assets,
   298 services, and both an `admin` and an `admin_secretary` — which the RBAC
   boundary work needs.
 - **`.env`.** Gitignored in both repos, and `.env.example` does not carry
