@@ -8,18 +8,28 @@ import { AuthorPassportPopover } from "./AuthorPassportPopover";
 import { CommentSection } from "./CommentSection";
 import { toggleLikePost } from "@/shared/api/feed";
 import { useAuthStore } from "@/shared/auth/useAuthStore";
+import { Badge } from "@/shared/components/ui/badge";
 
 interface PostCardProps {
   post: FeedPost;
   onPostDeleted?: (id: string) => void;
+  /** "feed" (default): content/media/comment-count open the detail modal via
+   * onOpenDetail. "modal": rendered inside PostDetailModal itself — clicking
+   * the post again would be pointless, and comments should already be open. */
+  variant?: "feed" | "modal";
+  onOpenDetail?: (post: FeedPost) => void;
 }
 
-export function PostCard({ post }: PostCardProps) {
+export function PostCard({
+  post,
+  onOpenDetail,
+  variant = "feed",
+}: PostCardProps) {
   const router = useRouter();
   const { user } = useAuthStore();
   const [liked, setLiked] = useState(post.isLikedByMe ?? false);
   const [likesCount, setLikesCount] = useState(post.likesCount);
-  const [showComments, setShowComments] = useState(false);
+  const [showComments, setShowComments] = useState(variant === "modal");
   const [commentsCount, setCommentsCount] = useState(post.commentsCount);
   const [likeLoading, setLikeLoading] = useState(false);
   const [copied, setCopied] = useState(false);
@@ -72,6 +82,8 @@ export function PostCard({ post }: PostCardProps) {
   };
 
   const isPartnerPost = post.type === "partner_announcement";
+  const openable = variant === "feed" && Boolean(onOpenDetail);
+  const handleOpenDetail = () => onOpenDetail?.(post);
 
   return (
     <article
@@ -99,7 +111,10 @@ export function PostCard({ post }: PostCardProps) {
       />
 
       {/* Post Text Content */}
-      <div className="mt-3 text-sm text-zinc-200 whitespace-pre-wrap leading-relaxed">
+      <div
+        onClick={openable ? handleOpenDetail : undefined}
+        className={`mt-3 text-sm text-zinc-200 whitespace-pre-wrap leading-relaxed ${openable ? "cursor-pointer" : ""}`}
+      >
         {post.content}
       </div>
 
@@ -129,7 +144,8 @@ export function PostCard({ post }: PostCardProps) {
       {/* Photo Gallery Grid */}
       {post.mediaUrls && post.mediaUrls.length > 0 && (
         <div
-          className={`mt-3.5 grid gap-2 rounded-xl overflow-hidden ${
+          onClick={openable ? handleOpenDetail : undefined}
+          className={`mt-3.5 grid gap-2 rounded-xl overflow-hidden ${openable ? "cursor-pointer" : ""} ${
             post.mediaUrls.length === 1
               ? "grid-cols-1"
               : post.mediaUrls.length === 2
@@ -180,9 +196,7 @@ export function PostCard({ post }: PostCardProps) {
                 {post.review.rating}.0 / 5
               </span>
             </div>
-            <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-              Verified Booking
-            </span>
+            <Badge variant="success">Verified Booking</Badge>
           </div>
           {post.review.comment && (
             <p className="text-xs text-zinc-300 italic">
@@ -404,9 +418,14 @@ export function PostCard({ post }: PostCardProps) {
             <span>{likesCount}</span>
           </button>
 
-          {/* Comment Toggle */}
+          {/* Comment Toggle — in the feed, this opens the post detail modal
+              (Facebook-style) instead of expanding comments inline. */}
           <button
-            onClick={() => setShowComments((prev) => !prev)}
+            onClick={
+              openable
+                ? handleOpenDetail
+                : () => setShowComments((prev) => !prev)
+            }
             className={`flex items-center gap-1 px-2.5 py-1.5 rounded-lg transition-colors ${
               showComments
                 ? "text-lime-400 bg-lime-400/10 font-bold"

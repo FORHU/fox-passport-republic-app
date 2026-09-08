@@ -25,6 +25,9 @@ export function useBlockUser() {
       queryClient.invalidateQueries({ queryKey: ["blockedUsers"] });
       queryClient.invalidateQueries({ queryKey: ["followStatus", targetId] });
       queryClient.invalidateQueries({ queryKey: ["followCounts", targetId] });
+      // Blocking someone unfollows them server-side too — drop them out of
+      // any rendered following/followers list without a manual refresh.
+      queryClient.invalidateQueries({ queryKey: ["followList"] });
     },
   });
 }

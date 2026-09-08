@@ -2,6 +2,7 @@ import Link from "next/link";
 import { FeedAuthor } from "../types";
 import { isPartnerUser } from "@/shared/auth/roles";
 import { FollowButton } from "@/features/follow/components/FollowButton";
+import { Badge } from "@/shared/components/ui/badge";
 
 interface AuthorPassportPopoverProps {
   author: FeedAuthor;
@@ -74,18 +75,11 @@ export function AuthorPassportPopover({
             >
               {author.name}
             </Link>
-            {isPartner && (
-              <span className="inline-flex items-center gap-0.5 px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-gradient-to-r from-amber-500/20 to-yellow-500/20 text-amber-300 border border-amber-500/40 shadow-sm">
-                <span className="material-symbols-outlined text-[12px]">
-                  verified
-                </span>
-                Partner Foxer
-              </span>
-            )}
+            {isPartner && <Badge variant="partner">Partner Foxer</Badge>}
             {!isPartner && author.roleType?.length > 0 && (
-              <span className="px-1.5 py-0.5 rounded text-[10px] font-semibold bg-zinc-800 text-zinc-300 border border-zinc-700">
+              <Badge variant="neutral">
                 {author.roleType[0].replace("Foxer", " Foxer")}
-              </span>
+              </Badge>
             )}
           </div>
 
