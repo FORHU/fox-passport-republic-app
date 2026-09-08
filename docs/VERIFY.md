@@ -36,15 +36,31 @@ connection, watch the **Messages** pane. That pane is the evidence.
 
 ## Accounts
 
-| Account | Password | Is |
-|---|---|---|
-| `admin@example.com` | `Adminjun1234567890!` | admin |
-| `secretary@example.com` | `Secretary1234567890!` | `admin_secretary` |
-| `user@example.com` | `Usernanaymo@1234567890!` | citizen |
-| `host@example.com` | `Hostpangani1234567890!` | eventFoxer |
-| `mayor@example.com` | `Mayormamamo1234567890!` | venueFoxer |
-| `gearfoxer@example.com` | `GearFoxer1234567890!` | gearFoxer |
-| `servicefoxer@example.com` | `Service1234567890!` | serviceFoxer |
+**One password for every account: `Password123!`** — `user.seeder.ts:81` and
+`partner.seeder.ts:13` both set `const SEED_PASSWORD = "Password123!"`, and
+every account below is hashed from it. Verified against a freshly seeded
+database on 8 Sep.
+
+| Account | Is |
+|---|---|
+| `admin@example.com` | admin |
+| `secretary@example.com` | `admin_secretary` |
+| `user@example.com` | citizen |
+| `host@example.com` | eventFoxer |
+| `mayor@example.com` | venueFoxer |
+| `gearfoxer@example.com` | gearFoxer |
+| `servicefoxer@example.com` | serviceFoxer |
+| `multirole@example.com` | eventFoxer + venueFoxer + serviceFoxer, plus gearFoxer once `partner.seeder` runs |
+| `partner@example.com` | all four foxer roles + investor |
+
+`multirole` and `partner` were seeded but never listed here.
+
+This table used to carry a different password per account —
+`Adminjun1234567890!`, `Usernanaymo@1234567890!` and so on. Those were real:
+they worked against the database this file was written against, which had been
+seeded before the seeders were changed to one shared constant. They stopped
+working the moment that database was re-seeded. If you meet an old database that
+still takes them, it predates the change; re-seeding settles it.
 
 `secretary@example.com` is new. The role has existed since the permission model
 landed with no way to assign it, so the thing it exists for has never been
