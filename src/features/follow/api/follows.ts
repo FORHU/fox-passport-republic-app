@@ -93,7 +93,16 @@ export async function getFollowRequests(
   return resp.data.data;
 }
 
-export async function getFollowSuggestions(): Promise<FollowListUser[]> {
-  const resp = await api.get("/follows/suggestions");
+export interface FollowSuggestion extends FollowListUser {
+  _count: { followers: number };
+}
+
+export async function getFollowSuggestions(
+  page = 1,
+  limit = 10,
+): Promise<FollowSuggestion[]> {
+  const resp = await api.get("/follows/suggestions", {
+    params: { page, limit },
+  });
   return resp.data.data;
 }

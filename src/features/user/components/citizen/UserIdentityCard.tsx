@@ -5,15 +5,7 @@
 
 import React from "react";
 import { useAuthStore } from "@/shared/auth/useAuthStore";
-import { FOXER_ROLES, type RoleType } from "@/shared/constants/roles";
-
-const ROLE_BADGE: Record<RoleType, { label: string; color: string }> = {
-  venueFoxer: { label: "Venue Foxer", color: "#ec4899" },
-  eventFoxer: { label: "Event Foxer", color: "#a78bfa" },
-  gearFoxer: { label: "Gear Foxer", color: "#38bdf8" },
-  serviceFoxer: { label: "Service Foxer", color: "#34d399" },
-  investor: { label: "Partner Foxer", color: "#10b981" },
-};
+import { FOXER_ROLES, ROLE_BADGE } from "@/shared/constants/roles";
 
 /**
  * Who this person is, as the server actually says so — not a template of
