@@ -128,7 +128,7 @@ export function RepublicTabs({
         <button
           type="button"
           onClick={() => setIsOpen((v) => !v)}
-          className="flex items-center gap-1.5 px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-lg bg-zinc-800 hover:bg-zinc-700 border border-zinc-700/80 text-[9px] sm:text-[10px] font-black uppercase tracking-wider text-lime-400 transition-colors cursor-pointer"
+          className="flex items-center gap-1.5 px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-lg hover:bg-zinc-800/60 text-[9px] sm:text-[10px] font-black uppercase tracking-wider text-zinc-400 hover:text-white transition-colors cursor-pointer"
         >
           <span className="material-symbols-outlined text-[13px]">
             {active.icon}
@@ -144,7 +144,7 @@ export function RepublicTabs({
         </button>
 
         {isOpen && (
-          <div className="absolute right-0 top-full mt-2 w-72 z-50 space-y-1.5 bg-zinc-900/95 backdrop-blur-xl border border-zinc-800/80 rounded-3xl p-2 shadow-2xl animate-in fade-in zoom-in-95">
+          <div className="absolute right-0 top-full mt-2 w-72 z-50 space-y-1.5 bg-zinc-900 border border-zinc-800/80 rounded-3xl p-2 shadow-2xl animate-in fade-in zoom-in-95">
             <div className="px-3 pt-2 pb-1 text-[10px] font-black uppercase tracking-wider text-zinc-500">
               Feed Streams
             </div>

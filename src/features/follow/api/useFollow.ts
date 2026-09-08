@@ -8,6 +8,7 @@ import {
   getFollowCounts,
   getFollowRequests,
   getFollowSuggestions,
+  getFollowing,
   type FollowStatusResult,
 } from "./follows";
 import { useAuthStore } from "@/shared/auth/useAuthStore";
@@ -89,6 +90,15 @@ export function useDeclineFollowRequest() {
   return useMutation({
     mutationFn: (requesterId: string) => declineFollowRequest(requesterId),
     onSuccess: (_, requesterId) => invalidate(requesterId),
+  });
+}
+
+export function useFollowing(userId?: string, page = 1, limit = 20) {
+  return useQuery({
+    queryKey: ["followList", "following", userId, page, limit],
+    queryFn: () => getFollowing(userId!, page, limit),
+    enabled: !!userId,
+    staleTime: 60 * 1000,
   });
 }
 

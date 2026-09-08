@@ -16,6 +16,13 @@ import { fetchOrganizerEvents } from "@/features/event/api/events";
 
 interface ComposePostBoxProps {
   onPostCreated?: () => void;
+  /** Rendered inside ComposePostModal, which already supplies the card
+   * chrome (border, background, header) — drops this component's own so
+   * they don't double up. */
+  embedded?: boolean;
+  /** Closes the containing modal after a successful post. Only meaningful
+   * alongside `embedded`. */
+  onClose?: () => void;
 }
 
 interface ResourceOption {
@@ -70,7 +77,11 @@ const RESOURCE_CONFIG: Partial<
   },
 };
 
-export function ComposePostBox({ onPostCreated }: ComposePostBoxProps) {
+export function ComposePostBox({
+  onPostCreated,
+  embedded = false,
+  onClose,
+}: ComposePostBoxProps) {
   const router = useRouter();
   const { user } = useAuthStore();
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -81,7 +92,7 @@ export function ComposePostBox({ onPostCreated }: ComposePostBoxProps) {
   const [uploading, setUploading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [isExpanded, setIsExpanded] = useState(false);
+  const [isExpanded, setIsExpanded] = useState(embedded);
   const [resourceId, setResourceId] = useState("");
 
   // Looked up and fetched unconditionally (rules of hooks) even before the
@@ -238,6 +249,7 @@ export function ComposePostBox({ onPostCreated }: ComposePostBoxProps) {
       setResourceId("");
       setIsExpanded(false);
       onPostCreated?.();
+      onClose?.();
     } catch (err: unknown) {
       setError((err as Error)?.message || "Failed to publish post");
     } finally {
@@ -246,7 +258,13 @@ export function ComposePostBox({ onPostCreated }: ComposePostBoxProps) {
   };
 
   return (
-    <div className="w-full rounded-2xl bg-zinc-900/90 border border-zinc-800/80 p-4 sm:p-5 shadow-xl">
+    <div
+      className={
+        embedded
+          ? "w-full"
+          : "w-full rounded-2xl bg-zinc-900/90 border border-zinc-800/80 p-4 sm:p-5 shadow-xl"
+      }
+    >
       <form onSubmit={handleSubmit}>
         {/* Post Type Selector Pills */}
         <div className="flex items-center gap-1.5 overflow-x-auto pb-2 mb-3 scrollbar-none">
@@ -320,6 +338,7 @@ export function ComposePostBox({ onPostCreated }: ComposePostBoxProps) {
           value={content}
           onChange={(e) => setContent(e.target.value)}
           onFocus={() => setIsExpanded(true)}
+          autoFocus={embedded}
           placeholder={
             type === "partner_announcement"
               ? "Share co-production opportunities, funding terms, or packages..."
@@ -327,7 +346,7 @@ export function ComposePostBox({ onPostCreated }: ComposePostBoxProps) {
                 ? "Tell citizens about your space, upcoming weekend slots, and amenities..."
                 : "What's happening in the Republic? Share an experience, tip, or story..."
           }
-          rows={isExpanded ? 3 : 2}
+          rows={embedded ? 8 : isExpanded ? 3 : 2}
           className="w-full bg-zinc-800/60 border border-zinc-700/60 rounded-xl p-3 text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-lime-400/60 transition-all resize-none"
         />
 

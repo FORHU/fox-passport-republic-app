@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
+import { Badge } from "@/shared/components/ui/badge";
 interface PartnerEquipmentDepotCardProps {
   onMapToggled?: (isOpen: boolean) => void;
   mapSlot?: React.ReactNode;
@@ -37,9 +38,9 @@ export function PartnerEquipmentDepotCard({
             Equipment Depots & Capital
           </h3>
         </div>
-        <span className="px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider bg-lime-400/15 text-lime-400 border border-lime-400/30 shrink-0">
+        <Badge variant="verified" icon={false} dot className="text-[9px]">
           Live Hubs
-        </span>
+        </Badge>
       </div>
 
       <p className="text-xs text-zinc-400 leading-relaxed">

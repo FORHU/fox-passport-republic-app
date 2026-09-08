@@ -8,6 +8,7 @@ import { useAuthStore } from "@/shared/auth/useAuthStore";
 import UserMenuButton from "@/shared/components/layout/UserMenuButton";
 import NotificationBell from "@/shared/components/layout/NotificationBell";
 import MobileBottomNav from "@/shared/components/layout/MobileBottomNav";
+import { Badge } from "@/shared/components/ui/badge";
 
 interface LandingHeaderProps {
   /** Optional — defaults to the auth store's own `openLogin`, so a server
@@ -27,7 +28,7 @@ const NAV_TABS = [
   { label: "Explore", href: "/" },
   { label: "Foxers", href: "/search" },
   { label: "Map", href: "/venues/map" },
-  { label: "Republic", href: "/republic" },
+  { label: "Foxer Community", href: "/republic" },
 ];
 
 export default function LandingHeader({
@@ -78,17 +79,30 @@ export default function LandingHeader({
               {NAV_TABS.map((tab) => {
                 const active = isTabActive(tab.href);
                 return (
-                  <Link
-                    key={tab.href}
-                    href={tab.href}
-                    className={
-                      active
-                        ? "px-6 py-2.5 rounded-full text-sm font-bold text-black bg-[#ccff00] hover:bg-[#b8e600] hover:shadow-[0_0_15px_rgba(204,255,0,0.5)] transition-all transform hover:-translate-y-0.5"
-                        : "px-6 py-2.5 rounded-full text-sm font-medium text-white/70 hover:text-white hover:bg-white/10 transition-all hover:scale-105"
-                    }
-                  >
-                    {tab.label}
-                  </Link>
+                  <div key={tab.href} className="relative">
+                    <Link
+                      href={tab.href}
+                      className={
+                        active
+                          ? "px-6 py-2.5 rounded-full text-sm font-bold text-black bg-[#ccff00] hover:bg-[#b8e600] hover:shadow-[0_0_15px_rgba(204,255,0,0.5)] transition-all transform hover:-translate-y-0.5"
+                          : "px-6 py-2.5 rounded-full text-sm font-medium text-white/70 hover:text-white hover:bg-white/10 transition-all hover:scale-105"
+                      }
+                    >
+                      {tab.label}
+                    </Link>
+                    {/* "Soon"-style corner flag — same treatment platforms use
+                        to mark a feature as early/experimental, just labeled
+                        Beta here instead. */}
+                    {tab.href === "/republic" && (
+                      <Badge
+                        variant="partner"
+                        icon={false}
+                        className="pointer-events-none absolute -top-2.5 -right-3 whitespace-nowrap bg-zinc-900 text-[9px] shadow-md"
+                      >
+                        Beta
+                      </Badge>
+                    )}
+                  </div>
                 );
               })}
             </nav>
