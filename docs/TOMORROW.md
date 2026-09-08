@@ -25,10 +25,11 @@ the code; they do not carry the two things most likely to waste your first hour.
 
 ### Where the work lives
 
-**See §0 for the current branches.** As of 7 Sep the live work is the auth
-hardening chain, on six local branches across the two repos, **none of them
-pushed** — so a fresh clone gets `main` and none of it. That is the first thing
-to check before assuming something is missing.
+**See §0 for the current branches.** As of 8 Sep the live work is the auth
+hardening chain, on seven branches across the two repos — **four pushed, three
+local**, and one of the local three has uncommitted work in it. A fresh clone
+gets `main` plus the four. That is the first thing to check before assuming
+something is missing.
 
 The `refactor/api-structure` / `refactor/app-structure` branches this section
 used to name are **merged**, as are `feat/role-assignment` and
@@ -98,40 +99,65 @@ records rather than instructions; grep them, do not read them.
 
 ## 0. In flight — as of 7 Sep
 
-**Auth hardening. Resume at AUTH-05.** The tracked list is
-[`AUTH_HARDENING.md`](./AUTH_HARDENING.md); this is only the pointer.
+**Auth hardening. All six are written; the browser pass is what is left.** The
+tracked list is [`AUTH_HARDENING.md`](./AUTH_HARDENING.md); this is only the
+pointer.
 
-Order is `AUTH-01 → AUTH-02 → AUTH-03 → AUTH-05 → AUTH-04 → AUTH-06`, then the
-auth architecture is **frozen**. AUTH-01, 02, 03 and 04 are done — 04 fell out of
-03 rather than being worked. **Two left, both in the api repo:**
+Order was `AUTH-01 → AUTH-02 → AUTH-03 → AUTH-05 → AUTH-04 → AUTH-06`, and with
+AUTH-05 and AUTH-06 landed on 8 Sep **the auth architecture is frozen** — no
+further changes without a decision recorded in `AUTH_HARDENING.md`.
 
-- [ ] **AUTH-05** — Google sign-in never calls `revokeAllForUser`, so it is the
-      one entry path that escapes one-session-per-account. Roughly one line in
-      `google-auth.service.ts`, matching `auth.service.ts:197`.
-- [ ] **AUTH-06** — two OTP problems found while doing AUTH-01. The plaintext
-      code is logged whenever the mail send fails (`auth.service.ts` lines 81,
-      334, 405) — inside `catch` blocks, labelled `[DEV]`, with **no `isDev`
-      guard**, so it happens in production, next to the address it belongs to.
-      And `generateOTP` uses `Math.random()`; `crypto` is already imported in
-      `otp.utils.ts` with an eslint-disable for being unused.
+What is not done is verification. None of AUTH-02, 03 or 05 has been exercised in
+a browser, and those are the three that unit tests cannot vindicate: the cookie
+relay and the second-device revocation. `VERIFY.md` is the runbook.
 
-### Nothing is pushed. Six local branches, stacked.
+The two that closed on 8 Sep, for the record:
 
-| Repo | Branch | Holds |
-|---|---|---|
-| api | `feat/auth-01-rate-limiting` (off `main`) | AUTH-01 |
-| api | `feat/auth-03-api-cookies` (off the above) | AUTH-03, api half |
-| app | `fix/session-end-consolidation` (off `main`) | endSession consolidation, AdminAuthGuard cleanup, `AUTH_HARDENING.md` |
-| app | `feat/auth-02-proxy-login` (off `main`) | AUTH-02 |
-| app | `feat/auth-03-api-cookies` (off the above) | AUTH-03, app half |
-| app | `docs/auth-hardening-tracking` (off `main`) | this section + `AUTH_HARDENING.md` |
+- [x] **AUTH-05** — Google sign-in now calls `revokeAllForUser` before issuing,
+      so no entry path escapes one-session-per-account. `google-auth.service.ts`,
+      four tests. **Not yet checked from a second device.**
+- [x] **AUTH-06** — the three `[DEV]` OTP logs in `auth.service.ts` are behind
+      `isDev`, so a mail outage in production no longer files each code next to
+      its address; the `console.error` beside each still records the failure.
+      `generateOTP` draws from `crypto.randomInt` across the full six-digit
+      space — the old expression could never produce a code below `100000`.
+      `tests/auth.otp.spec.ts`, seven tests.
 
-api 227 tests green, app 132 green, no lint errors either side. The only
-type-check errors are the two pre-existing `.next/types/validator.ts` ones.
+### Seven branches. Four are pushed, three are not.
+
+Corrected 8 Sep — the previous version of this section said nothing was pushed,
+which stopped being true. `main` also moved under all of them that day (api PR
+#76, app PR #52: follow requests, blocking, private profiles) and was merged into
+the two branches marked below.
+
+| Repo | Branch | Holds | Remote |
+|---|---|---|---|
+| api | `feat/auth-01-rate-limiting` (off `main`) | AUTH-01 | pushed |
+| api | `feat/auth-03-api-cookies` (off the above) | AUTH-03, api half | pushed, `main` merged in |
+| api | `feat/auth-05-google-session-revocation` (off the above) | AUTH-05 **and** AUTH-06 | **local, uncommitted** |
+| app | `fix/session-end-consolidation` (off `main`) | endSession consolidation, AdminAuthGuard cleanup | local only |
+| app | `feat/auth-02-proxy-login` (off `main`) | AUTH-02 | local only |
+| app | `feat/auth-03-api-cookies` (off the above) | AUTH-03, app half | pushed |
+| app | `docs/auth-hardening-tracking` (off `main`) | this section + `AUTH_HARDENING.md` | pushed, `main` merged in |
+
+**AUTH-05 and AUTH-06 share one branch and are not committed.** They are
+independent of each other and of the cookie chain — AUTH-06 touches
+`auth.service.ts` and `otp.utils.ts`, which nothing else in the chain touches —
+so they can be split into two commits off `main` whenever the branch is tidied.
+
+api 221 tests pass with 17 skipped, app 127 green, no lint errors either side.
+Two api specs fail — `event-template.submit` and `waitlist` — but they fail on
+plain `main` too and are unrelated to any of this. The only app type-check
+errors are the two pre-existing `.next/types/validator.ts` ones.
+
+**The api needs `prisma migrate` before it will run.** `main` brought a
+migration and `isPrivate` on `identity.prisma`; `prisma generate` alone is what
+makes `tsc` pass, not what makes the database match.
 
 ### Three things to know before merging any of it
 
-1. **None of AUTH-02 or AUTH-03 has been run in a browser.** A cookie relay is
+1. **None of AUTH-02, AUTH-03 or AUTH-05 has been run in a browser.** A cookie
+   relay, and a revocation that only shows itself on a second device, are
    precisely what unit tests cannot vindicate. `VERIFY.md` and the end-to-end
    sequence in `AUTH_HARDENING.md` matter more here than usual — especially
    watching the rotated cookie values actually change in the Application tab.

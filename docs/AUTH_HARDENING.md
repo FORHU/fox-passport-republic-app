@@ -42,8 +42,8 @@ here so they are not re-opened.
 | AUTH-02 | ✅ | ~~**Login bypasses the proxy**~~ — resolved 2026-09-07. Sign-in and the rest of the pre-session surface share the proxy client; nothing browser-side talks to the API directly for an authenticated concern. | app |
 | AUTH-03 | ✅ | ~~**Cookie policy lives in the app, not the API**~~ — resolved 2026-09-07. The API emits `Set-Cookie` and the proxy relays it; the app composes none. | both |
 | AUTH-04 | ✅ | ~~**`SESSION_MAX_AGE` written out three times**~~ — resolved 2026-09-07, dissolved into AUTH-03. Lifetime derives from `refreshTokenTtlMs()` in the API's config. | app |
-| AUTH-05 | 🟡 | **Google sign-in does not revoke existing sessions**, so it is the one entry path that escapes the one-session-per-account rule. | api |
-| AUTH-06 | 🟡 | **OTP generation and logging** — codes come from `Math.random()`, and the plaintext code is written to the log whenever the mail send fails, in every environment. | api |
+| AUTH-05 | ✅ | ~~**Google sign-in does not revoke existing sessions**~~ — resolved 2026-09-08. The callback revokes before it issues, so every entry path now ends the previous session. | api |
+| AUTH-06 | ✅ | ~~**OTP generation and logging**~~ — resolved 2026-09-08. Codes come from `crypto.randomInt` across the full six-digit space, and the plaintext code reaches a log in development only. | api |
 
 ---
 
@@ -212,11 +212,14 @@ without revoking what came before.
 So one-session-per-account holds for every entry path except this one: signing in
 with Google leaves an existing session alive alongside the new one.
 
-**Do.** Call `revokeAllForUser(user.id)` before issuing tokens in the Google
-callback, matching `auth.service.ts:197`.
+**Done, 2026-09-08.** `revokeAllForUser(user.id)` now runs in the callback
+between signing the access token and issuing the refresh token, matching the
+password path. Four tests in `google-oauth.identity.spec.ts` cover it, one of
+them on ordering: revocation has to land *before* the new token is issued or the
+session revokes itself.
 
-**Done when.** Signing in with Google from a second device ends the first
-device's session, exactly as a password login does.
+**Still to confirm in a browser.** Signing in with Google from a second device
+should end the first device's session. Unit tests cannot vindicate that.
 
 ---
 
@@ -260,6 +263,16 @@ guessable at all.
 **Already correct, leave alone:** codes expire (5-minute Redis TTL), are
 single-use and atomically consumed (`getDel`), and account identifiers are
 normalised.
+
+**Done, 2026-09-08.** `generateOTP` is
+`crypto.randomInt(0, 1_000_000).toString().padStart(6, "0")` and the
+eslint-disable on the `crypto` import is gone. The three `console.log` sites in
+`auth.service.ts` are behind `isDev`; the `console.error` beside each is
+untouched, so production still records that a send failed without recording what
+it was sending. `tests/auth.otp.spec.ts` covers both halves — four of its seven
+tests fail against the old code, including one that drives `forgotPassword`
+through a failing mailer with `isDev` false and asserts neither the code nor the
+address reaches the log.
 
 ---
 
@@ -344,12 +357,13 @@ stateless model and is the price of the row above.
 - [x] **AUTH-03** — Move cookie authorship to the API *(2026-09-07)*
 
 ### 🟡 Fix when convenient
-- [ ] **AUTH-05** — Revoke prior sessions on Google sign-in
+- [x] **AUTH-05** — Revoke prior sessions on Google sign-in *(2026-09-08)*
 - [x] **AUTH-04** — Delete the duplicated `SESSION_MAX_AGE` *(2026-09-07)* — it
       dissolved into AUTH-03 rather than being worked separately, which is what
       putting it last was for
-- [ ] **AUTH-06** — Stop logging OTPs on mail failure; move `generateOTP` to a
-      CSPRNG. Independent of the cookie chain; can be done at any point
+- [x] **AUTH-06** — Stop logging OTPs on mail failure; move `generateOTP` to a
+      CSPRNG *(2026-09-08)* — done off `main` in the end, since it touched
+      nothing the cookie chain touched
 
 ### 🔭 Revisit only if the policy changes
 - [ ] Multi-device sessions → then families, sessions UI, per-device metadata
