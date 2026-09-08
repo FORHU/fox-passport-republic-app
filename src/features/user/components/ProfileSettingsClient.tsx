@@ -557,15 +557,17 @@ function BlockedUsersSection() {
       <div>
         <h2 className="text-lg font-display font-bold mb-1">Blocked Citizens</h2>
         <p className="text-sm text-white/40">
-          Blocked citizens can't send you a new follow request. Unblocking is
-          always available.
+          Blocked citizens can&apos;t send you a new follow request. Unblocking
+          is always available.
         </p>
       </div>
 
       {isLoading ? (
         <p className="text-sm text-white/30">Loading…</p>
       ) : users.length === 0 ? (
-        <p className="text-sm text-white/30">You haven't blocked anyone.</p>
+        <p className="text-sm text-white/30">
+          You haven&apos;t blocked anyone.
+        </p>
       ) : (
         <div className="space-y-2">
           {users.map((u) => (
