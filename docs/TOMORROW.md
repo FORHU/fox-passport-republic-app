@@ -25,10 +25,11 @@ the code; they do not carry the two things most likely to waste your first hour.
 
 ### Where the work lives
 
-**See §0 for the current branches.** As of 8 Sep the live work is the auth
-hardening chain, on seven branches across the two repos — **five pushed, two
-local**, both of the local two in the app. A fresh clone gets `main` plus the
-five. That is the first thing to check before assuming something is missing.
+**See §0 for the current branches**, and `git branch -vv` for what is pushed —
+§0 deliberately no longer counts. As of 8 Sep the live work is the auth
+hardening chain, spread across both repos and **not on `main`**, so a fresh
+clone gets none of it. That is the first thing to check before assuming
+something is missing.
 
 The `refactor/api-structure` / `refactor/app-structure` branches this section
 used to name are **merged**, as are `feat/role-assignment` and
@@ -132,30 +133,55 @@ The two that closed on 8 Sep, for the record:
       space — the old expression could never produce a code below `100000`.
       `tests/auth.otp.spec.ts`, seven tests.
 
-### Seven branches. Five are pushed, two are not.
+### The branches
 
-Corrected 8 Sep — the previous version of this section said nothing was pushed,
-which stopped being true. `main` also moved under all of them that day (api PR
-#76, app PR #52: follow requests, blocking, private profiles) and was merged into
-the two branches marked below. Everything is committed; the two local branches
-simply have no remote yet.
+**`git branch -vv` in each repo is the authority, not this table.** It has been
+corrected three times in one day and was wrong within the hour each time — a
+count of what is pushed goes stale the moment anyone pushes. What is worth
+writing down is which branch holds which work and what depends on what; the
+remote state is a lookup.
 
-| Repo | Branch | Holds | Remote |
-|---|---|---|---|
-| api | `feat/auth-01-rate-limiting` (off `main`) | AUTH-01 | pushed |
-| api | `feat/auth-03-api-cookies` (off the above) | AUTH-03, api half | pushed, `main` merged in |
-| api | `feat/auth-05-google-session-revocation` (off the above) | AUTH-05 **and** AUTH-06 | pushed |
-| app | `fix/session-end-consolidation` (off `main`) | endSession consolidation, AdminAuthGuard cleanup | local only |
-| app | `feat/auth-02-proxy-login` (off `main`) | AUTH-02 | local only |
-| app | `feat/auth-03-api-cookies` (off the above) | AUTH-03, app half | pushed |
-| app | `docs/auth-hardening-tracking` (off `main`) | this section + `AUTH_HARDENING.md` | pushed, `main` merged in |
+**api** — one chain off `main`, plus one unrelated doc branch.
 
-**AUTH-05 and AUTH-06 share one branch, as one commit each.** They are
-independent of each other and of the cookie chain — AUTH-06 touches
-`auth.service.ts` and `otp.utils.ts`, which nothing else in the chain touches —
-so either cherry-picks onto `main` cleanly if they want reviewing separately.
-As it stands the PR stacks on `feat/auth-03-api-cookies` and carries that
-branch's diff until AUTH-03 lands.
+| Branch | Holds |
+|---|---|
+| `feat/auth-01-rate-limiting` | AUTH-01 |
+| `feat/auth-03-api-cookies` (off the above) | AUTH-03, api half. `main` merged in 8 Sep |
+| `feat/auth-05-google-session-revocation` (off the above) | AUTH-05 and AUTH-06, one commit each |
+| `docs/test-suite-wipes-dev-db` (off `main`) | the GOTCHAS entry. Unrelated to auth, can land on its own |
+
+Merging the tip lands all four auth items at once — the chain is linear.
+
+**app** — one code branch and one docs branch, both off `main`.
+
+| Branch | Holds |
+|---|---|
+| `feat/auth-03-api-cookies` | AUTH-02, AUTH-03, and the session-end work merged in 8 Sep |
+| `docs/auth-hardening-tracking` | this file, `AUTH_HARDENING.md`, `ARCHITECTURE.md`, `VERIFY.md`. `main` merged in |
+
+`fix/session-end-consolidation` and `feat/auth-02-proxy-login` still exist
+locally but are **fully contained** in `feat/auth-03-api-cookies` — redundant,
+not pending. Delete them or leave them; they hold nothing the code branch lacks.
+
+The `shared/lib/axios.ts` collision the earlier version of this section warned
+about is **resolved**, in that merge. Both branches had rewritten the 401
+interceptor: the session-end structure won, using AUTH-02's shared
+`isPreSessionAuthPath` rather than its own pair of `url.includes` checks.
+
+**`AUTH_HARDENING.md` lives only on the docs branch.** The session-end branch
+carried its own older copy, which made an add/add conflict whose wrong
+resolution would have reverted the AUTH-05/06 closure; it was removed from the
+code branch on 8 Sep. If it reappears on a code branch, that is the bug.
+
+api 238 tests, app 140. Two api specs that used to fail — `event-template.submit`
+and `waitlist` — pass since the pending migrations were applied; see GOTCHAS 7b
+for what that cost.
+
+**AUTH-06 is independent of the cookie chain** — it touches
+`auth.service.ts` and `otp.utils.ts`, which nothing else in the chain does — so
+it cherry-picks onto `main` cleanly if it wants reviewing on its own. As it
+stands the PR stacks on `feat/auth-03-api-cookies` and carries that branch's
+diff until AUTH-03 lands.
 
 api 221 tests pass with 17 skipped, app 127 green, no lint errors either side.
 Two api specs fail — `event-template.submit` and `waitlist` — but they fail on
