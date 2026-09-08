@@ -115,7 +115,7 @@ ever exercised in production.
 
 ---
 
-### AUTH-02 🟠 · Login bypasses the proxy
+### AUTH-02 ✅ · Login bypasses the proxy — resolved 2026-09-07
 
 **Now.** [`app/src/features/auth/hooks/useAuth.ts:15-21`](../src/features/auth/hooks/useAuth.ts)
 creates its own axios instance on `config.apiUrl` with `withCredentials: true`.
@@ -135,7 +135,7 @@ concern; sign-in works end to end.
 
 ---
 
-### AUTH-03 🟠 · Move cookie authorship to the API
+### AUTH-03 ✅ · Move cookie authorship to the API — resolved 2026-09-07
 
 **Now.** The API never touches cookies — no `cookie-parser`, tokens returned in
 JSON, `authenticate` reads `Authorization: Bearer` only. The app composes all
@@ -183,7 +183,7 @@ consumes them yet. Live sessions survive because names and format do not change.
 
 ---
 
-### AUTH-04 🟡 · Cookie lifetime is hand-copied
+### AUTH-04 ✅ · Cookie lifetime is hand-copied — resolved 2026-09-07
 
 **Now.** `SESSION_MAX_AGE = 7 * 24 * 60 * 60` appears in
 [`auth-actions.ts:23`](../src/shared/lib/server/auth-actions.ts) and
@@ -202,7 +202,7 @@ restate it.
 
 ---
 
-### AUTH-05 🟡 · Google sign-in does not revoke existing sessions
+### AUTH-05 ✅ · Google sign-in does not revoke existing sessions — resolved 2026-09-08
 
 **Now.** `revokeAllForUser` is called on password login, password reset, password
 change, and admin role assignment. It is **not** called on the Google path — see
@@ -223,7 +223,7 @@ should end the first device's session. Unit tests cannot vindicate that.
 
 ---
 
-### AUTH-06 🟡 · OTP generation and logging
+### AUTH-06 ✅ · OTP generation and logging — resolved 2026-09-08
 
 Found while doing AUTH-01. Two separate problems in the same area; the second is
 the one that actually leaks something today.

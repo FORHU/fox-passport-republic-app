@@ -26,10 +26,9 @@ the code; they do not carry the two things most likely to waste your first hour.
 ### Where the work lives
 
 **See §0 for the current branches.** As of 8 Sep the live work is the auth
-hardening chain, on seven branches across the two repos — **four pushed, three
-local**, and one of the local three has uncommitted work in it. A fresh clone
-gets `main` plus the four. That is the first thing to check before assuming
-something is missing.
+hardening chain, on seven branches across the two repos — **five pushed, two
+local**, both of the local two in the app. A fresh clone gets `main` plus the
+five. That is the first thing to check before assuming something is missing.
 
 The `refactor/api-structure` / `refactor/app-structure` branches this section
 used to name are **merged**, as are `feat/role-assignment` and
@@ -123,27 +122,30 @@ The two that closed on 8 Sep, for the record:
       space — the old expression could never produce a code below `100000`.
       `tests/auth.otp.spec.ts`, seven tests.
 
-### Seven branches. Four are pushed, three are not.
+### Seven branches. Five are pushed, two are not.
 
 Corrected 8 Sep — the previous version of this section said nothing was pushed,
 which stopped being true. `main` also moved under all of them that day (api PR
 #76, app PR #52: follow requests, blocking, private profiles) and was merged into
-the two branches marked below.
+the two branches marked below. Everything is committed; the two local branches
+simply have no remote yet.
 
 | Repo | Branch | Holds | Remote |
 |---|---|---|---|
 | api | `feat/auth-01-rate-limiting` (off `main`) | AUTH-01 | pushed |
 | api | `feat/auth-03-api-cookies` (off the above) | AUTH-03, api half | pushed, `main` merged in |
-| api | `feat/auth-05-google-session-revocation` (off the above) | AUTH-05 **and** AUTH-06 | **local, uncommitted** |
+| api | `feat/auth-05-google-session-revocation` (off the above) | AUTH-05 **and** AUTH-06 | pushed |
 | app | `fix/session-end-consolidation` (off `main`) | endSession consolidation, AdminAuthGuard cleanup | local only |
 | app | `feat/auth-02-proxy-login` (off `main`) | AUTH-02 | local only |
 | app | `feat/auth-03-api-cookies` (off the above) | AUTH-03, app half | pushed |
 | app | `docs/auth-hardening-tracking` (off `main`) | this section + `AUTH_HARDENING.md` | pushed, `main` merged in |
 
-**AUTH-05 and AUTH-06 share one branch and are not committed.** They are
+**AUTH-05 and AUTH-06 share one branch, as one commit each.** They are
 independent of each other and of the cookie chain — AUTH-06 touches
 `auth.service.ts` and `otp.utils.ts`, which nothing else in the chain touches —
-so they can be split into two commits off `main` whenever the branch is tidied.
+so either cherry-picks onto `main` cleanly if they want reviewing separately.
+As it stands the PR stacks on `feat/auth-03-api-cookies` and carries that
+branch's diff until AUTH-03 lands.
 
 api 221 tests pass with 17 skipped, app 127 green, no lint errors either side.
 Two api specs fail — `event-template.submit` and `waitlist` — but they fail on
