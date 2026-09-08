@@ -1,18 +1,25 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { Clock, LogOut } from "lucide-react";
+import { Clock, LogOut, Loader2 } from "lucide-react";
 
 interface SessionTimeoutModalProps {
   isOpen: boolean;
   onStayLoggedIn: () => void;
   onLogout: () => void;
+  /**
+   * Set while `onLogout` is in flight. Signing out awaits a round trip to
+   * /auth/logout before the page navigates, so without this the dialog sits
+   * there looking untouched and invites a second click.
+   */
+  isLoggingOut?: boolean;
 }
 
 export default function SessionTimeoutModal({
   isOpen,
   onStayLoggedIn,
   onLogout,
+  isLoggingOut = false,
 }: SessionTimeoutModalProps) {
   const [secondsLeft, setSecondsLeft] = useState(120);
   const startTimeRef = React.useRef(0);
@@ -63,16 +70,22 @@ export default function SessionTimeoutModal({
         <div className="flex gap-3">
           <button
             onClick={onStayLoggedIn}
-            className="flex-1 py-2.5 rounded-xl bg-[#ccff00] text-black font-bold text-sm hover:opacity-90 active:scale-95 transition-all"
+            disabled={isLoggingOut}
+            className="flex-1 py-2.5 rounded-xl bg-[#ccff00] text-black font-bold text-sm hover:opacity-90 active:scale-95 transition-all disabled:opacity-40 disabled:pointer-events-none"
           >
             Stay Logged In
           </button>
           <button
             onClick={onLogout}
-            className="flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl bg-white/5 text-white/50 font-semibold text-sm hover:bg-white/10 hover:text-white active:scale-95 transition-all"
+            disabled={isLoggingOut}
+            className="flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl bg-white/5 text-white/50 font-semibold text-sm hover:bg-white/10 hover:text-white active:scale-95 transition-all disabled:opacity-40 disabled:pointer-events-none"
           >
-            <LogOut size={14} />
-            Log Out
+            {isLoggingOut ? (
+              <Loader2 size={14} className="animate-spin" />
+            ) : (
+              <LogOut size={14} />
+            )}
+            {isLoggingOut ? "Signing out…" : "Log Out"}
           </button>
         </div>
       </div>
