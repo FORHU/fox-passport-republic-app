@@ -12,6 +12,10 @@ import { createMatch } from "@/features/match/api/matches";
 import { toast } from "sonner";
 import { toastRequireLogin } from "@/shared/lib/toast";
 import { fetchFoxerById } from "@/shared/api/foxers";
+import {
+  fetchEventTemplateById,
+  EventTemplateDetail,
+} from "@/features/event/api/event-templates";
 import DateRangePicker, {
   diffDays,
   formatDate,
@@ -28,7 +32,13 @@ interface Foxer {
   styleDescriptions: Record<string, string>;
   styleImages: Record<string, string>;
   styleCategories: Record<string, string>;
+  styleTemplateIds: Record<string, string>;
   basePrice: number;
+}
+
+interface ResourceOwner {
+  name: string;
+  avatar: string;
 }
 
 function getRoleLabel(roleType: string[]): string {
@@ -36,6 +46,12 @@ function getRoleLabel(roleType: string[]): string {
   if (roleType.includes("gearFoxer")) return "Gear Foxer";
   if (roleType.includes("serviceFoxer")) return "Talent Foxer";
   return "Foxer";
+}
+
+function foxerAvatarUrl(imgId: string | null | undefined, name: string) {
+  return imgId
+    ? `https://fox-passport-republic-assets.s3.ap-southeast-1.amazonaws.com/${imgId}`
+    : `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=ccff00&color=000`;
 }
 
 const MatchConfig: React.FC = () => {
@@ -52,6 +68,13 @@ const MatchConfig: React.FC = () => {
   const [foxer, setFoxer] = useState<Foxer | null>(null);
   const [isLoadingFoxers, setIsLoadingFoxers] = useState(true);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [detailsStyle, setDetailsStyle] = useState<string | null>(null);
+  const [templateDetail, setTemplateDetail] =
+    useState<EventTemplateDetail | null>(null);
+  const [templateDetailLoading, setTemplateDetailLoading] = useState(false);
+  const [resourceOwners, setResourceOwners] = useState<
+    Record<string, ResourceOwner>
+  >({});
 
   useEffect(() => {
     if (!foxerId) return;
@@ -67,11 +90,13 @@ const MatchConfig: React.FC = () => {
         const styleDescriptions: Record<string, string> = {};
         const styleImages: Record<string, string> = {};
         const styleCategories: Record<string, string> = {};
+        const styleTemplateIds: Record<string, string> = {};
         if (isEventFoxer) {
           templates.forEach((t) => {
             styleDescriptions[t.name] = t.description ?? "";
             styleImages[t.name] = t.images?.[0]?.url ?? "";
             styleCategories[t.name] = t.category ?? "";
+            styleTemplateIds[t.name] = t.id;
           });
         } else {
           services.forEach((s) => {
@@ -90,13 +115,12 @@ const MatchConfig: React.FC = () => {
           role: getRoleLabel(u.roleType ?? []),
           rating: 0,
           reviews: 0,
-          avatar: u.imgId
-            ? `https://fox-passport-republic-assets.s3.ap-southeast-1.amazonaws.com/${u.imgId}`
-            : `https://ui-avatars.com/api/?name=${encodeURIComponent(u.name)}&background=ccff00&color=000`,
+          avatar: foxerAvatarUrl(u.imgId, u.name),
           styles: styles.length > 0 ? styles : [u.name + "'s Package"],
           styleDescriptions,
           styleImages,
           styleCategories,
+          styleTemplateIds,
           basePrice,
         });
       })
@@ -106,6 +130,54 @@ const MatchConfig: React.FC = () => {
 
   const nextStep = () => setStep((prev) => Math.min(prev + 1, 4));
   const prevStep = () => setStep((prev) => Math.max(prev - 1, 1));
+
+  const openPackageDetails = async (style: string) => {
+    setSelectedStyle(style);
+    const templateId = foxer?.styleTemplateIds[style];
+    if (!templateId) return;
+
+    setDetailsStyle(style);
+    setTemplateDetail(null);
+    setTemplateDetailLoading(true);
+    try {
+      const detail = await fetchEventTemplateById(templateId);
+      setTemplateDetail(detail);
+
+      const ownerIds = Array.from(
+        new Set(
+          [
+            ...(detail.templateVenues ?? []).map((tv) => tv.venue?.mayorId),
+            ...(detail.templateAssets ?? []).map((ta) => ta.asset?.ownerId),
+            ...(detail.templateServices ?? []).map(
+              (ts) => ts.service?.ownerId,
+            ),
+          ].filter((id): id is string => Boolean(id)),
+        ),
+      );
+      const missing = ownerIds.filter((id) => !resourceOwners[id]);
+      if (missing.length > 0) {
+        const fetched = await Promise.all(
+          missing.map((id) => fetchFoxerById(id).catch(() => null)),
+        );
+        setResourceOwners((prev) => {
+          const next = { ...prev };
+          fetched.forEach((f, i) => {
+            if (f) {
+              next[missing[i]] = {
+                name: f.name,
+                avatar: foxerAvatarUrl(f.imgId, f.name),
+              };
+            }
+          });
+          return next;
+        });
+      }
+    } catch {
+      toast.error("Could not load package details");
+    } finally {
+      setTemplateDetailLoading(false);
+    }
+  };
 
   if (isLoadingFoxers || !foxer) {
     return (
@@ -206,7 +278,7 @@ const MatchConfig: React.FC = () => {
                     return (
                       <button
                         key={style}
-                        onClick={() => setSelectedStyle(style)}
+                        onClick={() => openPackageDetails(style)}
                         className={`rounded-[2rem] border transition-all duration-300 text-left flex flex-col overflow-hidden group ${isSelected ? "border-accent shadow-glow-accent" : "border-white/5 hover:border-white/20"}`}
                       >
                         {/* Image */}
@@ -644,6 +716,161 @@ const MatchConfig: React.FC = () => {
           </AnimatePresence>
         </div>
       </main>
+
+      <AnimatePresence>
+        {detailsStyle && foxer && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-999 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4"
+            onClick={() => setDetailsStyle(null)}
+          >
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 10 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 10 }}
+              onClick={(e) => e.stopPropagation()}
+              className="bg-[#0f111a] border border-white/10 rounded-[2rem] p-8 max-w-2xl w-full max-h-[85vh] overflow-y-auto space-y-8"
+            >
+              <div className="flex items-start justify-between gap-4">
+                <div>
+                  <p className="text-[10px] font-bold uppercase tracking-widest text-accent/70 mb-1">
+                    What&apos;s Included
+                  </p>
+                  <h3 className="text-2xl font-display font-bold text-white leading-snug">
+                    {detailsStyle}
+                  </h3>
+                  <p className="text-sm text-white/50 mt-2 leading-relaxed">
+                    The venue, services, and equipment {foxer.name} lined up
+                    for this package — each supplied by the Foxer who owns it.
+                  </p>
+                </div>
+                <button
+                  onClick={() => setDetailsStyle(null)}
+                  className="shrink-0 h-10 w-10 rounded-full bg-white/5 hover:bg-white/10 flex items-center justify-center text-white/60"
+                >
+                  <span className="material-symbols-outlined">close</span>
+                </button>
+              </div>
+
+              {templateDetailLoading && (
+                <div className="flex items-center justify-center py-10">
+                  <div className="w-8 h-8 border-4 border-accent/20 border-t-accent rounded-full animate-spin" />
+                </div>
+              )}
+
+              {!templateDetailLoading &&
+                templateDetail &&
+                [
+                  {
+                    label: "Venue",
+                    items: (templateDetail.templateVenues ?? [])
+                      .map((tv) => tv.venue)
+                      .filter(Boolean)
+                      .map((v) => ({ ...v, ownerId: v.mayorId })),
+                  },
+                  {
+                    label: "Services",
+                    items: (templateDetail.templateServices ?? [])
+                      .map((ts) => ts.service)
+                      .filter(Boolean),
+                  },
+                  {
+                    label: "Equipment",
+                    items: (templateDetail.templateAssets ?? [])
+                      .map((ta) => ta.asset)
+                      .filter(Boolean),
+                  },
+                ].map(({ label, items }) =>
+                  items.length > 0 ? (
+                    <div key={label} className="space-y-3">
+                      <h4 className="text-xs font-bold uppercase tracking-widest text-white/40">
+                        {label}
+                      </h4>
+                      <div className="grid sm:grid-cols-2 gap-3">
+                        {items.map((item) => {
+                          const owner = resourceOwners[item.ownerId];
+                          return (
+                            <div
+                              key={item.id}
+                              className="flex gap-3 p-3 rounded-2xl bg-white/3 border border-white/5"
+                            >
+                              <div className="h-14 w-14 shrink-0 rounded-xl overflow-hidden bg-white/5">
+                                {item.images?.[0]?.url ? (
+                                  <img
+                                    src={item.images[0].url}
+                                    alt={item.name}
+                                    className="w-full h-full object-cover"
+                                  />
+                                ) : (
+                                  <div className="w-full h-full flex items-center justify-center">
+                                    <span className="material-symbols-outlined text-white/20 text-xl">
+                                      category
+                                    </span>
+                                  </div>
+                                )}
+                              </div>
+                              <div className="min-w-0">
+                                <p className="text-sm font-bold text-white truncate">
+                                  {item.name}
+                                </p>
+                                <p className="text-[10px] uppercase tracking-wide text-accent/70">
+                                  {item.category}
+                                </p>
+                                {item.price > 0 && (
+                                  <p className="text-xs text-white/50 mt-0.5">
+                                    ₱{item.price.toLocaleString()}
+                                    {item.billingRate
+                                      ? ` / ${item.billingRate}`
+                                      : ""}
+                                  </p>
+                                )}
+                                <p className="text-[10px] text-white/30 mt-1 truncate">
+                                  Supplied by{" "}
+                                  {owner?.name ?? "another Foxer"}
+                                </p>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  ) : null,
+                )}
+
+              {!templateDetailLoading &&
+                templateDetail &&
+                (templateDetail.templateVenues ?? []).length === 0 &&
+                (templateDetail.templateServices ?? []).length === 0 &&
+                (templateDetail.templateAssets ?? []).length === 0 && (
+                  <p className="text-sm text-white/40 text-center py-4">
+                    This package doesn&apos;t have any venue, service, or
+                    equipment connections attached yet.
+                  </p>
+                )}
+
+              <div className="flex justify-center gap-4 pt-2">
+                <button
+                  onClick={() => setDetailsStyle(null)}
+                  className="px-8 py-4 rounded-full border border-white/10 hover:bg-white/5 transition-colors text-white"
+                >
+                  Keep Browsing
+                </button>
+                <button
+                  onClick={() => {
+                    setDetailsStyle(null);
+                    nextStep();
+                  }}
+                  className="btn-neon px-12 py-4 rounded-full bg-accent text-black font-bold"
+                >
+                  I want something like this
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       <AnimatePresence>
         {showSuccessModal && (

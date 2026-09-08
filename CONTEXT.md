@@ -114,6 +114,14 @@ _Avoid_: Host fee, commission
 **Platform Fee**
 The percentage the platform takes on every transaction, added on top of (itemsTotal + Host Markup). Not carved out of any role's earnings.
 
+**Marketplace**
+The platform-wide pool of registered, available Venues, Assets, and Services any Citizen or Foxer can browse, independent of any Event Template. Two existing views already cover it: foxer-grouped (`/search`, browsing Foxers as profiles — currently missing a VenueFoxer section) and item-grouped (`GET /venues` / `/asset` / `/service`, the same source an EventFoxer's own Event Template builder already browses). A Swap reuses the item-grouped view, filtered to the category being replaced.
+_Avoid_: Search (that's one view of the Marketplace, not the concept itself), Directory
+
+**Swap**
+A citizen's request, made while browsing an Event Template's proposed package (before submitting a Match Request), to replace one of that Template's attached items (Venue, Asset, or Service) with a same-category alternative picked from the Marketplace — e.g. swapping a Template's included florist Service for a different ServiceFoxer's florist listing. Scoped to same-category alternatives only, not a free-for-all browse. A Match Request may carry any number of Swaps, submitted as structured data (not free text) so the EventFoxer can review and click through to each exact replacement. The original, published Event Template is never modified by a Swap — it stays intact for other Citizens to book as-is. Estimated cost recalculates using the same Host Markup formula against the replacement item's price. The EventFoxer accepts or declines the whole Match Request (Swaps included) — there is no separate per-Swap approval state; disagreements are worked out over the Match's chat before a decision is made. An accepted Swap attaches its outside item directly (by id), the same way Event Template building already works — it does not require a Foxer↔Foxer Match with the outside supplier first.
+_Avoid_: Substitution, replacement (use Swap)
+
 **Match**
 A confirmed two-way connection between any two platform participants. The same entity covers two collaboration patterns:
 - *Citizen ↔ Foxer* — a Citizen selects and connects with a Foxer; leads toward a Booking.

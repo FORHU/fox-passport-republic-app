@@ -1,6 +1,7 @@
 /* eslint-disable @next/next/no-img-element */
 "use client";
 
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import type { ProviderRow } from "@/features/search/api/search";
 import SearchPagination from "./SearchPagination";
@@ -18,7 +19,7 @@ function BentoColumn({
 }) {
   const router = useRouter();
   return (
-    <div className="bg-[#0f1018] border border-white/10 rounded-3xl p-5 space-y-3 shrink-0 w-[85vw] max-w-85 sm:w-auto sm:max-w-none snap-center">
+    <div className="bg-[#0f1018] border border-white/10 rounded-3xl p-5 space-y-3">
       <div className="flex items-center gap-2 pb-2 border-b border-white/10">
         <span className="material-symbols-outlined text-[#ccff00] text-[20px]">
           {icon}
@@ -95,6 +96,8 @@ export default function GearServiceBento({
   totalPages,
   onPageChange,
 }: GearServiceBentoProps) {
+  const [tab, setTab] = useState<"gear" | "service">("gear");
+
   return (
     <section className="space-y-6">
       <div className="flex items-center gap-4">
@@ -105,7 +108,60 @@ export default function GearServiceBento({
         <div className="h-px flex-1 bg-white/10" />
       </div>
 
-      <div className="flex overflow-x-auto gap-4 pb-4 snap-x snap-mandatory hide-scrollbar sm:grid sm:grid-cols-2 sm:gap-6 sm:pb-0 sm:overflow-visible">
+      {/* Mobile: a toggle picks which list is shown, instead of swiping
+          between two side-by-side columns that only fit one at a time. */}
+      <div className="sm:hidden space-y-4">
+        <div className="flex items-center gap-1 p-1 rounded-2xl bg-white/5 border border-white/10">
+          {(
+            [
+              { key: "gear", label: "Gear Foxers", icon: "audio_file", count: gearItems.length },
+              { key: "service", label: "Service Foxers", icon: "design_services", count: serviceItems.length },
+            ] as const
+          ).map((t) => (
+            <button
+              key={t.key}
+              type="button"
+              onClick={() => setTab(t.key)}
+              className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-sm font-bold transition-all ${
+                tab === t.key
+                  ? "bg-[#ccff00] text-black"
+                  : "text-white/50 hover:text-white"
+              }`}
+            >
+              <span className="material-symbols-outlined text-[18px]">
+                {t.icon}
+              </span>
+              {t.label}
+              <span
+                className={`text-xs ${
+                  tab === t.key ? "text-black/60" : "text-white/30"
+                }`}
+              >
+                {t.count}
+              </span>
+            </button>
+          ))}
+        </div>
+
+        {tab === "gear" ? (
+          <BentoColumn
+            title="Gear Foxers"
+            icon="audio_file"
+            rows={gearItems}
+            loading={isFetching && gearItems.length === 0}
+          />
+        ) : (
+          <BentoColumn
+            title="Service Foxers"
+            icon="design_services"
+            rows={serviceItems}
+            loading={isFetching && serviceItems.length === 0}
+          />
+        )}
+      </div>
+
+      {/* Desktop: both columns side by side, no toggle needed. */}
+      <div className="hidden sm:grid sm:grid-cols-2 sm:gap-6">
         <BentoColumn
           title="Gear Foxers"
           icon="audio_file"

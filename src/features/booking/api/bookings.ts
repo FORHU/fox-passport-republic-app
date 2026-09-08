@@ -287,6 +287,35 @@ export async function fetchUserBookings(
   };
 }
 
+// Bookings other citizens made on events *you* organize — the counterpart to
+// fetchUserBookings, which only ever returns bookings you made yourself.
+export async function fetchReceivedBookings(
+  hostId: string,
+  page = 1,
+  limit = 4,
+): Promise<{
+  bookings: any[];
+  pagination: {
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+  };
+}> {
+  const resp = await api.get(
+    `/bookings?hostId=${hostId}&page=${page}&limit=${limit}`,
+  );
+  return {
+    bookings: resp.data?.data ?? [],
+    pagination: resp.data?.pagination ?? {
+      page,
+      limit,
+      total: 0,
+      totalPages: 0,
+    },
+  };
+}
+
 export async function fetchFoxerBookings(ownerId: string) {
   const [svcResp, assetResp] = await Promise.all([
     api.get(`/service/bookings?ownerId=${ownerId}`),

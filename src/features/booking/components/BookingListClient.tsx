@@ -7,7 +7,11 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/shared/auth/useAuthStore";
-import { fetchUserBookings } from "@/features/booking/api/bookings";
+import { useRoleAccess } from "@/shared/auth/useRoleAccess";
+import {
+  fetchUserBookings,
+  fetchReceivedBookings,
+} from "@/features/booking/api/bookings";
 import CancelBookingModal from "@/features/booking/components/CancelBookingModal";
 import { toast } from "sonner";
 import { getDashboardPath } from "@/shared/lib/dashboard-path";
@@ -35,6 +39,8 @@ function isPastDueUnpaid(booking: any) {
 export default function BookingListClient() {
   const router = useRouter();
   const { user } = useAuthStore();
+  const { canManageEvents } = useRoleAccess();
+  const [tab, setTab] = useState<"mine" | "received">("mine");
   const [page, setPage] = useState(1);
   const [cancelTargetId, setCancelTargetId] = useState<string | null>(null);
   const limit = 4;
@@ -50,10 +56,17 @@ export default function BookingListClient() {
    * The key is prefixed `user-bookings`, which is what `TOPIC_QUERY_KEYS` maps
    * `bookings` onto; React Query matches by prefix, so one emit refreshes
    * whichever page is open here and the mobile view besides.
+   *
+   * "received" is a second, independent list: bookings other citizens made on
+   * events *this* user organizes, rather than bookings they made themselves.
+   * Same topic prefix, so it refreshes on the same server-sent events.
    */
   const { data, isPending, isFetching, isError, refetch } = useQuery({
-    queryKey: ["user-bookings", userId, page, limit],
-    queryFn: () => fetchUserBookings(userId as string, page, limit),
+    queryKey: ["user-bookings", tab, userId, page, limit],
+    queryFn: () =>
+      tab === "mine"
+        ? fetchUserBookings(userId as string, page, limit)
+        : fetchReceivedBookings(userId as string, page, limit),
     enabled: Boolean(userId),
     // Paging replaced the whole list with a spinner before; this keeps the
     // previous page on screen under the overlay while the next one loads.
@@ -122,6 +135,32 @@ export default function BookingListClient() {
                 Bookings
               </Link>
             </nav>
+            {canManageEvents && (
+              <div className="hidden md:flex items-center gap-1 bg-black/20 p-1.5 rounded-full border border-white/5">
+                {(
+                  [
+                    { key: "mine", label: "Booked by Me" },
+                    { key: "received", label: "Received" },
+                  ] as const
+                ).map((t) => (
+                  <button
+                    key={t.key}
+                    type="button"
+                    onClick={() => {
+                      setTab(t.key);
+                      setPage(1);
+                    }}
+                    className={`px-4 py-2 rounded-full text-xs font-bold transition-all ${
+                      tab === t.key
+                        ? "bg-accent text-black"
+                        : "text-white/50 hover:text-white"
+                    }`}
+                  >
+                    {t.label}
+                  </button>
+                ))}
+              </div>
+            )}
             <div
               className="h-10 w-10 rounded-full border border-white/10 overflow-hidden cursor-pointer hover:border-accent transition-colors"
               onClick={() => router.push(getDashboardPath(user))}
@@ -155,7 +194,7 @@ export default function BookingListClient() {
               <span className="text-accent font-semibold">My Bookings</span>
             </div>
             <h1 className="text-4xl md:text-5xl font-display font-bold text-white">
-              My Bookings
+              {tab === "mine" ? "My Bookings" : "Bookings Received"}
             </h1>
           </div>
 
@@ -166,17 +205,21 @@ export default function BookingListClient() {
                   book_online
                 </span>
                 <h3 className="text-xl font-bold text-white mb-2">
-                  No bookings yet
+                  {tab === "mine" ? "No bookings yet" : "No bookings received yet"}
                 </h3>
                 <p className="text-text-muted mb-6">
-                  Start by exploring venues and booking your next event.
+                  {tab === "mine"
+                    ? "Start by exploring venues and booking your next event."
+                    : "Once a citizen books one of your events, it'll show up here."}
                 </p>
-                <Link
-                  href="/"
-                  className="inline-block px-8 py-4 rounded-xl bg-accent text-black font-bold hover:shadow-[0_0_20px_rgba(204,255,0,0.4)] transition-all"
-                >
-                  Browse Venues
-                </Link>
+                {tab === "mine" && (
+                  <Link
+                    href="/"
+                    className="inline-block px-8 py-4 rounded-xl bg-accent text-black font-bold hover:shadow-[0_0_20px_rgba(204,255,0,0.4)] transition-all"
+                  >
+                    Browse Venues
+                  </Link>
+                )}
               </div>
             ) : (
               <>
@@ -201,6 +244,7 @@ export default function BookingListClient() {
                           booking={booking}
                           onCancel={setCancelTargetId}
                           pastDueUnpaid
+                          viewerIsHost={tab === "received"}
                         />
                       ))}
                     </div>
@@ -212,6 +256,7 @@ export default function BookingListClient() {
                       key={booking.id}
                       booking={booking}
                       onCancel={setCancelTargetId}
+                      viewerIsHost={tab === "received"}
                     />
                   ))}
                 </div>
@@ -284,10 +329,15 @@ function BookingCard({
   booking,
   onCancel,
   pastDueUnpaid = false,
+  viewerIsHost = false,
 }: {
   booking: any;
   onCancel: (id: string) => void;
   pastDueUnpaid?: boolean;
+  // The viewer organizes this booking's event rather than having made the
+  // booking themselves — cancelling and reviewing are the booker's calls, not
+  // theirs, so those actions are hidden and the booker's name is shown instead.
+  viewerIsHost?: boolean;
 }) {
   const statusInfo = STATUS_LABEL[booking.status] || STATUS_LABEL.pending;
   const eventName = booking.event?.name || "Venue Booking";
@@ -301,6 +351,7 @@ function BookingCard({
   const isCompleted = booking.status === "completed";
   // Cancelling here would just race the auto-cancel sweep — nothing to offer but the notice above.
   const canCancel =
+    !viewerIsHost &&
     !pastDueUnpaid &&
     (booking.status === "pending" || booking.status === "confirmed");
   const noReview = !booking.hasReview;
@@ -338,6 +389,14 @@ function BookingCard({
               {booking.guestCount}{" "}
               {booking.guestCount === 1 ? "guest" : "guests"}
             </p>
+            {viewerIsHost && (
+              <p className="text-text-muted text-sm mt-1 flex items-center gap-2">
+                <span className="material-symbols-outlined text-[14px]">
+                  person
+                </span>
+                Booked by {booking.user?.name || "a citizen"}
+              </p>
+            )}
             <p className="text-text-muted text-xs mt-1 font-mono">
               #{booking.id.slice(0, 12)}
             </p>
@@ -365,7 +424,7 @@ function BookingCard({
         >
           View Details
         </Link>
-        {isCompleted && noReview && (
+        {!viewerIsHost && isCompleted && noReview && (
           <Link
             href={`/reviews/write/${booking.id}`}
             className="px-5 py-2.5 rounded-xl bg-accent text-black font-bold text-xs hover:shadow-[0_0_20px_rgba(204,255,0,0.4)] transition-all"

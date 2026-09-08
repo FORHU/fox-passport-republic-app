@@ -1,8 +1,9 @@
 "use client";
 
 import { useAuthStore } from "@/shared/auth/useAuthStore";
-import { useFollowStatus, useToggleFollow } from "../api/useFollow";
-import { Loader2, UserPlus, UserCheck } from "lucide-react";
+import { useFollowStatus, useSendFollow, useRemoveFollow } from "../api/useFollow";
+import { useBlockStatus } from "@/features/block/api/useBlock";
+import { Loader2, UserPlus, UserCheck, Clock } from "lucide-react";
 import { toast } from "sonner";
 
 interface FollowButtonProps {
@@ -25,48 +26,75 @@ export function FollowButton({
     user ? targetId : undefined,
     initialIsFollowing,
   );
-  const toggleFollow = useToggleFollow();
+  const { data: blockStatus } = useBlockStatus(user ? targetId : undefined);
+  const sendFollow = useSendFollow();
+  const removeFollow = useRemoveFollow();
 
   const isSelf = user?.id === targetId;
 
   if (isSelf) return null;
+  if (blockStatus?.blockedByMe || blockStatus?.blockedMe) return null;
 
-  const isFollowing = status?.following ?? false;
-  const isPending = toggleFollow.isPending;
+  const relation = status?.status ?? "none";
+  const isPending = sendFollow.isPending || removeFollow.isPending;
 
-  const handleToggle = () => {
+  const errorMessage = (e: unknown, fallback: string) =>
+    (e as { response?: { data?: { message?: string } } })?.response?.data
+      ?.message ?? fallback;
+
+  const handleClick = () => {
     if (!user) {
       openLogin();
       return;
     }
 
-    toggleFollow.mutate(targetId, {
-      onError: () => toast.error("Failed to update follow status"),
-    });
+    if (relation === "none") {
+      sendFollow.mutate(targetId, {
+        onError: (e) =>
+          toast.error(errorMessage(e, "Failed to send follow request")),
+      });
+    } else {
+      // Covers both "unfollow" (accepted) and "cancel request" (pending).
+      removeFollow.mutate(targetId, {
+        onError: (e) =>
+          toast.error(errorMessage(e, "Failed to update follow status")),
+      });
+    }
   };
 
   const defaultClasses = compact
     ? "h-8 px-3 rounded-lg text-xs"
     : "h-9 px-4 rounded-xl text-sm";
 
+  const isBusy = isLoading || isPending;
+
   return (
     <button
-      onClick={handleToggle}
-      disabled={isLoading || isPending}
+      onClick={handleClick}
+      disabled={isBusy}
       className={`font-bold flex items-center justify-center gap-2 transition-all disabled:opacity-50 disabled:cursor-not-allowed ${defaultClasses} ${
-        isFollowing
+        relation === "accepted"
           ? "bg-zinc-800 text-zinc-300 hover:bg-zinc-700 border border-zinc-700 hover:border-zinc-500"
-          : "bg-lime-400 text-black hover:bg-lime-300 shadow-[0_0_15px_rgba(204,255,0,0.15)] hover:shadow-[0_0_20px_rgba(204,255,0,0.3)]"
+          : relation === "pending"
+            ? "bg-zinc-800 text-zinc-400 hover:bg-zinc-700 border border-zinc-700"
+            : "bg-lime-400 text-black hover:bg-lime-300 shadow-[0_0_15px_rgba(204,255,0,0.15)] hover:shadow-[0_0_20px_rgba(204,255,0,0.3)]"
       } ${className}`}
     >
-      {isLoading || isPending ? (
+      {isBusy ? (
         <Loader2 className="w-4 h-4 animate-spin" />
-      ) : isFollowing ? (
+      ) : relation === "accepted" ? (
         <UserCheck className="w-4 h-4" />
+      ) : relation === "pending" ? (
+        <Clock className="w-4 h-4" />
       ) : (
         <UserPlus className="w-4 h-4" />
       )}
-      {!compact && (isFollowing ? "Following" : "Follow")}
+      {!compact &&
+        (relation === "accepted"
+          ? "Following"
+          : relation === "pending"
+            ? "Requested"
+            : "Follow")}
     </button>
   );
 }
