@@ -50,6 +50,27 @@ connection, watch the **Messages** pane. That pane is the evidence.
 landed with no way to assign it, so the thing it exists for has never been
 checked in a browser.
 
+**⚠️ These passwords match the database on the machine this was written on, not
+the seeders.** Flagged 8 Sep. Every seeder now sets
+`const SEED_PASSWORD = "Password123!"` — `user.seeder.ts:81` and
+`partner.seeder.ts:13` — so a **fresh clone** that follows §0·0's first commands
+and runs `prisma/seed.ts` gets `Password123!` for every account above and none
+of this column works. Verified against the live database: `admin@example.com`
+and `user@example.com` do take the passwords listed here, so this table is
+correct for an existing database and wrong for a new one. Whichever is intended,
+the two should not disagree.
+
+Two seeded accounts are also missing from the table:
+
+| Account | Password | Is |
+|---|---|---|
+| `multirole@example.com` | see note above | eventFoxer + venueFoxer + serviceFoxer, plus gearFoxer after `partner.seeder` |
+| `partner@example.com` | **unknown on this machine** | all four foxer roles + investor |
+
+`partner@example.com` matches neither `Password123!` nor the pattern the other
+accounts use, so whatever created it did not use the current seeder. Re-seeding
+is what settles it.
+
 ---
 
 ## A. The socket is actually alive

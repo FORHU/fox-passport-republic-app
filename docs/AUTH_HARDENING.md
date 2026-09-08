@@ -347,6 +347,80 @@ stateless model and is the price of the row above.
 
 ---
 
+## 🔍 Browser verification — written 8 Sep, **not yet run**
+
+`TOMORROW.md` pointed at "the end-to-end pass written into `AUTH_HARDENING.md`"
+for months. There wasn't one — `VERIFY.md` is the socket, emit and page-guard
+runbook from earlier work and has no auth section at all. This is that list.
+
+All six items are implemented and 238 api / 132 app tests pass, but AUTH-02,
+AUTH-03 and AUTH-05 are the three a unit test cannot vindicate: a cookie relay
+only fails in a real browser, and a revocation only shows itself on a second
+device.
+
+### Blocked before you start
+
+**AUTH-05 cannot be tested at all right now.** `GOOGLE_CLIENT_ID`,
+`GOOGLE_CLIENT_SECRET` and `GOOGLE_CALLBACK_URL` are unset in the api's `.env`,
+which is why the server prints `⚠️ Google sign-in will fail` at boot. AUTH-05 is
+the Google path, so it needs real OAuth credentials before any of it can be
+exercised. AUTH-01, 02 and 03 are unaffected.
+
+### Which branches
+
+| Repo | Branch | Carries |
+|---|---|---|
+| api | `feat/auth-05-google-session-revocation` | AUTH-01, 03, 05, 06 |
+| app | `feat/auth-03-api-cookies` | AUTH-02, 03 |
+
+The app's docs branch carries no auth code — testing from it exercises `main`'s
+old auth path and proves nothing. `fix/session-end-consolidation` is *not* in
+the app branch above, so logout and session-expiry are still the old path;
+merging the two is the `shared/lib/axios.ts` conflict, so test them separately
+unless you want to resolve it now.
+
+### V1 · AUTH-03 · The cookie reaches the browser
+
+Log in with a password. In DevTools → Application → Cookies, the session cookies
+must be **present on the app's origin**. The Network tab showing `Set-Cookie` on
+the API response is not sufficient — that header landing on the Next server and
+never reaching the browser is precisely the defect that was fixed, so the
+Application tab is the check that means anything.
+
+### V2 · AUTH-03 · Refresh rotates the value, it does not merely persist
+
+Note the refresh cookie's value. Force a refresh (wait out the 15-minute access
+token, or use "sync my account"). The value must **change**. A cookie that
+survives is not proof of anything; a cookie that rotates proves the relay
+carried a new `Set-Cookie` back through the proxy.
+
+### V3 · AUTH-02 · A wrong password costs one attempt, not two
+
+Sign in with a deliberately wrong password. It must count **once** against
+AUTH-01's per-account limit. The proxy refreshes and replays on any 401, so
+before the pre-session endpoint list this spent a refresh token and resubmitted
+the sign-in — two attempts for one click.
+
+### V4 · AUTH-02 · A failed sign-in does not eject you from the modal
+
+Same wrong password. The axios interceptor reads a 401 as a dead session and
+redirects; on the login modal that is wrong, and it should stay put.
+
+### V5 · AUTH-05 · A second device ends the first *(needs Google credentials)*
+
+Sign in with Google on device A, then on device B. A's session must end, exactly
+as a password login already does. Its access token lingers up to 15 minutes by
+design — the accepted consequence recorded above — so check that A cannot
+**refresh**, not that it dies instantly.
+
+### V6 · AUTH-06 · No code in the log
+
+Stop the mailer, trigger a password reset with `NODE_ENV=production`. The log
+must record that a send failed and must **not** contain the code or the address.
+Repeat in development and the code should appear — that affordance is deliberate.
+
+---
+
 ## 🗓️ Prioritized action plan
 
 ### 🔴 Fix immediately

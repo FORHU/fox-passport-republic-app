@@ -108,7 +108,17 @@ further changes without a decision recorded in `AUTH_HARDENING.md`.
 
 What is not done is verification. None of AUTH-02, 03 or 05 has been exercised in
 a browser, and those are the three that unit tests cannot vindicate: the cookie
-relay and the second-device revocation. `VERIFY.md` is the runbook.
+relay and the second-device revocation. The six checks are written out as
+**§ Browser verification** in `AUTH_HARDENING.md` — this document pointed at an
+end-to-end pass "written into `AUTH_HARDENING.md`" that did not exist until
+8 Sep, and `VERIFY.md` covers sockets and page guards, not auth.
+
+**AUTH-05 is blocked.** The api's `.env` has no Google OAuth credentials, so the
+one path AUTH-05 changes cannot be exercised at all until it does. AUTH-02 and
+AUTH-03 are testable now.
+
+**`VERIFY.md`'s account passwords disagree with the seeders** — correct for an
+existing database, wrong for a fresh clone. Flagged in that file.
 
 The two that closed on 8 Sep, for the record:
 
