@@ -21,6 +21,7 @@ export interface UpdateProfilePayload {
   phone?: string;
   profileImage?: string;
   city?: string;
+  isPrivate?: boolean;
 }
 
 export interface ChangePasswordPayload {
