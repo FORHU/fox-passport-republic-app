@@ -19,7 +19,9 @@ here.
 | `api-audit.md` | The record: API, data-fetching and auth findings. 9 open. |
 | `responsive-plan.md` | Responsive and touch backlog. 21 open. |
 | `roles-and-spaces.md` | The Foxer role model and the page split. 13 open. |
-| `app-architecture.md` | Boundary violations + template gaps. 19 open, 150 -> 72. |
+| `app-architecture.md` | Boundary violations + template gaps. 19 open; its counts predate 9 Sep. |
+| `FoxPassportSpatialIntelligence.md` | The spatial vision and target state. |
+| `SPATIAL-PLAN.md` | The spatial counter-plan: what already exists, and the order to build in. |
 
 ---
 
