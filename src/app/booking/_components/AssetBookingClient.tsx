@@ -73,6 +73,21 @@ export default function AssetBookingClient({ assetId }: { assetId: string }) {
     }
   }, [startDate, endDate]);
 
+  // Availability loads after the initial render, so a quantity bumped up
+  // before it resolves needs to be pulled back down once the real stock
+  // count (totalQty) is known.
+  useEffect(() => {
+    if (totalQty > 0 && quantity > totalQty) {
+      setQuantity(totalQty);
+    }
+  }, [totalQty, quantity]);
+
+  // `totalQty` is the owner's total physical stock of this item — asking for
+  // more than that makes every date unavailable regardless of bookings,
+  // which read as a broken/blurry calendar rather than "not enough stock".
+  // Capping the stepper here stops that state from happening at all. `0`
+  // means "not loaded yet", not "no stock", so it's treated as unbounded.
+  const maxQty = totalQty > 0 ? totalQty : undefined;
   const unitPrice = Number(asset?.price ?? 0);
   const days = useMemo(
     () => diffDays(startDate, endDate),
@@ -398,44 +413,6 @@ export default function AssetBookingClient({ assetId }: { assetId: string }) {
                 )}
               </div>
 
-              {/* Quantity */}
-              <div className="glass-card rounded-[2rem] p-8 border border-white/10">
-                <div className="flex items-center gap-3 mb-6">
-                  <span className="material-symbols-outlined text-accent text-2xl">
-                    inventory_2
-                  </span>
-                  <h3 className="text-xl font-display font-bold text-white">
-                    Quantity
-                  </h3>
-                </div>
-                <div className="flex items-center justify-between bg-black/20 p-4 rounded-2xl border border-white/5 max-w-xs">
-                  <button
-                    onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                    className="h-12 w-12 rounded-xl bg-surface-highlight text-white hover:bg-white/10 flex items-center justify-center transition-colors"
-                  >
-                    <span className="material-symbols-outlined text-[18px]">
-                      remove
-                    </span>
-                  </button>
-                  <div className="text-center">
-                    <span className="text-3xl font-bold font-display text-white">
-                      {quantity}
-                    </span>
-                    <span className="text-text-muted text-xs block">
-                      unit{quantity !== 1 ? "s" : ""}
-                    </span>
-                  </div>
-                  <button
-                    onClick={() => setQuantity(quantity + 1)}
-                    className="h-12 w-12 rounded-xl bg-white text-black hover:bg-accent flex items-center justify-center transition-colors"
-                  >
-                    <span className="material-symbols-outlined text-[18px]">
-                      add
-                    </span>
-                  </button>
-                </div>
-              </div>
-
               {/* Fulfillment */}
               <div className="glass-card rounded-[2rem] p-8 border border-white/10 space-y-6">
                 <div className="flex items-center gap-3 mb-2">
@@ -446,6 +423,54 @@ export default function AssetBookingClient({ assetId }: { assetId: string }) {
                     Fulfillment
                   </h3>
                 </div>
+
+                {/* Quantity — only worth a control when there's an actual
+                    choice; a single-unit item has nothing to configure. */}
+                {(maxQty === undefined || maxQty > 1) && (
+                  <div className="flex items-center justify-between bg-black/20 px-4 py-3 rounded-xl border border-white/5">
+                    <div className="flex items-center gap-2">
+                      <span className="material-symbols-outlined text-accent text-[18px]">
+                        inventory_2
+                      </span>
+                      <span className="text-sm font-bold text-white">
+                        Quantity
+                      </span>
+                      {maxQty !== undefined && (
+                        <span className="text-[10px] text-white/30">
+                          ({maxQty} available)
+                        </span>
+                      )}
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <button
+                        onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                        className="h-8 w-8 rounded-lg bg-surface-highlight text-white hover:bg-white/10 flex items-center justify-center transition-colors"
+                      >
+                        <span className="material-symbols-outlined text-[16px]">
+                          remove
+                        </span>
+                      </button>
+                      <span className="text-lg font-bold text-white w-4 text-center">
+                        {quantity}
+                      </span>
+                      <button
+                        onClick={() =>
+                          setQuantity((q) =>
+                            maxQty !== undefined
+                              ? Math.min(maxQty, q + 1)
+                              : q + 1,
+                          )
+                        }
+                        disabled={maxQty !== undefined && quantity >= maxQty}
+                        className="h-8 w-8 rounded-lg bg-white text-black hover:bg-accent flex items-center justify-center transition-colors disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:bg-white"
+                      >
+                        <span className="material-symbols-outlined text-[16px]">
+                          add
+                        </span>
+                      </button>
+                    </div>
+                  </div>
+                )}
 
                 <div className="flex bg-white/5 border border-white/10 rounded-2xl p-1.5">
                   <button

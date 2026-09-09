@@ -46,8 +46,12 @@ export default function VenueDetailClient({
     );
   }, []);
 
-  // Safe fallback pricing conversions
-  const venuePrice = Number(venue.pricing?.[0]?.pricePerDay || 0);
+  // `venue` here is the server-normalized shape from `getVenueById`
+  // (`normalizeVenue` in shared/lib/server/data.ts), not the raw API shape
+  // the `Venue` type describes — it flattens `pricing[0].pricePerDay` down
+  // to a single `price` number and `images` down to `string[]`. Reading the
+  // typed fields directly silently produced ₱0 and broken <img> tags.
+  const venuePrice = Number((venue as any).price || 0);
 
   return (
     <div className="bg-background bg-gradient-dark text-text-main antialiased min-h-screen flex flex-col selection:bg-accent selection:text-black font-body">
@@ -60,7 +64,7 @@ export default function VenueDetailClient({
 
       <LightboxGallery
         isOpen={store.galleryOpen}
-        images={(venue.images || []).map((img) => img.imageUrl)} // 👈 Change to this
+        images={(venue as any).images || []}
         title={venue.title}
         activeIndex={store.activeImageIndex}
         onClose={() => store.setGalleryOpen(false)}
@@ -111,7 +115,7 @@ export default function VenueDetailClient({
           />
 
           <VenueGalleryGrid
-            images={(venue.images || []).map((img) => img.imageUrl)}
+            images={(venue as any).images || []}
             onOpenGallery={store.openGallery}
           />
 

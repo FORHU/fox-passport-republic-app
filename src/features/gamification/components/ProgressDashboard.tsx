@@ -2,6 +2,7 @@
 "use client";
 
 import React, { useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import CircularProgress from "@/features/gamification/components/CircularProgress";
 import { BadgeGrid } from "@/features/gamification/components/BadgeCard";
@@ -56,6 +57,23 @@ export const ProgressDashboard: React.FC<ProgressDashboardProps> = ({
       {showHeader && (
         <div className="flex flex-col lg:flex-row justify-between items-end gap-6 mb-16">
           <div className="space-y-4">
+            {/* This page isn't one of the persistent nav pills in
+                LandingHeader, so without this it's a dead end reachable
+                only via the logo (which drops the "go back" intent and
+                just goes home). Plain text rather than a pill to match —
+                a second same-weight pill right next to the status chip
+                read as visual clutter, two badges competing for attention
+                before the eye even reaches the headline. */}
+            <Link
+              href="/"
+              className="flex items-center gap-1.5 w-fit text-white/40 hover:text-[#ccff00] text-xs font-semibold transition-colors group"
+            >
+              <span className="material-symbols-outlined text-[16px] group-hover:-translate-x-0.5 transition-transform">
+                arrow_back
+              </span>
+              Back to Main Page
+            </Link>
+
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 border border-white/10">
               <span className="w-2 h-2 rounded-full bg-green-500 shadow-[0_0_10px_#22c55e]"></span>
               <span className="text-[10px] font-mono text-white/70 tracking-widest uppercase">

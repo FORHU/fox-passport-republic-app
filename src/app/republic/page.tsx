@@ -31,6 +31,18 @@ const VALID_TABS: FeedTab[] = ["all", "community", "marketplace", "partners"];
 // with a blurred background — on every scroll-triggered post load, search
 // keystroke, or sort toggle in the feed next to it. Takes no props tied to
 // feed state, so it never has a reason to re-render after mount.
+//
+// `md:max-h-[calc(100vh-8.25rem)] md:overflow-y-auto` bounds the sticky
+// column to the viewport and scrolls its own overflow internally (the
+// inline equipment map can make this column taller than the screen) —
+// without a cap, `position: sticky` pins the *whole* oversized column to
+// the top of the viewport while the much taller feed column next to it
+// scrolls, leaving anything past the first screenful of the sidebar (the
+// map, "Republic Shortcuts") stuck below the fold for nearly the entire
+// page scroll, unreachable until the sidebar finally releases near the very
+// bottom of the feed. The trade-off: hovering the sidebar and hovering the
+// feed now scroll two different things, same as any other nested-scroll
+// panel (a contacts list next to a chat pane, etc.).
 const RepublicLeftSidebar = memo(function RepublicLeftSidebar() {
   return (
     <aside className="hidden md:block w-64 xl:w-80 shrink-0 md:sticky md:top-[8.25rem] md:self-start md:max-h-[calc(100vh-8.25rem)] md:overflow-y-auto space-y-4 h-fit [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
@@ -52,7 +64,9 @@ const RepublicLeftSidebar = memo(function RepublicLeftSidebar() {
           for medium screens */}
       <PartnerEquipmentDepotCard
         mapSlot={
-          <PartnerInventoryMap className="h-[360px] w-full rounded-2xl overflow-hidden" />
+          <PartnerInventoryMap
+            className="h-[360px] w-full rounded-2xl overflow-hidden"
+          />
         }
       />
 
@@ -218,9 +232,6 @@ function RepublicFeedContent() {
     [router, activeTab],
   );
 
-  // Sentinel ref for auto-pagination
-  const sentinelRef = useRef<HTMLDivElement>(null);
-
   // Fetch 10 posts at a time. A cursor means this is a "load more" call from
   // the scroll sentinel, so its results append onto what's already on screen
   // — true infinite scroll, the last-loaded post flows straight into the
@@ -290,18 +301,48 @@ function RepublicFeedContent() {
     fetchPosts(activeTab, search, mode, nextCursor);
   }, [nextCursor, loadingMore, loading, activeTab, search, mode, fetchPosts]);
 
-  // ── Auto-pagination sentinel ──────────────────────────────────────────────
-  // IntersectionObserver reports the sentinel's *current* visibility as soon
-  // as observe() runs, before any real scrolling — with only ~10 posts in the
-  // first batch, the list can easily be shorter than the viewport, and that
-  // first synchronous callback alone would advance to the next batch, whose
-  // sentinel does the same, cascading through every batch with no user
-  // interaction. Skipping that one callback and only acting on a later,
-  // genuine visibility change fixes it (same issue and fix as /venues/map's
-  // pagination).
+  // `handleLoadMore` is recreated on every render (it closes over nextCursor/
+  // loading/loadingMore so its own internal guard stays correct), which used
+  // to be a dependency of the observer effect below — so the observer itself
+  // got torn down and rebuilt after every single page load. Each rebuild
+  // reset `isInitialCallback`, and IntersectionObserver re-fires that
+  // synchronous "here's your current visibility" callback the instant
+  // observe() runs again — with the sentinel still inside the generous
+  // 350px rootMargin (easy with ~10 short post cards), the guard meant to
+  // filter that one callback landed on a doomed brand-new observer each
+  // time, so it kept slipping through and immediately loading the next page,
+  // whose completion tore down and rebuilt the observer again — cascading
+  // through every page in one burst instead of stopping to wait for a real
+  // scroll. Routing calls through a ref lets the observer itself be created
+  // exactly once (mount-only deps) while still always invoking the current
+  // `handleLoadMore` closure.
+  const handleLoadMoreRef = useRef(handleLoadMore);
   useEffect(() => {
-    const sentinel = sentinelRef.current;
-    if (!sentinel) return;
+    handleLoadMoreRef.current = handleLoadMore;
+  }, [handleLoadMore]);
+
+  // ── Auto-pagination sentinel ──────────────────────────────────────────────
+  // A callback ref rather than a plain ref + useEffect: the sentinel <div>
+  // only exists in the JSX branch below once `loading` is false and posts
+  // are non-empty, so a mount-once (`[]`-deps) effect would run before that
+  // div ever exists, find nothing to observe, and never run again. A
+  // callback ref instead fires exactly when React actually attaches or
+  // detaches the node — on the real initial mount, and again on each tab/
+  // search/mode change (which remounts this whole branch), but *not* on a
+  // plain load-more, since the sentinel div stays mounted throughout that.
+  //
+  // IntersectionObserver reports the sentinel's *current* visibility as soon
+  // as observe() runs, before any real scrolling — with only ~10 posts in
+  // the first batch, the list can easily be shorter than the viewport, and
+  // that first synchronous callback alone would advance to the next batch.
+  // Skipping that one callback and only acting on a later, genuine
+  // visibility change fixes it (same issue and fix as /venues/map's
+  // pagination).
+  const sentinelObserverRef = useRef<IntersectionObserver | null>(null);
+  const sentinelCallbackRef = useCallback((node: HTMLDivElement | null) => {
+    sentinelObserverRef.current?.disconnect();
+    sentinelObserverRef.current = null;
+    if (!node) return;
 
     let isInitialCallback = true;
     const observer = new IntersectionObserver(
@@ -311,8 +352,8 @@ function RepublicFeedContent() {
           return;
         }
         const [entry] = entries;
-        if (entry.isIntersecting && nextCursor && !loadingMore && !loading) {
-          handleLoadMore();
+        if (entry.isIntersecting) {
+          handleLoadMoreRef.current();
         }
       },
       {
@@ -322,11 +363,9 @@ function RepublicFeedContent() {
       },
     );
 
-    observer.observe(sentinel);
-    return () => {
-      observer.unobserve(sentinel);
-    };
-  }, [nextCursor, loadingMore, loading, handleLoadMore]);
+    observer.observe(node);
+    sentinelObserverRef.current = observer;
+  }, []);
 
   return (
     <div className="min-h-screen bg-[#09090e] text-white pb-36 pt-16 sm:pt-28 selection:bg-lime-400 selection:text-black">
@@ -335,7 +374,7 @@ function RepublicFeedContent() {
 
       <div className="max-w-[1440px] mx-auto px-3 sm:px-6">
         {/* ── LOCKED CONTROL BAR (Slim, docks under the floating header) ─── */}
-        <div className="md:hidden sticky top-16 z-40 py-2.5 bg-[#09090e]/95 backdrop-blur-2xl border-b border-zinc-800/80 -mx-3 px-3 shadow-[0_8px_24px_rgba(0,0,0,0.7)] flex items-center justify-between gap-2">
+        <div className="md:hidden sticky top-16 z-40 py-2.5 bg-[#09090e]/95 backdrop-blur-2xl border-b border-zinc-800/80 -mx-3 px-3 shadow-[0_8px_24px_rgba(0,0,0,0.7)] flex items-center justify-between gap-2 transform-gpu">
           {/* Stream Tabs (Horizontal swipeable pills) */}
           <div className="flex-1 min-w-0">
             <RepublicTabs
@@ -495,7 +534,7 @@ function RepublicFeedContent() {
                 ))}
 
                 {/* Auto-Pagination Sentinel */}
-                <div ref={sentinelRef} className="h-1 w-full" />
+                <div ref={sentinelCallbackRef} className="h-1 w-full" />
 
                 {/* Loading indicator while the next batch fetches */}
                 {loadingMore ? (

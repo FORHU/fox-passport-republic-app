@@ -43,10 +43,12 @@ export function useFollowCounts(userId?: string) {
   });
 }
 
-function useInvalidateFollow() {
+// Handles everything *other* than `followStatus`, which each mutation below
+// manages itself (optimistic set on click, corrected on success/error) —
+// invalidating it here too would just race that with a redundant refetch.
+function useInvalidateFollowRelated() {
   const queryClient = useQueryClient();
   return (targetId: string) => {
-    queryClient.invalidateQueries({ queryKey: ["followStatus", targetId] });
     queryClient.invalidateQueries({ queryKey: ["followCounts", targetId] });
     queryClient.invalidateQueries({ queryKey: ["followCounts"] });
     queryClient.invalidateQueries({ queryKey: ["followList"] });
@@ -55,18 +57,65 @@ function useInvalidateFollow() {
 }
 
 export function useSendFollow() {
-  const invalidate = useInvalidateFollow();
+  const queryClient = useQueryClient();
+  const invalidateRelated = useInvalidateFollowRelated();
+
   return useMutation({
     mutationFn: (targetId: string) => sendFollowRequest(targetId),
-    onSuccess: (_, targetId) => invalidate(targetId),
+    onMutate: async (targetId: string) => {
+      await queryClient.cancelQueries({ queryKey: ["followStatus", targetId] });
+      const previous = queryClient.getQueryData<FollowStatusResult>([
+        "followStatus",
+        targetId,
+      ]);
+      // We don't know client-side whether the target is private (that's a
+      // server-side decision in `sendFollow`), so "pending" is the honest
+      // optimistic guess — it never overclaims a follow that isn't real yet.
+      // `onSuccess` corrects it to "accepted" immediately once the response
+      // is in, which for a public target is typically imperceptible.
+      queryClient.setQueryData<FollowStatusResult>(["followStatus", targetId], {
+        status: "pending",
+        direction: "outgoing",
+      });
+      return { previous };
+    },
+    onError: (_err, targetId, context) => {
+      queryClient.setQueryData(["followStatus", targetId], context?.previous);
+    },
+    onSuccess: (data, targetId) => {
+      queryClient.setQueryData<FollowStatusResult>(["followStatus", targetId], {
+        status: data.status,
+        direction: "outgoing",
+      });
+      invalidateRelated(targetId);
+    },
   });
 }
 
 export function useRemoveFollow() {
-  const invalidate = useInvalidateFollow();
+  const queryClient = useQueryClient();
+  const invalidateRelated = useInvalidateFollowRelated();
+
   return useMutation({
     mutationFn: (targetId: string) => removeFollow(targetId),
-    onSuccess: (_, targetId) => invalidate(targetId),
+    onMutate: async (targetId: string) => {
+      await queryClient.cancelQueries({ queryKey: ["followStatus", targetId] });
+      const previous = queryClient.getQueryData<FollowStatusResult>([
+        "followStatus",
+        targetId,
+      ]);
+      queryClient.setQueryData<FollowStatusResult>(["followStatus", targetId], {
+        status: "none",
+        direction: null,
+      });
+      return { previous };
+    },
+    onError: (_err, targetId, context) => {
+      queryClient.setQueryData(["followStatus", targetId], context?.previous);
+    },
+    onSuccess: (_data, targetId) => {
+      invalidateRelated(targetId);
+    },
   });
 }
 
@@ -78,18 +127,30 @@ export function useFollowRequests(page = 1, limit = 20) {
 }
 
 export function useAcceptFollowRequest() {
-  const invalidate = useInvalidateFollow();
+  const queryClient = useQueryClient();
+  const invalidateRelated = useInvalidateFollowRelated();
   return useMutation({
     mutationFn: (requesterId: string) => acceptFollowRequest(requesterId),
-    onSuccess: (_, requesterId) => invalidate(requesterId),
+    onSuccess: (_, requesterId) => {
+      queryClient.invalidateQueries({
+        queryKey: ["followStatus", requesterId],
+      });
+      invalidateRelated(requesterId);
+    },
   });
 }
 
 export function useDeclineFollowRequest() {
-  const invalidate = useInvalidateFollow();
+  const queryClient = useQueryClient();
+  const invalidateRelated = useInvalidateFollowRelated();
   return useMutation({
     mutationFn: (requesterId: string) => declineFollowRequest(requesterId),
-    onSuccess: (_, requesterId) => invalidate(requesterId),
+    onSuccess: (_, requesterId) => {
+      queryClient.invalidateQueries({
+        queryKey: ["followStatus", requesterId],
+      });
+      invalidateRelated(requesterId);
+    },
   });
 }
 
@@ -102,12 +163,12 @@ export function useFollowing(userId?: string, page = 1, limit = 20) {
   });
 }
 
-export function useFollowSuggestions() {
+export function useFollowSuggestions(page = 1, limit = 10) {
   const { user } = useAuthStore();
 
   return useQuery({
-    queryKey: ["followSuggestions"],
-    queryFn: () => getFollowSuggestions(),
+    queryKey: ["followSuggestions", page, limit],
+    queryFn: () => getFollowSuggestions(page, limit),
     enabled: !!user,
     staleTime: 5 * 60 * 1000, // cache for 5 minutes
   });

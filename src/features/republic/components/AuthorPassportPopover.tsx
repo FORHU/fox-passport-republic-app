@@ -3,6 +3,7 @@ import { FeedAuthor } from "../types";
 import { isPartnerUser } from "@/shared/auth/roles";
 import { FollowButton } from "@/features/follow/components/FollowButton";
 import { Badge } from "@/shared/components/ui/badge";
+import { useFollowCounts } from "@/features/follow/api/useFollow";
 
 interface AuthorPassportPopoverProps {
   author: FeedAuthor;
@@ -36,6 +37,8 @@ export function AuthorPassportPopover({
 
   const badges = author.passport?.userBadges?.map((ub) => ub.badge) ?? [];
   const stampsCount = author.passport?.stamps?.length ?? 0;
+
+  const { data: followCounts } = useFollowCounts(author.id);
 
   return (
     <div className="flex items-center justify-between w-full">
@@ -87,6 +90,16 @@ export function AuthorPassportPopover({
             <span>{author.username ? `@${author.username}` : "Citizen"}</span>
             <span>•</span>
             <span>{dateFormatted}</span>
+
+            {typeof followCounts?.followers === "number" && (
+              <>
+                <span>•</span>
+                <span>
+                  {followCounts.followers}{" "}
+                  {followCounts.followers === 1 ? "Follower" : "Followers"}
+                </span>
+              </>
+            )}
 
             {stampsCount > 0 && (
               <>
