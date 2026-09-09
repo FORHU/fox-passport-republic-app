@@ -1,9 +1,14 @@
 # Tomorrow
 
 **The running order.** Rewritten 2 Sep 2026, revised 4 Sep after `main` took
-role assignment and `feat/map`, and again 7 Sep for the auth hardening chain —
-the previous 916-line version had 47 completed items in it and is in git history
-if the reasoning behind any of them is ever needed.
+role assignment and `feat/map`, again 7 Sep for the auth hardening chain, and
+9 Sep when the API work moved to its own `TOMORROW.md` — the previous 916-line
+version had 47 completed items in it and is in git history if the reasoning
+behind any of them is ever needed.
+
+**This file is the app.** The API has its own running order at
+`../fox-passport-republic-api/docs/TOMORROW.md`; the live work is there, not
+here.
 
 | Document | Role |
 |---|---|
@@ -26,10 +31,11 @@ the code; they do not carry the two things most likely to waste your first hour.
 ### Where the work lives
 
 **See §0 for the current branches**, and `git branch -vv` for what is pushed —
-§0 deliberately no longer counts. As of 8 Sep the live work is the auth
-hardening chain, spread across both repos and **not on `main`**, so a fresh
-clone gets none of it. That is the first thing to check before assuming
-something is missing.
+§0 deliberately no longer counts. As of 9 Sep the live work is **in the API
+repository**, on `feat/redis-backed-rate-limiting`, and it is large: caching,
+the controller extraction, and a test database. A fresh clone of the app gets
+all of the app, and none of that. The app's own unmerged half is
+`feat/auth-03-api-cookies`.
 
 The `refactor/api-structure` / `refactor/app-structure` branches this section
 used to name are **merged**, as are `feat/role-assignment` and
@@ -63,18 +69,23 @@ mid-refactor can be in the broken state, and `prisma migrate reset` fixes it.
 ### First commands
 
 ```
-# api
+# api — see that repo's docs/TOMORROW.md, which is authoritative for it
 pnpm install
 pnpm exec prisma generate          # the client is not committed
 pnpm exec prisma migrate deploy
 pnpm exec tsx prisma/seed.ts
-pnpm validate && pnpm test         # expect: boundaries intact, 198 passing
+pnpm validate
+pnpm exec vitest run               # expect: 313 passing, 27 files, 0 errors
 
 # app
 pnpm install
 pnpm type-check && pnpm test       # expect: clean, 102 passing
 node tools/validate-architecture.mjs   # expect: 72 violations, all one rule
 ```
+
+The API count was 198 here until 9 Sep, and the command carried two
+`--exclude`s because two specs deleted from the development database. Both are
+fixed: that suite has its own database now and runs whole.
 
 **Do not reach for `pnpm db:setup`.** It is
 `prisma generate && prisma migrate dev`, and `migrate dev` is the command that
@@ -97,11 +108,19 @@ records rather than instructions; grep them, do not read them.
 
 ---
 
-## 0. In flight — as of 7 Sep
+## 0. In flight — as of 9 Sep
+
+**The live work is in the API repository**, and its running order is
+[`../fox-passport-republic-api/docs/TOMORROW.md`](../../fox-passport-republic-api/docs/TOMORROW.md).
+Nothing in the app is in flight. What follows is what the app still owes.
 
 **Auth hardening. All six are written; the browser pass is what is left.** The
-tracked list is [`AUTH_HARDENING.md`](./AUTH_HARDENING.md); this is only the
-pointer.
+api half merged to `main` via PR #77 on 8 Sep. **The app half
+(`feat/auth-03-api-cookies`) is pushed and not merged**, so the api's cookie
+authorship is live on `main` while the app's relay is not — which is what
+produced a logout that did not log anyone out. That mismatch is the app's
+oldest open item. The tracked list is
+[`AUTH_HARDENING.md`](./AUTH_HARDENING.md); this is only the pointer.
 
 Order was `AUTH-01 → AUTH-02 → AUTH-03 → AUTH-05 → AUTH-04 → AUTH-06`, and with
 AUTH-05 and AUTH-06 landed on 8 Sep **the auth architecture is frozen** — no
