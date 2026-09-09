@@ -80,7 +80,8 @@ pnpm exec vitest run               # expect: 313 passing, 27 files, 0 errors
 # app
 pnpm install
 pnpm type-check && pnpm test       # expect: clean, 102 passing
-node tools/validate-architecture.mjs   # expect: 72 violations, all one rule
+node tools/validate-architecture.mjs   # expect: 20 violations, all one rule
+                                       # (it exits non-zero; that is normal here)
 ```
 
 The API count was 198 here until 9 Sep, and the command carried two
@@ -93,9 +94,15 @@ offers to reset the database when it sees drift — it wiped 148 users and
 everything else on 4 Sep. It is harmless against a genuinely empty database, but
 the explicit commands above never prompt, so use them and keep the habit.
 
-**72 is the expected number in the app, not a regression.** The baseline was
-150; the shared-kernel rule is at zero and stays there. If that number goes
-*up*, something regressed — `app-architecture.md` has the breakdown.
+**20 is the expected number in the app, not a regression.** Measured 9 Sep; the
+baseline was 150, then 72, and every one of the 20 is the Feature Isolation
+Boundary rule - the shared-kernel rule is at zero and stays there. The command
+exits non-zero at 20, so a red run is the normal state here and only the count
+carries information. If it goes *up*, something regressed.
+
+**It went up by one on 9 Sep.** `features/republic/components/AuthorPassportPopover.tsx`
+arrived with PR #55 importing across a feature boundary, taking 19 to 20. The
+counts in `app-architecture.md` are older than this line.
 
 ### Read first, in this order
 
