@@ -10,11 +10,17 @@ export interface Favorite {
     name: string;
     city?: string;
     state?: string;
+    price?: number | string;
+    billingRate?: string;
     images?: { imageUrl?: string; url?: string; isPrimary?: boolean }[];
   };
   event?: {
     id: string;
     name: string;
+    city?: string;
+    state?: string;
+    price?: number | string | null;
+    images?: { imageUrl?: string; url?: string; isPrimary?: boolean }[];
   };
 }
 

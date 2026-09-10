@@ -7,7 +7,7 @@ import { UserIdentityCard } from "@/features/user/components/citizen/UserIdentit
 import { UserWelcome } from "@/features/user/components/citizen/UserWelcome";
 import { UserNextUp } from "@/features/user/components/citizen/UserNextUp";
 import { UserForYou } from "@/features/user/components/citizen/UserForYou";
-import { UserJourney } from "@/features/gamification/components/UserJourney";
+import { UserCalendarWidget } from "@/features/user/components/citizen/UserCalendarWidget";
 import { UserWallet } from "@/features/user/components/citizen/UserWallet";
 import { UserSavedVibes } from "@/features/user/components/citizen/UserSavedVibes";
 import { UserFooter } from "@/features/user/components/citizen/UserFooter";
@@ -31,7 +31,8 @@ function UserDashboardContent({
     walletBalance,
     recentTransactions,
     savedVibes,
-    navigateToPassport,
+    upcomingEvents,
+    isLoading,
   } = useUserDashboard();
 
   // Use server data if client doesn't have
@@ -63,14 +64,14 @@ function UserDashboardContent({
           {/* Row 1: Next Up & Journey */}
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 mb-8">
             <div className="lg:col-span-8 flex flex-col">
-              <UserNextUp className="flex-1" />
-            </div>
-            <div className="lg:col-span-4 flex flex-col">
-              <UserJourney
-                userName={displayUserName}
-                navigateToPassport={navigateToPassport}
+              <UserNextUp
+                bookings={upcomingEvents}
+                isLoading={isLoading}
                 className="flex-1"
               />
+            </div>
+            <div className="lg:col-span-4 flex flex-col">
+              <UserCalendarWidget className="flex-1" />
             </div>
           </div>
 
