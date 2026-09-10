@@ -30,34 +30,6 @@ export const UserWelcome: React.FC<UserWelcomeProps> = ({
           .
         </p>
       </div>
-      <div className="hidden md:flex gap-4 mt-6 md:mt-0">
-        {/* Quick Links */}
-        <div className="flex gap-3">
-          <a
-            href="#"
-            className="bg-surface-highlight/40 hover:bg-surface-highlight border border-white/5 hover:border-white/20 rounded-2xl p-4 flex flex-col items-center justify-center gap-1 transition-all group min-w-[80px] relative"
-          >
-            <div className="h-8 w-8 rounded-full bg-blue-500/20 text-blue-400 group-hover:bg-blue-500 group-hover:text-white flex items-center justify-center transition-all">
-              <span className="material-symbols-outlined text-[20px]">
-                chat_bubble
-              </span>
-            </div>
-            <span className="text-white font-bold text-[10px]">Messages</span>
-          </a>
-
-          <a
-            href="#"
-            className="bg-surface-highlight/40 hover:bg-surface-highlight border border-white/5 hover:border-white/20 rounded-2xl p-4 flex flex-col items-center justify-center gap-1 transition-all group min-w-[80px]"
-          >
-            <div className="h-8 w-8 rounded-full bg-pink-500/20 text-pink-400 group-hover:bg-pink-500 group-hover:text-white flex items-center justify-center transition-all">
-              <span className="material-symbols-outlined text-[20px]">
-                settings
-              </span>
-            </div>
-            <span className="text-white font-bold text-[10px]">Settings</span>
-          </a>
-        </div>
-      </div>
     </div>
   );
 };

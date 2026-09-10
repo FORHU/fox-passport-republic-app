@@ -256,7 +256,9 @@ export async function getDashboardStats() {
 export async function getUserDashboard(_userId: string) {
   await requireAuth();
   try {
-    const body = await serverFetch("/bookings").catch(() => ({ data: [] }));
+    const body = await serverFetch("/bookings/upcoming").catch(() => ({
+      data: [],
+    }));
     const upcomingEvents = (body?.data || []).length;
     return { userName: "User", upcomingEvents, recommendations: 0 };
   } catch (error) {

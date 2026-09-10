@@ -4,6 +4,7 @@
 import React from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
+import { useLogout } from "@/shared/auth/useLogout";
 
 interface Props {
   user?: any;
@@ -24,6 +25,7 @@ const ROWS = [
 
 export default function MobileSettingsView({ user }: Props) {
   const router = useRouter();
+  const logout = useLogout();
 
   const name: string = user?.name ?? "Juan Dela Cruz";
   const email: string = user?.email ?? "juan@email.com";
@@ -140,7 +142,9 @@ export default function MobileSettingsView({ user }: Props) {
           {ROWS.map((row) => (
             <button
               key={row.label}
-              onClick={() => (row.href ? router.push(row.href) : undefined)}
+              onClick={() =>
+                row.href ? router.push(row.href) : logout()
+              }
               style={{
                 display: "flex",
                 alignItems: "center",

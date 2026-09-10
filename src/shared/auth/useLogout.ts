@@ -6,16 +6,22 @@ import { clearAuthCookies } from "@/shared/lib/server/auth-actions";
 
 export const useLogout = () => {
   const router = useRouter();
-  const { logout } = useAuthStore();
+  const { logout, openLogin } = useAuthStore();
 
-  return async () => {
+  // `promptLogin` defaults on for a plain sign-out, where showing the login
+  // screen is the point. Account deletion also routes through here to clear
+  // the same cookies/store, but has nothing left to log back into, so it
+  // passes `false` to skip the prompt.
+  return async (options?: { promptLogin?: boolean }) => {
     // Clear cookies on server
     await clearAuthCookies();
 
     // Clear client store
     logout();
 
-    // Redirect to home
+    if (options?.promptLogin ?? true) {
+      openLogin();
+    }
     router.push("/");
   };
 };

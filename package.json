@@ -53,6 +53,7 @@
     "react-qr-code": "^2.2.0",
     "recharts": "^3.6.0",
     "resium": "^1.19.2",
+    "satellite.js": "^7.1.0",
     "socket.io-client": "^4.8.3",
     "sonner": "^2.0.7",
     "stripe": "^22.3.0",

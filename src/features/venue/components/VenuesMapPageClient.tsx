@@ -18,10 +18,37 @@ import {
   CATEGORY_COLORS,
   CATEGORY_LABELS,
 } from "@/shared/components/ui/VenuesMap";
+import { LocationSearchResult } from "@/shared/components/ui/LocationSearchControl";
 import {
   fetchVenuesByViewport,
   ViewportBounds,
 } from "@/features/venue/api/venues";
+
+// A searched country has an exact bbox from Mapbox; a searched city
+// sometimes doesn't (small towns), so pad a fixed radius around its center
+// instead of falling back to the live pixel viewport.
+const CITY_FALLBACK_RADIUS_KM = 25;
+
+function boundsFromLocation(location: LocationSearchResult): ViewportBounds {
+  if (location.bbox) {
+    return {
+      west: location.bbox[0],
+      south: location.bbox[1],
+      east: location.bbox[2],
+      north: location.bbox[3],
+    };
+  }
+  const [lng, lat] = location.center;
+  const latPad = CITY_FALLBACK_RADIUS_KM / 110.574;
+  const lngPad =
+    CITY_FALLBACK_RADIUS_KM / (111.32 * Math.cos((lat * Math.PI) / 180));
+  return {
+    west: lng - lngPad,
+    south: lat - latPad,
+    east: lng + lngPad,
+    north: lat + latPad,
+  };
+}
 
 interface VenuesMapPageClientProps {
   venues: any[];
@@ -316,6 +343,16 @@ export function VenuesMapPageClient({
   );
   const [searchQuery, setSearchQuery] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
+  // A country/city picked from the map's location search. While set, it
+  // pins what "on screen" means for search purposes — panning/zooming
+  // around within it no longer narrows results back down to whatever
+  // sliver of it the camera happens to be showing.
+  const [selectedLocation, setSelectedLocation] =
+    useState<LocationSearchResult | null>(null);
+  const selectedLocationRef = useRef(selectedLocation);
+  useEffect(() => {
+    selectedLocationRef.current = selectedLocation;
+  }, [selectedLocation]);
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -452,12 +489,44 @@ export function VenuesMapPageClient({
     [debouncedSearch],
   );
 
-  // Refetch when search changes
+  // Real camera movement from panning/zooming. Ignored while a location is
+  // pinned via search — otherwise the very first pan inside, say, Baguio
+  // would immediately narrow the query back down to a tiny pixel rectangle
+  // and undo the point of picking a place.
+  const handleMapViewportChange = useCallback(
+    (bounds: ViewportBounds) => {
+      if (selectedLocationRef.current) return;
+      handleViewportChange(bounds);
+    },
+    [handleViewportChange],
+  );
+
+  // Only sets state — the effect below (watching `selectedLocation`) is
+  // what actually fetches, so picking a place triggers exactly one fetch
+  // instead of racing this against that effect.
+  const handleLocationSelect = useCallback((result: LocationSearchResult) => {
+    setSelectedLocation(result);
+  }, []);
+
+  const handleLocationClear = useCallback(() => {
+    setSelectedLocation(null);
+  }, []);
+
+  // Refetch when search text or the pinned location changes — scoped to
+  // the pinned location's bounds when one is set, otherwise whatever the
+  // map is currently showing.
   useEffect(() => {
-    if (currentBounds) {
-      handleViewportChange(currentBounds);
+    const bounds = selectedLocation
+      ? boundsFromLocation(selectedLocation)
+      : currentBounds;
+    if (bounds) {
+      handleViewportChange(bounds);
     }
-  }, [debouncedSearch, handleViewportChange]);
+    // Deliberately excludes `currentBounds`/`handleViewportChange`: those
+    // already trigger their own fetch on real map movement or location
+    // selection, and including them here would double-fetch on every pan.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [debouncedSearch, selectedLocation]);
 
   const totalPages = Math.ceil(totalCount / 12);
   const hasNextPage = page < totalPages;
@@ -604,10 +673,22 @@ export function VenuesMapPageClient({
                   </span>
                 )}
               </p>
-              {currentBounds && (
-                <span className="text-[10px] font-mono text-[#ccff00]/60 bg-[#ccff00]/10 px-2 py-0.5 rounded-full border border-[#ccff00]/20">
-                  Live Viewport
-                </span>
+              {selectedLocation ? (
+                <button
+                  type="button"
+                  onClick={handleLocationClear}
+                  title="Clear location filter and follow the map again"
+                  className="flex items-center gap-1 text-[10px] font-mono text-amber-400 bg-amber-400/10 px-2 py-0.5 rounded-full border border-amber-400/20 hover:bg-amber-400/20 transition-colors cursor-pointer"
+                >
+                  Filtered · {selectedLocation.name}
+                  <X className="w-2.5 h-2.5" />
+                </button>
+              ) : (
+                currentBounds && (
+                  <span className="text-[10px] font-mono text-[#ccff00]/60 bg-[#ccff00]/10 px-2 py-0.5 rounded-full border border-[#ccff00]/20">
+                    Live Viewport
+                  </span>
+                )
               )}
             </div>
 
@@ -728,7 +809,10 @@ export function VenuesMapPageClient({
                 setSelectedId(clusterVenues[0].id);
               }
             }}
-            onViewportChange={handleViewportChange}
+            onViewportChange={handleMapViewportChange}
+            onLocationSelect={handleLocationSelect}
+            onLocationClear={handleLocationClear}
+            showIssTracker
             className="h-full w-full rounded-[2rem] border border-white/10 overflow-hidden shadow-2xl"
           />
 

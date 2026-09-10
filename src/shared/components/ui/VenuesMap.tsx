@@ -2,12 +2,29 @@
 
 import React, { useEffect, useRef, useCallback } from "react";
 import { MapBoxView } from "@/shared/components/ui/MapBoxView";
+import {
+  LocationSearchControl,
+  LocationSearchResult,
+} from "@/shared/components/ui/LocationSearchControl";
+import { useUserLocation } from "@/shared/hooks/useUserLocation";
+import { createGeoCircle } from "@/shared/lib/geoCircle";
+import { getIssPosition } from "@/shared/lib/issTracker";
 import "mapbox-gl/dist/mapbox-gl.css";
 
+const ISS_REFRESH_MS = 3000;
+
 const POLYGON_SOURCE_ID = "venues-map-polygons";
+const HOME_SOURCE_ID = "venues-map-home-radius";
+const HOME_RADIUS_KM = 20;
 const DEFAULT_CENTER: [number, number] = [120.9842, 14.5995]; // Manila
 const ACCENT_COLOR = "#ccff00";
 const SELECTED_COLOR = "#ffffff";
+// The "you are here" radius is drawn in the accent color while the current
+// viewport actually contains the foxer's real location, and switches to this
+// amber the moment they search/pan somewhere else — a visual reminder that
+// what's on screen isn't where they actually are.
+const HOME_COLOR = ACCENT_COLOR;
+const AWAY_COLOR = "#f59e0b";
 
 // One color per venue type, shared by every map in the app — admin, the
 // public browse map, and the foxer's reference layer while drawing a new
@@ -76,6 +93,21 @@ export interface VenuesMapProps {
     west: number;
   }) => void;
   className?: string;
+  /** Show Mapbox's built-in "find my location" control (top-right). */
+  showGeolocate?: boolean;
+  /** Show the country search control (top-left) for jumping the view
+   * somewhere other than the foxer's own location. */
+  showLocationSearch?: boolean;
+  /** Fired when a country/city is picked from the location search — lets a
+   * parent scope its own venue queries to that place instead of whatever
+   * the camera happens to be showing pixel-for-pixel. */
+  onLocationSelect?: (result: LocationSearchResult) => void;
+  /** Fired when the location search is cleared back to empty. */
+  onLocationClear?: () => void;
+  /** Show a live-updating ISS marker, propagated client-side from its TLE
+   * via satellite.js. Off by default — it's a novelty overlay, not part of
+   * the venue-browsing experience. */
+  showIssTracker?: boolean;
 }
 
 let pinIdCounter = 0;
@@ -210,11 +242,26 @@ export function VenuesMap({
   onBuildingClick,
   onViewportChange,
   className = "h-96 w-full rounded-2xl overflow-hidden",
+  showGeolocate = true,
+  showLocationSearch = true,
+  onLocationSelect,
+  onLocationClear,
+  showIssTracker = false,
 }: VenuesMapProps) {
   const mapRef = useRef<any>(null);
   const mapboxglRef = useRef<any>(null);
   const markersRef = useRef<any[]>([]);
   const spiderMarkersRef = useRef<any[]>([]);
+  const homeMarkerRef = useRef<any>(null);
+  const homeMarkerElRef = useRef<HTMLDivElement | null>(null);
+  const issMarkerRef = useRef<any>(null);
+
+  // The foxer's real, detected location — kept separate from `center`/`zoom`
+  // (which drive what's actually on screen) so the map can tell the two
+  // apart and recolor the "you are here" radius accordingly.
+  const { coords: homeCoords, isLoading: homeLoading } = useUserLocation();
+  const homeCoordsRef = useRef(homeCoords);
+  const homeReadyRef = useRef(false);
 
   // Supercluster for zoom-based clustering of huge areas
   const clusterIndexRef = useRef(
@@ -231,6 +278,9 @@ export function VenuesMap({
   const onVenueClickRef = useRef(onVenueClick);
   const onBuildingClickRef = useRef(onBuildingClick);
   const onViewportChangeRef = useRef(onViewportChange);
+  const onLocationSelectRef = useRef(onLocationSelect);
+  const onLocationClearRef = useRef(onLocationClear);
+  const showIssTrackerRef = useRef(showIssTracker);
   const everSelectedRef = useRef(false);
   // Set whenever `venues` changes so `render()` knows to rebuild the
   // Supercluster index; a selection-only re-render (same venue set) can then
@@ -242,8 +292,33 @@ export function VenuesMap({
     onVenueClickRef.current = onVenueClick;
     onBuildingClickRef.current = onBuildingClick;
     onViewportChangeRef.current = onViewportChange;
+    onLocationSelectRef.current = onLocationSelect;
+    onLocationClearRef.current = onLocationClear;
     venuesDirtyRef.current = true;
-  }, [venues, onVenueClick, onBuildingClick, onViewportChange]);
+  }, [
+    venues,
+    onVenueClick,
+    onBuildingClick,
+    onViewportChange,
+    onLocationSelect,
+    onLocationClear,
+  ]);
+
+  useEffect(() => {
+    showIssTrackerRef.current = showIssTracker;
+    if (!showIssTracker && issMarkerRef.current) {
+      issMarkerRef.current.remove();
+      issMarkerRef.current = null;
+    } else if (showIssTracker) {
+      mapRef.current?.__renderIss?.();
+    }
+  }, [showIssTracker]);
+
+  useEffect(() => {
+    homeCoordsRef.current = homeCoords;
+    homeReadyRef.current = !homeLoading;
+    mapRef.current?.__renderHome?.();
+  }, [homeCoords, homeLoading]);
 
   const handleMapReady = useCallback(
     (map: any, mapboxgl: any) => {
@@ -631,6 +706,115 @@ export function VenuesMap({
         }
       };
 
+      // "Home" radius: a soft ring around the foxer's real detected
+      // location, independent of whatever the camera is currently pointed
+      // at. Colored on/off depending on whether the visible viewport
+      // actually contains that point — see updateHomeColorState.
+      const updateHomeColorState = () => {
+        if (!map.getLayer(`${HOME_SOURCE_ID}-fill`)) return;
+        let isHome = true;
+        try {
+          const bounds = map.getBounds();
+          isHome = bounds ? bounds.contains(homeCoordsRef.current) : true;
+        } catch {
+          // ignore if map canvas not ready
+        }
+        const color = isHome ? HOME_COLOR : AWAY_COLOR;
+        map.setPaintProperty(`${HOME_SOURCE_ID}-fill`, "fill-color", color);
+        map.setPaintProperty(`${HOME_SOURCE_ID}-line`, "line-color", color);
+        if (homeMarkerElRef.current) {
+          homeMarkerElRef.current.style.background = color;
+          homeMarkerElRef.current.style.boxShadow = `0 0 0 3px rgba(0,0,0,0.35), 0 0 10px ${color}`;
+        }
+      };
+
+      const renderHomeIndicator = () => {
+        if (!map.isStyleLoaded() || !homeReadyRef.current) return;
+        const circle = createGeoCircle(homeCoordsRef.current, HOME_RADIUS_KM);
+
+        const homeSource: any = map.getSource(HOME_SOURCE_ID);
+        if (homeSource) {
+          homeSource.setData(circle);
+        } else {
+          map.addSource(HOME_SOURCE_ID, { type: "geojson", data: circle });
+          map.addLayer({
+            id: `${HOME_SOURCE_ID}-fill`,
+            type: "fill",
+            source: HOME_SOURCE_ID,
+            paint: { "fill-color": HOME_COLOR, "fill-opacity": 0.08 },
+          });
+          map.addLayer({
+            id: `${HOME_SOURCE_ID}-line`,
+            type: "line",
+            source: HOME_SOURCE_ID,
+            paint: {
+              "line-color": HOME_COLOR,
+              "line-width": 1.5,
+              "line-dasharray": [2, 2],
+            },
+          });
+        }
+
+        if (!homeMarkerRef.current) {
+          const el = document.createElement("div");
+          el.title = "Your detected location";
+          el.style.cssText =
+            "width:14px;height:14px;border-radius:50%;border:2px solid #0b0d14;cursor:default;";
+          homeMarkerRef.current = new mapboxgl.Marker({
+            element: el,
+            anchor: "center",
+          })
+            .setLngLat(homeCoordsRef.current)
+            .addTo(map);
+          homeMarkerElRef.current = el;
+        } else {
+          homeMarkerRef.current.setLngLat(homeCoordsRef.current);
+        }
+
+        updateHomeColorState();
+      };
+
+      // ISS marker: propagated client-side from a TLE via satellite.js, so
+      // it needs no backend endpoint. Position is refreshed on an interval
+      // rather than per-frame — the station moves ~7.7km/s but that's still
+      // imperceptible at map scale over a few seconds.
+      const renderIss = () => {
+        if (!showIssTrackerRef.current || !map.isStyleLoaded()) return;
+        const pos = getIssPosition();
+        if (!pos) return;
+
+        if (!issMarkerRef.current) {
+          const el = document.createElement("div");
+          el.title = "International Space Station";
+          el.style.cssText =
+            "font-size:22px;line-height:1;cursor:pointer;filter:drop-shadow(0 0 6px rgba(255,255,255,0.8));";
+          el.textContent = "🛰️";
+          issMarkerRef.current = new mapboxgl.Marker({
+            element: el,
+            anchor: "center",
+          })
+            .setLngLat([pos.lng, pos.lat])
+            .addTo(map);
+          el.addEventListener("click", () => {
+            const current = getIssPosition();
+            if (!current) return;
+            new mapboxgl.Popup({ closeButton: true, offset: 14 })
+              .setLngLat([current.lng, current.lat])
+              .setHTML(
+                `<div style="font-family:inherit;padding:2px 4px;">
+                  <div style="color:#0b0d14;font-weight:700;font-size:13px;">🛰️ ISS (ZARYA)</div>
+                  <div style="color:#555;font-size:11px;margin-top:2px;">
+                    ${current.lat.toFixed(2)}°, ${current.lng.toFixed(2)}° · ${Math.round(current.altitudeKm)} km up
+                  </div>
+                </div>`,
+              )
+              .addTo(map);
+          });
+        } else {
+          issMarkerRef.current.setLngLat([pos.lng, pos.lat]);
+        }
+      };
+
       const flyToVenue = (id: string) => {
         const venue = venuesRef.current.find((v) => v.id === id);
         if (!venue) return;
@@ -686,17 +870,36 @@ export function VenuesMap({
       };
 
       map.on("moveend", emitBounds);
+      map.on("moveend", updateHomeColorState);
       map.on("load", () => {
         render();
+        renderHomeIndicator();
+        renderIss();
         emitBounds();
       });
       map.on("style.load", render);
+      map.on("style.load", renderHomeIndicator);
+      map.on("style.load", () => {
+        // A style reload tears down custom layers but Marker elements
+        // survive it; renderIss() only needs to run again so a fresh
+        // `map.isStyleLoaded()` check passes and future setLngLat calls
+        // still land on a live style.
+        issMarkerRef.current = null;
+        renderIss();
+      });
       (map as any).__rerender = render;
       (map as any).__flyToVenue = flyToVenue;
       (map as any).__flyToInitial = flyToInitial;
+      (map as any).__renderHome = renderHomeIndicator;
+      (map as any).__renderIss = renderIss;
+
+      const issIntervalId = window.setInterval(renderIss, ISS_REFRESH_MS);
+      (map as any).__issIntervalId = issIntervalId;
 
       render();
       if (map.isStyleLoaded()) {
+        renderHomeIndicator();
+        renderIss();
         emitBounds();
       }
     },
@@ -724,7 +927,45 @@ export function VenuesMap({
       markersRef.current = [];
       spiderMarkersRef.current.forEach((m) => m.remove());
       spiderMarkersRef.current = [];
+      homeMarkerRef.current?.remove();
+      homeMarkerRef.current = null;
+      issMarkerRef.current?.remove();
+      issMarkerRef.current = null;
+      const issIntervalId = (mapRef.current as any)?.__issIntervalId;
+      if (issIntervalId) window.clearInterval(issIntervalId);
     };
+  }, []);
+
+  const handleLocationSearchSelect = useCallback(
+    (result: LocationSearchResult) => {
+      const map = mapRef.current;
+      if (!map) return;
+      // Countries fit loosely (a whole country in frame); cities fly in
+      // tight, since a country-scale bbox around a single city would leave
+      // it a speck on the map.
+      const isCountry = result.placeType === "country";
+      if (result.bbox) {
+        map.fitBounds(
+          [
+            [result.bbox[0], result.bbox[1]],
+            [result.bbox[2], result.bbox[3]],
+          ],
+          { padding: 60, duration: 1000, maxZoom: isCountry ? 8 : 12 },
+        );
+      } else {
+        map.flyTo({
+          center: result.center,
+          zoom: isCountry ? 5 : 11,
+          duration: 1000,
+        });
+      }
+      onLocationSelectRef.current?.(result);
+    },
+    [],
+  );
+
+  const handleLocationSearchClear = useCallback(() => {
+    onLocationClearRef.current?.();
   }, []);
 
   return (
@@ -733,7 +974,17 @@ export function VenuesMap({
       zoom={zoom}
       className={className}
       onMapReady={handleMapReady}
-    />
+      showGeolocate={showGeolocate}
+    >
+      {showLocationSearch && (
+        <div className="absolute top-4 left-4 z-20">
+          <LocationSearchControl
+            onSelect={handleLocationSearchSelect}
+            onClear={handleLocationSearchClear}
+          />
+        </div>
+      )}
+    </MapBoxView>
   );
 }
 

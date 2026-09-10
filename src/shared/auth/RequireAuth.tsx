@@ -22,19 +22,19 @@ export default function RequireAuth({
   const isLoading = useAuthLoading();
   const router = useRouter();
 
-  // Get the action to open the signup modal
-  const openSignup = useAuthStore((state) => state.openSignup);
+  // Get the action to open the login modal
+  const openLogin = useAuthStore((state) => state.openLogin);
 
   useEffect(() => {
     // If we are done loading AND the user is NOT logged in
     if (!isLoading && !isAuthenticated) {
-      // 1. Open the Signup Modal immediately
-      openSignup();
+      // 1. Open the Login modal immediately
+      openLogin();
 
       // 2. Redirect them to Home (so the modal shows up over the home page)
       router.replace(redirectTo);
     }
-  }, [isAuthenticated, isLoading, redirectTo, router, openSignup]);
+  }, [isAuthenticated, isLoading, redirectTo, router, openLogin]);
 
   // Show spinner while deciding
   if (isLoading) {

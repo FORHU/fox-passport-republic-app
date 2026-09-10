@@ -2,7 +2,6 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { useProfile } from "@/features/user/hooks/useProfile";
 import { useLogout } from "@/shared/auth/useLogout";
 import { useAuthStore } from "@/shared/auth/useAuthStore";
@@ -91,7 +90,6 @@ function ToggleSwitch({
 }
 
 export default function ProfileSettingsClient() {
-  const router = useRouter();
   const logout = useLogout();
   const storeUser = useAuthStore((state) => state.user);
   const { profile, isLoading, updateProfile, changePassword, deleteAccount } =
@@ -193,8 +191,7 @@ export default function ProfileSettingsClient() {
     setIsSaving(true);
     try {
       await deleteAccount(deletePassword);
-      await logout();
-      router.push("/");
+      await logout({ promptLogin: false });
     } catch (err: any) {
       flash(
         err?.response?.data?.message ?? "Failed to delete account",

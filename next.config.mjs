@@ -1,3 +1,6 @@
+import fs from "node:fs";
+import path from "node:path";
+
 /** @type {import('next').NextConfig} */
 const isWindows = process.platform === "win32";
 
@@ -68,6 +71,22 @@ const nextConfig = {
     config.externals.push({
       cesium: 'Cesium',
     });
+    // satellite.js ships an opt-in WASM-accelerated SGP4 path (its `dist/wasm`
+    // barrel) that dynamically imports Emscripten glue code using `node:module`
+    // — a scheme webpack can't bundle for the browser. We only ever call the
+    // plain-JS propagator (propagate/gstime/eciToGeodetic), so stub that
+    // barrel out entirely rather than pulling it into the client bundle.
+    // pnpm nests the real file under node_modules/.pnpm/...; webpack resolves
+    // through the node_modules/satellite.js symlink to that real path, so the
+    // alias key has to be the realpath, not the symlinked one.
+    const satelliteWasmBarrelLink = path.resolve(
+      process.cwd(),
+      'node_modules', 'satellite.js', 'dist', 'wasm', 'index.js',
+    );
+    const satelliteWasmBarrel = fs.existsSync(satelliteWasmBarrelLink)
+      ? fs.realpathSync(satelliteWasmBarrelLink)
+      : satelliteWasmBarrelLink;
+    config.resolve.alias[satelliteWasmBarrel] = false;
     return config;
   },
 };
