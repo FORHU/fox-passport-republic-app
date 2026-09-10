@@ -1,13 +1,15 @@
 /* eslint-disable react-hooks/purity, @next/next/no-img-element */
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import QRCode from "react-qr-code";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { fetchBookingById } from "@/features/booking/api/bookings";
 import { useAuthStore } from "@/shared/auth/useAuthStore";
+import { pollWhileVisible } from "@/shared/lib/realtime";
 import CancelBookingModal from "./CancelBookingModal";
 import { getDashboardPath } from "@/shared/lib/dashboard-path";
 
@@ -35,36 +37,53 @@ export default function BookingDetailClient({
 }) {
   const router = useRouter();
   const { user } = useAuthStore();
-  const [booking, setBooking] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
-  const [notFound, setNotFound] = useState(false);
-  const [error, setError] = useState("");
   const [showCancelModal, setShowCancelModal] = useState(false);
+  const queryClient = useQueryClient();
 
-  useEffect(() => {
-    if (!bookingId) return;
-    setLoading(true);
-    fetchBookingById(bookingId)
-      .then((data) => {
-        if (!data) {
-          setNotFound(true);
-        } else {
-          setBooking(data);
-        }
-      })
-      .catch((err: any) => {
-        if (err?.response?.status === 404) {
-          setNotFound(true);
-        } else {
-          setError(
-            err?.response?.data?.message ||
-              err?.message ||
-              "Failed to load booking.",
-          );
-        }
-      })
-      .finally(() => setLoading(false));
-  }, [bookingId]);
+  /**
+   * This page used to fetch in a `useEffect` and hold the booking in component
+   * state, exactly as the list at `/booking` did before it was converted - and
+   * with the same consequence, one screen further in. The server emits the
+   * `bookings` topic the moment a payment settles, `SocketProvider` turns that
+   * into a React Query invalidation, and a component outside React Query cannot
+   * hear it. So the frame arrived and this page went on showing "Pending".
+   *
+   * Measured on 10 Sep before the change: a signed `payment_intent.succeeded`
+   * webhook, `42["data:invalidate",{"topic":"bookings"}]` in the socket log 73ms
+   * later, and this screen still reading Pending fifteen seconds after that. It
+   * is the exact scenario the whole invalidation design exists for - somebody
+   * watching a booking while a payment lands - and it was the last screen still
+   * unable to see it.
+   *
+   * The key is prefixed `user-bookings` for the reason `BookingListClient`
+   * gives: that is what `TOPIC_QUERY_KEYS` maps `bookings` onto, and React Query
+   * matches by prefix, so the same emit refreshes the list and this page.
+   */
+  const {
+    data: booking,
+    isPending,
+    isError,
+    error: queryError,
+  } = useQuery({
+    queryKey: ["user-bookings", "detail", bookingId],
+    queryFn: () => fetchBookingById(bookingId),
+    enabled: Boolean(bookingId),
+    refetchInterval: pollWhileVisible,
+  });
+
+  const err = queryError as
+    | { response?: { status?: number; data?: { message?: string } }; message?: string }
+    | undefined;
+  // A 404 is not a failure to load, it is an answer - keep the two apart, as
+  // the effect version did.
+  const notFound = (isError && err?.response?.status === 404) || (!isPending && !booking);
+  const error =
+    isError && !notFound
+      ? (err?.response?.data?.message ??
+        err?.message ??
+        "Failed to load booking.")
+      : "";
+  const loading = isPending;
 
   if (loading) {
     return (
@@ -445,9 +464,11 @@ export default function BookingDetailClient({
           onClose={() => setShowCancelModal(false)}
           onSuccess={() => {
             setShowCancelModal(false);
-            fetchBookingById(bookingId)
-              .then(setBooking)
-              .catch(() => {});
+            // The server emits `bookings` for this too, so this is belt and
+            // braces - but it is the local write, and waiting on a round trip
+            // through the socket to see your own cancellation is the thing
+            // this page was just fixed for.
+            queryClient.invalidateQueries({ queryKey: ["user-bookings"] });
           }}
         />
       )}

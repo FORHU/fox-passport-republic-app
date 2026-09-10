@@ -25,6 +25,25 @@ here.
 
 ---
 
+## 0·0a. The booking page could not hear the socket — fixed 10 Sep
+
+`BookingDetailClient` fetched in a `useEffect` and held the booking in component
+state, which put it outside React Query and therefore out of reach of every
+`data:invalidate` the server sends. A payment would settle, the frame would
+arrive 73ms later, and the page would go on reading **Pending** until someone
+reloaded it.
+
+This is the same defect `VERIFY.md` B3 records for the bookings *list* at
+`/booking`, one screen further in. The list was converted; the detail page was
+missed, and nothing pointed at it because a screen that never updates looks
+exactly like a socket that has nothing to say.
+
+Found by actually running B4 - see `VERIFY.md`, which now carries the result.
+After the fix the page flips in 585ms. **If another screen ever "doesn't update",
+check whether it is on React Query before checking anything else.**
+
+---
+
 ## 0·0. Picking this up on another machine
 
 Written 4 Sep. **Read this before cloning anywhere new.** The repositories carry
