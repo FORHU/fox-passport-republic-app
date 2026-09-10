@@ -276,7 +276,7 @@ export default function HostCalendarClient() {
                         event_busy
                       </span>
                       <p className="text-sm text-zinc-500">
-                        Nothing scheduled this day.
+                        Nothing has been scheduled this day.
                       </p>
                     </div>
                   ) : (
