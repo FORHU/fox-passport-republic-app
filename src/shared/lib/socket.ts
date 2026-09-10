@@ -32,6 +32,11 @@ export const connectSocket = (getTicket: () => Promise<string | null>) => {
   return socket;
 };
 
+/** The raw socket, for the rare feature-emitted event (e.g. "typing") that
+ * has no server-side REST equivalent to call instead. Null until connected —
+ * callers must handle that, not assume a session is live. */
+export const getSocket = () => socket;
+
 export const disconnectSocket = () => {
   if (socket) {
     socket.disconnect();

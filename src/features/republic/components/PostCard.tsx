@@ -3,12 +3,68 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { FeedPost } from "../types";
+import {
+  Award,
+  Handshake,
+  MessageCircle,
+  PlayCircle,
+  Pin,
+  Repeat2,
+  Send,
+  Share2,
+  Star,
+} from "lucide-react";
+import { toast } from "sonner";
+import { FeedPost, ReactionType } from "../types";
 import { AuthorPassportPopover } from "./AuthorPassportPopover";
 import { CommentSection } from "./CommentSection";
-import { toggleLikePost } from "@/shared/api/feed";
+import { ReactionButton } from "./ReactionButton";
+import { PostOptionsMenu } from "./PostOptionsMenu";
+import { RepostComposer } from "./RepostComposer";
+import { setPostReaction, editPost } from "@/shared/api/feed";
 import { useAuthStore } from "@/shared/auth/useAuthStore";
 import { Badge } from "@/shared/components/ui/badge";
+import { SharePostModal } from "@/features/messages/components/SharePostModal";
+import { ImageLightbox } from "@/features/messages/components/ImageLightbox";
+import { useChatWindowsStore } from "@/features/messages/store/useChatWindowsStore";
+import { useStartConversation } from "@/features/messages/hooks/useMessages";
+
+const VIDEO_EXTENSIONS = [".mp4", ".mov", ".webm", ".m4v"];
+const isVideoUrl = (url: string) => {
+  const clean = url.split("?")[0].toLowerCase();
+  return VIDEO_EXTENSIONS.some((ext) => clean.endsWith(ext));
+};
+
+// @handle -> a clickable link to that citizen's profile, same pattern the
+// backend uses to detect and notify mentions (see feed.service.ts
+// MENTION_PATTERN) — kept in sync by character set, not by importing across
+// the repo boundary.
+const MENTION_PATTERN = /@([a-zA-Z0-9_]{2,32})/g;
+function renderContentWithMentions(text: string) {
+  const parts: Array<string | { handle: string }> = [];
+  let lastIndex = 0;
+  for (const match of text.matchAll(MENTION_PATTERN)) {
+    const start = match.index ?? 0;
+    if (start > lastIndex) parts.push(text.slice(lastIndex, start));
+    parts.push({ handle: match[1] });
+    lastIndex = start + match[0].length;
+  }
+  if (lastIndex < text.length) parts.push(text.slice(lastIndex));
+
+  // Highlighted, not linked — the profile route is keyed by user id, and a
+  // raw @handle in text is only ever a username, so linking would need a
+  // username->id lookup per mention on every render. Not worth it for a
+  // visual highlight.
+  return parts.map((part, i) =>
+    typeof part === "string" ? (
+      <span key={i}>{part}</span>
+    ) : (
+      <span key={i} className="font-bold text-lime-400">
+        @{part.handle}
+      </span>
+    ),
+  );
+}
 
 interface PostCardProps {
   post: FeedPost;
@@ -23,67 +79,149 @@ interface PostCardProps {
 export function PostCard({
   post,
   onOpenDetail,
+  onPostDeleted,
   variant = "feed",
 }: PostCardProps) {
   const router = useRouter();
   const { user } = useAuthStore();
-  const [liked, setLiked] = useState(post.isLikedByMe ?? false);
+  const [myReaction, setMyReaction] = useState<ReactionType | null>(
+    post.myReaction ?? (post.isLikedByMe ? "like" : null),
+  );
   const [likesCount, setLikesCount] = useState(post.likesCount);
   const [showComments, setShowComments] = useState(variant === "modal");
   const [commentsCount, setCommentsCount] = useState(post.commentsCount);
-  const [likeLoading, setLikeLoading] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [showShareModal, setShowShareModal] = useState(false);
+  const [showRepostModal, setShowRepostModal] = useState(false);
+  const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
+  const [textExpanded, setTextExpanded] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editContent, setEditContent] = useState(post.content);
+  const [editedAt, setEditedAt] = useState(post.editedAt ?? null);
+  const [content, setContent] = useState(post.content);
+  const [removed, setRemoved] = useState(false);
+  const openChatWindow = useChatWindowsStore((s) => s.openChat);
+  const setChatConversationId = useChatWindowsStore((s) => s.setConversationId);
+  const startConversation = useStartConversation();
 
-  const handleLike = async () => {
+  const handleReact = async (type: ReactionType | null) => {
     if (!user) {
       router.push("/auth/login");
       return;
     }
-    if (likeLoading) return;
+    const prevReaction = myReaction;
+    const prevCount = likesCount;
 
     // Optimistic update
-    const nextLiked = !liked;
-    setLiked(nextLiked);
-    setLikesCount((prev) => (nextLiked ? prev + 1 : Math.max(0, prev - 1)));
-    setLikeLoading(true);
+    setMyReaction(type);
+    setLikesCount((prev) => {
+      if (prevReaction && !type) return Math.max(0, prev - 1);
+      if (!prevReaction && type) return prev + 1;
+      return prev;
+    });
 
     try {
-      const res = await toggleLikePost(post.id);
-      setLiked(res.liked);
+      const res = await setPostReaction(post.id, type);
+      setMyReaction(res.reaction);
       setLikesCount(res.likesCount);
     } catch (err) {
-      // Revert on error
-      setLiked(!nextLiked);
-      setLikesCount((prev) => (nextLiked ? Math.max(0, prev - 1) : prev + 1));
-      console.error("Like toggle failed:", err);
-    } finally {
-      setLikeLoading(false);
+      setMyReaction(prevReaction);
+      setLikesCount(prevCount);
+      console.error("Reaction failed:", err);
     }
   };
 
-  const handleShare = () => {
-    if (navigator?.clipboard) {
-      const url = `${window.location.origin}/republic?postId=${post.id}`;
-      navigator.clipboard.writeText(url);
+  const handleShare = async () => {
+    const url = `${window.location.origin}/republic?postId=${post.id}`;
+    try {
+      if (!navigator?.clipboard) throw new Error("Clipboard unavailable");
+      await navigator.clipboard.writeText(url);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
+    } catch {
+      toast.error("Could not copy link. Copy it manually: " + url);
     }
   };
 
-  const handleMessageFoxer = () => {
+  const handleSaveEdit = async () => {
+    const trimmed = editContent.trim();
+    if (!trimmed) {
+      toast.error("Post content cannot be empty.");
+      return;
+    }
+    try {
+      const updated = await editPost(post.id, { content: trimmed });
+      setContent(updated.content);
+      setEditedAt(updated.editedAt ?? new Date().toISOString());
+      setIsEditing(false);
+    } catch (error: any) {
+      toast.error(error?.response?.data?.message || "Could not save changes.");
+    }
+  };
+
+  const handleSendClick = () => {
     if (!user) {
       router.push("/auth/login");
       return;
     }
-    const label = post.content?.trim().slice(0, 60) || post.type;
-    router.push(
-      `/messages?userId=${post.author.id}&contextType=post&contextId=${post.id}&contextLabel=${encodeURIComponent(label)}`,
+    setShowShareModal(true);
+  };
+
+  // Opens the chat panel directly (no page navigation) and attaches
+  // whichever specific listing/event the clicked button came from as the
+  // conversation's context, instead of just the generic post.
+  const handleMessageFoxer = (
+    contextLabel: string,
+    contextType: string,
+    contextId: string,
+  ) => {
+    if (!user) {
+      router.push("/auth/login");
+      return;
+    }
+    openChatWindow({
+      otherUserId: post.author.id,
+      otherUserName: post.author.name,
+      otherUserImgId: post.author.imgId,
+      contextLabel,
+    });
+    startConversation.mutate(
+      { otherUserId: post.author.id, contextType, contextId, contextLabel },
+      {
+        onSuccess: (conversation) =>
+          setChatConversationId(post.author.id, conversation.id),
+        onError: (e: any) =>
+          toast.error(
+            e?.response?.data?.message || "Could not start this conversation.",
+          ),
+      },
     );
   };
 
+  const handleRemoved = (postId: string) => {
+    setRemoved(true);
+    onPostDeleted?.(postId);
+  };
+
+  const isOwner =
+    !!user &&
+    ((user as any).id === post.authorId ||
+      (user as any).userId === post.authorId);
   const isPartnerPost = post.type === "partner_announcement";
   const openable = variant === "feed" && Boolean(onOpenDetail);
   const handleOpenDetail = () => onOpenDetail?.(post);
+
+  if (removed) return null;
+
+  // Long posts truncate with a "See more" that expands inline — only in the
+  // feed, where a wall of text would otherwise dominate the whole card.
+  // PostDetailModal (variant="modal") always shows the full text.
+  const TRUNCATE_LENGTH = 280;
+  const isLongText = variant === "feed" && content.length > TRUNCATE_LENGTH;
+  const displayedContent =
+    isLongText && !textExpanded
+      ? content.slice(0, TRUNCATE_LENGTH).trimEnd()
+      : content;
 
   return (
     <article
@@ -96,9 +234,7 @@ export function PostCard({
       {/* Top Banner for Pinned or Partner Posts */}
       {post.isPinned && (
         <div className="flex items-center gap-1.5 text-xs text-lime-400 font-bold mb-3 pb-2 border-b border-zinc-800/60">
-          <span className="material-symbols-outlined text-[16px]">
-            push_pin
-          </span>
+          <Pin className="h-4 w-4" strokeWidth={2} />
           <span>Featured in Republic</span>
         </div>
       )}
@@ -108,15 +244,118 @@ export function PostCard({
         author={post.author}
         createdAt={post.createdAt}
         isFollowingAuthor={post.isFollowingAuthor}
+        optionsMenu={
+          <PostOptionsMenu
+            post={post}
+            isOwner={isOwner}
+            onEdit={() => {
+              setEditContent(content);
+              setIsEditing(true);
+            }}
+            onRemoved={handleRemoved}
+            onCopyLink={handleShare}
+          />
+        }
       />
 
       {/* Post Text Content */}
-      <div
-        onClick={openable ? handleOpenDetail : undefined}
-        className={`mt-3 text-sm text-zinc-200 whitespace-pre-wrap leading-relaxed ${openable ? "cursor-pointer" : ""}`}
-      >
-        {post.content}
-      </div>
+      {isEditing ? (
+        <div className="mt-3 space-y-2">
+          <textarea
+            value={editContent}
+            onChange={(e) => setEditContent(e.target.value)}
+            rows={3}
+            autoFocus
+            className="w-full resize-none bg-zinc-900 border border-zinc-800 focus:border-lime-400/60 rounded-xl px-3 py-2 text-sm text-white placeholder-zinc-500 focus:outline-none transition-colors"
+          />
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={handleSaveEdit}
+              className="px-3.5 py-1.5 rounded-lg bg-lime-400 hover:bg-lime-300 text-black font-bold text-xs transition-all cursor-pointer"
+            >
+              Save
+            </button>
+            <button
+              type="button"
+              onClick={() => setIsEditing(false)}
+              className="px-3.5 py-1.5 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-zinc-300 font-bold text-xs transition-all cursor-pointer"
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      ) : (
+        <div
+          onClick={openable ? handleOpenDetail : undefined}
+          className={`mt-3 text-sm text-zinc-200 whitespace-pre-wrap leading-relaxed ${openable ? "cursor-pointer" : ""}`}
+        >
+          {renderContentWithMentions(displayedContent)}
+          {isLongText && !textExpanded && (
+            <>
+              …{" "}
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setTextExpanded(true);
+                }}
+                className="font-bold text-zinc-400 hover:text-white transition-colors cursor-pointer"
+              >
+                See more
+              </button>
+            </>
+          )}
+          {isLongText && textExpanded && (
+            <>
+              {" "}
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setTextExpanded(false);
+                }}
+                className="font-bold text-zinc-400 hover:text-white transition-colors cursor-pointer"
+              >
+                See less
+              </button>
+            </>
+          )}
+          {editedAt && (
+            <span className="ml-1.5 text-[11px] text-zinc-500">(edited)</span>
+          )}
+        </div>
+      )}
+
+      {/* Repost embed — the reposter's own caption (above, if any) plus a
+          compact quoted card of the original post. */}
+      {post.originalPost && (
+        <Link
+          href={`/republic?postId=${post.originalPost.id}`}
+          className="mt-3 flex items-center gap-2.5 rounded-xl border border-zinc-800 bg-zinc-800/40 p-3 hover:bg-zinc-800/60 transition-colors"
+        >
+          <div className="h-11 w-11 shrink-0 overflow-hidden rounded-lg bg-zinc-800 flex items-center justify-center text-xs font-bold text-zinc-500">
+            {post.originalPost.mediaUrls[0] ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={post.originalPost.mediaUrls[0]}
+                alt=""
+                className="h-full w-full object-cover"
+              />
+            ) : (
+              post.originalPost.author.name?.charAt(0)?.toUpperCase()
+            )}
+          </div>
+          <div className="min-w-0">
+            <p className="text-xs font-bold text-zinc-200">
+              {post.originalPost.author.name}
+            </p>
+            <p className="text-[11px] text-zinc-500 line-clamp-2">
+              {post.originalPost.content}
+            </p>
+          </div>
+        </Link>
+      )}
 
       {/* Verified Venue Stamp Badge (if linked to a stamp) */}
       {post.stamp && (
@@ -129,9 +368,7 @@ export function PostCard({
               className="w-5 h-5 rounded-full object-cover ring-1 ring-amber-400/50"
             />
           ) : (
-            <span className="material-symbols-outlined text-[16px]">
-              military_tech
-            </span>
+            <Award className="h-4 w-4" strokeWidth={2} />
           )}
           <span className="font-bold">Verified Venue Stamp:</span>
           <span>{post.stamp.venue?.name || post.stamp.eventName}</span>
@@ -156,18 +393,40 @@ export function PostCard({
           {post.mediaUrls.map((url, idx) => (
             <div
               key={idx}
-              className={`relative overflow-hidden bg-zinc-800 rounded-lg group ${
+              onClick={(e) => {
+                e.stopPropagation();
+                setLightboxIndex(idx);
+              }}
+              className={`relative overflow-hidden bg-zinc-800 rounded-lg group cursor-pointer ${
                 post.mediaUrls.length === 3 && idx === 0
                   ? "col-span-2 sm:col-span-1 h-48 sm:h-40"
                   : "h-40"
               }`}
             >
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={url}
-                alt=""
-                className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
-              />
+              {isVideoUrl(url) ? (
+                <video
+                  src={url}
+                  muted
+                  className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                />
+              ) : (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={url}
+                  alt=""
+                  className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                />
+              )}
+              {isVideoUrl(url) && (
+                <div className="absolute inset-0 flex items-center justify-center bg-black/20">
+                  <div className="h-10 w-10 rounded-full bg-black/50 flex items-center justify-center">
+                    <PlayCircle
+                      className="h-6 w-6 text-white"
+                      strokeWidth={2}
+                    />
+                  </div>
+                </div>
+              )}
             </div>
           ))}
         </div>
@@ -181,16 +440,12 @@ export function PostCard({
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-1 text-amber-400">
               {Array.from({ length: 5 }).map((_, i) => (
-                <span
+                <Star
                   key={i}
-                  className="material-symbols-outlined text-[18px]"
-                  style={{
-                    fontVariationSettings:
-                      i < post.review!.rating ? "'FILL' 1" : "'FILL' 0",
-                  }}
-                >
-                  star
-                </span>
+                  className="h-[18px] w-[18px]"
+                  strokeWidth={2}
+                  fill={i < post.review!.rating ? "currentColor" : "none"}
+                />
               ))}
               <span className="text-xs font-bold text-white ml-1">
                 {post.review.rating}.0 / 5
@@ -236,13 +491,17 @@ export function PostCard({
               Book Venue
             </Link>
             <button
-              onClick={handleMessageFoxer}
+              onClick={() =>
+                handleMessageFoxer(
+                  `About ${post.venue!.name}`,
+                  "venue",
+                  post.venue!.id,
+                )
+              }
               title="Chat with Venue Foxer"
               className="px-3 py-2 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-zinc-200 font-bold text-xs flex items-center gap-1 border border-zinc-700 transition-all"
             >
-              <span className="material-symbols-outlined text-[15px]">
-                chat
-              </span>
+              <MessageCircle className="h-[15px] w-[15px]" strokeWidth={2} />
               <span className="hidden sm:inline">Message</span>
             </button>
           </div>
@@ -275,13 +534,17 @@ export function PostCard({
               Rent Gear
             </Link>
             <button
-              onClick={handleMessageFoxer}
+              onClick={() =>
+                handleMessageFoxer(
+                  `About ${post.asset!.name}`,
+                  "asset",
+                  post.asset!.id,
+                )
+              }
               title="Chat with Gear Foxer"
               className="px-3 py-2 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-zinc-200 font-bold text-xs flex items-center gap-1 border border-zinc-700 transition-all"
             >
-              <span className="material-symbols-outlined text-[15px]">
-                chat
-              </span>
+              <MessageCircle className="h-[15px] w-[15px]" strokeWidth={2} />
               <span className="hidden sm:inline">Message</span>
             </button>
           </div>
@@ -317,13 +580,17 @@ export function PostCard({
               Book Service
             </Link>
             <button
-              onClick={handleMessageFoxer}
+              onClick={() =>
+                handleMessageFoxer(
+                  `About ${post.service!.name}`,
+                  "service",
+                  post.service!.id,
+                )
+              }
               title="Chat with Service Foxer"
               className="px-3 py-2 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-zinc-200 font-bold text-xs flex items-center gap-1 border border-zinc-700 transition-all"
             >
-              <span className="material-symbols-outlined text-[15px]">
-                chat
-              </span>
+              <MessageCircle className="h-[15px] w-[15px]" strokeWidth={2} />
               <span className="hidden sm:inline">Message</span>
             </button>
           </div>
@@ -358,13 +625,17 @@ export function PostCard({
               Get Tickets
             </Link>
             <button
-              onClick={handleMessageFoxer}
+              onClick={() =>
+                handleMessageFoxer(
+                  `About ${post.event!.name}`,
+                  "event",
+                  post.event!.id,
+                )
+              }
               title="Chat with Event Organizer"
               className="px-3 py-2 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-zinc-200 font-bold text-xs flex items-center gap-1 border border-zinc-700 transition-all"
             >
-              <span className="material-symbols-outlined text-[15px]">
-                chat
-              </span>
+              <MessageCircle className="h-[15px] w-[15px]" strokeWidth={2} />
               <span className="hidden sm:inline">Message</span>
             </button>
           </div>
@@ -376,9 +647,7 @@ export function PostCard({
         <div className="mt-4 p-4 rounded-xl bg-gradient-to-r from-amber-500/15 via-yellow-500/10 to-transparent border border-amber-500/40 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
           <div>
             <span className="text-xs font-extrabold text-amber-300 flex items-center gap-1">
-              <span className="material-symbols-outlined text-[15px]">
-                handshake
-              </span>
+              <Handshake className="h-[15px] w-[15px]" strokeWidth={2} />
               Official Partner Foxer Opportunity
             </span>
             <p className="text-[11px] text-zinc-400 mt-0.5">
@@ -387,10 +656,16 @@ export function PostCard({
           </div>
 
           <button
-            onClick={handleMessageFoxer}
+            onClick={() =>
+              handleMessageFoxer(
+                post.content?.trim().slice(0, 60) || "Partner opportunity",
+                "post",
+                post.id,
+              )
+            }
             className="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-gradient-to-r from-amber-400 to-yellow-500 hover:from-amber-300 hover:to-yellow-400 text-black font-black text-xs flex items-center justify-center gap-1.5 shadow-[0_0_20px_rgba(245,158,11,0.4)] transition-all"
           >
-            <span className="material-symbols-outlined text-[16px]">chat</span>
+            <MessageCircle className="h-4 w-4" strokeWidth={2} />
             Contact Partner
           </button>
         </div>
@@ -399,24 +674,11 @@ export function PostCard({
       {/* ── ENGAGEMENT ACTION BAR ──────────────────────────────── */}
       <div className="flex items-center justify-between pt-3.5 mt-3.5 border-t border-zinc-800/80 text-xs">
         <div className="flex items-center gap-1 sm:gap-2">
-          {/* Like Button */}
-          <button
-            onClick={handleLike}
-            disabled={likeLoading}
-            className={`flex items-center gap-1 px-2.5 py-1.5 rounded-lg transition-colors ${
-              liked
-                ? "text-rose-400 bg-rose-500/10 font-bold"
-                : "text-zinc-400 hover:text-white hover:bg-zinc-800/60"
-            }`}
-          >
-            <span
-              className="material-symbols-outlined text-[18px]"
-              style={{ fontVariationSettings: liked ? "'FILL' 1" : "'FILL' 0" }}
-            >
-              favorite
-            </span>
-            <span>{likesCount}</span>
-          </button>
+          <ReactionButton
+            myReaction={myReaction}
+            likesCount={likesCount}
+            onReact={handleReact}
+          />
 
           {/* Comment Toggle — in the feed, this opens the post detail modal
               (Facebook-style) instead of expanding comments inline. */}
@@ -432,9 +694,7 @@ export function PostCard({
                 : "text-zinc-400 hover:text-white hover:bg-zinc-800/60"
             }`}
           >
-            <span className="material-symbols-outlined text-[18px]">
-              chat_bubble
-            </span>
+            <MessageCircle className="h-[18px] w-[18px]" strokeWidth={2} />
             <span>{commentsCount}</span>
           </button>
 
@@ -443,13 +703,69 @@ export function PostCard({
             onClick={handleShare}
             className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-zinc-400 hover:text-white hover:bg-zinc-800/60 transition-colors"
           >
-            <span className="material-symbols-outlined text-[18px]">share</span>
+            <Share2 className="h-[18px] w-[18px]" strokeWidth={2} />
             <span className="hidden sm:inline">
               {copied ? "Copied!" : "Share"}
             </span>
           </button>
+
+          {/* Send in Message — Messenger-style share to a person/conversation,
+              distinct from the copy-link Share above. */}
+          <button
+            onClick={handleSendClick}
+            className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-zinc-400 hover:text-white hover:bg-zinc-800/60 transition-colors"
+          >
+            <Send className="h-[18px] w-[18px]" strokeWidth={2} />
+            <span className="hidden sm:inline">Send</span>
+          </button>
+
+          {/* Repost — publishes a new post of your own quoting this one,
+              distinct from Share/Send which don't touch your own feed. */}
+          {!post.originalPostId && (
+            <button
+              onClick={() => {
+                if (!user) {
+                  router.push("/auth/login");
+                  return;
+                }
+                setShowRepostModal(true);
+              }}
+              className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-zinc-400 hover:text-white hover:bg-zinc-800/60 transition-colors"
+            >
+              <Repeat2 className="h-[18px] w-[18px]" strokeWidth={2} />
+              <span className="hidden sm:inline">Repost</span>
+            </button>
+          )}
         </div>
       </div>
+
+      {showShareModal && (
+        <SharePostModal
+          post={{
+            id: post.id,
+            content: post.content,
+            mediaUrls: post.mediaUrls,
+            author: {
+              id: post.author.id,
+              name: post.author.name,
+              imgId: post.author.imgId,
+            },
+          }}
+          onClose={() => setShowShareModal(false)}
+        />
+      )}
+
+      {lightboxIndex !== null && (
+        <ImageLightbox
+          urls={post.mediaUrls}
+          startIndex={lightboxIndex}
+          onClose={() => setLightboxIndex(null)}
+        />
+      )}
+
+      {showRepostModal && (
+        <RepostComposer post={post} onClose={() => setShowRepostModal(false)} />
+      )}
 
       {/* Flat Comments Section */}
       {showComments && (

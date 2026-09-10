@@ -10,6 +10,18 @@ import {
 } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
+import {
+  ArrowLeft,
+  ArrowRight,
+  CheckCircle2,
+  Compass,
+  Inbox,
+  NotebookPen,
+  Package,
+  PenTool,
+  PlusCircle,
+  Search,
+} from "lucide-react";
 import { FeedPost, FeedTab } from "@/features/republic/types";
 import { getFeed, getPostById } from "@/shared/api/feed";
 import { RepublicTabs } from "@/features/republic/components/RepublicTabs";
@@ -39,9 +51,10 @@ const RepublicLeftSidebar = memo(function RepublicLeftSidebar() {
         href="/"
         className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-2xl bg-zinc-900/90 hover:bg-zinc-800 text-zinc-300 hover:text-white text-xs font-bold border border-zinc-800/80 transition-all shadow-sm group cursor-pointer"
       >
-        <span className="material-symbols-outlined text-[16px] text-zinc-400 group-hover:text-lime-400 group-hover:-translate-x-1 transition-all">
-          arrow_back
-        </span>
+        <ArrowLeft
+          className="h-4 w-4 text-zinc-400 group-hover:text-lime-400 group-hover:-translate-x-1 transition-all"
+          strokeWidth={2}
+        />
         Back to Main Page
       </Link>
 
@@ -66,42 +79,39 @@ const RepublicLeftSidebar = memo(function RepublicLeftSidebar() {
           className="flex items-center justify-between text-zinc-400 hover:text-amber-300 py-1.5 transition-colors group"
         >
           <span className="flex items-center gap-2">
-            <span className="material-symbols-outlined text-[16px] text-amber-400">
-              explore
-            </span>
+            <Compass className="h-4 w-4 text-amber-400" strokeWidth={2} />
             Full Inventory Map
           </span>
-          <span className="material-symbols-outlined text-[14px] text-zinc-600 group-hover:translate-x-0.5 transition-transform">
-            arrow_forward
-          </span>
+          <ArrowRight
+            className="h-3.5 w-3.5 text-zinc-600 group-hover:translate-x-0.5 transition-transform"
+            strokeWidth={2}
+          />
         </Link>
         <Link
           href="/foxer/create-investment"
           className="flex items-center justify-between text-zinc-400 hover:text-lime-400 py-1.5 transition-colors group"
         >
           <span className="flex items-center gap-2">
-            <span className="material-symbols-outlined text-[16px] text-lime-400">
-              add_circle
-            </span>
+            <PlusCircle className="h-4 w-4 text-lime-400" strokeWidth={2} />
             Register Equipment Hub
           </span>
-          <span className="material-symbols-outlined text-[14px] text-zinc-600 group-hover:translate-x-0.5 transition-transform">
-            arrow_forward
-          </span>
+          <ArrowRight
+            className="h-3.5 w-3.5 text-zinc-600 group-hover:translate-x-0.5 transition-transform"
+            strokeWidth={2}
+          />
         </Link>
         <Link
           href="/venue-foxer/create-venue"
           className="flex items-center justify-between text-zinc-400 hover:text-pink-400 py-1.5 transition-colors group"
         >
           <span className="flex items-center gap-2">
-            <span className="material-symbols-outlined text-[16px] text-pink-400">
-              polyline
-            </span>
+            <PenTool className="h-4 w-4 text-pink-400" strokeWidth={2} />
             Draw & Add Venue
           </span>
-          <span className="material-symbols-outlined text-[14px] text-zinc-600 group-hover:translate-x-0.5 transition-transform">
-            arrow_forward
-          </span>
+          <ArrowRight
+            className="h-3.5 w-3.5 text-zinc-600 group-hover:translate-x-0.5 transition-transform"
+            strokeWidth={2}
+          />
         </Link>
       </div>
     </aside>
@@ -351,9 +361,7 @@ function RepublicFeedContent() {
             onClick={() => setComposeOpen(true)}
             className="shrink-0 py-2 px-3 rounded-xl font-black text-xs flex items-center gap-1.5 shadow-md transition-all cursor-pointer bg-lime-400 hover:bg-lime-300 text-black"
           >
-            <span className="material-symbols-outlined text-[16px]">
-              edit_note
-            </span>
+            <NotebookPen className="h-4 w-4" strokeWidth={2} />
             <span className="hidden xs:inline">Post</span>
           </button>
         </div>
@@ -371,9 +379,10 @@ function RepublicFeedContent() {
                 onSubmit={handleSearchSubmit}
                 className="relative flex items-center"
               >
-                <span className="material-symbols-outlined absolute left-3.5 text-zinc-400 text-[18px]">
-                  search
-                </span>
+                <Search
+                  className="absolute left-3.5 h-[18px] w-[18px] text-zinc-400"
+                  strokeWidth={2}
+                />
                 <input
                   type="text"
                   value={searchInput}
@@ -431,9 +440,10 @@ function RepublicFeedContent() {
             {/* Mobile-only Quick Depots Map Link */}
             <div className="md:hidden flex items-center justify-between px-3.5 py-2.5 rounded-2xl bg-gradient-to-r from-amber-500/10 via-zinc-900/90 to-zinc-900 border border-amber-500/20 text-xs shadow-md">
               <div className="flex items-center gap-2 min-w-0">
-                <span className="material-symbols-outlined text-amber-400 text-[18px] shrink-0">
-                  inventory_2
-                </span>
+                <Package
+                  className="h-[18px] w-[18px] text-amber-400 shrink-0"
+                  strokeWidth={2}
+                />
                 <span className="font-bold text-zinc-200 text-xs truncate">
                   Equipment Depots & Capital
                 </span>
@@ -458,9 +468,10 @@ function RepublicFeedContent() {
               </div>
             ) : posts.length === 0 ? (
               <div className="w-full rounded-3xl bg-zinc-950/60 border border-zinc-800/80 p-12 text-center space-y-3 shadow-xl">
-                <span className="material-symbols-outlined text-[52px] text-zinc-600">
-                  inbox
-                </span>
+                <Inbox
+                  className="h-[52px] w-[52px] text-zinc-600 mx-auto"
+                  strokeWidth={1.5}
+                />
                 <h3 className="text-base font-bold text-zinc-300">
                   No posts in this stream yet
                 </h3>
@@ -513,9 +524,10 @@ function RepublicFeedContent() {
                   posts.length > 0 && (
                     <div className="text-center py-8">
                       <span className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-zinc-900/80 border border-zinc-800 text-[11px] font-bold text-zinc-500">
-                        <span className="material-symbols-outlined text-[15px] text-lime-400">
-                          check_circle
-                        </span>
+                        <CheckCircle2
+                          className="h-[15px] w-[15px] text-lime-400"
+                          strokeWidth={2}
+                        />
                         You&apos;re all caught up on this stream
                       </span>
                     </div>
