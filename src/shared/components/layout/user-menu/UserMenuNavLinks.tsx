@@ -16,7 +16,7 @@ import {
   QrCode,
 } from "lucide-react";
 import { toast } from "sonner";
-import { useAuthStore } from "@/shared/auth/useAuthStore";
+import { useLogout } from "@/shared/auth/useLogout";
 
 interface UserMenuNavLinksProps {
   userId?: string | null;
@@ -34,6 +34,7 @@ export function UserMenuNavLinks({
   onClose,
 }: UserMenuNavLinksProps) {
   const router = useRouter();
+  const logout = useLogout();
 
   const navItems = [
     ...(userId
@@ -144,8 +145,7 @@ export function UserMenuNavLinks({
         <button
           onClick={() => {
             onClose();
-            useAuthStore.getState().logout();
-            router.push("/");
+            logout();
           }}
           className="w-full flex items-center gap-3 px-2 py-2.5 rounded-lg hover:bg-red-500/10 transition-colors group cursor-pointer"
         >
