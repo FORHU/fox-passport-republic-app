@@ -5,7 +5,7 @@
   "packageManager": "pnpm@10.34.5",
   "scripts": {
     "dev": "next dev --webpack -H 0.0.0.0 -p 6001",
-    "build": "next build",
+    "build": "next build --webpack",
     "start": "next start -p 6001",
     "lint": "node --max-old-space-size=4096 node_modules/eslint/bin/eslint.js src/",
     "type-check": "tsc --noEmit",
@@ -53,7 +53,6 @@
     "react-qr-code": "^2.2.0",
     "recharts": "^3.6.0",
     "resium": "^1.19.2",
-    "satellite.js": "^7.1.0",
     "socket.io-client": "^4.8.3",
     "sonner": "^2.0.7",
     "stripe": "^22.3.0",

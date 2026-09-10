@@ -812,7 +812,6 @@ export function VenuesMapPageClient({
             onViewportChange={handleMapViewportChange}
             onLocationSelect={handleLocationSelect}
             onLocationClear={handleLocationClear}
-            showIssTracker
             className="h-full w-full rounded-[2rem] border border-white/10 overflow-hidden shadow-2xl"
           />
 

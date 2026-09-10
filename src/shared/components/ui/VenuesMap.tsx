@@ -8,10 +8,7 @@ import {
 } from "@/shared/components/ui/LocationSearchControl";
 import { useUserLocation } from "@/shared/hooks/useUserLocation";
 import { createGeoCircle } from "@/shared/lib/geoCircle";
-import { getIssPosition } from "@/shared/lib/issTracker";
 import "mapbox-gl/dist/mapbox-gl.css";
-
-const ISS_REFRESH_MS = 3000;
 
 const POLYGON_SOURCE_ID = "venues-map-polygons";
 const HOME_SOURCE_ID = "venues-map-home-radius";
@@ -104,10 +101,6 @@ export interface VenuesMapProps {
   onLocationSelect?: (result: LocationSearchResult) => void;
   /** Fired when the location search is cleared back to empty. */
   onLocationClear?: () => void;
-  /** Show a live-updating ISS marker, propagated client-side from its TLE
-   * via satellite.js. Off by default — it's a novelty overlay, not part of
-   * the venue-browsing experience. */
-  showIssTracker?: boolean;
 }
 
 let pinIdCounter = 0;
@@ -246,7 +239,6 @@ export function VenuesMap({
   showLocationSearch = true,
   onLocationSelect,
   onLocationClear,
-  showIssTracker = false,
 }: VenuesMapProps) {
   const mapRef = useRef<any>(null);
   const mapboxglRef = useRef<any>(null);
@@ -254,7 +246,6 @@ export function VenuesMap({
   const spiderMarkersRef = useRef<any[]>([]);
   const homeMarkerRef = useRef<any>(null);
   const homeMarkerElRef = useRef<HTMLDivElement | null>(null);
-  const issMarkerRef = useRef<any>(null);
 
   // The foxer's real, detected location — kept separate from `center`/`zoom`
   // (which drive what's actually on screen) so the map can tell the two
@@ -280,7 +271,6 @@ export function VenuesMap({
   const onViewportChangeRef = useRef(onViewportChange);
   const onLocationSelectRef = useRef(onLocationSelect);
   const onLocationClearRef = useRef(onLocationClear);
-  const showIssTrackerRef = useRef(showIssTracker);
   const everSelectedRef = useRef(false);
   // Set whenever `venues` changes so `render()` knows to rebuild the
   // Supercluster index; a selection-only re-render (same venue set) can then
@@ -303,16 +293,6 @@ export function VenuesMap({
     onLocationSelect,
     onLocationClear,
   ]);
-
-  useEffect(() => {
-    showIssTrackerRef.current = showIssTracker;
-    if (!showIssTracker && issMarkerRef.current) {
-      issMarkerRef.current.remove();
-      issMarkerRef.current = null;
-    } else if (showIssTracker) {
-      mapRef.current?.__renderIss?.();
-    }
-  }, [showIssTracker]);
 
   useEffect(() => {
     homeCoordsRef.current = homeCoords;
@@ -774,47 +754,6 @@ export function VenuesMap({
         updateHomeColorState();
       };
 
-      // ISS marker: propagated client-side from a TLE via satellite.js, so
-      // it needs no backend endpoint. Position is refreshed on an interval
-      // rather than per-frame — the station moves ~7.7km/s but that's still
-      // imperceptible at map scale over a few seconds.
-      const renderIss = () => {
-        if (!showIssTrackerRef.current || !map.isStyleLoaded()) return;
-        const pos = getIssPosition();
-        if (!pos) return;
-
-        if (!issMarkerRef.current) {
-          const el = document.createElement("div");
-          el.title = "International Space Station";
-          el.style.cssText =
-            "font-size:22px;line-height:1;cursor:pointer;filter:drop-shadow(0 0 6px rgba(255,255,255,0.8));";
-          el.textContent = "🛰️";
-          issMarkerRef.current = new mapboxgl.Marker({
-            element: el,
-            anchor: "center",
-          })
-            .setLngLat([pos.lng, pos.lat])
-            .addTo(map);
-          el.addEventListener("click", () => {
-            const current = getIssPosition();
-            if (!current) return;
-            new mapboxgl.Popup({ closeButton: true, offset: 14 })
-              .setLngLat([current.lng, current.lat])
-              .setHTML(
-                `<div style="font-family:inherit;padding:2px 4px;">
-                  <div style="color:#0b0d14;font-weight:700;font-size:13px;">🛰️ ISS (ZARYA)</div>
-                  <div style="color:#555;font-size:11px;margin-top:2px;">
-                    ${current.lat.toFixed(2)}°, ${current.lng.toFixed(2)}° · ${Math.round(current.altitudeKm)} km up
-                  </div>
-                </div>`,
-              )
-              .addTo(map);
-          });
-        } else {
-          issMarkerRef.current.setLngLat([pos.lng, pos.lat]);
-        }
-      };
-
       const flyToVenue = (id: string) => {
         const venue = venuesRef.current.find((v) => v.id === id);
         if (!venue) return;
@@ -874,32 +813,18 @@ export function VenuesMap({
       map.on("load", () => {
         render();
         renderHomeIndicator();
-        renderIss();
         emitBounds();
       });
       map.on("style.load", render);
       map.on("style.load", renderHomeIndicator);
-      map.on("style.load", () => {
-        // A style reload tears down custom layers but Marker elements
-        // survive it; renderIss() only needs to run again so a fresh
-        // `map.isStyleLoaded()` check passes and future setLngLat calls
-        // still land on a live style.
-        issMarkerRef.current = null;
-        renderIss();
-      });
       (map as any).__rerender = render;
       (map as any).__flyToVenue = flyToVenue;
       (map as any).__flyToInitial = flyToInitial;
       (map as any).__renderHome = renderHomeIndicator;
-      (map as any).__renderIss = renderIss;
-
-      const issIntervalId = window.setInterval(renderIss, ISS_REFRESH_MS);
-      (map as any).__issIntervalId = issIntervalId;
 
       render();
       if (map.isStyleLoaded()) {
         renderHomeIndicator();
-        renderIss();
         emitBounds();
       }
     },
@@ -929,10 +854,6 @@ export function VenuesMap({
       spiderMarkersRef.current = [];
       homeMarkerRef.current?.remove();
       homeMarkerRef.current = null;
-      issMarkerRef.current?.remove();
-      issMarkerRef.current = null;
-      const issIntervalId = (mapRef.current as any)?.__issIntervalId;
-      if (issIntervalId) window.clearInterval(issIntervalId);
     };
   }, []);
 
