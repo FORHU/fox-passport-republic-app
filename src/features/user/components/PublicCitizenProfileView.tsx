@@ -20,7 +20,7 @@ import { FollowListModal } from "@/features/follow/components/FollowListModal";
 import { useFollowCounts } from "@/features/follow/api/useFollow";
 import { BlockMenuButton } from "@/features/block/components/BlockMenuButton";
 import { useBlockStatus } from "@/features/block/api/useBlock";
-import { useCanMessage } from "@/features/messages/hooks/useMessages";
+import { useCanMessage } from "@/shared/hooks/useCanMessage";
 
 const FALLBACK_AVATAR =
   "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=400&auto=format&fit=crop";

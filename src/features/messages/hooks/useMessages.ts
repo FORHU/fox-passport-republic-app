@@ -5,7 +5,6 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useAuthStore } from "@/shared/auth/useAuthStore";
 import {
   getConversations,
-  getCanMessage,
   startConversation,
   getMessages,
   sendMessage,
@@ -31,15 +30,16 @@ export function useConversations() {
   });
 }
 
-export function useCanMessage(targetId?: string) {
-  const { user } = useAuthStore();
-
-  return useQuery({
-    queryKey: ["canMessage", targetId],
-    queryFn: () => getCanMessage(targetId!),
-    enabled: !!targetId && !!user && user.id !== targetId,
-  });
-}
+/**
+ * `useCanMessage` moved to `@/shared/hooks/useCanMessage`.
+ *
+ * It is asked by screens that are not messaging screens - the public citizen
+ * profile, deciding whether to show a "Message" button - and answering it from
+ * here meant `features/user` importing `features/messages`, which the boundary
+ * scan rejects. Re-exported rather than only moved, so existing imports from
+ * this module keep working.
+ */
+export { useCanMessage } from "@/shared/hooks/useCanMessage";
 
 export function useMessagesForConversation(conversationId?: string) {
   const setMessages = useMessageStore((state) => state.setMessages);
