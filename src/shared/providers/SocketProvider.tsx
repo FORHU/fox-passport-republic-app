@@ -64,10 +64,43 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
       publishRealtime(SOCKET_EVENTS.NEW_MESSAGE, message);
     });
 
+    // These four were missing their `socket.on` — added at MESSAGE_DELETED,
+    // MESSAGE_REACTION, TYPING, PRESENCE_UPDATE time but never actually
+    // subscribed here, so every downstream `subscribeRealtime` listener for
+    // them was wired to a bus nothing ever published to.
+    socket.on(SOCKET_EVENTS.MESSAGE_DELETED, (payload) => {
+      publishRealtime(SOCKET_EVENTS.MESSAGE_DELETED, payload);
+    });
+    socket.on(SOCKET_EVENTS.MESSAGE_REACTION, (payload) => {
+      publishRealtime(SOCKET_EVENTS.MESSAGE_REACTION, payload);
+    });
+    socket.on(SOCKET_EVENTS.TYPING, (payload) => {
+      publishRealtime(SOCKET_EVENTS.TYPING, payload);
+    });
+    socket.on(SOCKET_EVENTS.PRESENCE_UPDATE, (payload) => {
+      publishRealtime(SOCKET_EVENTS.PRESENCE_UPDATE, payload);
+    });
+    socket.on(SOCKET_EVENTS.GROUP_REMOVED, (payload) => {
+      publishRealtime(SOCKET_EVENTS.GROUP_REMOVED, payload);
+    });
+    socket.on(SOCKET_EVENTS.MESSAGE_EDITED, (payload) => {
+      publishRealtime(SOCKET_EVENTS.MESSAGE_EDITED, payload);
+    });
+    socket.on(SOCKET_EVENTS.READ_RECEIPT, (payload) => {
+      publishRealtime(SOCKET_EVENTS.READ_RECEIPT, payload);
+    });
+
     return () => {
       socket.off(SOCKET_EVENTS.NEW_NOTIFICATION);
       socket.off(SOCKET_EVENTS.DATA_INVALIDATE);
       socket.off(SOCKET_EVENTS.NEW_MESSAGE);
+      socket.off(SOCKET_EVENTS.MESSAGE_DELETED);
+      socket.off(SOCKET_EVENTS.MESSAGE_REACTION);
+      socket.off(SOCKET_EVENTS.TYPING);
+      socket.off(SOCKET_EVENTS.PRESENCE_UPDATE);
+      socket.off(SOCKET_EVENTS.GROUP_REMOVED);
+      socket.off(SOCKET_EVENTS.MESSAGE_EDITED);
+      socket.off(SOCKET_EVENTS.READ_RECEIPT);
       disconnectSocket();
     };
   }, [isAuthenticated, queryClient, fetchTicket]);

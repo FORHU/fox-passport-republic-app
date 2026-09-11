@@ -1,7 +1,39 @@
 {
   "permissions": {
     "allow": [
-      "Bash(gh pr *)"
+      "Bash(gh pr *)",
+      "PowerShell(node -v)",
+      "PowerShell(npm -v)",
+      "PowerShell(corepack --version)",
+      "PowerShell(corepack enable)",
+      "PowerShell(corepack prepare pnpm@latest --activate)",
+      "PowerShell(npm install -g pnpm)",
+      "PowerShell(pnpm -v)",
+      "PowerShell(pnpm install)",
+      "Bash(xargs grep -l \"feed\" -i)",
+      "Bash(npx tsc *)",
+      "Bash(npx eslint *)",
+      "Bash(curl -s -o /tmp/republic.html -w \"HTTP %{http_code}\\\\n\" http://localhost:6001/republic)",
+      "Read(//tmp/**)",
+      "Bash(grep -o \"class=\\\\\"[^\\\\\"]*touch-manipulation[^\\\\\"]*\\\\\"\" /tmp/republic.html | head -3; echo \"---\"; grep -c \"ComposePostBox\\\\|Tag people\\\\|compose\" /tmp/republic.html)",
+      "Bash(curl -s -o /tmp/republic2.html -w \"HTTP %{http_code}\\\\n\" http://localhost:6001/republic)",
+      "Bash(curl -s -o /tmp/messages.html -w \"HTTP %{http_code}\\\\n\" http://localhost:6001/messages)",
+      "Bash(grep -o \"at [A-Za-z0-9_./]*\\\\.tsx\\\\{0,1\\\\}:[0-9]*\" /tmp/messages.html | head -20; echo \"---\"; grep -o '\"message\":\"[^\"]*\"' /tmp/messages.html | head -5; echo \"---size---\"; wc -c /tmp/messages.html)",
+      "Bash(python3 -c ' *)",
+      "Bash(curl -s -o /tmp/messages2.html -w \"HTTP %{http_code}\\\\n\" http://localhost:6001/messages)",
+      "Bash(curl -s -o /dev/null -w \"backend health: HTTP %{http_code}\\\\n\" http://localhost:6002/api/v1/feed/mentions/search?q=a --max-time 5)",
+      "Bash(curl -s -w \"\\\\nHTTP %{http_code}\\\\n\" http://localhost:6002/api/v1/feed/mentions/search?q=a --max-time 5)",
+      "Bash(curl -s -X POST http://localhost:6002/api/v1/auth/login -H 'Content-Type: application/json' -d '{\"email\":\"user@example.com\",\"password\":\"Password123!\"}' -c /tmp/cookies.txt -o /tmp/login.json --max-time 10)",
+      "Bash(curl -v -X POST http://localhost:6002/api/v1/auth/login -H 'Content-Type: application/json' -d '{\"email\":\"user@example.com\",\"password\":\"Password123!\"}' --max-time 10)",
+      "Bash(curl -s -o /dev/null -w \"HTTP %{http_code}\\\\n\" http://localhost:6002/api/v1/feed/mentions/search?q=a --max-time 5)",
+      "Bash(curl -s -o /dev/null -w \"frontend HTTP %{http_code}\\\\n\" http://localhost:6001/republic --max-time 5)",
+      "Bash(sleep 8 && cat /tmp/dev.log)",
+      "Bash(curl -s -o /dev/null -w \"frontend HTTP %{http_code}\\\\n\" http://localhost:6001/republic --max-time 10)",
+      "Bash(curl -s -o /dev/null -w \"backend HTTP %{http_code}\\\\n\" http://localhost:6002/api/v1/feed/mentions/search?q=a --max-time 5)",
+      "Bash(curl -s -X POST http://localhost:6002/api/v1/auth/login -H 'Content-Type: application/json' -d '{\"email\":\"user@example.com\",\"password\":\"Password123!\"}' --max-time 10)",
+      "Bash(pnpm lint *)",
+      "Bash(echo \"EXIT: $?\")",
+      "Bash(curl -s http://localhost:6001/republic --max-time 10 -o /tmp/republic3.html)"
     ]
   }
 }
