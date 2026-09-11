@@ -28,16 +28,34 @@
   - [ ] E
   - Needs both servers up; a few checks need two independent browser sessions.
 
+## P0/P1 — Event sharing (growth, independent of the Dynamic Events roadmap)
+
+**Decided 11 Sep:** this track does *not* wait on Dynamic Events Phase 1–3. It touches the existing public `EventTemplate` detail page (`app/event/[eventId]`), not anything net-new — so it ships in parallel, not after. Explicit call: **do not promise specialized Foxer Communities yet** (Running/Hiking/Basketball sub-communities) — that stays P3, deferred until the lighter moves below are validated. The near-term thesis is simply: *make every FoxPassport event easy to share, and make the shared link look excellent.*
+
+| Pri | Work | Note |
+|---|---|---|
+| P0/P1 | **Fix event OG/social preview** | `app/event/[eventId]/page.tsx` is a `"use client"` component, so it can't export `generateMetadata` — sharing a live event link today renders a blank/generic preview card. Do now. |
+| P1 | **Event public/shareable URL** | Already exists (`foxpassport.com/event/[eventId]`) — just needs to stay solid once the OG fix lands. |
+| P1 | **Event sharing/invitation UI** | No share button/action exists anywhere in the app today — build it. |
+| P1 | **QR / event registration flow** | Ties the shared link back to an actual check-in path — QR check-in already exists for bookings (`ticketCode`/`checkedIn`), confirm it holds up as the entry point once shared links start driving traffic. |
+| P1 | **Wire `Post.sharesCount`** | Field exists on `Post` and is already read for feed ranking (`feed.repository.ts:244`, weighted ×10) but nothing increments it — wire it up alongside the share UI above. |
+| P3+ | **Advanced growth loops** (referrals, achievements, user-generated content, social proof) | After acquisition is proven — not part of the near-term sharing push. |
+| P2 | Category/Subcategory taxonomy | Build as already planned (Dynamic Events Phase 1). |
+| P2 | Category-based community/feed filtering | After taxonomy exists — filter/follow the existing single Republic feed by category, not a new feature. |
+| P3 | Dedicated activity communities (Running/Hiking/Basketball Foxer Community) | Only when validated — not promised in the acquisition strategy yet. |
+| P3+ | Deep social-platform integrations (native FB/IG/Discord APIs, etc.) | Add selectively, later. |
+
 ## P2 — Before Dynamic Events Phase 1 can start
 
 - [ ] **Reconcile the `CAPACITY → REGISTRATION` capability dependency.** Confirmed intentional in both `DYNAMIC-EVENTS-PRODUCT-MASTER.md` §16 and `DYNAMIC-EVENTS-PROJECT-MASTER.md` §11, but it contradicts current behavior — `maxAttendees` on `EventTemplate` already caps private-booking events with no registration capability at all. Decide: drop the `CAPACITY → REGISTRATION` edge, or redefine `REGISTRATION` in that graph to mean "some attendee-tracking mechanism" (booking OR public) rather than specifically the new public flow.
 - [ ] **Map the 5 legacy `EventCategory` enum values into the new taxonomy** (`corporate`, `birthday`, `wedding`, `social`, `other` → which Category/Subcategory each becomes) before the Phase 1 migration runs, so nothing already in the database is orphaned.
 - [ ] **Formalize the ADR.** `DYNAMIC-EVENTS-PLAN.md` + `DYNAMIC-EVENTS-PRODUCT-MASTER.md` + `DYNAMIC-EVENTS-PROJECT-MASTER.md` already contain everything one needs (problem, options, decision, rationale) — just not yet assembled as a single decision record per the Product Master's own §23 process.
 - [ ] Confirm Decision Point Zero and §3a are explicitly approved (currently inferred from the Product Master doc being marked Active, not separately confirmed).
+- [ ] **Name and scope a lightweight event-operator role.** `"Partner"` is taken — `investor` already displays as **"Partner Foxer"** in the UI (`roles.ts:71`) and means capital/inventory/venue-equity/sponsorship. A registration/check-in-only partner (run clubs, community organizers) needs its own name (e.g. "Event Operator") and a lighter application flow than full `EventFoxer` KYC (BIR permit, NBI, portfolio, ID, TIN).
 
 ## P3 — New work, nothing broken, do after P0–P2
 
-- [ ] **Kick off Dynamic Events Phase 1 (Taxonomy)** — TASK-01 through TASK-10 per `DYNAMIC-EVENTS-PROJECT-MASTER.md` §9, once the three P2 items above are settled.
+- [ ] **Kick off Dynamic Events Phase 1 (Taxonomy)** — TASK-01 through TASK-10 per `DYNAMIC-EVENTS-PROJECT-MASTER.md` §9, once the P2 items above are settled.
 
 ---
 

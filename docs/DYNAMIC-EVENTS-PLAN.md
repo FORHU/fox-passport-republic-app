@@ -77,14 +77,29 @@ So this plan introduces a genuinely new, small domain — `EventRegistration` (o
 
 ## 4. Phased roadmap
 
-### Phase 1 — Taxonomy foundation `(M)`
+**Resequenced 11 Sep** (see the note at the end of this section): the plan originally ran Taxonomy → Capability framework → Public Participation. It now runs Public Event MVP → Taxonomy → Capability framework, on the reasoning that a fun run or sports tournament doesn't need subcategories or a toggle framework to prove FoxPassport can turn a stranger into a registered, checked-in participant — it needs `EventRegistration` and nothing else. Taxonomy and the formal capability system get built once that loop is proven, not before.
+
+### Phase 1 — Public Event MVP `(L)`
+
+This is the piece that actually proves the "dynamic" claim, and it's deliberately the *first* thing built, not the third. No taxonomy, no capability toggles, no ticketing — just enough for one real public occurrence to run end-to-end. Category stays the existing hardcoded `EventCategory` enum for now; visibility is a plain boolean (`isPublic`) rather than the full `PUBLIC/PRIVATE/UNLISTED` enum. Both get formalized in Phase 2/3 once this is proven, not before.
+
+- **Schema:** New `EventRegistration` (eventId, userId, status, ticketCode, checkedIn, registeredAt) — see §3a for why this is a new table rather than a reuse of `BookingAttendee`. Wire it to the same `Waitlist` model templates already have, so capacity overflow behaves identically whether the join came from a private booking or a public registration.
+- **Backend:** New endpoints for join/leave on a public `Event`, enforcing `EventTemplate.maxAttendees` against live `EventRegistration` counts before falling to `Waitlist`. Check-in reuses the same `checkedIn`/`ticketCode` shape and the existing `creator-dashboard/check-in` UI, pointed at `EventRegistration` rows for public templates.
+- **Frontend:** A "Join" / "Register" action on `app/event/[eventId]` for templates flagged public, distinct from the existing booking-request flow. Bundled with the Phase 1 sharing work already tracked in `PRIORITIES.md` (OG fix, share/invite UI, QR) — the MVP is worthless if nobody can find the link.
+- **Role note:** this phase is what a lightweight event partner (run club, community organizer) would actually touch. `"Partner"` is taken — `investor` already owns that word, displayed as **"Partner Foxer"** (`ROLE_BADGE.investor.label`, `fox-passport-republic-app/src/shared/constants/roles.ts:71`), tied to `PartnerInvestment` (capital/inventory/venue-equity/sponsorship). A run-club organizer who just wants check-in tech shouldn't need the full `EventFoxer` KYC flow (BIR permit, NBI, portfolio, valid ID, TIN) either. Name and scope a separate role (e.g. "Event Operator," "Community Host") before or alongside this phase — see `PRIORITIES.md`.
+- **Depends on:** Decision Point Zero (Option B) and §3a only. Nothing else.
+
+### Phase 2 — Taxonomy foundation `(M)`
 
 - **Schema:** New `Category` model (id, name, slug, parentId for subcategory) + `EventTag` join table. Seed it from the current `EventCategory` enum values so existing rows don't need re-tagging on day one.
 - **Backend:** `prisma/schema/event.prisma`, a new `category` table replacing the string-groupBy logic in `category.repository.ts` (it currently says outright there's no Category model — this phase makes that comment obsolete), plus the `category`/`targetCity` filters in `event-template.repository.ts`.
 - **Frontend:** Category picker in the template-creation flow (`app/creator-dashboard/events`) becomes a searchable category + tag input instead of a fixed 5-item dropdown.
 - **Risk:** Every existing `eventCategory` filter (search, trending-by-category, category landing page) needs to keep working during the enum→table migration — do it additively (new columns alongside the old enum) and cut over reads once seeded.
+- **Depends on:** Phase 1 proving the acquisition loop is worth building the discovery layer under.
 
-### Phase 2 — Event configuration: format, visibility, capability framework `(M)`
+### Phase 3 — Event configuration: format, visibility, capability framework `(M)`
+
+Retrofits Phase 1's hardcoded public/registration behavior behind an explicit, per-template toggle system — formalizing what was proven ad hoc, not building it from scratch.
 
 - **Schema:**
 
@@ -108,31 +123,23 @@ So this plan introduces a genuinely new, small domain — `EventRegistration` (o
   }
   ```
 
-  Also add `format` (`IN_PERSON | VIRTUAL | HYBRID`) and `visibility` (`PUBLIC | PRIVATE | UNLISTED`) directly on `EventTemplate`, replacing the plain `isPublic` boolean (keep `isPublic` as a computed/derived read so existing queries don't break).
+  Also add `format` (`IN_PERSON | VIRTUAL | HYBRID`) and `visibility` (`PUBLIC | PRIVATE | UNLISTED`), replacing Phase 1's plain `isPublic` boolean (keep `isPublic` as a computed/derived read so existing queries don't break).
 
-- **Capability dependency rules, enforced server-side, not just modeled:** `TICKETING` and `CHECK_IN` each require `REGISTRATION` to already be enabled on the same template — reject the write in `event-template.service.ts` rather than letting the client submit an inconsistent capability set. `config: Json` is for lightweight flags only (`requireWaiver`, `allowWaitlist`); anything that becomes a real business entity — a speaker, a session, a ticket tier — gets its own relational table in a later phase, never a JSON blob.
-- **Backend:** For `REGISTRATION`/`CAPACITY`/`CHECK_IN`, this phase gates the *existing* Waitlist/check-in behavior behind an explicit per-template flag (enforced in `event-template.service.ts` and `event-request.service.ts`; reuse the `can()` pattern in `types/permissions.ts` for who may edit capabilities). Invalidate `eventTemplateCache` on every capability write, same as every other template mutation. `TICKETING` and `SESSIONS` are declared here but have no behavior yet — they're just valid enum values a template can carry ahead of Phases 4–5.
-- **Frontend:** The template builder gains a "what does your event need?" step with checkboxes (disabled/greyed for capabilities whose dependency isn't met) plus format/visibility fields alongside Phase 1's category picker.
-
-### Phase 3 — Public event participation `(L)`
-
-This is the piece that actually proves the "dynamic" claim: that a template can serve strangers joining an occurrence, not just one client booking a package. Deliberately sequenced before Ticketing — prove people can discover and join a public FoxPassport event before adding payment on top.
-
-- **Schema:** New `EventRegistration` (eventId, userId, status, ticketCode, checkedIn, registeredAt) — see §3a for why this is a new table rather than a reuse of `BookingAttendee`. Wire it to the same `Waitlist` model templates already have, so capacity overflow behaves identically whether the join came from a private booking or a public registration.
-- **Backend:** New endpoints for join/leave on a public `Event` (`REGISTRATION` capability required), enforcing `maxAttendees` against live `EventRegistration` counts before falling to `Waitlist`. Check-in reuses the same `checkedIn`/`ticketCode` shape and the existing `creator-dashboard/check-in` UI, pointed at `EventRegistration` rows when the capability is `PUBLIC`.
-- **Frontend:** A "Join" / "Register" action on `app/event/[eventId]` for templates with `visibility: PUBLIC` and `REGISTRATION` enabled, distinct from the existing booking-request flow.
-- **Depends on:** Phase 2 (`REGISTRATION` capability + `visibility` field).
+- **Capability dependency rules, enforced server-side, not just modeled:** `TICKETING` and `CHECK_IN` each require `REGISTRATION` to already be enabled on the same template — reject the write in `event-template.service.ts` rather than letting the client submit an inconsistent capability set. This is also where the `CAPACITY → REGISTRATION` conflict tracked in `PRIORITIES.md` has to be resolved — `maxAttendees` already caps private-booking events with no registration capability at all today, so that edge needs redefining or dropping before this phase ships. `config: Json` is for lightweight flags only (`requireWaiver`, `allowWaitlist`); anything that becomes a real business entity — a speaker, a session, a ticket tier — gets its own relational table in a later phase, never a JSON blob.
+- **Backend:** Gates Phase 1's registration/capacity/check-in behavior behind an explicit per-template flag (enforced in `event-template.service.ts` and `event-request.service.ts`; reuse the `can()` pattern in `types/permissions.ts` for who may edit capabilities). Invalidate `eventTemplateCache` on every capability write, same as every other template mutation. `TICKETING` and `SESSIONS` are declared here but have no behavior yet — they're just valid enum values ahead of Phases 4–5.
+- **Frontend:** The template builder gains a "what does your event need?" step with checkboxes (disabled/greyed for capabilities whose dependency isn't met) plus format/visibility fields alongside Phase 2's category picker.
+- **Depends on:** Phase 1 (something real to formalize) and Phase 2 (shares the builder step).
 
 ### Phase 4 — Ticketing `(L)`
 
-- **Schema:** New `EventTicketTier` (templateId, name, price, quantity) and `EventTicket` (tierId, registrationId, ticketCode, checkedIn) — hangs off `EventRegistration` from Phase 3, and stays deliberately separate from the existing per-vendor `EventAssetTransaction`/`EventServiceTransaction`/`EventVenueTransaction` escrow rows, which stay exactly as they are for the private-booking flow.
+- **Schema:** New `EventTicketTier` (templateId, name, price, quantity) and `EventTicket` (tierId, registrationId, ticketCode, checkedIn) — hangs off `EventRegistration` from Phase 1, and stays deliberately separate from the existing per-vendor `EventAssetTransaction`/`EventServiceTransaction`/`EventVenueTransaction` escrow rows, which stay exactly as they are for the private-booking flow.
 - **Backend:** Reuse the existing Stripe integration (`payment.service.ts`, `stripe-connect` module) rather than building a second payment path.
-- **Depends on:** Phase 3 (per the dependency rule in Phase 2, `TICKETING` requires `REGISTRATION` to already be wired end-to-end, not just declared).
+- **Depends on:** Phase 3 (per the dependency rule there, `TICKETING` requires `REGISTRATION` to already be a formal, gated capability, not just Phase 1's hardcoded version).
 
 ### Phase 5 — Sessions & speakers `(M)`
 
 - **Schema:** New `EventSession` (templateId, title, startAt, endAt, speakerId?) and `EventSpeaker` (templateId, name, bio, imageId).
-- **Depends on:** Phase 2 only. No dependency on Phases 3–4 — can ship in parallel with Ticketing if there's capacity, since a conference agenda doesn't require ticket sales to exist first.
+- **Depends on:** Phase 3 only. No dependency on Phase 4 — can ship in parallel with Ticketing if there's capacity, since a conference agenda doesn't require ticket sales to exist first.
 
 ### Deferred — Teams, Sponsors, Vendor-as-capability, Livestream
 
@@ -144,14 +151,14 @@ Real demand hasn't shown up for these yet, and the `EventCapability` enum is add
 
 | Phase | Size | Blocks on |
 |---|---|---|
-| 1 · Taxonomy | M | Decision point zero (Option B) |
-| 2 · Event configuration (format, visibility, capabilities) | M | Phase 1 (shares the builder step) |
-| 3 · Public event participation | L | Phase 2 (`REGISTRATION` + `visibility`) |
-| 4 · Ticketing | L | Phase 3 (`TICKETING` requires `REGISTRATION` end-to-end) |
-| 5 · Sessions & speakers | M | Phase 2 only — can run parallel to Phase 4 |
+| 1 · Public Event MVP | L | Decision point zero (Option B) + §3a only |
+| 2 · Taxonomy | M | Phase 1 (proves the loop first) |
+| 3 · Event configuration (format, visibility, capabilities) | M | Phases 1 and 2 |
+| 4 · Ticketing | L | Phase 3 (`TICKETING` requires `REGISTRATION` as a formal capability) |
+| 5 · Sessions & speakers | M | Phase 3 only — can run parallel to Phase 4 |
 | Teams / Sponsors / Livestream | — | Deferred, no timeline |
 
-> **Before starting Phase 1:** Get explicit sign-off on Decision Point Zero (Option B) and its refinement in §3a (a new `EventRegistration` domain, not a reuse of `BookingAttendee`). Everything downstream branches from those two calls.
+> **Before starting Phase 1:** Get explicit sign-off on Decision Point Zero (Option B) and its refinement in §3a (a new `EventRegistration` domain, not a reuse of `BookingAttendee`). Everything downstream branches from those two calls. The Phase 1 sharing/OG-preview work in `PRIORITIES.md` can and should start immediately, in parallel — it has no dependency on this plan at all.
 
 ---
 
