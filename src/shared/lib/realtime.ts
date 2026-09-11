@@ -13,6 +13,26 @@ export const SOCKET_EVENTS = {
   // endpoint to refetch "just the new one" from, so the payload has to travel
   // with the event. Not yet folded into the topic system on the server.
   NEW_MESSAGE: "new_message",
+  // A message was deleted by its sender — carries just enough to remove it
+  // from a message list already held client-side.
+  MESSAGE_DELETED: "message_deleted",
+  // A message's reaction list changed — carries the full up-to-date list.
+  MESSAGE_REACTION: "message_reaction",
+  // Someone is typing in a conversation right now. Client-emitted too (see
+  // shared/lib/socket.ts getSocket) — the server just relays it back to the
+  // other participant.
+  TYPING: "typing",
+  // A conversation partner's online/offline status changed.
+  PRESENCE_UPDATE: "presence:update",
+  // Sent only to the person just removed from a group by its creator, so
+  // their own open window can close even though they can no longer poll
+  // that conversation for updates.
+  GROUP_REMOVED: "group:removed",
+  // A message's content changed — carries the full updated message.
+  MESSAGE_EDITED: "message_edited",
+  // Someone read up to "now" in a conversation — carries just the reader
+  // and the new cursor, so a group's "Seen by ..." line can update live.
+  READ_RECEIPT: "read:receipt",
 } as const;
 
 /**
