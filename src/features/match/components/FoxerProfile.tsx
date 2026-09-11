@@ -11,6 +11,7 @@ import {
   type Foxer,
   type FoxerSpecialization,
 } from "@/shared/api/foxers";
+import { smartBack } from "@/shared/lib/navigation";
 
 function ProfileSpecializationChip({ spec }: { spec: FoxerSpecialization }) {
   const label = spec.category.replace(/_/g, " ");
@@ -181,15 +182,15 @@ const FoxerProfile: React.FC = () => {
   return (
     <div className="min-h-screen bg-background bg-gradient-dark text-text-main selection:bg-accent selection:text-black">
       <header className="fixed top-0 left-0 right-0 z-50 p-6">
-        <Link
-          href="/"
-          className="inline-flex items-center gap-2 px-4 py-2 bg-white/5 backdrop-blur-md rounded-full border border-white/10 hover:bg-white/10 transition-all text-sm font-bold"
+        <button
+          onClick={() => smartBack(router, "/search")}
+          className="inline-flex items-center gap-2 px-4 py-2 bg-white/5 backdrop-blur-md rounded-full border border-white/10 hover:bg-white/10 transition-all text-sm font-bold cursor-pointer"
         >
           <span className="material-symbols-outlined text-[18px]">
             arrow_back
           </span>
           Back to Listings
-        </Link>
+        </button>
       </header>
 
       <main className="pt-24 pb-28 sm:pb-20 px-4">
