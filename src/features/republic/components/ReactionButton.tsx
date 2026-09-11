@@ -1,7 +1,9 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { ReactionType } from "@/shared/types/feed";
+
+const LONG_PRESS_MS = 400;
 
 const REACTIONS: Array<{
   type: ReactionType;
@@ -24,8 +26,8 @@ interface ReactionButtonProps {
 }
 
 // Facebook's Like button: a plain click toggles the default "like" reaction
-// on/off; hovering (desktop) or pressing-and-holding (not implemented here,
-// out of scope for a mouse-first feed) reveals the full 6-reaction picker.
+// on/off; hovering (desktop) or pressing-and-holding (touch) reveals the
+// full 6-reaction picker.
 export function ReactionButton({
   myReaction,
   likesCount,
@@ -33,6 +35,9 @@ export function ReactionButton({
 }: ReactionButtonProps) {
   const [pickerOpen, setPickerOpen] = useState(false);
   const closeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const longPressTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const longPressTriggered = useRef(false);
+  const containerRef = useRef<HTMLDivElement>(null);
 
   const openPicker = () => {
     if (closeTimer.current) clearTimeout(closeTimer.current);
@@ -43,10 +48,54 @@ export function ReactionButton({
     closeTimer.current = setTimeout(() => setPickerOpen(false), 200);
   };
 
+  const clearLongPressTimer = () => {
+    if (longPressTimer.current) {
+      clearTimeout(longPressTimer.current);
+      longPressTimer.current = null;
+    }
+  };
+
+  const handleTouchStart = () => {
+    longPressTriggered.current = false;
+    clearLongPressTimer();
+    longPressTimer.current = setTimeout(() => {
+      longPressTriggered.current = true;
+      if (typeof navigator !== "undefined" && navigator.vibrate) {
+        navigator.vibrate(10);
+      }
+      openPicker();
+    }, LONG_PRESS_MS);
+  };
+
+  const handleButtonClick = () => {
+    if (longPressTriggered.current) {
+      longPressTriggered.current = false;
+      return;
+    }
+    onReact(myReaction ? null : "like");
+  };
+
+  // Long-press opens the picker on touch devices where hover never fires;
+  // a tap outside the container closes it the same way mouseleave does on desktop.
+  useEffect(() => {
+    if (!pickerOpen) return;
+    const handleOutside = (e: PointerEvent) => {
+      if (
+        containerRef.current &&
+        !containerRef.current.contains(e.target as Node)
+      ) {
+        setPickerOpen(false);
+      }
+    };
+    document.addEventListener("pointerdown", handleOutside);
+    return () => document.removeEventListener("pointerdown", handleOutside);
+  }, [pickerOpen]);
+
   const current = REACTIONS.find((r) => r.type === myReaction);
 
   return (
     <div
+      ref={containerRef}
       className="relative"
       onMouseEnter={openPicker}
       onMouseLeave={scheduleClose}
@@ -75,8 +124,13 @@ export function ReactionButton({
       )}
       <button
         type="button"
-        onClick={() => onReact(myReaction ? null : "like")}
-        className={`flex items-center gap-1 px-2.5 py-1.5 rounded-lg transition-colors ${
+        onClick={handleButtonClick}
+        onTouchStart={handleTouchStart}
+        onTouchEnd={clearLongPressTimer}
+        onTouchMove={clearLongPressTimer}
+        onTouchCancel={clearLongPressTimer}
+        onContextMenu={(e) => e.preventDefault()}
+        className={`flex items-center gap-1 px-2.5 py-1.5 rounded-lg transition-colors select-none touch-manipulation ${
           current
             ? `${current.color} bg-white/5 font-bold`
             : "text-zinc-400 hover:text-white hover:bg-zinc-800/60"

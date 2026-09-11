@@ -16,6 +16,7 @@ import {
   Send,
   Speaker,
   Star,
+  Tag as TagIcon,
   Users,
   Wrench,
   Zap,
@@ -28,6 +29,10 @@ import {
   MentionCandidate,
 } from "@/features/republic/types";
 import { createPost, searchMentionCandidates } from "@/shared/api/feed";
+import {
+  PhotoTagEditor,
+  type PendingMediaTag,
+} from "@/features/republic/components/PhotoTagEditor";
 import { useAuthStore } from "@/shared/auth/useAuthStore";
 import { isPartnerUser } from "@/shared/auth/roles";
 import api from "@/shared/lib/axios";
@@ -41,6 +46,10 @@ const isVideoUrl = (url: string) => {
   const clean = url.split("?")[0].toLowerCase();
   return VIDEO_EXTENSIONS.some((ext) => clean.endsWith(ext));
 };
+
+interface PendingTag extends PendingMediaTag {
+  mediaUrl: string;
+}
 
 interface ComposePostBoxProps {
   onPostCreated?: () => void;
@@ -118,6 +127,8 @@ export function ComposePostBox({
   const [content, setContent] = useState("");
   const [visibility, setVisibility] = useState<PostVisibility>("public");
   const [mediaUrls, setMediaUrls] = useState<string[]>([]);
+  const [mediaTags, setMediaTags] = useState<PendingTag[]>([]);
+  const [taggingUrl, setTaggingUrl] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -279,7 +290,9 @@ export function ComposePostBox({
   };
 
   const removeMedia = (idx: number) => {
+    const removedUrl = mediaUrls[idx];
     setMediaUrls((prev) => prev.filter((_, i) => i !== idx));
+    setMediaTags((prev) => prev.filter((t) => t.mediaUrl !== removedUrl));
   };
 
   const handleContentChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
@@ -289,7 +302,10 @@ export function ComposePostBox({
     cursorPosRef.current = cursor;
 
     const uptoCursor = value.slice(0, cursor);
-    const match = uptoCursor.match(/@([a-zA-Z0-9_]{1,32})$/);
+    // {0,32}, not {1,32} — a bare "@" with nothing typed yet should still
+    // open the picker (empty-query search), matching Facebook's mention
+    // picker instead of waiting for the first letter.
+    const match = uptoCursor.match(/@([a-zA-Z0-9_]{0,32})$/);
     setMentionQuery(match ? match[1] : null);
   };
 
@@ -322,12 +338,23 @@ export function ComposePostBox({
       mediaUrls,
       visibility,
       ...(resourceConfig ? { [resourceConfig.field]: resourceId } : {}),
+      ...(mediaTags.length > 0
+        ? {
+            mediaTags: mediaTags.map(({ mediaUrl, userId, x, y }) => ({
+              mediaUrl,
+              userId,
+              x,
+              y,
+            })),
+          }
+        : {}),
     };
 
     try {
       await createPost(payload);
       setContent("");
       setMediaUrls([]);
+      setMediaTags([]);
       setResourceId("");
       setVisibility("public");
       setIsExpanded(false);
@@ -478,35 +505,81 @@ export function ComposePostBox({
         {/* Media Preview Grid */}
         {mediaUrls.length > 0 && (
           <div className="flex gap-2 flex-wrap mt-2.5">
-            {mediaUrls.map((url, idx) => (
-              <div
-                key={idx}
-                className="relative w-20 h-20 rounded-lg overflow-hidden border border-zinc-700 group"
-              >
-                {isVideoUrl(url) ? (
-                  <video
-                    src={url}
-                    muted
-                    className="w-full h-full object-cover"
-                  />
-                ) : (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img
-                    src={url}
-                    alt=""
-                    className="w-full h-full object-cover"
-                  />
-                )}
-                <button
-                  type="button"
-                  onClick={() => removeMedia(idx)}
-                  className="absolute top-1 right-1 w-5 h-5 rounded-full bg-black/80 text-white flex items-center justify-center text-xs opacity-0 group-hover:opacity-100 transition-opacity"
+            {mediaUrls.map((url, idx) => {
+              const tagCount = mediaTags.filter(
+                (t) => t.mediaUrl === url,
+              ).length;
+              return (
+                <div
+                  key={idx}
+                  className="relative w-20 h-20 rounded-lg overflow-hidden border border-zinc-700 group"
                 >
-                  ✕
-                </button>
-              </div>
-            ))}
+                  {isVideoUrl(url) ? (
+                    <video
+                      src={url}
+                      muted
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={url}
+                      alt=""
+                      className="w-full h-full object-cover"
+                    />
+                  )}
+                  <button
+                    type="button"
+                    onClick={() => removeMedia(idx)}
+                    className="absolute top-1 right-1 w-5 h-5 rounded-full bg-black/80 text-white flex items-center justify-center text-xs opacity-0 group-hover:opacity-100 transition-opacity"
+                  >
+                    ✕
+                  </button>
+                  {/* Photo tagging isn't meaningful on video — FB only tags
+                      people in photos, not a moving frame. */}
+                  {!isVideoUrl(url) && (
+                    <button
+                      type="button"
+                      onClick={() => setTaggingUrl(url)}
+                      title="Tag people"
+                      className={`absolute bottom-1 left-1 flex items-center gap-0.5 rounded-full bg-black/80 px-1.5 py-0.5 text-[10px] font-bold text-white transition-opacity ${
+                        tagCount > 0
+                          ? "opacity-100"
+                          : "opacity-0 group-hover:opacity-100"
+                      }`}
+                    >
+                      <TagIcon className="h-2.5 w-2.5" strokeWidth={2} />
+                      {tagCount > 0 && tagCount}
+                    </button>
+                  )}
+                </div>
+              );
+            })}
           </div>
+        )}
+
+        {taggingUrl && (
+          <PhotoTagEditor
+            mediaUrl={taggingUrl}
+            tags={mediaTags
+              .filter((t) => t.mediaUrl === taggingUrl)
+              .map(({ userId, x, y, name, username, imgId }) => ({
+                userId,
+                x,
+                y,
+                name,
+                username,
+                imgId,
+              }))}
+            onChange={(updated) => {
+              const activeUrl = taggingUrl;
+              setMediaTags((prev) => [
+                ...prev.filter((t) => t.mediaUrl !== activeUrl),
+                ...updated.map((t) => ({ ...t, mediaUrl: activeUrl })),
+              ]);
+            }}
+            onClose={() => setTaggingUrl(null)}
+          />
         )}
 
         {/* Bottom Actions Bar */}

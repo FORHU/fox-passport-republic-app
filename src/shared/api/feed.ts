@@ -9,6 +9,7 @@ import {
   ReactionType,
   ReactionBreakdownEntry,
   MentionCandidate,
+  MediaTag,
 } from "@/shared/types/feed";
 
 export interface FeedResponse {
@@ -142,6 +143,22 @@ export const toggleCommentLike = async (
 ): Promise<{ liked: boolean; likesCount: number }> => {
   const res = await api.post(`/feed/${postId}/comments/${commentId}/like`);
   return res.data.data;
+};
+
+export const addMediaTag = async (
+  postId: string,
+  payload: { mediaUrl: string; userId: string; x: number; y: number },
+): Promise<MediaTag> => {
+  const res = await api.post(`/feed/${postId}/media-tags`, payload);
+  return res.data.data;
+};
+
+export const removeMediaTag = async (
+  postId: string,
+  tagId: string,
+): Promise<{ success: boolean }> => {
+  const res = await api.delete(`/feed/${postId}/media-tags/${tagId}`);
+  return res.data;
 };
 
 export const fileReport = async (payload: {

@@ -5,6 +5,8 @@ import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import { ChevronLeft, ChevronRight, Download, X } from "lucide-react";
 import { toast } from "sonner";
+import { MediaTagOverlay } from "@/shared/components/ui/MediaTagOverlay";
+import type { MediaTag } from "@/shared/types/feed";
 
 const VIDEO_EXTENSIONS = [".mp4", ".mov", ".webm", ".m4v"];
 const isVideoUrl = (url: string) => {
@@ -18,6 +20,9 @@ interface ImageLightboxProps {
   urls: string[];
   startIndex?: number;
   onClose: () => void;
+  /** Feed posts only — chat attachments never carry tags, so this is
+   * omitted there and the overlay simply doesn't render. */
+  tagsByUrl?: MediaTag[];
 }
 
 // Full-screen media viewer — blurred backdrop, download button, prev/next
@@ -27,6 +32,7 @@ export function ImageLightbox({
   urls,
   startIndex = 0,
   onClose,
+  tagsByUrl,
 }: ImageLightboxProps) {
   const [index, setIndex] = useState(startIndex);
   const [mounted, setMounted] = useState(false);
@@ -147,12 +153,20 @@ export function ImageLightbox({
           className="max-h-[85vh] max-w-[90vw] rounded-lg shadow-2xl"
         />
       ) : (
-        <img
-          src={url}
-          alt=""
+        <div
+          className="relative max-h-[85vh] max-w-[90vw]"
           onClick={(e) => e.stopPropagation()}
-          className="max-h-[85vh] max-w-[90vw] rounded-lg object-contain shadow-2xl"
-        />
+        >
+          <img
+            src={url}
+            alt=""
+            className="max-h-[85vh] max-w-[90vw] rounded-lg object-contain shadow-2xl"
+          />
+          <MediaTagOverlay
+            tags={tagsByUrl?.filter((t) => t.mediaUrl === url) ?? []}
+            defaultRevealed
+          />
+        </div>
       )}
     </div>,
     document.body,

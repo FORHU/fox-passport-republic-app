@@ -21,7 +21,9 @@ import { CommentSection } from "./CommentSection";
 import { ReactionButton } from "./ReactionButton";
 import { PostOptionsMenu } from "./PostOptionsMenu";
 import { RepostComposer } from "./RepostComposer";
+import { MediaTagOverlay } from "@/shared/components/ui/MediaTagOverlay";
 import { setPostReaction, editPost } from "@/shared/api/feed";
+import { renderUsernameMentions } from "@/shared/lib/mentions";
 import { useAuthStore } from "@/shared/auth/useAuthStore";
 import { Badge } from "@/shared/components/ui/badge";
 import { SharePostModal } from "@/features/messages/components/SharePostModal";
@@ -34,37 +36,6 @@ const isVideoUrl = (url: string) => {
   const clean = url.split("?")[0].toLowerCase();
   return VIDEO_EXTENSIONS.some((ext) => clean.endsWith(ext));
 };
-
-// @handle -> a clickable link to that citizen's profile, same pattern the
-// backend uses to detect and notify mentions (see feed.service.ts
-// MENTION_PATTERN) — kept in sync by character set, not by importing across
-// the repo boundary.
-const MENTION_PATTERN = /@([a-zA-Z0-9_]{2,32})/g;
-function renderContentWithMentions(text: string) {
-  const parts: Array<string | { handle: string }> = [];
-  let lastIndex = 0;
-  for (const match of text.matchAll(MENTION_PATTERN)) {
-    const start = match.index ?? 0;
-    if (start > lastIndex) parts.push(text.slice(lastIndex, start));
-    parts.push({ handle: match[1] });
-    lastIndex = start + match[0].length;
-  }
-  if (lastIndex < text.length) parts.push(text.slice(lastIndex));
-
-  // Highlighted, not linked — the profile route is keyed by user id, and a
-  // raw @handle in text is only ever a username, so linking would need a
-  // username->id lookup per mention on every render. Not worth it for a
-  // visual highlight.
-  return parts.map((part, i) =>
-    typeof part === "string" ? (
-      <span key={i}>{part}</span>
-    ) : (
-      <span key={i} className="font-bold text-lime-400">
-        @{part.handle}
-      </span>
-    ),
-  );
-}
 
 interface PostCardProps {
   post: FeedPost;
@@ -290,7 +261,7 @@ export function PostCard({
           onClick={openable ? handleOpenDetail : undefined}
           className={`mt-3 text-sm text-zinc-200 whitespace-pre-wrap leading-relaxed ${openable ? "cursor-pointer" : ""}`}
         >
-          {renderContentWithMentions(displayedContent)}
+          {renderUsernameMentions(displayedContent)}
           {isLongText && !textExpanded && (
             <>
               …{" "}
@@ -427,6 +398,11 @@ export function PostCard({
                   </div>
                 </div>
               )}
+              <MediaTagOverlay
+                tags={
+                  post.mediaTags?.filter((t) => t.mediaUrl === url) ?? []
+                }
+              />
             </div>
           ))}
         </div>
@@ -759,6 +735,7 @@ export function PostCard({
         <ImageLightbox
           urls={post.mediaUrls}
           startIndex={lightboxIndex}
+          tagsByUrl={post.mediaTags}
           onClose={() => setLightboxIndex(null)}
         />
       )}

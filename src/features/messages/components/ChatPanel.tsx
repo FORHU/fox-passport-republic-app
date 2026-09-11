@@ -23,6 +23,7 @@ import {
   X,
 } from "lucide-react";
 import { toast } from "sonner";
+import { renderNamedMentions, type MentionableUser } from "@/shared/lib/mentions";
 import { useAuthStore } from "@/shared/auth/useAuthStore";
 import { SOCKET_EVENTS, subscribeRealtime } from "@/shared/lib/realtime";
 import { getSocket } from "@/shared/lib/socket";
@@ -114,6 +115,7 @@ function EditableCaption({
   onSave,
   onCancel,
   bubbleClassName,
+  mentionCandidates,
 }: {
   message: Message;
   isEditing: boolean;
@@ -124,6 +126,9 @@ function EditableCaption({
   /** Only used for the non-editing render, so each call site keeps its own
    * bubble styling (colored bubble vs. plain caption text). */
   bubbleClassName?: string;
+  /** Group conversations only — the closed set of names @mentions in this
+   * message's content can match against. See renderNamedMentions. */
+  mentionCandidates?: MentionableUser[];
 }) {
   if (isEditing) {
     return (
@@ -153,7 +158,9 @@ function EditableCaption({
   if (!message.content) return null;
   return (
     <p className={bubbleClassName}>
-      {message.content}
+      {mentionCandidates?.length
+        ? renderNamedMentions(message.content, mentionCandidates)
+        : message.content}
       {message.editedAt && (
         <span className="ml-1 text-[9px] opacity-50">(edited)</span>
       )}
@@ -388,6 +395,25 @@ export default function ChatPanel({
     return map;
   }, [participants]);
 
+  const user = useAuthStore((state) => state.user);
+  const currentUserId = user?.id as string | undefined;
+
+  // The closed set of names an @mention in this conversation can resolve
+  // against — `participants` already excludes the viewer, so their own name
+  // is added separately (otherwise a message mentioning the viewer
+  // wouldn't render as a link from the viewer's own side of the chat).
+  const mentionCandidates: MentionableUser[] = useMemo(() => {
+    if (!isGroup) return [];
+    const list: MentionableUser[] = (participants ?? []).map((p) => ({
+      id: p.id,
+      name: p.name,
+    }));
+    if (currentUserId && user?.name) {
+      list.push({ id: currentUserId, name: user.name });
+    }
+    return list;
+  }, [isGroup, participants, currentUserId, user?.name]);
+
   const closeChat = useChatWindowsStore((s) => s.closeChat);
   const minimizeChat = useChatWindowsStore((s) => s.minimizeChat);
   const restoreChat = useChatWindowsStore((s) => s.restoreChat);
@@ -403,9 +429,6 @@ export default function ChatPanel({
   const [editingGroupName, setEditingGroupName] = useState(false);
   const [groupNameInput, setGroupNameInput] = useState("");
   const renameGroup = useRenameGroupConversation();
-
-  const user = useAuthStore((state) => state.user);
-  const currentUserId = user?.id as string | undefined;
 
   const getSenderName = (senderId: string) => {
     if (senderId === currentUserId) return "You";
@@ -451,6 +474,18 @@ export default function ChatPanel({
   ]);
 
   const [content, setContent] = useState("");
+  // Group-chat @mention autocomplete: the search text after the triggering
+  // "@" (null when no mention is in progress) and the index of that "@" in
+  // `content`, so the picked name can be spliced back in at the right spot.
+  const [mentionQuery, setMentionQuery] = useState<string | null>(null);
+  const mentionAnchorRef = useRef(0);
+  const mentionSuggestions = useMemo(() => {
+    if (!isGroup || mentionQuery === null) return [];
+    const q = mentionQuery.toLowerCase();
+    return mentionCandidates
+      .filter((c) => c.name.toLowerCase().includes(q))
+      .slice(0, 6);
+  }, [isGroup, mentionQuery, mentionCandidates]);
   // URLs already uploaded, staged to go out with the next send — uploaded
   // eagerly on file pick (not on send) so the preview thumbnail and any
   // upload failure show up immediately, same as ComposePostBox.
@@ -642,11 +677,27 @@ export default function ChatPanel({
       {
         onSuccess: () => {
           setContent("");
+          setMentionQuery(null);
           setPendingAttachments([]);
           setReplyingTo(null);
         },
       },
     );
+  };
+
+  const insertMention = (candidate: MentionableUser) => {
+    const at = mentionAnchorRef.current;
+    const cursor = composerInputRef.current?.selectionStart ?? content.length;
+    const before = content.slice(0, at);
+    const after = content.slice(cursor);
+    const next = `${before}@${candidate.name} ${after}`;
+    setContent(next);
+    setMentionQuery(null);
+    const caret = before.length + candidate.name.length + 2;
+    requestAnimationFrame(() => {
+      composerInputRef.current?.focus();
+      composerInputRef.current?.setSelectionRange(caret, caret);
+    });
   };
 
   const handleReply = (message: Message) => {
@@ -1288,6 +1339,7 @@ export default function ChatPanel({
                           onChangeEditContent={setEditContent}
                           onSave={handleSaveEdit}
                           onCancel={handleCancelEdit}
+                          mentionCandidates={mentionCandidates}
                           bubbleClassName={`mt-1 rounded-2xl px-3 py-2 text-xs whitespace-pre-wrap break-words ${
                             isMine
                               ? "bg-[#ccff00] text-black rounded-br-sm"
@@ -1391,6 +1443,7 @@ export default function ChatPanel({
                           onChangeEditContent={setEditContent}
                           onSave={handleSaveEdit}
                           onCancel={handleCancelEdit}
+                          mentionCandidates={mentionCandidates}
                           bubbleClassName={`mt-1 rounded-2xl px-3 py-2 text-xs whitespace-pre-wrap break-words ${
                             isMine
                               ? "bg-[#ccff00] text-black rounded-br-sm"
@@ -1487,6 +1540,7 @@ export default function ChatPanel({
                           onChangeEditContent={setEditContent}
                           onSave={handleSaveEdit}
                           onCancel={handleCancelEdit}
+                          mentionCandidates={mentionCandidates}
                           bubbleClassName="whitespace-pre-wrap break-words"
                         />
                         <p
@@ -1667,23 +1721,66 @@ export default function ChatPanel({
                     >
                       <Paperclip className="h-4 w-4" strokeWidth={2} />
                     </button>
-                    <input
-                      ref={composerInputRef}
-                      value={content}
-                      onChange={(e) => {
-                        setContent(e.target.value);
-                        emitTyping();
-                      }}
-                      onKeyDown={(e) => {
-                        if (e.key === "Enter" && !e.shiftKey) {
-                          e.preventDefault();
-                          handleSend();
-                        }
-                      }}
-                      placeholder="Type a message…"
-                      disabled={!conversationId}
-                      className="flex-1 bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-xs text-white placeholder:text-white/30 focus:outline-none focus:border-[#ccff00]/40 disabled:opacity-50"
-                    />
+                    <div className="relative flex-1">
+                      {mentionQuery !== null && mentionSuggestions.length > 0 && (
+                        <div className="absolute left-0 bottom-full z-20 mb-1 w-56 max-h-48 overflow-y-auto rounded-xl border border-white/10 bg-zinc-950 shadow-2xl py-1">
+                          {mentionSuggestions.map((c) => (
+                            <button
+                              key={c.id}
+                              type="button"
+                              onClick={() => insertMention(c)}
+                              className="w-full flex items-center gap-2 px-3 py-2 text-left hover:bg-white/10 transition-colors"
+                            >
+                              <span className="text-xs font-bold text-white truncate">
+                                {c.name}
+                              </span>
+                            </button>
+                          ))}
+                        </div>
+                      )}
+                      <input
+                        ref={composerInputRef}
+                        value={content}
+                        onChange={(e) => {
+                          const value = e.target.value;
+                          const cursor = e.target.selectionStart ?? value.length;
+                          setContent(value);
+                          emitTyping();
+
+                          if (isGroup) {
+                            const uptoCursor = value.slice(0, cursor);
+                            const at = uptoCursor.lastIndexOf("@");
+                            const precededByBoundary =
+                              at === 0 || /\s/.test(uptoCursor[at - 1] ?? "");
+                            const tail = uptoCursor.slice(at + 1);
+                            if (
+                              at !== -1 &&
+                              precededByBoundary &&
+                              !/[\n@]/.test(tail) &&
+                              tail.length <= 40
+                            ) {
+                              mentionAnchorRef.current = at;
+                              setMentionQuery(tail);
+                            } else {
+                              setMentionQuery(null);
+                            }
+                          }
+                        }}
+                        onKeyDown={(e) => {
+                          if (e.key === "Escape" && mentionQuery !== null) {
+                            setMentionQuery(null);
+                            return;
+                          }
+                          if (e.key === "Enter" && !e.shiftKey) {
+                            e.preventDefault();
+                            handleSend();
+                          }
+                        }}
+                        placeholder="Type a message…"
+                        disabled={!conversationId}
+                        className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-xs text-white placeholder:text-white/30 focus:outline-none focus:border-[#ccff00]/40 disabled:opacity-50"
+                      />
+                    </div>
                     <button
                       onClick={handleSend}
                       disabled={

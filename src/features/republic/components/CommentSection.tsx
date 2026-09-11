@@ -1,15 +1,17 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Heart, Send, Trash2 } from "lucide-react";
 import { toast } from "sonner";
-import { PostComment } from "../types";
+import { MentionCandidate, PostComment } from "../types";
 import {
   getPostComments,
   addPostComment,
   deletePostComment,
+  searchMentionCandidates,
   toggleCommentLike,
 } from "@/shared/api/feed";
+import { renderUsernameMentions } from "@/shared/lib/mentions";
 import { useAuthStore } from "@/shared/auth/useAuthStore";
 
 interface CommentSectionProps {
@@ -93,7 +95,7 @@ function CommentRow({
               <span className="text-[10px] text-zinc-500">{dateStr}</span>
             </div>
             <p className="text-zinc-300 mt-0.5 whitespace-pre-wrap leading-relaxed">
-              {comment.content}
+              {renderUsernameMentions(comment.content)}
             </p>
             <div className="flex items-center gap-3 mt-1">
               <button
@@ -149,6 +151,33 @@ export function CommentSection({
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [replyTarget, setReplyTarget] = useState<PostComment | null>(null);
+  const [mentionQuery, setMentionQuery] = useState<string | null>(null);
+  const [mentionCandidates, setMentionCandidates] = useState<
+    MentionCandidate[]
+  >([]);
+  const inputRef = useRef<HTMLInputElement>(null);
+  const cursorPosRef = useRef(0);
+
+  useEffect(() => {
+    if (mentionQuery === null) {
+      setMentionCandidates([]);
+      return;
+    }
+    let cancelled = false;
+    const timer = setTimeout(() => {
+      searchMentionCandidates(mentionQuery)
+        .then((results) => {
+          if (!cancelled) setMentionCandidates(results);
+        })
+        .catch(() => {
+          if (!cancelled) setMentionCandidates([]);
+        });
+    }, 200);
+    return () => {
+      cancelled = true;
+      clearTimeout(timer);
+    };
+  }, [mentionQuery]);
 
   useEffect(() => {
     let mounted = true;
@@ -203,6 +232,31 @@ export function CommentSection({
     } finally {
       setSubmitting(false);
     }
+  };
+
+  const handleContentChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    const cursor = e.target.selectionStart ?? value.length;
+    setContent(value);
+    cursorPosRef.current = cursor;
+
+    const uptoCursor = value.slice(0, cursor);
+    // {0,32}, not {1,32} — a bare "@" with nothing typed yet should still
+    // open the picker (empty-query search), matching ComposePostBox.
+    const match = uptoCursor.match(/@([a-zA-Z0-9_]{0,32})$/);
+    setMentionQuery(match ? match[1] : null);
+  };
+
+  const insertMention = (username: string) => {
+    const cursor = cursorPosRef.current;
+    const before = content
+      .slice(0, cursor)
+      .replace(/@([a-zA-Z0-9_]{1,32})$/, `@${username} `);
+    const after = content.slice(cursor);
+    setContent(before + after);
+    setMentionQuery(null);
+    setMentionCandidates([]);
+    inputRef.current?.focus();
   };
 
   const handleDeleted = (id: string, parentId?: string) => {
@@ -272,11 +326,12 @@ export function CommentSection({
             </button>
           </div>
         )}
-        <div className="flex items-center gap-2">
+        <div className="relative flex items-center gap-2">
           <input
+            ref={inputRef}
             type="text"
             value={content}
-            onChange={(e) => setContent(e.target.value)}
+            onChange={handleContentChange}
             placeholder={
               user
                 ? replyTarget
@@ -287,6 +342,41 @@ export function CommentSection({
             disabled={!user || submitting}
             className="flex-1 bg-zinc-900 border border-zinc-800 focus:border-lime-400/60 rounded-xl px-3 py-2 text-xs text-white placeholder-zinc-500 focus:outline-none transition-colors"
           />
+          {mentionQuery !== null && mentionCandidates.length > 0 && (
+            <div className="absolute left-0 bottom-full z-20 mb-1 w-56 max-h-48 overflow-y-auto rounded-xl border border-zinc-800 bg-zinc-950 shadow-2xl py-1">
+              {mentionCandidates.map((c) => (
+                <button
+                  key={c.id}
+                  type="button"
+                  onClick={() => insertMention(c.username || c.name)}
+                  className="w-full flex items-center gap-2 px-3 py-2 text-left hover:bg-zinc-800 transition-colors"
+                >
+                  <div className="h-6 w-6 rounded-full bg-zinc-800 border border-zinc-700 flex items-center justify-center text-[10px] font-bold text-zinc-400 shrink-0 overflow-hidden">
+                    {c.imgId ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={c.imgId}
+                        alt=""
+                        className="h-full w-full object-cover"
+                      />
+                    ) : (
+                      c.name.charAt(0).toUpperCase()
+                    )}
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-xs font-bold text-white truncate">
+                      {c.name}
+                    </p>
+                    {c.username && (
+                      <p className="text-[10px] text-zinc-500 truncate">
+                        @{c.username}
+                      </p>
+                    )}
+                  </div>
+                </button>
+              ))}
+            </div>
+          )}
           <button
             type="submit"
             disabled={!user || !content.trim() || submitting}

@@ -18,6 +18,26 @@ export interface ReactionBreakdownEntry {
   count: number;
 }
 
+// A citizen pinned to a specific spot on a photo/video in a post — distinct
+// from @mentions, which link a username inside the post's text content.
+export interface MediaTag {
+  id: string;
+  mediaUrl: string;
+  userId: string;
+  /** 0-100, percentage from the left edge of the media — resolution
+   * independent so it still lines up on a responsively-sized <img>. */
+  x: number;
+  /** 0-100, percentage from the top edge. */
+  y: number;
+  createdAt: string;
+  user: {
+    id: string;
+    name: string;
+    username?: string | null;
+    imgId?: string | null;
+  };
+}
+
 export interface FeedAuthor {
   id: string;
   name: string;
@@ -73,6 +93,7 @@ export interface FeedPost {
   myReaction?: ReactionType | null;
   isFollowingAuthor?: boolean;
   isSavedByMe?: boolean;
+  mediaTags?: MediaTag[];
   editedAt?: string | null;
   createdAt: string;
   author: FeedAuthor;
@@ -185,6 +206,7 @@ export interface CreatePostPayload {
   eventId?: string | null;
   reviewId?: string | null;
   stampId?: string | null;
+  mediaTags?: Array<{ mediaUrl: string; userId: string; x: number; y: number }>;
 }
 
 export interface MentionCandidate {
