@@ -15,7 +15,7 @@ export const useFavorites = () => {
   const userId = user?.id as string | undefined;
   const queryClient = useQueryClient();
 
-  const { data: favorites = [] } = useQuery<Favorite[]>({
+  const { data: favorites = [], isLoading } = useQuery<Favorite[]>({
     queryKey: ["favorites", userId],
     queryFn: () => getUserFavorites(userId!),
     enabled: !!userId,
@@ -77,5 +77,11 @@ export const useFavorites = () => {
     toggle(venueId);
   };
 
-  return { favorites, isFavorited, toggleFavorite, isToggling: isPending };
+  return {
+    favorites,
+    isLoading,
+    isFavorited,
+    toggleFavorite,
+    isToggling: isPending,
+  };
 };

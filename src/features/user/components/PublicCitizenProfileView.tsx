@@ -790,9 +790,10 @@ export default function PublicCitizenProfileView() {
                   </h3>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     {profile.services?.map((s) => (
-                      <div
+                      <Link
                         key={s.id}
-                        className="rounded-2xl bg-zinc-950/70 border border-zinc-800/80 p-3 flex gap-3"
+                        href={`/booking/service/${s.id}`}
+                        className="group rounded-2xl bg-zinc-950/70 border border-zinc-800/80 hover:border-lime-400/50 p-3 transition-all flex gap-3"
                       >
                         <div className="w-16 h-16 rounded-xl overflow-hidden bg-zinc-900 shrink-0">
                           {s.images?.[0]?.url ? (
@@ -810,7 +811,7 @@ export default function PublicCitizenProfileView() {
                           )}
                         </div>
                         <div className="flex-1 min-w-0">
-                          <h4 className="font-bold text-sm text-white truncate">
+                          <h4 className="font-bold text-sm text-white truncate group-hover:text-lime-400 transition-colors">
                             {s.name}
                           </h4>
                           <p className="text-xs text-zinc-400 capitalize">
@@ -821,7 +822,7 @@ export default function PublicCitizenProfileView() {
                             {s.billingRate}
                           </p>
                         </div>
-                      </div>
+                      </Link>
                     ))}
                   </div>
                 </div>
@@ -838,9 +839,10 @@ export default function PublicCitizenProfileView() {
                   </h3>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     {profile.assets?.map((a) => (
-                      <div
+                      <Link
                         key={a.id}
-                        className="rounded-2xl bg-zinc-950/70 border border-zinc-800/80 p-3 flex gap-3"
+                        href={`/booking/asset/${a.id}`}
+                        className="group rounded-2xl bg-zinc-950/70 border border-zinc-800/80 hover:border-lime-400/50 p-3 transition-all flex gap-3"
                       >
                         <div className="w-16 h-16 rounded-xl overflow-hidden bg-zinc-900 shrink-0">
                           {a.images?.[0]?.url ? (
@@ -858,7 +860,7 @@ export default function PublicCitizenProfileView() {
                           )}
                         </div>
                         <div className="flex-1 min-w-0">
-                          <h4 className="font-bold text-sm text-white truncate">
+                          <h4 className="font-bold text-sm text-white truncate group-hover:text-lime-400 transition-colors">
                             {a.name}
                           </h4>
                           <p className="text-xs text-zinc-400 capitalize">
@@ -869,7 +871,7 @@ export default function PublicCitizenProfileView() {
                             {a.billingRate}
                           </p>
                         </div>
-                      </div>
+                      </Link>
                     ))}
                   </div>
                 </div>

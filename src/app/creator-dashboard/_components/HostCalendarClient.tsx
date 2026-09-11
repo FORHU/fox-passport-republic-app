@@ -1,34 +1,68 @@
 "use client";
 
-import React, { useState, useMemo } from "react";
+import React, { useMemo, useState } from "react";
 import Link from "next/link";
 import RequireAuth from "@/shared/auth/RequireAuth";
 import {
   useCalendarBookings,
   toMonthItems,
-  getBgColor,
   getIcon,
-  getDotColor,
 } from "@/shared/hooks/useCalendarBookings";
+
+const MONTH_NAMES = [
+  "January",
+  "February",
+  "March",
+  "April",
+  "May",
+  "June",
+  "July",
+  "August",
+  "September",
+  "October",
+  "November",
+  "December",
+];
+const WEEKDAYS = ["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"];
+
+function ordinal(day: number) {
+  if (day % 10 === 1 && day !== 11) return "st";
+  if (day % 10 === 2 && day !== 12) return "nd";
+  if (day % 10 === 3 && day !== 13) return "rd";
+  return "th";
+}
+
+function isSameDay(a: Date, b: Date) {
+  return (
+    a.getFullYear() === b.getFullYear() &&
+    a.getMonth() === b.getMonth() &&
+    a.getDate() === b.getDate()
+  );
+}
 
 export default function HostCalendarClient() {
   const [currentDate, setCurrentDate] = useState(new Date());
+  const [selectedDate, setSelectedDate] = useState(new Date());
   const { bookings, isLoading } = useCalendarBookings();
 
   const year = currentDate.getFullYear();
   const month = currentDate.getMonth();
-  const currentMonth = currentDate.toLocaleString("default", {
-    month: "long",
-    year: "numeric",
-  });
+  const today = new Date();
+  const todayStart = new Date(
+    today.getFullYear(),
+    today.getMonth(),
+    today.getDate(),
+  );
+  const isCurrentMonth =
+    month === today.getMonth() && year === today.getFullYear();
 
-  const goToPrevMonth = () => setCurrentDate(new Date(year, month - 1, 1));
-  const goToNextMonth = () => setCurrentDate(new Date(year, month + 1, 1));
+  const goToPrevYear = () => setCurrentDate(new Date(year - 1, month, 1));
+  const goToNextYear = () => setCurrentDate(new Date(year + 1, month, 1));
+  const goToMonth = (m: number) => setCurrentDate(new Date(year, m, 1));
 
   const days = useMemo(() => {
-    const firstDay = new Date(year, month, 1);
+    const offset = new Date(year, month, 1).getDay();
     const daysInMonth = new Date(year, month + 1, 0).getDate();
-    const offset = firstDay.getDay() === 0 ? 6 : firstDay.getDay() - 1;
     const result: (number | null)[] = [];
     for (let i = 0; i < offset; i++) result.push(null);
     for (let d = 1; d <= daysInMonth; d++) result.push(d);
@@ -41,16 +75,17 @@ export default function HostCalendarClient() {
     [bookings, year, month],
   );
 
-  const today = new Date();
-  const isCurrentMonth =
-    month === today.getMonth() && year === today.getFullYear();
+  const selectedDayBookings = useMemo(
+    () => bookings.filter((b) => isSameDay(b.startDate, selectedDate)),
+    [bookings, selectedDate],
+  );
 
   return (
     <RequireAuth>
       <div className="bg-[#02040a] text-white min-h-screen font-body antialiased">
         {/* Header */}
         <header className="fixed top-0 left-0 right-0 z-50 bg-[#02040a]/80 backdrop-blur-md border-b border-white/5">
-          <div className="mx-auto max-w-7xl px-4 h-20 flex items-center justify-between">
+          <div className="mx-auto max-w-7xl px-4 h-20 flex items-center">
             <div className="flex items-center gap-4">
               <Link
                 href="/creator-dashboard"
@@ -60,33 +95,13 @@ export default function HostCalendarClient() {
               </Link>
               <div>
                 <h1 className="text-2xl font-display font-bold">
-                  {currentMonth}
+                  {MONTH_NAMES[month]} {year}
                 </h1>
-                <p className="text-xs text-white/50">
+                <p className="text-xs text-zinc-500">
                   {isLoading
                     ? "Loading…"
                     : `${scheduleItems.length} booking${scheduleItems.length !== 1 ? "s" : ""} this month`}
                 </p>
-              </div>
-            </div>
-            <div className="flex items-center gap-4">
-              <div className="flex gap-2">
-                <button
-                  onClick={goToPrevMonth}
-                  className="h-10 w-10 rounded-full border border-white/10 flex items-center justify-center hover:bg-white/10"
-                >
-                  <span className="material-symbols-outlined">
-                    chevron_left
-                  </span>
-                </button>
-                <button
-                  onClick={goToNextMonth}
-                  className="h-10 w-10 rounded-full border border-white/10 flex items-center justify-center hover:bg-white/10"
-                >
-                  <span className="material-symbols-outlined">
-                    chevron_right
-                  </span>
-                </button>
               </div>
             </div>
           </div>
@@ -97,99 +112,206 @@ export default function HostCalendarClient() {
           <div className="mx-auto max-w-7xl px-4 py-3 flex items-center gap-6">
             {(
               [
-                { label: "Events", dot: getDotColor("event") },
-                { label: "Venues", dot: getDotColor("venue") },
-                { label: "Assets", dot: getDotColor("inventory") },
-                { label: "Services", dot: getDotColor("service") },
+                { label: "Events", type: "event" },
+                { label: "Venues", type: "venue" },
+                { label: "Assets", type: "inventory" },
+                { label: "Services", type: "service" },
               ] as const
-            ).map(({ label, dot }) => (
-              <div key={label} className="flex items-center gap-2">
-                <span className={`w-3 h-3 rounded-full ${dot}`} />
-                <span className="text-xs text-white/70">{label}</span>
+            ).map(({ label, type }) => (
+              <div key={label} className="flex items-center gap-1.5">
+                <span className="material-symbols-outlined text-[16px] text-zinc-400">
+                  {getIcon(type)}
+                </span>
+                <span className="text-xs text-zinc-300">{label}</span>
               </div>
             ))}
           </div>
         </div>
 
-        {/* Calendar Grid */}
-        <main className="pt-36 pb-28 sm:pb-10 px-4">
+        <main className="pt-32 pb-28 sm:pb-10 px-4">
           <div className="mx-auto max-w-7xl">
+            {/* Month strip */}
+            <div className="flex items-center gap-2 overflow-x-auto hide-scrollbar mb-8 pb-1">
+              {MONTH_NAMES.map((name, i) => (
+                <button
+                  key={name}
+                  onClick={() => goToMonth(i)}
+                  className={`px-4 py-2 rounded-full text-sm font-bold whitespace-nowrap transition-colors shrink-0 ${
+                    i === month
+                      ? "bg-[#ccff00] text-black"
+                      : "text-zinc-500 hover:text-white hover:bg-[#161920]"
+                  }`}
+                >
+                  {name}
+                </button>
+              ))}
+            </div>
+
             {isLoading ? (
-              <div className="flex items-center justify-center h-96 text-white/30 text-sm">
+              <div className="flex items-center justify-center h-96 text-zinc-600 text-sm">
                 Loading calendar…
               </div>
             ) : (
-              <div className="grid grid-cols-7 grid-rows-[auto_repeat(6,1fr)] gap-px bg-white/5 border border-white/10 rounded-2xl overflow-hidden min-h-[calc(100vh-200px)]">
-                {["MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN"].map((d) => (
-                  <div
-                    key={d}
-                    className="bg-[#1a1d2d] p-4 text-center text-xs font-bold text-white/40 uppercase tracking-wider"
-                  >
-                    {d}
-                  </div>
-                ))}
-
-                {days.map((day, index) => {
-                  if (day === null) {
-                    return (
-                      <div key={`empty-${index}`} className="bg-[#0f111a]/30" />
-                    );
-                  }
-
-                  const evs = scheduleItems.filter(
-                    (x) => day >= x.startDay && day <= x.endDay,
-                  );
-                  const isToday = isCurrentMonth && day === today.getDate();
-
-                  return (
-                    <div
-                      key={day}
-                      className="bg-[#0f111a] border-b border-r border-white/5 flex flex-col relative group hover:bg-white/5 min-h-30"
-                    >
-                      <div
-                        className={`mx-3 mt-3 mb-2 text-sm font-bold w-8 h-8 flex items-center justify-center rounded-lg ${
-                          isToday
-                            ? "bg-[#ccff00] text-black shadow-[0_0_10px_#ccff00]"
-                            : "text-white/50"
-                        }`}
+              <div className="grid grid-cols-1 lg:grid-cols-[1.5fr_1fr] gap-8">
+                {/* Calendar grid */}
+                <div>
+                  <div className="flex items-center justify-between mb-6">
+                    <h2 className="text-2xl font-display font-bold">
+                      <span className="text-[#ccff00]">
+                        {MONTH_NAMES[month]}
+                      </span>{" "}
+                      <span className="text-zinc-500">{year}</span>
+                    </h2>
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={goToPrevYear}
+                        aria-label="Previous year"
+                        className="h-9 w-9 rounded-full border border-white/10 flex items-center justify-center hover:bg-white/10 transition-colors"
                       >
-                        {day}
-                      </div>
-
-                      <div className="flex flex-col gap-1 px-2 pb-2">
-                        {evs.map((e) => {
-                          const isStart = day === e.startDay;
-                          const isEnd = day === e.endDay;
-                          const roundedClass =
-                            isStart && isEnd
-                              ? "rounded-md mx-0"
-                              : isStart
-                                ? "rounded-l-md rounded-r-none -mr-2"
-                                : isEnd
-                                  ? "rounded-r-md rounded-l-none -ml-2"
-                                  : "rounded-none -mx-2";
-
-                          return isStart ? (
-                            <div
-                              key={e.id}
-                              className={`${getBgColor(e.type)} text-[11px] font-bold py-1.5 px-2 flex items-center gap-1 truncate h-6.5 cursor-pointer hover:brightness-110 transition-all ${roundedClass}`}
-                            >
-                              <span className="material-symbols-outlined text-[14px]">
-                                {getIcon(e.type)}
-                              </span>
-                              {e.title}
-                            </div>
-                          ) : (
-                            <div
-                              key={e.id}
-                              className={`${getBgColor(e.type)} h-6.5 cursor-pointer hover:brightness-110 transition-all ${roundedClass}`}
-                            />
-                          );
-                        })}
-                      </div>
+                        <span className="material-symbols-outlined text-[18px]">
+                          chevron_left
+                        </span>
+                      </button>
+                      <button
+                        onClick={goToNextYear}
+                        aria-label="Next year"
+                        className="h-9 w-9 rounded-full border border-white/10 flex items-center justify-center hover:bg-white/10 transition-colors"
+                      >
+                        <span className="material-symbols-outlined text-[18px]">
+                          chevron_right
+                        </span>
+                      </button>
                     </div>
-                  );
-                })}
+                  </div>
+
+                  <div className="grid grid-cols-7 mb-2">
+                    {WEEKDAYS.map((d) => (
+                      <div
+                        key={d}
+                        className="text-center text-[10px] sm:text-xs font-bold text-zinc-500 uppercase tracking-wider py-2"
+                      >
+                        {d}
+                      </div>
+                    ))}
+                  </div>
+
+                  <div className="grid grid-cols-7 gap-1.5 sm:gap-2">
+                    {days.map((day, index) => {
+                      if (day === null) {
+                        return (
+                          <div
+                            key={`empty-${index}`}
+                            className="aspect-square"
+                          />
+                        );
+                      }
+
+                      const evs = scheduleItems.filter(
+                        (x) => day >= x.startDay && day <= x.endDay,
+                      );
+                      const cellDate = new Date(year, month, day);
+                      const isToday = isCurrentMonth && day === today.getDate();
+                      const isSelected = isSameDay(cellDate, selectedDate);
+                      const isPast = cellDate < todayStart;
+
+                      return (
+                        <button
+                          key={day}
+                          type="button"
+                          onClick={() => setSelectedDate(cellDate)}
+                          className={`rounded-2xl border aspect-square flex flex-col items-center justify-center p-2 transition-colors ${
+                            isSelected
+                              ? "bg-[#1c1f28] border-[#3a3f4d]"
+                              : "bg-[#111318] border-[#1f2229] hover:bg-[#161920] hover:border-[#2a2e38]"
+                          }`}
+                        >
+                          <span
+                            className={`text-sm font-bold w-7 h-7 flex items-center justify-center rounded-full ${
+                              isSelected
+                                ? "bg-white text-black"
+                                : isToday
+                                  ? "border-2 border-sky-400 text-sky-400"
+                                  : isPast
+                                    ? "text-zinc-600"
+                                    : "text-white"
+                            }`}
+                          >
+                            {day}
+                          </span>
+                          {evs.length > 0 && (
+                            <div className="flex items-center gap-0.5 mt-1">
+                              {Array.from(
+                                new Set(evs.map((e) => e.type)),
+                              ).map((type) => (
+                                <span
+                                  key={type}
+                                  className="material-symbols-outlined text-[11px] text-zinc-500"
+                                >
+                                  {getIcon(type)}
+                                </span>
+                              ))}
+                            </div>
+                          )}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* Selected day agenda */}
+                <div className="lg:border-l lg:border-white/10 lg:pl-8">
+                  <h2 className="text-2xl font-display font-bold mb-6">
+                    {selectedDate.toLocaleDateString("default", {
+                      weekday: "long",
+                    })}
+                    , {selectedDate.getDate()}
+                    <sup className="text-base">
+                      {ordinal(selectedDate.getDate())}
+                    </sup>
+                  </h2>
+
+                  {selectedDayBookings.length === 0 ? (
+                    <div className="flex flex-col items-center justify-center py-16 text-center border border-dashed border-zinc-800 rounded-2xl">
+                      <span className="material-symbols-outlined text-3xl text-zinc-700 mb-3">
+                        event_busy
+                      </span>
+                      <p className="text-sm text-zinc-500">
+                        Nothing has been scheduled this day.
+                      </p>
+                    </div>
+                  ) : (
+                    <div className="space-y-3">
+                      {selectedDayBookings.map((b) => (
+                        <div
+                          key={b.id}
+                          className="flex items-center gap-3 bg-[#111318] border border-[#1f2229] rounded-2xl px-4 py-3"
+                        >
+                          <span className="h-9 w-9 rounded-full bg-[#1f2229] flex items-center justify-center shrink-0">
+                            <span className="material-symbols-outlined text-[18px] text-zinc-300">
+                              {getIcon(b.type)}
+                            </span>
+                          </span>
+                          <div className="min-w-0">
+                            <p className="font-bold text-sm text-white truncate">
+                              {b.title}
+                            </p>
+                            <p className="text-xs text-zinc-500">
+                              {b.startDate.toLocaleTimeString("default", {
+                                hour: "numeric",
+                                minute: "2-digit",
+                              })}
+                              {" - "}
+                              {b.endDate.toLocaleTimeString("default", {
+                                hour: "numeric",
+                                minute: "2-digit",
+                              })}
+                            </p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
               </div>
             )}
           </div>

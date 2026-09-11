@@ -213,10 +213,12 @@ export default function AvailabilityCalendar(props: Props) {
         ))}
       </div>
 
-      {/* Day grid */}
-      <div className="grid grid-cols-7 gap-y-0.5">
+      {/* Day grid — no horizontal gap: range mode relies on selected cells
+          touching so the start/end/in-between highlight reads as one
+          continuous pill instead of disconnected squares. */}
+      <div className="grid grid-cols-7 gap-y-2">
         {cells.map((day, i) => {
-          if (day === null) return <div key={`e-${i}`} className="h-9" />;
+          if (day === null) return <div key={`e-${i}`} className="h-14" />;
           const ds = toDateStr(viewYear, viewMonth, day);
           const past = ds < todayStr;
           const unavail = unavailableSet.has(ds);
@@ -232,7 +234,7 @@ export default function AvailabilityCalendar(props: Props) {
               onClick={() => handleClick(ds)}
               disabled={past || unavail}
               className={[
-                "relative h-9 w-full text-xs font-bold transition-all flex items-center justify-center",
+                "relative h-14 w-full text-sm font-bold transition-all flex items-center justify-center",
                 inRange ? "bg-white/5" : "",
                 startEdge ? "rounded-l-xl" : "",
                 endEdge ? "rounded-r-xl" : "",
@@ -251,7 +253,7 @@ export default function AvailabilityCalendar(props: Props) {
             >
               {day}
               {unavail && !past && (
-                <span className="absolute bottom-1 left-1/2 -translate-x-1/2 h-1 w-1 rounded-full bg-red-400/70" />
+                <span className="absolute bottom-1.5 left-1/2 -translate-x-1/2 h-1 w-1 rounded-full bg-red-400/70" />
               )}
             </button>
           );

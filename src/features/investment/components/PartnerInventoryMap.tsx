@@ -30,12 +30,19 @@ interface PartnerInventoryMapProps {
   className?: string;
   selectedCategory?: InventoryCategory;
   onSelectInvestment?: (inv: PartnerInvestment) => void;
+  // Small inline embeds (e.g. the Republic sidebar card) sit inside a page
+  // that keeps scrolling past the map, so a click-and-drag gesture aimed at
+  // the page needs to fall through instead of panning the map — set this to
+  // false there. The dedicated /republic/investments map page is the map,
+  // so it keeps free dragging (the default).
+  dragPan?: boolean;
 }
 
 export default function PartnerInventoryMap({
   className = "h-[550px] w-full rounded-3xl overflow-hidden",
   selectedCategory,
   onSelectInvestment,
+  dragPan = true,
 }: PartnerInventoryMapProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<any>(null);
@@ -51,16 +58,102 @@ export default function PartnerInventoryMap({
   );
   const [loading, setLoading] = useState(false);
   const [mapReady, setMapReady] = useState(false);
+  const categoryScrollRef = useRef<HTMLDivElement>(null);
+  const [canScrollCatLeft, setCanScrollCatLeft] = useState(false);
+  const [canScrollCatRight, setCanScrollCatRight] = useState(false);
   // Captured once for the map's initial center — later `coords` updates
   // (geolocation resolving, "Fly to My Location") are applied via setCenter
   // in the effect below instead of tearing down and recreating the map.
   const initialCoordsRef = useRef(coords);
+  const dragPanRef = useRef(dragPan);
 
   useEffect(() => {
     if (selectedCategory) {
       setActiveCategory(selectedCategory);
     }
   }, [selectedCategory]);
+
+  const updateCategoryScrollState = useCallback(() => {
+    const el = categoryScrollRef.current;
+    if (!el) return;
+    setCanScrollCatLeft(el.scrollLeft > 4);
+    setCanScrollCatRight(el.scrollLeft + el.clientWidth < el.scrollWidth - 4);
+  }, []);
+
+  useEffect(() => {
+    const el = categoryScrollRef.current;
+    if (!el) return;
+    updateCategoryScrollState();
+    el.addEventListener("scroll", updateCategoryScrollState, {
+      passive: true,
+    });
+    const resizeObserver = new ResizeObserver(updateCategoryScrollState);
+    resizeObserver.observe(el);
+    return () => {
+      el.removeEventListener("scroll", updateCategoryScrollState);
+      resizeObserver.disconnect();
+    };
+  }, [updateCategoryScrollState]);
+
+  // Drag-to-scroll for the category row: overflow-x-auto already scrolls
+  // via touch/trackpad, but a mouse click-drag does nothing on a plain
+  // scroll container, so it just looks stuck past the card edge. This
+  // makes a mouse drag pan it directly, like a native slider/carousel.
+  //
+  // Deliberately NOT using setPointerCapture here: capturing the pointer
+  // on the row re-targets the *click* event to the row itself instead of
+  // whatever pill is under the cursor, so pill buttons stop receiving
+  // clicks entirely (confirmed while testing this - even a plain, no-drag
+  // click stopped selecting a category). Plain window-level mousemove/
+  // mouseup listeners get the same drag tracking without stealing clicks.
+  const dragStateRef = useRef<{ startX: number; startScrollLeft: number } | null>(
+    null,
+  );
+  const didDragRef = useRef(false);
+  const [isDraggingCategories, setIsDraggingCategories] = useState(false);
+
+  const handleCategoryMouseDown = (e: React.MouseEvent) => {
+    const el = categoryScrollRef.current;
+    if (!el) return;
+    dragStateRef.current = { startX: e.clientX, startScrollLeft: el.scrollLeft };
+    didDragRef.current = false;
+    setIsDraggingCategories(true);
+  };
+
+  useEffect(() => {
+    if (!isDraggingCategories) return;
+
+    const handleMove = (e: MouseEvent) => {
+      const el = categoryScrollRef.current;
+      const drag = dragStateRef.current;
+      if (!el || !drag) return;
+      const delta = e.clientX - drag.startX;
+      if (Math.abs(delta) > 4) didDragRef.current = true;
+      el.scrollLeft = drag.startScrollLeft - delta;
+    };
+
+    const handleUp = () => {
+      dragStateRef.current = null;
+      setIsDraggingCategories(false);
+    };
+
+    window.addEventListener("mousemove", handleMove);
+    window.addEventListener("mouseup", handleUp);
+    return () => {
+      window.removeEventListener("mousemove", handleMove);
+      window.removeEventListener("mouseup", handleUp);
+    };
+  }, [isDraggingCategories]);
+
+  // Dragging past the pill-click threshold shouldn't also select that
+  // category - swallow the click that follows the drag once.
+  const handleCategoryClickCapture = (e: React.MouseEvent) => {
+    if (didDragRef.current) {
+      e.preventDefault();
+      e.stopPropagation();
+      didDragRef.current = false;
+    }
+  };
 
   // Fetch map pins
   useEffect(() => {
@@ -164,6 +257,23 @@ export default function PartnerInventoryMap({
         center: initialCoordsRef.current,
         zoom: 11,
         attributionControl: false,
+        // Only the passthrough (dragPan: false) embed needs cooperative
+        // gestures: it sits in a normally-scrolling page, and without this
+        // Mapbox's default scroll-to-zoom would hijack the mouse wheel the
+        // moment the cursor is over the map, and single-finger touch drag
+        // would pan the map instead of scrolling the page. It requires
+        // Ctrl/Cmd+scroll to zoom and two fingers to pan on touch, letting
+        // a plain wheel scroll / single-finger drag fall through to the
+        // page instead. Once dragPan is enabled the map is meant to be
+        // freely interactive (the dedicated map page, or a card the user
+        // deliberately opened), so a normal one-finger drag should just pan
+        // it rather than showing a "use two fingers" hint.
+        cooperativeGestures: !dragPanRef.current,
+        // A click-and-drag over the map is otherwise consumed to pan it —
+        // fine for the dedicated map page, but for a small card embedded in
+        // a scrolling page (see `dragPan` prop) that gesture is usually the
+        // user trying to scroll the page, and the map should let it through.
+        dragPan: dragPanRef.current,
       });
       mapRef.current = map;
       setMapReady(true);
@@ -310,8 +420,26 @@ export default function PartnerInventoryMap({
         </div>
       </div>
 
-      {/* Category Pills */}
-      <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-none text-xs font-bold">
+      {/* Category Pills — overflow-x-auto with the app's globally-hidden
+          scrollbar gives no visual hint that it scrolls, so a mouse user
+          just sees it cut off at the card edge. Edge fades hint there's
+          more, and the row itself is drag-to-scroll (mouse click-drag pans
+          it, like touch already does natively) so it reads as a slider. */}
+      <div className="relative">
+        {canScrollCatLeft && (
+          <div className="absolute left-0 top-0 bottom-1 w-8 bg-linear-to-r from-zinc-950 to-transparent z-10 pointer-events-none" />
+        )}
+        {canScrollCatRight && (
+          <div className="absolute right-0 top-0 bottom-1 w-8 bg-linear-to-l from-zinc-950 to-transparent z-10 pointer-events-none" />
+        )}
+        <div
+          ref={categoryScrollRef}
+          onMouseDown={handleCategoryMouseDown}
+          onClickCapture={handleCategoryClickCapture}
+          className={`flex gap-2 overflow-x-auto pb-1 scrollbar-none text-xs font-bold select-none ${
+            isDraggingCategories ? "cursor-grabbing" : "cursor-grab"
+          }`}
+        >
         {[
           { id: "all", label: "All Equipment Supplies", icon: "widgets" },
           { id: "furniture_seating", label: "Chairs & Seating", icon: "chair" },
@@ -359,6 +487,7 @@ export default function PartnerInventoryMap({
             Coming Soon
           </span>
         </button>
+        </div>
       </div>
 
       {/* Mapbox Canvas */}

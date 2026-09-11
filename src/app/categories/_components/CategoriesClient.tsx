@@ -60,8 +60,13 @@ function CategoriesContent({
     router.push(`/categories/${categoryId}`);
   };
 
+  // `type` always falls back to "all" (line above), so the branch below
+  // this function is permanently taken - "/categories" with no query still
+  // resolves right back to `type="all"`. Routing back there just reloads
+  // the same screen the user is already looking at, so this goes home
+  // instead, where a working "back" is actually reachable.
   const handleBack = () => {
-    router.push("/categories");
+    router.push("/");
   };
 
   // View logic for category display

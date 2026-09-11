@@ -6,6 +6,7 @@ import Link from "next/link";
 import { useAuthStore } from "@/shared/auth/useAuthStore";
 import { isPartnerUser } from "@/shared/auth/roles";
 import { Badge } from "@/shared/components/ui/badge";
+import { ROLE_BADGE } from "@/shared/constants/roles";
 
 export function CitizenProfileSidebarCard() {
   const { user, openLogin } = useAuthStore();
@@ -89,16 +90,30 @@ export function CitizenProfileSidebarCard() {
         </div>
       </div>
 
-      {/* Role Badges */}
-      <div className="flex flex-wrap gap-1">
+      {/* Role Badges — each Foxer role gets its own accent color (shared
+          with the public passport card via ROLE_BADGE) instead of the
+          catch-all gray `neutral` pill, so four roles don't read as one
+          undifferentiated gray blob. */}
+      <div className="flex flex-wrap gap-1.5">
         {isPartner && <Badge variant="partner">Partner Foxer</Badge>}
         {roleTypes
           .filter((r) => r !== "investor")
-          .map((role) => (
-            <Badge key={role} variant="neutral">
-              {role.replace("Foxer", " Foxer")}
-            </Badge>
-          ))}
+          .map((role) => {
+            const meta = ROLE_BADGE[role];
+            return (
+              <span
+                key={role}
+                className="inline-flex w-fit shrink-0 items-center rounded-full border px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide"
+                style={{
+                  color: meta.color,
+                  borderColor: `${meta.color}40`,
+                  background: `${meta.color}1a`,
+                }}
+              >
+                {meta.label}
+              </span>
+            );
+          })}
         {roleTypes.length === 0 && (
           <Badge variant="verified">Verified Citizen</Badge>
         )}

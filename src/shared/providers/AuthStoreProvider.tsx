@@ -22,7 +22,10 @@ function SessionManager() {
     // session the UI just showed the door to.
     await clearAuthCookies().catch(() => {});
     useAuthStore.getState().logout();
-    window.location.href = "/";
+    // Same `?auth=expired` handoff as the idle-timeout and 401-interceptor
+    // paths: `SessionExpiredToast` picks it up after reload and opens the
+    // login modal, rather than landing on a bare home page.
+    window.location.href = "/?auth=expired";
   };
 
   return (

@@ -40,6 +40,7 @@ import { fetchVenuesByHostId } from "@/features/venue/api/venues";
 import { fetchAssetsByOwnerId } from "@/features/asset/api/assets";
 import { fetchServicesByOwnerId } from "@/features/service/api/services";
 import { fetchOrganizerEvents } from "@/features/event/api/events";
+import { StyledSelect } from "./StyledSelect";
 
 const VIDEO_EXTENSIONS = [".mp4", ".mov", ".webm", ".m4v"];
 const isVideoUrl = (url: string) => {
@@ -405,6 +406,23 @@ export function ComposePostBox({
               </button>
             );
           })}
+        {/* Post Type Selector — role-based options (venue/gear/service/
+            event/partner) can add up to seven choices, so this needs to be
+            a dropdown rather than a pill grid. */}
+        <div className="mb-3">
+          <StyledSelect
+            value={type}
+            options={postOptions.map((opt) => ({
+              value: opt.type,
+              label: opt.label,
+              icon: opt.icon,
+            }))}
+            onChange={(v) => {
+              setType(v as PostType);
+              setIsExpanded(true);
+              setResourceId("");
+            }}
+          />
         </div>
 
         {/* Resource Picker — commercial post types must attach one of the
@@ -428,20 +446,15 @@ export function ComposePostBox({
                 </Link>
               </div>
             ) : (
-              <select
+              <StyledSelect
                 value={resourceId}
-                onChange={(e) => setResourceId(e.target.value)}
-                className="w-full bg-zinc-800/60 border border-zinc-700/60 rounded-xl px-3 py-2.5 text-sm text-white focus:outline-none focus:border-lime-400/60 transition-all"
-              >
-                <option value="">
-                  Select a {resourceConfig.label.toLowerCase()} to spotlight…
-                </option>
-                {resourceOptions.map((r) => (
-                  <option key={String(r.id)} value={String(r.id)}>
-                    {r.name || r.title || String(r.id)}
-                  </option>
-                ))}
-              </select>
+                onChange={setResourceId}
+                placeholder={`Select a ${resourceConfig.label.toLowerCase()} to spotlight…`}
+                options={resourceOptions.map((r) => ({
+                  value: String(r.id),
+                  label: r.name || r.title || String(r.id),
+                }))}
+              />
             )}
           </div>
         )}
@@ -583,7 +596,7 @@ export function ComposePostBox({
         )}
 
         {/* Bottom Actions Bar */}
-        <div className="flex items-center justify-between mt-3 pt-2.5 border-t border-zinc-800/60">
+        <div className="flex items-center justify-between gap-2 mt-3 pt-2.5 border-t border-zinc-800/60">
           <div className="flex items-center gap-2">
             <input
               type="file"
@@ -630,6 +643,17 @@ export function ComposePostBox({
             {/* XP Award Pill */}
             <span className="hidden sm:inline-flex items-center gap-1 text-[11px] font-bold text-amber-400 bg-amber-500/10 border border-amber-500/20 px-2 py-0.5 rounded-full">
               <Zap className="h-3 w-3" strokeWidth={2} />
+            {/* XP Award Pill — hidden at xl+ because that's exactly where
+                this box only ever renders inside the Republic sidebar
+                (page.tsx's `hidden xl:block` column), whose "Publish
+                Update · +15 XP / Post" header already says this; showing
+                both left this bar fighting the submit button for space in
+                a 320-384px column. Below xl it's the mobile composer modal,
+                which has no such header, so the pill stays there. */}
+            <span className="hidden sm:inline-flex xl:hidden items-center gap-1 text-[11px] font-bold text-amber-400 bg-amber-500/10 border border-amber-500/20 px-2 py-0.5 rounded-full">
+              <span className="material-symbols-outlined text-[12px]">
+                bolt
+              </span>
               +15 XP for posting
             </span>
           </div>
@@ -642,7 +666,7 @@ export function ComposePostBox({
               uploading ||
               !!(resourceConfig && (resourceLoading || !resourceId))
             }
-            className="px-4 py-2 rounded-xl bg-lime-400 hover:bg-lime-300 disabled:opacity-40 disabled:cursor-not-allowed text-black font-extrabold text-xs transition-all shadow-md flex items-center gap-1.5"
+            className="ml-auto px-4 py-2 rounded-xl bg-lime-400 hover:bg-lime-300 disabled:opacity-40 disabled:cursor-not-allowed text-black font-extrabold text-xs transition-all shadow-md flex items-center gap-1.5"
           >
             {submitting ? "Publishing..." : "Post to Republic"}
             <Send className="h-3.5 w-3.5" strokeWidth={2} />

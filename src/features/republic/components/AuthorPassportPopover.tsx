@@ -7,6 +7,7 @@ import { FollowButton } from "@/features/follow/components/FollowButton";
 import { Badge } from "@/shared/components/ui/badge";
 import MessageButton from "@/features/messages/components/MessageButton";
 import { useAuthStore } from "@/shared/auth/useAuthStore";
+import { useFollowCounts } from "@/features/follow/api/useFollow";
 
 interface AuthorPassportPopoverProps {
   author: FeedAuthor;
@@ -48,6 +49,7 @@ export function AuthorPassportPopover({
 
   const currentUserId = useAuthStore((state) => state.user?.id);
   const isSelf = currentUserId === author.id;
+  const { data: followCounts } = useFollowCounts(author.id);
 
   return (
     <div className="flex items-center justify-between w-full">
@@ -99,6 +101,16 @@ export function AuthorPassportPopover({
             <span>{author.username ? `@${author.username}` : "Citizen"}</span>
             <span>•</span>
             <span>{dateFormatted}</span>
+
+            {typeof followCounts?.followers === "number" && (
+              <>
+                <span>•</span>
+                <span>
+                  {followCounts.followers}{" "}
+                  {followCounts.followers === 1 ? "Follower" : "Followers"}
+                </span>
+              </>
+            )}
 
             {stampsCount > 0 && (
               <>

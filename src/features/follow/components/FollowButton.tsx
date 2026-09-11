@@ -36,7 +36,11 @@ export function FollowButton({
   if (blockStatus?.blockedByMe || blockStatus?.blockedMe) return null;
 
   const relation = status?.status ?? "none";
-  const isPending = sendFollow.isPending || removeFollow.isPending;
+  // Not tied to `relation` display: the mutations set `followStatus`
+  // optimistically in `onMutate`, so the label/icon below already reflects
+  // the new state the instant a click happens — this only guards against a
+  // double-click firing a second request before the first settles.
+  const isMutating = sendFollow.isPending || removeFollow.isPending;
 
   const errorMessage = (e: unknown, fallback: string) =>
     (e as { response?: { data?: { message?: string } } })?.response?.data
@@ -66,12 +70,10 @@ export function FollowButton({
     ? "h-8 px-3 rounded-lg text-xs"
     : "h-9 px-4 rounded-xl text-sm";
 
-  const isBusy = isLoading || isPending;
-
   return (
     <button
       onClick={handleClick}
-      disabled={isBusy}
+      disabled={isLoading || isMutating}
       className={`font-bold flex items-center justify-center gap-2 transition-all disabled:opacity-50 disabled:cursor-not-allowed ${defaultClasses} ${
         relation === "accepted"
           ? "bg-zinc-800 text-zinc-300 hover:bg-zinc-700 border border-zinc-700 hover:border-zinc-500"
@@ -80,7 +82,7 @@ export function FollowButton({
             : "bg-lime-400 text-black hover:bg-lime-300 shadow-[0_0_15px_rgba(204,255,0,0.15)] hover:shadow-[0_0_20px_rgba(204,255,0,0.3)]"
       } ${className}`}
     >
-      {isBusy ? (
+      {isLoading ? (
         <Loader2 className="w-4 h-4 animate-spin" />
       ) : relation === "accepted" ? (
         <UserCheck className="w-4 h-4" />

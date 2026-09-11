@@ -139,6 +139,7 @@ export default function SignupForm() {
             className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 sm:py-3.5 text-sm text-white placeholder-white/20 focus:outline-none focus:ring-1 focus:ring-[#ccff00] focus:border-[#ccff00]/50 focus:bg-white/10 transition-all font-medium"
             placeholder="e.g. Fox Mulder"
             type="text"
+            autoComplete="name"
           />
           {errors.name && (
             <span className="text-xs text-red-500 ml-1">
@@ -157,6 +158,7 @@ export default function SignupForm() {
             className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 sm:py-3.5 text-sm text-white placeholder-white/20 focus:outline-none focus:ring-1 focus:ring-[#ccff00] focus:border-[#ccff00]/50 focus:bg-white/10 transition-all font-medium"
             placeholder="name@example.com"
             type="email"
+            autoComplete="email"
           />
           {errors.email && (
             <span className="text-xs text-red-500 ml-1">
@@ -175,6 +177,7 @@ export default function SignupForm() {
             className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 sm:py-3.5 text-sm text-white placeholder-white/20 focus:outline-none focus:ring-1 focus:ring-[#ccff00] focus:border-[#ccff00]/50 focus:bg-white/10 transition-all font-medium"
             placeholder="fox_mulder"
             type="text"
+            autoComplete="off"
           />
           {errors.username && (
             <span className="text-xs text-red-500 ml-1">
@@ -194,6 +197,7 @@ export default function SignupForm() {
               className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 sm:py-3.5 pr-12 text-sm text-white placeholder-white/20 focus:outline-none focus:ring-1 focus:ring-[#ccff00] focus:border-[#ccff00]/50 focus:bg-white/10 transition-all font-medium"
               placeholder="••••••••"
               type={showPassword ? "text" : "password"}
+              autoComplete="new-password"
             />
             <button
               type="button"
@@ -224,6 +228,7 @@ export default function SignupForm() {
               className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 sm:py-3.5 pr-12 text-sm text-white placeholder-white/20 focus:outline-none focus:ring-1 focus:ring-[#ccff00] focus:border-[#ccff00]/50 focus:bg-white/10 transition-all font-medium"
               placeholder="••••••••"
               type={showConfirmPassword ? "text" : "password"}
+              autoComplete="new-password"
             />
             <button
               type="button"
