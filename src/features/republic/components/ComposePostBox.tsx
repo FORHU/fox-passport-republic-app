@@ -6,21 +6,12 @@ import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
 import {
   Globe2,
-  Handshake,
   Images,
   Lock,
-  MapPin,
   Megaphone,
-  NotebookPen,
-  PartyPopper,
   Send,
-  Speaker,
-  Star,
   Tag as TagIcon,
   Users,
-  Wrench,
-  Zap,
-  type LucideIcon,
 } from "lucide-react";
 import {
   PostType,
@@ -210,16 +201,18 @@ export function ComposePostBox({
   const postOptions: Array<{
     type: PostType;
     label: string;
-    icon: LucideIcon;
+    /** Material Symbols icon name — StyledSelect renders this via its own
+     * `material-symbols-outlined` span, not a Lucide component. */
+    icon: string;
   }> = [
-    { type: "citizen_experience", label: "Citizen Story", icon: NotebookPen },
-    { type: "review_share", label: "Share Review", icon: Star },
+    { type: "citizen_experience", label: "Citizen Story", icon: "edit_note" },
+    { type: "review_share", label: "Share Review", icon: "star" },
     ...(isVenueFoxer
       ? [
           {
             type: "venue_spotlight" as PostType,
             label: "Spotlight Venue",
-            icon: MapPin,
+            icon: "location_on",
           },
         ]
       : []),
@@ -228,7 +221,7 @@ export function ComposePostBox({
           {
             type: "gear_offering" as PostType,
             label: "Offer Gear",
-            icon: Speaker,
+            icon: "speaker",
           },
         ]
       : []),
@@ -237,7 +230,7 @@ export function ComposePostBox({
           {
             type: "service_offering" as PostType,
             label: "Offer Service",
-            icon: Wrench,
+            icon: "build",
           },
         ]
       : []),
@@ -246,7 +239,7 @@ export function ComposePostBox({
           {
             type: "event_announcement" as PostType,
             label: "Announce Event",
-            icon: PartyPopper,
+            icon: "celebration",
           },
         ]
       : []),
@@ -255,7 +248,7 @@ export function ComposePostBox({
           {
             type: "partner_announcement" as PostType,
             label: "Partner Backing",
-            icon: Handshake,
+            icon: "handshake",
           },
         ]
       : []),
@@ -377,35 +370,6 @@ export function ComposePostBox({
       }
     >
       <form onSubmit={handleSubmit}>
-        {/* Post Type Selector Pills */}
-        <div className="post-type-scrollbar flex items-center gap-1.5 overflow-x-auto pb-2 mb-3">
-          {postOptions.map((opt) => {
-            const isSelected = type === opt.type;
-            return (
-              <button
-                type="button"
-                key={opt.type}
-                onClick={(e) => {
-                  setType(opt.type);
-                  setIsExpanded(true);
-                  setResourceId("");
-                  e.currentTarget.scrollIntoView({
-                    behavior: "smooth",
-                    inline: "center",
-                    block: "nearest",
-                  });
-                }}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition-all ${
-                  isSelected
-                    ? "bg-lime-400 text-black shadow-md"
-                    : "bg-zinc-800/80 text-zinc-400 hover:text-white hover:bg-zinc-700"
-                }`}
-              >
-                <opt.icon className="h-[15px] w-[15px]" strokeWidth={2} />
-                <span>{opt.label}</span>
-              </button>
-            );
-          })}
         {/* Post Type Selector — role-based options (venue/gear/service/
             event/partner) can add up to seven choices, so this needs to be
             a dropdown rather than a pill grid. */}
@@ -640,9 +604,6 @@ export function ComposePostBox({
               </select>
             </div>
 
-            {/* XP Award Pill */}
-            <span className="hidden sm:inline-flex items-center gap-1 text-[11px] font-bold text-amber-400 bg-amber-500/10 border border-amber-500/20 px-2 py-0.5 rounded-full">
-              <Zap className="h-3 w-3" strokeWidth={2} />
             {/* XP Award Pill — hidden at xl+ because that's exactly where
                 this box only ever renders inside the Republic sidebar
                 (page.tsx's `hidden xl:block` column), whose "Publish

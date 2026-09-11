@@ -30,7 +30,10 @@
       "Bash(sleep 8 && cat /tmp/dev.log)",
       "Bash(curl -s -o /dev/null -w \"frontend HTTP %{http_code}\\\\n\" http://localhost:6001/republic --max-time 10)",
       "Bash(curl -s -o /dev/null -w \"backend HTTP %{http_code}\\\\n\" http://localhost:6002/api/v1/feed/mentions/search?q=a --max-time 5)",
-      "Bash(curl -s -X POST http://localhost:6002/api/v1/auth/login -H 'Content-Type: application/json' -d '{\"email\":\"user@example.com\",\"password\":\"Password123!\"}' --max-time 10)"
+      "Bash(curl -s -X POST http://localhost:6002/api/v1/auth/login -H 'Content-Type: application/json' -d '{\"email\":\"user@example.com\",\"password\":\"Password123!\"}' --max-time 10)",
+      "Bash(pnpm lint *)",
+      "Bash(echo \"EXIT: $?\")",
+      "Bash(curl -s http://localhost:6001/republic --max-time 10 -o /tmp/republic3.html)"
     ]
   }
 }
