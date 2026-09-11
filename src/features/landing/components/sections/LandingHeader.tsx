@@ -97,7 +97,7 @@ export default function LandingHeader({
                       <Badge
                         variant="partner"
                         icon={false}
-                        className="pointer-events-none absolute -top-2.5 -right-3 whitespace-nowrap bg-zinc-900 text-[9px] shadow-md"
+                        className="pointer-events-none absolute -top-3 -right-8 whitespace-nowrap bg-zinc-900 text-[9px] shadow-md"
                       >
                         Beta
                       </Badge>

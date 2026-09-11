@@ -1,20 +1,29 @@
 import Link from "next/link";
+import type { ReactNode } from "react";
+import { Award } from "lucide-react";
 import { FeedAuthor } from "../types";
 import { isPartnerUser } from "@/shared/auth/roles";
 import { FollowButton } from "@/features/follow/components/FollowButton";
 import { Badge } from "@/shared/components/ui/badge";
+import MessageButton from "@/features/messages/components/MessageButton";
+import { useAuthStore } from "@/shared/auth/useAuthStore";
 import { useFollowCounts } from "@/features/follow/api/useFollow";
 
 interface AuthorPassportPopoverProps {
   author: FeedAuthor;
   createdAt: string;
   isFollowingAuthor?: boolean;
+  /** Rendered at the end of the badges/follow row — the post-level "..."
+   * menu (Edit/Delete/Save/Report), kept as a slot here so it sits in the
+   * same header row as everything else instead of floating separately. */
+  optionsMenu?: ReactNode;
 }
 
 export function AuthorPassportPopover({
   author,
   createdAt,
   isFollowingAuthor,
+  optionsMenu,
 }: AuthorPassportPopoverProps) {
   const citizenPath = author.passport?.paths?.find((p) => p.path === "user");
   const citizenLevel = citizenPath?.level ?? 1;
@@ -38,6 +47,8 @@ export function AuthorPassportPopover({
   const badges = author.passport?.userBadges?.map((ub) => ub.badge) ?? [];
   const stampsCount = author.passport?.stamps?.length ?? 0;
 
+  const currentUserId = useAuthStore((state) => state.user?.id);
+  const isSelf = currentUserId === author.id;
   const { data: followCounts } = useFollowCounts(author.id);
 
   return (
@@ -105,9 +116,7 @@ export function AuthorPassportPopover({
               <>
                 <span>•</span>
                 <span className="inline-flex items-center gap-1 text-[11px] text-amber-400 font-medium">
-                  <span className="material-symbols-outlined text-[13px]">
-                    military_tech
-                  </span>
+                  <Award className="h-[13px] w-[13px]" strokeWidth={2} />
                   {stampsCount} {stampsCount === 1 ? "Stamp" : "Stamps"}
                 </span>
               </>
@@ -117,27 +126,40 @@ export function AuthorPassportPopover({
       </div>
 
       {/* Badges preview & Follow */}
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-4">
         {badges.length > 0 && (
-          <div className="hidden sm:flex items-center gap-1">
+          <div className="hidden sm:flex items-center gap-2.5">
             {badges.slice(0, 2).map((b) => (
               <span
                 key={b.id}
                 title={b.name}
-                className="w-6 h-6 rounded-full bg-zinc-800/80 border border-zinc-700 flex items-center justify-center text-amber-400 text-xs shadow-inner"
+                className="flex items-center justify-center text-amber-400"
               >
-                <span className="material-symbols-outlined text-[14px]">
+                <span className="material-symbols-outlined text-[18px]">
                   {b.icon || "star"}
                 </span>
               </span>
             ))}
           </div>
         )}
+        {!isSelf && (
+          <MessageButton
+            otherUserId={author.id}
+            otherUserName={author.name}
+            otherUserImgId={author.imgId}
+            contextType="feed_post"
+            contextId={author.id}
+            contextLabel={`From a post by ${author.name}`}
+            label=""
+            className="h-8 w-8 flex items-center justify-center rounded-lg bg-zinc-800/80 text-zinc-400 hover:bg-zinc-700 hover:text-white border border-zinc-700/60 transition-all cursor-pointer shrink-0"
+          />
+        )}
         <FollowButton
           targetId={author.id}
           compact={true}
           initialIsFollowing={isFollowingAuthor}
         />
+        {optionsMenu}
       </div>
     </div>
   );
