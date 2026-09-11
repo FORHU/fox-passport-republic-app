@@ -1,10 +1,10 @@
 ﻿import React from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { X } from "lucide-react";
 import { BrandLogo } from "@/shared/components/layout/BrandLogo";
 import { DynamicIcon } from "@/shared/components/ui/DynamicIcon";
 import { Category } from "@/features/category/data/categories"; // Assuming this exists, catch if error
+import { smartBack } from "@/shared/lib/navigation";
 
 interface CategoryHeaderProps {
   category: Category;
@@ -17,6 +17,17 @@ export const CategoryHeader: React.FC<CategoryHeaderProps> = ({ category }) => {
     <header className="fixed top-6 left-0 right-0 z-50 transition-all duration-300">
       <div className="mx-auto max-w-7xl px-4">
         <div className="backdrop-blur-md bg-black/30 border border-white/10 rounded-full px-6 h-20 flex items-center justify-between shadow-2xl hover:bg-black/40 transition-colors duration-500">
+          {/* Back */}
+          <button
+            onClick={() => smartBack(router, "/")}
+            className="flex items-center gap-2 text-sm text-white/70 hover:text-white transition-colors cursor-pointer"
+          >
+            <span className="material-symbols-outlined text-[18px]">
+              arrow_back
+            </span>
+            <span className="hidden sm:inline">Back</span>
+          </button>
+
           {/* Logo */}
           <BrandLogo logoSize={48} textSize="text-2xl" />
 
@@ -46,16 +57,6 @@ export const CategoryHeader: React.FC<CategoryHeaderProps> = ({ category }) => {
             />
             {category.name}
           </span>
-
-          {/* Close / Action */}
-          <div className="flex items-center gap-4">
-            <button
-              onClick={() => router.push("/")}
-              className="h-11 w-11 flex items-center justify-center rounded-full bg-white/5 hover:bg-white hover:text-black transition-all"
-            >
-              <X className="w-5 h-5" />
-            </button>
-          </div>
         </div>
       </div>
     </header>

@@ -12,6 +12,7 @@ import { useAuthStore } from "@/shared/auth/useAuthStore";
 import { createPaymentIntent } from "@/features/booking/api/bookings";
 import StripePaymentForm from "./StripePaymentForm";
 import { getDashboardPath } from "@/shared/lib/dashboard-path";
+import { smartBack } from "@/shared/lib/navigation";
 
 const stripePromise = loadStripe(
   process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY || "",
@@ -181,21 +182,32 @@ export default function ItemCheckoutClient() {
         <div className="absolute top-20 right-0 w-[500px] h-[500px] bg-primary/20 rounded-full blur-[120px] pointer-events-none animate-pulse-slow mix-blend-screen" />
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 relative z-10">
           <div className="mb-10">
-            <div className="flex items-center gap-2 text-sm text-text-muted mb-4">
-              <Link
-                href="/categories"
-                className="hover:text-white transition-colors"
+            <div className="flex items-center justify-between mb-4 gap-4">
+              <button
+                onClick={() => smartBack(router, "/categories")}
+                className="flex items-center gap-2 text-sm text-text-muted hover:text-white transition-colors shrink-0"
               >
-                Browse
-              </Link>
-              <span className="material-symbols-outlined text-[14px]">
-                chevron_right
-              </span>
-              <span className="text-white/60">{typeConfig.label}</span>
-              <span className="material-symbols-outlined text-[14px]">
-                chevron_right
-              </span>
-              <span className="text-accent font-bold">Checkout</span>
+                <span className="material-symbols-outlined text-[18px]">
+                  arrow_back
+                </span>
+                Back
+              </button>
+              <div className="flex items-center gap-2 text-sm text-text-muted min-w-0">
+                <Link
+                  href="/categories"
+                  className="hover:text-white transition-colors"
+                >
+                  Browse
+                </Link>
+                <span className="material-symbols-outlined text-[14px]">
+                  chevron_right
+                </span>
+                <span className="text-white/60">{typeConfig.label}</span>
+                <span className="material-symbols-outlined text-[14px]">
+                  chevron_right
+                </span>
+                <span className="text-accent font-bold">Checkout</span>
+              </div>
             </div>
             <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
               <div>

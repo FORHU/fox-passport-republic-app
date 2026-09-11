@@ -102,6 +102,15 @@ export function EventDetailView({
           }`}
         >
           <div className="mx-auto max-w-7xl px-4 h-full flex items-center justify-between">
+            <button
+              onClick={() => router.back()}
+              className="flex items-center gap-2 text-sm font-bold text-white/60 hover:text-white transition-colors cursor-pointer"
+            >
+              <span className="material-symbols-outlined text-[18px]">
+                arrow_back
+              </span>
+              <span className="hidden sm:inline">Back</span>
+            </button>
             <Link href="/" className="flex items-center gap-2 sm:gap-3 group">
               <div className="flex h-8 w-8 sm:h-10 sm:w-10 items-center justify-center overflow-hidden group-hover:scale-110 transition-transform duration-300">
                 <Image
@@ -129,12 +138,6 @@ export function EventDetailView({
                   favorite_border
                 </span>{" "}
                 Save
-              </button>
-              <button
-                onClick={() => router.back()}
-                className="h-10 w-10 flex items-center justify-center rounded-full bg-white/5 hover:bg-white hover:text-black transition-all text-white cursor-pointer"
-              >
-                <span className="material-symbols-outlined">close</span>
               </button>
             </div>
           </div>

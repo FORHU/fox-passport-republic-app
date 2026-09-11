@@ -1,6 +1,7 @@
 /* eslint-disable @next/next/no-img-element */
 "use client";
 
+import { useRef } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { type Foxer, type FoxerSpecialization } from "@/shared/api/foxers";
@@ -75,6 +76,56 @@ function getRoleMeta(foxer: Foxer) {
   };
 }
 
+function VenueCarousel({ images }: { images: string[] }) {
+  const scrollRef = useRef<HTMLDivElement>(null);
+
+  const scroll = (dir: number) => (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    scrollRef.current?.scrollBy({ left: dir * 160, behavior: "smooth" });
+  };
+
+  return (
+    <div className="relative">
+      <div
+        ref={scrollRef}
+        className="flex gap-3 overflow-x-auto snap-x snap-mandatory hide-scrollbar scroll-smooth"
+      >
+        {images.map((img, idx) => (
+          <div
+            key={idx}
+            className="h-24 w-36 shrink-0 snap-start rounded-2xl overflow-hidden border border-white/10"
+          >
+            <img src={img} alt="Venue" className="h-full w-full object-cover" />
+          </div>
+        ))}
+      </div>
+      {images.length > 1 && (
+        <>
+          <button
+            type="button"
+            onClick={scroll(-1)}
+            className="absolute left-0 top-1/2 -translate-x-1/2 -translate-y-1/2 h-7 w-7 rounded-full bg-black/80 border border-white/10 flex items-center justify-center text-white/70 hover:text-white hover:bg-black cursor-pointer z-20"
+          >
+            <span className="material-symbols-outlined text-[16px]">
+              chevron_left
+            </span>
+          </button>
+          <button
+            type="button"
+            onClick={scroll(1)}
+            className="absolute right-0 top-1/2 translate-x-1/2 -translate-y-1/2 h-7 w-7 rounded-full bg-black/80 border border-white/10 flex items-center justify-center text-white/70 hover:text-white hover:bg-black cursor-pointer z-20"
+          >
+            <span className="material-symbols-outlined text-[16px]">
+              chevron_right
+            </span>
+          </button>
+        </>
+      )}
+    </div>
+  );
+}
+
 function FoxerCard({ foxer }: { foxer: Foxer }) {
   const router = useRouter();
 
@@ -90,6 +141,10 @@ function FoxerCard({ foxer }: { foxer: Foxer }) {
   )
     .filter(Boolean)
     .slice(0, 3);
+
+  const venueImages = (foxer.venues ?? [])
+    .flatMap((v) => v.images.map((img) => img.url))
+    .filter(Boolean);
 
   const tags =
     isHost && hasTemplates
@@ -203,21 +258,32 @@ function FoxerCard({ foxer }: { foxer: Foxer }) {
         );
       })()}
 
-      {portfolioImages.length > 0 && (
-        <div className="flex justify-between gap-3 mb-8 relative z-10 pointer-events-none">
-          {portfolioImages.map((img, idx) => (
-            <div
-              key={idx}
-              className="h-20 flex-1 rounded-2xl overflow-hidden border border-white/10 group-hover:scale-105 transition-transform duration-300 first:-rotate-3 last:rotate-3"
-            >
-              <img
-                src={img}
-                alt="Work"
-                className="h-full w-full object-cover"
-              />
-            </div>
-          ))}
+      {isHost && venueImages.length > 0 ? (
+        <div className="mb-8 relative z-10">
+          <p className="text-[9px] uppercase tracking-widest text-white/35 font-bold mb-2 pointer-events-none">
+            Venues
+          </p>
+          <div className="pointer-events-auto">
+            <VenueCarousel images={venueImages} />
+          </div>
         </div>
+      ) : (
+        portfolioImages.length > 0 && (
+          <div className="flex justify-between gap-3 mb-8 relative z-10 pointer-events-none">
+            {portfolioImages.map((img, idx) => (
+              <div
+                key={idx}
+                className="h-20 flex-1 rounded-2xl overflow-hidden border border-white/10 group-hover:scale-105 transition-transform duration-300 first:-rotate-3 last:rotate-3"
+              >
+                <img
+                  src={img}
+                  alt="Work"
+                  className="h-full w-full object-cover"
+                />
+              </div>
+            ))}
+          </div>
+        )
       )}
 
       <div className="flex gap-3 relative z-20 mt-auto pt-2">
