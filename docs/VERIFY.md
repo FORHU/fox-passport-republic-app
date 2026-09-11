@@ -261,16 +261,16 @@ times to trigger focus changes.
 
 | # | Check | Pass / Fail / Skipped | Note |
 |---|---|---|---|
-| A1 | socket connects | | |
-| A2 | one ticket per connect | | |
+| A1 | socket connects | **Pass** | 10 Sep, driven. `ws://localhost:6002/socket.io/?EIO=4&transport=websocket` opened on the booking page. |
+| A2 | one ticket per connect | **Pass** | 10 Sep. `40{"ticket":"bd4d…"}` sent, `40{"sid":"vW5A…"}` back; a fresh ticket on each connect. |
 | A3 | admin queue live | | |
 | A4 | non-admin isolated | | |
 | A5 | reconnect + rejoin | | |
 | A6 | Redis down degrades | | |
 | B1 | dispute → admin | | |
 | B2 | resolve → citizen | | |
-| B3 | citizen bookings live | | |
-| B4 | webhook → payer | | |
+| B3 | citizen bookings live | | Not run. `BookingListClient` is on React Query with a `user-bookings` key, so the path B4 proved covers it - but nobody has watched the list itself. |
+| B4 | webhook → payer | **Pass**, after a fix | 10 Sep, driven end to end. See below. |
 | B5 | check-in both sides | | |
 | C1 | signed-out redirects | | |
 | C2 | junk cookie bounced | | |
@@ -281,3 +281,43 @@ times to trigger focus changes.
 Anything that fails: record which frame was or was not in the WS pane. "It did
 not update" and "it updated in 60 seconds" are different bugs, and the second one
 is the one that hides.
+
+---
+
+## B4, run — 10 Sep
+
+Driven with Playwright rather than by hand, because the assertion this file
+actually asks for is about frames and timings and a person cannot read either
+reliably. The script is not committed; what it did is:
+
+1. signed in through the app as `user@example.com`,
+2. opened `/booking/seed-booking-birthday-01` with the booking left `pending`,
+3. fired a **signed** `payment_intent.succeeded` at the API - real HMAC, verified
+   by `constructEvent`, so the same handler a Stripe delivery reaches,
+4. watched the socket frames and the DOM without reloading.
+
+**It failed the first time, and the failure was the point.** The frame arrived -
+`42["data:invalidate",{"topic":"bookings"}]`, 73ms after the webhook - and the
+page went on reading **Pending** for the full fifteen seconds the script waited.
+
+`BookingDetailClient` was still fetching in a `useEffect` and holding the
+booking in component state. That is the same defect B3 describes for the list at
+`/booking`, one screen further in and never written down: a component outside
+React Query cannot hear an invalidation, so `SocketProvider` was doing its job
+and there was nothing listening. Converted to `useQuery` on a `user-bookings`
+key - which is what `TOPIC_QUERY_KEYS` maps the `bookings` topic onto - and the
+cancel modal now invalidates rather than refetching by hand.
+
+**After the fix, 6/6:**
+
+| Check | Result |
+|---|---|
+| sign-in through the app | pass |
+| booking page renders the pending booking | pass |
+| a websocket is actually open | pass |
+| the signed webhook is accepted | pass, HTTP 200 |
+| **flips to confirmed with no reload** | **pass, 585ms** |
+| **`data:invalidate` frame in the log** | **pass, +74ms** |
+
+585ms against a 60s polling fallback is the distinction this file exists to
+draw: the live path did that, not the poll.

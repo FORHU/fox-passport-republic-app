@@ -16,6 +16,41 @@ that this app does not** — scripts, error handling, Playwright, commit hooks.
 
 ## 0. The headline
 
+> **Re-measured 10 Sep 2026: 19 feature-isolation violations, not 72.**
+> The numbers in the rest of this document were true on 4 September and the
+> work since has cleared most of them; they are left as written because the
+> *reasoning* is what makes them useful, and rewriting the arithmetic would
+> cost that. Trust this block and the validator over any count below it.
+>
+> ```
+> node tools/validate-architecture.mjs
+> ```
+>
+> | Importing feature | Violations | Reaches into |
+> |---|---|---|
+> | `republic` | 11 | venue, asset, service, event, follow, block, messages |
+> | `user` | 6 | follow, block |
+> | `match` | 1 | event |
+> | `follow` | 1 | block |
+>
+> **`republic` is over half of what is left, and it is one decision, not
+> eleven.** It composes eight other features into a single screen, which is the
+> definition of an app-layer concern — §2d says the same thing about
+> `dashboard`, which had the same shape. Reclassifying it, or lifting its
+> composition into `app/`, clears 11 of 19 in one coherent change.
+>
+> **Do not clear these by moving things to `shared`.** That was considered on
+> 10 Sep and rejected: it would put `FollowButton`, `ChatPanel`,
+> `BlockMenuButton` and eight API modules into the shared kernel, which makes
+> the validator pass while deleting the boundary it exists to protect. §6
+> already says this about two specific cases; it generalises.
+>
+> One violation *was* cleared on 10 Sep, because it was genuinely the filing
+> error §2a describes rather than a coupling: `useCanMessage` answers "may this
+> user message that one", which the public citizen profile has to ask, and it
+> now sits in `shared/hooks` beside `useCanPartner` — the same question in the
+> same shape, already solved there.
+
 The app is **closer to the template than the API was**. Two of the five rules
 already pass outright:
 
@@ -24,7 +59,7 @@ already pass outright:
 | Layout is `app` / `features` / `shared` | **passes** |
 | Absolute `@/*` imports, no deep relative paths | **passes** — zero violations |
 | `shared/` must not import `features/` or `app/` | **passes** — was 9 |
-| A feature must not import another feature | **72 violations** — was 141 |
+| A feature must not import another feature | **19 violations** — was 141 |
 | `app/` must not use `@tanstack/react-query` directly | **passes** |
 
 150 violations sounded like a rewrite. It was not. It was **two problems**, and
