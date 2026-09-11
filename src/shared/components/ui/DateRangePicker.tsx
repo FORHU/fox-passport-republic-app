@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { createPortal } from "react-dom";
 
 export function diffDays(start: string, end: string): number {
@@ -208,7 +208,6 @@ export default function DateRangePicker({
   const toDisplay = (d: string) =>
     d
       ? new Date(d + "T00:00:00").toLocaleDateString("en-PH", {
-          weekday: "short",
           month: "short",
           day: "numeric",
           year: "numeric",
@@ -216,6 +215,16 @@ export default function DateRangePicker({
       : "";
   const [localStart, setLocalStart] = useState(toDisplay(startDate));
   const [localEnd, setLocalEnd] = useState(toDisplay(endDate));
+
+  // Keep the text inputs in sync when startDate/endDate change externally
+  // (e.g. a duration-preset button in a parent component), not just when
+  // the user edits them directly.
+  useEffect(() => {
+    setLocalStart(toDisplay(startDate));
+  }, [startDate]);
+  useEffect(() => {
+    setLocalEnd(toDisplay(endDate));
+  }, [endDate]);
 
   const handleCalendarStart = (d: string) => {
     onStartChange(d);
@@ -275,11 +284,11 @@ export default function DateRangePicker({
               placeholder="Select date"
               onChange={(e) => setLocalStart(e.target.value)}
               onBlur={(e) => parseDisplay(e.target.value, onStartChange)}
-              className="w-full bg-white/5 border border-white/10 rounded-xl px-5 py-4 text-white placeholder-text-muted/50 focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent transition-all pr-12"
+              className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3.5 text-sm font-semibold text-white placeholder-text-muted/50 focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent transition-all pr-11"
             />
             <span
               onClick={openCalendar}
-              className="absolute right-4 top-1/2 -translate-y-1/2 text-white/30 cursor-pointer material-symbols-outlined"
+              className="absolute right-3.5 top-1/2 -translate-y-1/2 text-white/30 cursor-pointer material-symbols-outlined text-[18px]"
             >
               calendar_today
             </span>
@@ -296,11 +305,11 @@ export default function DateRangePicker({
               placeholder="Select date"
               onChange={(e) => setLocalEnd(e.target.value)}
               onBlur={(e) => parseDisplay(e.target.value, onEndChange)}
-              className="w-full bg-white/5 border border-white/10 rounded-xl px-5 py-4 text-white placeholder-text-muted/50 focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent transition-all pr-12"
+              className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3.5 text-sm font-semibold text-white placeholder-text-muted/50 focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent transition-all pr-11"
             />
             <span
               onClick={openCalendar}
-              className="absolute right-4 top-1/2 -translate-y-1/2 text-white/30 cursor-pointer material-symbols-outlined"
+              className="absolute right-3.5 top-1/2 -translate-y-1/2 text-white/30 cursor-pointer material-symbols-outlined text-[18px]"
             >
               calendar_today
             </span>

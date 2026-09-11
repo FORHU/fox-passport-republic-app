@@ -11,7 +11,11 @@ import { useAuthStore } from "@/shared/auth/useAuthStore";
 import { createMatch } from "@/features/match/api/matches";
 import { toast } from "sonner";
 import { toastRequireLogin } from "@/shared/lib/toast";
-import { fetchFoxerById } from "@/shared/api/foxers";
+import {
+  fetchFoxerById,
+  type FoxerVenue,
+  type FoxerAsset,
+} from "@/shared/api/foxers";
 import {
   fetchEventTemplateById,
   EventTemplateDetail,
@@ -20,6 +24,7 @@ import DateRangePicker, {
   diffDays,
   formatDate,
 } from "@/shared/components/ui/DateRangePicker";
+import { smartBack } from "@/shared/lib/navigation";
 
 interface Foxer {
   id: string;
@@ -33,6 +38,8 @@ interface Foxer {
   styleImages: Record<string, string>;
   styleCategories: Record<string, string>;
   styleTemplateIds: Record<string, string>;
+  styleVenues: Record<string, FoxerVenue>;
+  styleAssets: Record<string, FoxerAsset>;
   basePrice: number;
 }
 
@@ -63,6 +70,9 @@ const MatchConfig: React.FC = () => {
   const [guests, setGuests] = useState(2);
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
+  const [durationPreset, setDurationPreset] = useState<
+    "weekend" | "week" | "custom"
+  >("custom");
   const [requestContent, setRequestContent] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [foxer, setFoxer] = useState<Foxer | null>(null);
@@ -82,21 +92,49 @@ const MatchConfig: React.FC = () => {
       .then((u) => {
         const isEventFoxer = u.roleType?.includes("eventFoxer");
         const templates = (u.eventTemplates ?? []).slice(0, 3);
+        const venues = (u.venues ?? []).slice(0, 3);
+        const assets = (u.assets ?? []).slice(0, 3);
         const services = (u.services ?? []).slice(0, 3);
-        // Signature experiences: event template names for EventFoxers, service names otherwise
-        const styles: string[] = isEventFoxer
+        const hasTemplates = isEventFoxer && templates.length > 0;
+        const hasOwnResources =
+          isEventFoxer &&
+          !hasTemplates &&
+          (venues.length > 0 || assets.length > 0);
+        // Signature experiences: event template names for EventFoxers (falling
+        // back to their own venues + gear when they haven't built a template
+        // yet), service names otherwise
+        const styles: string[] = hasTemplates
           ? templates.map((t) => t.name)
-          : services.map((s) => s.name);
+          : hasOwnResources
+            ? [...venues.map((v) => v.name), ...assets.map((a) => a.name)]
+            : services.map((s) => s.name);
         const styleDescriptions: Record<string, string> = {};
         const styleImages: Record<string, string> = {};
         const styleCategories: Record<string, string> = {};
         const styleTemplateIds: Record<string, string> = {};
-        if (isEventFoxer) {
+        const styleVenues: Record<string, FoxerVenue> = {};
+        const styleAssets: Record<string, FoxerAsset> = {};
+        if (hasTemplates) {
           templates.forEach((t) => {
             styleDescriptions[t.name] = t.description ?? "";
             styleImages[t.name] = t.images?.[0]?.url ?? "";
             styleCategories[t.name] = t.category ?? "";
             styleTemplateIds[t.name] = t.id;
+          });
+        } else if (hasOwnResources) {
+          venues.forEach((v) => {
+            styleDescriptions[v.name] =
+              v.description ?? `A venue ${u.name} hosts events at.`;
+            styleImages[v.name] = v.images?.[0]?.url ?? "";
+            styleCategories[v.name] = v.category ?? "";
+            styleVenues[v.name] = v;
+          });
+          assets.forEach((a) => {
+            styleDescriptions[a.name] =
+              a.description ?? `Gear ${u.name} has available.`;
+            styleImages[a.name] = a.images?.[0]?.url ?? "";
+            styleCategories[a.name] = a.category ?? "";
+            styleAssets[a.name] = a;
           });
         } else {
           services.forEach((s) => {
@@ -121,6 +159,8 @@ const MatchConfig: React.FC = () => {
           styleImages,
           styleCategories,
           styleTemplateIds,
+          styleVenues,
+          styleAssets,
           basePrice,
         });
       })
@@ -131,13 +171,105 @@ const MatchConfig: React.FC = () => {
   const nextStep = () => setStep((prev) => Math.min(prev + 1, 4));
   const prevStep = () => setStep((prev) => Math.max(prev - 1, 1));
 
+  const applyDurationPreset = (preset: "weekend" | "week" | "custom") => {
+    setDurationPreset(preset);
+    if (preset === "custom") return;
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const base = startDate ? new Date(startDate + "T00:00:00") : today;
+    const start = base < today ? today : base;
+    const nights = preset === "weekend" ? 2 : 7;
+    const end = new Date(start);
+    end.setDate(end.getDate() + nights);
+    setStartDate(start.toISOString().split("T")[0]);
+    setEndDate(end.toISOString().split("T")[0]);
+  };
+
   const openPackageDetails = async (style: string) => {
-    setSelectedStyle(style);
     const templateId = foxer?.styleTemplateIds[style];
-    if (!templateId) return;
+    const venue = foxer?.styleVenues[style];
+    const asset = foxer?.styleAssets[style];
+    if (!templateId && !venue && !asset) return;
 
     setDetailsStyle(style);
     setTemplateDetail(null);
+
+    // No real event template exists yet — this foxer's own gear stands in
+    // for one, so build the detail view straight from data we already have.
+    if (!templateId && asset && foxer) {
+      const images = asset.images.map((img, i) => ({
+        id: `${asset.id}-${i}`,
+        url: img.url,
+        name: asset.name,
+      }));
+      setTemplateDetail({
+        id: asset.id,
+        name: asset.name,
+        description: asset.description ?? "",
+        category: asset.category,
+        isPublic: true,
+        createdAt: "",
+        images,
+        templateAssets: [
+          {
+            asset: {
+              id: asset.id,
+              name: asset.name,
+              category: asset.category,
+              price: asset.price,
+              billingRate: asset.billingRate,
+              images: asset.images,
+              ownerId: foxer.id,
+            },
+          },
+        ],
+      });
+      setResourceOwners((prev) => ({
+        ...prev,
+        [foxer.id]: { name: foxer.name, avatar: foxer.avatar },
+      }));
+      return;
+    }
+
+    // No real event template exists yet — this foxer's own venue stands in
+    // for one, so build the detail view straight from data we already have.
+    if (!templateId && venue && foxer) {
+      const images = venue.images.map((img, i) => ({
+        id: `${venue.id}-${i}`,
+        url: img.url,
+        name: venue.name,
+      }));
+      setTemplateDetail({
+        id: venue.id,
+        name: venue.name,
+        description: venue.description ?? "",
+        category: venue.category,
+        isPublic: true,
+        createdAt: "",
+        images,
+        templateVenues: [
+          {
+            venue: {
+              id: venue.id,
+              name: venue.name,
+              category: venue.category,
+              price: venue.price,
+              billingRate: venue.billingRate,
+              images: venue.images,
+              ownerId: foxer.id,
+              mayorId: foxer.id,
+            },
+          },
+        ],
+      });
+      setResourceOwners((prev) => ({
+        ...prev,
+        [foxer.id]: { name: foxer.name, avatar: foxer.avatar },
+      }));
+      return;
+    }
+
+    if (!templateId) return;
     setTemplateDetailLoading(true);
     try {
       const detail = await fetchEventTemplateById(templateId);
@@ -197,6 +329,19 @@ const MatchConfig: React.FC = () => {
       <header className="fixed top-6 left-0 right-0 z-50">
         <div className="mx-auto max-w-7xl px-4">
           <div className="glass-panel rounded-full px-6 h-20 flex items-center justify-between shadow-2xl">
+            <button
+              onClick={() =>
+                step > 1
+                  ? prevStep()
+                  : smartBack(router, `/foxer/${foxerId as string}`)
+              }
+              className="flex items-center gap-2 text-sm text-white/60 hover:text-white transition-colors cursor-pointer"
+            >
+              <span className="material-symbols-outlined text-[18px]">
+                arrow_back
+              </span>
+              <span className="hidden sm:inline">Back</span>
+            </button>
             <Link href="/" className="flex items-center gap-3 group">
               <div className="flex h-10 w-10 items-center justify-center overflow-hidden group-hover:scale-110 transition-transform duration-300">
                 <Image
@@ -227,7 +372,7 @@ const MatchConfig: React.FC = () => {
       </header>
 
       <main className="grow pt-32 pb-28 sm:pb-20 px-4">
-        <div className="mx-auto max-w-4xl">
+        <div className="mx-auto max-w-5xl">
           <AnimatePresence mode="wait">
             {step === 1 && (
               <motion.div
@@ -235,13 +380,13 @@ const MatchConfig: React.FC = () => {
                 initial={{ opacity: 0, x: 20 }}
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: -20 }}
-                className="space-y-12 text-center"
+                className="space-y-8 text-center"
               >
                 <div className="relative inline-block">
                   <motion.div
                     initial={{ scale: 0.8 }}
                     animate={{ scale: 1 }}
-                    className="h-32 w-32 rounded-full border-4 border-accent shadow-glow-accent overflow-hidden mx-auto"
+                    className="h-14 w-14 rounded-full border-2 border-accent shadow-glow-accent overflow-hidden mx-auto"
                   >
                     <img
                       src={foxer.avatar}
@@ -249,21 +394,21 @@ const MatchConfig: React.FC = () => {
                       className="w-full h-full object-cover"
                     />
                   </motion.div>
-                  <div className="absolute -bottom-2 -right-2 bg-accent text-black rounded-full p-2 shadow-lg">
-                    <span className="material-symbols-outlined font-bold">
+                  <div className="absolute -bottom-0.5 -right-0.5 bg-accent text-black rounded-full p-0.5 shadow-lg">
+                    <span className="material-symbols-outlined font-bold text-[12px]">
                       verified
                     </span>
                   </div>
                 </div>
 
-                <div className="space-y-4">
-                  <h1 className="text-4xl md:text-6xl font-display font-bold text-white">
+                <div className="space-y-2">
+                  <h1 className="text-xl md:text-2xl font-display font-bold text-white">
                     Match with {foxer.name}
                   </h1>
-                  <p className="text-xl text-text-muted max-w-2xl mx-auto">
+                  <p className="text-sm text-text-muted max-w-2xl mx-auto">
                     These are events{" "}
                     <span className="text-white font-bold">{foxer.name}</span>{" "}
-                    has brought to life. Pick one that matches your vision —
+                    has brought to life. Browse what they offer —
                     they&apos;ll tailor it entirely to you.
                   </p>
                 </div>
@@ -274,15 +419,14 @@ const MatchConfig: React.FC = () => {
                   {foxer.styles.map((style) => {
                     const img = foxer.styleImages[style];
                     const category = foxer.styleCategories[style];
-                    const isSelected = selectedStyle === style;
                     return (
                       <button
                         key={style}
                         onClick={() => openPackageDetails(style)}
-                        className={`rounded-[2rem] border transition-all duration-300 text-left flex flex-col overflow-hidden group ${isSelected ? "border-accent shadow-glow-accent" : "border-white/5 hover:border-white/20"}`}
+                        className="rounded-[2rem] border border-white/5 hover:border-accent/40 transition-all duration-300 text-left flex flex-col overflow-hidden group"
                       >
                         {/* Image */}
-                        <div className="relative h-40 w-full overflow-hidden bg-white/5">
+                        <div className="relative h-64 w-full overflow-hidden bg-white/5">
                           {img ? (
                             <img
                               src={img}
@@ -296,18 +440,19 @@ const MatchConfig: React.FC = () => {
                               </span>
                             </div>
                           )}
-                          {isSelected && (
-                            <div className="absolute inset-0 bg-accent/20 flex items-center justify-center">
-                              <span className="material-symbols-outlined text-accent text-4xl">
-                                check_circle
-                              </span>
-                            </div>
-                          )}
                           {category && (
                             <span className="absolute top-3 left-3 px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wide bg-black/60 text-white/70 backdrop-blur-sm">
                               {category}
                             </span>
                           )}
+                          <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-colors flex items-center justify-center opacity-0 group-hover:opacity-100">
+                            <span className="flex items-center gap-1.5 text-xs font-bold text-white bg-black/60 backdrop-blur-sm px-3 py-1.5 rounded-full">
+                              <span className="material-symbols-outlined text-[16px]">
+                                visibility
+                              </span>
+                              View Details
+                            </span>
+                          </div>
                         </div>
                         {/* Info */}
                         <div className="p-5 space-y-1.5 bg-surface-highlight/30">
@@ -329,9 +474,13 @@ const MatchConfig: React.FC = () => {
 
                 <div className="pt-8 space-y-4 flex flex-col items-center">
                   <button
-                    disabled={!selectedStyle}
-                    onClick={nextStep}
-                    className="btn-neon px-12 py-4 rounded-full bg-accent text-black font-bold disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                    onClick={() => {
+                      if (!selectedStyle && foxer.styles.length > 0) {
+                        setSelectedStyle(foxer.styles[0]);
+                      }
+                      nextStep();
+                    }}
+                    className="btn-neon px-12 py-4 rounded-full bg-accent text-black font-bold transition-all"
                   >
                     I want something like this
                   </button>
@@ -357,6 +506,9 @@ const MatchConfig: React.FC = () => {
                 className="space-y-12"
               >
                 <div className="text-center space-y-4">
+                  <span className="inline-block px-4 py-1.5 rounded-full bg-accent/10 border border-accent/30 text-accent text-[10px] font-bold uppercase tracking-widest">
+                    Custom Event Setup
+                  </span>
                   <h2 className="text-4xl font-display font-bold text-white">
                     The Logistics
                   </h2>
@@ -367,17 +519,64 @@ const MatchConfig: React.FC = () => {
 
                 <div className="grid md:grid-cols-2 gap-8 items-stretch">
                   <div className="glass-card p-8 rounded-[2.5rem] space-y-6">
-                    <DateRangePicker
-                      startDate={startDate}
-                      endDate={endDate}
-                      onStartChange={setStartDate}
-                      onEndChange={setEndDate}
-                      stacked
-                    />
                     <div>
-                      <label className="block text-sm font-bold text-text-muted uppercase tracking-widest mb-4">
-                        Total Guests
-                      </label>
+                      <div className="flex items-center justify-between mb-3">
+                        <label className="text-xs font-bold text-text-muted uppercase tracking-widest">
+                          Duration Preset
+                        </label>
+                        <div className="flex items-center gap-1 bg-black/30 p-1 rounded-full border border-white/10">
+                          {(["weekend", "week", "custom"] as const).map(
+                            (preset) => (
+                              <button
+                                key={preset}
+                                onClick={() => applyDurationPreset(preset)}
+                                className={`px-3 py-1.5 rounded-full text-[11px] font-bold uppercase transition-all cursor-pointer ${
+                                  durationPreset === preset
+                                    ? "bg-accent text-black"
+                                    : "text-white/50 hover:text-white"
+                                }`}
+                              >
+                                {preset === "weekend"
+                                  ? "Weekend"
+                                  : preset === "week"
+                                    ? "1 Week"
+                                    : "Custom"}
+                              </button>
+                            ),
+                          )}
+                        </div>
+                      </div>
+                      <DateRangePicker
+                        startDate={startDate}
+                        endDate={endDate}
+                        onStartChange={(d) => {
+                          setStartDate(d);
+                          setDurationPreset("custom");
+                        }}
+                        onEndChange={(d) => {
+                          setEndDate(d);
+                          setDurationPreset("custom");
+                        }}
+                      />
+                    </div>
+                    <div>
+                      <div className="flex items-start justify-between gap-3 mb-4">
+                        <div>
+                          <label className="block text-sm font-bold text-text-muted uppercase tracking-widest">
+                            Total Guests
+                          </label>
+                          <p className="text-xs text-white/30 mt-0.5">
+                            Guests joining this event
+                          </p>
+                        </div>
+                        {selectedStyle &&
+                          foxer.styleCategories[selectedStyle] && (
+                            <span className="shrink-0 text-[10px] font-bold text-white/40 uppercase tracking-wide bg-white/5 px-2.5 py-1 rounded-full border border-white/10">
+                              Recommended for{" "}
+                              {foxer.styleCategories[selectedStyle]}
+                            </span>
+                          )}
+                      </div>
                       <div className="flex items-center justify-between bg-black/40 p-2 rounded-2xl border border-white/10">
                         <button
                           onClick={() => setGuests(Math.max(1, guests - 1))}
@@ -387,18 +586,28 @@ const MatchConfig: React.FC = () => {
                             remove
                           </span>
                         </button>
-                        <input
-                          type="text"
-                          inputMode="numeric"
-                          pattern="[0-9]*"
-                          value={guests}
-                          onChange={(e) => {
-                            const digits = e.target.value.replace(/\D/g, "");
-                            setGuests(digits === "" ? 0 : parseInt(digits, 10));
-                          }}
-                          onBlur={() => setGuests((g) => Math.max(1, g))}
-                          className="w-16 bg-transparent text-center text-lg font-display font-bold text-white outline-none"
-                        />
+                        <div className="flex flex-col items-center">
+                          <input
+                            type="text"
+                            inputMode="numeric"
+                            pattern="[0-9]*"
+                            value={guests}
+                            onChange={(e) => {
+                              const digits = e.target.value.replace(
+                                /\D/g,
+                                "",
+                              );
+                              setGuests(
+                                digits === "" ? 0 : parseInt(digits, 10),
+                              );
+                            }}
+                            onBlur={() => setGuests((g) => Math.max(1, g))}
+                            className="w-16 bg-transparent text-center text-lg font-display font-bold text-white outline-none"
+                          />
+                          <span className="text-[9px] uppercase tracking-widest text-white/30 font-bold -mt-1">
+                            Guests
+                          </span>
+                        </div>
                         <button
                           onClick={() => setGuests(guests + 1)}
                           className="h-12 w-12 rounded-xl bg-accent text-black flex items-center justify-center hover:opacity-90"
@@ -406,15 +615,33 @@ const MatchConfig: React.FC = () => {
                           <span className="material-symbols-outlined">add</span>
                         </button>
                       </div>
+                      <p className="text-[11px] text-white/30 mt-3 flex items-center gap-1.5">
+                        <span className="material-symbols-outlined text-[14px] text-accent/70">
+                          verified_user
+                        </span>
+                        Free modifications up to 72 hours before your event
+                        date.
+                      </p>
                     </div>
                   </div>
 
                   {selectedStyle ? (
                     <div className="glass-card p-8 rounded-[2.5rem] bg-accent/5 border border-accent/20 space-y-5 h-full flex flex-col justify-center">
                       <div>
-                        <p className="text-[10px] font-bold uppercase tracking-widest text-accent/70 mb-1">
-                          Your Starting Point
-                        </p>
+                        <div className="flex items-center justify-between mb-1">
+                          <p className="text-[10px] font-bold uppercase tracking-widest text-accent/70">
+                            Your Starting Point
+                          </p>
+                          <span className="text-[9px] font-bold uppercase tracking-wide text-white/40 bg-white/5 border border-white/10 rounded-full px-2 py-0.5">
+                            {foxer.styleTemplateIds[selectedStyle]
+                              ? "Event Template"
+                              : foxer.styleVenues[selectedStyle]
+                                ? "Venue Base"
+                                : foxer.styleAssets[selectedStyle]
+                                  ? "Gear Rental"
+                                  : "Service"}
+                          </span>
+                        </div>
                         <h3 className="text-lg font-bold text-white leading-snug">
                           {selectedStyle}
                         </h3>
@@ -426,23 +653,41 @@ const MatchConfig: React.FC = () => {
                         {foxer.name} will use this as your baseline and tailor
                         every detail — venue, timing, vibe — entirely to you.
                       </p>
-                      <ul className="space-y-3 pt-1">
-                        {[
-                          "Venue sourcing & coordination",
-                          "Services, talent & equipment",
-                          "On-the-day management",
-                        ].map((item) => (
-                          <li
-                            key={item}
-                            className="flex gap-3 text-sm text-white/70"
-                          >
-                            <span className="material-symbols-outlined text-accent text-[18px]">
-                              check_circle
-                            </span>
-                            {item}
-                          </li>
-                        ))}
-                      </ul>
+                      <div>
+                        <p className="text-[10px] font-bold uppercase tracking-widest text-white/30 mb-3">
+                          Included in this phase
+                        </p>
+                        <ul className="space-y-3">
+                          {[
+                            {
+                              title: "Venue sourcing & coordination",
+                              desc: "Matched to your date, guest count, and vibe",
+                            },
+                            {
+                              title: "Services, talent & equipment",
+                              desc: "Catering, entertainment, and gear arranged for you",
+                            },
+                            {
+                              title: "On-the-day management",
+                              desc: "A dedicated lead ensures everything runs smoothly",
+                            },
+                          ].map(({ title, desc }) => (
+                            <li key={title} className="flex gap-3">
+                              <span className="material-symbols-outlined text-accent text-[18px] shrink-0 mt-0.5">
+                                check_circle
+                              </span>
+                              <div>
+                                <p className="text-sm font-bold text-white leading-snug">
+                                  {title}
+                                </p>
+                                <p className="text-xs text-white/40 mt-0.5">
+                                  {desc}
+                                </p>
+                              </div>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
                     </div>
                   ) : (
                     <div className="glass-card p-8 rounded-[2.5rem] bg-white/3 border border-white/10 space-y-5 h-full flex flex-col justify-center">
@@ -471,19 +716,16 @@ const MatchConfig: React.FC = () => {
                   )}
                 </div>
 
-                <div className="flex justify-center gap-4">
-                  <button
-                    onClick={prevStep}
-                    className="px-8 py-4 rounded-full border border-white/10 hover:bg-white/5 transition-colors text-white"
-                  >
-                    Back
-                  </button>
+                <div className="flex justify-center">
                   <button
                     disabled={!startDate || !endDate}
                     onClick={nextStep}
-                    className="btn-neon px-12 py-4 rounded-full bg-accent text-black font-bold disabled:opacity-50"
+                    className="btn-neon px-10 py-3.5 rounded-full bg-accent text-black font-bold disabled:opacity-50 flex items-center gap-2"
                   >
                     Check Availability
+                    <span className="material-symbols-outlined text-[18px]">
+                      arrow_forward
+                    </span>
                   </button>
                 </div>
               </motion.div>
@@ -533,13 +775,7 @@ const MatchConfig: React.FC = () => {
                   />
                 </div>
 
-                <div className="flex justify-center gap-4">
-                  <button
-                    onClick={prevStep}
-                    className="px-8 py-4 rounded-full border border-white/10 hover:bg-white/5 transition-colors text-white"
-                  >
-                    Back
-                  </button>
+                <div className="flex justify-center">
                   <button
                     onClick={nextStep}
                     className="btn-neon px-12 py-4 rounded-full bg-accent text-black font-bold"
@@ -731,20 +967,16 @@ const MatchConfig: React.FC = () => {
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 10 }}
               onClick={(e) => e.stopPropagation()}
-              className="bg-[#0f111a] border border-white/10 rounded-[2rem] p-8 max-w-2xl w-full max-h-[85vh] overflow-y-auto space-y-8"
+              className="bg-[#0f111a] border border-white/10 rounded-[2rem] max-w-2xl w-full max-h-[85vh] flex flex-col overflow-hidden"
             >
-              <div className="flex items-start justify-between gap-4">
+              <div className="flex items-start justify-between gap-4 p-8 pb-0">
                 <div>
                   <p className="text-[10px] font-bold uppercase tracking-widest text-accent/70 mb-1">
-                    What&apos;s Included
+                    Past Creation
                   </p>
                   <h3 className="text-2xl font-display font-bold text-white leading-snug">
                     {detailsStyle}
                   </h3>
-                  <p className="text-sm text-white/50 mt-2 leading-relaxed">
-                    The venue, services, and equipment {foxer.name} lined up
-                    for this package — each supplied by the Foxer who owns it.
-                  </p>
                 </div>
                 <button
                   onClick={() => setDetailsStyle(null)}
@@ -754,10 +986,63 @@ const MatchConfig: React.FC = () => {
                 </button>
               </div>
 
+              <div className="overflow-y-auto flex-1 px-8 py-5 space-y-5">
               {templateDetailLoading && (
                 <div className="flex items-center justify-center py-10">
                   <div className="w-8 h-8 border-4 border-accent/20 border-t-accent rounded-full animate-spin" />
                 </div>
+              )}
+
+              {!templateDetailLoading && templateDetail && (
+                <div className="space-y-5">
+                  {templateDetail.images?.[0]?.url && (
+                    <div className="h-72 w-full rounded-2xl overflow-hidden bg-white/5 border border-white/10">
+                      <img
+                        src={templateDetail.images[0].url}
+                        alt={detailsStyle}
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                  )}
+
+                  <p className="text-sm text-white/70 leading-relaxed whitespace-pre-wrap">
+                    {templateDetail.description ||
+                      `The venue, services, and equipment ${foxer.name} lined up for this package — each supplied by the Foxer who owns it.`}
+                  </p>
+
+                  <div className="flex flex-wrap gap-2">
+                    {templateDetail.category && (
+                      <span className="px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wide bg-white/5 text-white/60 border border-white/10">
+                        {templateDetail.category}
+                      </span>
+                    )}
+                    {(templateDetail.targetCity ||
+                      templateDetail.targetState) && (
+                      <span className="px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wide bg-white/5 text-white/60 border border-white/10">
+                        {[templateDetail.targetCity, templateDetail.targetState]
+                          .filter(Boolean)
+                          .join(", ")}
+                      </span>
+                    )}
+                    {templateDetail.maxAttendees && (
+                      <span className="px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wide bg-white/5 text-white/60 border border-white/10">
+                        Up to {templateDetail.maxAttendees} guests
+                      </span>
+                    )}
+                    {!!templateDetail.estimatedTotal && (
+                      <span className="px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wide bg-accent/10 text-accent border border-accent/20">
+                        ~₱{templateDetail.estimatedTotal.toLocaleString()}{" "}
+                        estimated
+                      </span>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {!templateDetailLoading && templateDetail && (
+                <p className="text-xs font-bold uppercase tracking-widest text-white/40">
+                  What&apos;s Included
+                </p>
               )}
 
               {!templateDetailLoading &&
@@ -849,20 +1134,22 @@ const MatchConfig: React.FC = () => {
                     equipment connections attached yet.
                   </p>
                 )}
+              </div>
 
-              <div className="flex justify-center gap-4 pt-2">
+              <div className="flex justify-center gap-3 p-6 border-t border-white/10 shrink-0">
                 <button
                   onClick={() => setDetailsStyle(null)}
-                  className="px-8 py-4 rounded-full border border-white/10 hover:bg-white/5 transition-colors text-white"
+                  className="px-5 py-2.5 rounded-full border border-white/10 hover:bg-white/5 transition-colors text-white text-sm font-bold"
                 >
                   Keep Browsing
                 </button>
                 <button
                   onClick={() => {
+                    if (detailsStyle) setSelectedStyle(detailsStyle);
                     setDetailsStyle(null);
                     nextStep();
                   }}
-                  className="btn-neon px-12 py-4 rounded-full bg-accent text-black font-bold"
+                  className="btn-neon px-6 py-2.5 rounded-full bg-accent text-black font-bold text-sm"
                 >
                   I want something like this
                 </button>

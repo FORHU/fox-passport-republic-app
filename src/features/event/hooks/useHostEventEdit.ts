@@ -202,6 +202,10 @@ export function useHostEventEdit(eventId: string) {
       toast.error("Please add an event title");
       return;
     }
+    if (targetStatus === "pending" && !builder.category) {
+      toast.error("Please select a category");
+      return;
+    }
 
     builder.setIsSubmitting(true);
     try {
