@@ -10,8 +10,9 @@ import React, {
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { Star, Users, X, Loader2 } from "lucide-react";
+import { Star, Users, X, Loader2, LocateFixed } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
+import { toast } from "sonner";
 import {
   VenuesMap,
   MapVenue,
@@ -21,6 +22,7 @@ import {
 import { LocationSearchResult } from "@/shared/components/ui/LocationSearchControl";
 import {
   fetchVenuesByViewport,
+  fetchVenuesNear,
   ViewportBounds,
 } from "@/features/venue/api/venues";
 
@@ -354,6 +356,22 @@ export function VenuesMapPageClient({
     selectedLocationRef.current = selectedLocation;
   }, [selectedLocation]);
 
+  // "Near me" is a point-in-polygon check against GET /venues/near, not a
+  // viewport/radius query — it answers "does any venue's drawn service area
+  // actually cover where I am," which can be true for a venue nowhere near
+  // the current screen and false for one visible on it. Mutually exclusive
+  // with `selectedLocation`: both pin what "on screen" means for search
+  // purposes, and only one filter should win.
+  const [nearMeActive, setNearMeActive] = useState(false);
+  const nearMeActiveRef = useRef(false);
+  useEffect(() => {
+    nearMeActiveRef.current = nearMeActive;
+  }, [nearMeActive]);
+  const [isLocatingNear, setIsLocatingNear] = useState(false);
+  const [nearMeCenter, setNearMeCenter] = useState<[number, number] | null>(
+    null,
+  );
+
   useEffect(() => {
     const timer = setTimeout(() => {
       setDebouncedSearch(searchQuery);
@@ -495,7 +513,7 @@ export function VenuesMapPageClient({
   // and undo the point of picking a place.
   const handleMapViewportChange = useCallback(
     (bounds: ViewportBounds) => {
-      if (selectedLocationRef.current) return;
+      if (selectedLocationRef.current || nearMeActiveRef.current) return;
       handleViewportChange(bounds);
     },
     [handleViewportChange],
@@ -505,6 +523,7 @@ export function VenuesMapPageClient({
   // what actually fetches, so picking a place triggers exactly one fetch
   // instead of racing this against that effect.
   const handleLocationSelect = useCallback((result: LocationSearchResult) => {
+    setNearMeActive(false);
     setSelectedLocation(result);
   }, []);
 
@@ -512,10 +531,60 @@ export function VenuesMapPageClient({
     setSelectedLocation(null);
   }, []);
 
+  const handleNearMe = useCallback(() => {
+    if (typeof navigator === "undefined" || !navigator.geolocation) {
+      toast.error("Location isn't available in this browser.");
+      return;
+    }
+    setIsLocatingNear(true);
+    navigator.geolocation.getCurrentPosition(
+      async (position) => {
+        const { latitude: lat, longitude: lng } = position.coords;
+        try {
+          const venues = await fetchVenuesNear(lat, lng);
+          if (venues.length === 0) {
+            toast.error(
+              "No venue's service area covers your current location yet.",
+            );
+            return;
+          }
+          setSelectedLocation(null);
+          setNearMeActive(true);
+          setNearMeCenter([lng, lat]);
+          setRawVenues(venues);
+          setMapRawVenues(venues);
+          setTotalCount(venues.length);
+          setPage(1);
+          listParentRef.current?.scrollTo({ top: 0, behavior: "smooth" });
+        } catch {
+          toast.error("Couldn't check your location right now.");
+        } finally {
+          setIsLocatingNear(false);
+        }
+      },
+      (err) => {
+        toast.error(
+          err.code === err.PERMISSION_DENIED
+            ? "Location permission denied."
+            : "Couldn't get your location.",
+        );
+        setIsLocatingNear(false);
+      },
+      { enableHighAccuracy: true, timeout: 10000 },
+    );
+  }, []);
+
+  const handleNearMeClear = useCallback(() => {
+    setNearMeActive(false);
+    setNearMeCenter(null);
+    if (currentBounds) handleViewportChange(currentBounds);
+  }, [currentBounds, handleViewportChange]);
+
   // Refetch when search text or the pinned location changes — scoped to
   // the pinned location's bounds when one is set, otherwise whatever the
   // map is currently showing.
   useEffect(() => {
+    if (nearMeActive) return;
     const bounds = selectedLocation
       ? boundsFromLocation(selectedLocation)
       : currentBounds;
@@ -641,8 +710,8 @@ export function VenuesMapPageClient({
             </h1>
 
             {/* Search Bar */}
-            <div className="mt-4 mb-2">
-              <div className="relative">
+            <div className="mt-4 mb-2 flex gap-2">
+              <div className="relative flex-1">
                 <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-white/40 text-[18px]">
                   search
                 </span>
@@ -650,10 +719,34 @@ export function VenuesMapPageClient({
                   type="text"
                   placeholder="Search venues or location..."
                   value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
+                  onChange={(e) => {
+                    setSearchQuery(e.target.value);
+                    if (nearMeActive) setNearMeActive(false);
+                  }}
                   className="w-full bg-white/5 border border-white/10 rounded-xl py-2 pl-9 pr-4 text-sm text-white placeholder:text-white/30 focus:outline-none focus:border-[#ccff00] focus:ring-1 focus:ring-[#ccff00]/50 transition-all"
                 />
               </div>
+              <button
+                type="button"
+                onClick={nearMeActive ? handleNearMeClear : handleNearMe}
+                disabled={isLocatingNear}
+                title={
+                  nearMeActive
+                    ? "Clear and browse the map again"
+                    : "Show venues whose service area covers your current location"
+                }
+                className={`shrink-0 flex items-center justify-center h-9 w-9 rounded-xl border transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-wait ${
+                  nearMeActive
+                    ? "bg-[#ccff00]/15 border-[#ccff00]/40 text-[#ccff00]"
+                    : "bg-white/5 border-white/10 text-white/60 hover:text-white hover:border-white/30"
+                }`}
+              >
+                {isLocatingNear ? (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                ) : (
+                  <LocateFixed className="w-4 h-4" />
+                )}
+              </button>
             </div>
 
             {/* Screen-Scoped Counter */}
@@ -669,11 +762,21 @@ export function VenuesMapPageClient({
                     Showing{" "}
                     <strong className="text-white">{listVenues.length}</strong>{" "}
                     of <strong className="text-white">{totalCount}</strong>{" "}
-                    venues on screen
+                    {nearMeActive ? "venues near you" : "venues on screen"}
                   </span>
                 )}
               </p>
-              {selectedLocation ? (
+              {nearMeActive ? (
+                <button
+                  type="button"
+                  onClick={handleNearMeClear}
+                  title="Clear and follow the map again"
+                  className="flex items-center gap-1 text-[10px] font-mono text-[#ccff00] bg-[#ccff00]/10 px-2 py-0.5 rounded-full border border-[#ccff00]/20 hover:bg-[#ccff00]/20 transition-colors cursor-pointer"
+                >
+                  Near you
+                  <X className="w-2.5 h-2.5" />
+                </button>
+              ) : selectedLocation ? (
                 <button
                   type="button"
                   onClick={handleLocationClear}
@@ -802,6 +905,7 @@ export function VenuesMapPageClient({
             venues={mapVenues}
             fitToContent={false}
             zoom={6}
+            center={nearMeCenter ?? undefined}
             selectedVenueId={selectedId}
             onVenueClick={handleMapVenueClick}
             onBuildingClick={(clusterVenues) => {

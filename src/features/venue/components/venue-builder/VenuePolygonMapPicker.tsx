@@ -162,6 +162,12 @@ export function VenuePolygonMapPicker({
     tooSmall: false,
     overlapsName: null,
   });
+  // Surfaces a failed reference-boundary load instead of swallowing it — the
+  // overlap check above only catches a conflict once the reference layer
+  // actually loaded, so a silent failure here meant the host found out at
+  // submit time instead of while drawing.
+  const [referenceLoadFailed, setReferenceLoadFailed] = useState(false);
+  const [referenceRetryCount, setReferenceRetryCount] = useState(0);
   // Full undo history — every mutation (add/move/delete/insert a point,
   // close the shape, clear it) pushes a snapshot here first, so Undo works
   // the same way at every stage instead of only "remove the last placed
@@ -659,6 +665,7 @@ export function VenuePolygonMapPicker({
   // from the Publish rejection.
   useEffect(() => {
     let cancelled = false;
+    setReferenceLoadFailed(false);
     fetchReferenceBoundaries(excludeVenueId)
       .then((boundaries) => {
         if (cancelled) return;
@@ -666,11 +673,14 @@ export function VenuePolygonMapPicker({
         const map = mapRef.current;
         if (map?.__renderReferenceLayer) map.__renderReferenceLayer();
       })
-      .catch(() => {});
+      .catch(() => {
+        if (cancelled) return;
+        setReferenceLoadFailed(true);
+      });
     return () => {
       cancelled = true;
     };
-  }, [excludeVenueId]);
+  }, [excludeVenueId, referenceRetryCount]);
 
   // Recenter (without altering the drawn shape) when an address search picks
   // a city elsewhere on the map.
@@ -718,6 +728,19 @@ export function VenuePolygonMapPicker({
           {warning && (
             <p className="text-[11px] text-[#ff5d5d] font-semibold">
               {warning}
+            </p>
+          )}
+          {referenceLoadFailed && (
+            <p className="text-[11px] text-amber-400 font-semibold flex items-center gap-1.5">
+              Couldn&apos;t load other venues&apos; boundaries — you won&apos;t
+              see overlaps here until you retry.
+              <button
+                type="button"
+                onClick={() => setReferenceRetryCount((n) => n + 1)}
+                className="underline hover:text-amber-300 cursor-pointer"
+              >
+                Retry
+              </button>
             </p>
           )}
         </div>

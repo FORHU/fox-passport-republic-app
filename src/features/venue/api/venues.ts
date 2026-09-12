@@ -92,3 +92,16 @@ export async function fetchVenuesByViewport(
     total: resp.data?.total ?? 0,
   };
 }
+
+// Venues whose drawn service-area boundary actually covers a point — not a
+// proximity radius. Answers "does any venue serve this exact location," which
+// the viewport query above can't: a venue's boundary can be huge (covers the
+// point from far outside the current screen) or absent entirely (a pin-only
+// venue never matches here, by design). Public, no auth.
+export async function fetchVenuesNear(
+  lat: number,
+  lng: number,
+): Promise<any[]> {
+  const resp = await api.get("/venues/near", { params: { lat, lng } });
+  return Array.isArray(resp.data?.venues) ? resp.data.venues : [];
+}
