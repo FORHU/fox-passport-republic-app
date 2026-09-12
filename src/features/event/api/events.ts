@@ -56,3 +56,43 @@ export async function submitEventTemplate(eventId: Id): Promise<unknown> {
   const resp = await api.post(`/event-templates/${eventId}/submit`);
   return resp.data?.template ?? resp.data;
 }
+
+export interface EventOrganizerAssignmentItem {
+  id: string;
+  eventId: string;
+  userId: string;
+  assignedById: string;
+  permissions: string[];
+  createdAt: string;
+  user: {
+    id: string;
+    name: string | null;
+    email: string;
+  };
+}
+
+export async function fetchEventOrganizers(
+  eventId: Id,
+): Promise<EventOrganizerAssignmentItem[]> {
+  const resp = await api.get(`/events/${eventId}/organizers`);
+  return resp.data?.data ?? [];
+}
+
+export async function addEventOrganizer(
+  eventId: Id,
+  email: string,
+  permissions?: string[],
+): Promise<EventOrganizerAssignmentItem> {
+  const resp = await api.post(`/events/${eventId}/organizers`, {
+    email,
+    permissions,
+  });
+  return resp.data?.data;
+}
+
+export async function removeEventOrganizer(
+  eventId: Id,
+  userId: Id,
+): Promise<void> {
+  await api.delete(`/events/${eventId}/organizers/${userId}`);
+}

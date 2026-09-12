@@ -8,6 +8,7 @@ import { useAuthStore } from "@/shared/auth/useAuthStore";
 import { useEventBuilder } from "@/features/event/hooks/useEventBuilder";
 import {
   fetchEventsByHostId,
+  fetchOrganizerEvents,
   updateEvent,
   submitEventTemplate,
 } from "@/features/event/api/events";
@@ -190,6 +191,7 @@ export function useHostEventEdit(eventId: string) {
   const [isPrefilling, setIsPrefilling] = useState(true);
   const [prefillError, setPrefillError] = useState<string | null>(null);
   const [existingEndDatetime, setExistingEndDatetime] = useState<unknown>(null);
+  const [activeEventId, setActiveEventId] = useState<string | null>(null);
 
   const backHref = "/creator-dashboard/events";
 
@@ -414,6 +416,20 @@ export function useHostEventEdit(eventId: string) {
             builder.addBaseItem(eventServiceToResourceItem(es));
           });
         }
+        // Check if there is an active/booked Event instance matching this template
+        try {
+          const orgEvents = await fetchOrganizerEvents(hostId);
+          const matchedEvent = orgEvents.find(
+            (e: any) =>
+              String(e.templateId) === String(found.id) ||
+              String(e.id) === String(found.id),
+          );
+          if (matchedEvent) {
+            setActiveEventId(String(matchedEvent.id));
+          }
+        } catch {
+          // non-fatal: if no scheduled event, delegates can be managed once booked
+        }
       } catch (error) {
         console.error("Failed to prefill event edit:", error);
         if (!cancelled) setPrefillError("Failed to load event.");
@@ -429,6 +445,7 @@ export function useHostEventEdit(eventId: string) {
 
   return {
     ...builder,
+    activeEventId,
     handleBack,
     handlePublish,
     handleSaveDraft,
