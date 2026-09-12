@@ -29,8 +29,8 @@ const SYSTEM_ROLE_HINT: Record<SystemRole, string> = {
 const ROLE_TYPE_LABEL: Record<RoleType, string> = {
   venueFoxer: "Venue Foxer",
   eventFoxer: "Event Foxer",
-  gearFoxer: "Gear Foxer",
-  serviceFoxer: "Service Foxer",
+  gearFoxer: "Equipment Foxer",
+  serviceFoxer: "Talent Foxer",
   investor: "Investor",
 };
 

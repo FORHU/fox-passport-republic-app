@@ -221,6 +221,23 @@ function normalizeVenue(v: any) {
     status: v.status || "draft",
     bookings: v.bookingsCount ?? v.bookings ?? null,
     revenue: v.revenue ? `₱${Number(v.revenue).toLocaleString()}` : null,
+    facilities: v.facilities || [],
+    recommendedCapacity: v.recommendedCapacity || 0,
+    seatingArrangements: v.seatingArrangements || [],
+    stageConfig: v.stageConfig || "",
+    setupOptions: v.setupOptions || [],
+    operatingHours: v.operatingHours || null,
+    blockedDates: v.blockedDates || [],
+    minBookingTime: v.minBookingTime || 0,
+    depositRequirements: v.depositRequirements || "",
+    floorPlanUrls: v.floorPlanUrls || [],
+    seatingLayoutUrls: v.seatingLayoutUrls || [],
+    parkingInformation: v.parkingInformation || "",
+    accessibilityInformation: v.accessibilityInformation || "",
+    entranceInstructions: v.entranceInstructions || "",
+    packages: v.packages || [],
+    recommendedAssets: v.recommendedAssets || [],
+    recommendedServices: v.recommendedServices || [],
   };
 }
 

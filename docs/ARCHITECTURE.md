@@ -314,7 +314,7 @@ The core relationship is:
 ```text
 Person
   -> Citizen capability
-  -> optional Event/Venue/Gear/Service Foxer capabilities
+  -> optional Event/Venue/Gear/Talent Foxer capabilities
   -> optional Investor capability
 ```
 
@@ -338,7 +338,7 @@ Venue Foxer = optional
 ```
 
 Locations may be marketplace venues, public places, private or external venues,
-organizer-owned locations, or custom locations. Gear and Service Foxers are
+organizer-owned locations, or custom locations. Gear and Talent Foxers are
 optional contributors. An Event Foxer may use their own resources without
 creating artificial marketplace transactions with themselves.
 
@@ -356,7 +356,7 @@ authorization domain; it must not be represented by overloading `Booking`,
 The architecture is refined in this order:
 
 1. **Done.** Fix frontend creator-dashboard gates to use server-derived
-  permissions so Gear Foxers see asset tools and Service Foxers see service
+  permissions so Equipment Foxers see asset tools and Talent Foxers see service
   tools — `shared/auth/useRoleAccess.ts` now derives every field from
   `hasPermission()` instead of comparing role names.
 2. Add a flexible EventLocation model and require a location before publishing

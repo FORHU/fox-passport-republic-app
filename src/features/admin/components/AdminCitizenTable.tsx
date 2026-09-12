@@ -47,12 +47,12 @@ const ROLE_TYPE_STYLE: Record<
     icon: "storefront",
   },
   gearFoxer: {
-    label: "Gear Foxer",
+    label: "Equipment Foxer",
     color: "bg-purple-500/10 text-purple-400 border-purple-500/20",
     icon: "inventory_2",
   },
   serviceFoxer: {
-    label: "Service Foxer",
+    label: "Talent Foxer",
     color: "bg-orange-500/10 text-orange-400 border-orange-500/20",
     icon: "build",
   },

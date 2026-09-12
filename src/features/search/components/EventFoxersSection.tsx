@@ -48,7 +48,7 @@ const ROLE_META: Record<
     color: "#ff00aa",
   },
   gearFoxer: {
-    label: "Gear Foxer",
+    label: "Equipment Foxer",
     description: "Rents out equipment — sound, lighting & décor",
     color: "#a78bfa",
   },

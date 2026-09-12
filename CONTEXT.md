@@ -43,7 +43,7 @@ _Avoid_: FoxerAsset, Asset Foxer (old names)
 **ServiceFoxer**
 A Citizen approved to supply Services (catering, entertainment, design, staffing, etc.) into the marketplace for standalone booking or attachment to Event Templates.
 Code: `roleType` includes `"serviceFoxer"`.
-_Avoid_: FoxerService, Service Foxer (old names)
+_Avoid_: FoxerService, Talent Foxer (old names)
 
 **Foxer**
 Umbrella term for a GearFoxer or ServiceFoxer — anyone supplying inventory. Used when the distinction between the two doesn't matter.

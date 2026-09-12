@@ -835,7 +835,7 @@ export default function PublicCitizenProfileView() {
                     <span className="material-symbols-outlined text-[16px]">
                       devices
                     </span>
-                    Gear & Equipment
+                    Equipment & Equipment
                   </h3>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     {profile.assets?.map((a) => (

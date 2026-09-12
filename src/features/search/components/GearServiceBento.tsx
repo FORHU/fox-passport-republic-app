@@ -103,7 +103,7 @@ export default function GearServiceBento({
       <div className="flex items-center gap-4">
         <div className="h-px flex-1 bg-white/10" />
         <h2 className="text-3xl font-display font-bold tracking-tight text-white text-center">
-          Gear & Service Foxers
+          Equipment & Talent Foxers
         </h2>
         <div className="h-px flex-1 bg-white/10" />
       </div>
@@ -114,8 +114,8 @@ export default function GearServiceBento({
         <div className="flex items-center gap-1 p-1 rounded-2xl bg-white/5 border border-white/10">
           {(
             [
-              { key: "gear", label: "Gear Foxers", icon: "audio_file", count: gearItems.length },
-              { key: "service", label: "Service Foxers", icon: "design_services", count: serviceItems.length },
+              { key: "gear", label: "Equipment Foxers", icon: "audio_file", count: gearItems.length },
+              { key: "service", label: "Talent Foxers", icon: "design_services", count: serviceItems.length },
             ] as const
           ).map((t) => (
             <button
@@ -145,14 +145,14 @@ export default function GearServiceBento({
 
         {tab === "gear" ? (
           <BentoColumn
-            title="Gear Foxers"
+            title="Equipment Foxers"
             icon="audio_file"
             rows={gearItems}
             loading={isFetching && gearItems.length === 0}
           />
         ) : (
           <BentoColumn
-            title="Service Foxers"
+            title="Talent Foxers"
             icon="design_services"
             rows={serviceItems}
             loading={isFetching && serviceItems.length === 0}
@@ -163,13 +163,13 @@ export default function GearServiceBento({
       {/* Desktop: both columns side by side, no toggle needed. */}
       <div className="hidden sm:grid sm:grid-cols-2 sm:gap-6">
         <BentoColumn
-          title="Gear Foxers"
+          title="Equipment Foxers"
           icon="audio_file"
           rows={gearItems}
           loading={isFetching && gearItems.length === 0}
         />
         <BentoColumn
-          title="Service Foxers"
+          title="Talent Foxers"
           icon="design_services"
           rows={serviceItems}
           loading={isFetching && serviceItems.length === 0}

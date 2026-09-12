@@ -48,7 +48,7 @@ const ROLES: Role[] = [
   },
   {
     id: "gearFoxer",
-    label: "Gear Foxer",
+    label: "Equipment Foxer",
     desc: "Rent out equipment",
     icon: "inventory_2",
     color: "#38bdf8",
@@ -56,7 +56,7 @@ const ROLES: Role[] = [
   },
   {
     id: "serviceFoxer",
-    label: "Service Foxer",
+    label: "Talent Foxer",
     desc: "Offer catering, photography & more",
     icon: "design_services",
     color: "#34d399",

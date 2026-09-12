@@ -37,7 +37,7 @@ function getRoleLabel(foxer: Foxer): string {
   const roles = foxer.roleType ?? [];
   if (roles.includes("eventFoxer")) return "Event Foxer";
   if (roles.includes("venueFoxer")) return "Venue Foxer";
-  if (roles.includes("gearFoxer")) return "Gear Foxer";
+  if (roles.includes("gearFoxer")) return "Equipment Foxer";
   if (roles.includes("serviceFoxer")) return "Talent Foxer";
   return "Foxer";
 }
@@ -301,8 +301,8 @@ const FoxerProfile: React.FC = () => {
                 (() => {
                   const ROLE_LABELS: Record<string, string> = {
                     eventFoxer: "Event Foxer",
-                    serviceFoxer: "Service Foxer",
-                    gearFoxer: "Gear Foxer",
+                    serviceFoxer: "Talent Foxer",
+                    gearFoxer: "Equipment Foxer",
                     venueFoxer: "Venue Foxer",
                   };
                   const grouped = (foxer.foxerSpecializations ?? []).reduce<

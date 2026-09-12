@@ -50,7 +50,7 @@ interface ResourceOwner {
 
 function getRoleLabel(roleType: string[]): string {
   if (roleType.includes("eventFoxer")) return "Event Foxer";
-  if (roleType.includes("gearFoxer")) return "Gear Foxer";
+  if (roleType.includes("gearFoxer")) return "Equipment Foxer";
   if (roleType.includes("serviceFoxer")) return "Talent Foxer";
   return "Foxer";
 }

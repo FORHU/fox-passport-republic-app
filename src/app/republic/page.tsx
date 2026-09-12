@@ -5,23 +5,10 @@ import {
   useEffect,
   useCallback,
   useRef,
-  memo,
   Suspense,
 } from "react";
-import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import {
-  ArrowLeft,
-  ArrowRight,
-  CheckCircle2,
-  Compass,
-  Inbox,
-  NotebookPen,
-  Package,
-  PenTool,
-  PlusCircle,
-  Search,
-} from "lucide-react";
+import { CheckCircle2, Inbox, Search } from "lucide-react";
 import { FeedPost, FeedTab } from "@/features/republic/types";
 import { getFeed, getPostById } from "@/shared/api/feed";
 import { RepublicTabs } from "@/features/republic/components/RepublicTabs";
@@ -30,119 +17,14 @@ import { ComposePostModal } from "@/features/republic/components/ComposePostModa
 import { FeedSortMenu } from "@/features/republic/components/FeedSortMenu";
 import { PostCard } from "@/features/republic/components/PostCard";
 import { PostDetailModal } from "@/features/republic/components/PostDetailModal";
-import { CitizenProfileSidebarCard } from "@/features/republic/components/CitizenProfileSidebarCard";
-import { PartnerEquipmentDepotCard } from "@/features/republic/components/PartnerEquipmentDepotCard";
 import { FollowingWidget } from "@/features/republic/components/FollowingWidget";
+import { RepublicLeftSidebar } from "@/features/republic/components/RepublicLeftSidebar";
+import { RepublicRightSidebar } from "@/features/republic/components/RepublicRightSidebar";
+import { RepublicMobileControlBar } from "@/features/republic/components/RepublicMobileControlBar";
 import PartnerInventoryMap from "@/features/investment/components/PartnerInventoryMap";
 import LandingHeader from "@/features/landing/components/sections/LandingHeader";
 
 const VALID_TABS: FeedTab[] = ["all", "community", "marketplace", "partners"];
-
-// Memoized so the left column (profile card, Partner Resource Pool, shortcut
-// links) doesn't re-render — and visibly flicker/reflow, since it's sticky
-// with a blurred background — on every scroll-triggered post load, search
-// keystroke, or sort toggle in the feed next to it. Takes no props tied to
-// feed state, so it never has a reason to re-render after mount.
-//
-// `md:max-h-[calc(100vh-8.25rem)] md:overflow-y-auto` bounds the sticky
-// column to the viewport and scrolls its own overflow internally (the
-// inline equipment map can make this column taller than the screen) —
-// without a cap, `position: sticky` pins the *whole* oversized column to
-// the top of the viewport while the much taller feed column next to it
-// scrolls, leaving anything past the first screenful of the sidebar (the
-// map, "Republic Shortcuts") stuck below the fold for nearly the entire
-// page scroll, unreachable until the sidebar finally releases near the very
-// bottom of the feed. The trade-off: hovering the sidebar and hovering the
-// feed now scroll two different things, same as any other nested-scroll
-// panel (a contacts list next to a chat pane, etc.).
-const RepublicLeftSidebar = memo(function RepublicLeftSidebar() {
-  return (
-    <aside className="hidden md:block w-64 xl:w-80 shrink-0 md:sticky md:top-[8.25rem] md:self-start md:max-h-[calc(100vh-8.25rem)] md:overflow-y-auto space-y-4 h-fit [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
-      {/* Direct Back to Home link */}
-      <Link
-        href="/"
-        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-2xl bg-zinc-900/90 hover:bg-zinc-800 text-zinc-300 hover:text-white text-xs font-bold border border-zinc-800/80 transition-all shadow-sm group cursor-pointer"
-      >
-        <ArrowLeft
-          className="h-4 w-4 text-zinc-400 group-hover:text-lime-400 group-hover:-translate-x-1 transition-all"
-          strokeWidth={2}
-        />
-        Back to Main Page
-      </Link>
-
-      {/* Profile Icon / Passport Card */}
-      <CitizenProfileSidebarCard />
-
-      {/* Partner Resource Pool — always on the left now, not just tucked in
-          for medium screens */}
-      <PartnerEquipmentDepotCard
-        mapSlot={
-          <PartnerInventoryMap
-            className="h-[360px] w-full rounded-2xl overflow-hidden"
-          />
-        }
-      />
-
-      {/* Quick Republic Resource Links */}
-      <div className="rounded-3xl bg-zinc-950/60 border border-zinc-900 p-4 space-y-2 text-xs">
-        <div className="text-[10px] font-black uppercase tracking-wider text-zinc-500">
-          Republic Shortcuts
-        </div>
-        <Link
-          href="/republic/investments"
-          className="flex items-center justify-between text-zinc-400 hover:text-amber-300 py-1.5 transition-colors group"
-        >
-          <span className="flex items-center gap-2">
-            <Compass className="h-4 w-4 text-amber-400" strokeWidth={2} />
-            Full Inventory Map
-          </span>
-          <ArrowRight
-            className="h-3.5 w-3.5 text-zinc-600 group-hover:translate-x-0.5 transition-transform"
-            strokeWidth={2}
-          />
-        </Link>
-        <Link
-          href="/foxer/create-investment"
-          className="flex items-center justify-between text-zinc-400 hover:text-lime-400 py-1.5 transition-colors group"
-        >
-          <span className="flex items-center gap-2">
-            <PlusCircle className="h-4 w-4 text-lime-400" strokeWidth={2} />
-            Register Equipment Hub
-          </span>
-          <ArrowRight
-            className="h-3.5 w-3.5 text-zinc-600 group-hover:translate-x-0.5 transition-transform"
-            strokeWidth={2}
-          />
-        </Link>
-        <Link
-          href="/venue-foxer/create-venue"
-          className="flex items-center justify-between text-zinc-400 hover:text-pink-400 py-1.5 transition-colors group"
-        >
-          <span className="flex items-center gap-2">
-            <PenTool className="h-4 w-4 text-pink-400" strokeWidth={2} />
-            Draw & Add Venue
-          </span>
-          <ArrowRight
-            className="h-3.5 w-3.5 text-zinc-600 group-hover:translate-x-0.5 transition-transform"
-            strokeWidth={2}
-          />
-        </Link>
-      </div>
-    </aside>
-  );
-});
-
-// Memoized for the same reason as the left sidebar — its only prop is a
-// callback that's stable across everything except an actual tab/search/mode
-// change, so it stops re-rendering (and repainting its blurred, sticky
-// panels) on every scroll-triggered post load.
-const RepublicRightSidebar = memo(function RepublicRightSidebar() {
-  return (
-    <aside className="hidden xl:block w-80 xl:w-96 shrink-0 xl:sticky xl:top-[8.25rem] xl:self-start xl:h-[calc(100vh-8.25rem)]">
-      <FollowingWidget />
-    </aside>
-  );
-});
 
 function RepublicFeedContent() {
   const router = useRouter();
@@ -383,36 +265,27 @@ function RepublicFeedContent() {
       <LandingHeader />
 
       <div className="max-w-[1440px] mx-auto px-3 sm:px-6">
-        {/* ── LOCKED CONTROL BAR (Slim, docks under the floating header) ─── */}
-        <div className="md:hidden sticky top-16 z-40 py-2.5 bg-[#09090e]/95 backdrop-blur-2xl border-b border-zinc-800/80 -mx-3 px-3 shadow-[0_8px_24px_rgba(0,0,0,0.7)] flex items-center justify-between gap-2 transform-gpu">
-          {/* Stream Tabs (Horizontal swipeable pills) */}
-          <div className="flex-1 min-w-0">
-            <RepublicTabs
-              activeTab={activeTab}
-              onTabChange={handleTabChange}
-              orientation="horizontal"
-            />
-          </div>
-
-          {/* Quick Create Post Action — opens the same compose modal as
-              every other trigger on this page. */}
-          <button
-            onClick={() => setComposeOpen(true)}
-            className="shrink-0 py-2 px-3 rounded-xl font-black text-xs flex items-center gap-1.5 shadow-md transition-all cursor-pointer bg-lime-400 hover:bg-lime-300 text-black"
-          >
-            <NotebookPen className="h-4 w-4" strokeWidth={2} />
-            <span className="hidden xs:inline">Post</span>
-          </button>
-        </div>
+        {/* ── LOCKED MOBILE CONTROL BAR (Slim, docks under the floating header) ─ */}
+        <RepublicMobileControlBar
+          activeTab={activeTab}
+          onTabChange={handleTabChange}
+          onComposeOpen={() => setComposeOpen(true)}
+        />
 
         {/* ── SCREEN-ADAPTIVE RESPONSIVE LAYOUT (Mobile, Tablet, Desktop) ─── */}
         <div className="flex flex-col md:flex-row gap-6 items-start justify-center pt-5">
           {/* ── LEFT COLUMN (Locked at Top, Never Scrolls Away) ─────────────── */}
-          <RepublicLeftSidebar />
+          <RepublicLeftSidebar
+            mapSlot={
+              <PartnerInventoryMap
+                className="h-[360px] w-full rounded-2xl overflow-hidden"
+              />
+            }
+          />
 
           {/* ── MIDDLE COLUMN (Spacious Feeds & Floating Search) ────────────── */}
           <main className="flex-1 min-w-0 max-w-2xl xl:max-w-2xl space-y-5 w-full min-h-[85vh]">
-            {/* Search Input (Flows naturally on mobile, sticky on desktop) */}
+            {/* Search Input */}
             <div className="relative z-30 backdrop-blur-xl bg-zinc-950/90 border border-zinc-800/90 rounded-2xl p-2 sm:p-2.5 shadow-[0_10px_35px_rgba(0,0,0,0.7)] transition-all">
               <form
                 onSubmit={handleSearchSubmit}
@@ -476,26 +349,9 @@ function RepublicFeedContent() {
               <FollowingWidget />
             </div>
 
-            {/* Mobile-only Quick Depots Map Link */}
-            <div className="md:hidden flex items-center justify-between px-3.5 py-2.5 rounded-2xl bg-gradient-to-r from-amber-500/10 via-zinc-900/90 to-zinc-900 border border-amber-500/20 text-xs shadow-md">
-              <div className="flex items-center gap-2 min-w-0">
-                <Package
-                  className="h-[18px] w-[18px] text-amber-400 shrink-0"
-                  strokeWidth={2}
-                />
-                <span className="font-bold text-zinc-200 text-xs truncate">
-                  Equipment Depots & Capital
-                </span>
-              </div>
-              <Link
-                href="/republic/investments"
-                className="shrink-0 px-2.5 py-1 rounded-xl bg-amber-400/20 hover:bg-amber-400/30 text-amber-300 text-[11px] font-black transition-colors"
-              >
-                View Map →
-              </Link>
-            </div>
+            {/* Mobile Equipment Depots link — rendered by RepublicMobileControlBar */}
 
-            {/* In the middle it only has the feeds */}
+            {/* Feed stream */}
             {loading ? (
               <div className="space-y-4">
                 {Array.from({ length: 3 }).map((_, i) => (

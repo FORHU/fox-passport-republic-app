@@ -8,9 +8,10 @@ import Link from "next/link";
 interface VenueNavHeaderProps {
   title: string;
   onBack: () => void;
+  onProposePartnership?: () => void;
 }
 
-export function VenueNavHeader({ onBack }: VenueNavHeaderProps) {
+export function VenueNavHeader({ onBack, onProposePartnership }: VenueNavHeaderProps) {
   return (
     <header className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-md border-b border-white/5 h-14 sm:h-20 transition-all duration-300">
       <div className="mx-auto max-w-7xl px-4 h-full flex items-center justify-between">
@@ -42,11 +43,20 @@ export function VenueNavHeader({ onBack }: VenueNavHeaderProps) {
           </h2>
         </Link>
         <div className="flex items-center gap-4">
-          <button className="hidden sm:flex items-center gap-2 px-4 py-2 rounded-full border border-white/10 hover:bg-white/5 transition-colors text-sm font-medium text-white">
+          {onProposePartnership && (
+            <button
+              onClick={onProposePartnership}
+              className="hidden sm:flex items-center gap-2 px-4 py-2 rounded-full border border-white/10 hover:bg-[#ccff00]/10 hover:border-[#ccff00]/30 transition-colors text-sm font-medium text-white hover:text-[#ccff00] cursor-pointer"
+            >
+              <span className="material-symbols-outlined text-[18px]">handshake</span>{" "}
+              Propose Partnership
+            </button>
+          )}
+          <button className="hidden sm:flex items-center gap-2 px-4 py-2 rounded-full border border-white/10 hover:bg-white/5 transition-colors text-sm font-medium text-white cursor-pointer">
             <span className="material-symbols-outlined text-[18px]">share</span>{" "}
             Share
           </button>
-          <button className="hidden sm:flex items-center gap-2 px-4 py-2 rounded-full border border-white/10 hover:bg-white/5 transition-colors text-sm font-medium text-white">
+          <button className="hidden sm:flex items-center gap-2 px-4 py-2 rounded-full border border-white/10 hover:bg-white/5 transition-colors text-sm font-medium text-white cursor-pointer">
             <span className="material-symbols-outlined text-[18px]">
               favorite_border
             </span>{" "}

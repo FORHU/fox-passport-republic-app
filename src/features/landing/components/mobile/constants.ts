@@ -19,8 +19,8 @@ export const CATEGORY_EMOJI: Record<string, string> = {
 export const ROLE_LABELS: Record<string, string> = {
   eventFoxer: "Event Foxer",
   venueFoxer: "Venue Foxer",
-  gearFoxer: "Gear Foxer",
-  serviceFoxer: "Service Foxer",
+  gearFoxer: "Equipment Foxer",
+  serviceFoxer: "Talent Foxer",
 };
 
 export const FEATURE_CARDS = [
