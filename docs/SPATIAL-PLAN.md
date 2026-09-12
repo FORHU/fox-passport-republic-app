@@ -165,6 +165,18 @@ GET /api/v1/spatial/entities?bounds=minLng,minLat,maxLng,maxLat&types=venue,asse
 
 No UI change. No PostGIS. No new infrastructure.
 
+**Note added 12 Sep, after this step was written:** `GET /venues/near`
+(point-in-polygon — "does any venue's drawn boundary cover this exact point,"
+not a bounds/proximity query) shipped to a frontend caller three days after
+this plan proposed consolidating spatial reads into one module. It isn't a
+contradiction — it predates this plan being acted on — but it's exactly the
+kind of venue-feature-local spatial endpoint Step 1 argues should live in the
+consolidated module instead. Fold it in when Step 1 starts rather than
+treating it as a second, already-done thing to leave alone: it answers a
+different question than the bounds-filtered `SpatialEntity[]` shape above
+(coverage vs. viewport), so it likely wants its own query param on the same
+endpoint, not a separate route.
+
 ### Step 2 — move the existing maps onto it (app, ~3–4 days)
 
 One `useSpatialEntities(bounds, types)` hook; the four existing map components
@@ -203,20 +215,31 @@ trigger fires, and not before.
 
 ---
 
-## 6. The one risk worth naming
+## 6. The one risk worth naming — mostly closed, re-checked 12 Sep
 
 §28 puts spatial layers behind roles, and §29–31 put an AI on top of them.
 
-The app's authorization migration is **mid-flight**: `RBAC-PLAN.md` describes
-phases 0–6 with Phase 1 partially done. Adding a second surface that decides
-permissions — layer visibility, then an AI deciding what to answer — before that
-lands creates two places where the same question is answered differently.
+**This section was stale when it said the migration was "mid-flight" with
+"Phase 1 partially done"** — `RBAC-PLAN.md`, re-audited 12 Sep, shows Phases
+2, 3 (route conversion), 5 and 6 have all shipped, some of it before that
+plan was even first committed. The one piece still genuinely open is Phase
+4's missing-guard CI scan — not a blocker on *whether* the one-chokepoint
+model (`can()` / `permissionsForUser()` in `api/src/types/permissions.ts`)
+exists, only on whether CI catches a route that forgets to use it.
 
-That is the identical failure this codebase spent 9 Sep removing from its
-caching: invalidation scattered across services, two writes that quietly missed
-it, and a citizen shown their own payment as unpaid. The fix was one chokepoint.
-Spatial permissions should wait for the one chokepoint RBAC-PLAN is building,
-and then use it.
+So the AI/voice trigger in the table above (§5: "after the RBAC migration
+completes") is **much closer to satisfied than this section implied** — the
+chokepoint this section asks spatial permissions to wait for already exists
+and is in production use. Re-evaluate that trigger condition rather than
+treating it as still blocked on a mid-flight migration.
+
+The reasoning underneath still holds regardless of RBAC's exact phase: two
+places deciding the same permission question independently is the identical
+failure this codebase spent 9 Sep removing from its caching (invalidation
+scattered across services, two writes that quietly missed it, a citizen shown
+their own payment as unpaid). Spatial permissions should route through
+`permissionsForUser()`, not grow a second decision surface — that part of
+the argument doesn't depend on which RBAC phase is current.
 
 ---
 
