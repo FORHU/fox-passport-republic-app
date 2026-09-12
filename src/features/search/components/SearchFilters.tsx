@@ -163,7 +163,11 @@ function DropdownPositioner({
   return null;
 }
 
-export default function SearchFilters() {
+interface SearchFiltersProps {
+  onClose?: () => void;
+}
+
+export default function SearchFilters({ onClose }: SearchFiltersProps = {}) {
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -238,16 +242,37 @@ export default function SearchFilters() {
     maxPriceDebounceRef.current = setTimeout(() => commitMaxPrice(raw), 400);
   };
 
+  const activeFiltersCount = [category, country, city, label, maxPrice].filter(
+    Boolean,
+  ).length;
+
   const inputClass =
     "w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-white text-sm placeholder:text-white/30 focus:outline-none focus:border-[#ccff00]/50";
 
   return (
     <div className="bg-[#11121a] border border-white/10 rounded-2xl p-6 space-y-6 h-fit">
-      <div className="flex items-center gap-2">
-        <span className="h-2 w-2 rounded-full bg-[#ccff00] animate-pulse" />
-        <h3 className="text-lg font-display font-bold tracking-tight text-white">
-          Filters
-        </h3>
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <span className="h-2 w-2 rounded-full bg-[#ccff00] animate-pulse" />
+          <h3 className="text-lg font-display font-bold tracking-tight text-white">
+            Filters
+          </h3>
+          {activeFiltersCount > 0 && (
+            <span className="ml-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#ccff00] text-black">
+              {activeFiltersCount}
+            </span>
+          )}
+        </div>
+        {onClose && (
+          <button
+            type="button"
+            onClick={onClose}
+            aria-label="Close filters"
+            className="p-1 rounded-lg text-white/50 hover:text-white hover:bg-white/10 transition-colors"
+          >
+            <span className="material-symbols-outlined text-lg">close</span>
+          </button>
+        )}
       </div>
 
       {/* Category */}
@@ -368,29 +393,47 @@ export default function SearchFilters() {
         />
       </div>
 
-      <button
-        onClick={() => {
-          setCategory("");
-          setCountry("");
-          setCity("");
-          setLabel("");
-          setLat(undefined);
-          setLng(undefined);
-          setMaxPrice("");
-          updateParams({
-            category: "",
-            country: "",
-            city: "",
-            label: "",
-            lat: undefined,
-            lng: undefined,
-            maxPrice: "",
-          });
-        }}
-        className="w-full py-2.5 rounded-xl bg-white/5 border border-white/10 text-white/60 text-sm font-bold hover:bg-white/10 hover:text-white transition-all"
-      >
-        Clear Filters
-      </button>
+      <div className="space-y-2 pt-2">
+        {onClose && (
+          <button
+            type="button"
+            onClick={onClose}
+            className="w-full py-3 rounded-xl bg-[#ccff00] text-black font-bold text-sm hover:bg-[#b8e600] transition-all shadow-[0_0_20px_rgba(204,255,0,0.3)] flex items-center justify-center gap-2"
+          >
+            <span>Show Results</span>
+            {activeFiltersCount > 0 && (
+              <span className="text-[11px] font-bold px-1.5 py-0.5 rounded-full bg-black/20 text-black">
+                {activeFiltersCount}
+              </span>
+            )}
+          </button>
+        )}
+
+        <button
+          type="button"
+          onClick={() => {
+            setCategory("");
+            setCountry("");
+            setCity("");
+            setLabel("");
+            setLat(undefined);
+            setLng(undefined);
+            setMaxPrice("");
+            updateParams({
+              category: "",
+              country: "",
+              city: "",
+              label: "",
+              lat: undefined,
+              lng: undefined,
+              maxPrice: "",
+            });
+          }}
+          className="w-full py-2.5 rounded-xl bg-white/5 border border-white/10 text-white/60 text-sm font-bold hover:bg-white/10 hover:text-white transition-all"
+        >
+          Clear Filters
+        </button>
+      </div>
     </div>
   );
 }

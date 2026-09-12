@@ -53,9 +53,7 @@ export default function RepublicInvestmentsMapPage() {
       </div>
 
       {/* Mobile Floating Bottom Navigation */}
-      <div className="md:hidden">
-        <MobileBottomNav />
-      </div>
+      <MobileBottomNav />
     </div>
   );
 }

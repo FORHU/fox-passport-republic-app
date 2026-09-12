@@ -27,9 +27,7 @@ export default function ScannerPage() {
       </div>
 
       {/* Mobile bottom navigation */}
-      <div className="md:hidden">
-        <MobileBottomNav />
-      </div>
+      <MobileBottomNav />
     </div>
   );
 }

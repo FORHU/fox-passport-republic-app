@@ -158,8 +158,8 @@ export default function SearchClient() {
         )}
 
         <Sheet open={filtersOpen} onOpenChange={setFiltersOpen}>
-          {/* Horizontal type chips + mobile Filters trigger */}
-          <div className="flex sm:hidden items-center gap-2 overflow-x-auto hide-scrollbar mb-6 pb-0.5">
+          {/* Horizontal type chips + mobile/tablet Filters trigger */}
+          <div className="flex lg:hidden items-center gap-2 overflow-x-auto hide-scrollbar mb-6 pb-0.5">
             <SheetTrigger asChild>
               <button className="flex-none flex items-center gap-1.5 text-[11px] font-bold px-4 py-2 rounded-full transition-all whitespace-nowrap bg-white/6 border border-white/10 text-white">
                 <span className="material-symbols-outlined text-[14px]">
@@ -198,16 +198,16 @@ export default function SearchClient() {
 
           <SheetContent
             side="bottom"
-            className="bg-[#0c0d14] border-white/10 h-[75vh] max-h-[85vh] overflow-y-auto rounded-t-3xl p-4"
+            className="bg-[#0c0d14] border-white/10 h-[80vh] max-h-[90vh] overflow-y-auto rounded-t-3xl p-4 sm:p-6"
           >
             <SheetTitle className="sr-only">Filters</SheetTitle>
-            <SearchFilters />
+            <SearchFilters onClose={() => setFiltersOpen(false)} />
           </SheetContent>
         </Sheet>
 
-        <div className="flex flex-col sm:flex-row gap-8">
-          {/* Sidebar — desktop only */}
-          <aside className="hidden sm:block w-80 shrink-0 self-start sticky top-36">
+        <div className="flex flex-col lg:flex-row gap-8">
+          {/* Sidebar — desktop only (>= 1024px) */}
+          <aside className="hidden lg:block w-72 xl:w-80 shrink-0 self-start sticky top-36">
             <SearchFilters />
           </aside>
 
