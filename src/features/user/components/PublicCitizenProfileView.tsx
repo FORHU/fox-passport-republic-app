@@ -18,6 +18,8 @@ import { isPartnerUser } from "@/shared/auth/roles";
 import { FollowButton } from "@/features/follow/components/FollowButton";
 import { FollowListModal } from "@/features/follow/components/FollowListModal";
 import { useFollowCounts } from "@/features/follow/api/useFollow";
+import { BlockMenuButton } from "@/features/block/components/BlockMenuButton";
+import { useBlockStatus } from "@/features/block/api/useBlock";
 
 const FALLBACK_AVATAR =
   "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=400&auto=format&fit=crop";
@@ -65,6 +67,8 @@ export default function PublicCitizenProfileView() {
     "followers" | "following" | null
   >(null);
   const { data: followCounts } = useFollowCounts(id);
+  const { data: blockStatus } = useBlockStatus(id);
+  const isBlocked = blockStatus?.blockedByMe || blockStatus?.blockedMe;
 
   const {
     data: profile,
@@ -291,22 +295,24 @@ export default function PublicCitizenProfileView() {
             </div>
 
             {/* CTAs */}
-            <div className="flex sm:flex-col gap-2 w-full sm:w-auto shrink-0 pt-2 sm:pt-0">
+            <div className="flex flex-wrap items-center gap-2 shrink-0 pt-2 sm:pt-1 sm:self-start">
               {!isMe && (
                 <>
-                  <FollowButton
-                    targetId={profile.id}
-                    className="w-full sm:w-auto"
-                  />
-                  <Link
-                    href={`/messages?userId=${profile.id}&contextType=profile&contextId=${profile.id}&contextLabel=${encodeURIComponent(profile.name)}`}
-                    className="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-gradient-to-r from-lime-400 to-emerald-400 hover:from-lime-300 hover:to-emerald-300 text-black font-black text-xs flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(163,230,53,0.3)] transition-all cursor-pointer"
-                  >
-                    <span className="material-symbols-outlined text-[16px]">
-                      chat
-                    </span>
-                    <span>Message Citizen</span>
-                  </Link>
+                  {!isBlocked && (
+                    <>
+                      <FollowButton targetId={profile.id} />
+                      <Link
+                        href={`/messages?userId=${profile.id}&contextType=profile&contextId=${profile.id}&contextLabel=${encodeURIComponent(profile.name)}`}
+                        className="h-9 px-5 rounded-xl bg-gradient-to-r from-lime-400 to-emerald-400 hover:from-lime-300 hover:to-emerald-300 text-black font-black text-xs flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(163,230,53,0.3)] transition-all cursor-pointer"
+                      >
+                        <span className="material-symbols-outlined text-[16px]">
+                          chat
+                        </span>
+                        <span>Message Citizen</span>
+                      </Link>
+                    </>
+                  )}
+                  <BlockMenuButton targetId={profile.id} />
                 </>
               )}
               {isMe && (
@@ -784,9 +790,10 @@ export default function PublicCitizenProfileView() {
                   </h3>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     {profile.services?.map((s) => (
-                      <div
+                      <Link
                         key={s.id}
-                        className="rounded-2xl bg-zinc-950/70 border border-zinc-800/80 p-3 flex gap-3"
+                        href={`/booking/service/${s.id}`}
+                        className="group rounded-2xl bg-zinc-950/70 border border-zinc-800/80 hover:border-lime-400/50 p-3 transition-all flex gap-3"
                       >
                         <div className="w-16 h-16 rounded-xl overflow-hidden bg-zinc-900 shrink-0">
                           {s.images?.[0]?.url ? (
@@ -804,7 +811,7 @@ export default function PublicCitizenProfileView() {
                           )}
                         </div>
                         <div className="flex-1 min-w-0">
-                          <h4 className="font-bold text-sm text-white truncate">
+                          <h4 className="font-bold text-sm text-white truncate group-hover:text-lime-400 transition-colors">
                             {s.name}
                           </h4>
                           <p className="text-xs text-zinc-400 capitalize">
@@ -815,7 +822,7 @@ export default function PublicCitizenProfileView() {
                             {s.billingRate}
                           </p>
                         </div>
-                      </div>
+                      </Link>
                     ))}
                   </div>
                 </div>
@@ -832,9 +839,10 @@ export default function PublicCitizenProfileView() {
                   </h3>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     {profile.assets?.map((a) => (
-                      <div
+                      <Link
                         key={a.id}
-                        className="rounded-2xl bg-zinc-950/70 border border-zinc-800/80 p-3 flex gap-3"
+                        href={`/booking/asset/${a.id}`}
+                        className="group rounded-2xl bg-zinc-950/70 border border-zinc-800/80 hover:border-lime-400/50 p-3 transition-all flex gap-3"
                       >
                         <div className="w-16 h-16 rounded-xl overflow-hidden bg-zinc-900 shrink-0">
                           {a.images?.[0]?.url ? (
@@ -852,7 +860,7 @@ export default function PublicCitizenProfileView() {
                           )}
                         </div>
                         <div className="flex-1 min-w-0">
-                          <h4 className="font-bold text-sm text-white truncate">
+                          <h4 className="font-bold text-sm text-white truncate group-hover:text-lime-400 transition-colors">
                             {a.name}
                           </h4>
                           <p className="text-xs text-zinc-400 capitalize">
@@ -863,7 +871,7 @@ export default function PublicCitizenProfileView() {
                             {a.billingRate}
                           </p>
                         </div>
-                      </div>
+                      </Link>
                     ))}
                   </div>
                 </div>

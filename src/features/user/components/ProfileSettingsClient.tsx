@@ -2,13 +2,13 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { useProfile } from "@/features/user/hooks/useProfile";
 import { useLogout } from "@/shared/auth/useLogout";
 import { useAuthStore } from "@/shared/auth/useAuthStore";
 import AvatarUploader from "@/features/user/components/AvatarUploader";
+import { useBlockedUsers, useUnblockUser } from "@/features/block/api/useBlock";
 
-type Section = "profile" | "security" | "danger";
+type Section = "profile" | "privacy" | "security" | "danger";
 
 function SectionButton({
   active,
@@ -63,8 +63,33 @@ function StatusBadge({
   );
 }
 
+function ToggleSwitch({
+  checked,
+  onChange,
+}: {
+  checked: boolean;
+  onChange: (checked: boolean) => void;
+}) {
+  return (
+    <button
+      type="button"
+      role="switch"
+      aria-checked={checked}
+      onClick={() => onChange(!checked)}
+      className={`relative h-6 w-11 shrink-0 rounded-full transition-colors ${
+        checked ? "bg-[#ccff00]" : "bg-white/10"
+      }`}
+    >
+      <span
+        className={`absolute top-0.5 left-0.5 h-5 w-5 rounded-full bg-black transition-transform ${
+          checked ? "translate-x-5" : "translate-x-0"
+        }`}
+      />
+    </button>
+  );
+}
+
 export default function ProfileSettingsClient() {
-  const router = useRouter();
   const logout = useLogout();
   const storeUser = useAuthStore((state) => state.user);
   const { profile, isLoading, updateProfile, changePassword, deleteAccount } =
@@ -82,6 +107,7 @@ export default function ProfileSettingsClient() {
   const [username, setUsername] = useState("");
   const [phone, setPhone] = useState("");
   const [profileImage, setProfileImage] = useState("");
+  const [isPrivate, setIsPrivate] = useState(false);
 
   // Password form
   const [currentPassword, setCurrentPassword] = useState("");
@@ -98,6 +124,7 @@ export default function ProfileSettingsClient() {
       setUsername(profile.username ?? "");
       setPhone(profile.phone ?? "");
       setProfileImage(profile.imgId ?? "");
+      setIsPrivate(profile.isPrivate ?? false);
     }
   }, [profile]);
 
@@ -115,6 +142,7 @@ export default function ProfileSettingsClient() {
         username: username.trim() || undefined,
         phone: phone.trim() || undefined,
         profileImage: profileImage.trim() || undefined,
+        isPrivate,
       });
       flash("Profile updated successfully", "success");
     } catch (err: any) {
@@ -163,8 +191,7 @@ export default function ProfileSettingsClient() {
     setIsSaving(true);
     try {
       await deleteAccount(deletePassword);
-      await logout();
-      router.push("/");
+      await logout({ promptLogin: false });
     } catch (err: any) {
       flash(
         err?.response?.data?.message ?? "Failed to delete account",
@@ -231,6 +258,12 @@ export default function ProfileSettingsClient() {
                 icon="person"
                 label="Profile"
                 onClick={() => setActiveSection("profile")}
+              />
+              <SectionButton
+                active={activeSection === "privacy"}
+                icon="shield"
+                label="Privacy"
+                onClick={() => setActiveSection("privacy")}
               />
               <SectionButton
                 active={activeSection === "security"}
@@ -321,6 +354,19 @@ export default function ProfileSettingsClient() {
                 </Field>
               </div>
 
+              <div className="flex items-center justify-between gap-4 p-4 rounded-xl bg-white/[0.02] border border-white/5">
+                <div>
+                  <p className="text-sm font-bold text-white">
+                    Private Profile
+                  </p>
+                  <p className="text-xs text-white/40 mt-0.5">
+                    New followers must be approved by you. Your followers and
+                    following lists are hidden from everyone else.
+                  </p>
+                </div>
+                <ToggleSwitch checked={isPrivate} onChange={setIsPrivate} />
+              </div>
+
               <div className="flex items-center gap-3 pt-2">
                 <button
                   type="submit"
@@ -340,6 +386,8 @@ export default function ProfileSettingsClient() {
                 </button>
               </div>
             </form>
+          ) : activeSection === "privacy" ? (
+            <BlockedUsersSection />
           ) : activeSection === "security" ? (
             <form
               onSubmit={handleChangePassword}
@@ -492,6 +540,62 @@ export default function ProfileSettingsClient() {
           color: rgba(255, 255, 255, 0.2);
         }
       `}</style>
+    </div>
+  );
+}
+
+function BlockedUsersSection() {
+  const { data, isLoading } = useBlockedUsers();
+  const unblockUser = useUnblockUser();
+  const users = data?.data ?? [];
+
+  return (
+    <div className="bg-[#0f111a] border border-white/5 rounded-[2rem] p-8 space-y-6">
+      <div>
+        <h2 className="text-lg font-display font-bold mb-1">Blocked Citizens</h2>
+        <p className="text-sm text-white/40">
+          Blocked citizens can&apos;t send you a new follow request. Unblocking
+          is always available.
+        </p>
+      </div>
+
+      {isLoading ? (
+        <p className="text-sm text-white/30">Loading…</p>
+      ) : users.length === 0 ? (
+        <p className="text-sm text-white/30">
+          You haven&apos;t blocked anyone.
+        </p>
+      ) : (
+        <div className="space-y-2">
+          {users.map((u) => (
+            <div
+              key={u.id}
+              className="flex items-center justify-between gap-3 p-3 rounded-xl bg-white/[0.02] border border-white/5"
+            >
+              <div className="flex items-center gap-3 min-w-0">
+                <div className="h-9 w-9 rounded-full bg-white/5 flex items-center justify-center text-xs font-bold text-white/50 shrink-0">
+                  {u.name ? u.name.charAt(0).toUpperCase() : "?"}
+                </div>
+                <div className="min-w-0">
+                  <p className="text-sm font-bold text-white truncate">
+                    {u.name || "Unknown Citizen"}
+                  </p>
+                  <p className="text-xs text-white/30 truncate">
+                    @{u.username || "citizen"}
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={() => unblockUser.mutate(u.id)}
+                disabled={unblockUser.isPending}
+                className="px-4 py-2 rounded-lg bg-white/5 text-white/70 text-xs font-bold hover:bg-white/10 hover:text-white transition-all disabled:opacity-50 shrink-0"
+              >
+                Unblock
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

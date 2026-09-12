@@ -3,12 +3,18 @@
 import { useRouter } from "next/navigation";
 import { useQueryClient } from "@tanstack/react-query";
 import { endSession } from "@/shared/auth/endSession";
+import { useAuthStore } from "@/shared/auth/useAuthStore";
 
 export const useLogout = () => {
   const router = useRouter();
   const queryClient = useQueryClient();
+  const { openLogin } = useAuthStore();
 
-  return async () => {
+  // `promptLogin` defaults on for a plain sign-out, where showing the login
+  // screen is the point. Account deletion also routes through here to clear
+  // the same cookies/store, but has nothing left to log back into, so it
+  // passes `false` to skip the prompt.
+  return async (options?: { promptLogin?: boolean }) => {
     // Server cookies and client store, in that order.
     await endSession();
 
@@ -20,7 +26,9 @@ export const useLogout = () => {
     // `push`, which the hard-navigating paths never had to think about.
     queryClient.clear();
 
-    // Redirect to home
+    if (options?.promptLogin ?? true) {
+      openLogin();
+    }
     router.push("/");
   };
 };

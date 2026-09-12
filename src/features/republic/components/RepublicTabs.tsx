@@ -1,6 +1,14 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import {
+  ChevronDown,
+  Crown,
+  LayoutGrid,
+  Store,
+  Users,
+  type LucideIcon,
+} from "lucide-react";
 import { FeedTab } from "../types";
 
 interface RepublicTabsProps {
@@ -35,32 +43,32 @@ export function RepublicTabs({
   const tabs: Array<{
     id: FeedTab;
     label: string;
-    icon: string;
+    icon: LucideIcon;
     badge?: string;
     description: string;
   }> = [
     {
       id: "all",
       label: "All Feeds",
-      icon: "dynamic_feed",
+      icon: LayoutGrid,
       description: "Everything across the Republic",
     },
     {
       id: "community",
       label: "Community",
-      icon: "diversity_3",
+      icon: Users,
       description: "Citizen experiences & reviews",
     },
     {
       id: "marketplace",
       label: "Marketplace",
-      icon: "storefront",
+      icon: Store,
       description: "Venues, Gear, Services & Events",
     },
     {
       id: "partners",
       label: "Partners",
-      icon: "workspace_premium",
+      icon: Crown,
       badge: "PRO",
       description: "Backing, funding & co-hosting",
     },
@@ -92,9 +100,7 @@ export function RepublicTabs({
                 : "bg-zinc-800/60 text-zinc-400 group-hover:text-zinc-200"
             }`}
           >
-            <span className="material-symbols-outlined text-[20px]">
-              {tab.icon}
-            </span>
+            <tab.icon className="h-5 w-5" strokeWidth={2} />
           </div>
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-1.5">
@@ -128,23 +134,20 @@ export function RepublicTabs({
         <button
           type="button"
           onClick={() => setIsOpen((v) => !v)}
-          className="flex items-center gap-1.5 px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-lg bg-zinc-800 hover:bg-zinc-700 border border-zinc-700/80 text-[9px] sm:text-[10px] font-black uppercase tracking-wider text-lime-400 transition-colors cursor-pointer"
+          className="flex items-center gap-1.5 px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-lg hover:bg-zinc-800/60 text-[9px] sm:text-[10px] font-black uppercase tracking-wider text-zinc-400 hover:text-white transition-colors cursor-pointer"
         >
-          <span className="material-symbols-outlined text-[13px]">
-            {active.icon}
-          </span>
+          <active.icon className="h-3.5 w-3.5" strokeWidth={2} />
           <span className="truncate max-w-[70px] sm:max-w-none">
             {active.label}
           </span>
-          <span
-            className={`material-symbols-outlined text-[13px] transition-transform ${isOpen ? "rotate-180" : ""}`}
-          >
-            expand_more
-          </span>
+          <ChevronDown
+            className={`h-3.5 w-3.5 transition-transform ${isOpen ? "rotate-180" : ""}`}
+            strokeWidth={2}
+          />
         </button>
 
         {isOpen && (
-          <div className="absolute right-0 top-full mt-2 w-72 z-50 space-y-1.5 bg-zinc-900/95 backdrop-blur-xl border border-zinc-800/80 rounded-3xl p-2 shadow-2xl animate-in fade-in zoom-in-95">
+          <div className="absolute right-0 top-full mt-2 w-72 z-50 space-y-1.5 bg-zinc-900 border border-zinc-800/80 rounded-3xl p-2 shadow-2xl animate-in fade-in zoom-in-95">
             <div className="px-3 pt-2 pb-1 text-[10px] font-black uppercase tracking-wider text-zinc-500">
               Feed Streams
             </div>
@@ -188,13 +191,12 @@ export function RepublicTabs({
                 <span className="hidden sm:block absolute -top-1 left-1/2 -translate-x-1/2 w-8 h-1 bg-lime-400 rounded-full shadow-[0_0_10px_#ccff00]" />
               )}
 
-              <span
-                className={`material-symbols-outlined text-[18px] sm:text-[20px] ${
+              <tab.icon
+                className={`h-[18px] w-[18px] sm:h-5 sm:w-5 ${
                   isActive ? "text-lime-400" : "text-zinc-500"
                 }`}
-              >
-                {tab.icon}
-              </span>
+                strokeWidth={2}
+              />
 
               <span className="text-xs font-bold tracking-tight flex items-center gap-1">
                 {tab.label}

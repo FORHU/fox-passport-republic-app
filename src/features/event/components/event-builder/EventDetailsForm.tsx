@@ -98,12 +98,13 @@ export function EventDetailsForm({
         {/* Category - Moved below Title */}
         <div>
           <label className="text-[10px] uppercase font-bold text-white/40 tracking-widest mb-2 block text-justify">
-            Landing Page Category
+            Landing Page Category <span className="text-accent">*</span>
           </label>
           <div className="relative max-w-md">
             <select
               value={category}
               onChange={(e) => onCategoryChange(e.target.value)}
+              required
               className="w-full bg-white/5 border border-white/5 rounded-xl px-4 py-3 text-sm text-white appearance-none cursor-pointer focus:border-accent/30 outline-none"
             >
               <option value="" className="bg-[#0f111a] text-gray-500">

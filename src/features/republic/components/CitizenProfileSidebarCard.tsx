@@ -5,6 +5,8 @@ import React from "react";
 import Link from "next/link";
 import { useAuthStore } from "@/shared/auth/useAuthStore";
 import { isPartnerUser } from "@/shared/auth/roles";
+import { Badge } from "@/shared/components/ui/badge";
+import { ROLE_BADGE } from "@/shared/constants/roles";
 
 export function CitizenProfileSidebarCard() {
   const { user, openLogin } = useAuthStore();
@@ -88,28 +90,32 @@ export function CitizenProfileSidebarCard() {
         </div>
       </div>
 
-      {/* Role Badges */}
-      <div className="flex flex-wrap gap-1">
-        {isPartner && (
-          <span className="px-2 py-0.5 rounded-full bg-amber-400/15 border border-amber-400/40 text-amber-300 text-[10px] font-black uppercase tracking-wider flex items-center gap-1">
-            <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse" />
-            Partner Foxer
-          </span>
-        )}
+      {/* Role Badges — each Foxer role gets its own accent color (shared
+          with the public passport card via ROLE_BADGE) instead of the
+          catch-all gray `neutral` pill, so four roles don't read as one
+          undifferentiated gray blob. */}
+      <div className="flex flex-wrap gap-1.5">
+        {isPartner && <Badge variant="partner">Partner Foxer</Badge>}
         {roleTypes
           .filter((r) => r !== "investor")
-          .map((role) => (
-            <span
-              key={role}
-              className="px-2 py-0.5 rounded-full bg-zinc-800/80 border border-zinc-700/80 text-zinc-300 text-[10px] font-semibold capitalize"
-            >
-              {role.replace("Foxer", " Foxer")}
-            </span>
-          ))}
+          .map((role) => {
+            const meta = ROLE_BADGE[role];
+            return (
+              <span
+                key={role}
+                className="inline-flex w-fit shrink-0 items-center rounded-full border px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide"
+                style={{
+                  color: meta.color,
+                  borderColor: `${meta.color}40`,
+                  background: `${meta.color}1a`,
+                }}
+              >
+                {meta.label}
+              </span>
+            );
+          })}
         {roleTypes.length === 0 && (
-          <span className="px-2 py-0.5 rounded-full bg-lime-400/10 border border-lime-400/20 text-lime-400 text-[10px] font-bold">
-            Verified Citizen
-          </span>
+          <Badge variant="verified">Verified Citizen</Badge>
         )}
       </div>
 

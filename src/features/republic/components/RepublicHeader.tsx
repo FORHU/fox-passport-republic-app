@@ -7,6 +7,7 @@ import { usePathname } from "next/navigation";
 import { useAuthStore } from "@/shared/auth/useAuthStore";
 import UserMenuButton from "@/shared/components/layout/UserMenuButton";
 import NotificationBell from "@/shared/components/layout/NotificationBell";
+import { Badge } from "@/shared/components/ui/badge";
 
 export default function RepublicHeader() {
   const { isAuthenticated, openLogin } = useAuthStore();
@@ -40,9 +41,9 @@ export default function RepublicHeader() {
             <span className="text-base sm:text-lg font-black tracking-tight text-white group-hover:text-lime-400 transition-colors">
               FoxPassport
             </span>
-            <span className="hidden sm:inline-block px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-lime-400/10 text-lime-400 border border-lime-400/30">
+            <Badge variant="verified" className="hidden sm:inline-flex">
               Republic
-            </span>
+            </Badge>
           </div>
         </Link>
       </div>

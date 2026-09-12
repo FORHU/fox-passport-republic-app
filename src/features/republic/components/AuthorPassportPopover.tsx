@@ -1,18 +1,29 @@
 import Link from "next/link";
+import type { ReactNode } from "react";
+import { Award } from "lucide-react";
 import { FeedAuthor } from "../types";
 import { isPartnerUser } from "@/shared/auth/roles";
 import { FollowButton } from "@/features/follow/components/FollowButton";
+import { Badge } from "@/shared/components/ui/badge";
+import MessageButton from "@/features/messages/components/MessageButton";
+import { useAuthStore } from "@/shared/auth/useAuthStore";
+import { useFollowCounts } from "@/features/follow/api/useFollow";
 
 interface AuthorPassportPopoverProps {
   author: FeedAuthor;
   createdAt: string;
   isFollowingAuthor?: boolean;
+  /** Rendered at the end of the badges/follow row — the post-level "..."
+   * menu (Edit/Delete/Save/Report), kept as a slot here so it sits in the
+   * same header row as everything else instead of floating separately. */
+  optionsMenu?: ReactNode;
 }
 
 export function AuthorPassportPopover({
   author,
   createdAt,
   isFollowingAuthor,
+  optionsMenu,
 }: AuthorPassportPopoverProps) {
   const citizenPath = author.passport?.paths?.find((p) => p.path === "user");
   const citizenLevel = citizenPath?.level ?? 1;
@@ -35,6 +46,10 @@ export function AuthorPassportPopover({
 
   const badges = author.passport?.userBadges?.map((ub) => ub.badge) ?? [];
   const stampsCount = author.passport?.stamps?.length ?? 0;
+
+  const currentUserId = useAuthStore((state) => state.user?.id);
+  const isSelf = currentUserId === author.id;
+  const { data: followCounts } = useFollowCounts(author.id);
 
   return (
     <div className="flex items-center justify-between w-full">
@@ -74,18 +89,11 @@ export function AuthorPassportPopover({
             >
               {author.name}
             </Link>
-            {isPartner && (
-              <span className="inline-flex items-center gap-0.5 px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-gradient-to-r from-amber-500/20 to-yellow-500/20 text-amber-300 border border-amber-500/40 shadow-sm">
-                <span className="material-symbols-outlined text-[12px]">
-                  verified
-                </span>
-                Partner Foxer
-              </span>
-            )}
+            {isPartner && <Badge variant="partner">Partner Foxer</Badge>}
             {!isPartner && author.roleType?.length > 0 && (
-              <span className="px-1.5 py-0.5 rounded text-[10px] font-semibold bg-zinc-800 text-zinc-300 border border-zinc-700">
+              <Badge variant="neutral">
                 {author.roleType[0].replace("Foxer", " Foxer")}
-              </span>
+              </Badge>
             )}
           </div>
 
@@ -94,13 +102,21 @@ export function AuthorPassportPopover({
             <span>•</span>
             <span>{dateFormatted}</span>
 
+            {typeof followCounts?.followers === "number" && (
+              <>
+                <span>•</span>
+                <span>
+                  {followCounts.followers}{" "}
+                  {followCounts.followers === 1 ? "Follower" : "Followers"}
+                </span>
+              </>
+            )}
+
             {stampsCount > 0 && (
               <>
                 <span>•</span>
                 <span className="inline-flex items-center gap-1 text-[11px] text-amber-400 font-medium">
-                  <span className="material-symbols-outlined text-[13px]">
-                    military_tech
-                  </span>
+                  <Award className="h-[13px] w-[13px]" strokeWidth={2} />
                   {stampsCount} {stampsCount === 1 ? "Stamp" : "Stamps"}
                 </span>
               </>
@@ -110,27 +126,40 @@ export function AuthorPassportPopover({
       </div>
 
       {/* Badges preview & Follow */}
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-4">
         {badges.length > 0 && (
-          <div className="hidden sm:flex items-center gap-1">
+          <div className="hidden sm:flex items-center gap-2.5">
             {badges.slice(0, 2).map((b) => (
               <span
                 key={b.id}
                 title={b.name}
-                className="w-6 h-6 rounded-full bg-zinc-800/80 border border-zinc-700 flex items-center justify-center text-amber-400 text-xs shadow-inner"
+                className="flex items-center justify-center text-amber-400"
               >
-                <span className="material-symbols-outlined text-[14px]">
+                <span className="material-symbols-outlined text-[18px]">
                   {b.icon || "star"}
                 </span>
               </span>
             ))}
           </div>
         )}
+        {!isSelf && (
+          <MessageButton
+            otherUserId={author.id}
+            otherUserName={author.name}
+            otherUserImgId={author.imgId}
+            contextType="feed_post"
+            contextId={author.id}
+            contextLabel={`From a post by ${author.name}`}
+            label=""
+            className="h-8 w-8 flex items-center justify-center rounded-lg bg-zinc-800/80 text-zinc-400 hover:bg-zinc-700 hover:text-white border border-zinc-700/60 transition-all cursor-pointer shrink-0"
+          />
+        )}
         <FollowButton
           targetId={author.id}
           compact={true}
           initialIsFollowing={isFollowingAuthor}
         />
+        {optionsMenu}
       </div>
     </div>
   );

@@ -9,6 +9,35 @@ export type PostType =
 
 export type FeedTab = "all" | "community" | "marketplace" | "partners";
 
+export type PostVisibility = "public" | "followers" | "only_me";
+
+export type ReactionType = "like" | "love" | "haha" | "wow" | "sad" | "angry";
+
+export interface ReactionBreakdownEntry {
+  type: ReactionType;
+  count: number;
+}
+
+// A citizen pinned to a specific spot on a photo/video in a post — distinct
+// from @mentions, which link a username inside the post's text content.
+export interface MediaTag {
+  id: string;
+  mediaUrl: string;
+  userId: string;
+  /** 0-100, percentage from the left edge of the media — resolution
+   * independent so it still lines up on a responsively-sized <img>. */
+  x: number;
+  /** 0-100, percentage from the top edge. */
+  y: number;
+  createdAt: string;
+  user: {
+    id: string;
+    name: string;
+    username?: string | null;
+    imgId?: string | null;
+  };
+}
+
 export interface FeedAuthor {
   id: string;
   name: string;
@@ -48,20 +77,39 @@ export interface FeedPost {
   tab: FeedTab;
   content: string;
   mediaUrls: string[];
+  visibility?: PostVisibility;
   venueId?: string | null;
   assetId?: string | null;
   serviceId?: string | null;
   eventId?: string | null;
   reviewId?: string | null;
   stampId?: string | null;
+  originalPostId?: string | null;
   likesCount: number;
   commentsCount: number;
   sharesCount: number;
   isPinned: boolean;
   isLikedByMe?: boolean;
+  myReaction?: ReactionType | null;
   isFollowingAuthor?: boolean;
+  isSavedByMe?: boolean;
+  mediaTags?: MediaTag[];
+  editedAt?: string | null;
   createdAt: string;
   author: FeedAuthor;
+  originalPost?: {
+    id: string;
+    content: string;
+    mediaUrls: string[];
+    type: PostType;
+    createdAt: string;
+    author: {
+      id: string;
+      name: string;
+      username?: string | null;
+      imgId?: string | null;
+    };
+  } | null;
   venue?: {
     id: string;
     name: string;
@@ -133,6 +181,9 @@ export interface PostComment {
   postId: string;
   authorId: string;
   content: string;
+  parentId?: string | null;
+  likesCount: number;
+  isLikedByMe?: boolean;
   createdAt: string;
   author: {
     id: string;
@@ -141,16 +192,26 @@ export interface PostComment {
     imgId?: string | null;
     roleType: string[];
   };
+  replies?: PostComment[];
 }
 
 export interface CreatePostPayload {
   type: PostType;
   content: string;
   mediaUrls?: string[];
+  visibility?: PostVisibility;
   venueId?: string | null;
   assetId?: string | null;
   serviceId?: string | null;
   eventId?: string | null;
   reviewId?: string | null;
   stampId?: string | null;
+  mediaTags?: Array<{ mediaUrl: string; userId: string; x: number; y: number }>;
+}
+
+export interface MentionCandidate {
+  id: string;
+  name: string;
+  username: string | null;
+  imgId: string | null;
 }

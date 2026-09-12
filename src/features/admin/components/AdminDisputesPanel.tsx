@@ -1,10 +1,79 @@
 "use client";
 
-import React, { useState } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import React, { useEffect, useState } from "react";
+import {
+  useQuery,
+  useMutation,
+  useQueryClient,
+  keepPreviousData,
+} from "@tanstack/react-query";
 import api from "@/shared/lib/axios";
 import toast from "react-hot-toast";
 import { pollWhileVisible } from "@/shared/lib/realtime";
+
+interface QueuePagination {
+  page: number;
+  limit: number;
+  total: number;
+  totalPages: number;
+}
+
+/**
+ * The server-paginated equivalent of the four-button pager in
+ * `AdminCitizenTable` - same shape, same styling, lifted out because this file
+ * now has three lists that need it rather than one.
+ *
+ * Introduced 10 Sep alongside the API change. The queues used to return every
+ * row up to a 500-row cap, which every one of these lists rendered in full;
+ * past 50 the change was a real regression - a queue that used to show up to
+ * 500 disputes would have silently shown 50 and stopped - so the pager exists
+ * because the API change forced it, not as a separate enhancement.
+ */
+function QueuePager({
+  pagination,
+  page,
+  setPage,
+  isFetching,
+  noun,
+}: {
+  pagination: QueuePagination | undefined;
+  page: number;
+  setPage: (updater: (p: number) => number) => void;
+  isFetching: boolean;
+  noun: string;
+}) {
+  if (!pagination || pagination.totalPages <= 1) return null;
+
+  return (
+    <div className="px-8 py-4 border-t border-white/5 flex items-center justify-end gap-3">
+      <span className="text-[10px] text-white/40">
+        {isFetching
+          ? "Loading…"
+          : `Page ${pagination.page} of ${pagination.totalPages} · ${pagination.total} ${noun}`}
+      </span>
+      <div className="flex items-center gap-1.5">
+        <button
+          onClick={() => setPage((p) => Math.max(1, p - 1))}
+          disabled={page <= 1}
+          className="h-8 w-8 rounded-lg bg-white/5 flex items-center justify-center text-white/60 hover:text-white hover:bg-white/10 transition-all disabled:opacity-30 disabled:pointer-events-none"
+        >
+          <span className="material-symbols-outlined text-[16px]">
+            chevron_left
+          </span>
+        </button>
+        <button
+          onClick={() => setPage((p) => Math.min(pagination.totalPages, p + 1))}
+          disabled={page >= pagination.totalPages}
+          className="h-8 w-8 rounded-lg bg-white/5 flex items-center justify-center text-white/60 hover:text-white hover:bg-white/10 transition-all disabled:opacity-30 disabled:pointer-events-none"
+        >
+          <span className="material-symbols-outlined text-[16px]">
+            chevron_right
+          </span>
+        </button>
+      </div>
+    </div>
+  );
+}
 
 // ── Shared helpers ────────────────────────────────────────────────────────────
 
@@ -35,16 +104,41 @@ function Empty({ label }: { label: string }) {
 function RefundDisputesTab() {
   const qc = useQueryClient();
   const [notes, setNotes] = useState<Record<string, string>>({});
+  const [page, setPage] = useState(1);
 
-  const { data: disputes = [], isLoading } = useQuery<any[]>({
-    queryKey: ["admin", "disputes"],
-    queryFn: () => api.get("/admin/disputes").then((r) => r.data.data),
+  const { data, isLoading, isFetching } = useQuery<{
+    disputes: any[];
+    pagination: QueuePagination | undefined;
+  }>({
+    queryKey: ["admin", "disputes", page],
+    queryFn: () =>
+      api.get("/admin/disputes", { params: { page } }).then((r) => ({
+        disputes: r.data.data,
+        pagination: r.data.pagination,
+      })),
     // The `disputes` topic is how this table stays current; this is the
     // recovery path for a dropped socket, and until it was added the table
     // refreshed on mount and after its own mutation and never otherwise - two
     // admins working the same queue could not see each other's resolutions.
     refetchInterval: pollWhileVisible,
+    placeholderData: keepPreviousData,
   });
+  const disputes = data?.disputes ?? [];
+
+  // A resolution on the last page can shrink the queue below the page the
+  // admin is sitting on - the same clamp `AdminEventsTable` does for its own,
+  // client-side pagination.
+  // A resolution can shrink the queue below the page the admin is sitting
+  // on. This corrects it from the fetch result rather than the click, so the
+  // rule the linter wants (compute during render, do not setState from an
+  // effect) does not apply cleanly - there is no render-time value to derive
+  // from until the network response with the new totalPages has arrived.
+  // eslint-disable-next-line react-hooks/set-state-in-effect
+  useEffect(() => {
+    if (data?.pagination && page > data.pagination.totalPages) {
+      setPage(data.pagination.totalPages);
+    }
+  }, [data?.pagination, page]);
 
   const resolve = useMutation({
     mutationFn: ({
@@ -151,6 +245,13 @@ function RefundDisputesTab() {
           )}
         </div>
       ))}
+      <QueuePager
+        pagination={data?.pagination}
+        page={page}
+        setPage={setPage}
+        isFetching={isFetching}
+        noun="disputes"
+      />
     </div>
   );
 }
@@ -159,6 +260,7 @@ function RefundDisputesTab() {
 
 function BookingDisputesTab({ type }: { type: "asset" | "service" }) {
   const qc = useQueryClient();
+  const [page, setPage] = useState(1);
   const endpoint =
     type === "asset"
       ? "/admin/asset-bookings/disputes"
@@ -168,13 +270,34 @@ function BookingDisputesTab({ type }: { type: "asset" | "service" }) {
       ? `/admin/asset-bookings/${id}/resolve`
       : `/admin/service-bookings/${id}/resolve`;
 
-  const { data: bookings = [], isLoading } = useQuery<any[]>({
-    queryKey: ["admin", "disputes", type],
-    queryFn: () => api.get(endpoint).then((r) => r.data.data),
+  const { data, isLoading, isFetching } = useQuery<{
+    bookings: any[];
+    pagination: QueuePagination | undefined;
+  }>({
+    queryKey: ["admin", "disputes", type, page],
+    queryFn: () =>
+      api.get(endpoint, { params: { page } }).then((r) => ({
+        bookings: r.data.data,
+        pagination: r.data.pagination,
+      })),
     // As above. The `disputes` topic invalidates ["admin", "disputes"], which
     // matches this key by prefix, so both tables move on one emit.
     refetchInterval: pollWhileVisible,
+    placeholderData: keepPreviousData,
   });
+  const bookings = data?.bookings ?? [];
+
+  // A resolution can shrink the queue below the page the admin is sitting
+  // on. This corrects it from the fetch result rather than the click, so the
+  // rule the linter wants (compute during render, do not setState from an
+  // effect) does not apply cleanly - there is no render-time value to derive
+  // from until the network response with the new totalPages has arrived.
+  // eslint-disable-next-line react-hooks/set-state-in-effect
+  useEffect(() => {
+    if (data?.pagination && page > data.pagination.totalPages) {
+      setPage(data.pagination.totalPages);
+    }
+  }, [data?.pagination, page]);
 
   const resolve = useMutation({
     mutationFn: ({
@@ -199,76 +322,85 @@ function BookingDisputesTab({ type }: { type: "asset" | "service" }) {
     return <Empty label={`No disputed ${type} bookings.`} />;
 
   return (
-    <div className="overflow-x-auto">
-      <table className="w-full text-sm">
-        <thead>
-          <tr className="border-b border-white/5 text-left">
-            {[
-              type === "asset" ? "Asset" : "Service",
-              "Client",
-              "Date",
-              "Amount",
-              "Actions",
-            ].map((h) => (
-              <th
-                key={h}
-                className="py-3 px-4 text-[10px] uppercase tracking-widest text-white/30 font-bold whitespace-nowrap"
-              >
-                {h}
-              </th>
-            ))}
-          </tr>
-        </thead>
-        <tbody>
-          {bookings.map((b: any) => (
-            <tr
-              key={b.id}
-              className="border-b border-white/5 hover:bg-white/2 transition-colors"
-            >
-              <td className="py-3 px-4">
-                <p className="font-bold text-white text-xs">
-                  {b[type]?.name ?? "—"}
-                </p>
-                <p className="text-[10px] text-white/30">
-                  {b[type]?.category ?? ""}
-                </p>
-              </td>
-              <td className="py-3 px-4 text-xs text-white/60">
-                {b.user?.name ?? b.userId?.slice(0, 8)}
-              </td>
-              <td className="py-3 px-4 text-xs text-white/60 whitespace-nowrap">
-                {fmt(type === "asset" ? b.startDate : b.scheduledDate)}
-              </td>
-              <td className="py-3 px-4 text-xs font-bold text-white whitespace-nowrap">
-                {money(b.totalAmount)}
-              </td>
-              <td className="py-3 px-4">
-                <div className="flex gap-2">
-                  <button
-                    onClick={() =>
-                      resolve.mutate({ id: b.id, resolution: "completed" })
-                    }
-                    disabled={resolve.isPending}
-                    className="px-3 py-1.5 rounded-lg bg-green-500/20 text-green-400 border border-green-500/30 text-[10px] font-bold hover:bg-green-500/30 transition-colors disabled:opacity-40"
-                  >
-                    Mark Completed
-                  </button>
-                  <button
-                    onClick={() =>
-                      resolve.mutate({ id: b.id, resolution: "cancelled" })
-                    }
-                    disabled={resolve.isPending}
-                    className="px-3 py-1.5 rounded-lg bg-red-500/20 text-red-400 border border-red-500/30 text-[10px] font-bold hover:bg-red-500/30 transition-colors disabled:opacity-40"
-                  >
-                    Cancel
-                  </button>
-                </div>
-              </td>
+    <>
+      <div className="overflow-x-auto">
+        <table className="w-full text-sm">
+          <thead>
+            <tr className="border-b border-white/5 text-left">
+              {[
+                type === "asset" ? "Asset" : "Service",
+                "Client",
+                "Date",
+                "Amount",
+                "Actions",
+              ].map((h) => (
+                <th
+                  key={h}
+                  className="py-3 px-4 text-[10px] uppercase tracking-widest text-white/30 font-bold whitespace-nowrap"
+                >
+                  {h}
+                </th>
+              ))}
             </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
+          </thead>
+          <tbody>
+            {bookings.map((b: any) => (
+              <tr
+                key={b.id}
+                className="border-b border-white/5 hover:bg-white/2 transition-colors"
+              >
+                <td className="py-3 px-4">
+                  <p className="font-bold text-white text-xs">
+                    {b[type]?.name ?? "—"}
+                  </p>
+                  <p className="text-[10px] text-white/30">
+                    {b[type]?.category ?? ""}
+                  </p>
+                </td>
+                <td className="py-3 px-4 text-xs text-white/60">
+                  {b.user?.name ?? b.userId?.slice(0, 8)}
+                </td>
+                <td className="py-3 px-4 text-xs text-white/60 whitespace-nowrap">
+                  {fmt(type === "asset" ? b.startDate : b.scheduledDate)}
+                </td>
+                <td className="py-3 px-4 text-xs font-bold text-white whitespace-nowrap">
+                  {money(b.totalAmount)}
+                </td>
+                <td className="py-3 px-4">
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() =>
+                        resolve.mutate({ id: b.id, resolution: "completed" })
+                      }
+                      disabled={resolve.isPending}
+                      className="px-3 py-1.5 rounded-lg bg-green-500/20 text-green-400 border border-green-500/30 text-[10px] font-bold hover:bg-green-500/30 transition-colors disabled:opacity-40"
+                    >
+                      Mark Completed
+                    </button>
+                    <button
+                      onClick={() =>
+                        resolve.mutate({ id: b.id, resolution: "cancelled" })
+                      }
+                      disabled={resolve.isPending}
+                      className="px-3 py-1.5 rounded-lg bg-red-500/20 text-red-400 border border-red-500/30 text-[10px] font-bold hover:bg-red-500/30 transition-colors disabled:opacity-40"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      <QueuePager
+        pagination={data?.pagination}
+        page={page}
+        setPage={setPage}
+        isFetching={isFetching}
+        noun={type === "asset" ? "asset bookings" : "service bookings"}
+      />
+    </>
   );
 }
 

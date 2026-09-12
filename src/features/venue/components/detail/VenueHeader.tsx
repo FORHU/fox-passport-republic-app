@@ -14,6 +14,15 @@ export function VenueNavHeader({ onBack }: VenueNavHeaderProps) {
   return (
     <header className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-md border-b border-white/5 h-14 sm:h-20 transition-all duration-300">
       <div className="mx-auto max-w-7xl px-4 h-full flex items-center justify-between">
+        <button
+          onClick={onBack}
+          className="flex items-center gap-2 text-sm font-bold text-white/60 hover:text-white transition-colors cursor-pointer"
+        >
+          <span className="material-symbols-outlined text-[18px]">
+            arrow_back
+          </span>
+          <span className="hidden sm:inline">Back</span>
+        </button>
         <Link
           href="/"
           className="flex items-center gap-2 sm:gap-3 group cursor-pointer"
@@ -42,12 +51,6 @@ export function VenueNavHeader({ onBack }: VenueNavHeaderProps) {
               favorite_border
             </span>{" "}
             Save
-          </button>
-          <button
-            onClick={onBack}
-            className="h-10 w-10 flex items-center justify-center rounded-full bg-white/5 hover:bg-white hover:text-black transition-all text-white"
-          >
-            <span className="material-symbols-outlined">close</span>
           </button>
         </div>
       </div>

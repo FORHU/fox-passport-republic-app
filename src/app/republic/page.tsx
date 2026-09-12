@@ -10,14 +10,29 @@ import {
 } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
+import {
+  ArrowLeft,
+  ArrowRight,
+  CheckCircle2,
+  Compass,
+  Inbox,
+  NotebookPen,
+  Package,
+  PenTool,
+  PlusCircle,
+  Search,
+} from "lucide-react";
 import { FeedPost, FeedTab } from "@/features/republic/types";
-import { getFeed } from "@/shared/api/feed";
+import { getFeed, getPostById } from "@/shared/api/feed";
 import { RepublicTabs } from "@/features/republic/components/RepublicTabs";
-import { ComposePostBox } from "./_components/ComposePostBox";
+import { ComposePostTrigger } from "@/features/republic/components/ComposePostTrigger";
+import { ComposePostModal } from "@/features/republic/components/ComposePostModal";
+import { FeedSortMenu } from "@/features/republic/components/FeedSortMenu";
 import { PostCard } from "@/features/republic/components/PostCard";
+import { PostDetailModal } from "@/features/republic/components/PostDetailModal";
 import { CitizenProfileSidebarCard } from "@/features/republic/components/CitizenProfileSidebarCard";
 import { PartnerEquipmentDepotCard } from "@/features/republic/components/PartnerEquipmentDepotCard";
-import { SuggestedCitizensWidget } from "@/features/republic/components/SuggestedCitizensWidget";
+import { FollowingWidget } from "@/features/republic/components/FollowingWidget";
 import PartnerInventoryMap from "@/features/investment/components/PartnerInventoryMap";
 import LandingHeader from "@/features/landing/components/sections/LandingHeader";
 
@@ -28,24 +43,32 @@ const VALID_TABS: FeedTab[] = ["all", "community", "marketplace", "partners"];
 // with a blurred background — on every scroll-triggered post load, search
 // keystroke, or sort toggle in the feed next to it. Takes no props tied to
 // feed state, so it never has a reason to re-render after mount.
+//
+// `md:max-h-[calc(100vh-8.25rem)] md:overflow-y-auto` bounds the sticky
+// column to the viewport and scrolls its own overflow internally (the
+// inline equipment map can make this column taller than the screen) —
+// without a cap, `position: sticky` pins the *whole* oversized column to
+// the top of the viewport while the much taller feed column next to it
+// scrolls, leaving anything past the first screenful of the sidebar (the
+// map, "Republic Shortcuts") stuck below the fold for nearly the entire
+// page scroll, unreachable until the sidebar finally releases near the very
+// bottom of the feed. The trade-off: hovering the sidebar and hovering the
+// feed now scroll two different things, same as any other nested-scroll
+// panel (a contacts list next to a chat pane, etc.).
 const RepublicLeftSidebar = memo(function RepublicLeftSidebar() {
   return (
-    <aside className="hidden md:block w-64 xl:w-80 shrink-0 md:sticky md:top-28 md:self-start md:max-h-[calc(100vh-8rem)] md:overflow-y-auto space-y-4 h-fit [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
+    <aside className="hidden md:block w-64 xl:w-80 shrink-0 md:sticky md:top-[8.25rem] md:self-start md:max-h-[calc(100vh-8.25rem)] md:overflow-y-auto space-y-4 h-fit [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
       {/* Direct Back to Home link */}
-      <div className="flex items-center justify-between">
-        <Link
-          href="/"
-          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-2xl bg-zinc-900/90 hover:bg-zinc-800 text-zinc-300 hover:text-white text-xs font-bold border border-zinc-800/80 transition-all shadow-sm group cursor-pointer"
-        >
-          <span className="material-symbols-outlined text-[16px] text-zinc-400 group-hover:text-lime-400 group-hover:-translate-x-1 transition-all">
-            arrow_back
-          </span>
-          Back to Main Page
-        </Link>
-        <span className="text-[10px] font-black uppercase tracking-wider text-zinc-500">
-          Republic
-        </span>
-      </div>
+      <Link
+        href="/"
+        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-2xl bg-zinc-900/90 hover:bg-zinc-800 text-zinc-300 hover:text-white text-xs font-bold border border-zinc-800/80 transition-all shadow-sm group cursor-pointer"
+      >
+        <ArrowLeft
+          className="h-4 w-4 text-zinc-400 group-hover:text-lime-400 group-hover:-translate-x-1 transition-all"
+          strokeWidth={2}
+        />
+        Back to Main Page
+      </Link>
 
       {/* Profile Icon / Passport Card */}
       <CitizenProfileSidebarCard />
@@ -54,7 +77,9 @@ const RepublicLeftSidebar = memo(function RepublicLeftSidebar() {
           for medium screens */}
       <PartnerEquipmentDepotCard
         mapSlot={
-          <PartnerInventoryMap className="h-[360px] w-full rounded-2xl overflow-hidden" />
+          <PartnerInventoryMap
+            className="h-[360px] w-full rounded-2xl overflow-hidden"
+          />
         }
       />
 
@@ -68,42 +93,39 @@ const RepublicLeftSidebar = memo(function RepublicLeftSidebar() {
           className="flex items-center justify-between text-zinc-400 hover:text-amber-300 py-1.5 transition-colors group"
         >
           <span className="flex items-center gap-2">
-            <span className="material-symbols-outlined text-[16px] text-amber-400">
-              explore
-            </span>
+            <Compass className="h-4 w-4 text-amber-400" strokeWidth={2} />
             Full Inventory Map
           </span>
-          <span className="material-symbols-outlined text-[14px] text-zinc-600 group-hover:translate-x-0.5 transition-transform">
-            arrow_forward
-          </span>
+          <ArrowRight
+            className="h-3.5 w-3.5 text-zinc-600 group-hover:translate-x-0.5 transition-transform"
+            strokeWidth={2}
+          />
         </Link>
         <Link
           href="/foxer/create-investment"
           className="flex items-center justify-between text-zinc-400 hover:text-lime-400 py-1.5 transition-colors group"
         >
           <span className="flex items-center gap-2">
-            <span className="material-symbols-outlined text-[16px] text-lime-400">
-              add_circle
-            </span>
+            <PlusCircle className="h-4 w-4 text-lime-400" strokeWidth={2} />
             Register Equipment Hub
           </span>
-          <span className="material-symbols-outlined text-[14px] text-zinc-600 group-hover:translate-x-0.5 transition-transform">
-            arrow_forward
-          </span>
+          <ArrowRight
+            className="h-3.5 w-3.5 text-zinc-600 group-hover:translate-x-0.5 transition-transform"
+            strokeWidth={2}
+          />
         </Link>
         <Link
           href="/venue-foxer/create-venue"
           className="flex items-center justify-between text-zinc-400 hover:text-pink-400 py-1.5 transition-colors group"
         >
           <span className="flex items-center gap-2">
-            <span className="material-symbols-outlined text-[16px] text-pink-400">
-              polyline
-            </span>
+            <PenTool className="h-4 w-4 text-pink-400" strokeWidth={2} />
             Draw & Add Venue
           </span>
-          <span className="material-symbols-outlined text-[14px] text-zinc-600 group-hover:translate-x-0.5 transition-transform">
-            arrow_forward
-          </span>
+          <ArrowRight
+            className="h-3.5 w-3.5 text-zinc-600 group-hover:translate-x-0.5 transition-transform"
+            strokeWidth={2}
+          />
         </Link>
       </div>
     </aside>
@@ -114,25 +136,10 @@ const RepublicLeftSidebar = memo(function RepublicLeftSidebar() {
 // callback that's stable across everything except an actual tab/search/mode
 // change, so it stops re-rendering (and repainting its blurred, sticky
 // panels) on every scroll-triggered post load.
-const RepublicRightSidebar = memo(function RepublicRightSidebar({
-  onPostCreated,
-}: {
-  onPostCreated: () => void;
-}) {
+const RepublicRightSidebar = memo(function RepublicRightSidebar() {
   return (
-    <aside className="hidden xl:block w-80 xl:w-96 shrink-0 xl:sticky xl:top-28 xl:self-start xl:max-h-[calc(100vh-8rem)] xl:overflow-y-auto space-y-5 h-fit [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
-      {/* Discovery layer — Suggested Citizens today; a Friends/Following
-          list widget is planned to sit alongside this. */}
-      <SuggestedCitizensWidget />
-
-      {/* Publish Update (ComposePostBox) */}
-      <div className="space-y-2">
-        <div className="px-2 text-[10px] font-black uppercase tracking-wider text-zinc-500 flex items-center justify-between">
-          <span>Publish Update</span>
-          <span className="text-lime-400 font-bold">+15 XP / Post</span>
-        </div>
-        <ComposePostBox onPostCreated={onPostCreated} />
-      </div>
+    <aside className="hidden xl:block w-80 xl:w-96 shrink-0 xl:sticky xl:top-[8.25rem] xl:self-start xl:h-[calc(100vh-8.25rem)]">
+      <FollowingWidget />
     </aside>
   );
 });
@@ -152,8 +159,56 @@ function RepublicFeedContent() {
   const [loading, setLoading] = useState(true);
   const [nextCursor, setNextCursor] = useState<string | null>(null);
   const [loadingMore, setLoadingMore] = useState(false);
-  const [mobileComposeOpen, setMobileComposeOpen] = useState(false);
+  const [composeOpen, setComposeOpen] = useState(false);
+  const [activePost, setActivePost] = useState<FeedPost | null>(null);
   const postsListRef = useRef<HTMLDivElement>(null);
+
+  // The app hides scrollbars globally (see .custom-scrollbar in globals.css)
+  // so infinite-scroll feeds like this one give no visual sense of how much
+  // is left. Opt this page's page-level scrollbar back in for as long as
+  // it's mounted, so scroll position is always visible.
+  useEffect(() => {
+    document.documentElement.classList.add("custom-scrollbar");
+    return () => {
+      document.documentElement.classList.remove("custom-scrollbar");
+    };
+  }, []);
+
+  const handleOpenDetail = useCallback((post: FeedPost) => {
+    setActivePost(post);
+  }, []);
+
+  const handleCloseDetail = useCallback(() => {
+    setActivePost(null);
+    if (searchParams.get("postId")) {
+      const params = new URLSearchParams(searchParams.toString());
+      params.delete("postId");
+      const query = params.toString();
+      router.replace(query ? `/republic?${query}` : "/republic", {
+        scroll: false,
+      });
+    }
+  }, [router, searchParams]);
+
+  // Deep link support: PostCard's Share button already copies a
+  // `?postId=` URL — this is the read side, opening that post's detail
+  // modal directly on load rather than leaving the link a dead end.
+  useEffect(() => {
+    const postId = searchParams.get("postId");
+    if (!postId) return;
+    let cancelled = false;
+    getPostById(postId)
+      .then((post) => {
+        if (!cancelled) setActivePost(post);
+      })
+      .catch((err) => {
+        console.error("Failed to load shared post:", err);
+      });
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Sync activeTab when URL query changes (e.g. navigation from menu)
   useEffect(() => {
@@ -186,9 +241,6 @@ function RepublicFeedContent() {
     },
     [router, activeTab],
   );
-
-  // Sentinel ref for auto-pagination
-  const sentinelRef = useRef<HTMLDivElement>(null);
 
   // Fetch 10 posts at a time. A cursor means this is a "load more" call from
   // the scroll sentinel, so its results append onto what's already on screen
@@ -233,9 +285,9 @@ function RepublicFeedContent() {
     fetchPosts(activeTab, search, mode);
   }, [activeTab, search, mode, fetchPosts]);
 
-  // Stable reference so the memoized right sidebar (ComposePostBox lives
-  // there) doesn't re-render on every scroll-triggered post load or search
-  // keystroke — only when the filters this refetch actually depends on change.
+  // Shared success handler for the compose modal, wherever it was opened
+  // from — refetches the current feed view rather than assuming a full
+  // reload is needed.
   const handleDesktopPostCreated = useCallback(() => {
     fetchPosts(activeTab, search, mode);
   }, [fetchPosts, activeTab, search, mode]);
@@ -259,18 +311,48 @@ function RepublicFeedContent() {
     fetchPosts(activeTab, search, mode, nextCursor);
   }, [nextCursor, loadingMore, loading, activeTab, search, mode, fetchPosts]);
 
-  // ── Auto-pagination sentinel ──────────────────────────────────────────────
-  // IntersectionObserver reports the sentinel's *current* visibility as soon
-  // as observe() runs, before any real scrolling — with only ~10 posts in the
-  // first batch, the list can easily be shorter than the viewport, and that
-  // first synchronous callback alone would advance to the next batch, whose
-  // sentinel does the same, cascading through every batch with no user
-  // interaction. Skipping that one callback and only acting on a later,
-  // genuine visibility change fixes it (same issue and fix as /venues/map's
-  // pagination).
+  // `handleLoadMore` is recreated on every render (it closes over nextCursor/
+  // loading/loadingMore so its own internal guard stays correct), which used
+  // to be a dependency of the observer effect below — so the observer itself
+  // got torn down and rebuilt after every single page load. Each rebuild
+  // reset `isInitialCallback`, and IntersectionObserver re-fires that
+  // synchronous "here's your current visibility" callback the instant
+  // observe() runs again — with the sentinel still inside the generous
+  // 350px rootMargin (easy with ~10 short post cards), the guard meant to
+  // filter that one callback landed on a doomed brand-new observer each
+  // time, so it kept slipping through and immediately loading the next page,
+  // whose completion tore down and rebuilt the observer again — cascading
+  // through every page in one burst instead of stopping to wait for a real
+  // scroll. Routing calls through a ref lets the observer itself be created
+  // exactly once (mount-only deps) while still always invoking the current
+  // `handleLoadMore` closure.
+  const handleLoadMoreRef = useRef(handleLoadMore);
   useEffect(() => {
-    const sentinel = sentinelRef.current;
-    if (!sentinel) return;
+    handleLoadMoreRef.current = handleLoadMore;
+  }, [handleLoadMore]);
+
+  // ── Auto-pagination sentinel ──────────────────────────────────────────────
+  // A callback ref rather than a plain ref + useEffect: the sentinel <div>
+  // only exists in the JSX branch below once `loading` is false and posts
+  // are non-empty, so a mount-once (`[]`-deps) effect would run before that
+  // div ever exists, find nothing to observe, and never run again. A
+  // callback ref instead fires exactly when React actually attaches or
+  // detaches the node — on the real initial mount, and again on each tab/
+  // search/mode change (which remounts this whole branch), but *not* on a
+  // plain load-more, since the sentinel div stays mounted throughout that.
+  //
+  // IntersectionObserver reports the sentinel's *current* visibility as soon
+  // as observe() runs, before any real scrolling — with only ~10 posts in
+  // the first batch, the list can easily be shorter than the viewport, and
+  // that first synchronous callback alone would advance to the next batch.
+  // Skipping that one callback and only acting on a later, genuine
+  // visibility change fixes it (same issue and fix as /venues/map's
+  // pagination).
+  const sentinelObserverRef = useRef<IntersectionObserver | null>(null);
+  const sentinelCallbackRef = useCallback((node: HTMLDivElement | null) => {
+    sentinelObserverRef.current?.disconnect();
+    sentinelObserverRef.current = null;
+    if (!node) return;
 
     let isInitialCallback = true;
     const observer = new IntersectionObserver(
@@ -280,8 +362,8 @@ function RepublicFeedContent() {
           return;
         }
         const [entry] = entries;
-        if (entry.isIntersecting && nextCursor && !loadingMore && !loading) {
-          handleLoadMore();
+        if (entry.isIntersecting) {
+          handleLoadMoreRef.current();
         }
       },
       {
@@ -291,11 +373,9 @@ function RepublicFeedContent() {
       },
     );
 
-    observer.observe(sentinel);
-    return () => {
-      observer.unobserve(sentinel);
-    };
-  }, [nextCursor, loadingMore, loading, handleLoadMore]);
+    observer.observe(node);
+    sentinelObserverRef.current = observer;
+  }, []);
 
   return (
     <div className="min-h-screen bg-[#09090e] text-white pb-36 pt-16 sm:pt-28 selection:bg-lime-400 selection:text-black">
@@ -304,7 +384,7 @@ function RepublicFeedContent() {
 
       <div className="max-w-[1440px] mx-auto px-3 sm:px-6">
         {/* ── LOCKED CONTROL BAR (Slim, docks under the floating header) ─── */}
-        <div className="md:hidden sticky top-16 z-40 py-2.5 bg-[#09090e]/95 backdrop-blur-2xl border-b border-zinc-800/80 -mx-3 px-3 shadow-[0_8px_24px_rgba(0,0,0,0.7)] flex items-center justify-between gap-2">
+        <div className="md:hidden sticky top-16 z-40 py-2.5 bg-[#09090e]/95 backdrop-blur-2xl border-b border-zinc-800/80 -mx-3 px-3 shadow-[0_8px_24px_rgba(0,0,0,0.7)] flex items-center justify-between gap-2 transform-gpu">
           {/* Stream Tabs (Horizontal swipeable pills) */}
           <div className="flex-1 min-w-0">
             <RepublicTabs
@@ -314,28 +394,14 @@ function RepublicFeedContent() {
             />
           </div>
 
-          {/* Quick Create Post Action */}
+          {/* Quick Create Post Action — opens the same compose modal as
+              every other trigger on this page. */}
           <button
-            onClick={() => {
-              setMobileComposeOpen((prev) => !prev);
-              setTimeout(() => {
-                document
-                  .getElementById("republic-mobile-composer")
-                  ?.scrollIntoView({ behavior: "smooth", block: "start" });
-              }, 50);
-            }}
-            className={`shrink-0 py-2 px-3 rounded-xl font-black text-xs flex items-center gap-1.5 shadow-md transition-all cursor-pointer ${
-              mobileComposeOpen
-                ? "bg-zinc-800 hover:bg-zinc-700 text-zinc-300 border border-zinc-700"
-                : "bg-lime-400 hover:bg-lime-300 text-black"
-            }`}
+            onClick={() => setComposeOpen(true)}
+            className="shrink-0 py-2 px-3 rounded-xl font-black text-xs flex items-center gap-1.5 shadow-md transition-all cursor-pointer bg-lime-400 hover:bg-lime-300 text-black"
           >
-            <span className="material-symbols-outlined text-[16px]">
-              {mobileComposeOpen ? "close" : "edit_note"}
-            </span>
-            <span className="hidden xs:inline">
-              {mobileComposeOpen ? "Close" : "Post"}
-            </span>
+            <NotebookPen className="h-4 w-4" strokeWidth={2} />
+            <span className="hidden xs:inline">Post</span>
           </button>
         </div>
 
@@ -347,24 +413,25 @@ function RepublicFeedContent() {
           {/* ── MIDDLE COLUMN (Spacious Feeds & Floating Search) ────────────── */}
           <main className="flex-1 min-w-0 max-w-2xl xl:max-w-2xl space-y-5 w-full min-h-[85vh]">
             {/* Search Input (Flows naturally on mobile, sticky on desktop) */}
-            <div className="md:sticky md:top-28 z-30 backdrop-blur-xl bg-zinc-950/90 border border-zinc-800/90 rounded-2xl p-2 sm:p-2.5 shadow-[0_10px_35px_rgba(0,0,0,0.7)] transition-all">
+            <div className="relative z-30 backdrop-blur-xl bg-zinc-950/90 border border-zinc-800/90 rounded-2xl p-2 sm:p-2.5 shadow-[0_10px_35px_rgba(0,0,0,0.7)] transition-all">
               <form
                 onSubmit={handleSearchSubmit}
                 className="relative flex items-center"
               >
-                <span className="material-symbols-outlined absolute left-3.5 text-zinc-400 text-[18px]">
-                  search
-                </span>
+                <Search
+                  className="absolute left-3.5 h-[18px] w-[18px] text-zinc-400"
+                  strokeWidth={2}
+                />
                 <input
                   type="text"
                   value={searchInput}
                   onChange={(e) => setSearchInput(e.target.value)}
                   placeholder="Search feeds, creators, venues..."
-                  className="w-full bg-zinc-900/95 border border-zinc-800 focus:border-lime-400/70 rounded-xl pl-10 pr-28 sm:pr-32 py-2.5 text-xs text-white placeholder-zinc-500 focus:outline-none transition-colors"
+                  className="w-full bg-zinc-900/95 border border-zinc-800 focus:border-lime-400/70 rounded-xl pl-10 pr-9 py-2.5 text-xs text-white placeholder-zinc-500 focus:outline-none transition-colors"
                 />
 
-                <div className="absolute right-2.5 flex items-center gap-1.5">
-                  {searchInput && (
+                {searchInput && (
+                  <div className="absolute right-2.5 flex items-center gap-1.5">
                     <button
                       type="button"
                       onClick={() => {
@@ -375,55 +442,47 @@ function RepublicFeedContent() {
                     >
                       ✕
                     </button>
-                  )}
-                  {/* Feed Streams filter, folded into the search bar */}
-                  <RepublicTabs
-                    activeTab={activeTab}
-                    onTabChange={handleTabChange}
-                    orientation="dropdown"
-                  />
-                </div>
+                  </div>
+                )}
               </form>
             </div>
-            {/* Feed Sort Toggle */}
-            <div className="flex items-center gap-1.5 p-1.5 bg-zinc-950 border border-zinc-800 rounded-xl w-full sm:w-max mx-auto sm:mx-0 shadow-sm">
-              <button
-                onClick={() => setMode("recent")}
-                className={`flex-1 sm:flex-none px-6 py-2 rounded-lg text-[11px] font-black uppercase tracking-wider transition-all ${
-                  mode === "recent"
-                    ? "bg-zinc-800 text-white shadow-sm"
-                    : "text-zinc-500 hover:text-zinc-300 hover:bg-zinc-900/50"
-                }`}
-              >
-                Recent
-              </button>
-              <button
-                onClick={() => setMode("top")}
-                className={`flex-1 sm:flex-none px-6 py-2 rounded-lg text-[11px] font-black uppercase tracking-wider transition-all flex items-center justify-center gap-1.5 ${
-                  mode === "top"
-                    ? "bg-gradient-to-r from-lime-500/20 to-emerald-500/20 text-lime-400 border border-lime-500/30 shadow-[0_0_15px_rgba(163,230,53,0.15)]"
-                    : "text-zinc-500 hover:text-zinc-300 hover:bg-zinc-900/50"
-                }`}
-              >
-                <span className="material-symbols-outlined text-[14px]">
-                  hotel_class
-                </span>
-                Top Posts
-              </button>
+
+            {/* Publish Update — same trigger-opens-modal composer used
+                everywhere else, placed right under the search bar so it's
+                the first thing seen on every breakpoint. */}
+            <div className="space-y-1.5">
+              <ComposePostTrigger onOpen={() => setComposeOpen(true)} />
             </div>
 
-            {/* Suggested Citizens — tablet only; hidden on mobile (too cramped
+            {/* Feed filters — stream (All Feeds/Community/...) and sort
+                (Recent/Top Posts), grouped together instead of one being
+                buried inside the search bar. */}
+            <div className="flex items-center justify-between px-1">
+              <span className="text-sm font-black text-white">Posts</span>
+              <div className="flex items-center gap-1">
+                <RepublicTabs
+                  activeTab={activeTab}
+                  onTabChange={handleTabChange}
+                  orientation="dropdown"
+                />
+                <span className="w-px h-4 bg-zinc-800" />
+                <FeedSortMenu mode={mode} onChange={setMode} />
+              </div>
+            </div>
+
+            {/* Following — tablet only; hidden on mobile (too cramped
                 there) and hidden on xl+ (already in the right sidebar) */}
             <div className="hidden md:block xl:hidden w-full overflow-x-auto snap-x snap-mandatory pb-2 -mx-3 px-3 sm:mx-0 sm:px-0">
-              <SuggestedCitizensWidget />
+              <FollowingWidget />
             </div>
 
             {/* Mobile-only Quick Depots Map Link */}
             <div className="md:hidden flex items-center justify-between px-3.5 py-2.5 rounded-2xl bg-gradient-to-r from-amber-500/10 via-zinc-900/90 to-zinc-900 border border-amber-500/20 text-xs shadow-md">
               <div className="flex items-center gap-2 min-w-0">
-                <span className="material-symbols-outlined text-amber-400 text-[18px] shrink-0">
-                  inventory_2
-                </span>
+                <Package
+                  className="h-[18px] w-[18px] text-amber-400 shrink-0"
+                  strokeWidth={2}
+                />
                 <span className="font-bold text-zinc-200 text-xs truncate">
                   Equipment Depots & Capital
                 </span>
@@ -434,57 +493,6 @@ function RepublicFeedContent() {
               >
                 View Map →
               </Link>
-            </div>
-
-            {/* On Mobile & Medium screens (< xl), render the Compose Box or expandable prompt */}
-            <div
-              id="republic-mobile-composer"
-              className="xl:hidden space-y-2 scroll-mt-28"
-            >
-              {mobileComposeOpen ? (
-                <div className="p-3 sm:p-4 rounded-3xl bg-zinc-900/95 border border-zinc-800 space-y-2 shadow-xl animate-in fade-in zoom-in-95">
-                  <div className="flex items-center justify-between px-1">
-                    <span className="text-[11px] font-black uppercase tracking-wider text-lime-400">
-                      Create Republic Post
-                    </span>
-                    <button
-                      type="button"
-                      onClick={() => setMobileComposeOpen(false)}
-                      className="p-1 rounded-full text-zinc-400 hover:text-white cursor-pointer"
-                    >
-                      <span className="material-symbols-outlined text-[18px]">
-                        close
-                      </span>
-                    </button>
-                  </div>
-                  <ComposePostBox
-                    onPostCreated={() => {
-                      setMobileComposeOpen(false);
-                      fetchPosts(activeTab, search, mode);
-                    }}
-                  />
-                </div>
-              ) : (
-                <button
-                  type="button"
-                  onClick={() => setMobileComposeOpen(true)}
-                  className="w-full flex items-center justify-between p-3 rounded-2xl bg-zinc-900/80 border border-zinc-800 hover:border-lime-400/40 text-left text-xs text-zinc-400 hover:text-white transition-all shadow-md group cursor-pointer"
-                >
-                  <span className="flex items-center gap-2.5 truncate">
-                    <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-lime-400/10 text-lime-400 group-hover:scale-110 transition-transform">
-                      <span className="material-symbols-outlined text-[16px]">
-                        edit_note
-                      </span>
-                    </span>
-                    <span className="truncate">
-                      Share an update, offer gear, or tell a story...
-                    </span>
-                  </span>
-                  <span className="shrink-0 px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider bg-lime-400 text-black font-bold">
-                    Post
-                  </span>
-                </button>
-              )}
             </div>
 
             {/* In the middle it only has the feeds */}
@@ -499,9 +507,10 @@ function RepublicFeedContent() {
               </div>
             ) : posts.length === 0 ? (
               <div className="w-full rounded-3xl bg-zinc-950/60 border border-zinc-800/80 p-12 text-center space-y-3 shadow-xl">
-                <span className="material-symbols-outlined text-[52px] text-zinc-600">
-                  inbox
-                </span>
+                <Inbox
+                  className="h-[52px] w-[52px] text-zinc-600 mx-auto"
+                  strokeWidth={1.5}
+                />
                 <h3 className="text-base font-bold text-zinc-300">
                   No posts in this stream yet
                 </h3>
@@ -528,6 +537,7 @@ function RepublicFeedContent() {
                   <PostCard
                     key={post.id}
                     post={post}
+                    onOpenDetail={handleOpenDetail}
                     onPostDeleted={(id) => {
                       setPosts((prev) => prev.filter((p) => p.id !== id));
                     }}
@@ -535,7 +545,7 @@ function RepublicFeedContent() {
                 ))}
 
                 {/* Auto-Pagination Sentinel */}
-                <div ref={sentinelRef} className="h-1 w-full" />
+                <div ref={sentinelCallbackRef} className="h-1 w-full" />
 
                 {/* Loading indicator while the next batch fetches */}
                 {loadingMore ? (
@@ -553,9 +563,10 @@ function RepublicFeedContent() {
                   posts.length > 0 && (
                     <div className="text-center py-8">
                       <span className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-zinc-900/80 border border-zinc-800 text-[11px] font-bold text-zinc-500">
-                        <span className="material-symbols-outlined text-[15px] text-lime-400">
-                          check_circle
-                        </span>
+                        <CheckCircle2
+                          className="h-[15px] w-[15px] text-lime-400"
+                          strokeWidth={2}
+                        />
                         You&apos;re all caught up on this stream
                       </span>
                     </div>
@@ -566,9 +577,51 @@ function RepublicFeedContent() {
           </main>
 
           {/* ── RIGHT COLUMN (Large Desktop xl: >= 1280px) ──────────────────── */}
-          <RepublicRightSidebar onPostCreated={handleDesktopPostCreated} />
+          <RepublicRightSidebar />
         </div>
       </div>
+
+      {activePost && (
+        <PostDetailModal
+          post={activePost}
+          onClose={handleCloseDetail}
+          onPostDeleted={(id) => {
+            setPosts((prev) => prev.filter((p) => p.id !== id));
+            handleCloseDetail();
+          }}
+        />
+      )}
+
+      {/* Shared compose modal — every trigger point (desktop sidebar,
+          mobile control bar, mobile inline prompt) opens this same one. */}
+      {composeOpen && (
+        <ComposePostModal
+          onClose={() => setComposeOpen(false)}
+          onPostCreated={handleDesktopPostCreated}
+        />
+      )}
+
+      {/* Dark-theme thumb — the default .custom-scrollbar in globals.css is
+          tuned for light backgrounds and would be invisible here. */}
+      <style jsx global>{`
+        html.custom-scrollbar::-webkit-scrollbar {
+          width: 8px;
+        }
+        html.custom-scrollbar::-webkit-scrollbar-track {
+          background: transparent;
+        }
+        html.custom-scrollbar::-webkit-scrollbar-thumb {
+          background: rgba(255, 255, 255, 0.14);
+          border-radius: 20px;
+        }
+        html.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+          background: rgba(163, 230, 53, 0.35);
+        }
+        html.custom-scrollbar {
+          scrollbar-width: thin;
+          scrollbar-color: rgba(255, 255, 255, 0.14) transparent;
+        }
+      `}</style>
     </div>
   );
 }

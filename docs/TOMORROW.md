@@ -1,9 +1,14 @@
 # Tomorrow
 
 **The running order.** Rewritten 2 Sep 2026, revised 4 Sep after `main` took
-role assignment and `feat/map` — the previous 916-line version had 47 completed
-items in it and is in git history if the reasoning behind any of them is ever
-needed.
+role assignment and `feat/map`, again 7 Sep for the auth hardening chain, and
+9 Sep when the API work moved to its own `TOMORROW.md` — the previous 916-line
+version had 47 completed items in it and is in git history if the reasoning
+behind any of them is ever needed.
+
+**This file is the app.** The API has its own running order at
+`../fox-passport-republic-api/docs/TOMORROW.md`; the live work is there, not
+here.
 
 | Document | Role |
 |---|---|
@@ -14,7 +19,28 @@ needed.
 | `api-audit.md` | The record: API, data-fetching and auth findings. 9 open. |
 | `responsive-plan.md` | Responsive and touch backlog. 21 open. |
 | `roles-and-spaces.md` | The Foxer role model and the page split. 13 open. |
-| `app-architecture.md` | Boundary violations + template gaps. 19 open, 150 -> 72. |
+| `app-architecture.md` | Boundary violations + template gaps. 19 open; its counts predate 9 Sep. |
+| `FoxPassportSpatialIntelligence.md` | The spatial vision and target state. |
+| `SPATIAL-PLAN.md` | The spatial counter-plan: what already exists, and the order to build in. |
+
+---
+
+## 0·0a. The booking page could not hear the socket — fixed 10 Sep
+
+`BookingDetailClient` fetched in a `useEffect` and held the booking in component
+state, which put it outside React Query and therefore out of reach of every
+`data:invalidate` the server sends. A payment would settle, the frame would
+arrive 73ms later, and the page would go on reading **Pending** until someone
+reloaded it.
+
+This is the same defect `VERIFY.md` B3 records for the bookings *list* at
+`/booking`, one screen further in. The list was converted; the detail page was
+missed, and nothing pointed at it because a screen that never updates looks
+exactly like a socket that has nothing to say.
+
+Found by actually running B4 - see `VERIFY.md`, which now carries the result.
+After the fix the page flips in 585ms. **If another screen ever "doesn't update",
+check whether it is on React Query before checking anything else.**
 
 ---
 
@@ -25,22 +51,22 @@ the code; they do not carry the two things most likely to waste your first hour.
 
 ### Where the work lives
 
-| Repository | Branch | Ahead of `main` |
-|---|---|---|
-| api | `refactor/api-structure` | 7 commits — schema split, 31 modules, table renames, the validator, GOTCHAS |
-| app | `refactor/app-structure` | 1 commit — `shared/auth`, the realtime bus, the two new docs |
+**See §0 for the current branches**, and `git branch -vv` for what is pushed —
+§0 deliberately no longer counts. As of 9 Sep the live work is **in the API
+repository**, on `feat/redis-backed-rate-limiting`, and it is large: caching,
+the controller extraction, and a test database. A fresh clone of the app gets
+all of the app, and none of that. The app's own unmerged half is
+`feat/auth-03-api-cookies`.
 
-Both are pushed. Neither has a PR open. `main` is untouched in both.
-
-There is also an empty `docs/role-model` branch in the app — it holds nothing
-and can be deleted. The doc work it was created for ended up on
-`refactor/app-structure`, because the changes were still uncommitted when that
-branch was cut.
+The `refactor/api-structure` / `refactor/app-structure` branches this section
+used to name are **merged**, as are `feat/role-assignment` and
+`fix/secretary-admin-console`. The empty `docs/role-model` branch in the app
+still holds nothing and can still be deleted.
 
 ### What does not travel
 
 - **The database.** A clone has no data. `prisma migrate deploy` then
-  `pnpm exec tsx prisma/seed.ts` gives you 148 users, 78 venues, 128 assets,
+  `pnpm exec tsx prisma/seed.ts` gives you 148 users, 128 venues, 128 assets,
   298 services, and both an `admin` and an `admin_secretary` — which the RBAC
   boundary work needs.
 - **`.env`.** Gitignored in both repos, and `.env.example` does not carry
@@ -64,18 +90,24 @@ mid-refactor can be in the broken state, and `prisma migrate reset` fixes it.
 ### First commands
 
 ```
-# api
+# api — see that repo's docs/TOMORROW.md, which is authoritative for it
 pnpm install
 pnpm exec prisma generate          # the client is not committed
 pnpm exec prisma migrate deploy
 pnpm exec tsx prisma/seed.ts
-pnpm validate && pnpm test         # expect: boundaries intact, 198 passing
+pnpm validate
+pnpm exec vitest run               # expect: 313 passing, 27 files, 0 errors
 
 # app
 pnpm install
 pnpm type-check && pnpm test       # expect: clean, 102 passing
-node tools/validate-architecture.mjs   # expect: 72 violations, all one rule
+node tools/validate-architecture.mjs   # expect: 20 violations, all one rule
+                                       # (it exits non-zero; that is normal here)
 ```
+
+The API count was 198 here until 9 Sep, and the command carried two
+`--exclude`s because two specs deleted from the development database. Both are
+fixed: that suite has its own database now and runs whole.
 
 **Do not reach for `pnpm db:setup`.** It is
 `prisma generate && prisma migrate dev`, and `migrate dev` is the command that
@@ -83,9 +115,15 @@ offers to reset the database when it sees drift — it wiped 148 users and
 everything else on 4 Sep. It is harmless against a genuinely empty database, but
 the explicit commands above never prompt, so use them and keep the habit.
 
-**72 is the expected number in the app, not a regression.** The baseline was
-150; the shared-kernel rule is at zero and stays there. If that number goes
-*up*, something regressed — `app-architecture.md` has the breakdown.
+**20 is the expected number in the app, not a regression.** Measured 9 Sep; the
+baseline was 150, then 72, and every one of the 20 is the Feature Isolation
+Boundary rule - the shared-kernel rule is at zero and stays there. The command
+exits non-zero at 20, so a red run is the normal state here and only the count
+carries information. If it goes *up*, something regressed.
+
+**It went up by one on 9 Sep.** `features/republic/components/AuthorPassportPopover.tsx`
+arrived with PR #55 importing across a feature boundary, taking 19 to 20. The
+counts in `app-architecture.md` are older than this line.
 
 ### Read first, in this order
 
@@ -98,7 +136,137 @@ records rather than instructions; grep them, do not read them.
 
 ---
 
-## 0. In flight — as of 4 Sep
+## 0. In flight — as of 9 Sep
+
+**The live work is in the API repository**, and its running order is
+[`../fox-passport-republic-api/docs/TOMORROW.md`](../../fox-passport-republic-api/docs/TOMORROW.md).
+Nothing in the app is in flight. What follows is what the app still owes.
+
+**Auth hardening. All six are written; the browser pass is what is left.** The
+api half merged to `main` via PR #77 on 8 Sep. **The app half
+(`feat/auth-03-api-cookies`) is pushed and not merged**, so the api's cookie
+authorship is live on `main` while the app's relay is not — which is what
+produced a logout that did not log anyone out. That mismatch is the app's
+oldest open item. The tracked list is
+[`AUTH_HARDENING.md`](./AUTH_HARDENING.md); this is only the pointer.
+
+Order was `AUTH-01 → AUTH-02 → AUTH-03 → AUTH-05 → AUTH-04 → AUTH-06`, and with
+AUTH-05 and AUTH-06 landed on 8 Sep **the auth architecture is frozen** — no
+further changes without a decision recorded in `AUTH_HARDENING.md`.
+
+What is not done is verification. None of AUTH-02, 03 or 05 has been exercised in
+a browser, and those are the three that unit tests cannot vindicate: the cookie
+relay and the second-device revocation. The six checks are written out as
+**§ Browser verification** in `AUTH_HARDENING.md` — this document pointed at an
+end-to-end pass "written into `AUTH_HARDENING.md`" that did not exist until
+8 Sep, and `VERIFY.md` covers sockets and page guards, not auth.
+
+**AUTH-05 is blocked.** The api's `.env` has no Google OAuth credentials, so the
+one path AUTH-05 changes cannot be exercised at all until it does. AUTH-02 and
+AUTH-03 are testable now.
+
+**`VERIFY.md`'s account passwords disagree with the seeders** — correct for an
+existing database, wrong for a fresh clone. Flagged in that file.
+
+The two that closed on 8 Sep, for the record:
+
+- [x] **AUTH-05** — Google sign-in now calls `revokeAllForUser` before issuing,
+      so no entry path escapes one-session-per-account. `google-auth.service.ts`,
+      four tests. **Not yet checked from a second device.**
+- [x] **AUTH-06** — the three `[DEV]` OTP logs in `auth.service.ts` are behind
+      `isDev`, so a mail outage in production no longer files each code next to
+      its address; the `console.error` beside each still records the failure.
+      `generateOTP` draws from `crypto.randomInt` across the full six-digit
+      space — the old expression could never produce a code below `100000`.
+      `tests/auth.otp.spec.ts`, seven tests.
+
+### The branches
+
+**`git branch -vv` in each repo is the authority, not this table.** It has been
+corrected three times in one day and was wrong within the hour each time — a
+count of what is pushed goes stale the moment anyone pushes. What is worth
+writing down is which branch holds which work and what depends on what; the
+remote state is a lookup.
+
+**api** — one chain off `main`, plus one unrelated doc branch.
+
+| Branch | Holds |
+|---|---|
+| `feat/auth-01-rate-limiting` | AUTH-01 |
+| `feat/auth-03-api-cookies` (off the above) | AUTH-03, api half. `main` merged in 8 Sep |
+| `feat/auth-05-google-session-revocation` (off the above) | AUTH-05 and AUTH-06, one commit each |
+| `docs/test-suite-wipes-dev-db` (off `main`) | the GOTCHAS entry. Unrelated to auth, can land on its own |
+
+Merging the tip lands all four auth items at once — the chain is linear.
+
+**app** — one code branch and one docs branch, both off `main`.
+
+| Branch | Holds |
+|---|---|
+| `feat/auth-03-api-cookies` | AUTH-02, AUTH-03, and the session-end work merged in 8 Sep |
+| `docs/auth-hardening-tracking` | this file, `AUTH_HARDENING.md`, `ARCHITECTURE.md`, `VERIFY.md`. `main` merged in |
+
+`fix/session-end-consolidation` and `feat/auth-02-proxy-login` still exist
+locally but are **fully contained** in `feat/auth-03-api-cookies` — redundant,
+not pending. Delete them or leave them; they hold nothing the code branch lacks.
+
+The `shared/lib/axios.ts` collision the earlier version of this section warned
+about is **resolved**, in that merge. Both branches had rewritten the 401
+interceptor: the session-end structure won, using AUTH-02's shared
+`isPreSessionAuthPath` rather than its own pair of `url.includes` checks.
+
+**`AUTH_HARDENING.md` lives only on the docs branch.** The session-end branch
+carried its own older copy, which made an add/add conflict whose wrong
+resolution would have reverted the AUTH-05/06 closure; it was removed from the
+code branch on 8 Sep. If it reappears on a code branch, that is the bug.
+
+api 238 tests, app 140. Two api specs that used to fail — `event-template.submit`
+and `waitlist` — pass since the pending migrations were applied; see GOTCHAS 7b
+for what that cost.
+
+**AUTH-06 is independent of the cookie chain** — it touches
+`auth.service.ts` and `otp.utils.ts`, which nothing else in the chain does — so
+it cherry-picks onto `main` cleanly if it wants reviewing on its own. As it
+stands the PR stacks on `feat/auth-03-api-cookies` and carries that branch's
+diff until AUTH-03 lands.
+
+api 221 tests pass with 17 skipped, app 127 green, no lint errors either side.
+Two api specs fail — `event-template.submit` and `waitlist` — but they fail on
+plain `main` too and are unrelated to any of this. The only app type-check
+errors are the two pre-existing `.next/types/validator.ts` ones.
+
+**The api needs `prisma migrate` before it will run.** `main` brought a
+migration and `isPrivate` on `identity.prisma`; `prisma generate` alone is what
+makes `tsc` pass, not what makes the database match.
+
+### Three things to know before merging any of it
+
+1. **None of AUTH-02, AUTH-03 or AUTH-05 has been run in a browser.** A cookie
+   relay, and a revocation that only shows itself on a second device, are
+   precisely what unit tests cannot vindicate. `VERIFY.md` and the end-to-end
+   sequence in `AUTH_HARDENING.md` matter more here than usual — especially
+   watching the rotated cookie values actually change in the Application tab.
+2. **Merge `fix/session-end-consolidation` before the AUTH-03 branch.** Both
+   rewrite `shared/lib/axios.ts` and the proxy route heavily; taking them in the
+   other order means resolving that collision twice.
+3. **Land this docs branch early.** It carries `AUTH_HARDENING.md`, which is
+   otherwise stranded on `fix/session-end-consolidation` — which is why AUTH-02
+   and 03 are done but unticked there.
+
+### Decisions already made — do not re-open
+
+Recorded with reasoning in `AUTH_HARDENING.md`. Rejected: `tokenHash` (the
+refresh token is a signed JWT and only the jti is stored, which beats storing a
+hash), refresh-token **families** and the **sessions UI** (one session per
+account means one live chain, so `revokeAllForUser` already is family
+revocation), and MapAnytime's `activeSessionId` (immediate revocation, at the
+price of a database lookup on every authenticated request). The ≤15-minute
+window in which a signed-out access token still works is an **accepted
+consequence** of the stateless model, not an oversight.
+
+---
+
+## 0b. Landed 4 Sep — open follow-ups from it
 
 Role assignment **shipped**. Both PRs are merged and everything §0 asked for on
 3 Sep is on `main`:
