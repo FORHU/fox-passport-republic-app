@@ -13,7 +13,7 @@ against; this file describes the system as it stands.
 | Stack | Express 4 + TypeScript, Prisma 7, Postgres | Next 16 (App Router), React 19, TypeScript |
 | Port | 6002, everything under `/api/v1` | 6001 |
 | Owns | data, auth, authorization, money, mail, **session cookie policy** | rendering, cookie **relay**, realtime client |
-| Tests | vitest, 227 | vitest + testing-library, 132 |
+| Tests | vitest, 380 (re-measured 12 Sep; was 227) | vitest + testing-library, 144 (re-measured 12 Sep; was 132) |
 
 The API is the only authority on who may do what. The app holds no signing key
 and cannot mint a token — it verifies nothing and asks.
@@ -82,6 +82,23 @@ There is a test on it rather than a comment.
 way: logout needs the httpOnly refresh token to revoke it, which the Next server
 can read and the browser cannot. Relaying it would mean the API reading cookies.
 
+**Session end is one function, `endSession()` (`shared/auth/endSession.ts`),
+landed 12 Sep merging `feat/auth-03-api-cookies` into `main`.** It calls
+`clearAuthCookies()` (non-blocking — never awaited past a `.catch`, since the
+cookies are gone either way and the caller navigates immediately after) then
+`useAuthStore.getState().logout()`, replacing four separate hand-written
+clear-then-logout sequences that used to disagree — the axios 401 interceptor
+was the one that never cleared cookies at all. Its two callers:
+
+- `useLogout()` takes `{ promptLogin?: boolean }` (default `true`) — account
+  deletion passes `false` since there is nothing left to sign back into.
+- `AuthStoreProvider`'s idle-timeout `SessionManager` calls it, then hard-
+  navigates to `/?auth=expired` rather than a bare `/`, which
+  `SessionExpiredToast` (mounted globally) picks up on load to reopen the
+  login modal with an explanation. `middleware.ts` uses the sibling
+  `?auth=required` for a guard-triggered redirect, same toast, different
+  copy.
+
 Sign-in paths: password and Google, both through `/api/proxy/*` since 7 Sep
 (AUTH-02) — nothing browser-side calls the API directly for an authenticated
 concern any more. Google still crosses back with a single-use exchange code
@@ -125,18 +142,32 @@ inferred from one another.
 
 ## RBAC — how it is actually implemented
 
-**The grant tables are centralized in one file.** `api/src/types/permissions.ts`:
+**The grant tables are centralized in one file.** `api/src/types/permissions.ts`.
+**Re-verified 12 Sep: `PERMISSIONS` has grown to 19 entries** (role assignment
+and `admin_secretary`'s boundary added several after this was first written)
+and `admin`'s grant is 14 of them, not seven:
 
 ```ts
 export const PERMISSIONS = [
   "admin:access", "queue:read", "queue:decide",
-  "users:read", "roles:manage", "categories:manage", "bookings:read:all",
+  "users:read", "users:manage", "roles:manage", "roles:assign",
+  "categories:manage", "policies:manage", "bookings:read:all",
+  "payments:read:all", "disputes:resolve", "refunds:manage",
+  // supply side, below
+  "venue:manage", "asset:manage", "service:manage", "template:manage",
+  "booking:check-in", "payouts:onboard",
 ] as const;
 
 const GRANTS: Record<SystemRole, readonly Permission[]> = {
   user: [],
   admin_secretary: ["admin:access", "queue:read", "queue:decide"],
-  admin: [ ...all seven... ],
+  admin: [
+    "admin:access", "queue:read", "queue:decide", "users:read",
+    "users:manage", "roles:manage", "roles:assign", "categories:manage",
+    "policies:manage", "bookings:read:all", "payments:read:all",
+    "disputes:resolve", "refunds:manage",
+    "booking:check-in", // the one supply-side permission admin holds
+  ],
 };
 
 const ROLE_TYPE_GRANTS: Record<RoleType, readonly Permission[]> = {
@@ -162,10 +193,13 @@ repos.
 **Where it is applied, in order of authority:**
 
 1. **Route guards** — `requirePermission(p)` in `auth.middleware.ts`: 401 if
-   unauthenticated, 403 if `!can(req.user.systemRole, p)`. 21 registrations in
-   `admin.routes.ts` gate on a capability; 14 still gate on the role through the
-   deprecated `requireAdmin` (bookings, disputes, refunds) — the safe default for
-   a new role, since `requireAdmin` excludes `admin_secretary` by design.
+   unauthenticated, 403 if `!can(req.user.systemRole, p)`. **Re-verified 12 Sep:
+   this migration finished** — all 36 registrations in `admin.routes.ts` gate on
+   a capability now; `requireAdmin` appears zero times in that file (was 14,
+   including bookings/disputes/refunds, when this was written). `requireAdmin`,
+   `requireRole` and `requireHost` are still *defined* in `auth.middleware.ts`
+   but have no remaining call sites anywhere in `src/modules/*/*.routes.ts` —
+   dead code, not yet deleted. See `RBAC-PLAN.md` §3 for that cleanup.
 2. **Socket rooms** — the gateway joins `role:admin` only if
    `can(socket.systemRole, "queue:read")`. Same table, so a role that cannot read
    the queues never receives `admin:pending`.
@@ -242,7 +276,7 @@ a write that succeeded is never failed by an announcement that did not.
 src/app/         App Router. (main) group, admin, booking, checkout,
                  creator-dashboard, foxer, mayor, reviews, user …
                  api/proxy/[...path] — the authenticated pass-through
-src/features/    20 features, each with components/hooks/api/store
+src/features/    25 features, each with components/hooks/api/store (was 20)
 src/shared/lib/  axios, socket, realtime, permissions, server/{auth,data,auth-actions}
 src/shared/providers/  Query → AuthStore → Socket, mounted in app/layout.tsx
 ```
@@ -252,7 +286,9 @@ Global query defaults: `staleTime: 30s`, no refetch on window focus.
 
 ## Data
 
-41 Prisma models on Postgres. The spine:
+**59 Prisma models on Postgres** (re-counted 12 Sep; was 41 when this was
+written). The spine, plus three domains that landed after and were never
+folded in:
 
 - **People** — `User`, `RoleRequest`, five `*Application` models, `Passport`,
   `Badge`, `PassportStamp`, `FoxerSpecialization`
@@ -262,6 +298,13 @@ Global query defaults: `staleTime: 30s`, no refetch on window focus.
   `BookingAttendee`, `AssetBooking`, `ServiceBooking`, `Waitlist`
 - **Money** — `Payment`, `Payout`, `Refund`, `StripeEvent`
 - **Social** — `Review`, `ReviewReply`, `Favorite`, `Notification`
+- **Republic feed** (`prisma/schema/feed.prisma`) — `Post` and friends, added
+  by the work `REPUBLIC_FOXER_SPEC_AND_CHECKLIST.md` tracked
+- **Investments** (`prisma/schema/investment.prisma`) — `PartnerInvestment`
+  and friends, same source
+- **Messaging** (`prisma/schema/messaging.prisma`) — `Conversation`,
+  `Message` and friends; see `GOTCHAS.md` #11 in the api repo for a migration
+  bug found in this domain on 12 Sep
 
 ## Product Domain Model
 

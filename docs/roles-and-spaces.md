@@ -227,11 +227,11 @@ Three defects, all live:
 - **`sysRole === "super_admin"`** — a role no user can hold. Dead branch, and
   the same ghost `RBAC.md` records being removed from the API.
 
-- [ ] **Replace it with `hasPermission` against the server's `permissions`
-      array**, and add the file to the list in
-      `src/__tests__/data/permissions.test.ts` → "the gates are expressed as
-      capabilities". That test guards four files against exactly this pattern;
-      this hook is not one of them, which is how it survived Phase 5.
+- [x] **Replace it with `hasPermission` against the server's `permissions`
+      array — Completed.** `src/shared/auth/useRoleAccess.ts` derives all grants
+      directly via `hasPermission(user, "...")`, avoiding role-name inference.
+      `src/__tests__/data/permissions.test.ts` includes `src/shared/auth/useRoleAccess.ts`
+      in its capability gate assertion suite.
 
 ---
 
@@ -250,9 +250,9 @@ roles this person could apply for, below the real content rather than on top of
 it. A single-role Foxer gets their section and a line of text, not three
 adverts.
 
-- [ ] **Remove `LockedSection`** and the four blurred branches in
+- [x] **Remove `LockedSection`** and the four blurred branches in
       `HostDashboardClient.tsx`. The component has no other call site.
-- [ ] **Add the hint**, dismissible and persisted per user, linking to
+- [x] **Add the hint**, dismissible and persisted per user, linking to
       `/creator-dashboard/apply`.
 - [ ] **Four spaces, not six.** Venue, Event, Service (grouping gear + talent +
       service), and Fox Republic. `investor` grants nothing today and does not

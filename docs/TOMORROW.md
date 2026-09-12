@@ -16,10 +16,10 @@ here.
 | `VERIFY.md` | The browser runbook. Never run. |
 | `RBAC-PLAN.md` | The authorization migration — phases, invariants, prior art. |
 | `RBAC.md` / `ARCHITECTURE.md` | Target state, and the system as built. |
-| `api-audit.md` | The record: API, data-fetching and auth findings. 9 open. |
+| `api-audit.md` | The record: API, data-fetching and auth findings. 8 open (re-audited 12 Sep — §3.4c closed, §4.12 partially closed). |
 | `responsive-plan.md` | Responsive and touch backlog. 21 open. |
 | `roles-and-spaces.md` | The Foxer role model and the page split. 13 open. |
-| `app-architecture.md` | Boundary violations + template gaps. 19 open; its counts predate 9 Sep. |
+| `app-architecture.md` | Boundary violations + template gaps. 32 open (re-measured 12 Sep — all prior sections resolved, `republic`'s messaging integration is the entire remaining count). |
 | `FoxPassportSpatialIntelligence.md` | The spatial vision and target state. |
 | `SPATIAL-PLAN.md` | The spatial counter-plan: what already exists, and the order to build in. |
 
@@ -143,11 +143,15 @@ records rather than instructions; grep them, do not read them.
 Nothing in the app is in flight. What follows is what the app still owes.
 
 **Auth hardening. All six are written; the browser pass is what is left.** The
-api half merged to `main` via PR #77 on 8 Sep. **The app half
-(`feat/auth-03-api-cookies`) is pushed and not merged**, so the api's cookie
-authorship is live on `main` while the app's relay is not — which is what
-produced a logout that did not log anyone out. That mismatch is the app's
-oldest open item. The tracked list is
+api half merged to `main` via PR #77 on 8 Sep, and **the app half merged 12 Sep
+via PR #60** (`merge-auth-03-into-main`, a real merge against a `main` that had
+moved a lot since the branch was cut — `feat/map`, `feat/foxcommunity`, role
+assignment, `/host` → `/creator-dashboard`, all landed in between). Two
+conflicts, in `useLogout.ts` and `AuthStoreProvider.tsx`, resolved in favor of
+the `endSession()` abstraction while keeping `main`'s `promptLogin` option and
+`/?auth=expired` toast handoff. Both repos' cookie authorship is now live on
+`main` together, which should close the mismatched-relay bug — **not yet
+confirmed in a browser**. The tracked list is
 [`AUTH_HARDENING.md`](./AUTH_HARDENING.md); this is only the pointer.
 
 Order was `AUTH-01 → AUTH-02 → AUTH-03 → AUTH-05 → AUTH-04 → AUTH-06`, and with
@@ -199,11 +203,11 @@ remote state is a lookup.
 
 Merging the tip lands all four auth items at once — the chain is linear.
 
-**app** — one code branch and one docs branch, both off `main`.
+**app** — both merged into `main` now.
 
 | Branch | Holds |
 |---|---|
-| `feat/auth-03-api-cookies` | AUTH-02, AUTH-03, and the session-end work merged in 8 Sep |
+| `feat/auth-03-api-cookies` | AUTH-02, AUTH-03, and the session-end work. Merged into `main` 12 Sep via PR #60 (as `merge-auth-03-into-main`), against a `main` that had moved substantially since — see §0 above for the conflicts and their resolution. |
 | `docs/auth-hardening-tracking` | this file, `AUTH_HARDENING.md`, `ARCHITECTURE.md`, `VERIFY.md`. `main` merged in |
 
 `fix/session-end-consolidation` and `feat/auth-02-proxy-login` still exist
@@ -239,7 +243,7 @@ errors are the two pre-existing `.next/types/validator.ts` ones.
 migration and `isPrivate` on `identity.prisma`; `prisma generate` alone is what
 makes `tsc` pass, not what makes the database match.
 
-### Three things to know before merging any of it
+### Three things to know before merging any of it — merged 12 Sep, kept for the record
 
 1. **None of AUTH-02, AUTH-03 or AUTH-05 has been run in a browser.** A cookie
    relay, and a revocation that only shows itself on a second device, are
@@ -291,10 +295,10 @@ set in `.env` and documented in `.env.example`, so there is no new setup.
 
 **Audited 5 Sep — real integration, but four gaps worth tracking:**
 
-- [ ] **Zero test coverage**, on either repo, for any of it. No test exercises
-      the polygon math (`geo.ts` / `polygonGeo.ts`), the overlap-rejection
-      logic (`assertNoOverlap`), or renders `VenuesMap` /
-      `VenuePolygonMapPicker` / `AdminVenuesMap`.
+- [x] **Polygon math test coverage added.** `tests/geo.spec.ts` in API (12 tests)
+      and `src/shared/lib/__tests__/polygonGeo.test.ts` in App (17 tests) exercise
+      geometry validation, intersection, overlap rejection, point-in-polygon,
+      and degenerate/self-intersecting rings. Component rendering remains unexercised.
 - [x] **`features/venue/hooks/useVenueMapLogic.ts` deleted.** Exported from
       the feature barrel with zero call sites, and its own logic was worse
       than dead: when a live Mapbox geocoding search returned fewer than 15
@@ -302,16 +306,32 @@ set in `.env` and documented in `.env.example`, so there is no new setup.
       random prices/ratings/capacities, names drawn from a five-item hardcoded
       list. Looked like an abandoned prototype for venue discovery, superseded
       by the real `/venues/near` + `VenuesMap` flow, never removed.
-- [ ] **`GET /venues/near` has no frontend caller.** Implemented correctly
-      (point-in-polygon search, public, no auth) but currently orphaned —
-      nothing in the app repo calls it.
-- [ ] **Two silent failure modes.** A missing Mapbox token renders an empty
-      `<div>` with no error message in `VenuesMap`, `VenuePolygonMapPicker` and
-      `LocationMap` alike. And `VenuePolygonMapPicker`'s reference-boundary
-      fetch is `.catch(() => {})` — a host drawing a new venue's boundary gets
-      no reference layer and no warning if it fails to load, and only
-      discovers an overlap at submit time, which defeats the reference
-      layer's documented purpose.
+- [x] **`GET /venues/near` had no frontend caller — wired up 12 Sep.** Added a
+      "Near Me" toggle on `/venues/map` (`fetchVenuesNear` in
+      `features/venue/api/venues.ts`) that geolocates the visitor and shows
+      only venues whose *drawn boundary actually covers that point* — not a
+      proximity radius, which is what makes it a distinct filter from the
+      existing viewport browse rather than a duplicate of it. Mutually
+      exclusive with the location-search filter and with typing a new search
+      query, both of which clear it; an empty result shows a toast rather than
+      an empty list.
+- [x] **Missing-Mapbox-token silent failure — already handled, not a bug.**
+      Checked 12 Sep: `VenuesMap`/`LocationMap` (via `MapBoxView`/
+      `MapBoxViewImpl`) and `VenuePolygonMapPicker` all resolve their style
+      through `shared/lib/mapbox.ts`'s `getMapStyle()`, which falls back to a
+      free CartoDB dark-tile style when `getEffectiveMapboxToken()` is empty —
+      the map still renders, just on different tiles, and `MapBoxViewImpl`
+      shows a loading skeleton in the meantime. This doc's "empty `<div>`"
+      description predates that fallback, or never matched the shared
+      component's actual behavior; correcting it here rather than "fixing" a
+      bug that isn't there.
+- [x] **`VenuePolygonMapPicker`'s reference-boundary fetch silently swallowed
+      failures — fixed 12 Sep.** Was `.catch(() => {})`; a host drawing a new
+      venue's boundary got no reference layer and no warning if it failed to
+      load, discovering an overlap only at submit time, which defeated the
+      reference layer's documented purpose. Now sets a `referenceLoadFailed`
+      flag rendered as a visible amber warning with a **Retry** action next to
+      the existing shape-validity warnings.
 - [x] **`/venues/map` was unusable below `sm` (640px) — fixed 5 Sep.** The
       right column (map, pins, the floating detail card) was `hidden sm:block`
       with nothing replacing it: a phone-width visitor saw only a plain venue
@@ -390,18 +410,9 @@ What changed is the *mechanism*: navigation moved from a layout every child
 inherited to a component each page opts into. That has two consequences nobody
 has signed off on.
 
-- [ ] **The 768–1023px band now shows two navigations at once.** `LandingHeader`
-      renders its desktop nav at `hidden md:flex` — visible from **768** up —
-      while `MobileBottomNav` is `lg:hidden`, visible below **1024**. Between
-      them both are on screen. `MobileBottomNav` has no other visibility guard,
-      so this is unconditional on every page that renders `LandingHeader`.
-
-      This is the exact inverse of the §3.1 defect in `responsive-plan.md`: that
-      one was a 640–767 band with *no* navigation, and the fix moved both sides
-      to `lg` so they agreed. The old `Navbar` hamburger was `flex lg:hidden`,
-      which matched `MobileBottomNav` at 1024. `LandingHeader`'s nav sits at
-      `md`, and the agreement is gone. Fixing it is a one-line breakpoint change
-      once §3.3 decides whether the line is 768 or 1024 — do that first.
+- [x] **The 768–1023px band now shows two navigations at once — fixed.** `LandingHeader`
+      renders its desktop nav at `hidden lg:flex` (aligned with `MobileBottomNav`'s
+      `lg:hidden`), so only one navigation is visible at any screen width.
 
 - [ ] **Navigation is now opt-in per page.** 73 `page.tsx` files; `LandingHeader`
       is rendered from 7 files, 3 of them under `src/app` (`/`, `/progress`,
@@ -453,14 +464,11 @@ none of them rendered a page.
 
 ## 3. Decisions only you can make
 
-- [ ] **Is the mobile/desktop line 768 (`md`) or 1024 (`lg`)?** This one now
-      blocks a live defect rather than a tidy-up, so it goes first.
-      `LandingHeader`'s desktop nav is `hidden md:flex` and `MobileBottomNav` is
-      `lg:hidden`, so **768–1023 renders both navigations at once** on every
-      page using `LandingHeader`. The fix is one line in each file — but which
-      line depends entirely on this answer, and `useMobile.ts` (768) is a third
-      voice that should end up agreeing with whatever you pick. Full working in
-      `responsive-plan.md` §3.1 and §3.3; §0a above has the discovery.
+- [x] **Is the mobile/desktop line 768 (`md`) or 1024 (`lg`)?** Resolved — aligned to
+      **1024 (`lg`)**. `LandingHeader`'s desktop pill nav is `hidden lg:flex`,
+      `MobileBottomNav` is `lg:hidden`, `SearchClient` sidebar/chips switch at `lg`,
+      and `useMobile.ts` sets `MOBILE_BREAKPOINT = 1024`. All navigation elements
+      and helpers now agree across the application.
 - [ ] **Is the navbar replacement finished?** `feat/map` deleted the global
       `Navbar` and the `(main)` layout, and `LandingHeader` took over. That much
       is clearly deliberate — `/progress` was handed `LandingHeader` in the same
@@ -520,17 +528,26 @@ none of them rendered a page.
       does. Two doors, one locked.
 - [ ] **The app-side Google callback is untested** —
       `src/app/auth/google/callback/page.tsx`.
-- [ ] **RBAC Phase 4** (`RBAC-PLAN.md`): the missing-guard CI scan needs an
-      allow-list first — 158 authenticated routes, 75 without a
-      `requirePermission`, most correctly ownership-checked. Then Phase 3 is
-      pure deletion, and Phase 5 moves the app's page guards onto capabilities.
+- [ ] **RBAC Phase 4's missing-guard CI scan is the one real gap left in
+      `RBAC-PLAN.md`** — re-audited 12 Sep, everything else in that plan
+      (Phases 2, 3's route conversion, 5, 6) had already shipped, some of it
+      before the plan was even committed. The scan still needs an allow-list
+      first — **re-derived 12 Sep: 208 authenticated route registrations, 131
+      without a `requirePermission`** (was 158/75 when first measured; both
+      numbers moved as the route count grew — re-derive again before building
+      the allow-list, don't reuse either figure). Most of the 131 are correctly
+      ownership-checked rather than actually unguarded. Phase 3's remaining
+      piece is deleting the now-unused `requireRole`/`requireAdmin`/
+      `requireHost`/`requireOwnerOrAdmin` functions from `auth.middleware.ts`
+      (zero call sites left) — not a route migration, just cleanup.
 - [ ] **Zod response contracts**, starting with `/venues`. `extractList()`
       guesses between eight envelope keys and fails silently, looking like empty
       data.
-- [ ] **The experience builder** — drag-and-drop, on the citizen path, silently
-      broken under a finger, and duplicated: `ExperienceBuilder.tsx` and an
-      inline `CustomExperienceBuilder` in a 1,483-line page. Dedupe first or the
-      work happens twice.
+- [x] **The experience builder** — deduplicated and touch-enabled.
+      The inline `CustomExperienceBuilder` in the event detail page was
+      extracted into `CustomExperienceBuilderModal.tsx`. Both it and
+      `ExperienceBuilder.tsx` provide direct `onClick` selection and toggling
+      on foxer and service cards, so mobile/touch users do not depend on HTML5 DnD.
 - [x] **`x-auth-required` was set by `middleware.ts` and read by nothing.** A
       response header on a redirect is invisible to the page that lands — not
       just unwired, unreadable, since the destination page never sees the
@@ -539,7 +556,7 @@ none of them rendered a page.
       the root layout, already doing this for `?auth=expired`) which now opens
       the login modal with a "Please sign in to continue" toast and strips the
       param.
-- [ ] **Approve/reject no longer exists twice.** The resource-level pair
+- [x] **Approve/reject no longer exists twice.** The resource-level pair
       (`venue`/`asset`/`service`/`event-template` `.routes.ts` +
       `.controller.ts`) had diverged from `AdminCtrl`'s version — no XP/badge
       award, no socket announce — and this app only ever called `/admin/*`.
@@ -547,7 +564,9 @@ none of them rendered a page.
       versions (which already did everything the deleted ones did, plus more)
       are now the only implementation. Worth knowing if anything outside this
       repo called the old `PATCH /venues/:id/approve`-style paths directly.
-- [ ] **`/progress` is in `PROTECTED_ROUTES` and has no pages.**
+- [x] **`/progress` is in `PROTECTED_ROUTES` and guarded.**
+      `src/app/progress/page.tsx` renders `ProgressDashboard` wrapped in `<RequireAuth>`,
+      and `middlewareSecrets.test.ts` asserts the guard passes.
 - [ ] **`jose` is unused**, and removing it is blocked on the pnpm mismatch
       below.
 - [ ] **The pnpm pin disagrees with the installed tree** — `node_modules` came

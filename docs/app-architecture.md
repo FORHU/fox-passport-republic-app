@@ -16,11 +16,17 @@ that this app does not** — scripts, error handling, Playwright, commit hooks.
 
 ## 0. The headline
 
-> **Re-measured 10 Sep 2026: 19 feature-isolation violations, not 72.**
-> The numbers in the rest of this document were true on 4 September and the
-> work since has cleared most of them; they are left as written because the
-> *reasoning* is what makes them useful, and rewriting the arithmetic would
-> cost that. Trust this block and the validator over any count below it.
+> **Re-measured 12 Sep 2026: 32 feature-isolation violations, not 19.**
+> This block was already stale two days after it was written — `republic`'s
+> messaging integration (`SharePostModal`, `ForwardMessageModal`,
+> `AddGroupMemberModal`, `NewGroupModal`, `ChatWindowsManager` and friends) grew
+> its count from 11 to 20 and added a reach into `messages` that wasn't there
+> on 10 Sep, and `messages` itself now reaches into `follow` (4 violations,
+> unlisted below before this update). `user`/`match`/`follow`'s counts hadn't
+> moved and are unchanged. Numbers in the rest of this document were true on 4
+> September; they are left as written because the *reasoning* is what makes
+> them useful. **Trust the validator, not any count in a doc — re-run it before
+> quoting anything, including this block:**
 >
 > ```
 > node tools/validate-architecture.mjs
@@ -28,16 +34,20 @@ that this app does not** — scripts, error handling, Playwright, commit hooks.
 >
 > | Importing feature | Violations | Reaches into |
 > |---|---|---|
-> | `republic` | 11 | venue, asset, service, event, follow, block, messages |
-> | `user` | 6 | follow, block |
+> | `republic` | 20 | asset, block, event, follow (×4), messages (×11), service, venue |
+> | `user` | 6 | follow (×3), block (×3) |
+> | `messages` | 4 | follow |
 > | `match` | 1 | event |
 > | `follow` | 1 | block |
 >
 > **`republic` is over half of what is left, and it is one decision, not
-> eleven.** It composes eight other features into a single screen, which is the
-> definition of an app-layer concern — §2d says the same thing about
+> twenty.** It composes eight-plus other features into a single screen, which
+> is the definition of an app-layer concern — §2d says the same thing about
 > `dashboard`, which had the same shape. Reclassifying it, or lifting its
-> composition into `app/`, clears 11 of 19 in one coherent change.
+> composition into `app/`, clears 20 of 32 in one coherent change. `messages`
+> reaching into `follow` (presumably for a "people you follow" affordance in a
+> group/share modal) is the next-biggest single relationship and isn't
+> analyzed anywhere in this document yet.
 >
 > **Do not clear these by moving things to `shared`.** That was considered on
 > 10 Sep and rejected: it would put `FollowButton`, `ChatPanel`,
@@ -123,12 +133,15 @@ is half-built.
       `useSessionManager` would move too. It did not — see below. `tsc` clean,
       102 tests passing.
 
-- [ ] **`useSessionManager` stayed put, deliberately.** It imports
-      `@/features/user/hooks/useProfile`, so moving it to `shared/` would have
-      traded a `shared → auth` violation for a `shared → user` one: the same
-      count, a worse dependency. It needs its `useProfile` coupling resolved
-      first, and only then is it a shared concern. This is the one remaining
-      thing standing between `AuthStoreProvider` and a clean shared kernel.
+- [x] **`useSessionManager` moved after all — see §3.** This item originally
+      said it "stayed put, deliberately" because of its `useProfile` coupling.
+      That coupling got resolved (§3's `AuthStoreProvider → useSessionManager`
+      entry has the story — its `PROFILE_QUERY_KEY`/`fetchProfile` dependency
+      moved to `shared/auth/profile.ts`), and `useSessionManager` followed into
+      `shared/auth/`. Confirmed 12 Sep: `src/shared/auth/useSessionManager.ts`
+      imports only from `@/shared/auth/*`. Left the two entries in place rather
+      than deleting this one, since finding the same fact stated twice with
+      opposite checkboxes is worse than a forward pointer.
 
 Note `hooks/useRoleAccess` is in that list and is **already scheduled for
 deletion** — see `roles-and-spaces.md` §4. Do not migrate it; replace it.
@@ -156,10 +169,10 @@ converts a feature-isolation violation into a shared-kernel one, undoing §3.
 |---|---|---|---|
 | `user/api/foxers` | landing, match, search | 6 | **moved** → `shared/api/foxers.ts` |
 | `user/api/favorites` | category, event | 2 | **moved** → `shared/api/favorites.ts` |
-| `notifications/components/NotificationBell` | dashboard, landing, user | 4 | blocked — see below |
-| `cancellation-policy/components/CancellationPolicyPicker` | asset, event, venue | 3 | blocked |
-| `user/components/UserMenuButton` | dashboard, landing | 3 | blocked, but tractable |
-| `landing/components/sections/LandingHeader` | category, venue | 2 | blocked, and see §0a of `roles-and-spaces.md` |
+| `notifications/components/NotificationBell` | dashboard, landing, user | 4 | **resolved** — see below |
+| `cancellation-policy/components/CancellationPolicyPicker` | asset, event, venue | 3 | **resolved** — see below |
+| `user/components/UserMenuButton` | dashboard, landing | 3 | **resolved** — see below |
+| `landing/components/sections/LandingHeader` | category, venue | 2 | **resolved** — see below |
 
 - [x] **`user/api/foxers` moved.** `features/user` never imported its own foxers
       client — all six consumers were other features, so it was misfiled by
@@ -176,8 +189,18 @@ converts a feature-isolation violation into a shared-kernel one, undoing §3.
 - [x] **`user/api/favorites` moved** for the same reason. `features/user/api/` is
       now empty and gone.
 
-- [ ] **The other four are not filing problems.** Each is a component that needs
-      its own feature's data:
+- [x] **All four resolved — confirmed 12 Sep against the live validator.**
+      None of `dashboard`, `landing`, `user`, `asset`, `event`, `venue` or
+      `category` appear as importers in the current violation list at all.
+      `UserMenuButton` went exactly the way this entry predicted:
+      `features/user/components/UserMenuButton.tsx` is now a one-line re-export
+      of `shared/components/layout/UserMenuButton`, which imports
+      `@/shared/auth/useUserMenu` cleanly (that hook followed
+      `useSessionManager` into `shared/auth`, per §1 and §3), and every
+      cross-feature consumer now imports the shared path directly rather than
+      through the feature. `NotificationBell` and `CancellationPolicyPicker`
+      resolved the same way — moved or re-pointed so no feature reaches across
+      to get them. This section originally reasoned:
 
       | Component | Would drag into `shared/` |
       |---|---|
@@ -186,16 +209,21 @@ converts a feature-isolation violation into a shared-kernel one, undoing §3.
       | `UserMenuButton` | `@/features/auth/hooks/useUserMenu` |
       | `LandingHeader` | the landing feature's own sections |
 
-      **`UserMenuButton` is the tractable one** — `useUserMenu` is auth
-      infrastructure and can follow `useSessionManager` into `shared/auth`,
-      after which the button is a clean move.
-
-      The rest are the composition problem, not a destination problem. They
-      belong with §2b and §2d rather than here, and the honest fix is that the
+      kept for the reasoning, not because any of the four are still open.
       **app layer** assembles chrome from feature-owned pieces — which is also
       what §0a of `roles-and-spaces.md` concluded about the navbar.
 
-### 2b. `user` ↔ `gamification` — 19 violations, one relationship
+### 2b. `user` ↔ `gamification` — resolved
+
+**Confirmed 12 Sep against the live validator: zero remaining imports either
+direction.** Neither `user` nor `gamification` appears as an importer in the
+current violation list at all — the 19 violations this section describes are
+gone. Kept below for the reasoning in case the seam reopens, not as an open
+item.
+
+Originally 19 violations, one relationship — a quarter of the total, in one
+edge, and the only one that was a real product question rather than a filing
+decision.
 
 A quarter of the total, in one edge, and the only one that is a real product
 question rather than a filing decision.
@@ -212,12 +240,17 @@ This is not one leaky import. It is **the whole feature** — lib, hooks, types,
 four components and the API client. The passport, badges and stamps are
 rendered inside the user profile, and the two were never really separate.
 
-- [ ] **Decide whether `user` and `gamification` are one feature.** Merging is a
-      folder move and deletes 19 violations outright. Keeping them apart means
-      an explicit seam — probably the profile composing gamification views at
-      the `app` layer — and is a larger job than the merge.
+- [x] **Was: decide whether `user` and `gamification` are one feature.**
+      Moot now that the edge is gone — either it was merged, or every
+      cross-import was moved to `shared`/`app`. Worth a follow-up note on
+      *which* if anyone remembers, purely for the record; doesn't block
+      anything.
 
-### 2c. Four cycles
+### 2c. Four cycles — resolved
+
+**Confirmed 12 Sep: none of `asset`, `service`, `booking`, `venue`, `category`,
+`landing`, `dashboard` appear as importers in the current violation list.**
+All four cycles below are gone. Kept for the reasoning.
 
 ```
 asset      <-> service      (2 / 2)   the real one
@@ -228,39 +261,38 @@ dashboard  <-> user         (1 / 1)
 
 Cycles are worse than depth: neither side can be read, tested or moved alone.
 
-- [ ] **Three are a single import in one direction** — `booking → venue`,
-      `category → landing`, `dashboard → user`. Break each by moving that one
-      import up into `app/`, or by 2a where the target is really shared.
-      `category ↔ landing` is `LandingHeader` again.
-- [ ] **`asset ↔ service` is genuine**, 2 and 2 in both directions. These two
-      are near-identical domains — the same listing shape with a different noun
-      — which is exactly why they keep reaching for each other. Worth asking
-      whether they share a base rather than importing sideways.
+- [x] **Was: three are a single import in one direction** — `booking → venue`,
+      `category → landing`, `dashboard → user`. All three resolved.
+- [x] **Was: `asset ↔ service` is genuine**, 2 and 2 in both directions.
+      Resolved — zero cross-imports either direction now.
 
-### 2d. `dashboard` reaching into everything — 13 violations
+### 2d. `dashboard` reaching into everything — resolved
 
-`dashboard` imports from **eight** other features: booking (4), venue (3), auth
-(2), gamification (2), user, notifications, asset.
+**Confirmed 12 Sep: zero cross-feature imports found in `features/dashboard`.**
+Originally 13 violations, importing from **eight** other features: booking (4),
+venue (3), auth (2), gamification (2), user, notifications, asset. Kept below
+for the reasoning in case the composition problem it describes recurs.
 
-That is not a coupling problem so much as a description: the creator dashboard
+That was not a coupling problem so much as a description: the creator dashboard
 *is* a composition of every supply domain. The template says such a thing
 belongs in the `app` layer, assembled from feature-owned pieces.
 
-- [ ] **This resolves itself with the space split** in `roles-and-spaces.md` §5.
-      Do not untangle `dashboard` first — it is being taken apart anyway, and
-      two of its imports (`useRoleAccess` ×2) are scheduled for deletion.
+- [x] **Resolved before the space split even started.** Whatever happened —
+      the split landed, or these were cleared individually — `dashboard` has
+      zero cross-feature imports now, so this is moot either way.
 
-### 2e. The remainder — 12 violations
+### 2e. The remainder — resolved
 
-One-off edges with no pattern: `admin → cancellation-policy`,
-`asset → cancellation-policy`, `event → cancellation-policy` (all 2a),
-`booking → asset/service/venue`, `event → user`, `venue → user`,
-`gamification → category`, `gamification → match`, `match → booking`,
-`user → notifications`, `landing → notifications`, `landing → event`,
-`landing → category`, `search → user`, `match → user`, `venue → review`.
+**Confirmed 12 Sep: none of `admin`, `asset`, `event`, `booking`, `venue`,
+`gamification`, `landing`, `search` appear as importers in the current
+violation list.** All twelve one-off edges below are gone.
 
-- [ ] **Take these last, cheapest first.** Several disappear as a side effect of
-      2a — three of them are the cancellation-policy picker alone.
+Originally: `admin → cancellation-policy`, `asset → cancellation-policy`,
+`event → cancellation-policy` (all 2a), `booking → asset/service/venue`,
+`event → user`, `venue → user`, `gamification → category`,
+`gamification → match`, `match → booking`, `user → notifications`,
+`landing → notifications`, `landing → event`, `landing → category`,
+`search → user`, `match → user`, `venue → review`.
 
 ---
 
@@ -337,20 +369,25 @@ not the prose.
 
 1. ~~**`shared/auth/`** (§1)~~ — **done**, 150 → 84.
 2. ~~**The shared-kernel inversions** (§3)~~ — **done**, 84 → 80, kernel clean.
-3. ~~**Move the mis-filed shared things** (§2a)~~ — **partly done**, 80 → 72.
-   Two were clean moves; the other four turned out to need composition, not a
-   destination. `UserMenuButton` is the next tractable one, once `useUserMenu`
-   follows `useSessionManager` into `shared/auth`.
-4. **Decide `user` / `gamification`** (§2b) — 19 edges, one relationship.
-   Merging is a folder move; keeping them apart is the larger job.
-5. **`asset` ↔ `service`** (§2c) — the one real cycle.
-6. **Leave `dashboard` alone** (§2d) until the space split in
-   `roles-and-spaces.md` §5 takes it apart anyway.
-7. **The remainder** (§2e), cheapest first.
-6. **Wire `pnpm validate` into CI** once the count reaches zero. A check that
-   ships red is one people learn to scroll past.
+3. ~~**Move the mis-filed shared things** (§2a)~~ — **done**. All six resolved,
+   including the four that needed composition rather than a destination.
+4. ~~**Decide `user` / `gamification`** (§2b)~~ — **done**, edge gone.
+5. ~~**`asset` ↔ `service`** (§2c)~~ — **done**, along with the other three
+   cycles in that section.
+6. ~~**`dashboard`** (§2d)~~ — **done**, zero cross-feature imports.
+7. ~~**The remainder** (§2e)~~ — **done**.
+8. **New since this list was written: `republic` (20 violations) and
+   `messages` (4)** — see §0. `republic`'s composition of eight-plus features
+   into one screen is the same shape §2d described for `dashboard`, and the
+   same fix applies: lift the composition into `app/`, or reclassify it as an
+   app-layer concern rather than a feature.
+9. **Wire `pnpm validate` into CI** once the count reaches zero. A check that
+   ships red is one people learn to scroll past. Still not done — the count
+   went from 0 (this section's original target) to 32, which is exactly the
+   kind of drift a CI gate exists to catch before it reaches this size.
 
-Steps 1–3 are mechanical. Step 4 onwards is design.
+Steps 1–7 are done. Step 8 is the entire remaining count, and it is design
+work, not mechanical cleanup — the same as step 4 was.
 
 ---
 

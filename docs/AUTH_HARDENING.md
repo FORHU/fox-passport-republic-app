@@ -366,18 +366,29 @@ which is why the server prints `⚠️ Google sign-in will fail` at boot. AUTH-0
 the Google path, so it needs real OAuth credentials before any of it can be
 exercised. AUTH-01, 02 and 03 are unaffected.
 
-### Which branches
+### Which branches — both merged, test on `main`
 
-| Repo | Branch | Carries |
-|---|---|---|
-| api | `feat/auth-05-google-session-revocation` | AUTH-01, 03, 05, 06 |
-| app | `feat/auth-03-api-cookies` | AUTH-02, 03 |
+**Test on `main` in both repos now.** api's chain merged via PR #77 on 8 Sep;
+app's merged 12 Sep via PR #60 (`merge-auth-03-into-main`), a real merge
+against a `main` that had moved substantially in between (`feat/map`,
+`feat/foxcommunity`, role assignment, `/host` → `/creator-dashboard`). Two
+conflicts, both resolved in favor of the branch's session-end abstraction:
 
-The app's docs branch carries no auth code — testing from it exercises `main`'s
-old auth path and proves nothing. `fix/session-end-consolidation` is *not* in
-the app branch above, so logout and session-expiry are still the old path;
-merging the two is the `shared/lib/axios.ts` conflict, so test them separately
-unless you want to resolve it now.
+- `src/shared/auth/useLogout.ts` — now calls `endSession()` (see
+  `src/shared/auth/endSession.ts`), then respects an `options.promptLogin`
+  flag (default `true`) before calling `openLogin()`. `promptLogin: false` is
+  what account deletion passes to skip the login prompt after clearing the
+  session.
+- `src/shared/providers/AuthStoreProvider.tsx` — `SessionManager`'s idle-timeout
+  logout now also calls `endSession()`, then hard-navigates to
+  `/?auth=expired` (picked up by `SessionExpiredToast`, which opens the login
+  modal) instead of a bare `/`.
+
+The `shared/lib/axios.ts` conflict this section used to warn about is resolved
+— the session-end interceptor structure won, using AUTH-02's shared
+`isPreSessionAuthPath`. Historical branch names, no longer relevant to testing:
+api carried the chain on `feat/auth-05-google-session-revocation` (AUTH-01, 03,
+05, 06); app carried its half on `feat/auth-03-api-cookies` (AUTH-02, 03).
 
 ### V1 · AUTH-03 · The cookie reaches the browser
 

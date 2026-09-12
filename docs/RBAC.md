@@ -106,7 +106,9 @@ The RBAC implementation lives in:
 api/src/types/permissions.ts
 ```
 
-The grant table is the single source of truth:
+The grant table is the single source of truth. **Re-verified 12 Sep: this
+snippet is stale — `PERMISSIONS` has grown to 19 entries and `admin`'s grant to
+14**, added by the role-assignment work and the supply-side merge below:
 
 ```ts
 export const PERMISSIONS = [
@@ -114,9 +116,22 @@ export const PERMISSIONS = [
   "queue:read",
   "queue:decide",
   "users:read",
+  "users:manage",
   "roles:manage",
+  "roles:assign",
   "categories:manage",
+  "policies:manage",
   "bookings:read:all",
+  "payments:read:all",
+  "disputes:resolve",
+  "refunds:manage",
+  // supply side — merged with RoleType's grants below, not a second model
+  "venue:manage",
+  "asset:manage",
+  "service:manage",
+  "template:manage",
+  "booking:check-in",
+  "payouts:onboard",
 ] as const;
 
 const GRANTS: Record<SystemRole, readonly Permission[]> = {
@@ -133,9 +148,16 @@ const GRANTS: Record<SystemRole, readonly Permission[]> = {
     "queue:read",
     "queue:decide",
     "users:read",
+    "users:manage",
     "roles:manage",
+    "roles:assign",
     "categories:manage",
+    "policies:manage",
     "bookings:read:all",
+    "payments:read:all",
+    "disputes:resolve",
+    "refunds:manage",
+    "booking:check-in", // the one supply-side permission admin holds
   ],
 };
 ```
@@ -415,10 +437,12 @@ Resource Ownership
 Business Rules
 ```
 
-Example:
+Example (naming nit spotted 12 Sep: the real permission is singular,
+`"venue:manage"` — `PERMISSIONS` above has the exact spelling; this example
+predates it and was never updated):
 
 ```ts
-requirePermission("venues:manage");
+requirePermission("venue:manage");
 ```
 
 Then the service may verify:
@@ -885,22 +909,26 @@ from memory.
 | § | Claim | State | Evidence |
 |---|---|---|---|
 | 1–4 | Two repos, API sole authority, app holds no secret, grant table is the source of truth | **Holds** | `ACCESS_TOKEN_SECRET` absent from the app and pinned absent by `middlewareSecrets.test.ts` |
-| 5 | Permissions instead of hard-coded role checks | **Partial** | No `systemRole === "admin"` remains in the API. But **62 routes across 13 files** — 37 `requireAdmin`, 23 `requireRole`, 2 `requireHost` — still authorize by role name. `requirePermission` is used in exactly one file, on 21 registrations. Counted by parsing every `router.<verb>()` block; an earlier grep said 39 because it missed the multi-line ones. |
+| 5 | Permissions instead of hard-coded role checks | **Holds — re-verified 12 Sep** | The 62-route gap this row described is closed: zero `requireRole`/`requireAdmin`/`requireHost` call sites remain in any `*.routes.ts` file (`requirePermission` appears 77 times across the API). `admin.routes.ts` specifically: 36 of 36 registrations gate on a capability. The old guard functions are still *defined*, unused, in `auth.middleware.ts` — deletion is `RBAC-PLAN.md` Phase 3's one remaining piece. |
 | 6 | 401 / 403 / 200 pipeline | **Holds** where `requirePermission` is used | `auth.middleware.ts` |
 | 7 | Server re-derives; claim is UX only | **Holds** | `toAuthenticatedUser` drops the `permissions` claim |
 | 8 | Page authorization off a live profile | **Holds**, but by role helper | `requireAdmin()` → `canAccessAdmin()` on a live `/profile`. There is no app-side `requirePermission(...)`; §8's example does not exist yet. |
 | 9 | Nav declares permissions | **Holds** | `AdminSidebar.NAV_ITEMS`, typed with `satisfies` |
 | 10 | Socket uses the same table | **Holds** | gateway joins `role:admin` only on `can(role, "queue:read")` |
-| 11 | RBAC + ownership as separate layers | **Partial** | Ownership checks exist inside services (`booking.userId !== requesterId`). They are not paired with a permission, and `venues:manage` from the example does not exist. |
-| 12 | One authorization model | **Not yet** | `RoleType[]` is a second model: `requireHost` and `requireRole` authorize on it directly, with no grant table. |
+| 11 | RBAC + ownership as separate layers | **Partial** | Ownership checks exist inside services (`booking.userId !== requesterId`). They are not paired with a permission. (The example above used to cite a permission, `venues:manage`, that never existed — fixed 12 Sep; the real one is `venue:manage`.) |
+| 12 | One authorization model | **Holds — re-verified 12 Sep, contradicted this row's own neighbor above until now** | This was true when written; it stopped being true when `ROLE_TYPE_GRANTS` shipped. `RoleType` is not a second model — it's a second grant *input*, merged with `SystemRole`'s through `permissionsForUser()`, exactly as the "One RBAC implementation..." paragraph directly above this table already (correctly) describes. Zero `requireHost`/`requireRole` call sites remain. This row just never got updated to match. |
 | 13–19 | Realtime, layering, proxy, payments, data | **Holds** | |
-| 20.5 | No hard-coded role checks outside RBAC | **Not yet** | the 62 above |
+| 20.5 | No hard-coded role checks outside RBAC | **Holds — re-verified 12 Sep** | was "the 62 above" (row 5); that gap is closed |
 | 20.15 | Every protected operation requires explicit authorization | **Holds** | every non-public route carries `authenticate` plus a guard |
 | 21 | Full permission matrix, per-route 401/403/200 | **Not yet** | `permissions.spec.ts` tests `can()` exhaustively; no test asserts a route's 401/403/200 triad |
 
 ## Closing the gap
 
-Worked out in full in `RBAC-PLAN.md`; the outline is below.
+Worked out in full in `RBAC-PLAN.md`; the outline is below. **That plan's phase
+table was re-audited 12 Sep — every phase below except the missing-guard CI
+scan (Phase 4, item 5) has already shipped.** Read `RBAC-PLAN.md`'s status
+table for current state; the numbered outline below is kept for the reasoning,
+not as a to-do list.
 
 In dependency order. Nothing here needs a schema change.
 

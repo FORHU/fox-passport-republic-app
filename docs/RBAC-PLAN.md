@@ -9,15 +9,19 @@ ones a grep misses.
 
 ## Status
 
+**Re-audited 12 Sep — this table was stale before it was even committed.**
+Git history shows Phase 2 landed one minute *before* this document itself was
+first committed. Corrected below; see each phase section for what changed.
+
 | Phase | State |
 |---|---|
 | 0 — decide `RoleType` | **Settled.** It authorises today, so it moves into the table. |
 | 1 — SystemRole side | **Done.** 5 permissions added, 37 routes converted, the app's grant table deleted. api 156 tests, app 92, both clean. |
-| 2 — RoleType side | not started — 25 routes still on `requireRole`/`requireHost` |
-| 3 — delete the old guards | not started |
-| 4 — tests | not started |
-| 5 — app side | not started |
-| 6 — role assignment | not started — the only phase that changes what anyone can do in production, so it needs an explicit decision of its own |
+| 2 — RoleType side | **Done.** `ROLE_TYPE_GRANTS`, the union-typed `can()`, and `permissionsForUser()` all landed (commit `6fb900e`) — this is exactly the "Revised" 2b design below. Zero `requireRole`/`requireAdmin`/`requireHost` call sites remain in any `*.routes.ts`; `requirePermission` appears 77 times. |
+| 3 — delete the old guards | **Half done.** Every call site converted (0 remaining), but `requireRole`, `requireAdmin`, `requireHost` and `requireOwnerOrAdmin` are still *defined*, unused, in `auth.middleware.ts` — and the app's `checkRole()` is still present too. The deletion itself is still open. |
+| 4 — tests | **Mostly done.** `api/tests/permissions.spec.ts` and `app/src/__tests__/data/permissions.test.ts` already cover the exhaustive `admin`/`admin_secretary`/`user` matrix, the I3/I4/I5 invariants, and a cross-repo `PERMISSIONS` name-sync check. **Genuinely still missing: item 5, the missing-guard CI scan** — no such script or CI job exists anywhere in either repo. |
+| 5 — app side | **Functionally done, under the old name.** `requireAdmin()` in `app/src/shared/lib/server/auth.ts` already delegates to `canAccessAdmin()` / `hasPermission(user, "admin:access")` — permission-based, just not renamed. Matches `RBAC.md` §8's own conformance note. |
+| 6 — role assignment | **Done.** Shipped in commit `13c70da`, same day as Phase 2 — `PATCH /admin/users/:id/system-role` and `/role-types`, gated on `roles:assign` (admin-only), `RoleAssignmentSvc`, and an `AuditLog` model. api PR #69, app PRs #45/#48. |
 
 **What Phase 1 actually changed**
 

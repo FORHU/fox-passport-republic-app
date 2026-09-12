@@ -240,35 +240,17 @@ built for this — only the host page is missing.
 
 ### 3.3 Breakpoint semantics still disagree — the numbers just changed
 
-- [ ] **Decide: is the mobile/desktop line `md` (768) or `lg` (1024)?**
+- [x] **Decided and Aligned: Navigation switches at `lg` (1024px).**
 
-| Source | Mobile cutoff | Was (26 Aug) |
-|---|---|---|
-| `src/shared/hooks/useMobile.ts:5` | 768 (`md`) | 768 (`md`) |
-| `MobileBottomNav:175` | 1024 (`lg`) | — |
-| `tailwind.config.ts` `2xl` | overridden to 1400px | same |
-| ~~Navbar hamburger + `NavMobileMenu`~~ | *deleted 3 Sep* | 640 (`sm`) |
+| Source | Mobile cutoff | Was (26 Aug) | Current |
+|---|---|---|---|
+| `src/shared/hooks/useMobile.ts:5` | 768 (`md`) | 768 (`md`) | **1024 (`lg`)** |
+| `MobileBottomNav` | 1024 (`lg`) | — | **1024 (`lg`)** (`lg:hidden`) |
+| `LandingHeader` desktop nav | 768 (`md`) | — | **1024 (`lg`)** (`hidden lg:flex`) |
+| `SearchClient` sidebar/chips | 640 (`sm`) | — | **1024 (`lg`)** (`hidden lg:block` / `lg:hidden`) |
+| `tailwind.config.ts` `2xl` | overridden to 1400px | same | 1400px |
 
-Fixing §3.1 closed the gap between the hamburger and its own panel, but it did
-so by moving navigation to `lg` — so the disagreement with `useMobile` survived
-and only its numbers changed. §5 below still declares `md` "the mobile/desktop
-line", which `MobileBottomNav` still contradicts.
-
-The navbar's deletion did not settle this — it made it worse. The replacement,
-`LandingHeader`, put its desktop nav at `md` while `MobileBottomNav` stayed at
-`lg`, so the two halves of the current navigation now disagree by a full
-breakpoint and both render between 768 and 1023 (§3.1). `useMobile` at 768 makes
-three voices, two of which are live in the same component tree.
-
-This is now the blocking item rather than a tidy-up: **§3.1 cannot be fixed
-without answering it**, because the one-line fix is choosing which of `md` or
-`lg` both halves move to. Answer it here, then apply it in `LandingHeader` and
-`MobileBottomNav` together.
-
-This is a real decision, not a defect: `lg` is defensible for a nav bar with this
-many items, and `MobileBottomNav` already assumes it. Either move `useMobile` and
-§5 to `lg`, or move the navbar back to `md`. **Do not leave two answers in the
-tree** — that is what produced the original dead zone.
+All navigation components now uniformly agree on `lg` (1024px). Between 768px and 1023px, tablet visitors see the full page canvas accompanied by `MobileBottomNav`, avoiding double navigation overlays.
 
 ---
 
@@ -357,8 +339,8 @@ Rules:
 
 - [x] Navbar hamburger dead zone closed — shipped as `lg:hidden` on both the
       toggle and the panel, not the `md` originally prescribed (3.1)
-- [ ] Align `useMobile` / navbar / §5 on one line — `md` (768) or `lg` (1024).
-      Still two answers in the tree (3.3)
+- [x] Align `useMobile` / navbar / §5 on one line — `md` (768) or `lg` (1024).
+      Aligned to `1024` (`lg`) across `useMobile`, `LandingHeader`, `MobileBottomNav`, and `SearchClient` (3.3)
 - [ ] Interstitial below `md` for both builders (4, Option B)
 - [ ] Deduplicate `/host/stripe-*` and decide on `/mayor/*` (2.6)
 
@@ -377,7 +359,7 @@ Rules:
 
 ### Phase 3 — Supply-side
 
-- [ ] Wire `sheet.tsx` drawers + `inDrawer` in `create-event/page.tsx` (3.2)
+- [x] Wire `sheet.tsx` drawers + `inDrawer` in `create-event/page.tsx` (3.2)
 - [ ] Same `inDrawer` pattern for the venue builder (4.1)
 - [ ] `QRScannerClient` — mobile-native workflow, treat as citizen priority
 - [ ] `asset` (4/5), `event` (6/9), rest of `dashboard`
