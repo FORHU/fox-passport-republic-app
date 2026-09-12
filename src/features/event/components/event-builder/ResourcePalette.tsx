@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import React from "react";
 import {
@@ -14,6 +14,7 @@ interface ResourcePaletteProps {
   onCategoryChange: (catId: string) => void;
   onSearchChange: (query: string) => void;
   onDragStart: (e: React.DragEvent, item: ResourceItem) => void;
+  onSelectItem?: (item: ResourceItem) => void;
   /** When true, panels stack vertically and are always visible (used inside a mobile drawer). */
   inDrawer?: boolean;
 }
@@ -25,6 +26,7 @@ export function ResourcePalette({
   onCategoryChange,
   onSearchChange,
   onDragStart,
+  onSelectItem,
   inDrawer = false,
 }: ResourcePaletteProps) {
   const docked = inDrawer ? "" : "hidden md:flex";
@@ -82,7 +84,12 @@ export function ResourcePalette({
 
         <div className="flex-1 overflow-y-auto px-6 pb-6 space-y-3 custom-scrollbar">
           {filteredResources.map((item) => (
-            <ResourceCard key={item.id} item={item} onDragStart={onDragStart} />
+            <ResourceCard
+              key={item.id}
+              item={item}
+              onDragStart={onDragStart}
+              onSelect={onSelectItem}
+            />
           ))}
         </div>
       </aside>

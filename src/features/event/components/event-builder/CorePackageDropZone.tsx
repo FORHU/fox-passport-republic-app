@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import React from "react";
 import { ResourceItem } from "@/features/event/data/eventBuilderData";
@@ -58,8 +58,8 @@ export function CorePackageDropZone({
           <span className="material-symbols-outlined text-3xl mb-2 opacity-30">
             add_circle_outline
           </span>
-          <p className="text-sm opacity-50">
-            Drop venues, talent, services here
+          <p className="text-sm opacity-50 text-center px-4">
+            Drop items here or tap &ldquo;Add&rdquo; from the Assets palette
           </p>
         </div>
       ) : (

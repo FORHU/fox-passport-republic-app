@@ -229,43 +229,51 @@ export function useEventBuilder() {
     store.setIsDragOver(false);
   }, [store]);
 
+  const addResourceToCore = useCallback(
+    (item: ResourceItem) => {
+      // Only one venue allowed in the Core Package
+      if (item.resourceType === "venue") {
+        const alreadyHasVenue = store.baseItems.some(
+          (i) => i.resourceType === "venue" || VENUE_ICONS.includes(i.icon),
+        );
+        if (alreadyHasVenue) {
+          toast.error(
+            "Only one venue can be in the Core Package. Remove the existing venue first.",
+          );
+          store.setDraggedItem(null);
+          store.setIsDragOver(false);
+          return false;
+        }
+      }
+
+      store.addBaseItem(item);
+      toast.success(`Added ${item.name} to Core Package`);
+
+      // Auto-fill location fields when the first venue is added and location is empty
+      if (item.resourceType === "venue" && !store.location) {
+        const label = [item.city, item.state].filter(Boolean).join(", ");
+        if (label) store.setLocation(label);
+        if (item.city) store.setTargetCity(item.city);
+        if (item.state) store.setTargetState(item.state);
+        if (item.country) store.setTargetCountry(item.country);
+        if (item.lat != null) store.setLat(item.lat);
+        if (item.lng != null) store.setLng(item.lng);
+      }
+      return true;
+    },
+    [store],
+  );
+
   const handleDrop = useCallback(
     (e: React.DragEvent) => {
       e.preventDefault();
       store.setIsDragOver(false);
       if (store.draggedItem) {
-        const item = store.draggedItem;
-
-        // Only one venue allowed in the Core Package
-        if (item.resourceType === "venue") {
-          const alreadyHasVenue = store.baseItems.some(
-            (i) => i.resourceType === "venue" || VENUE_ICONS.includes(i.icon),
-          );
-          if (alreadyHasVenue) {
-            toast.error(
-              "Only one venue can be in the Core Package. Remove the existing venue first.",
-            );
-            store.setDraggedItem(null);
-            store.setIsDragOver(false);
-            return;
-          }
-        }
-
-        store.addBaseItem(item);
-        // Auto-fill location fields when the first venue is dropped and location is empty
-        if (item.resourceType === "venue" && !store.location) {
-          const label = [item.city, item.state].filter(Boolean).join(", ");
-          if (label) store.setLocation(label);
-          if (item.city) store.setTargetCity(item.city);
-          if (item.state) store.setTargetState(item.state);
-          if (item.country) store.setTargetCountry(item.country);
-          if (item.lat != null) store.setLat(item.lat);
-          if (item.lng != null) store.setLng(item.lng);
-        }
+        addResourceToCore(store.draggedItem);
       }
       store.setDraggedItem(null);
     },
-    [store],
+    [store, addResourceToCore],
   );
 
   // Gallery handlers
@@ -681,6 +689,7 @@ export function useEventBuilder() {
     handleDragOver,
     handleDragLeave,
     handleDrop,
+    addResourceToCore,
     addImageToGallery,
     handleBack,
     handleSaveDraft,

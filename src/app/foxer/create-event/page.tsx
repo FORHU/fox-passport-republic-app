@@ -4,6 +4,12 @@ import { useRouter } from "next/navigation";
 import RequireAuth from "@/shared/auth/RequireAuth";
 import { useEventBuilder } from "@/features/event/hooks/useEventBuilder";
 import { useEventBuilderStore } from "@/features/event/store/useEventBuilderStore";
+import { useState } from "react";
+import {
+  Sheet,
+  SheetContent,
+  SheetTitle,
+} from "@/shared/components/ui/sheet";
 import {
   ResourcePalette,
   EventHeader,
@@ -15,6 +21,9 @@ import {
 
 export default function EventCreationBuilder() {
   const router = useRouter();
+  const [paletteOpen, setPaletteOpen] = useState(false);
+  const [blueprintOpen, setBlueprintOpen] = useState(false);
+
   const {
     // State
     eventTitle,
@@ -63,6 +72,7 @@ export default function EventCreationBuilder() {
     handleDragOver,
     handleDragLeave,
     handleDrop,
+    addResourceToCore,
     addImageToGallery,
     handleBack,
     handleSaveDraft,
@@ -88,9 +98,12 @@ export default function EventCreationBuilder() {
           onBack={handleBack}
           onSaveDraft={handleSaveDraft}
           onPublish={handlePublish}
+          onTogglePalette={() => setPaletteOpen(true)}
+          onToggleBlueprint={() => setBlueprintOpen(true)}
         />
 
-        <div className="flex-1 flex overflow-hidden">
+        <div className="flex-1 flex overflow-hidden relative">
+          {/* Desktop docked palette */}
           <ResourcePalette
             activeCategory={activeCategory}
             searchQuery={searchQuery}
@@ -98,10 +111,11 @@ export default function EventCreationBuilder() {
             onCategoryChange={setActiveCategory}
             onSearchChange={setSearchQuery}
             onDragStart={handleDragStart}
+            onSelectItem={addResourceToCore}
           />
 
-          <main className="flex-1 overflow-y-auto p-8 bg-[#02040a] flex gap-8">
-            <div className="flex-1 max-w-4xl mx-auto space-y-8">
+          <main className="flex-1 overflow-y-auto p-4 sm:p-6 md:p-8 bg-[#02040a] flex gap-8">
+            <div className="flex-1 max-w-4xl mx-auto space-y-6 sm:space-y-8 pb-12 sm:pb-0">
               <EventDetailsForm
                 eventTitle={eventTitle}
                 description={description}
@@ -146,6 +160,7 @@ export default function EventCreationBuilder() {
             </div>
           </main>
 
+          {/* Desktop docked blueprint */}
           <EventBlueprint
             targetMargin={targetMargin}
             baseCost={financials.baseCost}
@@ -156,6 +171,54 @@ export default function EventCreationBuilder() {
             onMarginChange={setTargetMargin}
             onPreview={handlePreview}
           />
+
+          {/* Mobile Palette Drawer */}
+          <Sheet open={paletteOpen} onOpenChange={setPaletteOpen}>
+            <SheetContent
+              side="left"
+              className="bg-[#0f111a] border-white/10 w-[88vw] sm:max-w-md p-0 flex flex-col h-full"
+            >
+              <SheetTitle className="sr-only">Resource Palette</SheetTitle>
+              <div className="flex-1 overflow-y-auto flex flex-col pt-8">
+                <ResourcePalette
+                  activeCategory={activeCategory}
+                  searchQuery={searchQuery}
+                  filteredResources={filteredResources}
+                  onCategoryChange={setActiveCategory}
+                  onSearchChange={setSearchQuery}
+                  onDragStart={handleDragStart}
+                  onSelectItem={(item) => {
+                    const ok = addResourceToCore(item);
+                    if (ok) setPaletteOpen(false);
+                  }}
+                  inDrawer
+                />
+              </div>
+            </SheetContent>
+          </Sheet>
+
+          {/* Mobile Blueprint Drawer */}
+          <Sheet open={blueprintOpen} onOpenChange={setBlueprintOpen}>
+            <SheetContent
+              side="right"
+              className="bg-[#0f111a] border-white/10 w-[88vw] sm:max-w-md p-0 flex flex-col h-full"
+            >
+              <SheetTitle className="sr-only">Financial Blueprint</SheetTitle>
+              <div className="flex-1 overflow-y-auto flex flex-col pt-8">
+                <EventBlueprint
+                  targetMargin={targetMargin}
+                  baseCost={financials.baseCost}
+                  suggestedPrice={financials.suggestedPrice}
+                  venueCost={financials.venueCost}
+                  talentCost={financials.talentCost}
+                  blueprintHealth={blueprintHealth}
+                  onMarginChange={setTargetMargin}
+                  onPreview={handlePreview}
+                  inDrawer
+                />
+              </div>
+            </SheetContent>
+          </Sheet>
         </div>
       </div>
     </RequireAuth>

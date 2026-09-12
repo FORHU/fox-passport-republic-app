@@ -7,14 +7,15 @@ import { ResourceItem } from "@/features/event/data/eventBuilderData";
 interface ResourceCardProps {
   item: ResourceItem;
   onDragStart: (e: React.DragEvent, item: ResourceItem) => void;
+  onSelect?: (item: ResourceItem) => void;
 }
 
-export function ResourceCard({ item, onDragStart }: ResourceCardProps) {
+export function ResourceCard({ item, onDragStart, onSelect }: ResourceCardProps) {
   return (
     <div
       draggable
       onDragStart={(e) => onDragStart(e, item)}
-      className="group bg-[#161b26] hover:bg-[#1c2230] border border-white/5 hover:border-white/10 rounded-2xl p-4 cursor-grab"
+      className="group bg-[#161b26] hover:bg-[#1c2230] border border-white/5 hover:border-white/10 rounded-2xl p-4 cursor-grab transition-colors relative"
     >
       <div className="flex gap-4">
         {item.imageUrl ? (
@@ -31,17 +32,32 @@ export function ResourceCard({ item, onDragStart }: ResourceCardProps) {
           </div>
         )}
         <div className="min-w-0 flex-1">
-          <div className="flex justify-between items-start">
-            <h4 className="font-bold text-white text-sm truncate pr-2">
+          <div className="flex justify-between items-start gap-2">
+            <h4 className="font-bold text-white text-sm truncate pr-1">
               {item.name}
             </h4>
-            <span className="text-xs text-accent font-bold font-mono">
+            <span className="text-xs text-accent font-bold font-mono shrink-0">
               ₱{item.cost.toLocaleString()}
             </span>
           </div>
           <p className="text-[11px] text-gray-500 mt-1 line-clamp-2">
             {item.desc}
           </p>
+          {onSelect && (
+            <div className="mt-3 flex justify-end">
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onSelect(item);
+                }}
+                className="px-2.5 py-1 rounded-lg bg-white/10 hover:bg-accent hover:text-black text-[11px] font-bold text-white/80 transition-all flex items-center gap-1 cursor-pointer"
+              >
+                <span className="material-symbols-outlined text-[14px]">add</span>
+                Add
+              </button>
+            </div>
+          )}
         </div>
       </div>
     </div>
