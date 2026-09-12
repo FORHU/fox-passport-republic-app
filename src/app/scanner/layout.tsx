@@ -5,7 +5,7 @@ import { requireAuth } from "@/shared/lib/server/auth";
  * itself needs (`booking:check-in`) is enforced by the API on the write; this
  * guard only keeps an anonymous visitor from loading the page at all.
  *
- * `middleware.ts` only checks that a session cookie is *present* - it verifies
+ * `proxy.ts` only checks that a session cookie is *present* - it verifies
  * nothing, by design, so this app need not hold the API's signing key. The real
  * check is here: `requireAuth` resolves the session against a live `/profile`
  * call and redirects when there is nothing behind the cookie.

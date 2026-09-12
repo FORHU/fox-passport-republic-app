@@ -1,10 +1,8 @@
 # Roles and spaces — the Foxer model
 
-**Written 4 September 2026, from a design conversation.** Decisions taken in
-that conversation are marked **Decided**; everything else is open and says so.
-Code facts below were read from `main` on the day, not remembered — where a
-claim is about the running system the file and line are named, so it can be
-re-checked rather than trusted.
+**Written 4 September 2026, from a design conversation. Status updated 12 Sep 2026.**
+- **Resolved (3 items):** §4 `useRoleAccess` blocker resolved (permission-based grants via `hasPermission`), `LockedSection` removed from dashboard, dismissible hint added.
+- **Open (12 items):** Talent promotion (§2: 4 items), Community membership & host review (§3: 4 items), Spaces split (§5: 2 items), Unplaced concepts (§6: 2 items).
 
 Companion documents: `RBAC.md` is the authorization model as built,
 `RBAC-PLAN.md` the migration that produced it. This file is about the layer

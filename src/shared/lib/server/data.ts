@@ -25,7 +25,7 @@ async function getAuthToken(): Promise<string | null> {
  *
  * Refreshing belongs to the two places that can actually persist the result:
  * `app/api/proxy/[...path]/route.ts` for client calls, and `refreshUserSession`
- * in `auth-actions.ts` for server actions. On a protected route `middleware.ts`
+ * in `auth-actions.ts` for server actions. On a protected route `proxy.ts`
  * has already rejected an expired access token before any of this runs, so a
  * 401 reaching here means the session is genuinely over.
  */

@@ -3,6 +3,20 @@ import { NextRequest, NextResponse } from "next/server";
 /**
  * Navigation guard. Runs before pages are rendered.
  *
+ * Renamed from `middleware.ts` 12 Sep: Next.js 16.3.4 deprecated the
+ * `middleware` file convention in favor of `proxy` and, in this version,
+ * doesn't just warn about it - a file still named `middleware.ts` never gets
+ * registered at all (`.next/dev/server/middleware-manifest.json` stayed
+ * `{ "middleware": {} }` regardless of location, project root or `src/`).
+ * Found by testing every PROTECTED_ROUTES tree with plain `curl` and no
+ * cookies: all of them returned 200 with real page markup instead of a
+ * redirect. Not a data leak - each protected layout's own `requireAuth()`
+ * still fires and the redirect is present in the streamed RSC payload
+ * (`NEXT_REDIRECT;replace;/;307`) for any JS-executing client - but it meant
+ * this file's fast, pre-render redirect had been silently dead code, and a
+ * non-JS client (a bot, a crawler, a disabled-JS browser) saw an empty page
+ * shell for every protected route instead of ever being redirected.
+ *
  * This checks one thing: whether a session cookie is present. It is a redirect
  * for people who are not signed in, not an authorization boundary, and nothing
  * here should be read as proof of anything.

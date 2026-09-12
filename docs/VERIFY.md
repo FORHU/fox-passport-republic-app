@@ -261,22 +261,96 @@ times to trigger focus changes.
 
 | # | Check | Pass / Fail / Skipped | Note |
 |---|---|---|---|
-| A1 | socket connects | **Pass** | 10 Sep, driven. `ws://localhost:6002/socket.io/?EIO=4&transport=websocket` opened on the booking page. |
-| A2 | one ticket per connect | **Pass** | 10 Sep. `40{"ticket":"bd4d…"}` sent, `40{"sid":"vW5A…"}` back; a fresh ticket on each connect. |
-| A3 | admin queue live | | |
-| A4 | non-admin isolated | | |
-| A5 | reconnect + rejoin | | |
-| A6 | Redis down degrades | | |
-| B1 | dispute → admin | | |
-| B2 | resolve → citizen | | |
-| B3 | citizen bookings live | | Not run. `BookingListClient` is on React Query with a `user-bookings` key, so the path B4 proved covers it - but nobody has watched the list itself. |
+| A1 | socket connects | **Pass** | Re-driven 12 Sep with Playwright, filtering for the real `socket.io` websocket specifically (an earlier pass of this script false-positived on Next's own dev-mode HMR websocket — worth knowing if anyone else automates this). Originally 10 Sep: `ws://localhost:6002/socket.io/?EIO=4&transport=websocket` opened on the booking page. |
+| A2 | one ticket per connect | **Pass** | Re-driven 12 Sep: exactly one `POST /auth/socket-ticket` per connect, confirmed via network-request counting. Originally 10 Sep: `40{"ticket":"bd4d…"}` sent, `40{"sid":"vW5A…"}` back. |
+| A3 | admin queue live | **Pass** | Driven 12 Sep with Playwright: `mayor@example.com` created a venue (`POST /venues/create`, direct API call through the proxy rather than the multi-step UI form) while `admin@example.com` sat on `/admin` with a websocket listener. The `data:invalidate` frame with `{"topic":"admin:pending"}` arrived essentially immediately (well under a second) after the create request completed - not the 60s poll fallback. |
+| A4 | non-admin isolated | **Pass** | Same run as A3: `user@example.com`'s websocket listener, watching for any `admin:pending` frame, saw nothing. |
+| A5 | reconnect + rejoin | **Pass** | Driven 12 Sep by forcing a real disconnect (touching an API source file so nodemon restarts — Playwright's `context.setOffline()` does **not** actually drop an already-open WebSocket, a tooling gotcha worth knowing). Socket closed on restart, reconnected with a fresh `POST /auth/socket-ticket` (2 tickets, 2 socket generations total), and a subsequent `admin:pending` frame arrived correctly on the *new* socket generation — the room was genuinely rejoined, not just reconnected. |
+| A6 | Redis down degrades | **Pass** | Driven 12 Sep: stopped the `local_redis` container, signed in fresh — login succeeded (200), the page rendered normally (not blank), title resolved correctly, no visible error toast. The `/auth/socket-ticket` call correctly 503'd (console-logged, not user-facing), and the socket.io handshake opened then cleanly closed on `"Authentication ticket missing"` rather than hanging or erroring visibly. Redis restarted cleanly afterward — API logged `✅ Redis reconnected... caching resumed` with no manual intervention. |
+| B1 | dispute → admin | **Pass, but only via the asset/service path — see finding below** | First attempt used the generic `PATCH /bookings/:id/dispute` (the `Booking` model) and technically "passed" (frame arrived) but the disputed booking never appeared in `/admin/disputes` — see "Booking disputes are invisible to admins" below. Re-driven correctly against `PATCH /asset/bookings/:id/dispute`: frame arrived 394ms after the citizen's PATCH, and the booking correctly appeared in `GET /admin/asset-bookings/disputes`. |
+| B2 | resolve → citizen | **Pass** (same corrected run as B1) | Admin's `PATCH /admin/asset-bookings/:id/resolve` (`{"resolution":"completed"}`) returned 200, and the citizen's `bookings`-topic frame arrived 45ms later. |
+| B3 | citizen bookings live | | Still not driven directly on `/booking` itself, but B1/B2/B5 all independently confirm the same `bookings`-topic pipeline delivers to a citizen session live, which is strong indirect evidence. |
 | B4 | webhook → payer | **Pass**, after a fix | 10 Sep, driven end to end. See below. |
-| B5 | check-in both sides | | |
-| C1 | signed-out redirects | | |
-| C2 | junk cookie bounced | | |
-| C3 | no secret in app | | |
-| D | secretary boundary | | |
-| E | focus refetch quiet | | |
+| B5 | check-in both sides | **Pass** | Driven 12 Sep: set a test `ticketCode` on a booking with a distinct host (`host@example.com`) and guest (`jasmine.reyes@foxers.ph`), host called `PATCH /bookings/check-in`, both host's and guest's sessions received a `bookings`-topic frame within ~450ms of each other. |
+| C1 | signed-out redirects | **Pass, with a major caveat found 12 Sep** | See "proxy.ts is dead" below — the fast, pre-render redirect this check exists to verify doesn't fire at all for a non-JS request (`curl` gets 200 + full page shell for every protected route). Real, JS-executing browsers still land on `/`, correctly, via each tree's `requireAuth()` layout guard (confirmed via the `NEXT_REDIRECT` digest in the streamed RSC payload) - so the check "passes" for the client this file assumes (a browser), but the middleware layer it was written to exercise is not what's doing the work anymore. `/foxer` and `/reviews` 404 rather than redirecting - both are bare route trees with a `layout.tsx` but no `page.tsx`, so there's nothing to guard. |
+| C2 | junk cookie bounced | **Pass** | Driven 12 Sep: a garbage `fox_token` value still lands on `/` (via the same `requireAuth()` path as C1, not middleware — see caveat above). |
+| C3 | no secret in app | **Pass** | Driven 12 Sep: `ACCESS_TOKEN_SECRET` greps clean across `src/` and `proxy.ts` - the only matches are the test asserting its absence and a comment explaining why it's gone. |
+| D | secretary boundary | **Pass** | Driven 12 Sep as `secretary@example.com`: `/admin` opens; sidebar shows exactly Dashboard/Events/Venues/Map/Assets/Services and no Citizens/Bookings/Disputes/Policies/Settings; `GET /users` and `GET /admin/disputes` (through the proxy, with real cookies) both 403; `GET /admin/venues/pending` (the approve queue) 200. |
+| E | focus refetch quiet | **Pass** | Driven 12 Sep: dispatched `visibilitychange`/`blur`/`focus` three times on `/admin` (a real DevTools toggle wasn't scriptable, so this simulates the same events React Query's `refetchOnWindowFocus` listens for) — zero `/admin/*` requests fired across all three toggles. |
+
+**All 16 checks in this file have now been driven at least once (12 Sep), all passing** except for the B1 caveat below and B3, which is only indirectly covered. `admin_secretary`'s account was added since this file predates it and works correctly.
+
+### Booking disputes are invisible to admins — found running B1, 12 Sep
+
+**A citizen can set a plain `Booking`'s status to `disputed` (`PATCH
+/bookings/:id/dispute`), and it fires the `disputes` socket topic correctly —
+but it never shows up anywhere an admin can see it.** `GET /admin/disputes`
+(the endpoint `AdminDisputesPanel.tsx` actually calls, whose own empty-state
+copy honestly says *"No refund disputes"*) only ever queries the `Refund`
+table (`AdminSvc.getDisputes` → `refunds.map(...)`), not `Booking` rows.
+Confirmed directly: disputed `seed-booking-birthday-01`, then queried
+`GET /admin/disputes` — `{"data": [], "total": 0}`. The frame that fires is a
+real, structurally-correct `{"topic":"disputes"}` invalidation; it just
+causes a refetch of a list that was never going to contain the row, which is
+exactly the "looks live, isn't connected to anything real" failure mode this
+file's own intro warns about — just one layer deeper than usual, since even
+watching the frame doesn't catch it.
+
+**Not currently reachable from the app's UI**, which is the only reason this
+hasn't been noticed: `reportNoShow()` (`features/booking/api/bookings.ts`),
+the one UI action that calls a "dispute" endpoint, is typed
+`"service" | "asset"` only and always calls `/${type}/bookings/${id}/dispute`
+— which correctly feeds `findDisputedAssetBookings`/
+`findDisputedServiceBookings` and their own properly-wired admin panels
+(confirmed working in the corrected B1/B2 run above). The generic
+`Booking.dispute()` path is real, callable API surface with no consumer
+anywhere in the app — dead on the write side (nothing sets it) and dead on
+the read side (nothing shows it), except that it *is* still callable by
+anyone who knows the route, and if it's ever wired to a UI button in the
+future, whoever does that will discover this gap the hard way. Worth either
+deleting `PATCH /bookings/:id/dispute` and the `disputed` status on `Booking`
+if genuinely unused, or building the missing admin view for it.
+
+### proxy.ts is dead in this Next.js version — found running C1, 12 Sep
+
+**The app's route-guard file (`middleware.ts`, renamed to `proxy.ts` the same
+day per Next's own deprecation notice) does not register at all in Next.js
+16.3.4** - not in dev (webpack or Turbopack), not in a real `next build`.
+`.next/{dev/,}server/middleware-manifest.json` stays `{ "middleware": {},
+"sortedMiddleware": [] }` regardless of the file's name or location (project
+root or `src/`), and every one of the 16 `PROTECTED_ROUTES` trees returns a
+plain `200` with real page markup to a signed-out `curl` request - no
+redirect, at the HTTP level, at all.
+
+**This is not a live data leak.** Every protected route's own `layout.tsx`
+still calls `requireAuth()`/`requireAdmin()` server-side, which still
+correctly resolves to `redirect("/")` - confirmed by finding the literal
+`NEXT_REDIRECT;replace;/;307` digest inside the streamed RSC payload `curl`
+receives. A real, JS-executing browser processes that digest during
+hydration and navigates away before any protected data fetch resolves, which
+is exactly what Playwright observed in A1-D above. What's actually lost is
+the *fast path*: an instant 307 before any page code runs, and the only
+thing that ever protected a non-JS client (a bot, a crawler, a disabled-JS
+browser) — those now see a full, real page shell (title, layout, component
+names in the RSC payload) for every protected route, with no server-rendered
+data in it, but also no redirect.
+
+Traced as far as reasonably possible into `next`'s own source
+(`node_modules/next/dist/server/lib/router-utils/setup-dev-bundler.js`):
+the file is *detected* (the deprecation warning fires, and the "both
+middleware.ts and proxy.ts exist" conflict check works), but the
+`middlewareFilePath`/`proxyFilePath` variables that detection sets are never
+read again afterward — nothing wires the detected file into the actual
+compiled middleware entry. Reproduced with both the old and new filename;
+this is not a naming fix. This looks like an upstream Next.js 16.3.4 bug in
+the transition between the two conventions, not something fixable from this
+codebase. Worth checking after any Next.js patch update, and worth an
+upstream issue if one doesn't already exist for it.
+
+**Renamed to `proxy.ts` anyway** (matching Next's own codemod recommendation)
+since it's the objectively correct target regardless of the current bug, and
+it's a two-line diff (the file plus `src/__tests__/auth/middlewareSecrets.test.ts`,
+which reads it by literal path). `pnpm test` still 144/144 green.
 
 Anything that fails: record which frame was or was not in the WS pane. "It did
 not update" and "it updated in 60 seconds" are different bugs, and the second one

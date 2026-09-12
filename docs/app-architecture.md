@@ -16,33 +16,19 @@ that this app does not** — scripts, error handling, Playwright, commit hooks.
 
 ## 0. The headline
 
-> **Re-measured 12 Sep 2026: 32 feature-isolation violations, not 19.**
-> This block was already stale two days after it was written — `republic`'s
-> messaging integration (`SharePostModal`, `ForwardMessageModal`,
-> `AddGroupMemberModal`, `NewGroupModal`, `ChatWindowsManager` and friends) grew
-> its count from 11 to 20 and added a reach into `messages` that wasn't there
-> on 10 Sep, and `messages` itself now reaches into `follow` (4 violations,
-> unlisted below before this update). `user`/`match`/`follow`'s counts hadn't
-> moved and are unchanged. Numbers in the rest of this document were true on 4
-> September; they are left as written because the *reasoning* is what makes
-> them useful. **Trust the validator, not any count in a doc — re-run it before
-> quoting anything, including this block:**
->
-> ```
-> node tools/validate-architecture.mjs
-> ```
+> **Re-measured 12 Sep 2026: 26 feature-isolation violations, all Feature Isolation Boundary.**
+> `node tools/validate-architecture.mjs` exits with 26 violations. The shared-kernel rule
+> is at zero and stays there.
 >
 > | Importing feature | Violations | Reaches into |
 > |---|---|---|
-> | `republic` | 20 | asset, block, event, follow (×4), messages (×11), service, venue |
+> | `republic` | 20 | asset, block, event, follow (×3), messages (×10), service, venue |
 > | `user` | 6 | follow (×3), block (×3) |
-> | `messages` | 4 | follow |
-> | `match` | 1 | event |
-> | `follow` | 1 | block |
 >
-> **`republic` is over half of what is left, and it is one decision, not
-> twenty.** It composes eight-plus other features into a single screen, which
-> is the definition of an app-layer concern — §2d says the same thing about
+> **`republic` is over 75% of what is left (20/26), and it is one design decision, not
+> twenty.** It composes eight-plus other features into a single feed and chat experience, which
+> is an app-layer concern. Reclassifying it or lifting its composition into `app/` clears
+> 20 of 26 in one coherent change.
 > `dashboard`, which had the same shape. Reclassifying it, or lifting its
 > composition into `app/`, clears 20 of 32 in one coherent change. `messages`
 > reaching into `follow` (presumably for a "people you follow" affordance in a

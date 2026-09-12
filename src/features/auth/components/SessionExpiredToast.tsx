@@ -7,7 +7,7 @@ import { toastRequireLogin } from "@/shared/lib/toast";
 
 // Surfaces a message when the app hard-redirects here with `?auth=expired`
 // (session-manager idle logout, axios's silent-refresh failure) or
-// `?auth=required` (middleware.ts bouncing a signed-out visitor off a
+// `?auth=required` (proxy.ts bouncing a signed-out visitor off a
 // protected route). Without this, either redirect lands the user back on the
 // homepage with no explanation for why they were bounced.
 const MESSAGES: Record<string, string> = {

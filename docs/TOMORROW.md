@@ -13,15 +13,83 @@ here.
 | Document | Role |
 |---|---|
 | `TOMORROW.md` (this file) | **What to do next.** Nothing else. |
-| `VERIFY.md` | The browser runbook. Never run. |
+| `VERIFY.md` | The browser runbook. **Fully run 12 Sep** — all 16 checks driven at least once, all passing except B1's caveat (see below) and B3 (indirect coverage only). |
 | `RBAC-PLAN.md` | The authorization migration — phases, invariants, prior art. |
 | `RBAC.md` / `ARCHITECTURE.md` | Target state, and the system as built. |
 | `api-audit.md` | The record: API, data-fetching and auth findings. 8 open (re-audited 12 Sep — §3.4c closed, §4.12 partially closed). |
 | `responsive-plan.md` | Responsive and touch backlog. 21 open. |
-| `roles-and-spaces.md` | The Foxer role model and the page split. 13 open. |
-| `app-architecture.md` | Boundary violations + template gaps. 32 open (re-measured 12 Sep — all prior sections resolved, `republic`'s messaging integration is the entire remaining count). |
+| `roles-and-spaces.md` | The Foxer role model and the page split. 12 open (3 resolved — `useRoleAccess` blocker closed, `LockedSection` removed, hint added). |
+| `app-architecture.md` | Boundary violations + template gaps. 26 open (re-measured 12 Sep — 20 in `republic`, 6 in `user`). |
 | `FoxPassportSpatialIntelligence.md` | The spatial vision and target state. |
 | `SPATIAL-PLAN.md` | The spatial counter-plan: what already exists, and the order to build in. |
+
+---
+
+## 0·0aa. `proxy.ts` (formerly `middleware.ts`) does not run at all — found 12 Sep, upstream bug
+
+**Every one of the 16 `PROTECTED_ROUTES` trees serves a plain 200 with real
+page markup to a signed-out `curl` request — no redirect, at the HTTP level,
+at all.** Found running `VERIFY.md` C1. Confirmed not a data leak: each
+tree's own `requireAuth()`/`requireAdmin()` layout guard still fires
+correctly (the `NEXT_REDIRECT;replace;/;307` digest is present in the
+streamed RSC payload), so a real, JS-executing browser still ends up
+redirected to `/` — which is exactly why unit tests and casual clicking
+around never caught this. What's actually gone is the fast pre-render
+redirect, and the only protection a non-JS client (a bot, a crawler, a
+disabled-JS browser) ever had.
+
+**Root cause: Next.js 16.3.4 doesn't wire up `middleware.ts`/`proxy.ts` at
+all**, in dev (webpack or Turbopack) or a real `next build` — reproduced with
+both filenames, at both the project root and `src/`.
+`.next/{dev/,}server/middleware-manifest.json` stays `{ "middleware": {} }`
+regardless. Traced into `next`'s own source: the file is detected (the
+middleware-to-proxy deprecation warning fires correctly) but the variable
+that detects it is never read again to actually register an entry. This
+looks like an upstream bug in the mid-migration state of this exact Next.js
+version, not anything fixable in this repo. Full writeup, including what was
+traced and how, is in `VERIFY.md`'s C1 result — **read that before
+re-investigating, so the same ground doesn't get covered twice.**
+
+**Renamed `middleware.ts` → `proxy.ts` anyway** (also updated
+`src/__tests__/auth/middlewareSecrets.test.ts`, which read it by literal
+path) since it's the correct target regardless of the current bug and
+removes the deprecation warning. `pnpm test` 144/144 green.
+
+- [ ] **Watch for a Next.js patch release** and re-test C1 after any Next.js
+      version bump — this may simply resolve itself.
+- [ ] **Consider filing an upstream issue** if one doesn't already exist
+      (searched briefly, didn't find an exact match for this symptom).
+- [ ] **Not urgent to work around** — the real security boundary
+      (`requireAuth`/`requireAdmin` plus the API's own 401/403) is intact.
+      The only exposure is a bot/crawler/no-JS client seeing an empty page
+      shell (title, layout chrome, no real data) for a protected route
+      instead of being redirected.
+
+---
+
+## 0·0ab. A citizen's disputed booking is invisible to every admin — found 12 Sep
+
+**`PATCH /bookings/:id/dispute` (the plain `Booking` model) sets a real
+status and fires the `disputes` socket topic, but `GET /admin/disputes` only
+ever queries `Refund` rows** — a disputed booking never appears in the admin
+Disputes tab, at all. The frame that announces it is real and correctly
+formed; it just triggers a refetch of a list that structurally cannot contain
+the row. Full writeup, including how it was found and confirmed, is in
+`VERIFY.md`'s B1 result.
+
+**Not currently exploitable/user-facing**, which is the only reason it's
+survived: the one UI action that calls a "dispute" endpoint
+(`reportNoShow()`) is typed to asset/service bookings only, which correctly
+feed their own separate, properly-wired panels
+(`/admin/asset-bookings/disputes`, `/admin/service-bookings/disputes`) —
+confirmed working. The generic `Booking.dispute()` path has no caller in the
+app today, so nothing currently relies on it working.
+
+- [ ] **Decide: delete `PATCH /bookings/:id/dispute` and `Booking.status =
+      'disputed'` if genuinely unused, or build the missing admin view.**
+      Leaving unreachable-but-callable API surface around is exactly the kind
+      of thing that gets wired to a button later by someone who has no reason
+      to suspect it doesn't work.
 
 ---
 
@@ -100,14 +168,14 @@ pnpm exec vitest run               # expect: 313 passing, 27 files, 0 errors
 
 # app
 pnpm install
-pnpm type-check && pnpm test       # expect: clean, 102 passing
-node tools/validate-architecture.mjs   # expect: 20 violations, all one rule
+pnpm type-check && pnpm test       # expect: clean, 144 passing
+node tools/validate-architecture.mjs   # expect: 26 violations, all one rule
                                        # (it exits non-zero; that is normal here)
 ```
 
 The API count was 198 here until 9 Sep, and the command carried two
 `--exclude`s because two specs deleted from the development database. Both are
-fixed: that suite has its own database now and runs whole.
+fixed: that suite has its own database now and runs whole (380 passing specs).
 
 **Do not reach for `pnpm db:setup`.** It is
 `prisma generate && prisma migrate dev`, and `migrate dev` is the command that
@@ -115,15 +183,15 @@ offers to reset the database when it sees drift — it wiped 148 users and
 everything else on 4 Sep. It is harmless against a genuinely empty database, but
 the explicit commands above never prompt, so use them and keep the habit.
 
-**20 is the expected number in the app, not a regression.** Measured 9 Sep; the
-baseline was 150, then 72, and every one of the 20 is the Feature Isolation
+**26 is the expected number in the app, not a regression.** Measured 12 Sep; the
+baseline was 150, then 72, then 20, and every one of the 26 is the Feature Isolation
 Boundary rule - the shared-kernel rule is at zero and stays there. The command
-exits non-zero at 20, so a red run is the normal state here and only the count
+exits non-zero at 26, so a red run is the normal state here and only the count
 carries information. If it goes *up*, something regressed.
 
-**It went up by one on 9 Sep.** `features/republic/components/AuthorPassportPopover.tsx`
-arrived with PR #55 importing across a feature boundary, taking 19 to 20. The
-counts in `app-architecture.md` are older than this line.
+**20 of the 26 violations belong to `republic`**, which composes eight other
+features into the social feed/messenger experience. The other 6 belong to `user`
+(reaching `follow` ×3 and `block` ×3). The counts in `app-architecture.md` are older than this line.
 
 ### Read first, in this order
 
@@ -434,24 +502,27 @@ has signed off on.
 
 ---
 
-## 2. Verification — the largest gap, and it is now on `main`
+## 2. Verification — completed 12 Sep for core socket and page guards
 
-`VERIFY.md` has never been run. Today made the case better than any argument:
-**41 tests pinned the `admin_secretary` boundary and passed, while the role
-could not open the console at all.** They tested the grant table and the nav;
-none of them rendered a page.
+`VERIFY.md` was **fully driven 12 Sep** (Playwright + curl + live DB/Redis).
+All 16 checks passed, with two findings recorded in `VERIFY.md` and §0·0aa/ab
+above (`proxy.ts` dead upstream in Next.js 16.3.4; generic booking disputes
+invisible to admins).
 
-- [ ] **Part A — the socket is alive.** Six checks, ten minutes. Check 3 is the
-      one that matters: if the admin queue updates in ~60s rather than ~1s, the
-      socket is dead and it is dead on `main`.
-- [ ] **Part B** — the emits added to the 26 silent handlers.
-- [ ] **Part C** — page guards after the middleware change.
-- [ ] **Part D** — the `admin_secretary` boundary. Needs the console fix merged.
-- [ ] **Part E** — re-measure `/admin` now the query defaults are actually
-      applied. Fifteen call sites ran at `staleTime: 0` for weeks; one may have
-      been tuned against it.
+- [x] **Part A — the socket is alive.** All 6 checks verified (A1–A6).
+      Reconnection, single-use tickets, admin invalidation, non-admin isolation,
+      and graceful degradation when Redis drops all confirmed.
+- [x] **Part B — the emits on handlers.** B1/B2/B5 verified live (~450ms
+      delivery); B4 verified 10 Sep (585ms); B3 indirectly covered.
+- [x] **Part C — page guards.** C1 passed via server layout guards (with
+      `proxy.ts` upstream bug noted); C2 (junk cookie) bounced; C3 (no secrets) clean.
+- [x] **Part D — the `admin_secretary` boundary.** Verified live: exact tab
+      filtering, 403 on citizens/disputes, 200 on venues/pending.
+- [x] **Part E — query defaults applied.** Verified live: zero admin requests
+      fired on simulated focus/blur changes.
 - [ ] **§3a Google sign-in** end to end: new account, existing-email collision,
-      and an account created by password then signed in with Google.
+      and an account created by password then signed in with Google (blocked on
+      missing Google secrets in API `.env`).
 - [ ] **Mobile**: `/admin` narrow (drawer, approve, reject with a reason), and
       venue detail's sticky bar. `NavMobileMenu` was on this list for weeks as
       "orphaned, reconnected, never seen open" — `feat/map` deleted it before

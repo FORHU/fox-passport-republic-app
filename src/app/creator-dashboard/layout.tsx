@@ -5,7 +5,7 @@ import CreatorDashboardShell from "./_components/CreatorDashboardShell";
  * Host layout - wraps every creator dashboard page.
  *
  * The guard used to be `RequireAuth` alone, client-side against the auth store,
- * with a comment claiming `middleware.ts` handled auth and roles. It did once;
+ * with a comment claiming `proxy.ts` handled auth and roles. It did once;
  * it now checks only that a session cookie exists, so that this app need not
  * hold the API's signing key. `requireAuth` here resolves the session against a
  * live `/profile` call before anything renders.
