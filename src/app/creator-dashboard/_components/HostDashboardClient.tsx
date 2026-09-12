@@ -19,7 +19,6 @@ import {
   CalendarWidget,
   CreatorProfile,
   RecentActivity,
-  LockedSection,
 } from "@/features/dashboard/components";
 import { OccupancyChart, PendingRequests } from "./OccupancySection";
 import { useRoleAccess } from "@/shared/auth/useRoleAccess";
@@ -101,6 +100,33 @@ export default function HostDashboardClient({
   } = useDashboard();
 
   const access = useRoleAccess();
+  const authUser = useAuthStore((s) => s.user);
+
+  const discoveryHintKey = authUser?.id
+    ? `foxpassport:discovery-hint-dismissed:${authUser.id}`
+    : null;
+  const [discoveryHintDismissed, setDiscoveryHintDismissed] = useState(false);
+
+  React.useEffect(() => {
+    if (!discoveryHintKey) return;
+    try {
+      setDiscoveryHintDismissed(
+        localStorage.getItem(discoveryHintKey) === "1",
+      );
+    } catch {
+      // localStorage unavailable (private browsing, etc.) — hint just won't persist
+    }
+  }, [discoveryHintKey]);
+
+  const dismissDiscoveryHint = () => {
+    setDiscoveryHintDismissed(true);
+    if (!discoveryHintKey) return;
+    try {
+      localStorage.setItem(discoveryHintKey, "1");
+    } catch {
+      // ignore write failures — dismissal still applies for this session
+    }
+  };
 
   const { stats: foxerStats, isLoading: statsLoading } = useFoxerDashboard();
 
@@ -228,7 +254,7 @@ export default function HostDashboardClient({
 
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
             <div className="lg:col-span-8 space-y-10">
-              {access.canManageEvents ? (
+              {access.canManageEvents && (
                 <EventsSection
                   events={events}
                   onStatusChange={() => {}}
@@ -240,19 +266,9 @@ export default function HostDashboardClient({
                   totalPages={totalEventPages}
                   onPageChange={setEventsPage}
                 />
-              ) : (
-                <LockedSection
-                  title="My Active Events"
-                  icon="hub"
-                  iconColor="text-[#ccff00]"
-                  requiredRole="Event Foxer"
-                  applyHref="/creator-dashboard/apply"
-                >
-                  <EventsSection events={[]} onStatusChange={() => {}} />
-                </LockedSection>
               )}
 
-              {access.canManageVenues ? (
+              {access.canManageVenues && (
                 <VenuesSection
                   venues={venues}
                   onStatusChange={() => {}}
@@ -263,19 +279,9 @@ export default function HostDashboardClient({
                   totalPages={totalVenuePages}
                   onPageChange={setVenuesPage}
                 />
-              ) : (
-                <LockedSection
-                  title="My Venues"
-                  icon="apartment"
-                  iconColor="text-pink-500"
-                  requiredRole="Venue Foxer"
-                  applyHref="/venue-foxer/apply"
-                >
-                  <VenuesSection venues={[]} onStatusChange={() => {}} />
-                </LockedSection>
               )}
 
-              {access.canManageInventory ? (
+              {access.canManageInventory && (
                 <InventorySection
                   inventory={inventory}
                   onStatusChange={handleInventoryStatusChange}
@@ -283,19 +289,9 @@ export default function HostDashboardClient({
                   totalPages={totalAssetPages}
                   onPageChange={setAssetsPage}
                 />
-              ) : (
-                <LockedSection
-                  title="Inventories"
-                  icon="inventory_2"
-                  iconColor="text-purple-400"
-                  requiredRole="Foxer (Asset)"
-                  applyHref="/onboarding"
-                >
-                  <InventorySection inventory={[]} onStatusChange={() => {}} />
-                </LockedSection>
               )}
 
-              {access.canManageServices ? (
+              {access.canManageServices && (
                 <ServicesSection
                   services={services}
                   onStatusChange={() => {}}
@@ -303,17 +299,42 @@ export default function HostDashboardClient({
                   totalPages={totalServicePages}
                   onPageChange={setServicesPage}
                 />
-              ) : (
-                <LockedSection
-                  title="Services"
-                  icon="design_services"
-                  iconColor="text-yellow-400"
-                  requiredRole="Foxer (Service)"
-                  applyHref="/onboarding"
-                >
-                  <ServicesSection services={[]} onStatusChange={() => {}} />
-                </LockedSection>
               )}
+
+              {/* Dismissible Discovery Hint for unheld roles */}
+              {!discoveryHintDismissed &&
+                (!access.canManageEvents ||
+                  !access.canManageVenues ||
+                  !access.canManageInventory ||
+                  !access.canManageServices) && (
+                  <div className="rounded-2xl border border-white/10 bg-white/3 p-4 sm:p-5 flex items-center justify-between gap-4 text-xs text-white/60">
+                    <div className="flex items-center gap-3 min-w-0">
+                      <span className="material-symbols-outlined text-[#ccff00] text-lg shrink-0">
+                        auto_awesome
+                      </span>
+                      <p className="truncate">
+                        Unlock more provider capabilities (Venues, Events, Assets, Services) by expanding your creator profile.
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-2 shrink-0">
+                      <button
+                        onClick={() => router.push("/creator-dashboard/apply")}
+                        className="px-3.5 py-1.5 rounded-full bg-[#ccff00]/10 border border-[#ccff00]/30 text-[#ccff00] text-xs font-bold hover:bg-[#ccff00]/20 transition-colors whitespace-nowrap"
+                      >
+                        Apply for Roles
+                      </button>
+                      <button
+                        onClick={dismissDiscoveryHint}
+                        aria-label="Dismiss"
+                        className="h-7 w-7 rounded-full flex items-center justify-center text-white/40 hover:text-white hover:bg-white/10 transition-colors"
+                      >
+                        <span className="material-symbols-outlined text-[16px]">
+                          close
+                        </span>
+                      </button>
+                    </div>
+                  </div>
+                )}
             </div>
 
             <div className="lg:col-span-4">
