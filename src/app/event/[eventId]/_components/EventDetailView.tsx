@@ -11,6 +11,7 @@ import { EventHostCard } from "./EventHostCard";
 import { EventInclusions, InclusionItem } from "./EventInclusions";
 import { EventVenueOverview } from "./EventVenueOverview";
 import { EventBookingSidebar } from "./EventBookingSidebar";
+import { EventShareModal } from "./EventShareModal";
 
 const CATEGORY_ICONS: Record<string, string> = {
   music: "music_note",
@@ -56,6 +57,7 @@ export function EventDetailView({
 }: EventDetailViewProps) {
   const router = useRouter();
   const [isCustomBookingOpen, setIsCustomBookingOpen] = useState(false);
+  const [isShareOpen, setIsShareOpen] = useState(false);
 
   const templateImages: string[] = (template?.images ?? [])
     .map((img: any) => img.url)
@@ -68,7 +70,11 @@ export function EventDetailView({
     <div className="bg-background bg-gradient-dark text-text-main antialiased min-h-screen flex flex-col selection:bg-accent selection:text-black font-body">
       {/* Mobile-only redesigned view */}
       <div className="lg:hidden">
-        <MobileEventDetail event={template} isPreview={isPreview} />
+        <MobileEventDetail
+          event={template}
+          isPreview={isPreview}
+          onShareClick={() => setIsShareOpen(true)}
+        />
       </div>
 
       {/* Desktop / Tablet View */}
@@ -127,7 +133,10 @@ export function EventDetailView({
               </h2>
             </Link>
             <div className="flex items-center gap-4">
-              <button className="hidden sm:flex items-center gap-2 px-4 py-2 rounded-full border border-white/10 hover:bg-white/5 text-sm font-medium text-white cursor-pointer">
+              <button
+                onClick={() => setIsShareOpen(true)}
+                className="hidden sm:flex items-center gap-2 px-4 py-2 rounded-full border border-white/10 hover:bg-white/5 text-sm font-medium text-white cursor-pointer"
+              >
                 <span className="material-symbols-outlined text-[18px]">
                   share
                 </span>{" "}
@@ -352,6 +361,14 @@ export function EventDetailView({
           </div>
         </footer>
       </div>
+
+      <EventShareModal
+        isOpen={isShareOpen}
+        onClose={() => setIsShareOpen(false)}
+        eventId={eventId}
+        eventName={template?.name || "Event Listing"}
+        feedPostId={template?.feedPostId ?? null}
+      />
     </div>
   );
 }

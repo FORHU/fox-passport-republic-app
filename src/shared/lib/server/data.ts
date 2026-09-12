@@ -1,4 +1,4 @@
-﻿import { cookies } from "next/headers";
+import { cookies } from "next/headers";
 import { config } from "@/shared/lib/config";
 import { requireAuth } from "./auth";
 
@@ -522,6 +522,16 @@ export async function getFeaturedEventTemplates(limit = 4) {
   } catch (error) {
     console.error("Failed to fetch featured event templates:", error);
     return [];
+  }
+}
+
+export async function getPublicEventTemplateById(id: string) {
+  try {
+    const body = await serverFetch(`/event-templates/browse/${id}`);
+    return body?.data ?? null;
+  } catch (error) {
+    console.error(`Failed to fetch event template ${id}:`, error);
+    return null;
   }
 }
 

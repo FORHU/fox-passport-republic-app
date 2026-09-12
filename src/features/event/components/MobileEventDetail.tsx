@@ -8,6 +8,7 @@ import { useRouter } from "next/navigation";
 interface MobileEventDetailProps {
   event?: any;
   isPreview?: boolean;
+  onShareClick?: () => void;
 }
 
 const CATEGORY_PILL: Record<string, { bg: string; color: string }> = {
@@ -23,6 +24,7 @@ const AVATAR_COLORS = ["#7c3aed", "#db2777", "#f97316", "#3b82f6"];
 export default function MobileEventDetail({
   event,
   isPreview,
+  onShareClick,
 }: MobileEventDetailProps) {
   const router = useRouter();
 
@@ -128,6 +130,29 @@ export default function MobileEventDetail({
         >
           Event
         </p>
+        <button
+          onClick={onShareClick}
+          style={{
+            width: 36,
+            height: 36,
+            borderRadius: 999,
+            background: "rgba(0,0,0,0.4)",
+            backdropFilter: "blur(10px)",
+            WebkitBackdropFilter: "blur(10px)",
+            border: "none",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            cursor: "pointer",
+            flexShrink: 0,
+            color: "#fff",
+          }}
+          aria-label="Share event"
+        >
+          <span className="material-symbols-outlined" style={{ fontSize: 16 }}>
+            share
+          </span>
+        </button>
         <button
           style={{
             width: 36,

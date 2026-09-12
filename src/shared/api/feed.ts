@@ -86,6 +86,13 @@ export const repostPost = async (
   return res.data.data;
 };
 
+export const trackPostShare = async (
+  id: string,
+): Promise<{ success: boolean }> => {
+  const res = await api.post(`/feed/${id}/share`);
+  return res.data;
+};
+
 export const toggleSavePost = async (
   id: string,
 ): Promise<{ saved: boolean }> => {
