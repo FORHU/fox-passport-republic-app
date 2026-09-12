@@ -20,15 +20,19 @@ import { CustomExperienceBuilder } from "@/features/venue/components/detail/Expe
 import { useVenueDetailStore } from "@/features/venue/store/useVenueDetailStore";
 import { Venue } from "../hooks/useVenuesByCategory";
 import { Host } from "../types/venue";
+import { useAuthStore } from "@/shared/auth/useAuthStore";
 
 interface VenueDetailClientProps {
   venue: Venue;
   host: Host;
+  /** Composed at the app layer — this feature doesn't import `partnership` directly. */
+  onProposePartnership?: () => void;
 }
 
 export default function VenueDetailClient({
   venue,
   host,
+  onProposePartnership,
 }: VenueDetailClientProps) {
   const router = useRouter();
   const store = useVenueDetailStore();
@@ -52,6 +56,15 @@ export default function VenueDetailClient({
   // to a single `price` number and `images` down to `string[]`. Reading the
   // typed fields directly silently produced ₱0 and broken <img> tags.
   const venuePrice = Number((venue as any).price || 0);
+  
+  const { user } = useAuthStore();
+  const handleProposePartnership = () => {
+    if (!user?.roleType?.includes('investor')) {
+      router.push('/onboarding/partner');
+    } else {
+      onProposePartnership?.();
+    }
+  };
 
   return (
     <div className="bg-background bg-gradient-dark text-text-main antialiased min-h-screen flex flex-col selection:bg-accent selection:text-black font-body">
@@ -61,7 +74,6 @@ export default function VenueDetailClient({
         onClose={() => setIsCustomBookingOpen(false)}
         venuePrice={venuePrice}
       />
-
       <LightboxGallery
         isOpen={store.galleryOpen}
         images={(venue as any).images || []}
@@ -72,7 +84,11 @@ export default function VenueDetailClient({
         onPrev={() => store.prevImage(venue.images?.length || 0)}
       />
 
-      <VenueNavHeader title={venue.title} onBack={handleBack} />
+      <VenueNavHeader 
+        title={venue.title} 
+        onBack={handleBack} 
+        onProposePartnership={handleProposePartnership}
+      />
 
       {/* Mobile sticky bottom bar — design: "From ₱X/night  [Book Now]" */}
       {venuePrice > 0 && (
@@ -212,6 +228,84 @@ export default function VenueDetailClient({
                   {venue.description || "No description provided."}
                 </p>
               </div>
+
+              {venue.facilities && venue.facilities.length > 0 && (
+                <>
+                  <div className="h-px bg-white/10 w-full" />
+                  <div>
+                    <h3 className="text-2xl font-display font-bold text-white mb-4">
+                      Facilities
+                    </h3>
+                    <div className="flex flex-wrap gap-2">
+                      {venue.facilities.map((facility, idx) => (
+                        <span
+                          key={idx}
+                          className="px-3 py-1.5 bg-white/5 border border-white/10 rounded-lg text-sm text-gray-300 capitalize"
+                        >
+                          {facility.replace(/_/g, " ")}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                </>
+              )}
+
+              {venue.packages && venue.packages.length > 0 && (
+                <>
+                  <div className="h-px bg-white/10 w-full" />
+                  <div>
+                    <h3 className="text-2xl font-display font-bold text-white mb-4">
+                      Venue Packages
+                    </h3>
+                    <div className="grid gap-4 sm:grid-cols-2">
+                      {venue.packages.map((pkg: any) => (
+                        <div
+                          key={pkg.id}
+                          className="p-4 border border-white/10 rounded-2xl bg-white/5"
+                        >
+                          <h4 className="font-bold text-lg text-white mb-1">{pkg.name}</h4>
+                          <p className="text-accent font-bold text-sm mb-2">₱{Number(pkg.price).toLocaleString()}</p>
+                          <p className="text-gray-400 text-sm whitespace-pre-line">{pkg.description}</p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </>
+              )}
+
+              {((venue.recommendedAssets && venue.recommendedAssets.length > 0) || (venue.recommendedServices && venue.recommendedServices.length > 0)) && (
+                <>
+                  <div className="h-px bg-white/10 w-full" />
+                  <div>
+                    <h3 className="text-2xl font-display font-bold text-white mb-4">
+                      In-House Extras
+                    </h3>
+                    <p className="text-gray-400 text-sm mb-4">
+                      Enhance your event with gear and talent provided directly by the venue.
+                    </p>
+                    <div className="grid gap-4 sm:grid-cols-2">
+                      {venue.recommendedAssets?.map((asset: any) => (
+                        <div key={asset.id} className="p-3 border border-white/10 rounded-xl bg-white/5 flex gap-3 items-center">
+                          <span className="material-symbols-outlined text-accent text-2xl">speaker</span>
+                          <div>
+                            <p className="text-white font-bold text-sm">{asset.name}</p>
+                            <p className="text-accent text-xs">₱{Number(asset.price).toLocaleString()} / {asset.billingRate}</p>
+                          </div>
+                        </div>
+                      ))}
+                      {venue.recommendedServices?.map((service: any) => (
+                        <div key={service.id} className="p-3 border border-white/10 rounded-xl bg-white/5 flex gap-3 items-center">
+                          <span className="material-symbols-outlined text-accent text-2xl">person</span>
+                          <div>
+                            <p className="text-white font-bold text-sm">{service.name}</p>
+                            <p className="text-accent text-xs">₱{Number(service.price).toLocaleString()} / {service.billingRate}</p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </>
+              )}
 
               <div className="h-px bg-white/10 w-full" />
 

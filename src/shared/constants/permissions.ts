@@ -34,6 +34,7 @@ export const PERMISSIONS = [
   "payments:read:all",
   "disputes:resolve",
   "refunds:manage",
+  "event:manage-organizers",
 
   // The supply side — held through RoleType, not SystemRole
   "venue:manage",
