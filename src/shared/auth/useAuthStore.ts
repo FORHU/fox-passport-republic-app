@@ -3,9 +3,13 @@ import { User, LoginResponse } from "@/shared/auth/types";
 
 /**
  * Reads the `fox_user` cookie `setAuthCookies` sets alongside the httpOnly
- * token cookies. Non-httpOnly by design (see `setAuthCookies`), specifically
- * so this can read it back — it is the server's own record of who's
- * signed in, not a client-side echo of it.
+ * token cookies. Non-httpOnly by design (see `setAuthCookies`), carrying
+ * profile data and no token.
+ *
+ * The cookie exists for the server, not for this: `getUser` in
+ * `shared/lib/server/auth.ts` parses it when the API is unreachable, and
+ * localStorage is invisible from there. Here it is only the fallback — see
+ * `initialize`.
  */
 function readFoxUserCookie(): string | null {
   if (typeof document === "undefined") return null;
@@ -71,15 +75,19 @@ export const useAuthStore = create<AuthState>((set) => ({
       // is what rehydrates the session optimistically; the first proxied
       // request settles whether the cookie is still valid.
       //
-      // The cookie is checked first, not localStorage: it's the same value
-      // the server just set (or re-set on every refresh), so it can't drift
-      // from what the httpOnly cookies actually represent the way a
-      // separately-written localStorage copy can — e.g. a privacy tool that
-      // clears site storage but not cookies would otherwise show "logged
-      // out" here despite the session still being live. localStorage stays
-      // as a fallback for the same-tab case right after login, before this
-      // cookie would even be visible to a fresh read.
-      const storedUser = readFoxUserCookie() ?? localStorage.getItem("fox_user");
+      // localStorage first, cookie second, because localStorage is the fresher
+      // of the two: `setUser` rewrites it on every profile fetch, while the
+      // `fox_user` cookie is only written at login and by `refreshUserSession`
+      // — the proxy's silent refresh does not touch it. Reading the cookie
+      // first served a stale name, avatar and `roleType` (which gates UI) on
+      // every reload until the next poll landed.
+      //
+      // The cookie remains the fallback for the case localStorage cannot
+      // cover: site storage cleared while cookies survive, e.g. by a privacy
+      // tool, where the session is still live and dropping to "logged out"
+      // would be wrong.
+      const storedUser =
+        localStorage.getItem("fox_user") ?? readFoxUserCookie();
 
       if (storedUser) {
         set({
@@ -132,7 +140,8 @@ export const useAuthStore = create<AuthState>((set) => ({
   },
 
   logout: () => {
-    // Cookies are cleared by the `clearAuthCookies` server action.
+    // Client state only. Cookies are the server action's job — call
+    // `endSession` rather than this directly, so the two cannot drift.
     localStorage.removeItem("fox_user");
     set({
       isAuthenticated: false,

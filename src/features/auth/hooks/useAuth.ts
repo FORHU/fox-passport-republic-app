@@ -2,23 +2,20 @@
 
 import { useMutation } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
-import axios from "axios";
 import { toast } from "sonner";
+import api from "@/shared/lib/axios";
 import { useAuthStore } from "@/shared/auth/useAuthStore";
 import { LoginFormData, SignupFormData } from "@/shared/lib/schema";
 import { LoginResponse } from "@/shared/auth/types";
-import { config } from "@/shared/lib/config";
 import { canAccessAdmin } from "@/shared/lib/permissions";
-import { setAuthCookies } from "@/shared/lib/server/auth-actions";
 
-// --- AXIOS SETUP ---
-const api = axios.create({
-  baseURL: config.apiUrl,
-  withCredentials: true,
-  headers: {
-    "Content-Type": "application/json",
-  },
-});
+// These used to go through a private axios instance pointed straight at
+// `config.apiUrl` - the one place the browser talked to the API directly, and
+// the one that establishes the session. They share the proxy client with every
+// other request now, so there is a single browser-facing auth boundary.
+//
+// `withCredentials` went with it: /api/proxy is same-origin, so cookies ride
+// along without being asked to.
 
 // --- REAL API FUNCTIONS ---
 
@@ -78,17 +75,17 @@ export const useLogin = () => {
     onSuccess: async (data) => {
       console.log("Login Success:", data);
 
-      // Cookies before the store update, not after: `login(data)` flips
-      // `isAuthenticated` synchronously, and every component gated on that
-      // (NotificationBell, UserMenuButton's session sync, any query with
-      // `enabled: !!user`) can fire its request through the proxy the
-      // instant it re-renders. The proxy reads `fox_token` from the cookie
-      // jar — if one of those requests lands before this Server Action's
-      // Set-Cookie has actually been committed, the proxy forwards it
-      // unauthenticated, the backend 401s, and the global axios interceptor
-      // reads that 401 as "session expired" and force-logs the user right
-      // back out seconds after they logged in.
-      await setAuthCookies(data);
+      // No cookie write here any more. The API sets them on its own login
+      // response and the proxy relays those headers, so they are committed by
+      // the browser before this callback runs at all.
+      //
+      // The ordering this replaces was load-bearing and worth remembering:
+      // `login(data)` flips `isAuthenticated` synchronously, and everything
+      // gated on that fires immediately. When the cookies were written by a
+      // separate Server Action afterwards, those requests could reach the proxy
+      // before the Set-Cookie was committed - the proxy forwarded them
+      // unauthenticated, the API answered 401, and the interceptor read that as
+      // an expired session and signed the user out seconds after signing in.
 
       // Save user to store
       login(data);

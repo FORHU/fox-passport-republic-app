@@ -6,7 +6,7 @@ import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
 
 import { useAuthStore } from "@/shared/auth/useAuthStore";
-import { completeGoogleAuth } from "@/shared/lib/server/auth-actions";
+import { completeGoogleAuth } from "@/shared/auth/session-api";
 
 export default function GoogleAuthCallbackPage() {
   const router = useRouter();
