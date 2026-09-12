@@ -11,6 +11,7 @@ import {
   EventGallery,
   CorePackageDropZone,
   EventBlueprint,
+  EventOrganizersSection,
 } from "@/features/event/components/event-builder";
 import { useHostEventEdit } from "@/features/event/hooks/useHostEventEdit";
 
@@ -42,6 +43,7 @@ function EventEditContent({ id }: Props) {
     isSubmitting,
     saveStatus,
     isDragOver,
+    activeEventId,
     setActiveCategory,
     setEventTitle,
     setDescription,
@@ -155,6 +157,7 @@ function EventEditContent({ id }: Props) {
                   onRemoveItem={removeBaseItem}
                   onUpdateItem={updateBaseItem}
                 />
+                <EventOrganizersSection eventId={activeEventId} />
               </div>
             </main>
             <EventBlueprint
