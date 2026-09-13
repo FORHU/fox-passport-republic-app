@@ -31,7 +31,7 @@ export const TrendingSection: React.FC<TrendingSectionProps> = ({
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-        {trending.slice(0, 4).map((template: any, i: number) => {
+        {trending.slice(0, 4).map((template: any) => {
           const img =
             template.images?.[0]?.url ??
             template.images?.[0] ??

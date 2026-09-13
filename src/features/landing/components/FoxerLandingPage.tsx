@@ -17,7 +17,7 @@ interface FoxerLandingPageProps {
 }
 
 const FoxerLandingPage: React.FC<FoxerLandingPageProps> = ({
-  featuredTemplates = [],
+  featuredTemplates: _featuredTemplates = [],
 }) => {
   const { displayedCategories, openAuthModal } = useLandingPage();
 

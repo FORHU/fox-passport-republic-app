@@ -7,7 +7,6 @@ import CircularProgress from "@/features/gamification/components/CircularProgres
 import { BadgeGrid } from "@/features/gamification/components/BadgeCard";
 import { PassportGrid } from "@/features/gamification/components/PassportStamp";
 import {
-  UserPath,
   XP_REWARDS,
 } from "@/features/gamification/types/gamification";
 import {

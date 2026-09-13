@@ -1,7 +1,6 @@
 import React, { useCallback, useEffect, useState } from "react";
 import { getOpenSlots } from "@/shared/api/bidding";
 import { BidApplicationModal } from "./BidApplicationModal";
-import { useAuthStore } from "@/shared/auth/useAuthStore";
 
 export const OpenSlotsBoard: React.FC = () => {
   const [events, setEvents] = useState<any[]>([]);
