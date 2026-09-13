@@ -594,7 +594,6 @@ export function VenuesMapPageClient({
     // Deliberately excludes `currentBounds`/`handleViewportChange`: those
     // already trigger their own fetch on real map movement or location
     // selection, and including them here would double-fetch on every pan.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [debouncedSearch, selectedLocation]);
 
   const totalPages = Math.ceil(totalCount / 12);

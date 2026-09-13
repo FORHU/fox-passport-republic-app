@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 import { create } from "zustand";
 
 interface VenueDetailState {
@@ -91,7 +90,7 @@ interface ExperienceBuilderState {
 }
 
 export const useExperienceBuilderStore = create<ExperienceBuilderState>(
-  (set, get) => ({
+  (set) => ({
     activeCategory: "foxer",
     selectedFoxer: null,
     selectedServices: [],

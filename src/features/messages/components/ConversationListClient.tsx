@@ -1,4 +1,3 @@
-/* eslint-disable @next/next/no-img-element */
 "use client";
 
 import React, { useEffect, useState } from "react";
@@ -15,9 +14,15 @@ import {
 import { useAuthStore } from "@/shared/auth/useAuthStore";
 import { useChatWindowsStore } from "../store/useChatWindowsStore";
 import { NewGroupModal } from "./NewGroupModal";
-import type { Conversation } from "../types";
+import type { Conversation, Candidate } from "../types";
 
-export default function ConversationListClient() {
+interface ConversationListClientProps {
+  followingUsers?: Candidate[];
+}
+
+export default function ConversationListClient({
+  followingUsers,
+}: ConversationListClientProps = {}) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const queryClient = useQueryClient();
@@ -94,7 +99,6 @@ export default function ConversationListClient() {
         },
       },
     );
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isAuthenticated, userIdParam, startedUserId]);
 
   // Opens the conversation named by ?conversationId, or the one just
@@ -119,7 +123,6 @@ export default function ConversationListClient() {
       setAppliedConversationId(targetConversationId);
       openConversation(match);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [targetConversationId, appliedConversationId, conversations]);
 
   // Incoming requests (someone else messaged you with no existing
@@ -324,6 +327,7 @@ export default function ConversationListClient() {
             setNewGroupOpen(false);
             openConversation(conversation);
           }}
+          followingUsers={followingUsers}
         />
       )}
     </div>

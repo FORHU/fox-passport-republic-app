@@ -27,7 +27,7 @@ const ROLES = [
     href: "/foxer/apply?type=asset",
     color: "#a78bfa",
     icon: "inventory_2",
-    tag: "Gear Foxer",
+    tag: "Equipment Foxer",
     title: "Gear Provider",
     desc: "Rent out sound systems, lighting, furniture, and event equipment.",
   },

@@ -8,7 +8,7 @@ import { Toaster } from "sonner";
 import AuthModal from "@/features/auth/components/AuthModal";
 import NotificationSocketBridge from "@/features/notifications/components/NotificationSocketBridge";
 import MessageSocketBridge from "@/features/messages/components/MessageSocketBridge";
-import ChatWindowsManager from "@/features/messages/components/ChatWindowsManager";
+import ChatWindowsWrapper from "@/app/ChatWindowsWrapper";
 import SessionExpiredToast from "@/features/auth/components/SessionExpiredToast";
 import NavigationOverlay from "@/shared/components/ui/NavigationOverlay";
 
@@ -71,7 +71,7 @@ export default function RootLayout({
               layer may import features; SocketProvider, in shared/, may not. */}
           <NotificationSocketBridge />
           <MessageSocketBridge />
-          <ChatWindowsManager />
+          <ChatWindowsWrapper />
           <main className="grow overflow-x-clip">{children}</main>
         </Providers>
       </body>

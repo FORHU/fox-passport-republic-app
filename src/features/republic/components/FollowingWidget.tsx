@@ -1,25 +1,65 @@
-/* eslint-disable @next/next/no-img-element */
 "use client";
 
 import { useState } from "react";
 import { Mail, MessagesSquare, Users, Pin, BellOff } from "lucide-react";
-import { toast } from "sonner";
 import { useAuthStore } from "@/shared/auth/useAuthStore";
-import { useFollowing } from "@/features/follow/api/useFollow";
-import {
-  useConversations,
-  useStartConversation,
-  useLeaveGroupConversation,
-} from "@/features/messages/hooks/useMessages";
-import { useChatWindowsStore } from "@/features/messages/store/useChatWindowsStore";
-import { MessageRequestsModal } from "@/features/messages/components/MessageRequestsModal";
-import type { Conversation } from "@/features/messages/types";
-import { AccountOptionsMenu } from "./AccountOptionsMenu";
-import { GroupOptionsMenu } from "./GroupOptionsMenu";
 
-const errorMessage = (e: unknown, fallback: string) =>
-  (e as { response?: { data?: { message?: string } } })?.response?.data
-    ?.message ?? fallback;
+export interface FollowingWidgetProps {
+  isLoading?: boolean;
+  following: Array<{
+    id: string;
+    name: string | null;
+    imgId: string | null;
+  }>;
+  conversations: Array<{
+    id: string;
+    isGroup: boolean;
+    name?: string | null;
+    imgId?: string | null;
+    otherUser?: {
+      id: string;
+      name: string | null;
+      imgId: string | null;
+    } | null;
+    status: string;
+    isIncomingRequest?: boolean;
+    lastMessageAt?: string | null;
+    isPinned?: boolean;
+    pinnedAt?: string | null;
+    isMuted?: boolean;
+    unreadCount: number;
+    lastMessage?: { content: string; isMine: boolean } | null;
+    participants?: { id: string; name: string; imgId: string | null }[];
+    creatorId?: string;
+  }>;
+  incomingRequestsCount: number;
+
+  /** A render prop, not a static node, because the modal's own `onClose`
+   * needs to reach back into this component's `requestsOpen` state — the
+   * caller doesn't own that state, so it's handed the closer instead. */
+  messageRequestsModalSlot?: (closeModal: () => void) => React.ReactNode;
+
+  onOpenChat: (target: {
+    id: string;
+    name: string;
+    imgId: string | null;
+    isIncomingRequest?: boolean;
+  }) => void;
+  onOpenGroup: (conversation: any) => void;
+
+  accountOptionsRender: (
+    targetId: string,
+    conversationId?: string,
+    isMuted?: boolean,
+    isPinned?: boolean,
+  ) => React.ReactNode;
+  groupOptionsRender: (
+    conversationId: string,
+    groupName: string,
+    isMuted?: boolean,
+    isPinned?: boolean,
+  ) => React.ReactNode;
+}
 
 interface RowUser {
   isGroup: false;
@@ -32,35 +72,30 @@ interface RowGroup {
   isGroup: true;
   id: string;
   name: string;
-  conversation: Conversation;
+  conversation: any;
 }
 
 type Row = RowUser | RowGroup;
 
-export function FollowingWidget() {
+export function FollowingWidget({
+  isLoading,
+  following,
+  conversations: allConversations,
+  incomingRequestsCount,
+  messageRequestsModalSlot,
+  onOpenChat,
+  onOpenGroup,
+  accountOptionsRender,
+  groupOptionsRender,
+}: FollowingWidgetProps) {
   const { user } = useAuthStore();
-  const { data, isLoading, error } = useFollowing(user?.id);
-  const following = data?.data ?? [];
 
-  // Keyed by the other participant's id so each row can show its own last
-  // message instead of the username — the same conversations list the
-  // Messages page/widget already fetches, just cross-referenced here.
-  const { data: allConversations = [] } = useConversations();
   const conversations = allConversations.filter((c) => !c.isGroup);
   const groupConversations = allConversations.filter((c) => c.isGroup);
   const conversationByUserId = new Map(
     conversations.map((c) => [c.otherUser!.id, c]),
   );
-  const incomingRequestsCount = allConversations.filter(
-    (c) => c.isIncomingRequest,
-  ).length;
 
-  // Rows are "who you follow" plus "who you have an accepted conversation
-  // with" (e.g. someone whose message request you just accepted) — the
-  // latter matters because accepting a request doesn't also follow them,
-  // so without this an accepted conversation with a non-followed account
-  // would have nowhere to show. Pending requests are deliberately excluded
-  // here; those live only in the Message Requests folder until accepted.
   const followingRows: RowUser[] = following.map((u) => ({
     isGroup: false,
     id: u.id,
@@ -85,10 +120,6 @@ export function FollowingWidget() {
     conversation: c,
   }));
 
-  // Pinned rows float to the top first (most-recently-pinned first), then
-  // accounts/groups with a recent conversation (most recent first), same as
-  // a normal chat app's contact list — everyone else keeps their existing
-  // relative order.
   const rows: Row[] = [
     ...followingRows,
     ...acceptedNonFollowedRows,
@@ -116,64 +147,6 @@ export function FollowingWidget() {
   });
 
   const [requestsOpen, setRequestsOpen] = useState(false);
-  const openChatWindow = useChatWindowsStore((s) => s.openChat);
-  const openGroupChatWindow = useChatWindowsStore((s) => s.openGroupChat);
-  const setConversationId = useChatWindowsStore((s) => s.setConversationId);
-  const closeChat = useChatWindowsStore((s) => s.closeChat);
-  const startConversation = useStartConversation();
-  const leaveGroup = useLeaveGroupConversation();
-
-  const openGroup = (conversation: Conversation) => {
-    openGroupChatWindow({
-      conversationId: conversation.id,
-      name: conversation.name ?? "Group",
-      participants: conversation.participants ?? [],
-      creatorId: conversation.creatorId,
-      imgId: conversation.imgId,
-    });
-  };
-
-  const handleLeaveGroup = (conversationId: string) => {
-    leaveGroup.mutate(conversationId, {
-      onSuccess: () => closeChat(conversationId),
-      onError: (e) => toast.error(errorMessage(e, "Could not leave group.")),
-    });
-  };
-
-  const openChat = (target: {
-    id: string;
-    name: string;
-    imgId: string | null;
-    isIncomingRequest?: boolean;
-  }) => {
-    openChatWindow({
-      otherUserId: target.id,
-      otherUserName: target.name,
-      otherUserImgId: target.imgId,
-      isIncomingRequest: target.isIncomingRequest,
-    });
-    startConversation.mutate(
-      { otherUserId: target.id },
-      {
-        onSuccess: (conversation) =>
-          setConversationId(target.id, conversation.id),
-        onError: (e) => {
-          toast.error(errorMessage(e, "Could not start this conversation."));
-        },
-      },
-    );
-  };
-
-  const handleSelectRequest = (conversation: Conversation) => {
-    if (!conversation.otherUser) return;
-    setRequestsOpen(false);
-    openChat({
-      id: conversation.otherUser.id,
-      name: conversation.otherUser.name || "Citizen",
-      imgId: conversation.otherUser.imgId,
-      isIncomingRequest: true,
-    });
-  };
 
   if (!user) return null;
 
@@ -195,14 +168,8 @@ export function FollowingWidget() {
     );
   }
 
-  if (error) return null;
-
   return (
     <>
-      {/* h-full so this panel stretches to fill whatever height its sticky
-          container gives it, instead of shrink-wrapping to just its content —
-          the list scrolls internally if it's longer than that; the card
-          still reaches the bottom of the available space either way. */}
       <div className="h-full flex flex-col rounded-3xl bg-zinc-950/60 border border-zinc-900 p-4">
         <div className="flex items-center gap-2 shrink-0">
           <MessagesSquare className="h-4 w-4 text-lime-400" strokeWidth={2} />
@@ -211,9 +178,6 @@ export function FollowingWidget() {
           </div>
         </div>
 
-        {/* Message Requests — its own "folder", not surfaced inline in the
-            list below, and only shown at all when there's something waiting
-            in it — a reminder, not a permanent fixture. */}
         {incomingRequestsCount > 0 && (
           <button
             type="button"
@@ -256,7 +220,7 @@ export function FollowingWidget() {
                   >
                     <button
                       type="button"
-                      onClick={() => openGroup(conversation)}
+                      onClick={() => onOpenGroup(conversation)}
                       className="flex items-center gap-3 min-w-0 group text-left cursor-pointer"
                     >
                       <div className="relative shrink-0">
@@ -297,21 +261,16 @@ export function FollowingWidget() {
                       </div>
                     </button>
 
-                    <GroupOptionsMenu
-                      conversationId={conversation.id}
-                      groupName={followedUser.name}
-                      isMuted={conversation.isMuted}
-                      isPinned={conversation.isPinned}
-                      onLeave={() => handleLeaveGroup(conversation.id)}
-                      isLeaving={leaveGroup.isPending}
-                    />
+                    {groupOptionsRender(
+                      conversation.id,
+                      followedUser.name,
+                      conversation.isMuted,
+                      conversation.isPinned,
+                    )}
                   </div>
                 );
               }
 
-              // A pending request they sent *to* you is deliberately not
-              // reflected here — it only shows inside the Message Requests
-              // folder above until you accept it.
               const conversation = conversationByUserId.get(followedUser.id);
               const isPendingIncoming =
                 conversation?.isIncomingRequest ?? false;
@@ -321,8 +280,6 @@ export function FollowingWidget() {
               const preview = lastMessage
                 ? `${lastMessage.isMine ? "You: " : ""}${lastMessage.content}`
                 : "Click to start chatting";
-              // A request you sent that they haven't accepted yet — same
-              // "Pending" tag the /messages page shows for it.
               const isPendingSent =
                 !isPendingIncoming && conversation?.status === "pending";
               const hasUnread =
@@ -333,13 +290,10 @@ export function FollowingWidget() {
                   key={followedUser.id}
                   className="flex items-center justify-between gap-2"
                 >
-                  {/* Clicking the account itself opens the message composer —
-                    the 3-dot menu still has View Profile for navigating
-                    away instead. */}
                   <button
                     type="button"
                     onClick={() =>
-                      openChat({
+                      onOpenChat({
                         id: followedUser.id,
                         name: followedUser.name || "Citizen",
                         imgId: followedUser.imgId,
@@ -399,13 +353,12 @@ export function FollowingWidget() {
                     </div>
                   </button>
 
-                  <AccountOptionsMenu
-                    targetId={followedUser.id}
-                    conversationId={conversation?.id}
-                    isMuted={conversation?.isMuted}
-                    isPinned={conversation?.isPinned}
-                    onChatDeleted={() => closeChat(followedUser.id)}
-                  />
+                  {accountOptionsRender(
+                    followedUser.id,
+                    conversation?.id,
+                    conversation?.isMuted,
+                    conversation?.isPinned,
+                  )}
                 </div>
               );
             })}
@@ -414,10 +367,9 @@ export function FollowingWidget() {
       </div>
 
       {requestsOpen && (
-        <MessageRequestsModal
-          onClose={() => setRequestsOpen(false)}
-          onSelectRequest={handleSelectRequest}
-        />
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          {messageRequestsModalSlot?.(() => setRequestsOpen(false))}
+        </div>
       )}
     </>
   );

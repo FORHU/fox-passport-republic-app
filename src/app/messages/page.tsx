@@ -1,5 +1,5 @@
 import React, { Suspense } from "react";
-import ConversationListClient from "@/features/messages/components/ConversationListClient";
+import ConversationListWrapper from "./ConversationListWrapper";
 import type { Metadata } from "next";
 
 export const dynamic = "force-dynamic";
@@ -18,7 +18,7 @@ export default function MessagesPage() {
         </div>
       }
     >
-      <ConversationListClient />
+      <ConversationListWrapper />
     </Suspense>
   );
 }

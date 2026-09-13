@@ -1,4 +1,3 @@
-/* eslint-disable @next/next/no-img-element */
 "use client";
 
 import React, { useEffect, useMemo, useState } from "react";
@@ -205,7 +204,9 @@ export default function BookingListClient() {
                   book_online
                 </span>
                 <h3 className="text-xl font-bold text-white mb-2">
-                  {tab === "mine" ? "No bookings yet" : "No bookings received yet"}
+                  {tab === "mine"
+                    ? "No bookings yet"
+                    : "No bookings received yet"}
                 </h3>
                 <p className="text-text-muted mb-6">
                   {tab === "mine"

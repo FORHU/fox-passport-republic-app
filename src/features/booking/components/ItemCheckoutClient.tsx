@@ -1,4 +1,3 @@
-/* eslint-disable react-hooks/set-state-in-effect, @next/next/no-img-element */
 "use client";
 
 import React, { useEffect, useState } from "react";
@@ -87,7 +86,7 @@ export default function ItemCheckoutClient() {
         ),
       )
       .finally(() => setLoadingIntent(false));
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  }, []);
 
   const elementsOptions = clientSecret
     ? {

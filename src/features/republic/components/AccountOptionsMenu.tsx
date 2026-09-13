@@ -15,58 +15,38 @@ import {
   Pin,
   PinOff,
 } from "lucide-react";
-import { toast } from "sonner";
-import { useRemoveFollow } from "@/features/follow/api/useFollow";
-import {
-  useDeleteConversation,
-  useSetConversationMuted,
-  useSetConversationPinned,
-} from "@/features/messages/hooks/useMessages";
-import {
-  useBlockStatus,
-  useBlockUser,
-  useUnblockUser,
-} from "@/features/block/api/useBlock";
 import { ReportModal } from "@/shared/components/ReportModal";
 
 interface AccountOptionsMenuProps {
   targetId: string;
-  /** Only present once a thread with this person exists — "Delete Chat"
-   * doesn't show up for a follow you've never messaged. */
   conversationId?: string;
   isMuted?: boolean;
   isPinned?: boolean;
-  /** Fires right after a successful delete, so the caller can also close
-   * that person's chat window if it's currently open. */
-  onChatDeleted?: () => void;
+  isBlocked?: boolean;
+  onUnfollow?: () => void;
+  onBlock?: () => void;
+  onUnblock?: () => void;
+  onToggleMute?: () => void;
+  onTogglePin?: () => void;
+  onDeleteChat?: () => void;
 }
 
-const errorMessage = (e: unknown, fallback: string) =>
-  (e as { response?: { data?: { message?: string } } })?.response?.data
-    ?.message ?? fallback;
-
-// A "more options" menu for an account you already follow — view profile,
-// unfollow, delete chat (only once a thread exists), report, block.
-// Messaging itself isn't here: clicking the row (see FollowingWidget) opens
-// the composer instead, so it doesn't need a duplicate entry point.
 export function AccountOptionsMenu({
   targetId,
   conversationId,
   isMuted,
   isPinned,
-  onChatDeleted,
+  isBlocked = false,
+  onUnfollow,
+  onBlock,
+  onUnblock,
+  onToggleMute,
+  onTogglePin,
+  onDeleteChat,
 }: AccountOptionsMenuProps) {
   const [open, setOpen] = useState(false);
   const [showReport, setShowReport] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
-
-  const { data: blockStatus } = useBlockStatus(targetId);
-  const removeFollow = useRemoveFollow();
-  const blockUser = useBlockUser();
-  const unblockUser = useUnblockUser();
-  const deleteConversation = useDeleteConversation();
-  const setMuted = useSetConversationMuted();
-  const setPinned = useSetConversationPinned();
 
   useEffect(() => {
     if (!open) return;
@@ -79,13 +59,6 @@ export function AccountOptionsMenu({
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [open]);
 
-  const isBlocked = blockStatus?.blockedByMe ?? false;
-  const isBusy =
-    removeFollow.isPending ||
-    blockUser.isPending ||
-    unblockUser.isPending ||
-    deleteConversation.isPending;
-
   const handleReport = () => {
     setOpen(false);
     setShowReport(true);
@@ -93,58 +66,35 @@ export function AccountOptionsMenu({
 
   const handleUnfollow = () => {
     setOpen(false);
-    removeFollow.mutate(targetId, {
-      onError: (e) => toast.error(errorMessage(e, "Failed to unfollow")),
-    });
+    onUnfollow?.();
   };
 
   const handleBlock = () => {
     setOpen(false);
-    blockUser.mutate(targetId, {
-      onError: (e) =>
-        toast.error(errorMessage(e, "Could not block this citizen.")),
-    });
+    onBlock?.();
   };
 
   const handleDeleteChat = () => {
     if (!conversationId) return;
     setOpen(false);
-    deleteConversation.mutate(conversationId, {
-      onSuccess: () => onChatDeleted?.(),
-      onError: (e) => toast.error(errorMessage(e, "Could not delete chat.")),
-    });
+    onDeleteChat?.();
   };
 
   const handleToggleMute = () => {
     if (!conversationId) return;
     setOpen(false);
-    setMuted.mutate(
-      { conversationId, muted: !isMuted },
-      {
-        onError: (e) =>
-          toast.error(errorMessage(e, "Could not update notifications.")),
-      },
-    );
+    onToggleMute?.();
   };
 
   const handleTogglePin = () => {
     if (!conversationId) return;
     setOpen(false);
-    setPinned.mutate(
-      { conversationId, pinned: !isPinned },
-      {
-        onError: (e) =>
-          toast.error(errorMessage(e, "Could not pin this chat.")),
-      },
-    );
+    onTogglePin?.();
   };
 
   const handleUnblock = () => {
     setOpen(false);
-    unblockUser.mutate(targetId, {
-      onError: (e) =>
-        toast.error(errorMessage(e, "Could not unblock this citizen.")),
-    });
+    onUnblock?.();
   };
 
   return (
@@ -152,9 +102,8 @@ export function AccountOptionsMenu({
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
-        disabled={isBusy}
         aria-label="Account options"
-        className="h-8 w-8 flex items-center justify-center rounded-lg text-zinc-400 hover:bg-white/10 hover:text-white transition-colors disabled:opacity-50 cursor-pointer"
+        className="h-8 w-8 flex items-center justify-center rounded-lg text-zinc-400 hover:bg-white/10 hover:text-white transition-colors cursor-pointer"
       >
         <MoreVertical className="w-4 h-4" />
       </button>

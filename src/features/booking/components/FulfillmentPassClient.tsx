@@ -1,11 +1,9 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 "use client";
 
 import React, { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useAuthStore } from "@/shared/auth/useAuthStore";
 import {
   fetchServiceBooking,
   fetchAssetBooking,
@@ -46,7 +44,6 @@ export default function FulfillmentPassClient({
   bookingId,
 }: Props) {
   const router = useRouter();
-  const { user } = useAuthStore();
   const [booking, setBooking] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");

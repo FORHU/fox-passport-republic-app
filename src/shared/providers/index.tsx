@@ -6,7 +6,9 @@ import { AuthStoreProvider } from "./AuthStoreProvider";
 import { SocketProvider } from "./SocketProvider";
 
 export default function Providers({ children }: { children: React.ReactNode }) {
-  const [ready, setReady] = useState(false);
+  const [ready, setReady] = useState(
+    process.env.NEXT_PUBLIC_API_MOCKING !== "enabled",
+  );
 
   useEffect(() => {
     if (process.env.NEXT_PUBLIC_API_MOCKING === "enabled") {
@@ -15,8 +17,6 @@ export default function Providers({ children }: { children: React.ReactNode }) {
           .start({ onUnhandledRequest: "bypass" })
           .then(() => setReady(true));
       });
-    } else {
-      setReady(true);
     }
   }, []);
 

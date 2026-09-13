@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 "use client";
 
 import React from "react";
@@ -54,7 +53,7 @@ export function ListingSidebar({
   unit,
   status,
   city = "",
-  state = "",
+  state: _state = "",
   country = "",
   cancellationPolicyId,
   onCategorySelect,

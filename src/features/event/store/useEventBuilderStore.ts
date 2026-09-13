@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
 import {
@@ -202,7 +201,11 @@ export const useEventBuilderStore = create<EventBuilderState>()(
         showGuide: state.showGuide,
         draftId: state.draftId,
         // Strip File objects — blob URLs survive same-tab navigation, not hard reloads
-        gallery: state.gallery.map(({ file: _file, ...rest }) => rest),
+        gallery: state.gallery.map((item) => {
+          const copy = { ...item };
+          delete copy.file;
+          return copy;
+        }),
       }),
     },
   ),

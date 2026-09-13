@@ -111,9 +111,7 @@ describe("FollowButton optimistic toggle", () => {
     );
 
     renderButton();
-    await waitFor(() =>
-      expect(screen.getByRole("button")).not.toBeDisabled(),
-    );
+    await waitFor(() => expect(screen.getByRole("button")).not.toBeDisabled());
 
     fireEvent.click(screen.getByRole("button"));
     await waitFor(() =>
@@ -121,9 +119,7 @@ describe("FollowButton optimistic toggle", () => {
     );
 
     resolveSend({ status: "accepted" });
-    await waitFor(() =>
-      expect(screen.getByRole("button")).not.toBeDisabled(),
-    );
+    await waitFor(() => expect(screen.getByRole("button")).not.toBeDisabled());
   });
 
   it("unfollows immediately on click without waiting for the response", async () => {

@@ -2,7 +2,7 @@ export const dynamic = "force-dynamic";
 
 import { getVenueById } from "@/shared/lib/server/data";
 import { notFound } from "next/navigation";
-import VenueDetailClient from "@/features/venue/components/VenueDetailClient";
+import VenueDetailPageClient from "./_components/VenueDetailPageClient";
 
 export default async function VenueDetailPage({
   params,
@@ -18,5 +18,5 @@ export default async function VenueDetailPage({
 
   const host = venue.host ?? { name: "Venue Owner", avatar: "", bio: "" };
 
-  return <VenueDetailClient venue={venue} host={host} />;
+  return <VenueDetailPageClient venue={venue} host={host} />;
 }

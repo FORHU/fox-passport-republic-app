@@ -1,4 +1,3 @@
-/* eslint-disable @next/next/no-img-element */
 "use client";
 
 import React, { useEffect, useMemo, useRef, useState } from "react";
@@ -23,12 +22,15 @@ import {
   X,
 } from "lucide-react";
 import { toast } from "sonner";
-import { renderNamedMentions, type MentionableUser } from "@/shared/lib/mentions";
+import {
+  renderNamedMentions,
+  type MentionableUser,
+} from "@/shared/lib/mentions";
 import { useAuthStore } from "@/shared/auth/useAuthStore";
 import { SOCKET_EVENTS, subscribeRealtime } from "@/shared/lib/realtime";
 import { getSocket } from "@/shared/lib/socket";
 import { uploadMessageAttachment, getUserPresence } from "../api/messages";
-import type { Presence } from "../types";
+import type { Presence, Candidate } from "../types";
 import {
   useConversations,
   useMessagesForConversation,
@@ -368,6 +370,7 @@ interface ChatPanelProps {
    * dock at the true screen corner (like Messenger) instead of panels and
    * bubbles fighting over the same lane. */
   minimizedCount: number;
+  followingUsers?: Candidate[];
 }
 
 export default function ChatPanel({
@@ -375,6 +378,7 @@ export default function ChatPanel({
   panelIndex,
   minimizedCount,
   bubbleIndex,
+  followingUsers,
 }: ChatPanelProps) {
   const {
     id: otherUserId,
@@ -615,7 +619,6 @@ export default function ChatPanel({
       markedRef.current = conversationId;
       markReadMutation.mutate(conversationId);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [minimized, conversationId]);
 
   useEffect(() => {
@@ -926,15 +929,20 @@ export default function ChatPanel({
         <ForwardMessageModal
           message={forwardingMessage}
           onClose={() => setForwardingMessage(null)}
+          followingUsers={followingUsers}
         />
       )}
       {groupModalOpen && (
         <NewGroupModal
-          initialParticipant={{
-            id: otherUserId,
-            name: otherUserName,
-            imgId: otherUserImgId ?? null,
-          }}
+          initialParticipant={
+            isGroup
+              ? undefined
+              : {
+                  id: otherUserId,
+                  name: otherUserName,
+                  imgId: otherUserImgId ?? null,
+                }
+          }
           onClose={() => setGroupModalOpen(false)}
           onCreated={(conversation) => {
             setGroupModalOpen(false);
@@ -946,6 +954,7 @@ export default function ChatPanel({
               imgId: conversation.imgId,
             });
           }}
+          followingUsers={followingUsers}
         />
       )}
       {addMemberModalOpen && conversationId && (
@@ -960,6 +969,7 @@ export default function ChatPanel({
               conversation.participants ?? [],
             );
           }}
+          followingUsers={followingUsers}
         />
       )}
       {membersModalOpen && isGroup && currentUserId && (
@@ -1722,28 +1732,30 @@ export default function ChatPanel({
                       <Paperclip className="h-4 w-4" strokeWidth={2} />
                     </button>
                     <div className="relative flex-1">
-                      {mentionQuery !== null && mentionSuggestions.length > 0 && (
-                        <div className="absolute left-0 bottom-full z-20 mb-1 w-56 max-h-48 overflow-y-auto rounded-xl border border-white/10 bg-zinc-950 shadow-2xl py-1">
-                          {mentionSuggestions.map((c) => (
-                            <button
-                              key={c.id}
-                              type="button"
-                              onClick={() => insertMention(c)}
-                              className="w-full flex items-center gap-2 px-3 py-2 text-left hover:bg-white/10 transition-colors"
-                            >
-                              <span className="text-xs font-bold text-white truncate">
-                                {c.name}
-                              </span>
-                            </button>
-                          ))}
-                        </div>
-                      )}
+                      {mentionQuery !== null &&
+                        mentionSuggestions.length > 0 && (
+                          <div className="absolute left-0 bottom-full z-20 mb-1 w-56 max-h-48 overflow-y-auto rounded-xl border border-white/10 bg-zinc-950 shadow-2xl py-1">
+                            {mentionSuggestions.map((c) => (
+                              <button
+                                key={c.id}
+                                type="button"
+                                onClick={() => insertMention(c)}
+                                className="w-full flex items-center gap-2 px-3 py-2 text-left hover:bg-white/10 transition-colors"
+                              >
+                                <span className="text-xs font-bold text-white truncate">
+                                  {c.name}
+                                </span>
+                              </button>
+                            ))}
+                          </div>
+                        )}
                       <input
                         ref={composerInputRef}
                         value={content}
                         onChange={(e) => {
                           const value = e.target.value;
-                          const cursor = e.target.selectionStart ?? value.length;
+                          const cursor =
+                            e.target.selectionStart ?? value.length;
                           setContent(value);
                           emitTyping();
 

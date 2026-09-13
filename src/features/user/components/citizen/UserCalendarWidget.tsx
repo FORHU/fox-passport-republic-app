@@ -156,9 +156,7 @@ export const UserCalendarWidget: React.FC<UserCalendarWidgetProps> = ({
                   {day}
                 </span>
                 <span className="flex items-center gap-0.5 h-1">
-                  {mine && (
-                    <span className="h-1 w-1 rounded-full bg-accent" />
-                  )}
+                  {mine && <span className="h-1 w-1 rounded-full bg-accent" />}
                   {received && (
                     <span className="h-1 w-1 rounded-full bg-purple-400" />
                   )}
@@ -189,9 +187,7 @@ export const UserCalendarWidget: React.FC<UserCalendarWidgetProps> = ({
 
         <div className="mt-3 flex-1 min-h-[64px]">
           {isLoading ? (
-            <p className="text-xs text-text-muted text-center py-4">
-              Loading…
-            </p>
+            <p className="text-xs text-text-muted text-center py-4">Loading…</p>
           ) : selectedDay !== null && selectedItems.length > 0 ? (
             <div className="space-y-2">
               {selectedItems.map((item) => (

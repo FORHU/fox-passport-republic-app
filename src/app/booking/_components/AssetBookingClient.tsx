@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unused-vars, @next/next/no-img-element */
 "use client";
 
 import React, { useState, useEffect, useMemo } from "react";
@@ -43,7 +42,6 @@ export default function AssetBookingClient({ assetId }: { assetId: string }) {
   );
 
   // Form state
-  const today = new Date().toISOString().split("T")[0];
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
   const [quantity, setQuantity] = useState(1);

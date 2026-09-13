@@ -31,9 +31,10 @@ export function PhotoTagEditor({
   onClose,
 }: PhotoTagEditorProps) {
   const imgRef = useRef<HTMLImageElement>(null);
-  const [pendingSpot, setPendingSpot] = useState<{ x: number; y: number } | null>(
-    null,
-  );
+  const [pendingSpot, setPendingSpot] = useState<{
+    x: number;
+    y: number;
+  } | null>(null);
   const [query, setQuery] = useState("");
   const [candidates, setCandidates] = useState<MentionCandidate[]>([]);
   const [searching, setSearching] = useState(false);
@@ -68,7 +69,10 @@ export function PhotoTagEditor({
     const rect = e.currentTarget.getBoundingClientRect();
     const x = ((e.clientX - rect.left) / rect.width) * 100;
     const y = ((e.clientY - rect.top) / rect.height) * 100;
-    setPendingSpot({ x: Math.min(99, Math.max(1, x)), y: Math.min(99, Math.max(1, y)) });
+    setPendingSpot({
+      x: Math.min(99, Math.max(1, x)),
+      y: Math.min(99, Math.max(1, y)),
+    });
     setQuery("");
     setCandidates([]);
   };
@@ -126,7 +130,6 @@ export function PhotoTagEditor({
           onClick={handlePickSpot}
           className="relative w-full max-h-[60vh] overflow-hidden bg-zinc-900 cursor-crosshair select-none"
         >
-          {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             ref={imgRef}
             src={mediaUrl}
@@ -192,7 +195,6 @@ export function PhotoTagEditor({
                   >
                     <div className="h-6 w-6 rounded-full bg-zinc-800 border border-zinc-700 flex items-center justify-center text-[10px] font-bold text-zinc-400 shrink-0 overflow-hidden">
                       {c.imgId ? (
-                        // eslint-disable-next-line @next/next/no-img-element
                         <img
                           src={c.imgId}
                           alt=""

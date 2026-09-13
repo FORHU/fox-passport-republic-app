@@ -14,14 +14,13 @@ here.
 |---|---|
 | `TOMORROW.md` (this file) | **What to do next.** Nothing else. |
 | `VERIFY.md` | The browser runbook. **Fully run 12 Sep** — all 16 checks driven at least once, all passing except B1's caveat (see below) and B3 (indirect coverage only). |
-| `RBAC-PLAN.md` | The authorization migration — phases, invariants, prior art. |
-| `RBAC.md` / `ARCHITECTURE.md` | Target state, and the system as built. |
+| `RBAC.md` | Target state, migration history (invariants, prior art), and template-boundary conformance. `RBAC-PLAN.md` was folded in here 13 Sep now that the migration is done. |
+| `ARCHITECTURE.md` | The system as built — now also carries the durable parts of `app-architecture.md` (template-gap inventory, the two "don't fix these" call-outs), folded in 13 Sep once Feature Isolation hit 0 violations and the rest of that doc was just stale violation-tracking. |
 | `api-audit.md` | The record: API, data-fetching and auth findings. 8 open (re-audited 12 Sep — §3.4c closed, §4.12 partially closed). |
 | `responsive-plan.md` | Responsive and touch backlog. 21 open. |
 | `roles-and-spaces.md` | The Foxer role model and the page split. 12 open (3 resolved — `useRoleAccess` blocker closed, `LockedSection` removed, hint added). |
-| `app-architecture.md` | Boundary violations + template gaps. 26 open (re-measured 12 Sep — 20 in `republic`, 6 in `user`). |
-| `FoxPassportSpatialIntelligence.md` | The spatial vision and target state. |
-| `SPATIAL-PLAN.md` | The spatial counter-plan: what already exists, and the order to build in. |
+| `CENTRAL-PAYMENT-FRONTEND-PLAN.md` | Central Payment frontend. Built and reviewed 13 Sep — one panel deliberately not built, see the doc. |
+| `SPATIAL-PLAN.md` | The spatial vision and counter-plan: what already exists, and the order to build in. `FoxPassportSpatialIntelligence.md`'s still-valid principles were folded in here 13 Sep; its wrong stack/sequencing assumptions were not. |
 
 ---
 
@@ -85,13 +84,43 @@ feed their own separate, properly-wired panels
 confirmed working. The generic `Booking.dispute()` path has no caller in the
 app today, so nothing currently relies on it working.
 
-- [ ] **Decide: delete `PATCH /bookings/:id/dispute` and `Booking.status =
-      'disputed'` if genuinely unused, or build the missing admin view.**
-      Leaving unreachable-but-callable API surface around is exactly the kind
-      of thing that gets wired to a button later by someone who has no reason
-      to suspect it doesn't work.
+- [x] **Decided and done, 13 Sep: deleted.** Confirmed zero UI callers (the
+      only "dispute" action in the app always hits the type-scoped
+      `/asset/bookings/:id/dispute` / `/service/bookings/:id/dispute`, never
+      this generic one) and zero admin-side usage. Route, controller, service
+      and repository method all removed, along with `"disputed"` as an
+      allowed value on the generic `PATCH /:id/status` endpoint — a second,
+      equally invisible door onto the same dead state. `fox-passport-republic-api`
+      commit `58298fe`.
 
 ---
+
+## 0·0ac. Central Payment frontend landed and reviewed — 13 Sep
+
+The api's Central Payment backend (Invoice/Checkout/Payment/Payout/Voucher/
+PricingEngine, plus bidding and partnership) had zero frontend integration as
+of `api-audit.md`'s last pass — see `CENTRAL-PAYMENT-FRONTEND-PLAN.md` for
+the full plan. Both the backend HTTP layer (`fox-passport-republic-api`
+commit `09e893e`) and this app's integration have now landed and been
+reviewed; that plan document carries the full "Built and reviewed" record.
+
+**The one bug worth knowing about even without opening that doc:** the
+plan's own testing checklist named "pay successfully → browser redirects →
+webhook hasn't landed yet → success page must show confirming, not a false
+state" as the check most likely to be skipped — and it was, and it did
+produce a real bug. `useInvoiceStatusPoll` and `CentralPaymentStatusClient`
+both polled/rendered on `status === "processing"`, a value **nothing in the
+API ever sets** — the real pre-webhook state is `"pending"`. A citizen
+landing on the success page right after paying would see a raw
+`Status: pending` line and the page would never poll again. Fixed; see the
+plan doc for the rest (a viewer-scoping gap on the sponsorship "Pay Now"
+button, and `refunded`/`partially_refunded` not being handled as terminal at
+all).
+
+**Deliberately not done:** `EventPaymentPanel.tsx` shows pricing but not a
+breakdown of which venue/gear/service the citizen is actually paying for —
+the plan called this "the bigger of the two frontend pieces" and said to
+build it before the Pay button. Still open.
 
 ## 0·0a. The booking page could not hear the socket — fixed 10 Sep
 
@@ -169,8 +198,7 @@ pnpm exec vitest run               # expect: 313 passing, 27 files, 0 errors
 # app
 pnpm install
 pnpm type-check && pnpm test       # expect: clean, 144 passing
-node tools/validate-architecture.mjs   # expect: 26 violations, all one rule
-                                       # (it exits non-zero; that is normal here)
+node tools/validate-architecture.mjs   # expect: clean, 0 violations
 ```
 
 The API count was 198 here until 9 Sep, and the command carried two
@@ -183,15 +211,12 @@ offers to reset the database when it sees drift — it wiped 148 users and
 everything else on 4 Sep. It is harmless against a genuinely empty database, but
 the explicit commands above never prompt, so use them and keep the habit.
 
-**26 is the expected number in the app, not a regression.** Measured 12 Sep; the
-baseline was 150, then 72, then 20, and every one of the 26 is the Feature Isolation
-Boundary rule - the shared-kernel rule is at zero and stays there. The command
-exits non-zero at 26, so a red run is the normal state here and only the count
-carries information. If it goes *up*, something regressed.
-
-**20 of the 26 violations belong to `republic`**, which composes eight other
-features into the social feed/messenger experience. The other 6 belong to `user`
-(reaching `follow` ×3 and `block` ×3). The counts in `app-architecture.md` are older than this line.
+**The count is 0, as of `e507f9a` (13 Sep).** Baseline was 150, then 72, then 20,
+then 26 (measured 12 Sep — the 20 in `republic` and 6 in `user`/`follow`/`block`
+were all Feature Isolation Boundary violations; the shared-kernel rule was
+already at zero). `e507f9a` finished the follow/block/messages boundary
+refactor and closed out the remainder. The command now exits zero and stays
+that way — if it goes non-zero again, something regressed.
 
 ### Read first, in this order
 

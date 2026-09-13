@@ -1,4 +1,3 @@
-/* eslint-disable @next/next/no-img-element */
 "use client";
 
 import React from "react";
@@ -117,9 +116,9 @@ export const PassportSidebarContent: React.FC<PassportSidebarContentProps> = ({
               p === "eventFoxer"
                 ? "Event Foxer"
                 : p === "gearFoxer"
-                  ? "Gear Foxer"
+                  ? "Equipment Foxer"
                   : p === "serviceFoxer"
-                    ? "Service Foxer"
+                    ? "Talent Foxer"
                     : p === "venueFoxer"
                       ? "Venue Foxer"
                       : p === "investor"

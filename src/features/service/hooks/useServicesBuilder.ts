@@ -1,4 +1,3 @@
-/* eslint-disable react-hooks/exhaustive-deps, @typescript-eslint/no-unused-vars */
 "use client";
 
 import { useCallback, useMemo, useRef, useState, useEffect } from "react";
@@ -24,9 +23,9 @@ export function useServicesBuilder() {
   const store = useListingBuilderStore();
   const [error, setError] = useState<string | null>(null);
   const [isNotification, setIsNotification] = useState(false);
-  const [categoryMap, setCategoryMap] = useState<{ [key: string]: string }>({});
-  const { uploadFile, isUploading } = useFileUpload();
+  const { uploadFile } = useFileUpload();
   const savedDraftId = useRef<string | null>(null);
+  const [categoryMap, setCategoryMap] = useState<Record<string, string>>({});
 
   // Ensure the shared store is initialized for service mode
   useEffect(() => {
@@ -223,7 +222,6 @@ export function useServicesBuilder() {
       if (!userId) {
         throw new Error("User not authenticated");
       }
-      const stringHostId = String(userId);
 
       if (!store.image) {
         throw new Error("An image is required for publishing");

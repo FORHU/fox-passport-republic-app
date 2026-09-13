@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 "use client";
 
 import { useLandingPage } from "@/features/landing/hooks/useLandingPage";
@@ -18,7 +17,7 @@ interface FoxerLandingPageProps {
 }
 
 const FoxerLandingPage: React.FC<FoxerLandingPageProps> = ({
-  featuredTemplates = [],
+  featuredTemplates: _featuredTemplates = [],
 }) => {
   const { displayedCategories, openAuthModal } = useLandingPage();
 

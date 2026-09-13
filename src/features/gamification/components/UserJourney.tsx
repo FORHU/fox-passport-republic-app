@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 "use client";
 
 import { useRouter } from "next/navigation";
@@ -7,7 +6,6 @@ import { initializePathProgress } from "@/features/gamification/lib/gamification
 
 interface UserJourneyProps {
   userName?: string;
-  navigateToPassport: () => void;
   className?: string;
 }
 
@@ -19,7 +17,6 @@ const MILESTONES = [
 
 export const UserJourney: React.FC<UserJourneyProps> = ({
   userName,
-  navigateToPassport,
   className = "",
 }) => {
   const router = useRouter();

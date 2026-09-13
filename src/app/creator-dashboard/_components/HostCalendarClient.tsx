@@ -240,16 +240,16 @@ export default function HostCalendarClient() {
                           </span>
                           {evs.length > 0 && (
                             <div className="flex items-center gap-0.5 mt-1">
-                              {Array.from(
-                                new Set(evs.map((e) => e.type)),
-                              ).map((type) => (
-                                <span
-                                  key={type}
-                                  className="material-symbols-outlined text-[11px] text-zinc-500"
-                                >
-                                  {getIcon(type)}
-                                </span>
-                              ))}
+                              {Array.from(new Set(evs.map((e) => e.type))).map(
+                                (type) => (
+                                  <span
+                                    key={type}
+                                    className="material-symbols-outlined text-[11px] text-zinc-500"
+                                  >
+                                    {getIcon(type)}
+                                  </span>
+                                ),
+                              )}
                             </div>
                           )}
                         </button>

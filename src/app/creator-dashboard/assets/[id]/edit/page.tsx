@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 "use client";
 
 import React, { Suspense } from "react";
@@ -45,7 +44,6 @@ function HostAssetEditPageContent() {
 
     setTitle,
     setDescription,
-    setCategory,
     setCustomCategory,
     setPrice,
     setUnit,

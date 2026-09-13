@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 "use client";
 
 import React from "react";
@@ -20,8 +19,8 @@ function getRoleLabel(systemRole: string, roleTypes: string[]): string {
 
   const active: string[] = [];
   if (roleTypes.includes("eventFoxer")) active.push("Event Foxer");
-  if (roleTypes.includes("gearFoxer")) active.push("Gear Foxer");
-  if (roleTypes.includes("serviceFoxer")) active.push("Service Foxer");
+  if (roleTypes.includes("gearFoxer")) active.push("Equipment Foxer");
+  if (roleTypes.includes("serviceFoxer")) active.push("Talent Foxer");
 
   return active.length > 0 ? active.join(" · ") : "Citizen";
 }
@@ -36,9 +35,7 @@ export const UserHeader: React.FC<UserHeaderProps> = ({
     ? getRoleLabel(storeUser.systemRole ?? "", storeUser.roleType ?? [])
     : "Citizen";
 
-  const avatarUrl = storeUser?.imgId ?? null;
   const displayName = storeUser?.name || userName || "User";
-  const initial = displayName.charAt(0).toUpperCase();
 
   return (
     <header className="fixed top-6 left-0 right-0 z-50 transition-all duration-300">

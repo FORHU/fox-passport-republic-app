@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 "use client";
 
 import React, { useState } from "react";
@@ -8,7 +7,6 @@ import CircularProgress from "@/features/gamification/components/CircularProgres
 import { BadgeGrid } from "@/features/gamification/components/BadgeCard";
 import { PassportGrid } from "@/features/gamification/components/PassportStamp";
 import {
-  UserPath,
   XP_REWARDS,
 } from "@/features/gamification/types/gamification";
 import {
@@ -29,7 +27,6 @@ export const ProgressDashboard: React.FC<ProgressDashboardProps> = ({
   showHeader = true,
 }) => {
   const router = useRouter();
-  const [_selectedPath, setSelectedPath] = useState<UserPath | null>(null);
   const [selectedBadge, setSelectedBadge] = useState<Badge | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
@@ -130,7 +127,7 @@ export const ProgressDashboard: React.FC<ProgressDashboardProps> = ({
           {paths.map((path) => (
             <div
               key={path.path}
-              onClick={() => setSelectedPath(path.path)}
+              onClick={() => router.push("/user/passport")}
               className="glass-panel rounded-[3rem] p-10 flex flex-col items-center group hover:-translate-y-2 transition-all duration-500 cursor-pointer"
             >
               <CircularProgress

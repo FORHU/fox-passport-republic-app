@@ -657,7 +657,6 @@ export function VenuePolygonMapPicker({
     };
     // Map is built once; the `boundary` prop only seeds the initial ref
     // above, further external boundary changes aren't expected mid-edit.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Reference layer: every other live venue's shape, fetched once so the

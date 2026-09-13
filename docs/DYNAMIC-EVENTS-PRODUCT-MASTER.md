@@ -112,7 +112,7 @@ Social     ├─ Birthday, Meetup
 
 New categories should be configurable without requiring application code changes.
 
-> **Open reconciliation item (carried from `DYNAMIC-EVENTS-PLAN.md`):** this example taxonomy doesn't show where the current five `EventCategory` enum values (`corporate`, `birthday`, `wedding`, `social`, `other`) land as subcategories. Needs an explicit mapping before the Phase 1 migration runs, so nothing already in the database is orphaned.
+> **Open reconciliation item (carried from `DYNAMIC-EVENTS-PLAN.md`):** this example taxonomy doesn't show where the current five `EventCategory` enum values (`corporate`, `birthday`, `wedding`, `social`, `other`) land as subcategories. Needs an explicit mapping before the Phase 2 (Taxonomy) migration runs, so nothing already in the database is orphaned.
 
 ## 12. Tags
 
@@ -175,13 +175,16 @@ Enables conferences, seminars, workshops, panels, training events.
 
 ## 20. Product Roadmap
 
+**Resequenced 13 Sep** to MVP-first — see `docs/adr/0001-dynamic-events-architecture.md`'s "Decided 13 Sep" section for the reasoning. Phase 1 used to be Taxonomy; it is now Public Event MVP, and every phase after it shifted down one slot. Task content is unchanged from before this resequencing — only the order changed.
+
 - **Phase 0 — Architecture Decision:** `EventTemplate` remains reusable/public definition; `Event` remains existing occurrence; public registration is additive.
-- **Phase 1 — Taxonomy:** Categories, subcategories, tags, search, filtering.
-- **Phase 2 — Event Configuration:** Format, visibility, capability framework, capability dependencies.
-- **Phase 3 — Public Participation:** Public event occurrence, registration, participants, capacity, waitlist, check-in.
-- **Phase 4 — Ticketing:** Ticket tiers, inventory, purchase, payment, ticket codes, cancellation, refund rules.
-- **Phase 5 — Sessions and Speakers:** Sessions, speakers, scheduling, public event schedule.
-- **Phase 6 — Advanced Capabilities (deferred until demand justifies them):** Teams, sponsors, vendors, livestream, certificates, advanced registration forms, advanced analytics.
+- **Phase 1 — Public Event MVP:** A minimal `EventRegistration` capability (join/leave, capacity check against `EventTemplate.maxAttendees`, check-in reuse) — no taxonomy, no capability toggles, no ticketing yet. Proves a stranger can find and join a public event before any supporting infrastructure is built. Full technical detail in `DYNAMIC-EVENTS-PLAN.md` §4 Phase 1.
+- **Phase 2 — Taxonomy:** Categories, subcategories, tags, search, filtering.
+- **Phase 3 — Event Configuration:** Format, visibility, capability framework, capability dependencies. Formalizes Phase 1's hardcoded public/registration behavior behind explicit per-template toggles — retrofitting what was proven ad hoc, not building it from scratch.
+- **Phase 4 — Public Participation:** Extends the Phase 1 MVP's registration model with capacity, waitlist, and cancellation handling now that Phase 3 has given it a formal capability to hang off — not a separate, from-scratch domain.
+- **Phase 5 — Ticketing:** Ticket tiers, inventory, purchase, payment, ticket codes, cancellation, refund rules.
+- **Phase 6 — Sessions and Speakers:** Sessions, speakers, scheduling, public event schedule.
+- **Phase 7 — Advanced Capabilities (deferred until demand justifies them):** Teams, sponsors, vendors, livestream, certificates, advanced registration forms, advanced analytics.
 
 ## 21. Product Prioritization Framework
 

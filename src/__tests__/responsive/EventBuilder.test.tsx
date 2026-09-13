@@ -1,4 +1,3 @@
-/* eslint-disable @next/next/no-img-element */
 import { describe, it, expect, vi } from "vitest";
 import { render } from "@testing-library/react";
 import { ResourcePalette } from "@/features/event/components/event-builder/ResourcePalette";

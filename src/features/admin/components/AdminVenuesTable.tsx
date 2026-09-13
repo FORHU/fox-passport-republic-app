@@ -1,7 +1,6 @@
-/* eslint-disable @typescript-eslint/no-unused-vars, @next/next/no-img-element */
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import api from "@/shared/lib/axios";
 import { toast } from "sonner";
@@ -43,7 +42,7 @@ const ALL_STATUSES = [
 ];
 
 const MIN_REJECTION_REASON_LENGTH = 20;
-const PAGE_SIZE = 5;
+const PAGE_SIZE = 10;
 
 function statusColor(status: string) {
   return (
@@ -111,7 +110,6 @@ export const AdminVenuesTable: React.FC<VenueTableProps> = ({
   const [removedIds, setRemovedIds] = useState<Set<string>>(new Set());
   const visibleVenues = venues.filter((v) => !removedIds.has(v.id));
 
-  const PAGE_SIZE = 5;
   const [currentPage, setCurrentPage] = useState(1);
   const totalPages = Math.max(1, Math.ceil(visibleVenues.length / PAGE_SIZE));
   const safePage = Math.min(currentPage, totalPages);

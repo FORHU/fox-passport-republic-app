@@ -1,4 +1,3 @@
-/* eslint-disable @next/next/no-img-element */
 import { Suspense } from "react";
 
 // Skip static generation for this page - it fetches dynamic data

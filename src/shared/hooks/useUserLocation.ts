@@ -131,7 +131,7 @@ export function useUserLocation(): UserLocationState {
     } else {
       setIsLoading(false);
     }
-  }, [reverseGeocode, user?.country, user?.city]);
+  }, [reverseGeocode, user]);
 
   useEffect(() => {
     detectLocation();

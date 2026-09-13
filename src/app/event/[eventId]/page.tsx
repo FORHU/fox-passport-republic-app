@@ -28,10 +28,7 @@ export async function generateMetadata({
     .map((img: any) => img.url)
     .filter(Boolean);
 
-  const ogImages =
-    images.length > 0
-      ? images
-      : ["/foxonlylogo.png"];
+  const ogImages = images.length > 0 ? images : ["/foxonlylogo.png"];
 
   return {
     title,

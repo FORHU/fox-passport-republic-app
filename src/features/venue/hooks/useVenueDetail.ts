@@ -1,4 +1,3 @@
-/* eslint-disable react-hooks/exhaustive-deps, @typescript-eslint/no-unused-vars */
 "use client";
 
 import { useCallback, useEffect, useMemo } from "react";
@@ -69,7 +68,6 @@ export function useExperienceBuilder(
   foxers: LiveFoxer[] = [],
   itemsByCategory: Record<string, LiveService[]> = {},
 ) {
-  const router = useRouter();
   const store = useExperienceBuilderStore();
 
   // Prevent background scroll when open

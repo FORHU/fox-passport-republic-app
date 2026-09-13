@@ -1,4 +1,3 @@
-/* eslint-disable react-hooks/purity, @next/next/no-img-element */
 "use client";
 
 import React, { useState } from "react";
@@ -72,11 +71,15 @@ export default function BookingDetailClient({
   });
 
   const err = queryError as
-    | { response?: { status?: number; data?: { message?: string } }; message?: string }
+    | {
+        response?: { status?: number; data?: { message?: string } };
+        message?: string;
+      }
     | undefined;
   // A 404 is not a failure to load, it is an answer - keep the two apart, as
   // the effect version did.
-  const notFound = (isError && err?.response?.status === 404) || (!isPending && !booking);
+  const notFound =
+    (isError && err?.response?.status === 404) || (!isPending && !booking);
   const error =
     isError && !notFound
       ? (err?.response?.data?.message ??
@@ -84,6 +87,8 @@ export default function BookingDetailClient({
         "Failed to load booking.")
       : "";
   const loading = isPending;
+
+  const [nowMs] = useState(() => Date.now());
 
   if (loading) {
     return (
@@ -150,7 +155,7 @@ export default function BookingDetailClient({
   const isOwner = !!user?.id && user.id === booking.userId;
   const otherParty = isOwner ? booking.event?.host : booking.user;
   const hasStarted = booking.startAt
-    ? new Date(booking.startAt).getTime() <= Date.now()
+    ? new Date(booking.startAt).getTime() <= nowMs
     : false;
   const canCancel = isOwner && isActiveStatus && !hasStarted;
 

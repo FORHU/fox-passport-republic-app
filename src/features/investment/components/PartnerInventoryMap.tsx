@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useRef, useState, useCallback } from "react";
+import React, { useEffect, useLayoutEffect, useRef, useState, useCallback } from "react";
 import { useUserLocation } from "@/shared/hooks/useUserLocation";
 import {
   PartnerInvestment,
@@ -106,16 +106,20 @@ export default function PartnerInventoryMap({
   // clicks entirely (confirmed while testing this - even a plain, no-drag
   // click stopped selecting a category). Plain window-level mousemove/
   // mouseup listeners get the same drag tracking without stealing clicks.
-  const dragStateRef = useRef<{ startX: number; startScrollLeft: number } | null>(
-    null,
-  );
+  const dragStateRef = useRef<{
+    startX: number;
+    startScrollLeft: number;
+  } | null>(null);
   const didDragRef = useRef(false);
   const [isDraggingCategories, setIsDraggingCategories] = useState(false);
 
   const handleCategoryMouseDown = (e: React.MouseEvent) => {
     const el = categoryScrollRef.current;
     if (!el) return;
-    dragStateRef.current = { startX: e.clientX, startScrollLeft: el.scrollLeft };
+    dragStateRef.current = {
+      startX: e.clientX,
+      startScrollLeft: el.scrollLeft,
+    };
     didDragRef.current = false;
     setIsDraggingCategories(true);
   };
@@ -189,7 +193,9 @@ export default function PartnerInventoryMap({
   }, [activeCategory]);
 
   const investmentsRef = useRef(investments);
-  investmentsRef.current = investments;
+  useLayoutEffect(() => {
+    investmentsRef.current = investments;
+  });
 
   // Update pins when data changes
   const renderPins = useCallback(
@@ -240,7 +246,9 @@ export default function PartnerInventoryMap({
   );
 
   const renderPinsRef = useRef(renderPins);
-  renderPinsRef.current = renderPins;
+  useLayoutEffect(() => {
+    renderPinsRef.current = renderPins;
+  });
 
   // Mount Mapbox
   useEffect(() => {
@@ -440,53 +448,57 @@ export default function PartnerInventoryMap({
             isDraggingCategories ? "cursor-grabbing" : "cursor-grab"
           }`}
         >
-        {[
-          { id: "all", label: "All Equipment Supplies", icon: "widgets" },
-          { id: "furniture_seating", label: "Chairs & Seating", icon: "chair" },
-          {
-            id: "tables_staging",
-            label: "Tables & Staging",
-            icon: "table_restaurant",
-          },
-          { id: "audio_visual", label: "Audio & AV", icon: "speaker" },
-          { id: "lighting_rigging", label: "Lighting", icon: "light" },
-          { id: "power_climate", label: "Power & Gen", icon: "bolt" },
-        ].map((cat) => (
+          {[
+            { id: "all", label: "All Equipment Supplies", icon: "widgets" },
+            {
+              id: "furniture_seating",
+              label: "Chairs & Seating",
+              icon: "chair",
+            },
+            {
+              id: "tables_staging",
+              label: "Tables & Staging",
+              icon: "table_restaurant",
+            },
+            { id: "audio_visual", label: "Audio & AV", icon: "speaker" },
+            { id: "lighting_rigging", label: "Lighting", icon: "light" },
+            { id: "power_climate", label: "Power & Gen", icon: "bolt" },
+          ].map((cat) => (
+            <button
+              key={cat.id}
+              onClick={() => setActiveCategory(cat.id)}
+              className={`px-3 py-2 rounded-xl flex items-center gap-1.5 shrink-0 transition-all border ${
+                activeCategory === cat.id
+                  ? "bg-amber-400 text-black border-amber-300 shadow-md"
+                  : "bg-zinc-950/70 border-zinc-800 text-zinc-400 hover:text-white hover:border-zinc-700"
+              }`}
+            >
+              <span className="material-symbols-outlined text-[16px]">
+                {cat.icon}
+              </span>
+              <span>{cat.label}</span>
+            </button>
+          ))}
+
+          {/* Coming Soon Modality: Financial Capital */}
           <button
-            key={cat.id}
-            onClick={() => setActiveCategory(cat.id)}
-            className={`px-3 py-2 rounded-xl flex items-center gap-1.5 shrink-0 transition-all border ${
-              activeCategory === cat.id
-                ? "bg-amber-400 text-black border-amber-300 shadow-md"
-                : "bg-zinc-950/70 border-zinc-800 text-zinc-400 hover:text-white hover:border-zinc-700"
-            }`}
+            type="button"
+            onClick={() => {
+              toast.info(
+                "Financial Capital & Venue Equity investments are coming soon! Physical equipment & inventory hubs are currently live on the map.",
+                { duration: 4000 },
+              );
+            }}
+            className="px-3 py-2 rounded-xl flex items-center gap-1.5 shrink-0 transition-all border bg-zinc-950/40 border-amber-500/20 text-zinc-500 hover:text-amber-300 hover:border-amber-500/40 cursor-pointer"
           >
             <span className="material-symbols-outlined text-[16px]">
-              {cat.icon}
+              payments
             </span>
-            <span>{cat.label}</span>
+            <span>Financial Capital</span>
+            <span className="px-1.5 py-0.5 rounded text-[9px] font-black uppercase tracking-wider bg-amber-500/20 text-amber-400 border border-amber-500/30">
+              Coming Soon
+            </span>
           </button>
-        ))}
-
-        {/* Coming Soon Modality: Financial Capital */}
-        <button
-          type="button"
-          onClick={() => {
-            toast.info(
-              "Financial Capital & Venue Equity investments are coming soon! Physical equipment & inventory hubs are currently live on the map.",
-              { duration: 4000 },
-            );
-          }}
-          className="px-3 py-2 rounded-xl flex items-center gap-1.5 shrink-0 transition-all border bg-zinc-950/40 border-amber-500/20 text-zinc-500 hover:text-amber-300 hover:border-amber-500/40 cursor-pointer"
-        >
-          <span className="material-symbols-outlined text-[16px]">
-            payments
-          </span>
-          <span>Financial Capital</span>
-          <span className="px-1.5 py-0.5 rounded text-[9px] font-black uppercase tracking-wider bg-amber-500/20 text-amber-400 border border-amber-500/30">
-            Coming Soon
-          </span>
-        </button>
         </div>
       </div>
 

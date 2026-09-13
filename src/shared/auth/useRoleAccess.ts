@@ -19,7 +19,7 @@ export interface RoleAccess {
  * from the server-issued `permissions` list, never from role names.
  *
  * This used to read `roleType` and `systemRole` directly, which got three
- * things wrong (roles-and-spaces.md §4): a Gear Foxer and a Service Foxer
+ * things wrong (roles-and-spaces.md §4): a Equipment Foxer and a Talent Foxer
  * were cross-granted each other's UI through a shared `isFoxer` flag, an
  * admin saw every provider section unlocked even though the API withholds
  * `venue:manage` / `asset:manage` / `service:manage` / `template:manage` from

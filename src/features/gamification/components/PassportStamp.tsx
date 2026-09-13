@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 "use client";
 
 import React from "react";
@@ -47,10 +46,6 @@ function shortLocation(loc: string) {
   return loc.split(",")[0].toUpperCase();
 }
 
-// Extract year from date
-function stampYear(date: Date) {
-  return new Date(date).getFullYear();
-}
 
 // Deterministic rotation — varies per stamp so the grid looks natural
 const ROTATIONS = [-3, 2, -1.5, 3, -2, 1, -3.5, 2.5, -1];

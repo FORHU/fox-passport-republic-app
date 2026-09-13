@@ -1,7 +1,6 @@
-/* eslint-disable @typescript-eslint/no-unused-vars, react-hooks/exhaustive-deps */
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { useAuthStore } from "@/shared/auth/useAuthStore";
@@ -41,18 +40,7 @@ function normalizeLower(value: unknown) {
     .replace(/\s+/g, " ");
 }
 
-function normalizeEventStatusToBackend(value: unknown): string {
-  const raw = normalizeLower(value);
 
-  // Backend EventStatus enum (prisma/schema.prisma): draft | pending | ongoing | completed | cancelled
-  if (!raw) return "draft";
-  if (raw.includes("draft")) return "draft";
-  if (raw.includes("pend")) return "pending";
-  if (raw.includes("ongoing")) return "ongoing";
-  if (raw.includes("cancel")) return "cancelled";
-  if (raw.includes("complete")) return "completed";
-  return "draft";
-}
 
 function mapEventTypeToCategory(eventType: unknown): string {
   const t = normalizeLower(eventType);
@@ -190,8 +178,9 @@ export function useHostEventEdit(eventId: string) {
 
   const [isPrefilling, setIsPrefilling] = useState(true);
   const [prefillError, setPrefillError] = useState<string | null>(null);
-  const [existingEndDatetime, setExistingEndDatetime] = useState<unknown>(null);
   const [activeEventId, setActiveEventId] = useState<string | null>(null);
+  const existingVenueIdRef = useRef<string | null>(null);
+  const existingEndDatetimeRef = useRef<string | null>(null);
 
   const backHref = "/creator-dashboard/events";
 
@@ -253,7 +242,7 @@ export function useHostEventEdit(eventId: string) {
           VENUE_ICONS.includes(i.icon),
         );
         const venueId =
-          venueItem?.id ?? (builder as any).existingVenueId ?? null;
+          venueItem?.id ?? existingVenueIdRef.current ?? null;
         if (venueId) {
           try {
             await api.post(`/event-templates/${eventId}/venues`, {
@@ -333,10 +322,9 @@ export function useHostEventEdit(eventId: string) {
         if (cancelled) return;
 
         // Keep originals for update payload consistency.
-        setExistingEndDatetime(
-          found?.endDatetime ?? found?.end_datetime ?? null,
-        );
-        (builder as { existingVenueId?: string | null }).existingVenueId =
+        existingEndDatetimeRef.current =
+          found?.endDatetime ?? found?.end_datetime ?? null;
+        existingVenueIdRef.current =
           found?.venueId ??
           (found?.venue as Record<string, unknown>)?.id ??
           null;

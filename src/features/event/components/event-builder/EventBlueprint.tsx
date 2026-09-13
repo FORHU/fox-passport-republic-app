@@ -1,8 +1,7 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 "use client";
 
 import React from "react";
-import { ResourceItem } from "@/features/event/data/eventBuilderData";
+import {} from "@/features/event/data/eventBuilderData";
 
 interface EventBlueprintProps {
   targetMargin: number;

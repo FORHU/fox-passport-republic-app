@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unused-vars, @next/next/no-img-element */
 "use client";
 
 import React, { useEffect, useState } from "react";
@@ -47,12 +46,12 @@ const ROLE_TYPE_STYLE: Record<
     icon: "storefront",
   },
   gearFoxer: {
-    label: "Gear Foxer",
+    label: "Equipment Foxer",
     color: "bg-purple-500/10 text-purple-400 border-purple-500/20",
     icon: "inventory_2",
   },
   serviceFoxer: {
-    label: "Service Foxer",
+    label: "Talent Foxer",
     color: "bg-orange-500/10 text-orange-400 border-orange-500/20",
     icon: "build",
   },
@@ -69,10 +68,8 @@ const ROLE_TYPE_STYLE: Record<
 };
 
 function RoleBadge({
-  role,
   style,
 }: {
-  role: string;
   style: { label: string; color: string; icon: string };
 }) {
   return (
@@ -242,7 +239,7 @@ export const AdminCitizenTable: React.FC<CitizenTableProps> = ({
 
                       {/* System role */}
                       <td className="py-3 px-5">
-                        <RoleBadge role={citizen.systemRole} style={sysStyle} />
+                        <RoleBadge style={sysStyle} />
                       </td>
 
                       {/* Platform roles (roleType[]) */}
@@ -254,7 +251,7 @@ export const AdminCitizenTable: React.FC<CitizenTableProps> = ({
                             roleTypes.map((rt) => {
                               const s = ROLE_TYPE_STYLE[rt];
                               return s ? (
-                                <RoleBadge key={rt} role={rt} style={s} />
+                                <RoleBadge key={rt} style={s} />
                               ) : (
                                 <span
                                   key={rt}
@@ -332,10 +329,7 @@ export const AdminCitizenTable: React.FC<CitizenTableProps> = ({
                               <p className="text-[9px] uppercase font-bold text-accent tracking-widest mb-3">
                                 System Role
                               </p>
-                              <RoleBadge
-                                role={citizen.systemRole}
-                                style={sysStyle}
-                              />
+                              <RoleBadge style={sysStyle} />
                               <p className="text-[10px] text-white/25 mt-2">
                                 {citizen.systemRole === "admin"
                                   ? "Full platform access"
@@ -357,7 +351,7 @@ export const AdminCitizenTable: React.FC<CitizenTableProps> = ({
                                   roleTypes.map((rt) => {
                                     const s = ROLE_TYPE_STYLE[rt];
                                     return s ? (
-                                      <RoleBadge key={rt} role={rt} style={s} />
+                                      <RoleBadge key={rt} style={s} />
                                     ) : null;
                                   })
                                 )}

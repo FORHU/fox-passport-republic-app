@@ -59,8 +59,11 @@ export function EventHeader({
             </span>
           </h2>
           <div className="flex items-center gap-2 text-[10px] text-text-muted mt-0.5 truncate">
-            <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${statusDot}`} />
-            <span className="truncate">{eventTitle || "Untitled Event"}</span> · {statusLabel}
+            <span
+              className={`w-1.5 h-1.5 rounded-full shrink-0 ${statusDot}`}
+            />
+            <span className="truncate">{eventTitle || "Untitled Event"}</span> ·{" "}
+            {statusLabel}
           </div>
         </div>
       </div>

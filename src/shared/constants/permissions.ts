@@ -34,6 +34,7 @@ export const PERMISSIONS = [
   "payments:read:all",
   "disputes:resolve",
   "refunds:manage",
+  "event:manage-organizers",
 
   // The supply side — held through RoleType, not SystemRole
   "venue:manage",
@@ -42,6 +43,10 @@ export const PERMISSIONS = [
   "template:manage",
   "booking:check-in",
   "payouts:onboard",
+  "bid:manage",
+  "bid:submit-service",
+  "bid:submit-asset",
+  "partnership:propose",
 ] as const;
 
 export type Permission = (typeof PERMISSIONS)[number];

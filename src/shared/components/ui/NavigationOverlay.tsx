@@ -19,6 +19,32 @@ const MAX_VISIBLE_MS = 6000;
 // where React forbids scheduling state updates — patching at the router
 // call site instead means `start()` runs from a plain click handler, well
 // before Next's internal transition even begins.
+function patchRouter(
+  router: ReturnType<typeof useRouter>,
+  isSameUrl: (href: string) => boolean,
+  start: () => void,
+) {
+  const originalPush = router.push.bind(router);
+  const originalReplace = router.replace.bind(router);
+
+  router.push = ((...args: Parameters<typeof originalPush>) => {
+    const href = args[0];
+    if (typeof href !== "string" || !isSameUrl(href)) start();
+    return originalPush(...args);
+  }) as typeof router.push;
+
+  router.replace = ((...args: Parameters<typeof originalReplace>) => {
+    const href = args[0];
+    if (typeof href !== "string" || !isSameUrl(href)) start();
+    return originalReplace(...args);
+  }) as typeof router.replace;
+
+  return () => {
+    router.push = originalPush;
+    router.replace = originalReplace;
+  };
+}
+
 export default function NavigationOverlay() {
   const router = useRouter();
   const pathname = usePathname();
@@ -76,11 +102,7 @@ export default function NavigationOverlay() {
   // Next's internal navigation logic) is the only way to observe every
   // push/replace call site, matching the pattern Next itself uses to patch
   // history.pushState/replaceState on mount.
-  /* eslint-disable react-hooks/immutability */
   useEffect(() => {
-    const originalPush = router.push.bind(router);
-    const originalReplace = router.replace.bind(router);
-
     // A push/replace to the URL the browser is already on never changes
     // pathname/searchParams, so the "navigation completed" effect above
     // never fires and the overlay would otherwise sit blocking every click
@@ -100,29 +122,17 @@ export default function NavigationOverlay() {
       }
     };
 
-    router.push = ((...args: Parameters<typeof originalPush>) => {
-      const href = args[0];
-      if (typeof href !== "string" || !isSameUrl(href)) start();
-      return originalPush(...args);
-    }) as typeof router.push;
-    router.replace = ((...args: Parameters<typeof originalReplace>) => {
-      const href = args[0];
-      if (typeof href !== "string" || !isSameUrl(href)) start();
-      return originalReplace(...args);
-    }) as typeof router.replace;
-
+    const restoreRouter = patchRouter(router, isSameUrl, start);
     const onPopState = () => start();
     window.addEventListener("popstate", onPopState);
 
     return () => {
-      router.push = originalPush;
-      router.replace = originalReplace;
+      restoreRouter();
       window.removeEventListener("popstate", onPopState);
       if (hideRef.current) clearTimeout(hideRef.current);
       if (safetyRef.current) clearTimeout(safetyRef.current);
     };
   }, [router, start]);
-  /* eslint-enable react-hooks/immutability */
 
   if (!visible) return null;
 

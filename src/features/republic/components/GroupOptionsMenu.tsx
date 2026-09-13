@@ -2,42 +2,29 @@
 
 import { useEffect, useRef, useState } from "react";
 import { MoreVertical, LogOut, Bell, BellOff, Pin, PinOff } from "lucide-react";
-import { toast } from "sonner";
-import {
-  useSetConversationMuted,
-  useSetConversationPinned,
-} from "@/features/messages/hooks/useMessages";
 
-interface GroupOptionsMenuProps {
+export interface GroupOptionsMenuProps {
   conversationId: string;
   groupName: string;
   isMuted?: boolean;
   isPinned?: boolean;
   onLeave: () => void;
   isLeaving?: boolean;
+  onToggleMute?: () => void;
+  onTogglePin?: () => void;
 }
 
-const errorMessage = (e: unknown, fallback: string) =>
-  (e as { response?: { data?: { message?: string } } })?.response?.data
-    ?.message ?? fallback;
-
-// Same "..." dropdown shape as AccountOptionsMenu, scaled to what makes
-// sense on a group row — mute/pin (personal, same as a 1:1 thread) plus
-// leaving. A group has no profile to view, nothing to unfollow, and
-// blocking/reporting a thread isn't a per-row action, so this doesn't try
-// to mirror the rest of that menu's items.
 export function GroupOptionsMenu({
-  conversationId,
   groupName,
   isMuted,
   isPinned,
   onLeave,
   isLeaving,
+  onToggleMute,
+  onTogglePin,
 }: GroupOptionsMenuProps) {
   const [open, setOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
-  const setMuted = useSetConversationMuted();
-  const setPinned = useSetConversationPinned();
 
   useEffect(() => {
     if (!open) return;
@@ -57,24 +44,12 @@ export function GroupOptionsMenu({
 
   const handleTogglePin = () => {
     setOpen(false);
-    setPinned.mutate(
-      { conversationId, pinned: !isPinned },
-      {
-        onError: (e) =>
-          toast.error(errorMessage(e, "Could not pin this chat.")),
-      },
-    );
+    onTogglePin?.();
   };
 
   const handleToggleMute = () => {
     setOpen(false);
-    setMuted.mutate(
-      { conversationId, muted: !isMuted },
-      {
-        onError: (e) =>
-          toast.error(errorMessage(e, "Could not update notifications.")),
-      },
-    );
+    onToggleMute?.();
   };
 
   return (
