@@ -200,8 +200,7 @@ pnpm exec vitest run               # expect: 313 passing, 27 files, 0 errors
 # app
 pnpm install
 pnpm type-check && pnpm test       # expect: clean, 144 passing
-node tools/validate-architecture.mjs   # expect: 26 violations, all one rule
-                                       # (it exits non-zero; that is normal here)
+node tools/validate-architecture.mjs   # expect: clean, 0 violations
 ```
 
 The API count was 198 here until 9 Sep, and the command carried two

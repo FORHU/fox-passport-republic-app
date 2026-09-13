@@ -119,8 +119,8 @@ Before database implementation begins, the team must confirm:
 Phase 1 for the full technical detail this section summarizes. Inserted as
 its own numbered-but-lettered section (`8a`) rather than renumbering every
 section from 9 onward, because `§9`–`§16` are cited by number elsewhere in
-this doc tree (`docs/PRIORITIES.md` P2, the ADR itself) and a wholesale
-renumbering would silently break every one of those references. Every phase
+this doc tree (the ADR itself, among others) and a wholesale renumbering
+would silently break every one of those references. Every phase
 after this one keeps its `##` section number; only the "Phase N" label in
 each heading shifted up by one to match the new execution order.
 
@@ -143,12 +143,12 @@ overflow behaves identically to a private booking.
 | TASK-04 | Reuse existing checkedIn/ticketCode shape and creator-dashboard/check-in UI, pointed at EventRegistration rows for public templates |
 | TASK-05 | Add backend tests |
 | TASK-06 | "Join"/"Register" action on the public event page, distinct from the existing booking-request flow |
-| TASK-07 | Bundle with the sharing work already tracked in PRIORITIES.md (OG fix, share/invite UI, QR) — the MVP is only as useful as the link people can act on |
+| TASK-07 | Bundle with the sharing work (OG fix, share/invite UI, QR) — already shipped 11 Sep, see `TOMORROW.md` — the MVP is only as useful as the link people can act on |
 
 **Role note:** this is the phase a lightweight event partner (run club,
 community organizer) actually touches. `"Partner"` is taken —
 `investor` already owns that word. Name and scope a lighter-weight role
-(e.g. "Event Operator") before or alongside this phase; see `PRIORITIES.md`.
+(e.g. "Event Operator") before or alongside this phase — not yet decided.
 
 **Depends on:** Phase 0 (architecture decision) and `DYNAMIC-EVENTS-PLAN.md`
 §3a (a new `EventRegistration` domain, not a reuse of `BookingAttendee`) only.
