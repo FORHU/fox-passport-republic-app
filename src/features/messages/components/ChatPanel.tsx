@@ -620,7 +620,7 @@ export default function ChatPanel({
       markedRef.current = conversationId;
       markReadMutation.mutate(conversationId);
     }
-      }, [minimized, conversationId]);
+  }, [minimized, conversationId]);
 
   useEffect(() => {
     setJustAccepted(false);

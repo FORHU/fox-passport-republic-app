@@ -114,8 +114,18 @@ export default function GearServiceBento({
         <div className="flex items-center gap-1 p-1 rounded-2xl bg-white/5 border border-white/10">
           {(
             [
-              { key: "gear", label: "Equipment Foxers", icon: "audio_file", count: gearItems.length },
-              { key: "service", label: "Talent Foxers", icon: "design_services", count: serviceItems.length },
+              {
+                key: "gear",
+                label: "Equipment Foxers",
+                icon: "audio_file",
+                count: gearItems.length,
+              },
+              {
+                key: "service",
+                label: "Talent Foxers",
+                icon: "design_services",
+                count: serviceItems.length,
+              },
             ] as const
           ).map((t) => (
             <button

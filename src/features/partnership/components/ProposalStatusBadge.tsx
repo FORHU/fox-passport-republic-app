@@ -1,7 +1,11 @@
 import React from "react";
 import { PartnershipProposalStatus } from "../types/partnership.types";
 
-export function ProposalStatusBadge({ status }: { status: PartnershipProposalStatus }) {
+export function ProposalStatusBadge({
+  status,
+}: {
+  status: PartnershipProposalStatus;
+}) {
   const getBadgeStyle = () => {
     switch (status) {
       case "pending":
@@ -18,7 +22,9 @@ export function ProposalStatusBadge({ status }: { status: PartnershipProposalSta
   };
 
   return (
-    <span className={`px-2.5 py-1 text-xs font-semibold uppercase tracking-wider rounded-md ${getBadgeStyle()}`}>
+    <span
+      className={`px-2.5 py-1 text-xs font-semibold uppercase tracking-wider rounded-md ${getBadgeStyle()}`}
+    >
       {status}
     </span>
   );

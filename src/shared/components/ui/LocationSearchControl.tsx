@@ -121,7 +121,10 @@ export function LocationSearchControl({
   if (!token) return null;
 
   return (
-    <div ref={containerRef} className={`relative w-64 max-w-[80vw] ${className}`}>
+    <div
+      ref={containerRef}
+      className={`relative w-64 max-w-[80vw] ${className}`}
+    >
       <div className="relative">
         <Globe2 className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-white/40 pointer-events-none" />
         <input

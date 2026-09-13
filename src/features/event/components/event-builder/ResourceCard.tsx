@@ -10,7 +10,11 @@ interface ResourceCardProps {
   onSelect?: (item: ResourceItem) => void;
 }
 
-export function ResourceCard({ item, onDragStart, onSelect }: ResourceCardProps) {
+export function ResourceCard({
+  item,
+  onDragStart,
+  onSelect,
+}: ResourceCardProps) {
   return (
     <div
       draggable
@@ -53,7 +57,9 @@ export function ResourceCard({ item, onDragStart, onSelect }: ResourceCardProps)
                 }}
                 className="px-2.5 py-1 rounded-lg bg-white/10 hover:bg-accent hover:text-black text-[11px] font-bold text-white/80 transition-all flex items-center gap-1 cursor-pointer"
               >
-                <span className="material-symbols-outlined text-[14px]">add</span>
+                <span className="material-symbols-outlined text-[14px]">
+                  add
+                </span>
                 Add
               </button>
             </div>

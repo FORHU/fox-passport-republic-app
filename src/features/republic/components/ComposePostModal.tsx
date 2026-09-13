@@ -43,9 +43,7 @@ export function ComposePostModal({
             aria-label="Close"
             className="flex h-8 w-8 items-center justify-center rounded-full text-zinc-400 transition-colors hover:bg-zinc-800 hover:text-white cursor-pointer"
           >
-            <span className="material-symbols-outlined text-[20px]">
-              close
-            </span>
+            <span className="material-symbols-outlined text-[20px]">close</span>
           </button>
         </div>
         <div className="p-4 sm:p-5">

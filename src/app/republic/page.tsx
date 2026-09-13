@@ -78,7 +78,7 @@ function RepublicFeedContent() {
     return () => {
       cancelled = true;
     };
-      }, []);
+  }, []);
 
   // Sync activeTab when URL query changes (e.g. navigation from menu)
   useEffect(() => {
@@ -333,10 +333,7 @@ function RepublicFeedContent() {
 
                 <span className="w-px h-4 bg-zinc-800" />
 
-                <FeedSortMenu
-                  mode={mode}
-                  onChange={setMode}
-                />
+                <FeedSortMenu mode={mode} onChange={setMode} />
               </div>
             </div>
 
@@ -386,28 +383,20 @@ function RepublicFeedContent() {
                   )}
                 </div>
               ) : (
-                <div
-                  ref={postsListRef}
-                  className="space-y-4 scroll-mt-24"
-                >
+                <div ref={postsListRef} className="space-y-4 scroll-mt-24">
                   {posts.map((post) => (
                     <PostCard
                       key={post.id}
                       post={post}
                       onOpenDetail={handleOpenDetail}
                       onPostDeleted={(id) => {
-                        setPosts((prev) =>
-                          prev.filter((p) => p.id !== id)
-                        );
+                        setPosts((prev) => prev.filter((p) => p.id !== id));
                       }}
                     />
                   ))}
 
                   {/* Infinite-scroll sentinel */}
-                  <div
-                    ref={sentinelCallbackRef}
-                    className="h-1 w-full"
-                  />
+                  <div ref={sentinelCallbackRef} className="h-1 w-full" />
 
                   {loadingMore ? (
                     <div className="flex items-center justify-center gap-2 py-6 text-zinc-400 text-xs">

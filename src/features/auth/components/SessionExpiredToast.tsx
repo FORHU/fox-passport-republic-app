@@ -41,7 +41,7 @@ export default function SessionExpiredToast() {
       scroll: false,
     });
     // Only ever react to the param on first paint after the redirect.
-      }, []);
+  }, []);
 
   return null;
 }

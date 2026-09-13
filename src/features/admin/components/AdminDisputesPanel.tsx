@@ -133,7 +133,7 @@ function RefundDisputesTab() {
   // rule the linter wants (compute during render, do not setState from an
   // effect) does not apply cleanly - there is no render-time value to derive
   // from until the network response with the new totalPages has arrived.
-   
+
   useEffect(() => {
     if (data?.pagination && page > data.pagination.totalPages) {
       setPage(data.pagination.totalPages);
@@ -292,7 +292,7 @@ function BookingDisputesTab({ type }: { type: "asset" | "service" }) {
   // rule the linter wants (compute during render, do not setState from an
   // effect) does not apply cleanly - there is no render-time value to derive
   // from until the network response with the new totalPages has arrived.
-   
+
   useEffect(() => {
     if (data?.pagination && page > data.pagination.totalPages) {
       setPage(data.pagination.totalPages);

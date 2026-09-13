@@ -56,11 +56,11 @@ export default function VenueDetailClient({
   // to a single `price` number and `images` down to `string[]`. Reading the
   // typed fields directly silently produced ₱0 and broken <img> tags.
   const venuePrice = Number((venue as any).price || 0);
-  
+
   const { user } = useAuthStore();
   const handleProposePartnership = () => {
-    if (!user?.roleType?.includes('investor')) {
-      router.push('/onboarding/partner');
+    if (!user?.roleType?.includes("investor")) {
+      router.push("/onboarding/partner");
     } else {
       onProposePartnership?.();
     }
@@ -84,9 +84,9 @@ export default function VenueDetailClient({
         onPrev={() => store.prevImage(venue.images?.length || 0)}
       />
 
-      <VenueNavHeader 
-        title={venue.title} 
-        onBack={handleBack} 
+      <VenueNavHeader
+        title={venue.title}
+        onBack={handleBack}
         onProposePartnership={handleProposePartnership}
       />
 
@@ -263,9 +263,15 @@ export default function VenueDetailClient({
                           key={pkg.id}
                           className="p-4 border border-white/10 rounded-2xl bg-white/5"
                         >
-                          <h4 className="font-bold text-lg text-white mb-1">{pkg.name}</h4>
-                          <p className="text-accent font-bold text-sm mb-2">₱{Number(pkg.price).toLocaleString()}</p>
-                          <p className="text-gray-400 text-sm whitespace-pre-line">{pkg.description}</p>
+                          <h4 className="font-bold text-lg text-white mb-1">
+                            {pkg.name}
+                          </h4>
+                          <p className="text-accent font-bold text-sm mb-2">
+                            ₱{Number(pkg.price).toLocaleString()}
+                          </p>
+                          <p className="text-gray-400 text-sm whitespace-pre-line">
+                            {pkg.description}
+                          </p>
                         </div>
                       ))}
                     </div>
@@ -273,7 +279,10 @@ export default function VenueDetailClient({
                 </>
               )}
 
-              {((venue.recommendedAssets && venue.recommendedAssets.length > 0) || (venue.recommendedServices && venue.recommendedServices.length > 0)) && (
+              {((venue.recommendedAssets &&
+                venue.recommendedAssets.length > 0) ||
+                (venue.recommendedServices &&
+                  venue.recommendedServices.length > 0)) && (
                 <>
                   <div className="h-px bg-white/10 w-full" />
                   <div>
@@ -281,24 +290,45 @@ export default function VenueDetailClient({
                       In-House Extras
                     </h3>
                     <p className="text-gray-400 text-sm mb-4">
-                      Enhance your event with gear and talent provided directly by the venue.
+                      Enhance your event with gear and talent provided directly
+                      by the venue.
                     </p>
                     <div className="grid gap-4 sm:grid-cols-2">
                       {venue.recommendedAssets?.map((asset: any) => (
-                        <div key={asset.id} className="p-3 border border-white/10 rounded-xl bg-white/5 flex gap-3 items-center">
-                          <span className="material-symbols-outlined text-accent text-2xl">speaker</span>
+                        <div
+                          key={asset.id}
+                          className="p-3 border border-white/10 rounded-xl bg-white/5 flex gap-3 items-center"
+                        >
+                          <span className="material-symbols-outlined text-accent text-2xl">
+                            speaker
+                          </span>
                           <div>
-                            <p className="text-white font-bold text-sm">{asset.name}</p>
-                            <p className="text-accent text-xs">₱{Number(asset.price).toLocaleString()} / {asset.billingRate}</p>
+                            <p className="text-white font-bold text-sm">
+                              {asset.name}
+                            </p>
+                            <p className="text-accent text-xs">
+                              ₱{Number(asset.price).toLocaleString()} /{" "}
+                              {asset.billingRate}
+                            </p>
                           </div>
                         </div>
                       ))}
                       {venue.recommendedServices?.map((service: any) => (
-                        <div key={service.id} className="p-3 border border-white/10 rounded-xl bg-white/5 flex gap-3 items-center">
-                          <span className="material-symbols-outlined text-accent text-2xl">person</span>
+                        <div
+                          key={service.id}
+                          className="p-3 border border-white/10 rounded-xl bg-white/5 flex gap-3 items-center"
+                        >
+                          <span className="material-symbols-outlined text-accent text-2xl">
+                            person
+                          </span>
                           <div>
-                            <p className="text-white font-bold text-sm">{service.name}</p>
-                            <p className="text-accent text-xs">₱{Number(service.price).toLocaleString()} / {service.billingRate}</p>
+                            <p className="text-white font-bold text-sm">
+                              {service.name}
+                            </p>
+                            <p className="text-accent text-xs">
+                              ₱{Number(service.price).toLocaleString()} /{" "}
+                              {service.billingRate}
+                            </p>
                           </div>
                         </div>
                       ))}

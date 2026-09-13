@@ -14,15 +14,13 @@ here.
 |---|---|
 | `TOMORROW.md` (this file) | **What to do next.** Nothing else. |
 | `VERIFY.md` | The browser runbook. **Fully run 12 Sep** — all 16 checks driven at least once, all passing except B1's caveat (see below) and B3 (indirect coverage only). |
-| `RBAC-PLAN.md` | The authorization migration — phases, invariants, prior art. |
-| `RBAC.md` / `ARCHITECTURE.md` | Target state, and the system as built. |
+| `RBAC.md` | Target state, migration history (invariants, prior art), and template-boundary conformance. `RBAC-PLAN.md` was folded in here 13 Sep now that the migration is done. |
+| `ARCHITECTURE.md` | The system as built — now also carries the durable parts of `app-architecture.md` (template-gap inventory, the two "don't fix these" call-outs), folded in 13 Sep once Feature Isolation hit 0 violations and the rest of that doc was just stale violation-tracking. |
 | `api-audit.md` | The record: API, data-fetching and auth findings. 8 open (re-audited 12 Sep — §3.4c closed, §4.12 partially closed). |
 | `responsive-plan.md` | Responsive and touch backlog. 21 open. |
 | `roles-and-spaces.md` | The Foxer role model and the page split. 12 open (3 resolved — `useRoleAccess` blocker closed, `LockedSection` removed, hint added). |
-| `app-architecture.md` | Boundary violations + template gaps. 26 open (re-measured 12 Sep — 20 in `republic`, 6 in `user`). |
 | `CENTRAL-PAYMENT-FRONTEND-PLAN.md` | Central Payment frontend. Built and reviewed 13 Sep — one panel deliberately not built, see the doc. |
-| `FoxPassportSpatialIntelligence.md` | The spatial vision and target state. |
-| `SPATIAL-PLAN.md` | The spatial counter-plan: what already exists, and the order to build in. |
+| `SPATIAL-PLAN.md` | The spatial vision and counter-plan: what already exists, and the order to build in. `FoxPassportSpatialIntelligence.md`'s still-valid principles were folded in here 13 Sep; its wrong stack/sequencing assumptions were not. |
 
 ---
 

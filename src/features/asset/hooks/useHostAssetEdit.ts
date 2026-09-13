@@ -178,7 +178,7 @@ export function useHostAssetEdit(assetId: string) {
     return () => {
       cancelled = true;
     };
-      }, [assetId, hostId]);
+  }, [assetId, hostId]);
 
   const handleBack = useCallback(() => {
     router.push(backHref);

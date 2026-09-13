@@ -72,11 +72,15 @@ export default function BookingDetailClient({
   });
 
   const err = queryError as
-    | { response?: { status?: number; data?: { message?: string } }; message?: string }
+    | {
+        response?: { status?: number; data?: { message?: string } };
+        message?: string;
+      }
     | undefined;
   // A 404 is not a failure to load, it is an answer - keep the two apart, as
   // the effect version did.
-  const notFound = (isError && err?.response?.status === 404) || (!isPending && !booking);
+  const notFound =
+    (isError && err?.response?.status === 404) || (!isPending && !booking);
   const error =
     isError && !notFound
       ? (err?.response?.data?.message ??

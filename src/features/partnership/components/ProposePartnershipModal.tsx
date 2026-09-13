@@ -3,7 +3,10 @@
 import React, { useState } from "react";
 import { X } from "lucide-react";
 import { useForm } from "react-hook-form";
-import { PartnershipType, CreatePartnershipProposalDto } from "../types/partnership.types";
+import {
+  PartnershipType,
+  CreatePartnershipProposalDto,
+} from "../types/partnership.types";
 import { useCreatePartnershipProposal } from "../hooks/usePartnerships";
 
 interface ProposePartnershipModalProps {
@@ -19,21 +22,30 @@ export default function ProposePartnershipModal({
   targetName,
   onClose,
 }: ProposePartnershipModalProps) {
-  const { mutateAsync: createProposal, isPending } = useCreatePartnershipProposal();
-  
-  const { register, handleSubmit, watch, formState: { errors } } = useForm<CreatePartnershipProposalDto>({
+  const { mutateAsync: createProposal, isPending } =
+    useCreatePartnershipProposal();
+
+  const {
+    register,
+    handleSubmit,
+    watch,
+    formState: { errors },
+  } = useForm<CreatePartnershipProposalDto>({
     defaultValues: {
       targetEventId,
       targetVenueId,
       partnershipType: "investment",
       title: "",
       description: "",
-    }
+    },
   });
 
   const selectedType = watch("partnershipType");
 
-  const showAmountField = selectedType === "investment" || selectedType === "sponsorship" || selectedType === "business";
+  const showAmountField =
+    selectedType === "investment" ||
+    selectedType === "sponsorship" ||
+    selectedType === "business";
   const requireAmountField = selectedType === "investment";
 
   const onSubmit = async (data: CreatePartnershipProposalDto) => {
@@ -43,11 +55,11 @@ export default function ProposePartnershipModal({
       } else {
         delete data.proposedAmount;
       }
-      
-      // Convert text areas to objects for benefits/contributions if needed, 
+
+      // Convert text areas to objects for benefits/contributions if needed,
       // but for V1 we can just store them as raw text in the DB, or wrap in an object
       data.proposedBenefits = { text: data.proposedBenefits || "" };
-      
+
       await createProposal(data);
       onClose();
     } catch (e) {
@@ -66,7 +78,10 @@ export default function ProposePartnershipModal({
       >
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-xl font-bold text-white">Propose Partnership</h2>
-          <button onClick={onClose} className="p-2 text-white/50 hover:text-white rounded-full hover:bg-white/5">
+          <button
+            onClick={onClose}
+            className="p-2 text-white/50 hover:text-white rounded-full hover:bg-white/5"
+          >
             <X className="w-5 h-5" />
           </button>
         </div>
@@ -78,7 +93,9 @@ export default function ProposePartnershipModal({
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-white mb-1">Partnership Type</label>
+            <label className="block text-sm font-medium text-white mb-1">
+              Partnership Type
+            </label>
             <select
               {...register("partnershipType")}
               className="w-full bg-[#1a1d24] border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-[#ccff00]"
@@ -91,14 +108,20 @@ export default function ProposePartnershipModal({
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-white mb-1">Title</label>
+            <label className="block text-sm font-medium text-white mb-1">
+              Title
+            </label>
             <input
               {...register("title", { required: "Title is required" })}
               type="text"
               placeholder="e.g. Stage Sponsorship"
               className="w-full bg-[#1a1d24] border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-[#ccff00]"
             />
-            {errors.title && <p className="text-red-400 text-xs mt-1">{errors.title.message}</p>}
+            {errors.title && (
+              <p className="text-red-400 text-xs mt-1">
+                {errors.title.message}
+              </p>
+            )}
           </div>
 
           {showAmountField && (
@@ -107,31 +130,47 @@ export default function ProposePartnershipModal({
                 Amount (PHP) {requireAmountField ? "*" : "(Optional)"}
               </label>
               <input
-                {...register("proposedAmount", { 
-                  required: requireAmountField ? "Amount is required for investments" : false,
-                  min: { value: 1, message: "Amount must be positive" }
+                {...register("proposedAmount", {
+                  required: requireAmountField
+                    ? "Amount is required for investments"
+                    : false,
+                  min: { value: 1, message: "Amount must be positive" },
                 })}
                 type="number"
                 placeholder="0.00"
                 className="w-full bg-[#1a1d24] border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-[#ccff00]"
               />
-              {errors.proposedAmount && <p className="text-red-400 text-xs mt-1">{errors.proposedAmount.message}</p>}
+              {errors.proposedAmount && (
+                <p className="text-red-400 text-xs mt-1">
+                  {errors.proposedAmount.message}
+                </p>
+              )}
             </div>
           )}
 
           <div>
-            <label className="block text-sm font-medium text-white mb-1">Description</label>
+            <label className="block text-sm font-medium text-white mb-1">
+              Description
+            </label>
             <textarea
-              {...register("description", { required: "Description is required" })}
+              {...register("description", {
+                required: "Description is required",
+              })}
               placeholder="Describe your proposal..."
               rows={4}
               className="w-full bg-[#1a1d24] border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-[#ccff00] resize-none"
             />
-            {errors.description && <p className="text-red-400 text-xs mt-1">{errors.description.message}</p>}
+            {errors.description && (
+              <p className="text-red-400 text-xs mt-1">
+                {errors.description.message}
+              </p>
+            )}
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-white mb-1">Proposed Benefits (Optional)</label>
+            <label className="block text-sm font-medium text-white mb-1">
+              Proposed Benefits (Optional)
+            </label>
             <textarea
               {...register("proposedBenefits" as any)}
               placeholder="What benefits do you expect or offer?"

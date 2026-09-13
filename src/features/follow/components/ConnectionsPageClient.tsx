@@ -6,7 +6,11 @@ import { useParams, useSearchParams } from "next/navigation";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { ArrowLeft, Check, X } from "lucide-react";
 import { toast } from "sonner";
-import { getFollowers, getFollowing, type FollowListPage } from "../api/follows";
+import {
+  getFollowers,
+  getFollowing,
+  type FollowListPage,
+} from "../api/follows";
 import {
   useFollowRequests,
   useAcceptFollowRequest,
@@ -84,7 +88,13 @@ export function ConnectionsPageClient() {
   );
 }
 
-function FollowListTab({ userId, tab }: { userId: string; tab: "followers" | "following" }) {
+function FollowListTab({
+  userId,
+  tab,
+}: {
+  userId: string;
+  tab: "followers" | "following";
+}) {
   const { data, isLoading, isFetchingNextPage, hasNextPage, fetchNextPage } =
     useInfiniteQuery<FollowListPage>({
       queryKey: ["followList", tab, userId],
@@ -118,7 +128,9 @@ function FollowListTab({ userId, tab }: { userId: string; tab: "followers" | "fo
   if (users.length === 0) {
     return (
       <p className="text-center text-sm text-zinc-500 py-8">
-        {tab === "followers" ? "No followers yet." : "Not following anyone yet."}
+        {tab === "followers"
+          ? "No followers yet."
+          : "Not following anyone yet."}
       </p>
     );
   }

@@ -47,8 +47,8 @@ export const UserForYou: React.FC<UserForYouProps> = ({
             Venues are for Creator Roles
           </h4>
           <p className="text-text-muted text-sm max-w-xs">
-            Venue listings are available to Event Foxers, Equipment Foxers, and Venue
-            Foxers. Apply for a role to unlock this section.
+            Venue listings are available to Event Foxers, Equipment Foxers, and
+            Venue Foxers. Apply for a role to unlock this section.
           </p>
         </div>
       </section>

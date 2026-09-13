@@ -58,7 +58,7 @@ export function ImageLightbox({
       document.removeEventListener("keydown", onKeyDown);
       document.body.style.overflow = prevOverflow;
     };
-      }, [onClose, hasMultiple]);
+  }, [onClose, hasMultiple]);
 
   const handleDownload = async () => {
     if (downloading) return;

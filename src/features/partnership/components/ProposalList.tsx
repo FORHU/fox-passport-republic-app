@@ -10,17 +10,19 @@ interface ProposalListProps {
   emptyMessage?: string;
 }
 
-export function ProposalList({ 
-  proposals, 
-  isLoading, 
-  emptyMessage = "No proposals found." 
+export function ProposalList({
+  proposals,
+  isLoading,
+  emptyMessage = "No proposals found.",
 }: ProposalListProps) {
-  
   if (isLoading) {
     return (
       <div className="space-y-4">
-        {[1, 2, 3].map(i => (
-          <div key={i} className="animate-pulse bg-white/5 border border-white/10 rounded-2xl h-40"></div>
+        {[1, 2, 3].map((i) => (
+          <div
+            key={i}
+            className="animate-pulse bg-white/5 border border-white/10 rounded-2xl h-40"
+          ></div>
         ))}
       </div>
     );
@@ -36,7 +38,7 @@ export function ProposalList({
 
   return (
     <div className="space-y-4">
-      {proposals.map(proposal => (
+      {proposals.map((proposal) => (
         <ProposalCard key={proposal.id} proposal={proposal} />
       ))}
     </div>

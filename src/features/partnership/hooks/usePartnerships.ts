@@ -9,7 +9,10 @@ import {
 } from "@/features/partnership/api/partnerships";
 import { toast } from "sonner";
 
-export const usePartnershipProposals = (roleType?: string, targetId?: string) => {
+export const usePartnershipProposals = (
+  roleType?: string,
+  targetId?: string,
+) => {
   return useQuery({
     queryKey: ["partnershipProposals", roleType, targetId],
     queryFn: () => getPartnershipProposals(roleType, targetId),
@@ -33,7 +36,9 @@ export const useCreatePartnershipProposal = () => {
       toast.success("Partnership proposal submitted successfully!");
     },
     onError: (error: any) => {
-      toast.error(error?.response?.data?.message || "Failed to submit proposal.");
+      toast.error(
+        error?.response?.data?.message || "Failed to submit proposal.",
+      );
     },
   });
 };
@@ -47,7 +52,9 @@ export const useAcceptPartnershipProposal = () => {
       toast.success("Partnership proposal accepted!");
     },
     onError: (error: any) => {
-      toast.error(error?.response?.data?.message || "Failed to accept proposal.");
+      toast.error(
+        error?.response?.data?.message || "Failed to accept proposal.",
+      );
     },
   });
 };
@@ -61,7 +68,9 @@ export const useRejectPartnershipProposal = () => {
       toast.success("Partnership proposal rejected.");
     },
     onError: (error: any) => {
-      toast.error(error?.response?.data?.message || "Failed to reject proposal.");
+      toast.error(
+        error?.response?.data?.message || "Failed to reject proposal.",
+      );
     },
   });
 };
@@ -75,7 +84,9 @@ export const useWithdrawPartnershipProposal = () => {
       toast.success("Partnership proposal withdrawn.");
     },
     onError: (error: any) => {
-      toast.error(error?.response?.data?.message || "Failed to withdraw proposal.");
+      toast.error(
+        error?.response?.data?.message || "Failed to withdraw proposal.",
+      );
     },
   });
 };

@@ -94,7 +94,7 @@ export default function VenueCheckoutClient() {
         ),
       )
       .finally(() => setLoadingIntent(false));
-      }, [bookingId]);
+  }, [bookingId]);
 
   useEffect(() => {
     const observer = new IntersectionObserver(

@@ -35,13 +35,18 @@ export function ProposalCard({ proposal }: { proposal: PartnershipProposal }) {
           <div className="text-white/80 text-sm leading-relaxed mt-2 line-clamp-3">
             {proposal.description}
           </div>
-          
-          {proposal.proposedBenefits && (proposal.proposedBenefits as any).text && (
-            <div className="mt-2 bg-white/5 rounded-lg p-3">
-              <p className="text-xs font-medium text-white/40 mb-1">Proposed Benefits</p>
-              <p className="text-white/80 text-sm">{(proposal.proposedBenefits as any).text}</p>
-            </div>
-          )}
+
+          {proposal.proposedBenefits &&
+            (proposal.proposedBenefits as any).text && (
+              <div className="mt-2 bg-white/5 rounded-lg p-3">
+                <p className="text-xs font-medium text-white/40 mb-1">
+                  Proposed Benefits
+                </p>
+                <p className="text-white/80 text-sm">
+                  {(proposal.proposedBenefits as any).text}
+                </p>
+              </div>
+            )}
         </div>
 
         <div className="flex shrink-0">

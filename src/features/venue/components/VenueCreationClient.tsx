@@ -22,7 +22,7 @@ export default function VenueCreationClient() {
 
   useEffect(() => {
     resetStore();
-      }, []);
+  }, []);
 
   const {
     venueName,

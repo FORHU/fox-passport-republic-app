@@ -60,7 +60,8 @@ const DEFAULT_ICONS: Partial<Record<BadgeVariant, LucideIcon>> = {
 };
 
 export interface BadgeProps
-  extends React.HTMLAttributes<HTMLSpanElement>,
+  extends
+    React.HTMLAttributes<HTMLSpanElement>,
     VariantProps<typeof badgeVariants> {
   /** Small pulsing status dot before the label (e.g. "live" indicators). */
   dot?: boolean;

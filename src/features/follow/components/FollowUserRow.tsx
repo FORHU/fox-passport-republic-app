@@ -11,7 +11,11 @@ interface FollowUserRowProps {
   actions?: React.ReactNode;
 }
 
-export function FollowUserRow({ user, onNavigate, actions }: FollowUserRowProps) {
+export function FollowUserRow({
+  user,
+  onNavigate,
+  actions,
+}: FollowUserRowProps) {
   return (
     <div className="flex items-center justify-between gap-2">
       <Link
@@ -45,7 +49,9 @@ export function FollowUserRow({ user, onNavigate, actions }: FollowUserRowProps)
           <span className="text-xs text-zinc-500 truncate">
             @
             {user.username ||
-              (user.name ? user.name.toLowerCase().replace(/\s/g, "") : "citizen")}
+              (user.name
+                ? user.name.toLowerCase().replace(/\s/g, "")
+                : "citizen")}
           </span>
         </div>
       </Link>

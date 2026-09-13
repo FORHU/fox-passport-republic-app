@@ -148,7 +148,7 @@ export function useHostServiceEdit(serviceId: string) {
     return () => {
       cancelled = true;
     };
-      }, [serviceId, hostId]);
+  }, [serviceId, hostId]);
 
   const handleBack = useCallback(() => {
     router.push(backHref);

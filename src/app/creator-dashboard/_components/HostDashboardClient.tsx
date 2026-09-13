@@ -1,4 +1,3 @@
- 
 "use client";
 
 import React, { useState } from "react";
@@ -110,9 +109,7 @@ export default function HostDashboardClient({
   React.useEffect(() => {
     if (!discoveryHintKey) return;
     try {
-      setDiscoveryHintDismissed(
-        localStorage.getItem(discoveryHintKey) === "1",
-      );
+      setDiscoveryHintDismissed(localStorage.getItem(discoveryHintKey) === "1");
     } catch {
       // localStorage unavailable (private browsing, etc.) — hint just won't persist
     }
@@ -313,7 +310,8 @@ export default function HostDashboardClient({
                         auto_awesome
                       </span>
                       <p className="truncate">
-                        Unlock more provider capabilities (Venues, Events, Assets, Services) by expanding your creator profile.
+                        Unlock more provider capabilities (Venues, Events,
+                        Assets, Services) by expanding your creator profile.
                       </p>
                     </div>
                     <div className="flex items-center gap-2 shrink-0">

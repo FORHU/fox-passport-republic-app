@@ -142,9 +142,7 @@ export default function MobileSettingsView({ user }: Props) {
           {ROWS.map((row) => (
             <button
               key={row.label}
-              onClick={() =>
-                row.href ? router.push(row.href) : logout()
-              }
+              onClick={() => (row.href ? router.push(row.href) : logout())}
               style={{
                 display: "flex",
                 alignItems: "center",

@@ -100,7 +100,7 @@ export default function ConversationListClient({
         },
       },
     );
-      }, [isAuthenticated, userIdParam, startedUserId]);
+  }, [isAuthenticated, userIdParam, startedUserId]);
 
   // Opens the conversation named by ?conversationId, or the one just
   // started for ?userId=, once it's in the list. This has to be an effect
@@ -124,7 +124,7 @@ export default function ConversationListClient({
       setAppliedConversationId(targetConversationId);
       openConversation(match);
     }
-      }, [targetConversationId, appliedConversationId, conversations]);
+  }, [targetConversationId, appliedConversationId, conversations]);
 
   // Incoming requests (someone else messaged you with no existing
   // relationship) get their own section, separate from the normal inbox —

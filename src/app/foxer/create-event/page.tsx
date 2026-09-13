@@ -5,11 +5,7 @@ import RequireAuth from "@/shared/auth/RequireAuth";
 import { useEventBuilder } from "@/features/event/hooks/useEventBuilder";
 import { useEventBuilderStore } from "@/features/event/store/useEventBuilderStore";
 import { useState } from "react";
-import {
-  Sheet,
-  SheetContent,
-  SheetTitle,
-} from "@/shared/components/ui/sheet";
+import { Sheet, SheetContent, SheetTitle } from "@/shared/components/ui/sheet";
 import {
   ResourcePalette,
   EventHeader,

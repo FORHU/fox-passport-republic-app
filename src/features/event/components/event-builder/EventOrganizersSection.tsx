@@ -1,7 +1,13 @@
 "use client";
 
 import React, { useEffect, useState, useTransition } from "react";
-import { UserCheck, UserPlus, Trash2, Loader2, AlertCircle } from "lucide-react";
+import {
+  UserCheck,
+  UserPlus,
+  Trash2,
+  Loader2,
+  AlertCircle,
+} from "lucide-react";
 import {
   fetchEventOrganizers,
   addEventOrganizer,
@@ -14,8 +20,12 @@ interface EventOrganizersSectionProps {
   eventId?: string | null;
 }
 
-export function EventOrganizersSection({ eventId }: EventOrganizersSectionProps) {
-  const [organizers, setOrganizers] = useState<EventOrganizerAssignmentItem[]>([]);
+export function EventOrganizersSection({
+  eventId,
+}: EventOrganizersSectionProps) {
+  const [organizers, setOrganizers] = useState<EventOrganizerAssignmentItem[]>(
+    [],
+  );
   const [loading, setLoading] = useState(false);
   const [emailInput, setEmailInput] = useState("");
   const [isPending, startTransition] = useTransition();
@@ -53,7 +63,9 @@ export function EventOrganizersSection({ eventId }: EventOrganizersSectionProps)
     if (!email) return;
 
     if (!eventId) {
-      toast.error("An active scheduled event is required to assign check-in delegates.");
+      toast.error(
+        "An active scheduled event is required to assign check-in delegates.",
+      );
       return;
     }
 
@@ -65,7 +77,9 @@ export function EventOrganizersSection({ eventId }: EventOrganizersSectionProps)
         toast.success(`Assigned check-in delegate: ${email}`);
       } catch (err: any) {
         toast.error(
-          err?.response?.data?.message || err?.message || "Failed to assign organizer",
+          err?.response?.data?.message ||
+            err?.message ||
+            "Failed to assign organizer",
         );
       }
     });
@@ -81,7 +95,9 @@ export function EventOrganizersSection({ eventId }: EventOrganizersSectionProps)
         toast.success(`Removed delegate: ${delegateName}`);
       } catch (err: any) {
         toast.error(
-          err?.response?.data?.message || err?.message || "Failed to remove organizer",
+          err?.response?.data?.message ||
+            err?.message ||
+            "Failed to remove organizer",
         );
       }
     });
@@ -98,7 +114,9 @@ export function EventOrganizersSection({ eventId }: EventOrganizersSectionProps)
             </h3>
           </div>
           <p className="text-xs text-text-muted leading-relaxed max-w-xl">
-            Authorize team members or volunteers to scan citizen QR codes and check guests in at the door. Delegates receive a check-in link without gaining host privileges.
+            Authorize team members or volunteers to scan citizen QR codes and
+            check guests in at the door. Delegates receive a check-in link
+            without gaining host privileges.
           </p>
         </div>
       </div>
@@ -107,7 +125,8 @@ export function EventOrganizersSection({ eventId }: EventOrganizersSectionProps)
         <div className="flex items-center gap-3 p-4 rounded-xl bg-white/[0.02] border border-white/5 text-xs text-white/50">
           <AlertCircle className="w-4 h-4 text-yellow-400/80 shrink-0" />
           <span>
-            Check-in delegates can be assigned once this event is booked and scheduled.
+            Check-in delegates can be assigned once this event is booked and
+            scheduled.
           </span>
         </div>
       ) : (
@@ -172,7 +191,10 @@ export function EventOrganizersSection({ eventId }: EventOrganizersSectionProps)
                     <button
                       type="button"
                       onClick={() =>
-                        handleRemove(item.userId, item.user.name || item.user.email)
+                        handleRemove(
+                          item.userId,
+                          item.user.name || item.user.email,
+                        )
                       }
                       disabled={isPending}
                       className="p-1.5 rounded-lg text-white/40 hover:text-red-400 hover:bg-red-500/10 transition-colors"
