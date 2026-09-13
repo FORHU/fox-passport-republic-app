@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useRef, useState, useCallback } from "react";
+import React, { useEffect, useLayoutEffect, useRef, useState, useCallback } from "react";
 import { useUserLocation } from "@/shared/hooks/useUserLocation";
 import {
   PartnerInvestment,
@@ -193,7 +193,9 @@ export default function PartnerInventoryMap({
   }, [activeCategory]);
 
   const investmentsRef = useRef(investments);
-  investmentsRef.current = investments;
+  useLayoutEffect(() => {
+    investmentsRef.current = investments;
+  });
 
   // Update pins when data changes
   const renderPins = useCallback(
@@ -244,7 +246,9 @@ export default function PartnerInventoryMap({
   );
 
   const renderPinsRef = useRef(renderPins);
-  renderPinsRef.current = renderPins;
+  useLayoutEffect(() => {
+    renderPinsRef.current = renderPins;
+  });
 
   // Mount Mapbox
   useEffect(() => {

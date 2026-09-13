@@ -82,6 +82,7 @@ function VenueCarousel({ images }: { images: string[] }) {
   const scroll = (dir: number) => (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
+    // eslint-disable-next-line react-hooks/refs
     scrollRef.current?.scrollBy({ left: dir * 160, behavior: "smooth" });
   };
 

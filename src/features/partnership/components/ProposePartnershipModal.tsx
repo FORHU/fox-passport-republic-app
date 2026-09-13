@@ -1,10 +1,9 @@
 "use client";
 
-import React, { useState } from "react";
+import React from "react";
 import { X } from "lucide-react";
 import { useForm } from "react-hook-form";
 import {
-  PartnershipType,
   CreatePartnershipProposalDto,
 } from "../types/partnership.types";
 import { useCreatePartnershipProposal } from "../hooks/usePartnerships";
@@ -62,7 +61,7 @@ export default function ProposePartnershipModal({
 
       await createProposal(data);
       onClose();
-    } catch (e) {
+    } catch (_e) {
       // Error handled by hook
     }
   };

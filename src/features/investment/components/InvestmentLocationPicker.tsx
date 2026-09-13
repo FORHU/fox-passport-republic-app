@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useRef, useState, useCallback } from "react";
+import React, { useEffect, useLayoutEffect, useRef, useState, useCallback } from "react";
 import { config } from "@/shared/lib/config";
 import {
   getEffectiveMapboxToken,
@@ -200,7 +200,9 @@ export default function InvestmentLocationPicker({
       : detectedCoords,
   );
   const reverseGeocodePinRef = useRef(reverseGeocodePin);
-  reverseGeocodePinRef.current = reverseGeocodePin;
+  useLayoutEffect(() => {
+    reverseGeocodePinRef.current = reverseGeocodePin;
+  });
 
   // Mount Mapbox Map
   useEffect(() => {

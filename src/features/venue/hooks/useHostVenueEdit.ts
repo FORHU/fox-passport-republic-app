@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { useAuthStore } from "@/shared/auth/useAuthStore";
@@ -124,7 +124,9 @@ export function useHostVenueEdit(venueId: string) {
   // Read it through a ref instead: the effect gets the current builder without
   // depending on an identity that changes every render.
   const builderRef = useRef(builder);
-  builderRef.current = builder;
+  useLayoutEffect(() => {
+    builderRef.current = builder;
+  });
 
   const backHref = "/creator-dashboard/venues";
 
