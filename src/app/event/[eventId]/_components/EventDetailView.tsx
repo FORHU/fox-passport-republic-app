@@ -12,6 +12,7 @@ import { EventInclusions, InclusionItem } from "./EventInclusions";
 import { EventVenueOverview } from "./EventVenueOverview";
 import { EventBookingSidebar } from "./EventBookingSidebar";
 import { EventShareModal } from "./EventShareModal";
+import { EventPaymentPanel } from "@/features/event/components/EventPaymentPanel";
 import ProposePartnershipModal from "@/features/partnership/components/ProposePartnershipModal";
 import { useAuthStore } from "@/shared/auth/useAuthStore";
 import { useRouter as useNavigationRouter } from "next/navigation";
@@ -331,6 +332,11 @@ export function EventDetailView({
                   cancellationPolicy={cancellationPolicy}
                   cancellationPolicyId={template?.cancellationPolicyId}
                 />
+
+                <div className="h-px bg-white/10 w-full" />
+
+                {/* Central Payment Panel */}
+                <EventPaymentPanel eventId={eventId} />
 
                 <div className="h-px bg-white/10 w-full" />
 

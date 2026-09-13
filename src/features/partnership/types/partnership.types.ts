@@ -20,6 +20,11 @@ export interface PartnershipProposal {
   canAccept?: boolean;
   canReject?: boolean;
   canWithdraw?: boolean;
+  payment?: {
+    required: boolean;
+    status: 'pending' | 'processing' | 'paid' | 'failed' | 'cancelled' | 'refunded' | 'partially_refunded';
+    invoiceId?: string;
+  } | null;
 }
 
 export interface CreatePartnershipProposalDto {
