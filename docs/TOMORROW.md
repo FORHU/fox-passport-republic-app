@@ -213,15 +213,12 @@ offers to reset the database when it sees drift — it wiped 148 users and
 everything else on 4 Sep. It is harmless against a genuinely empty database, but
 the explicit commands above never prompt, so use them and keep the habit.
 
-**26 is the expected number in the app, not a regression.** Measured 12 Sep; the
-baseline was 150, then 72, then 20, and every one of the 26 is the Feature Isolation
-Boundary rule - the shared-kernel rule is at zero and stays there. The command
-exits non-zero at 26, so a red run is the normal state here and only the count
-carries information. If it goes *up*, something regressed.
-
-**20 of the 26 violations belong to `republic`**, which composes eight other
-features into the social feed/messenger experience. The other 6 belong to `user`
-(reaching `follow` ×3 and `block` ×3). The counts in `app-architecture.md` are older than this line.
+**The count is 0, as of `e507f9a` (13 Sep).** Baseline was 150, then 72, then 20,
+then 26 (measured 12 Sep — the 20 in `republic` and 6 in `user`/`follow`/`block`
+were all Feature Isolation Boundary violations; the shared-kernel rule was
+already at zero). `e507f9a` finished the follow/block/messages boundary
+refactor and closed out the remainder. The command now exits zero and stays
+that way — if it goes non-zero again, something regressed.
 
 ### Read first, in this order
 
