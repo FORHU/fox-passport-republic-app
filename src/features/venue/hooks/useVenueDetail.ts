@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo } from "react";
+import { useRouter } from "next/navigation";
 import {
   useVenueDetailStore,
   useExperienceBuilderStore,
@@ -19,6 +20,7 @@ import type {
 import { useCheckoutStore } from "@/shared/store/useCheckoutStore";
 
 export function useVenueDetail(venueData?: any) {
+  const router = useRouter();
   const store = useVenueDetailStore();
 
   const nights = useMemo(() => {

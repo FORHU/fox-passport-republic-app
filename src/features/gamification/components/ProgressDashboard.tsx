@@ -127,7 +127,7 @@ export const ProgressDashboard: React.FC<ProgressDashboardProps> = ({
           {paths.map((path) => (
             <div
               key={path.path}
-              onClick={() => setSelectedPath(path.path)}
+              onClick={() => router.push("/user/passport")}
               className="glass-panel rounded-[3rem] p-10 flex flex-col items-center group hover:-translate-y-2 transition-all duration-500 cursor-pointer"
             >
               <CircularProgress

@@ -42,6 +42,7 @@ const ALL_STATUSES = [
 ];
 
 const MIN_REJECTION_REASON_LENGTH = 20;
+const PAGE_SIZE = 10;
 
 function statusColor(status: string) {
   return (

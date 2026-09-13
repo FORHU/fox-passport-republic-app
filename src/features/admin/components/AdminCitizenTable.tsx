@@ -239,7 +239,7 @@ export const AdminCitizenTable: React.FC<CitizenTableProps> = ({
 
                       {/* System role */}
                       <td className="py-3 px-5">
-                        <RoleBadge role={citizen.systemRole} style={sysStyle} />
+                        <RoleBadge style={sysStyle} />
                       </td>
 
                       {/* Platform roles (roleType[]) */}
@@ -251,7 +251,7 @@ export const AdminCitizenTable: React.FC<CitizenTableProps> = ({
                             roleTypes.map((rt) => {
                               const s = ROLE_TYPE_STYLE[rt];
                               return s ? (
-                                <RoleBadge key={rt} role={rt} style={s} />
+                                <RoleBadge key={rt} style={s} />
                               ) : (
                                 <span
                                   key={rt}
@@ -329,10 +329,7 @@ export const AdminCitizenTable: React.FC<CitizenTableProps> = ({
                               <p className="text-[9px] uppercase font-bold text-accent tracking-widest mb-3">
                                 System Role
                               </p>
-                              <RoleBadge
-                                role={citizen.systemRole}
-                                style={sysStyle}
-                              />
+                              <RoleBadge style={sysStyle} />
                               <p className="text-[10px] text-white/25 mt-2">
                                 {citizen.systemRole === "admin"
                                   ? "Full platform access"
@@ -354,7 +351,7 @@ export const AdminCitizenTable: React.FC<CitizenTableProps> = ({
                                   roleTypes.map((rt) => {
                                     const s = ROLE_TYPE_STYLE[rt];
                                     return s ? (
-                                      <RoleBadge key={rt} role={rt} style={s} />
+                                      <RoleBadge key={rt} style={s} />
                                     ) : null;
                                   })
                                 )}

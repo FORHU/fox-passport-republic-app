@@ -180,6 +180,7 @@ export function useHostEventEdit(eventId: string) {
   const [prefillError, setPrefillError] = useState<string | null>(null);
   const [activeEventId, setActiveEventId] = useState<string | null>(null);
   const existingVenueIdRef = useRef<string | null>(null);
+  const existingEndDatetimeRef = useRef<string | null>(null);
 
   const backHref = "/creator-dashboard/events";
 
@@ -321,9 +322,8 @@ export function useHostEventEdit(eventId: string) {
         if (cancelled) return;
 
         // Keep originals for update payload consistency.
-        setExistingEndDatetime(
-          found?.endDatetime ?? found?.end_datetime ?? null,
-        );
+        existingEndDatetimeRef.current =
+          found?.endDatetime ?? found?.end_datetime ?? null;
         existingVenueIdRef.current =
           found?.venueId ??
           (found?.venue as Record<string, unknown>)?.id ??

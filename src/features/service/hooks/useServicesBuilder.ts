@@ -25,6 +25,7 @@ export function useServicesBuilder() {
   const [isNotification, setIsNotification] = useState(false);
   const { uploadFile } = useFileUpload();
   const savedDraftId = useRef<string | null>(null);
+  const [categoryMap, setCategoryMap] = useState<Record<string, string>>({});
 
   // Ensure the shared store is initialized for service mode
   useEffect(() => {
