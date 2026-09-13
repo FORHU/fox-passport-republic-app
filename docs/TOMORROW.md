@@ -85,11 +85,14 @@ feed their own separate, properly-wired panels
 confirmed working. The generic `Booking.dispute()` path has no caller in the
 app today, so nothing currently relies on it working.
 
-- [ ] **Decide: delete `PATCH /bookings/:id/dispute` and `Booking.status =
-      'disputed'` if genuinely unused, or build the missing admin view.**
-      Leaving unreachable-but-callable API surface around is exactly the kind
-      of thing that gets wired to a button later by someone who has no reason
-      to suspect it doesn't work.
+- [x] **Decided and done, 13 Sep: deleted.** Confirmed zero UI callers (the
+      only "dispute" action in the app always hits the type-scoped
+      `/asset/bookings/:id/dispute` / `/service/bookings/:id/dispute`, never
+      this generic one) and zero admin-side usage. Route, controller, service
+      and repository method all removed, along with `"disputed"` as an
+      allowed value on the generic `PATCH /:id/status` endpoint — a second,
+      equally invisible door onto the same dead state. `fox-passport-republic-api`
+      commit `58298fe`.
 
 ---
 
