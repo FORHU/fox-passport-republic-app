@@ -6,9 +6,7 @@ import { useRouter } from "next/navigation";
 import CircularProgress from "@/features/gamification/components/CircularProgress";
 import { BadgeGrid } from "@/features/gamification/components/BadgeCard";
 import { PassportGrid } from "@/features/gamification/components/PassportStamp";
-import {
-  XP_REWARDS,
-} from "@/features/gamification/types/gamification";
+import { XP_REWARDS } from "@/features/gamification/types/gamification";
 import {
   calculateMasteryLevel,
   formatXP,

@@ -78,11 +78,14 @@ function getRoleMeta(foxer: Foxer) {
 function VenueCarousel({ images }: { images: string[] }) {
   const scrollRef = useRef<HTMLDivElement>(null);
 
-  const scroll = useCallback((dir: number) => (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    scrollRef.current?.scrollBy({ left: dir * 160, behavior: "smooth" });
-  }, []);
+  const scroll = useCallback(
+    (dir: number) => (e: React.MouseEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
+      scrollRef.current?.scrollBy({ left: dir * 160, behavior: "smooth" });
+    },
+    [],
+  );
 
   return (
     <div className="relative">

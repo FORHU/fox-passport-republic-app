@@ -19,7 +19,9 @@ export default function VenueBookingSuccessClient() {
   const paymentIntentId = searchParams.get("payment_intent");
   const redirectStatus = searchParams.get("redirect_status");
   const totalAmount = totalParam ? Number(totalParam) : 0;
-  const [orderNumber] = useState(() => Math.floor(10000 + Math.random() * 90000));
+  const [orderNumber] = useState(() =>
+    Math.floor(10000 + Math.random() * 90000),
+  );
 
   useEffect(() => {
     if (confirmed.current) return;

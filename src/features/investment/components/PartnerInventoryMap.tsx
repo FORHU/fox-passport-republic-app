@@ -1,6 +1,12 @@
 "use client";
 
-import React, { useEffect, useLayoutEffect, useRef, useState, useCallback } from "react";
+import React, {
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+  useCallback,
+} from "react";
 import { useUserLocation } from "@/shared/hooks/useUserLocation";
 import {
   PartnerInvestment,

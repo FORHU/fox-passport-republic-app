@@ -155,7 +155,10 @@ export function useServicesBuilder() {
           name: store.title,
           description: store.description || undefined,
           billingRate: BILLING_RATE_MAP[store.unit as ServiceUnit] || "hourly",
-          category: store.category || undefined,
+          category:
+            (store.category && categoryMap[store.category]) ||
+            store.category ||
+            undefined,
           price: parsedPrice > 0 ? parsedPrice : undefined,
           cancellationPolicyId: store.cancellationPolicyId || undefined,
         } as any);
@@ -164,7 +167,10 @@ export function useServicesBuilder() {
           name: store.title,
           description: store.description || " ",
           billingRate: BILLING_RATE_MAP[store.unit as ServiceUnit] || "hourly",
-          category: store.category || "other",
+          category:
+            (store.category && categoryMap[store.category]) ||
+            store.category ||
+            "other",
           price: parsedPrice > 0 ? parsedPrice : 1,
           city: "N/A",
           country: "PH",
@@ -245,7 +251,7 @@ export function useServicesBuilder() {
         name: store.title,
         description: store.description,
         billingRate: BILLING_RATE_MAP[store.unit as ServiceUnit] || "hourly",
-        category: store.category,
+        category: categoryMap[store.category] || store.category,
         price:
           typeof store.price === "string"
             ? parseFloat(store.price)

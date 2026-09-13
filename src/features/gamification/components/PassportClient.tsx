@@ -73,7 +73,7 @@ export const PassportClient: React.FC<PassportClientProps> = ({ user }) => {
   useEffect(() => {
     if (clientInboxPage?.data) {
       if (clientInboxOffset === 0) {
-                setClientInboxAll(clientInboxPage.data);
+        setClientInboxAll(clientInboxPage.data);
       } else {
         setClientInboxAll((prev) => [...prev, ...clientInboxPage.data]);
       }
