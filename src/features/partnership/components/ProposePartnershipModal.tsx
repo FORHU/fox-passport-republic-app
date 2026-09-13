@@ -2,10 +2,8 @@
 
 import React from "react";
 import { X } from "lucide-react";
-import { useForm } from "react-hook-form";
-import {
-  CreatePartnershipProposalDto,
-} from "../types/partnership.types";
+import { useForm, useWatch } from "react-hook-form";
+import { CreatePartnershipProposalDto } from "../types/partnership.types";
 import { useCreatePartnershipProposal } from "../hooks/usePartnerships";
 
 interface ProposePartnershipModalProps {
@@ -27,7 +25,7 @@ export default function ProposePartnershipModal({
   const {
     register,
     handleSubmit,
-    watch,
+    control,
     formState: { errors },
   } = useForm<CreatePartnershipProposalDto>({
     defaultValues: {
@@ -39,7 +37,7 @@ export default function ProposePartnershipModal({
     },
   });
 
-  const selectedType = watch("partnershipType");
+  const selectedType = useWatch({ control, name: "partnershipType" });
 
   const showAmountField =
     selectedType === "investment" ||

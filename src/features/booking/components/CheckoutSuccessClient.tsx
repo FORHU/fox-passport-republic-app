@@ -24,7 +24,9 @@ export default function CheckoutSuccessClient() {
   } = useCheckoutStore();
   const { user } = useAuthStore();
   const confirmed = useRef(false);
-  const [orderNumber] = useState(() => Math.floor(10000 + Math.random() * 90000));
+  const [orderNumber] = useState(() =>
+    Math.floor(10000 + Math.random() * 90000),
+  );
 
   // Confirm payment on the backend once, using the Stripe payment_intent from the redirect URL
   useEffect(() => {

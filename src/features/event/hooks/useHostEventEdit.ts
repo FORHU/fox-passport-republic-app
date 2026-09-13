@@ -40,8 +40,6 @@ function normalizeLower(value: unknown) {
     .replace(/\s+/g, " ");
 }
 
-
-
 function mapEventTypeToCategory(eventType: unknown): string {
   const t = normalizeLower(eventType);
   const map: Record<string, string> = {
@@ -241,8 +239,7 @@ export function useHostEventEdit(eventId: string) {
         const venueItem = builder.baseItems.find((i) =>
           VENUE_ICONS.includes(i.icon),
         );
-        const venueId =
-          venueItem?.id ?? existingVenueIdRef.current ?? null;
+        const venueId = venueItem?.id ?? existingVenueIdRef.current ?? null;
         if (venueId) {
           try {
             await api.post(`/event-templates/${eventId}/venues`, {

@@ -46,7 +46,6 @@ function shortLocation(loc: string) {
   return loc.split(",")[0].toUpperCase();
 }
 
-
 // Deterministic rotation — varies per stamp so the grid looks natural
 const ROTATIONS = [-3, 2, -1.5, 3, -2, 1, -3.5, 2.5, -1];
 

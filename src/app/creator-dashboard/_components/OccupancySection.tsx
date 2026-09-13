@@ -33,7 +33,6 @@ export function OccupancyChart() {
   );
 }
 
-
 export function PendingRequests() {
   const router = useRouter();
   const [tab, setTab] = React.useState<"pending" | "confirmed">("pending");
