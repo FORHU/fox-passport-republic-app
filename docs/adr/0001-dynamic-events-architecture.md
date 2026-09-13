@@ -1,7 +1,8 @@
 # Dynamic Events architecture — reconciling four documents into one decision
 
-**Status:** Mostly decided. One open item needs an explicit call before Phase 1
-work starts (see "Still open" below).
+**Status:** Decided. Phase sequencing is MVP-first (see "Decided 13 Sep"
+below) — the one item still owed is renumbering the two master docs to match,
+not a decision.
 
 Before this record, Dynamic Events had four documents describing its
 architecture, written across three days, that agreed on almost everything but
@@ -72,7 +73,7 @@ single decision record `DYNAMIC-EVENTS-PRODUCT-MASTER.md` §23 and
   doc's §7 exactly, down to the "do not introduce `orgType` /
   `organization_id` / membership tables yet" instruction.
 
-## Still open — needs an explicit decision before Phase 1 starts
+## Decided 13 Sep — phase sequencing is MVP-first
 
 **Phase sequencing: prove the loop first, or build the foundation first?**
 
@@ -100,22 +101,31 @@ the product/project masters that are supposed to own sequencing decisions
 (`DYNAMIC-EVENTS-PROJECT-MASTER.md` §3: Product Manager owns priority,
 Technical Lead owns architecture — sequencing sits closer to the former).
 
-**Recommendation, not a decision:** MVP-first. The reasoning in
-`DYNAMIC-EVENTS-PLAN.md` §4 is sound on its own terms — `EventRegistration`
-alone is enough to prove a stranger can find and join a public event, and
-building taxonomy/capability infrastructure ahead of that risks the exact
-premature-generalization the Product Master's own guardrails (§28: "reject...
-unnecessary new domains... premature advanced features") warn against. But
-this is a sequencing call with product-priority implications, not a technical
-correctness question, and three other documents reached a different answer —
-**it needs the Product Manager role (per §3's own separation of
-responsibilities) to make the call explicitly, not inherit it by whichever
-document gets read first.**
+**Decided 13 Sep: MVP-first.** The reasoning in `DYNAMIC-EVENTS-PLAN.md` §4 is
+sound on its own terms — `EventRegistration` alone is enough to prove a
+stranger can find and join a public event, and building taxonomy/capability
+infrastructure ahead of that risks the exact premature-generalization the
+Product Master's own guardrails (§28: "reject... unnecessary new domains...
+premature advanced features") warn against. It also unblocks faster than the
+alternative: Phase 1 depends only on Decision Point Zero (already Option B)
+and §3a, nothing else, while Taxonomy-first would gate the first shippable
+proof of the "dynamic" claim behind two phases of infrastructure nobody has
+used yet.
 
-**Until decided:** treat `DYNAMIC-EVENTS-PLAN.md` §4 as the working order
-(it's the most recently reasoned-through), but do not start Phase 1 task
-breakdown from `DYNAMIC-EVENTS-PROJECT-MASTER.md` §9's Taxonomy tasks without
-confirming this first — that document still assumes Taxonomy is Phase 1.
+This was a sequencing call with product-priority implications, not a purely
+technical one, and three of the four source documents had reached a different
+answer by inertia rather than by re-deciding — so it is recorded here
+explicitly rather than left to whichever document gets read first.
+
+**Follow-up done, 13 Sep:** `DYNAMIC-EVENTS-PRODUCT-MASTER.md` §20 and
+`DYNAMIC-EVENTS-PROJECT-MASTER.md` §8a–§15 now both run Public Event MVP →
+Taxonomy → Capability Framework → Format/Visibility → Public Participation →
+Ticketing → Sessions/Speakers, matching this decision. `PROJECT-MASTER.md`'s
+new Phase 1 section is numbered `§8a` rather than by renumbering §9 onward,
+specifically so this ADR's own `§9–§15` citations (and `PRIORITIES.md`'s `§11`
+and `§16`) didn't have to be hunted down and fixed everywhere they're quoted —
+the section numbers after `§8` are unchanged, only the "Phase N" label text in
+each heading moved.
 
 ## Still open — carried forward, unresolved in every source that mentions it
 
