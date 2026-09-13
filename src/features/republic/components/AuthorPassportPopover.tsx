@@ -3,27 +3,29 @@ import type { ReactNode } from "react";
 import { Award } from "lucide-react";
 import { FeedAuthor } from "../types";
 import { isPartnerUser } from "@/shared/auth/roles";
-import { FollowButton } from "@/features/follow/components/FollowButton";
 import { Badge } from "@/shared/components/ui/badge";
-import MessageButton from "@/features/messages/components/MessageButton";
 import { useAuthStore } from "@/shared/auth/useAuthStore";
-import { useFollowCounts } from "@/features/follow/api/useFollow";
 
 interface AuthorPassportPopoverProps {
   author: FeedAuthor;
   createdAt: string;
   isFollowingAuthor?: boolean;
+  followersCount?: number;
   /** Rendered at the end of the badges/follow row — the post-level "..."
    * menu (Edit/Delete/Save/Report), kept as a slot here so it sits in the
    * same header row as everything else instead of floating separately. */
   optionsMenu?: ReactNode;
+  followButtonSlot?: ReactNode;
+  messageButtonSlot?: ReactNode;
 }
 
 export function AuthorPassportPopover({
   author,
   createdAt,
-  isFollowingAuthor,
+  followersCount,
   optionsMenu,
+  followButtonSlot,
+  messageButtonSlot,
 }: AuthorPassportPopoverProps) {
   const citizenPath = author.passport?.paths?.find((p) => p.path === "user");
   const citizenLevel = citizenPath?.level ?? 1;
@@ -49,7 +51,6 @@ export function AuthorPassportPopover({
 
   const currentUserId = useAuthStore((state) => state.user?.id);
   const isSelf = currentUserId === author.id;
-  const { data: followCounts } = useFollowCounts(author.id);
 
   return (
     <div className="flex items-center justify-between w-full">
@@ -102,12 +103,12 @@ export function AuthorPassportPopover({
             <span>•</span>
             <span>{dateFormatted}</span>
 
-            {typeof followCounts?.followers === "number" && (
+            {typeof followersCount === "number" && (
               <>
                 <span>•</span>
                 <span>
-                  {followCounts.followers}{" "}
-                  {followCounts.followers === 1 ? "Follower" : "Followers"}
+                  {followersCount}{" "}
+                  {followersCount === 1 ? "Follower" : "Followers"}
                 </span>
               </>
             )}
@@ -142,23 +143,8 @@ export function AuthorPassportPopover({
             ))}
           </div>
         )}
-        {!isSelf && (
-          <MessageButton
-            otherUserId={author.id}
-            otherUserName={author.name}
-            otherUserImgId={author.imgId}
-            contextType="feed_post"
-            contextId={author.id}
-            contextLabel={`From a post by ${author.name}`}
-            label=""
-            className="h-8 w-8 flex items-center justify-center rounded-lg bg-zinc-800/80 text-zinc-400 hover:bg-zinc-700 hover:text-white border border-zinc-700/60 transition-all cursor-pointer shrink-0"
-          />
-        )}
-        <FollowButton
-          targetId={author.id}
-          compact={true}
-          initialIsFollowing={isFollowingAuthor}
-        />
+        {!isSelf && messageButtonSlot}
+        {followButtonSlot}
         {optionsMenu}
       </div>
     </div>

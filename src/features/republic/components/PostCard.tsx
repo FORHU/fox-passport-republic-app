@@ -26,10 +26,6 @@ import { setPostReaction, editPost } from "@/shared/api/feed";
 import { renderUsernameMentions } from "@/shared/lib/mentions";
 import { useAuthStore } from "@/shared/auth/useAuthStore";
 import { Badge } from "@/shared/components/ui/badge";
-import { SharePostModal } from "@/features/messages/components/SharePostModal";
-import { ImageLightbox } from "@/features/messages/components/ImageLightbox";
-import { useChatWindowsStore } from "@/features/messages/store/useChatWindowsStore";
-import { useStartConversation } from "@/features/messages/hooks/useMessages";
 
 const VIDEO_EXTENSIONS = [".mp4", ".mov", ".webm", ".m4v"];
 const isVideoUrl = (url: string) => {
@@ -45,6 +41,21 @@ interface PostCardProps {
    * the post again would be pointless, and comments should already be open. */
   variant?: "feed" | "modal";
   onOpenDetail?: (post: FeedPost) => void;
+  onMessageFoxerClick?: (params: {
+    authorId: string;
+    authorName: string;
+    authorImgId?: string | null;
+    contextLabel: string;
+    contextType: string;
+    contextId: string;
+  }) => void;
+  renderShareModal?: (postToShare: any, onClose: () => void) => React.ReactNode;
+  renderImageLightbox?: (
+    urls: string[],
+    startIndex: number,
+    tagsByUrl: any,
+    onClose: () => void,
+  ) => React.ReactNode;
 }
 
 export function PostCard({
@@ -52,6 +63,9 @@ export function PostCard({
   onOpenDetail,
   onPostDeleted,
   variant = "feed",
+  onMessageFoxerClick,
+  renderShareModal,
+  renderImageLightbox,
 }: PostCardProps) {
   const router = useRouter();
   const { user } = useAuthStore();
@@ -71,9 +85,6 @@ export function PostCard({
   const [editedAt, setEditedAt] = useState(post.editedAt ?? null);
   const [content, setContent] = useState(post.content);
   const [removed, setRemoved] = useState(false);
-  const openChatWindow = useChatWindowsStore((s) => s.openChat);
-  const setChatConversationId = useChatWindowsStore((s) => s.setConversationId);
-  const startConversation = useStartConversation();
 
   const handleReact = async (type: ReactionType | null) => {
     if (!user) {
@@ -150,23 +161,14 @@ export function PostCard({
       router.push("/auth/login");
       return;
     }
-    openChatWindow({
-      otherUserId: post.author.id,
-      otherUserName: post.author.name,
-      otherUserImgId: post.author.imgId,
+    onMessageFoxerClick?.({
+      authorId: post.author.id,
+      authorName: post.author.name,
+      authorImgId: post.author.imgId,
       contextLabel,
+      contextType,
+      contextId,
     });
-    startConversation.mutate(
-      { otherUserId: post.author.id, contextType, contextId, contextLabel },
-      {
-        onSuccess: (conversation) =>
-          setChatConversationId(post.author.id, conversation.id),
-        onError: (e: any) =>
-          toast.error(
-            e?.response?.data?.message || "Could not start this conversation.",
-          ),
-      },
-    );
   };
 
   const handleRemoved = (postId: string) => {
@@ -399,9 +401,7 @@ export function PostCard({
                 </div>
               )}
               <MediaTagOverlay
-                tags={
-                  post.mediaTags?.filter((t) => t.mediaUrl === url) ?? []
-                }
+                tags={post.mediaTags?.filter((t) => t.mediaUrl === url) ?? []}
               />
             </div>
           ))}
@@ -715,9 +715,9 @@ export function PostCard({
         </div>
       </div>
 
-      {showShareModal && (
-        <SharePostModal
-          post={{
+      {showShareModal &&
+        renderShareModal?.(
+          {
             id: post.id,
             content: post.content,
             mediaUrls: post.mediaUrls,
@@ -726,19 +726,17 @@ export function PostCard({
               name: post.author.name,
               imgId: post.author.imgId,
             },
-          }}
-          onClose={() => setShowShareModal(false)}
-        />
-      )}
+          },
+          () => setShowShareModal(false),
+        )}
 
-      {lightboxIndex !== null && (
-        <ImageLightbox
-          urls={post.mediaUrls}
-          startIndex={lightboxIndex}
-          tagsByUrl={post.mediaTags}
-          onClose={() => setLightboxIndex(null)}
-        />
-      )}
+      {lightboxIndex !== null &&
+        renderImageLightbox?.(
+          post.mediaUrls,
+          lightboxIndex,
+          post.mediaTags,
+          () => setLightboxIndex(null),
+        )}
 
       {showRepostModal && (
         <RepostComposer post={post} onClose={() => setShowRepostModal(false)} />

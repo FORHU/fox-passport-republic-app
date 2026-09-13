@@ -15,11 +15,15 @@ import {
 } from "@/shared/api/citizen";
 import { useAuthStore } from "@/shared/auth/useAuthStore";
 import { isPartnerUser } from "@/shared/auth/roles";
-import { FollowButton } from "@/features/follow/components/FollowButton";
-import { FollowListModal } from "@/features/follow/components/FollowListModal";
-import { useFollowCounts } from "@/features/follow/api/useFollow";
-import { BlockMenuButton } from "@/features/block/components/BlockMenuButton";
-import { useBlockStatus } from "@/features/block/api/useBlock";
+
+export interface PublicCitizenProfileViewProps {
+  followCounts?: { followers: number; following: number };
+  isBlocked?: boolean;
+  onFollowersClick?: () => void;
+  onFollowingClick?: () => void;
+  renderFollowButton?: (targetId: string) => React.ReactNode;
+  renderBlockMenuButton?: (targetId: string) => React.ReactNode;
+}
 
 const FALLBACK_AVATAR =
   "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=400&auto=format&fit=crop";
@@ -58,17 +62,18 @@ const RARITY_COLORS: Record<
 
 type ProfileTab = "stamps" | "badges" | "activity" | "offerings";
 
-export default function PublicCitizenProfileView() {
+export default function PublicCitizenProfileView({
+  followCounts,
+  isBlocked,
+  onFollowersClick,
+  onFollowingClick,
+  renderFollowButton,
+  renderBlockMenuButton,
+}: PublicCitizenProfileViewProps) {
   const { id } = useParams<{ id: string }>();
   const router = useRouter();
   const { user: currentUser } = useAuthStore();
   const [activeTab, setActiveTab] = useState<ProfileTab>("stamps");
-  const [followListTab, setFollowListTab] = useState<
-    "followers" | "following" | null
-  >(null);
-  const { data: followCounts } = useFollowCounts(id);
-  const { data: blockStatus } = useBlockStatus(id);
-  const isBlocked = blockStatus?.blockedByMe || blockStatus?.blockedMe;
 
   const {
     data: profile,
@@ -245,7 +250,7 @@ export default function PublicCitizenProfileView() {
                 {followCounts && (
                   <span className="flex items-center gap-2 text-zinc-400 pl-1 border-l border-zinc-700 ml-1">
                     <button
-                      onClick={() => setFollowListTab("followers")}
+                      onClick={onFollowersClick}
                       className="flex items-center gap-1 hover:text-white transition-colors cursor-pointer"
                     >
                       <strong className="text-white">
@@ -254,7 +259,7 @@ export default function PublicCitizenProfileView() {
                       Followers
                     </button>
                     <button
-                      onClick={() => setFollowListTab("following")}
+                      onClick={onFollowingClick}
                       className="flex items-center gap-1 hover:text-white transition-colors cursor-pointer"
                     >
                       <strong className="text-white">
@@ -300,7 +305,7 @@ export default function PublicCitizenProfileView() {
                 <>
                   {!isBlocked && (
                     <>
-                      <FollowButton targetId={profile.id} />
+                      {renderFollowButton?.(profile.id)}
                       <Link
                         href={`/messages?userId=${profile.id}&contextType=profile&contextId=${profile.id}&contextLabel=${encodeURIComponent(profile.name)}`}
                         className="h-9 px-5 rounded-xl bg-gradient-to-r from-lime-400 to-emerald-400 hover:from-lime-300 hover:to-emerald-300 text-black font-black text-xs flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(163,230,53,0.3)] transition-all cursor-pointer"
@@ -312,7 +317,7 @@ export default function PublicCitizenProfileView() {
                       </Link>
                     </>
                   )}
-                  <BlockMenuButton targetId={profile.id} />
+                  {renderBlockMenuButton?.(profile.id)}
                 </>
               )}
               {isMe && (
@@ -880,14 +885,6 @@ export default function PublicCitizenProfileView() {
           )}
         </div>
       </div>
-
-      {followListTab && profile && (
-        <FollowListModal
-          userId={profile.id}
-          initialTab={followListTab}
-          onClose={() => setFollowListTab(null)}
-        />
-      )}
     </div>
   );
 }

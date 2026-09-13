@@ -6,18 +6,11 @@ import { createPortal } from "react-dom";
 import { Check, Search, Users, X } from "lucide-react";
 import { toast } from "sonner";
 import { useAuthStore } from "@/shared/auth/useAuthStore";
-import { useFollowing } from "@/features/follow/api/useFollow";
 import {
   useConversations,
   useCreateGroupConversation,
 } from "../hooks/useMessages";
-import type { Conversation } from "../types";
-
-interface Candidate {
-  id: string;
-  name: string;
-  imgId: string | null;
-}
+import type { Conversation, Candidate } from "../types";
 
 interface NewGroupModalProps {
   onClose: () => void;
@@ -26,6 +19,7 @@ interface NewGroupModalProps {
    * "Create group with {name}" from a 1:1 chat panel, where they might not
    * be in the following/recent-chats list this modal otherwise builds from. */
   initialParticipant?: Candidate;
+  followingUsers?: Candidate[];
 }
 
 // Messenger-style "New Group" sheet: pick 2+ people from who you follow or
@@ -36,10 +30,10 @@ export function NewGroupModal({
   onClose,
   onCreated,
   initialParticipant,
+  followingUsers,
 }: NewGroupModalProps) {
   const { user } = useAuthStore();
   const userId = user?.id as string | undefined;
-  const { data: followingPage } = useFollowing(userId);
   const { data: conversations = [] } = useConversations();
   const createGroup = useCreateGroupConversation();
 
@@ -75,7 +69,7 @@ export function NewGroupModal({
         imgId: c.otherUser.imgId,
       });
     }
-    for (const f of followingPage?.data ?? []) {
+    for (const f of followingUsers ?? []) {
       if (!byId.has(f.id)) {
         byId.set(f.id, { id: f.id, name: f.name, imgId: f.imgId });
       }
@@ -87,7 +81,7 @@ export function NewGroupModal({
     return trimmedQuery
       ? list.filter((c) => c.name?.toLowerCase().includes(trimmedQuery))
       : list;
-  }, [conversations, followingPage, userId, query, initialParticipant]);
+  }, [conversations, followingUsers, userId, query, initialParticipant]);
 
   const toggle = (id: string) => {
     setSelected((prev) => {

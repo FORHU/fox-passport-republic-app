@@ -1,12 +1,6 @@
 "use client";
 
-import {
-  useState,
-  useEffect,
-  useCallback,
-  useRef,
-  Suspense,
-} from "react";
+import { useState, useEffect, useCallback, useRef, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { CheckCircle2, Inbox, Search } from "lucide-react";
 import { FeedPost, FeedTab } from "@/features/republic/types";
@@ -17,10 +11,10 @@ import { ComposePostModal } from "@/features/republic/components/ComposePostModa
 import { FeedSortMenu } from "@/features/republic/components/FeedSortMenu";
 import { PostCard } from "@/features/republic/components/PostCard";
 import { PostDetailModal } from "@/features/republic/components/PostDetailModal";
-import { FollowingWidget } from "@/features/republic/components/FollowingWidget";
 import { RepublicLeftSidebar } from "@/features/republic/components/RepublicLeftSidebar";
 import { RepublicRightSidebar } from "@/features/republic/components/RepublicRightSidebar";
 import { RepublicMobileControlBar } from "@/features/republic/components/RepublicMobileControlBar";
+import FollowingWidgetSection from "./FollowingWidgetSection";
 import PartnerInventoryMap from "@/features/investment/components/PartnerInventoryMap";
 import LandingHeader from "@/features/landing/components/sections/LandingHeader";
 
@@ -277,9 +271,7 @@ function RepublicFeedContent() {
           {/* ── LEFT COLUMN (Locked at Top, Never Scrolls Away) ─────────────── */}
           <RepublicLeftSidebar
             mapSlot={
-              <PartnerInventoryMap
-                className="h-[360px] w-full rounded-2xl overflow-hidden"
-              />
+              <PartnerInventoryMap className="h-[360px] w-full rounded-2xl overflow-hidden" />
             }
           />
 
@@ -346,7 +338,7 @@ function RepublicFeedContent() {
             {/* Following — tablet only; hidden on mobile (too cramped
                 there) and hidden on xl+ (already in the right sidebar) */}
             <div className="hidden md:block xl:hidden w-full overflow-x-auto snap-x snap-mandatory pb-2 -mx-3 px-3 sm:mx-0 sm:px-0">
-              <FollowingWidget />
+              <FollowingWidgetSection />
             </div>
 
             {/* Mobile Equipment Depots link — rendered by RepublicMobileControlBar */}
@@ -433,7 +425,9 @@ function RepublicFeedContent() {
           </main>
 
           {/* ── RIGHT COLUMN (Large Desktop xl: >= 1280px) ──────────────────── */}
-          <RepublicRightSidebar />
+          <RepublicRightSidebar>
+            <FollowingWidgetSection />
+          </RepublicRightSidebar>
         </div>
       </div>
 
