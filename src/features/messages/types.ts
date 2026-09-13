@@ -4,6 +4,17 @@ export interface ConversationParticipant {
   imgId: string | null;
 }
 
+/**
+ * Someone eligible to start a conversation with, add to a group, or forward
+ * a message/post to — the shape every "send to" picker in this feature needs.
+ * Same shape as `ConversationParticipant`, named separately because the two
+ * meanings (an existing conversation's participant vs. a followed user who
+ * could become one) are conceptually distinct even though the data lines up.
+ * Was independently redeclared in four components with drifting `imgId`
+ * optionality; this is the one place it should be defined now.
+ */
+export type Candidate = ConversationParticipant;
+
 export type ConversationStatus = "pending" | "accepted";
 
 export interface Conversation {

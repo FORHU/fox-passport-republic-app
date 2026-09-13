@@ -6,17 +6,17 @@ import { createPortal } from "react-dom";
 import { Check, Search, Send, Users, X } from "lucide-react";
 import { toast } from "sonner";
 import { useAuthStore } from "@/shared/auth/useAuthStore";
-import { useFollowing } from "@/features/follow/api/useFollow";
 import {
   useConversations,
   useStartConversation,
   useSendMessage,
 } from "../hooks/useMessages";
-import type { Message } from "../types";
+import type { Message, Candidate } from "../types";
 
 interface ForwardMessageModalProps {
   message: Message;
   onClose: () => void;
+  followingUsers?: Candidate[];
 }
 
 interface Recipient {
@@ -35,10 +35,10 @@ interface Recipient {
 export function ForwardMessageModal({
   message,
   onClose,
+  followingUsers,
 }: ForwardMessageModalProps) {
   const { user } = useAuthStore();
   const userId = user?.id as string | undefined;
-  const { data: followingPage } = useFollowing(userId);
   const { data: conversations = [] } = useConversations();
   const startConversation = useStartConversation();
   const sendMessage = useSendMessage();
@@ -84,7 +84,7 @@ export function ForwardMessageModal({
         isGroup: false,
       });
     }
-    for (const f of followingPage?.data ?? []) {
+    for (const f of followingUsers ?? []) {
       const key = `user:${f.id}`;
       if (!byKey.has(key)) {
         byKey.set(key, {
@@ -103,7 +103,7 @@ export function ForwardMessageModal({
     return trimmedQuery
       ? list.filter((r) => r.name?.toLowerCase().includes(trimmedQuery))
       : list;
-  }, [conversations, followingPage, userId, query]);
+  }, [conversations, followingUsers, userId, query]);
 
   const toggle = (key: string) => {
     setSelected((prev) => {

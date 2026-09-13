@@ -1,8 +1,11 @@
 "use client";
 
 import { useAuthStore } from "@/shared/auth/useAuthStore";
-import { useFollowStatus, useSendFollow, useRemoveFollow } from "../api/useFollow";
-import { useBlockStatus } from "@/features/block/api/useBlock";
+import {
+  useFollowStatus,
+  useSendFollow,
+  useRemoveFollow,
+} from "../api/useFollow";
 import { Loader2, UserPlus, UserCheck, Clock } from "lucide-react";
 import { toast } from "sonner";
 
@@ -13,6 +16,7 @@ interface FollowButtonProps {
   /** Skips the initial GET /follows/:id/status round trip when the caller
    * already knows the answer (e.g. it came embedded in a feed response). */
   initialIsFollowing?: boolean;
+  isBlocked?: boolean;
 }
 
 export function FollowButton({
@@ -20,20 +24,20 @@ export function FollowButton({
   className = "",
   compact = false,
   initialIsFollowing,
+  isBlocked,
 }: FollowButtonProps) {
   const { user, openLogin } = useAuthStore();
   const { data: status, isLoading } = useFollowStatus(
     user ? targetId : undefined,
     initialIsFollowing,
   );
-  const { data: blockStatus } = useBlockStatus(user ? targetId : undefined);
   const sendFollow = useSendFollow();
   const removeFollow = useRemoveFollow();
 
   const isSelf = user?.id === targetId;
 
   if (isSelf) return null;
-  if (blockStatus?.blockedByMe || blockStatus?.blockedMe) return null;
+  if (isBlocked) return null;
 
   const relation = status?.status ?? "none";
   // Not tied to `relation` display: the mutations set `followStatus`

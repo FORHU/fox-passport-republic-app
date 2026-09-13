@@ -16,10 +16,6 @@ import {
   type FoxerVenue,
   type FoxerAsset,
 } from "@/shared/api/foxers";
-import {
-  fetchEventTemplateById,
-  EventTemplateDetail,
-} from "@/features/event/api/event-templates";
 import DateRangePicker, {
   diffDays,
   formatDate,
@@ -50,7 +46,7 @@ interface ResourceOwner {
 
 function getRoleLabel(roleType: string[]): string {
   if (roleType.includes("eventFoxer")) return "Event Foxer";
-  if (roleType.includes("gearFoxer")) return "Gear Foxer";
+  if (roleType.includes("gearFoxer")) return "Equipment Foxer";
   if (roleType.includes("serviceFoxer")) return "Talent Foxer";
   return "Foxer";
 }
@@ -61,7 +57,11 @@ function foxerAvatarUrl(imgId: string | null | undefined, name: string) {
     : `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=ccff00&color=000`;
 }
 
-const MatchConfig: React.FC = () => {
+interface MatchConfigProps {
+  fetchTemplate: (id: string) => Promise<any>;
+}
+
+const MatchConfig: React.FC<MatchConfigProps> = ({ fetchTemplate }) => {
   const router = useRouter();
   const { foxerId } = useParams();
   const { isAuthenticated, openLogin } = useAuthStore();
@@ -79,8 +79,10 @@ const MatchConfig: React.FC = () => {
   const [isLoadingFoxers, setIsLoadingFoxers] = useState(true);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [detailsStyle, setDetailsStyle] = useState<string | null>(null);
-  const [templateDetail, setTemplateDetail] =
-    useState<EventTemplateDetail | null>(null);
+  // `any` deliberately — `fetchTemplate` is a prop precisely so this feature
+  // doesn't import `event`'s API client or types directly (see the prop's
+  // own `Promise<any>` signature).
+  const [templateDetail, setTemplateDetail] = useState<any>(null);
   const [templateDetailLoading, setTemplateDetailLoading] = useState(false);
   const [resourceOwners, setResourceOwners] = useState<
     Record<string, ResourceOwner>
@@ -272,16 +274,20 @@ const MatchConfig: React.FC = () => {
     if (!templateId) return;
     setTemplateDetailLoading(true);
     try {
-      const detail = await fetchEventTemplateById(templateId);
+      const detail = await fetchTemplate(templateId);
       setTemplateDetail(detail);
 
       const ownerIds = Array.from(
         new Set(
           [
-            ...(detail.templateVenues ?? []).map((tv) => tv.venue?.mayorId),
-            ...(detail.templateAssets ?? []).map((ta) => ta.asset?.ownerId),
+            ...(detail.templateVenues ?? []).map(
+              (tv: any) => tv.venue?.mayorId,
+            ),
+            ...(detail.templateAssets ?? []).map(
+              (ta: any) => ta.asset?.ownerId,
+            ),
             ...(detail.templateServices ?? []).map(
-              (ts) => ts.service?.ownerId,
+              (ts: any) => ts.service?.ownerId,
             ),
           ].filter((id): id is string => Boolean(id)),
         ),
@@ -408,8 +414,8 @@ const MatchConfig: React.FC = () => {
                   <p className="text-sm text-text-muted max-w-2xl mx-auto">
                     These are events{" "}
                     <span className="text-white font-bold">{foxer.name}</span>{" "}
-                    has brought to life. Browse what they offer —
-                    they&apos;ll tailor it entirely to you.
+                    has brought to life. Browse what they offer — they&apos;ll
+                    tailor it entirely to you.
                   </p>
                 </div>
 
@@ -593,10 +599,7 @@ const MatchConfig: React.FC = () => {
                             pattern="[0-9]*"
                             value={guests}
                             onChange={(e) => {
-                              const digits = e.target.value.replace(
-                                /\D/g,
-                                "",
-                              );
+                              const digits = e.target.value.replace(/\D/g, "");
                               setGuests(
                                 digits === "" ? 0 : parseInt(digits, 10),
                               );
@@ -987,153 +990,155 @@ const MatchConfig: React.FC = () => {
               </div>
 
               <div className="overflow-y-auto flex-1 px-8 py-5 space-y-5">
-              {templateDetailLoading && (
-                <div className="flex items-center justify-center py-10">
-                  <div className="w-8 h-8 border-4 border-accent/20 border-t-accent rounded-full animate-spin" />
-                </div>
-              )}
+                {templateDetailLoading && (
+                  <div className="flex items-center justify-center py-10">
+                    <div className="w-8 h-8 border-4 border-accent/20 border-t-accent rounded-full animate-spin" />
+                  </div>
+                )}
 
-              {!templateDetailLoading && templateDetail && (
-                <div className="space-y-5">
-                  {templateDetail.images?.[0]?.url && (
-                    <div className="h-72 w-full rounded-2xl overflow-hidden bg-white/5 border border-white/10">
-                      <img
-                        src={templateDetail.images[0].url}
-                        alt={detailsStyle}
-                        className="w-full h-full object-cover"
-                      />
+                {!templateDetailLoading && templateDetail && (
+                  <div className="space-y-5">
+                    {templateDetail.images?.[0]?.url && (
+                      <div className="h-72 w-full rounded-2xl overflow-hidden bg-white/5 border border-white/10">
+                        <img
+                          src={templateDetail.images[0].url}
+                          alt={detailsStyle}
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                    )}
+
+                    <p className="text-sm text-white/70 leading-relaxed whitespace-pre-wrap">
+                      {templateDetail.description ||
+                        `The venue, services, and equipment ${foxer.name} lined up for this package — each supplied by the Foxer who owns it.`}
+                    </p>
+
+                    <div className="flex flex-wrap gap-2">
+                      {templateDetail.category && (
+                        <span className="px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wide bg-white/5 text-white/60 border border-white/10">
+                          {templateDetail.category}
+                        </span>
+                      )}
+                      {(templateDetail.targetCity ||
+                        templateDetail.targetState) && (
+                        <span className="px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wide bg-white/5 text-white/60 border border-white/10">
+                          {[
+                            templateDetail.targetCity,
+                            templateDetail.targetState,
+                          ]
+                            .filter(Boolean)
+                            .join(", ")}
+                        </span>
+                      )}
+                      {templateDetail.maxAttendees && (
+                        <span className="px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wide bg-white/5 text-white/60 border border-white/10">
+                          Up to {templateDetail.maxAttendees} guests
+                        </span>
+                      )}
+                      {!!templateDetail.estimatedTotal && (
+                        <span className="px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wide bg-accent/10 text-accent border border-accent/20">
+                          ~₱{templateDetail.estimatedTotal.toLocaleString()}{" "}
+                          estimated
+                        </span>
+                      )}
                     </div>
+                  </div>
+                )}
+
+                {!templateDetailLoading && templateDetail && (
+                  <p className="text-xs font-bold uppercase tracking-widest text-white/40">
+                    What&apos;s Included
+                  </p>
+                )}
+
+                {!templateDetailLoading &&
+                  templateDetail &&
+                  [
+                    {
+                      label: "Venue",
+                      items: (templateDetail.templateVenues ?? [])
+                        .map((tv: any) => tv.venue)
+                        .filter(Boolean)
+                        .map((v: any) => ({ ...v, ownerId: v.mayorId })),
+                    },
+                    {
+                      label: "Services",
+                      items: (templateDetail.templateServices ?? [])
+                        .map((ts: any) => ts.service)
+                        .filter(Boolean),
+                    },
+                    {
+                      label: "Equipment",
+                      items: (templateDetail.templateAssets ?? [])
+                        .map((ta: any) => ta.asset)
+                        .filter(Boolean),
+                    },
+                  ].map(({ label, items }) =>
+                    items.length > 0 ? (
+                      <div key={label} className="space-y-3">
+                        <h4 className="text-xs font-bold uppercase tracking-widest text-white/40">
+                          {label}
+                        </h4>
+                        <div className="grid sm:grid-cols-2 gap-3">
+                          {items.map((item: any) => {
+                            const owner = resourceOwners[item.ownerId];
+                            return (
+                              <div
+                                key={item.id}
+                                className="flex gap-3 p-3 rounded-2xl bg-white/3 border border-white/5"
+                              >
+                                <div className="h-14 w-14 shrink-0 rounded-xl overflow-hidden bg-white/5">
+                                  {item.images?.[0]?.url ? (
+                                    <img
+                                      src={item.images[0].url}
+                                      alt={item.name}
+                                      className="w-full h-full object-cover"
+                                    />
+                                  ) : (
+                                    <div className="w-full h-full flex items-center justify-center">
+                                      <span className="material-symbols-outlined text-white/20 text-xl">
+                                        category
+                                      </span>
+                                    </div>
+                                  )}
+                                </div>
+                                <div className="min-w-0">
+                                  <p className="text-sm font-bold text-white truncate">
+                                    {item.name}
+                                  </p>
+                                  <p className="text-[10px] uppercase tracking-wide text-accent/70">
+                                    {item.category}
+                                  </p>
+                                  {item.price > 0 && (
+                                    <p className="text-xs text-white/50 mt-0.5">
+                                      ₱{item.price.toLocaleString()}
+                                      {item.billingRate
+                                        ? ` / ${item.billingRate}`
+                                        : ""}
+                                    </p>
+                                  )}
+                                  <p className="text-[10px] text-white/30 mt-1 truncate">
+                                    Supplied by {owner?.name ?? "another Foxer"}
+                                  </p>
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    ) : null,
                   )}
 
-                  <p className="text-sm text-white/70 leading-relaxed whitespace-pre-wrap">
-                    {templateDetail.description ||
-                      `The venue, services, and equipment ${foxer.name} lined up for this package — each supplied by the Foxer who owns it.`}
-                  </p>
-
-                  <div className="flex flex-wrap gap-2">
-                    {templateDetail.category && (
-                      <span className="px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wide bg-white/5 text-white/60 border border-white/10">
-                        {templateDetail.category}
-                      </span>
-                    )}
-                    {(templateDetail.targetCity ||
-                      templateDetail.targetState) && (
-                      <span className="px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wide bg-white/5 text-white/60 border border-white/10">
-                        {[templateDetail.targetCity, templateDetail.targetState]
-                          .filter(Boolean)
-                          .join(", ")}
-                      </span>
-                    )}
-                    {templateDetail.maxAttendees && (
-                      <span className="px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wide bg-white/5 text-white/60 border border-white/10">
-                        Up to {templateDetail.maxAttendees} guests
-                      </span>
-                    )}
-                    {!!templateDetail.estimatedTotal && (
-                      <span className="px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wide bg-accent/10 text-accent border border-accent/20">
-                        ~₱{templateDetail.estimatedTotal.toLocaleString()}{" "}
-                        estimated
-                      </span>
-                    )}
-                  </div>
-                </div>
-              )}
-
-              {!templateDetailLoading && templateDetail && (
-                <p className="text-xs font-bold uppercase tracking-widest text-white/40">
-                  What&apos;s Included
-                </p>
-              )}
-
-              {!templateDetailLoading &&
-                templateDetail &&
-                [
-                  {
-                    label: "Venue",
-                    items: (templateDetail.templateVenues ?? [])
-                      .map((tv) => tv.venue)
-                      .filter(Boolean)
-                      .map((v) => ({ ...v, ownerId: v.mayorId })),
-                  },
-                  {
-                    label: "Services",
-                    items: (templateDetail.templateServices ?? [])
-                      .map((ts) => ts.service)
-                      .filter(Boolean),
-                  },
-                  {
-                    label: "Equipment",
-                    items: (templateDetail.templateAssets ?? [])
-                      .map((ta) => ta.asset)
-                      .filter(Boolean),
-                  },
-                ].map(({ label, items }) =>
-                  items.length > 0 ? (
-                    <div key={label} className="space-y-3">
-                      <h4 className="text-xs font-bold uppercase tracking-widest text-white/40">
-                        {label}
-                      </h4>
-                      <div className="grid sm:grid-cols-2 gap-3">
-                        {items.map((item) => {
-                          const owner = resourceOwners[item.ownerId];
-                          return (
-                            <div
-                              key={item.id}
-                              className="flex gap-3 p-3 rounded-2xl bg-white/3 border border-white/5"
-                            >
-                              <div className="h-14 w-14 shrink-0 rounded-xl overflow-hidden bg-white/5">
-                                {item.images?.[0]?.url ? (
-                                  <img
-                                    src={item.images[0].url}
-                                    alt={item.name}
-                                    className="w-full h-full object-cover"
-                                  />
-                                ) : (
-                                  <div className="w-full h-full flex items-center justify-center">
-                                    <span className="material-symbols-outlined text-white/20 text-xl">
-                                      category
-                                    </span>
-                                  </div>
-                                )}
-                              </div>
-                              <div className="min-w-0">
-                                <p className="text-sm font-bold text-white truncate">
-                                  {item.name}
-                                </p>
-                                <p className="text-[10px] uppercase tracking-wide text-accent/70">
-                                  {item.category}
-                                </p>
-                                {item.price > 0 && (
-                                  <p className="text-xs text-white/50 mt-0.5">
-                                    ₱{item.price.toLocaleString()}
-                                    {item.billingRate
-                                      ? ` / ${item.billingRate}`
-                                      : ""}
-                                  </p>
-                                )}
-                                <p className="text-[10px] text-white/30 mt-1 truncate">
-                                  Supplied by{" "}
-                                  {owner?.name ?? "another Foxer"}
-                                </p>
-                              </div>
-                            </div>
-                          );
-                        })}
-                      </div>
-                    </div>
-                  ) : null,
-                )}
-
-              {!templateDetailLoading &&
-                templateDetail &&
-                (templateDetail.templateVenues ?? []).length === 0 &&
-                (templateDetail.templateServices ?? []).length === 0 &&
-                (templateDetail.templateAssets ?? []).length === 0 && (
-                  <p className="text-sm text-white/40 text-center py-4">
-                    This package doesn&apos;t have any venue, service, or
-                    equipment connections attached yet.
-                  </p>
-                )}
+                {!templateDetailLoading &&
+                  templateDetail &&
+                  (templateDetail.templateVenues ?? []).length === 0 &&
+                  (templateDetail.templateServices ?? []).length === 0 &&
+                  (templateDetail.templateAssets ?? []).length === 0 && (
+                    <p className="text-sm text-white/40 text-center py-4">
+                      This package doesn&apos;t have any venue, service, or
+                      equipment connections attached yet.
+                    </p>
+                  )}
               </div>
 
               <div className="flex justify-center gap-3 p-6 border-t border-white/10 shrink-0">

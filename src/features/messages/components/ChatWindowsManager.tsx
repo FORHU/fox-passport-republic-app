@@ -4,6 +4,7 @@ import { useEffect } from "react";
 import { useChatWindowsStore } from "../store/useChatWindowsStore";
 import { PANEL_WIDTH, PANEL_GAP, EDGE_OFFSET } from "../constants";
 import ChatPanel from "./ChatPanel";
+import type { Candidate } from "../types";
 
 // Mounted once at the app root. Every trigger across the app (post authors,
 // the Following widget, the Messages page, message requests) opens chats
@@ -12,7 +13,13 @@ import ChatPanel from "./ChatPanel";
 // windows/bubbles, so several open chats stack side by side (and several
 // minimized ones stack on top of each other) instead of every trigger point
 // piling its own panel on the same fixed position.
-export default function ChatWindowsManager() {
+interface ChatWindowsManagerProps {
+  followingUsers?: Candidate[];
+}
+
+export default function ChatWindowsManager({
+  followingUsers,
+}: ChatWindowsManagerProps = {}) {
   const windows = useChatWindowsStore((s) => s.windows);
   const setMaxOpenWindows = useChatWindowsStore((s) => s.setMaxOpenWindows);
 
@@ -45,6 +52,7 @@ export default function ChatWindowsManager() {
             key={w.id}
             chatWindow={w}
             minimizedCount={minimizedCount}
+            followingUsers={followingUsers}
             {...props}
           />
         );

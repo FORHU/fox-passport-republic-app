@@ -66,7 +66,7 @@ export const ROLE_BADGE: Record<RoleType, { label: string; color: string }> =
   {
     venueFoxer: { label: "Venue Foxer", color: "#ec4899" },
     eventFoxer: { label: "Event Foxer", color: "#a78bfa" },
-    gearFoxer: { label: "Gear Foxer", color: "#38bdf8" },
-    serviceFoxer: { label: "Service Foxer", color: "#34d399" },
+    gearFoxer: { label: "Equipment Foxer", color: "#38bdf8" },
+    serviceFoxer: { label: "Talent Foxer", color: "#34d399" },
     investor: { label: "Partner Foxer", color: "#10b981" },
   };

@@ -112,7 +112,52 @@ Before database implementation begins, the team must confirm:
 
 **Exit criteria:** Architecture approved. Existing relationships documented. Migration impact reviewed. Developers understand the new domain boundaries.
 
-## 9. Dynamic Events — Phase 1: Event Taxonomy
+## 8a. Dynamic Events — Phase 1: Public Event MVP
+
+**Resequenced 13 Sep** — see `docs/adr/0001-dynamic-events-architecture.md`'s
+"Decided 13 Sep" section for the reasoning, and `DYNAMIC-EVENTS-PLAN.md` §4
+Phase 1 for the full technical detail this section summarizes. Inserted as
+its own numbered-but-lettered section (`8a`) rather than renumbering every
+section from 9 onward, because `§9`–`§16` are cited by number elsewhere in
+this doc tree (`docs/PRIORITIES.md` P2, the ADR itself) and a wholesale
+renumbering would silently break every one of those references. Every phase
+after this one keeps its `##` section number; only the "Phase N" label in
+each heading shifted up by one to match the new execution order.
+
+Proves the public-participation loop end to end — a stranger can find and
+join a public event — before any taxonomy or capability-toggle
+infrastructure exists to support it. No subcategories, no format/visibility
+enum, no ticketing.
+
+**Scope:** `EventRegistration` (eventId, userId, status, ticketCode,
+checkedIn, registeredAt), wired to the existing `Waitlist` model so capacity
+overflow behaves identically to a private booking.
+
+**Tasks:**
+
+| Task | Description |
+|---|---|
+| TASK-01 | Create EventRegistration schema + migration |
+| TASK-02 | Wire EventRegistration to the existing Waitlist model |
+| TASK-03 | Join/leave endpoints, enforcing EventTemplate.maxAttendees against live registration counts |
+| TASK-04 | Reuse existing checkedIn/ticketCode shape and creator-dashboard/check-in UI, pointed at EventRegistration rows for public templates |
+| TASK-05 | Add backend tests |
+| TASK-06 | "Join"/"Register" action on the public event page, distinct from the existing booking-request flow |
+| TASK-07 | Bundle with the sharing work already tracked in PRIORITIES.md (OG fix, share/invite UI, QR) — the MVP is only as useful as the link people can act on |
+
+**Role note:** this is the phase a lightweight event partner (run club,
+community organizer) actually touches. `"Partner"` is taken —
+`investor` already owns that word. Name and scope a lighter-weight role
+(e.g. "Event Operator") before or alongside this phase; see `PRIORITIES.md`.
+
+**Depends on:** Phase 0 (architecture decision) and `DYNAMIC-EVENTS-PLAN.md`
+§3a (a new `EventRegistration` domain, not a reuse of `BookingAttendee`) only.
+
+**Exit criteria:** A stranger can register for a public event, be capped by
+`maxAttendees`, and be checked in at the door, all without touching the
+private Booking flow.
+
+## 9. Dynamic Events — Phase 2: Event Taxonomy
 
 **Scope:** `Category`, `Parent Category`, `Subcategory`, `Tag`, `EventTag`
 
@@ -135,7 +180,11 @@ Before database implementation begins, the team must confirm:
 
 **Exit criteria:** Existing EventTemplates continue working. Existing categories preserved. New categories addable without code changes. Search/filter works. Tests pass.
 
-## 10. Dynamic Events — Phase 2: Capability Framework
+## 10. Dynamic Events — Phase 3: Capability Framework
+
+Formalizes Phase 1's hardcoded public/registration behavior behind an
+explicit per-template toggle — retrofitting what Phase 1 proved ad hoc, not
+building the capability model from scratch.
 
 Implement `EventCapability`, `EventTemplateCapability`.
 
@@ -168,7 +217,7 @@ The frontend may disable invalid combinations, but the backend remains authorita
 
 > **Open reconciliation item (carried from `DYNAMIC-EVENTS-PLAN.md`):** this is now confirmed, in two separate documents, as an intentional dependency — not a typo. It still needs reconciling against current behavior, where `maxAttendees` on `EventTemplate` already caps private-booking events with no registration capability at all. Decide: drop the `CAPACITY → REGISTRATION` edge, or redefine `REGISTRATION` in this graph to mean "some attendee-tracking mechanism" (booking OR public) rather than specifically the new public flow.
 
-## 12. Dynamic Events — Phase 3: Format and Visibility
+## 12. Dynamic Events — Phase 4: Format and Visibility
 
 Implement `format` (`IN_PERSON`, `VIRTUAL`, `HYBRID`) and `visibility` (`PUBLIC`, `PRIVATE`, `UNLISTED`).
 
@@ -178,15 +227,24 @@ Implement `format` (`IN_PERSON`, `VIRTUAL`, `HYBRID`) and `visibility` (`PUBLIC`
 
 **Exit criteria:** Existing templates remain functional. New visibility options work. Format validation works. API tests pass. UI reflects the new state.
 
-## 13. Dynamic Events — Phase 4: Public Event Participation
+## 13. Dynamic Events — Phase 5: Public Event Participation
 
-Introduces the new public participation domain. **Do not simply repurpose `BookingAttendee`.**
+**Extends** the `EventRegistration` domain Phase 1's MVP already introduced —
+capacity, waitlist and cancellation handling on top of the join/leave/check-in
+loop that phase proved, now that Phase 3 has given it a formal capability to
+hang off. Not a from-scratch build, and **do not simply repurpose
+`BookingAttendee`** for it either.
 
 ```
 Event → EventRegistration → Participant
 ```
 
-**Tasks:**
+**Tasks:** TASK-01 and TASK-02 below are now largely done by Phase 1
+(`EventRegistration` already exists and the occurrence model is settled) —
+kept in the table rather than deleted, since re-deriving what's left of each
+is exactly the kind of stale-count mistake this doc tree warns against
+elsewhere. Re-check against Phase 1's actual output before starting this
+phase, don't assume the table below.
 
 | Task | Description |
 |---|---|
@@ -205,7 +263,7 @@ Event → EventRegistration → Participant
 
 **Exit criteria:** User can register. Limits enforced. Cancellation works. Waitlist works where enabled. Check-in works. Unauthorized access rejected. Existing Booking flow unaffected.
 
-## 14. Dynamic Events — Phase 5: Ticketing
+## 14. Dynamic Events — Phase 6: Ticketing
 
 Implement `EventTicketTier`, `EventTicket` (e.g. General / VIP / Student).
 
@@ -213,7 +271,7 @@ Implement `EventTicketTier`, `EventTicket` (e.g. General / VIP / Student).
 
 **Dependency:** Ticketing requires `REGISTRATION`. Reuse existing payment infrastructure.
 
-## 15. Dynamic Events — Phase 6: Sessions and Speakers
+## 15. Dynamic Events — Phase 7: Sessions and Speakers
 
 Implement `EventSession`, `EventSpeaker`.
 

@@ -12,6 +12,9 @@ import { EventInclusions, InclusionItem } from "./EventInclusions";
 import { EventVenueOverview } from "./EventVenueOverview";
 import { EventBookingSidebar } from "./EventBookingSidebar";
 import { EventShareModal } from "./EventShareModal";
+import ProposePartnershipModal from "@/features/partnership/components/ProposePartnershipModal";
+import { useAuthStore } from "@/shared/auth/useAuthStore";
+import { useRouter as useNavigationRouter } from "next/navigation";
 
 const CATEGORY_ICONS: Record<string, string> = {
   music: "music_note",
@@ -55,9 +58,11 @@ export function EventDetailView({
   mapLat,
   mapLng,
 }: EventDetailViewProps) {
-  const router = useRouter();
+  const router = useNavigationRouter();
+  const { user } = useAuthStore();
   const [isCustomBookingOpen, setIsCustomBookingOpen] = useState(false);
   const [isShareOpen, setIsShareOpen] = useState(false);
+  const [isPartnershipOpen, setIsPartnershipOpen] = useState(false);
 
   const templateImages: string[] = (template?.images ?? [])
     .map((img: any) => img.url)
@@ -65,6 +70,15 @@ export function EventDetailView({
 
   const maxAttendees: number | null = template?.maxAttendees ?? null;
   const category: string = template?.category ?? "";
+  
+  const handleProposePartnership = () => {
+    // Basic redirect for non-partners, although backend may supply a clearer flag in V2
+    if (!user?.roleType?.includes('investor')) {
+      router.push('/onboarding/partner');
+    } else {
+      setIsPartnershipOpen(true);
+    }
+  };
 
   return (
     <div className="bg-background bg-gradient-dark text-text-main antialiased min-h-screen flex flex-col selection:bg-accent selection:text-black font-body">
@@ -84,6 +98,13 @@ export function EventDetailView({
           onClose={() => setIsCustomBookingOpen(false)}
           venuePrice={price}
         />
+        {isPartnershipOpen && (
+          <ProposePartnershipModal
+            targetEventId={eventId}
+            targetName={template.name || "Untitled Event"}
+            onClose={() => setIsPartnershipOpen(false)}
+          />
+        )}
 
         {/* Draft Preview Top Banner */}
         {isPreview && isDraft && (
@@ -133,6 +154,17 @@ export function EventDetailView({
               </h2>
             </Link>
             <div className="flex items-center gap-4">
+              {!isPreview && (
+                <button
+                  onClick={handleProposePartnership}
+                  className="hidden sm:flex items-center gap-2 px-4 py-2 rounded-full border border-white/10 hover:bg-[#ccff00]/10 hover:border-[#ccff00]/30 text-sm font-medium text-white hover:text-[#ccff00] transition-colors cursor-pointer"
+                >
+                  <span className="material-symbols-outlined text-[18px]">
+                    handshake
+                  </span>{" "}
+                  Propose Partnership
+                </button>
+              )}
               <button
                 onClick={() => setIsShareOpen(true)}
                 className="hidden sm:flex items-center gap-2 px-4 py-2 rounded-full border border-white/10 hover:bg-white/5 text-sm font-medium text-white cursor-pointer"

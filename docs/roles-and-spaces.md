@@ -13,13 +13,13 @@ above both — what the roles *are*, and what each one gets to look at.
 ## 0. The idea, in one paragraph
 
 A Venue Foxer or an Event Foxer is not just a listing. It is the **host of a
-community**: Service Foxers — gear, talent, catering, photography — apply to it,
+community**: Talent Foxers — gear, talent, catering, photography — apply to it,
 are accepted or refused by it, and once inside work under its rules. So the
 platform has two kinds of application, and only the first exists today:
 
 1. **Apply to be a Foxer.** A person asks the platform for a `RoleType`, and an
    admin reviews it. This is `RoleRequest`, and it is built.
-2. **Apply to a community.** An accepted Service Foxer asks a *specific* venue
+2. **Apply to a community.** An accepted Talent Foxer asks a *specific* venue
    or a *specific* Event Foxer to work with them, and that host reviews it.
    **Nothing for this exists.**
 
@@ -50,7 +50,7 @@ by `talentFoxer` too.
 ### Why flat rather than nested
 
 The question put in the conversation was: *if someone is a `gearFoxer`, are they
-also a `serviceFoxer`?* The answer was **yes** — which makes "Service Foxer" a
+also a `serviceFoxer`?* The answer was **yes** — which makes "Talent Foxer" a
 **category label, not a role** — named **Provider**, see below. Permissions stay on the leaves.
 
 That is the cheap answer, and it is worth being explicit about what it buys:
@@ -58,7 +58,7 @@ That is the cheap answer, and it is worth being explicit about what it buys:
 - **No inheritance.** Nothing in either codebase resolves a permission through a
   parent role today, and this decision means nothing has to start.
 - **No migration for the grouping.** `roleType` stays `["gearFoxer"]`. Nothing
-  stored says "also a Service Foxer" — the grouping is a constant in the app,
+  stored says "also a Talent Foxer" — the grouping is a constant in the app,
   read only when deciding which page tree to render.
 - **`can()` is untouched.** Six leaves, six grants, still `Record<RoleType, …>`,
   so a seventh role still fails to compile until someone grants it something.
@@ -69,7 +69,7 @@ and it introduces a resolution order that then has to be right everywhere.
 
 ### The umbrella is called **Provider** — **Decided**
 
-"Service Foxer" was briefly both the umbrella *and* one of its three leaves. The
+"Talent Foxer" was briefly both the umbrella *and* one of its three leaves. The
 same name meaning two things, adjacent, inside a permission vocabulary, is how
 `RBAC.md` describes drift starting — so the umbrella is **Provider**:
 
@@ -131,9 +131,9 @@ role that provides it.
 
 ## 3. The community layer — an organisation, but only a roster — **Decided**
 
-A Service Foxer applies to a Venue or to an Event Foxer, and that host accepts
+A Talent Foxer applies to a Venue or to an Event Foxer, and that host accepts
 or refuses them. The shape is an **organisation**: the venue or Event Foxer is
-the org, the accepted Service Foxers are its members, and a member applies for a
+the org, the accepted Talent Foxers are its members, and a member applies for a
 named role within it — photographer, sound, catering.
 
 **Membership grants no platform permission.** That was decided explicitly, and
@@ -215,8 +215,8 @@ Three defects, all live:
 
 - **Gear and Service cross-grant.** `isFoxer` is true if the user holds *either*
   `gearFoxer` or `serviceFoxer`; then `canManageInventory` and
-  `canManageServices` both admit `isFoxer`. So a Service Foxer gets the gear UI
-  and a Gear Foxer gets the services UI. **The six roles cannot be separated in
+  `canManageServices` both admit `isFoxer`. So a Talent Foxer gets the gear UI
+  and a Equipment Foxer gets the services UI. **The six roles cannot be separated in
   the UI while the hook says two of them are the same thing.**
 - **Admins get everything unlocked.** `canManageVenues: isMayor || isAdmin`, and
   the same for the other three. The API deliberately withholds `venue:manage`,
@@ -293,7 +293,7 @@ the duplication FoxPassport removed. Copy the route separation, not the gates.
 | Talent | **Its own resource type** — `entertainment` leaves `ServiceCategory` |
 | Roster label | **Derived, not stored** — no `roleLabel` column |
 | Dashboard | **Work surface** + one dismissible hint |
-| Service Foxer as a role | **No** — category label, permissions stay on leaves |
+| Talent Foxer as a role | **No** — category label, permissions stay on leaves |
 | Community membership | **Roster only** — grants no permission |
 | API source layout | **21 flat modules by domain** — not nested by Foxer role |
 | Table renames (`@@map`) | **Deferred** — see api `docs/adr/0003` |

@@ -15,9 +15,15 @@ import {
 import { useAuthStore } from "@/shared/auth/useAuthStore";
 import { useChatWindowsStore } from "../store/useChatWindowsStore";
 import { NewGroupModal } from "./NewGroupModal";
-import type { Conversation } from "../types";
+import type { Conversation, Candidate } from "../types";
 
-export default function ConversationListClient() {
+interface ConversationListClientProps {
+  followingUsers?: Candidate[];
+}
+
+export default function ConversationListClient({
+  followingUsers,
+}: ConversationListClientProps = {}) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const queryClient = useQueryClient();
@@ -324,6 +330,7 @@ export default function ConversationListClient() {
             setNewGroupOpen(false);
             openConversation(conversation);
           }}
+          followingUsers={followingUsers}
         />
       )}
     </div>

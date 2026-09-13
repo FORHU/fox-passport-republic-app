@@ -60,13 +60,14 @@
 - [ ] **Reconcile the `CAPACITY → REGISTRATION` capability dependency.** Confirmed intentional in both `DYNAMIC-EVENTS-PRODUCT-MASTER.md` §16 and `DYNAMIC-EVENTS-PROJECT-MASTER.md` §11, but it contradicts current behavior — `maxAttendees` on `EventTemplate` already caps private-booking events with no registration capability at all. Decide: drop the `CAPACITY → REGISTRATION` edge, or redefine `REGISTRATION` in that graph to mean "some attendee-tracking mechanism" (booking OR public) rather than specifically the new public flow.
 - [ ] **Map the 5 legacy `EventCategory` enum values into the new taxonomy** (`corporate`, `birthday`, `wedding`, `social`, `other` → which Category/Subcategory each becomes) before the Phase 1 migration runs, so nothing already in the database is orphaned.
 - [x] **ADR written** — [`docs/adr/0001-dynamic-events-architecture.md`](./adr/0001-dynamic-events-architecture.md), 12 Sep. Reconciles all three Dynamic Events docs plus an external recommendation doc reviewed the same day.
-  - [ ] **One thing the ADR surfaced that it can't resolve itself:** `DYNAMIC-EVENTS-PLAN.md` (resequenced 11 Sep, MVP-first) disagrees with `DYNAMIC-EVENTS-PRODUCT-MASTER.md` + `DYNAMIC-EVENTS-PROJECT-MASTER.md` + the external doc (all three still Taxonomy-first) on phase order. Needs an explicit product-priority call — see the ADR's "Still open" section for both sides' reasoning.
+  - [x] **Phase sequencing decided 13 Sep: MVP-first** (`DYNAMIC-EVENTS-PLAN.md` §4's order — Public Event MVP → Taxonomy → Capability Framework), recorded in the ADR's "Decided 13 Sep" section.
+  - [x] **Follow-up from that decision — done 13 Sep:** `DYNAMIC-EVENTS-PRODUCT-MASTER.md` §20 and `DYNAMIC-EVENTS-PROJECT-MASTER.md` §8a–§15 now both run MVP-first, matching the ADR. `PROJECT-MASTER.md`'s new Phase 1 section is `§8a` (not a renumbering of §9 onward), so every existing `§9`–`§16` citation elsewhere in these docs stays correct.
 - [ ] Confirm Decision Point Zero and §3a are explicitly approved (currently inferred from the Product Master doc being marked Active, not separately confirmed).
 - [ ] **Name and scope a lightweight event-operator role.** `"Partner"` is taken — `investor` already displays as **"Partner Foxer"** in the UI (`roles.ts:71`) and means capital/inventory/venue-equity/sponsorship. A registration/check-in-only partner (run clubs, community organizers) needs its own name (e.g. "Event Operator") and a lighter application flow than full `EventFoxer` KYC (BIR permit, NBI, portfolio, ID, TIN).
 
 ## P3 — New work, nothing broken, do after P0–P2
 
-- [ ] **Kick off Dynamic Events Phase 1 (Taxonomy)** — TASK-01 through TASK-10 per `DYNAMIC-EVENTS-PROJECT-MASTER.md` §9, once the P2 items above are settled.
+- [ ] **Kick off Dynamic Events Phase 1 (Public Event MVP)** — see `DYNAMIC-EVENTS-PROJECT-MASTER.md` §8a, once the P2 items above are settled. Phase 2 (Taxonomy, §9, TASK-01 through TASK-10) follows it, not the other way around — see the 13 Sep resequencing decision.
 
 ---
 

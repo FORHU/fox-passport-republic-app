@@ -27,10 +27,6 @@ import {
 import { useAuthStore } from "@/shared/auth/useAuthStore";
 import { isPartnerUser } from "@/shared/auth/roles";
 import api from "@/shared/lib/axios";
-import { fetchVenuesByHostId } from "@/features/venue/api/venues";
-import { fetchAssetsByOwnerId } from "@/features/asset/api/assets";
-import { fetchServicesByOwnerId } from "@/features/service/api/services";
-import { fetchOrganizerEvents } from "@/features/event/api/events";
 import { StyledSelect } from "./StyledSelect";
 
 const VIDEO_EXTENSIONS = [".mp4", ".mov", ".webm", ".m4v"];
@@ -43,7 +39,13 @@ interface PendingTag extends PendingMediaTag {
   mediaUrl: string;
 }
 
-interface ComposePostBoxProps {
+export interface ResourceOption {
+  id: string | number;
+  name?: string;
+  title?: string;
+}
+
+export interface ComposePostBoxProps {
   onPostCreated?: () => void;
   /** Rendered inside ComposePostModal, which already supplies the card
    * chrome (border, background, header) — drops this component's own so
@@ -52,64 +54,21 @@ interface ComposePostBoxProps {
   /** Closes the containing modal after a successful post. Only meaningful
    * alongside `embedded`. */
   onClose?: () => void;
-}
 
-interface ResourceOption {
-  id: string | number;
-  name?: string;
-  title?: string;
+  fetchVenues?: (ownerId: string) => Promise<ResourceOption[]>;
+  fetchAssets?: (ownerId: string) => Promise<ResourceOption[]>;
+  fetchServices?: (ownerId: string) => Promise<ResourceOption[]>;
+  fetchEvents?: (ownerId: string) => Promise<ResourceOption[]>;
 }
-
-// Commercial post types embed a specific listing the author owns — the feed
-// API validates ownership of this id server-side (feed.service.ts), so this
-// only needs to help the user pick a valid one from what they actually have.
-const RESOURCE_CONFIG: Partial<
-  Record<
-    PostType,
-    {
-      field: "venueId" | "assetId" | "serviceId" | "eventId";
-      label: string;
-      createHref: string;
-      emptyMessage: string;
-      fetcher: (ownerId: string) => Promise<ResourceOption[]>;
-    }
-  >
-> = {
-  venue_spotlight: {
-    field: "venueId",
-    label: "Venue",
-    createHref: "/venue-foxer/create-venue",
-    emptyMessage: "You don't have any venues yet.",
-    fetcher: fetchVenuesByHostId,
-  },
-  gear_offering: {
-    field: "assetId",
-    label: "Gear",
-    createHref: "/foxer/create-listing",
-    emptyMessage: "You don't have any gear listings yet.",
-    fetcher: fetchAssetsByOwnerId,
-  },
-  service_offering: {
-    field: "serviceId",
-    label: "Service",
-    createHref: "/foxer/create-service",
-    emptyMessage: "You don't have any service listings yet.",
-    fetcher: fetchServicesByOwnerId,
-  },
-  event_announcement: {
-    field: "eventId",
-    label: "Event",
-    createHref: "/foxer/create-event",
-    emptyMessage:
-      "No scheduled events yet — they appear here once someone books your event template.",
-    fetcher: fetchOrganizerEvents,
-  },
-};
 
 export function ComposePostBox({
   onPostCreated,
   embedded = false,
   onClose,
+  fetchVenues,
+  fetchAssets,
+  fetchServices,
+  fetchEvents,
 }: ComposePostBoxProps) {
   const router = useRouter();
   const { user } = useAuthStore();
@@ -154,13 +113,54 @@ export function ComposePostBox({
     };
   }, [mentionQuery]);
 
-  // Looked up and fetched unconditionally (rules of hooks) even before the
-  // `!user` early return below — `enabled` gates the actual network call.
+  const RESOURCE_CONFIG: Partial<
+    Record<
+      PostType,
+      {
+        field: "venueId" | "assetId" | "serviceId" | "eventId";
+        label: string;
+        createHref: string;
+        emptyMessage: string;
+        fetcher?: (ownerId: string) => Promise<ResourceOption[]>;
+      }
+    >
+  > = {
+    venue_spotlight: {
+      field: "venueId",
+      label: "Venue",
+      createHref: "/venue-foxer/create-venue",
+      emptyMessage: "You don't have any venues yet.",
+      fetcher: fetchVenues,
+    },
+    gear_offering: {
+      field: "assetId",
+      label: "Gear",
+      createHref: "/foxer/create-listing",
+      emptyMessage: "You don't have any gear listings yet.",
+      fetcher: fetchAssets,
+    },
+    service_offering: {
+      field: "serviceId",
+      label: "Service",
+      createHref: "/foxer/create-service",
+      emptyMessage: "You don't have any service listings yet.",
+      fetcher: fetchServices,
+    },
+    event_announcement: {
+      field: "eventId",
+      label: "Event",
+      createHref: "/foxer/create-event",
+      emptyMessage:
+        "No scheduled events yet — they appear here once someone books your event template.",
+      fetcher: fetchEvents,
+    },
+  };
+
   const resourceConfig = RESOURCE_CONFIG[type];
   const { data: resourceOptions = [], isLoading: resourceLoading } = useQuery({
     queryKey: ["compose-resource", resourceConfig?.field, user?.id],
-    queryFn: () => resourceConfig!.fetcher(user!.id),
-    enabled: !!user?.id && !!resourceConfig,
+    queryFn: () => resourceConfig?.fetcher?.(user!.id) ?? Promise.resolve([]),
+    enabled: !!user?.id && !!resourceConfig && !!resourceConfig.fetcher,
     staleTime: 30_000,
   });
 
@@ -296,9 +296,6 @@ export function ComposePostBox({
     cursorPosRef.current = cursor;
 
     const uptoCursor = value.slice(0, cursor);
-    // {0,32}, not {1,32} — a bare "@" with nothing typed yet should still
-    // open the picker (empty-query search), matching Facebook's mention
-    // picker instead of waiting for the first letter.
     const match = uptoCursor.match(/@([a-zA-Z0-9_]{0,32})$/);
     setMentionQuery(match ? match[1] : null);
   };
@@ -370,9 +367,6 @@ export function ComposePostBox({
       }
     >
       <form onSubmit={handleSubmit}>
-        {/* Post Type Selector — role-based options (venue/gear/service/
-            event/partner) can add up to seven choices, so this needs to be
-            a dropdown rather than a pill grid. */}
         <div className="mb-3">
           <StyledSelect
             value={type}
@@ -389,8 +383,6 @@ export function ComposePostBox({
           />
         </div>
 
-        {/* Resource Picker — commercial post types must attach one of the
-            author's own listings; the feed API validates ownership server-side. */}
         {resourceConfig && (
           <div className="mb-3">
             {resourceLoading ? (
@@ -423,7 +415,6 @@ export function ComposePostBox({
           </div>
         )}
 
-        {/* Text Area */}
         <div className="relative">
           <textarea
             ref={textareaRef}
@@ -479,7 +470,6 @@ export function ComposePostBox({
           )}
         </div>
 
-        {/* Media Preview Grid */}
         {mediaUrls.length > 0 && (
           <div className="flex gap-2 flex-wrap mt-2.5">
             {mediaUrls.map((url, idx) => {
@@ -512,8 +502,6 @@ export function ComposePostBox({
                   >
                     ✕
                   </button>
-                  {/* Photo tagging isn't meaningful on video — FB only tags
-                      people in photos, not a moving frame. */}
                   {!isVideoUrl(url) && (
                     <button
                       type="button"
@@ -559,7 +547,6 @@ export function ComposePostBox({
           />
         )}
 
-        {/* Bottom Actions Bar */}
         <div className="flex items-center justify-between gap-2 mt-3 pt-2.5 border-t border-zinc-800/60">
           <div className="flex items-center gap-2">
             <input
@@ -582,7 +569,6 @@ export function ComposePostBox({
               </span>
             </button>
 
-            {/* Visibility Selector */}
             <div className="flex items-center gap-1 text-xs text-zinc-400 py-1 px-2 rounded-lg bg-zinc-800/40">
               {visibility === "public" ? (
                 <Globe2 className="h-3.5 w-3.5" strokeWidth={2} />
@@ -604,13 +590,6 @@ export function ComposePostBox({
               </select>
             </div>
 
-            {/* XP Award Pill — hidden at xl+ because that's exactly where
-                this box only ever renders inside the Republic sidebar
-                (page.tsx's `hidden xl:block` column), whose "Publish
-                Update · +15 XP / Post" header already says this; showing
-                both left this bar fighting the submit button for space in
-                a 320-384px column. Below xl it's the mobile composer modal,
-                which has no such header, so the pill stays there. */}
             <span className="hidden sm:inline-flex xl:hidden items-center gap-1 text-[11px] font-bold text-amber-400 bg-amber-500/10 border border-amber-500/20 px-2 py-0.5 rounded-full">
               <span className="material-symbols-outlined text-[12px]">
                 bolt
@@ -637,9 +616,6 @@ export function ComposePostBox({
         {error && <p className="text-xs text-rose-400 mt-2">{error}</p>}
       </form>
 
-      {/* globals.css hides scrollbars everywhere except .custom-scrollbar,
-          which is itself tuned for light backgrounds — this pill row needs
-          its own dark-theme thumb, horizontal (height, not width). */}
       <style jsx global>{`
         .post-type-scrollbar::-webkit-scrollbar {
           height: 6px;

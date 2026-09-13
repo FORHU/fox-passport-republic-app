@@ -7,12 +7,12 @@ import { useEffect } from "react";
 import { Check, Search, Send, Users, X } from "lucide-react";
 import { toast } from "sonner";
 import { useAuthStore } from "@/shared/auth/useAuthStore";
-import { useFollowing } from "@/features/follow/api/useFollow";
 import {
   useConversations,
   useStartConversation,
   useSendMessage,
 } from "../hooks/useMessages";
+import type { Candidate } from "../types";
 
 export interface SharePostTarget {
   id: string;
@@ -24,6 +24,7 @@ export interface SharePostTarget {
 interface SharePostModalProps {
   post: SharePostTarget;
   onClose: () => void;
+  followingUsers?: Candidate[];
 }
 
 interface Recipient {
@@ -40,10 +41,13 @@ interface Recipient {
 // add an optional caption, and share a post into a (possibly brand-new)
 // conversation with each of them — reusing the same startConversation +
 // sendMessage plumbing ChatPanel uses, just looped over the selection.
-export function SharePostModal({ post, onClose }: SharePostModalProps) {
+export function SharePostModal({
+  post,
+  onClose,
+  followingUsers,
+}: SharePostModalProps) {
   const { user } = useAuthStore();
   const userId = user?.id as string | undefined;
-  const { data: followingPage } = useFollowing(userId);
   const { data: conversations = [] } = useConversations();
   const startConversation = useStartConversation();
   const sendMessage = useSendMessage();
@@ -94,7 +98,7 @@ export function SharePostModal({ post, onClose }: SharePostModalProps) {
         isGroup: false,
       });
     }
-    for (const f of followingPage?.data ?? []) {
+    for (const f of followingUsers ?? []) {
       const key = `user:${f.id}`;
       if (!byKey.has(key)) {
         byKey.set(key, {
@@ -113,7 +117,7 @@ export function SharePostModal({ post, onClose }: SharePostModalProps) {
     return trimmedQuery
       ? list.filter((r) => r.name?.toLowerCase().includes(trimmedQuery))
       : list;
-  }, [conversations, followingPage, userId, query]);
+  }, [conversations, followingUsers, userId, query]);
 
   const toggle = (key: string) => {
     setSelected((prev) => {

@@ -6,18 +6,11 @@ import { createPortal } from "react-dom";
 import { Check, Search, UserPlus, X } from "lucide-react";
 import { toast } from "sonner";
 import { useAuthStore } from "@/shared/auth/useAuthStore";
-import { useFollowing } from "@/features/follow/api/useFollow";
 import {
   useConversations,
   useAddGroupParticipants,
 } from "../hooks/useMessages";
-import type { Conversation } from "../types";
-
-interface Candidate {
-  id: string;
-  name: string;
-  imgId: string | null;
-}
+import type { Conversation, Candidate } from "../types";
 
 interface AddGroupMemberModalProps {
   conversationId: string;
@@ -25,6 +18,7 @@ interface AddGroupMemberModalProps {
   existingParticipantIds: string[];
   onClose: () => void;
   onAdded: (conversation: Conversation) => void;
+  followingUsers?: Candidate[];
 }
 
 // Same recipient-picker shape as NewGroupModal, but adding to an existing
@@ -35,10 +29,10 @@ export function AddGroupMemberModal({
   existingParticipantIds,
   onClose,
   onAdded,
+  followingUsers,
 }: AddGroupMemberModalProps) {
   const { user } = useAuthStore();
   const userId = user?.id as string | undefined;
-  const { data: followingPage } = useFollowing(userId);
   const { data: conversations = [] } = useConversations();
   const addParticipants = useAddGroupParticipants();
 
@@ -76,7 +70,7 @@ export function AddGroupMemberModal({
         imgId: c.otherUser.imgId,
       });
     }
-    for (const f of followingPage?.data ?? []) {
+    for (const f of followingUsers ?? []) {
       if (excludeIds.has(f.id) || byId.has(f.id)) continue;
       byId.set(f.id, { id: f.id, name: f.name, imgId: f.imgId });
     }
@@ -86,7 +80,7 @@ export function AddGroupMemberModal({
     return trimmedQuery
       ? list.filter((c) => c.name?.toLowerCase().includes(trimmedQuery))
       : list;
-  }, [conversations, followingPage, excludeIds, query]);
+  }, [conversations, followingUsers, excludeIds, query]);
 
   const toggle = (id: string) => {
     setSelected((prev) => {

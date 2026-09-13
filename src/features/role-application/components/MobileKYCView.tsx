@@ -7,8 +7,8 @@ type RoleType = "venueFoxer" | "eventFoxer" | "gearFoxer" | "serviceFoxer";
 const ROLE_DISPLAY: Record<RoleType, string> = {
   venueFoxer: "Venue Foxer",
   eventFoxer: "Event Foxer",
-  gearFoxer: "Gear Foxer",
-  serviceFoxer: "Service Foxer",
+  gearFoxer: "Equipment Foxer",
+  serviceFoxer: "Talent Foxer",
 };
 
 type StepStatus = "verified" | "in-review" | "required";
