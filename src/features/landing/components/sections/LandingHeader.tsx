@@ -28,7 +28,7 @@ const NAV_TABS = [
   { label: "Explore", href: "/" },
   { label: "Foxers", href: "/search" },
   { label: "Map", href: "/venues/map" },
-  { label: "Foxer Community", href: "/republic" },
+  { label: "Foxer Republic", href: "/republic" },
 ];
 
 export default function LandingHeader({
@@ -99,7 +99,7 @@ export default function LandingHeader({
                         icon={false}
                         className="pointer-events-none absolute -top-3 -right-8 whitespace-nowrap bg-zinc-900 text-[9px] shadow-md"
                       >
-                        Beta
+                        Beta Community
                       </Badge>
                     )}
                   </div>

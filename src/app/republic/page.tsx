@@ -40,14 +40,9 @@ function RepublicFeedContent() {
   const postsListRef = useRef<HTMLDivElement>(null);
 
   // The app hides scrollbars globally (see .custom-scrollbar in globals.css)
-  // so infinite-scroll feeds like this one give no visual sense of how much
-  // is left. Opt this page's page-level scrollbar back in for as long as
-  // it's mounted, so scroll position is always visible.
+  // We apply the custom-scrollbar to the feed container below.
   useEffect(() => {
-    document.documentElement.classList.add("custom-scrollbar");
-    return () => {
-      document.documentElement.classList.remove("custom-scrollbar");
-    };
+    // No longer applying to document.documentElement as the page is now fixed 100vh
   }, []);
 
   const handleOpenDetail = useCallback((post: FeedPost) => {
@@ -254,31 +249,39 @@ function RepublicFeedContent() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-[#09090e] text-white pb-36 pt-16 sm:pt-28 selection:bg-lime-400 selection:text-black">
+    <div className="h-[100dvh] overflow-hidden flex flex-col bg-[#09090e] text-white pt-16 sm:pt-28 selection:bg-lime-400 selection:text-black">
       {/* ── SAME FLOATING PILL HEADER USED ON / , /search, /venues/map ──────── */}
       <LandingHeader />
 
-      <div className="max-w-[1440px] mx-auto px-3 sm:px-6">
-        {/* ── LOCKED MOBILE CONTROL BAR (Slim, docks under the floating header) ─ */}
+      <div className="max-w-[1440px] mx-auto px-3 sm:px-6 w-full flex-1 min-h-0 flex flex-col overflow-hidden">
+        {/* Mobile controls stay fixed within the viewport */}
         <RepublicMobileControlBar
           activeTab={activeTab}
           onTabChange={handleTabChange}
           onComposeOpen={() => setComposeOpen(true)}
         />
 
-        {/* ── SCREEN-ADAPTIVE RESPONSIVE LAYOUT (Mobile, Tablet, Desktop) ─── */}
-        <div className="flex flex-col md:flex-row gap-6 items-start justify-center pt-5">
-          {/* ── LEFT COLUMN (Locked at Top, Never Scrolls Away) ─────────────── */}
-          <RepublicLeftSidebar
-            mapSlot={
-              <PartnerInventoryMap className="h-[360px] w-full rounded-2xl overflow-hidden" />
-            }
-          />
+        {/* Main three-column layout */}
+        <div className="flex flex-col md:flex-row gap-6 items-start justify-center pt-5 flex-1 min-h-0 overflow-hidden">
+          {/* LEFT SIDEBAR
+              - Independent scrolling
+              - Does not expand the page
+              - Remains contained within viewport */}
+          <aside className="hidden md:block h-full min-h-0 w-[280px] shrink-0 overflow-y-auto overscroll-contain custom-scrollbar pr-2 pb-12">
+            <RepublicLeftSidebar
+              mapSlot={
+                <PartnerInventoryMap className="h-[360px] w-full rounded-2xl overflow-hidden" />
+              }
+            />
+          </aside>
 
-          {/* ── MIDDLE COLUMN (Spacious Feeds & Floating Search) ────────────── */}
-          <main className="flex-1 min-w-0 max-w-2xl xl:max-w-2xl space-y-5 w-full min-h-[85vh]">
+          {/* CENTER FEED
+              - Facebook-style primary scroll area
+              - Only the feed moves
+              - Page/body does not scroll */}
+          <main className="flex-1 min-w-0 min-h-0 max-w-2xl xl:max-w-2xl w-full h-full overflow-y-auto overscroll-contain custom-scrollbar px-1 pb-12">
             {/* Search Input */}
-            <div className="relative z-30 backdrop-blur-xl bg-zinc-950/90 border border-zinc-800/90 rounded-2xl p-2 sm:p-2.5 shadow-[0_10px_35px_rgba(0,0,0,0.7)] transition-all">
+            <div className="relative z-30 backdrop-blur-xl bg-zinc-950/90 border border-zinc-800/90 rounded-2xl p-2 sm:p-2.5 shadow-[0_10px_35px_rgba(0,0,0,0.7)]">
               <form
                 onSubmit={handleSearchSubmit}
                 className="relative flex items-center"
@@ -287,6 +290,7 @@ function RepublicFeedContent() {
                   className="absolute left-3.5 h-[18px] w-[18px] text-zinc-400"
                   strokeWidth={2}
                 />
+
                 <input
                   type="text"
                   value={searchInput}
@@ -312,122 +316,137 @@ function RepublicFeedContent() {
               </form>
             </div>
 
-            {/* Publish Update — same trigger-opens-modal composer used
-                everywhere else, placed right under the search bar so it's
-                the first thing seen on every breakpoint. */}
-            <div className="space-y-1.5">
+            {/* Publish */}
+            <div className="space-y-1.5 mt-5">
               <ComposePostTrigger onOpen={() => setComposeOpen(true)} />
             </div>
 
-            {/* Feed filters — stream (All Feeds/Community/...) and sort
-                (Recent/Top Posts), grouped together instead of one being
-                buried inside the search bar. */}
-            <div className="flex items-center justify-between px-1">
+            {/* Feed filters */}
+            <div className="flex items-center justify-between px-1 mt-5">
               <span className="text-sm font-black text-white">Posts</span>
+
               <div className="flex items-center gap-1">
                 <RepublicTabs
                   activeTab={activeTab}
                   onTabChange={handleTabChange}
                   orientation="dropdown"
                 />
+
                 <span className="w-px h-4 bg-zinc-800" />
-                <FeedSortMenu mode={mode} onChange={setMode} />
+
+                <FeedSortMenu
+                  mode={mode}
+                  onChange={setMode}
+                />
               </div>
             </div>
 
-            {/* Following — tablet only; hidden on mobile (too cramped
-                there) and hidden on xl+ (already in the right sidebar) */}
-            <div className="hidden md:block xl:hidden w-full overflow-x-auto snap-x snap-mandatory pb-2 -mx-3 px-3 sm:mx-0 sm:px-0">
+            {/* Following — tablet only */}
+            <div className="hidden md:block xl:hidden w-full overflow-x-auto snap-x snap-mandatory pb-2 mt-5 -mx-3 px-3 sm:mx-0 sm:px-0">
               <FollowingWidgetSection />
             </div>
 
-            {/* Mobile Equipment Depots link — rendered by RepublicMobileControlBar */}
+            {/* Feed */}
+            <div className="mt-5">
+              {loading ? (
+                <div className="space-y-4">
+                  {Array.from({ length: 3 }).map((_, i) => (
+                    <div
+                      key={i}
+                      className="w-full h-52 rounded-3xl bg-zinc-900/60 border border-zinc-800/60 animate-pulse"
+                    />
+                  ))}
+                </div>
+              ) : posts.length === 0 ? (
+                <div className="w-full rounded-3xl bg-zinc-950/60 border border-zinc-800/80 p-12 text-center space-y-3 shadow-xl">
+                  <Inbox
+                    className="h-[52px] w-[52px] text-zinc-600 mx-auto"
+                    strokeWidth={1.5}
+                  />
 
-            {/* Feed stream */}
-            {loading ? (
-              <div className="space-y-4">
-                {Array.from({ length: 3 }).map((_, i) => (
+                  <h3 className="text-base font-bold text-zinc-300">
+                    No posts in this stream yet
+                  </h3>
+
+                  <p className="text-xs text-zinc-500 max-w-sm mx-auto leading-relaxed">
+                    {search
+                      ? `No posts matched your search for "${search}". Try different keywords or reset your filter.`
+                      : "Be the trailblazer and share the very first update with the Republic!"}
+                  </p>
+
+                  {search && (
+                    <button
+                      onClick={() => {
+                        setSearch("");
+                        setSearchInput("");
+                      }}
+                      className="px-4 py-2 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-xs font-bold text-white transition-colors cursor-pointer"
+                    >
+                      Clear Search Filter
+                    </button>
+                  )}
+                </div>
+              ) : (
+                <div
+                  ref={postsListRef}
+                  className="space-y-4 scroll-mt-24"
+                >
+                  {posts.map((post) => (
+                    <PostCard
+                      key={post.id}
+                      post={post}
+                      onOpenDetail={handleOpenDetail}
+                      onPostDeleted={(id) => {
+                        setPosts((prev) =>
+                          prev.filter((p) => p.id !== id)
+                        );
+                      }}
+                    />
+                  ))}
+
+                  {/* Infinite-scroll sentinel */}
                   <div
-                    key={i}
-                    className="w-full h-52 rounded-3xl bg-zinc-900/60 border border-zinc-800/60 animate-pulse"
+                    ref={sentinelCallbackRef}
+                    className="h-1 w-full"
                   />
-                ))}
-              </div>
-            ) : posts.length === 0 ? (
-              <div className="w-full rounded-3xl bg-zinc-950/60 border border-zinc-800/80 p-12 text-center space-y-3 shadow-xl">
-                <Inbox
-                  className="h-[52px] w-[52px] text-zinc-600 mx-auto"
-                  strokeWidth={1.5}
-                />
-                <h3 className="text-base font-bold text-zinc-300">
-                  No posts in this stream yet
-                </h3>
-                <p className="text-xs text-zinc-500 max-w-sm mx-auto leading-relaxed">
-                  {search
-                    ? `No posts matched your search for "${search}". Try different keywords or reset your filter.`
-                    : "Be the trailblazer and share the very first update with the Republic!"}
-                </p>
-                {search && (
-                  <button
-                    onClick={() => {
-                      setSearch("");
-                      setSearchInput("");
-                    }}
-                    className="px-4 py-2 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-xs font-bold text-white transition-colors cursor-pointer"
-                  >
-                    Clear Search Filter
-                  </button>
-                )}
-              </div>
-            ) : (
-              <div ref={postsListRef} className="space-y-4 scroll-mt-24">
-                {posts.map((post) => (
-                  <PostCard
-                    key={post.id}
-                    post={post}
-                    onOpenDetail={handleOpenDetail}
-                    onPostDeleted={(id) => {
-                      setPosts((prev) => prev.filter((p) => p.id !== id));
-                    }}
-                  />
-                ))}
 
-                {/* Auto-Pagination Sentinel */}
-                <div ref={sentinelCallbackRef} className="h-1 w-full" />
-
-                {/* Loading indicator while the next batch fetches */}
-                {loadingMore ? (
-                  <div className="flex items-center justify-center gap-2 py-6 text-zinc-400 text-xs">
-                    <span className="w-5 h-5 rounded-full border-2 border-lime-400 border-t-transparent animate-spin" />
-                    <span>Loading more posts...</span>
-                  </div>
-                ) : nextCursor ? (
-                  <div className="text-center py-6">
-                    <span className="text-[11px] font-mono text-zinc-500 uppercase tracking-wider">
-                      Scroll for more
-                    </span>
-                  </div>
-                ) : (
-                  posts.length > 0 && (
-                    <div className="text-center py-8">
-                      <span className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-zinc-900/80 border border-zinc-800 text-[11px] font-bold text-zinc-500">
-                        <CheckCircle2
-                          className="h-[15px] w-[15px] text-lime-400"
-                          strokeWidth={2}
-                        />
-                        You&apos;re all caught up on this stream
+                  {loadingMore ? (
+                    <div className="flex items-center justify-center gap-2 py-6 text-zinc-400 text-xs">
+                      <span className="w-5 h-5 rounded-full border-2 border-lime-400 border-t-transparent animate-spin" />
+                      <span>Loading more posts...</span>
+                    </div>
+                  ) : nextCursor ? (
+                    <div className="text-center py-6">
+                      <span className="text-[11px] font-mono text-zinc-500 uppercase tracking-wider">
+                        Scroll for more
                       </span>
                     </div>
-                  )
-                )}
-              </div>
-            )}
+                  ) : (
+                    posts.length > 0 && (
+                      <div className="text-center py-8">
+                        <span className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-zinc-900/80 border border-zinc-800 text-[11px] font-bold text-zinc-500">
+                          <CheckCircle2
+                            className="h-[15px] w-[15px] text-lime-400"
+                            strokeWidth={2}
+                          />
+                          You&apos;re all caught up on this stream
+                        </span>
+                      </div>
+                    )
+                  )}
+                </div>
+              )}
+            </div>
           </main>
 
-          {/* ── RIGHT COLUMN (Large Desktop xl: >= 1280px) ──────────────────── */}
-          <RepublicRightSidebar>
-            <FollowingWidgetSection />
-          </RepublicRightSidebar>
+          {/* RIGHT SIDEBAR
+              - Independent contained scrolling
+              - Does not affect page height */}
+          <aside className="hidden xl:block h-full min-h-0 w-[280px] shrink-0 overflow-y-auto overscroll-contain custom-scrollbar pl-2 pb-12">
+            <RepublicRightSidebar>
+              <FollowingWidgetSection />
+            </RepublicRightSidebar>
+          </aside>
         </div>
       </div>
 
@@ -451,25 +470,13 @@ function RepublicFeedContent() {
         />
       )}
 
-      {/* Dark-theme thumb — the default .custom-scrollbar in globals.css is
-          tuned for light backgrounds and would be invisible here. */}
       <style jsx global>{`
-        html.custom-scrollbar::-webkit-scrollbar {
-          width: 8px;
+        .custom-scrollbar::-webkit-scrollbar {
+          display: none;
         }
-        html.custom-scrollbar::-webkit-scrollbar-track {
-          background: transparent;
-        }
-        html.custom-scrollbar::-webkit-scrollbar-thumb {
-          background: rgba(255, 255, 255, 0.14);
-          border-radius: 20px;
-        }
-        html.custom-scrollbar::-webkit-scrollbar-thumb:hover {
-          background: rgba(163, 230, 53, 0.35);
-        }
-        html.custom-scrollbar {
-          scrollbar-width: thin;
-          scrollbar-color: rgba(255, 255, 255, 0.14) transparent;
+        .custom-scrollbar {
+          -ms-overflow-style: none;
+          scrollbar-width: none;
         }
       `}</style>
     </div>
