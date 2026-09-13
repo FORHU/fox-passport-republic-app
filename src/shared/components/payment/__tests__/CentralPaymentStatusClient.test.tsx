@@ -51,13 +51,17 @@ describe("CentralPaymentStatusClient", () => {
     });
 
     render(<CentralPaymentStatusClient invoiceId="inv-123" />);
-    
+
     act(() => {
       vi.advanceTimersByTime(15000);
     });
 
     expect(screen.getByText("Confirming Payment...")).toBeDefined();
-    expect(screen.getByText("Payment is still being confirmed. You can safely leave this page.")).toBeDefined();
+    expect(
+      screen.getByText(
+        "Payment is still being confirmed. You can safely leave this page.",
+      ),
+    ).toBeDefined();
     expect(screen.queryByText("Payment Failed or Cancelled")).toBeNull();
   });
 

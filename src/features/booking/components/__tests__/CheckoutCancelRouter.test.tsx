@@ -11,16 +11,18 @@ vi.mock("next/navigation", () => ({
 
 vi.mock("@/shared/components/payment/CentralPaymentStatusClient", () => ({
   CentralPaymentStatusClient: ({ invoiceId }: { invoiceId: string }) => (
-    <div data-testid="central-payment-cancel">Actual Status Lookup: {invoiceId}</div>
+    <div data-testid="central-payment-cancel">
+      Actual Status Lookup: {invoiceId}
+    </div>
   ),
 }));
 
 describe("CheckoutCancelRouter", () => {
   it("renders Central Payment status lookup when invoiceId is present", () => {
     mockSearchParams = new Map([["invoiceId", "inv-123"]]);
-    
+
     render(<CheckoutCancelRouter />);
-    
+
     expect(screen.getByTestId("central-payment-cancel")).toBeDefined();
     expect(screen.getByText("Actual Status Lookup: inv-123")).toBeDefined();
     expect(screen.queryByText("Checkout Cancelled")).toBeNull();
@@ -28,9 +30,9 @@ describe("CheckoutCancelRouter", () => {
 
   it("renders generic checkout cancelled when invoiceId is missing", () => {
     mockSearchParams = new Map();
-    
+
     render(<CheckoutCancelRouter />);
-    
+
     expect(screen.getByText("Checkout Cancelled")).toBeDefined();
     expect(screen.queryByTestId("central-payment-cancel")).toBeNull();
   });

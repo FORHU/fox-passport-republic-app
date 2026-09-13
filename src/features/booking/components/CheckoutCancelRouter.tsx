@@ -19,8 +19,12 @@ export function CheckoutCancelRouter() {
         <div className="inline-flex items-center justify-center h-20 w-20 rounded-full bg-red-500/20 text-red-500 font-bold mb-6">
           <span className="material-symbols-outlined text-4xl">cancel</span>
         </div>
-        <h2 className="text-2xl font-display font-bold text-white mb-2">Checkout Cancelled</h2>
-        <p className="text-text-muted mb-8">You have cancelled the checkout process.</p>
+        <h2 className="text-2xl font-display font-bold text-white mb-2">
+          Checkout Cancelled
+        </h2>
+        <p className="text-text-muted mb-8">
+          You have cancelled the checkout process.
+        </p>
         <Link
           href="/"
           className="px-6 py-3 rounded-xl bg-white/10 hover:bg-white/20 text-white font-medium transition-colors"

@@ -1,7 +1,10 @@
 "use client";
 
 import React, { useState } from "react";
-import { useEventPaymentSummary, useEventCheckoutMutation } from "@/features/event/hooks/useEventCheckout";
+import {
+  useEventPaymentSummary,
+  useEventCheckoutMutation,
+} from "@/features/event/hooks/useEventCheckout";
 
 export interface EventPaymentPanelProps {
   eventId: string;
@@ -9,18 +12,20 @@ export interface EventPaymentPanelProps {
 
 export function EventPaymentPanel({ eventId }: EventPaymentPanelProps) {
   const [voucherCode, setVoucherCode] = useState("");
-  const [appliedVoucher, setAppliedVoucher] = useState<string | undefined>(undefined);
-  
-  const { 
-    data: summary, 
-    isLoading: isSummaryLoading, 
-    error: summaryError 
+  const [appliedVoucher, setAppliedVoucher] = useState<string | undefined>(
+    undefined,
+  );
+
+  const {
+    data: summary,
+    isLoading: isSummaryLoading,
+    error: summaryError,
   } = useEventPaymentSummary(eventId, appliedVoucher);
 
   const {
     mutate: checkout,
     isPending: isCheckoutLoading,
-    error: checkoutError
+    error: checkoutError,
   } = useEventCheckoutMutation();
 
   const handleApplyVoucher = () => {
@@ -43,7 +48,9 @@ export function EventPaymentPanel({ eventId }: EventPaymentPanelProps) {
   return (
     <div className="bg-white/5 backdrop-blur-md rounded-[2rem] border border-white/10 p-6 md:p-8">
       <div className="flex items-center gap-3 mb-6">
-        <span className="material-symbols-outlined text-accent text-2xl">payments</span>
+        <span className="material-symbols-outlined text-accent text-2xl">
+          payments
+        </span>
         <h2 className="text-xl font-display font-bold text-white">Payment</h2>
       </div>
 
@@ -53,16 +60,15 @@ export function EventPaymentPanel({ eventId }: EventPaymentPanelProps) {
             error
           </span>
           <div>
-            <p className="text-red-400 text-sm font-medium">
-              {errorMessage}
-            </p>
+            <p className="text-red-400 text-sm font-medium">{errorMessage}</p>
           </div>
         </div>
       )}
 
       {summaryError ? (
         <div className="text-sm text-red-400">
-          {(summaryError as any)?.response?.data?.message || "Failed to load payment summary."}
+          {(summaryError as any)?.response?.data?.message ||
+            "Failed to load payment summary."}
         </div>
       ) : isSummaryLoading ? (
         <div className="flex justify-center py-8">

@@ -71,11 +71,11 @@ export function EventDetailView({
 
   const maxAttendees: number | null = template?.maxAttendees ?? null;
   const category: string = template?.category ?? "";
-  
+
   const handleProposePartnership = () => {
     // Basic redirect for non-partners, although backend may supply a clearer flag in V2
-    if (!user?.roleType?.includes('investor')) {
-      router.push('/onboarding/partner');
+    if (!user?.roleType?.includes("investor")) {
+      router.push("/onboarding/partner");
     } else {
       setIsPartnershipOpen(true);
     }

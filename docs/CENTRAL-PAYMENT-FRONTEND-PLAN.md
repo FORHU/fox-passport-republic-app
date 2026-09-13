@@ -1,9 +1,55 @@
 # Central Payment: frontend implementation plan
 
-**Status:** Draft — not started, backend contracts now decided
+**Status:** Built and reviewed, 13 Sep — see "Built and reviewed" below for exactly what shipped, what the review found and fixed, and the one deliberately-deferred piece.
 **Scope:** `event`, `partnership` features, plus new checkout API clients
 **Prepared:** 2026-09-13
-**Depends on:** `fox-passport-republic-api`'s Central Payment backend getting an HTTP surface — see that repo's own plan file (uncommitted, `C:\Users\My PC\.claude\plans\agile-sauteeing-cloud.md`). **Nothing here can be built until that lands** — right now there is no route to call at all.
+**Depends on:** `fox-passport-republic-api`'s Central Payment backend getting an HTTP surface — landed the same day, commit `09e893e` (`fox-passport-republic-api`).
+
+## Built and reviewed — 13 Sep
+
+All of the implementation order below shipped except item 5's accepted-transactions
+panel (see "Deliberately not done" below). Reviewed against this plan's own
+contracts and testing checklist; two real bugs were found and fixed, not just
+theoretical risks the checklist happened to name in advance.
+
+**Found and fixed — the exact "redirect race" this plan's own testing
+checklist warned about, and it was real:**
+
+- `useInvoiceStatusPoll`'s polling condition, and `CentralPaymentStatusClient`'s
+  "Confirming Payment..." branch, both checked `status === "processing"`.
+  **Nothing in the API ever sets that value** — the real pre-webhook state is
+  `"pending"` (`InvoiceSvc.getInvoiceStatus`'s `paymentStatus` falls back to
+  `invoice.status`, which starts and stays `"pending"` until the webhook lands).
+  So the success page would load once immediately after the Stripe redirect,
+  read `"pending"`, match neither the paid/failed branches nor the
+  (unreachable) processing branch, and fall into a raw `Status: pending` line
+  with **no further polling** — exactly "shows a false state instead of
+  confirming", the one thing the plan said was most likely to be skipped.
+  Fixed: both now key off `paymentStatus` (not `status` — the two can
+  legitimately disagree, since a failed attempt leaves the invoice `"pending"`
+  for retry while `paymentStatus` reports the attempt's own `"failed"`) and
+  treat anything non-terminal, not just a hardcoded `"processing"`, as "still
+  confirming".
+- Same fix surfaced a second gap: `"refunded"`/`"partially_refunded"` weren't
+  handled as terminal at all and would have fallen into the same
+  "still confirming" bucket forever. Now their own branch.
+
+**Found and fixed — a viewer-scoping gap in `ProposalActions.tsx`:** the "Pay
+Now" button was gated only on `proposal.payment?.required`, which is a
+proposal-level fact, not a viewer-scoped one — the *organizer* who just
+accepted a sponsorship would see the same "Pay Now" button as the partner who
+actually owes the money. Not a security hole (`POST .../checkout` already
+403s anyone but `proposal.partnerId`, per the api's Step 1 review), but
+confusing UI. Fixed: gated on `proposal.partnerId === currentUser.id` too.
+
+**Deliberately not done — item 5's accepted-transactions panel.** `EventPaymentPanel.tsx`
+shows the pricing summary (subtotal/discount/fee/total) and the Pay Now
+action, but not the per-vendor breakdown (which venue, which gear, which
+service the citizen is actually paying for) this plan called "the bigger of
+the two frontend pieces" and explicitly said to build *before* the Pay
+button. A citizen sees a total with no line items behind it. Not fixed here —
+it's new UI work, not a bug in what exists, and out of scope for a review
+pass.
 
 ## Why this exists
 
@@ -152,26 +198,26 @@ Event checkout may optionally send `{ "voucherCode": "FOX2026" }`. The frontend 
 ## Implementation order
 
 ```
-1. Finalize backend HTTP contracts (the 4 above)
-2. GET /v1/invoices/:id
-3. GET /v1/events/:eventId/payment-summary
-4. POST /v1/events/:eventId/checkout (with graceful retry via existing-invoice reuse)
-5. Event frontend: payment summary + accepted-transactions panel + Pay Now
-6. Generalize (or build) checkout success/cancel pages
-7. POST sponsorship checkout endpoint
-8. Partnership frontend: Pay Sponsorship action
-9. Voucher code input on event checkout
-10. Integration tests (both repos)
-11. Manual Stripe-test-mode pass, staging verification
+1. [x] Finalize backend HTTP contracts (the 4 above) — api commit 09e893e
+2. [x] GET /v1/invoices/:id
+3. [x] GET /v1/events/:eventId/payment-summary
+4. [x] POST /v1/events/:eventId/checkout (graceful retry — api's advisory-lock fix, see that repo's Step 1 review)
+5. [ ] Event frontend: payment summary + Pay Now done; accepted-transactions panel NOT built — see "Deliberately not done" above
+6. [x] Generalized checkout success/cancel pages (CheckoutSuccessRouter/CheckoutCancelRouter branch on ?invoiceId)
+7. [x] POST sponsorship checkout endpoint
+8. [x] Partnership frontend: Pay Sponsorship action (viewer-scoping bug found + fixed in review)
+9. [x] Voucher code input on event checkout (not built for sponsorship — was never in scope, see "Vouchers" above)
+10. [x] Integration tests (both repos) — 26 new frontend tests, 29 new api tests
+11. [ ] Manual Stripe-test-mode pass, staging verification — not run; no staging environment exists yet
 ```
 
 ## Testing checklist
 
-**Event**: accepted Venue/Gear/Talent displayed correctly; total matches backend; Pay Now → real checkout URL; button disabled during request; voucher code submit (valid + invalid); paid/failed/cancelled states render correctly.
+**Event**: accepted Venue/Gear/Talent displayed correctly — **not covered, see above, no such list exists yet**; total matches backend ✓; Pay Now → real checkout URL ✓; button disabled during request ✓; voucher code submit (valid + invalid) ✓; paid/failed/cancelled states render correctly ✓ (refunded/partially_refunded added during review — they weren't handled at all before).
 
-**Sponsorship**: payment action shows only for accepted sponsorships; not shown for other partnership types; not shown once already paid; checkout redirects correctly; state updates after payment.
+**Sponsorship**: payment action shows only for accepted sponsorships ✓; not shown for other partnership types ✓; not shown once already paid ✓; not shown to the non-partner party — **found broken in review, fixed**; checkout redirects correctly ✓; state updates after payment ✓.
 
-**Redirect race** (the one most likely to be skipped and cause a real bug): pay successfully → browser redirects → **webhook hasn't finished yet** → success page must show "confirming", not a false "paid".
+**Redirect race** (the one most likely to be skipped and cause a real bug): pay successfully → browser redirects → **webhook hasn't finished yet** → success page must show "confirming", not a false "paid". **This was skipped, and it did cause a real bug** — see "Built and reviewed" above. Fixed and now covered by `CentralPaymentStatusClient.test.tsx`'s "falls through to the confirming spinner for pending" case.
 
 **Voucher redemption timing**: abandoned checkout → not redeemed. Failed payment → not redeemed. Successful payment → redeemed exactly once. Duplicate webhook delivery → still redeemed exactly once (this one's actually already covered — `WebhookSvc.processEventWithIdempotency` + the `voucherRedemption` unique-per-invoice check in `handlePaymentSuccess` — but worth a frontend-triggered end-to-end check too).
 

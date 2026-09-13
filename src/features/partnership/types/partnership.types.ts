@@ -1,5 +1,7 @@
-export type PartnershipType = 'investment' | 'sponsorship' | 'resource' | 'business';
-export type PartnershipProposalStatus = 'pending' | 'accepted' | 'rejected' | 'withdrawn';
+export type PartnershipType =
+  "investment" | "sponsorship" | "resource" | "business";
+export type PartnershipProposalStatus =
+  "pending" | "accepted" | "rejected" | "withdrawn";
 
 export interface PartnershipProposal {
   id: string;
@@ -15,14 +17,21 @@ export interface PartnershipProposal {
   status: PartnershipProposalStatus;
   createdAt: string;
   updatedAt: string;
-  
+
   // UI Convenience Flags provided by backend
   canAccept?: boolean;
   canReject?: boolean;
   canWithdraw?: boolean;
   payment?: {
     required: boolean;
-    status: 'pending' | 'processing' | 'paid' | 'failed' | 'cancelled' | 'refunded' | 'partially_refunded';
+    status:
+      | "pending"
+      | "processing"
+      | "paid"
+      | "failed"
+      | "cancelled"
+      | "refunded"
+      | "partially_refunded";
     invoiceId?: string;
   } | null;
 }

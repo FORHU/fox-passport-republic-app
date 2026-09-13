@@ -20,6 +20,7 @@ here.
 | `responsive-plan.md` | Responsive and touch backlog. 21 open. |
 | `roles-and-spaces.md` | The Foxer role model and the page split. 12 open (3 resolved — `useRoleAccess` blocker closed, `LockedSection` removed, hint added). |
 | `app-architecture.md` | Boundary violations + template gaps. 26 open (re-measured 12 Sep — 20 in `republic`, 6 in `user`). |
+| `CENTRAL-PAYMENT-FRONTEND-PLAN.md` | Central Payment frontend. Built and reviewed 13 Sep — one panel deliberately not built, see the doc. |
 | `FoxPassportSpatialIntelligence.md` | The spatial vision and target state. |
 | `SPATIAL-PLAN.md` | The spatial counter-plan: what already exists, and the order to build in. |
 
@@ -95,6 +96,33 @@ app today, so nothing currently relies on it working.
       commit `58298fe`.
 
 ---
+
+## 0·0ac. Central Payment frontend landed and reviewed — 13 Sep
+
+The api's Central Payment backend (Invoice/Checkout/Payment/Payout/Voucher/
+PricingEngine, plus bidding and partnership) had zero frontend integration as
+of `api-audit.md`'s last pass — see `CENTRAL-PAYMENT-FRONTEND-PLAN.md` for
+the full plan. Both the backend HTTP layer (`fox-passport-republic-api`
+commit `09e893e`) and this app's integration have now landed and been
+reviewed; that plan document carries the full "Built and reviewed" record.
+
+**The one bug worth knowing about even without opening that doc:** the
+plan's own testing checklist named "pay successfully → browser redirects →
+webhook hasn't landed yet → success page must show confirming, not a false
+state" as the check most likely to be skipped — and it was, and it did
+produce a real bug. `useInvoiceStatusPoll` and `CentralPaymentStatusClient`
+both polled/rendered on `status === "processing"`, a value **nothing in the
+API ever sets** — the real pre-webhook state is `"pending"`. A citizen
+landing on the success page right after paying would see a raw
+`Status: pending` line and the page would never poll again. Fixed; see the
+plan doc for the rest (a viewer-scoping gap on the sponsorship "Pay Now"
+button, and `refunded`/`partially_refunded` not being handled as terminal at
+all).
+
+**Deliberately not done:** `EventPaymentPanel.tsx` shows pricing but not a
+breakdown of which venue/gear/service the citizen is actually paying for —
+the plan called this "the bigger of the two frontend pieces" and said to
+build it before the Pay button. Still open.
 
 ## 0·0a. The booking page could not hear the socket — fixed 10 Sep
 

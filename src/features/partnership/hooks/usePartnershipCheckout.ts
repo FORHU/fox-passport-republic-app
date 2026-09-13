@@ -14,7 +14,9 @@ export const usePartnershipCheckoutMutation = () => {
       }
     },
     onError: (error: any) => {
-      toast.error(error?.response?.data?.message || "Could not initialize checkout.");
+      toast.error(
+        error?.response?.data?.message || "Could not initialize checkout.",
+      );
     },
   });
 };

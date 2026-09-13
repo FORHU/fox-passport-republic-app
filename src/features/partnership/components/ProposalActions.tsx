@@ -11,14 +11,26 @@ import { usePartnershipCheckoutMutation } from "../hooks/usePartnershipCheckout"
 import { useAuthStore } from "@/shared/auth/useAuthStore";
 import { Check, X, Undo2, CreditCard, Loader2 } from "lucide-react";
 
-export function ProposalActions({ proposal }: { proposal: PartnershipProposal }) {
-  const { mutate: accept, isPending: isAccepting } = useAcceptPartnershipProposal();
-  const { mutate: reject, isPending: isRejecting } = useRejectPartnershipProposal();
-  const { mutate: withdraw, isPending: isWithdrawing } = useWithdrawPartnershipProposal();
-  const { mutate: checkout, isPending: isCheckingOut, error: checkoutError } = usePartnershipCheckoutMutation();
+export function ProposalActions({
+  proposal,
+}: {
+  proposal: PartnershipProposal;
+}) {
+  const { mutate: accept, isPending: isAccepting } =
+    useAcceptPartnershipProposal();
+  const { mutate: reject, isPending: isRejecting } =
+    useRejectPartnershipProposal();
+  const { mutate: withdraw, isPending: isWithdrawing } =
+    useWithdrawPartnershipProposal();
+  const {
+    mutate: checkout,
+    isPending: isCheckingOut,
+    error: checkoutError,
+  } = usePartnershipCheckoutMutation();
   const { user } = useAuthStore();
 
-  const isLoading = isAccepting || isRejecting || isWithdrawing || isCheckingOut;
+  const isLoading =
+    isAccepting || isRejecting || isWithdrawing || isCheckingOut;
 
   // Payment is owed by the partner who proposed it, not the organizer/owner
   // who calls accept — `payment.required` alone is proposal-level, not
@@ -28,7 +40,7 @@ export function ProposalActions({ proposal }: { proposal: PartnershipProposal })
   // pay).
   const isPartner = !!user && proposal.partnerId === user.id;
   const showPaymentAction =
-    isPartner && proposal.status === 'accepted' && proposal.payment?.required;
+    isPartner && proposal.status === "accepted" && proposal.payment?.required;
   const paymentStatus = proposal.payment?.status;
 
   const errorMessage = (checkoutError as any)?.response?.data?.message;
@@ -46,7 +58,7 @@ export function ProposalActions({ proposal }: { proposal: PartnershipProposal })
             Accept
           </button>
         )}
-        
+
         {proposal.canReject && (
           <button
             onClick={() => reject(proposal.id)}
@@ -71,12 +83,12 @@ export function ProposalActions({ proposal }: { proposal: PartnershipProposal })
 
         {showPaymentAction && (
           <>
-            {paymentStatus === 'paid' ? (
+            {paymentStatus === "paid" ? (
               <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#ccff00]/10 border border-[#ccff00]/20 text-[#ccff00] text-sm font-bold">
                 <Check className="w-4 h-4" />
                 Paid
               </div>
-            ) : paymentStatus === 'processing' ? (
+            ) : paymentStatus === "processing" ? (
               <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-blue-500/20 text-blue-400 text-sm font-medium">
                 <Loader2 className="w-4 h-4 animate-spin" />
                 Processing
@@ -92,7 +104,11 @@ export function ProposalActions({ proposal }: { proposal: PartnershipProposal })
                 ) : (
                   <CreditCard className="w-4 h-4" />
                 )}
-                {paymentStatus === 'failed' || paymentStatus === 'cancelled' || paymentStatus === 'refunded' ? 'Retry Payment' : 'Pay Now'}
+                {paymentStatus === "failed" ||
+                paymentStatus === "cancelled" ||
+                paymentStatus === "refunded"
+                  ? "Retry Payment"
+                  : "Pay Now"}
               </button>
             )}
           </>

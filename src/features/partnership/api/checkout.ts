@@ -4,7 +4,7 @@ import type { CheckoutResponse } from "@/shared/types/payment";
 
 export async function createSponsorshipCheckout(
   proposalId: Id,
-  voucherCode?: string
+  voucherCode?: string,
 ): Promise<CheckoutResponse> {
   const resp = await api.post(`/partnerships/${proposalId}/checkout`, {
     voucherCode,

@@ -7,7 +7,7 @@ import type {
 
 export async function createEventCheckout(
   eventId: Id,
-  voucherCode?: string
+  voucherCode?: string,
 ): Promise<CheckoutResponse> {
   const resp = await api.post(`/events/${eventId}/checkout`, { voucherCode });
   return resp.data;
@@ -15,7 +15,7 @@ export async function createEventCheckout(
 
 export async function getEventPaymentSummary(
   eventId: Id,
-  voucherCode?: string
+  voucherCode?: string,
 ): Promise<PaymentSummaryResponse> {
   const resp = await api.get(`/events/${eventId}/payment-summary`, {
     params: { voucherCode },
