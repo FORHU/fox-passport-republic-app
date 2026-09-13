@@ -249,7 +249,7 @@ function RepublicFeedContent() {
   }, []);
 
   return (
-    <div className="h-[100dvh] overflow-hidden flex flex-col bg-[#09090e] text-white pt-16 sm:pt-28 selection:bg-lime-400 selection:text-black">
+    <div className="h-[100dvh] min-h-0 overflow-hidden flex flex-col bg-[#09090e] text-white pt-16 sm:pt-28 selection:bg-lime-400 selection:text-black">
       {/* ── SAME FLOATING PILL HEADER USED ON / , /search, /venues/map ──────── */}
       <LandingHeader />
 
