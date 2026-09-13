@@ -58,8 +58,7 @@ export function ImageLightbox({
       document.removeEventListener("keydown", onKeyDown);
       document.body.style.overflow = prevOverflow;
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [onClose, hasMultiple]);
+      }, [onClose, hasMultiple]);
 
   const handleDownload = async () => {
     if (downloading) return;

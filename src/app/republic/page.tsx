@@ -78,8 +78,7 @@ function RepublicFeedContent() {
     return () => {
       cancelled = true;
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+      }, []);
 
   // Sync activeTab when URL query changes (e.g. navigation from menu)
   useEffect(() => {

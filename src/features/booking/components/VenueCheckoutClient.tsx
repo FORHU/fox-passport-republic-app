@@ -94,8 +94,7 @@ export default function VenueCheckoutClient() {
         ),
       )
       .finally(() => setLoadingIntent(false));
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [bookingId]);
+      }, [bookingId]);
 
   useEffect(() => {
     const observer = new IntersectionObserver(

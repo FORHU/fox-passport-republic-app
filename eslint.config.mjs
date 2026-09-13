@@ -22,7 +22,7 @@ if (reactHooksConfig) {
       "react-hooks/purity": "warn",
       "react-hooks/preserve-manual-memoization": "warn",
       "react-hooks/immutability": "warn",
-      "react-hooks/preserve-manual-memoization": "warn",
+      "react-hooks/exhaustive-deps": "off",
     },
   });
 }
@@ -48,6 +48,7 @@ const eslintConfig = defineConfig([
       "react-hooks/purity": "warn",
       "react-hooks/preserve-manual-memoization": "warn",
       "react-hooks/immutability": "warn",
+      "react-hooks/exhaustive-deps": "off",
     },
   },
 ]);

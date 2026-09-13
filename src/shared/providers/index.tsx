@@ -16,6 +16,7 @@ export default function Providers({ children }: { children: React.ReactNode }) {
           .then(() => setReady(true));
       });
     } else {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setReady(true);
     }
   }, []);

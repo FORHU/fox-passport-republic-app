@@ -620,8 +620,7 @@ export default function ChatPanel({
       markedRef.current = conversationId;
       markReadMutation.mutate(conversationId);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [minimized, conversationId]);
+      }, [minimized, conversationId]);
 
   useEffect(() => {
     setJustAccepted(false);

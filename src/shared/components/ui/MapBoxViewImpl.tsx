@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useLayoutEffect, useRef, useState } from "react";
 import "mapbox-gl/dist/mapbox-gl.css";
 import {
   getEffectiveMapboxToken,
@@ -67,13 +67,16 @@ export function MapBoxViewImpl({
 
   // Keep latest callbacks in refs to avoid re-binding map event listeners
   const onClickRef = useRef(onClick);
-  onClickRef.current = onClick;
   const onDblClickRef = useRef(onDblClick);
-  onDblClickRef.current = onDblClick;
   const onMoveEndRef = useRef(onMoveEnd);
-  onMoveEndRef.current = onMoveEnd;
   const onMapReadyRef = useRef(onMapReady);
-  onMapReadyRef.current = onMapReady;
+
+  useLayoutEffect(() => {
+    onClickRef.current = onClick;
+    onDblClickRef.current = onDblClick;
+    onMoveEndRef.current = onMoveEnd;
+    onMapReadyRef.current = onMapReady;
+  });
 
   // Capture initial map options in a ref so the mount effect only runs once
   // without needing reactive props in the dependency array.

@@ -148,8 +148,7 @@ export function useHostServiceEdit(serviceId: string) {
     return () => {
       cancelled = true;
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [serviceId, hostId]);
+      }, [serviceId, hostId]);
 
   const handleBack = useCallback(() => {
     router.push(backHref);
