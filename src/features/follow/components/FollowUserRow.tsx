@@ -25,7 +25,6 @@ export function FollowUserRow({
       >
         <div className="w-10 h-10 rounded-full overflow-hidden bg-zinc-800 shrink-0 border border-zinc-700/50 group-hover:border-lime-500/50 transition-colors">
           {user.imgId ? (
-            // eslint-disable-next-line @next/next/no-img-element
             <img
               src={
                 user.imgId.startsWith("http://") ||

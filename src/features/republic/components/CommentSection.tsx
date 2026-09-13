@@ -353,7 +353,6 @@ export function CommentSection({
                 >
                   <div className="h-6 w-6 rounded-full bg-zinc-800 border border-zinc-700 flex items-center justify-center text-[10px] font-bold text-zinc-400 shrink-0 overflow-hidden">
                     {c.imgId ? (
-                      // eslint-disable-next-line @next/next/no-img-element
                       <img
                         src={c.imgId}
                         alt=""

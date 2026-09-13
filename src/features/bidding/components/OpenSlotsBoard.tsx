@@ -1,10 +1,9 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { getOpenSlots } from "@/shared/api/bidding";
 import { BidApplicationModal } from "./BidApplicationModal";
 import { useAuthStore } from "@/shared/auth/useAuthStore";
 
 export const OpenSlotsBoard: React.FC = () => {
-  const user = useAuthStore((state) => state.user);
   const [events, setEvents] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
@@ -15,11 +14,7 @@ export const OpenSlotsBoard: React.FC = () => {
     { id: "srv-2", title: "Acoustic Band" },
   ];
 
-  useEffect(() => {
-    fetchSlots();
-  }, []);
-
-  const fetchSlots = async () => {
+  const fetchSlots = useCallback(async () => {
     try {
       const res = await getOpenSlots();
       if (res.success) setEvents(res.data);
@@ -28,7 +23,11 @@ export const OpenSlotsBoard: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    fetchSlots();
+  }, [fetchSlots]);
 
   if (loading) return <div>Loading open slots...</div>;
 

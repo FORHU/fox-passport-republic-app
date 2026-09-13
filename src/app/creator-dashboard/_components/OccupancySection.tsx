@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unused-vars, @next/next/no-img-element */
 "use client";
 
 import React from "react";
@@ -34,11 +33,6 @@ export function OccupancyChart() {
   );
 }
 
-function statusColor(s: string) {
-  if (s === "approved") return "#22c55e";
-  if (s === "rejected") return "#ef4444";
-  return "#f97316";
-}
 
 export function PendingRequests() {
   const router = useRouter();

@@ -268,8 +268,6 @@ export async function getDashboardStats() {
     };
   }
 }
-
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export async function getUserDashboard(_userId: string) {
   await requireAuth();
   try {

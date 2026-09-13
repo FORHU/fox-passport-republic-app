@@ -1,7 +1,6 @@
-/* eslint-disable @next/next/no-img-element */
 "use client";
 
-import { useRef } from "react";
+import { useCallback, useRef } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { type Foxer, type FoxerSpecialization } from "@/shared/api/foxers";
@@ -79,12 +78,11 @@ function getRoleMeta(foxer: Foxer) {
 function VenueCarousel({ images }: { images: string[] }) {
   const scrollRef = useRef<HTMLDivElement>(null);
 
-  const scroll = (dir: number) => (e: React.MouseEvent) => {
+  const scroll = useCallback((dir: number) => (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    // eslint-disable-next-line react-hooks/refs
     scrollRef.current?.scrollBy({ left: dir * 160, behavior: "smooth" });
-  };
+  }, []);
 
   return (
     <div className="relative">

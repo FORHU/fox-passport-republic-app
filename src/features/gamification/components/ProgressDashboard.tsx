@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 "use client";
 
 import React, { useState } from "react";
@@ -29,7 +28,6 @@ export const ProgressDashboard: React.FC<ProgressDashboardProps> = ({
   showHeader = true,
 }) => {
   const router = useRouter();
-  const [_selectedPath, setSelectedPath] = useState<UserPath | null>(null);
   const [selectedBadge, setSelectedBadge] = useState<Badge | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
 

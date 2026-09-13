@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { getEventBids, acceptBid } from "@/shared/api/bidding";
 import { toast } from "sonner";
 
@@ -13,11 +13,7 @@ export const HostReviewBidsView: React.FC<HostReviewBidsViewProps> = ({
   const [loading, setLoading] = useState(true);
   const [processingId, setProcessingId] = useState<string | null>(null);
 
-  useEffect(() => {
-    fetchBids();
-  }, [eventId]);
-
-  const fetchBids = async () => {
+  const fetchBids = useCallback(async () => {
     try {
       const res = await getEventBids(eventId);
       if (res.success) setBids(res.data);
@@ -26,7 +22,11 @@ export const HostReviewBidsView: React.FC<HostReviewBidsViewProps> = ({
     } finally {
       setLoading(false);
     }
-  };
+  }, [eventId]);
+
+  useEffect(() => {
+    fetchBids();
+  }, [fetchBids]);
 
   const handleAccept = async (bidId: string) => {
     try {
@@ -78,7 +78,7 @@ export const HostReviewBidsView: React.FC<HostReviewBidsViewProps> = ({
               </p>
               {bid.message && (
                 <p className="text-sm mt-2 italic text-white/70">
-                  "{bid.message}"
+                  &ldquo;{bid.message}&rdquo;
                 </p>
               )}
             </div>

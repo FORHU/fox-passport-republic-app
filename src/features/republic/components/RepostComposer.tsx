@@ -82,7 +82,6 @@ export function RepostComposer({ post, onClose }: RepostComposerProps) {
           <div className="mt-3 rounded-xl border border-zinc-800 bg-zinc-900/60 p-3 flex items-center gap-2.5">
             <div className="h-10 w-10 shrink-0 overflow-hidden rounded-lg bg-zinc-800 flex items-center justify-center text-xs font-bold text-zinc-500">
               {post.mediaUrls[0] ? (
-                // eslint-disable-next-line @next/next/no-img-element
                 <img
                   src={post.mediaUrls[0]}
                   alt=""

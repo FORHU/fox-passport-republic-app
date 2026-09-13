@@ -73,8 +73,7 @@ export const PassportClient: React.FC<PassportClientProps> = ({ user }) => {
   useEffect(() => {
     if (clientInboxPage?.data) {
       if (clientInboxOffset === 0) {
-        // eslint-disable-next-line react-hooks/set-state-in-effect
-        setClientInboxAll(clientInboxPage.data);
+                setClientInboxAll(clientInboxPage.data);
       } else {
         setClientInboxAll((prev) => [...prev, ...clientInboxPage.data]);
       }

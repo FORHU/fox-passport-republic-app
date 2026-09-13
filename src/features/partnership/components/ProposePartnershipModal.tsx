@@ -61,7 +61,7 @@ export default function ProposePartnershipModal({
 
       await createProposal(data);
       onClose();
-    } catch (_e) {
+    } catch {
       // Error handled by hook
     }
   };

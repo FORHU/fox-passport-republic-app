@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unused-vars, @next/next/no-img-element */
 "use client";
 
 import React, { useEffect, useState } from "react";
@@ -69,10 +68,8 @@ const ROLE_TYPE_STYLE: Record<
 };
 
 function RoleBadge({
-  role,
   style,
 }: {
-  role: string;
   style: { label: string; color: string; icon: string };
 }) {
   return (

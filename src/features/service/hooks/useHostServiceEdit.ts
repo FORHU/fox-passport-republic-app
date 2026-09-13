@@ -1,9 +1,8 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { toast } from "sonner";
+import {} from "sonner";
 import { useAuthStore } from "@/shared/auth/useAuthStore";
 import { useServicesBuilder } from "@/features/service/hooks/useServicesBuilder";
 import {
@@ -13,8 +12,6 @@ import {
 import type { Id } from "@/shared/lib/api-types";
 import {
   SERVICE_CATEGORIES,
-  SERVICE_STATUSES,
-  SERVICE_UNITS,
   BILLING_RATE_MAP,
 } from "@/features/service/data/serviceBuilderData";
 

@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import { usePartnershipProposals } from "@/features/partnership/hooks/usePartnerships";
 import { ProposalList } from "@/features/partnership/components/ProposalList";
-import { useAuthStore } from "@/shared/auth/useAuthStore";
+import {} from "@/shared/auth/useAuthStore";
 
 export default function PartnershipsDashboardPage() {
   const [activeTab, setActiveTab] = useState<"incoming" | "sent" | "active">(

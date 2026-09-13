@@ -1,7 +1,6 @@
-﻿/* eslint-disable react-hooks/purity, @next/next/no-img-element */
 "use client";
 
-import React, { useEffect, useRef, useMemo } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -20,10 +19,7 @@ export default function VenueBookingSuccessClient() {
   const paymentIntentId = searchParams.get("payment_intent");
   const redirectStatus = searchParams.get("redirect_status");
   const totalAmount = totalParam ? Number(totalParam) : 0;
-  const orderNumber = useMemo(
-    () => Math.floor(10000 + Math.random() * 90000),
-    [],
-  );
+  const [orderNumber] = useState(() => Math.floor(10000 + Math.random() * 90000));
 
   useEffect(() => {
     if (confirmed.current) return;
@@ -38,7 +34,7 @@ export default function VenueBookingSuccessClient() {
         () => {},
       );
     }
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  }, []);
 
   const dashboardPath = getDashboardPath(user);
 

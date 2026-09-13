@@ -1,15 +1,12 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 "use client";
 
 import { useEffect, useRef, useCallback } from "react";
 import { useQuery } from "@tanstack/react-query";
-import api from "@/shared/lib/axios";
 import { useAuthStore } from "@/shared/auth/useAuthStore";
 import { PROFILE_QUERY_KEY, fetchProfile } from "@/shared/auth/profile";
 import { endSession } from "@/shared/auth/endSession";
 
 const IDLE_WARN_MS = 2 * 60 * 60 * 1000; // show warning at 2 hours idle
-const IDLE_LOGOUT_MS = 24 * 60 * 60 * 1000; // auto-logout at 24 hours idle (effectively disabled)
 export function useSessionManager(
   onShowWarning: () => void,
   onDismissWarning: () => void,

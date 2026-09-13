@@ -309,7 +309,6 @@ export function PostCard({
         >
           <div className="h-11 w-11 shrink-0 overflow-hidden rounded-lg bg-zinc-800 flex items-center justify-center text-xs font-bold text-zinc-500">
             {post.originalPost.mediaUrls[0] ? (
-              // eslint-disable-next-line @next/next/no-img-element
               <img
                 src={post.originalPost.mediaUrls[0]}
                 alt=""
@@ -334,7 +333,6 @@ export function PostCard({
       {post.stamp && (
         <div className="mt-3 inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-300 text-xs shadow-sm">
           {post.stamp.imageUrl ? (
-            // eslint-disable-next-line @next/next/no-img-element
             <img
               src={post.stamp.imageUrl}
               alt="Stamp"
@@ -383,7 +381,6 @@ export function PostCard({
                   className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
                 />
               ) : (
-                // eslint-disable-next-line @next/next/no-img-element
                 <img
                   src={url}
                   alt=""

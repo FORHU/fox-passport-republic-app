@@ -1,7 +1,6 @@
-/* eslint-disable react-hooks/purity, @next/next/no-img-element */
 "use client";
 
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -89,6 +88,8 @@ export default function BookingDetailClient({
       : "";
   const loading = isPending;
 
+  const [nowMs] = useState(() => Date.now());
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -154,7 +155,7 @@ export default function BookingDetailClient({
   const isOwner = !!user?.id && user.id === booking.userId;
   const otherParty = isOwner ? booking.event?.host : booking.user;
   const hasStarted = booking.startAt
-    ? new Date(booking.startAt).getTime() <= Date.now()
+    ? new Date(booking.startAt).getTime() <= nowMs
     : false;
   const canCancel = isOwner && isActiveStatus && !hasStarted;
 

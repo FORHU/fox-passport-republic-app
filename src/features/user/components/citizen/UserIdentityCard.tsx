@@ -1,6 +1,3 @@
-/* eslint-disable @next/next/no-img-element -- user.imgId is a CloudFront URL
-   outside next.config's image remotePatterns, same as AdminCitizenTable and
-   UserMenuButton. */
 "use client";
 
 import React from "react";

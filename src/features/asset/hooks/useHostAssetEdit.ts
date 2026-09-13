@@ -1,9 +1,7 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { toast } from "sonner";
 import { useAuthStore } from "@/shared/auth/useAuthStore";
 import { useInventoryBuilder } from "@/features/asset/hooks/useInventoryBuilder";
 import { fetchAssetsByOwnerId, updateAsset } from "@/features/asset/api/assets";
@@ -11,8 +9,6 @@ import type { Id } from "@/shared/lib/api-types";
 import {
   ASSET_CATEGORIES,
   CONDITIONS,
-  STATUSES,
-  INVENTORY_UNITS,
 } from "@/features/asset/data/listingBuilderData";
 
 function belongsToHost(record: any, hostId: Id): boolean {

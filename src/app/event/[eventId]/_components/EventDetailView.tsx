@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import {} from "next/navigation";
 import MobileEventDetail from "@/features/event/components/MobileEventDetail";
 import { CustomExperienceBuilderModal } from "./CustomExperienceBuilderModal";
 import { EventGallery } from "./EventGallery";

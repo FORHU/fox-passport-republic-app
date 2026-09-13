@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 "use client";
 
 import { useLandingPage } from "@/features/landing/hooks/useLandingPage";

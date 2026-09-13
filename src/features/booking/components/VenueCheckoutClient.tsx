@@ -1,5 +1,4 @@
-﻿/* eslint-disable @next/next/no-img-element */
-"use client";
+﻿"use client";
 
 import React, { useEffect, useState, useRef } from "react";
 import Image from "next/image";
@@ -72,7 +71,7 @@ export default function VenueCheckoutClient() {
       toast.success("Payment successful! Your venue is booked.");
       confirmBookingPayment(bookingId, pi, totalAmount).catch(() => {});
     }
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  }, []);
 
   useEffect(() => {
     if (!bookingId || clientSecret) return;

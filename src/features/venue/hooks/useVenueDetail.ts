@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 "use client";
 
 import { useCallback, useEffect, useMemo } from "react";
@@ -21,7 +20,6 @@ import type {
 import { useCheckoutStore } from "@/shared/store/useCheckoutStore";
 
 export function useVenueDetail(venueData?: any) {
-  const router = useRouter();
   const store = useVenueDetailStore();
 
   const nights = useMemo(() => {
@@ -69,7 +67,6 @@ export function useExperienceBuilder(
   foxers: LiveFoxer[] = [],
   itemsByCategory: Record<string, LiveService[]> = {},
 ) {
-  const router = useRouter();
   const store = useExperienceBuilderStore();
 
   // Prevent background scroll when open

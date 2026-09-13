@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 "use client";
 
 import React, { useState } from "react";
@@ -13,7 +12,6 @@ import {
 } from "lucide-react";
 import RequireAuth from "@/shared/auth/RequireAuth";
 import Link from "next/link";
-import FileUploader from "@/shared/components/layout/FileUploader";
 import { KycDocumentSection } from "./KycDocumentSection";
 import SpecializationPicker from "./SpecializationPicker";
 import { ApplicationFlowHeader } from "./ApplicationFlowHeader";

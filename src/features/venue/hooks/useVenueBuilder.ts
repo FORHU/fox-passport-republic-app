@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -24,7 +23,7 @@ export function useVenueBuilder() {
   const router = useRouter();
   const queryClient = useQueryClient();
   const store = useVenueBuilderStore();
-  const { uploadFile, isUploading } = useFileUpload();
+  const { uploadFile } = useFileUpload();
   const savedDraftId = useRef<string | null>(null);
 
   const [catalog, setCatalog] = useState<VenueCatalog | null>(null);
