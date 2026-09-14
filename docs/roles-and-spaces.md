@@ -3,6 +3,7 @@
 **Written 4 September 2026, from a design conversation. Status updated 12 Sep 2026.**
 - **Resolved (3 items):** §4 `useRoleAccess` blocker resolved (permission-based grants via `hasPermission`), `LockedSection` removed from dashboard, dismissible hint added.
 - **Open (12 items):** Talent promotion (§2: 4 items), Community membership & host review (§3: 4 items), Spaces split (§5: 2 items), Unplaced concepts (§6: 2 items).
+- **Naming conflict flagged and resolved 14 Sep 2026:** `BUSINESS-STRATEGY-MASTER.md` §11.5 decided 14 Sep that ServiceFoxer's public-facing name is **Talent Foxer** (matches the live `roles.ts` label). This document's §1 had planned a *distinct* new sixth `RoleType` also keyed `talentFoxer`, for entertainment specifically — colliding under the exact "same name means two things" failure this document already warned about for the *umbrella* (§1 "Why flat rather than nested," which is why the umbrella is called Provider, not Talent Foxer). **Resolved by re-keying the planned role to `performerFoxer`** (permission `performer:manage`, application model `PerformerFoxerApplication`) throughout §1, §2's diagram references, and §7. The `resourceType: "talent"` data-category naming in §2 is unaffected — it stays `"talent"`, matching the existing precedent that a role's key doesn't have to match its resourceType (`gearFoxer` already supplies `resourceType: "asset"`, not `"gear"`).
 
 Companion documents: `RBAC.md` is the authorization model as built,
 `RBAC-PLAN.md` the migration that produced it. This file is about the layer
@@ -13,39 +14,50 @@ above both — what the roles *are*, and what each one gets to look at.
 ## 0. The idea, in one paragraph
 
 A Venue Foxer or an Event Foxer is not just a listing. It is the **host of a
-community**: Talent Foxers — gear, talent, catering, photography — apply to it,
+community**: Providers — gear, talent, catering, photography — apply to it,
 are accepted or refused by it, and once inside work under its rules. So the
 platform has two kinds of application, and only the first exists today:
 
 1. **Apply to be a Foxer.** A person asks the platform for a `RoleType`, and an
    admin reviews it. This is `RoleRequest`, and it is built.
-2. **Apply to a community.** An accepted Talent Foxer asks a *specific* venue
+2. **Apply to a community.** An accepted Provider asks a *specific* venue
    or a *specific* Event Foxer to work with them, and that host reviews it.
    **Nothing for this exists.**
 
-The second one is an **organisation** — the host is the org, accepted Service
-Foxers are its members. Crucially it is **only a roster**: membership grants no
-permission, which is what keeps it a data model rather than an authorization
-change. See §3.
+The second one is an **organisation** — the host is the org, accepted
+Providers are its members. Crucially it is **only a roster**: membership
+grants no permission, which is what keeps it a data model rather than an
+authorization change. See §3.
+
+*(Uses "Provider" — the umbrella term §1 decides on below — rather than any
+specific leaf role, since gear, talent, catering, and photography suppliers
+all apply the same way. Written before "Talent Foxer" was locked in as
+ServiceFoxer's public name; see the status block above.)*
 
 ---
 
 ## 1. Six roles, flat — **Decided**
 
-Five `RoleType`s exist today. `talentFoxer` is the sixth. The enum stays flat:
-six leaves, six grants, no inheritance.
+Five `RoleType`s exist today. `performerFoxer` is the sixth. The enum stays
+flat: six leaves, six grants, no inheritance.
 
 | RoleType | Permission | Space it appears in |
 |---|---|---|
 | `venueFoxer` | `venue:manage` | Venue Foxer |
 | `eventFoxer` | `template:manage`, `booking:check-in` | Event Foxer |
 | `gearFoxer` | `asset:manage` | *Provider (grouping)* |
-| `talentFoxer` | `talent:manage` — **new** | *Provider (grouping)* |
+| `performerFoxer` | `performer:manage` — **new** | *Provider (grouping)* |
 | `serviceFoxer` | `service:manage` | *Provider (grouping)* |
 | `investor` | *none* | Fox Republic |
 
+*(Keyed `performerFoxer`, not `talentFoxer` — re-keyed 14 Sep 2026 once
+ServiceFoxer's public name became "Talent Foxer," to avoid the exact
+umbrella/leaf name collision §1's own "Why flat rather than nested" section
+warns about below. `resourceType: "talent"` as the data category this role
+supplies is unaffected — see §2.)*
+
 `payouts:onboard` is held by all four existing supply roles and should be held
-by `talentFoxer` too.
+by `performerFoxer` too.
 
 ### Why flat rather than nested
 
@@ -58,7 +70,7 @@ That is the cheap answer, and it is worth being explicit about what it buys:
 - **No inheritance.** Nothing in either codebase resolves a permission through a
   parent role today, and this decision means nothing has to start.
 - **No migration for the grouping.** `roleType` stays `["gearFoxer"]`. Nothing
-  stored says "also a Talent Foxer" — the grouping is a constant in the app,
+  stored says "also a Provider" — the grouping is a constant in the app,
   read only when deciding which page tree to render.
 - **`can()` is untouched.** Six leaves, six grants, still `Record<RoleType, …>`,
   so a seventh role still fails to compile until someone grants it something.
@@ -75,10 +87,16 @@ same name meaning two things, adjacent, inside a permission vocabulary, is how
 
 ```
 Provider
-  ├─ gearFoxer     asset:manage
-  ├─ talentFoxer   talent:manage
-  └─ serviceFoxer  service:manage
+  ├─ gearFoxer       asset:manage
+  ├─ performerFoxer  performer:manage
+  └─ serviceFoxer    service:manage
 ```
+
+The same drift returned on its own 14 Sep 2026: once `serviceFoxer` was given
+the public name "Talent Foxer" (see the status block above), the leaf
+originally keyed `talentFoxer` would have re-created it as *two leaves*
+sharing one name instead of a leaf-and-umbrella pair — same failure, same
+fix. Re-keyed to `performerFoxer`.
 
 Provider exists **only in the UI** — a page grouping and a constant. No enum
 value moves, and `serviceFoxer` keeps its name. Renaming the leaf instead was
@@ -131,9 +149,9 @@ role that provides it.
 
 ## 3. The community layer — an organisation, but only a roster — **Decided**
 
-A Talent Foxer applies to a Venue or to an Event Foxer, and that host accepts
+A Provider applies to a Venue or to an Event Foxer, and that host accepts
 or refuses them. The shape is an **organisation**: the venue or Event Foxer is
-the org, the accepted Talent Foxers are its members, and a member applies for a
+the org, the accepted Providers are its members, and a member applies for a
 named role within it — photographer, sound, catering.
 
 **Membership grants no platform permission.** That was decided explicitly, and
@@ -298,6 +316,9 @@ the duplication FoxPassport removed. Copy the route separation, not the gates.
 | API source layout | **21 flat modules by domain** — not nested by Foxer role |
 | Table renames (`@@map`) | **Deferred** — see api `docs/adr/0003` |
 
+*The "Talent Foxer as a role" row is about the umbrella grouping, not the
+`performerFoxer` leaf added 14 Sep — the umbrella stays Provider either way.*
+
 The last two are API-repo concerns and are recorded there; they are listed here
 so the whole day's decisions can be read in one place.
 
@@ -307,8 +328,8 @@ so the whole day's decisions can be read in one place.
 
 1. **Fix `useRoleAccess`** (§4). Blocking, small, and correct on its own merits
    regardless of what else is decided.
-2. **Add `talentFoxer` and `talent:manage`** (§1), plus a
-   `TalentFoxerApplication` so it can be applied for like the other five. Both
+2. **Add `performerFoxer` and `performer:manage`** (§1), plus a
+   `PerformerFoxerApplication` so it can be applied for like the other five. Both
    grant tables are `Record<RoleType, …>`, so this will not compile until each
    is updated — the safety net working.
 3. **Give talent a `resourceType`** (§2), so the builder's fourth tab starts

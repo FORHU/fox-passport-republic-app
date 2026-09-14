@@ -139,17 +139,35 @@ export function useEventBuilder() {
                 ? s.category.toLowerCase()
                 : s.category?.slug?.toLowerCase();
 
-            if (category === "entertainment") {
-              talent.push({ ...item, icon: "music_note" });
-            } else if (
-              ["planning", "catering", "photography", "videography"].includes(
-                category,
-              )
+            // performerFoxer-owned categories (see PERFORMER_SERVICE_CATEGORIES
+            // in the api's src/types/permissions.ts) land in the talent bucket
+            // regardless of icon — "entertainment" is the legacy/paused value,
+            // the rest are the granular categories new listings use.
+            if (
+              [
+                "entertainment",
+                "photography",
+                "videography",
+                "dj",
+                "live_band",
+                "mc",
+              ].includes(category)
             ) {
-              const iconMap: Record<string, string> = {
-                catering: "restaurant",
+              const talentIconMap: Record<string, string> = {
+                entertainment: "music_note",
                 photography: "camera_alt",
                 videography: "videocam",
+                dj: "music_note",
+                live_band: "music_note",
+                mc: "mic",
+              };
+              talent.push({
+                ...item,
+                icon: talentIconMap[category] || "music_note",
+              });
+            } else if (["planning", "catering"].includes(category)) {
+              const iconMap: Record<string, string> = {
+                catering: "restaurant",
                 planning: "event_note",
               };
               service.push({

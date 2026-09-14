@@ -55,11 +55,13 @@ export function PassportProgressTab({
                 ? "Equipment Foxer"
                 : path.path === "serviceFoxer"
                   ? "Talent Foxer"
-                  : path.path === "eventFoxer"
-                    ? "Event Foxer"
-                    : path.path === "venueFoxer"
-                      ? "Venue Foxer"
-                      : path.path;
+                  : path.path === "performerFoxer"
+                    ? "Performer Foxer"
+                    : path.path === "eventFoxer"
+                      ? "Event Foxer"
+                      : path.path === "venueFoxer"
+                        ? "Venue Foxer"
+                        : path.path;
           const pct = Math.min(
             100,
             Math.round((path.currentXP / path.requiredXP) * 100),
@@ -223,7 +225,8 @@ export function PassportProgressTab({
 
           {/* Foxer Path Guide */}
           {(activePathTypes.includes("gearFoxer") ||
-            activePathTypes.includes("serviceFoxer")) && (
+            activePathTypes.includes("serviceFoxer") ||
+            activePathTypes.includes("performerFoxer")) && (
             <div className="space-y-4">
               <p className="text-[10px] font-black text-[#f97316] uppercase tracking-widest opacity-60">
                 Foxer Career

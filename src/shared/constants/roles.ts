@@ -19,12 +19,13 @@ export const ROLE_TYPES = [
   "eventFoxer",
   "gearFoxer",
   "serviceFoxer",
+  "performerFoxer",
   "investor",
 ] as const;
 export type RoleType = (typeof ROLE_TYPES)[number];
 
 /**
- * The four supply-side roles — everything except `investor`, which applies and
+ * The five supply-side roles — everything except `investor`, which applies and
  * is approved but has nothing to manage.
  *
  * This list was written out by hand in five components, once as `VENUE_ROLES`,
@@ -36,6 +37,7 @@ export const FOXER_ROLES: readonly RoleType[] = [
   "eventFoxer",
   "gearFoxer",
   "serviceFoxer",
+  "performerFoxer",
 ];
 
 /**
@@ -67,5 +69,6 @@ export const ROLE_BADGE: Record<RoleType, { label: string; color: string }> = {
   eventFoxer: { label: "Event Foxer", color: "#a78bfa" },
   gearFoxer: { label: "Equipment Foxer", color: "#38bdf8" },
   serviceFoxer: { label: "Talent Foxer", color: "#34d399" },
+  performerFoxer: { label: "Performer Foxer", color: "#f59e0b" },
   investor: { label: "Partner Foxer", color: "#10b981" },
 };

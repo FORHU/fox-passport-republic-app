@@ -4,6 +4,7 @@ export type UserPath =
   | "user"
   | "gearFoxer"
   | "serviceFoxer"
+  | "performerFoxer"
   | "eventFoxer"
   | "venueFoxer"
   | "investor";
@@ -109,6 +110,13 @@ export const PATH_LABELS = {
     15: "Master Foxer",
     20: "Elite Foxer",
   },
+  performerFoxer: {
+    1: "Starter Foxer",
+    5: "Social Butterfly",
+    10: "Event Curator",
+    15: "Master Foxer",
+    20: "Elite Foxer",
+  },
   eventFoxer: {
     1: "Event Starter",
     3: "Event Planner",
@@ -146,6 +154,7 @@ export const PATH_COLORS: Record<UserPath, string> = {
   user: "#22c55e", // Green
   gearFoxer: "#f97316", // Orange
   serviceFoxer: "#f97316", // Orange
+  performerFoxer: "#f59e0b", // Amber
   eventFoxer: "#3b82f6", // Blue
   venueFoxer: "#a855f7", // Purple
   investor: "#eab308", // Yellow
@@ -160,7 +169,7 @@ export const XP_REWARDS = {
   shareEvent: 15,
   referFriend: 200,
 
-  // GearFoxer / ServiceFoxer path
+  // GearFoxer / ServiceFoxer / PerformerFoxer path
   createListing: 100,
   listingBooked: 150,
   completeEvent: 200,

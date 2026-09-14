@@ -3,7 +3,12 @@
 import React, { useState } from "react";
 import { ApplicationFlowHeader } from "./ApplicationFlowHeader";
 
-type RoleType = "venueFoxer" | "eventFoxer" | "gearFoxer" | "serviceFoxer";
+type RoleType =
+  | "venueFoxer"
+  | "eventFoxer"
+  | "gearFoxer"
+  | "serviceFoxer"
+  | "performerFoxer";
 
 interface Props {
   roleType?: RoleType;
@@ -14,6 +19,7 @@ const ROLE_TABS: { id: RoleType; label: string; icon: string }[] = [
   { id: "eventFoxer", label: "Event Foxer", icon: "celebration" },
   { id: "gearFoxer", label: "Equipment Foxer", icon: "inventory_2" },
   { id: "serviceFoxer", label: "Talent Foxer", icon: "design_services" },
+  { id: "performerFoxer", label: "Performer Foxer", icon: "theater_comedy" },
 ];
 
 const ROLE_CONFIG: Record<RoleType, { placeholder: string; docs: string }> = {
@@ -32,6 +38,10 @@ const ROLE_CONFIG: Record<RoleType, { placeholder: string; docs: string }> = {
   serviceFoxer: {
     placeholder: "e.g. Maria Santos Photography",
     docs: "Valid ID, business permit or freelance credentials",
+  },
+  performerFoxer: {
+    placeholder: "e.g. DJ Solar",
+    docs: "Valid ID, portfolio or demo reel, freelance credentials",
   },
 };
 

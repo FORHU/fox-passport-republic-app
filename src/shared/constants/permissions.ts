@@ -40,6 +40,7 @@ export const PERMISSIONS = [
   "venue:manage",
   "asset:manage",
   "service:manage",
+  "performer:manage",
   "template:manage",
   "booking:check-in",
   "payouts:onboard",

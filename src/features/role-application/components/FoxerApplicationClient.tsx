@@ -11,6 +11,7 @@ import {
   UserCircle,
   Link as LinkIcon,
   BadgeCheck,
+  Music2,
 } from "lucide-react";
 import RequireAuth from "@/shared/auth/RequireAuth";
 import Link from "next/link";
@@ -21,7 +22,6 @@ import { ApplicationFlowHeader } from "./ApplicationFlowHeader";
 const SERVICE_CATEGORY_OPTIONS = [
   { value: "design", label: "Design" },
   { value: "catering", label: "Catering" },
-  { value: "entertainment", label: "Entertainment" },
   { value: "service_staff", label: "Service Staff" },
   { value: "other", label: "Other" },
 ];
@@ -33,15 +33,26 @@ const ASSET_CATEGORY_OPTIONS = [
   { value: "other", label: "Other" },
 ];
 
+// entertainment stays a legacy value on ServiceCategory (existing rows are
+// paused until reapproved as performerFoxer — see the 14 Sep migration) but
+// isn't offered here; new performer listings use these granular categories.
+const PERFORMER_CATEGORY_OPTIONS = [
+  { value: "photography", label: "Photography" },
+  { value: "videography", label: "Videography" },
+  { value: "dj", label: "DJ" },
+  { value: "live_band", label: "Live Band" },
+  { value: "mc", label: "MC / Host" },
+];
+
 export default function FoxerApplicationClient({
   initialType = "service",
 }: {
-  initialType?: "asset" | "service";
+  initialType?: "asset" | "service" | "performer";
 }) {
   const { mutate: applyRole, isPending } = useApplyRole();
-  const [providerType, setProviderType] = useState<"asset" | "service">(
-    initialType,
-  );
+  const [providerType, setProviderType] = useState<
+    "asset" | "service" | "performer"
+  >(initialType);
 
   // Asset Form State
   const [assetData, setAssetData] = useState({
@@ -75,9 +86,29 @@ export default function FoxerApplicationClient({
     string[]
   >([]);
 
+  // Performer Form State — same shape as PerformerFoxerApplication, which
+  // mirrors ServiceFoxerApplication (performerTypes instead of serviceTypes)
+  const [performerData, setPerformerData] = useState({
+    performerTypes: "",
+    portfolioUrls: "",
+    experience: "",
+    nbiClearanceIdNumber: "",
+    tinNumber: "",
+    validId1FileId: "",
+    nbiFileId: "",
+    tinIdFileId: "",
+    birPermitFileId: "",
+    selfieFileId: "",
+  });
+  const [performerSpecializations, setPerformerSpecializations] = useState<
+    string[]
+  >([]);
+
   const handleFileUpload = (field: string, fileId: string) => {
     if (providerType === "asset") {
       setAssetData((prev) => ({ ...prev, [field]: fileId }));
+    } else if (providerType === "performer") {
+      setPerformerData((prev) => ({ ...prev, [field]: fileId }));
     } else {
       setServiceData((prev) => ({ ...prev, [field]: fileId }));
     }
@@ -91,7 +122,14 @@ export default function FoxerApplicationClient({
     setServiceData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
   };
 
-  const SERVICE_DIGIT_FIELD_MAX_LENGTH: Record<string, number> = {
+  const handlePerformerChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setPerformerData((prev) => ({
+      ...prev,
+      [e.target.name]: e.target.value,
+    }));
+  };
+
+  const DIGIT_FIELD_MAX_LENGTH: Record<string, number> = {
     nbiClearanceIdNumber: 18,
     tinNumber: 9,
   };
@@ -102,8 +140,18 @@ export default function FoxerApplicationClient({
     const { name, value } = e.target;
     const digits = value
       .replace(/\D/g, "")
-      .slice(0, SERVICE_DIGIT_FIELD_MAX_LENGTH[name]);
+      .slice(0, DIGIT_FIELD_MAX_LENGTH[name]);
     setServiceData((prev) => ({ ...prev, [name]: digits }));
+  };
+
+  const handlePerformerDigitsChange = (
+    e: React.ChangeEvent<HTMLInputElement>,
+  ) => {
+    const { name, value } = e.target;
+    const digits = value
+      .replace(/\D/g, "")
+      .slice(0, DIGIT_FIELD_MAX_LENGTH[name]);
+    setPerformerData((prev) => ({ ...prev, [name]: digits }));
   };
 
   const handleAssetTinChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -121,6 +169,18 @@ export default function FoxerApplicationClient({
     setServiceData((prev) => ({ ...prev, experience: String(clamped) }));
   };
 
+  const handlePerformerExperienceChange = (
+    e: React.ChangeEvent<HTMLInputElement>,
+  ) => {
+    const digits = e.target.value.replace(/\D/g, "");
+    if (digits === "") {
+      setPerformerData((prev) => ({ ...prev, experience: "" }));
+      return;
+    }
+    const clamped = Math.min(100, Math.max(0, Number(digits)));
+    setPerformerData((prev) => ({ ...prev, experience: String(clamped) }));
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (providerType === "asset") {
@@ -133,6 +193,23 @@ export default function FoxerApplicationClient({
             .map((s) => s.trim())
             .filter(Boolean),
           specializations: assetSpecializations,
+        },
+      });
+    } else if (providerType === "performer") {
+      applyRole({
+        roleType: "performerFoxer",
+        data: {
+          ...performerData,
+          experience: parseInt(performerData.experience, 10),
+          performerTypes: performerData.performerTypes
+            .split(",")
+            .map((s) => s.trim())
+            .filter(Boolean),
+          portfolioUrls: performerData.portfolioUrls
+            .split(",")
+            .map((s) => s.trim())
+            .filter(Boolean),
+          specializations: performerSpecializations,
         },
       });
     } else {
@@ -155,6 +232,13 @@ export default function FoxerApplicationClient({
     }
   };
 
+  const accent =
+    providerType === "asset"
+      ? "#a78bfa"
+      : providerType === "performer"
+        ? "#f59e0b"
+        : "#00d2ff";
+
   return (
     <RequireAuth>
       <ApplicationFlowHeader />
@@ -163,44 +247,32 @@ export default function FoxerApplicationClient({
           {/* Background Glow */}
           <div
             className="absolute top-0 right-0 -mr-20 -mt-20 w-64 h-64 blur-[100px] rounded-full pointer-events-none transition-colors duration-500"
-            style={{
-              backgroundColor:
-                providerType === "asset"
-                  ? "rgba(167,139,250,0.1)"
-                  : "rgba(0,210,255,0.1)",
-            }}
+            style={{ backgroundColor: `${accent}1a` }}
           />
 
           <div className="mb-10 text-center relative z-10">
             <div
               className="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-6 transition-colors duration-300"
               style={{
-                backgroundColor:
-                  providerType === "asset"
-                    ? "rgba(167,139,250,0.2)"
-                    : "rgba(0,210,255,0.2)",
-                color: providerType === "asset" ? "#a78bfa" : "#00d2ff",
+                backgroundColor: `${accent}33`,
+                color: accent,
               }}
             >
               {providerType === "asset" ? (
                 <Package size={32} />
+              ) : providerType === "performer" ? (
+                <Music2 size={32} />
               ) : (
                 <Briefcase size={32} />
               )}
             </div>
             <h1 className="text-3xl md:text-4xl font-display font-bold text-white mb-2">
               Apply to be a{" "}
-              <span
-                style={{
-                  color: providerType === "asset" ? "#a78bfa" : "#00d2ff",
-                }}
-              >
-                Foxer
-              </span>
+              <span style={{ color: accent }}>Foxer</span>
             </h1>
             <p className="text-white/60">
-              Provide your professional details to start offering services or
-              equipment in FoxPassport.
+              Provide your professional details to start offering services,
+              equipment, or performances in FoxPassport.
             </p>
           </div>
 
@@ -215,6 +287,16 @@ export default function FoxerApplicationClient({
               }`}
             >
               Service Provider
+            </button>
+            <button
+              onClick={() => setProviderType("performer")}
+              className={`flex-1 py-3 text-sm font-bold uppercase tracking-wider rounded-lg transition-all ${
+                providerType === "performer"
+                  ? "bg-[#f59e0b] text-black shadow-lg"
+                  : "text-white/50 hover:text-white"
+              }`}
+            >
+              Performer
             </button>
             <button
               onClick={() => setProviderType("asset")}
@@ -353,6 +435,130 @@ export default function FoxerApplicationClient({
                   description="As a service provider, we require a full background check including NBI clearance."
                 />
               </>
+            ) : providerType === "performer" ? (
+              // --- PERFORMER PROVIDER FORM ---
+              <>
+                <div className="space-y-2">
+                  <label className="text-sm font-bold text-white/80 uppercase tracking-wider">
+                    Performer Types *
+                  </label>
+                  <p className="text-xs text-white/40 mb-1">
+                    Comma-separated (e.g. DJ, Live Band, MC)
+                  </p>
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-white/40">
+                      <Tag size={18} />
+                    </div>
+                    <input
+                      required
+                      type="text"
+                      name="performerTypes"
+                      value={performerData.performerTypes}
+                      onChange={handlePerformerChange}
+                      className="w-full bg-white/5 border border-white/10 rounded-xl py-3 pl-12 pr-4 text-white placeholder:text-white/30 focus:outline-none focus:border-[#f59e0b]/50 focus:bg-white/10 transition-colors"
+                      placeholder="DJ, Live Band, Photography..."
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-sm font-bold text-white/80 uppercase tracking-wider">
+                    Years of Experience *
+                  </label>
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-white/40">
+                      <UserCircle size={18} />
+                    </div>
+                    <input
+                      required
+                      type="text"
+                      inputMode="numeric"
+                      pattern="[0-9]*"
+                      name="experience"
+                      value={performerData.experience}
+                      onChange={handlePerformerExperienceChange}
+                      className="w-full bg-white/5 border border-white/10 rounded-xl py-3 pl-12 pr-4 text-white placeholder:text-white/30 focus:outline-none focus:border-[#f59e0b]/50 focus:bg-white/10 transition-colors"
+                      placeholder="e.g. 3"
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-sm font-bold text-white/80 uppercase tracking-wider">
+                    Portfolio / Demo Reel Links *
+                  </label>
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-white/40">
+                      <LinkIcon size={18} />
+                    </div>
+                    <input
+                      required
+                      type="text"
+                      name="portfolioUrls"
+                      value={performerData.portfolioUrls}
+                      onChange={handlePerformerChange}
+                      className="w-full bg-white/5 border border-white/10 rounded-xl py-3 pl-12 pr-4 text-white placeholder:text-white/30 focus:outline-none focus:border-[#f59e0b]/50 focus:bg-white/10 transition-colors"
+                      placeholder="https://youtube.com/..., https://soundcloud.com/..."
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-sm font-bold text-white/80 uppercase tracking-wider">
+                    NBI Clearance ID *
+                  </label>
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-white/40">
+                      <BadgeCheck size={18} />
+                    </div>
+                    <input
+                      required
+                      type="text"
+                      inputMode="numeric"
+                      name="nbiClearanceIdNumber"
+                      maxLength={18}
+                      value={performerData.nbiClearanceIdNumber}
+                      onChange={handlePerformerDigitsChange}
+                      className="w-full bg-white/5 border border-white/10 rounded-xl py-3 pl-12 pr-4 text-white placeholder:text-white/30 focus:outline-none focus:border-[#f59e0b]/50 focus:bg-white/10 transition-colors"
+                      placeholder="XXXX-XXXX-XXXX"
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-sm font-bold text-white/80 uppercase tracking-wider">
+                    TIN Number (Optional)
+                  </label>
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-white/40">
+                      <Hash size={18} />
+                    </div>
+                    <input
+                      type="text"
+                      inputMode="numeric"
+                      name="tinNumber"
+                      maxLength={9}
+                      value={performerData.tinNumber}
+                      onChange={handlePerformerDigitsChange}
+                      className="w-full bg-white/5 border border-white/10 rounded-xl py-3 pl-12 pr-4 text-white placeholder:text-white/30 focus:outline-none focus:border-[#f59e0b]/50 focus:bg-white/10 transition-colors"
+                      placeholder="000-000-000-000"
+                    />
+                  </div>
+                </div>
+
+                <SpecializationPicker
+                  options={PERFORMER_CATEGORY_OPTIONS}
+                  value={performerSpecializations}
+                  onChange={setPerformerSpecializations}
+                  accentColor="#f59e0b"
+                />
+
+                <KycDocumentSection
+                  onUpload={handleFileUpload}
+                  title="Performer Verification"
+                  description="As a performer, we require a full background check including NBI clearance."
+                />
+              </>
             ) : (
               // --- ASSET PROVIDER FORM ---
               <>
@@ -448,10 +654,7 @@ export default function FoxerApplicationClient({
                 type="submit"
                 disabled={isPending}
                 className="w-full flex-1 flex items-center justify-center gap-2 text-black font-bold py-3 px-6 rounded-xl hover:brightness-110 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-                style={{
-                  backgroundColor:
-                    providerType === "asset" ? "#a78bfa" : "#00d2ff",
-                }}
+                style={{ backgroundColor: accent }}
               >
                 {isPending ? "Submitting..." : "Submit Application"}
                 {!isPending && <ArrowRight size={18} />}

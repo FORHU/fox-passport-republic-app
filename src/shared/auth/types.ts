@@ -7,7 +7,12 @@ export type SystemRole = "user" | "admin_secretary" | "admin";
 
 /** Mirrors the API's `RoleType` Prisma enum. */
 export type RoleType =
-  "venueFoxer" | "eventFoxer" | "gearFoxer" | "serviceFoxer" | "investor";
+  | "venueFoxer"
+  | "eventFoxer"
+  | "gearFoxer"
+  | "serviceFoxer"
+  | "performerFoxer"
+  | "investor";
 
 export interface User {
   id: string;

@@ -15,7 +15,8 @@ export default async function FoxerApplicationPage({
   searchParams: Promise<{ type?: string }>;
 }) {
   const { type } = await searchParams;
-  const initialType = type === "asset" ? "asset" : "service";
+  const initialType =
+    type === "asset" ? "asset" : type === "performer" ? "performer" : "service";
   return (
     <>
       <div className="lg:hidden">
