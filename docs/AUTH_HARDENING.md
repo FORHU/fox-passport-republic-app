@@ -349,7 +349,7 @@ stateless model and is the price of the row above.
 
 ## 🔍 Browser verification — written 8 Sep, **not yet run**
 
-`TOMORROW.md` pointed at "the end-to-end pass written into `AUTH_HARDENING.md`"
+`NEXT.md` pointed at "the end-to-end pass written into `AUTH_HARDENING.md`"
 for months. There wasn't one — `VERIFY.md` is the socket, emit and page-guard
 runbook from earlier work and has no auth section at all. This is that list.
 

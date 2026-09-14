@@ -406,7 +406,7 @@ Ordered by what it buys, not by size.
 
 - [x] **`type-check` added** — `tsc --noEmit`. There was no blessed way to
       typecheck this app, which is why the stale `.next` route-validator errors
-      (§5 of `TOMORROW.md`) surprise people: the first person to run `tsc` by
+      (§5 of `NEXT.md`) surprise people: the first person to run `tsc` by
       hand meets four errors about a route group that no longer exists, with no
       way to know that is normal.
 - [x] **`test` is now `vitest run`**, with the watch form kept as `test:watch`.
@@ -449,7 +449,7 @@ The template ships `playwright.config.ts`, an `e2e/` directory and
 `test:e2e` / `test:e2e:ui` scripts. This app has none.
 
 `VERIFY.md` is a 267-line browser runbook that **has never been run**, and it is
-the largest gap in this repository by some distance. `TOMORROW.md` §2 makes the
+the largest gap in this repository by some distance. `NEXT.md` §2 makes the
 case better than any argument: *41 tests pinned the `admin_secretary` boundary
 and passed, while the role could not open the console at all.* They tested the
 grant table and the nav; none of them rendered a page.

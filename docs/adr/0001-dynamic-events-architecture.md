@@ -165,7 +165,7 @@ framework asked for, not a replacement for any of them.*
 
 *Note (13 Sep): `PRIORITIES.md`, cited above as a source for the two "Still
 open" items, was retired the same day — its P0/P1 items were already done and
-recorded in `TOMORROW.md`, and its two open P2 items were folded directly into
+recorded in `NEXT.md`, and its two open P2 items were folded directly into
 `DYNAMIC-EVENTS-PLAN.md` (§2 and §4). The citations above are left as-is since
 this record reflects what existed at decision time; the content itself did
 not change homes in a way that drops anything.*

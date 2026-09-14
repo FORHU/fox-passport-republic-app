@@ -143,7 +143,7 @@ overflow behaves identically to a private booking.
 | TASK-04 | Reuse existing checkedIn/ticketCode shape and creator-dashboard/check-in UI, pointed at EventRegistration rows for public templates |
 | TASK-05 | Add backend tests |
 | TASK-06 | "Join"/"Register" action on the public event page, distinct from the existing booking-request flow |
-| TASK-07 | Bundle with the sharing work (OG fix, share/invite UI, QR) — already shipped 11 Sep, see `TOMORROW.md` — the MVP is only as useful as the link people can act on |
+| TASK-07 | Bundle with the sharing work (OG fix, share/invite UI, QR) — already shipped 11 Sep, see `NEXT.md` — the MVP is only as useful as the link people can act on |
 
 **Role note:** this is the phase a lightweight event partner (run club,
 community organizer) actually touches. `"Partner"` is taken —
