@@ -8,7 +8,12 @@ import { toast } from "sonner";
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 type RoleId =
-  "citizen" | "venueFoxer" | "eventFoxer" | "gearFoxer" | "serviceFoxer";
+  | "citizen"
+  | "venueFoxer"
+  | "eventFoxer"
+  | "gearFoxer"
+  | "serviceFoxer"
+  | "performerFoxer";
 
 interface Role {
   id: RoleId;
@@ -57,10 +62,18 @@ const ROLES: Role[] = [
   {
     id: "serviceFoxer",
     label: "Talent Foxer",
-    desc: "Offer catering, photography & more",
+    desc: "Offer catering, design & more",
     icon: "design_services",
     color: "#34d399",
     iconBg: "rgba(52,211,153,0.2)",
+  },
+  {
+    id: "performerFoxer",
+    label: "Performer Foxer",
+    desc: "Offer photography, DJ, live music & more",
+    icon: "theater_comedy",
+    color: "#f59e0b",
+    iconBg: "rgba(245,158,11,0.2)",
   },
 ];
 

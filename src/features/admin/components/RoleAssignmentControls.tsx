@@ -31,6 +31,7 @@ const ROLE_TYPE_LABEL: Record<RoleType, string> = {
   eventFoxer: "Event Foxer",
   gearFoxer: "Equipment Foxer",
   serviceFoxer: "Talent Foxer",
+  performerFoxer: "Performer Foxer",
   investor: "Investor",
 };
 

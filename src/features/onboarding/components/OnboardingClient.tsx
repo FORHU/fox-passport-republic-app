@@ -19,7 +19,17 @@ const ROLES = [
     icon: "design_services",
     tag: "Talent Foxer",
     title: "Talent Provider",
-    desc: "Offer catering, photography, entertainment, and professional services.",
+    desc: "Offer catering, design, staffing, and professional services.",
+  },
+  {
+    type: "performer",
+    roleType: "performerFoxer",
+    href: "/foxer/apply?type=performer",
+    color: "#f59e0b",
+    icon: "theater_comedy",
+    tag: "Performer Foxer",
+    title: "Performer",
+    desc: "Offer photography, DJ, live music, hosting, and more.",
   },
   {
     type: "asset",

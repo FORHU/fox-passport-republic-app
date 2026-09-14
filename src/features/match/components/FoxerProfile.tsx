@@ -38,6 +38,7 @@ function getRoleLabel(foxer: Foxer): string {
   if (roles.includes("venueFoxer")) return "Venue Foxer";
   if (roles.includes("gearFoxer")) return "Equipment Foxer";
   if (roles.includes("serviceFoxer")) return "Talent Foxer";
+  if (roles.includes("performerFoxer")) return "Performer Foxer";
   return "Foxer";
 }
 
@@ -301,6 +302,7 @@ const FoxerProfile: React.FC = () => {
                   const ROLE_LABELS: Record<string, string> = {
                     eventFoxer: "Event Foxer",
                     serviceFoxer: "Talent Foxer",
+                    performerFoxer: "Performer Foxer",
                     gearFoxer: "Equipment Foxer",
                     venueFoxer: "Venue Foxer",
                   };

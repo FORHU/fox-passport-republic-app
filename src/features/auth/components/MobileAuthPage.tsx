@@ -20,6 +20,8 @@ import {
 } from "@/shared/lib/schema";
 import { useAuthStore } from "@/shared/auth/useAuthStore";
 import { getBrowserApiUrl } from "@/shared/lib/config";
+import { config } from "@/shared/lib/config";
+import { TermsPrivacyModal } from "@/features/auth/components/TermsPrivacyModal";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -326,6 +328,11 @@ function SignupView({
 }) {
   const signupMutation = useSignup();
   const [showPw, setShowPw] = useState(false);
+  const [agreedToTerms, setAgreedToTerms] = useState(false);
+  const [hasReadCharter, setHasReadCharter] = useState(false);
+  const [charterTab, setCharterTab] = useState<"terms" | "privacy" | null>(
+    null,
+  );
 
   const {
     register,
@@ -527,7 +534,7 @@ function SignupView({
         <label
           style={{
             display: "flex",
-            alignItems: "flex-start",
+            alignItems: "center",
             gap: 10,
             cursor: "pointer",
             marginTop: 4,
@@ -536,8 +543,17 @@ function SignupView({
           <input
             type="checkbox"
             required
+            checked={agreedToTerms}
+            onChange={(e) => {
+              // Reading the charter is mandatory before it can be checked;
+              // unchecking never needs that gate.
+              if (e.target.checked && !hasReadCharter) {
+                setCharterTab("terms");
+                return;
+              }
+              setAgreedToTerms(e.target.checked);
+            }}
             style={{
-              marginTop: 2,
               accentColor: "#ccff00",
               width: 16,
               height: 16,
@@ -552,15 +568,56 @@ function SignupView({
             }}
           >
             I agree to the{" "}
-            <span style={{ color: "#ccff00", fontWeight: 700 }}>
+            <button
+              type="button"
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                setCharterTab("terms");
+              }}
+              style={{
+                color: "#ccff00",
+                fontWeight: 700,
+                background: "none",
+                border: "none",
+                padding: 0,
+                font: "inherit",
+                cursor: "pointer",
+              }}
+            >
               Terms of Service
-            </span>{" "}
+            </button>{" "}
             &{" "}
-            <span style={{ color: "#ccff00", fontWeight: 700 }}>
+            <button
+              type="button"
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                setCharterTab("privacy");
+              }}
+              style={{
+                color: "#ccff00",
+                fontWeight: 700,
+                background: "none",
+                border: "none",
+                padding: 0,
+                font: "inherit",
+                cursor: "pointer",
+              }}
+            >
               Privacy Policy
-            </span>
+            </button>
           </span>
         </label>
+
+        {charterTab && (
+          <TermsPrivacyModal
+            initialTab={charterTab}
+            onClose={() => setCharterTab(null)}
+            onAccept={() => setAgreedToTerms(true)}
+            onBothRead={() => setHasReadCharter(true)}
+          />
+        )}
 
         <button
           type="submit"

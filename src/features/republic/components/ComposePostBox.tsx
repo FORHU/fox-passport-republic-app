@@ -200,6 +200,9 @@ export function ComposePostBox({
   const isVenueFoxer = isPartner || roleTypes.includes("venueFoxer");
   const isGearFoxer = isPartner || roleTypes.includes("gearFoxer");
   const isServiceFoxer = isPartner || roleTypes.includes("serviceFoxer");
+  // performerFoxer-owned listings are still Service rows, so they share the
+  // service_offering PostType — see feed.service.ts's service_offering case.
+  const isPerformerFoxer = isPartner || roleTypes.includes("performerFoxer");
   const isEventFoxer = isPartner || roleTypes.includes("eventFoxer");
 
   const postOptions: Array<{
@@ -230,7 +233,7 @@ export function ComposePostBox({
           },
         ]
       : []),
-    ...(isServiceFoxer
+    ...(isServiceFoxer || isPerformerFoxer
       ? [
           {
             type: "service_offering" as PostType,

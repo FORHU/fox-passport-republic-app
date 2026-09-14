@@ -2,13 +2,19 @@
 
 import React from "react";
 
-type RoleType = "venueFoxer" | "eventFoxer" | "gearFoxer" | "serviceFoxer";
+type RoleType =
+  | "venueFoxer"
+  | "eventFoxer"
+  | "gearFoxer"
+  | "serviceFoxer"
+  | "performerFoxer";
 
 const ROLE_DISPLAY: Record<RoleType, string> = {
   venueFoxer: "Venue Foxer",
   eventFoxer: "Event Foxer",
   gearFoxer: "Equipment Foxer",
   serviceFoxer: "Talent Foxer",
+  performerFoxer: "Performer Foxer",
 };
 
 type StepStatus = "verified" | "in-review" | "required";

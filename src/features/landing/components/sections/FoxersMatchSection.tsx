@@ -18,7 +18,8 @@ const ROLE_FILTERS = [
   { label: "All", value: undefined, icon: "groups" },
   { label: "Event Foxer", value: "eventFoxer", icon: "celebration" },
   { label: "Venue Foxer", value: "venueFoxer", icon: "location_city" },
-  { label: "Talent Foxer", value: "serviceFoxer", icon: "theater_comedy" },
+  { label: "Talent Foxer", value: "serviceFoxer", icon: "design_services" },
+  { label: "Performer Foxer", value: "performerFoxer", icon: "theater_comedy" },
   { label: "Equipment Foxer", value: "gearFoxer", icon: "speaker" },
 ] as const;
 
@@ -176,6 +177,7 @@ function getPrimaryRole(foxer: Foxer): string {
   if (roles.includes("eventFoxer")) return "eventFoxer";
   if (roles.includes("gearFoxer")) return "gearFoxer";
   if (roles.includes("serviceFoxer")) return "serviceFoxer";
+  if (roles.includes("performerFoxer")) return "performerFoxer";
   return "";
 }
 
@@ -195,8 +197,13 @@ const ROLE_META: Record<
   },
   serviceFoxer: {
     label: "Talent Foxer",
-    description: "Provides services like photography, catering & entertainment",
+    description: "Provides services like catering, design & staffing",
     color: "#00d2ff",
+  },
+  performerFoxer: {
+    label: "Performer Foxer",
+    description: "Provides photography, DJ, live music & more",
+    color: "#f59e0b",
   },
   venueFoxer: {
     label: "Venue Foxer",
@@ -210,6 +217,7 @@ function getRoleMeta(foxer: Foxer) {
   if (roles.includes("eventFoxer")) return ROLE_META.eventFoxer;
   if (roles.includes("gearFoxer")) return ROLE_META.gearFoxer;
   if (roles.includes("serviceFoxer")) return ROLE_META.serviceFoxer;
+  if (roles.includes("performerFoxer")) return ROLE_META.performerFoxer;
   return {
     label: "Foxer",
     description: "FoxPassport verified professional",

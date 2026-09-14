@@ -7,7 +7,7 @@ export interface ResourceItem {
   icon: string;
   desc: string;
   imageUrl?: string;
-  resourceType?: "venue" | "asset" | "service";
+  resourceType?: "venue" | "asset" | "service" | "talent";
   agreedPrice?: number;
   isOptional?: boolean;
   // Venue-only location fields for auto-fill
@@ -57,4 +57,11 @@ export const EVENT_CATEGORIES = [
 
 // Icon categories for cost breakdown calculations
 export const VENUE_ICONS = ["location_city", "warehouse", "forest"];
-export const TALENT_ICONS = ["music_note", "local_bar", "movie_filter", "mic"];
+export const TALENT_ICONS = [
+  "music_note",
+  "local_bar",
+  "movie_filter",
+  "mic",
+  "camera_alt",
+  "videocam",
+];
