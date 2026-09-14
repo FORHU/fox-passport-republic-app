@@ -20,7 +20,7 @@ _Avoid_: Regular user, plain user
 
 **RoleType**
 A supply-side capability a Citizen can apply for and be approved to hold. Multiple RoleTypes may be held simultaneously — they are additive, not exclusive.
-Values: `venueFoxer`, `eventFoxer`, `gearFoxer`, `serviceFoxer`, `investor`.
+Values: `venueFoxer`, `eventFoxer`, `gearFoxer`, `serviceFoxer`, `performerFoxer`, `investor`.
 Distinct from `systemRole` (`user`/`admin`), which governs platform administration.
 There is no `super_admin` — `enum SystemRole` in `schema.prisma` has exactly two values.
 _Avoid_: Role (ambiguous with systemRole), permission
@@ -41,12 +41,17 @@ Code: `roleType` includes `"gearFoxer"`.
 _Avoid_: FoxerAsset, Asset Foxer (old names)
 
 **ServiceFoxer**
-A Citizen approved to supply Services (catering, entertainment, design, staffing, etc.) into the marketplace for standalone booking or attachment to Event Templates. Public-facing name is **Talent Foxer** — decided 14 Sep 2026, see `docs/BUSINESS-STRATEGY-MASTER.md` §11.5. `ServiceFoxer`/`serviceFoxer` remains the code-level term; use it in code, API, and this glossary.
+A Citizen approved to supply Services (catering, design, staffing, etc.) into the marketplace for standalone booking or attachment to Event Templates. Public-facing name is **Talent Foxer** — decided 14 Sep 2026, see `docs/BUSINESS-STRATEGY-MASTER.md` §11.5. `ServiceFoxer`/`serviceFoxer` remains the code-level term; use it in code, API, and this glossary. `entertainment` is a legacy `ServiceCategory` value here — new entertainment-type supply is PerformerFoxer, not ServiceFoxer.
 Code: `roleType` includes `"serviceFoxer"`.
 _Avoid_: FoxerService (old name)
 
+**PerformerFoxer**
+A Citizen approved to supply entertainment-type Services — photography, videography, DJ, live band, MC — via the same `Service` model ServiceFoxer uses. Public-facing name is **Performer Foxer**. Added 14 Sep 2026, re-keyed from the originally-planned `talentFoxer` to avoid colliding with ServiceFoxer's public name — see `docs/roles-and-spaces.md` §1.
+Code: `roleType` includes `"performerFoxer"`; category values `photography`/`videography`/`dj`/`live_band`/`mc` (plus legacy `entertainment` for pre-migration listings).
+_Avoid_: TalentFoxer (rejected key, collides with ServiceFoxer's public name)
+
 **Foxer**
-Umbrella term for a GearFoxer or ServiceFoxer — anyone supplying inventory. Used when the distinction between the two doesn't matter.
+Umbrella term for a GearFoxer, ServiceFoxer or PerformerFoxer — anyone supplying inventory. Used when the distinction between them doesn't matter. Same grouping as **Provider** in `docs/roles-and-spaces.md`.
 
 **Investor**
 A Citizen approved as a financial stakeholder. Application requires proof of funds and an investment range, unlike operational RoleTypes.
@@ -64,7 +69,7 @@ _Avoid_: User ID (that's the internal UUID), account number
 A Citizen's gamification profile. Tracks stamps collected, badges earned, XP earned, and level progress per Path.
 
 **Path**
-A per-RoleType XP progression track. Each Citizen has one Path per role they hold (`user`, `eventFoxer`, `venueFoxer`, `gearFoxer`, `serviceFoxer`, `investor`). Levels and tier labels are independent per Path.
+A per-RoleType XP progression track. Each Citizen has one Path per role they hold (`user`, `eventFoxer`, `venueFoxer`, `gearFoxer`, `serviceFoxer`, `performerFoxer`, `investor`). Levels and tier labels are independent per Path.
 
 **Level**
 A numeric milestone within a Path, earned by accumulating XP. XP required per level scales by 15% per level (`XP_PER_LEVEL = 1000` base). Each Path has named tier labels at milestone levels:
@@ -76,6 +81,7 @@ A numeric milestone within a Path, earned by accumulating XP. XP required per le
 | VenueFoxer | Ward Officer (1) → District Head (3) → City Planner (7) → City Leader (12) → Grand Foxer (18) |
 | GearFoxer | Starter Foxer (1) → Social Butterfly (5) → Event Curator (10) → Master Foxer (15) → Elite Foxer (20) |
 | ServiceFoxer | Starter Foxer (1) → Social Butterfly (5) → Event Curator (10) → Master Foxer (15) → Elite Foxer (20) |
+| PerformerFoxer | Starter Foxer (1) → Social Butterfly (5) → Event Curator (10) → Master Foxer (15) → Elite Foxer (20) |
 | Investor | Seed Funder (1) → Angel Investor (3) → Venture Partner (6) → Major Stakeholder (10) → Elite Investor (15) |
 
 **Badge**
@@ -161,4 +167,4 @@ Those belong in code comments, or in the ADRs — which live in the **API** repo
 - `0002-stripe-connect-payouts.md`
 
 Ongoing engineering trackers are in [`docs/`](./docs/); start at
-[`docs/TOMORROW.md`](./docs/TOMORROW.md).
+[`docs/NEXT.md`](./docs/NEXT.md).
