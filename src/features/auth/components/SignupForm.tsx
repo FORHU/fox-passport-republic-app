@@ -3,12 +3,13 @@
 import React from "react";
 import { useForm, SubmitHandler, FieldErrors } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Loader2 } from "lucide-react";
+import { Loader2, Check } from "lucide-react";
 
 import { useSignup } from "@/features/auth/hooks/useAuth";
 import { signupSchema, SignupFormData } from "@/shared/lib/schema";
 import { useAuthStore } from "@/shared/auth/useAuthStore";
 import { config } from "@/shared/lib/config";
+import { TermsPrivacyModal } from "@/features/auth/components/TermsPrivacyModal";
 
 import { toast } from "sonner";
 
@@ -74,6 +75,11 @@ export default function SignupForm() {
   const { toggleView } = useAuthStore();
   const [showPassword, setShowPassword] = React.useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = React.useState(false);
+  const [agreedToTerms, setAgreedToTerms] = React.useState(false);
+  const [hasReadCharter, setHasReadCharter] = React.useState(false);
+  const [charterTab, setCharterTab] = React.useState<
+    "terms" | "privacy" | null
+  >(null);
 
   const {
     register,
@@ -250,17 +256,25 @@ export default function SignupForm() {
 
         {/* Terms */}
         <div className="flex items-center gap-3 pt-2">
-          <div className="relative flex items-center">
+          <div className="relative flex h-5 w-5 shrink-0 items-center">
             <input
               className="peer h-5 w-5 cursor-pointer appearance-none rounded-md border border-white/20 bg-white/5 checked:border-[#ccff00] checked:bg-[#ccff00] transition-all hover:border-[#ccff00]/50"
               id="terms"
               type="checkbox"
+              checked={agreedToTerms}
+              onChange={(e) => {
+                // Reading the charter is mandatory before it can be
+                // checked; unchecking never needs that gate.
+                if (e.target.checked && !hasReadCharter) {
+                  setCharterTab("terms");
+                  return;
+                }
+                setAgreedToTerms(e.target.checked);
+              }}
               required
             />
-            <span className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-black opacity-0 peer-checked:opacity-100 transition-opacity pointer-events-none">
-              <span className="material-symbols-outlined text-[16px] font-bold">
-                check
-              </span>
+            <span className="pointer-events-none absolute inset-0 flex items-center justify-center text-black opacity-0 transition-opacity peer-checked:opacity-100">
+              <Check className="h-3.5 w-3.5" strokeWidth={3.5} />
             </span>
           </div>
           <label
@@ -268,21 +282,32 @@ export default function SignupForm() {
             htmlFor="terms"
           >
             I agree to the{" "}
-            <a
+            <button
+              type="button"
+              onClick={() => setCharterTab("terms")}
               className="text-white hover:text-[#ccff00] underline decoration-[#ccff00]/30 underline-offset-2 transition-colors"
-              href="#"
             >
               Terms of Service
-            </a>{" "}
+            </button>{" "}
             &{" "}
-            <a
+            <button
+              type="button"
+              onClick={() => setCharterTab("privacy")}
               className="text-white hover:text-[#ccff00] underline decoration-[#ccff00]/30 underline-offset-2 transition-colors"
-              href="#"
             >
               Privacy Policy
-            </a>
+            </button>
           </label>
         </div>
+
+        {charterTab && (
+          <TermsPrivacyModal
+            initialTab={charterTab}
+            onClose={() => setCharterTab(null)}
+            onAccept={() => setAgreedToTerms(true)}
+            onBothRead={() => setHasReadCharter(true)}
+          />
+        )}
 
         {/* Submit Button */}
         {/* Submit Button */}
