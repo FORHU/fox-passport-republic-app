@@ -1,6 +1,11 @@
 "use client";
 
-import React, { useState, forwardRef, useImperativeHandle } from "react";
+import React, {
+  useState,
+  useCallback,
+  forwardRef,
+  useImperativeHandle,
+} from "react";
 import {
   useStripe,
   useElements,
@@ -26,41 +31,41 @@ const StripePaymentForm = forwardRef<
   const [isProcessing, setIsProcessing] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  useImperativeHandle(ref, () => ({ submit: handleSubmit }), [
-    stripe,
-    elements,
-    isProcessing,
-  ]);
+  const handleSubmit = useCallback(
+    async (e?: React.FormEvent) => {
+      e?.preventDefault();
+      if (!stripe || !elements) return;
 
-  const handleSubmit = async (e?: React.FormEvent) => {
-    e?.preventDefault();
-    if (!stripe || !elements) return;
+      setIsProcessing(true);
+      setErrorMessage(null);
 
-    setIsProcessing(true);
-    setErrorMessage(null);
+      const { error, paymentIntent } = await stripe.confirmPayment({
+        elements,
+        redirect: "if_required",
+        confirmParams: {
+          return_url:
+            returnUrl ?? `${window.location.origin}/checkout/success`,
+        },
+      });
 
-    const { error, paymentIntent } = await stripe.confirmPayment({
-      elements,
-      redirect: "if_required",
-      confirmParams: {
-        return_url: returnUrl ?? `${window.location.origin}/checkout/success`,
-      },
-    });
+      if (error) {
+        setErrorMessage(error.message || "Payment failed. Please try again.");
+        setIsProcessing(false);
+        return;
+      }
 
-    if (error) {
-      setErrorMessage(error.message || "Payment failed. Please try again.");
-      setIsProcessing(false);
-      return;
-    }
+      if (
+        paymentIntent?.status === "succeeded" ||
+        paymentIntent?.status === "processing"
+      ) {
+        onSuccess?.(paymentIntent.id);
+        setIsProcessing(false);
+      }
+    },
+    [stripe, elements, returnUrl, onSuccess],
+  );
 
-    if (
-      paymentIntent?.status === "succeeded" ||
-      paymentIntent?.status === "processing"
-    ) {
-      onSuccess?.(paymentIntent.id);
-      setIsProcessing(false);
-    }
-  };
+  useImperativeHandle(ref, () => ({ submit: handleSubmit }), [handleSubmit]);
 
   return (
     <div className="space-y-6">

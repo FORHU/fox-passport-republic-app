@@ -20,7 +20,6 @@ import {
 } from "@/shared/lib/schema";
 import { useAuthStore } from "@/shared/auth/useAuthStore";
 import { getBrowserApiUrl } from "@/shared/lib/config";
-import { config } from "@/shared/lib/config";
 import { TermsPrivacyModal } from "@/features/auth/components/TermsPrivacyModal";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
