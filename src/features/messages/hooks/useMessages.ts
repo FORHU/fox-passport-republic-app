@@ -24,6 +24,9 @@ import {
   getReadReceipts,
   setConversationMuted,
   setConversationPinned,
+  setPinnedMessage,
+  getPinnedMessage,
+  searchMessages,
 } from "../api/messages";
 import { useMessageStore } from "../store/useMessageStore";
 import { Message, StartConversationInput } from "../types";
@@ -326,6 +329,52 @@ export function useSetConversationPinned() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["conversations"] });
     },
+  });
+}
+
+export function usePinnedMessage(conversationId?: string) {
+  return useQuery({
+    queryKey: ["pinned-message", conversationId],
+    queryFn: () => getPinnedMessage(conversationId!),
+    enabled: !!conversationId,
+    staleTime: 1000 * 15,
+  });
+}
+
+export function useSetPinnedMessage() {
+  const queryClient = useQueryClient();
+  const setPinnedMessageId = useMessageStore((s) => s.setPinnedMessageId);
+
+  return useMutation({
+    mutationFn: ({
+      conversationId,
+      messageId,
+      pinned,
+    }: {
+      conversationId: string;
+      messageId: string;
+      pinned: boolean;
+    }) => setPinnedMessage(conversationId, messageId, pinned),
+    onSuccess: (message, { conversationId, messageId, pinned }) => {
+      setPinnedMessageId(conversationId, pinned ? messageId : null);
+      queryClient.invalidateQueries({
+        queryKey: ["pinned-message", conversationId],
+      });
+    },
+  });
+}
+
+// Not a useQuery — a search is a one-shot lookup fired on submit, not
+// something to keep refetching/caching against a changing query key.
+export function useSearchMessages() {
+  return useMutation({
+    mutationFn: ({
+      conversationId,
+      query,
+    }: {
+      conversationId: string;
+      query: string;
+    }) => searchMessages(conversationId, query),
   });
 }
 

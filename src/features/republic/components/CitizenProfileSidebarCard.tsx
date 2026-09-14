@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { useAuthStore } from "@/shared/auth/useAuthStore";
 import { isPartnerUser } from "@/shared/auth/roles";
@@ -55,9 +56,11 @@ export function CitizenProfileSidebarCard() {
       <div className="flex items-center gap-3.5">
         <Link href={`/user/${user.id}`} className="relative shrink-0 block">
           {user.imgId ? (
-            <img
+            <Image
               src={user.imgId}
               alt={user.name}
+              width={48}
+              height={48}
               className="w-12 h-12 rounded-2xl object-cover border-2 border-lime-400/50 shadow-md ring-2 ring-lime-400/20"
             />
           ) : (

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import Image from "next/image";
 import { X } from "lucide-react";
 import { searchMentionCandidates } from "@/shared/api/feed";
 import type { MentionCandidate } from "@/features/republic/types";
@@ -195,9 +196,11 @@ export function PhotoTagEditor({
                   >
                     <div className="h-6 w-6 rounded-full bg-zinc-800 border border-zinc-700 flex items-center justify-center text-[10px] font-bold text-zinc-400 shrink-0 overflow-hidden">
                       {c.imgId ? (
-                        <img
+                        <Image
                           src={c.imgId}
                           alt=""
+                          width={24}
+                          height={24}
                           className="h-full w-full object-cover"
                         />
                       ) : (

@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { MoreVertical, LogOut, Bell, BellOff, Pin, PinOff } from "lucide-react";
+import { ConfirmModal } from "@/shared/components/ConfirmModal";
 
 export interface GroupOptionsMenuProps {
   conversationId: string;
@@ -24,6 +25,7 @@ export function GroupOptionsMenu({
   onTogglePin,
 }: GroupOptionsMenuProps) {
   const [open, setOpen] = useState(false);
+  const [confirmingLeave, setConfirmingLeave] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -39,7 +41,7 @@ export function GroupOptionsMenu({
 
   const handleLeave = () => {
     setOpen(false);
-    onLeave();
+    setConfirmingLeave(true);
   };
 
   const handleTogglePin = () => {
@@ -100,6 +102,20 @@ export function GroupOptionsMenu({
             Leave &quot;{groupName}&quot;
           </button>
         </div>
+      )}
+
+      {confirmingLeave && (
+        <ConfirmModal
+          title="Leave group?"
+          description={`You'll stop receiving messages from "${groupName}" and won't see its history unless someone adds you back.`}
+          confirmLabel="Leave"
+          isPending={isLeaving}
+          onConfirm={() => {
+            onLeave();
+            setConfirmingLeave(false);
+          }}
+          onClose={() => setConfirmingLeave(false)}
+        />
       )}
     </div>
   );

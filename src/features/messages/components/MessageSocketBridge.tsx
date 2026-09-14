@@ -31,6 +31,9 @@ export default function MessageSocketBridge() {
   const setMessageReactions = useMessageStore(
     (state) => state.setMessageReactions,
   );
+  const setPinnedMessageId = useMessageStore(
+    (state) => state.setPinnedMessageId,
+  );
   const openChat = useChatWindowsStore((state) => state.openChat);
   const openGroupChat = useChatWindowsStore((state) => state.openGroupChat);
   const closeChat = useChatWindowsStore((state) => state.closeChat);
@@ -154,6 +157,17 @@ export default function MessageSocketBridge() {
         updateMessage(message);
       }),
     [updateMessage],
+  );
+
+  useEffect(
+    () =>
+      subscribeRealtime<{ conversationId: string; messageId: string | null }>(
+        SOCKET_EVENTS.MESSAGE_PINNED,
+        ({ conversationId, messageId }) => {
+          setPinnedMessageId(conversationId, messageId);
+        },
+      ),
+    [setPinnedMessageId],
   );
 
   useEffect(

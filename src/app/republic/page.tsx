@@ -27,10 +27,16 @@ function RepublicFeedContent() {
   const initialTab: FeedTab =
     tabParam && VALID_TABS.includes(tabParam) ? tabParam : "all";
 
+  // A tapped hashtag (see renderUsernameMentions) lands here as
+  // `?hashtag=foo` — there's no separate tag index, so this just seeds the
+  // existing content search with the literal "#foo" substring.
+  const hashtagParam = searchParams.get("hashtag");
+  const initialSearch = hashtagParam ? `#${hashtagParam}` : "";
+
   const [activeTab, setActiveTab] = useState<FeedTab>(initialTab);
   const [mode, setMode] = useState<"recent" | "top">("recent");
-  const [search, setSearch] = useState("");
-  const [searchInput, setSearchInput] = useState("");
+  const [search, setSearch] = useState(initialSearch);
+  const [searchInput, setSearchInput] = useState(initialSearch);
   const [posts, setPosts] = useState<FeedPost[]>([]);
   const [loading, setLoading] = useState(true);
   const [nextCursor, setNextCursor] = useState<string | null>(null);
@@ -266,7 +272,7 @@ function RepublicFeedContent() {
               - Independent scrolling
               - Does not expand the page
               - Remains contained within viewport */}
-          <aside className="hidden md:block h-full min-h-0 w-[280px] shrink-0 overflow-y-auto overscroll-contain custom-scrollbar pr-2 pb-12">
+          <aside className="hidden md:block h-full min-h-0 w-[320px] shrink-0 overflow-y-auto overscroll-contain custom-scrollbar pr-2 pb-12">
             <RepublicLeftSidebar
               mapSlot={
                 <PartnerInventoryMap className="h-[360px] w-full rounded-2xl overflow-hidden" />
@@ -430,7 +436,7 @@ function RepublicFeedContent() {
           {/* RIGHT SIDEBAR
               - Independent contained scrolling
               - Does not affect page height */}
-          <aside className="hidden xl:block h-full min-h-0 w-[280px] shrink-0 overflow-y-auto overscroll-contain custom-scrollbar pl-2 pb-12">
+          <aside className="hidden xl:block h-full min-h-0 w-[320px] shrink-0 overflow-y-auto overscroll-contain custom-scrollbar pl-2 pb-12">
             <RepublicRightSidebar>
               <FollowingWidgetSection />
             </RepublicRightSidebar>

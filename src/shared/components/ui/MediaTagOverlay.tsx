@@ -17,7 +17,8 @@ interface MediaTagOverlayProps {
 // percentage. Distinct from @mention highlighting in post text (PostCard's
 // renderContentWithMentions) — these pins point at people, not read them.
 // Lives under shared/ (not features/republic) because it's also used by
-// ImageLightbox, which is a features/messages component.
+// ImageLightbox, which itself lives under shared/ for the same reason
+// (used by both the republic and messages features).
 export function MediaTagOverlay({
   tags,
   defaultRevealed = false,

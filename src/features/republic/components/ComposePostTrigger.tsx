@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useAuthStore } from "@/shared/auth/useAuthStore";
 
 interface ComposePostTriggerProps {
@@ -27,9 +28,11 @@ export function ComposePostTrigger({ onOpen }: ComposePostTriggerProps) {
     <div className="w-full rounded-2xl backdrop-blur-xl bg-zinc-950/90 border border-zinc-800/90 p-3 shadow-[0_10px_35px_rgba(0,0,0,0.7)]">
       <div className="flex items-center gap-2.5">
         {user?.imgId ? (
-          <img
+          <Image
             src={user.imgId}
             alt={user.name}
+            width={36}
+            height={36}
             className="w-9 h-9 rounded-full object-cover border border-zinc-700 shrink-0"
           />
         ) : (

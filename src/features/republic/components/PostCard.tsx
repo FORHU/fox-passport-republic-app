@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
@@ -15,14 +16,15 @@ import {
   Star,
 } from "lucide-react";
 import { toast } from "sonner";
-import { FeedPost, ReactionType } from "../types";
+import { FeedPost, ReactionType, Poll as PollType } from "../types";
 import { AuthorPassportPopover } from "./AuthorPassportPopover";
 import { CommentSection } from "./CommentSection";
 import { ReactionButton } from "./ReactionButton";
 import { PostOptionsMenu } from "./PostOptionsMenu";
 import { RepostComposer } from "./RepostComposer";
 import { MediaTagOverlay } from "@/shared/components/ui/MediaTagOverlay";
-import { setPostReaction, editPost } from "@/shared/api/feed";
+import { ImageLightbox } from "@/shared/components/ui/ImageLightbox";
+import { setPostReaction, editPost, voteOnPoll } from "@/shared/api/feed";
 import { renderUsernameMentions } from "@/shared/lib/mentions";
 import { useAuthStore } from "@/shared/auth/useAuthStore";
 import { Badge } from "@/shared/components/ui/badge";
@@ -33,9 +35,86 @@ const isVideoUrl = (url: string) => {
   return VIDEO_EXTENSIONS.some((ext) => clean.endsWith(ext));
 };
 
+// Single-choice voting UI — tapping an option you already picked toggles
+// your vote off (see FeedRepo.voteOnPoll), tapping another moves it there.
+// Bar fill widths are derived from the post's own poll state (kept
+// optimistic-free/server-truth by always replacing it with the vote
+// response) rather than tracked separately.
+function PollCard({
+  postId,
+  poll,
+  currentUserId,
+  onVoted,
+}: {
+  postId: string;
+  poll: PollType;
+  currentUserId?: string;
+  onVoted: (poll: PollType) => void;
+}) {
+  const [voting, setVoting] = useState(false);
+  const totalVotes = poll.options.reduce((sum, o) => sum + o.votesCount, 0);
+
+  const handleVote = async (optionId: string) => {
+    if (voting) return;
+    setVoting(true);
+    try {
+      const updated = await voteOnPoll(postId, optionId);
+      onVoted(updated);
+    } catch (err: unknown) {
+      toast.error((err as Error)?.message || "Could not cast your vote.");
+    } finally {
+      setVoting(false);
+    }
+  };
+
+  return (
+    <div className="mt-3.5 space-y-1.5" onClick={(e) => e.stopPropagation()}>
+      {poll.options.map((opt) => {
+        const pct =
+          totalVotes > 0 ? Math.round((opt.votesCount / totalVotes) * 100) : 0;
+        const isMine = opt.votes.some((v) => v.userId === currentUserId);
+        return (
+          <button
+            key={opt.id}
+            type="button"
+            onClick={() => handleVote(opt.id)}
+            disabled={voting}
+            className={`relative w-full text-left rounded-xl border overflow-hidden px-3 py-2.5 text-xs transition-colors disabled:cursor-not-allowed ${
+              isMine
+                ? "border-lime-400/70 bg-lime-400/5"
+                : "border-zinc-700/60 bg-zinc-800/40 hover:border-zinc-600"
+            }`}
+          >
+            <div
+              className="absolute inset-y-0 left-0 bg-lime-400/10 transition-all"
+              style={{ width: `${pct}%` }}
+            />
+            <div className="relative flex items-center justify-between gap-2">
+              <span
+                className={`font-bold ${isMine ? "text-lime-300" : "text-zinc-200"}`}
+              >
+                {opt.label}
+              </span>
+              <span className="text-zinc-400 font-mono text-[11px] shrink-0">
+                {pct}%
+              </span>
+            </div>
+          </button>
+        );
+      })}
+      <p className="text-[11px] text-zinc-500 px-0.5">
+        {totalVotes} vote{totalVotes !== 1 ? "s" : ""}
+      </p>
+    </div>
+  );
+}
+
 interface PostCardProps {
   post: FeedPost;
   onPostDeleted?: (id: string) => void;
+  /** Fires when this post is unsaved from its options menu — used by the
+   * Saved Posts page to drop it from the list immediately. */
+  onPostUnsaved?: (id: string) => void;
   /** "feed" (default): content/media/comment-count open the detail modal via
    * onOpenDetail. "modal": rendered inside PostDetailModal itself — clicking
    * the post again would be pointless, and comments should already be open. */
@@ -50,22 +129,16 @@ interface PostCardProps {
     contextId: string;
   }) => void;
   renderShareModal?: (postToShare: any, onClose: () => void) => React.ReactNode;
-  renderImageLightbox?: (
-    urls: string[],
-    startIndex: number,
-    tagsByUrl: any,
-    onClose: () => void,
-  ) => React.ReactNode;
 }
 
 export function PostCard({
   post,
   onOpenDetail,
   onPostDeleted,
+  onPostUnsaved,
   variant = "feed",
   onMessageFoxerClick,
   renderShareModal,
-  renderImageLightbox,
 }: PostCardProps) {
   const router = useRouter();
   const { user } = useAuthStore();
@@ -85,6 +158,7 @@ export function PostCard({
   const [editedAt, setEditedAt] = useState(post.editedAt ?? null);
   const [content, setContent] = useState(post.content);
   const [removed, setRemoved] = useState(false);
+  const [poll, setPoll] = useState<PollType | null>(post.poll ?? null);
 
   const handleReact = async (type: ReactionType | null) => {
     if (!user) {
@@ -227,6 +301,7 @@ export function PostCard({
             }}
             onRemoved={handleRemoved}
             onCopyLink={handleShare}
+            onUnsaved={onPostUnsaved}
           />
         }
       />
@@ -307,12 +382,14 @@ export function PostCard({
           href={`/republic?postId=${post.originalPost.id}`}
           className="mt-3 flex items-center gap-2.5 rounded-xl border border-zinc-800 bg-zinc-800/40 p-3 hover:bg-zinc-800/60 transition-colors"
         >
-          <div className="h-11 w-11 shrink-0 overflow-hidden rounded-lg bg-zinc-800 flex items-center justify-center text-xs font-bold text-zinc-500">
+          <div className="relative h-11 w-11 shrink-0 overflow-hidden rounded-lg bg-zinc-800 flex items-center justify-center text-xs font-bold text-zinc-500">
             {post.originalPost.mediaUrls[0] ? (
-              <img
+              <Image
                 src={post.originalPost.mediaUrls[0]}
                 alt=""
-                className="h-full w-full object-cover"
+                fill
+                sizes="44px"
+                className="object-cover"
               />
             ) : (
               post.originalPost.author.name?.charAt(0)?.toUpperCase()
@@ -329,13 +406,25 @@ export function PostCard({
         </Link>
       )}
 
+      {/* Poll */}
+      {poll && (
+        <PollCard
+          postId={post.id}
+          poll={poll}
+          currentUserId={user?.userId ?? user?.id}
+          onVoted={setPoll}
+        />
+      )}
+
       {/* Verified Venue Stamp Badge (if linked to a stamp) */}
       {post.stamp && (
         <div className="mt-3 inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-300 text-xs shadow-sm">
           {post.stamp.imageUrl ? (
-            <img
+            <Image
               src={post.stamp.imageUrl}
               alt="Stamp"
+              width={20}
+              height={20}
               className="w-5 h-5 rounded-full object-cover ring-1 ring-amber-400/50"
             />
           ) : (
@@ -381,10 +470,12 @@ export function PostCard({
                   className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
                 />
               ) : (
-                <img
+                <Image
                   src={url}
                   alt=""
-                  className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                  fill
+                  sizes="(max-width: 640px) 50vw, 33vw"
+                  className="object-cover transition-transform duration-300 group-hover:scale-105"
                 />
               )}
               {isVideoUrl(url) && (
@@ -727,13 +818,14 @@ export function PostCard({
           () => setShowShareModal(false),
         )}
 
-      {lightboxIndex !== null &&
-        renderImageLightbox?.(
-          post.mediaUrls,
-          lightboxIndex,
-          post.mediaTags,
-          () => setLightboxIndex(null),
-        )}
+      {lightboxIndex !== null && (
+        <ImageLightbox
+          urls={post.mediaUrls}
+          startIndex={lightboxIndex}
+          tagsByUrl={post.mediaTags}
+          onClose={() => setLightboxIndex(null)}
+        />
+      )}
 
       {showRepostModal && (
         <RepostComposer post={post} onClose={() => setShowRepostModal(false)} />

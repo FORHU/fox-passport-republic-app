@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import Image from "next/image";
 import { createPortal } from "react-dom";
 import { Check, Search, UserPlus, X } from "lucide-react";
 import { toast } from "sonner";
@@ -155,10 +156,12 @@ export function AddGroupMemberModal({
                   <div className="relative h-10 w-10 shrink-0">
                     <div className="h-10 w-10 rounded-full overflow-hidden bg-zinc-800 border border-zinc-700/50 flex items-center justify-center text-xs font-bold text-zinc-500">
                       {c.imgId ? (
-                        <img
+                        <Image
                           src={c.imgId}
                           alt=""
-                          className="h-full w-full object-cover"
+                          fill
+                          sizes="40px"
+                          className="object-cover"
                         />
                       ) : (
                         c.name?.charAt(0)?.toUpperCase() || "?"

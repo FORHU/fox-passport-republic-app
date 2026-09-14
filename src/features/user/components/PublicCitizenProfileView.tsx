@@ -22,6 +22,14 @@ export interface PublicCitizenProfileViewProps {
   onFollowingClick?: () => void;
   renderFollowButton?: (targetId: string) => React.ReactNode;
   renderBlockMenuButton?: (targetId: string) => React.ReactNode;
+  /** Composed from the app layer so this feature doesn't reach into
+   * `messages` directly — same reasoning as renderFollowButton/
+   * renderBlockMenuButton above. Should open the floating chat panel
+   * rather than navigating to /messages. */
+  renderMessageButton?: (
+    targetId: string,
+    targetName: string,
+  ) => React.ReactNode;
 }
 
 const FALLBACK_AVATAR =
@@ -68,6 +76,7 @@ export default function PublicCitizenProfileView({
   onFollowingClick,
   renderFollowButton,
   renderBlockMenuButton,
+  renderMessageButton,
 }: PublicCitizenProfileViewProps) {
   const { id } = useParams<{ id: string }>();
   const router = useRouter();
@@ -305,15 +314,7 @@ export default function PublicCitizenProfileView({
                   {!isBlocked && (
                     <>
                       {renderFollowButton?.(profile.id)}
-                      <Link
-                        href={`/messages?userId=${profile.id}&contextType=profile&contextId=${profile.id}&contextLabel=${encodeURIComponent(profile.name)}`}
-                        className="h-9 px-5 rounded-xl bg-gradient-to-r from-lime-400 to-emerald-400 hover:from-lime-300 hover:to-emerald-300 text-black font-black text-xs flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(163,230,53,0.3)] transition-all cursor-pointer"
-                      >
-                        <span className="material-symbols-outlined text-[16px]">
-                          chat
-                        </span>
-                        <span>Message Citizen</span>
-                      </Link>
+                      {renderMessageButton?.(profile.id, profile.name)}
                     </>
                   )}
                   {renderBlockMenuButton?.(profile.id)}

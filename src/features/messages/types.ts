@@ -88,6 +88,9 @@ export interface Message {
   type?: MessageType;
   /** Set on edit — null/undefined means never edited. */
   editedAt?: string | null;
+  /** Shared across the whole thread — set means this is the conversation's
+   * one pinned message right now, not a per-viewer preference. */
+  pinnedAt?: string | null;
 }
 
 export interface Presence {

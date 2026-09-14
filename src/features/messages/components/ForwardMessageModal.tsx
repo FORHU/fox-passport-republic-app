@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import Image from "next/image";
 import { createPortal } from "react-dom";
 import { Check, Search, Send, Users, X } from "lucide-react";
 import { toast } from "sonner";
@@ -179,15 +180,17 @@ export function ForwardMessageModal({
 
         {/* Message preview */}
         <div className="flex items-center gap-2.5 border-b border-zinc-800/80 px-4 py-3 shrink-0">
-          <div className="h-11 w-11 shrink-0 overflow-hidden rounded-lg bg-zinc-800 flex items-center justify-center text-xs font-bold text-zinc-500">
+          <div className="relative h-11 w-11 shrink-0 overflow-hidden rounded-lg bg-zinc-800 flex items-center justify-center text-xs font-bold text-zinc-500">
             {message.attachmentUrls?.[0] || message.sharedPost?.mediaUrls[0] ? (
-              <img
+              <Image
                 src={
-                  message.attachmentUrls?.[0] ??
-                  message.sharedPost?.mediaUrls[0]
+                  (message.attachmentUrls?.[0] ??
+                    message.sharedPost?.mediaUrls[0])!
                 }
                 alt=""
-                className="h-full w-full object-cover"
+                fill
+                sizes="44px"
+                className="object-cover"
               />
             ) : (
               "💬"
@@ -230,10 +233,12 @@ export function ForwardMessageModal({
                   <div className="relative h-10 w-10 shrink-0">
                     <div className="h-10 w-10 rounded-full overflow-hidden bg-zinc-800 border border-zinc-700/50 flex items-center justify-center text-xs font-bold text-zinc-500">
                       {r.imgId ? (
-                        <img
+                        <Image
                           src={r.imgId}
                           alt=""
-                          className="h-full w-full object-cover"
+                          fill
+                          sizes="40px"
+                          className="object-cover"
                         />
                       ) : r.isGroup ? (
                         <Users className="h-4 w-4" strokeWidth={2} />

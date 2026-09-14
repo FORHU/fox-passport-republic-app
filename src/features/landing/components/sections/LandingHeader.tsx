@@ -97,7 +97,12 @@ export default function LandingHeader({
                       <Badge
                         variant="partner"
                         icon={false}
-                        className="pointer-events-none absolute -top-3 -right-8 whitespace-nowrap bg-zinc-900 text-[9px] shadow-md"
+                        // The badge's own height (~19px from its py-1 +
+                        // text-[9px]) is taller than a -top-3 (12px) offset
+                        // can clear, so its bottom edge dipped back down
+                        // into the pill it's meant to float above.
+                        // -top-6 (24px) clears it with a bit of margin.
+                        className="pointer-events-none absolute -top-6 -right-6 whitespace-nowrap bg-zinc-900 text-[9px] shadow-md"
                       >
                         Beta Community
                       </Badge>
