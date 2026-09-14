@@ -9,7 +9,6 @@ import { useSignup } from "@/features/auth/hooks/useAuth";
 import { signupSchema, SignupFormData } from "@/shared/lib/schema";
 import { useAuthStore } from "@/shared/auth/useAuthStore";
 import { config, getBrowserApiUrl } from "@/shared/lib/config";
-import { config } from "@/shared/lib/config";
 import { TermsPrivacyModal } from "@/features/auth/components/TermsPrivacyModal";
 
 import { toast } from "sonner";
