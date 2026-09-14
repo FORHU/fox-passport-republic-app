@@ -83,6 +83,12 @@ const NAV_ITEMS = [
     permission: "bookings:read:all",
   },
   {
+    label: "Platform Fees",
+    icon: "payments",
+    id: "platform-fees",
+    permission: "fees:manage",
+  },
+  {
     label: "Settings",
     icon: "settings",
     id: "settings",

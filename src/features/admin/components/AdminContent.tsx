@@ -15,6 +15,7 @@ import {
   AdminAssetsTable,
   AdminServicesTable,
   AdminCancellationPolicies,
+  AdminPlatformFeeConfigs,
   AdminDisputesPanel,
 } from "@/features/admin/components";
 import { useAdminData } from "@/features/admin/hooks/useAdminData";
@@ -168,6 +169,8 @@ export const AdminContent: React.FC<Props> = ({
       {activeTab === "disputes" && <AdminDisputesPanel />}
 
       {activeTab === "policies" && <AdminCancellationPolicies />}
+
+      {activeTab === "platform-fees" && <AdminPlatformFeeConfigs />}
 
       {activeTab === "settings" && (
         <div className="glass-card rounded-[2rem] p-12 border border-white/5 flex flex-col items-center gap-4 text-center">
