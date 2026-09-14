@@ -1,0 +1,347 @@
+<title>Stabilization Pass</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=Public+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+  :root {
+    --paper: #f7f5f0;
+    --paper-raised: #ffffff;
+    --ink: #1d1b17;
+    --ink-muted: #635f54;
+    --ink-faint: #948f81;
+    --line: #e2ddd0;
+    --accent: #2f6f62;
+    --accent-ink: #1e4a41;
+    --accent-soft: #e3efea;
+    --flag: #9a5b23;
+    --flag-soft: #f4e8d8;
+    --serif: "Fraunces", "Iowan Old Style", Georgia, serif;
+    --sans: "Public Sans", -apple-system, "Segoe UI", sans-serif;
+    --mono: "IBM Plex Mono", "SFMono-Regular", Consolas, monospace;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --paper: #17181a;
+      --paper-raised: #1e2022;
+      --ink: #ece8e0;
+      --ink-muted: #a39d8f;
+      --ink-faint: #706b5f;
+      --line: #2d2f31;
+      --accent: #5fbba4;
+      --accent-ink: #bfe9dc;
+      --accent-soft: #1b2b27;
+      --flag: #d99a55;
+      --flag-soft: #2c2317;
+    }
+  }
+
+  :root[data-theme="dark"] {
+    --paper: #17181a;
+    --paper-raised: #1e2022;
+    --ink: #ece8e0;
+    --ink-muted: #a39d8f;
+    --ink-faint: #706b5f;
+    --line: #2d2f31;
+    --accent: #5fbba4;
+    --accent-ink: #bfe9dc;
+    --accent-soft: #1b2b27;
+    --flag: #d99a55;
+    --flag-soft: #2c2317;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--sans);
+    font-size: 16px;
+    line-height: 1.6;
+    padding: 56px 20px 96px;
+  }
+
+  .page {
+    max-width: 720px;
+    margin: 0 auto;
+  }
+
+  header.intro {
+    margin-bottom: 40px;
+  }
+
+  .kicker {
+    font-family: var(--mono);
+    font-size: 12px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--accent-ink);
+    background: var(--accent-soft);
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: 4px;
+    margin-bottom: 18px;
+  }
+
+  h1 {
+    font-family: var(--serif);
+    font-weight: 700;
+    font-optical-sizing: auto;
+    font-size: clamp(32px, 6vw, 44px);
+    line-height: 1.08;
+    letter-spacing: -0.01em;
+    margin: 0 0 14px;
+    text-wrap: balance;
+  }
+
+  .lede {
+    font-size: 17px;
+    color: var(--ink-muted);
+    max-width: 62ch;
+    margin: 0;
+  }
+
+  .stat-strip {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px 28px;
+    margin-top: 28px;
+    padding-top: 22px;
+    border-top: 1px solid var(--line);
+  }
+
+  .stat {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    font-family: var(--mono);
+  }
+
+  .stat .n {
+    font-size: 20px;
+    font-weight: 500;
+    color: var(--ink);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .stat .label {
+    font-size: 12.5px;
+    color: var(--ink-faint);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  .log {
+    position: relative;
+    padding-left: 26px;
+  }
+
+  .log::before {
+    content: "";
+    position: absolute;
+    top: 6px;
+    bottom: 6px;
+    left: 0;
+    width: 1px;
+    background: var(--line);
+  }
+
+  section.area {
+    position: relative;
+    padding-bottom: 40px;
+  }
+
+  section.area:last-child { padding-bottom: 0; }
+
+  section.area::before {
+    content: "";
+    position: absolute;
+    left: -26px;
+    top: 8px;
+    width: 9px;
+    height: 9px;
+    margin-left: -4px;
+    border-radius: 50%;
+    background: var(--paper);
+    border: 2px solid var(--accent);
+  }
+
+  .path {
+    display: block;
+    font-family: var(--mono);
+    font-size: 12.5px;
+    color: var(--ink-faint);
+    letter-spacing: 0.01em;
+    margin-bottom: 6px;
+  }
+
+  h2 {
+    font-family: var(--serif);
+    font-weight: 600;
+    font-size: 23px;
+    line-height: 1.25;
+    margin: 0 0 12px;
+    text-wrap: balance;
+  }
+
+  .area p.deck {
+    color: var(--ink-muted);
+    margin: 0 0 16px;
+    max-width: 60ch;
+  }
+
+  ul.items {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  ul.items li {
+    padding-left: 20px;
+    position: relative;
+  }
+
+  ul.items li::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 10px;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--ink-faint);
+  }
+
+  ul.items li.found::before {
+    background: var(--flag);
+  }
+
+  .tag-found {
+    display: inline-block;
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--flag);
+    background: var(--flag-soft);
+    padding: 1px 7px;
+    border-radius: 3px;
+    margin-right: 8px;
+    transform: translateY(-1px);
+  }
+
+  code {
+    font-family: var(--mono);
+    font-size: 0.92em;
+    background: var(--paper-raised);
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    padding: 0.1em 0.4em;
+  }
+
+  footer.note {
+    margin-top: 48px;
+    padding-top: 20px;
+    border-top: 1px solid var(--line);
+    color: var(--ink-faint);
+    font-size: 13.5px;
+    max-width: 62ch;
+  }
+
+  @media (max-width: 480px) {
+    body { padding: 40px 16px 72px; }
+    .log { padding-left: 20px; }
+    section.area::before { left: -20px; }
+  }
+</style>
+
+<div class="page">
+
+  <header class="intro">
+    <span class="kicker">Session log</span>
+    <h1>Stabilization Pass</h1>
+    <p class="lede">
+      A working session across the citizen dashboard, the venue calendar, the saved-items
+      page, sign-in/sign-out, and the production build. Several fixes started as one
+      reported symptom and turned up a second, unrelated bug underneath — those are
+      marked <span class="tag-found">found</span> below.
+    </p>
+    <div class="stat-strip">
+      <div class="stat"><span class="n">5</span><span class="label">areas touched</span></div>
+      <div class="stat"><span class="n">6</span><span class="label">bugs found underneath</span></div>
+      <div class="stat"><span class="n">1</span><span class="label">build blocker cleared</span></div>
+    </div>
+  </header>
+
+  <div class="log">
+
+    <section class="area">
+      <span class="path">app/user — citizen dashboard</span>
+      <h2>Dashboard cards, one by one</h2>
+      <p class="deck">Most of this dashboard turned out to be sample content standing in for data that was already available.</p>
+      <ul class="items">
+        <li class="found"><span class="tag-found">Found</span>“Next Up” showed one hardcoded event no matter who was signed in. Wired it to the person's actual bookings and pending requests.</li>
+        <li>Replaced the gamification card with a small live calendar — the bookings you've made, and, separately, anyone else's bookings on things you offer.</li>
+        <li>Turned the flat “For You” grid into a swipeable carousel and made its Music / Art / Food filters actually filter, instead of sitting there unclickable.</li>
+        <li class="found"><span class="tag-found">Found</span>Removed the “Venues Available” list, which duplicated another section, and a placeholder link that would 404 on click.</li>
+        <li>“Saved Vibes” had no upper bound and would grow forever as favorites piled up — added paging, four at a time.</li>
+        <li>Removed two header buttons ("Messages", "Settings") that didn't lead anywhere.</li>
+      </ul>
+    </section>
+
+    <section class="area">
+      <span class="path">creator-dashboard/calendar</span>
+      <h2>The month view, redesigned</h2>
+      <p class="deck">Rebuilt from a plain grid into a two-pane month + day-detail layout, then spent most of the polish on things that only show up once you actually look closely.</p>
+      <ul class="items">
+        <li>Month picker and year controls now sit next to the calendar they control, not off in a separate header.</li>
+        <li>Selecting a day and “today” no longer fight for the same color — each now has its own, and the color for a selected day was toned down from neon to something easier to look at.</li>
+        <li>Booking types (events, venues, gear, services) are labeled with small icons instead of a color key, so nothing depends on telling four similar hues apart.</li>
+        <li class="found"><span class="tag-found">Found</span>Day cells changed size depending on how many weeks the month had. Every month now renders the same fixed grid.</li>
+        <li>Swapped translucent overlay colors for solid ones throughout — the washed-out, slightly-blurry look was coming from stacked transparency, not an actual rendering bug.</li>
+      </ul>
+    </section>
+
+    <section class="area">
+      <span class="path">wishlists — saved items page</span>
+      <h2>A page that had never been connected</h2>
+      <p class="deck">What looked like one bug — hardcoded cards — turned out to be three, stacked on top of each other.</p>
+      <ul class="items">
+        <li class="found"><span class="tag-found">Found</span>Both the desktop and mobile saved-items pages were entirely mock data; neither had ever called the real save/favorite feature.</li>
+        <li class="found"><span class="tag-found">Found</span>Underneath that: the favorites API never actually looked up the venue or event a favorite pointed to, so even the correct page would have shown blank titles.</li>
+        <li class="found"><span class="tag-found">Found</span>And under that: a field-naming mismatch meant the app could never correctly tell whether something was already saved, anywhere it appeared.</li>
+        <li>Fixed all three, then rebuilt both pages against the real data, including a proper header and back button on the desktop page, which had neither.</li>
+      </ul>
+    </section>
+
+    <section class="area">
+      <span class="path">auth — sign in / sign out</span>
+      <h2>Three ways to log out, only one of them complete</h2>
+      <ul class="items">
+        <li class="found"><span class="tag-found">Found</span>The screen shown to a signed-out visitor was the sign-up form, not sign-in — for someone who just logged out, that's the wrong default.</li>
+        <li class="found"><span class="tag-found">Found</span>Of three separate “log out” buttons in the app, one skipped clearing the session cookie entirely, and one on mobile did nothing at all.</li>
+        <li>Consolidated all three into one, and every sign-out now returns to the sign-in screen (except right after deleting an account, where there's nothing to sign back in to).</li>
+        <li class="found"><span class="tag-found">Found</span>The sign-up form would silently fill in a previous visitor's saved username and password — it was missing the field markers that tell a browser “this is a new account, not a login.”</li>
+      </ul>
+    </section>
+
+    <section class="area">
+      <span class="path">build &amp; CI</span>
+      <h2>Why a build sat unfinished for half an hour</h2>
+      <ul class="items">
+        <li class="found"><span class="tag-found">Found</span>The production build had switched to a newer, faster bundler by default — one that skipped a required manual step for two specific libraries. Without it, the build tried to fully process a large mapping library and a satellite-tracking library that neither is meant to be processed that way, and hung.</li>
+        <li>Pointed production builds back to the older, already-working bundler; a full build now finishes in well under a minute.</li>
+        <li>Removed the satellite-tracking feature (an ISS marker on the map) and its library entirely, at request, rather than keeping the workaround.</li>
+        <li class="found"><span class="tag-found">Found</span>A leftover set of pages from before a URL restructuring was still shipping — every one of them just redirects elsewhere now, but they were failing the build's type checks. Deleted the whole leftover set.</li>
+        <li class="found"><span class="tag-found">Found</span>The CI cache key was accidentally including the entire installed-dependencies folder, which made it change on nearly every run and defeated the point of caching. Narrowed it to the actual source files.</li>
+      </ul>
+    </section>
+
+  </div>
+
+  <footer class="note">
+    Everything above was verified directly — either by re-running the affected page, or, for the build issues, by running a full production build end to end and confirming it completes cleanly.
+  </footer>
+
+</div>
