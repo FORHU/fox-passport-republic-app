@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import {
   ChevronDown,
   Crown,
@@ -17,29 +18,54 @@ interface RepublicTabsProps {
   orientation?: "horizontal" | "vertical" | "dropdown";
 }
 
+const DROPDOWN_MENU_WIDTH = 288; // w-72
+
 export function RepublicTabs({
   activeTab,
   onTabChange,
   orientation = "horizontal",
 }: RepublicTabsProps) {
   const [isOpen, setIsOpen] = useState(false);
-  const containerRef = useRef<HTMLDivElement>(null);
+  const triggerRef = useRef<HTMLButtonElement>(null);
+  const menuRef = useRef<HTMLDivElement>(null);
+  // Only the "dropdown" orientation uses these — portaled to <body> with
+  // coordinates computed from the trigger, same reasoning as
+  // FeedSortMenu's identical dropdown right next to it: this row sits
+  // alongside the right-sidebar column in the same flex row, and an inline
+  // `absolute` dropdown only ranks against z-index within its own
+  // containing block, not across unrelated sibling columns.
+  const [coords, setCoords] = useState<{ top: number; left: number } | null>(
+    null,
+  );
 
   // Only the dropdown variant needs outside-click-to-close; skip wiring the
   // listener for the other orientations, which have no open/close state.
   useEffect(() => {
     if (orientation !== "dropdown" || !isOpen) return;
     const handleClickOutside = (e: MouseEvent) => {
+      const target = e.target as Node;
       if (
-        containerRef.current &&
-        !containerRef.current.contains(e.target as Node)
+        menuRef.current?.contains(target) ||
+        triggerRef.current?.contains(target)
       ) {
-        setIsOpen(false);
+        return;
       }
+      setIsOpen(false);
     };
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [orientation, isOpen]);
+
+  const openDropdown = () => {
+    const rect = triggerRef.current?.getBoundingClientRect();
+    if (rect) {
+      setCoords({
+        top: rect.bottom + 8,
+        left: rect.right - DROPDOWN_MENU_WIDTH,
+      });
+    }
+    setIsOpen(true);
+  };
   const tabs: Array<{
     id: FeedTab;
     label: string;
@@ -130,10 +156,11 @@ export function RepublicTabs({
   if (orientation === "dropdown") {
     const active = tabs.find((t) => t.id === activeTab) ?? tabs[0];
     return (
-      <div ref={containerRef} className="relative shrink-0">
+      <div className="relative shrink-0">
         <button
+          ref={triggerRef}
           type="button"
-          onClick={() => setIsOpen((v) => !v)}
+          onClick={() => (isOpen ? setIsOpen(false) : openDropdown())}
           className="flex items-center gap-1.5 px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-lg hover:bg-zinc-800/60 text-[9px] sm:text-[10px] font-black uppercase tracking-wider text-zinc-400 hover:text-white transition-colors cursor-pointer"
         >
           <active.icon className="h-3.5 w-3.5" strokeWidth={2} />
@@ -146,17 +173,28 @@ export function RepublicTabs({
           />
         </button>
 
-        {isOpen && (
-          <div className="absolute right-0 top-full mt-2 w-72 z-50 space-y-1.5 bg-zinc-900 border border-zinc-800/80 rounded-3xl p-2 shadow-2xl animate-in fade-in zoom-in-95">
-            <div className="px-3 pt-2 pb-1 text-[10px] font-black uppercase tracking-wider text-zinc-500">
-              Feed Streams
-            </div>
-            {renderOptions((tab) => {
-              onTabChange(tab);
-              setIsOpen(false);
-            })}
-          </div>
-        )}
+        {isOpen &&
+          coords &&
+          createPortal(
+            <div
+              ref={menuRef}
+              style={{
+                top: coords.top,
+                left: coords.left,
+                width: DROPDOWN_MENU_WIDTH,
+              }}
+              className="fixed z-[200] space-y-1.5 bg-zinc-900 border border-zinc-800/80 rounded-3xl p-2 shadow-2xl animate-in fade-in zoom-in-95"
+            >
+              <div className="px-3 pt-2 pb-1 text-[10px] font-black uppercase tracking-wider text-zinc-500">
+                Feed Streams
+              </div>
+              {renderOptions((tab) => {
+                onTabChange(tab);
+                setIsOpen(false);
+              })}
+            </div>,
+            document.body,
+          )}
       </div>
     );
   }

@@ -33,6 +33,9 @@ export const SOCKET_EVENTS = {
   // Someone read up to "now" in a conversation — carries just the reader
   // and the new cursor, so a group's "Seen by ..." line can update live.
   READ_RECEIPT: "read:receipt",
+  // The conversation's pinned message changed — carries the conversation
+  // and the now-pinned message's id (or null if unpinned).
+  MESSAGE_PINNED: "message:pinned",
 } as const;
 
 /**

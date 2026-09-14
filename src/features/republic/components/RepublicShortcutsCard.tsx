@@ -1,7 +1,13 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowRight, Compass, PenTool, PlusCircle } from "lucide-react";
+import {
+  ArrowRight,
+  Bookmark,
+  Compass,
+  PenTool,
+  PlusCircle,
+} from "lucide-react";
 
 /**
  * Quick-access directory links pinned to the Republic left sidebar.
@@ -14,6 +20,19 @@ export function RepublicShortcutsCard() {
       <div className="text-[10px] font-black uppercase tracking-wider text-zinc-500">
         Republic Shortcuts
       </div>
+      <Link
+        href="/republic/saved"
+        className="flex items-center justify-between text-zinc-400 hover:text-lime-400 py-1.5 transition-colors group"
+      >
+        <span className="flex items-center gap-2">
+          <Bookmark className="h-4 w-4 text-lime-400" strokeWidth={2} />
+          Saved Posts
+        </span>
+        <ArrowRight
+          className="h-3.5 w-3.5 text-zinc-600 group-hover:translate-x-0.5 transition-transform"
+          strokeWidth={2}
+        />
+      </Link>
       <Link
         href="/republic/investments"
         className="flex items-center justify-between text-zinc-400 hover:text-amber-300 py-1.5 transition-colors group"

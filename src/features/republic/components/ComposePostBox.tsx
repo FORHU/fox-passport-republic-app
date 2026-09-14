@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
 import {
@@ -9,9 +10,11 @@ import {
   Images,
   Lock,
   Megaphone,
+  Plus,
   Send,
   Tag as TagIcon,
   Users,
+  X,
 } from "lucide-react";
 import {
   PostType,
@@ -85,6 +88,7 @@ export function ComposePostBox({
   const [error, setError] = useState<string | null>(null);
   const [isExpanded, setIsExpanded] = useState(embedded);
   const [resourceId, setResourceId] = useState("");
+  const [pollOptions, setPollOptions] = useState<string[]>(["", ""]);
   const [mentionQuery, setMentionQuery] = useState<string | null>(null);
   const [mentionCandidates, setMentionCandidates] = useState<
     MentionCandidate[]
@@ -210,6 +214,7 @@ export function ComposePostBox({
   }> = [
     { type: "citizen_experience", label: "Citizen Story", icon: "edit_note" },
     { type: "review_share", label: "Share Review", icon: "star" },
+    { type: "poll", label: "Create Poll", icon: "checklist" },
     ...(isVenueFoxer
       ? [
           {
@@ -315,11 +320,24 @@ export function ComposePostBox({
     textareaRef.current?.focus();
   };
 
+  const trimmedPollOptions = pollOptions
+    .map((o) => o.trim())
+    .filter((o) => o.length > 0);
+  const isPollValid =
+    type !== "poll" ||
+    (trimmedPollOptions.length >= 2 &&
+      new Set(trimmedPollOptions.map((o) => o.toLowerCase())).size ===
+        trimmedPollOptions.length);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!content.trim() || submitting) return;
     if (resourceConfig && !resourceId) {
       setError(`Select a ${resourceConfig.label.toLowerCase()} to spotlight.`);
+      return;
+    }
+    if (type === "poll" && !isPollValid) {
+      setError("Add at least 2 unique poll options.");
       return;
     }
 
@@ -342,6 +360,7 @@ export function ComposePostBox({
             })),
           }
         : {}),
+      ...(type === "poll" ? { pollOptions: trimmedPollOptions } : {}),
     };
 
     try {
@@ -351,6 +370,7 @@ export function ComposePostBox({
       setMediaTags([]);
       setResourceId("");
       setVisibility("public");
+      setPollOptions(["", ""]);
       setIsExpanded(false);
       onPostCreated?.();
       onClose?.();
@@ -426,11 +446,13 @@ export function ComposePostBox({
             onFocus={() => setIsExpanded(true)}
             autoFocus={embedded}
             placeholder={
-              type === "partner_announcement"
-                ? "Share co-production opportunities, funding terms, or packages..."
-                : type === "venue_spotlight"
-                  ? "Tell citizens about your space, upcoming weekend slots, and amenities..."
-                  : "What's happening in the Republic? Share an experience, tip, or story..."
+              type === "poll"
+                ? "Ask the Republic a question..."
+                : type === "partner_announcement"
+                  ? "Share co-production opportunities, funding terms, or packages..."
+                  : type === "venue_spotlight"
+                    ? "Tell citizens about your space, upcoming weekend slots, and amenities..."
+                    : "What's happening in the Republic? Share an experience, tip, or story..."
             }
             rows={embedded ? 8 : isExpanded ? 3 : 2}
             className="w-full bg-zinc-800/60 border border-zinc-700/60 rounded-xl p-3 text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-lime-400/60 transition-all resize-none"
@@ -447,9 +469,11 @@ export function ComposePostBox({
                 >
                   <div className="h-6 w-6 rounded-full bg-zinc-800 border border-zinc-700 flex items-center justify-center text-[10px] font-bold text-zinc-400 shrink-0 overflow-hidden">
                     {c.imgId ? (
-                      <img
+                      <Image
                         src={c.imgId}
                         alt=""
+                        width={24}
+                        height={24}
                         className="h-full w-full object-cover"
                       />
                     ) : (
@@ -490,10 +514,12 @@ export function ComposePostBox({
                       className="w-full h-full object-cover"
                     />
                   ) : (
-                    <img
+                    <Image
                       src={url}
                       alt=""
-                      className="w-full h-full object-cover"
+                      fill
+                      sizes="80px"
+                      className="object-cover"
                     />
                   )}
                   <button
@@ -521,6 +547,49 @@ export function ComposePostBox({
                 </div>
               );
             })}
+          </div>
+        )}
+
+        {type === "poll" && (
+          <div className="mt-2.5 space-y-1.5">
+            {pollOptions.map((opt, idx) => (
+              <div key={idx} className="flex items-center gap-1.5">
+                <input
+                  type="text"
+                  value={opt}
+                  onChange={(e) =>
+                    setPollOptions((prev) =>
+                      prev.map((o, i) => (i === idx ? e.target.value : o)),
+                    )
+                  }
+                  maxLength={120}
+                  placeholder={`Option ${idx + 1}`}
+                  className="flex-1 bg-zinc-800/60 border border-zinc-700/60 rounded-xl px-3 py-2 text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-lime-400/60 transition-all"
+                />
+                {pollOptions.length > 2 && (
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setPollOptions((prev) => prev.filter((_, i) => i !== idx))
+                    }
+                    aria-label="Remove option"
+                    className="h-7 w-7 shrink-0 flex items-center justify-center rounded-lg text-zinc-500 hover:bg-zinc-800 hover:text-white transition-colors cursor-pointer"
+                  >
+                    <X className="h-3.5 w-3.5" strokeWidth={2} />
+                  </button>
+                )}
+              </div>
+            ))}
+            {pollOptions.length < 10 && (
+              <button
+                type="button"
+                onClick={() => setPollOptions((prev) => [...prev, ""])}
+                className="flex items-center gap-1.5 text-xs font-bold text-lime-400 hover:text-lime-300 transition-colors py-1 cursor-pointer"
+              >
+                <Plus className="h-3.5 w-3.5" strokeWidth={2} />
+                Add Option
+              </button>
+            )}
           </div>
         )}
 
@@ -605,6 +674,7 @@ export function ComposePostBox({
               !content.trim() ||
               submitting ||
               uploading ||
+              !isPollValid ||
               !!(resourceConfig && (resourceLoading || !resourceId))
             }
             className="ml-auto px-4 py-2 rounded-xl bg-lime-400 hover:bg-lime-300 disabled:opacity-40 disabled:cursor-not-allowed text-black font-extrabold text-xs transition-all shadow-md flex items-center gap-1.5"

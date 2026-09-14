@@ -199,3 +199,33 @@ export const setConversationPinned = async (
   });
   return res.data.data;
 };
+
+export const setPinnedMessage = async (
+  conversationId: string,
+  messageId: string,
+  pinned: boolean,
+): Promise<Message> => {
+  const res = await api.patch(
+    `/conversations/${conversationId}/messages/${messageId}/pin`,
+    { pinned },
+  );
+  return res.data.data;
+};
+
+export const getPinnedMessage = async (
+  conversationId: string,
+): Promise<Message | null> => {
+  const res = await api.get(`/conversations/${conversationId}/pinned-message`);
+  return res.data.data ?? null;
+};
+
+export const searchMessages = async (
+  conversationId: string,
+  query: string,
+): Promise<Message[]> => {
+  const res = await api.get(
+    `/conversations/${conversationId}/messages/search`,
+    { params: { q: query } },
+  );
+  return res.data.data ?? [];
+};

@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import Image from "next/image";
 import { useQueryClient } from "@tanstack/react-query";
 import { ArrowLeft, MessageCircle, Users, Pin, BellOff } from "lucide-react";
 import { toast } from "sonner";
@@ -203,12 +204,14 @@ export default function ConversationListClient({
                     onClick={() => openConversation(c)}
                     className="w-full flex items-center gap-4 p-4 rounded-2xl border border-[#ccff00]/20 bg-[#ccff00]/5 hover:bg-[#ccff00]/10 transition-colors text-left"
                   >
-                    <div className="h-11 w-11 rounded-full bg-white/10 border border-white/10 flex items-center justify-center text-sm font-black text-white/50 overflow-hidden shrink-0">
+                    <div className="relative h-11 w-11 rounded-full bg-white/10 border border-white/10 flex items-center justify-center text-sm font-black text-white/50 overflow-hidden shrink-0">
                       {c.otherUser?.imgId ? (
-                        <img
+                        <Image
                           src={c.otherUser.imgId}
-                          className="h-full w-full object-cover"
                           alt=""
+                          fill
+                          sizes="44px"
+                          className="object-cover"
                         />
                       ) : (
                         c.otherUser?.name?.charAt(0)?.toUpperCase()
@@ -261,22 +264,26 @@ export default function ConversationListClient({
                     onClick={() => openConversation(c)}
                     className="w-full flex items-center gap-4 p-4 rounded-2xl border border-white/5 bg-white/2 hover:bg-white/5 transition-colors text-left"
                   >
-                    <div className="h-11 w-11 rounded-full bg-white/10 border border-white/10 flex items-center justify-center text-sm font-black text-white/50 overflow-hidden shrink-0">
+                    <div className="relative h-11 w-11 rounded-full bg-white/10 border border-white/10 flex items-center justify-center text-sm font-black text-white/50 overflow-hidden shrink-0">
                       {c.isGroup ? (
                         c.imgId ? (
-                          <img
+                          <Image
                             src={c.imgId}
-                            className="h-full w-full object-cover"
                             alt=""
+                            fill
+                            sizes="44px"
+                            className="object-cover"
                           />
                         ) : (
                           <Users className="h-4 w-4" strokeWidth={2} />
                         )
                       ) : c.otherUser?.imgId ? (
-                        <img
+                        <Image
                           src={c.otherUser.imgId}
-                          className="h-full w-full object-cover"
                           alt=""
+                          fill
+                          sizes="44px"
+                          className="object-cover"
                         />
                       ) : (
                         c.otherUser?.name?.charAt(0)?.toUpperCase()

@@ -1,8 +1,6 @@
 "use client";
 
 import { toast } from "sonner";
-import { useAuthStore } from "@/shared/auth/useAuthStore";
-import { useFollowing } from "@/features/follow/api/useFollow";
 import {
   useBlockStatus,
   useBlockUser,
@@ -35,11 +33,13 @@ const errorMessage = (e: unknown, fallback: string) =>
 // violation this replaced.
 function AccountOptionsMenuContainer({
   targetId,
+  targetName,
   conversationId,
   isMuted,
   isPinned,
 }: {
   targetId: string;
+  targetName: string;
   conversationId?: string;
   isMuted?: boolean;
   isPinned?: boolean;
@@ -57,6 +57,7 @@ function AccountOptionsMenuContainer({
   return (
     <AccountOptionsMenu
       targetId={targetId}
+      targetName={targetName}
       conversationId={conversationId}
       isMuted={isMuted}
       isPinned={isPinned}
@@ -162,11 +163,7 @@ function GroupOptionsMenuContainer({
 }
 
 export default function FollowingWidgetSection() {
-  const { user } = useAuthStore();
-  const { data, isLoading } = useFollowing(user?.id);
-  const following = data?.data ?? [];
-
-  const { data: conversations = [] } = useConversations();
+  const { data: conversations = [], isLoading } = useConversations();
   const incomingRequestsCount = conversations.filter(
     (c) => c.isIncomingRequest,
   ).length;
@@ -227,7 +224,6 @@ export default function FollowingWidgetSection() {
   return (
     <FollowingWidget
       isLoading={isLoading}
-      following={following}
       conversations={conversations}
       incomingRequestsCount={incomingRequestsCount}
       onOpenChat={handleOpenChat}
@@ -240,9 +236,16 @@ export default function FollowingWidgetSection() {
           }
         />
       )}
-      accountOptionsRender={(targetId, conversationId, isMuted, isPinned) => (
+      accountOptionsRender={(
+        targetId,
+        targetName,
+        conversationId,
+        isMuted,
+        isPinned,
+      ) => (
         <AccountOptionsMenuContainer
           targetId={targetId}
+          targetName={targetName}
           conversationId={conversationId}
           isMuted={isMuted}
           isPinned={isPinned}

@@ -55,6 +55,11 @@ const TYPE_META: Record<string, { icon: string; color: string; bg: string }> = {
     color: "text-green-300",
     bg: "bg-green-500/10",
   },
+  "message:mention": {
+    icon: "alternate_email",
+    color: "text-lime-300",
+    bg: "bg-lime-500/10",
+  },
 };
 
 const fallbackMeta = {
@@ -144,8 +149,10 @@ export default function NotificationListClient() {
               onClick={() => router.push(getDashboardPath(user))}
             >
               {user?.imgId ? (
-                <img
+                <Image
                   alt="User"
+                  width={40}
+                  height={40}
                   className="h-full w-full object-cover"
                   src={user.imgId}
                 />

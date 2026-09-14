@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import Image from "next/image";
 import { createPortal } from "react-dom";
 import { useEffect } from "react";
 import { Check, Search, Send, Users, X } from "lucide-react";
@@ -190,18 +191,22 @@ export function SharePostModal({
 
         {/* Post preview */}
         <div className="flex items-center gap-2.5 border-b border-zinc-800/80 px-4 py-3 shrink-0">
-          <div className="h-11 w-11 shrink-0 overflow-hidden rounded-lg bg-zinc-800 flex items-center justify-center text-xs font-bold text-zinc-500">
+          <div className="relative h-11 w-11 shrink-0 overflow-hidden rounded-lg bg-zinc-800 flex items-center justify-center text-xs font-bold text-zinc-500">
             {post.mediaUrls[0] ? (
-              <img
+              <Image
                 src={post.mediaUrls[0]}
                 alt=""
-                className="h-full w-full object-cover"
+                fill
+                sizes="44px"
+                className="object-cover"
               />
             ) : post.author.imgId ? (
-              <img
+              <Image
                 src={post.author.imgId}
                 alt=""
-                className="h-full w-full object-cover"
+                fill
+                sizes="44px"
+                className="object-cover"
               />
             ) : (
               post.author.name?.charAt(0)?.toUpperCase()
@@ -249,10 +254,12 @@ export function SharePostModal({
                   <div className="relative h-10 w-10 shrink-0">
                     <div className="h-10 w-10 rounded-full overflow-hidden bg-zinc-800 border border-zinc-700/50 flex items-center justify-center text-xs font-bold text-zinc-500">
                       {r.imgId ? (
-                        <img
+                        <Image
                           src={r.imgId}
                           alt=""
-                          className="h-full w-full object-cover"
+                          fill
+                          sizes="40px"
+                          className="object-cover"
                         />
                       ) : r.isGroup ? (
                         <Users className="h-4 w-4" strokeWidth={2} />

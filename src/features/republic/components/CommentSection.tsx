@@ -1,12 +1,14 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { Heart, Send, Trash2 } from "lucide-react";
+import Image from "next/image";
+import { Heart, Pencil, Send, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { MentionCandidate, PostComment } from "../types";
 import {
   getPostComments,
   addPostComment,
+  editPostComment,
   deletePostComment,
   searchMentionCandidates,
   toggleCommentLike,
@@ -30,17 +32,24 @@ function CommentRow({
   isReply,
   onDeleted,
   onReply,
+  onEdited,
 }: {
   comment: PostComment;
   postId: string;
   isReply: boolean;
   onDeleted: (id: string) => void;
   onReply?: (comment: PostComment) => void;
+  onEdited: (id: string, content: string, updatedAt: string) => void;
 }) {
   const { user } = useAuthStore();
   const [liked, setLiked] = useState(comment.isLikedByMe ?? false);
   const [likesCount, setLikesCount] = useState(comment.likesCount ?? 0);
   const [deleting, setDeleting] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editContent, setEditContent] = useState(comment.content);
+  const [saving, setSaving] = useState(false);
+  const wasEdited =
+    comment.updatedAt && comment.updatedAt !== comment.createdAt;
 
   const initial = comment.author.name
     ? comment.author.name.charAt(0).toUpperCase()
@@ -64,6 +73,21 @@ function CommentRow({
       setLiked(!nextLiked);
       setLikesCount((prev) => (nextLiked ? Math.max(0, prev - 1) : prev + 1));
       toast.error("Could not like this comment.");
+    }
+  };
+
+  const handleSaveEdit = async () => {
+    const trimmed = editContent.trim();
+    if (!trimmed || saving) return;
+    setSaving(true);
+    try {
+      const updated = await editPostComment(postId, comment.id, trimmed);
+      onEdited(comment.id, updated.content, updated.updatedAt ?? "");
+      setIsEditing(false);
+    } catch (err: unknown) {
+      toast.error((err as Error)?.message || "Failed to edit comment");
+    } finally {
+      setSaving(false);
     }
   };
 
@@ -93,47 +117,93 @@ function CommentRow({
                 {comment.author.name}
               </span>
               <span className="text-[10px] text-zinc-500">{dateStr}</span>
-            </div>
-            <p className="text-zinc-300 mt-0.5 whitespace-pre-wrap leading-relaxed">
-              {renderUsernameMentions(comment.content)}
-            </p>
-            <div className="flex items-center gap-3 mt-1">
-              <button
-                type="button"
-                onClick={handleLike}
-                className={`flex items-center gap-1 text-[10px] font-bold transition-colors cursor-pointer ${
-                  liked ? "text-rose-400" : "text-zinc-500 hover:text-white"
-                }`}
-              >
-                <Heart
-                  className="h-3 w-3"
-                  strokeWidth={2}
-                  fill={liked ? "currentColor" : "none"}
-                />
-                {likesCount > 0 ? likesCount : "Like"}
-              </button>
-              {!isReply && onReply && (
-                <button
-                  type="button"
-                  onClick={() => onReply(comment)}
-                  className="text-[10px] font-bold text-zinc-500 hover:text-white transition-colors cursor-pointer"
-                >
-                  Reply
-                </button>
+              {wasEdited && !isEditing && (
+                <span className="text-[10px] text-zinc-600">(edited)</span>
               )}
             </div>
+            {isEditing ? (
+              <div className="mt-1 space-y-1.5">
+                <input
+                  type="text"
+                  value={editContent}
+                  onChange={(e) => setEditContent(e.target.value)}
+                  autoFocus
+                  className="w-full bg-zinc-950 border border-lime-400/60 rounded-lg px-2 py-1.5 text-xs text-white focus:outline-none"
+                />
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={handleSaveEdit}
+                    disabled={saving || !editContent.trim()}
+                    className="text-[10px] font-bold text-lime-400 hover:text-lime-300 disabled:opacity-40 transition-colors cursor-pointer"
+                  >
+                    {saving ? "Saving..." : "Save"}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setEditContent(comment.content);
+                      setIsEditing(false);
+                    }}
+                    className="text-[10px] font-bold text-zinc-500 hover:text-white transition-colors cursor-pointer"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <p className="text-zinc-300 mt-0.5 whitespace-pre-wrap leading-relaxed">
+                {renderUsernameMentions(comment.content)}
+              </p>
+            )}
+            {!isEditing && (
+              <div className="flex items-center gap-3 mt-1">
+                <button
+                  type="button"
+                  onClick={handleLike}
+                  className={`flex items-center gap-1 text-[10px] font-bold transition-colors cursor-pointer ${
+                    liked ? "text-rose-400" : "text-zinc-500 hover:text-white"
+                  }`}
+                >
+                  <Heart
+                    className="h-3 w-3"
+                    strokeWidth={2}
+                    fill={liked ? "currentColor" : "none"}
+                  />
+                  {likesCount > 0 ? likesCount : "Like"}
+                </button>
+                {!isReply && onReply && (
+                  <button
+                    type="button"
+                    onClick={() => onReply(comment)}
+                    className="text-[10px] font-bold text-zinc-500 hover:text-white transition-colors cursor-pointer"
+                  >
+                    Reply
+                  </button>
+                )}
+              </div>
+            )}
           </div>
         </div>
 
-        {isMine(user, comment.authorId) && (
-          <button
-            onClick={handleDelete}
-            disabled={deleting}
-            title="Delete comment"
-            className="text-zinc-500 hover:text-rose-400 transition-colors p-1 disabled:opacity-40 disabled:cursor-not-allowed shrink-0"
-          >
-            <Trash2 className="h-3.5 w-3.5" strokeWidth={2} />
-          </button>
+        {isMine(user, comment.authorId) && !isEditing && (
+          <div className="flex items-center gap-1 shrink-0">
+            <button
+              onClick={() => setIsEditing(true)}
+              title="Edit comment"
+              className="text-zinc-500 hover:text-lime-400 transition-colors p-1"
+            >
+              <Pencil className="h-3.5 w-3.5" strokeWidth={2} />
+            </button>
+            <button
+              onClick={handleDelete}
+              disabled={deleting}
+              title="Delete comment"
+              className="text-zinc-500 hover:text-rose-400 transition-colors p-1 disabled:opacity-40 disabled:cursor-not-allowed"
+            >
+              <Trash2 className="h-3.5 w-3.5" strokeWidth={2} />
+            </button>
+          </div>
         )}
       </div>
     </div>
@@ -259,6 +329,29 @@ export function CommentSection({
     inputRef.current?.focus();
   };
 
+  const handleEdited = (
+    id: string,
+    content: string,
+    updatedAt: string,
+    parentId?: string,
+  ) => {
+    setComments((prev) => {
+      if (parentId) {
+        return prev.map((c) =>
+          c.id === parentId
+            ? {
+                ...c,
+                replies: (c.replies ?? []).map((r) =>
+                  r.id === id ? { ...r, content, updatedAt } : r,
+                ),
+              }
+            : c,
+        );
+      }
+      return prev.map((c) => (c.id === id ? { ...c, content, updatedAt } : c));
+    });
+  };
+
   const handleDeleted = (id: string, parentId?: string) => {
     setComments((prev) => {
       if (parentId) {
@@ -292,6 +385,9 @@ export function CommentSection({
                 isReply={false}
                 onDeleted={(id) => handleDeleted(id)}
                 onReply={setReplyTarget}
+                onEdited={(id, content, updatedAt) =>
+                  handleEdited(id, content, updatedAt)
+                }
               />
               {(c.replies ?? []).map((r) => (
                 <CommentRow
@@ -300,6 +396,9 @@ export function CommentSection({
                   postId={postId}
                   isReply
                   onDeleted={(id) => handleDeleted(id, c.id)}
+                  onEdited={(id, content, updatedAt) =>
+                    handleEdited(id, content, updatedAt, c.id)
+                  }
                 />
               ))}
             </div>
@@ -353,9 +452,11 @@ export function CommentSection({
                 >
                   <div className="h-6 w-6 rounded-full bg-zinc-800 border border-zinc-700 flex items-center justify-center text-[10px] font-bold text-zinc-400 shrink-0 overflow-hidden">
                     {c.imgId ? (
-                      <img
+                      <Image
                         src={c.imgId}
                         alt=""
+                        width={24}
+                        height={24}
                         className="h-full w-full object-cover"
                       />
                     ) : (

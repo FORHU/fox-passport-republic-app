@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import type { ReactNode } from "react";
 import { Award } from "lucide-react";
 import { FeedAuthor } from "../types";
@@ -58,17 +59,19 @@ export function AuthorPassportPopover({
         {/* Avatar */}
         <Link href={`/user/${author.id}`} className="relative group block">
           <div
-            className={`w-11 h-11 rounded-full overflow-hidden flex items-center justify-center font-bold text-sm transition-transform group-hover:scale-105 ${
+            className={`relative w-11 h-11 rounded-full overflow-hidden flex items-center justify-center font-bold text-sm transition-transform group-hover:scale-105 ${
               isPartner
                 ? "ring-2 ring-amber-400 bg-amber-950/40 text-amber-300"
                 : "ring-2 ring-lime-400/40 bg-zinc-800 text-lime-400"
             }`}
           >
             {avatarUrl ? (
-              <img
+              <Image
                 src={avatarUrl}
                 alt={author.name}
-                className="w-full h-full object-cover"
+                fill
+                sizes="44px"
+                className="object-cover"
               />
             ) : (
               initial

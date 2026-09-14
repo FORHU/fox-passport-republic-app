@@ -33,6 +33,7 @@ export default function MessageButton({
 }: MessageButtonProps) {
   const openChat = useChatWindowsStore((s) => s.openChat);
   const setConversationId = useChatWindowsStore((s) => s.setConversationId);
+  const closeChat = useChatWindowsStore((s) => s.closeChat);
   const startConversation = useStartConversation();
 
   const handleOpen = () => {
@@ -43,6 +44,10 @@ export default function MessageButton({
         onSuccess: (conversation) =>
           setConversationId(otherUserId, conversation.id),
         onError: (error: any) => {
+          // No conversationId ever gets set on this window, so it would
+          // otherwise sit open with nothing loaded and no way to send —
+          // closing it makes the block visible instead of just silent.
+          closeChat(otherUserId);
           toast.error(
             error?.response?.data?.message ||
               "Could not start this conversation.",

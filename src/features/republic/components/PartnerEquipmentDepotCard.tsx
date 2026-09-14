@@ -27,18 +27,23 @@ export function PartnerEquipmentDepotCard({
 
       {/* Header */}
       <div className="flex items-start justify-between gap-2">
-        <div className="space-y-1">
-          <div className="flex items-center gap-1.5 text-[10px] font-black uppercase tracking-wider text-amber-400">
-            <span className="material-symbols-outlined text-[16px]">
+        <div className="space-y-1 min-w-0">
+          <div className="flex items-center gap-1.5 min-w-0 text-[10px] font-black uppercase tracking-wider text-amber-400">
+            <span className="material-symbols-outlined text-[16px] shrink-0">
               inventory_2
             </span>
-            Partner Resource Pool
+            <span className="truncate min-w-0">Partner Resource Pool</span>
           </div>
           <h3 className="text-base font-black text-white tracking-tight">
             Equipment Depots & Capital
           </h3>
         </div>
-        <Badge variant="verified" icon={false} dot className="text-[9px]">
+        <Badge
+          variant="verified"
+          icon={false}
+          dot
+          className="text-[9px] shrink-0"
+        >
           Live Hubs
         </Badge>
       </div>
@@ -48,41 +53,48 @@ export function PartnerEquipmentDepotCard({
         silent generators) stored at partner depots.
       </p>
 
-      {/* Action Buttons */}
-      <div className="grid grid-cols-2 gap-2">
+      {/* Action Buttons — minmax(0,1fr) tracks so a button can actually
+          shrink/truncate its label instead of forcing the grid (and this
+          card's overflow-hidden) to clip content at the narrower md
+          breakpoint width (see RepublicLeftSidebar's w-64). */}
+      <div className="grid grid-cols-[minmax(0,1fr)_minmax(0,1fr)] gap-2">
         {mapSlot ? (
           <button
             type="button"
             onClick={toggleMap}
-            className={`px-3 py-2.5 rounded-xl border text-xs font-black flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
+            className={`min-w-0 px-3 py-2.5 rounded-xl border text-xs font-black flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
               showInlineMap
                 ? "bg-amber-400 text-black border-amber-300 shadow-md"
                 : "bg-zinc-800/80 hover:bg-zinc-800 border-zinc-700 text-zinc-200 hover:text-white"
             }`}
           >
-            <span className="material-symbols-outlined text-[16px]">
+            <span className="material-symbols-outlined text-[16px] shrink-0">
               {showInlineMap ? "layers_clear" : "map"}
             </span>
-            {showInlineMap ? "Hide Map" : "View Map"}
+            <span className="truncate min-w-0">
+              {showInlineMap ? "Hide Map" : "View Map"}
+            </span>
           </button>
         ) : (
           <Link
             href="/republic/investments"
-            className="px-3 py-2.5 rounded-xl border border-zinc-700 bg-zinc-800/80 hover:bg-zinc-800 text-zinc-200 hover:text-white text-xs font-black flex items-center justify-center gap-1.5 transition-all truncate"
+            className="min-w-0 px-3 py-2.5 rounded-xl border border-zinc-700 bg-zinc-800/80 hover:bg-zinc-800 text-zinc-200 hover:text-white text-xs font-black flex items-center justify-center gap-1.5 transition-all"
           >
-            <span className="material-symbols-outlined text-[16px]">map</span>
-            Explore Map
+            <span className="material-symbols-outlined text-[16px] shrink-0">
+              map
+            </span>
+            <span className="truncate min-w-0">Explore Map</span>
           </Link>
         )}
 
         <Link
           href="/foxer/create-investment"
-          className="px-3 py-2.5 rounded-xl bg-gradient-to-r from-amber-400 to-yellow-500 hover:from-amber-300 hover:to-yellow-400 text-black font-black text-xs flex items-center justify-center gap-1.5 shadow-md transition-all truncate"
+          className="min-w-0 px-3 py-2.5 rounded-xl bg-gradient-to-r from-amber-400 to-yellow-500 hover:from-amber-300 hover:to-yellow-400 text-black font-black text-xs flex items-center justify-center gap-1.5 shadow-md transition-all"
         >
-          <span className="material-symbols-outlined text-[16px]">
+          <span className="material-symbols-outlined text-[16px] shrink-0">
             add_circle
           </span>
-          Add Tools
+          <span className="truncate min-w-0">Add Tools</span>
         </Link>
       </div>
 

@@ -1,16 +1,12 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 import { Mail, MessagesSquare, Users, Pin, BellOff } from "lucide-react";
 import { useAuthStore } from "@/shared/auth/useAuthStore";
 
 export interface FollowingWidgetProps {
   isLoading?: boolean;
-  following: Array<{
-    id: string;
-    name: string | null;
-    imgId: string | null;
-  }>;
   conversations: Array<{
     id: string;
     isGroup: boolean;
@@ -49,6 +45,7 @@ export interface FollowingWidgetProps {
 
   accountOptionsRender: (
     targetId: string,
+    targetName: string,
     conversationId?: string,
     isMuted?: boolean,
     isPinned?: boolean,
@@ -66,6 +63,7 @@ interface RowUser {
   id: string;
   name: string;
   imgId: string | null;
+  conversation: any;
 }
 
 interface RowGroup {
@@ -79,7 +77,6 @@ type Row = RowUser | RowGroup;
 
 export function FollowingWidget({
   isLoading,
-  following,
   conversations: allConversations,
   incomingRequestsCount,
   messageRequestsModalSlot,
@@ -90,61 +87,51 @@ export function FollowingWidget({
 }: FollowingWidgetProps) {
   const { user } = useAuthStore();
 
-  const conversations = allConversations.filter((c) => !c.isGroup);
-  const groupConversations = allConversations.filter((c) => c.isGroup);
-  const conversationByUserId = new Map(
-    conversations.map((c) => [c.otherUser!.id, c]),
-  );
+  // Every thread the user's actually part of — not gated on following,
+  // since this is "your messages" in general now, not a following-list
+  // seeded with placeholder rows. Incoming (not-yet-accepted) requests
+  // stay out of this list; they only live in the Message Requests folder
+  // above until accepted.
+  const threads = allConversations.filter((c) => !c.isIncomingRequest);
 
-  const followingRows: RowUser[] = following.map((u) => ({
-    isGroup: false,
-    id: u.id,
-    name: u.name || "Unknown Citizen",
-    imgId: u.imgId,
-  }));
-  const followingIds = new Set(followingRows.map((r) => r.id));
-  const acceptedNonFollowedRows: RowUser[] = conversations
-    .filter(
-      (c) => c.status === "accepted" && !followingIds.has(c.otherUser!.id),
+  const rows: Row[] = threads
+    .map((c): Row =>
+      c.isGroup
+        ? {
+            isGroup: true,
+            id: c.id,
+            name: c.name || "Group",
+            conversation: c,
+          }
+        : {
+            isGroup: false,
+            id: c.otherUser!.id,
+            name: c.otherUser!.name || "Unknown Citizen",
+            imgId: c.otherUser!.imgId,
+            conversation: c,
+          },
     )
-    .map((c) => ({
-      isGroup: false,
-      id: c.otherUser!.id,
-      name: c.otherUser!.name || "Unknown Citizen",
-      imgId: c.otherUser!.imgId,
-    }));
-  const groupRows: RowGroup[] = groupConversations.map((c) => ({
-    isGroup: true,
-    id: c.id,
-    name: c.name || "Group",
-    conversation: c,
-  }));
-
-  const rows: Row[] = [
-    ...followingRows,
-    ...acceptedNonFollowedRows,
-    ...groupRows,
-  ].sort((a, b) => {
-    const aConv = a.isGroup ? a.conversation : conversationByUserId.get(a.id);
-    const bConv = b.isGroup ? b.conversation : conversationByUserId.get(b.id);
-    if (!!aConv?.isPinned !== !!bConv?.isPinned) {
-      return aConv?.isPinned ? -1 : 1;
-    }
-    if (aConv?.isPinned && bConv?.isPinned) {
-      return (
-        new Date(bConv.pinnedAt ?? 0).getTime() -
-        new Date(aConv.pinnedAt ?? 0).getTime()
-      );
-    }
-    const aTime = aConv?.lastMessageAt;
-    const bTime = bConv?.lastMessageAt;
-    if (aTime && bTime) {
-      return new Date(bTime).getTime() - new Date(aTime).getTime();
-    }
-    if (aTime) return -1;
-    if (bTime) return 1;
-    return 0;
-  });
+    .sort((a, b) => {
+      const aConv = a.conversation;
+      const bConv = b.conversation;
+      if (!!aConv?.isPinned !== !!bConv?.isPinned) {
+        return aConv?.isPinned ? -1 : 1;
+      }
+      if (aConv?.isPinned && bConv?.isPinned) {
+        return (
+          new Date(bConv.pinnedAt ?? 0).getTime() -
+          new Date(aConv.pinnedAt ?? 0).getTime()
+        );
+      }
+      const aTime = aConv?.lastMessageAt;
+      const bTime = bConv?.lastMessageAt;
+      if (aTime && bTime) {
+        return new Date(bTime).getTime() - new Date(aTime).getTime();
+      }
+      if (aTime) return -1;
+      if (bTime) return 1;
+      return 0;
+    });
 
   const [requestsOpen, setRequestsOpen] = useState(false);
 
@@ -174,7 +161,7 @@ export function FollowingWidget({
         <div className="flex items-center gap-2 shrink-0">
           <MessagesSquare className="h-4 w-4 text-lime-400" strokeWidth={2} />
           <div className="text-[10px] font-black uppercase tracking-wider text-zinc-400">
-            Message Your Following
+            Messages
           </div>
         </div>
 
@@ -199,8 +186,8 @@ export function FollowingWidget({
 
         {rows.length === 0 ? (
           <p className="mt-4 text-xs text-zinc-500 leading-relaxed">
-            You&apos;re not following anyone yet. Follow citizens and partners
-            from their posts or profiles to see them here.
+            No conversations yet. Message a citizen or partner from their
+            profile or a post to see it here.
           </p>
         ) : (
           <div className="mt-4 flex-1 min-h-0 overflow-y-auto space-y-4 pr-1 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
@@ -210,7 +197,7 @@ export function FollowingWidget({
                 const lastMessage = conversation.lastMessage;
                 const preview = lastMessage
                   ? `${lastMessage.isMine ? "You: " : ""}${lastMessage.content}`
-                  : "Click to start chatting";
+                  : "No messages yet";
                 const hasUnread = conversation.unreadCount > 0;
 
                 return (
@@ -226,10 +213,12 @@ export function FollowingWidget({
                       <div className="relative shrink-0">
                         <div className="w-9 h-9 rounded-full overflow-hidden bg-zinc-800 border border-zinc-700/50 group-hover:border-lime-500/50 transition-colors flex items-center justify-center text-zinc-500">
                           {conversation.imgId ? (
-                            <img
+                            <Image
                               src={conversation.imgId}
                               alt=""
-                              className="w-full h-full object-cover"
+                              fill
+                              sizes="36px"
+                              className="object-cover"
                             />
                           ) : (
                             <Users className="h-4 w-4" strokeWidth={2} />
@@ -271,19 +260,13 @@ export function FollowingWidget({
                 );
               }
 
-              const conversation = conversationByUserId.get(followedUser.id);
-              const isPendingIncoming =
-                conversation?.isIncomingRequest ?? false;
-              const lastMessage = isPendingIncoming
-                ? undefined
-                : conversation?.lastMessage;
+              const { conversation } = followedUser;
+              const lastMessage = conversation?.lastMessage;
               const preview = lastMessage
                 ? `${lastMessage.isMine ? "You: " : ""}${lastMessage.content}`
-                : "Click to start chatting";
-              const isPendingSent =
-                !isPendingIncoming && conversation?.status === "pending";
-              const hasUnread =
-                !isPendingIncoming && (conversation?.unreadCount ?? 0) > 0;
+                : "No messages yet";
+              const isPendingSent = conversation?.status === "pending";
+              const hasUnread = (conversation?.unreadCount ?? 0) > 0;
 
               return (
                 <div
@@ -304,7 +287,7 @@ export function FollowingWidget({
                     <div className="relative shrink-0">
                       <div className="w-9 h-9 rounded-full overflow-hidden bg-zinc-800 border border-zinc-700/50 group-hover:border-lime-500/50 transition-colors">
                         {followedUser.imgId ? (
-                          <img
+                          <Image
                             src={
                               followedUser.imgId.startsWith("http://") ||
                               followedUser.imgId.startsWith("https://")
@@ -312,7 +295,9 @@ export function FollowingWidget({
                                 : `https://fox-passport-republic-assets.s3.ap-southeast-1.amazonaws.com/${followedUser.imgId}`
                             }
                             alt={followedUser.name || "User"}
-                            className="w-full h-full object-cover"
+                            fill
+                            sizes="36px"
+                            className="object-cover"
                           />
                         ) : (
                           <div className="w-full h-full bg-zinc-800 flex items-center justify-center text-xs font-bold text-zinc-500">
@@ -355,6 +340,7 @@ export function FollowingWidget({
 
                   {accountOptionsRender(
                     followedUser.id,
+                    followedUser.name,
                     conversation?.id,
                     conversation?.isMuted,
                     conversation?.isPinned,

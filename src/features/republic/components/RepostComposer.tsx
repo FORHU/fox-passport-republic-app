@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Image from "next/image";
 import { createPortal } from "react-dom";
 import { X } from "lucide-react";
 import { toast } from "sonner";
@@ -80,12 +81,14 @@ export function RepostComposer({ post, onClose }: RepostComposerProps) {
           />
 
           <div className="mt-3 rounded-xl border border-zinc-800 bg-zinc-900/60 p-3 flex items-center gap-2.5">
-            <div className="h-10 w-10 shrink-0 overflow-hidden rounded-lg bg-zinc-800 flex items-center justify-center text-xs font-bold text-zinc-500">
+            <div className="relative h-10 w-10 shrink-0 overflow-hidden rounded-lg bg-zinc-800 flex items-center justify-center text-xs font-bold text-zinc-500">
               {post.mediaUrls[0] ? (
-                <img
+                <Image
                   src={post.mediaUrls[0]}
                   alt=""
-                  className="h-full w-full object-cover"
+                  fill
+                  sizes="40px"
+                  className="object-cover"
                 />
               ) : (
                 post.author.name?.charAt(0)?.toUpperCase()

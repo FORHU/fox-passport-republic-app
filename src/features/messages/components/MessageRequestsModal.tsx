@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
+import Image from "next/image";
 import { X } from "lucide-react";
 import { toast } from "sonner";
 import {
@@ -94,12 +95,14 @@ export function MessageRequestsModal({
                 onClick={() => onSelectRequest(c)}
                 className="w-full flex items-center gap-3 p-2.5 rounded-xl hover:bg-zinc-900 transition-colors text-left cursor-pointer"
               >
-                <div className="w-10 h-10 rounded-full overflow-hidden bg-zinc-800 shrink-0 border border-zinc-700/50 flex items-center justify-center text-xs font-bold text-zinc-500">
+                <div className="relative w-10 h-10 rounded-full overflow-hidden bg-zinc-800 shrink-0 border border-zinc-700/50 flex items-center justify-center text-xs font-bold text-zinc-500">
                   {c.otherUser?.imgId ? (
-                    <img
+                    <Image
                       src={c.otherUser.imgId}
                       alt={c.otherUser.name || "User"}
-                      className="w-full h-full object-cover"
+                      fill
+                      sizes="40px"
+                      className="object-cover"
                     />
                   ) : (
                     c.otherUser?.name?.charAt(0)?.toUpperCase() || "?"

@@ -10,6 +10,7 @@ import {
   ReactionBreakdownEntry,
   MentionCandidate,
   MediaTag,
+  Poll,
 } from "@/shared/types/feed";
 
 export interface FeedResponse {
@@ -103,8 +104,16 @@ export const toggleSavePost = async (
 export const getSavedPosts = async (params?: {
   limit?: number;
   cursor?: string;
-}): Promise<FeedPost[]> => {
+}): Promise<FeedResponse> => {
   const res = await api.get("/feed/saved", { params });
+  return res.data;
+};
+
+export const voteOnPoll = async (
+  postId: string,
+  optionId: string,
+): Promise<Poll> => {
+  const res = await api.post(`/feed/${postId}/poll/vote`, { optionId });
   return res.data.data;
 };
 
@@ -133,6 +142,17 @@ export const addPostComment = async (
   parentId?: string,
 ): Promise<PostComment> => {
   const res = await api.post(`/feed/${id}/comments`, { content, parentId });
+  return res.data.data;
+};
+
+export const editPostComment = async (
+  postId: string,
+  commentId: string,
+  content: string,
+): Promise<PostComment> => {
+  const res = await api.patch(`/feed/${postId}/comments/${commentId}`, {
+    content,
+  });
   return res.data.data;
 };
 
