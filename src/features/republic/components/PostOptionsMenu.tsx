@@ -23,6 +23,9 @@ interface PostOptionsMenuProps {
    * shouldn't see the post anymore. */
   onRemoved: (postId: string) => void;
   onCopyLink: () => void;
+  /** Fires when this post is unsaved — lets a saved-posts list drop it
+   * immediately instead of waiting for a refetch. */
+  onUnsaved?: (postId: string) => void;
 }
 
 export function PostOptionsMenu({
@@ -31,6 +34,7 @@ export function PostOptionsMenu({
   onEdit,
   onRemoved,
   onCopyLink,
+  onUnsaved,
 }: PostOptionsMenuProps) {
   const [open, setOpen] = useState(false);
   const [showReport, setShowReport] = useState(false);
@@ -55,6 +59,7 @@ export function PostOptionsMenu({
       const res = await toggleSavePost(post.id);
       setSaved(res.saved);
       toast.success(res.saved ? "Saved" : "Removed from saved");
+      if (!res.saved) onUnsaved?.(post.id);
     } catch (error: any) {
       toast.error(
         error?.response?.data?.message || "Could not save this post.",

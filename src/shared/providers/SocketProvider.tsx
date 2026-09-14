@@ -89,6 +89,9 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
     socket.on(SOCKET_EVENTS.READ_RECEIPT, (payload) => {
       publishRealtime(SOCKET_EVENTS.READ_RECEIPT, payload);
     });
+    socket.on(SOCKET_EVENTS.MESSAGE_PINNED, (payload) => {
+      publishRealtime(SOCKET_EVENTS.MESSAGE_PINNED, payload);
+    });
 
     return () => {
       socket.off(SOCKET_EVENTS.NEW_NOTIFICATION);
@@ -101,6 +104,7 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
       socket.off(SOCKET_EVENTS.GROUP_REMOVED);
       socket.off(SOCKET_EVENTS.MESSAGE_EDITED);
       socket.off(SOCKET_EVENTS.READ_RECEIPT);
+      socket.off(SOCKET_EVENTS.MESSAGE_PINNED);
       disconnectSocket();
     };
   }, [isAuthenticated, queryClient, fetchTicket]);

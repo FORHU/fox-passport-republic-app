@@ -12,6 +12,12 @@ interface MessageState {
     messageId: string,
     reactions: MessageReactionEntry[],
   ) => void;
+  /** Only one pinned message per conversation — clears `pinnedAt` on every
+   * other message in it, sets it on `messageId` (or clears all if null). */
+  setPinnedMessageId: (
+    conversationId: string,
+    messageId: string | null,
+  ) => void;
 }
 
 // Mirrors useNotificationStore: REST fetches and socket pushes both funnel
@@ -80,6 +86,22 @@ export const useMessageStore = create<MessageState>((set) => ({
           [conversationId]: existing.map((m) =>
             m.id === messageId ? { ...m, reactions } : m,
           ),
+        },
+      };
+    }),
+
+  setPinnedMessageId: (conversationId, messageId) =>
+    set((state) => {
+      const existing = state.messagesByConversation[conversationId];
+      if (!existing) return state;
+      const now = new Date().toISOString();
+      return {
+        messagesByConversation: {
+          ...state.messagesByConversation,
+          [conversationId]: existing.map((m) => ({
+            ...m,
+            pinnedAt: m.id === messageId ? now : null,
+          })),
         },
       };
     }),

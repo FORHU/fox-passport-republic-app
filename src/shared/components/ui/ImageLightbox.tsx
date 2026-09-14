@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { ChevronLeft, ChevronRight, Download, X } from "lucide-react";
 import { toast } from "sonner";
@@ -12,6 +12,11 @@ const isVideoUrl = (url: string) => {
   const clean = url.split("?")[0].toLowerCase();
   return VIDEO_EXTENSIONS.some((ext) => clean.endsWith(ext));
 };
+
+// A swipe past this many pixels commits to a prev/next, rather than
+// snapping back — matches the feel of a native mobile gallery without
+// pulling in a carousel library.
+const SWIPE_THRESHOLD_PX = 50;
 
 interface ImageLightboxProps {
   /** Accepts either a single url (chat attachments) or the full gallery
@@ -25,8 +30,12 @@ interface ImageLightboxProps {
 }
 
 // Full-screen media viewer — blurred backdrop, download button, prev/next
-// through the rest of the gallery, click-outside/Escape to close. Handles
-// video the same as images (native <video controls> instead of <img>).
+// through the rest of the gallery (via arrow buttons, arrow keys, or a
+// touch swipe), click-outside/Escape to close. Handles video the same as
+// images (native <video controls> instead of <img>). Lives under shared/
+// (not a features/* folder) since it's genuinely feature-agnostic — used by
+// both the messages feature (chat attachments) and the republic feature
+// (post photo galleries), and neither may import the other's code directly.
 export function ImageLightbox({
   urls,
   startIndex = 0,
@@ -43,6 +52,18 @@ export function ImageLightbox({
 
   const goPrev = () => setIndex((i) => (i - 1 + urls.length) % urls.length);
   const goNext = () => setIndex((i) => (i + 1) % urls.length);
+
+  const touchStartX = useRef<number | null>(null);
+  const handleTouchStart = (e: React.TouchEvent) => {
+    touchStartX.current = e.touches[0].clientX;
+  };
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    if (touchStartX.current === null || !hasMultiple) return;
+    const delta = e.changedTouches[0].clientX - touchStartX.current;
+    touchStartX.current = null;
+    if (delta > SWIPE_THRESHOLD_PX) goPrev();
+    else if (delta < -SWIPE_THRESHOLD_PX) goNext();
+  };
 
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
@@ -91,6 +112,8 @@ export function ImageLightbox({
       onClick={(e) => {
         if (e.target === e.currentTarget) onClose();
       }}
+      onTouchStart={handleTouchStart}
+      onTouchEnd={handleTouchEnd}
     >
       <div className="absolute top-4 right-4 flex items-center gap-2">
         <button
@@ -136,8 +159,21 @@ export function ImageLightbox({
           >
             <ChevronRight className="h-5 w-5" />
           </button>
-          <div className="absolute bottom-4 left-1/2 -translate-x-1/2 rounded-full bg-white/10 px-3 py-1 text-xs font-bold text-white">
-            {index + 1} / {urls.length}
+          <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex items-center gap-1.5 rounded-full bg-white/10 px-3 py-1.5">
+            {urls.map((u, i) => (
+              <button
+                key={u + i}
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setIndex(i);
+                }}
+                aria-label={`Go to photo ${i + 1}`}
+                className={`h-1.5 rounded-full transition-all cursor-pointer ${
+                  i === index ? "w-4 bg-white" : "w-1.5 bg-white/40"
+                }`}
+              />
+            ))}
           </div>
         </>
       )}
@@ -155,6 +191,14 @@ export function ImageLightbox({
           className="relative max-h-[85vh] max-w-[90vw]"
           onClick={(e) => e.stopPropagation()}
         >
+          {/* Deliberately a plain <img>, not next/image: this is a single
+              on-demand full-view image (not a list rendering many at once),
+              and next/image's `fill` would need a fixed-size ancestor,
+              which would grow this div's click-catching hitbox past the
+              image's real letterboxed bounds and swallow backdrop clicks
+              that should close the lightbox. The real fix for large images
+              here is at the upload source (S3Svc.optimizeImage resizes to
+              1600px/WebP), which already applies regardless of this tag. */}
           <img
             src={url}
             alt=""

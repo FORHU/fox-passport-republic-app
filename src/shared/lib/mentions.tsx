@@ -7,37 +7,45 @@ import type { ReactNode } from "react";
 // feed.service.ts MENTION_PATTERN, kept in sync by character set since a
 // raw @handle here is always a username, resolved via the public profile
 // route which accepts either an id or a username (/users/profile/:idOrUsername).
-const USERNAME_MENTION_PATTERN = /@([a-zA-Z0-9_]{2,32})/g;
+// Hashtags aren't stored/tokenized server-side — a tapped tag just seeds the
+// existing feed search box with the literal "#tag" substring, since Post
+// content search is already a case-insensitive `contains` match.
+const TOKEN_PATTERN = /([@#])([a-zA-Z0-9_]{2,32})/g;
 
-/** Renders @username mentions in post/comment text as links to /user/:username. */
+/** Renders @username mentions and #hashtags in post/comment text — mentions
+ * link to /user/:username, hashtags to a feed search for that tag. */
 export function renderUsernameMentions(
   text: string,
   className = "font-bold text-lime-400 hover:underline",
 ): ReactNode[] {
-  const parts: Array<string | { handle: string }> = [];
+  const parts: Array<string | { kind: "@" | "#"; value: string }> = [];
   let lastIndex = 0;
-  for (const match of text.matchAll(USERNAME_MENTION_PATTERN)) {
+  for (const match of text.matchAll(TOKEN_PATTERN)) {
     const start = match.index ?? 0;
     if (start > lastIndex) parts.push(text.slice(lastIndex, start));
-    parts.push({ handle: match[1] });
+    parts.push({ kind: match[1] as "@" | "#", value: match[2] });
     lastIndex = start + match[0].length;
   }
   if (lastIndex < text.length) parts.push(text.slice(lastIndex));
 
-  return parts.map((part, i) =>
-    typeof part === "string" ? (
-      <span key={i}>{part}</span>
-    ) : (
+  return parts.map((part, i) => {
+    if (typeof part === "string") return <span key={i}>{part}</span>;
+    const href =
+      part.kind === "@"
+        ? `/user/${part.value}`
+        : `/republic?hashtag=${encodeURIComponent(part.value)}`;
+    return (
       <Link
         key={i}
-        href={`/user/${part.handle}`}
+        href={href}
         onClick={(e) => e.stopPropagation()}
         className={className}
       >
-        @{part.handle}
+        {part.kind}
+        {part.value}
       </Link>
-    ),
-  );
+    );
+  });
 }
 
 function escapeRegExp(value: string): string {

@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useRef } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { type Foxer, type FoxerSpecialization } from "@/shared/api/foxers";
@@ -96,9 +97,15 @@ function VenueCarousel({ images }: { images: string[] }) {
         {images.map((img, idx) => (
           <div
             key={idx}
-            className="h-24 w-36 shrink-0 snap-start rounded-2xl overflow-hidden border border-white/10"
+            className="relative h-24 w-36 shrink-0 snap-start rounded-2xl overflow-hidden border border-white/10"
           >
-            <img src={img} alt="Venue" className="h-full w-full object-cover" />
+            <Image
+              src={img}
+              alt="Venue"
+              fill
+              sizes="144px"
+              className="object-cover"
+            />
           </div>
         ))}
       </div>
@@ -180,9 +187,11 @@ function FoxerCard({ foxer }: { foxer: Foxer }) {
       <div className="flex items-start justify-between gap-2 mb-3 relative z-10 pointer-events-none">
         <div className="flex gap-3 sm:gap-4 min-w-0">
           <div className="relative shrink-0">
-            <img
+            <Image
               src={avatarUrl}
               alt={foxer.name}
+              width={64}
+              height={64}
               className="h-12 w-12 sm:h-16 sm:w-16 rounded-full object-cover border-2 border-surface-highlight group-hover:scale-105 transition-transform"
               onError={(e) => {
                 (e.target as HTMLImageElement).src = FALLBACK_AVATAR;
@@ -275,12 +284,14 @@ function FoxerCard({ foxer }: { foxer: Foxer }) {
             {portfolioImages.map((img, idx) => (
               <div
                 key={idx}
-                className="h-20 flex-1 rounded-2xl overflow-hidden border border-white/10 group-hover:scale-105 transition-transform duration-300 first:-rotate-3 last:rotate-3"
+                className="relative h-20 flex-1 rounded-2xl overflow-hidden border border-white/10 group-hover:scale-105 transition-transform duration-300 first:-rotate-3 last:rotate-3"
               >
-                <img
+                <Image
                   src={img}
                   alt="Work"
-                  className="h-full w-full object-cover"
+                  fill
+                  sizes="120px"
+                  className="object-cover"
                 />
               </div>
             ))}

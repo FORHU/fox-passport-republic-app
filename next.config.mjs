@@ -5,6 +5,7 @@ const nextConfig = {
   turbopack: {},
   ...(isWindows ? {} : { output: "standalone" }),
   reactStrictMode: false,
+  allowedDevOrigins: ["192.168.1.34"],
 
   images: {
     remotePatterns: [

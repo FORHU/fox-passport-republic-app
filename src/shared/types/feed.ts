@@ -5,7 +5,21 @@ export type PostType =
   | "gear_offering"
   | "service_offering"
   | "event_announcement"
-  | "partner_announcement";
+  | "partner_announcement"
+  | "poll";
+
+export interface PollOption {
+  id: string;
+  label: string;
+  position: number;
+  votesCount: number;
+  votes: Array<{ userId: string }>;
+}
+
+export interface Poll {
+  id: string;
+  options: PollOption[];
+}
 
 export type FeedTab = "all" | "community" | "marketplace" | "partners";
 
@@ -174,6 +188,7 @@ export interface FeedPost {
       city: string;
     } | null;
   } | null;
+  poll?: Poll | null;
 }
 
 export interface PostComment {
@@ -185,6 +200,7 @@ export interface PostComment {
   likesCount: number;
   isLikedByMe?: boolean;
   createdAt: string;
+  updatedAt?: string;
   author: {
     id: string;
     name: string;
@@ -207,6 +223,7 @@ export interface CreatePostPayload {
   reviewId?: string | null;
   stampId?: string | null;
   mediaTags?: Array<{ mediaUrl: string; userId: string; x: number; y: number }>;
+  pollOptions?: string[];
 }
 
 export interface MentionCandidate {

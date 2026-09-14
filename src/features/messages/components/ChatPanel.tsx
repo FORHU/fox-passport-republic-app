@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useMemo, useRef, useState } from "react";
+import Image from "next/image";
 import { createPortal } from "react-dom";
 import {
   Camera,
@@ -13,8 +14,11 @@ import {
   MoreHorizontal,
   Paperclip,
   Pencil,
+  Pin,
+  PinOff,
   PlayCircle,
   Reply,
+  Search,
   Send,
   Trash2,
   UserPlus,
@@ -46,6 +50,9 @@ import {
   useEditMessage,
   useSetGroupPhoto,
   useReadReceipts,
+  usePinnedMessage,
+  useSetPinnedMessage,
+  useSearchMessages,
 } from "../hooks/useMessages";
 import {
   useChatWindowsStore,
@@ -53,10 +60,11 @@ import {
 } from "../store/useChatWindowsStore";
 import type { Message } from "../types";
 import { ForwardMessageModal } from "./ForwardMessageModal";
-import { ImageLightbox } from "./ImageLightbox";
+import { ImageLightbox } from "@/shared/components/ui/ImageLightbox";
 import { NewGroupModal } from "./NewGroupModal";
 import { AddGroupMemberModal } from "./AddGroupMemberModal";
 import { GroupMembersModal } from "./GroupMembersModal";
+import { ConfirmModal } from "@/shared/components/ConfirmModal";
 import {
   PANEL_WIDTH,
   PANEL_GAP,
@@ -82,7 +90,11 @@ function isVideoUrl(url: string): boolean {
 // grid tiles for feed post videos.
 function AttachmentThumb({ url }: { url: string }) {
   if (!isVideoUrl(url)) {
-    return <img src={url} alt="" className="h-28 w-full object-cover" />;
+    return (
+      <div className="relative h-28 w-full">
+        <Image src={url} alt="" fill sizes="280px" className="object-cover" />
+      </div>
+    );
   }
   return (
     <div className="relative h-28 w-full">
@@ -202,15 +214,19 @@ function ReactionBadges({
 
 function MessageActions({
   isMine,
+  isPinned,
   onReply,
   onForward,
+  onTogglePin,
   onEdit,
   onDelete,
   onReact,
 }: {
   isMine: boolean;
+  isPinned: boolean;
   onReply: () => void;
   onForward: () => void;
+  onTogglePin: () => void;
   onEdit?: () => void;
   onDelete?: () => void;
   onReact: (emoji: string) => void;
@@ -316,6 +332,17 @@ function MessageActions({
             >
               <Forward className="h-3 w-3" />
               Forward
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setOpen(false);
+                onTogglePin();
+              }}
+              className="w-full flex items-center gap-2 px-3 py-1.5 text-[11px] text-white/70 hover:bg-white/10 hover:text-white transition-colors cursor-pointer"
+            >
+              <Pin className="h-3 w-3" />
+              {isPinned ? "Unpin" : "Pin"}
             </button>
             {onEdit && (
               <button
@@ -453,7 +480,41 @@ export default function ChatPanel({
   const editMessage = useEditMessage();
   const [editingMessageId, setEditingMessageId] = useState<string | null>(null);
   const [editContent, setEditContent] = useState("");
+  const [confirmingDeleteMessageId, setConfirmingDeleteMessageId] = useState<
+    string | null
+  >(null);
+  const [confirmingLeaveGroup, setConfirmingLeaveGroup] = useState(false);
   const { data: conversations = [] } = useConversations();
+  const { data: pinnedMessage } = usePinnedMessage(conversationId);
+  const setPinnedMessageMutation = useSetPinnedMessage();
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [searchResults, setSearchResults] = useState<Message[] | null>(null);
+  const searchMutation = useSearchMessages();
+
+  const handleTogglePin = (message: Message) => {
+    if (!conversationId) return;
+    const pinning = pinnedMessage?.id !== message.id;
+    setPinnedMessageMutation.mutate(
+      { conversationId, messageId: message.id, pinned: pinning },
+      {
+        onError: (error: any) => {
+          toast.error(
+            error?.response?.data?.message || "Could not update the pin.",
+          );
+        },
+      },
+    );
+  };
+
+  const handleSearchSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!conversationId || !searchQuery.trim()) return;
+    searchMutation.mutate(
+      { conversationId, query: searchQuery.trim() },
+      { onSuccess: setSearchResults },
+    );
+  };
 
   // Keeps this window's title/member list in sync with membership changes
   // — someone leaving or being added invalidates the conversations query
@@ -684,6 +745,11 @@ export default function ChatPanel({
           setPendingAttachments([]);
           setReplyingTo(null);
         },
+        onError: (error: any) => {
+          toast.error(
+            error?.response?.data?.message || "Could not send this message.",
+          );
+        },
       },
     );
   };
@@ -770,10 +836,16 @@ export default function ChatPanel({
 
   const handleDeleteMessage = (messageId: string) => {
     if (!conversationId) return;
+    setConfirmingDeleteMessageId(messageId);
+  };
+
+  const confirmDeleteMessage = () => {
+    if (!conversationId || !confirmingDeleteMessageId) return;
     deleteMutation.mutate(
-      { conversationId, messageId },
+      { conversationId, messageId: confirmingDeleteMessageId },
       {
         onError: () => toast.error("Could not delete this message."),
+        onSettled: () => setConfirmingDeleteMessageId(null),
       },
     );
   };
@@ -888,10 +960,12 @@ export default function ChatPanel({
           className="relative flex h-full w-full items-center justify-center rounded-full bg-[#0a0a0a] border border-white/10 shadow-2xl overflow-hidden cursor-pointer hover:scale-105 transition-transform"
         >
           {otherUserImgId ? (
-            <img
+            <Image
               src={otherUserImgId}
-              className="h-full w-full object-cover"
               alt=""
+              fill
+              sizes="56px"
+              className="object-cover"
             />
           ) : (
             <span className="text-sm font-black text-white/70">
@@ -1010,6 +1084,33 @@ export default function ChatPanel({
           onClose={() => setLightboxGallery(null)}
         />
       )}
+      {confirmingDeleteMessageId && (
+        <ConfirmModal
+          title="Delete this message?"
+          description="This removes it for everyone in the chat, not just you. This can't be undone."
+          confirmLabel="Delete"
+          isPending={deleteMutation.isPending}
+          onConfirm={confirmDeleteMessage}
+          onClose={() => setConfirmingDeleteMessageId(null)}
+        />
+      )}
+      {confirmingLeaveGroup && (
+        <ConfirmModal
+          title="Leave group?"
+          description={`You'll stop receiving messages from "${otherUserName}" and won't see its history unless someone adds you back.`}
+          confirmLabel="Leave"
+          isPending={leaveGroup.isPending}
+          onConfirm={() => {
+            if (!conversationId) return;
+            leaveGroup.mutate(conversationId, {
+              onSuccess: () => closeChat(otherUserId),
+              onError: () => toast.error("Could not leave group."),
+              onSettled: () => setConfirmingLeaveGroup(false),
+            });
+          }}
+          onClose={() => setConfirmingLeaveGroup(false)}
+        />
+      )}
       {createPortal(
         <div
           style={{ right, width: PANEL_WIDTH }}
@@ -1030,10 +1131,12 @@ export default function ChatPanel({
                       className="group relative h-8 w-8 rounded-full bg-white/10 border border-white/10 flex items-center justify-center text-xs font-black text-white/50 overflow-hidden cursor-pointer disabled:opacity-50"
                     >
                       {otherUserImgId ? (
-                        <img
+                        <Image
                           src={otherUserImgId}
-                          className="h-full w-full object-cover"
                           alt=""
+                          fill
+                          sizes="32px"
+                          className="object-cover"
                         />
                       ) : (
                         <Users className="h-3.5 w-3.5" strokeWidth={2} />
@@ -1043,12 +1146,14 @@ export default function ChatPanel({
                       </div>
                     </button>
                   ) : (
-                    <div className="h-8 w-8 rounded-full bg-white/10 border border-white/10 flex items-center justify-center text-xs font-black text-white/50 overflow-hidden">
+                    <div className="relative h-8 w-8 rounded-full bg-white/10 border border-white/10 flex items-center justify-center text-xs font-black text-white/50 overflow-hidden">
                       {otherUserImgId ? (
-                        <img
+                        <Image
                           src={otherUserImgId}
-                          className="h-full w-full object-cover"
                           alt=""
+                          fill
+                          sizes="32px"
+                          className="object-cover"
                         />
                       ) : (
                         otherUserName?.charAt(0)?.toUpperCase()
@@ -1144,6 +1249,24 @@ export default function ChatPanel({
                 </div>
               </div>
               <div className="flex items-center gap-0.5 shrink-0">
+                <button
+                  onClick={() => {
+                    setSearchOpen((v) => !v);
+                    if (searchOpen) {
+                      setSearchQuery("");
+                      setSearchResults(null);
+                    }
+                  }}
+                  aria-label="Search messages"
+                  title="Search messages"
+                  className={`h-7 w-7 rounded-full flex items-center justify-center transition-colors cursor-pointer ${
+                    searchOpen
+                      ? "bg-white/10 text-white"
+                      : "text-white/50 hover:bg-white/10 hover:text-white"
+                  }`}
+                >
+                  <Search className="h-3.5 w-3.5" strokeWidth={2} />
+                </button>
                 {!isGroup && (
                   <button
                     onClick={() => setGroupModalOpen(true)}
@@ -1166,13 +1289,7 @@ export default function ChatPanel({
                 )}
                 {isGroup && (
                   <button
-                    onClick={() => {
-                      if (!conversationId) return;
-                      leaveGroup.mutate(conversationId, {
-                        onSuccess: () => closeChat(otherUserId),
-                        onError: () => toast.error("Could not leave group."),
-                      });
-                    }}
+                    onClick={() => setConfirmingLeaveGroup(true)}
                     disabled={leaveGroup.isPending}
                     aria-label="Leave group"
                     className="h-7 w-7 rounded-full flex items-center justify-center text-white/50 hover:bg-white/10 hover:text-white transition-colors cursor-pointer disabled:opacity-50"
@@ -1197,16 +1314,94 @@ export default function ChatPanel({
               </div>
             </div>
 
+            {searchOpen && (
+              <div className="border-b border-white/10 bg-[#111] px-3 py-2">
+                <form
+                  onSubmit={handleSearchSubmit}
+                  className="flex items-center gap-2"
+                >
+                  <input
+                    type="text"
+                    autoFocus
+                    value={searchQuery}
+                    onChange={(e) => {
+                      setSearchQuery(e.target.value);
+                      if (!e.target.value.trim()) setSearchResults(null);
+                    }}
+                    placeholder="Search this conversation…"
+                    className="flex-1 bg-white/5 border border-white/10 focus:border-lime-400/60 rounded-lg px-2.5 py-1.5 text-xs text-white placeholder-white/30 focus:outline-none transition-colors"
+                  />
+                  <button
+                    type="submit"
+                    disabled={!searchQuery.trim() || searchMutation.isPending}
+                    className="text-[11px] font-bold text-lime-400 hover:text-lime-300 disabled:opacity-40 transition-colors cursor-pointer shrink-0"
+                  >
+                    {searchMutation.isPending ? "…" : "Go"}
+                  </button>
+                </form>
+                {searchResults !== null && (
+                  <div className="mt-2 max-h-48 overflow-y-auto space-y-1">
+                    {searchResults.length === 0 ? (
+                      <p className="text-[11px] text-white/40 px-1 py-2">
+                        No messages matched &quot;{searchQuery}&quot;.
+                      </p>
+                    ) : (
+                      searchResults.map((r) => (
+                        <div
+                          key={r.id}
+                          className="rounded-lg bg-white/5 px-2.5 py-1.5"
+                        >
+                          <p className="text-[10px] font-bold text-white/50">
+                            {getSenderName(r.senderId)} ·{" "}
+                            {new Date(r.createdAt).toLocaleDateString("en-US", {
+                              month: "short",
+                              day: "numeric",
+                            })}
+                          </p>
+                          <p className="text-xs text-white/80 line-clamp-2">
+                            {r.content}
+                          </p>
+                        </div>
+                      ))
+                    )}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {pinnedMessage && (
+              <button
+                type="button"
+                onClick={() => handleTogglePin(pinnedMessage)}
+                title="Unpin message"
+                className="flex items-center gap-2 border-b border-white/10 bg-white/5 px-3 py-1.5 text-left hover:bg-white/10 transition-colors cursor-pointer"
+              >
+                <Pin
+                  className="h-3 w-3 shrink-0 text-lime-400"
+                  strokeWidth={2}
+                />
+                <p className="flex-1 min-w-0 text-[11px] text-white/70 truncate">
+                  <span className="font-bold text-white/90">
+                    {getSenderName(pinnedMessage.senderId)}:
+                  </span>{" "}
+                  {pinnedMessage.content || "Attachment"}
+                </p>
+                <PinOff className="h-3 w-3 shrink-0 text-white/30" />
+              </button>
+            )}
+
             {/* Messages */}
             <div className="flex-1 overflow-y-auto px-3 py-3 space-y-2">
               {showRequestPrompt && (
                 <div className="flex flex-col items-center text-center gap-2 py-4">
-                  <div className="h-14 w-14 rounded-full bg-white/10 border border-white/10 flex items-center justify-center text-base font-black text-white/50 overflow-hidden shrink-0">
+                  <div className="relative h-14 w-14 rounded-full bg-white/10 border border-white/10 flex items-center justify-center text-base font-black text-white/50 overflow-hidden shrink-0">
                     {otherUserImgId ? (
-                      <img
+                      <Image
                         src={otherUserImgId}
-                        className="h-full w-full object-cover"
                         alt=""
+                        fill
+                        sizes="56px"
+                        className="object-cover"
                       />
                     ) : (
                       otherUserName?.charAt(0)?.toUpperCase()
@@ -1269,9 +1464,11 @@ export default function ChatPanel({
                     <div className="h-6 w-6 shrink-0 self-end">
                       {isLastInGroup &&
                         (senderImgId ? (
-                          <img
+                          <Image
                             src={senderImgId}
                             alt=""
+                            width={24}
+                            height={24}
                             className="h-6 w-6 rounded-full object-cover"
                           />
                         ) : (
@@ -1293,6 +1490,8 @@ export default function ChatPanel({
                         isMine={isMine}
                         onReply={() => handleReply(m)}
                         onForward={() => setForwardingMessage(m)}
+                        isPinned={pinnedMessage?.id === m.id}
+                        onTogglePin={() => handleTogglePin(m)}
                         onEdit={isMine ? () => handleStartEdit(m) : undefined}
                         onDelete={
                           isMine ? () => handleDeleteMessage(m.id) : undefined
@@ -1327,11 +1526,15 @@ export default function ChatPanel({
                           className="block overflow-hidden rounded-2xl border border-white/10 bg-white/5 hover:bg-white/10 transition-colors"
                         >
                           {m.sharedPost.mediaUrls[0] && (
-                            <img
-                              src={m.sharedPost.mediaUrls[0]}
-                              alt=""
-                              className="h-32 w-full object-cover"
-                            />
+                            <div className="relative h-32 w-full">
+                              <Image
+                                src={m.sharedPost.mediaUrls[0]}
+                                alt=""
+                                fill
+                                sizes="280px"
+                                className="object-cover"
+                              />
+                            </div>
                           )}
                           <div className="p-2.5">
                             <p className="text-[10px] font-bold text-white/70">
@@ -1394,6 +1597,8 @@ export default function ChatPanel({
                         isMine={isMine}
                         onReply={() => handleReply(m)}
                         onForward={() => setForwardingMessage(m)}
+                        isPinned={pinnedMessage?.id === m.id}
+                        onTogglePin={() => handleTogglePin(m)}
                         onEdit={isMine ? () => handleStartEdit(m) : undefined}
                         onDelete={
                           isMine ? () => handleDeleteMessage(m.id) : undefined
@@ -1497,6 +1702,8 @@ export default function ChatPanel({
                       isMine={isMine}
                       onReply={() => handleReply(m)}
                       onForward={() => setForwardingMessage(m)}
+                      isPinned={pinnedMessage?.id === m.id}
+                      onTogglePin={() => handleTogglePin(m)}
                       onEdit={isMine ? () => handleStartEdit(m) : undefined}
                       onDelete={
                         isMine ? () => handleDeleteMessage(m.id) : undefined
@@ -1679,11 +1886,13 @@ export default function ChatPanel({
                               className="h-full w-full rounded-lg object-cover border border-white/10"
                             />
                           ) : (
-                            <img
+                            <Image
                               src={url}
                               alt=""
+                              fill
+                              sizes="48px"
                               onError={() => removePendingAttachment(url)}
-                              className="h-full w-full rounded-lg object-cover border border-white/10"
+                              className="rounded-lg object-cover border border-white/10"
                             />
                           )}
                           <button

@@ -16,9 +16,11 @@ import {
   PinOff,
 } from "lucide-react";
 import { ReportModal } from "@/shared/components/ReportModal";
+import { ConfirmModal } from "@/shared/components/ConfirmModal";
 
 interface AccountOptionsMenuProps {
   targetId: string;
+  targetName?: string;
   conversationId?: string;
   isMuted?: boolean;
   isPinned?: boolean;
@@ -31,8 +33,11 @@ interface AccountOptionsMenuProps {
   onDeleteChat?: () => void;
 }
 
+type PendingConfirm = "unfollow" | "block" | "deleteChat" | null;
+
 export function AccountOptionsMenu({
   targetId,
+  targetName,
   conversationId,
   isMuted,
   isPinned,
@@ -46,7 +51,9 @@ export function AccountOptionsMenu({
 }: AccountOptionsMenuProps) {
   const [open, setOpen] = useState(false);
   const [showReport, setShowReport] = useState(false);
+  const [pendingConfirm, setPendingConfirm] = useState<PendingConfirm>(null);
   const menuRef = useRef<HTMLDivElement>(null);
+  const name = targetName || "this citizen";
 
   useEffect(() => {
     if (!open) return;
@@ -66,18 +73,25 @@ export function AccountOptionsMenu({
 
   const handleUnfollow = () => {
     setOpen(false);
-    onUnfollow?.();
+    setPendingConfirm("unfollow");
   };
 
   const handleBlock = () => {
     setOpen(false);
-    onBlock?.();
+    setPendingConfirm("block");
   };
 
   const handleDeleteChat = () => {
     if (!conversationId) return;
     setOpen(false);
-    onDeleteChat?.();
+    setPendingConfirm("deleteChat");
+  };
+
+  const confirmPending = () => {
+    if (pendingConfirm === "unfollow") onUnfollow?.();
+    else if (pendingConfirm === "block") onBlock?.();
+    else if (pendingConfirm === "deleteChat") onDeleteChat?.();
+    setPendingConfirm(null);
   };
 
   const handleToggleMute = () => {
@@ -200,6 +214,34 @@ export function AccountOptionsMenu({
           targetType="user"
           targetId={targetId}
           onClose={() => setShowReport(false)}
+        />
+      )}
+
+      {pendingConfirm && (
+        <ConfirmModal
+          title={
+            pendingConfirm === "unfollow"
+              ? "Unfollow?"
+              : pendingConfirm === "block"
+                ? "Block this citizen?"
+                : "Delete this chat?"
+          }
+          description={
+            pendingConfirm === "unfollow"
+              ? `You'll stop following ${name}. You can follow them again anytime.`
+              : pendingConfirm === "block"
+                ? `${name} won't be able to message you or see your posts. You can unblock them anytime.`
+                : "This removes the chat from your list. The other person keeps their side, and it comes back the next time either of you sends a message."
+          }
+          confirmLabel={
+            pendingConfirm === "unfollow"
+              ? "Unfollow"
+              : pendingConfirm === "block"
+                ? "Block"
+                : "Delete"
+          }
+          onConfirm={confirmPending}
+          onClose={() => setPendingConfirm(null)}
         />
       )}
     </div>

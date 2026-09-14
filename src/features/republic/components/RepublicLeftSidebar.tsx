@@ -14,26 +14,28 @@ interface RepublicLeftSidebarProps {
 }
 
 /**
- * Sticky left sidebar for the Republic feed page.
+ * Left sidebar content for the Republic feed page (profile card, Partner
+ * Resource Pool, shortcut links).
  *
- * Memoized so the left column (profile card, Partner Resource Pool, shortcut
- * links) doesn't re-render — and visibly flicker/reflow, since it's sticky
- * with a blurred background — on every scroll-triggered post load, search
- * keystroke, or sort toggle in the feed next to it. Takes no props tied to
- * feed state, so it never has a reason to re-render after mount.
+ * Deliberately a plain `w-full` container, not its own fixed-width/sticky/
+ * scrolling `<aside>` — the page (`app/republic/page.tsx`) already wraps
+ * this in an `<aside w-[280px] overflow-y-auto>` that owns sizing and
+ * independent scroll for this column. An earlier version of this component
+ * declared its own conflicting width (`w-64 xl:w-80`, wider than the
+ * parent's 280px at the `xl` breakpoint) and its own sticky/overflow rules,
+ * which fought the outer aside and spilled content past the column's right
+ * edge, clipped by each card's own `overflow-hidden`.
  *
- * `md:max-h-[calc(100vh-8.25rem)] md:overflow-y-auto` bounds the sticky
- * column to the viewport and scrolls its own overflow internally (the inline
- * equipment map can make this column taller than the screen) — without a cap,
- * `position: sticky` pins the *whole* oversized column to the top of the
- * viewport while the much taller feed column scrolls, leaving anything past
- * the first screenful of the sidebar stuck below the fold.
+ * Memoized so this column doesn't re-render on every scroll-triggered post
+ * load, search keystroke, or sort toggle in the feed next to it — it takes
+ * no props tied to feed state, so it never has a reason to re-render after
+ * mount.
  */
 export const RepublicLeftSidebar = memo(function RepublicLeftSidebar({
   mapSlot,
 }: RepublicLeftSidebarProps) {
   return (
-    <aside className="hidden md:block w-64 xl:w-80 shrink-0 md:sticky md:top-[8.25rem] md:self-start md:max-h-[calc(100vh-8.25rem)] md:overflow-y-auto space-y-4 h-fit [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
+    <div className="w-full space-y-4">
       {/* Direct Back to Home link */}
       <Link
         href="/"
@@ -56,6 +58,6 @@ export const RepublicLeftSidebar = memo(function RepublicLeftSidebar({
 
       {/* Quick Republic Resource Links */}
       <RepublicShortcutsCard />
-    </aside>
+    </div>
   );
 });

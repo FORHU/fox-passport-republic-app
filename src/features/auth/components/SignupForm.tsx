@@ -8,7 +8,7 @@ import { Loader2 } from "lucide-react";
 import { useSignup } from "@/features/auth/hooks/useAuth";
 import { signupSchema, SignupFormData } from "@/shared/lib/schema";
 import { useAuthStore } from "@/shared/auth/useAuthStore";
-import { config } from "@/shared/lib/config";
+import { config, getBrowserApiUrl } from "@/shared/lib/config";
 
 import { toast } from "sonner";
 
@@ -16,7 +16,15 @@ import { toast } from "sonner";
 const SocialButtons = () => (
   <div className="grid grid-cols-2 gap-3 mb-4 sm:mb-6">
     <a
+      // `config.apiUrl` is only the no-JS/SSR fallback (identical on server
+      // and client, so hydration never mismatches this attribute) — the
+      // click handler overrides it with the host this page actually
+      // loaded from, same reasoning as LoginForm's identical button.
       href={`${config.apiUrl}/auth/google`}
+      onClick={(e) => {
+        e.preventDefault();
+        window.location.href = `${getBrowserApiUrl()}/auth/google?origin=${encodeURIComponent(window.location.origin)}`;
+      }}
       className="group flex items-center justify-center gap-2 sm:gap-3 py-2 sm:py-3 px-3 sm:px-4 rounded-xl bg-white/5 border border-white/10 hover:bg-white hover:text-black hover:border-white transition-all duration-300"
     >
       <svg
