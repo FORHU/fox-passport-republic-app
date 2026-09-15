@@ -17,6 +17,7 @@ import { RepublicMobileControlBar } from "@/features/republic/components/Republi
 import FollowingWidgetSection from "./FollowingWidgetSection";
 import PartnerInventoryMap from "@/features/investment/components/PartnerInventoryMap";
 import LandingHeader from "@/features/landing/components/sections/LandingHeader";
+import { SharePostModal } from "@/features/messages/components/SharePostModal";
 
 const VALID_TABS: FeedTab[] = ["all", "community", "marketplace", "partners"];
 
@@ -254,11 +255,11 @@ function RepublicFeedContent() {
   }, []);
 
   return (
-    <div className="h-[100dvh] min-h-0 overflow-hidden flex flex-col bg-[#09090e] text-white pt-16 sm:pt-28 selection:bg-lime-400 selection:text-black">
+    <div className="min-h-screen flex flex-col bg-[#09090e] text-white pt-16 sm:pt-28 selection:bg-lime-400 selection:text-black">
       {/* ── SAME FLOATING PILL HEADER USED ON / , /search, /venues/map ──────── */}
       <LandingHeader />
 
-      <div className="max-w-[1440px] mx-auto px-3 sm:px-6 w-full flex-1 min-h-0 flex flex-col overflow-hidden">
+      <div className="max-w-[1440px] mx-auto px-3 sm:px-6 w-full flex-1 flex flex-col">
         {/* Mobile controls stay fixed within the viewport */}
         <RepublicMobileControlBar
           activeTab={activeTab}
@@ -267,12 +268,11 @@ function RepublicFeedContent() {
         />
 
         {/* Main three-column layout */}
-        <div className="flex flex-col md:flex-row gap-6 items-start justify-center pt-5 flex-1 min-h-0 overflow-hidden">
+        <div className="flex flex-col md:flex-row gap-6 items-start justify-center pt-5 flex-1">
           {/* LEFT SIDEBAR
-              - Independent scrolling
-              - Does not expand the page
-              - Remains contained within viewport */}
-          <aside className="hidden md:block h-full min-h-0 w-[320px] shrink-0 overflow-y-auto overscroll-contain custom-scrollbar pr-2 pb-12">
+              - Sticky under the fixed header
+              - The page itself scrolls (single scrollbar on the right edge) */}
+          <aside className="hidden md:block w-[320px] shrink-0 sticky top-28 pr-2 pb-12">
             <RepublicLeftSidebar
               mapSlot={
                 <PartnerInventoryMap className="h-[360px] w-full rounded-2xl overflow-hidden" />
@@ -280,11 +280,8 @@ function RepublicFeedContent() {
             />
           </aside>
 
-          {/* CENTER FEED
-              - Facebook-style primary scroll area
-              - Only the feed moves
-              - Page/body does not scroll */}
-          <main className="flex-1 min-w-0 min-h-0 max-w-2xl xl:max-w-2xl w-full h-full overflow-y-auto overscroll-contain custom-scrollbar px-1 pb-12">
+          {/* CENTER FEED — scrolls with the page */}
+          <main className="flex-1 min-w-0 max-w-2xl xl:max-w-2xl w-full px-1 pb-12">
             {/* Search Input */}
             <div className="relative z-30 backdrop-blur-xl bg-zinc-950/90 border border-zinc-800/90 rounded-2xl p-2 sm:p-2.5 shadow-[0_10px_35px_rgba(0,0,0,0.7)]">
               <form
@@ -398,6 +395,9 @@ function RepublicFeedContent() {
                       onPostDeleted={(id) => {
                         setPosts((prev) => prev.filter((p) => p.id !== id));
                       }}
+                      renderShareModal={(postToShare, onClose) => (
+                        <SharePostModal post={postToShare} onClose={onClose} />
+                      )}
                     />
                   ))}
 
@@ -433,10 +433,8 @@ function RepublicFeedContent() {
             </div>
           </main>
 
-          {/* RIGHT SIDEBAR
-              - Independent contained scrolling
-              - Does not affect page height */}
-          <aside className="hidden xl:block h-full min-h-0 w-[320px] shrink-0 overflow-y-auto overscroll-contain custom-scrollbar pl-2 pb-12">
+          {/* RIGHT SIDEBAR — sticky under the fixed header */}
+          <aside className="hidden xl:block w-[320px] shrink-0 sticky top-28 pl-2 pb-12">
             <RepublicRightSidebar>
               <FollowingWidgetSection />
             </RepublicRightSidebar>
