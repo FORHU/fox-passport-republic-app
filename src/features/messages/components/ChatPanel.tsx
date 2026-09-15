@@ -130,6 +130,7 @@ function EditableCaption({
   onCancel,
   bubbleClassName,
   mentionCandidates,
+  mentionClassName,
 }: {
   message: Message;
   isEditing: boolean;
@@ -143,6 +144,10 @@ function EditableCaption({
   /** Group conversations only — the closed set of names @mentions in this
    * message's content can match against. See renderNamedMentions. */
   mentionCandidates?: MentionableUser[];
+  /** Overrides renderNamedMentions' default lime-on-dark styling — needed on
+   * the lime `bg-[#ccff00]` bubble ("mine"), where lime-on-lime text is
+   * nearly unreadable. */
+  mentionClassName?: string;
 }) {
   if (isEditing) {
     return (
@@ -173,7 +178,11 @@ function EditableCaption({
   return (
     <p className={bubbleClassName}>
       {mentionCandidates?.length
-        ? renderNamedMentions(message.content, mentionCandidates)
+        ? renderNamedMentions(
+            message.content,
+            mentionCandidates,
+            mentionClassName,
+          )
         : message.content}
       {message.editedAt && (
         <span className="ml-1 text-[9px] opacity-50">(edited)</span>
@@ -1553,6 +1562,11 @@ export default function ChatPanel({
                           onSave={handleSaveEdit}
                           onCancel={handleCancelEdit}
                           mentionCandidates={mentionCandidates}
+                          mentionClassName={
+                            isMine
+                              ? "font-bold text-black underline decoration-black/40 hover:decoration-black"
+                              : undefined
+                          }
                           bubbleClassName={`mt-1 rounded-2xl px-3 py-2 text-xs whitespace-pre-wrap break-words ${
                             isMine
                               ? "bg-[#ccff00] text-black rounded-br-sm"
@@ -1659,6 +1673,11 @@ export default function ChatPanel({
                           onSave={handleSaveEdit}
                           onCancel={handleCancelEdit}
                           mentionCandidates={mentionCandidates}
+                          mentionClassName={
+                            isMine
+                              ? "font-bold text-black underline decoration-black/40 hover:decoration-black"
+                              : undefined
+                          }
                           bubbleClassName={`mt-1 rounded-2xl px-3 py-2 text-xs whitespace-pre-wrap break-words ${
                             isMine
                               ? "bg-[#ccff00] text-black rounded-br-sm"
@@ -1758,6 +1777,11 @@ export default function ChatPanel({
                           onSave={handleSaveEdit}
                           onCancel={handleCancelEdit}
                           mentionCandidates={mentionCandidates}
+                          mentionClassName={
+                            isMine
+                              ? "font-bold text-black underline decoration-black/40 hover:decoration-black"
+                              : undefined
+                          }
                           bubbleClassName="whitespace-pre-wrap break-words"
                         />
                         <p

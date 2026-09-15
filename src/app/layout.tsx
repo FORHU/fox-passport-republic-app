@@ -3,6 +3,7 @@ import { Suspense } from "react";
 import "cesium/Build/Cesium/Widgets/widgets.css";
 import "./globals.css";
 import { Toaster } from "sonner";
+import { CheckCircle2, XCircle, Info, AlertTriangle, Loader2 } from "lucide-react";
 
 // Import the Modal Component
 import AuthModal from "@/features/auth/components/AuthModal";
@@ -61,8 +62,27 @@ export default function RootLayout({
             <NavigationOverlay />
           </Suspense>
 
-          {/* 2. Add the Toaster here. 'richColors' gives you green for success/red for error automatically. */}
-          <Toaster position="top-center" richColors />
+          {/* Notifications surface bottom-right — out of the way of the fixed
+              header/bell and the content the user is actually reading —
+              styled as an on-brand glass card instead of sonner's default
+              richColors red/green/blue. */}
+          <Toaster
+            position="bottom-right"
+            gap={10}
+            offset={20}
+            toastOptions={{
+              duration: 4000,
+              className: "!bg-[#13141f] !border !border-white/10 !text-white !shadow-[0_10px_35px_rgba(0,0,0,0.55)] !rounded-2xl",
+              descriptionClassName: "!text-zinc-400",
+            }}
+            icons={{
+              success: <CheckCircle2 className="h-[18px] w-[18px] text-lime-400" strokeWidth={2} />,
+              error: <XCircle className="h-[18px] w-[18px] text-red-400" strokeWidth={2} />,
+              info: <Info className="h-[18px] w-[18px] text-zinc-300" strokeWidth={2} />,
+              warning: <AlertTriangle className="h-[18px] w-[18px] text-amber-400" strokeWidth={2} />,
+              loading: <Loader2 className="h-[18px] w-[18px] text-lime-400 animate-spin" strokeWidth={2} />,
+            }}
+          />
 
           {/* 3. Your Auth Modal sits here */}
           <AuthModal />
