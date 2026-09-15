@@ -3,6 +3,7 @@
 import { useEffect } from "react";
 import { FeedPost } from "../types";
 import { PostCard } from "./PostCard";
+import { SharePostModal } from "@/features/messages/components/SharePostModal";
 
 interface PostDetailModalProps {
   post: FeedPost;
@@ -52,7 +53,14 @@ export function PostDetailModal({
           </button>
         </div>
         <div className="p-4 sm:p-5">
-          <PostCard post={post} variant="modal" onPostDeleted={onPostDeleted} />
+          <PostCard
+            post={post}
+            variant="modal"
+            onPostDeleted={onPostDeleted}
+            renderShareModal={(postToShare, onCloseShare) => (
+              <SharePostModal post={postToShare} onClose={onCloseShare} />
+            )}
+          />
         </div>
       </div>
     </div>

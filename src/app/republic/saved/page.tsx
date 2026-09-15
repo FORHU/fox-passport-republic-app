@@ -8,6 +8,7 @@ import { getSavedPosts } from "@/shared/api/feed";
 import { PostCard } from "@/features/republic/components/PostCard";
 import { PostDetailModal } from "@/features/republic/components/PostDetailModal";
 import LandingHeader from "@/features/landing/components/sections/LandingHeader";
+import { SharePostModal } from "@/features/messages/components/SharePostModal";
 
 export default function SavedPostsPage() {
   const [posts, setPosts] = useState<FeedPost[]>([]);
@@ -132,6 +133,9 @@ export default function SavedPostsPage() {
                 onOpenDetail={setActivePost}
                 onPostDeleted={handleUnsaved}
                 onPostUnsaved={handleUnsaved}
+                renderShareModal={(postToShare, onClose) => (
+                  <SharePostModal post={postToShare} onClose={onClose} />
+                )}
               />
             ))}
 

@@ -331,7 +331,7 @@ export function ComposePostBox({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!content.trim() || submitting) return;
+    if ((!content.trim() && mediaUrls.length === 0) || submitting) return;
     if (resourceConfig && !resourceId) {
       setError(`Select a ${resourceConfig.label.toLowerCase()} to spotlight.`);
       return;
@@ -671,7 +671,7 @@ export function ComposePostBox({
           <button
             type="submit"
             disabled={
-              !content.trim() ||
+              (!content.trim() && mediaUrls.length === 0) ||
               submitting ||
               uploading ||
               !isPollValid ||
