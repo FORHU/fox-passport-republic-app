@@ -12,6 +12,7 @@ import {
   type SystemRole,
 } from "@/shared/constants/roles";
 import { changeRoleTypes, changeSystemRole } from "@/features/admin/api/roles";
+import { StyledSelect } from "@/shared/components/ui/StyledSelect";
 
 const SYSTEM_ROLE_LABEL: Record<SystemRole, string> = {
   user: "Citizen",
@@ -131,18 +132,16 @@ export function RoleAssignmentControls({
               System role
             </label>
             <div className="flex items-center gap-2">
-              <select
+              <StyledSelect
                 id={`system-role-${citizen.id}`}
                 value={systemRole}
-                onChange={(e) => setSystemRole(e.target.value as SystemRole)}
-                className="bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-[12px] text-white focus:border-accent outline-none"
-              >
-                {SYSTEM_ROLES.map((r) => (
-                  <option key={r} value={r}>
-                    {SYSTEM_ROLE_LABEL[r]}
-                  </option>
-                ))}
-              </select>
+                onChange={(v) => setSystemRole(v as SystemRole)}
+                options={SYSTEM_ROLES.map((r) => ({
+                  value: r,
+                  label: SYSTEM_ROLE_LABEL[r],
+                }))}
+                className="py-2 text-[12px] w-auto min-w-40"
+              />
               <button
                 type="button"
                 disabled={!roleDirty || roleMutation.isPending}

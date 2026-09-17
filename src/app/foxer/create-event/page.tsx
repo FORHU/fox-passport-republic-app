@@ -25,6 +25,7 @@ export default function EventCreationBuilder() {
     eventTitle,
     description,
     category,
+    categoryOther,
     date,
     location,
     maxAttendees,
@@ -46,6 +47,7 @@ export default function EventCreationBuilder() {
     setEventTitle,
     setDescription,
     setCategory,
+    setCategoryOther,
     setDate,
     setLocation,
     setTargetCity,
@@ -111,11 +113,12 @@ export default function EventCreationBuilder() {
           />
 
           <main className="flex-1 overflow-y-auto p-4 sm:p-6 md:p-8 bg-[#02040a] flex gap-8">
-            <div className="flex-1 max-w-4xl mx-auto space-y-6 sm:space-y-8 pb-12 sm:pb-0">
+            <div className="flex-1 min-w-0 space-y-6 sm:space-y-8 pb-12 sm:pb-0">
               <EventDetailsForm
                 eventTitle={eventTitle}
                 description={description}
                 category={category}
+                categoryOther={categoryOther}
                 date={date}
                 location={location}
                 maxAttendees={maxAttendees}
@@ -124,6 +127,7 @@ export default function EventCreationBuilder() {
                 onTitleChange={setEventTitle}
                 onDescriptionChange={setDescription}
                 onCategoryChange={setCategory}
+                onCategoryOtherChange={setCategoryOther}
                 onDateChange={setDate}
                 onLocationChange={setLocation}
                 onTargetCityChange={setTargetCity}
@@ -160,9 +164,11 @@ export default function EventCreationBuilder() {
           <EventBlueprint
             targetMargin={targetMargin}
             baseCost={financials.baseCost}
+            listingCost={financials.listingCost}
             suggestedPrice={financials.suggestedPrice}
             venueCost={financials.venueCost}
             talentCost={financials.talentCost}
+            serviceCost={financials.serviceCost}
             blueprintHealth={blueprintHealth}
             onMarginChange={setTargetMargin}
             onPreview={handlePreview}
@@ -204,9 +210,11 @@ export default function EventCreationBuilder() {
                 <EventBlueprint
                   targetMargin={targetMargin}
                   baseCost={financials.baseCost}
+                  listingCost={financials.listingCost}
                   suggestedPrice={financials.suggestedPrice}
                   venueCost={financials.venueCost}
                   talentCost={financials.talentCost}
+                  serviceCost={financials.serviceCost}
                   blueprintHealth={blueprintHealth}
                   onMarginChange={setTargetMargin}
                   onPreview={handlePreview}

@@ -6,16 +6,29 @@ import {
   VENUE_TYPES,
 } from "@/features/venue/data/venueBuilderData";
 import CancellationPolicyPicker from "@/shared/components/ui/CancellationPolicyPicker";
+import { StyledSelect } from "@/shared/components/ui/StyledSelect";
+import SearchableDropdown from "@/shared/components/ui/SearchableDropdown";
+import { COUNTRIES, COUNTRY_CODES } from "@/shared/data/countries";
 import {
-  MapboxLocationInput,
-  MapboxContextItem,
-} from "@/shared/components/ui/MapboxLocationInput";
+  STATIC_CITY_LISTS,
+  STATIC_REGION_LISTS,
+} from "@/shared/data/locationLists";
+import {
+  PH_CITY_TO_PROVINCE,
+  PH_TOWNS_BY_PROVINCE,
+} from "@/shared/data/location";
+import {
+  searchCitiesInCountry,
+  searchRegionsInCountry,
+  geocodeCountryCenter,
+} from "@/shared/lib/geocoding";
 import { VenuePolygonMapPicker } from "@/features/venue/components/venue-builder/VenuePolygonMapPicker";
 
 interface VenueDetailsFormProps {
   venueName: string;
   description: string;
   venueType: string;
+  venueTypeOther: string;
   capacity: string;
   location: string;
   city: string;
@@ -31,6 +44,7 @@ interface VenueDetailsFormProps {
   onNameChange: (name: string) => void;
   onDescriptionChange: (desc: string) => void;
   onTypeChange: (type: string) => void;
+  onTypeOtherChange: (type: string) => void;
   onCapacityChange: (cap: string) => void;
   onLocationChange: (loc: string) => void;
   onCityChange: (city: string) => void;
@@ -48,6 +62,7 @@ export function VenueDetailsForm({
   venueName,
   description,
   venueType,
+  venueTypeOther,
   capacity,
   location,
   city,
@@ -63,6 +78,7 @@ export function VenueDetailsForm({
   onNameChange,
   onDescriptionChange,
   onTypeChange,
+  onTypeOtherChange,
   onCapacityChange,
   onLocationChange,
   onCityChange,
@@ -75,6 +91,14 @@ export function VenueDetailsForm({
   onRemoveImage,
   onCloseGuide,
 }: VenueDetailsFormProps) {
+  const isPH = country === "Philippines";
+  // Once a province is picked, the city list narrows to just that
+  // province's towns instead of the generic curated major-cities list.
+  const isPHProvinceScoped = isPH && Boolean(state && PH_TOWNS_BY_PROVINCE[state]);
+  const cityOptions = isPHProvinceScoped
+    ? PH_TOWNS_BY_PROVINCE[state]
+    : STATIC_CITY_LISTS[country];
+
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const openFilePicker = useCallback(() => {
@@ -119,7 +143,7 @@ export function VenueDetailsForm({
 
       {/* Form */}
       <div className="relative rounded-[2rem] overflow-hidden border border-white/10 bg-[#0f111a] p-8">
-        <div className="max-w-4xl space-y-8">
+        <div className="space-y-8">
           <div className="space-y-6">
             {/* Venue Name */}
             <div>
@@ -146,20 +170,21 @@ export function VenueDetailsForm({
                 <label className="text-[10px] uppercase font-bold text-white/40 tracking-widest mb-2 block">
                   Type
                 </label>
-                <select
+                <StyledSelect
                   value={venueType}
-                  onChange={(e) => onTypeChange(e.target.value)}
-                  className="w-full bg-white/5 border border-white/5 rounded-xl px-4 py-3 text-sm text-white appearance-none cursor-pointer"
-                >
-                  <option value="" className="bg-[#0f111a]">
-                    Select...
-                  </option>
-                  {VENUE_TYPES.map((t) => (
-                    <option key={t} value={t} className="bg-[#0f111a]">
-                      {t}
-                    </option>
-                  ))}
-                </select>
+                  onChange={onTypeChange}
+                  options={VENUE_TYPES}
+                  placeholder="Select..."
+                />
+                {venueType === "Other" && (
+                  <input
+                    type="text"
+                    value={venueTypeOther}
+                    onChange={(e) => onTypeOtherChange(e.target.value)}
+                    placeholder="Please specify the venue type..."
+                    className="w-full mt-2 bg-white/5 border border-white/5 rounded-xl px-4 py-3 text-sm text-white placeholder-white/30 focus:border-accent/30 outline-none transition-colors"
+                  />
+                )}
               </div>
               <div className="flex-1">
                 <label className="text-[10px] uppercase font-bold text-white/40 tracking-widest mb-2 block">
@@ -197,44 +222,64 @@ export function VenueDetailsForm({
               </div>
             </div>
 
-            {/* Country, City, State */}
+            {/* Country, City, State — Country drives what's offered in the
+                other two: a curated static list where we have one (the
+                Philippines, plus the US/Europe for cities), live Mapbox
+                search scoped to the chosen country otherwise. */}
             <div className="grid grid-cols-3 gap-4">
               <div className="relative">
                 <label className="text-[10px] uppercase font-bold text-white/40 tracking-widest mb-2 block">
                   Country
                 </label>
-                <MapboxLocationInput
+                <SearchableDropdown
                   value={country}
-                  onChange={onCountryChange}
-                  type="country"
-                  placeholder="Country"
-                  onSelect={(val: string) => onCountryChange(val)}
+                  options={COUNTRIES}
+                  placeholder="Select country..."
+                  searchPlaceholder="Search countries..."
+                  onChange={(val) => {
+                    onCountryChange(val);
+                    onCityChange("");
+                    onStateChange("");
+                    const code = val ? COUNTRY_CODES[val] : undefined;
+                    if (code) {
+                      geocodeCountryCenter(code).then((center) => {
+                        if (center) onLatLngChange(center[1], center[0]);
+                      });
+                    }
+                  }}
                 />
               </div>
               <div className="relative">
                 <label className="text-[10px] uppercase font-bold text-white/40 tracking-widest mb-2 block">
                   City
                 </label>
-                <MapboxLocationInput
+                <SearchableDropdown
+                  key={`${country}-${isPHProvinceScoped ? state : ""}`}
                   value={city}
-                  onChange={onCityChange}
-                  type="place"
-                  placeholder="City"
-                  onSelect={(
-                    val: string,
-                    context?: MapboxContextItem[],
-                    center?: [number, number],
-                  ) => {
+                  disabled={!country}
+                  options={cityOptions}
+                  asyncSearch={
+                    !cityOptions && COUNTRY_CODES[country]
+                      ? (q) => searchCitiesInCountry(q, COUNTRY_CODES[country])
+                      : undefined
+                  }
+                  asyncHint="Type at least 2 letters..."
+                  placeholder={
+                    country ? "Select city..." : "Select a country first"
+                  }
+                  searchPlaceholder="Search cities..."
+                  onChange={(val) => {
                     onCityChange(val);
-                    const region = context?.find((c) =>
-                      c.id.startsWith("region"),
-                    )?.text;
-                    const countryName = context?.find((c) =>
-                      c.id.startsWith("country"),
-                    )?.text;
-                    if (region) onStateChange(region);
-                    if (countryName) onCountryChange(countryName);
-                    if (center) onLatLngChange(center[1], center[0]); // center is [lng, lat]
+                    // The Philippines is the one country we have a real
+                    // city -> province mapping for, so picking a city there
+                    // resolves the correct province automatically instead of
+                    // leaving it to an unrelated alphabetical list.
+                    if (isPH) {
+                      const province = PH_CITY_TO_PROVINCE[val];
+                      if (province && province !== state) {
+                        onStateChange(province);
+                      }
+                    }
                   }}
                 />
               </div>
@@ -242,18 +287,38 @@ export function VenueDetailsForm({
                 <label className="text-[10px] uppercase font-bold text-white/40 tracking-widest mb-2 block">
                   State/Province
                 </label>
-                <MapboxLocationInput
+                <SearchableDropdown
+                  key={country || "no-country"}
                   value={state}
-                  onChange={onStateChange}
-                  type="region"
-                  placeholder="State/Province"
-                  onSelect={(val: string, context?: MapboxContextItem[]) => {
+                  disabled={!country}
+                  options={STATIC_REGION_LISTS[country]}
+                  asyncSearch={
+                    !STATIC_REGION_LISTS[country] && COUNTRY_CODES[country]
+                      ? (q) =>
+                          searchRegionsInCountry(q, COUNTRY_CODES[country])
+                      : undefined
+                  }
+                  asyncHint="Type at least 2 letters..."
+                  onChange={(val) => {
                     onStateChange(val);
-                    const countryName = context?.find((c) =>
-                      c.id.startsWith("country"),
-                    )?.text;
-                    if (countryName) onCountryChange(countryName);
+                    // Narrowing/changing the province can leave a
+                    // previously-picked city stranded in the wrong one —
+                    // clear it rather than show a mismatched pair.
+                    if (
+                      isPH &&
+                      city &&
+                      val &&
+                      !(PH_TOWNS_BY_PROVINCE[val] ?? []).includes(city)
+                    ) {
+                      onCityChange("");
+                    }
                   }}
+                  placeholder={
+                    country
+                      ? "Select state/province..."
+                      : "Select a country first"
+                  }
+                  searchPlaceholder="Search states/provinces..."
                 />
               </div>
             </div>

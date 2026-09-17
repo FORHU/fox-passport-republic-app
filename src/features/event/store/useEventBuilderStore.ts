@@ -10,6 +10,8 @@ interface EventBuilderState {
   eventTitle: string;
   description: string;
   category: string;
+  /** Free-text category when `category` is "Other". */
+  categoryOther: string;
   date: string;
   location: string;
   targetCity: string;
@@ -39,6 +41,7 @@ interface EventBuilderState {
   setEventTitle: (title: string) => void;
   setDescription: (desc: string) => void;
   setCategory: (cat: string) => void;
+  setCategoryOther: (cat: string) => void;
   setDate: (date: string) => void;
   setLocation: (loc: string) => void;
   setTargetCity: (city: string) => void;
@@ -85,6 +88,7 @@ const initialState = {
   eventTitle: "",
   description: "",
   category: "",
+  categoryOther: "",
   date: "",
   location: "",
   targetCity: "",
@@ -116,6 +120,7 @@ export const useEventBuilderStore = create<EventBuilderState>()(
       setEventTitle: (title) => set({ eventTitle: title }),
       setDescription: (desc) => set({ description: desc }),
       setCategory: (cat) => set({ category: cat }),
+      setCategoryOther: (cat) => set({ categoryOther: cat }),
       setDate: (date) => set({ date: date }),
       setLocation: (loc) => set({ location: loc }),
       setTargetCity: (city) => set({ targetCity: city }),
@@ -187,6 +192,7 @@ export const useEventBuilderStore = create<EventBuilderState>()(
         eventTitle: state.eventTitle,
         description: state.description,
         category: state.category,
+        categoryOther: state.categoryOther,
         date: state.date,
         location: state.location,
         targetCity: state.targetCity,

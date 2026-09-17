@@ -8,11 +8,14 @@ interface VenueNavHeaderProps {
   title: string;
   onBack: () => void;
   onProposePartnership?: () => void;
+  /** Shown instead of "Propose Partnership" when the viewer owns this venue. */
+  onEdit?: () => void;
 }
 
 export function VenueNavHeader({
   onBack,
   onProposePartnership,
+  onEdit,
 }: VenueNavHeaderProps) {
   return (
     <header className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-md border-b border-white/5 h-14 sm:h-20 transition-all duration-300">
@@ -45,16 +48,28 @@ export function VenueNavHeader({
           </h2>
         </Link>
         <div className="flex items-center gap-4">
-          {onProposePartnership && (
+          {onEdit ? (
             <button
-              onClick={onProposePartnership}
-              className="hidden sm:flex items-center gap-2 px-4 py-2 rounded-full border border-white/10 hover:bg-[#ccff00]/10 hover:border-[#ccff00]/30 transition-colors text-sm font-medium text-white hover:text-[#ccff00] cursor-pointer"
+              onClick={onEdit}
+              className="flex items-center gap-2 px-4 py-2 rounded-full bg-accent text-black hover:brightness-110 transition-all text-sm font-bold cursor-pointer"
             >
               <span className="material-symbols-outlined text-[18px]">
-                handshake
+                edit
               </span>{" "}
-              Propose Partnership
+              <span className="hidden sm:inline">Edit Venue</span>
             </button>
+          ) : (
+            onProposePartnership && (
+              <button
+                onClick={onProposePartnership}
+                className="hidden sm:flex items-center gap-2 px-4 py-2 rounded-full border border-white/10 hover:bg-[#ccff00]/10 hover:border-[#ccff00]/30 transition-colors text-sm font-medium text-white hover:text-[#ccff00] cursor-pointer"
+              >
+                <span className="material-symbols-outlined text-[18px]">
+                  handshake
+                </span>{" "}
+                Propose Partnership
+              </button>
+            )
           )}
           <button className="hidden sm:flex items-center gap-2 px-4 py-2 rounded-full border border-white/10 hover:bg-white/5 transition-colors text-sm font-medium text-white cursor-pointer">
             <span className="material-symbols-outlined text-[18px]">share</span>{" "}

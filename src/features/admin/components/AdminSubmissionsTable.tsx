@@ -5,7 +5,11 @@ import api from "@/shared/lib/axios";
 import { toast } from "sonner";
 import { useQueryClient } from "@tanstack/react-query";
 
-type RoleStatus = "pending" | "approved" | "rejected";
+type RoleStatus =
+  | "pending"
+  | "approved"
+  | "rejected"
+  | "revision_requested";
 
 interface FileRecord {
   id: string;
@@ -30,12 +34,25 @@ interface ApplicationData {
   businessType?: string;
 }
 
+// The document field keys admins can flag and applicants resubmit — must
+// match DOCUMENT_FIELD_TO_DB_COLUMN in the API's role-request.service.ts.
+const DOCUMENT_FIELDS: { key: keyof ApplicationData; label: string }[] = [
+  { key: "validId1", label: "Primary Valid ID" },
+  { key: "nbiFile", label: "NBI Clearance" },
+  { key: "tinIdFile", label: "TIN ID / Certificate" },
+  { key: "birPermitFile", label: "BIR 2303 / Permit" },
+  { key: "selfieFile", label: "Verification Selfie" },
+  { key: "portfolioFile", label: "Portfolio / Resume" },
+];
+
 interface RoleApplication {
   id: string;
   roleType: string;
   status: RoleStatus;
   createdAt: string;
   rejectionReason?: string;
+  flaggedDocuments?: string[];
+  revisionNote?: string;
   user: { id: string; name: string; email: string };
   venueFoxerApplication?: ApplicationData;
   eventFoxerApplication?: ApplicationData;
@@ -58,12 +75,21 @@ const STATUS_STYLES: Record<RoleStatus, string> = {
   pending: "bg-yellow-500/10 text-yellow-400 border-yellow-500/20",
   approved: "bg-green-500/10 text-green-400 border-green-500/20",
   rejected: "bg-red-500/10 text-red-400 border-red-500/20",
+  revision_requested: "bg-orange-500/10 text-orange-400 border-orange-500/20",
 };
 
 const STATUS_ICONS: Record<RoleStatus, string> = {
   pending: "hourglass_top",
   approved: "check_circle",
   rejected: "cancel",
+  revision_requested: "flag",
+};
+
+const STATUS_LABELS: Record<RoleStatus, string> = {
+  pending: "Pending",
+  approved: "Approved",
+  rejected: "Rejected",
+  revision_requested: "Needs Revision",
 };
 
 function getAppData(app: RoleApplication): ApplicationData | null {
@@ -81,10 +107,12 @@ function getAppData(app: RoleApplication): ApplicationData | null {
 function DocPreview({
   label,
   file,
+  flagged,
   onPreview,
 }: {
   label: string;
   file?: FileRecord | null;
+  flagged?: boolean;
   onPreview: (file: FileRecord, label: string) => void;
 }) {
   if (!file)
@@ -100,17 +128,28 @@ function DocPreview({
     );
 
   const isPdf = file.type === "application/pdf" || file.name?.endsWith(".pdf");
+  const ringClass = flagged
+    ? "border-red-500/60 ring-1 ring-red-500/40"
+    : "border-white/10 group-hover:border-[#ccff00]/40";
 
   return (
     <div className="space-y-1">
-      <p className="text-[10px] text-white/30 uppercase tracking-wider">
+      <p className="text-[10px] uppercase tracking-wider flex items-center gap-1.5 text-white/30">
         {label}
+        {flagged && (
+          <span className="inline-flex items-center gap-0.5 text-red-400 normal-case tracking-normal font-bold">
+            <span className="material-symbols-outlined text-[12px]">
+              flag
+            </span>
+            Flagged
+          </span>
+        )}
       </p>
       {isPdf ? (
         <button
           type="button"
           onClick={() => onPreview(file, label)}
-          className="w-full h-24 rounded-xl bg-white/5 border border-white/10 flex flex-col items-center justify-center gap-2 hover:border-[#ccff00]/40 hover:bg-white/10 transition group"
+          className={`w-full h-24 rounded-xl bg-white/5 border ${ringClass} flex flex-col items-center justify-center gap-2 hover:bg-white/10 transition group`}
         >
           <span className="material-symbols-outlined text-[32px] text-red-400 group-hover:scale-110 transition-transform">
             picture_as_pdf
@@ -128,7 +167,7 @@ function DocPreview({
           <img
             src={file.url}
             alt={label}
-            className="h-24 w-full object-cover rounded-xl border border-white/10 group-hover:border-[#ccff00]/40 transition"
+            className={`h-24 w-full object-cover rounded-xl border ${ringClass} transition`}
           />
           <div className="absolute inset-0 rounded-xl bg-black/50 opacity-0 group-hover:opacity-100 transition flex items-center justify-center">
             <span className="material-symbols-outlined text-white text-[24px]">
@@ -151,6 +190,14 @@ function FilePreviewModal({
   onClose: () => void;
 }) {
   const isPdf = file.type === "application/pdf" || file.name?.endsWith(".pdf");
+
+  useEffect(() => {
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = prevOverflow;
+    };
+  }, []);
 
   return (
     <div
@@ -218,7 +265,7 @@ function ApplicationDetailDrawer({
   app: RoleApplication;
   onClose: () => void;
   onApprove: (id: string) => void;
-  onReject: (id: string) => void;
+  onReject: (app: RoleApplication) => void;
   processing: boolean;
 }) {
   const data = getAppData(app);
@@ -226,6 +273,14 @@ function ApplicationDetailDrawer({
     file: FileRecord;
     label: string;
   } | null>(null);
+
+  useEffect(() => {
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = prevOverflow;
+    };
+  }, []);
 
   return (
     <div
@@ -252,7 +307,7 @@ function ApplicationDetailDrawer({
               <span className="material-symbols-outlined text-[13px]">
                 {STATUS_ICONS[app.status]}
               </span>
-              {app.status.charAt(0).toUpperCase() + app.status.slice(1)}
+              {STATUS_LABELS[app.status]}
             </span>
             <button
               onClick={onClose}
@@ -364,21 +419,25 @@ function ApplicationDetailDrawer({
                   <DocPreview
                     label="Primary Valid ID"
                     file={data.validId1}
+                    flagged={app.flaggedDocuments?.includes("validId1")}
                     onPreview={(file, label) => setPreviewFile({ file, label })}
                   />
                   <DocPreview
                     label="NBI Clearance"
                     file={data.nbiFile}
+                    flagged={app.flaggedDocuments?.includes("nbiFile")}
                     onPreview={(file, label) => setPreviewFile({ file, label })}
                   />
                   <DocPreview
                     label="TIN ID / Certificate"
                     file={data.tinIdFile}
+                    flagged={app.flaggedDocuments?.includes("tinIdFile")}
                     onPreview={(file, label) => setPreviewFile({ file, label })}
                   />
                   <DocPreview
                     label="BIR 2303 / Permit"
                     file={data.birPermitFile}
+                    flagged={app.flaggedDocuments?.includes("birPermitFile")}
                     onPreview={(file, label) => setPreviewFile({ file, label })}
                   />
                 </div>
@@ -389,17 +448,36 @@ function ApplicationDetailDrawer({
                 <DocPreview
                   label="Verification Selfie"
                   file={data.selfieFile}
+                  flagged={app.flaggedDocuments?.includes("selfieFile")}
                   onPreview={(file, label) => setPreviewFile({ file, label })}
                 />
                 {data.portfolioFile !== undefined && (
                   <DocPreview
                     label="Portfolio / Resume"
                     file={data.portfolioFile}
+                    flagged={app.flaggedDocuments?.includes("portfolioFile")}
                     onPreview={(file, label) => setPreviewFile({ file, label })}
                   />
                 )}
               </div>
             </>
+          )}
+
+          {app.status === "revision_requested" && (
+            <div className="bg-orange-500/10 border border-orange-500/20 rounded-xl p-4">
+              <p className="text-xs text-orange-400/60 uppercase tracking-wider mb-1">
+                Needs revision — flagged above
+              </p>
+              {app.revisionNote && (
+                <p className="text-orange-300 text-sm">
+                  &quot;{app.revisionNote}&quot;
+                </p>
+              )}
+              <p className="text-orange-300/50 text-xs mt-2">
+                Only the flagged documents need to be replaced — the rest of
+                the application stands.
+              </p>
+            </div>
           )}
 
           {app.status === "rejected" && app.rejectionReason && (
@@ -425,11 +503,11 @@ function ApplicationDetailDrawer({
               Approve
             </button>
             <button
-              onClick={() => onReject(app.id)}
+              onClick={() => onReject(app)}
               disabled={processing}
               className="flex-1 py-3 rounded-xl bg-red-500/20 text-red-400 font-bold text-sm hover:bg-red-500/30 transition disabled:opacity-50"
             >
-              Reject
+              Reject / Flag Documents
             </button>
           </div>
         )}
@@ -453,8 +531,20 @@ export const AdminSubmissionsTable: React.FC = () => {
   const [filter, setFilter] = useState<"all" | RoleStatus>("all");
   const [processingId, setProcessingId] = useState<string | null>(null);
   const [selectedApp, setSelectedApp] = useState<RoleApplication | null>(null);
-  const [rejectModal, setRejectModal] = useState<{ id: string } | null>(null);
-  const [rejectionReason, setRejectionReason] = useState("");
+  const [rejectModal, setRejectModal] = useState<RoleApplication | null>(
+    null,
+  );
+  const [flaggedDocs, setFlaggedDocs] = useState<Set<string>>(new Set());
+  const [reviewNote, setReviewNote] = useState("");
+
+  useEffect(() => {
+    if (!rejectModal) return;
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = prevOverflow;
+    };
+  }, [rejectModal]);
 
   const fetchApplications = async () => {
     try {
@@ -496,30 +586,64 @@ export const AdminSubmissionsTable: React.FC = () => {
     }
   };
 
-  const handleReject = async () => {
+  const closeRejectModal = () => {
+    setRejectModal(null);
+    setFlaggedDocs(new Set());
+    setReviewNote("");
+  };
+
+  // "Request Revision" flags only the picked documents — everything else on
+  // the application stands, and the applicant only has to replace those.
+  const handleRequestRevision = async () => {
+    if (!rejectModal || flaggedDocs.size === 0) return;
+    const id = rejectModal.id;
+    const documentList = Array.from(flaggedDocs);
+    setProcessingId(id);
+    try {
+      await api.patch(`/role-requests/review/${id}`, {
+        status: "revision_requested",
+        flaggedDocuments: documentList,
+        revisionNote: reviewNote,
+      });
+      toast.success("Revision requested — applicant notified");
+      const patch = {
+        status: "revision_requested" as RoleStatus,
+        flaggedDocuments: documentList,
+        revisionNote: reviewNote,
+      };
+      setApplications((prev) =>
+        prev.map((a) => (a.id === id ? { ...a, ...patch } : a)),
+      );
+      setSelectedApp((prev) => (prev?.id === id ? { ...prev, ...patch } : prev));
+      closeRejectModal();
+    } catch (err: any) {
+      toast.error(err.response?.data?.message || "Failed to request revision");
+    } finally {
+      setProcessingId(null);
+    }
+  };
+
+  // Full reject — nothing carries over, the applicant has to start a fresh
+  // application for this role.
+  const handleRejectEntirely = async () => {
     if (!rejectModal) return;
     const id = rejectModal.id;
     setProcessingId(id);
     try {
       await api.patch(`/role-requests/review/${id}`, {
         status: "rejected",
-        rejectionReason,
+        rejectionReason: reviewNote,
       });
       toast.success("Application rejected");
+      const patch = {
+        status: "rejected" as RoleStatus,
+        rejectionReason: reviewNote,
+      };
       setApplications((prev) =>
-        prev.map((a) =>
-          a.id === id
-            ? { ...a, status: "rejected" as RoleStatus, rejectionReason }
-            : a,
-        ),
+        prev.map((a) => (a.id === id ? { ...a, ...patch } : a)),
       );
-      setSelectedApp((prev) =>
-        prev?.id === id
-          ? { ...prev, status: "rejected" as RoleStatus, rejectionReason }
-          : prev,
-      );
-      setRejectModal(null);
-      setRejectionReason("");
+      setSelectedApp((prev) => (prev?.id === id ? { ...prev, ...patch } : prev));
+      closeRejectModal();
     } catch (err: any) {
       toast.error(err.response?.data?.message || "Failed to reject");
     } finally {
@@ -546,17 +670,25 @@ export const AdminSubmissionsTable: React.FC = () => {
             </p>
           </div>
           <div className="flex gap-2 flex-wrap">
-            {(["all", "pending", "approved", "rejected"] as const).map((f) => (
+            {(
+              [
+                "all",
+                "pending",
+                "revision_requested",
+                "approved",
+                "rejected",
+              ] as const
+            ).map((f) => (
               <button
                 key={f}
                 onClick={() => setFilter(f)}
-                className={`px-4 py-2 rounded-full text-xs font-bold capitalize transition-colors ${
+                className={`px-4 py-2 rounded-full text-xs font-bold transition-colors ${
                   filter === f
                     ? "bg-[#ccff00] text-black"
                     : "bg-white/5 text-white/60 hover:bg-white/10 hover:text-white"
                 }`}
               >
-                {f}
+                {f === "all" ? "All" : STATUS_LABELS[f]}
               </button>
             ))}
           </div>
@@ -621,8 +753,7 @@ export const AdminSubmissionsTable: React.FC = () => {
                         <span className="material-symbols-outlined text-[13px]">
                           {STATUS_ICONS[app.status]}
                         </span>
-                        {app.status.charAt(0).toUpperCase() +
-                          app.status.slice(1)}
+                        {STATUS_LABELS[app.status]}
                       </span>
                     </td>
                   </tr>
@@ -639,43 +770,94 @@ export const AdminSubmissionsTable: React.FC = () => {
           app={selectedApp}
           onClose={() => setSelectedApp(null)}
           onApprove={(id) => handleApprove(id)}
-          onReject={(id) => {
+          onReject={(app) => {
             setSelectedApp(null);
-            setRejectModal({ id });
+            setRejectModal(app);
           }}
           processing={processingId === selectedApp.id}
         />
       )}
 
-      {/* Reject Modal */}
+      {/* Reject / Request Revision Modal */}
       {rejectModal && (
-        <div className="fixed inset-0 z-999 flex items-center justify-center bg-black/70 backdrop-blur-sm">
-          <div className="bg-[#0f111a] border border-white/10 rounded-2xl p-8 max-w-sm w-full mx-4 space-y-4">
-            <h3 className="text-white font-bold text-lg">Reject Application</h3>
-            <p className="text-white/50 text-sm">
-              Provide a reason for rejection (optional).
-            </p>
+        <div className="fixed inset-0 z-999 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
+          <div className="bg-[#0f111a] border border-white/10 rounded-2xl p-8 max-w-md w-full space-y-4 max-h-[90vh] overflow-y-auto">
+            <div>
+              <h3 className="text-white font-bold text-lg">
+                Reject or Request Revision
+              </h3>
+              <p className="text-white/50 text-sm mt-1">
+                Flag the specific documents that are wrong — only those get
+                sent back to the applicant to re-upload. Leave nothing
+                checked to reject the whole application instead.
+              </p>
+            </div>
+
+            <div className="space-y-2">
+              {DOCUMENT_FIELDS.filter(
+                ({ key }) => getAppData(rejectModal)?.[key],
+              ).map(({ key, label }) => {
+                const checked = flaggedDocs.has(key);
+                return (
+                  <label
+                    key={key}
+                    className={`flex items-center gap-3 rounded-xl border p-3 cursor-pointer transition ${
+                      checked
+                        ? "bg-red-500/10 border-red-500/40"
+                        : "bg-white/5 border-white/10 hover:border-white/20"
+                    }`}
+                  >
+                    <input
+                      type="checkbox"
+                      checked={checked}
+                      onChange={(e) =>
+                        setFlaggedDocs((prev) => {
+                          const next = new Set(prev);
+                          if (e.target.checked) next.add(key);
+                          else next.delete(key);
+                          return next;
+                        })
+                      }
+                      className="w-4 h-4 accent-red-500"
+                    />
+                    <span className="text-white text-sm">{label}</span>
+                  </label>
+                );
+              })}
+            </div>
+
             <textarea
-              value={rejectionReason}
-              onChange={(e) => setRejectionReason(e.target.value)}
-              placeholder="e.g. Incomplete documents submitted"
+              value={reviewNote}
+              onChange={(e) => setReviewNote(e.target.value)}
+              placeholder={
+                flaggedDocs.size > 0
+                  ? "Explain what's wrong with the flagged document(s)"
+                  : "Reason for rejecting the whole application"
+              }
               rows={3}
               className="w-full bg-white/5 border border-white/10 rounded-xl p-3 text-white text-sm placeholder:text-white/30 focus:outline-none focus:border-red-500/50 resize-none"
             />
-            <div className="flex gap-3 pt-1">
+
+            <div className="flex flex-col gap-2 pt-1">
               <button
-                onClick={handleReject}
-                disabled={!!processingId}
-                className="flex-1 py-2.5 rounded-xl bg-red-500/80 text-white font-bold text-sm hover:bg-red-500 transition disabled:opacity-50"
+                onClick={handleRequestRevision}
+                disabled={!!processingId || flaggedDocs.size === 0}
+                className="w-full py-2.5 rounded-xl bg-orange-500/80 text-white font-bold text-sm hover:bg-orange-500 transition disabled:opacity-30 disabled:cursor-not-allowed"
               >
-                {processingId ? "Rejecting..." : "Confirm Reject"}
+                {processingId
+                  ? "Sending…"
+                  : `Request Revision${flaggedDocs.size > 0 ? ` (${flaggedDocs.size})` : ""}`}
               </button>
               <button
-                onClick={() => {
-                  setRejectModal(null);
-                  setRejectionReason("");
-                }}
-                className="flex-1 py-2.5 rounded-xl bg-white/5 text-white/60 font-bold text-sm hover:bg-white/10 transition"
+                onClick={handleRejectEntirely}
+                disabled={!!processingId}
+                className="w-full py-2.5 rounded-xl bg-red-500/80 text-white font-bold text-sm hover:bg-red-500 transition disabled:opacity-50"
+              >
+                {processingId ? "Rejecting…" : "Reject Entire Application"}
+              </button>
+              <button
+                onClick={closeRejectModal}
+                className="w-full py-2.5 rounded-xl bg-white/5 text-white/60 font-bold text-sm hover:bg-white/10 transition"
               >
                 Cancel
               </button>

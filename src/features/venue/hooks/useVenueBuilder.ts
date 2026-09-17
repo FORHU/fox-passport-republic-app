@@ -19,6 +19,22 @@ import {
 type VenueCatalog = { tech: string[]; amenities: string[]; staff: string[] };
 const CATALOG_TABS = new Set(["tech", "amenities", "staff"]);
 
+// Assumed share of bookings that purchase at least one add-on — add-ons are
+// optional upsells, not part of the base rental, so their projected revenue
+// is discounted relative to the (already-occupancy-weighted) base rate.
+const ADDON_ATTACH_RATE = 0.2;
+
+// The backend stores `category` as a free-text string, so picking "Other"
+// and typing a custom type sends that text directly as the category instead
+// of the literal word "other".
+function resolveVenueCategory(venueType: string, venueTypeOther: string) {
+  const effective =
+    venueType === "Other" && venueTypeOther.trim()
+      ? venueTypeOther.trim()
+      : venueType;
+  return effective ? effective.toLowerCase().replace(/\s+/g, "_") : undefined;
+}
+
 export function useVenueBuilder() {
   const router = useRouter();
   const queryClient = useQueryClient();
@@ -79,14 +95,18 @@ export function useVenueBuilder() {
     );
   }, [store.resources, store.activeCategory, store.searchQuery]);
 
-  // Calculate revenue
+  // Calculate revenue. Standard Features (`includedItems`) are part of the
+  // base rental — their listed values are informational only and don't add
+  // to the projection, since guests already pay for them via the nightly
+  // rate. Only Monetized Add-ons (`addonItems`) contribute extra revenue,
+  // and only at the assumed ADDON_ATTACH_RATE share of bookings.
   const revenue = useMemo(() => {
     const monthlyBase = store.baseRate * 30 * (store.occupancyRate / 100);
     const monthlyAddons =
       store.addonItems.reduce((acc, item) => acc + item.value, 0) *
       30 *
       (store.occupancyRate / 100) *
-      0.2;
+      ADDON_ATTACH_RATE;
     return { monthlyBase, monthlyAddons, total: monthlyBase + monthlyAddons };
   }, [store.baseRate, store.occupancyRate, store.addonItems]);
 
@@ -193,9 +213,7 @@ export function useVenueBuilder() {
       const payload = {
         name: store.venueName,
         description: store.description || undefined,
-        category: store.venueType
-          ? store.venueType.toLowerCase().replace(/\s+/g, "_")
-          : undefined,
+        category: resolveVenueCategory(store.venueType, store.venueTypeOther),
         capacity: parseInt(store.capacity) || undefined,
         address: store.location || undefined,
         city: store.city || undefined,
@@ -242,6 +260,9 @@ export function useVenueBuilder() {
     const missing: string[] = [];
     if (!store.venueName) missing.push("Venue Name");
     if (!store.venueType) missing.push("Category");
+    if (store.venueType === "Other" && !store.venueTypeOther.trim()) {
+      missing.push("Venue Type (please specify)");
+    }
     if (!store.description) missing.push("Description");
     if (!store.location) missing.push("Address");
     if (!store.city) missing.push("City");
@@ -286,7 +307,7 @@ export function useVenueBuilder() {
       const payload = {
         name: store.venueName,
         description: store.description,
-        category: store.venueType.toLowerCase().replace(/\s+/g, "_"),
+        category: resolveVenueCategory(store.venueType, store.venueTypeOther),
         capacity: parseInt(store.capacity) || 1,
         address: store.location,
         city: store.city,

@@ -11,6 +11,7 @@ import {
   RevenueProjector,
 } from "@/features/venue/components/venue-builder";
 import { useHostVenueEdit } from "@/features/venue/hooks/useHostVenueEdit";
+import { VenueAffiliatesSection } from "@/features/venue-affiliation/components/VenueAffiliatesSection";
 
 interface Props {
   id: string;
@@ -20,9 +21,11 @@ function VenueEditContent({ id }: Props) {
   const {
     isPrefilling,
     prefillError,
+    existingStatus,
     venueName,
     description,
     venueType,
+    venueTypeOther,
     capacity,
     location,
     city,
@@ -49,6 +52,7 @@ function VenueEditContent({ id }: Props) {
     setVenueName,
     setDescription,
     setVenueType,
+    setVenueTypeOther,
     setCapacity,
     setLocation,
     setCity,
@@ -119,6 +123,7 @@ function VenueEditContent({ id }: Props) {
         <div className="fixed inset-0 z-60 bg-[#02040a] text-white flex flex-col font-body">
           <VenueHeader
             venueName={venueName}
+            status={existingStatus}
             isSubmitting={isSubmitting}
             onBack={handleBack}
             onSaveDraft={handleSaveDraft}
@@ -139,11 +144,12 @@ function VenueEditContent({ id }: Props) {
               onDragStart={handleDragStart}
             />
             <main className="flex-1 overflow-y-auto p-8 bg-[#02040a] flex gap-8">
-              <div className="flex-1 max-w-4xl mx-auto space-y-8">
+              <div className="flex-1 min-w-0 space-y-8">
                 <VenueDetailsForm
                   venueName={venueName}
                   description={description}
                   venueType={venueType}
+                  venueTypeOther={venueTypeOther}
                   capacity={capacity}
                   location={location}
                   city={city}
@@ -159,6 +165,7 @@ function VenueEditContent({ id }: Props) {
                   onNameChange={setVenueName}
                   onDescriptionChange={setDescription}
                   onTypeChange={setVenueType}
+                  onTypeOtherChange={setVenueTypeOther}
                   onCapacityChange={setCapacity}
                   onLocationChange={setLocation}
                   onCityChange={setCity}
@@ -192,6 +199,7 @@ function VenueEditContent({ id }: Props) {
                   onDrop={handleDrop}
                   onRemoveItem={removeAddonItem}
                 />
+                <VenueAffiliatesSection venueId={id} />
               </div>
             </main>
             <RevenueProjector

@@ -13,6 +13,7 @@ import { EventVenueOverview } from "./EventVenueOverview";
 import { EventBookingSidebar } from "./EventBookingSidebar";
 import { EventShareModal } from "./EventShareModal";
 import { EventPaymentPanel } from "@/features/event/components/EventPaymentPanel";
+import { EventLineItemsPanel } from "@/features/event/components/EventLineItemsPanel";
 import ProposePartnershipModal from "@/features/partnership/components/ProposePartnershipModal";
 import { useAuthStore } from "@/shared/auth/useAuthStore";
 import { useRouter as useNavigationRouter } from "next/navigation";
@@ -64,6 +65,7 @@ export function EventDetailView({
   const [isCustomBookingOpen, setIsCustomBookingOpen] = useState(false);
   const [isShareOpen, setIsShareOpen] = useState(false);
   const [isPartnershipOpen, setIsPartnershipOpen] = useState(false);
+  const [hasBlockingItems, setHasBlockingItems] = useState(false);
 
   const templateImages: string[] = (template?.images ?? [])
     .map((img: any) => img.url)
@@ -335,8 +337,23 @@ export function EventDetailView({
 
                 <div className="h-px bg-white/10 w-full" />
 
+                {/* Booked items — ad-hoc marketplace add/remove, status */}
+                <EventLineItemsPanel
+                  eventId={eventId}
+                  onBlockingChange={setHasBlockingItems}
+                />
+
+                <div className="h-px bg-white/10 w-full" />
+
                 {/* Central Payment Panel */}
-                <EventPaymentPanel eventId={eventId} />
+                <EventPaymentPanel
+                  eventId={eventId}
+                  disabledReason={
+                    hasBlockingItems
+                      ? "Resolve items awaiting provider confirmation above before paying."
+                      : null
+                  }
+                />
 
                 <div className="h-px bg-white/10 w-full" />
 

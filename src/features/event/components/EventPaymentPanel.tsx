@@ -9,9 +9,16 @@ import {
 
 export interface EventPaymentPanelProps {
   eventId: string;
+  /** Set by the sibling EventLineItemsPanel when an ad-hoc item is still
+   * awaiting provider confirmation — disables Pay Now before the citizen
+   * even tries, rather than only surfacing it after a 409. */
+  disabledReason?: string | null;
 }
 
-export function EventPaymentPanel({ eventId }: EventPaymentPanelProps) {
+export function EventPaymentPanel({
+  eventId,
+  disabledReason,
+}: EventPaymentPanelProps) {
   const [voucherCode, setVoucherCode] = useState("");
   // No one-code limit: this event may have a different active voucher per
   // provider (venue/gear/talent), plus at most one platform-wide code — the
@@ -31,10 +38,8 @@ export function EventPaymentPanel({ eventId }: EventPaymentPanelProps) {
   } = useEventCheckoutMutation();
 
   const [confirmingCancel, setConfirmingCancel] = useState(false);
-  const {
-    mutate: cancelEvent,
-    isPending: isCancelling,
-  } = useCancelEventMutation(eventId);
+  const { mutate: cancelEvent, isPending: isCancelling } =
+    useCancelEventMutation(eventId);
 
   const handleApplyVoucher = () => {
     const code = voucherCode.trim();
@@ -215,8 +220,9 @@ export function EventPaymentPanel({ eventId }: EventPaymentPanelProps) {
 
           <button
             onClick={handlePayNow}
-            disabled={isCheckoutLoading}
-            className="w-full flex items-center justify-center gap-2 bg-accent text-black font-bold py-3 px-4 rounded-xl hover:bg-[#b3e600] transition-colors disabled:opacity-70 disabled:cursor-not-allowed"
+            disabled={isCheckoutLoading || !!disabledReason}
+            title={disabledReason ?? undefined}
+            className="w-full flex items-center justify-center gap-2 bg-accent text-black font-bold py-3 px-4 rounded-xl hover:bg-[#b3e600] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {isCheckoutLoading ? (
               <>
@@ -227,6 +233,11 @@ export function EventPaymentPanel({ eventId }: EventPaymentPanelProps) {
               "Pay Now"
             )}
           </button>
+          {disabledReason && (
+            <p className="text-center text-[11px] text-yellow-400 mt-3">
+              {disabledReason}
+            </p>
+          )}
 
           <button
             onClick={handleCancelEvent}

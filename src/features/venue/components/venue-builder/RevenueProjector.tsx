@@ -51,10 +51,13 @@ export function RevenueProjector({
               onChange={(e) => onBaseRateChange(Number(e.target.value))}
               className="w-full bg-black border border-white/10 rounded-lg px-3 py-2 text-white font-mono text-right focus:border-accent outline-none text-sm"
             />
+            <p className="text-[10px] text-white/30 mt-1.5">
+              What you charge per night before any add-ons.
+            </p>
           </div>
           <div>
             <label className="text-[10px] text-text-muted block mb-2">
-              Est. Occupancy (%)
+              Expected Booking Rate (%)
             </label>
             <div className="flex items-center gap-3">
               <input
@@ -69,14 +72,20 @@ export function RevenueProjector({
                 {occupancyRate}%
               </span>
             </div>
+            <p className="text-[10px] text-white/30 mt-1.5">
+              The percentage of available nights you expect to be booked each month.
+            </p>
           </div>
         </div>
 
         {/* Monthly Estimates */}
         <div>
-          <h4 className="text-[10px] font-bold text-white/40 uppercase tracking-widest mb-4">
+          <h4 className="text-[10px] font-bold text-white/40 uppercase tracking-widest mb-2">
             Monthly Estimates
           </h4>
+          <p className="text-[10px] text-white/30 mb-4">
+            Based on a 30-day month at your Expected Booking Rate above.
+          </p>
           <div className="space-y-3">
             <div className="flex justify-between text-xs">
               <span className="text-text-muted">Rental Income</span>
@@ -84,12 +93,19 @@ export function RevenueProjector({
                 ₱{monthlyBase.toLocaleString()}
               </span>
             </div>
+            <p className="text-[10px] text-white/30 -mt-2">
+              Nightly Rate × 30 days × Expected Booking Rate.
+            </p>
             <div className="flex justify-between text-xs">
               <span className="text-text-muted">Add-on Revenue</span>
               <span className="text-white font-mono">
                 ₱{monthlyAddons.toLocaleString()}
               </span>
             </div>
+            <p className="text-[10px] text-white/30 -mt-2">
+              From your Monetized Add-ons below — assumes roughly 1 in 5
+              bookings purchases one.
+            </p>
             <div className="h-px bg-white/10 my-2" />
             <div className="flex justify-between text-lg font-bold">
               <span className="text-white">Total Yield</span>

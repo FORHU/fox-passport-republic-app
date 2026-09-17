@@ -4,7 +4,11 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { useAuthStore } from "@/shared/auth/useAuthStore";
-import { useEventBuilder } from "@/features/event/hooks/useEventBuilder";
+import {
+  useEventBuilder,
+  splitCategoryOtherNote,
+  withCategoryOtherNote,
+} from "@/features/event/hooks/useEventBuilder";
 import {
   fetchEventsByHostId,
   fetchOrganizerEvents,
@@ -195,6 +199,14 @@ export function useHostEventEdit(eventId: string) {
       toast.error("Please select a category");
       return;
     }
+    if (
+      targetStatus === "pending" &&
+      builder.category === "Other" &&
+      !builder.categoryOther.trim()
+    ) {
+      toast.error("Please specify the event category");
+      return;
+    }
 
     builder.setIsSubmitting(true);
     try {
@@ -217,9 +229,14 @@ export function useHostEventEdit(eventId: string) {
         .replace(/_/g, " ");
       const eventType = safeEventTypeMapping[rawCategory] || "other";
 
+      const description = withCategoryOtherNote(
+        builder.description,
+        builder.category,
+        builder.categoryOther,
+      );
       const payload: Record<string, unknown> = {
         name: builder.eventTitle,
-        description: builder.description || undefined,
+        description: description || undefined,
         category: eventType,
         isPublic: false,
         maxAttendees:
@@ -334,10 +351,23 @@ export function useHostEventEdit(eventId: string) {
         builder.setShowGuide(false);
 
         builder.setEventTitle(found?.name ?? found?.title ?? "Untitled Event");
-        builder.setDescription(found?.description ?? "");
-        builder.setCategory(
-          mapEventTypeToCategory(found?.eventType ?? found?.type ?? ""),
+        const resolvedCategory = mapEventTypeToCategory(
+          found?.eventType ?? found?.type ?? "",
         );
+        builder.setCategory(resolvedCategory);
+        // "Other" categories fold their custom label into the description on
+        // save (the backend category is a fixed enum) — parse it back out so
+        // editing shows the original "please specify" text, not a stray note
+        // stuck at the top of the description.
+        if (resolvedCategory === "Other") {
+          const { categoryOther, description } = splitCategoryOtherNote(
+            found?.description ?? "",
+          );
+          builder.setCategoryOther(categoryOther);
+          builder.setDescription(description);
+        } else {
+          builder.setDescription(found?.description ?? "");
+        }
         builder.setDate(
           toDatetimeLocalValue(
             found?.startDatetime ?? found?.start_datetime ?? found?.date,
