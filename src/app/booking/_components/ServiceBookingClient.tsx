@@ -9,6 +9,7 @@ import type { BackendService } from "@/shared/lib/api-types";
 import {
   bookService,
   fetchServiceAvailability,
+  previewServiceBookingPrice,
 } from "@/features/booking/api/bookings";
 import { useItemBookingStore } from "@/features/booking/store/useItemBookingStore";
 import { useAuthStore } from "@/shared/auth/useAuthStore";
@@ -16,6 +17,7 @@ import { toast } from "sonner";
 import { toastRequireLogin } from "@/shared/lib/toast";
 import AvailabilityCalendar from "@/features/booking/components/AvailabilityCalendar";
 import { getDashboardPath } from "@/shared/lib/dashboard-path";
+import { useCurrency } from "@/shared/providers/CurrencyProvider";
 
 const SERVICE_FEE = 150;
 
@@ -27,6 +29,7 @@ export default function ServiceBookingClient({
   const router = useRouter();
   const { user, isAuthenticated, openLogin } = useAuthStore();
   const { setBookingDetails, setBookingId } = useItemBookingStore();
+  const { format } = useCurrency();
 
   const [service, setService] = useState<BackendService | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -43,6 +46,14 @@ export default function ServiceBookingClient({
   const [guestCount, setGuestCount] = useState(50);
   const [eventLocation, setEventLocation] = useState("");
   const [projectNotes, setProjectNotes] = useState("");
+  const [voucherCodeInput, setVoucherCodeInput] = useState("");
+  const [appliedVoucherCode, setAppliedVoucherCode] = useState<string | null>(
+    null,
+  );
+  const [voucherDiscount, setVoucherDiscount] = useState(0);
+  const [voucherError, setVoucherError] = useState<string | null>(null);
+  const [voucherChecking, setVoucherChecking] = useState(false);
+  const [autoApplied, setAutoApplied] = useState(false);
 
   useEffect(() => {
     fetchServiceById(serviceId)
@@ -61,16 +72,89 @@ export default function ServiceBookingClient({
   const sessionCount = Math.max(1, bookingDates.length);
   const subtotal =
     (isPerSession ? unitPrice : unitPrice * durationHours) * sessionCount;
-  const total = subtotal + SERVICE_FEE;
+  const total = Math.max(0, subtotal - voucherDiscount) + SERVICE_FEE;
 
   const rateLabel = isPerSession
-    ? `₱${unitPrice.toLocaleString()} / session`
-    : `₱${unitPrice.toLocaleString()} / hr`;
+    ? `${format(unitPrice)} / session`
+    : `${format(unitPrice)} / hr`;
 
   const durationLabel = isPerSession ? "Sessions" : "Hours";
 
   const imageUrl =
     service?.images?.[0]?.url ?? service?.images?.[0]?.imageUrl ?? null;
+
+  // Shared by handleApplyVoucher and handleProceed so the two never compute
+  // the schedule differently.
+  function computeSchedule(): { scheduledDate: string; endDate: string } | null {
+    if (bookingDates.length === 0) return null;
+    const firstDate = bookingDates[0];
+    const lastDate = bookingDates[bookingDates.length - 1];
+    const scheduledDate = new Date(`${firstDate}T${callTime}:00`).toISOString();
+    const endDate = isPerSession
+      ? new Date(`${lastDate}T${callTime}:00`).toISOString()
+      : new Date(
+          new Date(`${lastDate}T${callTime}:00`).getTime() +
+            durationHours * 3600000,
+        ).toISOString();
+    return { scheduledDate, endDate };
+  }
+
+  const handleApplyVoucher = async () => {
+    const code = voucherCodeInput.trim();
+    const schedule = computeSchedule();
+    if (!code || !service || !schedule) return;
+    setVoucherChecking(true);
+    setVoucherError(null);
+    try {
+      const preview = await previewServiceBookingPrice({
+        serviceId: service.id,
+        scheduledDate: schedule.scheduledDate,
+        endDate: schedule.endDate,
+        voucherCode: code,
+      });
+      setAppliedVoucherCode(preview.voucherCode);
+      setVoucherDiscount(preview.discountAmount);
+      setAutoApplied(false);
+    } catch (err: any) {
+      setVoucherError(
+        err?.response?.data?.message || "Could not apply this code.",
+      );
+      setAppliedVoucherCode(null);
+      setVoucherDiscount(0);
+    } finally {
+      setVoucherChecking(false);
+    }
+  };
+
+  // Silently checks for an auto-apply, no-code-needed promotion whenever the
+  // schedule changes — skipped once the citizen has typed their own code.
+  useEffect(() => {
+    const schedule = computeSchedule();
+    if (!service || !schedule || voucherCodeInput.trim()) return;
+    let cancelled = false;
+    previewServiceBookingPrice({
+      serviceId: service.id,
+      scheduledDate: schedule.scheduledDate,
+      endDate: schedule.endDate,
+    })
+      .then((preview) => {
+        if (cancelled) return;
+        if (preview.discountAmount > 0 && preview.voucherCode) {
+          setAppliedVoucherCode(preview.voucherCode);
+          setVoucherDiscount(preview.discountAmount);
+          setAutoApplied(true);
+        } else if (autoApplied) {
+          setAppliedVoucherCode(null);
+          setVoucherDiscount(0);
+          setAutoApplied(false);
+        }
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+     
+  }, [service, bookingDates, callTime, durationHours, voucherCodeInput]);
 
   const handleProceed = async () => {
     const newErrors: typeof errors = {};
@@ -93,17 +177,9 @@ export default function ServiceBookingClient({
 
     setIsSubmitting(true);
     try {
-      const firstDate = bookingDates[0];
-      const lastDate = bookingDates[bookingDates.length - 1];
-      const scheduledDate = new Date(
-        `${firstDate}T${callTime}:00`,
-      ).toISOString();
-      const endDate = isPerSession
-        ? new Date(`${lastDate}T${callTime}:00`).toISOString()
-        : new Date(
-            new Date(`${lastDate}T${callTime}:00`).getTime() +
-              durationHours * 3600000,
-          ).toISOString();
+      const schedule = computeSchedule();
+      if (!schedule) return;
+      const { scheduledDate, endDate } = schedule;
 
       let bookingId: string | null = null;
       try {
@@ -115,6 +191,7 @@ export default function ServiceBookingClient({
           location: eventLocation.trim(),
           notes: projectNotes.trim() || undefined,
           totalAmount: total,
+          voucherCode: appliedVoucherCode ?? undefined,
         });
         bookingId = result?.id ?? null;
       } catch {
@@ -601,16 +678,57 @@ export default function ServiceBookingClient({
                     <div className="flex justify-between text-sm">
                       <span className="text-text-muted">Service Fee</span>
                       <span className="text-white font-medium">
-                        ₱{SERVICE_FEE.toLocaleString()}
+                        {format(SERVICE_FEE)}
                       </span>
                     </div>
+                    {voucherDiscount > 0 && (
+                      <div className="flex justify-between text-sm text-green-400">
+                        <span>
+                          {autoApplied
+                            ? "Discount applied automatically"
+                            : `Voucher (${appliedVoucherCode})`}
+                        </span>
+                        <span>-{format(voucherDiscount)}</span>
+                      </div>
+                    )}
+
+                    {!autoApplied && (
+                      <div className="flex gap-2">
+                        <input
+                          type="text"
+                          placeholder="Voucher code"
+                          value={voucherCodeInput}
+                          onChange={(e) => {
+                            setVoucherCodeInput(e.target.value);
+                            setVoucherError(null);
+                          }}
+                          className="flex-1 bg-black/30 border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-accent"
+                        />
+                        <button
+                          type="button"
+                          onClick={handleApplyVoucher}
+                          disabled={
+                            voucherChecking ||
+                            !voucherCodeInput.trim() ||
+                            bookingDates.length === 0
+                          }
+                          className="px-4 py-2 bg-white/10 hover:bg-white/20 rounded-xl text-xs font-bold text-white transition-colors disabled:opacity-50"
+                        >
+                          {voucherChecking ? "…" : "Apply"}
+                        </button>
+                      </div>
+                    )}
+                    {voucherError && (
+                      <p className="text-xs text-red-400">{voucherError}</p>
+                    )}
+
                     <div className="h-px bg-white/10 my-2" />
                     <div className="flex justify-between items-end">
                       <span className="text-sm font-bold text-white">
                         Total
                       </span>
                       <span className="text-2xl font-display font-bold text-accent">
-                        ₱{total.toLocaleString()}
+                        {format(total)}
                       </span>
                     </div>
                   </div>
@@ -639,7 +757,7 @@ export default function ServiceBookingClient({
                       <span className="material-symbols-outlined text-[12px] align-middle mr-1">
                         lock
                       </span>
-                      Secure encrypted checkout · Funds held in escrow
+                      Secure encrypted checkout · Payment held safely until confirmed
                     </p>
                   </div>
                 </div>
@@ -662,7 +780,7 @@ export default function ServiceBookingClient({
                       },
                       {
                         icon: "lock",
-                        title: "Payment Held in Escrow",
+                        title: "Payment Held Safely",
                         desc: "Funds are secured — the provider cannot access them yet.",
                       },
                       {

@@ -14,6 +14,7 @@ const OTHER_USER_ID = "other-user-id";
 
 describe("ProposalActions", () => {
   const mockCheckout = vi.fn();
+  const mockCancelSponsorship = vi.fn();
 
   beforeEach(() => {
     vi.clearAllMocks();
@@ -34,6 +35,10 @@ describe("ProposalActions", () => {
       mutate: mockCheckout,
       isPending: false,
       error: null,
+    });
+    (checkoutHooks.useCancelSponsorshipMutation as any).mockReturnValue({
+      mutate: mockCancelSponsorship,
+      isPending: false,
     });
 
     // Default: viewer is the partner who owes the payment.
@@ -104,6 +109,21 @@ describe("ProposalActions", () => {
     render(<ProposalActions proposal={proposal} />);
     expect(screen.getByText("Paid")).toBeDefined();
     expect(screen.queryByText("Pay Now")).toBeNull();
+  });
+
+  it("lets the partner cancel a paid sponsorship", () => {
+    const proposal: any = {
+      id: "prop-123",
+      partnerId: PARTNER_ID,
+      status: "accepted",
+      partnershipType: "sponsorship",
+      payment: { required: true, status: "paid" },
+    };
+
+    render(<ProposalActions proposal={proposal} />);
+    const button = screen.getByText("Cancel");
+    fireEvent.click(button);
+    expect(mockCancelSponsorship).toHaveBeenCalledWith("prop-123");
   });
 
   it("does not show Pay Sponsorship for non-sponsorships", () => {

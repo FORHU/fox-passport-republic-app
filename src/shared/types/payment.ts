@@ -50,9 +50,25 @@ export interface CheckoutResponse {
   status: CheckoutStatus;
 }
 
+/** One payable vendor line — which venue/gear/talent this payment actually
+ *  covers. Purely for display; the backend's aggregate fields on
+ *  `PaymentSummaryResponse` (subtotal/discount/fee/gross) remain the only
+ *  source of truth for totals. `discountAmount` is that line's own
+ *  discount when a Foxer-owned voucher (typed or auto-applied) matched it
+ *  specifically — 0 when it didn't, even if other lines or a platform-wide
+ *  code discounted the checkout overall. */
+export interface PaymentLineItem {
+  type: "venue" | "asset" | "service";
+  name: string;
+  providerName: string;
+  amount: number;
+  discountAmount: number;
+}
+
 export interface PaymentSummaryResponse {
   eventId: string;
   currency: string;
+  items: PaymentLineItem[];
   subtotalAmount: number;
   discountAmount: number;
   platformFeeAmount: number;

@@ -5,24 +5,29 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { fetchVenueById } from "@/features/venue/api/venues";
-import { bookVenueDraft } from "@/features/booking/api/bookings";
+import {
+  bookVenueDraft,
+  previewVenueBookingPrice,
+} from "@/features/booking/api/bookings";
 import { useAuthStore } from "@/shared/auth/useAuthStore";
 import { StepperControl } from "@/shared/components/ui/StepperControl";
 import { ProgressIndicator } from "@/shared/components/ui/ProgressIndicator";
 import { FormSection } from "@/shared/components/ui/FormSection";
-import { EscrowTimeline } from "@/shared/components/ui/EscrowTimeline";
+import { PaymentProtectionTimeline } from "@/shared/components/ui/PaymentProtectionTimeline";
 import DateRangePicker, {
   diffDays,
 } from "@/shared/components/ui/DateRangePicker";
 import { toast } from "sonner";
 import { toastRequireLogin } from "@/shared/lib/toast";
 import { getDashboardPath } from "@/shared/lib/dashboard-path";
+import { useCurrency } from "@/shared/providers/CurrencyProvider";
 
 const SERVICE_FEE_RATE = 0.1;
 
 export default function VenueBookingClient({ venueId }: { venueId: string }) {
   const router = useRouter();
   const { user, isAuthenticated, openLogin } = useAuthStore();
+  const { format } = useCurrency();
 
   const [venue, setVenue] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -33,6 +38,15 @@ export default function VenueBookingClient({ venueId }: { venueId: string }) {
   const [guestCount, setGuestCount] = useState(2);
   const [specialRequests, setSpecialRequests] = useState("");
   const [errors, setErrors] = useState<{ dates?: string }>({});
+
+  const [voucherCodeInput, setVoucherCodeInput] = useState("");
+  const [appliedVoucherCode, setAppliedVoucherCode] = useState<string | null>(
+    null,
+  );
+  const [voucherDiscount, setVoucherDiscount] = useState(0);
+  const [voucherError, setVoucherError] = useState<string | null>(null);
+  const [voucherChecking, setVoucherChecking] = useState(false);
+  const [autoApplied, setAutoApplied] = useState(false);
 
   useEffect(() => {
     fetchVenueById(venueId)
@@ -54,10 +68,73 @@ export default function VenueBookingClient({ venueId }: { venueId: string }) {
   );
   const subtotal = baseRate * days * guestCount;
   const serviceFee = Math.round(subtotal * SERVICE_FEE_RATE);
-  const total = subtotal + serviceFee;
+  const total = Math.max(0, subtotal + serviceFee - voucherDiscount);
 
   const imageUrl =
     venue?.images?.[0]?.url ?? venue?.images?.[0]?.imageUrl ?? null;
+
+  // Reset a previously-applied voucher when the dates change — a discount
+  // validated against one date range isn't guaranteed valid for another.
+  useEffect(() => {
+    setAppliedVoucherCode(null);
+    setVoucherDiscount(0);
+    setVoucherError(null);
+  }, [startDate, endDate]);
+
+  const handleApplyVoucher = async () => {
+    if (!voucherCodeInput.trim()) return;
+    if (!startDate || !endDate) {
+      setVoucherError("Pick your dates first.");
+      return;
+    }
+    setVoucherChecking(true);
+    setVoucherError(null);
+    try {
+      const preview = await previewVenueBookingPrice({
+        venueId,
+        startDate: new Date(`${startDate}T00:00:00`).toISOString(),
+        endDate: new Date(`${endDate}T23:59:59`).toISOString(),
+        voucherCode: voucherCodeInput.trim(),
+      });
+      setAppliedVoucherCode(voucherCodeInput.trim().toUpperCase());
+      setVoucherDiscount(preview.discountAmount);
+      setAutoApplied(false);
+      toast.success("Voucher applied.");
+    } catch (err: any) {
+      setAppliedVoucherCode(null);
+      setVoucherDiscount(0);
+      setVoucherError(
+        err?.response?.data?.message || "Invalid or expired voucher code.",
+      );
+    } finally {
+      setVoucherChecking(false);
+    }
+  };
+
+  // Silently checks for an auto-apply, no-code-needed promotion whenever the
+  // dates change — skipped once the citizen has typed their own code.
+  useEffect(() => {
+    if (!startDate || !endDate || voucherCodeInput.trim()) return;
+    let cancelled = false;
+    previewVenueBookingPrice({
+      venueId,
+      startDate: new Date(`${startDate}T00:00:00`).toISOString(),
+      endDate: new Date(`${endDate}T23:59:59`).toISOString(),
+    })
+      .then((preview) => {
+        if (cancelled) return;
+        if (preview.discountAmount > 0 && preview.voucherCode) {
+          setAppliedVoucherCode(preview.voucherCode);
+          setVoucherDiscount(preview.discountAmount);
+          setAutoApplied(true);
+        }
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+     
+  }, [venueId, startDate, endDate, voucherCodeInput]);
 
   const handleProceed = async () => {
     if (!startDate || !endDate) {
@@ -82,10 +159,11 @@ export default function VenueBookingClient({ venueId }: { venueId: string }) {
         guestCount,
         totalAmount: total,
         specialRequests: specialRequests.trim() || undefined,
+        voucherCode: appliedVoucherCode ?? undefined,
       });
 
       router.push(
-        `/booking/venue/checkout?bookingId=${result.bookingId}&total=${total}`,
+        `/booking/venue/checkout?bookingId=${result.bookingId}&total=${total}&subtotal=${subtotal}&serviceFee=${serviceFee}`,
       );
     } catch (err: any) {
       toast.error(
@@ -304,7 +382,7 @@ export default function VenueBookingClient({ venueId }: { venueId: string }) {
                     <div className="flex justify-between text-sm">
                       <span className="text-text-muted">Rate</span>
                       <span className="text-white font-medium">
-                        â‚±{baseRate.toLocaleString()} / guest / day
+                        {format(baseRate)} / guest / day
                       </span>
                     </div>
                     <div className="flex justify-between text-sm">
@@ -316,29 +394,91 @@ export default function VenueBookingClient({ venueId }: { venueId: string }) {
                     <div className="flex justify-between text-sm">
                       <span className="text-text-muted">Guests</span>
                       <span className="text-white font-medium">
-                        Ã— {guestCount}
+                        × {guestCount}
                       </span>
                     </div>
                     <div className="h-px bg-white/10 my-2" />
                     <div className="flex justify-between text-sm">
                       <span className="text-text-muted">Subtotal</span>
                       <span className="text-white">
-                        â‚±{subtotal.toLocaleString()}
+                        {format(subtotal)}
                       </span>
                     </div>
                     <div className="flex justify-between text-sm">
                       <span className="text-text-muted">Service Fee (10%)</span>
                       <span className="text-white">
-                        â‚±{serviceFee.toLocaleString()}
+                        {format(serviceFee)}
                       </span>
                     </div>
+
+                    <div className="pt-1">
+                      {appliedVoucherCode ? (
+                        <div className="flex items-center justify-between text-sm bg-accent/10 border border-accent/20 rounded-xl px-3 py-2">
+                          <span className="text-accent font-semibold flex items-center gap-1.5">
+                            <span className="material-symbols-outlined text-[14px]">
+                              sell
+                            </span>
+                            {autoApplied
+                              ? "Discount applied automatically"
+                              : `${appliedVoucherCode} applied`}
+                          </span>
+                          {!autoApplied && (
+                            <button
+                              onClick={() => {
+                                setAppliedVoucherCode(null);
+                                setVoucherDiscount(0);
+                                setVoucherCodeInput("");
+                              }}
+                              className="text-white/40 hover:text-white text-xs"
+                            >
+                              Remove
+                            </button>
+                          )}
+                        </div>
+                      ) : (
+                        <div className="flex gap-2">
+                          <input
+                            type="text"
+                            value={voucherCodeInput}
+                            onChange={(e) => {
+                              setVoucherCodeInput(e.target.value);
+                              setVoucherError(null);
+                            }}
+                            placeholder="Voucher code"
+                            className="flex-1 min-w-0 bg-black/20 border border-white/10 rounded-xl px-3 py-2 text-sm text-white placeholder-text-muted/50 focus:border-accent outline-none transition-all uppercase"
+                          />
+                          <button
+                            onClick={handleApplyVoucher}
+                            disabled={voucherChecking || !voucherCodeInput.trim()}
+                            className="shrink-0 px-4 py-2 rounded-xl bg-white/10 text-white text-sm font-semibold hover:bg-white/20 transition-all disabled:opacity-50"
+                          >
+                            {voucherChecking ? "..." : "Apply"}
+                          </button>
+                        </div>
+                      )}
+                      {voucherError && (
+                        <p className="text-red-400 text-xs mt-1.5">
+                          {voucherError}
+                        </p>
+                      )}
+                    </div>
+
+                    {voucherDiscount > 0 && (
+                      <div className="flex justify-between text-sm">
+                        <span className="text-accent">Voucher discount</span>
+                        <span className="text-accent">
+                          -{format(voucherDiscount)}
+                        </span>
+                      </div>
+                    )}
+
                     <div className="h-px bg-white/10 my-2" />
                     <div className="flex justify-between items-end">
                       <span className="text-sm font-bold text-white">
                         Total
                       </span>
                       <span className="text-2xl font-display font-bold text-accent">
-                        â‚±{total.toLocaleString()}
+                        {format(total)}
                       </span>
                     </div>
                   </div>
@@ -367,12 +507,12 @@ export default function VenueBookingClient({ venueId }: { venueId: string }) {
                       <span className="material-symbols-outlined text-[12px] align-middle mr-1">
                         lock
                       </span>
-                      Secure encrypted checkout Â· Funds held in escrow
+                      Secure encrypted checkout · Payment held safely until confirmed
                     </p>
                   </div>
                 </div>
 
-                <EscrowTimeline />
+                <PaymentProtectionTimeline />
               </div>
             </div>
           </div>

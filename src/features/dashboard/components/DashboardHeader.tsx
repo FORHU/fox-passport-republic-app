@@ -17,6 +17,8 @@ const NAV_ICONS: Record<string, string> = {
   Assets: "inventory_2",
   Services: "design_services",
   "Check In": "qr_code_scanner",
+  Earnings: "account_balance_wallet",
+  Promotions: "sell",
 };
 
 interface DashboardHeaderProps {
@@ -33,10 +35,13 @@ export function DashboardHeader({
   const access = useRoleAccess();
   const pathname = usePathname();
 
+  const roleType = user?.roleType ?? [];
   const roleLabels: string[] = [];
   if (access.isMayor) roleLabels.push("Venue Foxer");
   if (access.isHost) roleLabels.push("Event Foxer");
   if (access.isFoxer) roleLabels.push("Foxer");
+  if (roleType.includes("performerFoxer")) roleLabels.push("Performer Foxer");
+  if (roleType.includes("investor")) roleLabels.push("Partner Foxer");
   const roleLabel = roleLabels.length > 0 ? roleLabels.join(" · ") : "Creator";
 
   const navLinks = [
@@ -57,10 +62,20 @@ export function DashboardHeader({
       label: "Services",
       href: "/creator-dashboard/services",
     },
+    access.canManagePromotions && {
+      label: "Promotions",
+      href: "/creator-dashboard/promotions",
+    },
     access.isHost && {
       label: "Check In",
       href: "/creator-dashboard/check-in",
     },
+    // Unconditional: every RoleType that reaches this layout (including
+    // performerFoxer and investor, neither of which manages a listing type
+    // above) can hold Payouts and needs a way to see/onboard them — this was
+    // previously reachable only by typing the URL; the mobile nav had it, the
+    // desktop nav here never did.
+    { label: "Earnings", href: "/creator-dashboard/earnings" },
   ].filter(Boolean) as { label: string; href: string }[];
 
   return (

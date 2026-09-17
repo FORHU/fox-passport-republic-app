@@ -612,3 +612,28 @@ body {
   box-shadow: 0 0 15px rgba(255,255,255,0.3);
 }
 
+/* Booking invoice — "Print / Save as PDF" isolates .invoice-printable so the
+   fixed header, other booking panels, and page background don't end up in
+   the printout/PDF. */
+@media print {
+  body * {
+    visibility: hidden;
+  }
+  .invoice-printable,
+  .invoice-printable * {
+    visibility: visible;
+  }
+  .invoice-printable {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    background: #ffffff !important;
+    color: #000000 !important;
+  }
+  .invoice-printable * {
+    color: inherit !important;
+    background: transparent !important;
+  }
+}
+

@@ -8,6 +8,7 @@ export interface RoleAccess {
   canManageEvents: boolean; // template:manage
   canManageInventory: boolean; // asset:manage
   canManageServices: boolean; // service:manage
+  canManagePromotions: boolean; // promotions:manage-own
   isAdmin: boolean;
   isMayor: boolean;
   isHost: boolean;
@@ -34,6 +35,7 @@ export function useRoleAccess(): RoleAccess {
   const canManageEvents = hasPermission(user, "template:manage");
   const canManageInventory = hasPermission(user, "asset:manage");
   const canManageServices = hasPermission(user, "service:manage");
+  const canManagePromotions = hasPermission(user, "promotions:manage-own");
   const isHost = hasPermission(user, "booking:check-in");
 
   return {
@@ -41,6 +43,7 @@ export function useRoleAccess(): RoleAccess {
     canManageEvents,
     canManageInventory,
     canManageServices,
+    canManagePromotions,
     isAdmin: canAccessAdmin(user),
     isMayor: canManageVenues,
     isHost,

@@ -10,6 +10,7 @@ import { fetchBookingById } from "@/features/booking/api/bookings";
 import { useAuthStore } from "@/shared/auth/useAuthStore";
 import { pollWhileVisible } from "@/shared/lib/realtime";
 import CancelBookingModal from "./CancelBookingModal";
+import MessageButton from "@/features/messages/components/MessageButton";
 import { getDashboardPath } from "@/shared/lib/dashboard-path";
 
 const STATUS_LABEL: Record<string, { label: string; color: string }> = {
@@ -150,6 +151,30 @@ export default function BookingDetailClient({
     .filter((p: any) => p.status === "completed")
     .reduce((sum: number, p: any) => sum + (p.amount || 0), 0);
 
+  // The subtotal/fee split lives on the Event this booking belongs to
+  // (`itemsTotal`/`hostMarkupAmount`/`platformFeeAmount`), not on the Booking
+  // row itself — Booking only ever carries the final `totalAmount`. Falls
+  // back to the total alone if an older booking has no breakdown recorded.
+  const subtotalAmount = Number(booking.event?.itemsTotal ?? 0);
+  const hostMarkupAmount = Number(booking.event?.hostMarkupAmount ?? 0);
+  const platformFeeAmount = Number(booking.event?.platformFeeAmount ?? 0);
+  const hasBreakdown = subtotalAmount > 0;
+
+  const invoiceLineItems = [
+    ...(booking.venueTransactions ?? []).map((tx: any) => ({
+      label: tx.venue?.name || "Venue Reservation",
+      amount: Number(tx.agreedPrice),
+    })),
+    ...(booking.assetTransactions ?? []).map((tx: any) => ({
+      label: tx.asset?.name || "Gear Rental",
+      amount: Number(tx.agreedPrice),
+    })),
+    ...(booking.serviceTransactions ?? []).map((tx: any) => ({
+      label: tx.service?.name || "Talent Service",
+      amount: Number(tx.agreedPrice),
+    })),
+  ];
+
   // Only the citizen who made the booking can cancel it — the host/organizer
   // viewing the same booking gets "Unauthorized" from the API if they try.
   const isOwner = !!user?.id && user.id === booking.userId;
@@ -276,15 +301,16 @@ export default function BookingDetailClient({
               </div>
               <div className="flex items-center gap-2 shrink-0">
                 {otherParty?.id && (
-                  <Link
-                    href={`/messages?userId=${encodeURIComponent(otherParty.id)}&contextType=booking&contextId=${encodeURIComponent(bookingId)}&contextLabel=${encodeURIComponent(eventName)}`}
+                  <MessageButton
+                    otherUserId={otherParty.id}
+                    otherUserName={otherParty.name ?? "User"}
+                    otherUserImgId={otherParty.imgId}
+                    contextType="booking"
+                    contextId={bookingId}
+                    contextLabel={eventName}
+                    label={isOwner ? "Message Foxer" : "Message User"}
                     className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-white text-xs font-semibold transition-colors border border-zinc-700/50"
-                  >
-                    <span className="material-symbols-outlined text-[16px] text-amber-400">
-                      chat
-                    </span>
-                    <span>{isOwner ? "Message Foxer" : "Message User"}</span>
-                  </Link>
+                  />
                 )}
                 {canCancel && (
                   <button
@@ -345,6 +371,107 @@ export default function BookingDetailClient({
                   ₱{booking.totalAmount?.toLocaleString() || "0"}
                 </p>
               </div>
+            </div>
+          </div>
+
+          <div className="invoice-printable glass-panel rounded-3xl p-4 sm:p-8 mt-6">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-xl font-display font-bold text-white">
+                Invoice
+              </h2>
+              <button
+                onClick={() => window.print()}
+                className="print:hidden flex items-center gap-2 px-4 py-2 rounded-xl bg-white/5 text-white/70 text-xs font-bold hover:bg-white/10 hover:text-white transition-all"
+              >
+                <span className="material-symbols-outlined text-[16px]">
+                  print
+                </span>
+                Print / Save as PDF
+              </button>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4 mb-6 text-sm">
+              <div>
+                <p className="text-text-muted text-xs uppercase tracking-wider mb-1">
+                  Billed To
+                </p>
+                <p className="text-white font-semibold">
+                  {booking.user?.name || "—"}
+                </p>
+                <p className="text-text-muted">{booking.user?.email || ""}</p>
+              </div>
+              <div className="text-right">
+                <p className="text-text-muted text-xs uppercase tracking-wider mb-1">
+                  Date Issued
+                </p>
+                <p className="text-white font-semibold">
+                  {booking.createdAt
+                    ? new Date(booking.createdAt).toLocaleDateString("en-PH", {
+                        month: "long",
+                        day: "numeric",
+                        year: "numeric",
+                      })
+                    : "—"}
+                </p>
+                <p className="text-text-muted font-mono text-xs mt-1">
+                  #{bookingId.slice(0, 12)}
+                </p>
+              </div>
+            </div>
+
+            <div className="space-y-3 border-t border-white/10 pt-4">
+              {(invoiceLineItems.length > 0
+                ? invoiceLineItems
+                : [{ label: eventName, amount: subtotalAmount || Number(booking.totalAmount) || 0 }]
+              ).map((item, i) => (
+                <div key={i} className="flex justify-between text-sm">
+                  <span className="text-text-muted">{item.label}</span>
+                  <span className="text-white">
+                    ₱{item.amount.toLocaleString()}
+                  </span>
+                </div>
+              ))}
+            </div>
+
+            <div className="border-t border-white/10 mt-4 pt-4 space-y-2">
+              {hasBreakdown && (
+                <div className="flex justify-between text-sm">
+                  <span className="text-text-muted">Subtotal</span>
+                  <span className="text-white">
+                    ₱{subtotalAmount.toLocaleString()}
+                  </span>
+                </div>
+              )}
+              {hostMarkupAmount > 0 && (
+                <div className="flex justify-between text-sm">
+                  <span className="text-text-muted">Host Markup</span>
+                  <span className="text-white">
+                    ₱{hostMarkupAmount.toLocaleString()}
+                  </span>
+                </div>
+              )}
+              {platformFeeAmount > 0 && (
+                <div className="flex justify-between text-sm">
+                  <span className="text-text-muted">Platform Fee</span>
+                  <span className="text-white">
+                    ₱{platformFeeAmount.toLocaleString()}
+                  </span>
+                </div>
+              )}
+            </div>
+
+            <div className="border-t border-dashed border-white/20 mt-4 pt-4 flex justify-between items-end">
+              <div>
+                <p className="text-white font-bold font-display">Total</p>
+                <span
+                  className={`inline-block mt-1 px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${statusInfo.color}`}
+                >
+                  {statusInfo.label}
+                </span>
+              </div>
+              <span className="text-2xl font-display font-bold text-accent">
+                ₱{booking.totalAmount?.toLocaleString() || "0"}
+              </span>
             </div>
           </div>
 

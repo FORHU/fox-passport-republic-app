@@ -34,6 +34,28 @@ export async function deleteVenue(venueId: Id): Promise<void> {
   await api.delete(`/venues/${venueId}`);
 }
 
+export interface VenueSearchResult {
+  id: string;
+  name: string;
+  city: string | null;
+  mayorId: string;
+}
+
+/** Lightweight name search for pickers (e.g. targeting a venue for a
+ *  revenue-share investment) — not the full venue object. */
+export async function searchVenues(
+  query: string,
+): Promise<VenueSearchResult[]> {
+  if (!query.trim()) return [];
+  // Deliberately not `lightweight: true` — that mode's `select` is tuned for
+  // map-pin rendering (lat/lng/boundary/price/images) and omits `city`/
+  // `mayorId`, both of which this picker needs.
+  const resp = await api.get("/venues", {
+    params: { search: query, limit: 10 },
+  });
+  return unwrapList(resp.data);
+}
+
 export async function fetchVenueCatalog(): Promise<{
   tech: string[];
   amenities: string[];

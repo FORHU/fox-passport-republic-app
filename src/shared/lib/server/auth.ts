@@ -66,6 +66,13 @@ export async function requireAdmin() {
  * The old `host`/`mayor`/`foxer` values checked here were RoleType names from
  * before the Foxer rename, compared against `systemRole`, which can only ever
  * be `user` or `admin` — so that branch never matched anything.
+ *
+ * `performerFoxer` and `investor` were missing from this list even after
+ * both gained real dashboard content (a payout ledger, Stripe Connect
+ * onboarding) — a performerFoxer or investor hit the redirect below and
+ * could never reach `/creator-dashboard/earnings` or `/stripe-onboard` at
+ * all, despite the API granting both roles `payouts:onboard`. Every RoleType
+ * in ROLE_TYPES (shared/constants/roles.ts) belongs here now.
  */
 export async function requireHost() {
   const user = await requireAuth();
@@ -75,6 +82,8 @@ export async function requireHost() {
     "venueFoxer",
     "gearFoxer",
     "serviceFoxer",
+    "performerFoxer",
+    "investor",
   ];
 
   // Host areas are an admin override over someone else's data, which the

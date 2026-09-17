@@ -14,7 +14,7 @@ export default function EarningsPage() {
               Earnings & Payouts
             </h1>
             <p className="text-text-muted text-sm">
-              Track your escrow balance, pending payouts, and full booking
+              Track payments held for you, pending payouts, and full booking
               history.
             </p>
           </div>

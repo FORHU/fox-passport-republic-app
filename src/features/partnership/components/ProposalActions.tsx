@@ -7,9 +7,12 @@ import {
   useRejectPartnershipProposal,
   useWithdrawPartnershipProposal,
 } from "../hooks/usePartnerships";
-import { usePartnershipCheckoutMutation } from "../hooks/usePartnershipCheckout";
+import {
+  usePartnershipCheckoutMutation,
+  useCancelSponsorshipMutation,
+} from "../hooks/usePartnershipCheckout";
 import { useAuthStore } from "@/shared/auth/useAuthStore";
-import { Check, X, Undo2, CreditCard, Loader2 } from "lucide-react";
+import { Check, X, Undo2, CreditCard, Loader2, Ban } from "lucide-react";
 
 export function ProposalActions({
   proposal,
@@ -27,10 +30,16 @@ export function ProposalActions({
     isPending: isCheckingOut,
     error: checkoutError,
   } = usePartnershipCheckoutMutation();
+  const { mutate: cancelSponsorship, isPending: isCancelling } =
+    useCancelSponsorshipMutation();
   const { user } = useAuthStore();
 
   const isLoading =
-    isAccepting || isRejecting || isWithdrawing || isCheckingOut;
+    isAccepting ||
+    isRejecting ||
+    isWithdrawing ||
+    isCheckingOut ||
+    isCancelling;
 
   // Payment is owed by the partner who proposed it, not the organizer/owner
   // who calls accept — `payment.required` alone is proposal-level, not
@@ -84,10 +93,24 @@ export function ProposalActions({
         {showPaymentAction && (
           <>
             {paymentStatus === "paid" ? (
-              <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#ccff00]/10 border border-[#ccff00]/20 text-[#ccff00] text-sm font-bold">
-                <Check className="w-4 h-4" />
-                Paid
-              </div>
+              <>
+                <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#ccff00]/10 border border-[#ccff00]/20 text-[#ccff00] text-sm font-bold">
+                  <Check className="w-4 h-4" />
+                  Paid
+                </div>
+                <button
+                  onClick={() => cancelSponsorship(proposal.id)}
+                  disabled={isLoading}
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-white/10 text-white/50 text-sm font-medium hover:bg-white/5 hover:text-white/70 transition disabled:opacity-50"
+                >
+                  {isCancelling ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <Ban className="w-4 h-4" />
+                  )}
+                  Cancel
+                </button>
+              </>
             ) : paymentStatus === "processing" ? (
               <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-blue-500/20 text-blue-400 text-sm font-medium">
                 <Loader2 className="w-4 h-4 animate-spin" />
