@@ -25,8 +25,8 @@ export function FeatureDropZone({
   const isIncluded = type === "included";
   const title = isIncluded ? "Standard Features" : "Monetized Add-ons";
   const subtitle = isIncluded
-    ? "Included in base rental."
-    : "Optional paid upgrades.";
+    ? "Included in base rental — values are for reference only and don't add to your revenue projection."
+    : "Optional paid upgrades — their value feeds into Add-on Revenue in the projector.";
   const icon = isIncluded ? "check_circle" : "monetization_on";
   const iconColor = isIncluded ? "text-accent" : "text-secondary";
   const itemBgColor = isIncluded

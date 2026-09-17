@@ -44,6 +44,34 @@ const ALL_STATUSES = [
 const MIN_REJECTION_REASON_LENGTH = 20;
 const PAGE_SIZE = 10;
 
+// Ignore the timestamp jitter from a venue's own multi-step creation (a few
+// PUTs while the host is still filling out the draft) — only flag it as
+// "edited" once it's been touched well after that initial save.
+const EDIT_THRESHOLD_MS = 2 * 60 * 1000;
+
+function wasEditedAfterCreation(venue: any): boolean {
+  if (!venue?.createdAt || !venue?.updatedAt) return false;
+  const created = new Date(venue.createdAt).getTime();
+  const updated = new Date(venue.updatedAt).getTime();
+  return Number.isFinite(created) && Number.isFinite(updated)
+    ? updated - created > EDIT_THRESHOLD_MS
+    : false;
+}
+
+function timeAgo(dateString: string): string {
+  const diffMs = Date.now() - new Date(dateString).getTime();
+  const minutes = Math.floor(diffMs / 60000);
+  if (minutes < 1) return "just now";
+  if (minutes < 60) return `${minutes}m ago`;
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) return `${hours}h ago`;
+  const days = Math.floor(hours / 24);
+  if (days < 30) return `${days}d ago`;
+  const months = Math.floor(days / 30);
+  if (months < 12) return `${months}mo ago`;
+  return `${Math.floor(months / 12)}y ago`;
+}
+
 function statusColor(status: string) {
   return (
     ALL_STATUSES.find((s) => s.value === status)?.color ??
@@ -324,6 +352,12 @@ export const AdminVenuesTable: React.FC<VenueTableProps> = ({
                   const staffing = venue.staffing ?? [];
                   const policies = venue.policies ?? [];
 
+                  const isEdited = wasEditedAfterCreation(venue);
+                  const isResubmission =
+                    isEdited &&
+                    venue.status === "pending" &&
+                    Boolean(venue.rejectionReason);
+
                   return (
                     <React.Fragment key={venue.id ?? venue.name ?? i}>
                       <tr
@@ -346,9 +380,23 @@ export const AdminVenuesTable: React.FC<VenueTableProps> = ({
                               />
                             </div>
                             <div className="flex flex-col min-w-0">
-                              <span className="font-bold text-white group-hover:text-accent transition-colors leading-tight">
-                                {venue.name}
-                              </span>
+                              <div className="flex items-center gap-2">
+                                <span className="font-bold text-white group-hover:text-accent transition-colors leading-tight">
+                                  {venue.name}
+                                </span>
+                                {isEdited && (
+                                  <span
+                                    title={`Last updated ${timeAgo(venue.updatedAt)} — same venue, not a duplicate`}
+                                    className={`shrink-0 px-1.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider border ${
+                                      isResubmission
+                                        ? "bg-blue-500/10 text-blue-400 border-blue-500/20"
+                                        : "bg-white/5 text-white/50 border-white/10"
+                                    }`}
+                                  >
+                                    {isResubmission ? "Resubmitted" : "Updated"}
+                                  </span>
+                                )}
+                              </div>
                               <span className="text-[10px] text-white/30 truncate max-w-[150px]">
                                 {venue.id}
                               </span>
@@ -554,6 +602,14 @@ export const AdminVenuesTable: React.FC<VenueTableProps> = ({
                                     </span>
                                     {(venue.status ?? "pending").toUpperCase()}
                                   </span>
+                                  {isEdited && venue.updatedAt && (
+                                    <p className="text-[10px] text-white/30 mt-2">
+                                      {isResubmission
+                                        ? "Edited and resubmitted after rejection"
+                                        : "Edited since it was created"}{" "}
+                                      — last updated {timeAgo(venue.updatedAt)}
+                                    </p>
+                                  )}
                                 </div>
                               </div>
 

@@ -27,6 +27,7 @@ function EventEditContent({ id }: Props) {
     eventTitle,
     description,
     category,
+    categoryOther,
     date,
     location,
     maxAttendees,
@@ -48,6 +49,7 @@ function EventEditContent({ id }: Props) {
     setEventTitle,
     setDescription,
     setCategory,
+    setCategoryOther,
     setDate,
     setLocation,
     setMaxAttendees,
@@ -124,11 +126,12 @@ function EventEditContent({ id }: Props) {
               onDragStart={handleDragStart}
             />
             <main className="flex-1 overflow-y-auto p-8 bg-[#02040a] flex gap-8">
-              <div className="flex-1 max-w-4xl mx-auto space-y-8">
+              <div className="flex-1 min-w-0 space-y-8">
                 <EventDetailsForm
                   eventTitle={eventTitle}
                   description={description}
                   category={category}
+                  categoryOther={categoryOther}
                   date={date}
                   location={location}
                   maxAttendees={maxAttendees}
@@ -137,6 +140,7 @@ function EventEditContent({ id }: Props) {
                   onTitleChange={setEventTitle}
                   onDescriptionChange={setDescription}
                   onCategoryChange={setCategory}
+                  onCategoryOtherChange={setCategoryOther}
                   onDateChange={setDate}
                   onLocationChange={setLocation}
                   onMaxAttendeesChange={setMaxAttendees}
@@ -163,9 +167,11 @@ function EventEditContent({ id }: Props) {
             <EventBlueprint
               targetMargin={targetMargin}
               baseCost={financials.baseCost}
+              listingCost={financials.listingCost}
               suggestedPrice={financials.suggestedPrice}
               venueCost={financials.venueCost}
               talentCost={financials.talentCost}
+              serviceCost={financials.serviceCost}
               blueprintHealth={blueprintHealth}
               onMarginChange={(m: number) => setTargetMargin(m)}
               onPreview={async () => {

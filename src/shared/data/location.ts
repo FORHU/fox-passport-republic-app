@@ -1856,3 +1856,32 @@ export const ALL_LOCATIONS: LocationItem[] = Object.entries(PH_DATA).flatMap(
       towns.map((name) => createLoc(name, province, region)),
     ),
 );
+
+// Every province/independent city named as a top-level key across all
+// regions — used as the static "State/Province" options list for the
+// Philippines, since Mapbox's live region search is unreliable at this
+// level of granularity.
+export const PH_PROVINCES: string[] = Array.from(
+  new Set(Object.values(PH_DATA).flatMap((provinces) => Object.keys(provinces))),
+).sort();
+
+// Town/city name -> its province, so picking a city can auto-fill the
+// correct province instead of leaving it to an unrelated flat list (e.g.
+// picking "Baguio" should resolve to "Benguet", not require the user to
+// separately hunt for it alphabetically).
+export const PH_CITY_TO_PROVINCE: Record<string, string> =
+  Object.fromEntries(ALL_LOCATIONS.map((loc) => [loc.name, loc.province]));
+
+// Province -> every town/city inside it, so picking a province can narrow
+// the city list down to just the places that actually belong to it.
+export const PH_TOWNS_BY_PROVINCE: Record<string, string[]> = Object.entries(
+  PH_DATA,
+).reduce(
+  (acc, [, provinces]) => {
+    Object.entries(provinces).forEach(([province, towns]) => {
+      acc[province] = [...(acc[province] ?? []), ...towns].sort();
+    });
+    return acc;
+  },
+  {} as Record<string, string[]>,
+);

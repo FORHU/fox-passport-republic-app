@@ -46,9 +46,15 @@ function belongsToHost(record: Venue, hostId: Id): boolean {
 function toTitleCase(value: unknown): string {
   const s = String(value ?? "").trim();
   if (!s) return "";
-  return s.charAt(0).toUpperCase() + s.slice(1);
+  return s.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
 }
 
+// Used only for the *target* status a submit action sends to the backend
+// (from handleSaveDraft/handlePublish) — the backend only ever accepts a
+// generic update moving a venue between "draft" and "pending" (see
+// venue.service.ts's updateVenue clamp), so anything else collapses to
+// "pending" here. Do NOT use this to interpret a venue's *current*, already-
+// fetched status — see normalizeExistingVenueStatus below for that.
 function normalizeVenueStatusToBackend(value: unknown): string {
   const raw = String(value ?? "")
     .trim()
@@ -60,6 +66,27 @@ function normalizeVenueStatusToBackend(value: unknown): string {
   if (raw.includes("draft")) return "draft";
   if (raw.includes("archiv")) return "archived";
   if (raw.includes("reject")) return "rejected";
+  return "pending";
+}
+
+// Used to interpret the venue's *current* status as fetched from the
+// backend, for display and for deciding whether editing this venue should
+// even be allowed to touch its status at all. Distinct from the function
+// above: this one recognizes "available" (the live/approved status) instead
+// of collapsing it to "pending" — collapsing it there was the bug that made
+// an already-approved venue's Studio header claim it was still a draft.
+function normalizeExistingVenueStatus(value: unknown): string {
+  const raw = String(value ?? "")
+    .trim()
+    .toLowerCase()
+    .replace(/_/g, " ")
+    .replace(/\s+/g, " ");
+
+  if (!raw) return "pending";
+  if (raw.includes("draft")) return "draft";
+  if (raw.includes("archiv")) return "archived";
+  if (raw.includes("reject")) return "rejected";
+  if (raw.includes("available") || raw.includes("publish")) return "available";
   return "pending";
 }
 
@@ -150,6 +177,10 @@ export function useHostVenueEdit(venueId: string) {
       toast.error("Please fill in the required fields (Name and Type)");
       return;
     }
+    if (builder.venueType === "Other" && !builder.venueTypeOther.trim()) {
+      toast.error("Please specify the venue type");
+      return;
+    }
 
     const capacityNum = parseInt(builder.capacity || "0", 10);
     if (!Number.isFinite(capacityNum) || capacityNum < 1) {
@@ -157,8 +188,16 @@ export function useHostVenueEdit(venueId: string) {
       return;
     }
 
+    // Once a venue is already live (`available`), this Studio session is
+    // just editing its details — never resubmitting it. Sending
+    // status: "pending"/"draft" here (what a fresh submit/save would send)
+    // would silently demote an approved, publicly-bookable venue back into
+    // review and pull it out of search/booking until an admin re-approves
+    // it, even though nothing about its approval actually changed.
+    const isAlreadyLive = existingStatus === "available";
     const normalizedTarget = normalizeVenueStatusToBackend(targetStatus);
     if (
+      !isAlreadyLive &&
       normalizedTarget !== "draft" &&
       (!builder.boundary || builder.boundary.length < 3)
     ) {
@@ -172,7 +211,11 @@ export function useHostVenueEdit(venueId: string) {
       const payload: VenueUpdatePayload = {
         name: builder.venueName,
         description: builder.description || "Venue updated via Studio.",
-        category: builder.venueType.toLowerCase(),
+        category: (
+          builder.venueType === "Other" && builder.venueTypeOther.trim()
+            ? builder.venueTypeOther.trim()
+            : builder.venueType
+        ).toLowerCase(),
         capacity: capacityNum,
         address: builder.location,
         city: builder.city,
@@ -196,7 +239,7 @@ export function useHostVenueEdit(venueId: string) {
           .filter((i) => i.category === "rules")
           .map((i) => i.name),
         cancellationPolicyId: builder.cancellationPolicyId || undefined,
-        status: normalizedTarget,
+        ...(isAlreadyLive ? {} : { status: normalizedTarget }),
       };
 
       if (!venueId) {
@@ -218,9 +261,13 @@ export function useHostVenueEdit(venueId: string) {
         await api.post(`/venues/${venueId}/images`, formData);
       }
 
-      setExistingStatus(targetStatus);
+      if (!isAlreadyLive) setExistingStatus(normalizedTarget);
       toast.success(
-        targetStatus === "draft" ? "Draft saved!" : "Venue published!",
+        isAlreadyLive
+          ? "Venue updated!"
+          : targetStatus === "draft"
+            ? "Draft saved!"
+            : "Venue published!",
       );
       setTimeout(() => {
         builder.reset();
@@ -289,7 +336,7 @@ export function useHostVenueEdit(venueId: string) {
         if (cancelled) return;
 
         setExistingStatus(
-          normalizeVenueStatusToBackend(found?.status ?? "pending_review"),
+          normalizeExistingVenueStatus(found?.status ?? "pending_review"),
         );
 
         builder.reset();
@@ -298,9 +345,24 @@ export function useHostVenueEdit(venueId: string) {
         builder.setVenueName(found?.name ?? found?.title ?? "");
         builder.setDescription(found?.description ?? "");
 
-        const rawType = found?.type ?? found?.venueType ?? "";
+        // The backend stores this as `category` (a free-text field); `type`/
+        // `venueType` are checked first only as legacy fallbacks in case an
+        // older normalized shape is ever passed in here.
+        const rawType = found?.type ?? found?.venueType ?? found?.category ?? "";
         const normalizedType = toTitleCase(String(rawType).toLowerCase());
-        builder.setVenueType(normalizedType || (VENUE_TYPES[0] as string));
+        if (normalizedType && VENUE_TYPES.includes(normalizedType)) {
+          builder.setVenueType(normalizedType);
+          builder.setVenueTypeOther("");
+        } else if (normalizedType) {
+          // A category that isn't one of the known types — e.g. a custom
+          // value entered via "Other" — round-trips back into "Other" with
+          // the original text restored.
+          builder.setVenueType("Other");
+          builder.setVenueTypeOther(normalizedType);
+        } else {
+          builder.setVenueType(VENUE_TYPES[0] as string);
+          builder.setVenueTypeOther("");
+        }
 
         builder.setCapacity(String(found?.capacity ?? found?.cap ?? ""));
 

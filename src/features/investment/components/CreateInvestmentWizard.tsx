@@ -16,6 +16,7 @@ import {
   type VenueSearchResult,
 } from "@/features/venue/api/venues";
 import { formatCurrency } from "@/shared/lib/currency";
+import { StyledSelect } from "@/shared/components/ui/StyledSelect";
 
 type InvestmentModality = "physical_inventory" | "venue_equity";
 
@@ -205,9 +206,7 @@ export default function CreateInvestmentWizard() {
           broadcastToFeed: form.broadcastToFeed,
         });
 
-        toast.success(
-          "Equipment Inventory Hub registered & published on map!",
-        );
+        toast.success("Equipment Inventory Hub registered & published on map!");
       }
 
       router.push("/republic?tab=partners");
@@ -489,8 +488,8 @@ export default function CreateInvestmentWizard() {
                 </div>
                 <p className="text-[11px] text-zinc-500">
                   This percentage of the venue&apos;s own payout comes to you
-                  automatically each time it earns — the venue owner keeps
-                  the rest.
+                  automatically each time it earns — the venue owner keeps the
+                  rest.
                 </p>
               </div>
             </div>
@@ -544,20 +543,16 @@ export default function CreateInvestmentWizard() {
                 Which venue are you backing?
               </h2>
               <p className="text-xs text-zinc-400 mt-0.5">
-                Search by venue name. Your revenue share is carved out of
-                that venue&apos;s own payout — this doesn&apos;t change what
-                the citizen pays or the platform&apos;s fee.
+                Search by venue name. Your revenue share is carved out of that
+                venue&apos;s own payout — this doesn&apos;t change what the
+                citizen pays or the platform&apos;s fee.
               </p>
             </div>
 
             <div className="relative">
               <input
                 type="text"
-                value={
-                  form.targetVenue
-                    ? form.targetVenue.name
-                    : venueQuery
-                }
+                value={form.targetVenue ? form.targetVenue.name : venueQuery}
                 onChange={(e) => {
                   setForm({ ...form, targetVenue: null });
                   setVenueQuery(e.target.value);
@@ -710,17 +705,16 @@ export default function CreateInvestmentWizard() {
                 <label className="text-xs font-bold text-zinc-300 uppercase tracking-wider block">
                   Item Condition
                 </label>
-                <select
+                <StyledSelect
                   value={form.itemCondition}
-                  onChange={(e) =>
-                    setForm({ ...form, itemCondition: e.target.value })
-                  }
-                  className="w-full px-4 py-2.5 rounded-xl bg-zinc-950 border border-zinc-800 text-white focus:outline-none focus:border-amber-400 text-sm"
-                >
-                  <option value="mint">Brand New / Mint Condition</option>
-                  <option value="good">Good / Event-Ready</option>
-                  <option value="heavy_duty">Heavy-Duty / Industrial</option>
-                </select>
+                  onChange={(v) => setForm({ ...form, itemCondition: v })}
+                  options={[
+                    { value: "mint", label: "Brand New / Mint Condition" },
+                    { value: "good", label: "Good / Event-Ready" },
+                    { value: "heavy_duty", label: "Heavy-Duty / Industrial" },
+                  ]}
+                  className="bg-zinc-950 border-zinc-800"
+                />
               </div>
             </div>
 
@@ -745,23 +739,27 @@ export default function CreateInvestmentWizard() {
                 <label className="text-xs font-bold text-zinc-300 uppercase tracking-wider block">
                   Dispatch & Delivery Policy
                 </label>
-                <select
+                <StyledSelect
                   value={form.transportPolicy}
-                  onChange={(e) =>
-                    setForm({ ...form, transportPolicy: e.target.value as any })
+                  onChange={(v) =>
+                    setForm({ ...form, transportPolicy: v as any })
                   }
-                  className="w-full px-4 py-2.5 rounded-xl bg-zinc-950 border border-zinc-800 text-white focus:outline-none focus:border-amber-400 text-sm"
-                >
-                  <option value="self_pickup">
-                    Self-Pickup by Venue / Organizer
-                  </option>
-                  <option value="partner_delivers_free">
-                    Partner Delivers (Free within radius)
-                  </option>
-                  <option value="partner_delivers_fee">
-                    Partner Delivers (Flat Logistics Fee)
-                  </option>
-                </select>
+                  options={[
+                    {
+                      value: "self_pickup",
+                      label: "Self-Pickup by Venue / Organizer",
+                    },
+                    {
+                      value: "partner_delivers_free",
+                      label: "Partner Delivers (Free within radius)",
+                    },
+                    {
+                      value: "partner_delivers_fee",
+                      label: "Partner Delivers (Flat Logistics Fee)",
+                    },
+                  ]}
+                  className="bg-zinc-950 border-zinc-800"
+                />
               </div>
             </div>
 
@@ -994,16 +992,12 @@ export default function CreateInvestmentWizard() {
                   </div>
                   <div>
                     Territory:{" "}
-                    <span className="text-white">
-                      {form.location.country}
-                    </span>
+                    <span className="text-white">{form.location.country}</span>
                   </div>
                   {form.location.city && (
                     <div>
                       City:{" "}
-                      <span className="text-white">
-                        {form.location.city}
-                      </span>
+                      <span className="text-white">{form.location.city}</span>
                     </div>
                   )}
                   <div>

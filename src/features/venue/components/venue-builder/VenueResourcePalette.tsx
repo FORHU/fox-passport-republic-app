@@ -89,7 +89,7 @@ export function VenueResourcePalette({
       </nav>
 
       {/* Resource List */}
-      <aside className="flex-1 min-w-0 sm:w-72 md:w-80 shrink-0 border-r border-white/5 bg-[#0f111a] flex flex-col relative z-10">
+      <aside className="w-full sm:w-72 md:w-80 shrink-0 border-r border-white/5 bg-[#0f111a] flex flex-col relative z-10">
         <div className="p-6 pb-2">
           <h3 className="font-display font-bold text-lg text-white mb-1">
             {currentCategoryLabel}
@@ -113,7 +113,7 @@ export function VenueResourcePalette({
                 className="hidden"
               />
 
-              <div className="flex gap-3">
+              <div className="flex items-start gap-3">
                 {/* Photo Upload Area - Hidden for Staffing and Policies */}
                 {activeCategory !== "staff" && activeCategory !== "rules" && (
                   <div className="relative group shrink-0">
@@ -170,25 +170,25 @@ export function VenueResourcePalette({
                       className="w-full bg-black/30 border border-white/5 rounded-lg px-3 py-2 text-xs text-white focus:border-accent outline-none transition-colors"
                     />
                   </div>
+
+                  {activeCategory !== "rules" && (
+                    <div className="space-y-1">
+                      <label className="text-[9px] uppercase text-white/40 font-bold ml-1">
+                        Value (₱)
+                      </label>
+                      <input
+                        type="number"
+                        placeholder="0"
+                        value={newItem.value}
+                        onChange={(e) =>
+                          onNewItemChange({ ...newItem, value: e.target.value })
+                        }
+                        className="w-full bg-black/30 border border-white/5 rounded-lg px-3 py-2 text-xs text-white focus:border-accent outline-none transition-colors"
+                      />
+                    </div>
+                  )}
                 </div>
               </div>
-
-              {activeCategory !== "rules" && (
-                <div className="space-y-1">
-                  <label className="text-[9px] uppercase text-white/40 font-bold ml-1">
-                    Value (₱)
-                  </label>
-                  <input
-                    type="number"
-                    placeholder="0"
-                    value={newItem.value}
-                    onChange={(e) =>
-                      onNewItemChange({ ...newItem, value: e.target.value })
-                    }
-                    className="w-full bg-black/30 border border-white/5 rounded-lg px-3 py-2 text-xs text-white focus:border-accent outline-none transition-colors"
-                  />
-                </div>
-              )}
               <button
                 onClick={onAddCustomItem}
                 disabled={!newItem.name}

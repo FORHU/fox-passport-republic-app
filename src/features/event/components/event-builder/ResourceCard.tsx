@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import Link from "next/link";
 import { ResourceItem } from "@/features/event/data/eventBuilderData";
 
 interface ResourceCardProps {
@@ -14,11 +15,23 @@ export function ResourceCard({
   onDragStart,
   onSelect,
 }: ResourceCardProps) {
+  // A venue without an approved affiliation can't be dragged/added — the
+  // organizer must apply to (or be invited by) its owner first. See
+  // EventTemplateSvc.attachVenue on the API for the check this UI mirrors.
+  const isGatedVenue =
+    item.resourceType === "venue" &&
+    item.affiliationStatus &&
+    item.affiliationStatus !== "approved";
+
   return (
     <div
-      draggable
-      onDragStart={(e) => onDragStart(e, item)}
-      className="group bg-[#161b26] hover:bg-[#1c2230] border border-white/5 hover:border-white/10 rounded-2xl p-4 cursor-grab transition-colors relative"
+      draggable={!isGatedVenue}
+      onDragStart={(e) => !isGatedVenue && onDragStart(e, item)}
+      className={`group bg-[#161b26] border border-white/5 rounded-2xl p-4 transition-colors relative ${
+        isGatedVenue
+          ? "opacity-60"
+          : "hover:bg-[#1c2230] hover:border-white/10 cursor-grab"
+      }`}
     >
       <div className="flex gap-4">
         {item.imageUrl ? (
@@ -46,22 +59,40 @@ export function ResourceCard({
           <p className="text-[11px] text-gray-500 mt-1 line-clamp-2">
             {item.desc}
           </p>
-          {onSelect && (
+          {isGatedVenue ? (
             <div className="mt-3 flex justify-end">
-              <button
-                type="button"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onSelect(item);
-                }}
-                className="px-2.5 py-1 rounded-lg bg-white/10 hover:bg-accent hover:text-black text-[11px] font-bold text-white/80 transition-all flex items-center gap-1 cursor-pointer"
-              >
-                <span className="material-symbols-outlined text-[14px]">
-                  add
+              {item.affiliationStatus === "pending" ? (
+                <span className="px-2.5 py-1 rounded-lg bg-yellow-500/10 text-[11px] font-bold text-yellow-400">
+                  Pending approval
                 </span>
-                Add
-              </button>
+              ) : (
+                <Link
+                  href={`/foxer/affiliations?venueId=${item.id}`}
+                  onClick={(e) => e.stopPropagation()}
+                  className="px-2.5 py-1 rounded-lg bg-white/10 hover:bg-accent hover:text-black text-[11px] font-bold text-white/80 transition-all cursor-pointer"
+                >
+                  Apply to host here
+                </Link>
+              )}
             </div>
+          ) : (
+            onSelect && (
+              <div className="mt-3 flex justify-end">
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onSelect(item);
+                  }}
+                  className="px-2.5 py-1 rounded-lg bg-white/10 hover:bg-accent hover:text-black text-[11px] font-bold text-white/80 transition-all flex items-center gap-1 cursor-pointer"
+                >
+                  <span className="material-symbols-outlined text-[14px]">
+                    add
+                  </span>
+                  Add
+                </button>
+              </div>
+            )
           )}
         </div>
       </div>

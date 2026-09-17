@@ -30,7 +30,7 @@ import {
 import { useAuthStore } from "@/shared/auth/useAuthStore";
 import { isPartnerUser } from "@/shared/auth/roles";
 import api from "@/shared/lib/axios";
-import { StyledSelect } from "./StyledSelect";
+import { StyledSelect } from "@/shared/components/ui/StyledSelect";
 
 const VIDEO_EXTENSIONS = [".mp4", ".mov", ".webm", ".m4v"];
 const isVideoUrl = (url: string) => {
@@ -647,17 +647,17 @@ export function ComposePostBox({
               ) : (
                 <Lock className="h-3.5 w-3.5" strokeWidth={2} />
               )}
-              <select
+              <StyledSelect
                 value={visibility}
-                onChange={(e) =>
-                  setVisibility(e.target.value as PostVisibility)
-                }
-                className="bg-transparent text-xs text-zinc-300 focus:outline-none cursor-pointer"
-              >
-                <option value="public">Public</option>
-                <option value="followers">Followers</option>
-                <option value="only_me">Only Me</option>
-              </select>
+                onChange={(v) => setVisibility(v as PostVisibility)}
+                options={[
+                  { value: "public", label: "Public" },
+                  { value: "followers", label: "Followers" },
+                  { value: "only_me", label: "Only Me" },
+                ]}
+                className="w-auto bg-transparent border-0 rounded-md px-1 py-0 text-xs text-zinc-300"
+                panelClassName="w-32"
+              />
             </div>
 
             <span className="hidden sm:inline-flex xl:hidden items-center gap-1 text-[11px] font-bold text-amber-400 bg-amber-500/10 border border-amber-500/20 px-2 py-0.5 rounded-full">

@@ -12,6 +12,7 @@ interface SearchableDropdownProps {
   asyncHint?: string;
   placeholder: string;
   searchPlaceholder: string;
+  disabled?: boolean;
 }
 
 export default function SearchableDropdown({
@@ -21,6 +22,7 @@ export default function SearchableDropdown({
   asyncHint = "Type to search...",
   placeholder,
   searchPlaceholder,
+  disabled = false,
   onChange,
 }: SearchableDropdownProps & { onChange: (val: string) => void }) {
   const [open, setOpen] = useState(false);
@@ -57,6 +59,26 @@ export default function SearchableDropdown({
     if (!open || !ref.current) return;
     const r = ref.current.getBoundingClientRect();
     setRect({ top: r.bottom + 4, left: r.left, width: r.width });
+  }, [open]);
+
+  useEffect(() => {
+    if (!open) return;
+    // The panel is a fixed-position portal, so it doesn't move with the
+    // trigger on its own. Re-measuring on every scroll event is laggy —
+    // React's render is a frame or more behind the actual scroll, so the
+    // panel visibly chases the trigger and snaps back once it catches up.
+    // Closing on scroll (what most portaled dropdowns do) avoids that
+    // entirely: the panel just stays put until it's dismissed.
+    const handleScroll = () => setOpen(false);
+    window.addEventListener("scroll", handleScroll, {
+      capture: true,
+      passive: true,
+    });
+    window.addEventListener("resize", handleScroll);
+    return () => {
+      window.removeEventListener("scroll", handleScroll, { capture: true });
+      window.removeEventListener("resize", handleScroll);
+    };
   }, [open]);
 
   useEffect(() => {
@@ -105,8 +127,9 @@ export default function SearchableDropdown({
     <div ref={ref} className="relative">
       <button
         type="button"
-        onClick={() => setOpen((o) => !o)}
-        className="w-full flex items-center justify-between bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-white text-sm focus:outline-none focus:border-[#ccff00]/50 transition-all"
+        disabled={disabled}
+        onClick={() => !disabled && setOpen((o) => !o)}
+        className="w-full flex items-center justify-between bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-white text-sm focus:outline-none focus:border-accent/50 transition-all disabled:opacity-40 disabled:cursor-not-allowed"
       >
         <span className={value ? "text-white" : "text-white/30"}>
           {value || placeholder}
@@ -140,10 +163,10 @@ export default function SearchableDropdown({
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}
                   placeholder={searchPlaceholder}
-                  className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 mb-1.5 text-white text-sm placeholder:text-white/30 focus:outline-none focus:border-[#ccff00]/50"
+                  className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 mb-1.5 text-white text-sm placeholder:text-white/30 focus:outline-none focus:border-accent/50"
                 />
                 {loading && (
-                  <span className="absolute right-3 top-1/2 -translate-y-1/2 h-2 w-2 rounded-full bg-[#ccff00] animate-pulse" />
+                  <span className="absolute right-3 top-1/2 -translate-y-1/2 h-2 w-2 rounded-full bg-accent animate-pulse" />
                 )}
               </div>
               <div className="max-h-56 overflow-y-auto">
@@ -155,7 +178,7 @@ export default function SearchableDropdown({
                   }}
                   className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-all ${
                     !value
-                      ? "bg-[#ccff00]/15 text-[#ccff00] font-bold"
+                      ? "bg-accent/15 text-accent font-bold"
                       : "text-white/70 hover:bg-white/10 hover:text-white"
                   }`}
                 >
@@ -171,7 +194,7 @@ export default function SearchableDropdown({
                     }}
                     className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-all ${
                       value === opt
-                        ? "bg-[#ccff00]/15 text-[#ccff00] font-bold"
+                        ? "bg-accent/15 text-accent font-bold"
                         : "text-white/70 hover:bg-white/10 hover:text-white"
                     }`}
                   >

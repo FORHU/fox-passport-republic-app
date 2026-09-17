@@ -5,6 +5,7 @@ import { X } from "lucide-react";
 import { useForm, useWatch } from "react-hook-form";
 import { CreatePartnershipProposalDto } from "../types/partnership.types";
 import { useCreatePartnershipProposal } from "../hooks/usePartnerships";
+import { StyledSelect } from "@/shared/components/ui/StyledSelect";
 
 interface ProposePartnershipModalProps {
   targetEventId?: string;
@@ -26,6 +27,7 @@ export default function ProposePartnershipModal({
     register,
     handleSubmit,
     control,
+    setValue,
     formState: { errors },
   } = useForm<CreatePartnershipProposalDto>({
     defaultValues: {
@@ -93,15 +95,22 @@ export default function ProposePartnershipModal({
             <label className="block text-sm font-medium text-white mb-1">
               Partnership Type
             </label>
-            <select
-              {...register("partnershipType")}
-              className="w-full bg-[#1a1d24] border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-[#ccff00]"
-            >
-              <option value="investment">Investment</option>
-              <option value="sponsorship">Sponsorship</option>
-              <option value="resource">Resource Contribution</option>
-              <option value="business">Business Partnership</option>
-            </select>
+            <StyledSelect
+              value={selectedType}
+              onChange={(v) =>
+                setValue(
+                  "partnershipType",
+                  v as CreatePartnershipProposalDto["partnershipType"],
+                )
+              }
+              options={[
+                { value: "investment", label: "Investment" },
+                { value: "sponsorship", label: "Sponsorship" },
+                { value: "resource", label: "Resource Contribution" },
+                { value: "business", label: "Business Partnership" },
+              ]}
+              className="bg-[#1a1d24]"
+            />
           </div>
 
           <div>

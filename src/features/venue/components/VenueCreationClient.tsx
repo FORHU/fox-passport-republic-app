@@ -28,6 +28,7 @@ export default function VenueCreationClient() {
     venueName,
     description,
     venueType,
+    venueTypeOther,
     capacity,
     location,
     city,
@@ -54,6 +55,7 @@ export default function VenueCreationClient() {
     setVenueName,
     setDescription,
     setVenueType,
+    setVenueTypeOther,
     setCapacity,
     setLocation,
     setCity,
@@ -188,11 +190,12 @@ export default function VenueCreationClient() {
               mobileTab === "details" ? "flex" : "hidden"
             } xl:flex flex-1 overflow-y-auto p-4 sm:p-8 bg-[#02040a] gap-8`}
           >
-            <div className="flex-1 max-w-4xl mx-auto space-y-8">
+            <div className="flex-1 min-w-0 space-y-8">
               <VenueDetailsForm
                 venueName={venueName}
                 description={description}
                 venueType={venueType}
+                venueTypeOther={venueTypeOther}
                 capacity={capacity}
                 location={location}
                 city={city}
@@ -207,6 +210,7 @@ export default function VenueCreationClient() {
                 onNameChange={setVenueName}
                 onDescriptionChange={setDescription}
                 onTypeChange={setVenueType}
+                onTypeOtherChange={setVenueTypeOther}
                 onCapacityChange={setCapacity}
                 onLocationChange={setLocation}
                 onCityChange={setCity}
