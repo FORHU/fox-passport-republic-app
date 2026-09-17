@@ -157,7 +157,7 @@ export default function VenueBookingSuccessClient() {
                       <span className="material-symbols-outlined text-[16px] text-accent">
                         receipt
                       </span>
-                      {bookingId ? `#${bookingId.slice(0, 12)}` : "â€”"}
+                      {bookingId ? `#${bookingId.slice(0, 12)}` : "—"}
                     </p>
                   </div>
                   <div>
@@ -190,7 +190,7 @@ export default function VenueBookingSuccessClient() {
                       <span className="material-symbols-outlined text-[16px] text-accent">
                         payments
                       </span>
-                      â‚±{totalAmount.toLocaleString()}
+                      ₱{totalAmount.toLocaleString()}
                     </p>
                   </div>
                 </div>
@@ -201,7 +201,7 @@ export default function VenueBookingSuccessClient() {
               <div>
                 <p className="text-text-muted text-sm">Total Charged</p>
                 <span className="text-3xl font-display font-bold text-white">
-                  â‚±{totalAmount.toLocaleString()}.00
+                  ₱{totalAmount.toLocaleString()}.00
                 </span>
               </div>
               <div className="flex gap-3 w-full sm:w-auto">

@@ -399,7 +399,7 @@ component that uses it anywhere in `src/`. Scaffolded, not built.
   not implemented.
 
 - Nothing in the realtime path has been verified in a browser
-  (`TOMORROW.md` §3d.5). A dead socket and a quiet one look identical.
+  (`NEXT.md` §3d.5). A dead socket and a quiet one look identical.
 - Approve/reject exists twice — `/admin/*` and the resource-level routes. Only
   the first is used by this app, and they have already diverged once.
 - `extractList()` guesses between eight response envelope keys, which fails

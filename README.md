@@ -9,7 +9,7 @@ Next.js App Router + TypeScript + Tailwind. Talks to the Express API in
 landing page to work.
 
 > Domain vocabulary is in [`CONTEXT.md`](./CONTEXT.md). Engineering trackers are
-> in [`docs/`](./docs/) — start at [`docs/TOMORROW.md`](./docs/TOMORROW.md) for
+> in [`docs/`](./docs/) — start at [`docs/NEXT.md`](./docs/NEXT.md) for
 > what is open, [`docs/api-audit.md`](./docs/api-audit.md) for why things are the
 > way they are.
 
@@ -123,4 +123,4 @@ pnpm test
 Vitest + jsdom. Note what the suite does and does not cover: the data tests
 assert **request counts**, and the responsive tests assert **class names**. Both
 would pass if the proxy returned garbage. Anything touching the proxy, uploads,
-or the 401-refresh-replay path needs a browser — see `docs/TOMORROW.md` §1.
+or the 401-refresh-replay path needs a browser — see `docs/NEXT.md` §1.

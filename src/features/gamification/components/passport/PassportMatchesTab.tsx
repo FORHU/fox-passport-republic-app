@@ -1,10 +1,10 @@
 "use client";
 
 import React, { useState } from "react";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { motion } from "motion/react";
 import { formatXP } from "@/features/gamification/lib/gamification";
+import MessageButton from "@/features/messages/components/MessageButton";
 import {
   ClientMatchRequest,
   OutgoingMatchGroup,
@@ -222,16 +222,18 @@ export function PassportMatchesTab({
                         )}
                       </div>
                       {req.client?.id && (
-                        <Link
-                          href={`/messages?userId=${req.client.id}&contextType=match_request&contextId=${req.id}&contextLabel=${encodeURIComponent(req.name)}`}
-                          onClick={(e) => e.stopPropagation()}
-                          className="h-8 w-8 rounded-full bg-white/5 border border-white/10 text-white/50 hover:text-white hover:bg-white/10 flex items-center justify-center transition-all shrink-0"
-                          title="Message Client"
-                        >
-                          <span className="material-symbols-outlined text-[15px]">
-                            chat
-                          </span>
-                        </Link>
+                        <div onClick={(e) => e.stopPropagation()}>
+                          <MessageButton
+                            otherUserId={req.client.id}
+                            otherUserName={req.client.name}
+                            otherUserImgId={req.client.imgId}
+                            contextType="match_request"
+                            contextId={req.id}
+                            contextLabel={req.name}
+                            label=""
+                            className="h-8 w-8 rounded-full bg-white/5 border border-white/10 text-white/50 hover:text-white hover:bg-white/10 flex items-center justify-center transition-all shrink-0"
+                          />
+                        </div>
                       )}
                       <div className="flex flex-col items-end gap-2 shrink-0">
                         {req.totalAmount > 0 && (
@@ -357,16 +359,18 @@ export function PassportMatchesTab({
                           </p>
                         </div>
                         {req.provider?.id && (
-                          <Link
-                            href={`/messages?userId=${req.provider.id}&contextType=match_request&contextId=${req.id}&contextLabel=${encodeURIComponent(req.item?.name ?? req.type)}`}
-                            onClick={(e) => e.stopPropagation()}
-                            className="h-7 w-7 rounded-full bg-white/5 border border-white/10 text-white/50 hover:text-white hover:bg-white/10 flex items-center justify-center transition-all shrink-0"
-                            title="Message Provider"
-                          >
-                            <span className="material-symbols-outlined text-[14px]">
-                              chat
-                            </span>
-                          </Link>
+                          <div onClick={(e) => e.stopPropagation()}>
+                            <MessageButton
+                              otherUserId={req.provider.id}
+                              otherUserName={req.provider.name}
+                              otherUserImgId={req.provider.imgId}
+                              contextType="match_request"
+                              contextId={req.id}
+                              contextLabel={req.item?.name ?? req.type}
+                              label=""
+                              className="h-7 w-7 rounded-full bg-white/5 border border-white/10 text-white/50 hover:text-white hover:bg-white/10 flex items-center justify-center transition-all shrink-0"
+                            />
+                          </div>
                         )}
                         <span
                           className="text-[9px] font-black uppercase tracking-widest px-2.5 py-1 rounded-full shrink-0"
@@ -449,16 +453,18 @@ export function PassportMatchesTab({
                       </p>
                     </div>
                     {req.template.owner?.id && (
-                      <Link
-                        href={`/messages?userId=${req.template.owner.id}&contextType=match_request&contextId=${req.id}&contextLabel=${encodeURIComponent(req.template.name)}`}
-                        onClick={(e) => e.stopPropagation()}
-                        className="h-8 w-8 rounded-full bg-white/5 border border-white/10 text-white/50 hover:text-white hover:bg-white/10 flex items-center justify-center transition-all shrink-0"
-                        title="Message Organizer"
-                      >
-                        <span className="material-symbols-outlined text-[15px]">
-                          chat
-                        </span>
-                      </Link>
+                      <div onClick={(e) => e.stopPropagation()}>
+                        <MessageButton
+                          otherUserId={req.template.owner.id}
+                          otherUserName={req.template.owner.name}
+                          otherUserImgId={req.template.owner.imgId}
+                          contextType="match_request"
+                          contextId={req.id}
+                          contextLabel={req.template.name}
+                          label=""
+                          className="h-8 w-8 rounded-full bg-white/5 border border-white/10 text-white/50 hover:text-white hover:bg-white/10 flex items-center justify-center transition-all shrink-0"
+                        />
+                      </div>
                     )}
                     {req.matchRequestStatus === "pending" ? (
                       <div className="flex flex-col gap-1.5 shrink-0">

@@ -357,7 +357,7 @@ Only once Phases 1 and 2 leave them with zero call sites:
 - delete `requireRole`, `requireAdmin`, `requireHost` from `auth.middleware.ts`
 - delete `checkRole()` from `app/src/shared/lib/server/auth.ts` — already dead,
   zero call sites today
-- decide `requireOwnerOrAdmin` (§3 of `TOMORROW.md`): it has no call sites
+- decide `requireOwnerOrAdmin` (§3 of `NEXT.md`): it has no call sites
   either, and under the new model it is the *ownership* layer the spec's §11
   describes. Either implement §11 properly with it or delete it.
 
@@ -424,7 +424,7 @@ reason for having one. Defer it until then.
 
 ## Phase 6 — how a role actually gets assigned
 
-Open since §3c of `TOMORROW.md`: `admin_secretary` exists in the enum, in the
+Open since §3c of `NEXT.md`: `admin_secretary` exists in the enum, in the
 grant table, in the guards and in the nav — and **nobody holds it**, because
 there is no way to give it to anyone. `roles:manage` covers role *applications*
 (`RoleType`), not `SystemRole`. Today the only route in is a hand-written
@@ -523,7 +523,7 @@ the opposite trade to ours on almost every axis, which makes it useful.
 
 - **A runtime RBAC surface.** `src/modules/rbac/` is four endpoints — list
   permissions, list roles, update a role's permissions, create a role — and it
-  answers the question §3c of `TOMORROW.md` leaves open ("nobody has
+  answers the question §3c of `NEXT.md` leaves open ("nobody has
   `admin_secretary` yet, and there is no UI to grant it: seeder, migration, or
   screen?"). Their answer is a screen, and it is small.
 - **Gate the router, not the route.** `router.use(authenticate, requirePermission(PERMISSIONS.USERS_ROLES))`

@@ -788,7 +788,7 @@ export default function BookingConfigurationClient() {
                       },
                       {
                         icon: "lock",
-                        title: "Payment Held in Escrow",
+                        title: "Payment Held Safely",
                         desc: "Funds are secured — the provider cannot access them yet.",
                       },
                       {

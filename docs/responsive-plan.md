@@ -2,7 +2,7 @@
 
 Status: proposed — baseline re-measured 27 August 2026 at `ccfcf75`
 Scope: `fox-passport-republic-app`
-Role: input to [`TOMORROW.md`](./TOMORROW.md), which holds the running order.
+Role: input to [`NEXT.md`](./NEXT.md), which holds the running order.
 
 This plan is written against the current code, not a generic checklist. Every
 claim below was verified in the tree.
@@ -217,7 +217,7 @@ over as the navigation component. Its desktop nav is `hidden md:flex` — visibl
 from **768** up — while `MobileBottomNav` is still `lg:hidden`, visible below
 **1024**. So where 640–767 once had *no* navigation, **768–1023 now has two at
 once**. Same root cause as the original defect: two halves of one navigation
-disagreeing about where mobile ends. See `TOMORROW.md` §0a; the fix is a
+disagreeing about where mobile ends. See `NEXT.md` §0a; the fix is a
 one-line breakpoint change, but §3.3 below decides which line. Do not treat the
 table above as current state.
 

@@ -1,3 +1,5 @@
+"use client";
+
 import MatchConfig from "@/features/match/components/MatchConfig";
 import { fetchEventTemplateById } from "@/features/event/api/event-templates";
 

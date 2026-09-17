@@ -9,6 +9,7 @@ import type { BackendAsset } from "@/shared/lib/api-types";
 import {
   bookAsset,
   fetchAssetAvailability,
+  previewAssetBookingPrice,
 } from "@/features/booking/api/bookings";
 import { useItemBookingStore } from "@/features/booking/store/useItemBookingStore";
 import { useAuthStore } from "@/shared/auth/useAuthStore";
@@ -16,6 +17,7 @@ import { toast } from "sonner";
 import { toastRequireLogin } from "@/shared/lib/toast";
 import AvailabilityCalendar from "@/features/booking/components/AvailabilityCalendar";
 import { getDashboardPath } from "@/shared/lib/dashboard-path";
+import { useCurrency } from "@/shared/providers/CurrencyProvider";
 
 const SERVICE_FEE = 150;
 
@@ -29,6 +31,7 @@ export default function AssetBookingClient({ assetId }: { assetId: string }) {
   const router = useRouter();
   const { user, isAuthenticated, openLogin } = useAuthStore();
   const { setBookingDetails, setBookingId } = useItemBookingStore();
+  const { format } = useCurrency();
 
   const [asset, setAsset] = useState<BackendAsset | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -50,6 +53,17 @@ export default function AssetBookingClient({ assetId }: { assetId: string }) {
   );
   const [deliveryAddress, setDeliveryAddress] = useState("");
   const [notes, setNotes] = useState("");
+  const [voucherCodeInput, setVoucherCodeInput] = useState("");
+  const [appliedVoucherCode, setAppliedVoucherCode] = useState<string | null>(
+    null,
+  );
+  const [voucherDiscount, setVoucherDiscount] = useState(0);
+  const [voucherError, setVoucherError] = useState<string | null>(null);
+  const [voucherChecking, setVoucherChecking] = useState(false);
+  // True when the discount came from an auto-apply promotion the citizen
+  // never typed a code for — distinguishes "Voucher applied" from "Discount
+  // applied" in the summary UI below.
+  const [autoApplied, setAutoApplied] = useState(false);
 
   useEffect(() => {
     fetchAssetById(assetId)
@@ -92,11 +106,75 @@ export default function AssetBookingClient({ assetId }: { assetId: string }) {
     [startDate, endDate],
   );
   const subtotal = unitPrice * quantity * days;
-  const total = subtotal + SERVICE_FEE;
+  const total = Math.max(0, subtotal - voucherDiscount) + SERVICE_FEE;
 
-  const rateLabel = `₱${unitPrice.toLocaleString()} / day`;
+  const rateLabel = `${format(unitPrice)} / day`;
   const imageUrl =
     asset?.images?.[0]?.url ?? asset?.images?.[0]?.imageUrl ?? null;
+
+  // A voucher code is validated against the real subtotal server-side (min
+  // spend, usage limits, active window) — this never trusts a client-side
+  // discount calculation, only the amount the API actually confirms.
+  const handleApplyVoucher = async () => {
+    const code = voucherCodeInput.trim();
+    if (!code || !asset || !startDate || !endDate) return;
+    setVoucherChecking(true);
+    setVoucherError(null);
+    try {
+      // The endpoint throws (400) rather than returning a null voucher when
+      // the code doesn't validate — an invalid/expired/ineligible code lands
+      // in the catch block below, not this success path.
+      const preview = await previewAssetBookingPrice({
+        assetId: asset.id,
+        startDate: new Date(`${startDate}T00:00:00`).toISOString(),
+        endDate: new Date(`${endDate}T23:59:59`).toISOString(),
+        quantity,
+        voucherCode: code,
+      });
+      setAppliedVoucherCode(preview.voucherCode);
+      setVoucherDiscount(preview.discountAmount);
+      setAutoApplied(false);
+    } catch (err: any) {
+      setVoucherError(
+        err?.response?.data?.message || "Could not apply this code.",
+      );
+      setAppliedVoucherCode(null);
+      setVoucherDiscount(0);
+    } finally {
+      setVoucherChecking(false);
+    }
+  };
+
+  // Silently checks for an auto-apply, no-code-needed promotion whenever the
+  // priceable inputs change — but only while the citizen hasn't typed their
+  // own code, so a manually-applied voucher is never clobbered by this.
+  useEffect(() => {
+    if (!asset || !startDate || !endDate || voucherCodeInput.trim()) return;
+    let cancelled = false;
+    previewAssetBookingPrice({
+      assetId: asset.id,
+      startDate: new Date(`${startDate}T00:00:00`).toISOString(),
+      endDate: new Date(`${endDate}T23:59:59`).toISOString(),
+      quantity,
+    })
+      .then((preview) => {
+        if (cancelled) return;
+        if (preview.discountAmount > 0 && preview.voucherCode) {
+          setAppliedVoucherCode(preview.voucherCode);
+          setVoucherDiscount(preview.discountAmount);
+          setAutoApplied(true);
+        } else if (autoApplied) {
+          setAppliedVoucherCode(null);
+          setVoucherDiscount(0);
+          setAutoApplied(false);
+        }
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+     
+  }, [asset, startDate, endDate, quantity, voucherCodeInput]);
 
   const handleProceed = async () => {
     const newErrors: typeof errors = {};
@@ -133,6 +211,7 @@ export default function AssetBookingClient({ assetId }: { assetId: string }) {
             fulfillment === "delivery" ? deliveryAddress.trim() : undefined,
           notes: notes.trim() || undefined,
           totalAmount: total,
+          voucherCode: appliedVoucherCode ?? undefined,
         });
         bookingId = result?.id ?? null;
       } catch {
@@ -602,16 +681,58 @@ export default function AssetBookingClient({ assetId }: { assetId: string }) {
                     <div className="flex justify-between text-sm">
                       <span className="text-text-muted">Service Fee</span>
                       <span className="text-white font-medium">
-                        ₱{SERVICE_FEE.toLocaleString()}
+                        {format(SERVICE_FEE)}
                       </span>
                     </div>
+                    {voucherDiscount > 0 && (
+                      <div className="flex justify-between text-sm text-green-400">
+                        <span>
+                          {autoApplied
+                            ? "Discount applied automatically"
+                            : `Voucher (${appliedVoucherCode})`}
+                        </span>
+                        <span>-{format(voucherDiscount)}</span>
+                      </div>
+                    )}
+
+                    {!autoApplied && (
+                      <div className="flex gap-2">
+                        <input
+                          type="text"
+                          placeholder="Voucher code"
+                          value={voucherCodeInput}
+                          onChange={(e) => {
+                            setVoucherCodeInput(e.target.value);
+                            setVoucherError(null);
+                          }}
+                          className="flex-1 bg-black/30 border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-accent"
+                        />
+                        <button
+                          type="button"
+                          onClick={handleApplyVoucher}
+                          disabled={
+                            voucherChecking ||
+                            !voucherCodeInput.trim() ||
+                            !startDate ||
+                            !endDate
+                          }
+                          className="px-4 py-2 bg-white/10 hover:bg-white/20 rounded-xl text-xs font-bold text-white transition-colors disabled:opacity-50"
+                        >
+                          {voucherChecking ? "…" : "Apply"}
+                        </button>
+                      </div>
+                    )}
+                    {voucherError && (
+                      <p className="text-xs text-red-400">{voucherError}</p>
+                    )}
+
                     <div className="h-px bg-white/10 my-2" />
                     <div className="flex justify-between items-end">
                       <span className="text-sm font-bold text-white">
                         Total
                       </span>
                       <span className="text-2xl font-display font-bold text-accent">
-                        ₱{total.toLocaleString()}
+                        {format(total)}
                       </span>
                     </div>
                   </div>
@@ -640,7 +761,7 @@ export default function AssetBookingClient({ assetId }: { assetId: string }) {
                       <span className="material-symbols-outlined text-[12px] align-middle mr-1">
                         lock
                       </span>
-                      Secure encrypted checkout · Funds held in escrow
+                      Secure encrypted checkout · Payment held safely until confirmed
                     </p>
                   </div>
                 </div>
@@ -663,7 +784,7 @@ export default function AssetBookingClient({ assetId }: { assetId: string }) {
                       },
                       {
                         icon: "lock",
-                        title: "Payment Held in Escrow",
+                        title: "Payment Held Safely",
                         desc: "Funds are secured — the owner cannot access them yet.",
                       },
                       {

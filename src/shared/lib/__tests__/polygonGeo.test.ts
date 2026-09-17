@@ -14,7 +14,7 @@ import {
  * host is drawing a venue boundary — it is explicitly not the source of
  * truth, but a wrong answer here still shows a host a false "this is fine"
  * or "this overlaps" while drawing. Flagged as untested in the 5 Sep map
- * audit (docs/TOMORROW.md); this closes that gap for the client side.
+ * audit (docs/NEXT.md); this closes that gap for the client side.
  */
 
 const square: LngLat[] = [

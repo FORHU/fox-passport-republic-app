@@ -2,7 +2,7 @@
 
 Status: open — last verified 27 August 2026 (app `ccfcf75`, api `2b5e63c`)
 Scope: `fox-passport-republic-app` + `fox-passport-republic-api`
-Role: **the record.** `TOMORROW.md` is the running order; this is what was found,
+Role: **the record.** `NEXT.md` is the running order; this is what was found,
 what was fixed, and what is still open. Sections 1–2 and 4 are closed history —
 section 3 is the live list.
 
@@ -536,7 +536,7 @@ before stashing, and both stashes applied cleanly afterwards.
       `NavMobileMenu.tsx`, `BrowseDropdown.tsx`, `HostModal.tsx`, `useNavbar.ts`
       and the `(main)` layout that rendered them. The reconnection above was
       never seen in a browser and the files no longer exist. Whether that
-      deletion was intended is open — `TOMORROW.md` §0a.
+      deletion was intended is open — `NEXT.md` §0a.
 
 Reviewed and found correct, for the record:
 
@@ -772,7 +772,7 @@ it so it stops implying a guarantee that is not there.
 **Confirmed 12 Sep: the two most safety-critical ones are fixed.**
 `config.ts` now imports `requireSecret` from `./utils/require-secret` and
 routes `ACCESS_TOKEN_SECRET` and `REFRESH_TOKEN_SECRET` through it — this is
-the guard `TOMORROW.md` §5 refers to as refusing to start on a missing or weak
+the guard `NEXT.md` §5 refers to as refusing to start on a missing or weak
 token secret, landed after this finding was originally written.
 
 **The other 13 are still bare `process.env.X as string` casts**, unvalidated:

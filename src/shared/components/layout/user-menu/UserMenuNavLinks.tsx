@@ -8,7 +8,6 @@ import {
   MessageSquare,
   User,
   Settings,
-  Globe,
   HelpCircle,
   UserPlus,
   LogOut,
@@ -17,6 +16,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { useLogout } from "@/shared/auth/useLogout";
+import { CurrencySwitcher } from "@/shared/components/layout/CurrencySwitcher";
 
 interface UserMenuNavLinksProps {
   userId?: string | null;
@@ -70,12 +70,6 @@ export function UserMenuNavLinks({
       href: "/user/settings",
     },
     {
-      label: "Languages & currency",
-      icon: Globe,
-      href: "/settings/language",
-      comingSoon: true,
-    },
-    {
       label: "Help Center",
       icon: HelpCircle,
       href: "/help",
@@ -110,6 +104,7 @@ export function UserMenuNavLinks({
             )}
           </button>
         ))}
+        <CurrencySwitcher />
         {!isAdmin && (
           <button
             onClick={() => {

@@ -7,18 +7,30 @@ import type {
 
 export async function createEventCheckout(
   eventId: Id,
-  voucherCode?: string,
+  voucherCodes: string[] = [],
 ): Promise<CheckoutResponse> {
-  const resp = await api.post(`/events/${eventId}/checkout`, { voucherCode });
+  const resp = await api.post(`/events/${eventId}/checkout`, {
+    voucherCodes,
+  });
   return resp.data;
 }
 
 export async function getEventPaymentSummary(
   eventId: Id,
-  voucherCode?: string,
+  voucherCodes: string[] = [],
 ): Promise<PaymentSummaryResponse> {
   const resp = await api.get(`/events/${eventId}/payment-summary`, {
-    params: { voucherCode },
+    params: { voucherCodes },
   });
   return resp.data;
+}
+
+export interface CancelEventResult {
+  refunds: { amount: string; status: string }[];
+  totalRefunded: number;
+}
+
+export async function cancelEvent(eventId: Id): Promise<CancelEventResult> {
+  const resp = await api.post(`/events/${eventId}/cancel`);
+  return resp.data?.data ?? resp.data;
 }

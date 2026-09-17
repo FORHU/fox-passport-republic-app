@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import Link from "next/link";
+import MessageButton from "@/features/messages/components/MessageButton";
 
 export interface EventHostCardProps {
   owner?: {
@@ -20,9 +20,6 @@ export function EventHostCard({
   eventId,
   eventName,
 }: EventHostCardProps) {
-  const contextParams = eventId
-    ? `&contextType=event&contextId=${encodeURIComponent(eventId)}&contextLabel=${encodeURIComponent(eventName || "Event")}`
-    : "";
   const ownerName = owner?.name ?? "Organizer";
   const ownerInitial = ownerName.charAt(0).toUpperCase();
 
@@ -99,13 +96,16 @@ export function EventHostCard({
           </span>
         </div>
         {owner?.id ? (
-          <Link
-            href={`/messages?userId=${encodeURIComponent(owner.id)}${contextParams}`}
+          <MessageButton
+            otherUserId={owner.id}
+            otherUserName={ownerName}
+            otherUserImgId={owner.imgId}
+            contextType={eventId ? "event" : undefined}
+            contextId={eventId}
+            contextLabel={eventName || "Event"}
+            label="Contact Organizer"
             className="inline-flex items-center gap-2 px-6 py-3 rounded-xl border border-white/10 text-sm font-bold text-white hover:bg-white hover:text-black transition-colors"
-          >
-            <span className="material-symbols-outlined text-[16px]">chat</span>
-            Contact Organizer
-          </Link>
+          />
         ) : (
           <button className="px-6 py-3 rounded-xl border border-white/10 text-sm font-bold text-white hover:bg-white hover:text-black transition-colors cursor-pointer">
             Contact Organizer

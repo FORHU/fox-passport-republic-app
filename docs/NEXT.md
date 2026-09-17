@@ -1,18 +1,18 @@
-# Tomorrow
+# Next
 
 **The running order.** Rewritten 2 Sep 2026, revised 4 Sep after `main` took
 role assignment and `feat/map`, again 7 Sep for the auth hardening chain, and
-9 Sep when the API work moved to its own `TOMORROW.md` — the previous 916-line
+9 Sep when the API work moved to its own `NEXT.md` — the previous 916-line
 version had 47 completed items in it and is in git history if the reasoning
 behind any of them is ever needed.
 
 **This file is the app.** The API has its own running order at
-`../fox-passport-republic-api/docs/TOMORROW.md`; the live work is there, not
+`../fox-passport-republic-api/docs/NEXT.md`; the live work is there, not
 here.
 
 | Document | Role |
 |---|---|
-| `TOMORROW.md` (this file) | **What to do next.** Nothing else. |
+| `NEXT.md` (this file) | **What to do next.** Nothing else. |
 | `VERIFY.md` | The browser runbook. **Fully run 12 Sep** — all 16 checks driven at least once, all passing except B1's caveat (see below) and B3 (indirect coverage only). |
 | `RBAC.md` | Target state, migration history (invariants, prior art), and template-boundary conformance. `RBAC-PLAN.md` was folded in here 13 Sep now that the migration is done. |
 | `ARCHITECTURE.md` | The system as built — now also carries the durable parts of `app-architecture.md` (template-gap inventory, the two "don't fix these" call-outs), folded in 13 Sep once Feature Isolation hit 0 violations and the rest of that doc was just stale violation-tracking. |
@@ -188,7 +188,7 @@ mid-refactor can be in the broken state, and `prisma migrate reset` fixes it.
 ### First commands
 
 ```
-# api — see that repo's docs/TOMORROW.md, which is authoritative for it
+# api — see that repo's docs/NEXT.md, which is authoritative for it
 pnpm install
 pnpm exec prisma generate          # the client is not committed
 pnpm exec prisma migrate deploy
@@ -233,7 +233,7 @@ records rather than instructions; grep them, do not read them.
 ## 0. In flight — as of 9 Sep
 
 **The live work is in the API repository**, and its running order is
-[`../fox-passport-republic-api/docs/TOMORROW.md`](../../fox-passport-republic-api/docs/TOMORROW.md).
+[`../fox-passport-republic-api/docs/NEXT.md`](../../fox-passport-republic-api/docs/NEXT.md).
 Nothing in the app is in flight. What follows is what the app still owes.
 
 **Auth hardening. All six are written; the browser pass is what is left.** The

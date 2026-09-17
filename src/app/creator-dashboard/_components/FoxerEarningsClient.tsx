@@ -1,10 +1,17 @@
-"use client";
+﻿"use client";
 
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useAuthStore } from "@/shared/auth/useAuthStore";
 import { fetchFoxerBookings } from "@/features/booking/api/bookings";
+import ProviderBookingRowActions from "@/features/booking/components/ProviderBookingRowActions";
+import {
+  fetchMyPayouts,
+  PAYOUT_SOURCE_LABEL,
+  type Payout,
+} from "@/features/dashboard/api/payouts";
+import { formatCurrency } from "@/shared/lib/currency";
 
 type Booking = Record<string, unknown>;
 
@@ -20,11 +27,11 @@ const STATUS_CFG: Record<
     tip: "Waiting for client payment confirmation.",
   },
   confirmed: {
-    label: "In Escrow",
+    label: "Payment Held",
     color: "text-accent",
     bg: "bg-accent/10 border-accent/20",
     icon: "lock",
-    tip: "Payment secured. Awaiting client arrival confirmation.",
+    tip: "Client already paid. We're holding it safely until they confirm you showed up.",
   },
   active: {
     label: "Releasing",
@@ -56,13 +63,47 @@ const STATUS_CFG: Record<
   },
 };
 
+// Roles whose held-payment flow runs through the asset/service booking
+// APIs `fetchFoxerBookings` reads — venueFoxer (Mayor) gets paid through
+// EventVenueTransaction and eventFoxer (Host) through the host markup,
+// neither of which is a service/asset booking, and investor never has
+// bookings at all. Showing the held-payment cards + booking list to those
+// three would just be an empty "No bookings yet" even once they're actively
+// getting paid — their real payout record is the ledger below, which reads
+// from the role-agnostic `/payouts/me` instead.
+const BOOKING_PAYOUT_ROLES = ["gearFoxer", "serviceFoxer", "performerFoxer"];
+
 export default function FoxerEarningsClient() {
   const { user } = useAuthStore();
+  const roleType = user?.roleType ?? [];
+  const hasBookingPayouts = roleType.some((r) =>
+    BOOKING_PAYOUT_ROLES.includes(r),
+  );
+  const isInvestor = roleType.includes("investor");
+
   const [serviceBookings, setServiceBookings] = useState<Booking[]>([]);
   const [assetBookings, setAssetBookings] = useState<Booking[]>([]);
   const [loading, setLoading] = useState(true);
+  const [payouts, setPayouts] = useState<Payout[]>([]);
+  const [payoutTotals, setPayoutTotals] = useState({ paid: 0, pending: 0 });
+  const [payoutsLoading, setPayoutsLoading] = useState(true);
+  const [bookingsVersion, setBookingsVersion] = useState(0);
 
   useEffect(() => {
+    fetchMyPayouts(1, 20)
+      .then(({ payouts, totals }) => {
+        setPayouts(payouts);
+        setPayoutTotals(totals);
+      })
+      .catch(() => {})
+      .finally(() => setPayoutsLoading(false));
+  }, []);
+
+  useEffect(() => {
+    if (!hasBookingPayouts) {
+      setLoading(false);
+      return;
+    }
     const id = user?.id ?? (user as { userId?: string })?.userId;
     if (!id) return;
     fetchFoxerBookings(id)
@@ -72,7 +113,7 @@ export default function FoxerEarningsClient() {
       })
       .catch(() => {})
       .finally(() => setLoading(false));
-  }, [user]);
+  }, [user, hasBookingPayouts, bookingsVersion]);
 
   const allBookings: any[] = (
     [
@@ -83,17 +124,17 @@ export default function FoxerEarningsClient() {
     (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
   );
 
-  const escrowTotal = allBookings
+  const heldTotal = allBookings
     .filter((b) => ["pending", "confirmed"].includes(b.status))
-    .reduce((s, b) => s + b.totalAmount, 0);
+    .reduce((s, b) => s + Number(b.totalAmount), 0);
   const releasedTotal = allBookings
     .filter((b) => b.status === "completed")
-    .reduce((s, b) => s + b.totalAmount, 0);
+    .reduce((s, b) => s + Number(b.totalAmount), 0);
   const lifetimeTotal = allBookings
     .filter((b) => !["cancelled", "disputed"].includes(b.status))
-    .reduce((s, b) => s + b.totalAmount, 0);
+    .reduce((s, b) => s + Number(b.totalAmount), 0);
 
-  const escrowCount = allBookings.filter((b) =>
+  const heldCount = allBookings.filter((b) =>
     ["pending", "confirmed"].includes(b.status),
   ).length;
   const completedCount = allBookings.filter(
@@ -102,18 +143,42 @@ export default function FoxerEarningsClient() {
 
   return (
     <div className="space-y-6">
+      {!hasBookingPayouts && (
+        <div className="glass-panel rounded-2xl p-5 border border-white/10 flex items-center gap-4">
+          <div className="h-12 w-12 rounded-2xl bg-accent/10 flex items-center justify-center flex-shrink-0">
+            <span className="material-symbols-outlined text-[24px] text-accent">
+              {isInvestor ? "trending_up" : "receipt_long"}
+            </span>
+          </div>
+          <div>
+            <p className="text-white font-bold text-sm">
+              {isInvestor
+                ? "Revenue Share Payouts"
+                : "Payouts From Your Bookings"}
+            </p>
+            <p className="text-white/40 text-xs mt-0.5">
+              {isInvestor
+                ? "Your revenue-share cut is carved out automatically whenever a venue or event you've invested in gets paid — there's no holding period on your side."
+                : "Your venue and event bookings are tracked on the Calendar and Venues/Events pages. The ledger below is your actual Stripe transfer record."}
+            </p>
+          </div>
+        </div>
+      )}
+
       {/* Earnings Summary */}
+      {hasBookingPayouts && (
+      <>
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         {[
           {
-            label: "In Escrow",
-            amount: escrowTotal,
+            label: "Payment Held",
+            amount: heldTotal,
             icon: "lock",
             color: "text-accent",
-            desc: `${escrowCount} pending`,
+            desc: `${heldCount} pending`,
           },
           {
-            label: "Released",
+            label: "Paid Out",
             amount: releasedTotal,
             icon: "check_circle",
             color: "text-green-400",
@@ -144,7 +209,7 @@ export default function FoxerEarningsClient() {
             <p
               className={`text-2xl font-display font-bold ${card.color} mb-0.5`}
             >
-              ₱{card.amount.toLocaleString()}
+              {formatCurrency(card.amount)}
             </p>
             <p className="text-xs text-white/30">{card.desc}</p>
           </div>
@@ -157,7 +222,7 @@ export default function FoxerEarningsClient() {
           <span className="material-symbols-outlined text-[18px] text-accent">
             info
           </span>
-          How Escrow Payouts Work
+          How Payouts Work
         </h3>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
           {[
@@ -165,7 +230,7 @@ export default function FoxerEarningsClient() {
               icon: "shopping_cart",
               step: "01",
               label: "Client Books & Pays",
-              desc: "Client pays upfront via Stripe. Their money goes into escrow — not released to you yet.",
+              desc: "The client pays upfront via Stripe. We hold that payment safely — it isn't released to you yet.",
             },
             {
               icon: "qr_code_scanner",
@@ -177,7 +242,7 @@ export default function FoxerEarningsClient() {
               icon: "send_money",
               step: "03",
               label: "Funds Wire to You",
-              desc: "Once confirmed, funds are released and transferred to your payout account within 3–5 business days.",
+              desc: "Once confirmed, the held payment is released and wired to your payout account within 3–5 business days.",
             },
           ].map((s) => (
             <div key={s.step} className="flex gap-4">
@@ -201,6 +266,8 @@ export default function FoxerEarningsClient() {
           ))}
         </div>
       </div>
+      </>
+      )}
 
       {/* Stripe Connect CTA */}
       <div className="glass-panel rounded-2xl p-5 border border-dashed border-accent/30 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
@@ -215,8 +282,7 @@ export default function FoxerEarningsClient() {
               Set Up Your Payout Account
             </p>
             <p className="text-white/40 text-xs mt-0.5">
-              Connect your bank account to receive automatic payouts when escrow
-              releases.
+              Connect your bank account to receive automatic payouts.
             </p>
           </div>
         </div>
@@ -228,7 +294,92 @@ export default function FoxerEarningsClient() {
         </Link>
       </div>
 
+      {/* Payout Ledger — the actual Stripe Transfer record, distinct from
+          the held-payment/lifetime cards above (which are inferred from booking
+          gross totals). This is per-transfer net amounts, including venue/
+          host-markup/investor-revenue-share payouts the cards above never
+          covered. */}
+      <div>
+        <h3 className="text-sm font-bold text-white uppercase tracking-widest mb-4 flex items-center gap-2">
+          <span className="material-symbols-outlined text-[18px] text-white/30">
+            receipt_long
+          </span>
+          Payout Ledger
+        </h3>
+
+        <div className="grid grid-cols-2 gap-4 mb-4">
+          <div className="glass-panel rounded-2xl p-4 border border-white/10">
+            <p className="text-[10px] text-white/40 uppercase tracking-wider font-bold mb-1">
+              Paid Out
+            </p>
+            <p className="text-xl font-display font-bold text-green-400">
+              {formatCurrency(payoutTotals.paid)}
+            </p>
+          </div>
+          <div className="glass-panel rounded-2xl p-4 border border-white/10">
+            <p className="text-[10px] text-white/40 uppercase tracking-wider font-bold mb-1">
+              Pending
+            </p>
+            <p className="text-xl font-display font-bold text-yellow-400">
+              {formatCurrency(payoutTotals.pending)}
+            </p>
+          </div>
+        </div>
+
+        {payoutsLoading ? (
+          <div className="flex items-center justify-center py-10">
+            <span className="animate-spin material-symbols-outlined text-accent text-3xl">
+              progress_activity
+            </span>
+          </div>
+        ) : payouts.length === 0 ? (
+          <div className="glass-panel rounded-2xl p-6 border border-white/10 text-center">
+            <p className="text-white/40 text-sm">No payouts yet.</p>
+          </div>
+        ) : (
+          <div className="space-y-2">
+            {payouts.map((payout) => (
+              <div
+                key={payout.id}
+                className="glass-panel rounded-xl p-4 border border-white/10 flex items-center justify-between gap-4"
+              >
+                <div className="min-w-0">
+                  <p className="text-white text-sm font-semibold truncate">
+                    {PAYOUT_SOURCE_LABEL[payout.sourceType] ??
+                      payout.sourceType}
+                  </p>
+                  <p className="text-white/30 text-xs mt-0.5">
+                    {new Date(payout.createdAt).toLocaleDateString(undefined, {
+                      month: "short",
+                      day: "numeric",
+                      year: "numeric",
+                    })}
+                  </p>
+                </div>
+                <div className="flex items-center gap-3 shrink-0">
+                  <span className="text-white font-bold font-display">
+                    {formatCurrency(payout.payoutAmount)}
+                  </span>
+                  <span
+                    className={`text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider ${
+                      payout.status === "paid"
+                        ? "text-green-400 bg-green-400/10 border border-green-400/20"
+                        : payout.status === "pending"
+                          ? "text-yellow-400 bg-yellow-400/10 border border-yellow-400/20"
+                          : "text-red-400 bg-red-400/10 border border-red-400/20"
+                    }`}
+                  >
+                    {payout.status}
+                  </span>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
       {/* Booking List */}
+      {hasBookingPayouts && (
       <div>
         <h3 className="text-sm font-bold text-white uppercase tracking-widest mb-4 flex items-center gap-2">
           <span className="material-symbols-outlined text-[18px] text-white/30">
@@ -330,10 +481,16 @@ export default function FoxerEarningsClient() {
                   </div>
 
                   {/* Amount + CTA */}
-                  <div className="flex flex-col items-end justify-between flex-shrink-0">
+                  <div className="flex flex-col items-end justify-between flex-shrink-0 gap-2">
                     <p className="text-accent font-bold font-display text-lg">
-                      ₱{booking.totalAmount?.toLocaleString()}
+                      {formatCurrency(Number(booking.totalAmount))}
                     </p>
+                    <ProviderBookingRowActions
+                      bookingType={booking._type}
+                      bookingId={booking.id}
+                      status={booking.status}
+                      onChanged={() => setBookingsVersion((v) => v + 1)}
+                    />
                     <Link
                       href={`/booking/fulfillment/${booking._type}/${booking.id}`}
                       className="text-xs text-white/30 hover:text-accent transition-colors flex items-center gap-1 group-hover:text-white/60"
@@ -350,6 +507,7 @@ export default function FoxerEarningsClient() {
           </div>
         )}
       </div>
+      )}
     </div>
   );
 }

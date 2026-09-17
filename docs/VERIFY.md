@@ -1,6 +1,6 @@
 # Browser verification runbook
 
-**The one thing tests cannot do.** Everything in `TOMORROW.md` §3d and §3e
+**The one thing tests cannot do.** Everything in `NEXT.md` §3d and §3e
 passes `tsc`, lint and 240 unit tests, and none of it has been seen working. The
 failure mode that matters here is silent: a socket that never connects looks
 exactly like a socket with nothing to say, and the whole point of the migration

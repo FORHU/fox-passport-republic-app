@@ -11,3 +11,14 @@ export async function createSponsorshipCheckout(
   });
   return resp.data;
 }
+
+export interface CancelSponsorshipResult {
+  refund: { amount: string; status: string } | null;
+}
+
+export async function cancelSponsorship(
+  proposalId: Id,
+): Promise<CancelSponsorshipResult> {
+  const resp = await api.post(`/partnerships/${proposalId}/cancel`);
+  return resp.data?.data ?? resp.data;
+}

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { motion } from "motion/react";
 import { toast } from "sonner";
@@ -11,6 +11,13 @@ import {
 } from "@/shared/api/investments";
 import InvestmentLocationPicker from "./InvestmentLocationPicker";
 import api from "@/shared/lib/axios";
+import {
+  searchVenues,
+  type VenueSearchResult,
+} from "@/features/venue/api/venues";
+import { formatCurrency } from "@/shared/lib/currency";
+
+type InvestmentModality = "physical_inventory" | "venue_equity";
 
 interface WizardFormState {
   title: string;
@@ -31,6 +38,10 @@ interface WizardFormState {
   };
   mediaUrls: string[];
   broadcastToFeed: boolean;
+  // Revenue-share (venue_equity) fields — unused for physical_inventory
+  targetVenue: VenueSearchResult | null;
+  monetaryValue: number;
+  revenueSharePercent: number;
 }
 
 const CATEGORY_OPTIONS: {
@@ -52,8 +63,11 @@ export default function CreateInvestmentWizard() {
   const [step, setStep] = useState<number>(1);
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [uploadingImage, setUploadingImage] = useState<boolean>(false);
-  const [showComingSoonNotice, setShowComingSoonNotice] =
-    useState<boolean>(false);
+  const [modality, setModality] =
+    useState<InvestmentModality>("physical_inventory");
+  const [venueQuery, setVenueQuery] = useState("");
+  const [venueResults, setVenueResults] = useState<VenueSearchResult[]>([]);
+  const [venueSearchLoading, setVenueSearchLoading] = useState(false);
 
   const [form, setForm] = useState<WizardFormState>({
     title: "",
@@ -74,7 +88,26 @@ export default function CreateInvestmentWizard() {
     },
     mediaUrls: [],
     broadcastToFeed: true,
+    targetVenue: null,
+    monetaryValue: 0,
+    revenueSharePercent: 10,
   });
+
+  // Debounced venue name search for the revenue-share target picker.
+  useEffect(() => {
+    if (modality !== "venue_equity" || !venueQuery.trim()) {
+      setVenueResults([]);
+      return;
+    }
+    setVenueSearchLoading(true);
+    const handle = setTimeout(() => {
+      searchVenues(venueQuery)
+        .then(setVenueResults)
+        .catch(() => setVenueResults([]))
+        .finally(() => setVenueSearchLoading(false));
+    }, 300);
+    return () => clearTimeout(handle);
+  }, [venueQuery, modality]);
 
   // Direct S3 file upload
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -109,7 +142,9 @@ export default function CreateInvestmentWizard() {
   const handleSubmit = async () => {
     if (!form.title.trim()) {
       toast.error(
-        "Please provide an equipment name (e.g. 500 Chiavari Chairs).",
+        modality === "venue_equity"
+          ? "Please provide a title for this revenue-share agreement."
+          : "Please provide an equipment name (e.g. 500 Chiavari Chairs).",
       );
       return;
     }
@@ -119,35 +154,66 @@ export default function CreateInvestmentWizard() {
       );
       return;
     }
+    if (modality === "venue_equity") {
+      if (!form.targetVenue) {
+        toast.error("Please search for and select the venue you're backing.");
+        return;
+      }
+      if (form.revenueSharePercent <= 0 || form.revenueSharePercent > 100) {
+        toast.error("Revenue share must be between 1% and 100%.");
+        return;
+      }
+    }
 
     setIsSubmitting(true);
     try {
-      await createInvestment({
-        type: "physical_inventory",
-        title: form.title,
-        description: form.description,
-        inventoryCategory: form.inventoryCategory,
-        quantityTotal: form.quantityTotal,
-        itemCondition: form.itemCondition,
-        monetaryValue: 0,
-        usageTerms: form.usageTerms,
-        address: form.location.address || undefined,
-        city: form.location.city || undefined,
-        state: form.location.state || undefined,
-        country: form.location.country || undefined,
-        lat: form.location.lat,
-        lng: form.location.lng,
-        deliveryRadiusKm: form.location.deliveryRadiusKm,
-        transportPolicy: form.transportPolicy,
-        mediaUrls: form.mediaUrls,
-        broadcastToFeed: form.broadcastToFeed,
-      });
+      if (modality === "venue_equity") {
+        await createInvestment({
+          type: "venue_equity",
+          title: form.title,
+          description: form.description,
+          monetaryValue: form.monetaryValue,
+          revenueSharePercent: form.revenueSharePercent,
+          usageTerms: "rev_share",
+          targetVenueId: form.targetVenue!.id,
+          mediaUrls: form.mediaUrls,
+          broadcastToFeed: form.broadcastToFeed,
+        });
 
-      toast.success("Equipment Inventory Hub registered & published on map!");
+        toast.success(
+          `Revenue-share investment registered — ${form.revenueSharePercent}% of ${form.targetVenue!.name}'s venue payouts.`,
+        );
+      } else {
+        await createInvestment({
+          type: "physical_inventory",
+          title: form.title,
+          description: form.description,
+          inventoryCategory: form.inventoryCategory,
+          quantityTotal: form.quantityTotal,
+          itemCondition: form.itemCondition,
+          monetaryValue: 0,
+          usageTerms: form.usageTerms,
+          address: form.location.address || undefined,
+          city: form.location.city || undefined,
+          state: form.location.state || undefined,
+          country: form.location.country || undefined,
+          lat: form.location.lat,
+          lng: form.location.lng,
+          deliveryRadiusKm: form.location.deliveryRadiusKm,
+          transportPolicy: form.transportPolicy,
+          mediaUrls: form.mediaUrls,
+          broadcastToFeed: form.broadcastToFeed,
+        });
+
+        toast.success(
+          "Equipment Inventory Hub registered & published on map!",
+        );
+      }
+
       router.push("/republic?tab=partners");
     } catch (err: any) {
       toast.error(
-        err?.response?.data?.message || "Failed to create equipment hub",
+        err?.response?.data?.message || "Failed to register investment",
       );
     } finally {
       setIsSubmitting(false);
@@ -181,7 +247,11 @@ export default function CreateInvestmentWizard() {
             </h2>
             <div className="flex items-center gap-2 text-[10px] text-zinc-500 mt-0.5 truncate">
               <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse shrink-0" />
-              {form.title || "New Equipment Hub"} (Draft)
+              {form.title ||
+                (modality === "venue_equity"
+                  ? "New Revenue Share"
+                  : "New Equipment Hub")}{" "}
+              (Draft)
             </div>
           </div>
         </div>
@@ -207,12 +277,20 @@ export default function CreateInvestmentWizard() {
 
         {/* 4 Step Indicator */}
         <div className="grid grid-cols-4 gap-2 border-b border-zinc-800 pb-4">
-          {[
-            { num: 1, label: "Modality" },
-            { num: 2, label: "Equipment Details" },
-            { num: 3, label: "Depot Location" },
-            { num: 4, label: "Photos & Deploy" },
-          ].map((s) => (
+          {(modality === "venue_equity"
+            ? [
+                { num: 1, label: "Modality" },
+                { num: 2, label: "Revenue Share Terms" },
+                { num: 3, label: "Target Venue" },
+                { num: 4, label: "Photos & Deploy" },
+              ]
+            : [
+                { num: 1, label: "Modality" },
+                { num: 2, label: "Equipment Details" },
+                { num: 3, label: "Depot Location" },
+                { num: 4, label: "Photos & Deploy" },
+              ]
+          ).map((s) => (
             <button
               key={s.num}
               type="button"
@@ -233,7 +311,7 @@ export default function CreateInvestmentWizard() {
           ))}
         </div>
 
-        {/* ── STEP 1: MODALITY PICKER (WITH COMING SOON BADGE) ─────── */}
+        {/* ── STEP 1: MODALITY PICKER ────────────────────────────────── */}
         {step === 1 && (
           <motion.div
             initial={{ opacity: 0, y: 10 }}
@@ -245,20 +323,20 @@ export default function CreateInvestmentWizard() {
                 Choose Investment Stream
               </h2>
               <span className="text-[11px] text-zinc-400">
-                Active & Upcoming Modalities
+                Both modalities are live
               </span>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {/* Option A: Physical Equipment Inventory Hub (ACTIVE) */}
-              <div className="relative rounded-3xl p-6 border bg-gradient-to-br from-amber-950/40 via-zinc-900 to-zinc-950 border-amber-400/80 shadow-[0_0_30px_rgba(245,158,11,0.15)] ring-1 ring-amber-400 flex flex-col justify-between">
-                <div className="absolute top-4 right-4">
-                  <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-lime-400/20 text-lime-400 border border-lime-400/40">
-                    <span className="w-1.5 h-1.5 rounded-full bg-lime-400 animate-pulse" />
-                    Available Now
-                  </span>
-                </div>
-
+              {/* Option A: Physical Equipment Inventory Hub */}
+              <div
+                onClick={() => setModality("physical_inventory")}
+                className={`relative rounded-3xl p-6 border transition-all flex flex-col justify-between cursor-pointer ${
+                  modality === "physical_inventory"
+                    ? "bg-gradient-to-br from-amber-950/40 via-zinc-900 to-zinc-950 border-amber-400/80 shadow-[0_0_30px_rgba(245,158,11,0.15)] ring-1 ring-amber-400"
+                    : "bg-zinc-950/60 border-zinc-800/80 hover:border-zinc-700 opacity-85 hover:opacity-100"
+                }`}
+              >
                 <div>
                   <div className="w-12 h-12 rounded-2xl bg-amber-400/15 border border-amber-400/30 flex items-center justify-center text-amber-300 mb-4">
                     <span className="material-symbols-outlined text-2xl">
@@ -276,85 +354,60 @@ export default function CreateInvestmentWizard() {
                   </p>
                 </div>
 
-                <div className="mt-6 pt-4 border-t border-zinc-800/80 flex items-center justify-between text-xs text-amber-300 font-bold">
-                  <span>Selected Modality</span>
-                  <span className="material-symbols-outlined text-amber-400">
-                    check_circle
-                  </span>
+                <div className="mt-6 pt-4 border-t border-zinc-800/80 flex items-center justify-between text-xs font-bold">
+                  {modality === "physical_inventory" ? (
+                    <>
+                      <span className="text-amber-300">Selected Modality</span>
+                      <span className="material-symbols-outlined text-amber-400">
+                        check_circle
+                      </span>
+                    </>
+                  ) : (
+                    <span className="text-zinc-500">Tap to select</span>
+                  )}
                 </div>
               </div>
 
-              {/* Option B: Financial Capital & Venue Equity (COMING SOON) */}
+              {/* Option B: Financial Capital & Venue Equity (revenue share) */}
               <div
-                onClick={() => setShowComingSoonNotice(true)}
-                className="relative rounded-3xl p-6 border bg-zinc-950/60 border-zinc-800/80 hover:border-zinc-700 transition-all flex flex-col justify-between cursor-pointer group opacity-85 hover:opacity-100"
+                onClick={() => setModality("venue_equity")}
+                className={`relative rounded-3xl p-6 border transition-all flex flex-col justify-between cursor-pointer ${
+                  modality === "venue_equity"
+                    ? "bg-gradient-to-br from-amber-950/40 via-zinc-900 to-zinc-950 border-amber-400/80 shadow-[0_0_30px_rgba(245,158,11,0.15)] ring-1 ring-amber-400"
+                    : "bg-zinc-950/60 border-zinc-800/80 hover:border-zinc-700 opacity-85 hover:opacity-100"
+                }`}
               >
-                <div className="absolute top-4 right-4">
-                  <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-amber-500/10 text-amber-400 border border-amber-500/30 shadow-sm">
-                    <span className="material-symbols-outlined text-[12px]">
-                      schedule
-                    </span>
-                    Coming Soon
-                  </span>
-                </div>
-
                 <div>
-                  <div className="w-12 h-12 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center text-zinc-400 group-hover:text-amber-300 transition-colors mb-4">
+                  <div className="w-12 h-12 rounded-2xl bg-amber-400/15 border border-amber-400/30 flex items-center justify-center text-amber-300 mb-4">
                     <span className="material-symbols-outlined text-2xl">
                       payments
                     </span>
                   </div>
-                  <h3 className="text-base font-black text-zinc-300 group-hover:text-white transition-colors mb-2">
+                  <h3 className="text-base font-black text-white mb-2">
                     Financial Capital & Venue Equity
                   </h3>
-                  <p className="text-xs text-zinc-500 leading-relaxed">
-                    Direct cash injection, venue renovation funds, and event
-                    pre-production co-financing with revenue-share or equity
-                    contracts.
+                  <p className="text-xs text-zinc-400 leading-relaxed">
+                    Pledge capital against a specific venue and set your own
+                    revenue-share percentage — you&apos;re paid automatically
+                    out of that venue&apos;s own payout whenever it earns
+                    through the Republic, alongside the venue owner.
                   </p>
                 </div>
 
-                <div className="mt-6 pt-4 border-t border-zinc-900 flex items-center justify-between text-xs text-zinc-500">
-                  <span>Regulatory Preparation</span>
-                  <span className="text-[11px] font-semibold text-amber-400/80 group-hover:underline">
-                    Read Details →
-                  </span>
+                <div className="mt-6 pt-4 border-t border-zinc-800/80 flex items-center justify-between text-xs font-bold">
+                  {modality === "venue_equity" ? (
+                    <>
+                      <span className="text-amber-300">Selected Modality</span>
+                      <span className="material-symbols-outlined text-amber-400">
+                        check_circle
+                      </span>
+                    </>
+                  ) : (
+                    <span className="text-zinc-500">Tap to select</span>
+                  )}
                 </div>
               </div>
             </div>
-
-            {/* Coming Soon Notice Drawer/Alert */}
-            {showComingSoonNotice && (
-              <motion.div
-                initial={{ opacity: 0, y: -5 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="p-4 rounded-2xl bg-amber-950/30 border border-amber-500/30 flex items-start gap-3 text-xs"
-              >
-                <span className="material-symbols-outlined text-amber-400 text-xl shrink-0 mt-0.5">
-                  info
-                </span>
-                <div className="flex-1 space-y-1">
-                  <h4 className="font-bold text-amber-300">
-                    Financial Capital & Equity Pool is Coming Soon
-                  </h4>
-                  <p className="text-zinc-300 leading-relaxed">
-                    We are currently refining the legal agreements, escrow
-                    frameworks, and securities compliance for monetary
-                    investments. In the meantime, **Physical Equipment &
-                    Inventory Resource Pooling** is fully live and ready!
-                  </p>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => setShowComingSoonNotice(false)}
-                  className="text-zinc-400 hover:text-white"
-                >
-                  <span className="material-symbols-outlined text-[16px]">
-                    close
-                  </span>
-                </button>
-              </motion.div>
-            )}
 
             <div className="pt-4 flex justify-end">
               <button
@@ -362,7 +415,9 @@ export default function CreateInvestmentWizard() {
                 onClick={() => setStep(2)}
                 className="px-6 py-3 rounded-xl bg-gradient-to-r from-amber-400 to-yellow-500 hover:from-amber-300 hover:to-yellow-400 text-black font-black text-xs flex items-center gap-1.5 shadow-lg transition-all cursor-pointer"
               >
-                Continue to Equipment Details
+                {modality === "venue_equity"
+                  ? "Continue to Revenue Share Terms"
+                  : "Continue to Equipment Details"}
                 <span className="material-symbols-outlined text-[16px]">
                   arrow_forward
                 </span>
@@ -371,8 +426,222 @@ export default function CreateInvestmentWizard() {
           </motion.div>
         )}
 
-        {/* ── STEP 2: EQUIPMENT DETAILS & ATTRIBUTES ─────────────────── */}
-        {step === 2 && (
+        {/* ── STEP 2 (venue_equity): REVENUE SHARE TERMS ──────────────── */}
+        {step === 2 && modality === "venue_equity" && (
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="space-y-6"
+          >
+            <div className="space-y-2">
+              <label className="text-xs font-bold text-zinc-300 uppercase tracking-wider block">
+                Agreement Title *
+              </label>
+              <input
+                type="text"
+                value={form.title}
+                onChange={(e) => setForm({ ...form, title: e.target.value })}
+                placeholder="e.g. Renovation Capital for Grand Ballroom"
+                className="w-full px-4 py-3 rounded-xl bg-zinc-950 border border-zinc-800 text-white placeholder:text-zinc-600 focus:outline-none focus:border-amber-400 text-sm font-semibold"
+              />
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <label className="text-xs font-bold text-zinc-300 uppercase tracking-wider block">
+                  Capital Pledged
+                </label>
+                <input
+                  type="number"
+                  min="0"
+                  value={form.monetaryValue}
+                  onChange={(e) =>
+                    setForm({
+                      ...form,
+                      monetaryValue: Number(e.target.value),
+                    })
+                  }
+                  className="w-full px-4 py-2.5 rounded-xl bg-zinc-950 border border-zinc-800 text-white focus:outline-none focus:border-amber-400 text-sm"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-xs font-bold text-zinc-300 uppercase tracking-wider block">
+                  Your Revenue Share (%) *
+                </label>
+                <div className="flex items-center gap-3">
+                  <input
+                    type="range"
+                    min={1}
+                    max={100}
+                    value={form.revenueSharePercent}
+                    onChange={(e) =>
+                      setForm({
+                        ...form,
+                        revenueSharePercent: Number(e.target.value),
+                      })
+                    }
+                    className="flex-1 accent-amber-400"
+                  />
+                  <span className="w-14 text-right text-amber-300 font-black text-sm">
+                    {form.revenueSharePercent}%
+                  </span>
+                </div>
+                <p className="text-[11px] text-zinc-500">
+                  This percentage of the venue&apos;s own payout comes to you
+                  automatically each time it earns — the venue owner keeps
+                  the rest.
+                </p>
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-xs font-bold text-zinc-300 uppercase tracking-wider block">
+                Description & Terms *
+              </label>
+              <textarea
+                rows={4}
+                value={form.description}
+                onChange={(e) =>
+                  setForm({ ...form, description: e.target.value })
+                }
+                placeholder="Describe what the capital covers and any conditions of the revenue-share agreement..."
+                className="w-full px-4 py-3 rounded-xl bg-zinc-950 border border-zinc-800 text-white placeholder:text-zinc-600 focus:outline-none focus:border-amber-400 text-sm"
+              />
+            </div>
+
+            <div className="pt-4 flex items-center justify-between">
+              <button
+                type="button"
+                onClick={() => setStep(1)}
+                className="px-5 py-2.5 rounded-xl bg-zinc-900 hover:bg-zinc-800 text-zinc-300 font-bold text-xs transition-colors"
+              >
+                Back
+              </button>
+              <button
+                type="button"
+                onClick={() => setStep(3)}
+                className="px-6 py-3 rounded-xl bg-gradient-to-r from-amber-400 to-yellow-500 hover:from-amber-300 hover:to-yellow-400 text-black font-black text-xs flex items-center gap-1.5 shadow-lg transition-all cursor-pointer"
+              >
+                Choose Target Venue
+                <span className="material-symbols-outlined text-[16px]">
+                  arrow_forward
+                </span>
+              </button>
+            </div>
+          </motion.div>
+        )}
+
+        {/* ── STEP 3 (venue_equity): TARGET VENUE SEARCH ──────────────── */}
+        {step === 3 && modality === "venue_equity" && (
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="space-y-6"
+          >
+            <div>
+              <h2 className="text-lg font-bold text-white">
+                Which venue are you backing?
+              </h2>
+              <p className="text-xs text-zinc-400 mt-0.5">
+                Search by venue name. Your revenue share is carved out of
+                that venue&apos;s own payout — this doesn&apos;t change what
+                the citizen pays or the platform&apos;s fee.
+              </p>
+            </div>
+
+            <div className="relative">
+              <input
+                type="text"
+                value={
+                  form.targetVenue
+                    ? form.targetVenue.name
+                    : venueQuery
+                }
+                onChange={(e) => {
+                  setForm({ ...form, targetVenue: null });
+                  setVenueQuery(e.target.value);
+                }}
+                placeholder="Search venues by name..."
+                className="w-full px-4 py-3 rounded-xl bg-zinc-950 border border-zinc-800 text-white placeholder:text-zinc-600 focus:outline-none focus:border-amber-400 text-sm font-semibold"
+              />
+              {!form.targetVenue && venueQuery.trim() && (
+                <div className="absolute z-10 mt-1 w-full rounded-xl bg-zinc-950 border border-zinc-800 shadow-xl overflow-hidden max-h-64 overflow-y-auto">
+                  {venueSearchLoading ? (
+                    <div className="p-3 text-xs text-zinc-500">
+                      Searching...
+                    </div>
+                  ) : venueResults.length === 0 ? (
+                    <div className="p-3 text-xs text-zinc-500">
+                      No venues found.
+                    </div>
+                  ) : (
+                    venueResults.map((v) => (
+                      <button
+                        key={v.id}
+                        type="button"
+                        onClick={() => {
+                          setForm({ ...form, targetVenue: v });
+                          setVenueQuery("");
+                        }}
+                        className="w-full text-left px-4 py-2.5 hover:bg-amber-400/10 text-sm text-white flex items-center justify-between gap-2"
+                      >
+                        <span className="truncate">{v.name}</span>
+                        {v.city && (
+                          <span className="text-xs text-zinc-500 shrink-0">
+                            {v.city}
+                          </span>
+                        )}
+                      </button>
+                    ))
+                  )}
+                </div>
+              )}
+            </div>
+
+            {form.targetVenue && (
+              <div className="p-4 rounded-2xl bg-amber-400/10 border border-amber-400/30 flex items-center justify-between">
+                <div className="flex items-center gap-2 text-sm text-white font-bold">
+                  <span className="material-symbols-outlined text-amber-400 text-[18px]">
+                    location_city
+                  </span>
+                  {form.targetVenue.name}
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setForm({ ...form, targetVenue: null })}
+                  className="text-xs text-zinc-400 hover:text-white"
+                >
+                  Change
+                </button>
+              </div>
+            )}
+
+            <div className="pt-4 flex items-center justify-between">
+              <button
+                type="button"
+                onClick={() => setStep(2)}
+                className="px-5 py-2.5 rounded-xl bg-zinc-900 hover:bg-zinc-800 text-zinc-300 font-bold text-xs transition-colors"
+              >
+                Back
+              </button>
+              <button
+                type="button"
+                onClick={() => setStep(4)}
+                disabled={!form.targetVenue}
+                className="px-6 py-3 rounded-xl bg-gradient-to-r from-amber-400 to-yellow-500 hover:from-amber-300 hover:to-yellow-400 text-black font-black text-xs flex items-center gap-1.5 shadow-lg transition-all cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
+              >
+                Review & Photos
+                <span className="material-symbols-outlined text-[16px]">
+                  arrow_forward
+                </span>
+              </button>
+            </div>
+          </motion.div>
+        )}
+
+        {/* ── STEP 2 (physical_inventory): EQUIPMENT DETAILS & ATTRIBUTES ─ */}
+        {step === 2 && modality === "physical_inventory" && (
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
@@ -534,8 +803,8 @@ export default function CreateInvestmentWizard() {
           </motion.div>
         )}
 
-        {/* ── STEP 3: DEPOT LOCATION ON MAP ─────────────────────────── */}
-        {step === 3 && (
+        {/* ── STEP 3 (physical_inventory): DEPOT LOCATION ON MAP ────── */}
+        {step === 3 && modality === "physical_inventory" && (
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
@@ -592,8 +861,9 @@ export default function CreateInvestmentWizard() {
                 Photos & Feed Broadcast
               </h2>
               <p className="text-xs text-zinc-400 mt-0.5">
-                Upload real photos of your equipment depot or tools to build
-                trust with organizers.
+                {modality === "venue_equity"
+                  ? "Upload any supporting documents or photos for this agreement."
+                  : "Upload real photos of your equipment depot or tools to build trust with organizers."}
               </p>
             </div>
 
@@ -672,53 +942,85 @@ export default function CreateInvestmentWizard() {
             </div>
 
             {/* Review Summary Card */}
-            <div className="rounded-2xl bg-zinc-950 border border-zinc-800/80 p-5 space-y-3 text-xs">
-              <div className="text-zinc-400 uppercase font-black text-[10px] tracking-wider">
-                Equipment Hub Summary
-              </div>
-              <div className="flex justify-between items-center text-sm font-bold text-white">
-                <span>{form.title}</span>
-                <span className="text-amber-400 font-black">
-                  {form.quantityTotal} units available
-                </span>
-              </div>
-              <div className="grid grid-cols-2 gap-2 text-zinc-400 pt-2 border-t border-zinc-900">
-                <div>
-                  Category:{" "}
-                  <span className="text-white capitalize">
-                    {form.inventoryCategory.replace(/_/g, " ")}
+            {modality === "venue_equity" ? (
+              <div className="rounded-2xl bg-zinc-950 border border-zinc-800/80 p-5 space-y-3 text-xs">
+                <div className="text-zinc-400 uppercase font-black text-[10px] tracking-wider">
+                  Revenue Share Summary
+                </div>
+                <div className="flex justify-between items-center text-sm font-bold text-white">
+                  <span>{form.title}</span>
+                  <span className="text-amber-400 font-black">
+                    {form.revenueSharePercent}% share
                   </span>
                 </div>
-                <div>
-                  Condition:{" "}
-                  <span className="text-white capitalize">
-                    {form.itemCondition}
-                  </span>
-                </div>
-                <div>
-                  Territory:{" "}
-                  <span className="text-white">{form.location.country}</span>
-                </div>
-                {form.location.city && (
+                <div className="grid grid-cols-2 gap-2 text-zinc-400 pt-2 border-t border-zinc-900">
                   <div>
-                    City:{" "}
-                    <span className="text-white">{form.location.city}</span>
+                    Target Venue:{" "}
+                    <span className="text-white">
+                      {form.targetVenue?.name ?? "—"}
+                    </span>
                   </div>
-                )}
-                <div>
-                  Coverage:{" "}
-                  <span className="text-amber-300 font-bold">
-                    {form.location.deliveryRadiusKm} km radius
-                  </span>
-                </div>
-                <div>
-                  Dispatch:{" "}
-                  <span className="text-white capitalize">
-                    {form.transportPolicy.replace(/_/g, " ")}
-                  </span>
+                  <div>
+                    Capital Pledged:{" "}
+                    <span className="text-white">
+                      {formatCurrency(form.monetaryValue)}
+                    </span>
+                  </div>
                 </div>
               </div>
-            </div>
+            ) : (
+              <div className="rounded-2xl bg-zinc-950 border border-zinc-800/80 p-5 space-y-3 text-xs">
+                <div className="text-zinc-400 uppercase font-black text-[10px] tracking-wider">
+                  Equipment Hub Summary
+                </div>
+                <div className="flex justify-between items-center text-sm font-bold text-white">
+                  <span>{form.title}</span>
+                  <span className="text-amber-400 font-black">
+                    {form.quantityTotal} units available
+                  </span>
+                </div>
+                <div className="grid grid-cols-2 gap-2 text-zinc-400 pt-2 border-t border-zinc-900">
+                  <div>
+                    Category:{" "}
+                    <span className="text-white capitalize">
+                      {form.inventoryCategory.replace(/_/g, " ")}
+                    </span>
+                  </div>
+                  <div>
+                    Condition:{" "}
+                    <span className="text-white capitalize">
+                      {form.itemCondition}
+                    </span>
+                  </div>
+                  <div>
+                    Territory:{" "}
+                    <span className="text-white">
+                      {form.location.country}
+                    </span>
+                  </div>
+                  {form.location.city && (
+                    <div>
+                      City:{" "}
+                      <span className="text-white">
+                        {form.location.city}
+                      </span>
+                    </div>
+                  )}
+                  <div>
+                    Coverage:{" "}
+                    <span className="text-amber-300 font-bold">
+                      {form.location.deliveryRadiusKm} km radius
+                    </span>
+                  </div>
+                  <div>
+                    Dispatch:{" "}
+                    <span className="text-white capitalize">
+                      {form.transportPolicy.replace(/_/g, " ")}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            )}
 
             <div className="pt-4 flex items-center justify-between">
               <button
@@ -734,7 +1036,11 @@ export default function CreateInvestmentWizard() {
                 disabled={isSubmitting}
                 className="px-8 py-3.5 rounded-xl bg-gradient-to-r from-amber-400 to-yellow-500 hover:from-amber-300 hover:to-yellow-400 text-black font-black text-sm flex items-center gap-2 shadow-[0_0_25px_rgba(245,158,11,0.4)] transition-all disabled:opacity-50 cursor-pointer"
               >
-                {isSubmitting ? "Deploying Hub..." : "Deploy Equipment to Map"}
+                {isSubmitting
+                  ? "Submitting..."
+                  : modality === "venue_equity"
+                    ? "Register Revenue Share"
+                    : "Deploy Equipment to Map"}
                 <span className="material-symbols-outlined text-[18px]">
                   rocket_launch
                 </span>

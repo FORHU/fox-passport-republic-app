@@ -13,7 +13,7 @@ import {
   fetchInvestmentsOnMap,
   InventoryCategory,
 } from "@/shared/api/investments";
-import Link from "next/link";
+import MessageButton from "@/features/messages/components/MessageButton";
 import { toast } from "sonner";
 import {
   getEffectiveMapboxToken,
@@ -564,15 +564,16 @@ export default function PartnerInventoryMap({
 
             <div className="mt-4 flex items-center gap-2">
               {selectedPin.partner && (
-                <Link
-                  href={`/messages?userId=${selectedPin.partner.id}&contextType=investment&contextId=${selectedPin.id}&contextLabel=${encodeURIComponent(selectedPin.title)}`}
+                <MessageButton
+                  otherUserId={selectedPin.partner.id}
+                  otherUserName={selectedPin.partner.name}
+                  otherUserImgId={selectedPin.partner.imgId}
+                  contextType="investment"
+                  contextId={selectedPin.id}
+                  contextLabel={selectedPin.title}
+                  label="Request Tool Dispatch"
                   className="flex-1 px-4 py-2.5 rounded-xl bg-gradient-to-r from-amber-400 to-yellow-500 hover:from-amber-300 hover:to-yellow-400 text-black font-black text-xs flex items-center justify-center gap-1.5 shadow-lg transition-all cursor-pointer"
-                >
-                  <span className="material-symbols-outlined text-[16px]">
-                    chat
-                  </span>
-                  <span>Request Tool Dispatch</span>
-                </Link>
+                />
               )}
             </div>
           </div>

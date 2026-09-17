@@ -7,12 +7,14 @@ vi.mock("@/features/event/hooks/useEventCheckout");
 
 describe("EventPaymentPanel", () => {
   const mockCheckout = vi.fn();
+  const mockCancelEvent = vi.fn();
 
   beforeEach(() => {
     vi.clearAllMocks();
     (eventHooks.useEventPaymentSummary as any).mockReturnValue({
       data: {
         eventId: "event-123",
+        items: [],
         subtotalAmount: 5000,
         discountAmount: 0,
         platformFeeAmount: 500,
@@ -27,6 +29,11 @@ describe("EventPaymentPanel", () => {
       mutate: mockCheckout,
       isPending: false,
       error: null,
+    });
+
+    (eventHooks.useCancelEventMutation as any).mockReturnValue({
+      mutate: mockCancelEvent,
+      isPending: false,
     });
   });
 
@@ -44,7 +51,7 @@ describe("EventPaymentPanel", () => {
     fireEvent.click(button);
     expect(mockCheckout).toHaveBeenCalledWith({
       eventId: "event-123",
-      voucherCode: undefined,
+      voucherCodes: [],
     });
   });
 
