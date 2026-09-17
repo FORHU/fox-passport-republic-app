@@ -65,6 +65,21 @@ export default function VenueDetailClient({
     }
   };
 
+  // Same id-field fallback pattern useHostVenueEdit's belongsToHost uses —
+  // this venue record and the separately-passed `host` can each carry the
+  // owner's id under a different key depending on which code path produced
+  // them, so no single field is reliable on its own.
+  const ownerIdCandidates = [
+    (venue as any).host?.id,
+    (venue as any).mayorId,
+    (venue as any).mayor?.id,
+    (venue as any).hostId,
+    host?.id,
+  ];
+  const isOwner =
+    !!user?.id &&
+    ownerIdCandidates.some((id) => id && String(id) === String(user.id));
+
   return (
     <div className="bg-background bg-gradient-dark text-text-main antialiased min-h-screen flex flex-col selection:bg-accent selection:text-black font-body">
       {/* Experience Builder Overlay */}
@@ -87,6 +102,11 @@ export default function VenueDetailClient({
         title={venue.title}
         onBack={handleBack}
         onProposePartnership={handleProposePartnership}
+        onEdit={
+          isOwner
+            ? () => router.push(`/creator-dashboard/venues/${venue.id}/edit`)
+            : undefined
+        }
       />
 
       {/* Mobile sticky bottom bar — design: "From ₱X/night  [Book Now]" */}

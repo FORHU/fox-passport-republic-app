@@ -73,6 +73,9 @@ export default function OnboardingClient({ user: serverUser }: { user: any }) {
 
   const [step, setStep] = useState<Step>(hasExistingRoles ? 3 : 1);
   const [pendingRoles, setPendingRoles] = useState<string[]>([]);
+  const [revisionRequests, setRevisionRequests] = useState<
+    { id: string; roleType: string }[]
+  >([]);
   const [name, setName] = useState(user?.name ?? "");
   const [city, setCity] = useState("");
   const [isSaving, setIsSaving] = useState(false);
@@ -81,16 +84,22 @@ export default function OnboardingClient({ user: serverUser }: { user: any }) {
     api
       .get("/role-requests/my")
       .then((res) => {
-        const pending: string[] = (res.data?.data ?? [])
-          .filter((r: any) => r.status === "pending")
-          .map((r: any) => r.roleType);
+        const requests: any[] = res.data?.data ?? [];
+        const pending: string[] = requests
+          .filter((r) => r.status === "pending")
+          .map((r) => r.roleType);
+        const revisions = requests
+          .filter((r) => r.status === "revision_requested")
+          .map((r) => ({ id: r.id, roleType: r.roleType }));
         setPendingRoles(pending);
-        if (pending.length > 0) setStep(3);
+        setRevisionRequests(revisions);
+        if (pending.length > 0 || revisions.length > 0) setStep(3);
       })
       .catch(() => {});
   }, []);
 
-  const hasCommittedRoles = hasExistingRoles || pendingRoles.length > 0;
+  const hasCommittedRoles =
+    hasExistingRoles || pendingRoles.length > 0 || revisionRequests.length > 0;
   const goAfterProfile = () => setStep(hasCommittedRoles ? 3 : 2);
   const goBackFromRoles = () => setStep(hasCommittedRoles ? 1 : 2);
 
@@ -370,6 +379,12 @@ export default function OnboardingClient({ user: serverUser }: { user: any }) {
                   const isActive = existingRoles.includes(role.roleType);
                   const isPending =
                     !isActive && pendingRoles.includes(role.roleType);
+                  const revisionRequest =
+                    !isActive && !isPending
+                      ? revisionRequests.find(
+                          (r) => r.roleType === role.roleType,
+                        )
+                      : undefined;
 
                   if (isActive) {
                     return (
@@ -452,6 +467,50 @@ export default function OnboardingClient({ user: serverUser }: { user: any }) {
                           {role.desc}
                         </p>
                       </div>
+                    );
+                  }
+
+                  if (revisionRequest) {
+                    return (
+                      <Link
+                        key={role.type}
+                        href={`/foxer/resubmit/${revisionRequest.id}`}
+                        className="group relative bg-[#1a1a24] rounded-[1.5rem] p-6 text-left border border-orange-500/20 hover:bg-[#1e1e2c] transition-all duration-300 flex flex-col"
+                        style={{
+                          boxShadow: "inset 0 0 0 1px rgba(249,115,22,0.15)",
+                        }}
+                      >
+                        <span className="absolute top-4 right-4 inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-orange-500/10 border border-orange-500/30 text-orange-400 text-[10px] font-bold uppercase tracking-wider">
+                          <span className="material-symbols-outlined text-[11px]">
+                            flag
+                          </span>
+                          Needs Revision
+                        </span>
+                        <div
+                          className="h-12 w-12 rounded-xl flex items-center justify-center mb-4"
+                          style={{ backgroundColor: `${role.color}20` }}
+                        >
+                          <span
+                            className="material-symbols-outlined text-[24px]"
+                            style={{ color: role.color }}
+                          >
+                            {role.icon}
+                          </span>
+                        </div>
+                        <p
+                          className="text-[10px] font-bold uppercase tracking-widest mb-1"
+                          style={{ color: role.color }}
+                        >
+                          {role.tag}
+                        </p>
+                        <h3 className="text-lg font-display font-bold text-white mb-1">
+                          {role.title}
+                        </h3>
+                        <p className="text-xs text-orange-300/70 mt-auto group-hover:text-orange-300 transition-colors">
+                          One or more documents were flagged — tap to fix and
+                          resubmit.
+                        </p>
+                      </Link>
                     );
                   }
 

@@ -536,6 +536,33 @@ export async function issueManualRefund(payload: {
   return resp.data?.data;
 }
 
+/**
+ * Itemized refund for a single asset/service transaction — distinct from
+ * `issueManualRefund` above, which is a whole-booking bookkeeping record
+ * with no Stripe call and no remaining-balance check. This one actually
+ * calls Stripe and validates the amount against what's left refundable on
+ * that specific line item. See the api repo's
+ * docs/adr/0005-itemized-refunds-vs-bookkeeping-refunds.md.
+ */
+export async function issueItemizedRefund(
+  transactionId: string,
+  payload: { kind: "asset" | "service"; amount: number; reason: string },
+): Promise<
+  RefundRecord & { assetTransactionId?: string; serviceTransactionId?: string; alreadyPaidOutWarning?: boolean }
+> {
+  const idempotencyKey =
+    typeof crypto !== "undefined" && "randomUUID" in crypto
+      ? crypto.randomUUID()
+      : `${Date.now()}-${Math.random()}`;
+
+  const resp = await api.post(
+    `/admin/transactions/${transactionId}/refund`,
+    payload,
+    { headers: { "Idempotency-Key": idempotencyKey } },
+  );
+  return resp.data?.data;
+}
+
 export async function fetchRefundHistory(params?: {
   status?: string;
   page?: number;

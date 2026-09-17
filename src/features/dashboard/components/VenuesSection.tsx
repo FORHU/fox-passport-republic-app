@@ -15,6 +15,11 @@ interface VenuesSectionProps {
   showHeading?: boolean;
   viewAllHref?: string;
   onEdit?: (id: number | string) => void;
+  /** Opens the venue's own (read-only) page — used instead of `onEdit` for
+   * a live venue, so clicking into it doesn't drop the host straight into
+   * the builder with a resubmission prompt. Falls back to `onEdit` if not
+   * given. */
+  onView?: (id: number | string) => void;
   page?: number;
   totalPages?: number;
   onPageChange?: (page: number) => void;
@@ -27,6 +32,7 @@ export function VenuesSection({
   showHeading = true,
   viewAllHref = "/creator-dashboard/venues",
   onEdit,
+  onView,
   page,
   totalPages,
   onPageChange,
@@ -56,22 +62,28 @@ export function VenuesSection({
       )}
       <div className="space-y-4">
         {venues.length > 0 ? (
-          venues.map((vn) => (
+          venues.map((vn) => {
+            const isLive = ["published", "available"].includes(
+              (vn.status || "").toLowerCase(),
+            );
+            // A live venue already has something to look at — clicking in
+            // opens that (read-only) instead of dropping straight into the
+            // builder, which used to prompt "Submit for Review" on a venue
+            // that's already approved. A draft/pending one has nothing to
+            // view yet, so clicking it still goes straight to editing.
+            const primaryAction = isLive ? (onView ?? onEdit) : onEdit;
+            return (
             <div
               key={vn.id}
               className={`bg-[#0f111a]/60 backdrop-blur border border-white/5 p-5 rounded-3xl hover:bg-white/5 transition-all group border-l-4 ${
-                ["published", "available"].includes(
-                  (vn.status || "").toLowerCase(),
-                )
-                  ? "border-l-green-500"
-                  : "border-l-yellow-500"
-              } ${onEdit ? "cursor-pointer" : ""}`}
-              onClick={() => onEdit?.(vn.id)}
-              role={onEdit ? "button" : undefined}
-              tabIndex={onEdit ? 0 : undefined}
+                isLive ? "border-l-green-500" : "border-l-yellow-500"
+              } ${primaryAction ? "cursor-pointer" : ""}`}
+              onClick={() => primaryAction?.(vn.id)}
+              role={primaryAction ? "button" : undefined}
+              tabIndex={primaryAction ? 0 : undefined}
               onKeyDown={(e) => {
-                if (!onEdit) return;
-                if (e.key === "Enter" || e.key === " ") onEdit(vn.id);
+                if (!primaryAction) return;
+                if (e.key === "Enter" || e.key === " ") primaryAction(vn.id);
               }}
             >
               <div className="flex flex-col sm:flex-row gap-5">
@@ -115,9 +127,7 @@ export function VenuesSection({
                       onStatusChange={(s) => onStatusChange(vn.id, s)}
                     />
                   </div>
-                  {["published", "available"].includes(
-                    (vn.status || "").toLowerCase(),
-                  ) ? (
+                  {isLive ? (
                     <div className="mt-4 grid grid-cols-3 gap-4 border-t border-white/5 pt-4">
                       <div>
                         <div className="text-[10px] text-white/40 uppercase">
@@ -133,8 +143,12 @@ export function VenuesSection({
                       </div>
                       <div className="flex justify-end gap-2">
                         <button
+                          title="Edit details"
                           className="h-9 w-9 rounded-full bg-white/5 hover:bg-white hover:text-black flex items-center justify-center"
-                          onClick={(e) => e.stopPropagation()}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onEdit?.(vn.id);
+                          }}
                         >
                           <span className="material-symbols-outlined text-[18px]">
                             edit
@@ -184,7 +198,8 @@ export function VenuesSection({
                 </div>
               </div>
             </div>
-          ))
+            );
+          })
         ) : (
           <EmptyState type="venues" href="/venue-foxer/create-venue" />
         )}

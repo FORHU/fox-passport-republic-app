@@ -74,3 +74,31 @@ export interface PaymentSummaryResponse {
   platformFeeAmount: number;
   grossAmount: number;
 }
+
+/**
+ * The two Phase B marketplace error shapes `POST /events/:eventId/checkout`
+ * can return, in addition to the plain `{ success: false, message }` every
+ * other checkout error uses. Both carry structured data beyond the message
+ * string because a generic error toast can't tell the citizen which item to
+ * act on — read `error.response.data` against this shape (via the `code`
+ * discriminant) before falling back to the plain message.
+ */
+export interface ItemsAwaitingConfirmationError {
+  success: false;
+  message: string;
+  code: "ITEMS_AWAITING_CONFIRMATION";
+  blockingItemIds: string[];
+}
+
+export interface AvailabilityConflictErrorResponse {
+  success: false;
+  message: string;
+  code: "AVAILABILITY_CONFLICT";
+  kind: "asset" | "service";
+  itemId: string;
+}
+
+export type CheckoutErrorResponse =
+  | ItemsAwaitingConfirmationError
+  | AvailabilityConflictErrorResponse
+  | { success: false; message: string; code?: undefined };

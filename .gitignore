@@ -46,3 +46,10 @@ next-env.d.ts
 # test output
 /test-results/
 /playwright-report/
+
+# agent skills installed via `npx skills` (npx skills@latest add ...) —
+# .claude/skills/ is that installer's per-tool symlink target, not part of
+# .claude/ generally (settings.json/settings.local.json there stay tracked)
+/.agents/
+/.claude/skills/
+/skills-lock.json

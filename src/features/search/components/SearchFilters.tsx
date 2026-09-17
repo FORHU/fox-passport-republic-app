@@ -4,44 +4,13 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useState, useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
 import MapboxLocationPicker from "./MapboxLocationPicker";
-import SearchableDropdown from "./SearchableDropdown";
+import SearchableDropdown from "@/shared/components/ui/SearchableDropdown";
 import { COUNTRIES, COUNTRY_CODES } from "@/shared/data/countries";
-import { MAJOR_CITIES } from "@/shared/data/majorCities";
-import { CITY_DATA_BY_COUNTRY } from "@/shared/data/usEuropeCities";
-import { config } from "@/shared/lib/config";
-
-interface MapboxFeature {
-  text: string;
-}
-
-// Curated static city lists we actually have data for: the Philippines plus
-// the US and core European markets. Any other country falls back to live
-// Mapbox place search scoped to the chosen country.
-const STATIC_CITY_LISTS: Record<string, string[]> = {
-  Philippines: MAJOR_CITIES,
-  ...CITY_DATA_BY_COUNTRY,
-};
-
-// Shown when no country is picked yet, so "All countries" doesn't silently
-// behave like one specific country was already selected.
-const ALL_STATIC_CITIES = Array.from(
-  new Set(Object.values(STATIC_CITY_LISTS).flat()),
-).sort();
-
-async function searchCitiesInCountry(
-  query: string,
-  countryCode: string,
-): Promise<string[]> {
-  if (!config.mapboxToken) return [];
-  const res = await fetch(
-    `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(
-      query,
-    )}.json?access_token=${config.mapboxToken}&types=place&country=${countryCode}&limit=8`,
-  );
-  if (!res.ok) return [];
-  const data = await res.json();
-  return ((data.features as MapboxFeature[]) || []).map((f) => f.text);
-}
+import {
+  STATIC_CITY_LISTS,
+  ALL_STATIC_CITIES,
+} from "@/shared/data/locationLists";
+import { searchCitiesInCountry } from "@/shared/lib/geocoding";
 
 const CATEGORIES = ["wedding", "corporate", "birthday", "social", "other"];
 

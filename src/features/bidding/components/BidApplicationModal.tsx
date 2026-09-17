@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { submitBid } from "@/shared/api/bidding";
 import { toast } from "sonner";
+import { StyledSelect } from "@/shared/components/ui/StyledSelect";
 
 interface BidApplicationModalProps {
   eventId: string;
@@ -77,20 +78,12 @@ export const BidApplicationModal: React.FC<BidApplicationModalProps> = ({
             <label className="text-sm text-white/70">
               Which of your services are you offering?
             </label>
-            <select
-              className="w-full bg-white/5 border border-white/10 rounded-lg p-3 text-white focus:border-[#ccff00] focus:outline-none transition-colors"
+            <StyledSelect
               value={selectedServiceId}
-              onChange={(e) => setSelectedServiceId(e.target.value)}
-            >
-              <option value="" disabled className="text-black">
-                Select a service
-              </option>
-              {services.map((s) => (
-                <option key={s.id} value={s.id} className="text-black">
-                  {s.title}
-                </option>
-              ))}
-            </select>
+              onChange={setSelectedServiceId}
+              placeholder="Select a service"
+              options={services.map((s) => ({ value: s.id, label: s.title }))}
+            />
           </div>
           <div className="space-y-2">
             <label className="text-sm text-white/70">

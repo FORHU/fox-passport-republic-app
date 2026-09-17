@@ -6,6 +6,7 @@ import {
   cancelEvent,
 } from "@/features/event/api/checkout";
 import type { Id } from "@/shared/lib/api-types";
+import type { CheckoutErrorResponse } from "@/shared/types/payment";
 
 export const useEventPaymentSummary = (
   eventId: Id,
@@ -36,9 +37,20 @@ export const useEventCheckoutMutation = () => {
       }
     },
     onError: (error: any) => {
-      toast.error(
-        error?.response?.data?.message || "Could not initialize checkout.",
-      );
+      const body: CheckoutErrorResponse | undefined = error?.response?.data;
+      if (body?.code === "ITEMS_AWAITING_CONFIRMATION") {
+        toast.error(
+          `${body.blockingItemIds.length} item(s) are still awaiting provider confirmation — resolve them below before paying.`,
+        );
+        return;
+      }
+      if (body?.code === "AVAILABILITY_CONFLICT") {
+        toast.error(
+          "One of your items is no longer available for these dates. Remove or replace it before paying.",
+        );
+        return;
+      }
+      toast.error(body?.message || "Could not initialize checkout.");
     },
   });
 };

@@ -13,6 +13,8 @@ interface VenueBuilderState {
   venueName: string;
   description: string;
   venueType: string;
+  /** Free-text type when `venueType` is "Other" — sent as the actual category. */
+  venueTypeOther: string;
   capacity: string;
   location: string;
   country: string;
@@ -49,6 +51,7 @@ interface VenueBuilderState {
   setVenueName: (name: string) => void;
   setDescription: (desc: string) => void;
   setVenueType: (type: string) => void;
+  setVenueTypeOther: (type: string) => void;
   setCapacity: (cap: string) => void;
   setLocation: (loc: string) => void;
   setCountry: (c: string) => void;
@@ -98,6 +101,7 @@ const initialData = {
   venueName: "",
   description: "",
   venueType: "",
+  venueTypeOther: "",
   capacity: "",
   location: "",
   country: "",
@@ -129,6 +133,7 @@ export const useVenueBuilderStore = create<VenueBuilderState>((set) => ({
   setVenueName: (name) => set({ venueName: name }),
   setDescription: (desc) => set({ description: desc }),
   setVenueType: (type) => set({ venueType: type }),
+  setVenueTypeOther: (type) => set({ venueTypeOther: type }),
   setCapacity: (cap) => set({ capacity: cap }),
   setLocation: (loc) => set({ location: loc }),
   setCountry: (c) => set({ country: c }),

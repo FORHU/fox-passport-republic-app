@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
@@ -9,8 +9,10 @@ import {
   useDeclineMatch,
 } from "@/features/gamification/hooks/usePassport";
 import type { ClientMatchRequest } from "@/features/gamification/api/passport";
+import { StyledSelect } from "@/shared/components/ui/StyledSelect";
 
 export function OccupancyChart() {
+  const [range, setRange] = useState("7d");
   return (
     <div className="lg:col-span-8 bg-[#0f111a]/80 backdrop-blur border border-white/5 rounded-[2rem] p-6">
       <div className="flex justify-between items-start mb-6">
@@ -18,10 +20,15 @@ export function OccupancyChart() {
           <h3 className="text-lg font-display font-bold mb-1">Occupancy</h3>
           <p className="text-xs text-white/40">Capacity usage</p>
         </div>
-        <select className="bg-black/40 border border-white/10 text-white text-xs rounded-lg px-3 py-1.5">
-          <option>7 Days</option>
-          <option>30 Days</option>
-        </select>
+        <StyledSelect
+          value={range}
+          onChange={setRange}
+          options={[
+            { value: "7d", label: "7 Days" },
+            { value: "30d", label: "30 Days" },
+          ]}
+          className="bg-black/40 py-1.5 text-xs w-auto min-w-32"
+        />
       </div>
       <div
         className="flex items-center justify-center text-white/20 text-sm"

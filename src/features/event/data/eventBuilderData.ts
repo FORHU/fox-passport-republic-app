@@ -16,6 +16,12 @@ export interface ResourceItem {
   country?: string;
   lat?: number | null;
   lng?: number | null;
+  // Venue-only: whether the current user may attach this venue to a
+  // template — "approved" (owns it or has an approved affiliation),
+  // "pending" (application/invite awaiting a decision), or "none" (must
+  // apply first). Undefined for non-venue items, where it's meaningless.
+  affiliationStatus?: "approved" | "pending" | "none";
+  mayorId?: string;
 }
 
 export interface GalleryItem {

@@ -272,6 +272,7 @@ export default function HostDashboardClient({
                   onEdit={(id) =>
                     router.push(`/creator-dashboard/venues/${id}/edit`)
                   }
+                  onView={(id) => router.push(`/venues/${id}`)}
                   page={venuesPage}
                   totalPages={totalVenuePages}
                   onPageChange={setVenuesPage}

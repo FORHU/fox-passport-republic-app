@@ -10,10 +10,14 @@ import {
 } from "@/shared/data/listingBuilderData";
 
 import CancellationPolicyPicker from "@/shared/components/ui/CancellationPolicyPicker";
+import { StyledSelect } from "@/shared/components/ui/StyledSelect";
+import SearchableDropdown from "@/shared/components/ui/SearchableDropdown";
+import { COUNTRIES, COUNTRY_CODES } from "@/shared/data/countries";
+import { STATIC_CITY_LISTS } from "@/shared/data/locationLists";
 import {
-  MapboxLocationInput,
-  MapboxContextItem,
-} from "@/shared/components/ui/MapboxLocationInput";
+  searchCitiesInCountry,
+  geocodeCountryCenter,
+} from "@/shared/lib/geocoding";
 
 interface ListingSidebarProps {
   activeType: ListingType;
@@ -183,25 +187,12 @@ export function ListingSidebar({
                 </button>
               </div>
             </div>
-            <div className="relative">
-              <select
-                value={unit}
-                onChange={(e) => onUnitChange(e.target.value)}
-                className="w-full bg-white/5 border border-white/5 rounded-xl px-4 py-4 text-sm text-white placeholder-white/30 focus:border-accent/30 outline-none appearance-none cursor-pointer transition-colors"
-                style={{ colorScheme: "dark" }}
-              >
-                {(units as readonly string[]).map((u) => (
-                  <option key={u} value={u} className="bg-[#0f111a]">
-                    {u}
-                  </option>
-                ))}
-              </select>
-              <span className="absolute right-4 top-1/2 -translate-y-1/2 text-white/30 pointer-events-none">
-                <span className="material-symbols-outlined text-[20px]">
-                  expand_more
-                </span>
-              </span>
-            </div>
+            <StyledSelect
+              value={unit}
+              onChange={onUnitChange}
+              options={units as readonly string[] as string[]}
+              className="py-4"
+            />
           </div>
         </div>
 
@@ -213,39 +204,43 @@ export function ListingSidebar({
           />
         </div>
 
-        {/* Location */}
+        {/* Location — Country drives which cities are offered: a curated
+            static list where we have one, live Mapbox search scoped to the
+            chosen country otherwise. */}
         <div className="space-y-3">
           <label className="text-[10px] uppercase font-bold text-white/40 tracking-widest block">
             Location
           </label>
-          <MapboxLocationInput
-            value={city}
-            onChange={onCityChange}
-            type="place"
-            placeholder="City"
-            onSelect={(
-              val: string,
-              context?: MapboxContextItem[],
-              center?: [number, number],
-            ) => {
-              onCityChange(val);
-              const region = context?.find((c) =>
-                c.id.startsWith("region"),
-              )?.text;
-              const countryName = context?.find((c) =>
-                c.id.startsWith("country"),
-              )?.text;
-              if (region) onStateChange(region);
-              if (countryName) onCountryChange(countryName);
-              if (center) onLatLngChange(center[1], center[0]);
+          <SearchableDropdown
+            value={country}
+            options={COUNTRIES}
+            placeholder="Select country..."
+            searchPlaceholder="Search countries..."
+            onChange={(val) => {
+              onCountryChange(val);
+              onCityChange("");
+              const code = val ? COUNTRY_CODES[val] : undefined;
+              if (code) {
+                geocodeCountryCenter(code).then((center) => {
+                  if (center) onLatLngChange(center[1], center[0]);
+                });
+              }
             }}
           />
-          <MapboxLocationInput
-            value={country}
-            onChange={onCountryChange}
-            type="country"
-            placeholder="Country"
-            onSelect={(val: string) => onCountryChange(val)}
+          <SearchableDropdown
+            key={country || "no-country"}
+            value={city}
+            disabled={!country}
+            options={STATIC_CITY_LISTS[country]}
+            asyncSearch={
+              !STATIC_CITY_LISTS[country] && COUNTRY_CODES[country]
+                ? (q) => searchCitiesInCountry(q, COUNTRY_CODES[country])
+                : undefined
+            }
+            asyncHint="Type at least 2 letters..."
+            placeholder={country ? "Select city..." : "Select a country first"}
+            searchPlaceholder="Search cities..."
+            onChange={onCityChange}
           />
         </div>
 
