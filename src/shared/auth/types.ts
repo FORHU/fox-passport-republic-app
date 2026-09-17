@@ -31,6 +31,9 @@ export interface User {
   imgId?: string; // profile image URL (CloudFront)
   city?: string;
   country?: string;
+  // Display-only — see src/shared/lib/currency.ts. Never affects what a
+  // booking actually charges, only how amounts are shown to this user.
+  preferredCurrency?: string;
 }
 
 export interface LoginResponse {

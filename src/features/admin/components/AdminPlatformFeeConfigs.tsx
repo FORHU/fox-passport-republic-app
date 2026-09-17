@@ -166,9 +166,11 @@ function FeeRuleModal({
                 }
                 className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-3 text-sm text-white focus:border-accent/40 outline-none transition-all"
               >
-                <option value="">Any (wildcard)</option>
+                <option className="bg-[#0f111a] text-white" value="">
+                  Any (wildcard)
+                </option>
                 {TRANSACTION_TYPES.map((t) => (
-                  <option key={t} value={t}>
+                  <option className="bg-[#0f111a] text-white" key={t} value={t}>
                     {t}
                   </option>
                 ))}
@@ -185,9 +187,11 @@ function FeeRuleModal({
                 }
                 className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-3 text-sm text-white focus:border-accent/40 outline-none transition-all"
               >
-                <option value="">Any (wildcard)</option>
+                <option className="bg-[#0f111a] text-white" value="">
+                  Any (wildcard)
+                </option>
                 {FEE_CATEGORIES.map((c) => (
-                  <option key={c} value={c}>
+                  <option className="bg-[#0f111a] text-white" key={c} value={c}>
                     {c}
                   </option>
                 ))}
@@ -348,7 +352,7 @@ function PreviewTool() {
             className="bg-white/5 border border-white/10 rounded-xl px-3 py-2.5 text-sm text-white focus:border-accent/40 outline-none"
           >
             {TRANSACTION_TYPES.map((t) => (
-              <option key={t} value={t}>
+              <option className="bg-[#0f111a] text-white" key={t} value={t}>
                 {t}
               </option>
             ))}
@@ -363,9 +367,11 @@ function PreviewTool() {
             onChange={(e) => setCategory(e.target.value as FeeCategory | "")}
             className="bg-white/5 border border-white/10 rounded-xl px-3 py-2.5 text-sm text-white focus:border-accent/40 outline-none"
           >
-            <option value="">Any</option>
+            <option className="bg-[#0f111a] text-white" value="">
+              Any
+            </option>
             {FEE_CATEGORIES.map((c) => (
-              <option key={c} value={c}>
+              <option className="bg-[#0f111a] text-white" key={c} value={c}>
                 {c}
               </option>
             ))}

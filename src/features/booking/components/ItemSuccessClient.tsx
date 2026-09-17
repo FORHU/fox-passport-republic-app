@@ -246,7 +246,7 @@ export default function ItemSuccessClient() {
                         2
                       </div>
                       <p className="text-sm text-text-muted">
-                        Your payment is held in escrow — the provider cannot
+                        Your payment is held safely — the provider cannot
                         access it yet.
                       </p>
                     </div>
@@ -285,8 +285,8 @@ export default function ItemSuccessClient() {
                         3
                       </div>
                       <p className="text-sm text-text-muted">
-                        Confirm receipt in good condition to release payment
-                        from escrow.
+                        Confirm receipt in good condition to release the held
+                        payment.
                       </p>
                     </div>
                   </>

@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import QueryProvider from "./QueryProvider";
 import { AuthStoreProvider } from "./AuthStoreProvider";
 import { SocketProvider } from "./SocketProvider";
+import { CurrencyProvider } from "./CurrencyProvider";
 
 export default function Providers({ children }: { children: React.ReactNode }) {
   const [ready, setReady] = useState(
@@ -25,7 +26,9 @@ export default function Providers({ children }: { children: React.ReactNode }) {
   return (
     <QueryProvider>
       <AuthStoreProvider>
-        <SocketProvider>{children}</SocketProvider>
+        <CurrencyProvider>
+          <SocketProvider>{children}</SocketProvider>
+        </CurrencyProvider>
       </AuthStoreProvider>
     </QueryProvider>
   );

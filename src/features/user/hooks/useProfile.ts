@@ -22,6 +22,7 @@ export interface UpdateProfilePayload {
   profileImage?: string;
   city?: string;
   isPrivate?: boolean;
+  preferredCurrency?: string;
 }
 
 export interface ChangePasswordPayload {
@@ -63,6 +64,7 @@ export function useProfile() {
         username: updated.username,
         mobileNumber: updated.phone,
         imgId: updated.imgId,
+        preferredCurrency: updated.preferredCurrency,
       });
     }
     return updated;

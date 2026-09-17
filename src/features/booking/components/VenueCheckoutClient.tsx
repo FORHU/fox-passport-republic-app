@@ -16,6 +16,8 @@ import { ProgressIndicator } from "@/shared/components/ui/ProgressIndicator";
 import StripePaymentForm from "./StripePaymentForm";
 import api from "@/shared/lib/axios";
 import { getDashboardPath } from "@/shared/lib/dashboard-path";
+import { useCurrency } from "@/shared/providers/CurrencyProvider";
+import { DEFAULT_CURRENCY } from "@/shared/lib/currency";
 
 const stripePromise = loadStripe(
   process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY || "",
@@ -27,7 +29,12 @@ export default function VenueCheckoutClient() {
   const bookingId = searchParams.get("bookingId");
   const totalParam = searchParams.get("total");
   const totalAmount = totalParam ? Number(totalParam) : 0;
+  const subtotalParam = searchParams.get("subtotal");
+  const subtotalAmount = subtotalParam ? Number(subtotalParam) : 0;
+  const serviceFeeParam = searchParams.get("serviceFee");
+  const serviceFeeAmount = serviceFeeParam ? Number(serviceFeeParam) : 0;
   const { user } = useAuthStore();
+  const { currency, format } = useCurrency();
   const confirmed = useRef(false);
 
   const [clientSecret, setClientSecret] = useState<string | null>(null);
@@ -49,14 +56,14 @@ export default function VenueCheckoutClient() {
         await confirmBookingPayment(bookingId, piId, totalAmount);
       }
     } catch {
-      // Booking was already confirmed via webhook â€” safe to ignore
+      // Booking was already confirmed via webhook — safe to ignore
     }
 
     // Save contact info to user's profile
     try {
       await api.put("/profile", { phone: mobileNumber || undefined });
     } catch {
-      // Non-critical â€” profile update failure shouldn't block success
+      // Non-critical — profile update failure shouldn't block success
     }
   };
 
@@ -270,7 +277,7 @@ export default function VenueCheckoutClient() {
                   {/* Payment Panel */}
                   <div className="glass-panel rounded-[2rem] p-8">
                     <h2 className="text-2xl font-display font-bold text-white mb-6 flex items-center gap-3">
-                      <span className="flex items-center justify-center w-8 h-8 rounded-full bg-primary text-white text-sm">
+                      <span className="flex items-center justify-center w-8 h-8 rounded-full bg-accent text-black text-sm font-bold">
                         1
                       </span>
                       Payment
@@ -294,7 +301,7 @@ export default function VenueCheckoutClient() {
                     ) : loadingIntent ? (
                       <div className="flex items-center gap-3 py-8 justify-center text-white/50">
                         <span className="h-5 w-5 rounded-full border-2 border-white/20 border-t-white/60 animate-spin" />
-                        Initializing secure paymentâ€¦
+                        Initializing secure payment…
                       </div>
                     ) : (
                       <StripePaymentForm
@@ -392,7 +399,7 @@ export default function VenueCheckoutClient() {
                         onClick={() => formRef.current?.submit()}
                         className="w-full rounded-2xl bg-[#ccff00] py-4 px-6 text-black font-bold text-lg hover:shadow-[0_0_30px_rgba(204,255,0,0.4)] transition-all active:scale-95 flex items-center justify-center gap-2"
                       >
-                        Confirm & Pay â‚±{totalAmount.toLocaleString()}
+                        Confirm & Pay ₱{totalAmount.toLocaleString()}
                         <span className="material-symbols-outlined">
                           arrow_forward
                         </span>
@@ -428,10 +435,10 @@ export default function VenueCheckoutClient() {
                 </Elements>
               ) : (
                 <>
-                  {/* Loading / no clientSecret yet â€” render panels without Elements */}
+                  {/* Loading / no clientSecret yet — render panels without Elements */}
                   <div className="glass-panel rounded-[2rem] p-8">
                     <h2 className="text-2xl font-display font-bold text-white mb-6 flex items-center gap-3">
-                      <span className="flex items-center justify-center w-8 h-8 rounded-full bg-primary text-white text-sm">
+                      <span className="flex items-center justify-center w-8 h-8 rounded-full bg-accent text-black text-sm font-bold">
                         1
                       </span>
                       Payment
@@ -439,7 +446,7 @@ export default function VenueCheckoutClient() {
                     {loadingIntent ? (
                       <div className="flex items-center gap-3 py-8 justify-center text-white/50">
                         <span className="h-5 w-5 rounded-full border-2 border-white/20 border-t-white/60 animate-spin" />
-                        Initializing secure paymentâ€¦
+                        Initializing secure payment…
                       </div>
                     ) : (
                       <div className="py-8 text-center text-white/40">
@@ -518,7 +525,7 @@ export default function VenueCheckoutClient() {
                         <span className="material-symbols-outlined text-[14px]">
                           receipt
                         </span>
-                        Booking ID: {bookingId.slice(0, 8)}â€¦
+                        Booking ID: {bookingId.slice(0, 8)}…
                       </p>
                     </div>
                   </div>
@@ -529,6 +536,22 @@ export default function VenueCheckoutClient() {
                         #{bookingId.slice(0, 12)}
                       </span>
                     </div>
+                    {subtotalAmount > 0 && (
+                      <div className="flex justify-between text-sm">
+                        <span className="text-text-muted">Subtotal</span>
+                        <span className="text-white font-medium">
+                          ₱{subtotalAmount.toLocaleString()}
+                        </span>
+                      </div>
+                    )}
+                    {serviceFeeAmount > 0 && (
+                      <div className="flex justify-between text-sm">
+                        <span className="text-text-muted">Service Fee</span>
+                        <span className="text-white font-medium">
+                          ₱{serviceFeeAmount.toLocaleString()}
+                        </span>
+                      </div>
+                    )}
                   </div>
                   <div className="border-t border-dashed border-white/20 pt-4">
                     <div className="flex justify-between items-end">
@@ -537,10 +560,18 @@ export default function VenueCheckoutClient() {
                       </span>
                       <span className="text-3xl font-display font-bold text-accent text-shadow-glow">
                         {totalAmount > 0
-                          ? `â‚±${totalAmount.toLocaleString()}`
-                          : "Processingâ€¦"}
+                          ? `₱${totalAmount.toLocaleString()}`
+                          : "Processing…"}
                       </span>
                     </div>
+                    {/* Charging always happens in PHP — this is a
+                        display-only estimate, never the authoritative
+                        charge amount. */}
+                    {totalAmount > 0 && currency !== DEFAULT_CURRENCY && (
+                      <p className="text-right text-xs text-text-muted mt-1">
+                        ≈ {format(totalAmount)}
+                      </p>
+                    )}
                   </div>
                 </div>
 

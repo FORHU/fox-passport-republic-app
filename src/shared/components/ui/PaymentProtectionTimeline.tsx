@@ -6,7 +6,7 @@ interface TimelineStep {
   desc: string;
 }
 
-interface EscrowTimelineProps {
+interface PaymentProtectionTimelineProps {
   steps?: TimelineStep[];
 }
 
@@ -18,7 +18,7 @@ const DEFAULT_STEPS: TimelineStep[] = [
   },
   {
     icon: "lock",
-    title: "Payment Held in Escrow",
+    title: "Payment Held Safely",
     desc: "Funds are secured — the owner cannot access them yet.",
   },
   {
@@ -28,7 +28,9 @@ const DEFAULT_STEPS: TimelineStep[] = [
   },
 ];
 
-export function EscrowTimeline({ steps = DEFAULT_STEPS }: EscrowTimelineProps) {
+export function PaymentProtectionTimeline({
+  steps = DEFAULT_STEPS,
+}: PaymentProtectionTimelineProps) {
   return (
     <div className="rounded-3xl border border-accent/20 bg-linear-to-b from-accent/5 to-black/20 overflow-hidden">
       <div className="px-6 pt-6 pb-4 flex items-center gap-3 border-b border-accent/10">

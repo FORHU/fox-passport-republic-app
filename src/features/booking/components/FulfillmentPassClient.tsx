@@ -9,7 +9,12 @@ import {
   fetchAssetBooking,
   confirmArrival,
   reportNoShow,
+  cancelItemBooking,
+  getBookingEditRequest,
 } from "@/features/booking/api/bookings";
+import RequestBookingEditModal from "./RequestBookingEditModal";
+import BookingEditRequestStatusCard from "./BookingEditRequestStatusCard";
+import type { BookingEditRequest } from "@/features/booking/types/booking.types";
 
 type BookingType = "service" | "asset";
 
@@ -18,8 +23,8 @@ interface Props {
   bookingId: string;
 }
 
-const ESCROW_STEPS = [
-  { label: "PAYMENT SECURED IN ESCROW" },
+const PAYMENT_PROTECTION_STEPS = [
+  { label: "PAYMENT SECURED" },
   { label: "AWAITING ARRIVAL (FUNDS HELD)" },
   { label: "RELEASE FUNDS TO FOXER" },
 ];
@@ -49,6 +54,11 @@ export default function FulfillmentPassClient({
   const [error, setError] = useState("");
   const [actionLoading, setActionLoading] = useState(false);
   const [showDisputeModal, setShowDisputeModal] = useState(false);
+  const [showCancelModal, setShowCancelModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [editRequest, setEditRequest] = useState<BookingEditRequest | null>(
+    null,
+  );
 
   useEffect(() => {
     const fetcher =
@@ -57,6 +67,10 @@ export default function FulfillmentPassClient({
       .then(setBooking)
       .catch(() => setError("Booking not found"))
       .finally(() => setLoading(false));
+
+    getBookingEditRequest(bookingType, bookingId)
+      .then(setEditRequest)
+      .catch(() => {});
   }, [bookingId, bookingType]);
 
   const handleConfirmArrival = async () => {
@@ -77,6 +91,19 @@ export default function FulfillmentPassClient({
     try {
       const updated = await reportNoShow(bookingType, bookingId);
       setBooking(updated);
+    } catch (e: any) {
+      alert(e?.response?.data?.message ?? e.message);
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const handleCancelBooking = async () => {
+    setShowCancelModal(false);
+    setActionLoading(true);
+    try {
+      const result = await cancelItemBooking(bookingType, bookingId);
+      setBooking(result.booking);
     } catch (e: any) {
       alert(e?.response?.data?.message ?? e.message);
     } finally {
@@ -141,6 +168,13 @@ export default function FulfillmentPassClient({
   const isActive = status === "active";
   const canConfirm = status === "confirmed";
   const canDispute = ["confirmed", "active"].includes(status);
+  const canCancel = ["pending", "confirmed", "active"].includes(status);
+  const hasActiveEditRequest =
+    editRequest &&
+    ["pending", "approved"].includes(editRequest.status) &&
+    !(editRequest.status === "approved" && editRequest.appliedAt);
+  const canRequestEdit =
+    ["confirmed", "active"].includes(status) && !hasActiveEditRequest;
 
   const statusBadge =
     {
@@ -297,7 +331,7 @@ export default function FulfillmentPassClient({
               </div>
             </div>
 
-            {/* Escrow Protection */}
+            {/* Payment Protection */}
             <div className="glass-panel rounded-3xl p-6 border border-white/10 relative overflow-hidden">
               <div className="absolute -top-10 -right-10 w-32 h-32 bg-accent/10 rounded-full blur-2xl pointer-events-none" />
 
@@ -306,7 +340,7 @@ export default function FulfillmentPassClient({
                   <span className="material-symbols-outlined text-[18px] text-accent">
                     shield
                   </span>
-                  Escrow Protection
+                  Payment Protection
                 </h3>
                 <span
                   className={`h-3 w-3 rounded-full ${isDisputed ? "bg-red-400" : isCompleted ? "bg-green-400" : "bg-accent animate-pulse"}`}
@@ -316,7 +350,7 @@ export default function FulfillmentPassClient({
               {/* Steps */}
               <div className="space-y-3 mb-5 relative z-10">
                 <div className="absolute left-[7px] top-4 bottom-4 w-0.5 bg-white/10" />
-                {ESCROW_STEPS.map((step, i) => (
+                {PAYMENT_PROTECTION_STEPS.map((step, i) => (
                   <div
                     key={i}
                     className="flex items-center gap-3 relative z-10"
@@ -430,6 +464,17 @@ export default function FulfillmentPassClient({
                   Message {owner?.name?.split(" ")[0]}
                 </a>
               )}
+              {canRequestEdit && (
+                <button
+                  onClick={() => setShowEditModal(true)}
+                  className="flex-1 py-3 rounded-2xl border border-white/10 text-white font-bold text-sm hover:bg-white/5 transition-all flex items-center justify-center gap-2"
+                >
+                  <span className="material-symbols-outlined text-[18px]">
+                    edit_calendar
+                  </span>
+                  Request a Change
+                </button>
+              )}
               {canDispute && (
                 <button
                   onClick={() => setShowDisputeModal(true)}
@@ -441,6 +486,17 @@ export default function FulfillmentPassClient({
                   Report a Problem or No-Show
                 </button>
               )}
+              {canCancel && (
+                <button
+                  onClick={() => setShowCancelModal(true)}
+                  className="flex-1 py-3 rounded-2xl border border-white/10 text-white/50 font-bold text-sm hover:bg-white/5 hover:text-white/70 transition-all flex items-center justify-center gap-2"
+                >
+                  <span className="material-symbols-outlined text-[18px]">
+                    cancel
+                  </span>
+                  Cancel Booking
+                </button>
+              )}
             </div>
             <div className="mt-4 pt-4 border-t border-white/10 text-center">
               <p className="text-white/30 text-xs mb-1.5">Need an Invoice?</p>
@@ -449,8 +505,35 @@ export default function FulfillmentPassClient({
               </span>
             </div>
           </div>
+
+          {editRequest && (
+            <BookingEditRequestStatusCard
+              request={editRequest}
+              onChanged={setEditRequest}
+            />
+          )}
         </div>
       </main>
+
+      {/* Request Change Modal */}
+      {showEditModal && (
+        <RequestBookingEditModal
+          bookingType={bookingType}
+          bookingId={bookingId}
+          currentQuantityOrGuestCount={
+            isService ? booking.guestCount ?? 1 : booking.quantity ?? 1
+          }
+          currentStartDate={
+            isService ? booking.scheduledDate : booking.startDate
+          }
+          currentEndDate={booking.endDate ?? null}
+          onClose={() => setShowEditModal(false)}
+          onSubmitted={(request) => {
+            setEditRequest(request);
+            setShowEditModal(false);
+          }}
+        />
+      )}
 
       {/* Dispute Confirmation Modal */}
       {showDisputeModal && (
@@ -482,6 +565,42 @@ export default function FulfillmentPassClient({
                 className="flex-1 py-3 rounded-2xl bg-red-500 text-white font-bold text-sm hover:bg-red-600 active:scale-95 transition-all disabled:opacity-60"
               >
                 {actionLoading ? "Reporting..." : "Yes, Report"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Cancel Booking Confirmation Modal */}
+      {showCancelModal && (
+        <div className="fixed inset-0 z-100 flex items-end sm:items-center justify-center bg-black/70 px-4 pb-4 sm:pb-0">
+          <div className="glass-panel rounded-3xl p-8 border border-white/10 max-w-sm w-full animate-in slide-in-from-bottom-4 duration-300">
+            <div className="text-center mb-6">
+              <span className="material-symbols-outlined text-white/60 text-5xl block mb-3">
+                cancel
+              </span>
+              <h3 className="text-xl font-display font-bold text-white mb-2">
+                Cancel this booking?
+              </h3>
+              <p className="text-sm text-text-muted leading-relaxed">
+                Your refund, if any, follows the provider&apos;s cancellation
+                policy — the closer to your date, the less may come back.
+                This can&apos;t be undone.
+              </p>
+            </div>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setShowCancelModal(false)}
+                className="flex-1 py-3 rounded-2xl border border-white/10 text-white font-bold text-sm hover:bg-white/5 transition-all"
+              >
+                Keep Booking
+              </button>
+              <button
+                onClick={handleCancelBooking}
+                disabled={actionLoading}
+                className="flex-1 py-3 rounded-2xl bg-red-500 text-white font-bold text-sm hover:bg-red-600 active:scale-95 transition-all disabled:opacity-60"
+              >
+                {actionLoading ? "Cancelling..." : "Yes, Cancel"}
               </button>
             </div>
           </div>

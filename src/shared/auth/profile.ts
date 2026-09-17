@@ -31,6 +31,7 @@ export interface ProfileData {
   roleType: RoleType[];
   permissions: readonly Permission[];
   isPrivate: boolean;
+  preferredCurrency: string;
   createdAt: string;
   updatedAt: string;
 }

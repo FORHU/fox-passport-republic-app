@@ -89,6 +89,12 @@ const NAV_ITEMS = [
     permission: "fees:manage",
   },
   {
+    label: "Promotions",
+    icon: "sell",
+    id: "promotions",
+    permission: "promotions:manage",
+  },
+  {
     label: "Settings",
     icon: "settings",
     id: "settings",
