@@ -612,7 +612,7 @@ export function HostBio({ host }: HostBioProps) {
         <img
           src={host.avatar}
           className="w-16 h-16 rounded-full object-cover border-2 border-white/10"
-          alt="Venue owner"
+          alt="Venue Foxer"
         />
         <div className="absolute -bottom-1 -right-1 bg-accent text-black rounded-full p-1 border-4 border-[#0f111a] shadow-sm flex items-center justify-center">
           <span className="material-symbols-outlined text-[14px]">

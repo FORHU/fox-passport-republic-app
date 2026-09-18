@@ -342,7 +342,7 @@ export default function VenueBookingClient({ venueId }: { venueId: string }) {
                   value={specialRequests}
                   onChange={(e) => setSpecialRequests(e.target.value)}
                   className="w-full bg-black/20 border border-white/10 rounded-2xl p-4 text-white placeholder-text-muted/50 focus:border-accent focus:ring-1 focus:ring-accent transition-all resize-none h-32 outline-none"
-                  placeholder="Any special requirements, setup needs, or questions for the venue owner..."
+                  placeholder="Any special requirements, setup needs, or questions for the Venue Foxer..."
                 />
               </FormSection>
             </div>

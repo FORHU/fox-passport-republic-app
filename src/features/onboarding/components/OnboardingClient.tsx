@@ -37,7 +37,7 @@ const ROLES = [
     href: "/foxer/apply?type=asset",
     color: "#a78bfa",
     icon: "inventory_2",
-    tag: "Equipment Foxer",
+    tag: "Gear Foxer",
     title: "Gear Provider",
     desc: "Rent out sound systems, lighting, furniture, and event equipment.",
   },
@@ -58,7 +58,7 @@ const ROLES = [
     color: "#ff00aa",
     icon: "travel_explore",
     tag: "Event Foxer",
-    title: "Event Creator",
+    title: "Event Foxer",
     desc: "Create and organize events, coordinating every detail end-to-end.",
   },
 ];

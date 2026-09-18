@@ -75,7 +75,7 @@ export default function HostApplicationClient() {
               Become an <span className="text-[#ff00aa]">Event Foxer</span>
             </h1>
             <p className="text-white/60">
-              Apply to become an authorized Event Creator. Organizers use venues
+              Apply to become an authorized Event Foxer. Event Foxers use venues
               provided by Venue Foxers to create unforgettable experiences.
             </p>
           </div>
@@ -160,7 +160,7 @@ export default function HostApplicationClient() {
               />
               <p className="text-xs text-[#ff00aa]/80 leading-relaxed">
                 By submitting this application, you agree to comply with
-                FoxPassport&apos;s event hosting policies and quality standards.
+                FoxPassport&apos;s Event Foxer policies and quality standards.
                 Your application will be reviewed by our team.
               </p>
             </div>

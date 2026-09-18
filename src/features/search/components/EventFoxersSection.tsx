@@ -49,7 +49,7 @@ const ROLE_META: Record<
     color: "#ff00aa",
   },
   gearFoxer: {
-    label: "Equipment Foxer",
+    label: "Gear Foxer",
     description: "Rents out equipment — sound, lighting & décor",
     color: "#a78bfa",
   },
@@ -378,7 +378,7 @@ export default function EventFoxersSection({
             Event Foxers
           </h2>
           <p className="text-white/50 text-sm mt-1">
-            Organizers who specialize in your vibe.
+            Event Foxers who specialize in your vibe.
           </p>
         </div>
         <span className="flex items-center gap-2 text-xs text-white/40">

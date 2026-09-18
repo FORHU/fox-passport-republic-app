@@ -1,4 +1,8 @@
-export type BookingKind = "asset" | "service";
+// "booking" targets a direct-venue Booking (single provider, no template) —
+// a template-based, multi-provider Event Booking has no per-booking price
+// formula and stays out of scope. See the API repo's booking-edit-request
+// service for the full reasoning.
+export type BookingKind = "asset" | "service" | "booking";
 
 export type BookingEditRequestStatus =
   | "pending"
@@ -18,6 +22,7 @@ export interface BookingEditRequest {
   id: string;
   assetBookingId: string | null;
   serviceBookingId: string | null;
+  bookingId: string | null;
   requestedById: string;
   status: BookingEditRequestStatus;
 

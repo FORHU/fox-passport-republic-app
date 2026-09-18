@@ -19,7 +19,7 @@ function getRoleLabel(systemRole: string, roleTypes: string[]): string {
 
   const active: string[] = [];
   if (roleTypes.includes("eventFoxer")) active.push("Event Foxer");
-  if (roleTypes.includes("gearFoxer")) active.push("Equipment Foxer");
+  if (roleTypes.includes("gearFoxer")) active.push("Gear Foxer");
   if (roleTypes.includes("serviceFoxer")) active.push("Talent Foxer");
 
   return active.length > 0 ? active.join(" · ") : "Citizen";

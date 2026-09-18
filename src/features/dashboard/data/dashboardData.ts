@@ -52,6 +52,10 @@ export interface ServiceItem {
   icon: string;
   color: string;
   img?: string;
+  category?: string;
+  tags?: string[];
+  city?: string;
+  isWillingToTravel?: boolean;
 }
 
 export interface PendingRequest {

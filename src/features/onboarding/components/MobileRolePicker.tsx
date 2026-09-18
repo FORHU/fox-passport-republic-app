@@ -53,7 +53,7 @@ const ROLES: Role[] = [
   },
   {
     id: "gearFoxer",
-    label: "Equipment Foxer",
+    label: "Gear Foxer",
     desc: "Rent out equipment",
     icon: "inventory_2",
     color: "#38bdf8",

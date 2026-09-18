@@ -6,10 +6,15 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import QRCode from "react-qr-code";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { fetchBookingById } from "@/features/booking/api/bookings";
+import {
+  fetchBookingById,
+  getBookingEditRequest,
+} from "@/features/booking/api/bookings";
 import { useAuthStore } from "@/shared/auth/useAuthStore";
 import { pollWhileVisible } from "@/shared/lib/realtime";
 import CancelBookingModal from "./CancelBookingModal";
+import RequestBookingEditModal from "./RequestBookingEditModal";
+import BookingEditRequestStatusCard from "./BookingEditRequestStatusCard";
 import MessageButton from "@/features/messages/components/MessageButton";
 import { getDashboardPath } from "@/shared/lib/dashboard-path";
 
@@ -38,6 +43,7 @@ export default function BookingDetailClient({
   const router = useRouter();
   const { user } = useAuthStore();
   const [showCancelModal, setShowCancelModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
   const queryClient = useQueryClient();
 
   /**
@@ -67,6 +73,18 @@ export default function BookingDetailClient({
   } = useQuery({
     queryKey: ["user-bookings", "detail", bookingId],
     queryFn: () => fetchBookingById(bookingId),
+    enabled: Boolean(bookingId),
+    refetchInterval: pollWhileVisible,
+  });
+
+  // Only ever populated for a direct-venue Booking (single provider, no
+  // template) — see the API repo's booking-edit-request service for why a
+  // template-based, multi-provider Event Booking is out of scope. Harmless
+  // to query unconditionally: it just resolves to null for every other kind.
+  const editRequestQueryKey = ["user-bookings", "edit-request", "booking", bookingId];
+  const { data: editRequest } = useQuery({
+    queryKey: editRequestQueryKey,
+    queryFn: () => getBookingEditRequest("booking", bookingId),
     enabled: Boolean(bookingId),
     refetchInterval: pollWhileVisible,
   });
@@ -183,6 +201,25 @@ export default function BookingDetailClient({
     ? new Date(booking.startAt).getTime() <= nowMs
     : false;
   const canCancel = isOwner && isActiveStatus && !hasStarted;
+
+  // A direct-venue Booking: single provider, no template, and nothing else
+  // (asset/service items) attached to it via the ad-hoc marketplace — the
+  // one case with a real per-booking price formula to reprice against. See
+  // the API repo's booking-edit-request service.
+  const isDirectVenueBooking =
+    (booking.venueTransactions?.length ?? 0) === 1 &&
+    !(booking.assetTransactions?.length ?? 0) &&
+    !(booking.serviceTransactions?.length ?? 0);
+  const hasActiveEditRequest =
+    editRequest &&
+    ["pending", "approved"].includes(editRequest.status) &&
+    !(editRequest.status === "approved" && editRequest.appliedAt);
+  const canRequestEdit =
+    isOwner &&
+    isDirectVenueBooking &&
+    isActiveStatus &&
+    !hasStarted &&
+    !hasActiveEditRequest;
 
   // The event's match request can be approved by the host while the booking
   // itself is still "pending" — that just means payment hasn't gone through
@@ -311,6 +348,17 @@ export default function BookingDetailClient({
                     label={isOwner ? "Message Foxer" : "Message User"}
                     className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-white text-xs font-semibold transition-colors border border-zinc-700/50"
                   />
+                )}
+                {canRequestEdit && (
+                  <button
+                    onClick={() => setShowEditModal(true)}
+                    className="flex items-center gap-2 px-5 py-2.5 rounded-xl border border-white/10 text-white text-sm font-semibold hover:bg-white/5 transition-all shrink-0"
+                  >
+                    <span className="material-symbols-outlined text-[16px]">
+                      edit_calendar
+                    </span>
+                    Request a Change
+                  </button>
                 )}
                 {canCancel && (
                   <button
@@ -500,7 +548,7 @@ export default function BookingDetailClient({
                       </h2>
                     </div>
                     <p className="text-text-muted text-sm mb-4">
-                      Show this QR code to the organizer at the event entrance.
+                      Show this QR code to the Event Foxer at the event entrance.
                       They will scan it to verify your booking.
                     </p>
                     <div className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-white/5 border border-white/10">
@@ -588,6 +636,16 @@ export default function BookingDetailClient({
             </div>
           )}
         </div>
+        {editRequest && (
+          <div className="max-w-4xl mx-auto px-4 mt-6">
+            <BookingEditRequestStatusCard
+              request={editRequest}
+              onChanged={(updated) =>
+                queryClient.setQueryData(editRequestQueryKey, updated)
+              }
+            />
+          </div>
+        )}
       </main>
 
       {showCancelModal && (
@@ -601,6 +659,21 @@ export default function BookingDetailClient({
             // through the socket to see your own cancellation is the thing
             // this page was just fixed for.
             queryClient.invalidateQueries({ queryKey: ["user-bookings"] });
+          }}
+        />
+      )}
+
+      {showEditModal && (
+        <RequestBookingEditModal
+          bookingType="booking"
+          bookingId={bookingId}
+          currentQuantityOrGuestCount={booking.guestCount ?? 1}
+          currentStartDate={booking.startAt}
+          currentEndDate={booking.endAt ?? null}
+          onClose={() => setShowEditModal(false)}
+          onSubmitted={(request) => {
+            queryClient.setQueryData(editRequestQueryKey, request);
+            setShowEditModal(false);
           }}
         />
       )}

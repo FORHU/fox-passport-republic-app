@@ -15,6 +15,8 @@ import {
   VenuesSection,
   InventorySection,
   ServicesSection,
+  PerformersSection,
+  isPerformerService,
   CalendarWidget,
   CreatorProfile,
   RecentActivity,
@@ -183,13 +185,15 @@ export default function HostDashboardClient({
   // Each of these is gated on the same role check that decides whether the
   // section renders at all. Without the gate a Foxer with one role still polled
   // all four resources every 10 seconds to fill three locked sections.
+  // Services data is fetched for both serviceFoxer (talent/operational) and
+  // performerFoxer (entertainment/performer) since both use the Service model.
   const { data: rawServices, total: totalServices } = useHostData(
     "services",
     initialData.services,
     {
       page: servicesPage,
       limit: PER_PAGE,
-      enabled: access.canManageServices,
+      enabled: access.canManageServices || access.canManagePerformers,
     },
   );
   const { data: rawAssets, total: totalAssets } = useHostData(
@@ -239,6 +243,9 @@ export default function HostDashboardClient({
             onNavigateToCreateVenue={handleNavigateToCreateVenue}
             onNavigateToCreateInventory={handleNavigateToCreateInventory}
             onNavigateToCreateService={handleNavigateToCreateService}
+            onNavigateToCreatePerformerService={() =>
+              router.push("/foxer/create-service?type=performer")
+            }
             access={access}
           />
 
@@ -289,7 +296,8 @@ export default function HostDashboardClient({
                 />
               )}
 
-              {access.canManageServices && (
+              {/* Pure Service Foxer (Talent / Operational) */}
+              {access.canManageServices && !access.canManagePerformers && (
                 <ServicesSection
                   services={services}
                   onStatusChange={() => {}}
@@ -299,12 +307,50 @@ export default function HostDashboardClient({
                 />
               )}
 
+              {/* Pure Performer Foxer (Stage / Entertainment / Creative) */}
+              {access.canManagePerformers && !access.canManageServices && (
+                <PerformersSection
+                  services={services}
+                  onStatusChange={() => {}}
+                  page={servicesPage}
+                  totalPages={totalServicePages}
+                  onPageChange={setServicesPage}
+                  onEdit={(id) =>
+                    router.push(`/creator-dashboard/services/${id}/edit`)
+                  }
+                />
+              )}
+
+              {/* Multi-role holder (Both Talent Services & Stage Gigs) */}
+              {access.canManageServices && access.canManagePerformers && (
+                <>
+                  <ServicesSection
+                    services={services.filter((s) => !isPerformerService(s))}
+                    onStatusChange={() => {}}
+                    page={servicesPage}
+                    totalPages={totalServicePages}
+                    onPageChange={setServicesPage}
+                  />
+                  <PerformersSection
+                    services={services.filter(isPerformerService)}
+                    onStatusChange={() => {}}
+                    page={servicesPage}
+                    totalPages={totalServicePages}
+                    onPageChange={setServicesPage}
+                    onEdit={(id) =>
+                      router.push(`/creator-dashboard/services/${id}/edit`)
+                    }
+                  />
+                </>
+              )}
+
               {/* Dismissible Discovery Hint for unheld roles */}
               {!discoveryHintDismissed &&
                 (!access.canManageEvents ||
                   !access.canManageVenues ||
                   !access.canManageInventory ||
-                  !access.canManageServices) && (
+                  !access.canManageServices ||
+                  !access.canManagePerformers) && (
                   <div className="rounded-2xl border border-white/10 bg-white/3 p-4 sm:p-5 flex items-center justify-between gap-4 text-xs text-white/60">
                     <div className="flex items-center gap-3 min-w-0">
                       <span className="material-symbols-outlined text-[#ccff00] text-lg shrink-0">
@@ -312,7 +358,8 @@ export default function HostDashboardClient({
                       </span>
                       <p className="truncate">
                         Unlock more provider capabilities (Venues, Events,
-                        Assets, Services) by expanding your creator profile.
+                        Assets, Services, Performers) by expanding your creator
+                        profile.
                       </p>
                     </div>
                     <div className="flex items-center gap-2 shrink-0">

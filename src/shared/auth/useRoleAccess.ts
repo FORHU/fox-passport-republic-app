@@ -8,6 +8,7 @@ export interface RoleAccess {
   canManageEvents: boolean; // template:manage
   canManageInventory: boolean; // asset:manage
   canManageServices: boolean; // service:manage
+  canManagePerformers: boolean; // performer:manage
   canManagePromotions: boolean; // promotions:manage-own
   isAdmin: boolean;
   isMayor: boolean;
@@ -35,6 +36,7 @@ export function useRoleAccess(): RoleAccess {
   const canManageEvents = hasPermission(user, "template:manage");
   const canManageInventory = hasPermission(user, "asset:manage");
   const canManageServices = hasPermission(user, "service:manage");
+  const canManagePerformers = hasPermission(user, "performer:manage");
   const canManagePromotions = hasPermission(user, "promotions:manage-own");
   const isHost = hasPermission(user, "booking:check-in");
 
@@ -43,10 +45,13 @@ export function useRoleAccess(): RoleAccess {
     canManageEvents,
     canManageInventory,
     canManageServices,
+    canManagePerformers,
     canManagePromotions,
     isAdmin: canAccessAdmin(user),
     isMayor: canManageVenues,
     isHost,
-    isFoxer: canManageInventory || canManageServices,
+    // isFoxer covers all three provider roles so a pure performerFoxer
+    // is not invisible on the dashboard
+    isFoxer: canManageInventory || canManageServices || canManagePerformers,
   };
 }

@@ -116,7 +116,7 @@ export const PassportSidebarContent: React.FC<PassportSidebarContentProps> = ({
               p === "eventFoxer"
                 ? "Event Foxer"
                 : p === "gearFoxer"
-                  ? "Equipment Foxer"
+                  ? "Gear Foxer"
                   : p === "serviceFoxer"
                     ? "Talent Foxer"
                     : p === "performerFoxer"

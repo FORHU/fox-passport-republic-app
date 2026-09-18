@@ -436,7 +436,7 @@ export default function InvestmentLocationPicker({
             className="w-full accent-amber-400 cursor-pointer"
           />
           <p className="text-[11px] text-zinc-500">
-            Partner venues and event organizers located within{" "}
+            Partner venues and Event Foxers located within{" "}
             {value.deliveryRadiusKm} km of this warehouse will see these
             supplies as available for dispatch.
           </p>

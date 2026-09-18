@@ -389,7 +389,7 @@ export default function CreateInvestmentWizard() {
                     Pledge capital against a specific venue and set your own
                     revenue-share percentage — you&apos;re paid automatically
                     out of that venue&apos;s own payout whenever it earns
-                    through the Republic, alongside the venue owner.
+                    through the Republic, alongside the Venue Foxer.
                   </p>
                 </div>
 
@@ -488,7 +488,7 @@ export default function CreateInvestmentWizard() {
                 </div>
                 <p className="text-[11px] text-zinc-500">
                   This percentage of the venue&apos;s own payout comes to you
-                  automatically each time it earns — the venue owner keeps the
+                  automatically each time it earns — the Venue Foxer keeps the
                   rest.
                 </p>
               </div>
@@ -747,7 +747,7 @@ export default function CreateInvestmentWizard() {
                   options={[
                     {
                       value: "self_pickup",
-                      label: "Self-Pickup by Venue / Organizer",
+                      label: "Self-Pickup by Venue Foxer / Event Foxer",
                     },
                     {
                       value: "partner_delivers_free",

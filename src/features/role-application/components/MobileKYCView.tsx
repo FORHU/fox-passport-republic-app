@@ -12,7 +12,7 @@ type RoleType =
 const ROLE_DISPLAY: Record<RoleType, string> = {
   venueFoxer: "Venue Foxer",
   eventFoxer: "Event Foxer",
-  gearFoxer: "Equipment Foxer",
+  gearFoxer: "Gear Foxer",
   serviceFoxer: "Talent Foxer",
   performerFoxer: "Performer Foxer",
 };

@@ -64,7 +64,7 @@ export const ROLE_DEFS: RoleDef[] = [
   },
   {
     key: "mayor",
-    label: "Mayor Venue Console",
+    label: "Venue Foxer Console",
     href: "/mayor",
     applyHref: "/mayor/apply",
     description: "Venue listing & space manager",
