@@ -15,10 +15,57 @@ import NavigationOverlay from "@/shared/components/ui/NavigationOverlay";
 
 // Import the Master Provider
 import Providers from "@/shared/providers";
+import WebsiteJsonLd from "@/shared/components/seo/WebsiteJsonLd";
+
+const appUrl = (
+  process.env.NEXT_PUBLIC_APP_URL || "https://foxpassport.com"
+).replace(/\/+$/, "");
 
 export const metadata: Metadata = {
-  title: "FoxPassport - Let's Make Life an Event",
-  description: "FoxPassport returns the power of Happiness & Experience to You",
+  metadataBase: new URL(appUrl),
+  title: {
+    default: "FoxPassport — Let's Make Life an Event",
+    template: "%s | FoxPassport",
+  },
+  description:
+    "FoxPassport returns the power of Happiness & Experience to You. Discover curated events, unique venues, and local experiences.",
+  applicationName: "FoxPassport",
+  authors: [{ name: "FoxPassport" }],
+  openGraph: {
+    type: "website",
+    locale: "en_US",
+    url: appUrl,
+    siteName: "FoxPassport",
+    title: "FoxPassport — Let's Make Life an Event",
+    description:
+      "FoxPassport returns the power of Happiness & Experience to You. Discover curated events, unique venues, and local experiences.",
+    images: [
+      {
+        url: "/foxonlylogo.png",
+        width: 1200,
+        height: 630,
+        alt: "FoxPassport",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "FoxPassport — Let's Make Life an Event",
+    description:
+      "FoxPassport returns the power of Happiness & Experience to You. Discover curated events, unique venues, and local experiences.",
+    images: ["/foxonlylogo.png"],
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-video-preview": -1,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+    },
+  },
 };
 
 export const viewport: Viewport = {
@@ -94,6 +141,7 @@ export default function RootLayout({
           <NotificationSocketBridge />
           <MessageSocketBridge />
           <ChatWindowsWrapper />
+          <WebsiteJsonLd />
           <main className="grow overflow-x-clip">{children}</main>
         </Providers>
       </body>

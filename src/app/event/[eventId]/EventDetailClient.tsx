@@ -4,8 +4,13 @@ import React, { Suspense } from "react";
 import { useParams, useSearchParams } from "next/navigation";
 import { useEventDetail } from "./_hooks/useEventDetail";
 import { EventDetailView } from "./_components/EventDetailView";
+import type { EventTemplateDetail } from "@/features/event/api/event-templates";
 
-function EventDetailContent() {
+function EventDetailContent({
+  initialTemplate,
+}: {
+  initialTemplate?: EventTemplateDetail | null;
+}) {
   const { eventId } = useParams();
   const searchParams = useSearchParams();
   const isPreview = searchParams.get("preview") === "1";
@@ -22,7 +27,7 @@ function EventDetailContent() {
     mapLng,
     isDraft,
     router,
-  } = useEventDetail(eventId as string, isPreview);
+  } = useEventDetail(eventId as string, isPreview, initialTemplate);
 
   if (loadError) {
     return (
@@ -69,7 +74,11 @@ function EventDetailContent() {
   );
 }
 
-export function EventDetailClient() {
+export function EventDetailClient({
+  initialTemplate,
+}: {
+  initialTemplate?: EventTemplateDetail | null;
+} = {}) {
   return (
     <Suspense
       fallback={
@@ -78,7 +87,7 @@ export function EventDetailClient() {
         </div>
       }
     >
-      <EventDetailContent />
+      <EventDetailContent initialTemplate={initialTemplate} />
     </Suspense>
   );
 }
