@@ -11,11 +11,19 @@ export interface TemplateResource {
   billingRate: string;
   images: { url: string }[];
   ownerId: string;
+  lat?: number | null;
+  lng?: number | null;
+  description?: string | null;
 }
 
 export interface EventTemplateDetail extends EventTemplate {
+  status?: string;
+  cancellationPolicyId?: string | null;
+  lat?: number | null;
+  lng?: number | null;
+  date?: string | null;
   templateVenues?: {
-    venue: TemplateResource & { mayorId: string };
+    venue: TemplateResource & { mayorId?: string };
   }[];
   templateAssets?: { asset: TemplateResource }[];
   templateServices?: { service: TemplateResource }[];

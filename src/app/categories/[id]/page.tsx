@@ -1,6 +1,7 @@
 export const dynamic = "force-dynamic";
 
-import Link from "next/link";
+import type { Metadata } from "next";
+import { notFound } from "next/navigation";
 import {
   getCategoryBySlug,
   getEventsByCategory,
@@ -20,6 +21,47 @@ interface CategoryDetailPageProps {
   params: Promise<{ id: string }>;
 }
 
+export async function generateMetadata({
+  params,
+}: CategoryDetailPageProps): Promise<Metadata> {
+  const { id } = await params;
+  const category = await getCategoryBySlug(id);
+
+  if (!category) {
+    return {
+      title: "Category Not Found",
+      robots: { index: false, follow: false },
+    };
+  }
+
+  const name = category.name || "Experiences";
+  const title = `${name} Experiences`;
+  const description =
+    category.tagline ||
+    `Explore ${name} events, venues, and experiences on FoxPassport.`;
+
+  return {
+    title,
+    description,
+    alternates: {
+      canonical: `/categories/${id}`,
+    },
+    openGraph: {
+      title,
+      description,
+      url: `/categories/${id}`,
+      type: "website",
+      images: ["/foxonlylogo.png"],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+      images: ["/foxonlylogo.png"],
+    },
+  };
+}
+
 export default async function CategoryDetailPage({
   params,
 }: CategoryDetailPageProps) {
@@ -27,19 +69,7 @@ export default async function CategoryDetailPage({
   const category = await getCategoryBySlug(id);
 
   if (!category) {
-    return (
-      <div className="min-h-screen bg-black flex flex-col items-center justify-center text-center p-4">
-        <h1 className="text-3xl font-bold text-white mb-4">
-          Category Not Found
-        </h1>
-        <Link
-          href="/"
-          className="px-6 py-3 rounded-xl bg-[#ccff00] text-black font-bold hover:bg-[#b3e600] transition-colors"
-        >
-          Go Home
-        </Link>
-      </div>
-    );
+    notFound();
   }
 
   // Fetch related data
@@ -59,12 +89,14 @@ export default async function CategoryDetailPage({
       CATEGORY_GRADIENTS[category.name?.toLowerCase()] ||
       category.gradient ||
       "from-white to-gray-500",
-    children: (category.subCategories || []).map((sub: any) => ({
-      ...sub,
-      image:
-        sub.image ||
-        "https://images.unsplash.com/photo-1576610616656-d3aa5d1f4534?w=800",
-    })),
+    children: (category.subCategories || []).map(
+      (sub: { image?: string; [key: string]: unknown }) => ({
+        ...sub,
+        image:
+          sub.image ||
+          "https://images.unsplash.com/photo-1576610616656-d3aa5d1f4534?w=800",
+      }),
+    ),
     events,
     trending,
   };

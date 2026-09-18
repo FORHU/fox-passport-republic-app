@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useEventBuilderStore } from "@/features/event/store/useEventBuilderStore";
+import type { EventTemplateDetail } from "@/features/event/api/event-templates";
 import { InclusionItem } from "../_components/EventInclusions";
 
 export function formatEventDate(dateStr: string | null | undefined) {
@@ -28,9 +29,12 @@ export function formatEventDate(dateStr: string | null | undefined) {
 export function useEventDetail(
   eventId: string | undefined,
   isPreview: boolean,
+  initialTemplate?: EventTemplateDetail | null,
 ) {
   const router = useRouter();
-  const [template, setTemplate] = useState<any>(null);
+  const [template, setTemplate] = useState<EventTemplateDetail | null>(
+    initialTemplate ?? null,
+  );
   const [loadError, setLoadError] = useState<string | null>(null);
   const [cancellationPolicy, setCancellationPolicy] = useState<{
     name: string;
@@ -63,7 +67,7 @@ export function useEventDetail(
             ),
           );
       });
-    } else {
+    } else if (!initialTemplate) {
       import("@/features/booking/api/bookings").then(
         ({ getPublicTemplate }) => {
           getPublicTemplate(id)
@@ -82,7 +86,7 @@ export function useEventDetail(
         },
       );
     }
-  }, [eventId, isPreview]);
+  }, [eventId, isPreview, initialTemplate]);
 
   // Fetch cancellation policy details when the template has one
   useEffect(() => {
@@ -119,11 +123,12 @@ export function useEventDetail(
     (acc, item) => acc + (item.agreedPrice ?? item.cost),
     0,
   );
+  const estimated = template?.estimatedTotal ?? 0;
   const price: number =
     isPreview && storePrice > 0
       ? storePrice
-      : template?.estimatedTotal > 0
-        ? template.estimatedTotal
+      : estimated > 0
+        ? estimated
         : 0;
 
   const eventDate = formatEventDate(template?.date);
@@ -131,19 +136,19 @@ export function useEventDetail(
     template?.status === "draft" || template?.status === "pending";
 
   const dbInclusions: InclusionItem[] = [
-    ...(template?.templateVenues ?? []).map((v: any) => ({
+    ...(template?.templateVenues ?? []).map((v) => ({
       name: v.venue?.name ?? "Venue",
       icon: "apartment",
       desc: v.venue?.description ?? "",
       imageUrl: v.venue?.images?.[0]?.url ?? undefined,
     })),
-    ...(template?.templateAssets ?? []).map((a: any) => ({
+    ...(template?.templateAssets ?? []).map((a) => ({
       name: a.asset?.name ?? "Asset",
       icon: "category",
       desc: a.asset?.description ?? "",
       imageUrl: a.asset?.images?.[0]?.url ?? undefined,
     })),
-    ...(template?.templateServices ?? []).map((s: any) => ({
+    ...(template?.templateServices ?? []).map((s) => ({
       name: s.service?.name ?? "Service",
       icon: "star",
       desc: s.service?.description ?? "",

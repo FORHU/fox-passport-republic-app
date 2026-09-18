@@ -39,6 +39,7 @@ function getRoleLabel(foxer: Foxer): string {
   if (roles.includes("gearFoxer")) return "Equipment Foxer";
   if (roles.includes("serviceFoxer")) return "Talent Foxer";
   if (roles.includes("performerFoxer")) return "Performer Foxer";
+  if (roles.includes("investor")) return "Partner Foxer";
   return "Foxer";
 }
 

@@ -1,5 +1,8 @@
 import { cookies } from "next/headers";
+import { cache } from "react";
 import { config } from "@/shared/lib/config";
+import type { Foxer } from "@/shared/api/foxers";
+import type { EventTemplateDetail } from "@/features/event/api/event-templates";
 import { requireAuth } from "./auth";
 
 async function getAuthToken(): Promise<string | null> {
@@ -94,6 +97,31 @@ async function serverFetch(
   }
 
   return res.json();
+}
+
+async function publicServerFetch<T = Record<string, unknown>>(
+  endpoint: string,
+  params?: Record<string, string>,
+): Promise<T | null> {
+  const baseUrl = config.apiUrl;
+  let url = `${baseUrl}${endpoint}`;
+  if (params) {
+    const qs = new URLSearchParams(params).toString();
+    if (qs) url += `?${qs}`;
+  }
+
+  try {
+    const res = await fetch(url, {
+      headers: { "Content-Type": "application/json" },
+      cache: "no-store",
+    });
+    if (!res.ok) {
+      return null;
+    }
+    return res.json() as Promise<T>;
+  } catch {
+    return null;
+  }
 }
 
 // Exported for other server utilities that need a raw fetch helper
@@ -284,7 +312,7 @@ export async function getUserDashboard(_userId: string) {
 
 export async function getVenues() {
   try {
-    const body = await serverFetch("/venues");
+    const body = await publicServerFetch("/venues");
     return extractList(body).map(normalizeVenue);
   } catch (error) {
     console.error("Failed to fetch venues:", error);
@@ -375,7 +403,7 @@ export async function getEvents(ownerId?: string) {
 
 export async function getCategories() {
   try {
-    const body = await serverFetch("/categories");
+    const body = await publicServerFetch("/categories");
     return extractList(body);
   } catch (error) {
     console.error("Failed to fetch categories:", error);
@@ -492,7 +520,7 @@ export async function getBookingById(id: string) {
   }
 }
 
-export async function getVenueById(id: string) {
+export const getVenueById = cache(async (id: string) => {
   try {
     const body = await serverFetch(`/venues/${id}`);
     const data = extractOne(body);
@@ -501,7 +529,18 @@ export async function getVenueById(id: string) {
   } catch {
     return null;
   }
-}
+});
+
+export const getFoxerById = cache(async (id: string): Promise<Foxer | null> => {
+  try {
+    const body = await publicServerFetch<{ data?: Foxer }>(
+      `/users/foxers/${id}`,
+    );
+    return body?.data ?? null;
+  } catch {
+    return null;
+  }
+});
 
 export async function getCategoryBySlug(slug: string) {
   try {
@@ -540,15 +579,43 @@ export async function getFeaturedEventTemplates(limit = 4) {
   }
 }
 
-export async function getPublicEventTemplateById(id: string) {
+export async function getPublicEventTemplates(limit = 100) {
   try {
-    const body = await serverFetch(`/event-templates/browse/${id}`);
-    return body?.data ?? null;
+    const body = await publicServerFetch("/event-templates/browse", {
+      limit: String(limit),
+    });
+    return extractList(body);
   } catch (error) {
-    console.error(`Failed to fetch event template ${id}:`, error);
-    return null;
+    console.error("Failed to fetch public event templates:", error);
+    return [];
   }
 }
+
+export async function getPublicFoxers(limit = 100) {
+  try {
+    const body = await publicServerFetch("/users/foxers", {
+      limit: String(limit),
+    });
+    return extractList(body);
+  } catch (error) {
+    console.error("Failed to fetch public foxers:", error);
+    return [];
+  }
+}
+
+export const getPublicEventTemplateById = cache(
+  async (id: string): Promise<EventTemplateDetail | null> => {
+    try {
+      const body = await publicServerFetch<{ data?: EventTemplateDetail }>(
+        `/event-templates/browse/${id}`,
+      );
+      return body?.data ?? null;
+    } catch (error) {
+      console.error(`Failed to fetch event template ${id}:`, error);
+      return null;
+    }
+  },
+);
 
 export async function getTrendingEventsByCategory(categorySlug: string) {
   try {
