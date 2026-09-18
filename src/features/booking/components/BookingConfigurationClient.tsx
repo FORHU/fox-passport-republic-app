@@ -784,7 +784,7 @@ export default function BookingConfigurationClient() {
                       {
                         icon: "event_available",
                         title: "Package Confirmed",
-                        desc: "The organizer reviews and locks in your event details.",
+                        desc: "The Event Foxer reviews and locks in your event details.",
                       },
                       {
                         icon: "lock",

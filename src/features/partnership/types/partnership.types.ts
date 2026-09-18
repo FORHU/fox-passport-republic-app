@@ -18,10 +18,10 @@ export interface PartnershipProposal {
   createdAt: string;
   updatedAt: string;
 
-  // UI Convenience Flags provided by backend
-  canAccept?: boolean;
-  canReject?: boolean;
-  canWithdraw?: boolean;
+  // Computed server-side per viewer, always present (never client-derived).
+  canAccept: boolean;
+  canReject: boolean;
+  canWithdraw: boolean;
   payment?: {
     required: boolean;
     status:

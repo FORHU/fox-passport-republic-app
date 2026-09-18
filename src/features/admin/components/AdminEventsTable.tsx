@@ -214,7 +214,7 @@ export const AdminEventsTable: React.FC<EventsTableProps> = ({
                       <td className="p-6 text-gray-300">
                         <div className="flex flex-col">
                           <span className="font-medium text-white/90">
-                            {event.host?.name || "Unknown Organizer"}
+                            {event.host?.name || "Unknown Event Foxer"}
                           </span>
                           <span className="text-[10px] text-white/40 font-mono tracking-tighter">
                             ID: {event.hostId}

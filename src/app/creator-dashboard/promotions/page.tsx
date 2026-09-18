@@ -1,6 +1,6 @@
 export const dynamic = "force-dynamic";
 
-import { requireAuth } from "@/shared/lib/server/auth";
+import { requirePermission } from "@/shared/lib/server/auth";
 import {
   getAssetsByHostId,
   getServicesByHostId,
@@ -9,7 +9,7 @@ import {
 import FoxerPromotionsClient from "@/features/dashboard/components/FoxerPromotionsClient";
 
 export default async function CreatorPromotionsPage() {
-  const user = await requireAuth();
+  const user = await requirePermission("promotions:manage-own");
   const [assets, services, venues] = await Promise.all([
     getAssetsByHostId(user.id),
     getServicesByHostId(user.id),

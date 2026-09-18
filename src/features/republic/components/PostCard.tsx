@@ -605,7 +605,7 @@ export function PostCard({
                   post.asset!.id,
                 )
               }
-              title="Chat with Equipment Foxer"
+              title="Chat with Gear Foxer"
               className="px-3 py-2 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-zinc-200 font-bold text-xs flex items-center gap-1 border border-zinc-700 transition-all"
             >
               <MessageCircle className="h-[15px] w-[15px]" strokeWidth={2} />
@@ -696,7 +696,7 @@ export function PostCard({
                   post.event!.id,
                 )
               }
-              title="Chat with Event Organizer"
+              title="Chat with Event Foxer"
               className="px-3 py-2 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-zinc-200 font-bold text-xs flex items-center gap-1 border border-zinc-700 transition-all"
             >
               <MessageCircle className="h-[15px] w-[15px]" strokeWidth={2} />

@@ -2,6 +2,11 @@
 
 import React from "react";
 import { BlueprintHealthItem } from "@/features/event/hooks/useEventBuilder";
+import {
+  ResourceItem,
+  VENUE_ICONS,
+  TALENT_ICONS,
+} from "@/features/event/data/eventBuilderData";
 
 interface EventBlueprintProps {
   targetMargin: number;
@@ -20,6 +25,39 @@ interface EventBlueprintProps {
   onPreview?: () => void;
   /** When true, panel is always visible (used inside a mobile drawer). */
   inDrawer?: boolean;
+  /** Per-item breakdown under each category subtotal — omit for just the totals. */
+  baseItems?: ResourceItem[];
+}
+
+// Same classification `useEventBuilder`'s `financials` uses for the three
+// subtotals — kept in sync here so a citizen-facing item never lands under
+// a category its own subtotal wasn't counted in.
+function itemPrice(item: ResourceItem): number {
+  return Number(item.agreedPrice ?? item.cost) || 0;
+}
+
+function CategoryItemList({ items }: { items: ResourceItem[] }) {
+  if (items.length === 0) return null;
+  return (
+    <div className="pl-3 mt-1.5 space-y-1 border-l border-white/10">
+      {items.map((item) => (
+        <div
+          key={item.id}
+          className="flex justify-between items-start gap-3 text-[11px]"
+        >
+          <span className="text-white/40 truncate">
+            {item.name}
+            {item.isOptional && (
+              <span className="ml-1 text-white/25">(optional)</span>
+            )}
+          </span>
+          <span className="text-white/55 font-mono text-right break-all shrink-0">
+            ₱{itemPrice(item).toLocaleString()}
+          </span>
+        </div>
+      ))}
+    </div>
+  );
 }
 
 export function EventBlueprint({
@@ -34,7 +72,21 @@ export function EventBlueprint({
   onMarginChange,
   onPreview,
   inDrawer = false,
+  baseItems = [],
 }: EventBlueprintProps) {
+  const venueItems = baseItems.filter(
+    (i) => i.resourceType === "venue" || VENUE_ICONS.includes(i.icon),
+  );
+  const talentItems = baseItems.filter(
+    (i) => i.resourceType === "talent" || TALENT_ICONS.includes(i.icon),
+  );
+  const serviceItems = baseItems.filter(
+    (i) =>
+      i.resourceType !== "venue" &&
+      !VENUE_ICONS.includes(i.icon) &&
+      i.resourceType !== "talent" &&
+      !TALENT_ICONS.includes(i.icon),
+  );
   return (
     <aside
       className={`${inDrawer ? "flex w-full border-l-0" : "hidden md:flex w-80"} shrink-0 border-l border-white/5 bg-[#0f111a] flex-col shadow-2xl z-10`}
@@ -57,28 +109,43 @@ export function EventBlueprint({
             the listing price.
           </p>
           <div className="space-y-3">
-            <div className="flex justify-between text-xs">
-              <span className="text-text-muted">Venue & Infrastructure</span>
-              <span className="text-white font-mono">
-                ₱{venueCost.toLocaleString()}
-              </span>
+            <div>
+              <div className="flex justify-between items-start gap-3 text-xs">
+                <span className="text-text-muted shrink-0">
+                  Venue & Infrastructure
+                </span>
+                <span className="text-white font-mono text-right break-all">
+                  ₱{venueCost.toLocaleString()}
+                </span>
+              </div>
+              <CategoryItemList items={venueItems} />
             </div>
-            <div className="flex justify-between text-xs">
-              <span className="text-text-muted">Talent & Entertainment</span>
-              <span className="text-white font-mono">
-                ₱{talentCost.toLocaleString()}
-              </span>
+            <div>
+              <div className="flex justify-between items-start gap-3 text-xs">
+                <span className="text-text-muted shrink-0">
+                  Talent & Entertainment
+                </span>
+                <span className="text-white font-mono text-right break-all">
+                  ₱{talentCost.toLocaleString()}
+                </span>
+              </div>
+              <CategoryItemList items={talentItems} />
             </div>
-            <div className="flex justify-between text-xs">
-              <span className="text-text-muted">Services & Equipment</span>
-              <span className="text-white font-mono">
-                ₱{serviceCost.toLocaleString()}
-              </span>
+            <div>
+              <div className="flex justify-between items-start gap-3 text-xs">
+                <span className="text-text-muted shrink-0">
+                  Services & Equipment
+                </span>
+                <span className="text-white font-mono text-right break-all">
+                  ₱{serviceCost.toLocaleString()}
+                </span>
+              </div>
+              <CategoryItemList items={serviceItems} />
             </div>
             <div className="h-px bg-white/10 my-2" />
-            <div className="flex justify-between text-sm font-bold">
-              <span className="text-white">Total Base Cost</span>
-              <span className="text-white font-mono">
+            <div className="flex justify-between items-start gap-3 text-sm font-bold">
+              <span className="text-white shrink-0">Total Base Cost</span>
+              <span className="text-white font-mono text-right break-all">
                 ₱{baseCost.toLocaleString()}
               </span>
             </div>
@@ -122,9 +189,11 @@ export function EventBlueprint({
             </p>
           </div>
           <div className="space-y-1 pt-3 border-t border-white/5">
-            <div className="flex justify-between items-center">
-              <span className="text-xs text-text-muted">Suggested Price</span>
-              <span className="text-base font-bold text-white font-mono">
+            <div className="flex justify-between items-start gap-3">
+              <span className="text-xs text-text-muted shrink-0">
+                Suggested Price
+              </span>
+              <span className="text-base font-bold text-white font-mono text-right break-all">
                 ₱{suggestedPrice.toLocaleString()}
               </span>
             </div>

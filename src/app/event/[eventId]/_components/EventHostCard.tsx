@@ -20,7 +20,7 @@ export function EventHostCard({
   eventId,
   eventName,
 }: EventHostCardProps) {
-  const ownerName = owner?.name ?? "Organizer";
+  const ownerName = owner?.name ?? "Event Foxer";
   const ownerInitial = ownerName.charAt(0).toUpperCase();
 
   if (variant === "compact") {
@@ -52,7 +52,7 @@ export function EventHostCard({
               Curated by {ownerName}
             </h3>
             <p className="text-accent text-xs font-bold uppercase tracking-wider">
-              Event Organizer
+              Event Foxer
             </p>
           </div>
         </div>
@@ -84,9 +84,9 @@ export function EventHostCard({
       </div>
       <div>
         <h3 className="text-xl font-bold text-white mb-1">
-          Hosted by {ownerName}
+          Created by {ownerName}
         </h3>
-        <p className="text-text-muted text-sm mb-4">FoxPassport Organizer</p>
+        <p className="text-text-muted text-sm mb-4">FoxPassport Event Foxer</p>
         <div className="flex gap-4 text-sm text-white mb-4">
           <span className="flex items-center gap-1">
             <span className="material-symbols-outlined text-[16px] text-accent">
@@ -103,12 +103,12 @@ export function EventHostCard({
             contextType={eventId ? "event" : undefined}
             contextId={eventId}
             contextLabel={eventName || "Event"}
-            label="Contact Organizer"
+            label="Contact Event Foxer"
             className="inline-flex items-center gap-2 px-6 py-3 rounded-xl border border-white/10 text-sm font-bold text-white hover:bg-white hover:text-black transition-colors"
           />
         ) : (
           <button className="px-6 py-3 rounded-xl border border-white/10 text-sm font-bold text-white hover:bg-white hover:text-black transition-colors cursor-pointer">
-            Contact Organizer
+            Contact Event Foxer
           </button>
         )}
       </div>

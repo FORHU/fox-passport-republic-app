@@ -169,6 +169,7 @@ export default function EventCreationBuilder() {
             venueCost={financials.venueCost}
             talentCost={financials.talentCost}
             serviceCost={financials.serviceCost}
+            baseItems={baseItems}
             blueprintHealth={blueprintHealth}
             onMarginChange={setTargetMargin}
             onPreview={handlePreview}
@@ -215,6 +216,7 @@ export default function EventCreationBuilder() {
                   venueCost={financials.venueCost}
                   talentCost={financials.talentCost}
                   serviceCost={financials.serviceCost}
+                  baseItems={baseItems}
                   blueprintHealth={blueprintHealth}
                   onMarginChange={setTargetMargin}
                   onPreview={handlePreview}

@@ -17,7 +17,7 @@ interface Props {
 const ROLE_TABS: { id: RoleType; label: string; icon: string }[] = [
   { id: "venueFoxer", label: "Venue Foxer", icon: "apartment" },
   { id: "eventFoxer", label: "Event Foxer", icon: "celebration" },
-  { id: "gearFoxer", label: "Equipment Foxer", icon: "inventory_2" },
+  { id: "gearFoxer", label: "Gear Foxer", icon: "inventory_2" },
   { id: "serviceFoxer", label: "Talent Foxer", icon: "design_services" },
   { id: "performerFoxer", label: "Performer Foxer", icon: "theater_comedy" },
 ];

@@ -100,7 +100,7 @@ export function VenueCard({ venue }: VenueCardProps) {
               {venue.host.name.charAt(0).toUpperCase()}
             </div>
             <div>
-              <p className="text-xs text-gray-500">Hosted by</p>
+              <p className="text-xs text-gray-500">Listed by</p>
               <p className="text-sm font-medium text-gray-900">
                 {venue.host.name}
               </p>

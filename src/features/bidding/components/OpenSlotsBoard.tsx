@@ -51,7 +51,7 @@ export const OpenSlotsBoard: React.FC = () => {
               </p>
             </div>
             <div className="flex-1">
-              <p className="text-sm">Host: {evt.host?.name}</p>
+              <p className="text-sm">Event Foxer: {evt.host?.name}</p>
               <p className="text-sm text-white/50 mt-2">
                 Looking for talent to fill open spots.
               </p>

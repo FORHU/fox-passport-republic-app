@@ -146,7 +146,7 @@ export const EventPackagesSection: React.FC<EventPackagesSectionProps> = ({
 
                 <div className="flex items-center justify-between border-t border-white/10 pt-4">
                   <span className="text-xs text-gray-500">
-                    by {template.owner?.name ?? "Organizer"}
+                    by {template.owner?.name ?? "Event Foxer"}
                   </span>
                   <span className="h-8 w-8 rounded-full bg-white/10 flex items-center justify-center text-white group-hover:bg-[#ccff00] group-hover:text-black transition-colors">
                     <ArrowRight className="w-4 h-4" />

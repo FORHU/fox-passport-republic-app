@@ -172,6 +172,7 @@ function EventEditContent({ id }: Props) {
               venueCost={financials.venueCost}
               talentCost={financials.talentCost}
               serviceCost={financials.serviceCost}
+              baseItems={baseItems}
               blueprintHealth={blueprintHealth}
               onMarginChange={(m: number) => setTargetMargin(m)}
               onPreview={async () => {

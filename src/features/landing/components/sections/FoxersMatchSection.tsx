@@ -20,7 +20,7 @@ const ROLE_FILTERS = [
   { label: "Venue Foxer", value: "venueFoxer", icon: "location_city" },
   { label: "Talent Foxer", value: "serviceFoxer", icon: "design_services" },
   { label: "Performer Foxer", value: "performerFoxer", icon: "theater_comedy" },
-  { label: "Equipment Foxer", value: "gearFoxer", icon: "speaker" },
+  { label: "Gear Foxer", value: "gearFoxer", icon: "speaker" },
 ] as const;
 
 type RoleFilter = (typeof ROLE_FILTERS)[number]["value"];
@@ -191,7 +191,7 @@ const ROLE_META: Record<
     color: "#ff00aa",
   },
   gearFoxer: {
-    label: "Equipment Foxer",
+    label: "Gear Foxer",
     description: "Rents out equipment — sound, lighting & décor",
     color: "#a78bfa",
   },

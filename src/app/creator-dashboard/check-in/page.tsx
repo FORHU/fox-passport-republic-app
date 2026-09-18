@@ -1,10 +1,13 @@
 export const dynamic = "force-dynamic";
 
 import React from "react";
+import { requirePermission } from "@/shared/lib/server/auth";
 import { DashboardHeader } from "@/features/dashboard/components/DashboardHeader";
 import QRScannerClient from "../_components/QRScannerClient";
 
-export default function CheckInPage() {
+export default async function CheckInPage() {
+  await requirePermission("booking:check-in");
+
   return (
     <div
       className="bg-[#02040a] text-white min-h-screen font-body antialiased"

@@ -52,7 +52,7 @@ export function PassportProgressTab({
             path.path === "user"
               ? "Citizen"
               : path.path === "gearFoxer"
-                ? "Equipment Foxer"
+                ? "Gear Foxer"
                 : path.path === "serviceFoxer"
                   ? "Talent Foxer"
                   : path.path === "performerFoxer"
