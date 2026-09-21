@@ -11,9 +11,11 @@ import { useUserLocation } from "@/shared/hooks/useUserLocation";
 import {
   PartnerInvestment,
   fetchInvestmentsOnMap,
+  cancelInvestment,
   InventoryCategory,
 } from "@/shared/api/investments";
 import MessageButton from "@/features/messages/components/MessageButton";
+import { useAuthStore } from "@/shared/auth/useAuthStore";
 import { toast } from "sonner";
 import {
   getEffectiveMapboxToken,
@@ -63,7 +65,9 @@ export default function PartnerInventoryMap({
     selectedCategory || "all",
   );
   const [loading, setLoading] = useState(false);
+  const [cancelling, setCancelling] = useState(false);
   const [mapReady, setMapReady] = useState(false);
+  const currentUserId = useAuthStore((s) => s.user?.id);
   const categoryScrollRef = useRef<HTMLDivElement>(null);
   const [canScrollCatLeft, setCanScrollCatLeft] = useState(false);
   const [canScrollCatRight, setCanScrollCatRight] = useState(false);
@@ -378,6 +382,30 @@ export default function PartnerInventoryMap({
     };
   }, []);
 
+  const handleCancelInvestment = async () => {
+    if (!selectedPin) return;
+    if (
+      !window.confirm(
+        "Cancel this investment pledge? It will stop counting toward any revenue share and disappear from the map.",
+      )
+    ) {
+      return;
+    }
+    setCancelling(true);
+    try {
+      await cancelInvestment(selectedPin.id);
+      setInvestments((prev) => prev.filter((i) => i.id !== selectedPin.id));
+      setSelectedPin(null);
+      toast.success("Investment cancelled.");
+    } catch (err: any) {
+      toast.error(
+        err?.response?.data?.message ?? "Failed to cancel investment",
+      );
+    } finally {
+      setCancelling(false);
+    }
+  };
+
   const hasCenteredRef = useRef(false);
   useEffect(() => {
     if (!mapReady || !mapRef.current) return;
@@ -563,17 +591,32 @@ export default function PartnerInventoryMap({
             </div>
 
             <div className="mt-4 flex items-center gap-2">
-              {selectedPin.partner && (
-                <MessageButton
-                  otherUserId={selectedPin.partner.id}
-                  otherUserName={selectedPin.partner.name}
-                  otherUserImgId={selectedPin.partner.imgId}
-                  contextType="investment"
-                  contextId={selectedPin.id}
-                  contextLabel={selectedPin.title}
-                  label="Request Tool Dispatch"
-                  className="flex-1 px-4 py-2.5 rounded-xl bg-gradient-to-r from-amber-400 to-yellow-500 hover:from-amber-300 hover:to-yellow-400 text-black font-black text-xs flex items-center justify-center gap-1.5 shadow-lg transition-all cursor-pointer"
-                />
+              {selectedPin.partner &&
+                selectedPin.partner.id !== currentUserId && (
+                  <MessageButton
+                    otherUserId={selectedPin.partner.id}
+                    otherUserName={selectedPin.partner.name}
+                    otherUserImgId={selectedPin.partner.imgId}
+                    contextType="investment"
+                    contextId={selectedPin.id}
+                    contextLabel={selectedPin.title}
+                    label="Request Tool Dispatch"
+                    className="flex-1 px-4 py-2.5 rounded-xl bg-gradient-to-r from-amber-400 to-yellow-500 hover:from-amber-300 hover:to-yellow-400 text-black font-black text-xs flex items-center justify-center gap-1.5 shadow-lg transition-all cursor-pointer"
+                  />
+                )}
+
+              {selectedPin.partner?.id === currentUserId && (
+                <button
+                  type="button"
+                  onClick={handleCancelInvestment}
+                  disabled={cancelling}
+                  className="flex-1 px-4 py-2.5 rounded-xl bg-zinc-900 border border-red-500/30 hover:border-red-500/60 text-red-400 hover:text-red-300 font-black text-xs flex items-center justify-center gap-1.5 transition-all cursor-pointer disabled:opacity-60"
+                >
+                  <span className="material-symbols-outlined text-[16px]">
+                    cancel
+                  </span>
+                  {cancelling ? "Cancelling..." : "Cancel Investment"}
+                </button>
               )}
             </div>
           </div>

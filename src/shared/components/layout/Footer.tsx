@@ -104,7 +104,7 @@ export default function Footer() {
 
           {/* Hosting Section */}
           <div className="flex flex-col">
-            <h4 className="font-bold text-gray-900 mb-3 md:mb-4">Hosting</h4>
+            <h4 className="font-bold text-gray-900 mb-3 md:mb-4">For Foxers</h4>
             <ul className="space-y-2">
               <li>
                 <a href="#" className="hover:underline hover:text-gray-900">
@@ -123,7 +123,7 @@ export default function Footer() {
               </li>
               <li>
                 <a href="#" className="hover:underline hover:text-gray-900">
-                  Hosting
+                  For Foxers
                 </a>
               </li>
               <li>

@@ -71,7 +71,7 @@ export default async function VenueDetailPage({
     notFound();
   }
 
-  const host = venue.host ?? { name: "Venue Owner", avatar: "", bio: "" };
+  const host = venue.host ?? { name: "Venue Foxer", avatar: "", bio: "" };
 
   return (
     <>

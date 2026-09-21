@@ -1,13 +1,15 @@
+export const dynamic = "force-dynamic";
+
+import { requirePermission } from "@/shared/lib/server/auth";
 import VenueEditClient from "./_components/VenueEditClient";
 import MobileVenueStudio from "@/features/dashboard/components/MobileVenueStudio";
-
-export const dynamic = "force-dynamic";
 
 interface Props {
   params: Promise<{ id: string }>;
 }
 
 export default async function HostVenueEditPage({ params }: Props) {
+  await requirePermission("venue:manage");
   const { id } = await params;
   return (
     <>

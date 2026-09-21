@@ -36,7 +36,7 @@ function getRoleLabel(foxer: Foxer): string {
   const roles = foxer.roleType ?? [];
   if (roles.includes("eventFoxer")) return "Event Foxer";
   if (roles.includes("venueFoxer")) return "Venue Foxer";
-  if (roles.includes("gearFoxer")) return "Equipment Foxer";
+  if (roles.includes("gearFoxer")) return "Gear Foxer";
   if (roles.includes("serviceFoxer")) return "Talent Foxer";
   if (roles.includes("performerFoxer")) return "Performer Foxer";
   if (roles.includes("investor")) return "Partner Foxer";
@@ -154,7 +154,7 @@ const FoxerProfile: React.FC = () => {
 
   const bio = isHost
     ? (foxer.eventTemplates?.[0]?.description ??
-      "This organizer has not added a bio yet.")
+      "This Event Foxer has not added a bio yet.")
     : isGearFoxer && hasAssets
       ? (foxer.assets?.[0]?.description ??
         "This foxer has not added a bio yet.")
@@ -304,7 +304,7 @@ const FoxerProfile: React.FC = () => {
                     eventFoxer: "Event Foxer",
                     serviceFoxer: "Talent Foxer",
                     performerFoxer: "Performer Foxer",
-                    gearFoxer: "Equipment Foxer",
+                    gearFoxer: "Gear Foxer",
                     venueFoxer: "Venue Foxer",
                   };
                   const grouped = (foxer.foxerSpecializations ?? []).reduce<

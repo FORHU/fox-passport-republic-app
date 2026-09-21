@@ -146,7 +146,14 @@ export function useEventBuilder() {
             const item: ResourceItem = {
               id: a.id,
               name: a.name,
-              cost: a.price || 5000,
+              // `price` comes off the wire as a Prisma Decimal, which
+              // serializes to a numeric *string* (e.g. "5000.00") — left
+              // un-wrapped, financials' `reduce((a, i) => a + price(i), 0)`
+              // silently switches to string concatenation the moment one
+              // of these hits it, producing a corrupted total (e.g.
+              // "05000" + "1600" instead of 6600). Number(...) here matches
+              // how the venue mapping above already handles the same field.
+              cost: Number(a.price) || 5000,
               icon: "inventory_2",
               desc: a.description || "Real asset from the database.",
               imageUrl: a.images?.[0]?.url ?? undefined,
@@ -193,7 +200,8 @@ export function useEventBuilder() {
             const item: ResourceItem = {
               id: s.id,
               name: s.name,
-              cost: s.price || 7500,
+              // Same string-Decimal issue as the asset mapping above.
+              cost: Number(s.price) || 7500,
               icon: "work_outline",
               desc: s.description || "Premium service for your event.",
               imageUrl: s.images?.[0]?.url ?? undefined,
@@ -230,6 +238,7 @@ export function useEventBuilder() {
               };
               talent.push({
                 ...item,
+                resourceType: "talent",
                 icon: talentIconMap[category] || "music_note",
               });
             } else if (["planning", "catering"].includes(category)) {
@@ -275,18 +284,31 @@ export function useEventBuilder() {
   // handlePublish), falling back to the listing price otherwise — so the
   // numbers shown here never drift from what's actually being negotiated.
   const financials = useMemo(() => {
-    const price = (item: ResourceItem) => item.agreedPrice ?? item.cost;
+    // Coerced with Number(...) at the point of use, not just at fetch time
+    // (see the Number(...) wrap added around a.price/s.price above) —
+    // `baseItems` is persisted to localStorage (see the store's `persist`
+    // middleware), so an item added before that fix stays in a citizen's
+    // browser with a string `cost` indefinitely. Without this, `reduce`
+    // silently degrades into string concatenation the moment one of these
+    // hits it, producing a corrupted total no re-fetch can repair.
+    const price = (item: ResourceItem) =>
+      Number(item.agreedPrice ?? item.cost) || 0;
 
-    const listingCost = store.baseItems.reduce((a, i) => a + i.cost, 0);
+    const listingCost = store.baseItems.reduce(
+      (a, i) => a + (Number(i.cost) || 0),
+      0,
+    );
     const baseCost = store.baseItems.reduce((a, i) => a + price(i), 0);
     const suggestedPrice = baseCost * (1 + store.targetMargin / 100);
 
     const venueCost = store.baseItems
-      .filter((i) => VENUE_ICONS.includes(i.icon))
+      .filter((i) => i.resourceType === "venue" || VENUE_ICONS.includes(i.icon))
       .reduce((a, i) => a + price(i), 0);
 
     const talentCost = store.baseItems
-      .filter((i) => TALENT_ICONS.includes(i.icon))
+      .filter(
+        (i) => i.resourceType === "talent" || TALENT_ICONS.includes(i.icon),
+      )
       .reduce((a, i) => a + price(i), 0);
 
     // Everything that isn't a venue or talent item — services, equipment,
@@ -296,7 +318,11 @@ export function useEventBuilder() {
     // in the UI even if new resource categories are added later.
     const serviceCost = store.baseItems
       .filter(
-        (i) => !VENUE_ICONS.includes(i.icon) && !TALENT_ICONS.includes(i.icon),
+        (i) =>
+          i.resourceType !== "venue" &&
+          !VENUE_ICONS.includes(i.icon) &&
+          i.resourceType !== "talent" &&
+          !TALENT_ICONS.includes(i.icon),
       )
       .reduce((a, i) => a + price(i), 0);
 
@@ -395,6 +421,20 @@ export function useEventBuilder() {
 
   const addResourceToCore = useCallback(
     (item: ResourceItem) => {
+      // `store.addBaseItem` already no-ops on a duplicate id, but it did so
+      // silently — this call site still fired the "Added to Core Package"
+      // success toast regardless, telling the host something happened when
+      // nothing did. Catch it here instead, before the venue-specific
+      // checks below, so every resource type (talent, service, equipment)
+      // gets an honest "already added" notice.
+      const alreadyAdded = store.baseItems.some((i) => i.id === item.id);
+      if (alreadyAdded) {
+        toast.info(`${item.name} is already in your Core Package`);
+        store.setDraggedItem(null);
+        store.setIsDragOver(false);
+        return false;
+      }
+
       // Only one venue allowed in the Core Package
       if (item.resourceType === "venue") {
         if (item.affiliationStatus && item.affiliationStatus !== "approved") {

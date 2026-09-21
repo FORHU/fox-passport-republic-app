@@ -117,7 +117,9 @@ export function createBuildingClusterPinElement(
     ? `drop-shadow(0 0 12px rgba(204,255,0,0.85))`
     : `drop-shadow(0 0 6px rgba(0,0,0,0.75))`;
   const el = document.createElement("div");
-  el.style.cssText = `cursor: pointer; filter: ${glow}; transition: transform 0.2s;`;
+  // Mapbox updates this element's transform on every camera frame. A CSS
+  // transform transition makes the cluster visibly trail behind while panning.
+  el.style.cssText = `cursor: pointer; filter: ${glow};`;
 
   el.innerHTML = `
     <div style="display:inline-flex;align-items:center;background:#09090e;border:2px solid ${selected ? "#ccff00" : "#f59e0b"};border-radius:999px;padding:3px 8px 3px 6px;box-shadow:0 6px 18px rgba(0,0,0,0.85);gap:5px;transform:translateY(-10px);">

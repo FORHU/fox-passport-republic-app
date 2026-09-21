@@ -14,7 +14,7 @@ const DEFAULT_STEPS: TimelineStep[] = [
   {
     icon: "assignment_turned_in",
     title: "Booking Draft Created",
-    desc: "The venue owner reviews your dates and confirms availability.",
+    desc: "The Venue Foxer reviews your dates and confirms availability.",
   },
   {
     icon: "lock",

@@ -286,7 +286,7 @@ export default function FoxerApplicationClient({
                   : "text-white/50 hover:text-white"
               }`}
             >
-              Service Provider
+              Talent Foxer
             </button>
             <button
               onClick={() => setProviderType("performer")}
@@ -432,7 +432,7 @@ export default function FoxerApplicationClient({
                 <KycDocumentSection
                   onUpload={handleFileUpload}
                   title="Professional Verification"
-                  description="As a service provider, we require a full background check including NBI clearance."
+                  description="As a Talent Foxer, we require a full background check including NBI clearance."
                 />
               </>
             ) : providerType === "performer" ? (

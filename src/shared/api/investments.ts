@@ -139,3 +139,10 @@ export async function fetchInvestmentById(
   const res = await api.get(`/investments/${id}`);
   return res.data?.data;
 }
+
+export async function cancelInvestment(
+  id: string,
+): Promise<PartnerInvestment> {
+  const res = await api.patch(`/investments/${id}/cancel`);
+  return res.data?.data;
+}

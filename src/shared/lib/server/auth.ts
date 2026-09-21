@@ -1,7 +1,11 @@
 import { cache } from "react";
 import { redirect } from "next/navigation";
 import { getServerApi } from "./data";
-import { hasPermission, canAccessAdmin } from "@/shared/lib/permissions";
+import {
+  hasPermission,
+  canAccessAdmin,
+  type Permission,
+} from "@/shared/lib/permissions";
 
 // Memoised per render pass. requireAuth/requireHost are called by a page and
 // then again inside the data helpers it calls, so the profile lookup - a
@@ -55,6 +59,36 @@ export async function requireAdmin() {
   // do inside it is enforced per route by the API.
   if (!canAccessAdmin(user)) {
     redirect("/");
+  }
+  return user;
+}
+
+/**
+ * Server-side guard enforcing an explicit Permission.
+ * Redirects to the creator dashboard (or specified fallback) if unheld.
+ */
+export async function requirePermission(
+  permission: Permission,
+  redirectTo = "/creator-dashboard",
+) {
+  const user = await requireAuth();
+  if (!hasPermission(user, permission)) {
+    redirect(redirectTo);
+  }
+  return user;
+}
+
+/**
+ * Server-side guard requiring at least one of the provided permissions.
+ */
+export async function requireAnyPermission(
+  permissions: readonly Permission[],
+  redirectTo = "/creator-dashboard",
+) {
+  const user = await requireAuth();
+  const allowed = permissions.some((p) => hasPermission(user, p));
+  if (!allowed) {
+    redirect(redirectTo);
   }
   return user;
 }

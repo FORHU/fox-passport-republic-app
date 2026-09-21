@@ -4,7 +4,7 @@ import React, { useState } from "react";
 import { createBookingEditRequest } from "@/features/booking/api/bookings";
 import type { BookingEditRequest } from "@/features/booking/types/booking.types";
 
-type BookingType = "service" | "asset";
+type BookingType = "service" | "asset" | "booking";
 
 interface Props {
   bookingType: BookingType;
@@ -33,6 +33,13 @@ export default function RequestBookingEditModal({
   onSubmitted,
 }: Props) {
   const isAsset = bookingType === "asset";
+  // A quantity multiplier (proposedQuantity) only ever applies to an Asset
+  // booking; both Service and direct-venue Booking guest counts are
+  // capacity/informational only (proposedGuestCount, no price impact).
+  const isAssetQuantity = isAsset;
+  // A direct-venue Booking has a real end date too, same as an Asset
+  // booking — only a Service booking's end date is optional/absent.
+  const showEndDate = bookingType === "asset" || bookingType === "booking";
   const [quantityOrGuests, setQuantityOrGuests] = useState(
     currentQuantityOrGuestCount,
   );
@@ -63,11 +70,11 @@ export default function RequestBookingEditModal({
         bookingKind: bookingType,
         bookingId,
         proposedQuantity:
-          isAsset && quantityOrGuests !== currentQuantityOrGuestCount
+          isAssetQuantity && quantityOrGuests !== currentQuantityOrGuestCount
             ? quantityOrGuests
             : undefined,
         proposedGuestCount:
-          !isAsset && quantityOrGuests !== currentQuantityOrGuestCount
+          !isAssetQuantity && quantityOrGuests !== currentQuantityOrGuestCount
             ? quantityOrGuests
             : undefined,
         proposedStartDate:
@@ -99,7 +106,7 @@ export default function RequestBookingEditModal({
             Request a Change
           </h3>
           <p className="text-sm text-text-muted leading-relaxed">
-            Propose a new {isAsset ? "quantity or " : ""}date. The provider
+            Propose a new {isAssetQuantity ? "quantity or " : ""}date. The provider
             has to approve it before anything changes — if the price moves,
             you&apos;ll be charged or refunded the difference.
           </p>
@@ -108,7 +115,7 @@ export default function RequestBookingEditModal({
         <div className="space-y-4">
           <div>
             <label className="text-[10px] text-white/40 uppercase tracking-wider font-bold mb-1.5 block">
-              {isAsset ? "Quantity" : "Guest Count"}
+              {isAssetQuantity ? "Quantity" : "Guest Count"}
             </label>
             <div className="flex items-center gap-3">
               <button
@@ -136,7 +143,7 @@ export default function RequestBookingEditModal({
           <div className="grid grid-cols-2 gap-3">
             <div>
               <label className="text-[10px] text-white/40 uppercase tracking-wider font-bold mb-1.5 block">
-                {isAsset ? "Start Date" : "Date"}
+                {showEndDate ? "Start Date" : "Date"}
               </label>
               <input
                 type="date"
@@ -145,7 +152,7 @@ export default function RequestBookingEditModal({
                 className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-white text-sm"
               />
             </div>
-            {isAsset && (
+            {showEndDate && (
               <div>
                 <label className="text-[10px] text-white/40 uppercase tracking-wider font-bold mb-1.5 block">
                   End Date
