@@ -67,7 +67,7 @@ export function ListingSidebar({
   onUnitChange,
   onStatusChange,
   onCityChange = () => {},
-  onStateChange = () => {},
+  onStateChange: _onStateChange = () => {},
   onCountryChange = () => {},
   onLatLngChange = () => {},
   onCancellationPolicyChange,

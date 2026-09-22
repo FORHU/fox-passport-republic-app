@@ -20,6 +20,9 @@ import { useVenueDetailStore } from "@/features/venue/store/useVenueDetailStore"
 import { Venue } from "../hooks/useVenuesByCategory";
 import { Host } from "../types/venue";
 import { useAuthStore } from "@/shared/auth/useAuthStore";
+import { useStartConversation } from "@/features/messages/hooks/useMessages";
+import { useChatWindowsStore } from "@/features/messages/store/useChatWindowsStore";
+import { ReportModal } from "@/shared/components/ReportModal";
 
 interface VenueDetailClientProps {
   venue: Venue;
@@ -36,18 +39,13 @@ export default function VenueDetailClient({
   const router = useRouter();
   const store = useVenueDetailStore();
   const [isCustomBookingOpen, setIsCustomBookingOpen] = useState(false);
+  const [isReportOpen, setIsReportOpen] = useState(false);
 
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
 
   const handleBack = useCallback(() => router.back(), [router]);
-
-  const handleContactOwner = useCallback(() => {
-    toast.info(
-      "Messaging coming soon! For now, contact the owner through the platform.",
-    );
-  }, []);
 
   // `venue` here is the server-normalized shape from `getVenueById`
   // (`normalizeVenue` in shared/lib/server/data.ts), not the raw API shape
@@ -76,9 +74,70 @@ export default function VenueDetailClient({
     (venue as any).hostId,
     host?.id,
   ];
+  const ownerId = ownerIdCandidates.find((id) => !!id);
   const isOwner =
     !!user?.id &&
     ownerIdCandidates.some((id) => id && String(id) === String(user.id));
+
+  const openChat = useChatWindowsStore((s) => s.openChat);
+  const setConversationId = useChatWindowsStore((s) => s.setConversationId);
+  const closeChat = useChatWindowsStore((s) => s.closeChat);
+  const startConversation = useStartConversation();
+
+  const handleContactOwner = useCallback(() => {
+    if (!user) {
+      router.push("/auth/login");
+      return;
+    }
+    if (!ownerId) {
+      toast.error("Couldn't find this venue's owner to message.");
+      return;
+    }
+    const otherUserId = String(ownerId);
+    openChat({
+      otherUserId,
+      otherUserName: host?.name || "Venue Owner",
+      otherUserImgId: host?.avatar,
+      contextLabel: venue.title,
+    });
+    startConversation.mutate(
+      {
+        otherUserId,
+        contextType: "venue",
+        contextId: venue.id,
+        contextLabel: venue.title,
+      },
+      {
+        onSuccess: (conversation) =>
+          setConversationId(otherUserId, conversation.id),
+        onError: (error: any) => {
+          closeChat(otherUserId);
+          toast.error(
+            error?.response?.data?.message ||
+              "Could not start this conversation.",
+          );
+        },
+      },
+    );
+  }, [
+    user,
+    ownerId,
+    host,
+    venue,
+    openChat,
+    setConversationId,
+    closeChat,
+    startConversation,
+    router,
+  ]);
+
+  const handleReportListing = useCallback(() => {
+    if (!user) {
+      router.push("/auth/login");
+      return;
+    }
+    setIsReportOpen(true);
+  }, [user, router]);
 
   return (
     <div className="bg-background bg-gradient-dark text-text-main antialiased min-h-screen flex flex-col selection:bg-accent selection:text-black font-body">
@@ -88,6 +147,13 @@ export default function VenueDetailClient({
         onClose={() => setIsCustomBookingOpen(false)}
         venuePrice={venuePrice}
       />
+      {isReportOpen && (
+        <ReportModal
+          targetType="venue"
+          targetId={venue.id}
+          onClose={() => setIsReportOpen(false)}
+        />
+      )}
       <LightboxGallery
         isOpen={store.galleryOpen}
         images={(venue as any).images || []}
@@ -445,6 +511,7 @@ export default function VenueDetailClient({
                 capacity={venue.capacity?.toString() || "0"}
                 onContactOwner={handleContactOwner}
                 onCustomExperience={() => setIsCustomBookingOpen(true)}
+                onReportListing={handleReportListing}
               />
             </div>
           </div>

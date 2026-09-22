@@ -828,7 +828,7 @@ function ForgotView({ onBack }: { onBack: () => void }) {
 // ─── Verify Email View ────────────────────────────────────────────────────────
 
 function VerifyView({ onVerified }: { onVerified: () => void }) {
-  const { pendingEmail } = useAuthStore();
+  const { pendingEmail, setPendingVerificationEmail } = useAuthStore();
   const verifyMutation = useVerifyEmail();
   const resendMutation = useResendOtp();
   const [otp, setOtp] = useState("");
@@ -842,6 +842,7 @@ function VerifyView({ onVerified }: { onVerified: () => void }) {
         onSuccess: () => {
           if (typeof window !== "undefined")
             localStorage.setItem("fp_new_user", "true");
+          setPendingVerificationEmail("");
           toast.success("Email verified! Please log in to continue.");
           onVerified();
         },
