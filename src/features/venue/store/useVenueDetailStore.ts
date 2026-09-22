@@ -81,6 +81,7 @@ interface ExperienceBuilderState {
   setActiveCategory: (cat: string) => void;
   setSelectedFoxer: (id: string | null) => void;
   toggleService: (id: string) => void;
+  clearServices: () => void;
   setSearchQuery: (query: string) => void;
   setIsSubmitting: (submitting: boolean) => void;
   setIsSuccess: (success: boolean) => void;
@@ -108,6 +109,8 @@ export const useExperienceBuilderStore = create<ExperienceBuilderState>(
           ? state.selectedServices.filter((s) => s !== id)
           : [...state.selectedServices, id],
       })),
+
+    clearServices: () => set({ selectedServices: [] }),
 
     setSearchQuery: (query) => set({ searchQuery: query }),
     setIsSubmitting: (submitting) => set({ isSubmitting: submitting }),

@@ -68,7 +68,8 @@ const realSignup = async (data: SignupFormData) => {
 
 export const useLogin = () => {
   const router = useRouter();
-  const { login, close } = useAuthStore();
+  const { login, close, setView, setPendingVerificationEmail } =
+    useAuthStore();
 
   return useMutation({
     mutationFn: realLogin,
@@ -106,8 +107,14 @@ export const useLogin = () => {
         router.push("/");
       }
     },
-    onError: (error: any) => {
+    onError: (error: any, variables) => {
       console.error("Login Error:", error);
+      if (error.response?.status === 403) {
+        setPendingVerificationEmail(variables.email);
+        setView("verify-email");
+        toast.error("Please verify your email before logging in.");
+        return;
+      }
       const msg =
         error.response?.data?.message ||
         "Login Failed. Please check your credentials.";
@@ -117,7 +124,7 @@ export const useLogin = () => {
 };
 
 export const useSignup = () => {
-  const { setView, setPendingEmail } = useAuthStore();
+  const { setView, setPendingVerificationEmail } = useAuthStore();
 
   return useMutation({
     mutationFn: realSignup,
@@ -127,7 +134,7 @@ export const useSignup = () => {
       toast.success("Account created! Please verify your email.");
 
       // Carry the email forward and show the OTP entry screen
-      setPendingEmail(variables.email);
+      setPendingVerificationEmail(variables.email);
       setView("verify-email");
     },
     onError: (error: any) => {

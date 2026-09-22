@@ -43,6 +43,7 @@ export default function VenueCreationClient() {
     addonItems,
     baseRate,
     occupancyRate,
+    extraGuestRate,
     activeCategory,
     searchQuery,
     showGuide,
@@ -69,6 +70,7 @@ export default function VenueCreationClient() {
     removeAddonItem,
     setBaseRate,
     setOccupancyRate,
+    setExtraGuestRate,
     setActiveCategory,
     setSearchQuery,
     setShowGuide,
@@ -256,11 +258,14 @@ export default function VenueCreationClient() {
             <RevenueProjector
               baseRate={baseRate}
               occupancyRate={occupancyRate}
+              extraGuestRate={extraGuestRate}
+              capacity={capacity}
               monthlyBase={revenue.monthlyBase}
               monthlyAddons={revenue.monthlyAddons}
               total={revenue.total}
               onBaseRateChange={setBaseRate}
               onOccupancyRateChange={setOccupancyRate}
+              onExtraGuestRateChange={setExtraGuestRate}
               onPreview={() => setIsPreviewOpen(true)}
             />
           </div>

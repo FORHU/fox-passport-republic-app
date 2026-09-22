@@ -11,6 +11,7 @@ import {
   ListingStatusPanel,
 } from "@/features/asset/components/listing-builder";
 import { useHostAssetEdit } from "@/features/asset/hooks/useHostAssetEdit";
+import { AssetAvailabilitySection } from "@/features/asset/components/AssetAvailabilitySection";
 
 function HostAssetEditPageContent() {
   const params = useParams<{ id: string }>();
@@ -173,7 +174,9 @@ function HostAssetEditPageContent() {
             onTitleChange={setTitle}
             onDescriptionChange={setDescription}
             onImageUpload={handleImageUpload}
-          />
+          >
+            <AssetAvailabilitySection assetId={id} />
+          </ListingPreviewCard>
 
           <ListingStatusPanel
             activeType={activeType}

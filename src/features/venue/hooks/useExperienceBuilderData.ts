@@ -100,7 +100,7 @@ async function fetchFoxers(): Promise<LiveFoxer[]> {
     : (res.data?.data ?? []);
   return users.map((u) => {
     const priceList = [...(u.services ?? []), ...(u.assets ?? [])]
-      .map((i) => i.price)
+      .map((i) => Number(i.price))
       .filter((p) => p > 0);
     const fee = priceList.length > 0 ? Math.min(...priceList) : 0;
     return {
@@ -123,11 +123,11 @@ async function fetchServices(): Promise<LiveService[]> {
   const res = await api.get("/service");
   const services: ApiService[] = Array.isArray(res.data)
     ? res.data
-    : (res.data?.data ?? []);
+    : (res.data?.services ?? res.data?.data ?? []);
   return services.map((s) => ({
     id: s.id,
     name: s.name,
-    price: s.price,
+    price: Number(s.price),
     icon: SERVICE_CATEGORY_ICON[s.category] ?? "star",
     desc: s.description ?? "",
     category: SERVICE_CAT_TO_TAB[s.category] ?? "catering",
@@ -138,11 +138,11 @@ async function fetchAssets(): Promise<LiveService[]> {
   const res = await api.get("/asset");
   const assets: ApiAsset[] = Array.isArray(res.data)
     ? res.data
-    : (res.data?.data ?? []);
+    : (res.data?.assets ?? res.data?.data ?? []);
   return assets.map((a) => ({
     id: a.id,
     name: a.name,
-    price: a.price,
+    price: Number(a.price),
     icon: ASSET_CATEGORY_ICON[a.category] ?? "category",
     desc: a.description ?? "",
     category: ASSET_CAT_TO_TAB[a.category] ?? "tech",

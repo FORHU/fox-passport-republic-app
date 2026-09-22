@@ -12,6 +12,7 @@ interface VenueBookingWidgetProps {
   capacity?: string;
   onContactOwner: () => void;
   onCustomExperience?: () => void;
+  onReportListing?: () => void;
 }
 
 export function BookingWidget({
@@ -23,6 +24,7 @@ export function BookingWidget({
   capacity,
   onContactOwner,
   onCustomExperience,
+  onReportListing,
 }: VenueBookingWidgetProps) {
   const router = useRouter();
 
@@ -100,12 +102,17 @@ export function BookingWidget({
         )}
       </div>
 
-      <div className="mt-4 flex items-center justify-center gap-2 text-xs text-text-muted">
+      <button
+        type="button"
+        onClick={onReportListing}
+        disabled={!onReportListing}
+        className="mt-4 flex items-center justify-center gap-2 text-xs text-text-muted mx-auto disabled:cursor-not-allowed"
+      >
         <span className="material-symbols-outlined text-[14px]">flag</span>
         <span className="underline cursor-pointer hover:text-white">
           Report this listing
         </span>
-      </div>
+      </button>
     </div>
   );
 }

@@ -17,6 +17,9 @@ interface ListingPreviewCardProps {
   onTitleChange: (title: string) => void;
   onDescriptionChange: (desc: string) => void;
   onImageUpload: (url: string) => void;
+  /** Extra content rendered below the preview card, inside the same
+   *  scrollable column — e.g. an availability calendar. */
+  children?: React.ReactNode;
 }
 
 export function ListingPreviewCard({
@@ -33,6 +36,7 @@ export function ListingPreviewCard({
   onTitleChange,
   onDescriptionChange,
   onImageUpload,
+  children,
 }: ListingPreviewCardProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -226,6 +230,8 @@ export function ListingPreviewCard({
             </div>
           </div>
         </div>
+
+        {children}
       </div>
     </main>
   );

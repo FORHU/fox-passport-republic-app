@@ -4,7 +4,10 @@ import React, { useState, useEffect, useMemo } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { fetchVenueById } from "@/features/venue/api/venues";
+import {
+  fetchVenueById,
+  fetchVenueUnavailableDates,
+} from "@/features/venue/api/venues";
 import {
   bookVenueDraft,
   previewVenueBookingPrice,
@@ -17,6 +20,8 @@ import { PaymentProtectionTimeline } from "@/shared/components/ui/PaymentProtect
 import DateRangePicker, {
   diffDays,
 } from "@/shared/components/ui/DateRangePicker";
+import { ScheduleConflictWarning } from "@/shared/components/ui/ScheduleConflictWarning";
+import { useScheduleConflicts } from "@/shared/hooks/useScheduleConflicts";
 import { toast } from "sonner";
 import { toastRequireLogin } from "@/shared/lib/toast";
 import { getDashboardPath } from "@/shared/lib/dashboard-path";
@@ -32,6 +37,9 @@ export default function VenueBookingClient({ venueId }: { venueId: string }) {
   const [venue, setVenue] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [unavailableDates, setUnavailableDates] = useState<Set<string>>(
+    new Set(),
+  );
 
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
@@ -55,20 +63,71 @@ export default function VenueBookingClient({ venueId }: { venueId: string }) {
       .finally(() => setIsLoading(false));
   }, [venueId]);
 
+  // A year-out window is generous enough for any realistic booking horizon
+  // without the response growing unbounded — this is a flat list of ISO
+  // days, not a paginated range.
+  useEffect(() => {
+    const start = new Date();
+    start.setHours(0, 0, 0, 0);
+    const end = new Date(start);
+    end.setFullYear(end.getFullYear() + 1);
+    fetchVenueUnavailableDates(
+      venueId,
+      start.toISOString(),
+      end.toISOString(),
+    )
+      .then(({ dates }) => setUnavailableDates(new Set(dates)))
+      .catch(() => {});
+  }, [venueId]);
+
   useEffect(() => {
     if (startDate && endDate && endDate < startDate) {
       setEndDate(startDate);
     }
   }, [startDate, endDate]);
 
+  const scheduleConflicts = useScheduleConflicts(startDate, endDate);
+
   const baseRate = Number(venue?.price ?? 0);
+  const capacity = Number(venue?.capacity ?? 0) || undefined;
+  const extraGuestRate =
+    venue?.extraGuestRate != null ? Number(venue.extraGuestRate) : null;
   const days = useMemo(
     () => diffDays(startDate, endDate),
     [startDate, endDate],
   );
-  const subtotal = baseRate * days * guestCount;
+  // Mirrors BookingSvc.priceVenueBooking exactly — a venue's `price` is a
+  // flat package rate for up to `capacity` guests, never multiplied by
+  // guest count. Only guests beyond capacity add anything, at the venue's
+  // own `extraGuestRate`, which itself scales with duration the same way
+  // the base price does (not by guests a second time in some other unit).
+  const rateMultiplier =
+    venue?.billingRate === "hourly"
+      ? days * 24
+      : venue?.billingRate === "daily"
+        ? days
+        : venue?.billingRate === "weekly"
+          ? Math.ceil(days / 7)
+          : venue?.billingRate === "monthly"
+            ? Math.ceil(days / 30)
+            : 1;
+  const extraGuests = capacity ? Math.max(0, guestCount - capacity) : 0;
+  const needsApproval = extraGuests > 0;
+  const baseAmount = baseRate * rateMultiplier;
+  const overageAmount = extraGuestRate
+    ? extraGuestRate * rateMultiplier * extraGuests
+    : 0;
+  const subtotal = baseAmount + overageAmount;
   const serviceFee = Math.round(subtotal * SERVICE_FEE_RATE);
   const total = Math.max(0, subtotal + serviceFee - voucherDiscount);
+  const rateUnit =
+    venue?.billingRate === "hourly"
+      ? "hr"
+      : venue?.billingRate === "weekly"
+        ? "week"
+        : venue?.billingRate === "monthly"
+          ? "month"
+          : "day";
 
   const imageUrl =
     venue?.images?.[0]?.url ?? venue?.images?.[0]?.imageUrl ?? null;
@@ -94,6 +153,7 @@ export default function VenueBookingClient({ venueId }: { venueId: string }) {
         venueId,
         startDate: new Date(`${startDate}T00:00:00`).toISOString(),
         endDate: new Date(`${endDate}T23:59:59`).toISOString(),
+        guestCount,
         voucherCode: voucherCodeInput.trim(),
       });
       setAppliedVoucherCode(voucherCodeInput.trim().toUpperCase());
@@ -120,6 +180,7 @@ export default function VenueBookingClient({ venueId }: { venueId: string }) {
       venueId,
       startDate: new Date(`${startDate}T00:00:00`).toISOString(),
       endDate: new Date(`${endDate}T23:59:59`).toISOString(),
+      guestCount,
     })
       .then((preview) => {
         if (cancelled) return;
@@ -133,8 +194,8 @@ export default function VenueBookingClient({ venueId }: { venueId: string }) {
     return () => {
       cancelled = true;
     };
-     
-  }, [venueId, startDate, endDate, voucherCodeInput]);
+
+  }, [venueId, startDate, endDate, guestCount, voucherCodeInput]);
 
   const handleProceed = async () => {
     if (!startDate || !endDate) {
@@ -150,6 +211,17 @@ export default function VenueBookingClient({ venueId }: { venueId: string }) {
       return;
     }
 
+    const isIdentityBlocked =
+      user?.identityVerified !== true || user?.isEmailVerified !== true;
+
+    if (isIdentityBlocked) {
+      toast.error(
+        "Please complete both email and identity verification before making a booking.",
+      );
+      router.push("/kyc");
+      return;
+    }
+
     setIsSubmitting(true);
     try {
       const result = await bookVenueDraft({
@@ -161,6 +233,13 @@ export default function VenueBookingClient({ venueId }: { venueId: string }) {
         specialRequests: specialRequests.trim() || undefined,
         voucherCode: appliedVoucherCode ?? undefined,
       });
+
+      if (needsApproval) {
+        router.push(
+          `/booking/venue/pending?bookingId=${result.bookingId}&extraGuests=${extraGuests}&total=${total}`,
+        );
+        return;
+      }
 
       router.push(
         `/booking/venue/checkout?bookingId=${result.bookingId}&total=${total}&subtotal=${subtotal}&serviceFee=${serviceFee}`,
@@ -321,7 +400,16 @@ export default function VenueBookingClient({ venueId }: { venueId: string }) {
                   startLabel="Start Date"
                   endLabel="End Date"
                   showSummary={false}
+                  disabledDates={unavailableDates}
                 />
+                <p className="text-xs text-white/40 mt-3 flex items-center gap-1.5">
+                  <span className="material-symbols-outlined text-[13px] text-red-400/60">
+                    event_busy
+                  </span>
+                  Dates already booked or blocked by the Venue Foxer are
+                  unavailable.
+                </p>
+                <ScheduleConflictWarning conflicts={scheduleConflicts} />
               </FormSection>
 
               {/* Guest Count */}
@@ -330,10 +418,33 @@ export default function VenueBookingClient({ venueId }: { venueId: string }) {
                   value={guestCount}
                   onChange={setGuestCount}
                   min={1}
+                  max={extraGuestRate ? undefined : capacity}
                   step={1}
                   label="Total Guests"
                   icon="person"
                 />
+                {capacity && (
+                  <p className="text-xs text-white/40 mt-3 flex items-center gap-1.5">
+                    <span className="material-symbols-outlined text-[13px] text-accent/70">
+                      info
+                    </span>
+                    {extraGuestRate
+                      ? `This venue's package covers ${capacity} guests. Beyond that, it's sent to the Venue Foxer as a request — they confirm the venue can actually fit everyone before you pay.`
+                      : `This venue fits up to ${capacity} guests.`}
+                  </p>
+                )}
+                {needsApproval && (
+                  <div className="flex items-start gap-2.5 mt-3 px-4 py-3 bg-amber-500/10 border border-amber-500/25 rounded-xl">
+                    <span className="material-symbols-outlined text-amber-400 text-[16px] mt-0.5 shrink-0">
+                      hourglass_top
+                    </span>
+                    <p className="text-xs text-amber-300">
+                      {extraGuests} guest{extraGuests !== 1 ? "s" : ""} over
+                      capacity — this becomes a <strong>Request</strong> the
+                      Venue Foxer must approve before you can pay.
+                    </p>
+                  </div>
+                )}
               </FormSection>
 
               {/* Special Requests */}
@@ -382,7 +493,7 @@ export default function VenueBookingClient({ venueId }: { venueId: string }) {
                     <div className="flex justify-between text-sm">
                       <span className="text-text-muted">Rate</span>
                       <span className="text-white font-medium">
-                        {format(baseRate)} / guest / day
+                        {format(baseRate)} / {rateUnit}
                       </span>
                     </div>
                     <div className="flex justify-between text-sm">
@@ -392,18 +503,29 @@ export default function VenueBookingClient({ venueId }: { venueId: string }) {
                       </span>
                     </div>
                     <div className="flex justify-between text-sm">
-                      <span className="text-text-muted">Guests</span>
+                      <span className="text-text-muted">
+                        Guests{capacity ? ` (up to ${capacity} included)` : ""}
+                      </span>
                       <span className="text-white font-medium">
-                        × {guestCount}
+                        {guestCount}
                       </span>
                     </div>
                     <div className="h-px bg-white/10 my-2" />
                     <div className="flex justify-between text-sm">
-                      <span className="text-text-muted">Subtotal</span>
-                      <span className="text-white">
-                        {format(subtotal)}
-                      </span>
+                      <span className="text-text-muted">Base package</span>
+                      <span className="text-white">{format(baseAmount)}</span>
                     </div>
+                    {needsApproval && (
+                      <div className="flex justify-between text-sm">
+                        <span className="text-amber-400">
+                          +{extraGuests} extra guest
+                          {extraGuests !== 1 ? "s" : ""}
+                        </span>
+                        <span className="text-amber-400">
+                          {format(overageAmount)}
+                        </span>
+                      </div>
+                    )}
                     <div className="flex justify-between text-sm">
                       <span className="text-text-muted">Service Fee (10%)</span>
                       <span className="text-white">
@@ -492,7 +614,14 @@ export default function VenueBookingClient({ venueId }: { venueId: string }) {
                       {isSubmitting ? (
                         <>
                           <span className="h-5 w-5 rounded-full border-2 border-black/20 border-t-black animate-spin" />{" "}
-                          Creating bookingâ€¦
+                          {needsApproval ? "Sending request…" : "Creating booking…"}
+                        </>
+                      ) : needsApproval ? (
+                        <>
+                          Request to Book{" "}
+                          <span className="material-symbols-outlined">
+                            hourglass_top
+                          </span>
                         </>
                       ) : (
                         <>

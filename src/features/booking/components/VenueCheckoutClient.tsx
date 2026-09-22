@@ -40,6 +40,11 @@ export default function VenueCheckoutClient() {
   const [clientSecret, setClientSecret] = useState<string | null>(null);
   const [loadingIntent, setLoadingIntent] = useState(false);
   const [intentError, setIntentError] = useState<string | null>(null);
+  // Distinguishes "still waiting on the Venue Foxer" from an actual payment
+  // failure — same wording the server uses in PaymentSvc.createPaymentIntent's
+  // pending-request gate, matched here rather than adding a second signal
+  // (an error code) just for this one string.
+  const isAwaitingApproval = !!intentError?.includes("awaiting the Venue Foxer");
   const [paymentSuccess, setPaymentSuccess] = useState(false);
   const [email, setEmail] = useState(user?.email || "");
   const [mobileNumber, setMobileNumber] = useState(user?.mobileNumber || "");
@@ -314,12 +319,26 @@ export default function VenueCheckoutClient() {
                     )}
 
                     {intentError && (
-                      <div className="flex items-start gap-3 bg-red-500/10 border border-red-500/30 rounded-xl p-4 mt-4">
-                        <span className="material-symbols-outlined text-red-400 text-[18px] mt-0.5 shrink-0">
-                          error
+                      <div
+                        className={`flex items-start gap-3 rounded-xl p-4 mt-4 border ${
+                          isAwaitingApproval
+                            ? "bg-amber-500/10 border-amber-500/30"
+                            : "bg-red-500/10 border-red-500/30"
+                        }`}
+                      >
+                        <span
+                          className={`material-symbols-outlined text-[18px] mt-0.5 shrink-0 ${
+                            isAwaitingApproval ? "text-amber-400" : "text-red-400"
+                          }`}
+                        >
+                          {isAwaitingApproval ? "hourglass_top" : "error"}
                         </span>
                         <div>
-                          <p className="text-red-400 text-sm font-medium">
+                          <p
+                            className={`text-sm font-medium ${
+                              isAwaitingApproval ? "text-amber-300" : "text-red-400"
+                            }`}
+                          >
                             {intentError}
                           </p>
                           <button
@@ -345,7 +364,7 @@ export default function VenueCheckoutClient() {
                             }}
                             className="mt-2 text-xs text-white/60 hover:text-white underline"
                           >
-                            Try again
+                            {isAwaitingApproval ? "Check again" : "Try again"}
                           </button>
                         </div>
                       </div>
@@ -388,23 +407,58 @@ export default function VenueCheckoutClient() {
                     </div>
                   </div>
 
-                  {/* Confirm & Pay Button */}
-                  {!paymentSuccess &&
-                    email &&
-                    mobileNumber &&
-                    !loadingIntent &&
-                    !intentError && (
-                      <button
-                        type="button"
-                        onClick={() => formRef.current?.submit()}
-                        className="w-full rounded-2xl bg-[#ccff00] py-4 px-6 text-black font-bold text-lg hover:shadow-[0_0_30px_rgba(204,255,0,0.4)] transition-all active:scale-95 flex items-center justify-center gap-2"
-                      >
-                        Confirm & Pay ₱{totalAmount.toLocaleString()}
-                        <span className="material-symbols-outlined">
-                          arrow_forward
-                        </span>
-                      </button>
-                    )}
+                  {/* Confirm & Pay Button — always rendered, disabled until
+                      both contact fields are filled and the payment form is
+                      ready. This way the citizen can see the action they're
+                      working toward rather than it appearing from nowhere. */}
+                  {!paymentSuccess && !intentError && (() => {
+                    const missingEmail = !email.trim();
+                    const missingPhone = !mobileNumber.trim();
+                    const notReady = loadingIntent || missingEmail || missingPhone;
+                    const hint = loadingIntent
+                      ? "Initialising payment…"
+                      : missingEmail && missingPhone
+                        ? "Enter your email and mobile number to continue"
+                        : missingEmail
+                          ? "Enter your email to continue"
+                          : missingPhone
+                            ? "Enter your mobile number to continue"
+                            : null;
+                    return (
+                      <div className="space-y-2">
+                        <button
+                          type="button"
+                          disabled={notReady}
+                          onClick={() => formRef.current?.submit()}
+                          className="w-full rounded-2xl bg-[#ccff00] py-4 px-6 text-black font-bold text-lg transition-all flex items-center justify-center gap-2
+                                     disabled:opacity-40 disabled:cursor-not-allowed disabled:shadow-none
+                                     enabled:hover:shadow-[0_0_30px_rgba(204,255,0,0.4)] enabled:active:scale-95"
+                        >
+                          {loadingIntent ? (
+                            <>
+                              <span className="h-5 w-5 rounded-full border-2 border-black/20 border-t-black animate-spin" />
+                              Initialising…
+                            </>
+                          ) : (
+                            <>
+                              Confirm & Pay ₱{totalAmount.toLocaleString()}
+                              <span className="material-symbols-outlined">
+                                arrow_forward
+                              </span>
+                            </>
+                          )}
+                        </button>
+                        {hint && (
+                          <p className="text-center text-xs text-white/40 flex items-center justify-center gap-1">
+                            <span className="material-symbols-outlined text-[13px]">
+                              info
+                            </span>
+                            {hint}
+                          </p>
+                        )}
+                      </div>
+                    );
+                  })()}
 
                   <div className="flex items-center justify-center gap-2 text-xs text-white/40">
                     <span className="material-symbols-outlined text-[14px] text-green-500">

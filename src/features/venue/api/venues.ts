@@ -127,3 +127,42 @@ export async function fetchVenuesNear(
   const resp = await api.get("/venues/near", { params: { lat, lng } });
   return Array.isArray(resp.data?.venues) ? resp.data.venues : [];
 }
+
+export interface VenueUnavailability {
+  /** Every unavailable day (YYYY-MM-DD) — booked and manually blocked, unioned. */
+  dates: string[];
+  /** Subset of `dates` the host blocked themselves — the only ones a host UI
+   *  can offer to unblock; the rest belong to a citizen's real booking. */
+  blockedDates: string[];
+}
+
+// Days a venue can't be booked for, within [start, end).
+export async function fetchVenueUnavailableDates(
+  venueId: Id,
+  start: string,
+  end: string,
+): Promise<VenueUnavailability> {
+  const resp = await api.get(`/venues/${venueId}/unavailable-dates`, {
+    params: { start, end },
+  });
+  return {
+    dates: Array.isArray(resp.data?.dates) ? resp.data.dates : [],
+    blockedDates: Array.isArray(resp.data?.blockedDates)
+      ? resp.data.blockedDates
+      : [],
+  };
+}
+
+export async function blockVenueDate(
+  venueId: Id,
+  date: string,
+): Promise<void> {
+  await api.post(`/venues/${venueId}/blocked-dates`, { date });
+}
+
+export async function unblockVenueDate(
+  venueId: Id,
+  date: string,
+): Promise<void> {
+  await api.delete(`/venues/${venueId}/blocked-dates/${date}`);
+}

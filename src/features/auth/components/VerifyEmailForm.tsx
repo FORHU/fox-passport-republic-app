@@ -12,6 +12,9 @@ export default function VerifyEmailForm() {
   const verifyEmailMutation = useVerifyEmail();
   const resendMutation = useResendOtp();
   const setView = useAuthStore((s) => s.setView);
+  const setPendingVerificationEmail = useAuthStore(
+    (s) => s.setPendingVerificationEmail,
+  );
   const pendingEmail = useAuthStore((s) => s.pendingEmail);
 
   const {
@@ -28,10 +31,11 @@ export default function VerifyEmailForm() {
       return;
     }
     verifyEmailMutation.mutate(
-      { email: pendingEmail, otpCode: data.otpCode },
+      { email: pendingEmail, otpCode: data.otpCode.trim() },
       {
         onSuccess: () => {
           localStorage.setItem("fp_new_user", "1");
+          setPendingVerificationEmail("");
           setView("login");
         },
       },
@@ -60,6 +64,8 @@ export default function VerifyEmailForm() {
             className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 sm:py-3.5 text-white placeholder-white/20 focus:outline-none focus:ring-1 focus:ring-[#ccff00] focus:border-[#ccff00]/50 focus:bg-white/10 transition-all font-medium text-center text-2xl tracking-widest"
             placeholder="------"
             maxLength={6}
+            inputMode="numeric"
+            autoComplete="one-time-code"
             type="text"
           />
           {errors.otpCode && (

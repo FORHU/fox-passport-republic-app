@@ -189,7 +189,7 @@ export const removeMediaTag = async (
 };
 
 export const fileReport = async (payload: {
-  targetType: "post" | "user";
+  targetType: "post" | "user" | "venue";
   targetId: string;
   reason: string;
   details?: string;

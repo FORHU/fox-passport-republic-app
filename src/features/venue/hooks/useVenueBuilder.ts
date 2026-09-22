@@ -221,6 +221,7 @@ export function useVenueBuilder() {
         country: store.country || undefined,
         boundary: store.boundary ?? undefined,
         price: store.baseRate || undefined,
+        extraGuestRate: store.extraGuestRate || undefined,
         spaceType: allItems
           .filter((i) => i.category === "spaces")
           .map((i) => i.name),
@@ -315,6 +316,7 @@ export function useVenueBuilder() {
         country: store.country,
         boundary: store.boundary ?? undefined,
         price: store.baseRate,
+        extraGuestRate: store.extraGuestRate || undefined,
         spaceType: allItems
           .filter((i) => i.category === "spaces")
           .map((i) => i.name),

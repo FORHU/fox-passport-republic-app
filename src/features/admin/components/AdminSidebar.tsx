@@ -77,6 +77,12 @@ const NAV_ITEMS = [
     permission: "bookings:read:all",
   },
   {
+    label: "Reports",
+    icon: "flag",
+    id: "reports",
+    permission: "queue:read",
+  },
+  {
     label: "Policies",
     icon: "policy",
     id: "policies",
