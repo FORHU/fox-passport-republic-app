@@ -25,6 +25,8 @@ function readFoxUserCookie(): string | null {
 type AuthView =
   "login" | "signup" | "forgot-password" | "reset-password" | "verify-email";
 
+const PENDING_VERIFICATION_EMAIL_KEY = "fp_pending_verification_email";
+
 interface AuthState {
   // State
   isAuthenticated: boolean;
@@ -42,6 +44,7 @@ interface AuthState {
   openSignup: () => void;
   setView: (view: AuthView) => void;
   setPendingEmail: (email: string) => void;
+  setPendingVerificationEmail: (email: string) => void;
   close: () => void;
   toggleView: () => void;
   setLoading: (loading: boolean) => void;
@@ -88,11 +91,21 @@ export const useAuthStore = create<AuthState>((set) => ({
       // would be wrong.
       const storedUser =
         localStorage.getItem("fox_user") ?? readFoxUserCookie();
+      const pendingVerificationEmail = localStorage.getItem(
+        PENDING_VERIFICATION_EMAIL_KEY,
+      );
 
       if (storedUser) {
         set({
           user: JSON.parse(storedUser),
           isAuthenticated: true,
+          isLoading: false,
+        });
+      } else if (pendingVerificationEmail) {
+        set({
+          isOpen: true,
+          view: "verify-email",
+          pendingEmail: pendingVerificationEmail,
           isLoading: false,
         });
       } else {
@@ -108,6 +121,14 @@ export const useAuthStore = create<AuthState>((set) => ({
   openSignup: () => set({ isOpen: true, view: "signup" }),
   setView: (view) => set({ view }),
   setPendingEmail: (email) => set({ pendingEmail: email }),
+  setPendingVerificationEmail: (email) => {
+    if (email) {
+      localStorage.setItem(PENDING_VERIFICATION_EMAIL_KEY, email);
+    } else {
+      localStorage.removeItem(PENDING_VERIFICATION_EMAIL_KEY);
+    }
+    set({ pendingEmail: email });
+  },
   close: () => set({ isOpen: false }),
   toggleView: () =>
     set((state) => ({

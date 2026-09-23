@@ -388,16 +388,44 @@ export interface VenueBookingPricePreview {
   voucherCode: string | null;
   platformFeeAmount: number;
   totalAmount: number;
+  /** True once `guestCount` exceeds the venue's capacity — this booking
+   *  would need the Venue Foxer's approval, not just payment. */
+  needsApproval: boolean;
+  extraGuests: number;
 }
 
 export async function previewVenueBookingPrice(params: {
   venueId: string;
   startDate: string;
   endDate: string;
+  guestCount: number;
   voucherCode?: string;
 }): Promise<VenueBookingPricePreview> {
   const resp = await api.get("/bookings/venue-price-preview", { params });
   return resp.data?.data;
+}
+
+export interface ScheduleConflict {
+  id: string;
+  type: "venue" | "event" | "asset" | "service";
+  title: string;
+  startDate: string;
+  endDate: string;
+}
+
+// Informational only — every one of the citizen's own bookings (across all
+// three booking models) whose dates overlap the range being configured.
+// Nothing about this blocks a booking; it's a heads-up shown alongside the
+// date picker, same spirit as DateRangePicker's `disabledDates` but for the
+// citizen's own schedule rather than the item's availability.
+export async function fetchScheduleConflicts(
+  startDate: string,
+  endDate: string,
+): Promise<ScheduleConflict[]> {
+  const resp = await api.get("/bookings/schedule-conflicts", {
+    params: { startDate, endDate },
+  });
+  return Array.isArray(resp.data?.data) ? resp.data.data : [];
 }
 
 export async function fetchUserBookings(

@@ -17,10 +17,16 @@ const REASONS = [
 ];
 
 interface ReportModalProps {
-  targetType: "post" | "user";
+  targetType: "post" | "user" | "venue";
   targetId: string;
   onClose: () => void;
 }
+
+const TARGET_LABEL: Record<ReportModalProps["targetType"], string> = {
+  post: "Post",
+  user: "Account",
+  venue: "Listing",
+};
 
 export function ReportModal({
   targetType,
@@ -79,7 +85,7 @@ export function ReportModal({
       <div className="w-full max-w-sm bg-zinc-950 border border-zinc-800 rounded-2xl shadow-2xl overflow-hidden">
         <div className="flex items-center justify-between border-b border-zinc-800/80 px-4 py-3">
           <h2 className="text-sm font-bold text-white">
-            Report {targetType === "post" ? "Post" : "Account"}
+            Report {TARGET_LABEL[targetType]}
           </h2>
           <button
             onClick={onClose}
@@ -92,7 +98,7 @@ export function ReportModal({
 
         <div className="p-4 space-y-1">
           <p className="text-xs text-zinc-500 mb-2">
-            Why are you reporting this {targetType}?
+            Why are you reporting this {TARGET_LABEL[targetType].toLowerCase()}?
           </p>
           {REASONS.map((r) => (
             <button

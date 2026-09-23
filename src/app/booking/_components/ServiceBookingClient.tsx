@@ -16,6 +16,8 @@ import { useAuthStore } from "@/shared/auth/useAuthStore";
 import { toast } from "sonner";
 import { toastRequireLogin } from "@/shared/lib/toast";
 import AvailabilityCalendar from "@/features/booking/components/AvailabilityCalendar";
+import { ScheduleConflictWarning } from "@/shared/components/ui/ScheduleConflictWarning";
+import { useScheduleConflicts } from "@/shared/hooks/useScheduleConflicts";
 import { getDashboardPath } from "@/shared/lib/dashboard-path";
 import { useCurrency } from "@/shared/providers/CurrencyProvider";
 
@@ -64,6 +66,15 @@ export default function ServiceBookingClient({
       .then((d) => setBookedDates(d.bookedDates))
       .catch(() => {});
   }, [serviceId]);
+
+  // A range check is close enough for a heads-up — service bookings pick
+  // individual days, not a range, so this spans the earliest to latest
+  // selected date rather than checking each one separately.
+  const sortedBookingDates = [...bookingDates].sort();
+  const scheduleConflicts = useScheduleConflicts(
+    sortedBookingDates[0] ?? "",
+    sortedBookingDates[sortedBookingDates.length - 1] ?? "",
+  );
 
   const unitPrice = Number(service?.price ?? 0);
   const isPerSession =
@@ -172,6 +183,17 @@ export default function ServiceBookingClient({
     if (!isAuthenticated) {
       toastRequireLogin("Please log in to complete your booking.");
       openLogin();
+      return;
+    }
+
+    const isIdentityBlocked =
+      user?.identityVerified !== true || user?.isEmailVerified !== true;
+
+    if (isIdentityBlocked) {
+      toast.error(
+        "Please complete both email and identity verification before making a booking.",
+      );
+      router.push("/kyc");
       return;
     }
 
@@ -466,6 +488,7 @@ export default function ServiceBookingClient({
                       shown in red
                     </p>
                   )}
+                  <ScheduleConflictWarning conflicts={scheduleConflicts} />
                 </div>
 
                 {/* Call Time */}

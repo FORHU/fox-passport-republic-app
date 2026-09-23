@@ -16,6 +16,8 @@ import { useAuthStore } from "@/shared/auth/useAuthStore";
 import { toast } from "sonner";
 import { toastRequireLogin } from "@/shared/lib/toast";
 import AvailabilityCalendar from "@/features/booking/components/AvailabilityCalendar";
+import { ScheduleConflictWarning } from "@/shared/components/ui/ScheduleConflictWarning";
+import { useScheduleConflicts } from "@/shared/hooks/useScheduleConflicts";
 import { getDashboardPath } from "@/shared/lib/dashboard-path";
 import { useCurrency } from "@/shared/providers/CurrencyProvider";
 
@@ -84,6 +86,8 @@ export default function AssetBookingClient({ assetId }: { assetId: string }) {
       setEndDate(startDate);
     }
   }, [startDate, endDate]);
+
+  const scheduleConflicts = useScheduleConflicts(startDate, endDate);
 
   // Availability loads after the initial render, so a quantity bumped up
   // before it resolves needs to be pulled back down once the real stock
@@ -194,6 +198,17 @@ export default function AssetBookingClient({ assetId }: { assetId: string }) {
     if (!isAuthenticated) {
       toastRequireLogin("Please log in to complete your booking.");
       openLogin();
+      return;
+    }
+
+    const isIdentityBlocked =
+      user?.identityVerified !== true || user?.isEmailVerified !== true;
+
+    if (isIdentityBlocked) {
+      toast.error(
+        "Please complete both email and identity verification before making a booking.",
+      );
+      router.push("/kyc");
       return;
     }
 
@@ -488,6 +503,7 @@ export default function AssetBookingClient({ assetId }: { assetId: string }) {
                     reveal more unavailable days
                   </p>
                 )}
+                <ScheduleConflictWarning conflicts={scheduleConflicts} />
               </div>
 
               {/* Fulfillment */}

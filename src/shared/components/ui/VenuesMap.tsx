@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useEffect, useRef, useCallback } from "react";
+import React, { useEffect, useRef, useCallback, useState } from "react";
+import { Mountain } from "lucide-react";
 import { MapBoxView } from "@/shared/components/ui/MapBoxView";
 import {
   LocationSearchControl,
@@ -8,7 +9,12 @@ import {
 } from "@/shared/components/ui/LocationSearchControl";
 import { useUserLocation } from "@/shared/hooks/useUserLocation";
 import { createGeoCircle } from "@/shared/lib/geoCircle";
+import { getEffectiveMapboxToken } from "@/shared/lib/mapbox";
 import "mapbox-gl/dist/mapbox-gl.css";
+
+const TERRAIN_DEM_SOURCE_ID = "venues-map-mapbox-dem";
+const SKY_LAYER_ID = "venues-map-sky";
+const BUILDINGS_LAYER_ID = "venues-map-3d-buildings";
 
 const POLYGON_SOURCE_ID = "venues-map-polygons";
 const HOME_SOURCE_ID = "venues-map-home-radius";
@@ -245,6 +251,12 @@ export function VenuesMap({
   const mapRef = useRef<any>(null);
   const mapboxglRef = useRef<any>(null);
   const markersRef = useRef<any[]>([]);
+  // Terrain/3D view is only offered when a real Mapbox token is configured —
+  // the raster Carto fallback style has no DEM/building sources to extrude,
+  // and requesting the mapbox-dem tileset without a token would 401 and trip
+  // setupMapboxFallback's style swap, wiping the map out from under the user.
+  const hasMapboxToken = !!getEffectiveMapboxToken();
+  const [is3D, setIs3D] = useState(false);
   const spiderMarkersRef = useRef<any[]>([]);
   const homeMarkerRef = useRef<any>(null);
   const homeMarkerElRef = useRef<HTMLDivElement | null>(null);
@@ -788,6 +800,80 @@ export function VenuesMap({
         }
       };
 
+      // Google-Earth-style 3D view: globe projection + real elevation +
+      // extruded buildings + a tilt, all toggled together as one "3D" state
+      // rather than exposed as separate knobs.
+      const enable3D = () => {
+        if (!hasMapboxToken) return;
+        try {
+          map.setProjection("globe");
+        } catch {
+          // older style/runtime without globe support — terrain/buildings still apply
+        }
+
+        if (!map.getSource(TERRAIN_DEM_SOURCE_ID)) {
+          map.addSource(TERRAIN_DEM_SOURCE_ID, {
+            type: "raster-dem",
+            url: "mapbox://mapbox.mapbox-terrain-dem-v1",
+            tileSize: 512,
+            maxzoom: 14,
+          });
+        }
+        map.setTerrain({ source: TERRAIN_DEM_SOURCE_ID, exaggeration: 1.4 });
+
+        if (!map.getLayer(SKY_LAYER_ID)) {
+          map.addLayer({
+            id: SKY_LAYER_ID,
+            type: "sky",
+            paint: {
+              "sky-type": "atmosphere",
+              "sky-atmosphere-sun-intensity": 10,
+            },
+          });
+        }
+
+        if (map.getSource("composite") && !map.getLayer(BUILDINGS_LAYER_ID)) {
+          try {
+            map.addLayer({
+              id: BUILDINGS_LAYER_ID,
+              source: "composite",
+              "source-layer": "building",
+              type: "fill-extrusion",
+              minzoom: 14,
+              paint: {
+                "fill-extrusion-color": "#2a2d3a",
+                "fill-extrusion-height": ["get", "height"],
+                "fill-extrusion-base": ["get", "min_height"],
+                "fill-extrusion-opacity": 0.85,
+              },
+            });
+          } catch {
+            // style has no vector "building" source-layer to extrude — skip
+          }
+        }
+
+        map.easeTo({ pitch: 60, duration: 800 });
+      };
+
+      const disable3D = () => {
+        try {
+          map.setProjection("mercator");
+        } catch {
+          // ignore
+        }
+        try {
+          map.setTerrain(null);
+        } catch {
+          // ignore
+        }
+        if (map.getLayer(SKY_LAYER_ID)) map.removeLayer(SKY_LAYER_ID);
+        if (map.getLayer(BUILDINGS_LAYER_ID)) map.removeLayer(BUILDINGS_LAYER_ID);
+        map.easeTo({ pitch: 0, bearing: 0, duration: 800 });
+      };
+
+      (map as any).__enable3D = enable3D;
+      (map as any).__disable3D = disable3D;
+
       const initialCenter = center ?? DEFAULT_CENTER;
       const initialZoom = zoom;
       const flyToInitial = () => {
@@ -891,6 +977,18 @@ export function VenuesMap({
     onLocationClearRef.current?.();
   }, []);
 
+  const handleToggle3D = useCallback(() => {
+    setIs3D((prev) => {
+      const next = !prev;
+      if (next) {
+        mapRef.current?.__enable3D?.();
+      } else {
+        mapRef.current?.__disable3D?.();
+      }
+      return next;
+    });
+  }, []);
+
   return (
     <MapBoxView
       center={center ?? DEFAULT_CENTER}
@@ -906,6 +1004,22 @@ export function VenuesMap({
             onClear={handleLocationSearchClear}
           />
         </div>
+      )}
+      {hasMapboxToken && (
+        <button
+          type="button"
+          onClick={handleToggle3D}
+          aria-pressed={is3D}
+          aria-label={is3D ? "Switch to flat map view" : "Switch to 3D terrain view"}
+          title={is3D ? "Switch to flat map view" : "Switch to 3D terrain view"}
+          className={`absolute bottom-4 right-4 z-20 w-9 h-9 flex items-center justify-center rounded-full backdrop-blur-xl border shadow-2xl transition-colors cursor-pointer ${
+            is3D
+              ? "bg-[#ccff00] border-[#ccff00] text-black"
+              : "bg-[#0b0d14]/95 border-white/10 text-white/70 hover:text-white hover:border-[#ccff00]/50"
+          }`}
+        >
+          <Mountain className="w-4 h-4" />
+        </button>
       )}
     </MapBoxView>
   );

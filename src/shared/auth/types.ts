@@ -27,6 +27,7 @@ export interface User {
   permissions?: readonly Permission[];
   isEventFoxer?: boolean;
   mobileNumber?: string;
+  identityVerified?: boolean;
   isEmailVerified?: boolean;
   imgId?: string; // profile image URL (CloudFront)
   city?: string;

@@ -5,22 +5,28 @@ import React from "react";
 interface RevenueProjectorProps {
   baseRate: number;
   occupancyRate: number;
+  extraGuestRate: number;
+  capacity: string;
   monthlyBase: number;
   monthlyAddons: number;
   total: number;
   onBaseRateChange: (rate: number) => void;
   onOccupancyRateChange: (rate: number) => void;
+  onExtraGuestRateChange: (rate: number) => void;
   onPreview: () => void;
 }
 
 export function RevenueProjector({
   baseRate,
   occupancyRate,
+  extraGuestRate,
+  capacity,
   monthlyBase,
   monthlyAddons,
   total,
   onBaseRateChange,
   onOccupancyRateChange,
+  onExtraGuestRateChange,
   onPreview,
 }: RevenueProjectorProps) {
   return (
@@ -76,6 +82,32 @@ export function RevenueProjector({
               The percentage of available nights you expect to be booked each month.
             </p>
           </div>
+        </div>
+
+        {/* Over-Capacity Requests */}
+        <div className="bg-[#161b26] rounded-xl p-5 border border-white/5">
+          <h4 className="text-[10px] font-bold text-white uppercase tracking-wider mb-4 flex items-center gap-2">
+            <span className="material-symbols-outlined text-accent text-[14px]">
+              groups
+            </span>
+            Over-Capacity Requests
+          </h4>
+          <label className="text-[10px] text-text-muted block mb-2">
+            Extra Guest Rate (₱, optional)
+          </label>
+          <input
+            type="number"
+            min={0}
+            value={extraGuestRate || ""}
+            onChange={(e) => onExtraGuestRateChange(Number(e.target.value) || 0)}
+            placeholder="Leave blank to disallow"
+            className="w-full bg-black border border-white/10 rounded-lg px-3 py-2 text-white font-mono text-right focus:border-accent outline-none text-sm"
+          />
+          <p className="text-[10px] text-white/30 mt-1.5">
+            {extraGuestRate > 0
+              ? `A citizen requesting more than ${capacity || "your capacity"} guests pays this per extra guest, at the same rate unit as above. They can't pay until you approve the request.`
+              : "Blank means citizens can never book beyond your stated capacity."}
+          </p>
         </div>
 
         {/* Monthly Estimates */}

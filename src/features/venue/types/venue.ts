@@ -85,6 +85,10 @@ export interface Venue {
   billingRate?: string;
   capacity?: number;
   cap?: number;
+  /** Per-extra-guest surcharge the mayor sets. When present, bookings
+   *  exceeding `capacity` are allowed but held as requests pending the
+   *  Venue Foxer's approval before payment is collected. */
+  extraGuestRate?: number | null;
   type?: string;
   venueType?: string;
   spaceType?: string[];
@@ -123,6 +127,7 @@ export interface VenueUpdatePayload {
   country?: string;
   boundary?: [number, number][];
   price: number;
+  extraGuestRate?: number;
   spaceType: string[];
   amenities: string[];
   techAv: string[];

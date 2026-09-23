@@ -360,11 +360,12 @@ device.
 
 ### Blocked before you start
 
-**AUTH-05 cannot be tested at all right now.** `GOOGLE_CLIENT_ID`,
-`GOOGLE_CLIENT_SECRET` and `GOOGLE_CALLBACK_URL` are unset in the api's `.env`,
-which is why the server prints `⚠️ Google sign-in will fail` at boot. AUTH-05 is
-the Google path, so it needs real OAuth credentials before any of it can be
-exercised. AUTH-01, 02 and 03 are unaffected.
+**AUTH-05 requires the API OAuth environment to be configured.** The local API
+`.env` now contains `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET` and
+`GOOGLE_CALLBACK_URL`, so the Google path can be exercised locally. Production
+and other environments must provide their own credentials and register the
+matching callback URI in Google Cloud Console. AUTH-01, 02 and 03 are
+unaffected.
 
 ### Which branches — both merged, test on `main`
 

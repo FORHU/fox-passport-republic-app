@@ -10,6 +10,7 @@ import {
   ListingStatusPanel,
 } from "@/features/asset/components/listing-builder";
 import { useHostServiceEdit } from "@/features/service/hooks/useHostServiceEdit";
+import { ServiceAvailabilitySection } from "@/features/service/components/ServiceAvailabilitySection";
 
 interface Props {
   id: string;
@@ -145,7 +146,9 @@ function ServiceEditContent({ id }: Props) {
             onTitleChange={setTitle}
             onDescriptionChange={setDescription}
             onImageUpload={handleImageUpload}
-          />
+          >
+            <ServiceAvailabilitySection serviceId={id} />
+          </ListingPreviewCard>
           <ListingStatusPanel
             activeType={activeType}
             categories={categories}

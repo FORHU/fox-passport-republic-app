@@ -43,6 +43,7 @@ export function CustomExperienceBuilder({
     setActiveCategory,
     setSelectedFoxer,
     toggleService,
+    clearServices,
     setSearchQuery,
     handleDragStart,
     handleDragOver,
@@ -392,26 +393,26 @@ export function CustomExperienceBuilder({
 
             {/* Selected Foxer */}
             {selectedFoxerData ? (
-              <div className="flex justify-between items-start animate-in fade-in slide-in-from-right-4 group relative">
-                <div className="flex gap-3">
-                  <div className="h-8 w-8 rounded bg-accent/20 flex items-center justify-center text-accent">
+              <div className="flex items-start gap-2 animate-in fade-in slide-in-from-right-4 group">
+                <div className="flex gap-3 flex-1 min-w-0">
+                  <div className="h-8 w-8 rounded bg-accent/20 flex items-center justify-center text-accent shrink-0">
                     <span className="material-symbols-outlined text-[16px]">
                       person
                     </span>
                   </div>
-                  <div>
-                    <p className="text-sm font-bold text-white">
+                  <div className="min-w-0">
+                    <p className="text-sm font-bold text-white truncate">
                       {selectedFoxerData.name}
                     </p>
                     <p className="text-xs text-text-muted">Curator Fee</p>
                   </div>
                 </div>
-                <span className="text-sm font-bold text-white">
+                <span className="text-sm font-bold text-white shrink-0">
                   ₱{selectedFoxerData.fee.toLocaleString()}
                 </span>
                 <button
                   onClick={() => setSelectedFoxer(null)}
-                  className="absolute -right-2 -top-2 opacity-0 group-hover:opacity-100 p-1 text-red-400 hover:text-red-300 transition-opacity"
+                  className="shrink-0 w-5 flex justify-center opacity-0 group-hover:opacity-100 text-red-400 hover:text-red-300 transition-opacity"
                 >
                   <span className="material-symbols-outlined text-[16px]">
                     cancel
@@ -435,21 +436,31 @@ export function CustomExperienceBuilder({
             {/* Selected Services */}
             {selectedServicesData.length > 0 && (
               <div className="space-y-4 pt-4 border-t border-white/5">
-                <p className="text-xs font-bold text-text-muted uppercase tracking-wider">
-                  Add-ons
-                </p>
+                <div className="flex items-center justify-between">
+                  <p className="text-xs font-bold text-text-muted uppercase tracking-wider">
+                    Add-ons
+                  </p>
+                  <button
+                    onClick={clearServices}
+                    className="text-xs font-bold text-red-400 hover:text-red-300 transition-colors"
+                  >
+                    Remove all
+                  </button>
+                </div>
                 {selectedServicesData.map((s) => (
                   <div
                     key={s.id}
-                    className="flex justify-between items-start animate-in fade-in slide-in-from-right-4 group relative"
+                    className="flex items-start gap-2 animate-in fade-in slide-in-from-right-4 group"
                   >
-                    <p className="text-sm text-gray-300 w-2/3">{s.name}</p>
-                    <span className="text-sm font-bold text-white">
+                    <p className="text-sm text-gray-300 truncate flex-1 min-w-0">
+                      {s.name}
+                    </p>
+                    <span className="text-sm font-bold text-white shrink-0">
                       ₱{s.price.toLocaleString()}
                     </span>
                     <button
                       onClick={() => toggleService(s.id)}
-                      className="absolute -right-2 top-0 opacity-0 group-hover:opacity-100 p-1 text-red-400 hover:text-red-300 transition-opacity"
+                      className="shrink-0 w-5 flex justify-center opacity-0 group-hover:opacity-100 text-red-400 hover:text-red-300 transition-opacity"
                     >
                       <span className="material-symbols-outlined text-[16px]">
                         cancel

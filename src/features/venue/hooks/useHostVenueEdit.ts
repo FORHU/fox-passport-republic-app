@@ -223,6 +223,7 @@ export function useHostVenueEdit(venueId: string) {
         country: builder.country,
         boundary: builder.boundary ?? undefined,
         price: builder.baseRate,
+        extraGuestRate: builder.extraGuestRate || undefined,
         spaceType: allItems
           .filter((i) => i.category === "spaces")
           .map((i) => i.name),
@@ -461,6 +462,9 @@ export function useHostVenueEdit(venueId: string) {
         );
         builder.setOccupancyRate(
           Number(found?.occupancyRate ?? found?.occupancy ?? 60),
+        );
+        builder.setExtraGuestRate(
+          found?.extraGuestRate != null ? Number(found.extraGuestRate) : 0,
         );
       } catch (err) {
         console.error("Prefill venue edit failed:", err);

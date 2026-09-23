@@ -30,6 +30,7 @@ export interface ProfileData {
   systemRole: SystemRole;
   roleType: RoleType[];
   permissions: readonly Permission[];
+  identityVerified?: boolean;
   isPrivate: boolean;
   preferredCurrency: string;
   createdAt: string;

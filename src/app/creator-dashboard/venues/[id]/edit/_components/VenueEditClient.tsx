@@ -12,6 +12,7 @@ import {
 } from "@/features/venue/components/venue-builder";
 import { useHostVenueEdit } from "@/features/venue/hooks/useHostVenueEdit";
 import { VenueAffiliatesSection } from "@/features/venue-affiliation/components/VenueAffiliatesSection";
+import { VenueAvailabilitySection } from "@/features/venue/components/VenueAvailabilitySection";
 
 interface Props {
   id: string;
@@ -40,6 +41,7 @@ function VenueEditContent({ id }: Props) {
     addonItems,
     baseRate,
     occupancyRate,
+    extraGuestRate,
     activeCategory,
     searchQuery,
     showGuide,
@@ -66,6 +68,7 @@ function VenueEditContent({ id }: Props) {
     removeAddonItem,
     setBaseRate,
     setOccupancyRate,
+    setExtraGuestRate,
     setActiveCategory,
     setSearchQuery,
     setShowGuide,
@@ -199,17 +202,21 @@ function VenueEditContent({ id }: Props) {
                   onDrop={handleDrop}
                   onRemoveItem={removeAddonItem}
                 />
+                <VenueAvailabilitySection venueId={id} />
                 <VenueAffiliatesSection venueId={id} />
               </div>
             </main>
             <RevenueProjector
               baseRate={baseRate}
               occupancyRate={occupancyRate}
+              extraGuestRate={extraGuestRate}
+              capacity={capacity}
               monthlyBase={revenue.monthlyBase}
               monthlyAddons={revenue.monthlyAddons}
               total={revenue.total}
               onBaseRateChange={setBaseRate}
               onOccupancyRateChange={setOccupancyRate}
+              onExtraGuestRateChange={setExtraGuestRate}
               onPreview={() => window.open(`/venues/${id}`, "_blank")}
             />
           </div>
