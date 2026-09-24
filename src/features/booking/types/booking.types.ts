@@ -4,6 +4,26 @@
 // service for the full reasoning.
 export type BookingKind = "asset" | "service" | "booking";
 
+export interface ItemBookingPayment {
+  id: string;
+  amount: number | string;
+  method: string;
+  provider: string;
+  providerReference: string | null;
+  status: string;
+  paidAt: string | null;
+  createdAt: string;
+}
+
+export interface ItemBookingRefund {
+  id: string;
+  amount: number | string;
+  reason: string | null;
+  providerReference: string | null;
+  status: string;
+  createdAt: string;
+}
+
 export type BookingEditRequestStatus =
   | "pending"
   | "approved"
