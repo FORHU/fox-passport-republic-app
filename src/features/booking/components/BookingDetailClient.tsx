@@ -178,6 +178,13 @@ export default function BookingDetailClient({
   const platformFeeAmount = Number(booking.event?.platformFeeAmount ?? 0);
   const hasBreakdown = subtotalAmount > 0;
 
+  // `booking.totalAmount` is the server-computed Event total (items ×
+  // markup only) and can legitimately be 0 for a template with no attached
+  // items — it does not include a platform service fee charged at checkout.
+  // What actually reflects money received is the sum of completed payment
+  // records, so prefer that for display whenever it exists.
+  const displayTotal = totalPaid > 0 ? totalPaid : Number(booking.totalAmount) || 0;
+
   const invoiceLineItems = [
     ...(booking.venueTransactions ?? []).map((tx: any) => ({
       label: tx.venue?.name || "Venue Reservation",
@@ -416,7 +423,7 @@ export default function BookingDetailClient({
                   Total Amount
                 </p>
                 <p className="text-accent font-display font-bold text-xl">
-                  ₱{booking.totalAmount?.toLocaleString() || "0"}
+                  ₱{displayTotal.toLocaleString()}
                 </p>
               </div>
             </div>
@@ -470,7 +477,7 @@ export default function BookingDetailClient({
             <div className="space-y-3 border-t border-white/10 pt-4">
               {(invoiceLineItems.length > 0
                 ? invoiceLineItems
-                : [{ label: eventName, amount: subtotalAmount || Number(booking.totalAmount) || 0 }]
+                : [{ label: eventName, amount: subtotalAmount || displayTotal }]
               ).map((item, i) => (
                 <div key={i} className="flex justify-between text-sm">
                   <span className="text-text-muted">{item.label}</span>
@@ -518,7 +525,7 @@ export default function BookingDetailClient({
                 </span>
               </div>
               <span className="text-2xl font-display font-bold text-accent">
-                ₱{booking.totalAmount?.toLocaleString() || "0"}
+                ₱{displayTotal.toLocaleString()}
               </span>
             </div>
           </div>

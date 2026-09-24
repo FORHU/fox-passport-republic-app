@@ -360,9 +360,21 @@ export default function BookingConfigurationClient() {
                             remove
                           </span>
                         </button>
-                        <span className="text-lg sm:text-xl font-bold font-display w-6 sm:w-8 text-center text-white">
-                          {guests}
-                        </span>
+                        <input
+                          type="number"
+                          min={1}
+                          inputMode="numeric"
+                          value={guests}
+                          onChange={(e) => {
+                            const value = Number(e.target.value);
+                            if (Number.isNaN(value)) return;
+                            setGuests(Math.max(1, Math.floor(value)));
+                          }}
+                          onBlur={(e) => {
+                            if (e.target.value === "") setGuests(1);
+                          }}
+                          className="text-lg sm:text-xl font-bold font-display w-10 sm:w-12 text-center text-white bg-transparent focus:outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                        />
                         <button
                           onClick={() => setGuests(guests + 1)}
                           className="h-8 w-8 sm:h-10 sm:w-10 rounded-full bg-white text-black hover:bg-accent flex items-center justify-center transition-colors"
@@ -715,7 +727,6 @@ export default function BookingConfigurationClient() {
                                 const result = await bookFromTemplate({
                                   templateId,
                                   guestCount: guests,
-                                  totalAmount,
                                   startAt: startAt.toISOString(),
                                   endAt: endAt.toISOString(),
                                   excludedAssetIds: optionalAssets

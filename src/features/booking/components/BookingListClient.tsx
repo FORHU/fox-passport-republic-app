@@ -356,6 +356,13 @@ function BookingCard({
     !pastDueUnpaid &&
     (booking.status === "pending" || booking.status === "confirmed");
   const noReview = !booking.hasReview;
+  // booking.totalAmount is the server-computed Event total (items × markup)
+  // and can be 0 for a template with no attached items even though a
+  // platform service fee was actually charged — prefer what was really paid.
+  const totalPaid = (booking.payments || [])
+    .filter((p: any) => p.status === "completed")
+    .reduce((sum: number, p: any) => sum + (p.amount || 0), 0);
+  const displayTotal = totalPaid > 0 ? totalPaid : Number(booking.totalAmount) || 0;
 
   return (
     <div
@@ -414,7 +421,7 @@ function BookingCard({
             {pastDueUnpaid ? "Unpaid & Expired" : statusInfo.label}
           </span>
           <span className="text-xl font-display font-bold text-accent">
-            ₱{booking.totalAmount?.toLocaleString() || "0"}
+            ₱{displayTotal.toLocaleString()}
           </span>
         </div>
       </div>

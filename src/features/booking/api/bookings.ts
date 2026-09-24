@@ -41,13 +41,15 @@ export async function getOwnTemplate(templateId: string) {
 export async function bookFromTemplate(payload: {
   templateId: string;
   guestCount: number;
-  totalAmount: number;
   startAt: string;
   endAt: string;
   excludedAssetIds?: string[];
   excludedServiceIds?: string[];
   excludedVenueIds?: string[];
 }): Promise<{ booking: { id: string }; eventId: string }> {
+  // Event.totalAmount is server-computed from the template's items + host
+  // markup (see api docs/adr/0001) — the endpoint rejects a client-supplied
+  // totalAmount outright, so it must never be part of this payload.
   const resp = await api.post("/bookings/from-template", payload);
   return resp.data?.data;
 }
