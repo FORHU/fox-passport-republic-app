@@ -2,6 +2,7 @@
 
 import React from "react";
 import Image from "next/image";
+import Link from "next/link";
 import PassportBookletCard from "./PassportBookletCard";
 
 interface Props {
@@ -61,13 +62,19 @@ export default function MobilePassportView({ user }: Props) {
           gap: 10,
         }}
       >
-        <Image
-          src="/foxonlylogo.png"
-          alt="FoxPassport"
-          width={22}
-          height={22}
-          style={{ objectFit: "contain" }}
-        />
+        <Link
+          href="/user"
+          aria-label="Back to profile"
+          style={{ display: "flex", alignItems: "center", flexShrink: 0 }}
+        >
+          <Image
+            src="/foxonlylogo.png"
+            alt="FoxPassport"
+            width={22}
+            height={22}
+            style={{ objectFit: "contain" }}
+          />
+        </Link>
         <p
           style={{
             flex: 1,

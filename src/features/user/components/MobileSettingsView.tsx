@@ -2,6 +2,7 @@
 
 import React from "react";
 import Image from "next/image";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useLogout } from "@/shared/auth/useLogout";
 
@@ -40,7 +41,7 @@ export default function MobileSettingsView({ user }: Props) {
         color: "#fff",
       }}
     >
-      {/* Nav bar — no back button, top-level page */}
+      {/* Nav bar */}
       <div
         style={{
           position: "fixed",
@@ -59,13 +60,19 @@ export default function MobileSettingsView({ user }: Props) {
           gap: 10,
         }}
       >
-        <Image
-          src="/foxonlylogo.png"
-          alt="FoxPassport"
-          width={22}
-          height={22}
-          style={{ objectFit: "contain" }}
-        />
+        <Link
+          href="/user"
+          aria-label="Back to profile"
+          style={{ display: "flex", alignItems: "center", flexShrink: 0 }}
+        >
+          <Image
+            src="/foxonlylogo.png"
+            alt="FoxPassport"
+            width={22}
+            height={22}
+            style={{ objectFit: "contain" }}
+          />
+        </Link>
         <p
           style={{
             flex: 1,

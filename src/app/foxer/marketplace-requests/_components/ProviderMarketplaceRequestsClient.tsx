@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import Link from "next/link";
 import { toast } from "sonner";
 import {
   fetchProviderMarketplaceItems,
@@ -82,6 +83,12 @@ export default function ProviderMarketplaceRequestsClient() {
   return (
     <div className="min-h-screen bg-black text-white p-6 md:p-10">
       <div className="max-w-4xl mx-auto">
+        <Link
+          href="/"
+          className="text-xs text-white/40 hover:text-white/70 transition-colors mb-3 inline-block"
+        >
+          ← Home
+        </Link>
         <h1 className="text-2xl font-display font-bold mb-2">
           Marketplace Requests
         </h1>
