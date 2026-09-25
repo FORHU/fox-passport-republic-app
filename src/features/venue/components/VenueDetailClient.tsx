@@ -20,8 +20,6 @@ import { useVenueDetailStore } from "@/features/venue/store/useVenueDetailStore"
 import { Venue } from "../hooks/useVenuesByCategory";
 import { Host } from "../types/venue";
 import { useAuthStore } from "@/shared/auth/useAuthStore";
-import { useStartConversation } from "@/features/messages/hooks/useMessages";
-import { useChatWindowsStore } from "@/features/messages/store/useChatWindowsStore";
 import { ReportModal } from "@/shared/components/ReportModal";
 
 interface VenueDetailClientProps {
@@ -29,12 +27,19 @@ interface VenueDetailClientProps {
   host: Host;
   /** Composed at the app layer — this feature doesn't import `partnership` directly. */
   onProposePartnership?: () => void;
+  /** Opens this venue's Shared Inbox; composed at the app layer too. */
+  onContactVenue?: () => void;
+  /** For an approved Organizer: asking to join this venue's team. Composed
+   * at the app layer, like the two above. */
+  organizerSlot?: React.ReactNode;
 }
 
 export default function VenueDetailClient({
   venue,
   host,
   onProposePartnership,
+  onContactVenue,
+  organizerSlot,
 }: VenueDetailClientProps) {
   const router = useRouter();
   const store = useVenueDetailStore();
@@ -74,62 +79,24 @@ export default function VenueDetailClient({
     (venue as any).hostId,
     host?.id,
   ];
-  const ownerId = ownerIdCandidates.find((id) => !!id);
   const isOwner =
     !!user?.id &&
     ownerIdCandidates.some((id) => id && String(id) === String(user.id));
 
-  const openChat = useChatWindowsStore((s) => s.openChat);
-  const setConversationId = useChatWindowsStore((s) => s.setConversationId);
-  const closeChat = useChatWindowsStore((s) => s.closeChat);
-  const startConversation = useStartConversation();
-
+  // Messages go to the venue's Shared Inbox, answered by its Mayor and
+  // Organizers together (CONTEXT.md) rather than to the Mayor in person.
+  // Composed at the app layer: this feature doesn't import `messages`.
   const handleContactOwner = useCallback(() => {
     if (!user) {
       router.push("/auth/login");
       return;
     }
-    if (!ownerId) {
-      toast.error("Couldn't find this venue's owner to message.");
+    if (!onContactVenue) {
+      toast.error("Messaging isn't available here.");
       return;
     }
-    const otherUserId = String(ownerId);
-    openChat({
-      otherUserId,
-      otherUserName: host?.name || "Venue Owner",
-      otherUserImgId: host?.avatar,
-      contextLabel: venue.title,
-    });
-    startConversation.mutate(
-      {
-        otherUserId,
-        contextType: "venue",
-        contextId: venue.id,
-        contextLabel: venue.title,
-      },
-      {
-        onSuccess: (conversation) =>
-          setConversationId(otherUserId, conversation.id),
-        onError: (error: any) => {
-          closeChat(otherUserId);
-          toast.error(
-            error?.response?.data?.message ||
-              "Could not start this conversation.",
-          );
-        },
-      },
-    );
-  }, [
-    user,
-    ownerId,
-    host,
-    venue,
-    openChat,
-    setConversationId,
-    closeChat,
-    startConversation,
-    router,
-  ]);
+    onContactVenue();
+  }, [user, onContactVenue, router]);
 
   const handleReportListing = useCallback(() => {
     if (!user) {
@@ -252,6 +219,8 @@ export default function VenueDetailClient({
                   </div>
                 </div>
               </div>
+
+              {organizerSlot}
 
               {/* Venue highlights */}
               <div className="space-y-6">

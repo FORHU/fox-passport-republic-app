@@ -61,6 +61,16 @@ const ROLES = [
     title: "Event Foxer",
     desc: "Create and organize events, coordinating every detail end-to-end.",
   },
+  {
+    type: "organizer",
+    roleType: "organizer",
+    href: "/foxer/apply?type=organizer",
+    color: "#e879f9",
+    icon: "assignment_ind",
+    tag: "Organizer",
+    title: "Organizer",
+    desc: "Help Mayors and Event Owners run their venues and events, once they invite you.",
+  },
 ];
 
 export default function OnboardingClient({ user: serverUser }: { user: any }) {
@@ -68,7 +78,11 @@ export default function OnboardingClient({ user: serverUser }: { user: any }) {
   const { user: clientUser, setUser } = useAuthStore();
   const user = clientUser || serverUser;
 
-  const existingRoles: string[] = (user?.roleType ?? []).filter(isFoxerRole);
+  // Organizer is not a Foxer (it supplies no inventory) but is still a role
+  // this page offers, so it counts as one the user already holds.
+  const existingRoles: string[] = (user?.roleType ?? []).filter(
+    (role: string) => isFoxerRole(role) || role === "organizer",
+  );
   const hasExistingRoles = existingRoles.length > 0;
 
   const [step, setStep] = useState<Step>(hasExistingRoles ? 3 : 1);

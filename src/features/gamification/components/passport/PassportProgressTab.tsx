@@ -61,7 +61,9 @@ export function PassportProgressTab({
                       ? "Event Foxer"
                       : path.path === "venueFoxer"
                         ? "Venue Foxer"
-                        : path.path;
+                        : path.path === "organizer"
+                          ? "Organizer"
+                          : path.path;
           const pct = Math.min(
             100,
             Math.round((path.currentXP / path.requiredXP) * 100),
@@ -256,6 +258,47 @@ export function PassportProgressTab({
                   </div>
                   <span className="font-mono text-sm text-[#f97316] font-bold">
                     +{XP_REWARDS.completeEvent} XP
+                  </span>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Organizer Path Guide */}
+          {activePathTypes.includes("organizer") && (
+            <div className="space-y-4">
+              <p className="text-[10px] font-black text-[#e879f9] uppercase tracking-widest opacity-60">
+                Organizer Career
+              </p>
+              <div className="space-y-3">
+                <div className="flex justify-between items-center p-4 rounded-2xl bg-white/5 border border-white/5 hover:bg-white/10 transition-all">
+                  <div className="flex items-center gap-3">
+                    <span className="material-symbols-outlined text-[#e879f9] text-sm">
+                      celebration
+                    </span>
+                    <span className="text-sm text-white/70">
+                      Help run an event to completion
+                    </span>
+                  </div>
+                  <span className="font-mono text-sm text-[#e879f9] font-bold">
+                    +{XP_REWARDS.organizerEventCompleted} XP
+                  </span>
+                </div>
+                <div className="flex justify-between items-center p-4 rounded-2xl bg-white/5 border border-white/5 hover:bg-white/10 transition-all">
+                  <div className="flex items-center gap-3">
+                    <span className="material-symbols-outlined text-[#e879f9] text-sm">
+                      qr_code_scanner
+                    </span>
+                    <span className="text-sm text-white/70">
+                      Check in a guest{" "}
+                      <span className="text-white/40">
+                        (up to {XP_REWARDS.organizerCheckInCapPerEvent} XP per
+                        event)
+                      </span>
+                    </span>
+                  </div>
+                  <span className="font-mono text-sm text-[#e879f9] font-bold">
+                    +{XP_REWARDS.organizerGuestCheckedIn} XP
                   </span>
                 </div>
               </div>

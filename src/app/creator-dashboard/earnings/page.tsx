@@ -1,9 +1,17 @@
 export const dynamic = "force-dynamic";
 
+import { requirePermission } from "@/shared/lib/server/auth";
 import FoxerEarningsClient from "../_components/FoxerEarningsClient";
 import MobileEarningsView from "@/features/dashboard/components/MobileEarningsView";
 
-export default function EarningsPage() {
+// Nobody without `payouts:onboard` has anything here to see — an Organizer
+// gets no platform pay at all (ADR 0005). The nav link is already hidden
+// for them (DashboardHeader), but the route itself was still open to
+// anyone signed in, landing on a page whose only content was a "Connect
+// Stripe" link for money they can never receive. Found 25 Sep.
+export default async function EarningsPage() {
+  await requirePermission("payouts:onboard");
+
   return (
     <>
       <MobileEarningsView />

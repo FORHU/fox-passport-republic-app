@@ -7,6 +7,10 @@ const SUPPLY_ROLE_TYPES: RoleType[] = [
   "venueFoxer",
   "gearFoxer",
   "serviceFoxer",
+  // Their payouts and Stripe onboarding live on the creator dashboard.
+  "performerFoxer",
+  // Invitations and the teams they help run live on the dashboard.
+  "organizer",
 ];
 
 /**

@@ -11,8 +11,8 @@ import {
   EventGallery,
   CorePackageDropZone,
   EventBlueprint,
-  EventOrganizersSection,
 } from "@/features/event/components/event-builder";
+import { TeamPanel } from "@/features/appointment/components/TeamPanel";
 import { useHostEventEdit } from "@/features/event/hooks/useHostEventEdit";
 
 interface Props {
@@ -161,7 +161,12 @@ function EventEditContent({ id }: Props) {
                   onRemoveItem={removeBaseItem}
                   onUpdateItem={updateBaseItem}
                 />
-                <EventOrganizersSection eventId={activeEventId} />
+                <TeamPanel
+                  target={
+                    activeEventId ? { type: "event", id: activeEventId } : null
+                  }
+                  unavailableMessage="You can add organizers and helpers once this event is booked and scheduled."
+                />
               </div>
             </main>
             <EventBlueprint

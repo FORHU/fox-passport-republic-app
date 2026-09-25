@@ -4,10 +4,38 @@ import React, { useState } from "react";
 import FileUploader from "@/shared/components/layout/FileUploader";
 import { ShieldCheck } from "lucide-react";
 
+export interface KycDocument {
+  /** The application column the uploaded file id is stored under. */
+  field: string;
+  label: string;
+  accept?: string;
+}
+
+// The business-verification set every Foxer role has always asked for.
+export const FOXER_KYC_DOCUMENTS: KycDocument[] = [
+  { field: "validId1FileId", label: "Primary Valid ID *" },
+  { field: "nbiFileId", label: "NBI Clearance (PDF) *", accept: "application/pdf" },
+  { field: "tinIdFileId", label: "TIN ID / Certificate *" },
+  { field: "birPermitFileId", label: "BIR 2303 / Permit *" },
+  { field: "selfieFileId", label: "Verification Selfie *" },
+];
+
+// An Organizer is vetted as a person, not a business: identity only, and
+// named generically rather than after one country's paperwork.
+export const ORGANIZER_KYC_DOCUMENTS: KycDocument[] = [
+  { field: "validId1FileId", label: "Government-issued ID *" },
+  {
+    field: "backgroundClearanceFileId",
+    label: "Police / Background Clearance *",
+  },
+  { field: "selfieFileId", label: "Verification Selfie *" },
+];
+
 interface KycDocumentSectionProps {
   onUpload: (field: string, fileId: string) => void;
   title?: string;
   description?: string;
+  documents?: KycDocument[];
 }
 
 interface FileSignature {
@@ -19,6 +47,7 @@ export function KycDocumentSection({
   onUpload,
   title = "Identity Verification",
   description = "Please provide the following documents to verify your identity and business status.",
+  documents = FOXER_KYC_DOCUMENTS,
 }: KycDocumentSectionProps) {
   // Tracks the file picked for each slot so the same document can't be reused
   // across two different required uploads (e.g. ID photo also submitted as the selfie).
@@ -65,47 +94,27 @@ export function KycDocumentSection({
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <FileUploader
-          label="Primary Valid ID *"
-          onUploadComplete={(id) => onUpload("validId1FileId", id)}
-          validateFile={validateAgainstOtherSlots("validId1FileId")}
-          onFileSelected={registerFile("validId1FileId")}
-          onFileCleared={clearFile("validId1FileId")}
-        />
-        <FileUploader
-          label="NBI Clearance (PDF) *"
-          accept="application/pdf"
-          onUploadComplete={(id) => onUpload("nbiFileId", id)}
-          validateFile={validateAgainstOtherSlots("nbiFileId")}
-          onFileSelected={registerFile("nbiFileId")}
-          onFileCleared={clearFile("nbiFileId")}
-        />
+        {documents.map(({ field, label, accept }, i) => (
+          <div
+            key={field}
+            // An odd one out (the selfie, in both sets) takes the full row.
+            className={
+              documents.length % 2 === 1 && i === documents.length - 1
+                ? "md:col-span-2"
+                : undefined
+            }
+          >
+            <FileUploader
+              label={label}
+              accept={accept}
+              onUploadComplete={(id) => onUpload(field, id)}
+              validateFile={validateAgainstOtherSlots(field)}
+              onFileSelected={registerFile(field)}
+              onFileCleared={clearFile(field)}
+            />
+          </div>
+        ))}
       </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <FileUploader
-          label="TIN ID / Certificate *"
-          onUploadComplete={(id) => onUpload("tinIdFileId", id)}
-          validateFile={validateAgainstOtherSlots("tinIdFileId")}
-          onFileSelected={registerFile("tinIdFileId")}
-          onFileCleared={clearFile("tinIdFileId")}
-        />
-        <FileUploader
-          label="BIR 2303 / Permit *"
-          onUploadComplete={(id) => onUpload("birPermitFileId", id)}
-          validateFile={validateAgainstOtherSlots("birPermitFileId")}
-          onFileSelected={registerFile("birPermitFileId")}
-          onFileCleared={clearFile("birPermitFileId")}
-        />
-      </div>
-
-      <FileUploader
-        label="Verification Selfie *"
-        onUploadComplete={(id) => onUpload("selfieFileId", id)}
-        validateFile={validateAgainstOtherSlots("selfieFileId")}
-        onFileSelected={registerFile("selfieFileId")}
-        onFileCleared={clearFile("selfieFileId")}
-      />
     </div>
   );
 }

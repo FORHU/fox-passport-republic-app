@@ -125,7 +125,9 @@ export const PassportSidebarContent: React.FC<PassportSidebarContentProps> = ({
                       ? "Venue Foxer"
                       : p === "investor"
                         ? "Investor"
-                        : p,
+                        : p === "organizer"
+                          ? "Organizer"
+                          : p,
             )
             .join(" · ") || "Citizen"}
         </p>

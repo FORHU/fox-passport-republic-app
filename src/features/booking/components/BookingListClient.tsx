@@ -35,11 +35,22 @@ function isPastDueUnpaid(booking: any) {
   return booking.status === "pending" && new Date(booking.startAt) < new Date();
 }
 
-export default function BookingListClient() {
+export default function BookingListClient({
+  initialTab = "mine",
+}: {
+  /** `?tab=received` opens straight onto bookings for events you run. */
+  initialTab?: "mine" | "received";
+} = {}) {
   const router = useRouter();
   const { user } = useAuthStore();
   const { canManageEvents } = useRoleAccess();
-  const [tab, setTab] = useState<"mine" | "received">("mine");
+  // Organizers run events too (ADR 0005 in the API); the received list
+  // includes events they organise, not only ones they own.
+  const runsEvents =
+    canManageEvents || (user?.roleType ?? []).includes("organizer");
+  const [tab, setTab] = useState<"mine" | "received">(
+    runsEvents ? initialTab : "mine",
+  );
   const [page, setPage] = useState(1);
   const [cancelTargetId, setCancelTargetId] = useState<string | null>(null);
   const limit = 4;
@@ -134,7 +145,7 @@ export default function BookingListClient() {
                 Bookings
               </Link>
             </nav>
-            {canManageEvents && (
+            {runsEvents && (
               <div className="hidden md:flex items-center gap-1 bg-black/20 p-1.5 rounded-full border border-white/5">
                 {(
                   [

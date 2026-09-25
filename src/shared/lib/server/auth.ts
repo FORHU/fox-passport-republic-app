@@ -118,6 +118,9 @@ export async function requireHost() {
     "serviceFoxer",
     "performerFoxer",
     "investor",
+    // Holds nothing to manage of their own, but the dashboard is where they
+    // answer invitations and find the teams they help run (ADR 0005).
+    "organizer",
   ];
 
   // Host areas are an admin override over someone else's data, which the

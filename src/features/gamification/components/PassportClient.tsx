@@ -88,6 +88,7 @@ export const PassportClient: React.FC<PassportClientProps> = ({ user }) => {
     if (role === "gearFoxer") return "gearFoxer";
     if (role === "serviceFoxer") return "serviceFoxer";
     if (role === "performerFoxer") return "performerFoxer";
+    if (role === "organizer") return "organizer";
     return null;
   };
   const rolePaths: UserPath[] = Array.from(

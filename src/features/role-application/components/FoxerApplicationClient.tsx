@@ -12,10 +12,15 @@ import {
   Link as LinkIcon,
   BadgeCheck,
   Music2,
+  ClipboardCheck,
+  MapPin,
 } from "lucide-react";
 import RequireAuth from "@/shared/auth/RequireAuth";
 import Link from "next/link";
-import { KycDocumentSection } from "./KycDocumentSection";
+import {
+  KycDocumentSection,
+  ORGANIZER_KYC_DOCUMENTS,
+} from "./KycDocumentSection";
 import SpecializationPicker from "./SpecializationPicker";
 import { ApplicationFlowHeader } from "./ApplicationFlowHeader";
 
@@ -44,15 +49,31 @@ const PERFORMER_CATEGORY_OPTIONS = [
   { value: "mc", label: "MC / Host" },
 ];
 
+// An Organizer's specializations are the kinds of events and venues they have
+// helped run, so they draw on both the API's EventCategory and VenueCategory.
+const ORGANIZER_CATEGORY_OPTIONS = [
+  { value: "wedding", label: "Weddings" },
+  { value: "birthday", label: "Birthdays" },
+  { value: "corporate", label: "Corporate" },
+  { value: "social", label: "Social" },
+  { value: "indoor", label: "Indoor Venues" },
+  { value: "outdoor", label: "Outdoor Venues" },
+  { value: "hotel", label: "Hotels" },
+  { value: "beach_resort", label: "Beach Resorts" },
+  { value: "garden", label: "Gardens" },
+];
+
+type ProviderType = "asset" | "service" | "performer" | "organizer";
+
+const ORGANIZER_ACCENT = "#e879f9";
+
 export default function FoxerApplicationClient({
   initialType = "service",
 }: {
-  initialType?: "asset" | "service" | "performer";
+  initialType?: ProviderType;
 }) {
   const { mutate: applyRole, isPending } = useApplyRole();
-  const [providerType, setProviderType] = useState<
-    "asset" | "service" | "performer"
-  >(initialType);
+  const [providerType, setProviderType] = useState<ProviderType>(initialType);
 
   // Asset Form State
   const [assetData, setAssetData] = useState({
@@ -104,8 +125,23 @@ export default function FoxerApplicationClient({
     string[]
   >([]);
 
+  // Organizer Form State — mirrors the API's OrganizerApplication
+  const [organizerData, setOrganizerData] = useState({
+    bio: "",
+    experience: "",
+    location: "",
+    validId1FileId: "",
+    backgroundClearanceFileId: "",
+    selfieFileId: "",
+  });
+  const [organizerSpecializations, setOrganizerSpecializations] = useState<
+    string[]
+  >([]);
+
   const handleFileUpload = (field: string, fileId: string) => {
-    if (providerType === "asset") {
+    if (providerType === "organizer") {
+      setOrganizerData((prev) => ({ ...prev, [field]: fileId }));
+    } else if (providerType === "asset") {
       setAssetData((prev) => ({ ...prev, [field]: fileId }));
     } else if (providerType === "performer") {
       setPerformerData((prev) => ({ ...prev, [field]: fileId }));
@@ -183,7 +219,16 @@ export default function FoxerApplicationClient({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (providerType === "asset") {
+    if (providerType === "organizer") {
+      applyRole({
+        roleType: "organizer",
+        data: {
+          ...organizerData,
+          experience: parseInt(organizerData.experience, 10),
+          specializations: organizerSpecializations,
+        },
+      });
+    } else if (providerType === "asset") {
       applyRole({
         roleType: "gearFoxer",
         data: {
@@ -233,7 +278,9 @@ export default function FoxerApplicationClient({
   };
 
   const accent =
-    providerType === "asset"
+    providerType === "organizer"
+      ? ORGANIZER_ACCENT
+      : providerType === "asset"
       ? "#a78bfa"
       : providerType === "performer"
         ? "#f59e0b"
@@ -258,7 +305,9 @@ export default function FoxerApplicationClient({
                 color: accent,
               }}
             >
-              {providerType === "asset" ? (
+              {providerType === "organizer" ? (
+                <ClipboardCheck size={32} />
+              ) : providerType === "asset" ? (
                 <Package size={32} />
               ) : providerType === "performer" ? (
                 <Music2 size={32} />
@@ -266,14 +315,29 @@ export default function FoxerApplicationClient({
                 <Briefcase size={32} />
               )}
             </div>
-            <h1 className="text-3xl md:text-4xl font-display font-bold text-white mb-2">
-              Apply to be a{" "}
-              <span style={{ color: accent }}>Foxer</span>
-            </h1>
-            <p className="text-white/60">
-              Provide your professional details to start offering services,
-              equipment, or performances in FoxPassport.
-            </p>
+            {providerType === "organizer" ? (
+              <>
+                <h1 className="text-3xl md:text-4xl font-display font-bold text-white mb-2">
+                  Apply to be an{" "}
+                  <span style={{ color: accent }}>Organizer</span>
+                </h1>
+                <p className="text-white/60">
+                  Once approved, Mayors and Event Owners can invite you to help
+                  run their venues and events.
+                </p>
+              </>
+            ) : (
+              <>
+                <h1 className="text-3xl md:text-4xl font-display font-bold text-white mb-2">
+                  Apply to be a{" "}
+                  <span style={{ color: accent }}>Foxer</span>
+                </h1>
+                <p className="text-white/60">
+                  Provide your professional details to start offering services,
+                  equipment, or performances in FoxPassport.
+                </p>
+              </>
+            )}
           </div>
 
           {/* Provider Type Toggle */}
@@ -308,10 +372,113 @@ export default function FoxerApplicationClient({
             >
               Gear Provider
             </button>
+            <button
+              onClick={() => setProviderType("organizer")}
+              className={`flex-1 py-3 text-sm font-bold uppercase tracking-wider rounded-lg transition-all ${
+                providerType === "organizer"
+                  ? "bg-[#e879f9] text-black shadow-lg"
+                  : "text-white/50 hover:text-white"
+              }`}
+            >
+              Organizer
+            </button>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-6 relative z-10">
-            {providerType === "service" ? (
+            {providerType === "organizer" ? (
+              // --- ORGANIZER FORM ---
+              <>
+                <div className="space-y-2">
+                  <label className="text-sm font-bold text-white/80 uppercase tracking-wider">
+                    About You *
+                  </label>
+                  <textarea
+                    required
+                    name="bio"
+                    rows={4}
+                    value={organizerData.bio}
+                    onChange={(e) =>
+                      setOrganizerData((prev) => ({
+                        ...prev,
+                        bio: e.target.value,
+                      }))
+                    }
+                    className="w-full bg-white/5 border border-white/10 rounded-xl py-3 px-4 text-white placeholder:text-white/30 focus:outline-none focus:border-[#e879f9]/50 focus:bg-white/10 transition-colors resize-none"
+                    placeholder="The events and venues you've helped run, and what you did there."
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-sm font-bold text-white/80 uppercase tracking-wider">
+                    Years of Experience *
+                  </label>
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-white/40">
+                      <UserCircle size={18} />
+                    </div>
+                    <input
+                      required
+                      type="text"
+                      inputMode="numeric"
+                      pattern="[0-9]*"
+                      name="experience"
+                      value={organizerData.experience}
+                      onChange={(e) => {
+                        const digits = e.target.value.replace(/\D/g, "");
+                        setOrganizerData((prev) => ({
+                          ...prev,
+                          experience:
+                            digits === ""
+                              ? ""
+                              : String(Math.min(100, Number(digits))),
+                        }));
+                      }}
+                      className="w-full bg-white/5 border border-white/10 rounded-xl py-3 pl-12 pr-4 text-white placeholder:text-white/30 focus:outline-none focus:border-[#e879f9]/50 focus:bg-white/10 transition-colors"
+                      placeholder="e.g. 3"
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-sm font-bold text-white/80 uppercase tracking-wider">
+                    Location *
+                  </label>
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-white/40">
+                      <MapPin size={18} />
+                    </div>
+                    <input
+                      required
+                      type="text"
+                      name="location"
+                      value={organizerData.location}
+                      onChange={(e) =>
+                        setOrganizerData((prev) => ({
+                          ...prev,
+                          location: e.target.value,
+                        }))
+                      }
+                      className="w-full bg-white/5 border border-white/10 rounded-xl py-3 pl-12 pr-4 text-white placeholder:text-white/30 focus:outline-none focus:border-[#e879f9]/50 focus:bg-white/10 transition-colors"
+                      placeholder="City where you usually work"
+                    />
+                  </div>
+                </div>
+
+                <SpecializationPicker
+                  options={ORGANIZER_CATEGORY_OPTIONS}
+                  value={organizerSpecializations}
+                  onChange={setOrganizerSpecializations}
+                  accentColor={ORGANIZER_ACCENT}
+                />
+
+                <KycDocumentSection
+                  onUpload={handleFileUpload}
+                  documents={ORGANIZER_KYC_DOCUMENTS}
+                  title="Identity Verification"
+                  description="Organizers see guest lists and help run other people's venues and events, so we verify who you are before anyone can invite you."
+                />
+              </>
+            ) : providerType === "service" ? (
               // --- SERVICE PROVIDER FORM ---
               <>
                 <div className="space-y-2">

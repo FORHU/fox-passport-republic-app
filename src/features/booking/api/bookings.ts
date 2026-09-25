@@ -112,7 +112,11 @@ export async function createPaymentIntent(payload: {
   return resp.data?.data;
 }
 
-// 5. Confirm Booking after Payment (records the payment in our system)
+// 5. Confirm Booking after Payment (records the payment in our system).
+// The server verifies `transactionId` with Stripe itself before trusting
+// any of this — a failure here is expected whenever the webhook already
+// settled it first, so every caller treats it as a courtesy, not the
+// source of truth (see BookingSvc.confirmPayment).
 export async function confirmBookingPayment(
   bookingId: string,
   paymentIntentId: string,

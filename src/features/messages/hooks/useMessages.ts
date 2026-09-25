@@ -6,6 +6,8 @@ import { useAuthStore } from "@/shared/auth/useAuthStore";
 import {
   getConversations,
   startConversation,
+  startInboxConversation,
+  fetchEventSuppliers,
   acceptConversationRequest,
   declineConversationRequest,
   getMessages,
@@ -29,6 +31,7 @@ import {
   searchMessages,
 } from "../api/messages";
 import { useMessageStore } from "../store/useMessageStore";
+import { openConversationWindow } from "../store/useChatWindowsStore";
 import { Message, StartConversationInput } from "../types";
 
 // Must be a stable reference — a fresh `[]` literal returned from the
@@ -73,6 +76,29 @@ export function useMessagesForConversation(conversationId?: string) {
 export function useStartConversation() {
   return useMutation({
     mutationFn: (input: StartConversationInput) => startConversation(input),
+  });
+}
+
+/**
+ * Start or reopen a Shared Inbox thread and open its chat window: a guest
+ * writing to a Venue or Event, or an Event's team writing to an attendee.
+ */
+export function useOpenInbox() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: startInboxConversation,
+    onSuccess: (conversation) => {
+      queryClient.invalidateQueries({ queryKey: ["conversations"] });
+      openConversationWindow(conversation);
+    },
+  });
+}
+
+/** An Event's Suppliers its Owner and Organizers can message. */
+export function useEventSuppliers(eventId: string) {
+  return useQuery({
+    queryKey: ["conversations", "event-suppliers", eventId],
+    queryFn: () => fetchEventSuppliers(eventId),
   });
 }
 

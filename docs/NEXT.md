@@ -538,6 +538,138 @@ has signed off on.
 
 ## 1. Next piece of work
 
+- [ ] **`/creator-dashboard/earnings` shows fabricated payout history and
+      fabricated verification status on mobile — found 25 Sep, while fixing
+      the Earnings nav gating below.** `MobileEarningsView.tsx`'s
+      `PAYOUT_CHECKLIST` ("Valid Government ID: VERIFIED", "Business
+      Permit: IN REVIEW", "Bank/Stripe Connect: NOT LINKED") and `PAYOUTS`
+      (four line items — "Skyline Loft booking ₱15,300", "Neon Nights event
+      ₱22,000", etc.) are hardcoded constants, no API call, shown to every
+      phone visitor to the earnings page regardless of their real KYC state
+      or real payout history. This is worse than the `MobileCreatorHome`
+      finding above: it's fabricating both money and identity-verification
+      status on the one page that is specifically about someone's real
+      payouts. Left untouched — out of scope for the Earnings-visibility fix
+      below, and deserves its own look before being wired to
+      `fetchMyPayouts`/the real KYC status, same as `MobileCreatorHome` was.
+
+- [x] **Earnings was reachable and nudged toward Stripe for people who can
+      never receive a payout — fixed 25 Sep.** ADR 0005: an Organizer gets
+      no platform pay at all (`payouts:onboard` withheld on purpose). The
+      "Earnings" link was shown unconditionally in both `DashboardHeader`'s
+      desktop nav and `MobileCreatorBottomNav`'s mobile tab bar, and
+      `/creator-dashboard/earnings` itself had no guard — reachable by
+      anyone signed in via a direct link, landing on a page whose only real
+      content for them was a "Connect Stripe" link. Both nav surfaces now
+      gate on `useRoleAccess.canReceivePayouts`, and the page itself now
+      calls `requirePermission("payouts:onboard")` server-side, so it's
+      closed even for someone who reaches it directly rather than through
+      either nav. `MobileCreatorBottomNav`'s "Listings" tab
+      (`/creator-dashboard/venues`) was left as unconditional — same shape
+      of gap, not part of this fix.
+
+- [x] **Mobile Creator Studio home showed fabricated numbers to everyone —
+      fixed 25 Sep.** `MobileCreatorHome.tsx`'s KPI cards and "Pending
+      Requests" were hardcoded constants — "₱82k Revenue", "14 Bookings", a
+      fake "Skyline Loft" request — with no API call, shown to every phone
+      visitor regardless of role or account. KPI cards now read
+      `useFoxerDashboard`'s real `totalRevenue`/`totalBookings` (through
+      `formatCurrency`, not a hardcoded `₱`) and are gated on
+      `hasListings`, same as desktop. Pending Requests now reads the same
+      real match-request inbox desktop's `PendingRequests` does
+      (`useClientMatchRequests`) — pulled into a new
+      `MobilePendingRequests.tsx` in `app/creator-dashboard/_components`
+      (composed in from `page.tsx`, passed down as a `pendingRequests` slot)
+      rather than imported directly into `MobileCreatorHome`, since that
+      file lives inside the `dashboard` feature and reaching into
+      `gamification` from there would have been a new Feature Isolation
+      violation of the exact kind already tracked in §0. **Deliberately
+      read-only for now** — no Accept/Decline on mobile yet, just the real
+      names and dates instead of fake ones; acting on one means going to
+      `/user/passport`, same as desktop's own "View All". Full parity
+      (in-place accept/decline) is a follow-up, not done here.
+- [ ] **Mobile Creator Studio's "Quick Actions" buttons do nothing — found
+      25 Sep, while fixing the above.** New Event / Add Venue / Add Gear /
+      Add Service in `MobileCreatorHome.tsx` have no `onClick` at all, for
+      anyone. Left alone — out of the scope that was agreed for the KPI/
+      Pending-Requests fix above — but it's the same shape of bug.
+
+- [x] **Creator dashboard showed every Foxer-only widget to Organizers (and
+      Investors) regardless of role — fixed 25 Sep.** `KPICards`,
+      `PendingRequests` and `StripeConnectSection` on `HostDashboardClient`
+      rendered unconditionally — an approved Organizer with no team (holds
+      no permission at all: ADR 0005) saw a full shell of listing metrics,
+      match requests, and a "Connect Stripe" nudge toward payouts Organizers
+      are explicitly never granted. Fixed with two new `useRoleAccess`
+      fields: `hasListings` (any of venue/event/asset/service/performer
+      manage) gates `KPICards`/`PendingRequests`, and `canReceivePayouts`
+      (`payouts:onboard`) gates `StripeConnectSection` — chosen per-widget
+      rather than one combined switch specifically so an Investor (who holds
+      `payouts:onboard` but no listing role) still sees Stripe while an
+      Organizer doesn't. The "Unlock more provider capabilities... Apply for
+      Roles" hint used to fire whenever *any* of the five Foxer permissions
+      was missing (nearly everyone, forever); it now only shows for someone
+      with `hasListings` false. `CalendarWidget` was deliberately left
+      ungated — it already mixes in the viewer's own bookings-as-a-guest,
+      which is real for an Organizer too. Three other sidebar widgets
+      (`OccupancyChart`, `CreatorProfile`, `RecentActivity`) were found to be
+      unfinished placeholders — hardcoded "No occupancy data yet"/"85%
+      Complete"/an always-empty activity list — for every role, not just
+      Organizers; left untouched as a separate, pre-existing gap rather than
+      folded into this fix.
+
+- [x] **SECURITY — anyone signed in could mark any booking paid — fixed 25
+      Sep.** `POST /v1/bookings/:id/confirm` (`BookingSvc.confirmPayment`)
+      checked neither who was calling nor the payment itself: it took a
+      client-supplied `{ amount, transactionId }` on faith and marked the
+      booking paid. Now it requires the caller to be the booking's own
+      client (or an admin), and retrieves the PaymentIntent from Stripe
+      itself to check it actually succeeded and was minted for this exact
+      booking (`PaymentSvc.createPaymentIntent` always stamps
+      `metadata.bookingId`) — the amount and currency it records come from
+      Stripe, never from the client. A failure here is expected whenever the
+      `payment_intent.succeeded` webhook (`PaymentSvc.settleSucceededIntent`)
+      already settled it first; every caller already treated this endpoint
+      as a courtesy, not the source of truth, so nothing else changed.
+
+- [x] **SECURITY — any booking was readable by anyone with its id — fixed 25
+      Sep.** `GET /v1/bookings/:id` now requires sign-in and goes through
+      `BookingSvc.getBookingForViewer`: the booker, an invited attendee, an
+      admin, or the Event's / booked Venue's Owner and staff. Everyone else
+      gets the same "not found" as a missing booking. Nothing public used it.
+
+- [x] **SECURITY — any signed-in user could read any Event's full record —
+      fixed 25 Sep.** `GET /v1/event-requests/:id`
+      (`EventRequestSvc.getRequestById`) now refuses anyone but the Event's
+      client, its Owner, an Organizer with `event:view-sales`, or an admin —
+      everyone else gets the same "not found" as a missing Event.
+      `fetchEventLineItems`, its one caller (the event page's line-items
+      panel, reached from public browsing too), now treats that refusal as
+      "nothing to show" instead of an error banner.
+
+- [x] **Organizers — the two set-aside Event permissions, settled 25 Sep.**
+      Editing an Event's details stays the Owner's for good. Instead of
+      reporting a supplier problem, Organizers **message Suppliers**: new
+      `event:message-suppliers` permission, Shared Inbox threads now record
+      whether they are with a guest or a Supplier (`Conversation.inboxWith`),
+      and `/creator-dashboard/suppliers/[eventId]` lists the Event's booked
+      and bidding Suppliers with a Message button, above its bids. See the
+      api's ADR 0005 § Settled after the first build.
+- [x] **Venue studio lost new photos — fixed 25 Sep.** `useHostVenueEdit`
+      POSTed new files to `/venues/:id/images`, a route the api never had. It
+      now uploads each new file, then saves the whole list as `imgIds` with
+      the venue, so removed photos stay removed too. Capped at the api's 5.
+- [x] **A screen for an Event's bids — built 25 Sep.**
+      `/creator-dashboard/suppliers/[eventId]` lists Talent and Gear bids with the
+      slot and its currency; the Owner can accept, Organizers can reject.
+      Linked from the Team page (Owners) and Organizing (Organizers).
+- [x] **Phones could never start a role application — fixed 25 Sep.**
+      `/onboarding` gave phones `MobileRolePicker`, which PUT an
+      `intendedRoles` field the api ignores and went home. It is gone; the
+      responsive `OnboardingClient` serves every width.
+- [x] **Performer Foxers landed on `/user` — fixed 25 Sep.**
+      `performerFoxer` added to `SUPPLY_ROLE_TYPES` in `dashboard-path.ts`.
+
 - [x] **A payment model for item bookings — completed 23 Sep.** `Payment` now
       supports invoice, asset-booking, and service-booking ownership. Existing
       item-booking confirmations upsert an idempotent payment-history row, and

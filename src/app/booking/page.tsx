@@ -10,7 +10,12 @@ export const metadata: Metadata = {
   description: "View your venue, service, and asset booking history.",
 };
 
-export default function BookingPage() {
+export default async function BookingPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ tab?: string }>;
+}) {
+  const { tab } = await searchParams;
   return (
     <>
       {/* Mobile */}
@@ -27,7 +32,9 @@ export default function BookingPage() {
             </div>
           }
         >
-          <BookingListClient />
+          <BookingListClient
+            initialTab={tab === "received" ? "received" : "mine"}
+          />
         </Suspense>
       </div>
     </>

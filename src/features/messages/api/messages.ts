@@ -1,6 +1,7 @@
 import api from "@/shared/lib/axios";
 import {
   Conversation,
+  EventSupplier,
   Message,
   MessageReactionEntry,
   Presence,
@@ -18,6 +19,29 @@ export const startConversation = async (
 ): Promise<{ id: string }> => {
   const res = await api.post("/conversations", input);
   return res.data.data;
+};
+
+/**
+ * Open (or reopen) a Shared Inbox thread with a Venue or Event. `guestId` only
+ * when an Event's team writes first to one of its attendees.
+ */
+export const startInboxConversation = async (input: {
+  venueId?: string;
+  eventId?: string;
+  guestId?: string;
+}): Promise<Conversation> => {
+  const res = await api.post("/conversations/inbox", input);
+  return res.data.data;
+};
+
+/** An Event's Suppliers, for its Owner and Organizers to message. */
+export const fetchEventSuppliers = async (
+  eventId: string,
+): Promise<EventSupplier[]> => {
+  const res = await api.get("/conversations/inbox/suppliers", {
+    params: { eventId },
+  });
+  return res.data.data ?? [];
 };
 
 export const acceptConversationRequest = async (

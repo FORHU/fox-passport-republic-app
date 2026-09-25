@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from "react";
 import api from "@/shared/lib/axios";
 import { toast } from "sonner";
-import { useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 
 type RoleStatus =
   | "pending"
@@ -28,6 +28,7 @@ interface ApplicationData {
   birPermitFile?: FileRecord | null;
   selfieFile?: FileRecord | null;
   portfolioFile?: FileRecord | null;
+  backgroundClearanceFile?: FileRecord | null; // organizer only
   // investor fields
   investmentAmount?: string;
   businessName?: string;
@@ -43,6 +44,7 @@ const DOCUMENT_FIELDS: { key: keyof ApplicationData; label: string }[] = [
   { key: "birPermitFile", label: "BIR 2303 / Permit" },
   { key: "selfieFile", label: "Verification Selfie" },
   { key: "portfolioFile", label: "Portfolio / Resume" },
+  { key: "backgroundClearanceFile", label: "Background Clearance" },
 ];
 
 interface RoleApplication {
@@ -60,6 +62,7 @@ interface RoleApplication {
   serviceFoxerApplication?: ApplicationData;
   performerFoxerApplication?: ApplicationData;
   investorApplication?: ApplicationData;
+  organizerApplication?: ApplicationData;
 }
 
 const ROLE_LABELS: Record<string, string> = {
@@ -69,6 +72,7 @@ const ROLE_LABELS: Record<string, string> = {
   serviceFoxer: "Talent Foxer",
   performerFoxer: "Performer Foxer",
   investor: "Investor",
+  organizer: "Organizer",
 };
 
 const STATUS_STYLES: Record<RoleStatus, string> = {
@@ -100,6 +104,7 @@ function getAppData(app: RoleApplication): ApplicationData | null {
     app.serviceFoxerApplication ??
     app.performerFoxerApplication ??
     app.investorApplication ??
+    app.organizerApplication ??
     null
   );
 }
@@ -422,24 +427,50 @@ function ApplicationDetailDrawer({
                     flagged={app.flaggedDocuments?.includes("validId1")}
                     onPreview={(file, label) => setPreviewFile({ file, label })}
                   />
-                  <DocPreview
-                    label="NBI Clearance"
-                    file={data.nbiFile}
-                    flagged={app.flaggedDocuments?.includes("nbiFile")}
-                    onPreview={(file, label) => setPreviewFile({ file, label })}
-                  />
-                  <DocPreview
-                    label="TIN ID / Certificate"
-                    file={data.tinIdFile}
-                    flagged={app.flaggedDocuments?.includes("tinIdFile")}
-                    onPreview={(file, label) => setPreviewFile({ file, label })}
-                  />
-                  <DocPreview
-                    label="BIR 2303 / Permit"
-                    file={data.birPermitFile}
-                    flagged={app.flaggedDocuments?.includes("birPermitFile")}
-                    onPreview={(file, label) => setPreviewFile({ file, label })}
-                  />
+                  {/* An Organizer is vetted as a person, not a business, so
+                      they submit a background clearance and no tax or permit
+                      documents — see the API's docs/adr/0005. */}
+                  {app.roleType === "organizer" ? (
+                    <DocPreview
+                      label="Background Clearance"
+                      file={data.backgroundClearanceFile}
+                      flagged={app.flaggedDocuments?.includes(
+                        "backgroundClearanceFile",
+                      )}
+                      onPreview={(file, label) =>
+                        setPreviewFile({ file, label })
+                      }
+                    />
+                  ) : (
+                    <>
+                      <DocPreview
+                        label="NBI Clearance"
+                        file={data.nbiFile}
+                        flagged={app.flaggedDocuments?.includes("nbiFile")}
+                        onPreview={(file, label) =>
+                          setPreviewFile({ file, label })
+                        }
+                      />
+                      <DocPreview
+                        label="TIN ID / Certificate"
+                        file={data.tinIdFile}
+                        flagged={app.flaggedDocuments?.includes("tinIdFile")}
+                        onPreview={(file, label) =>
+                          setPreviewFile({ file, label })
+                        }
+                      />
+                      <DocPreview
+                        label="BIR 2303 / Permit"
+                        file={data.birPermitFile}
+                        flagged={app.flaggedDocuments?.includes(
+                          "birPermitFile",
+                        )}
+                        onPreview={(file, label) =>
+                          setPreviewFile({ file, label })
+                        }
+                      />
+                    </>
+                  )}
                 </div>
               </div>
 
@@ -524,10 +555,41 @@ function ApplicationDetailDrawer({
   );
 }
 
+// Under `admin-data`, which the socket's `admin:pending` topic invalidates
+// (TOPIC_QUERY_KEYS in shared/lib/realtime.ts) — the API emits it on every
+// review. This list used to be fetched once into component state, outside
+// React Query, so an approval (this admin's in another tab, or another
+// admin's) never reached it until the page was reloaded.
+const ROLE_APPLICATIONS_KEY = ["admin-data", "role-applications"];
+
 export const AdminSubmissionsTable: React.FC = () => {
   const queryClient = useQueryClient();
-  const [applications, setApplications] = useState<RoleApplication[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const {
+    data: applications = [],
+    isLoading,
+    isError,
+  } = useQuery({
+    queryKey: ROLE_APPLICATIONS_KEY,
+    queryFn: async (): Promise<RoleApplication[]> => {
+      const { data } = await api.get("/role-requests/list");
+      return data.data || [];
+    },
+  });
+  useEffect(() => {
+    if (isError) toast.error("Failed to load role applications");
+  }, [isError]);
+
+  // Apply a decision on screen at once, then refetch everything under
+  // `admin-data` — this list, and the counts and badges elsewhere in the
+  // console that the decision also changed.
+  const setApplications = (
+    update: (prev: RoleApplication[]) => RoleApplication[],
+  ) => {
+    queryClient.setQueryData<RoleApplication[]>(ROLE_APPLICATIONS_KEY, (prev) =>
+      update(prev ?? []),
+    );
+    queryClient.invalidateQueries({ queryKey: ["admin-data"] });
+  };
   const [filter, setFilter] = useState<"all" | RoleStatus>("all");
   const [processingId, setProcessingId] = useState<string | null>(null);
   const [selectedApp, setSelectedApp] = useState<RoleApplication | null>(null);
@@ -545,21 +607,6 @@ export const AdminSubmissionsTable: React.FC = () => {
       document.body.style.overflow = prevOverflow;
     };
   }, [rejectModal]);
-
-  const fetchApplications = async () => {
-    try {
-      const { data } = await api.get("/role-requests/list");
-      setApplications(data.data || []);
-    } catch {
-      toast.error("Failed to load role applications");
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchApplications();
-  }, []);
 
   const handleApprove = async (id: string) => {
     setProcessingId(id);

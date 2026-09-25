@@ -11,10 +11,19 @@ import {
 import type { ClientMatchRequest } from "@/features/gamification/api/passport";
 import { StyledSelect } from "@/shared/components/ui/StyledSelect";
 
-export function OccupancyChart() {
+export function OccupancyChart({
+  fullWidth = false,
+}: {
+  /** True when `PendingRequests` isn't rendered alongside it (no listing
+   * role: ADR 0005) — otherwise this stayed pinned at 8/12 with an empty
+   * gap where its row-mate used to be. */
+  fullWidth?: boolean;
+}) {
   const [range, setRange] = useState("7d");
   return (
-    <div className="lg:col-span-8 bg-[#0f111a]/80 backdrop-blur border border-white/5 rounded-[2rem] p-6">
+    <div
+      className={`${fullWidth ? "lg:col-span-12" : "lg:col-span-8"} bg-[#0f111a]/80 backdrop-blur border border-white/5 rounded-[2rem] p-6`}
+    >
       <div className="flex justify-between items-start mb-6">
         <div>
           <h3 className="text-lg font-display font-bold mb-1">Occupancy</h3>

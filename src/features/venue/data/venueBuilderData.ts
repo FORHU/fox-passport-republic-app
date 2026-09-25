@@ -24,6 +24,7 @@ export interface GalleryItem {
   caption: string;
   file?: File;
   image?: string; // the actual File from the device (present before upload)
+  fileId?: string; // the stored File's id, for a photo already on the venue
 }
 
 export const RESOURCE_CATEGORIES: ResourceCategory[] = [

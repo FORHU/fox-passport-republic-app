@@ -33,6 +33,8 @@ import { useHostData } from "@/features/dashboard/hooks/useHostData";
 import { useFoxerDashboard } from "@/features/dashboard/hooks/useFoxerDashboard";
 import type { EventItem } from "@/features/dashboard/data/dashboardData";
 import StripeConnectSection from "@/features/dashboard/components/StripeConnectSection";
+import { OrganizingSection } from "@/features/appointment/components/OrganizingSection";
+import { OpenToOrganizersSection } from "@/features/appointment/components/OpenToOrganizersSection";
 
 interface HostDashboardClientProps {
   initialData: {
@@ -249,15 +251,23 @@ export default function HostDashboardClient({
             access={access}
           />
 
-          <KPICards stats={foxerStats} isLoading={statsLoading} />
+          {/* KPIs and match requests measure a Foxer's own listings — an
+              Organizer or Investor supplies none, so there is nothing here
+              for them to read (see useRoleAccess.hasListings). */}
+          {access.hasListings && (
+            <KPICards stats={foxerStats} isLoading={statsLoading} />
+          )}
 
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 mb-10">
-            <OccupancyChart />
-            <PendingRequests />
+            <OccupancyChart fullWidth={!access.hasListings} />
+            {access.hasListings && <PendingRequests />}
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
             <div className="lg:col-span-8 space-y-10">
+              <OrganizingSection />
+              <OpenToOrganizersSection />
+
               {access.canManageEvents && (
                 <EventsSection
                   events={events}
@@ -344,13 +354,11 @@ export default function HostDashboardClient({
                 </>
               )}
 
-              {/* Dismissible Discovery Hint for unheld roles */}
-              {!discoveryHintDismissed &&
-                (!access.canManageEvents ||
-                  !access.canManageVenues ||
-                  !access.canManageInventory ||
-                  !access.canManageServices ||
-                  !access.canManagePerformers) && (
+              {/* Dismissible Discovery Hint for someone with no listing role
+                  yet — used to fire on missing *any* of the five, which is
+                  nearly everyone (a Venue Foxer without also being an Event
+                  Foxer saw this forever). Now only for someone with none. */}
+              {!discoveryHintDismissed && !access.hasListings && (
                   <div className="rounded-2xl border border-white/10 bg-white/3 p-4 sm:p-5 flex items-center justify-between gap-4 text-xs text-white/60">
                     <div className="flex items-center gap-3 min-w-0">
                       <span className="material-symbols-outlined text-[#ccff00] text-lg shrink-0">
@@ -385,7 +393,9 @@ export default function HostDashboardClient({
 
             <div className="lg:col-span-4">
               <div className="sticky top-32 space-y-6">
-                <StripeConnectSection />
+                {/* Organizers get no platform pay (ADR 0005) — nothing here
+                    for them to onboard for. */}
+                {access.canReceivePayouts && <StripeConnectSection />}
                 <CalendarWidget />
                 <CreatorProfile />
                 <RecentActivity />

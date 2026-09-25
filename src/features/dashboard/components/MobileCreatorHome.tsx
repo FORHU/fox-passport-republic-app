@@ -3,37 +3,46 @@
 import React from "react";
 import MobileCreatorBottomNav from "./MobileCreatorBottomNav";
 import { DashboardHeader } from "./DashboardHeader";
+import { useFoxerDashboard } from "@/features/dashboard/hooks/useFoxerDashboard";
+import { useRoleAccess } from "@/shared/auth/useRoleAccess";
+import { formatCurrency } from "@/shared/lib/currency";
 
 const STRIPE_BG = `repeating-linear-gradient(135deg,rgba(255,255,255,0.03) 0px,rgba(255,255,255,0.03) 1px,transparent 1px,transparent 12px)`;
 
-const KPI_CARDS = [
-  {
-    label: "REVENUE",
-    value: "₱82k",
-    icon: "payments",
-    iconColor: "#ccff00",
-    iconBg: "rgba(204,255,0,0.12)",
-  },
-  {
-    label: "BOOKINGS",
-    value: "14",
-    icon: "calendar_month",
-    iconColor: "#f472b6",
-    iconBg: "rgba(244,114,182,0.12)",
-  },
-];
-
-const PENDING = [
-  { id: 1, name: "Skyline Loft", subtitle: "Venue booking request · 2h ago" },
-  { id: 2, name: "DJ Marco", subtitle: "Event crew inquiry · 5h ago" },
-];
-
 interface MobileCreatorHomeProps {
   user: any;
+  /** Composed in by the page; this feature cannot import another. */
+  organizing?: React.ReactNode;
+  /** Same reason: the real pending-requests data lives in `gamification`. */
+  pendingRequests?: React.ReactNode;
 }
 
-export default function MobileCreatorHome({ user }: MobileCreatorHomeProps) {
+export default function MobileCreatorHome({
+  user,
+  organizing,
+  pendingRequests,
+}: MobileCreatorHomeProps) {
   const firstName = user?.firstName || user?.name?.split(" ")[0] || "Creator";
+  const { hasListings } = useRoleAccess();
+  // Was two permanently hardcoded tiles ("₱82k Revenue", "14 Bookings") shown
+  // to every phone visitor regardless of role or account — found 25 Sep.
+  const { stats, isLoading: statsLoading } = useFoxerDashboard();
+  const kpiCards = [
+    {
+      label: "REVENUE",
+      value: statsLoading ? "…" : formatCurrency(stats?.totalRevenue ?? 0),
+      icon: "payments",
+      iconColor: "#ccff00",
+      iconBg: "rgba(204,255,0,0.12)",
+    },
+    {
+      label: "BOOKINGS",
+      value: statsLoading ? "…" : String(stats?.totalBookings ?? 0),
+      icon: "calendar_month",
+      iconColor: "#f472b6",
+      iconBg: "rgba(244,114,182,0.12)",
+    },
+  ];
 
   return (
     <div
@@ -69,163 +78,71 @@ export default function MobileCreatorHome({ user }: MobileCreatorHomeProps) {
           </p>
         </div>
 
-        {/* KPI cards */}
-        <div style={{ display: "flex", gap: 12, marginBottom: 28 }}>
-          {KPI_CARDS.map((kpi) => (
-            <div
-              key={kpi.label}
-              style={{
-                flex: 1,
-                background: "rgba(255,255,255,0.04)",
-                border: "1px solid rgba(255,255,255,0.07)",
-                borderRadius: 18,
-                padding: "16px 14px",
-              }}
-            >
-              <div
-                style={{
-                  width: 32,
-                  height: 32,
-                  borderRadius: 10,
-                  background: kpi.iconBg,
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  marginBottom: 12,
-                }}
-              >
-                <span
-                  className="material-symbols-outlined"
-                  style={{ fontSize: 18, color: kpi.iconColor }}
-                >
-                  {kpi.icon}
-                </span>
-              </div>
-              <p
-                style={{
-                  fontFamily: 'var(--font-display,"Space Grotesk",sans-serif)',
-                  fontSize: 22,
-                  fontWeight: 700,
-                  color: "#fff",
-                  margin: "0 0 2px",
-                }}
-              >
-                {kpi.value}
-              </p>
-              <p
-                style={{
-                  fontSize: 10,
-                  fontWeight: 700,
-                  letterSpacing: "0.08em",
-                  color: "rgba(255,255,255,0.4)",
-                  margin: 0,
-                }}
-              >
-                {kpi.label}
-              </p>
-            </div>
-          ))}
-        </div>
+        {organizing && <div style={{ marginBottom: 28 }}>{organizing}</div>}
 
-        {/* Pending Requests */}
-        <div style={{ marginBottom: 28 }}>
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "space-between",
-              marginBottom: 14,
-            }}
-          >
-            <p
-              style={{
-                fontSize: 12,
-                fontWeight: 700,
-                letterSpacing: "0.1em",
-                textTransform: "uppercase",
-                color: "rgba(255,255,255,0.4)",
-                margin: 0,
-              }}
-            >
-              Pending Requests
-            </p>
-            <span style={{ fontSize: 11, color: "#ccff00", fontWeight: 600 }}>
-              {PENDING.length} new
-            </span>
-          </div>
-
-          <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-            {PENDING.map((item) => (
+        {/* KPI cards — real data (useFoxerDashboard), and only for someone
+            with a listing of their own to measure. An Organizer or Investor
+            supplies nothing, so there is nothing here for them to read. */}
+        {hasListings && (
+          <div style={{ display: "flex", gap: 12, marginBottom: 28 }}>
+            {kpiCards.map((kpi) => (
               <div
-                key={item.id}
+                key={kpi.label}
                 style={{
+                  flex: 1,
                   background: "rgba(255,255,255,0.04)",
                   border: "1px solid rgba(255,255,255,0.07)",
-                  borderRadius: 16,
-                  padding: "12px 14px",
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 12,
+                  borderRadius: 18,
+                  padding: "16px 14px",
                 }}
               >
-                {/* Stripe thumbnail */}
                 <div
                   style={{
-                    width: 40,
-                    height: 40,
+                    width: 32,
+                    height: 32,
                     borderRadius: 10,
-                    flexShrink: 0,
-                    overflow: "hidden",
-                    background: STRIPE_BG,
-                    border: "1px solid rgba(255,255,255,0.07)",
-                  }}
-                />
-                {/* Info */}
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <p
-                    style={{
-                      fontSize: 13,
-                      fontWeight: 600,
-                      color: "#fff",
-                      margin: "0 0 2px",
-                      overflow: "hidden",
-                      textOverflow: "ellipsis",
-                      whiteSpace: "nowrap",
-                    }}
-                  >
-                    {item.name}
-                  </p>
-                  <p
-                    style={{
-                      fontSize: 11,
-                      color: "rgba(255,255,255,0.4)",
-                      margin: 0,
-                    }}
-                  >
-                    {item.subtitle}
-                  </p>
-                </div>
-                {/* Glass Review button */}
-                <button
-                  style={{
-                    flexShrink: 0,
-                    background: "rgba(255,255,255,0.08)",
-                    color: "#fff",
-                    border: "1px solid rgba(255,255,255,0.15)",
-                    borderRadius: 9999,
-                    padding: "7px 14px",
-                    fontSize: 11,
-                    fontWeight: 700,
-                    cursor: "pointer",
-                    whiteSpace: "nowrap",
+                    background: kpi.iconBg,
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    marginBottom: 12,
                   }}
                 >
-                  Review
-                </button>
+                  <span
+                    className="material-symbols-outlined"
+                    style={{ fontSize: 18, color: kpi.iconColor }}
+                  >
+                    {kpi.icon}
+                  </span>
+                </div>
+                <p
+                  style={{
+                    fontFamily: 'var(--font-display,"Space Grotesk",sans-serif)',
+                    fontSize: 22,
+                    fontWeight: 700,
+                    color: "#fff",
+                    margin: "0 0 2px",
+                  }}
+                >
+                  {kpi.value}
+                </p>
+                <p
+                  style={{
+                    fontSize: 10,
+                    fontWeight: 700,
+                    letterSpacing: "0.08em",
+                    color: "rgba(255,255,255,0.4)",
+                    margin: 0,
+                  }}
+                >
+                  {kpi.label}
+                </p>
               </div>
             ))}
           </div>
-        </div>
+        )}
+
+        {pendingRequests}
 
         {/* Quick Actions */}
         <div>

@@ -7,7 +7,10 @@ import { toast } from "sonner";
 import { SOCKET_EVENTS, subscribeRealtime } from "@/shared/lib/realtime";
 import { useAuthStore } from "@/shared/auth/useAuthStore";
 import { useMessageStore } from "../store/useMessageStore";
-import { useChatWindowsStore } from "../store/useChatWindowsStore";
+import {
+  openConversationWindow,
+  useChatWindowsStore,
+} from "../store/useChatWindowsStore";
 import type { Conversation, Message, MessageReactionEntry } from "../types";
 
 /**
@@ -34,8 +37,6 @@ export default function MessageSocketBridge() {
   const setPinnedMessageId = useMessageStore(
     (state) => state.setPinnedMessageId,
   );
-  const openChat = useChatWindowsStore((state) => state.openChat);
-  const openGroupChat = useChatWindowsStore((state) => state.openGroupChat);
   const closeChat = useChatWindowsStore((state) => state.closeChat);
 
   useEffect(
@@ -84,31 +85,12 @@ export default function MessageSocketBridge() {
               (w) =>
                 w.id === message.conversationId || w.id === message.senderId,
             );
-          if (!hasWindow) {
-            if (conversation?.isGroup) {
-              openGroupChat({
-                conversationId: conversation.id,
-                name: conversation.name ?? "Group",
-                participants: conversation.participants ?? [],
-                creatorId: conversation.creatorId,
-                imgId: conversation.imgId,
-                minimized: true,
-              });
-            } else if (conversation?.otherUser) {
-              openChat({
-                otherUserId: conversation.otherUser.id,
-                otherUserName: conversation.otherUser.name,
-                otherUserImgId: conversation.otherUser.imgId,
-                contextLabel: conversation.contextLabel ?? undefined,
-                isIncomingRequest: conversation.isIncomingRequest,
-                conversationId: conversation.id,
-                minimized: true,
-              });
-            }
+          if (!hasWindow && conversation) {
+            openConversationWindow(conversation, { minimized: true });
           }
         }
       }),
-    [addMessage, queryClient, userId, router, openChat, openGroupChat],
+    [addMessage, queryClient, userId, router],
   );
 
   useEffect(

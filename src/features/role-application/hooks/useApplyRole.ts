@@ -11,7 +11,8 @@ export type RoleType =
   | "serviceFoxer"
   | "performerFoxer"
   | "investor"
-  | "eventFoxer";
+  | "eventFoxer"
+  | "organizer";
 
 interface ApplyRolePayload {
   roleType: RoleType;

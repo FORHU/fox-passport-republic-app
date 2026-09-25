@@ -1,12 +1,17 @@
 export const dynamic = "force-dynamic";
 
 import React from "react";
-import { requirePermission } from "@/shared/lib/server/auth";
+import { requireAuth } from "@/shared/lib/server/auth";
 import { DashboardHeader } from "@/features/dashboard/components/DashboardHeader";
 import QRScannerClient from "../_components/QRScannerClient";
 
 export default async function CheckInPage() {
-  await requirePermission("booking:check-in");
+  // Signed in is enough to open the scanner. Whether a given ticket may be
+  // checked in is decided per Event by the API: the Event Owner, their
+  // Organizers and Check-in Helpers, and the Venue's staff on the day, none
+  // of whom hold a global `booking:check-in`. Requiring it here turned every
+  // helper away from the page they were sent to.
+  await requireAuth();
 
   return (
     <div

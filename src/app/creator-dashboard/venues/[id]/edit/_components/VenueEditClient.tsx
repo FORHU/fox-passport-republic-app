@@ -13,6 +13,7 @@ import {
 import { useHostVenueEdit } from "@/features/venue/hooks/useHostVenueEdit";
 import { VenueAffiliatesSection } from "@/features/venue-affiliation/components/VenueAffiliatesSection";
 import { VenueAvailabilitySection } from "@/features/venue/components/VenueAvailabilitySection";
+import { TeamPanel } from "@/features/appointment/components/TeamPanel";
 
 interface Props {
   id: string;
@@ -204,6 +205,7 @@ function VenueEditContent({ id }: Props) {
                 />
                 <VenueAvailabilitySection venueId={id} />
                 <VenueAffiliatesSection venueId={id} />
+                <TeamPanel target={{ type: "venue", id }} />
               </div>
             </main>
             <RevenueProjector
