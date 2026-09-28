@@ -14,6 +14,16 @@ export interface RoleAccess {
   isMayor: boolean;
   isHost: boolean;
   isFoxer: boolean;
+  /** Holds at least one listing-producing role — a venue, event, asset,
+   * service or performer offering of their own. What the dashboard's
+   * supply-side widgets (KPIs, match requests) actually measure; an
+   * Organizer or Investor holds neither this nor a listing, since neither
+   * supplies anything themselves (ADR 0005; CONTEXT.md: Organizer). */
+  hasListings: boolean;
+  /** May receive a platform payout (`payouts:onboard`) — every Foxer and
+   * Investor, never an Organizer: ADR 0005 is explicit that Organizers get
+   * no platform pay, so Stripe onboarding has nothing for them to do. */
+  canReceivePayouts: boolean;
 }
 
 /**
@@ -53,5 +63,12 @@ export function useRoleAccess(): RoleAccess {
     // isFoxer covers all three provider roles so a pure performerFoxer
     // is not invisible on the dashboard
     isFoxer: canManageInventory || canManageServices || canManagePerformers,
+    hasListings:
+      canManageVenues ||
+      canManageEvents ||
+      canManageInventory ||
+      canManageServices ||
+      canManagePerformers,
+    canReceivePayouts: hasPermission(user, "payouts:onboard"),
   };
 }

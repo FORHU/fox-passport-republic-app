@@ -12,7 +12,8 @@ export type RoleType =
   | "gearFoxer"
   | "serviceFoxer"
   | "performerFoxer"
-  | "investor";
+  | "investor"
+  | "organizer";
 
 export interface User {
   id: string;

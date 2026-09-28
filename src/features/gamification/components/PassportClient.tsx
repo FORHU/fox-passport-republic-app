@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import Link from "next/link";
 import { Menu } from "lucide-react";
 import { AnimatePresence } from "motion/react";
 import {
@@ -87,6 +88,7 @@ export const PassportClient: React.FC<PassportClientProps> = ({ user }) => {
     if (role === "gearFoxer") return "gearFoxer";
     if (role === "serviceFoxer") return "serviceFoxer";
     if (role === "performerFoxer") return "performerFoxer";
+    if (role === "organizer") return "organizer";
     return null;
   };
   const rolePaths: UserPath[] = Array.from(
@@ -129,6 +131,13 @@ export const PassportClient: React.FC<PassportClientProps> = ({ user }) => {
           backgroundSize: "24px 24px",
         }}
       ></div>
+
+      <Link
+        href="/user"
+        className="max-w-[1400px] mx-auto flex items-center gap-2 text-xs text-white/40 hover:text-white/70 transition-colors mb-4 px-1"
+      >
+        ← Profile
+      </Link>
 
       <div className="flex max-w-[1400px] mx-auto min-h-[calc(100vh-5rem)] rounded-[3rem] overflow-clip border border-white/5 shadow-2xl relative">
         {/* Sidebar — docked on desktop, drawer on mobile */}

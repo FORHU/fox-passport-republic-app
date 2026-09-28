@@ -12,7 +12,7 @@ import { toast } from "sonner";
 import { useAuthStore } from "@/shared/auth/useAuthStore";
 import { useVenueBuilder } from "@/features/venue/hooks/useVenueBuilder";
 import { fetchVenuesByHostId, updateVenue } from "@/features/venue/api/venues";
-import api from "@/shared/lib/axios";
+import { useFileUpload } from "@/shared/hooks/useFileUpload";
 import { VENUE_TYPES } from "@/features/venue/data/venueBuilderData";
 import type { Id } from "@/shared/lib/api-types";
 import type {
@@ -140,12 +140,16 @@ interface ErrorResponse {
   message?: string;
 }
 
+/** The api's cap on a venue's `imgIds`. */
+const MAX_VENUE_PHOTOS = 5;
+
 export function useHostVenueEdit(venueId: string) {
   const router = useRouter();
   const user = useAuthStore((s) => s.user);
   const hostId = user?.id;
 
   const builder = useVenueBuilder();
+  const { uploadFile } = useFileUpload();
 
   // `useVenueBuilder` returns a fresh object literal on every render (it spreads
   // the store and rebuilds handlers, and the return itself is not memoised), so
@@ -249,18 +253,39 @@ export function useHostVenueEdit(venueId: string) {
         return;
       }
 
-      await updateVenue(venueId, payload);
-
-      // Upload any new gallery files only.
-      const galleryFiles = builder.gallery
-        .map((item: { file?: File }) => item.file)
-        .filter((f): f is File => Boolean(f));
-
-      if (galleryFiles.length > 0) {
-        const formData = new FormData();
-        galleryFiles.forEach((file) => formData.append("images", file));
-        await api.post(`/venues/${venueId}/images`, formData);
+      // Photos go the way the venue builder sends them: upload each new file,
+      // then save the whole list as `imgIds`, which replaces the venue's set -
+      // so removals stick too. (This used to POST the files to
+      // `/venues/:id/images`, a route the api never had.) Sent only when every
+      // existing photo's File id is known, so an old record can't lose one.
+      const gallery = builder.gallery;
+      const hasNewPhotos = gallery.some((item) => item.file);
+      const knowsEveryId = gallery.every((item) => item.file || item.fileId);
+      if (gallery.length > MAX_VENUE_PHOTOS) {
+        toast.error(`A venue can have up to ${MAX_VENUE_PHOTOS} photos.`);
+        return;
       }
+      if (hasNewPhotos && !knowsEveryId) {
+        toast.error("Couldn't match this venue's photos. Reload and try again.");
+        return;
+      }
+      if (knowsEveryId && gallery.length > 0) {
+        const imgIds: string[] = [];
+        for (const item of gallery) {
+          if (!item.file) {
+            imgIds.push(item.fileId!);
+            continue;
+          }
+          const uploaded = await uploadFile(item.file);
+          if (!uploaded?.fileId) {
+            throw new Error("One or more photos failed to upload.");
+          }
+          imgIds.push(uploaded.fileId);
+        }
+        payload.imgIds = imgIds;
+      }
+
+      await updateVenue(venueId, payload);
 
       if (!isAlreadyLive) setExistingStatus(normalizedTarget);
       toast.success(
@@ -391,6 +416,7 @@ export function useHostVenueEdit(venueId: string) {
               img && typeof img === "object" ? (img as VenueImage) : null;
             builder.addGalleryItem({
               id: `venue-img-${found?.id}-${idx}`,
+              fileId: imgObj?.id,
               url,
               caption: imgObj?.altText ?? imgObj?.caption ?? `Image ${idx + 1}`,
             });

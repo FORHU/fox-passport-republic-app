@@ -3,6 +3,10 @@ import { requireHost } from "@/shared/lib/server/auth";
 import { getHostDashboard } from "@/shared/lib/server/data";
 import HostDashboardClient from "./_components/HostDashboardClient";
 import MobileCreatorHome from "@/features/dashboard/components/MobileCreatorHome";
+import { OrganizingSection } from "@/features/appointment/components/OrganizingSection";
+import { OpenToOrganizersSection } from "@/features/appointment/components/OpenToOrganizersSection";
+import { OrganizerAttention } from "./_components/OrganizerAttention";
+import { MobilePendingRequests } from "./_components/MobilePendingRequests";
 
 export default async function Dashboard() {
   const user = await requireHost();
@@ -10,7 +14,17 @@ export default async function Dashboard() {
 
   return (
     <>
-      <MobileCreatorHome user={user} />
+      <MobileCreatorHome
+        user={user}
+        organizing={
+          <div className="space-y-6">
+            <OrganizerAttention />
+            <OrganizingSection />
+            <OpenToOrganizersSection />
+          </div>
+        }
+        pendingRequests={<MobilePendingRequests />}
+      />
       <div className="hidden lg:block">
         <HostDashboardClient initialData={data} />
       </div>

@@ -1,9 +1,9 @@
 import api from "@/shared/lib/axios";
 import type { Id } from "@/shared/lib/api-types";
+import { parseVenueListResponse } from "./schemas";
 
 function unwrapList(data: any): any[] {
-  const raw = data?.venues ?? data?.data ?? (Array.isArray(data) ? data : []);
-  return Array.isArray(raw) ? raw : [];
+  return parseVenueListResponse(data);
 }
 
 function unwrapOne(data: any): any {

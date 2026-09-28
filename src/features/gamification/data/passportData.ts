@@ -5,6 +5,7 @@ export const PATH_SHORT: Record<string, string> = {
   gearFoxer: "Gear",
   serviceFoxer: "Service",
   performerFoxer: "Performer",
+  organizer: "Organizer",
 };
 
 export const PATH_COLORS: Record<string, string> = {
@@ -14,6 +15,7 @@ export const PATH_COLORS: Record<string, string> = {
   gearFoxer: "#f97316",
   serviceFoxer: "#22c55e",
   performerFoxer: "#f59e0b",
+  organizer: "#e879f9",
 };
 
 // Frontend mirror of API PERK_THRESHOLDS — level at which each perk unlocks per path

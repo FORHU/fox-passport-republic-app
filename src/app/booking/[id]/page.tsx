@@ -1,5 +1,5 @@
 import React, { Suspense } from "react";
-import BookingDetailClient from "@/features/booking/components/BookingDetailClient";
+import BookingDetailPageClient from "./_components/BookingDetailPageClient";
 import type { Metadata } from "next";
 
 export const dynamic = "force-dynamic";
@@ -25,7 +25,7 @@ export default async function BookingDetailPage({
           </div>
         }
       >
-        <BookingDetailClient bookingId={id} />
+        <BookingDetailPageClient bookingId={id} />
       </Suspense>
     </div>
   );

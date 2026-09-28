@@ -57,6 +57,7 @@ export interface GalleryItem {
 }
 
 export interface VenueImage {
+  id?: string;
   url?: string;
   imageUrl?: string;
   image?: string;
@@ -134,6 +135,8 @@ export interface VenueUpdatePayload {
   staffing: string[];
   policies: string[];
   cancellationPolicyId?: string;
+  /** Every photo, in order; replaces the venue's whole set. */
+  imgIds?: string[];
   // Omitted when updating an already-approved venue's details — a generic
   // update should never carry a status the backend would apply (see
   // useHostVenueEdit's submitVenue), only a real draft/resubmit action sets

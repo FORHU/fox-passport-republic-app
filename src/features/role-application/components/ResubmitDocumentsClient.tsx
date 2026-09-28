@@ -16,6 +16,7 @@ const ROLE_LABELS: Record<string, string> = {
   serviceFoxer: "Talent Foxer",
   performerFoxer: "Performer Foxer",
   investor: "Investor",
+  organizer: "Organizer",
 };
 
 // Must match DOCUMENT_FIELD_TO_DB_COLUMN in the API's role-request.service.ts
@@ -27,6 +28,7 @@ const DOCUMENT_FIELDS: Record<string, { label: string; accept?: string }> = {
   birPermitFile: { label: "BIR 2303 / Permit" },
   selfieFile: { label: "Verification Selfie" },
   portfolioFile: { label: "Portfolio / Resume" },
+  backgroundClearanceFile: { label: "Police / Background Clearance" },
 };
 
 interface RoleRequestSummary {

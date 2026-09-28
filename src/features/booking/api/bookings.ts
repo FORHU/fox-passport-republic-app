@@ -41,13 +41,15 @@ export async function getOwnTemplate(templateId: string) {
 export async function bookFromTemplate(payload: {
   templateId: string;
   guestCount: number;
-  totalAmount: number;
   startAt: string;
   endAt: string;
   excludedAssetIds?: string[];
   excludedServiceIds?: string[];
   excludedVenueIds?: string[];
 }): Promise<{ booking: { id: string }; eventId: string }> {
+  // Event.totalAmount is server-computed from the template's items + host
+  // markup (see api docs/adr/0001) — the endpoint rejects a client-supplied
+  // totalAmount outright, so it must never be part of this payload.
   const resp = await api.post("/bookings/from-template", payload);
   return resp.data?.data;
 }
@@ -110,7 +112,11 @@ export async function createPaymentIntent(payload: {
   return resp.data?.data;
 }
 
-// 5. Confirm Booking after Payment (records the payment in our system)
+// 5. Confirm Booking after Payment (records the payment in our system).
+// The server verifies `transactionId` with Stripe itself before trusting
+// any of this — a failure here is expected whenever the webhook already
+// settled it first, so every caller treats it as a courtesy, not the
+// source of truth (see BookingSvc.confirmPayment).
 export async function confirmBookingPayment(
   bookingId: string,
   paymentIntentId: string,

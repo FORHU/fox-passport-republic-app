@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { toast } from "sonner";
 import { useAuthStore } from "@/shared/auth/useAuthStore";
 import { canAccessAdmin } from "@/shared/lib/permissions";
@@ -163,6 +164,12 @@ export default function AdminRefundsClient() {
     <div className="min-h-screen bg-black text-white p-6 md:p-10">
       <div className="max-w-3xl mx-auto space-y-10">
         <div>
+          <Link
+            href="/admin"
+            className="text-xs text-white/40 hover:text-white/70 transition-colors mb-3 inline-block"
+          >
+            ← Admin
+          </Link>
           <h1 className="text-2xl font-display font-bold mb-2">Refunds</h1>
           <p className="text-sm text-white/50">
             Whole-booking disputes and itemized single-item refunds — two

@@ -39,7 +39,17 @@ const STATUS_STYLES: Record<string, string> = {
 // already scoped to this one venue: no venue picker needed, and the
 // affiliate list is naturally "this venue's team," not "all my venues'
 // affiliations mixed together."
-export function VenueAffiliatesSection({ venueId }: { venueId: string }) {
+// `asOrganizer`: shown to one of the venue's Organizers rather than its mayor
+// (the API's docs/adr/0005). They decide applications, but inviting,
+// withdrawing and revoking stay the mayor's, and so does approving one that
+// carries a negotiated price. The API refuses all of these regardless.
+export function VenueAffiliatesSection({
+  venueId,
+  asOrganizer = false,
+}: {
+  venueId: string;
+  asOrganizer?: boolean;
+}) {
   const [affiliates, setAffiliates] = useState<VenueAffiliation[]>([]);
   const [loading, setLoading] = useState(true);
   const [inviteFoxer, setInviteFoxer] = useState<PickerItem | null>(null);
@@ -104,9 +114,10 @@ export function VenueAffiliatesSection({ venueId }: { venueId: string }) {
         </span>
       </div>
 
-      <div className="flex gap-2 mb-6">
-        <div className="flex-1">
-          <EntitySearchPicker
+      {!asOrganizer && (
+        <div className="flex gap-2 mb-6">
+          <div className="flex-1">
+            <EntitySearchPicker
             selected={inviteFoxer}
             onSelect={setInviteFoxer}
             search={searchEventFoxers}
@@ -120,8 +131,9 @@ export function VenueAffiliatesSection({ venueId }: { venueId: string }) {
           className="px-4 py-2 rounded-xl bg-accent text-black text-sm font-bold disabled:opacity-50"
         >
           Invite
-        </button>
-      </div>
+          </button>
+        </div>
+      )}
 
       {loading ? (
         <div className="flex flex-col items-center justify-center h-20 text-text-muted">
@@ -144,6 +156,8 @@ export function VenueAffiliatesSection({ venueId }: { venueId: string }) {
             // sent in (invites the mayor sent are decided by the Event
             // Foxer, elsewhere).
             const iAmDecider = aff.initiatedBy === "eventFoxer";
+            const needsMayor =
+              asOrganizer && aff.agreedPrice != null;
             return (
               <div
                 key={aff.id}
@@ -166,15 +180,24 @@ export function VenueAffiliatesSection({ venueId }: { venueId: string }) {
                   </span>
                   {aff.status === "pending" && iAmDecider && (
                     <>
-                      <button
-                        disabled={busyId === aff.id}
-                        onClick={() =>
-                          withBusy(aff.id, () => approveAffiliation(aff.id))
-                        }
-                        className="px-2.5 py-1 rounded-lg bg-accent text-black text-[11px] font-bold disabled:opacity-50"
-                      >
-                        Approve
-                      </button>
+                      {needsMayor ? (
+                        <span
+                          className="px-2.5 py-1 rounded-lg bg-white/5 text-white/50 text-[11px] font-bold"
+                          title="This application sets a price, so the venue's mayor approves it"
+                        >
+                          Mayor approves
+                        </span>
+                      ) : (
+                        <button
+                          disabled={busyId === aff.id}
+                          onClick={() =>
+                            withBusy(aff.id, () => approveAffiliation(aff.id))
+                          }
+                          className="px-2.5 py-1 rounded-lg bg-accent text-black text-[11px] font-bold disabled:opacity-50"
+                        >
+                          Approve
+                        </button>
+                      )}
                       <button
                         disabled={busyId === aff.id}
                         onClick={() =>
@@ -186,7 +209,7 @@ export function VenueAffiliatesSection({ venueId }: { venueId: string }) {
                       </button>
                     </>
                   )}
-                  {aff.status === "pending" && !iAmDecider && (
+                  {!asOrganizer && aff.status === "pending" && !iAmDecider && (
                     <button
                       disabled={busyId === aff.id}
                       onClick={() =>
@@ -198,7 +221,7 @@ export function VenueAffiliatesSection({ venueId }: { venueId: string }) {
                       Cancel
                     </button>
                   )}
-                  {aff.status === "approved" && (
+                  {!asOrganizer && aff.status === "approved" && (
                     <button
                       disabled={busyId === aff.id}
                       onClick={() =>

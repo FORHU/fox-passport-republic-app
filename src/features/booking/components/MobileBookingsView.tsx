@@ -3,6 +3,7 @@
 import React, { useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import Image from "next/image";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/shared/auth/useAuthStore";
 import { fetchUserBookings } from "@/features/booking/api/bookings";
@@ -99,13 +100,19 @@ export default function MobileBookingsView() {
           gap: 10,
         }}
       >
-        <Image
-          src="/foxonlylogo.png"
-          alt="FoxPassport"
-          width={22}
-          height={22}
-          style={{ objectFit: "contain" }}
-        />
+        <Link
+          href="/"
+          aria-label="Back home"
+          style={{ display: "flex", alignItems: "center", flexShrink: 0 }}
+        >
+          <Image
+            src="/foxonlylogo.png"
+            alt="FoxPassport"
+            width={22}
+            height={22}
+            style={{ objectFit: "contain" }}
+          />
+        </Link>
         <p
           style={{
             flex: 1,
@@ -173,6 +180,10 @@ export default function MobileBookingsView() {
                 })
               : "—";
             const eventName = b.event?.name || "Venue Booking";
+            const totalPaid = (b.payments || [])
+              .filter((p: any) => p.status === "completed")
+              .reduce((sum: number, p: any) => sum + (p.amount || 0), 0);
+            const displayTotal = totalPaid > 0 ? totalPaid : Number(b.totalAmount) || 0;
 
             return (
               <button
@@ -220,7 +231,7 @@ export default function MobileBookingsView() {
                       margin: "3px 0 6px",
                     }}
                   >
-                    {startDate} · ₱{b.totalAmount?.toLocaleString() ?? "0"}
+                    {startDate} · ₱{displayTotal.toLocaleString()}
                   </p>
                   <span
                     style={{

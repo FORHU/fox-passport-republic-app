@@ -21,6 +21,7 @@ export const ROLE_TYPES = [
   "serviceFoxer",
   "performerFoxer",
   "investor",
+  "organizer",
 ] as const;
 export type RoleType = (typeof ROLE_TYPES)[number];
 
@@ -71,4 +72,5 @@ export const ROLE_BADGE: Record<RoleType, { label: string; color: string }> = {
   serviceFoxer: { label: "Talent Foxer", color: "#34d399" },
   performerFoxer: { label: "Performer Foxer", color: "#f59e0b" },
   investor: { label: "Partner Foxer", color: "#10b981" },
+  organizer: { label: "Organizer", color: "#e879f9" },
 };

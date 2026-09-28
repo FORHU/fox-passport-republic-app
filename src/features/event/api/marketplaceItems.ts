@@ -45,7 +45,20 @@ export interface EventLineItemsResult {
 export async function fetchEventLineItems(
   eventId: Id,
 ): Promise<EventLineItemsResult> {
-  const resp = await api.get(`/event-requests/${eventId}`);
+  // The api now refuses this to anyone but the Event's client, its Owner, an
+  // Organizer, or an admin (previously anyone signed in). This page is
+  // reached by public browsing too, where that refusal is the expected
+  // outcome, not a failure — so it reads the same as "nothing to show"
+  // rather than surfacing an error state.
+  let resp;
+  try {
+    resp = await api.get(`/event-requests/${eventId}`);
+  } catch (err: any) {
+    if (err?.response?.status === 404 || err?.response?.status === 403) {
+      return { items: [] };
+    }
+    throw err;
+  }
   const event = resp.data?.data;
   if (!event) return { items: [] };
 

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -8,10 +8,14 @@ import { loadStripe } from "@stripe/stripe-js";
 import { Elements } from "@stripe/react-stripe-js";
 import { useCheckoutStore } from "@/features/booking/store/useCheckoutStore";
 import { useAuthStore } from "@/shared/auth/useAuthStore";
-import { createPaymentIntent } from "@/features/booking/api/bookings";
+import {
+  createPaymentIntent,
+  confirmBookingPayment,
+} from "@/features/booking/api/bookings";
 import StripePaymentForm from "./StripePaymentForm";
 import { getDashboardPath } from "@/shared/lib/dashboard-path";
 import { smartBack } from "@/shared/lib/navigation";
+import { toast } from "sonner";
 
 const stripePromise = loadStripe(
   process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY || "",
@@ -37,10 +41,19 @@ export default function CheckoutClient() {
 
   const dashboardPath = getDashboardPath(user);
 
-  // Request a PaymentIntent when the component mounts (if not already fetched)
-  useEffect(() => {
-    if (clientSecret || totalAmount <= 0) return;
+  const onPaymentSuccess = async (paymentIntentId: string) => {
+    toast.success("Payment successful! Your booking is confirmed.");
+    try {
+      if (draftBookingId && totalAmount > 0) {
+        await confirmBookingPayment(draftBookingId, paymentIntentId, totalAmount);
+      }
+    } catch {
+      // Booking was already confirmed via webhook — safe to ignore
+    }
+    router.push("/checkout/success");
+  };
 
+  const fetchPaymentIntent = useCallback(() => {
     setLoadingIntent(true);
     setIntentError(null);
 
@@ -58,7 +71,23 @@ export default function CheckoutClient() {
         ),
       )
       .finally(() => setLoadingIntent(false));
+  }, [totalAmount, draftBookingId, venueName, setClientSecret]);
+
+  // Request a PaymentIntent when the component mounts (if not already fetched)
+  useEffect(() => {
+    if (clientSecret || totalAmount <= 0) return;
+    fetchPaymentIntent();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // A cached clientSecret can point at a PaymentIntent that's since gone
+  // terminal (succeeded/canceled from an earlier attempt) — Stripe Elements
+  // can't be initialized with one, so self-heal by clearing it and pulling a
+  // fresh PaymentIntent instead of leaving the user stuck.
+  const handleElementsLoadError = useCallback(() => {
+    setClientSecret(null);
+    fetchPaymentIntent();
+  }, [fetchPaymentIntent, setClientSecret]);
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -293,8 +322,16 @@ export default function CheckoutClient() {
                   !intentError &&
                   clientSecret &&
                   elementsOptions && (
-                    <Elements stripe={stripePromise} options={elementsOptions}>
-                      <StripePaymentForm totalAmount={totalAmount} />
+                    <Elements
+                      key={clientSecret}
+                      stripe={stripePromise}
+                      options={elementsOptions}
+                    >
+                      <StripePaymentForm
+                        totalAmount={totalAmount}
+                        onSuccess={onPaymentSuccess}
+                        onLoadError={handleElementsLoadError}
+                      />
                     </Elements>
                   )}
 

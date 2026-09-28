@@ -15,7 +15,6 @@ import { pollWhileVisible } from "@/shared/lib/realtime";
 import CancelBookingModal from "./CancelBookingModal";
 import RequestBookingEditModal from "./RequestBookingEditModal";
 import BookingEditRequestStatusCard from "./BookingEditRequestStatusCard";
-import MessageButton from "@/features/messages/components/MessageButton";
 import { getDashboardPath } from "@/shared/lib/dashboard-path";
 
 const STATUS_LABEL: Record<string, { label: string; color: string }> = {
@@ -35,10 +34,28 @@ const PAYMENT_STATUS_LABEL: Record<string, { label: string; color: string }> = {
   cancelled: { label: "Cancelled", color: "text-white/50 bg-white/5" },
 };
 
+/** What a messaging action needs to know about this booking. */
+export interface BookingMessageContext {
+  bookingId: string;
+  /** Set for an Event booking — its conversations go to the Event's Shared
+   * Inbox rather than to one person. */
+  eventId: string | null;
+  /** Who made the booking. */
+  guestId: string;
+  /** Whether the viewer is that guest, or on the Event's side. */
+  viewerIsGuest: boolean;
+  /** The person on the other side, for a booking with no Event. */
+  otherParty: { id: string; name?: string | null; imgId?: string | null } | null;
+  contextLabel: string;
+}
+
 export default function BookingDetailClient({
   bookingId,
+  messageAction,
 }: {
   bookingId: string;
+  /** Composed at the app layer: this feature doesn't import `messages`. */
+  messageAction?: (ctx: BookingMessageContext) => React.ReactNode;
 }) {
   const router = useRouter();
   const { user } = useAuthStore();
@@ -177,6 +194,13 @@ export default function BookingDetailClient({
   const hostMarkupAmount = Number(booking.event?.hostMarkupAmount ?? 0);
   const platformFeeAmount = Number(booking.event?.platformFeeAmount ?? 0);
   const hasBreakdown = subtotalAmount > 0;
+
+  // `booking.totalAmount` is the server-computed Event total (items ×
+  // markup only) and can legitimately be 0 for a template with no attached
+  // items — it does not include a platform service fee charged at checkout.
+  // What actually reflects money received is the sum of completed payment
+  // records, so prefer that for display whenever it exists.
+  const displayTotal = totalPaid > 0 ? totalPaid : Number(booking.totalAmount) || 0;
 
   const invoiceLineItems = [
     ...(booking.venueTransactions ?? []).map((tx: any) => ({
@@ -337,18 +361,14 @@ export default function BookingDetailClient({
                 </p>
               </div>
               <div className="flex items-center gap-2 shrink-0">
-                {otherParty?.id && (
-                  <MessageButton
-                    otherUserId={otherParty.id}
-                    otherUserName={otherParty.name ?? "User"}
-                    otherUserImgId={otherParty.imgId}
-                    contextType="booking"
-                    contextId={bookingId}
-                    contextLabel={eventName}
-                    label={isOwner ? "Message Foxer" : "Message User"}
-                    className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-white text-xs font-semibold transition-colors border border-zinc-700/50"
-                  />
-                )}
+                {messageAction?.({
+                  bookingId,
+                  eventId: booking.event?.id ?? null,
+                  guestId: booking.userId,
+                  viewerIsGuest: isOwner,
+                  otherParty: otherParty?.id ? otherParty : null,
+                  contextLabel: eventName,
+                })}
                 {canRequestEdit && (
                   <button
                     onClick={() => setShowEditModal(true)}
@@ -416,7 +436,7 @@ export default function BookingDetailClient({
                   Total Amount
                 </p>
                 <p className="text-accent font-display font-bold text-xl">
-                  ₱{booking.totalAmount?.toLocaleString() || "0"}
+                  ₱{displayTotal.toLocaleString()}
                 </p>
               </div>
             </div>
@@ -470,7 +490,7 @@ export default function BookingDetailClient({
             <div className="space-y-3 border-t border-white/10 pt-4">
               {(invoiceLineItems.length > 0
                 ? invoiceLineItems
-                : [{ label: eventName, amount: subtotalAmount || Number(booking.totalAmount) || 0 }]
+                : [{ label: eventName, amount: subtotalAmount || displayTotal }]
               ).map((item, i) => (
                 <div key={i} className="flex justify-between text-sm">
                   <span className="text-text-muted">{item.label}</span>
@@ -518,7 +538,7 @@ export default function BookingDetailClient({
                 </span>
               </div>
               <span className="text-2xl font-display font-bold text-accent">
-                ₱{booking.totalAmount?.toLocaleString() || "0"}
+                ₱{displayTotal.toLocaleString()}
               </span>
             </div>
           </div>

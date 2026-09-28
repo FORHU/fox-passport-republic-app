@@ -6,4 +6,3 @@ export { EventDetailsForm } from "./EventDetailsForm";
 export { EventGallery } from "./EventGallery";
 export { CorePackageDropZone } from "./CorePackageDropZone";
 export { EventBlueprint } from "./EventBlueprint";
-export { EventOrganizersSection } from "./EventOrganizersSection";

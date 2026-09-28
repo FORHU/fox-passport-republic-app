@@ -13,7 +13,7 @@ import {
   useDeclineConversationRequest,
 } from "../hooks/useMessages";
 import { useAuthStore } from "@/shared/auth/useAuthStore";
-import { useChatWindowsStore } from "../store/useChatWindowsStore";
+import { openConversationWindow } from "../store/useChatWindowsStore";
 import { NewGroupModal } from "./NewGroupModal";
 import type { Conversation, Candidate } from "../types";
 
@@ -29,31 +29,9 @@ export default function ConversationListClient({
   const queryClient = useQueryClient();
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
   const { data: conversations = [], isLoading } = useConversations();
-  const openChatWindow = useChatWindowsStore((s) => s.openChat);
-  const openGroupChatWindow = useChatWindowsStore((s) => s.openGroupChat);
   const [newGroupOpen, setNewGroupOpen] = useState(false);
 
-  const openConversation = (c: Conversation) => {
-    if (c.isGroup) {
-      openGroupChatWindow({
-        conversationId: c.id,
-        name: c.name ?? "Group",
-        participants: c.participants ?? [],
-        creatorId: c.creatorId,
-        imgId: c.imgId,
-      });
-      return;
-    }
-    if (!c.otherUser) return;
-    openChatWindow({
-      otherUserId: c.otherUser.id,
-      otherUserName: c.otherUser.name,
-      otherUserImgId: c.otherUser.imgId,
-      contextLabel: c.contextLabel ?? undefined,
-      isIncomingRequest: c.isIncomingRequest,
-      conversationId: c.id,
-    });
-  };
+  const openConversation = (c: Conversation) => openConversationWindow(c);
 
   // Get-or-creates a conversation for ?userId=, the link shape used by
   // PostCard, PartnerInventoryMap, PublicCitizenProfileView, and the
@@ -214,7 +192,7 @@ export default function ConversationListClient({
                           className="object-cover"
                         />
                       ) : (
-                        c.otherUser?.name?.charAt(0)?.toUpperCase()
+                        conversationTitle(c)?.charAt(0)?.toUpperCase()
                       )}
                     </div>
                     <div className="flex-1 min-w-0">
@@ -286,7 +264,7 @@ export default function ConversationListClient({
                           className="object-cover"
                         />
                       ) : (
-                        c.otherUser?.name?.charAt(0)?.toUpperCase()
+                        conversationTitle(c)?.charAt(0)?.toUpperCase()
                       )}
                     </div>
                     <div className="flex-1 min-w-0">
@@ -295,8 +273,13 @@ export default function ConversationListClient({
                           <Pin className="h-3 w-3 shrink-0 text-[#ccff00]/70" />
                         )}
                         <span className="font-bold text-white text-sm truncate">
-                          {c.isGroup ? c.name : c.otherUser?.name}
+                          {conversationTitle(c)}
                         </span>
+                        {c.isInbox && c.viewerRole === "team" && c.inbox && (
+                          <span className="shrink-0 text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full bg-[#e879f9]/10 text-[#e879f9] border border-[#e879f9]/20 truncate max-w-[45%]">
+                            {c.inbox.with === "supplier" ? "Supplier" : "Inbox"} · {c.inbox.name}
+                          </span>
+                        )}
                         {c.isMuted && (
                           <BellOff className="h-3 w-3 shrink-0 text-white/30" />
                         )}
@@ -339,4 +322,16 @@ export default function ConversationListClient({
       )}
     </div>
   );
+}
+
+/**
+ * What a conversation is called in the list: a group's name, the other person
+ * in a 1:1, and for a Shared Inbox thread the Venue or Event to its guest and
+ * the guest to its team.
+ */
+function conversationTitle(c: Conversation): string | undefined {
+  if (c.isInbox) {
+    return c.viewerRole === "guest" ? c.inbox?.name : c.otherUser?.name;
+  }
+  return c.isGroup ? c.name : c.otherUser?.name;
 }

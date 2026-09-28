@@ -427,7 +427,13 @@ export default function ChatPanel({
     contextLabel,
     isIncomingRequest,
     minimized,
+    inbox,
   } = chatWindow;
+  // A Shared Inbox thread has several people on one side, like a group — so
+  // it names each sender and has no single person's presence to show — but
+  // none of a group's membership tools: its team is whoever runs the Venue
+  // or Event, not a list anyone edits here.
+  const isMulti = isGroup || !!inbox;
 
   const participantsById = useMemo(() => {
     const map = new Map<string, { name: string; imgId?: string | null }>();
@@ -470,14 +476,30 @@ export default function ChatPanel({
   const [groupNameInput, setGroupNameInput] = useState("");
   const renameGroup = useRenameGroupConversation();
 
+  const { messages, isLoading } = useMessagesForConversation(conversationId);
+  // In a Shared Inbox thread each message carries its real sender, which is
+  // the only way to name the teammate who wrote it.
+  const inboxSenders = useMemo(() => {
+    const map = new Map<string, { name: string; imgId?: string | null }>();
+    if (!inbox) return map;
+    for (const m of messages) {
+      if (m.sender) map.set(m.senderId, m.sender);
+    }
+    return map;
+  }, [inbox, messages]);
+
   const getSenderName = (senderId: string) => {
     if (senderId === currentUserId) return "You";
+    if (inbox) return inboxSenders.get(senderId)?.name ?? "Someone";
     if (isGroup) return participantsById.get(senderId)?.name ?? "Someone";
     return otherUserName;
   };
   const getSenderImgId = (senderId: string) =>
-    isGroup ? participantsById.get(senderId)?.imgId : otherUserImgId;
-  const { messages, isLoading } = useMessagesForConversation(conversationId);
+    inbox
+      ? inboxSenders.get(senderId)?.imgId
+      : isGroup
+        ? participantsById.get(senderId)?.imgId
+        : otherUserImgId;
   const sendMutation = useSendMessage();
   const deleteMutation = useDeleteMessage();
   const reactMutation = useReactToMessage();
@@ -603,11 +625,11 @@ export default function ChatPanel({
   const typingEmitTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
-    if (isGroup) return;
+    if (isMulti) return;
     getUserPresence(otherUserId)
       .then(setPresence)
       .catch(() => {});
-  }, [otherUserId, isGroup]);
+  }, [otherUserId, isMulti]);
 
   useEffect(
     () =>
@@ -616,13 +638,13 @@ export default function ChatPanel({
         online: boolean;
         lastActiveAt?: string;
       }>(SOCKET_EVENTS.PRESENCE_UPDATE, (payload) => {
-        if (isGroup || payload.userId !== otherUserId) return;
+        if (isMulti || payload.userId !== otherUserId) return;
         setPresence({
           online: payload.online,
           lastActiveAt: payload.lastActiveAt ?? null,
         });
       }),
-    [otherUserId, isGroup],
+    [otherUserId, isMulti],
   );
 
   useEffect(
@@ -631,7 +653,7 @@ export default function ChatPanel({
         SOCKET_EVENTS.TYPING,
         (payload) => {
           if (payload.conversationId !== conversationId) return;
-          if (!isGroup && payload.userId !== otherUserId) return;
+          if (!isMulti && payload.userId !== otherUserId) return;
           if (payload.userId === currentUserId) return;
 
           const { userId: typerId } = payload;
@@ -650,7 +672,7 @@ export default function ChatPanel({
           );
         },
       ),
-    [otherUserId, conversationId, isGroup, currentUserId],
+    [otherUserId, conversationId, isMulti, currentUserId],
   );
 
   useEffect(() => {
@@ -1224,13 +1246,19 @@ export default function ChatPanel({
                   )}
                   {typingUserIds.length > 0 ? (
                     <p className="text-[10px] text-lime-400 truncate">
-                      {isGroup
+                      {isMulti
                         ? typingUserIds.length === 1
                           ? `${getSenderName(typingUserIds[0])} is typing…`
                           : typingUserIds.length === 2
                             ? `${getSenderName(typingUserIds[0])} and ${getSenderName(typingUserIds[1])} are typing…`
                             : "Several people are typing…"
                         : "Typing…"}
+                    </p>
+                  ) : inbox ? (
+                    <p className="text-[10px] text-white/40 truncate">
+                      {inbox.viewerRole === "guest"
+                        ? `Replies come from the ${inbox.type}'s team`
+                        : `${inbox.with === "supplier" ? "Supplier" : "Guest"} · ${inbox.type === "venue" ? "Venue" : "Event"} inbox`}
                     </p>
                   ) : isGroup ? (
                     <button
@@ -1276,7 +1304,7 @@ export default function ChatPanel({
                 >
                   <Search className="h-3.5 w-3.5" strokeWidth={2} />
                 </button>
-                {!isGroup && (
+                {!isGroup && !inbox && (
                   <button
                     onClick={() => setGroupModalOpen(true)}
                     aria-label={`Create group with ${otherUserName}`}
@@ -1487,7 +1515,7 @@ export default function ChatPanel({
                         ))}
                     </div>
                   );
-                  const groupSenderLabel = isGroup && !isMine && (
+                  const groupSenderLabel = isMulti && !isMine && (
                     <p className="text-[9px] font-bold text-white/40 mb-0.5 ml-1">
                       {senderName}
                     </p>

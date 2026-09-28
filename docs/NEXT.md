@@ -93,6 +93,13 @@ app today, so nothing currently relies on it working.
       allowed value on the generic `PATCH /:id/status` endpoint — a second,
       equally invisible door onto the same dead state. `fox-passport-republic-api`
       commit `58298fe`.
+- [ ] **Check this stayed deleted.** As of 24 Sep no dispute route is
+      registered in the api's `booking.routes.ts`/`booking.controller.ts`, but
+      a comment in `booking.service.ts` (above `updateStatus`) now speaks of
+      giving the Event-flow `Booking` "the same active/disputed lifecycle" as
+      asset bookings. Either the comment is loose wording, or `disputed` is
+      coming back onto the generic path — in which case this whole finding
+      re-opens, because `GET /admin/disputes` still only reads `Refund` rows.
 
 ---
 
@@ -118,10 +125,11 @@ plan doc for the rest (a viewer-scoping gap on the sponsorship "Pay Now"
 button, and `refunded`/`partially_refunded` not being handled as terminal at
 all).
 
-**Deliberately not done:** `EventPaymentPanel.tsx` shows pricing but not a
-breakdown of which venue/gear/service the citizen is actually paying for —
-the plan called this "the bigger of the two frontend pieces" and said to
-build it before the Pay button. Still open.
+**Since done:** the `EventPaymentPanel.tsx` breakdown, which was deliberately
+left out at review time (the plan called it "the bigger of the two frontend
+pieces"). The panel now renders a "What you're paying for" list — per
+venue/asset/service line with provider name, amount and discount — landed in
+`12e45af`. Confirmed in code 24 Sep; not yet driven in a browser.
 
 ## 0·0a. The booking page could not hear the socket — fixed 10 Sep
 
@@ -198,8 +206,8 @@ pnpm exec vitest run               # expect: 313 passing, 27 files, 0 errors
 
 # app
 pnpm install
-pnpm type-check && pnpm test       # expect: clean, 144 passing
-node tools/validate-architecture.mjs   # expect: clean, 0 violations
+pnpm type-check && pnpm test       # expect: clean, 180 passing (26 files, 24 Sep)
+node tools/validate-architecture.mjs   # expect: clean — currently 16 violations, see below
 ```
 
 The API count was 198 here until 9 Sep, and the command carried two
@@ -218,6 +226,16 @@ were all Feature Isolation Boundary violations; the shared-kernel rule was
 already at zero). `e507f9a` finished the follow/block/messages boundary
 refactor and closed out the remainder. The command now exits zero and stays
 that way — if it goes non-zero again, something regressed.
+
+- [ ] **It regressed — 16 violations as of 24 Sep**, all Feature Isolation
+      Boundary, all in committed code (none from the uncommitted checkout
+      work). The clusters: `messages/MessageButton` (and `useMessages`,
+      `useChatWindowsStore`, `SharePostModal`) imported from `booking`,
+      `gamification`, `investment`, `venue` and `republic`;
+      `booking/api/bookings` + `AvailabilityCalendar` imported from `asset`
+      and `service`; `event` → `venue-affiliation`; `venue-affiliation` →
+      `search`; `investment` → `venue/api`. Re-run the command for the
+      current list rather than trusting this one.
 
 ### Read first, in this order
 
@@ -259,9 +277,9 @@ relay and the second-device revocation. The six checks are written out as
 end-to-end pass "written into `AUTH_HARDENING.md`" that did not exist until
 8 Sep, and `VERIFY.md` covers sockets and page guards, not auth.
 
-**AUTH-05 is blocked.** The api's `.env` has no Google OAuth credentials, so the
-one path AUTH-05 changes cannot be exercised at all until it does. AUTH-02 and
-AUTH-03 are testable now.
+**AUTH-05 is unblocked (24 Sep).** The api's `.env` now carries both
+`GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET`, so the one path AUTH-05 changes
+can finally be exercised. AUTH-02, AUTH-03 and AUTH-05 are all testable now.
 
 **`VERIFY.md`'s account passwords disagree with the seeders** — correct for an
 existing database, wrong for a fresh clone. Flagged in that file.
@@ -453,10 +471,10 @@ set in `.env` and documented in `.env.example`, so there is no new setup.
 Both branches still exist and each still holds one commit that is **not** on
 `main`. They are now misnamed for what is left in them:
 
-- [ ] **api `feat/role-assignment` — `05590bd`, the seed preflight guard.**
-      `prisma/preflight.ts`, `prisma/seed.ts`, `tests/preflight.spec.ts`. Needs
-      its own PR under its own name; nothing about it relates to role
-      assignment.
+- [x] **api `feat/role-assignment` — `05590bd`, the seed preflight guard.**
+      `prisma/preflight.ts`, `prisma/seed.ts`, `tests/preflight.spec.ts`.
+      Confirmed 24 Sep: `05590bd` is in the api's current history and
+      `prisma/preflight.ts` is present. The remote branch can be deleted.
 - [ ] **app `fix/secretary-admin-console` — `8bc3586`, this document.** Docs
       only.
 
@@ -520,11 +538,156 @@ has signed off on.
 
 ## 1. Next piece of work
 
-- [ ] **A payment model for item bookings.** `Payment.bookingId` relates to
-      `Booking` only, so `AssetBooking` and `ServiceBooking` keep payment state
-      as inline columns — `paymentStatus`, `paymentTransactionId`,
-      `stripePaymentId`, `paymentMethod`. They get no payment history, and
-      `Refund` cannot link to them at all. Agreed as the next schema change.
+- [x] **Open dashboard items closed — 28 Sep.** Mobile Earnings now reads the
+      real payout ledger (`/payouts/me`) and real Stripe status
+      (`useStripeConnect`): fake KYC checklist, four fake payouts and the
+      dead "Withdraw" button are gone (a "Connect Bank"/"Finish Payout Setup"
+      link shows until payouts are enabled). Quick Actions are real links,
+      each shown only for the listing type the person can create. The
+      "Listings" tab is hidden without `hasListings`. `OrganizingSection`
+      shows an explanatory empty state to Organizers only. The stub
+      `OccupancyChart` (no data source) and `RecentActivity` (permanently
+      empty) are removed rather than faked; `CreatorProfile` lost its fake
+      "85% Complete" badge and dead buttons, keeping only Settings.
+      `PendingRequests` now spans the full row. Re-adding occupancy/activity
+      needs a real API first.
+- [x] **`/creator-dashboard/earnings` shows fabricated payout history and
+      fabricated verification status on mobile — found 25 Sep, while fixing
+      the Earnings nav gating below.** `MobileEarningsView.tsx`'s
+      `PAYOUT_CHECKLIST` ("Valid Government ID: VERIFIED", "Business
+      Permit: IN REVIEW", "Bank/Stripe Connect: NOT LINKED") and `PAYOUTS`
+      (four line items — "Skyline Loft booking ₱15,300", "Neon Nights event
+      ₱22,000", etc.) are hardcoded constants, no API call, shown to every
+      phone visitor to the earnings page regardless of their real KYC state
+      or real payout history. This is worse than the `MobileCreatorHome`
+      finding above: it's fabricating both money and identity-verification
+      status on the one page that is specifically about someone's real
+      payouts. Left untouched — out of scope for the Earnings-visibility fix
+      below, and deserves its own look before being wired to
+      `fetchMyPayouts`/the real KYC status, same as `MobileCreatorHome` was.
+
+- [x] **Earnings was reachable and nudged toward Stripe for people who can
+      never receive a payout — fixed 25 Sep.** ADR 0005: an Organizer gets
+      no platform pay at all (`payouts:onboard` withheld on purpose). The
+      "Earnings" link was shown unconditionally in both `DashboardHeader`'s
+      desktop nav and `MobileCreatorBottomNav`'s mobile tab bar, and
+      `/creator-dashboard/earnings` itself had no guard — reachable by
+      anyone signed in via a direct link, landing on a page whose only real
+      content for them was a "Connect Stripe" link. Both nav surfaces now
+      gate on `useRoleAccess.canReceivePayouts`, and the page itself now
+      calls `requirePermission("payouts:onboard")` server-side, so it's
+      closed even for someone who reaches it directly rather than through
+      either nav. `MobileCreatorBottomNav`'s "Listings" tab
+      (`/creator-dashboard/venues`) was left as unconditional — same shape
+      of gap, not part of this fix.
+
+- [x] **Mobile Creator Studio home showed fabricated numbers to everyone —
+      fixed 25 Sep.** `MobileCreatorHome.tsx`'s KPI cards and "Pending
+      Requests" were hardcoded constants — "₱82k Revenue", "14 Bookings", a
+      fake "Skyline Loft" request — with no API call, shown to every phone
+      visitor regardless of role or account. KPI cards now read
+      `useFoxerDashboard`'s real `totalRevenue`/`totalBookings` (through
+      `formatCurrency`, not a hardcoded `₱`) and are gated on
+      `hasListings`, same as desktop. Pending Requests now reads the same
+      real match-request inbox desktop's `PendingRequests` does
+      (`useClientMatchRequests`) — pulled into a new
+      `MobilePendingRequests.tsx` in `app/creator-dashboard/_components`
+      (composed in from `page.tsx`, passed down as a `pendingRequests` slot)
+      rather than imported directly into `MobileCreatorHome`, since that
+      file lives inside the `dashboard` feature and reaching into
+      `gamification` from there would have been a new Feature Isolation
+      violation of the exact kind already tracked in §0. **Deliberately
+      read-only for now** — no Accept/Decline on mobile yet, just the real
+      names and dates instead of fake ones; acting on one means going to
+      `/user/passport`, same as desktop's own "View All". Full parity
+      (in-place accept/decline) is a follow-up, not done here.
+- [x] **Mobile Creator Studio's "Quick Actions" buttons do nothing — found
+      25 Sep, while fixing the above.** New Event / Add Venue / Add Gear /
+      Add Service in `MobileCreatorHome.tsx` have no `onClick` at all, for
+      anyone. Left alone — out of the scope that was agreed for the KPI/
+      Pending-Requests fix above — but it's the same shape of bug.
+
+- [x] **Creator dashboard showed every Foxer-only widget to Organizers (and
+      Investors) regardless of role — fixed 25 Sep.** `KPICards`,
+      `PendingRequests` and `StripeConnectSection` on `HostDashboardClient`
+      rendered unconditionally — an approved Organizer with no team (holds
+      no permission at all: ADR 0005) saw a full shell of listing metrics,
+      match requests, and a "Connect Stripe" nudge toward payouts Organizers
+      are explicitly never granted. Fixed with two new `useRoleAccess`
+      fields: `hasListings` (any of venue/event/asset/service/performer
+      manage) gates `KPICards`/`PendingRequests`, and `canReceivePayouts`
+      (`payouts:onboard`) gates `StripeConnectSection` — chosen per-widget
+      rather than one combined switch specifically so an Investor (who holds
+      `payouts:onboard` but no listing role) still sees Stripe while an
+      Organizer doesn't. The "Unlock more provider capabilities... Apply for
+      Roles" hint used to fire whenever *any* of the five Foxer permissions
+      was missing (nearly everyone, forever); it now only shows for someone
+      with `hasListings` false. `CalendarWidget` was deliberately left
+      ungated — it already mixes in the viewer's own bookings-as-a-guest,
+      which is real for an Organizer too. Three other sidebar widgets
+      (`OccupancyChart`, `CreatorProfile`, `RecentActivity`) were found to be
+      unfinished placeholders — hardcoded "No occupancy data yet"/"85%
+      Complete"/an always-empty activity list — for every role, not just
+      Organizers; left untouched as a separate, pre-existing gap rather than
+      folded into this fix.
+
+- [x] **SECURITY — anyone signed in could mark any booking paid — fixed 25
+      Sep.** `POST /v1/bookings/:id/confirm` (`BookingSvc.confirmPayment`)
+      checked neither who was calling nor the payment itself: it took a
+      client-supplied `{ amount, transactionId }` on faith and marked the
+      booking paid. Now it requires the caller to be the booking's own
+      client (or an admin), and retrieves the PaymentIntent from Stripe
+      itself to check it actually succeeded and was minted for this exact
+      booking (`PaymentSvc.createPaymentIntent` always stamps
+      `metadata.bookingId`) — the amount and currency it records come from
+      Stripe, never from the client. A failure here is expected whenever the
+      `payment_intent.succeeded` webhook (`PaymentSvc.settleSucceededIntent`)
+      already settled it first; every caller already treated this endpoint
+      as a courtesy, not the source of truth, so nothing else changed.
+
+- [x] **SECURITY — any booking was readable by anyone with its id — fixed 25
+      Sep.** `GET /v1/bookings/:id` now requires sign-in and goes through
+      `BookingSvc.getBookingForViewer`: the booker, an invited attendee, an
+      admin, or the Event's / booked Venue's Owner and staff. Everyone else
+      gets the same "not found" as a missing booking. Nothing public used it.
+
+- [x] **SECURITY — any signed-in user could read any Event's full record —
+      fixed 25 Sep.** `GET /v1/event-requests/:id`
+      (`EventRequestSvc.getRequestById`) now refuses anyone but the Event's
+      client, its Owner, an Organizer with `event:view-sales`, or an admin —
+      everyone else gets the same "not found" as a missing Event.
+      `fetchEventLineItems`, its one caller (the event page's line-items
+      panel, reached from public browsing too), now treats that refusal as
+      "nothing to show" instead of an error banner.
+
+- [x] **Organizers — the two set-aside Event permissions, settled 25 Sep.**
+      Editing an Event's details stays the Owner's for good. Instead of
+      reporting a supplier problem, Organizers **message Suppliers**: new
+      `event:message-suppliers` permission, Shared Inbox threads now record
+      whether they are with a guest or a Supplier (`Conversation.inboxWith`),
+      and `/creator-dashboard/suppliers/[eventId]` lists the Event's booked
+      and bidding Suppliers with a Message button, above its bids. See the
+      api's ADR 0005 § Settled after the first build.
+- [x] **Venue studio lost new photos — fixed 25 Sep.** `useHostVenueEdit`
+      POSTed new files to `/venues/:id/images`, a route the api never had. It
+      now uploads each new file, then saves the whole list as `imgIds` with
+      the venue, so removed photos stay removed too. Capped at the api's 5.
+- [x] **A screen for an Event's bids — built 25 Sep.**
+      `/creator-dashboard/suppliers/[eventId]` lists Talent and Gear bids with the
+      slot and its currency; the Owner can accept, Organizers can reject.
+      Linked from the Team page (Owners) and Organizing (Organizers).
+- [x] **Phones could never start a role application — fixed 25 Sep.**
+      `/onboarding` gave phones `MobileRolePicker`, which PUT an
+      `intendedRoles` field the api ignores and went home. It is gone; the
+      responsive `OnboardingClient` serves every width.
+- [x] **Performer Foxers landed on `/user` — fixed 25 Sep.**
+      `performerFoxer` added to `SUPPLY_ROLE_TYPES` in `dashboard-path.ts`.
+
+- [x] **A payment model for item bookings — completed 23 Sep.** `Payment` now
+      supports invoice, asset-booking, and service-booking ownership. Existing
+      item-booking confirmations upsert an idempotent payment-history row, and
+      booking detail responses include ordered payments and refunds. The
+      fulfillment screen displays the latest payment reference and refund count.
 
 ---
 
@@ -547,8 +710,8 @@ invisible to admins).
 - [x] **Part E — query defaults applied.** Verified live: zero admin requests
       fired on simulated focus/blur changes.
 - [ ] **§3a Google sign-in** end to end: new account, existing-email collision,
-      and an account created by password then signed in with Google (blocked on
-      missing Google secrets in API `.env`).
+      and an account created by password then signed in with Google.
+      Unblocked 24 Sep — the API `.env` now has the Google secrets.
 - [ ] **Mobile**: `/admin` narrow (drawer, approve, reject with a reason), and
       venue detail's sticky bar. `NavMobileMenu` was on this list for weeks as
       "orphaned, reconnected, never seen open" — `feat/map` deleted it before
@@ -592,12 +755,17 @@ invisible to admins).
       it — it never did, `/host` was not in the array. The modal-state logic
       that lived in that layout moved to `host/_components/HostShell.tsx` so
       the layout itself could become a server component calling `requireAuth`.
+      **Since then `src/app/host` is gone** (renamed to `/creator-dashboard`,
+      which has its own `requireAuth` layout), so `HostShell.tsx` no longer
+      exists and `"/host"` in `proxy.ts`'s `PROTECTED_ROUTES` is a harmless
+      stale entry that can be removed.
 - [ ] **Silent Google account linking** — an existing email signing in with
       Google is linked without a challenge. Acceptable, or not?
 - [ ] **Single-session across a person's own devices.** Signing in on a phone
       ends the desktop session. Deliberate, or friction?
-- [ ] **`requireOwnerOrAdmin`** has zero call sites. Under the new model it is
-      the *ownership* layer the spec describes. Implement it properly, or delete.
+- [x] **`requireOwnerOrAdmin`** had zero call sites. Decided: deleted, with
+      the other legacy guards, 23 Sep — see §4. Ownership stays checked inside
+      each service.
 - [ ] **Does `MobileAdminView` earn its keep?** Two implementations of the same
       console to keep in step.
 
@@ -605,7 +773,13 @@ invisible to admins).
 
 ## 4. Keyboard work, roughly by cost of ignoring it
 
-- [ ] **Close the test suite's blind spot — this is the highest-leverage item
+- [x] **Behavioral RBAC coverage — representative routes completed 23 Sep.**
+      Added HTTP regression tests for the production middleware and mounted
+      `/api/v1/admin/stats` and `/api/v1/users/` routes: unauthenticated `401`,
+      denied citizen/secretary `403`, and allowed `admin_secretary` `200`
+      responses. The broader per-route ownership triads remain a follow-up.
+- [ ] **Close the remaining test suite's blind spot — this is the
+      highest-leverage item
       here.** Twice on 2 Sep a feature was entirely broken while its tests
       passed: the socket had been dead for weeks, and 41 tests pinned the
       `admin_secretary` boundary while the role could not open the console at
@@ -618,28 +792,29 @@ invisible to admins).
       than another ten table tests, and any feature whose only coverage is a
       source scan should get one behavioural test that exercises it the way a
       person would.
-- [ ] **`GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` are `as string` casts** with
-      no validation, while every other secret goes through `requireSecret`. A
-      missing Google secret fails at first sign-in rather than at boot.
-- [ ] **Google sign-in does not revoke other sessions**, where password login
-      does. Two doors, one locked.
-- [ ] **The app-side Google callback is untested** —
-      `src/app/auth/google/callback/page.tsx`.
-- [ ] **RBAC Phase 4's missing-guard CI scan is the one real gap left in
-      `RBAC-PLAN.md`** — re-audited 12 Sep, everything else in that plan
-      (Phases 2, 3's route conversion, 5, 6) had already shipped, some of it
-      before the plan was even committed. The scan still needs an allow-list
-      first — **re-derived 12 Sep: 208 authenticated route registrations, 131
-      without a `requirePermission`** (was 158/75 when first measured; both
-      numbers moved as the route count grew — re-derive again before building
-      the allow-list, don't reuse either figure). Most of the 131 are correctly
-      ownership-checked rather than actually unguarded. Phase 3's remaining
-      piece is deleting the now-unused `requireRole`/`requireAdmin`/
-      `requireHost`/`requireOwnerOrAdmin` functions from `auth.middleware.ts`
-      (zero call sites left) — not a route migration, just cleanup.
-- [ ] **Zod response contracts**, starting with `/venues`. `extractList()`
-      guesses between eight envelope keys and fails silently, looking like empty
-      data.
+- [x] **`GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` configuration — completed 23
+      Sep.** Google OAuth now rejects partial credentials and invalid callback
+      URLs at API startup; the fully unset integration remains optional with a
+      warning.
+- [x] **Google sign-in session revocation — completed 8 Sep.** Google login
+      revokes existing sessions before issuing the new session, matching the
+      password-login path. End-to-end browser verification remains open below.
+- [x] **The app-side Google callback is now tested — completed 23 Sep.**
+      `src/app/auth/google/callback/__tests__/page.test.tsx` covers the
+      missing-exchange-code redirect, an existing-user session completion, and
+      the new-user onboarding redirect.
+- [x] **RBAC missing-guard regression gate and legacy guard cleanup — completed
+      23 Sep.** `validate-rbac-guards.mjs` now fails when authenticated routes
+      exceed the current audited baseline, while `--report` remains available
+      for deliberate audits. The unused `requireRole`, `requireAdmin`,
+      `requireHost`, and `requireOwnerOrAdmin` exports are removed. The full
+      per-route ownership allow-list audit and behavioral `401/403/2xx` tests
+      remain open under the test-suite blind-spot item above.
+- [x] **Zod response contracts for `/venues` — completed 23 Sep.**
+      `src/features/venue/api/schemas.ts` validates the envelope explicitly
+      (`venueListResponseSchema`) instead of guessing between keys, and
+      `venues.ts`'s `unwrapList` now parses through it. Other endpoints still
+      use ad hoc unwrapping and are a candidate follow-up, not covered here.
 - [x] **The experience builder** — deduplicated and touch-enabled.
       The inline `CustomExperienceBuilder` in the event detail page was
       extracted into `CustomExperienceBuilderModal.tsx`. Both it and
@@ -664,11 +839,12 @@ invisible to admins).
 - [x] **`/progress` is in `PROTECTED_ROUTES` and guarded.**
       `src/app/progress/page.tsx` renders `ProgressDashboard` wrapped in `<RequireAuth>`,
       and `middlewareSecrets.test.ts` asserts the guard passes.
-- [ ] **`jose` is unused**, and removing it is blocked on the pnpm mismatch
-      below.
-- [ ] **The pnpm pin disagrees with the installed tree** — `node_modules` came
-      from pnpm 11, `packageManager` says 10.34.5. Anyone following the pin gets
-      a full relink.
+- [x] **`jose` removed — 24 Sep.** It had no imports in `src`;
+      `pnpm remove jose` under pnpm 10.34.5 touched only `package.json` and
+      nine lockfile lines.
+- [x] **The pnpm pin matches the installed tree.** Confirmed 24 Sep:
+      `node_modules/.modules.yaml` records `pnpm@10.34.5`, the same as
+      `packageManager`.
 - [ ] **RS256/ES256** if middleware ever needs to verify tokens again. Large,
       and genuinely optional.
 

@@ -14,7 +14,11 @@ import {
 } from "@/features/booking/api/bookings";
 import RequestBookingEditModal from "./RequestBookingEditModal";
 import BookingEditRequestStatusCard from "./BookingEditRequestStatusCard";
-import type { BookingEditRequest } from "@/features/booking/types/booking.types";
+import type {
+  BookingEditRequest,
+  ItemBookingPayment,
+  ItemBookingRefund,
+} from "@/features/booking/types/booking.types";
 
 type BookingType = "service" | "asset";
 
@@ -175,6 +179,9 @@ export default function FulfillmentPassClient({
     !(editRequest.status === "approved" && editRequest.appliedAt);
   const canRequestEdit =
     ["confirmed", "active"].includes(status) && !hasActiveEditRequest;
+  const payments = (booking.payments ?? []) as ItemBookingPayment[];
+  const refunds = (booking.refunds ?? []) as ItemBookingRefund[];
+  const latestPayment = payments[0];
 
   const statusBadge =
     {
@@ -376,6 +383,36 @@ export default function FulfillmentPassClient({
                   </div>
                 ))}
               </div>
+
+              {latestPayment && (
+                <div className="mb-5 rounded-2xl border border-white/10 bg-white/5 p-3 relative z-10">
+                  <div className="flex items-center justify-between gap-3">
+                    <span className="text-[10px] uppercase tracking-wider text-white/40">
+                      Latest payment
+                    </span>
+                    <span className="text-xs font-bold uppercase text-accent">
+                      {latestPayment.status}
+                    </span>
+                  </div>
+                  <div className="mt-2 flex items-center justify-between gap-3 text-xs">
+                    <span className="text-white/50">
+                      {latestPayment.method}
+                      {latestPayment.providerReference
+                        ? ` · ${latestPayment.providerReference}`
+                        : ""}
+                    </span>
+                    <span className="font-bold text-white">
+                      ₱{Number(latestPayment.amount).toLocaleString()}
+                    </span>
+                  </div>
+                  {refunds.length > 0 && (
+                    <p className="mt-2 text-[10px] uppercase tracking-wider text-amber-300">
+                      {refunds.length} refund record
+                      {refunds.length === 1 ? "" : "s"}
+                    </p>
+                  )}
+                </div>
+              )}
 
               {/* Action area */}
               {isDisputed ? (

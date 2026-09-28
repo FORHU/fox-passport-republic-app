@@ -47,6 +47,31 @@ export interface Conversation {
   isMuted: boolean;
   isPinned: boolean;
   pinnedAt: string | null;
+  /** Shared Inbox (CONTEXT.md): a thread that belongs to a Venue or Event
+   * rather than to two people. `otherUser` is the guest for the team and
+   * null for the guest, who sees the Venue or Event instead. */
+  isInbox?: boolean;
+  inbox?: SharedInbox;
+  viewerRole?: "guest" | "team";
+}
+
+export interface SharedInbox {
+  type: "venue" | "event";
+  id: string;
+  name: string;
+  /** Who the Venue or Event is talking to: a guest, or one of the Event's
+   * Suppliers. */
+  with?: "guest" | "supplier";
+}
+
+/** Someone an Event's team can message as one of its Suppliers. */
+export interface EventSupplier {
+  user: { id: string; name: string | null; imgId: string | null };
+  supplies: {
+    kind: "venue" | "service" | "asset";
+    name: string;
+    via: "booked" | "bid";
+  }[];
 }
 
 export interface SharedPostPreview {
@@ -91,6 +116,9 @@ export interface Message {
   /** Shared across the whole thread — set means this is the conversation's
    * one pinned message right now, not a per-viewer preference. */
   pinnedAt?: string | null;
+  /** Who wrote it. In a Shared Inbox thread several people answer on
+   * one side, so a reply shows its real author. */
+  sender?: ConversationParticipant;
 }
 
 export interface Presence {

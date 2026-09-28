@@ -49,7 +49,7 @@ interface CheckoutState {
 
   setAttendees: (attendees: Attendee[]) => void;
   setDraftIds: (eventId: string, bookingId: string) => void;
-  setClientSecret: (secret: string) => void;
+  setClientSecret: (secret: string | null) => void;
   resetCheckout: () => void;
 }
 
@@ -97,7 +97,11 @@ export const useCheckoutStore = create<CheckoutState>()(
 
       setAttendees: (attendees) => set({ attendees }),
       setDraftIds: (draftEventId, draftBookingId) =>
-        set({ draftEventId, draftBookingId }),
+        // A new booking draft always needs its own PaymentIntent — clear any
+        // stale clientSecret left over from a prior attempt (persisted to
+        // sessionStorage), otherwise checkout reuses a PaymentIntent tied to
+        // a different booking/amount and Stripe rejects the confirm as a 400.
+        set({ draftEventId, draftBookingId, clientSecret: null }),
       setClientSecret: (clientSecret) => set({ clientSecret }),
 
       resetCheckout: () =>

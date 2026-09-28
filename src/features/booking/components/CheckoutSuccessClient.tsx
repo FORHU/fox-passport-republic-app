@@ -122,9 +122,12 @@ export default function CheckoutSuccessClient() {
 
         <div className="w-full max-w-3xl px-4 sm:px-6 lg:px-8 relative z-10 animate-in fade-in slide-in-from-bottom-8 duration-700">
           <div className="text-center mb-10">
-            <div className="inline-flex items-center justify-center h-24 w-24 rounded-full bg-accent text-black font-bold shadow-[0_0_50px_rgba(204,255,0,0.4)] mb-6">
-              <span className="material-symbols-outlined text-5xl">
-                check_circle
+            <div className="inline-flex items-center justify-center h-28 w-28 rounded-full bg-accent text-black font-bold shadow-[0_0_50px_rgba(204,255,0,0.4)] mb-6">
+              <span
+                className="material-symbols-outlined text-8xl"
+                style={{ fontVariationSettings: "'FILL' 1, 'wght' 700" }}
+              >
+                check
               </span>
             </div>
             <h1 className="text-4xl md:text-5xl font-display font-bold text-white tracking-tight mb-4">
@@ -233,7 +236,7 @@ export default function CheckoutSuccessClient() {
               </div>
               <div className="flex gap-3 w-full sm:w-auto">
                 <Link
-                  href="/booking"
+                  href={draftBookingId ? `/booking/${draftBookingId}` : "/booking"}
                   className="flex-1 sm:flex-none px-6 py-3 rounded-xl border border-white/10 text-white font-bold text-sm hover:bg-white/5 transition-all text-center"
                 >
                   View Receipt

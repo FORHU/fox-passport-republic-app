@@ -1,6 +1,7 @@
 ﻿"use client";
 
 import React from "react";
+import Link from "next/link";
 import { Search, MapPin } from "lucide-react";
 import RequireAuth from "@/shared/auth/RequireAuth";
 import { useReviewSelectStore } from "@/features/review/store/useReviewsStore";
@@ -35,6 +36,12 @@ export default function ReviewSelectClient({
         {/* Header Section */}
         <div className="bg-white border-b border-gray-200">
           <div className="max-w-5xl mx-auto px-4 py-12 md:py-16">
+            <Link
+              href="/"
+              className="text-xs text-gray-400 hover:text-gray-700 transition-colors mb-4 inline-block"
+            >
+              ← Home
+            </Link>
             <h1 className="text-3xl md:text-5xl font-bold text-gray-900 mb-4 text-center">
               Find a business to review
             </h1>

@@ -28,7 +28,7 @@ _Avoid_: Role (ambiguous with systemRole), permission
 **VenueFoxer**
 A Citizen approved to list and manage Venues. A Venue is bare space — VenueFoxers don't sell experiences standalone; they earn only when an EventFoxer selects their Venue into an Event Template.
 Code: `roleType` includes `"venueFoxer"`.
-_Avoid_: Mayor (old name)
+_Avoid_: Owner (for a venue — see **Mayor**)
 
 **EventFoxer**
 A Citizen approved to assemble Event Templates: attaches an existing Venue (from a VenueFoxer) plus Assets/Services (from GearFoxers/ServiceFoxers), then submits for admin approval. Curates and coordinates — does not supply their own Venue, Assets, or Services. Also acts as program manager for the event, coordinating all suppliers (decorations, catering, etc.) to deliver the full experience.
@@ -57,6 +57,34 @@ Umbrella term for a GearFoxer, ServiceFoxer or PerformerFoxer — anyone supplyi
 A Citizen approved as a financial stakeholder. Application requires proof of funds and an investment range, unlike operational RoleTypes.
 Code: `roleType` includes `"investor"`.
 
+**Organizer**
+A RoleType a Citizen applies for and is admin-approved to hold, which makes them eligible to be **Appointed** to help run a specific Event or Venue. Holding the role alone grants nothing over any Event or Venue — only an Appointment does.
+_Avoid_: Delegate, staff, co-host
+
+**Mayor**
+The VenueFoxer a Venue belongs to — exactly one per Venue. The only one who can make or revoke Appointments on that Venue, and the only one who sets its prices.
+_Avoid_: Owner, venue owner
+
+**Event Owner**
+The EventFoxer who created an Event — exactly one per Event. The only one who can make or revoke Appointments on that Event, and the only one who controls its pricing and payouts. Stored in code as `Event.organizerId`, a legacy name: the Event Owner is not an Organizer by Appointment.
+_Avoid_: Host, organizer (for the Event Owner) — an Event has one Event Owner and any number of Organizers
+
+**Appointment**
+A Mayor or Event Owner naming an approved Organizer to help run one of their own Venues or Events. They may make any number of Appointments per Event or Venue. It starts from either side (the Mayor or Event Owner invites, or an Organizer requests to join one that accepts requests) and takes effect only once the other side accepts. Either side can end it at any time. The Mayor or Event Owner is always an Organizer of what they own, without applying and without an Appointment.
+_Avoid_: Assignment, delegation
+
+**Check-in Helper**
+Any user a Mayor or Event Owner adds to an Event or Venue solely to check guests in. Needs no RoleType and no admin approval — the lightweight tier beneath Organizer. Every Organizer can also check guests in, so an Organizer is never also added as a Check-in Helper.
+_Avoid_: Door staff, delegate, check-in delegate
+
+**Shared Inbox**
+The one conversation space an Event or Venue has with guests — and, for an Event, with its Suppliers. Every conversation belongs to the Event or Venue, not to whoever replied; its Mayor or Event Owner and every current Organizer read and answer it, and each reply shows who sent it.
+_Avoid_: Organizer inbox, personal thread (for these conversations)
+
+**Supplier**
+Anyone an Event depends on to happen: the Mayor of its booked Venue, and the Foxers booked to supply its Talent or Gear, or bidding to. An Event's Organizers talk to its Suppliers through its Shared Inbox, but only the Event Owner agrees prices with them.
+_Avoid_: Vendor, provider (in conversation; `providerId` in code)
+
 ---
 
 ## Core Concepts
@@ -69,7 +97,7 @@ _Avoid_: User ID (that's the internal UUID), account number
 A Citizen's gamification profile. Tracks stamps collected, badges earned, XP earned, and level progress per Path.
 
 **Path**
-A per-RoleType XP progression track. Each Citizen has one Path per role they hold (`user`, `eventFoxer`, `venueFoxer`, `gearFoxer`, `serviceFoxer`, `performerFoxer`, `investor`). Levels and tier labels are independent per Path.
+A per-RoleType XP progression track. Each Citizen has one Path per role they hold (`user`, `eventFoxer`, `venueFoxer`, `gearFoxer`, `serviceFoxer`, `performerFoxer`, `investor`, `organizer`). Levels and tier labels are independent per Path.
 
 **Level**
 A numeric milestone within a Path, earned by accumulating XP. XP required per level scales by 15% per level (`XP_PER_LEVEL = 1000` base). Each Path has named tier labels at milestone levels:
@@ -83,6 +111,7 @@ A numeric milestone within a Path, earned by accumulating XP. XP required per le
 | ServiceFoxer | Starter Foxer (1) → Social Butterfly (5) → Event Curator (10) → Master Foxer (15) → Elite Foxer (20) |
 | PerformerFoxer | Starter Foxer (1) → Social Butterfly (5) → Event Curator (10) → Master Foxer (15) → Elite Foxer (20) |
 | Investor | Seed Funder (1) → Angel Investor (3) → Venture Partner (6) → Major Stakeholder (10) → Elite Investor (15) |
+| Organizer | Crew Member (1) → Stage Manager (3) → Floor Lead (7) → Production Chief (12) → Master Organizer (18) |
 
 **Badge**
 A collectible unlocked by completing specific achievements within a Path. Has a rarity tier: Common, Uncommon, Rare, Epic, Legendary. Rarity determines visual treatment (color/glow).

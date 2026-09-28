@@ -50,7 +50,8 @@ export const ROLE_DEFS: RoleDef[] = [
     description: "Manage your venues & events",
     icon: Building2,
     emoji: "🏠",
-    roleTypes: [...FOXER_ROLES],
+    // Organizers aren't Foxers, but their Appointments are run from here.
+    roleTypes: [...FOXER_ROLES, "organizer"],
   },
   {
     key: "investor",

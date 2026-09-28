@@ -46,6 +46,7 @@ const PATH_CONFIG: Record<string, { color: string; label: string }> = {
   performerFoxer: { color: "#f59e0b", label: "Performer Foxer" },
   eventFoxer: { color: "#3b82f6", label: "Event Foxer" },
   venueFoxer: { color: "#ccff00", label: "Venue Foxer" },
+  organizer: { color: "#e879f9", label: "Organizer" },
 };
 
 interface BadgeCardProps {

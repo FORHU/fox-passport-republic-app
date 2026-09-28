@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import { toast } from "sonner";
+import type { Conversation, SharedInbox } from "../types";
 
 export interface ChatParticipant {
   id: string;
@@ -24,6 +25,9 @@ export interface ChatWindowData {
   contextLabel?: string;
   isIncomingRequest?: boolean;
   minimized: boolean;
+  /** Shared Inbox only: which Venue or Event the thread belongs to, and
+   * whether the viewer is its guest or on its team. */
+  inbox?: SharedInbox & { viewerRole: "guest" | "team" };
 }
 
 interface OpenChatInput {
@@ -49,6 +53,15 @@ interface OpenGroupChatInput {
   minimized?: boolean;
 }
 
+interface OpenInboxChatInput {
+  conversationId: string;
+  /** The Venue or Event for its guest; the guest, for its team. */
+  title: string;
+  imgId?: string | null;
+  inbox: SharedInbox & { viewerRole: "guest" | "team" };
+  minimized?: boolean;
+}
+
 interface ChatWindowsState {
   windows: ChatWindowData[];
   /** How many *open* (non-minimized) panels currently fit on screen side by
@@ -59,6 +72,7 @@ interface ChatWindowsState {
   setMaxOpenWindows: (max: number) => void;
   openChat: (input: OpenChatInput) => void;
   openGroupChat: (input: OpenGroupChatInput) => void;
+  openInboxChat: (input: OpenInboxChatInput) => void;
   setConversationId: (otherUserId: string, conversationId: string) => void;
   setGroupName: (conversationId: string, name: string) => void;
   setGroupParticipants: (
@@ -130,6 +144,48 @@ export const useChatWindowsStore = create<ChatWindowsState>((set, get) => ({
       otherUserImgId: input.otherUserImgId,
       contextLabel: input.contextLabel,
       isIncomingRequest: input.isIncomingRequest,
+      minimized: input.minimized ?? false,
+    };
+    set({ windows: [...state.windows, next] });
+  },
+
+  // A Shared Inbox thread has no single "other user" either — the team side
+  // is several people — so like a group it keys on the conversation id.
+  openInboxChat: (input) => {
+    const state = get();
+    const existing = state.windows.find((w) => w.id === input.conversationId);
+    const openCount = state.windows.filter((w) => !w.minimized).length;
+
+    if (existing) {
+      if (!existing.minimized || openCount < state.maxOpenWindows) {
+        set({
+          windows: state.windows.map((w) =>
+            w.id === input.conversationId
+              ? // Asked to open: restore it. Asked for a bubble: never
+                // collapse a window the viewer already has open.
+                { ...w, minimized: input.minimized ? w.minimized : false }
+              : w,
+          ),
+        });
+      } else {
+        toast.error("Your chat windows are full — close one to open another.");
+      }
+      return;
+    }
+
+    if (!input.minimized && openCount >= state.maxOpenWindows) {
+      toast.error("Your chat windows are full — close one to open another.");
+      return;
+    }
+
+    const next: ChatWindowData = {
+      id: input.conversationId,
+      conversationId: input.conversationId,
+      isGroup: false,
+      otherUserName: input.title,
+      otherUserImgId: input.imgId ?? null,
+      contextLabel: input.inbox.name,
+      inbox: input.inbox,
       minimized: input.minimized ?? false,
     };
     set({ windows: [...state.windows, next] });
@@ -234,3 +290,46 @@ export const useChatWindowsStore = create<ChatWindowsState>((set, get) => ({
     });
   },
 }));
+
+/**
+ * Open the right kind of window for any conversation — a group, a Shared
+ * Inbox thread, or a 1:1 — so every place that opens one routes the same way.
+ */
+export function openConversationWindow(
+  c: Conversation,
+  opts: { minimized?: boolean } = {},
+) {
+  const store = useChatWindowsStore.getState();
+  if (c.isInbox && c.inbox && c.viewerRole) {
+    store.openInboxChat({
+      conversationId: c.id,
+      title:
+        c.viewerRole === "guest" ? c.inbox.name : (c.otherUser?.name ?? "Guest"),
+      imgId: c.viewerRole === "guest" ? null : (c.otherUser?.imgId ?? null),
+      inbox: { ...c.inbox, viewerRole: c.viewerRole },
+      minimized: opts.minimized,
+    });
+    return;
+  }
+  if (c.isGroup) {
+    store.openGroupChat({
+      conversationId: c.id,
+      name: c.name ?? "Group",
+      participants: c.participants ?? [],
+      creatorId: c.creatorId,
+      imgId: c.imgId,
+      minimized: opts.minimized,
+    });
+    return;
+  }
+  if (!c.otherUser) return;
+  store.openChat({
+    otherUserId: c.otherUser.id,
+    otherUserName: c.otherUser.name,
+    otherUserImgId: c.otherUser.imgId,
+    contextLabel: c.contextLabel ?? undefined,
+    isIncomingRequest: c.isIncomingRequest,
+    conversationId: c.id,
+    minimized: opts.minimized,
+  });
+}

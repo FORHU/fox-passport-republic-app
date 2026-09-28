@@ -61,6 +61,7 @@ export function DashboardHeader({
   if (access.canManageServices) roleLabels.push("Talent Foxer");
   if (access.canManagePerformers) roleLabels.push("Performer Foxer");
   if (roleType.includes("investor")) roleLabels.push("Partner Foxer");
+  if (roleType.includes("organizer")) roleLabels.push("Organizer");
 
   // Compact role label display when user holds multiple roles
   const primaryRoleLabel =
@@ -98,15 +99,25 @@ export function DashboardHeader({
 
   // Secondary tools & operations
   const secondaryLinks = [
+    // Organizers & Check-in Helpers for every Venue and Event you own.
+    (access.canManageEvents || access.canManageVenues) && {
+      label: "Team",
+      href: "/creator-dashboard/team",
+    },
     access.canManagePromotions && {
       label: "Promotions",
       href: "/creator-dashboard/promotions",
     },
-    access.isHost && {
+    // Organizers check guests in too, on the Events and Venues they help run.
+    (access.isHost || roleType.includes("organizer")) && {
       label: "Check In",
       href: "/creator-dashboard/check-in",
     },
-    { label: "Earnings", href: "/creator-dashboard/earnings" },
+    // An Organizer gets no platform pay (ADR 0005) — nothing to see here.
+    access.canReceivePayouts && {
+      label: "Earnings",
+      href: "/creator-dashboard/earnings",
+    },
   ].filter(Boolean) as { label: string; href: string }[];
 
   const allNavLinks = [...primaryLinks, ...secondaryLinks];
