@@ -19,9 +19,8 @@ import {
   isPerformerService,
   CalendarWidget,
   CreatorProfile,
-  RecentActivity,
 } from "@/features/dashboard/components";
-import { OccupancyChart, PendingRequests } from "./OccupancySection";
+import { PendingRequests } from "./OccupancySection";
 import { useRoleAccess } from "@/shared/auth/useRoleAccess";
 
 import { useAuthStore } from "@/shared/auth/useAuthStore";
@@ -258,10 +257,11 @@ export default function HostDashboardClient({
             <KPICards stats={foxerStats} isLoading={statsLoading} />
           )}
 
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 mb-10">
-            <OccupancyChart fullWidth={!access.hasListings} />
-            {access.hasListings && <PendingRequests />}
-          </div>
+          {access.hasListings && (
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 mb-10">
+              <PendingRequests />
+            </div>
+          )}
 
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
             <div className="lg:col-span-8 space-y-10">
@@ -398,7 +398,6 @@ export default function HostDashboardClient({
                 {access.canReceivePayouts && <StripeConnectSection />}
                 <CalendarWidget />
                 <CreatorProfile />
-                <RecentActivity />
               </div>
             </div>
           </div>

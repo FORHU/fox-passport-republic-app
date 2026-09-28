@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
@@ -9,45 +9,6 @@ import {
   useDeclineMatch,
 } from "@/features/gamification/hooks/usePassport";
 import type { ClientMatchRequest } from "@/features/gamification/api/passport";
-import { StyledSelect } from "@/shared/components/ui/StyledSelect";
-
-export function OccupancyChart({
-  fullWidth = false,
-}: {
-  /** True when `PendingRequests` isn't rendered alongside it (no listing
-   * role: ADR 0005) — otherwise this stayed pinned at 8/12 with an empty
-   * gap where its row-mate used to be. */
-  fullWidth?: boolean;
-}) {
-  const [range, setRange] = useState("7d");
-  return (
-    <div
-      className={`${fullWidth ? "lg:col-span-12" : "lg:col-span-8"} bg-[#0f111a]/80 backdrop-blur border border-white/5 rounded-[2rem] p-6`}
-    >
-      <div className="flex justify-between items-start mb-6">
-        <div>
-          <h3 className="text-lg font-display font-bold mb-1">Occupancy</h3>
-          <p className="text-xs text-white/40">Capacity usage</p>
-        </div>
-        <StyledSelect
-          value={range}
-          onChange={setRange}
-          options={[
-            { value: "7d", label: "7 Days" },
-            { value: "30d", label: "30 Days" },
-          ]}
-          className="bg-black/40 py-1.5 text-xs w-auto min-w-32"
-        />
-      </div>
-      <div
-        className="flex items-center justify-center text-white/20 text-sm"
-        style={{ height: "160px" }}
-      >
-        No occupancy data yet
-      </div>
-    </div>
-  );
-}
 
 export function PendingRequests() {
   const router = useRouter();
@@ -64,7 +25,7 @@ export function PendingRequests() {
   const totalPending = pendingAll.length;
 
   return (
-    <div className="lg:col-span-4 bg-[#0f111a]/80 backdrop-blur border border-white/5 rounded-[2rem] p-6 flex flex-col">
+    <div className="lg:col-span-12 bg-[#0f111a]/80 backdrop-blur border border-white/5 rounded-[2rem] p-6 flex flex-col">
       <div className="flex justify-between items-center mb-4">
         <div className="flex items-center gap-1 bg-white/5 p-1 rounded-full border border-white/10">
           <button

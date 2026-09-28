@@ -538,7 +538,20 @@ has signed off on.
 
 ## 1. Next piece of work
 
-- [ ] **`/creator-dashboard/earnings` shows fabricated payout history and
+- [x] **Open dashboard items closed — 28 Sep.** Mobile Earnings now reads the
+      real payout ledger (`/payouts/me`) and real Stripe status
+      (`useStripeConnect`): fake KYC checklist, four fake payouts and the
+      dead "Withdraw" button are gone (a "Connect Bank"/"Finish Payout Setup"
+      link shows until payouts are enabled). Quick Actions are real links,
+      each shown only for the listing type the person can create. The
+      "Listings" tab is hidden without `hasListings`. `OrganizingSection`
+      shows an explanatory empty state to Organizers only. The stub
+      `OccupancyChart` (no data source) and `RecentActivity` (permanently
+      empty) are removed rather than faked; `CreatorProfile` lost its fake
+      "85% Complete" badge and dead buttons, keeping only Settings.
+      `PendingRequests` now spans the full row. Re-adding occupancy/activity
+      needs a real API first.
+- [x] **`/creator-dashboard/earnings` shows fabricated payout history and
       fabricated verification status on mobile — found 25 Sep, while fixing
       the Earnings nav gating below.** `MobileEarningsView.tsx`'s
       `PAYOUT_CHECKLIST` ("Valid Government ID: VERIFIED", "Business
@@ -588,7 +601,7 @@ has signed off on.
       names and dates instead of fake ones; acting on one means going to
       `/user/passport`, same as desktop's own "View All". Full parity
       (in-place accept/decline) is a follow-up, not done here.
-- [ ] **Mobile Creator Studio's "Quick Actions" buttons do nothing — found
+- [x] **Mobile Creator Studio's "Quick Actions" buttons do nothing — found
       25 Sep, while fixing the above.** New Event / Add Venue / Add Gear /
       Add Service in `MobileCreatorHome.tsx` have no `onClick` at all, for
       anyone. Left alone — out of the scope that was agreed for the KPI/

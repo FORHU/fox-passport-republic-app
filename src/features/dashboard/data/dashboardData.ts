@@ -86,8 +86,6 @@ export const INITIAL_SERVICES: ServiceItem[] = [];
 
 export const PENDING_REQUESTS: PendingRequest[] = [];
 
-export const RECENT_ACTIVITY: ActivityItem[] = [];
-
 export const KPI_DATA = [
   {
     id: "earnings",

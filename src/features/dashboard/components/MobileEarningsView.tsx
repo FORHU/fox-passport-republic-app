@@ -1,44 +1,89 @@
 "use client";
 
-import React from "react";
+import React, { useEffect, useState } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import MobileCreatorBottomNav from "./MobileCreatorBottomNav";
+import { useStripeConnect } from "../hooks/useStripeConnect";
+import {
+  fetchMyPayouts,
+  PAYOUT_SOURCE_LABEL,
+  type Payout,
+} from "../api/payouts";
+import { formatCurrency } from "@/shared/lib/currency";
 
-const PAYOUT_CHECKLIST = [
-  {
-    icon: "check_circle",
-    iconColor: "#22c55e",
-    iconBg: "rgba(34,197,94,0.15)",
-    title: "Valid Government ID",
-    status: "VERIFIED",
-    statusColor: "#22c55e",
-  },
-  {
-    icon: "hourglass_top",
-    iconColor: "#f59e0b",
-    iconBg: "rgba(245,158,11,0.15)",
-    title: "Business Permit",
-    status: "IN REVIEW",
-    statusColor: "#f59e0b",
-  },
-  {
-    icon: "account_balance",
-    iconColor: "rgba(255,255,255,0.3)",
-    iconBg: "rgba(255,255,255,0.06)",
-    title: "Bank / Stripe Connect",
-    status: "NOT LINKED",
-    statusColor: "rgba(255,255,255,0.3)",
-  },
-];
-
-const PAYOUTS = [
-  { id: 1, name: "Skyline Loft booking", date: "Aug 2", amount: "15,300" },
-  { id: 2, name: "Neon Nights event", date: "Jul 28", amount: "22,000" },
-  { id: 3, name: "Garden Pavilion", date: "Jul 20", amount: "18,900" },
-  { id: 4, name: "Weekend rental", date: "Jul 15", amount: "9,500" },
-];
+const DONE = {
+  icon: "check_circle",
+  iconColor: "#22c55e",
+  iconBg: "rgba(34,197,94,0.15)",
+  statusColor: "#22c55e",
+};
+const WAITING = {
+  icon: "hourglass_top",
+  iconColor: "#f59e0b",
+  iconBg: "rgba(245,158,11,0.15)",
+  statusColor: "#f59e0b",
+};
+const TODO = {
+  icon: "account_balance",
+  iconColor: "rgba(255,255,255,0.3)",
+  iconBg: "rgba(255,255,255,0.06)",
+  statusColor: "rgba(255,255,255,0.3)",
+};
 
 export default function MobileEarningsView() {
+  const { status, loading: stripeLoading } = useStripeConnect();
+  const [payouts, setPayouts] = useState<Payout[]>([]);
+  const [totals, setTotals] = useState({ paid: 0, pending: 0 });
+  const [payoutsLoading, setPayoutsLoading] = useState(true);
+
+  useEffect(() => {
+    fetchMyPayouts(1, 10)
+      .then((r) => {
+        setPayouts(r.payouts);
+        setTotals(r.totals);
+      })
+      .catch(() => {})
+      .finally(() => setPayoutsLoading(false));
+  }, []);
+
+  const checklist = stripeLoading
+    ? []
+    : [
+        {
+          title: "Payout account created",
+          ...(status?.hasStripeAccount ? DONE : TODO),
+          label: status?.hasStripeAccount ? "DONE" : "NOT STARTED",
+        },
+        {
+          title: "Identity & bank details",
+          ...(status?.stripeOnboardingComplete
+            ? DONE
+            : status?.hasStripeAccount
+              ? WAITING
+              : TODO),
+          label: status?.stripeOnboardingComplete
+            ? "COMPLETE"
+            : status?.hasStripeAccount
+              ? "INCOMPLETE"
+              : "NOT STARTED",
+        },
+        {
+          title: "Payouts enabled",
+          ...(status?.stripePayoutsEnabled
+            ? DONE
+            : status?.stripeOnboardingComplete
+              ? WAITING
+              : TODO),
+          label: status?.stripePayoutsEnabled
+            ? "ENABLED"
+            : status?.stripeOnboardingComplete
+              ? "IN REVIEW"
+              : "NOT YET",
+        },
+      ];
+  const payoutsReady = !!status?.stripePayoutsEnabled;
+
   return (
     <div
       className="lg:hidden"
@@ -85,7 +130,7 @@ export default function MobileEarningsView() {
 
       {/* Scrollable content */}
       <div style={{ padding: "142px 20px 100px" }}>
-        {/* Available Balance card */}
+        {/* Pending Payouts card */}
         <div
           style={{
             background: "linear-gradient(135deg,#161616,#0a0a0a)",
@@ -117,23 +162,36 @@ export default function MobileEarningsView() {
               lineHeight: 1,
             }}
           >
-            ₱64,200
+            {payoutsLoading ? "—" : formatCurrency(totals.pending)}
           </p>
-          <button
+          <p
             style={{
-              width: "100%",
-              background: "#ccff00",
-              color: "#000",
-              fontWeight: 800,
-              fontSize: 13,
-              border: "none",
-              borderRadius: 16,
-              padding: 14,
-              cursor: "pointer",
+              fontSize: 11,
+              color: "rgba(255,255,255,0.4)",
+              margin: "0 0 12px",
             }}
           >
-            Withdraw
-          </button>
+            Paid out so far: {payoutsLoading ? "—" : formatCurrency(totals.paid)}
+          </p>
+          {!payoutsReady && (
+            <Link
+              href="/creator-dashboard/stripe-onboard"
+              style={{
+                display: "block",
+                textAlign: "center",
+                textDecoration: "none",
+                width: "100%",
+                background: "#ccff00",
+                color: "#000",
+                fontWeight: 800,
+                fontSize: 13,
+                borderRadius: 16,
+                padding: 14,
+              }}
+            >
+              {status?.hasStripeAccount ? "Finish Payout Setup" : "Connect Bank"}
+            </Link>
+          )}
         </div>
 
         {/* Payout Setup */}
@@ -157,7 +215,7 @@ export default function MobileEarningsView() {
             marginBottom: 24,
           }}
         >
-          {PAYOUT_CHECKLIST.map((item) => (
+          {checklist.map((item) => (
             <div
               key={item.title}
               style={{
@@ -213,7 +271,7 @@ export default function MobileEarningsView() {
                     margin: 0,
                   }}
                 >
-                  {item.status}
+                  {item.label}
                 </p>
               </div>
             </div>
@@ -233,48 +291,67 @@ export default function MobileEarningsView() {
         >
           Recent Payouts
         </p>
-        <div style={{ display: "flex", flexDirection: "column" }}>
-          {PAYOUTS.map((payout, i) => (
-            <div
-              key={payout.id}
-              style={{
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center",
-                padding: "12px 0",
-                borderBottom:
-                  i < PAYOUTS.length - 1
-                    ? "1px solid rgba(255,255,255,0.05)"
-                    : "none",
-              }}
-            >
-              <div>
-                <p
+        {payoutsLoading ? (
+          <p style={{ fontSize: 12, color: "rgba(255,255,255,0.4)" }}>Loading…</p>
+        ) : payouts.length === 0 ? (
+          <p style={{ fontSize: 12, color: "rgba(255,255,255,0.4)" }}>
+            No payouts yet.
+          </p>
+        ) : (
+          <div style={{ display: "flex", flexDirection: "column" }}>
+            {payouts.map((payout, i) => (
+              <div
+                key={payout.id}
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  padding: "12px 0",
+                  borderBottom:
+                    i < payouts.length - 1
+                      ? "1px solid rgba(255,255,255,0.05)"
+                      : "none",
+                }}
+              >
+                <div>
+                  <p
+                    style={{
+                      fontSize: 12,
+                      fontWeight: 700,
+                      color: "#fff",
+                      margin: "0 0 2px",
+                    }}
+                  >
+                    {PAYOUT_SOURCE_LABEL[payout.sourceType] ?? payout.sourceType}
+                  </p>
+                  <p
+                    style={{
+                      fontSize: 10,
+                      color: "rgba(255,255,255,0.4)",
+                      margin: 0,
+                    }}
+                  >
+                    {new Date(payout.createdAt).toLocaleDateString(undefined, {
+                      month: "short",
+                      day: "numeric",
+                    })}
+                    {" · "}
+                    {payout.status}
+                  </p>
+                </div>
+                <span
                   style={{
-                    fontSize: 12,
+                    fontSize: 13,
                     fontWeight: 700,
-                    color: "#fff",
-                    margin: "0 0 2px",
+                    color: payout.status === "failed" ? "#f87171" : "#22c55e",
                   }}
                 >
-                  {payout.name}
-                </p>
-                <p
-                  style={{
-                    fontSize: 10,
-                    color: "rgba(255,255,255,0.4)",
-                    margin: 0,
-                  }}
-                >
-                  {payout.date}
-                </p>
+                  {formatCurrency(payout.payoutAmount)}
+                </span>
               </div>
-              <span style={{ fontSize: 13, fontWeight: 700, color: "#22c55e" }}>
-                +₱{payout.amount}
-              </span>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
       </div>
 
       <MobileCreatorBottomNav />

@@ -6,7 +6,6 @@ import { useRoleAccess } from "@/shared/auth/useRoleAccess";
 
 const BASE_TABS = [
   { icon: "dashboard", label: "Overview", href: "/creator-dashboard" },
-  { icon: "grid_view", label: "Listings", href: "/creator-dashboard/venues" },
   {
     icon: "calendar_month",
     label: "Calendar",
@@ -17,22 +16,28 @@ const BASE_TABS = [
 
 export default function MobileCreatorBottomNav() {
   const pathname = usePathname();
-  const { canReceivePayouts } = useRoleAccess();
+  const { canReceivePayouts, hasListings } = useRoleAccess();
 
   // An Organizer gets no platform pay (ADR 0005) — the tab used to sit here
   // regardless, pointing at a page that (now correctly) bounces them
   // straight back to this same dashboard.
-  const tabs = canReceivePayouts
-    ? [
-        ...BASE_TABS.slice(0, 3),
-        {
-          icon: "account_balance_wallet",
-          label: "Earnings",
-          href: "/creator-dashboard/earnings",
-        },
-        BASE_TABS[3],
-      ]
-    : BASE_TABS;
+  // The Listings tab is a Foxer's own inventory — nothing there for someone
+  // who supplies nothing.
+  const tabs = [
+    BASE_TABS[0],
+    hasListings && {
+      icon: "grid_view",
+      label: "Listings",
+      href: "/creator-dashboard/venues",
+    },
+    BASE_TABS[1],
+    canReceivePayouts && {
+      icon: "account_balance_wallet",
+      label: "Earnings",
+      href: "/creator-dashboard/earnings",
+    },
+    BASE_TABS[2],
+  ].filter((x) => x !== false);
 
   const isActive = (href: string) =>
     href === "/creator-dashboard"

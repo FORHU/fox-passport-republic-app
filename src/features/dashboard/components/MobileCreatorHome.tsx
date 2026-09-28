@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import Link from "next/link";
 import MobileCreatorBottomNav from "./MobileCreatorBottomNav";
 import { DashboardHeader } from "./DashboardHeader";
 import { useFoxerDashboard } from "@/features/dashboard/hooks/useFoxerDashboard";
@@ -23,7 +24,41 @@ export default function MobileCreatorHome({
   pendingRequests,
 }: MobileCreatorHomeProps) {
   const firstName = user?.firstName || user?.name?.split(" ")[0] || "Creator";
-  const { hasListings } = useRoleAccess();
+  const {
+    hasListings,
+    canManageEvents,
+    canManageVenues,
+    canManageInventory,
+    canManageServices,
+  } = useRoleAccess();
+  // Each shortcut only for the listing type this person can actually create —
+  // the buttons used to show to everyone and did nothing.
+  const quickActions = [
+    canManageEvents && {
+      icon: "add_circle",
+      label: "New Event",
+      color: "#ccff00",
+      href: "/foxer/create-event",
+    },
+    canManageVenues && {
+      icon: "apartment",
+      label: "Add Venue",
+      color: "#c4b5fd",
+      href: "/venue-foxer/create-venue",
+    },
+    canManageInventory && {
+      icon: "inventory_2",
+      label: "Add Gear",
+      color: "#93c5fd",
+      href: "/foxer/create-listing?type=inventory",
+    },
+    canManageServices && {
+      icon: "design_services",
+      label: "Add Service",
+      color: "#fcd34d",
+      href: "/foxer/create-listing?type=service",
+    },
+  ].filter((a) => a !== false);
   // Was two permanently hardcoded tiles ("₱82k Revenue", "14 Bookings") shown
   // to every phone visitor regardless of role or account — found 25 Sep.
   const { stats, isLoading: statsLoading } = useFoxerDashboard();
@@ -145,6 +180,7 @@ export default function MobileCreatorHome({
         {pendingRequests}
 
         {/* Quick Actions */}
+        {quickActions.length > 0 && (
         <div>
           <p
             style={{
@@ -161,18 +197,10 @@ export default function MobileCreatorHome({
           <div
             style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}
           >
-            {[
-              { icon: "add_circle", label: "New Event", color: "#ccff00" },
-              { icon: "apartment", label: "Add Venue", color: "#c4b5fd" },
-              { icon: "inventory_2", label: "Add Gear", color: "#93c5fd" },
-              {
-                icon: "design_services",
-                label: "Add Service",
-                color: "#fcd34d",
-              },
-            ].map((action) => (
-              <button
+            {quickActions.map((action) => (
+              <Link
                 key={action.label}
+                href={action.href}
                 style={{
                   background: `${STRIPE_BG}, rgba(255,255,255,0.03)`,
                   border: "1px solid rgba(255,255,255,0.07)",
@@ -183,6 +211,7 @@ export default function MobileCreatorHome({
                   gap: 10,
                   cursor: "pointer",
                   textAlign: "left",
+                  textDecoration: "none",
                 }}
               >
                 <span
@@ -194,10 +223,11 @@ export default function MobileCreatorHome({
                 <span style={{ fontSize: 13, fontWeight: 600, color: "#fff" }}>
                   {action.label}
                 </span>
-              </button>
+              </Link>
             ))}
           </div>
         </div>
+        )}
       </div>
 
       <MobileCreatorBottomNav />

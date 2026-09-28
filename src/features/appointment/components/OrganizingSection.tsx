@@ -11,6 +11,7 @@ import {
   ScanLine,
   X,
 } from "lucide-react";
+import { useAuthStore } from "@/shared/auth/useAuthStore";
 import { useMyAppointments } from "../hooks/useAppointments";
 import type { MyAppointment } from "../api/appointments";
 
@@ -57,17 +58,42 @@ function targetOf(a: MyAppointment) {
 export function OrganizingSection() {
   const { mine, accept, decline, leave, withdraw } = useMyAppointments();
   const [confirmLeave, setConfirmLeave] = useState<string | null>(null);
+  const isOrganizer = useAuthStore((s) =>
+    (s.user?.roleType ?? []).includes("organizer"),
+  );
 
   const rows = mine.data ?? [];
   const invitations = rows.filter((a) => a.state === "invited");
   const teams = rows.filter((a) => a.state === "active");
   const requests = rows.filter((a) => a.state === "requested");
 
+  if (mine.isLoading) return null;
   if (
-    mine.isLoading ||
-    (invitations.length === 0 && teams.length === 0 && requests.length === 0)
+    invitations.length === 0 &&
+    teams.length === 0 &&
+    requests.length === 0
   ) {
-    return null;
+    // Only an Organizer expects to see this section; for everyone else it
+    // stays out of the way.
+    if (!isOrganizer) return null;
+    return (
+      <section
+        aria-labelledby="organizing-heading"
+        className="rounded-2xl border border-white/10 bg-white/[0.02] p-5"
+      >
+        <h2
+          id="organizing-heading"
+          className="text-xl font-display font-bold text-white"
+        >
+          Organizing
+        </h2>
+        <p className="text-sm text-white/50 mt-1">
+          You&apos;re not helping run any events or venues yet. Invitations
+          appear here — turn on &quot;Open to Organizers&quot; below so owners
+          can find you.
+        </p>
+      </section>
+    );
   }
 
   const busy =
