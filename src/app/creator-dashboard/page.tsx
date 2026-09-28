@@ -5,6 +5,7 @@ import HostDashboardClient from "./_components/HostDashboardClient";
 import MobileCreatorHome from "@/features/dashboard/components/MobileCreatorHome";
 import { OrganizingSection } from "@/features/appointment/components/OrganizingSection";
 import { OpenToOrganizersSection } from "@/features/appointment/components/OpenToOrganizersSection";
+import { OrganizerAttention } from "./_components/OrganizerAttention";
 import { MobilePendingRequests } from "./_components/MobilePendingRequests";
 
 export default async function Dashboard() {
@@ -17,6 +18,7 @@ export default async function Dashboard() {
         user={user}
         organizing={
           <div className="space-y-6">
+            <OrganizerAttention />
             <OrganizingSection />
             <OpenToOrganizersSection />
           </div>

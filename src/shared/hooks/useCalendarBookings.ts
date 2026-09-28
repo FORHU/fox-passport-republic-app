@@ -188,6 +188,23 @@ export function useCalendarBookings() {
       }
     } catch {}
 
+    // 5. Events the user helps run for someone else (Organizer or Check-in
+    // Helper appointments). Venue appointments have no date, so only events.
+    try {
+      const resp = await api.get("/appointments/mine");
+      const list = resp?.data?.data;
+      for (const ap of Array.isArray(list) ? list : []) {
+        if (ap.state !== "active" || !ap.event?.startAt) continue;
+        results.push({
+          id: `organizing-${ap.id}`,
+          title: ap.event.name ?? "Event",
+          startDate: new Date(ap.event.startAt),
+          endDate: new Date(ap.event.endAt ?? ap.event.startAt),
+          type: "event",
+        });
+      }
+    } catch {}
+
     setBookings(results);
     setIsLoading(false);
   }, [user]);

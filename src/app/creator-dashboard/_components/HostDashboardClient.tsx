@@ -21,6 +21,7 @@ import {
   CreatorProfile,
 } from "@/features/dashboard/components";
 import { PendingRequests } from "./OccupancySection";
+import { OrganizerAttention } from "./OrganizerAttention";
 import { useRoleAccess } from "@/shared/auth/useRoleAccess";
 
 import { useAuthStore } from "@/shared/auth/useAuthStore";
@@ -102,6 +103,9 @@ export default function HostDashboardClient({
   } = useDashboard();
 
   const access = useRoleAccess();
+  const isOrganizer = (useAuthStore((s) => s.user?.roleType) ?? []).includes(
+    "organizer",
+  );
   const authUser = useAuthStore((s) => s.user);
 
   const discoveryHintKey = authUser?.id
@@ -265,6 +269,7 @@ export default function HostDashboardClient({
 
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
             <div className="lg:col-span-8 space-y-10">
+              <OrganizerAttention />
               <OrganizingSection />
               <OpenToOrganizersSection />
 
@@ -365,9 +370,9 @@ export default function HostDashboardClient({
                         auto_awesome
                       </span>
                       <p className="truncate">
-                        Unlock more provider capabilities (Venues, Events,
-                        Assets, Services, Performers) by expanding your creator
-                        profile.
+                        {isOrganizer
+                          ? "Want to list your own venue, events, gear or services too? Apply for a Foxer role."
+                          : "Unlock more provider capabilities (Venues, Events, Assets, Services, Performers) by expanding your creator profile."}
                       </p>
                     </div>
                     <div className="flex items-center gap-2 shrink-0">
