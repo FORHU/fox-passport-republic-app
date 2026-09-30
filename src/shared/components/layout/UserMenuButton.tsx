@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { Menu } from "lucide-react";
 import { useUserMenu } from "@/shared/auth/useUserMenu";
+import { useUnreadMessagesCount } from "@/features/messages/hooks/useUnreadMessagesCount";
 import { useAuthStore } from "@/shared/auth/useAuthStore";
 import { refreshSession } from "@/shared/auth/session-api";
 import { toast } from "sonner";
@@ -23,6 +24,7 @@ export default function UserMenuButton({ onSignIn }: UserMenuButtonProps = {}) {
   const { isOpen, toggle, close, menuRef } = useUserMenu();
   const [lockedRole, setLockedRole] = useState<RoleDef | null>(null);
   const [syncing, setSyncing] = useState(false);
+  const { unreadCount: unreadMessages } = useUnreadMessagesCount();
 
   const sysRole = user?.systemRole ?? "user";
   const roleTypes: string[] = user?.roleType ?? [];
@@ -100,6 +102,11 @@ export default function UserMenuButton({ onSignIn }: UserMenuButtonProps = {}) {
           aria-label="User menu"
         >
           <Menu className="w-5 h-5 transition-transform group-hover:scale-110" />
+          {user && unreadMessages > 0 && (
+            <span className="absolute -top-1 -right-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-[#ccff00] px-1 text-[10px] font-bold text-black">
+              {unreadMessages > 9 ? "9+" : unreadMessages}
+            </span>
+          )}
         </button>
 
         {isOpen && user && (
@@ -110,6 +117,7 @@ export default function UserMenuButton({ onSignIn }: UserMenuButtonProps = {}) {
             {/* Role Dashboards */}
             <UserMenuRoleSection
               isAdmin={isAdmin}
+              roleTypes={roleTypes}
               hasRoleAccess={hasRoleAccess}
               onSelectRole={handleSelectRole}
               onSelectAdmin={handleSelectAdmin}

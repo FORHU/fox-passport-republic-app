@@ -80,6 +80,33 @@ export default function HostApplicationClient() {
             </p>
           </div>
 
+          {/* Every other role application is its own page too — this is the
+              one place an eventFoxer applicant would otherwise be stuck. */}
+          <p className="text-xs text-white/40 text-center -mt-5 mb-8 relative z-10">
+            Looking for a different role?{" "}
+            <Link
+              href="/foxer/apply"
+              className="text-white/70 underline hover:text-white"
+            >
+              Talent, Gear, Performer, or Organizer
+            </Link>
+            ,{" "}
+            <Link
+              href="/venue-foxer/apply"
+              className="text-white/70 underline hover:text-white"
+            >
+              Venue Foxer
+            </Link>
+            , or{" "}
+            <Link
+              href="/foxer/apply-investor"
+              className="text-white/70 underline hover:text-white"
+            >
+              Investor
+            </Link>
+            .
+          </p>
+
           <form onSubmit={handleSubmit} className="space-y-6 relative z-10">
             <div className="space-y-2">
               <label className="text-sm font-bold text-white/80 uppercase tracking-wider">

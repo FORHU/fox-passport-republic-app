@@ -384,22 +384,30 @@ export default function FoxerApplicationClient({
             </button>
           </div>
 
-          {/* Event and Venue Foxer have their own applications with their own
-              documents, so they link out rather than sit in the tab bar. */}
+          {/* Event Foxer, Venue Foxer, and Investor have their own
+              applications with their own fields, so they link out rather
+              than sit in the tab bar. */}
           <p className="text-xs text-white/40 text-center -mt-5 mb-8 relative z-10">
-            Want to host events or list a venue instead?{" "}
+            Want to host events, list a venue, or invest instead?{" "}
             <Link
               href="/creator-dashboard/apply"
               className="text-white/70 underline hover:text-white"
             >
               Apply as an Event Foxer
-            </Link>{" "}
-            or{" "}
+            </Link>
+            ,{" "}
             <Link
               href="/venue-foxer/apply"
               className="text-white/70 underline hover:text-white"
             >
               Venue Foxer
+            </Link>
+            , or{" "}
+            <Link
+              href="/foxer/apply-investor"
+              className="text-white/70 underline hover:text-white"
+            >
+              Investor
             </Link>
             .
           </p>
