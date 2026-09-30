@@ -1,0 +1,205 @@
+name: Deploy to EC2 (staging)
+
+# FORHU/fox-passport-republic-app → the staging host in ap-southeast-1.
+#
+# Same OIDC + SSM pattern as the API. The one thing to watch here is that
+# NEXT_PUBLIC_* values are inlined into the client bundle at `next build`, not
+# read at container runtime — so the env file has to exist before docker build,
+# and changing one of those values needs a rebuild, not a restart.
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: "Branch, tag, or SHA to deploy (ignored on push)"
+        required: true
+        default: main
+      image_tag:
+        description: "Existing image tag to deploy. Leave blank to build from ref."
+        required: false
+        default: ""
+
+concurrency:
+  group: foxpassport-staging-deploy # shared with the API: one deploy at a time
+  cancel-in-progress: false
+
+env:
+  ECR_REPOSITORY: fox-passport-republic-app
+  AWS_REGION: ap-southeast-1
+  ACCOUNT_ID: "617163942417"
+  INSTANCE_ID: i-08f8f2e613ba0e544
+  CONTAINER: foxpassport-app
+  APP_DIR: /opt/foxpassport
+  ENV_PARAM: /foxpassport-staging/app-env
+  NODE_ENV: production
+  PORT: "3000"
+
+jobs:
+  deploy:
+    name: Build, Push & Deploy (staging)
+    # Native arm64 — see the API workflow. QEMU cross-builds of Next.js are
+    # pathologically slow and look like a hang.
+    runs-on: ubuntu-24.04-arm
+    environment: staging
+
+    permissions:
+      id-token: write
+      contents: read
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.inputs.ref || github.sha }}
+
+      - name: Configure AWS credentials (OIDC)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ vars.AWS_DEPLOY_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Resolve image tag
+        id: tag
+        run: |
+          TAG="${{ github.event.inputs.image_tag }}"
+          [ -z "$TAG" ] && TAG="${{ github.sha }}"
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+          echo "registry=${{ env.ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com" >> "$GITHUB_OUTPUT"
+          echo "Deploying ${{ env.ECR_REPOSITORY }}:$TAG"
+
+      - name: Login to Amazon ECR
+        run: |
+          aws ecr get-login-password --region "${{ env.AWS_REGION }}" \
+            | docker login --username AWS --password-stdin "${{ steps.tag.outputs.registry }}"
+
+      # Next.js loads .env.production for a production build. It ignores names
+      # like .env.staging — writing that file instead is how the UK admin ended
+      # up with localhost:3001 compiled into its client bundle. Check this
+      # filename against the repo's Dockerfile before the first run.
+      - name: Write env file
+        if: ${{ github.event_name == 'push' || github.event.inputs.image_tag == '' }}
+        env:
+          NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: ${{ secrets.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY }}
+          NEXT_PUBLIC_MAPBOX_TOKEN: ${{ secrets.NEXT_PUBLIC_MAPBOX_TOKEN }}
+        run: |
+          cat > ${{ github.workspace }}/.env.production << EOF
+          NODE_ENV=${{ env.NODE_ENV }}
+          NEXT_PUBLIC_API_URL=${{ vars.NEXT_PUBLIC_API_URL }}
+          NEXT_PUBLIC_SOCKET_URL=${{ vars.NEXT_PUBLIC_SOCKET_URL }}
+          NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=${NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY}
+          NEXT_PUBLIC_MAPBOX_TOKEN=${NEXT_PUBLIC_MAPBOX_TOKEN}
+          EOF
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build and push Docker image
+        if: ${{ github.event_name == 'push' || github.event.inputs.image_tag == '' }}
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ./Dockerfile
+          push: true
+          platforms: linux/arm64
+          provenance: false
+          tags: ${{ steps.tag.outputs.registry }}/${{ env.ECR_REPOSITORY }}:${{ steps.tag.outputs.tag }}
+
+      # The same values also serve as the container's runtime env. They hold no
+      # secrets beyond publishable keys, but go through Parameter Store for
+      # consistency with the API.
+      - name: Store env file in Parameter Store
+        env:
+          NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: ${{ secrets.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY }}
+          NEXT_PUBLIC_MAPBOX_TOKEN: ${{ secrets.NEXT_PUBLIC_MAPBOX_TOKEN }}
+        run: |
+          set -euo pipefail
+          umask 077
+          cat > env.tmp << EOF
+          NODE_ENV=${{ env.NODE_ENV }}
+          PORT=${{ env.PORT }}
+          NEXT_PUBLIC_API_URL=${{ vars.NEXT_PUBLIC_API_URL }}
+          NEXT_PUBLIC_SOCKET_URL=${{ vars.NEXT_PUBLIC_SOCKET_URL }}
+          NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=${NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY}
+          NEXT_PUBLIC_MAPBOX_TOKEN=${NEXT_PUBLIC_MAPBOX_TOKEN}
+          EOF
+
+          aws ssm put-parameter \
+            --name "${{ env.ENV_PARAM }}" \
+            --type SecureString --overwrite \
+            --value "file://env.tmp" \
+            --region "${{ env.AWS_REGION }}" > /dev/null
+
+          rm -f env.tmp
+
+      - name: Deploy via SSM
+        id: send
+        env:
+          REGISTRY: ${{ steps.tag.outputs.registry }}
+          TAG: ${{ steps.tag.outputs.tag }}
+        run: |
+          set -euo pipefail
+          IMAGE="${REGISTRY}/${{ env.ECR_REPOSITORY }}:${TAG}"
+          ENVFILE="${{ env.APP_DIR }}/app.env"
+
+          COMMANDS=(
+            "set -euo pipefail"
+            "mkdir -p ${{ env.APP_DIR }}"
+            "aws ssm get-parameter --name ${{ env.ENV_PARAM }} --with-decryption --region ${{ env.AWS_REGION }} --query Parameter.Value --output text > ${ENVFILE}"
+            "chmod 600 ${ENVFILE}"
+            "aws ecr get-login-password --region ${{ env.AWS_REGION }} | docker login --username AWS --password-stdin ${REGISTRY}"
+            "docker pull --platform linux/arm64 ${IMAGE}"
+            "docker rm -f ${{ env.CONTAINER }} 2>/dev/null || true"
+            "docker run -d --name ${{ env.CONTAINER }} --restart unless-stopped --platform linux/arm64 --env-file ${ENVFILE} -p 127.0.0.1:${{ env.PORT }}:${{ env.PORT }} ${IMAGE}"
+            "docker image prune -f"
+          )
+
+          PARAMS=$(printf '%s\n' "${COMMANDS[@]}" | jq -R . | jq -sc '{commands: .}')
+
+          CMD_ID=$(aws ssm send-command \
+            --region "${{ env.AWS_REGION }}" \
+            --instance-ids "${{ env.INSTANCE_ID }}" \
+            --document-name AWS-RunShellScript \
+            --comment "deploy ${{ env.CONTAINER }} ${TAG}" \
+            --timeout-seconds 900 \
+            --parameters "${PARAMS}" \
+            --query Command.CommandId --output text)
+
+          echo "command_id=$CMD_ID" >> "$GITHUB_OUTPUT"
+          echo "SSM command: $CMD_ID"
+
+      - name: Wait for the deploy
+        run: |
+          set -uo pipefail
+          STATUS=Pending
+          for i in $(seq 1 90); do
+            STATUS=$(aws ssm get-command-invocation \
+              --region "${{ env.AWS_REGION }}" \
+              --command-id "${{ steps.send.outputs.command_id }}" \
+              --instance-id "${{ env.INSTANCE_ID }}" \
+              --query Status --output text 2>/dev/null || echo Pending)
+            echo "status: $STATUS"
+            case "$STATUS" in Success|Failed|Cancelled|TimedOut) break ;; esac
+            sleep 10
+          done
+
+          aws ssm get-command-invocation \
+            --region "${{ env.AWS_REGION }}" \
+            --command-id "${{ steps.send.outputs.command_id }}" \
+            --instance-id "${{ env.INSTANCE_ID }}" \
+            --query '[StandardOutputContent,StandardErrorContent]' --output text
+
+          [ "$STATUS" = "Success" ] || { echo "::error::deploy $STATUS"; exit 1; }
+
+      - name: Smoke test
+        run: |
+          set -uo pipefail
+          for i in $(seq 1 12); do
+            CODE=$(curl -sL -o /dev/null -m 10 -w '%{http_code}' https://dev.foxpassport.com/ || echo 000)
+            echo "attempt $i: $CODE"
+            [ "$CODE" = "200" ] && exit 0
+            sleep 10
+          done
+          echo "::error::dev.foxpassport.com did not answer after the deploy"
+          exit 1
