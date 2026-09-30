@@ -81,6 +81,7 @@ export default function StripeOnboardClient() {
       style={{
         background:
           "radial-gradient(circle at 15% 50%, rgba(124,58,237,0.15) 0%, transparent 40%), radial-gradient(circle at 85% 30%, rgba(219,39,119,0.1) 0%, transparent 40%), #02040a",
+        backgroundAttachment: "fixed",
       }}
     >
       <div className="mx-auto max-w-3xl px-4 py-12">

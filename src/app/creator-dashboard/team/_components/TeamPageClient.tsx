@@ -83,7 +83,14 @@ export default function TeamPageClient() {
   const loading = venues.isLoading || events.isLoading;
 
   return (
-    <div className="bg-[#02040a] text-white min-h-screen font-body antialiased">
+    <div
+      className="bg-[#02040a] text-white min-h-screen font-body antialiased"
+      style={{
+        background:
+          "radial-gradient(circle at 15% 50%, rgba(124,58,237,0.15) 0%, transparent 40%), radial-gradient(circle at 85% 30%, rgba(219,39,119,0.1) 0%, transparent 40%), radial-gradient(circle at 50% 0%, rgba(204,255,0,0.05) 0%, transparent 50%), #02040a",
+        backgroundAttachment: "fixed",
+      }}
+    >
       <DashboardHeader />
       <main className="pt-28 pb-28 sm:pb-20">
         <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8 space-y-8">

@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import { usePartnershipProposals } from "@/features/partnership/hooks/usePartnerships";
 import { ProposalList } from "@/features/partnership/components/ProposalList";
-import {} from "@/shared/auth/useAuthStore";
+import { DashboardHeader } from "@/features/dashboard/components/DashboardHeader";
 
 export default function PartnershipsDashboardPage() {
   const [activeTab, setActiveTab] = useState<"incoming" | "sent" | "active">(
@@ -38,52 +38,55 @@ export default function PartnershipsDashboardPage() {
   };
 
   return (
-    <div className="max-w-4xl mx-auto space-y-8">
-      <div>
-        <h1 className="text-3xl font-bold text-white mb-2">Partnerships</h1>
-        <p className="text-white/60">
-          Manage your incoming proposals and sent partnership requests.
-        </p>
-      </div>
+    <div className="bg-[#02040a] text-white min-h-screen font-body antialiased">
+      <DashboardHeader />
+      <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-10 pt-32 space-y-8">
+        <div>
+          <h1 className="text-3xl font-bold text-white mb-2">Partnerships</h1>
+          <p className="text-white/60">
+            Manage your incoming proposals and sent partnership requests.
+          </p>
+        </div>
 
-      <div className="flex gap-4 border-b border-white/10">
-        <button
-          onClick={() => setActiveTab("incoming")}
-          className={`pb-4 px-2 font-medium transition-colors border-b-2 ${
-            activeTab === "incoming"
-              ? "text-white border-[#ccff00]"
-              : "text-white/50 border-transparent hover:text-white"
-          }`}
-        >
-          Incoming Proposals
-        </button>
-        <button
-          onClick={() => setActiveTab("sent")}
-          className={`pb-4 px-2 font-medium transition-colors border-b-2 ${
-            activeTab === "sent"
-              ? "text-white border-[#ccff00]"
-              : "text-white/50 border-transparent hover:text-white"
-          }`}
-        >
-          Sent Proposals
-        </button>
-        <button
-          onClick={() => setActiveTab("active")}
-          className={`pb-4 px-2 font-medium transition-colors border-b-2 ${
-            activeTab === "active"
-              ? "text-white border-[#ccff00]"
-              : "text-white/50 border-transparent hover:text-white"
-          }`}
-        >
-          Active Partnerships
-        </button>
-      </div>
+        <div className="flex gap-4 border-b border-white/10">
+          <button
+            onClick={() => setActiveTab("incoming")}
+            className={`pb-4 px-2 font-medium transition-colors border-b-2 ${
+              activeTab === "incoming"
+                ? "text-white border-[#ccff00]"
+                : "text-white/50 border-transparent hover:text-white"
+            }`}
+          >
+            Incoming Proposals
+          </button>
+          <button
+            onClick={() => setActiveTab("sent")}
+            className={`pb-4 px-2 font-medium transition-colors border-b-2 ${
+              activeTab === "sent"
+                ? "text-white border-[#ccff00]"
+                : "text-white/50 border-transparent hover:text-white"
+            }`}
+          >
+            Sent Proposals
+          </button>
+          <button
+            onClick={() => setActiveTab("active")}
+            className={`pb-4 px-2 font-medium transition-colors border-b-2 ${
+              activeTab === "active"
+                ? "text-white border-[#ccff00]"
+                : "text-white/50 border-transparent hover:text-white"
+            }`}
+          >
+            Active Partnerships
+          </button>
+        </div>
 
-      <ProposalList
-        proposals={getActiveList()}
-        isLoading={isLoading}
-        emptyMessage={`No ${activeTab} partnerships found.`}
-      />
+        <ProposalList
+          proposals={getActiveList()}
+          isLoading={isLoading}
+          emptyMessage={`No ${activeTab} partnerships found.`}
+        />
+      </main>
     </div>
   );
 }

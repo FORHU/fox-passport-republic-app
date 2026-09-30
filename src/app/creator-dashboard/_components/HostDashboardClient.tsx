@@ -234,6 +234,7 @@ export default function HostDashboardClient({
       style={{
         background:
           "radial-gradient(circle at 15% 50%, rgba(124,58,237,0.15) 0%, transparent 40%), radial-gradient(circle at 85% 30%, rgba(219,39,119,0.1) 0%, transparent 40%), radial-gradient(circle at 50% 0%, rgba(204,255,0,0.05) 0%, transparent 50%), #02040a",
+        backgroundAttachment: "fixed",
       }}
     >
       <DashboardHeader />
@@ -364,36 +365,36 @@ export default function HostDashboardClient({
                   nearly everyone (a Venue Foxer without also being an Event
                   Foxer saw this forever). Now only for someone with none. */}
               {!discoveryHintDismissed && !access.hasListings && (
-                  <div className="rounded-2xl border border-white/10 bg-white/3 p-4 sm:p-5 flex items-center justify-between gap-4 text-xs text-white/60">
-                    <div className="flex items-center gap-3 min-w-0">
-                      <span className="material-symbols-outlined text-[#ccff00] text-lg shrink-0">
-                        auto_awesome
-                      </span>
-                      <p className="truncate">
-                        {isOrganizer
-                          ? "Want to list your own venue, events, gear or services too? Apply for a Foxer role."
-                          : "Unlock more provider capabilities (Venues, Events, Assets, Services, Performers) by expanding your creator profile."}
-                      </p>
-                    </div>
-                    <div className="flex items-center gap-2 shrink-0">
-                      <button
-                        onClick={() => router.push("/creator-dashboard/apply")}
-                        className="px-3.5 py-1.5 rounded-full bg-[#ccff00]/10 border border-[#ccff00]/30 text-[#ccff00] text-xs font-bold hover:bg-[#ccff00]/20 transition-colors whitespace-nowrap"
-                      >
-                        Apply for Roles
-                      </button>
-                      <button
-                        onClick={dismissDiscoveryHint}
-                        aria-label="Dismiss"
-                        className="h-7 w-7 rounded-full flex items-center justify-center text-white/40 hover:text-white hover:bg-white/10 transition-colors"
-                      >
-                        <span className="material-symbols-outlined text-[16px]">
-                          close
-                        </span>
-                      </button>
-                    </div>
+                <div className="rounded-2xl border border-white/10 bg-white/3 p-4 sm:p-5 flex items-center justify-between gap-4 text-xs text-white/60">
+                  <div className="flex items-center gap-3 min-w-0">
+                    <span className="material-symbols-outlined text-[#ccff00] text-lg shrink-0">
+                      auto_awesome
+                    </span>
+                    <p className="truncate">
+                      {isOrganizer
+                        ? "Want to list your own venue, events, gear or services too? Apply for a Foxer role."
+                        : "Unlock more provider capabilities (Venues, Events, Assets, Services, Performers) by expanding your creator profile."}
+                    </p>
                   </div>
-                )}
+                  <div className="flex items-center gap-2 shrink-0">
+                    <button
+                      onClick={() => router.push("/creator-dashboard/apply")}
+                      className="px-3.5 py-1.5 rounded-full bg-[#ccff00]/10 border border-[#ccff00]/30 text-[#ccff00] text-xs font-bold hover:bg-[#ccff00]/20 transition-colors whitespace-nowrap"
+                    >
+                      Apply for Roles
+                    </button>
+                    <button
+                      onClick={dismissDiscoveryHint}
+                      aria-label="Dismiss"
+                      className="h-7 w-7 rounded-full flex items-center justify-center text-white/40 hover:text-white hover:bg-white/10 transition-colors"
+                    >
+                      <span className="material-symbols-outlined text-[16px]">
+                        close
+                      </span>
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
 
             <div className="lg:col-span-4">
