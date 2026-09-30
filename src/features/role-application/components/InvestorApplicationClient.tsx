@@ -162,7 +162,7 @@ export default function InvestorApplicationClient() {
                 />
               </div>
               <p className="text-xs text-white/40">
-                A rough figure — how much you're looking to deploy overall.
+                A rough figure — how much you&apos;re looking to deploy overall.
               </p>
             </div>
 
