@@ -1,11 +1,5 @@
 import { FOXER_ROLES } from "@/shared/constants/roles";
-import {
-  LayoutDashboard,
-  Building2,
-  Coins,
-  Compass,
-  Landmark,
-} from "lucide-react";
+import { LayoutDashboard, Building2, Coins, Compass } from "lucide-react";
 
 export interface RoleDef {
   key: string;
@@ -17,6 +11,12 @@ export interface RoleDef {
   emoji: string;
   roleTypes: string[];
   systemRoles?: string[];
+  /** Overrides `label` when the viewer holds exactly one of `roleTypes`
+   * (excluding "organizer", which rides along on this dashboard without
+   * making it "theirs") — so a venueFoxer with no other Foxer role sees
+   * "Venue Foxer Console" instead of the generic umbrella name. */
+  labelFor?: (roleTypes: string[]) => string;
+  descriptionFor?: (roleTypes: string[]) => string;
 }
 
 export const ROLE_DEFS: RoleDef[] = [
@@ -52,25 +52,40 @@ export const ROLE_DEFS: RoleDef[] = [
     emoji: "🏠",
     // Organizers aren't Foxers, but their Appointments are run from here.
     roleTypes: [...FOXER_ROLES, "organizer"],
+    // A venueFoxer with no other Foxer role gets "their" name for this same
+    // dashboard instead of the generic umbrella one — see
+    // singleFoxerRoleLabel below. There used to be a separate "Venue Foxer
+    // Console" menu entry for this; it only ever redirected into this same
+    // dashboard's Venues tab, so it was a second door to one room.
+    labelFor: (roleTypes) =>
+      singleFoxerRoleLabel(roleTypes) === "venueFoxer"
+        ? "Venue Foxer Console"
+        : "Creator Dashboard",
+    descriptionFor: (roleTypes) =>
+      singleFoxerRoleLabel(roleTypes) === "venueFoxer"
+        ? "Venue listing & space manager"
+        : "Manage your venues & events",
   },
   {
     key: "investor",
     label: "Partner Foxer Hub",
     href: "/republic/investments",
-    applyHref: "/foxer/create-investment",
+    // Was "/foxer/create-investment" — that's the wizard an *approved*
+    // investor uses to register a stream, not the application. There was no
+    // application form at all, so a locked citizen hit that wizard and got
+    // blocked with no way forward.
+    applyHref: "/foxer/apply-investor",
     description: "Equipment depots, capital map & inventory",
     icon: Coins,
     emoji: "💎",
     roleTypes: ["investor"],
   },
-  {
-    key: "mayor",
-    label: "Venue Foxer Console",
-    href: "/mayor",
-    applyHref: "/mayor/apply",
-    description: "Venue listing & space manager",
-    icon: Landmark,
-    emoji: "🏛️",
-    roleTypes: ["venueFoxer"],
-  },
 ];
+
+/** The one FOXER_ROLES entry the viewer holds, or null if they hold none or
+ * more than one. `organizer` doesn't count — it never makes this dashboard
+ * "theirs" the way a supply-side role does. */
+function singleFoxerRoleLabel(roleTypes: string[]): string | null {
+  const held = FOXER_ROLES.filter((r) => roleTypes.includes(r));
+  return held.length === 1 ? held[0] : null;
+}

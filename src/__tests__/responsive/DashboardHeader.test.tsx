@@ -46,6 +46,14 @@ vi.mock("@/shared/components/layout/NotificationBell", () => ({
   default: () => <div data-testid="notification-bell" />,
 }));
 
+// UserMenuButton (rendered inside DashboardHeader's user menu) reads this to
+// badge the hamburger icon with unread messages — a real query, so it needs
+// mocking here the same way NotificationBell's own query dependency is
+// avoided above.
+vi.mock("@/features/messages/hooks/useUnreadMessagesCount", () => ({
+  useUnreadMessagesCount: () => ({ unreadCount: 0, isLoading: false }),
+}));
+
 import { DashboardHeader } from "@/features/dashboard/components/DashboardHeader";
 
 describe("DashboardHeader — responsive nav", () => {

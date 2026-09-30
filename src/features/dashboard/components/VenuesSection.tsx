@@ -63,9 +63,11 @@ export function VenuesSection({
       <div className="space-y-4">
         {venues.length > 0 ? (
           venues.map((vn) => {
-            const isLive = ["published", "available"].includes(
-              (vn.status || "").toLowerCase(),
-            );
+            const statusLower = (vn.status || "").toLowerCase();
+            const isLive = ["published", "available"].includes(statusLower);
+            const isPending = statusLower === "pending";
+            const isRejected = statusLower === "rejected";
+            const isArchived = statusLower === "archived";
             // A live venue already has something to look at — clicking in
             // opens that (read-only) instead of dropping straight into the
             // builder, which used to prompt "Submit for Review" on a venue
@@ -166,32 +168,44 @@ export function VenuesSection({
                     </div>
                   ) : (
                     <div className="mt-4 flex justify-between items-center border-t border-white/5 pt-4">
-                      <div className="flex items-center gap-2 text-yellow-400">
+                      <div
+                        className={`flex items-center gap-2 ${
+                          isPending
+                            ? "text-yellow-400"
+                            : isRejected
+                              ? "text-red-400"
+                              : isArchived
+                                ? "text-white/40"
+                                : "text-yellow-400"
+                        }`}
+                      >
                         <span className="material-symbols-outlined text-[18px]">
-                          {(vn.status || "").toLowerCase() === "pending_review"
+                          {isPending
                             ? "policy"
-                            : "edit_square"}
+                            : isRejected
+                              ? "cancel"
+                              : isArchived
+                                ? "inventory_2"
+                                : "edit_square"}
                         </span>
                         <span className="text-xs">
-                          {(vn.status || "").toLowerCase() === "pending_review"
+                          {isPending
                             ? "Pending Admin Review"
-                            : "Draft / Work in Progress"}
+                            : isRejected
+                              ? "Rejected — edit and resubmit"
+                              : isArchived
+                                ? "Archived"
+                                : "Draft / Work in Progress"}
                         </span>
                       </div>
                       <button
                         className="px-4 py-2 rounded-full bg-white/10 text-xs font-bold hover:bg-white hover:text-black"
                         onClick={(e) => {
                           e.stopPropagation();
-                          if (
-                            (vn.status || "").toLowerCase() !== "pending_review"
-                          ) {
-                            onEdit?.(vn.id);
-                          }
+                          if (!isPending) onEdit?.(vn.id);
                         }}
                       >
-                        {(vn.status || "").toLowerCase() === "pending_review"
-                          ? "Contact Support"
-                          : "Continue Editing"}
+                        {isPending ? "Contact Support" : "Continue Editing"}
                       </button>
                     </div>
                   )}

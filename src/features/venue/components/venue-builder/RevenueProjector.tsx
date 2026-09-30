@@ -53,8 +53,10 @@ export function RevenueProjector({
             </label>
             <input
               type="number"
-              value={baseRate}
-              onChange={(e) => onBaseRateChange(Number(e.target.value))}
+              min={0}
+              value={baseRate || ""}
+              onChange={(e) => onBaseRateChange(Number(e.target.value) || 0)}
+              placeholder="e.g. 5000"
               className="w-full bg-black border border-white/10 rounded-lg px-3 py-2 text-white font-mono text-right focus:border-accent outline-none text-sm"
             />
             <p className="text-[10px] text-white/30 mt-1.5">

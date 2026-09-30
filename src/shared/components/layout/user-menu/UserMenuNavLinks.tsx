@@ -17,6 +17,7 @@ import {
 import { toast } from "sonner";
 import { useLogout } from "@/shared/auth/useLogout";
 import { CurrencySwitcher } from "@/shared/components/layout/CurrencySwitcher";
+import { useUnreadMessagesCount } from "@/features/messages/hooks/useUnreadMessagesCount";
 
 interface UserMenuNavLinksProps {
   userId?: string | null;
@@ -35,6 +36,7 @@ export function UserMenuNavLinks({
 }: UserMenuNavLinksProps) {
   const router = useRouter();
   const logout = useLogout();
+  const { unreadCount: unreadMessages } = useUnreadMessagesCount();
 
   const navItems = [
     ...(userId
@@ -63,6 +65,7 @@ export function UserMenuNavLinks({
       label: "Messages",
       icon: MessageSquare,
       href: "/messages",
+      badge: unreadMessages > 0 ? (unreadMessages > 9 ? "9+" : unreadMessages) : undefined,
     },
     {
       label: "Account settings",
@@ -100,6 +103,11 @@ export function UserMenuNavLinks({
             {(item as { comingSoon?: boolean }).comingSoon && (
               <span className="ml-auto text-[9px] font-bold text-white/20 uppercase tracking-wider">
                 Soon
+              </span>
+            )}
+            {(item as { badge?: string | number }).badge !== undefined && (
+              <span className="ml-auto flex h-5 min-w-5 items-center justify-center rounded-full bg-[#ccff00] px-1.5 text-[10px] font-bold text-black">
+                {(item as { badge?: string | number }).badge}
               </span>
             )}
           </button>

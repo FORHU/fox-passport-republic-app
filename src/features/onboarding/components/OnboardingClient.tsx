@@ -71,6 +71,16 @@ const ROLES = [
     title: "Organizer",
     desc: "Help Mayors and Event Owners run their venues and events, once they invite you.",
   },
+  {
+    type: "investor",
+    roleType: "investor",
+    href: "/foxer/apply-investor",
+    color: "#10b981",
+    icon: "diamond",
+    tag: "Partner Foxer",
+    title: "Investor",
+    desc: "Deploy equipment inventory or capital, and earn a revenue share.",
+  },
 ];
 
 export default function OnboardingClient({ user: serverUser }: { user: any }) {
@@ -78,10 +88,12 @@ export default function OnboardingClient({ user: serverUser }: { user: any }) {
   const { user: clientUser, setUser } = useAuthStore();
   const user = clientUser || serverUser;
 
-  // Organizer is not a Foxer (it supplies no inventory) but is still a role
-  // this page offers, so it counts as one the user already holds.
+  // Organizer and investor aren't Foxers (neither supplies inventory) but
+  // are still roles this page offers, so they count as ones the user
+  // already holds.
   const existingRoles: string[] = (user?.roleType ?? []).filter(
-    (role: string) => isFoxerRole(role) || role === "organizer",
+    (role: string) =>
+      isFoxerRole(role) || role === "organizer" || role === "investor",
   );
   const hasExistingRoles = existingRoles.length > 0;
 
@@ -278,7 +290,7 @@ export default function OnboardingClient({ user: serverUser }: { user: any }) {
 
               <div className="space-y-4">
                 <button
-                  onClick={() => router.push("/")}
+                  onClick={() => router.push("/search")}
                   className="group w-full bg-[#1a1a24] rounded-[1.5rem] p-7 text-left border border-white/5 hover:border-[#ccff00]/40 hover:bg-[#1e1e2c] transition-all duration-300"
                 >
                   <div className="flex items-center gap-4">
@@ -389,7 +401,11 @@ export default function OnboardingClient({ user: serverUser }: { user: any }) {
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {ROLES.map((role) => {
+                {ROLES.map((role, idx) => {
+                  // An odd count leaves the last card alone in its row —
+                  // give it the full row instead of a lopsided empty gap.
+                  const isLastOdd =
+                    ROLES.length % 2 === 1 && idx === ROLES.length - 1;
                   const isActive = existingRoles.includes(role.roleType);
                   const isPending =
                     !isActive && pendingRoles.includes(role.roleType);
@@ -404,7 +420,7 @@ export default function OnboardingClient({ user: serverUser }: { user: any }) {
                     return (
                       <div
                         key={role.type}
-                        className="relative bg-[#1a1a24] rounded-[1.5rem] p-6 border border-green-500/20 flex flex-col"
+                        className={`relative bg-[#1a1a24] rounded-[1.5rem] p-6 border border-green-500/20 flex flex-col ${isLastOdd ? "sm:col-span-2 sm:mx-auto sm:w-full sm:max-w-[calc(50%-0.5rem)]" : ""}`}
                         style={{
                           boxShadow: "inset 0 0 0 1px rgba(34,197,94,0.15)",
                         }}
@@ -446,7 +462,7 @@ export default function OnboardingClient({ user: serverUser }: { user: any }) {
                     return (
                       <div
                         key={role.type}
-                        className="relative bg-[#1a1a24] rounded-[1.5rem] p-6 border border-amber-500/20 flex flex-col"
+                        className={`relative bg-[#1a1a24] rounded-[1.5rem] p-6 border border-amber-500/20 flex flex-col ${isLastOdd ? "sm:col-span-2 sm:mx-auto sm:w-full sm:max-w-[calc(50%-0.5rem)]" : ""}`}
                         style={{
                           boxShadow: "inset 0 0 0 1px rgba(245,158,11,0.12)",
                         }}
@@ -489,7 +505,7 @@ export default function OnboardingClient({ user: serverUser }: { user: any }) {
                       <Link
                         key={role.type}
                         href={`/foxer/resubmit/${revisionRequest.id}`}
-                        className="group relative bg-[#1a1a24] rounded-[1.5rem] p-6 text-left border border-orange-500/20 hover:bg-[#1e1e2c] transition-all duration-300 flex flex-col"
+                        className={`group relative bg-[#1a1a24] rounded-[1.5rem] p-6 text-left border border-orange-500/20 hover:bg-[#1e1e2c] transition-all duration-300 flex flex-col ${isLastOdd ? "sm:col-span-2 sm:mx-auto sm:w-full sm:max-w-[calc(50%-0.5rem)]" : ""}`}
                         style={{
                           boxShadow: "inset 0 0 0 1px rgba(249,115,22,0.15)",
                         }}
@@ -532,7 +548,7 @@ export default function OnboardingClient({ user: serverUser }: { user: any }) {
                     <Link
                       key={role.type}
                       href={role.href}
-                      className="group relative bg-[#1a1a24] rounded-[1.5rem] p-6 text-left border border-white/5 hover:bg-[#1e1e2c] transition-all duration-300 hover:-translate-y-1 flex flex-col"
+                      className={`group relative bg-[#1a1a24] rounded-[1.5rem] p-6 text-left border border-white/5 hover:bg-[#1e1e2c] transition-all duration-300 hover:-translate-y-1 flex flex-col ${isLastOdd ? "sm:col-span-2 sm:mx-auto sm:w-full sm:max-w-[calc(50%-0.5rem)]" : ""}`}
                     >
                       <div
                         className="absolute inset-0 rounded-[1.5rem] opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"

@@ -29,10 +29,13 @@ interface ApplicationData {
   selfieFile?: FileRecord | null;
   portfolioFile?: FileRecord | null;
   backgroundClearanceFile?: FileRecord | null; // organizer only
-  // investor fields
-  investmentAmount?: string;
-  businessName?: string;
-  businessType?: string;
+  // investor fields — match InvestorApplication in the Prisma schema, not
+  // the identity-verification shape every other role uses. An investor is
+  // vetted on their declared capital and interests, not KYC documents.
+  companyName?: string;
+  investmentRange?: number | string;
+  interests?: string[];
+  proofOfFunds?: FileRecord | null;
 }
 
 // The document field keys admins can flag and applicants resubmit — must
@@ -354,7 +357,12 @@ function ApplicationDetailDrawer({
           {/* Application-specific fields */}
           {data && (
             <>
-              {(data.bio || data.experience || data.location) && (
+              {(data.bio ||
+                data.experience ||
+                data.location ||
+                data.companyName ||
+                data.investmentRange != null ||
+                (data.interests && data.interests.length > 0)) && (
                 <div className="space-y-3">
                   <p className="text-xs text-white/40 uppercase tracking-widest font-bold">
                     Application Details
@@ -388,23 +396,41 @@ function ApplicationDetailDrawer({
                         </p>
                       </div>
                     )}
-                    {data.investmentAmount && (
+                    {data.companyName && (
                       <div className="flex justify-between items-center">
                         <span className="text-white/40 text-sm">
-                          Investment Amount
+                          Company / Organization
                         </span>
                         <span className="text-white text-sm font-medium">
-                          {data.investmentAmount}
+                          {data.companyName}
                         </span>
                       </div>
                     )}
-                    {data.businessName && (
+                    {data.investmentRange != null && (
                       <div className="flex justify-between items-center">
                         <span className="text-white/40 text-sm">
-                          Business Name
+                          Investment Range
                         </span>
                         <span className="text-white text-sm font-medium">
-                          {data.businessName}
+                          ₱{Number(data.investmentRange).toLocaleString()}
+                        </span>
+                      </div>
+                    )}
+                    {data.interests && data.interests.length > 0 && (
+                      <div className="flex justify-between items-center">
+                        <span className="text-white/40 text-sm">
+                          Interests
+                        </span>
+                        <span className="text-white text-sm font-medium text-right">
+                          {data.interests
+                            .map((i) =>
+                              i === "venue_equity"
+                                ? "Financial Capital & Venue Equity"
+                                : i === "physical_inventory"
+                                  ? "Physical Equipment & Inventory"
+                                  : i,
+                            )
+                            .join(", ")}
                         </span>
                       </div>
                     )}
@@ -412,85 +438,111 @@ function ApplicationDetailDrawer({
                 </div>
               )}
 
-              {/* Identity Documents */}
-              <div className="space-y-3">
-                <p className="text-xs text-white/40 uppercase tracking-widest font-bold flex items-center gap-2">
-                  <span className="material-symbols-outlined text-[14px] text-yellow-400">
-                    warning
-                  </span>
-                  Verify these documents carefully
-                </p>
-                <div className="grid grid-cols-2 gap-3">
-                  <DocPreview
-                    label="Primary Valid ID"
-                    file={data.validId1}
-                    flagged={app.flaggedDocuments?.includes("validId1")}
-                    onPreview={(file, label) => setPreviewFile({ file, label })}
-                  />
-                  {/* An Organizer is vetted as a person, not a business, so
-                      they submit a background clearance and no tax or permit
-                      documents — see the API's docs/adr/0005. */}
-                  {app.roleType === "organizer" ? (
-                    <DocPreview
-                      label="Background Clearance"
-                      file={data.backgroundClearanceFile}
-                      flagged={app.flaggedDocuments?.includes(
-                        "backgroundClearanceFile",
+              {/* Identity Documents — an Investor is vetted on declared
+                  capital and interests, not identity/business documents, so
+                  none of this section applies to that role. */}
+              {app.roleType !== "investor" && (
+                <>
+                  <div className="space-y-3">
+                    <p className="text-xs text-white/40 uppercase tracking-widest font-bold flex items-center gap-2">
+                      <span className="material-symbols-outlined text-[14px] text-yellow-400">
+                        warning
+                      </span>
+                      Verify these documents carefully
+                    </p>
+                    <div className="grid grid-cols-2 gap-3">
+                      <DocPreview
+                        label="Primary Valid ID"
+                        file={data.validId1}
+                        flagged={app.flaggedDocuments?.includes("validId1")}
+                        onPreview={(file, label) =>
+                          setPreviewFile({ file, label })
+                        }
+                      />
+                      {/* An Organizer is vetted as a person, not a business, so
+                          they submit a background clearance and no tax or permit
+                          documents — see the API's docs/adr/0005. */}
+                      {app.roleType === "organizer" ? (
+                        <DocPreview
+                          label="Background Clearance"
+                          file={data.backgroundClearanceFile}
+                          flagged={app.flaggedDocuments?.includes(
+                            "backgroundClearanceFile",
+                          )}
+                          onPreview={(file, label) =>
+                            setPreviewFile({ file, label })
+                          }
+                        />
+                      ) : (
+                        <>
+                          <DocPreview
+                            label="NBI Clearance"
+                            file={data.nbiFile}
+                            flagged={app.flaggedDocuments?.includes("nbiFile")}
+                            onPreview={(file, label) =>
+                              setPreviewFile({ file, label })
+                            }
+                          />
+                          <DocPreview
+                            label="TIN ID / Certificate"
+                            file={data.tinIdFile}
+                            flagged={app.flaggedDocuments?.includes(
+                              "tinIdFile",
+                            )}
+                            onPreview={(file, label) =>
+                              setPreviewFile({ file, label })
+                            }
+                          />
+                          <DocPreview
+                            label="BIR 2303 / Permit"
+                            file={data.birPermitFile}
+                            flagged={app.flaggedDocuments?.includes(
+                              "birPermitFile",
+                            )}
+                            onPreview={(file, label) =>
+                              setPreviewFile({ file, label })
+                            }
+                          />
+                        </>
                       )}
+                    </div>
+                  </div>
+
+                  {/* Selfie & Portfolio */}
+                  <div className="grid grid-cols-2 gap-3">
+                    <DocPreview
+                      label="Verification Selfie"
+                      file={data.selfieFile}
+                      flagged={app.flaggedDocuments?.includes("selfieFile")}
                       onPreview={(file, label) =>
                         setPreviewFile({ file, label })
                       }
                     />
-                  ) : (
-                    <>
+                    {data.portfolioFile !== undefined && (
                       <DocPreview
-                        label="NBI Clearance"
-                        file={data.nbiFile}
-                        flagged={app.flaggedDocuments?.includes("nbiFile")}
-                        onPreview={(file, label) =>
-                          setPreviewFile({ file, label })
-                        }
-                      />
-                      <DocPreview
-                        label="TIN ID / Certificate"
-                        file={data.tinIdFile}
-                        flagged={app.flaggedDocuments?.includes("tinIdFile")}
-                        onPreview={(file, label) =>
-                          setPreviewFile({ file, label })
-                        }
-                      />
-                      <DocPreview
-                        label="BIR 2303 / Permit"
-                        file={data.birPermitFile}
+                        label="Portfolio / Resume"
+                        file={data.portfolioFile}
                         flagged={app.flaggedDocuments?.includes(
-                          "birPermitFile",
+                          "portfolioFile",
                         )}
                         onPreview={(file, label) =>
                           setPreviewFile({ file, label })
                         }
                       />
-                    </>
-                  )}
-                </div>
-              </div>
+                    )}
+                  </div>
+                </>
+              )}
 
-              {/* Selfie & Portfolio */}
-              <div className="grid grid-cols-2 gap-3">
-                <DocPreview
-                  label="Verification Selfie"
-                  file={data.selfieFile}
-                  flagged={app.flaggedDocuments?.includes("selfieFile")}
-                  onPreview={(file, label) => setPreviewFile({ file, label })}
-                />
-                {data.portfolioFile !== undefined && (
+              {app.roleType === "investor" && (
+                <div className="grid grid-cols-2 gap-3">
                   <DocPreview
-                    label="Portfolio / Resume"
-                    file={data.portfolioFile}
-                    flagged={app.flaggedDocuments?.includes("portfolioFile")}
+                    label="Proof of Funds"
+                    file={data.proofOfFunds}
                     onPreview={(file, label) => setPreviewFile({ file, label })}
                   />
-                )}
-              </div>
+                </div>
+              )}
             </>
           )}
 

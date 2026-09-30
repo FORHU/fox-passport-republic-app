@@ -6,6 +6,7 @@ import { RoleDef, ROLE_DEFS } from "./types";
 
 interface UserMenuRoleSectionProps {
   isAdmin: boolean;
+  roleTypes: string[];
   hasRoleAccess: (def: RoleDef) => boolean;
   onSelectRole: (def: RoleDef, unlocked: boolean) => void;
   onSelectAdmin: () => void;
@@ -13,6 +14,7 @@ interface UserMenuRoleSectionProps {
 
 export function UserMenuRoleSection({
   isAdmin,
+  roleTypes,
   hasRoleAccess,
   onSelectRole,
   onSelectAdmin,
@@ -40,6 +42,8 @@ export function UserMenuRoleSection({
           {ROLE_DEFS.map((def) => {
             const unlocked = hasRoleAccess(def);
             const Icon = def.icon;
+            const label = def.labelFor?.(roleTypes) ?? def.label;
+            const description = def.descriptionFor?.(roleTypes) ?? def.description;
             return (
               <button
                 key={def.key}
@@ -69,10 +73,10 @@ export function UserMenuRoleSection({
                         : "text-white/40"
                     }`}
                   >
-                    {def.label}
+                    {label}
                   </p>
                   <p className="text-[10px] text-white/30 truncate">
-                    {def.description}
+                    {description}
                   </p>
                 </div>
                 {!unlocked && (

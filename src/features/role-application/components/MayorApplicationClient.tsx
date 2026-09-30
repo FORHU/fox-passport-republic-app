@@ -82,6 +82,33 @@ export default function MayorApplicationClient() {
             </p>
           </div>
 
+          {/* Every other role application is its own page too — this is the
+              one place a venueFoxer applicant would otherwise be stuck. */}
+          <p className="text-xs text-white/40 text-center -mt-5 mb-8 relative z-10">
+            Looking for a different role?{" "}
+            <Link
+              href="/foxer/apply"
+              className="text-white/70 underline hover:text-white"
+            >
+              Talent, Gear, Performer, or Organizer
+            </Link>
+            ,{" "}
+            <Link
+              href="/creator-dashboard/apply"
+              className="text-white/70 underline hover:text-white"
+            >
+              Event Foxer
+            </Link>
+            , or{" "}
+            <Link
+              href="/foxer/apply-investor"
+              className="text-white/70 underline hover:text-white"
+            >
+              Investor
+            </Link>
+            .
+          </p>
+
           <form onSubmit={handleSubmit} className="space-y-6 relative z-10">
             {/* Business Name */}
             <div className="space-y-2">

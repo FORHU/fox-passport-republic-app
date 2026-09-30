@@ -41,12 +41,10 @@ function Empty() {
         <span className="material-symbols-outlined text-[40px]">sell</span>
       </div>
       <div className="text-center">
-        <p className="text-sm text-white/30 font-medium">
-          No promotions yet.
-        </p>
+        <p className="text-sm text-white/30 font-medium">No promotions yet.</p>
         <p className="text-[11px] text-white/15 mt-1">
-          Create one for a listing, then generate codes citizens can redeem.
-          The discount comes out of your own payout, not the platform&apos;s.
+          Create one for a listing, then generate codes citizens can redeem. The
+          discount comes out of your own payout, not the platform&apos;s.
         </p>
       </div>
     </div>
@@ -193,7 +191,9 @@ function PromotionModal({
             {promo ? (
               <div className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white/60">
                 {listingOptions.find(
-                  (o) => o.id === (promo.assetId ?? promo.serviceId ?? promo.venueId),
+                  (o) =>
+                    o.id ===
+                    (promo.assetId ?? promo.serviceId ?? promo.venueId),
                 )?.name ?? "This listing"}{" "}
                 <span className="text-white/30 text-xs">
                   (can&apos;t be changed after creation)
@@ -256,7 +256,9 @@ function PromotionModal({
               </label>
               <select
                 value={discountType}
-                onChange={(e) => setDiscountType(e.target.value as DiscountType)}
+                onChange={(e) =>
+                  setDiscountType(e.target.value as DiscountType)
+                }
                 className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-3 text-sm text-white focus:border-[#ccff00]/40 outline-none transition-all"
               >
                 <option className="bg-[#0f111a] text-white" value="percentage">
@@ -269,14 +271,18 @@ function PromotionModal({
             </div>
             <div className="space-y-1">
               <label className="text-[10px] uppercase font-bold text-white/40 tracking-widest">
-                {discountType === "percentage" ? "Percent Off" : "Amount Off (₱)"}
+                {discountType === "percentage"
+                  ? "Percent Off"
+                  : "Amount Off (₱)"}
               </label>
               <input
                 type="text"
                 inputMode="decimal"
                 value={discountValue}
                 onChange={(e) => setDiscountValue(e.target.value)}
-                placeholder={discountType === "percentage" ? "e.g. 10" : "e.g. 200"}
+                placeholder={
+                  discountType === "percentage" ? "e.g. 10" : "e.g. 200"
+                }
                 className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-3 text-sm text-white placeholder-white/20 focus:border-[#ccff00]/40 outline-none transition-all"
               />
             </div>
@@ -712,9 +718,7 @@ export default function FoxerPromotionsClient({
   };
 
   const handleDelete = async (id: string) => {
-    if (
-      !confirm("Deactivate this promotion? Its vouchers will stop working.")
-    )
+    if (!confirm("Deactivate this promotion? Its vouchers will stop working."))
       return;
     try {
       await deleteOwnPromotion(id);
@@ -752,6 +756,7 @@ export default function FoxerPromotionsClient({
         style={{
           background:
             "radial-gradient(circle at 15% 50%, rgba(124,58,237,0.15) 0%, transparent 40%), radial-gradient(circle at 85% 30%, rgba(219,39,119,0.1) 0%, transparent 40%), radial-gradient(circle at 50% 0%, rgba(204,255,0,0.05) 0%, transparent 50%), #02040a",
+          backgroundAttachment: "fixed",
         }}
       >
         <DashboardHeader />
@@ -799,7 +804,9 @@ export default function FoxerPromotionsClient({
                       <div
                         className="flex-1 min-w-0 cursor-pointer"
                         onClick={() =>
-                          setExpandedId(expandedId === promo.id ? null : promo.id)
+                          setExpandedId(
+                            expandedId === promo.id ? null : promo.id,
+                          )
                         }
                       >
                         <div className="flex items-center gap-2.5 flex-wrap">
@@ -820,13 +827,20 @@ export default function FoxerPromotionsClient({
                             </span>
                           ) : (
                             <span className="px-2 py-0.5 rounded-md text-[9px] font-bold uppercase tracking-wider bg-white/5 text-white/40 border border-white/10">
-                              {(promo.vouchers ?? []).filter((v) => !v.code.startsWith("AUTO-")).length}{" "}
+                              {
+                                (promo.vouchers ?? []).filter(
+                                  (v) => !v.code.startsWith("AUTO-"),
+                                ).length
+                              }{" "}
                               codes
                             </span>
                           )}
                         </div>
                         <p className="text-white/50 text-sm mt-1.5">
-                          On <span className="text-white/70">{listingName(promo)}</span>
+                          On{" "}
+                          <span className="text-white/70">
+                            {listingName(promo)}
+                          </span>
                           {" · "}
                           {describeConstraints(promo)}
                         </p>
