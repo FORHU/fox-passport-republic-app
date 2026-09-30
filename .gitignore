@@ -53,3 +53,4 @@ next-env.d.ts
 /.agents/
 /.claude/skills/
 /skills-lock.json
+docs/ROLE_FLOWS_CHECKLIST.pdf
