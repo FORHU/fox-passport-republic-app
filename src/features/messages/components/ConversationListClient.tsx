@@ -13,6 +13,7 @@ import {
   useDeclineConversationRequest,
 } from "../hooks/useMessages";
 import { useAuthStore } from "@/shared/auth/useAuthStore";
+import { UserHeader } from "@/features/user/components/citizen/UserHeader";
 import { openConversationWindow } from "../store/useChatWindowsStore";
 import { NewGroupModal } from "./NewGroupModal";
 import type { Conversation, Candidate } from "../types";
@@ -134,8 +135,10 @@ export default function ConversationListClient({
   };
 
   return (
-    <div className="min-h-screen bg-[#0a0a0a] p-4 sm:p-8">
-      <div className="max-w-2xl mx-auto">
+    <div className="min-h-screen bg-[#02040a] text-white font-body antialiased">
+      <UserHeader isAuthenticated={isAuthenticated} />
+
+      <div className="max-w-2xl mx-auto pt-32 pb-20 px-4 sm:px-8">
         <div className="flex items-center gap-3 mb-8">
           <button
             onClick={() => router.back()}
