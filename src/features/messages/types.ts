@@ -2,6 +2,10 @@ export interface ConversationParticipant {
   id: string;
   name: string;
   imgId: string | null;
+  /** The person's platform roles, for the role badges in chat. */
+  roleType?: string[];
+  /** Set once an admin approved their ID — the Verified badge. */
+  identityVerifiedAt?: string | null;
 }
 
 /**

@@ -5,6 +5,8 @@ import {
   RESOURCE_CATEGORIES,
   ResourceItem,
 } from "@/features/venue/data/venueBuilderData";
+import { Money } from "@/shared/components/ui/Money";
+import { currencySymbol } from "@/shared/lib/currency";
 
 interface VenueResourcePaletteProps {
   activeCategory: string;
@@ -174,7 +176,7 @@ export function VenueResourcePalette({
                   {activeCategory !== "rules" && (
                     <div className="space-y-1">
                       <label className="text-[9px] uppercase text-white/40 font-bold ml-1">
-                        Value (₱)
+                        Value ({currencySymbol()})
                       </label>
                       <input
                         type="number"
@@ -243,7 +245,7 @@ export function VenueResourcePalette({
                     <div className="flex flex-row items-center gap-2">
                       {item.category !== "rules" && (
                         <span className="text-xs text-accent font-bold font-mono">
-                          ₱{item.value.toLocaleString()}
+                          <Money amount={item.value} />
                         </span>
                       )}
                       <button

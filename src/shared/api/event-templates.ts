@@ -16,6 +16,8 @@ export interface EventTemplate {
   maxAttendees?: number | null;
   currentAttendees?: number;
   estimatedTotal?: number;
+  // The platform fee already inside estimatedTotal (API calculateTotalsBreakdown).
+  platformFeeAmount?: number;
 }
 
 export async function fetchTrendingTemplates(

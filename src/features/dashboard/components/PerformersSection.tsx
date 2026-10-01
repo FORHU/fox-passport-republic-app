@@ -7,6 +7,7 @@ import { type ServiceItem } from "@/features/dashboard/data/dashboardData";
 import { StatusBadge } from "./StatusBadge";
 import { EmptyState } from "./EmptyState";
 import { PaginationBar } from "./PaginationBar";
+import { Money } from "@/shared/components/ui/Money";
 
 const PERFORMER_CATEGORIES = new Set([
   "entertainment",
@@ -202,7 +203,8 @@ export function PerformersSection({
                         Performance Fee
                       </span>
                       <span className="text-base font-bold font-mono text-amber-400">
-                        {sv.price}
+                        <Money amount={sv.price} />
+                        {sv.priceUnit ? ` ${sv.priceUnit}` : ""}
                       </span>
                     </div>
 

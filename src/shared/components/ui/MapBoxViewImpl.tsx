@@ -5,6 +5,7 @@ import "mapbox-gl/dist/mapbox-gl.css";
 import {
   getEffectiveMapboxToken,
   getMapStyle,
+  MapThemeControl,
   setupMapboxFallback,
 } from "@/shared/lib/mapbox";
 
@@ -32,7 +33,11 @@ export interface MapBoxViewProps {
   markers?: MapMarkerItem[];
   className?: string;
   style?: React.CSSProperties;
+  /** Fires once, when the map first finishes loading. */
   onMapReady?: (map: any, mapboxgl: any) => void;
+  /** Fires each time the style reloads after that (a dark/light switch),
+   * which wipes custom sources and layers — re-add them here. */
+  onStyleLoad?: (map: any, mapboxgl: any) => void;
   onClick?: (lngLat: [number, number], mapEvent: any) => void;
   onDblClick?: (lngLat: [number, number], mapEvent: any) => void;
   onMoveEnd?: (center: [number, number], zoom: number) => void;
@@ -54,6 +59,7 @@ export function MapBoxViewImpl({
   className = "w-full h-full min-h-[300px]",
   style,
   onMapReady,
+  onStyleLoad,
   onClick,
   onDblClick,
   onMoveEnd,
@@ -70,12 +76,14 @@ export function MapBoxViewImpl({
   const onDblClickRef = useRef(onDblClick);
   const onMoveEndRef = useRef(onMoveEnd);
   const onMapReadyRef = useRef(onMapReady);
+  const onStyleLoadRef = useRef(onStyleLoad);
 
   useLayoutEffect(() => {
     onClickRef.current = onClick;
     onDblClickRef.current = onDblClick;
     onMoveEndRef.current = onMoveEnd;
     onMapReadyRef.current = onMapReady;
+    onStyleLoadRef.current = onStyleLoad;
   });
 
   // Capture initial map options in a ref so the mount effect only runs once
@@ -138,6 +146,10 @@ export function MapBoxViewImpl({
         );
       }
 
+      if (initInteractive) {
+        map.addControl(new MapThemeControl(), "top-right");
+      }
+
       if (initShowGeolocate) {
         const geolocate = new mapboxgl.GeolocateControl({
           positionOptions: { enableHighAccuracy: true },
@@ -167,12 +179,21 @@ export function MapBoxViewImpl({
         }
       });
 
+      // Both "load" and "style.load" can signal readiness first, so this
+      // guards against running consumers' one-time setup twice.
+      let readyFired = false;
       const handleReady = () => {
-        if (isCancelled) return;
+        if (isCancelled || readyFired) return;
+        readyFired = true;
         setIsLoaded(true);
         if (onMapReadyRef.current) {
           onMapReadyRef.current(map, mapboxgl);
         }
+        // Registered only now, so it skips the initial style load and fires
+        // just for later reloads (a theme switch).
+        map.on("style.load", () => {
+          if (!isCancelled) onStyleLoadRef.current?.(map, mapboxgl);
+        });
       };
 
       if (map.isStyleLoaded()) {

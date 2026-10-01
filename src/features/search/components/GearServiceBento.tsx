@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import type { ProviderRow } from "@/features/search/api/search";
 import SearchPagination from "./SearchPagination";
+import { Money } from "@/shared/components/ui/Money";
 
 function BentoColumn({
   title,
@@ -66,7 +67,7 @@ function BentoColumn({
               </p>
             </div>
             <span className="text-xs font-bold text-[#ccff00] whitespace-nowrap">
-              ₱{row.price.toLocaleString()}
+              <Money amount={row.price} />
               <span className="text-white/40 font-normal">
                 /{row.billingRate}
               </span>

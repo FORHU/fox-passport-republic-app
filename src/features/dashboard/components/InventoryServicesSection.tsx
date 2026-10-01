@@ -10,6 +10,7 @@ import {
 import { StatusBadge } from "./StatusBadge";
 import { EmptyState } from "./EmptyState";
 import { PaginationBar } from "./PaginationBar";
+import { Money } from "@/shared/components/ui/Money";
 
 interface InventorySectionProps {
   inventory: InventoryItem[];
@@ -199,7 +200,10 @@ export function ServicesSection({
                   >
                     {sv.name}
                   </h4>
-                  <p className="text-xs text-white/40">{sv.price}</p>
+                  <p className="text-xs text-white/40">
+                    <Money amount={sv.price} />
+                    {sv.priceUnit ? ` ${sv.priceUnit}` : ""}
+                  </p>
                 </div>
               </div>
               <StatusBadge

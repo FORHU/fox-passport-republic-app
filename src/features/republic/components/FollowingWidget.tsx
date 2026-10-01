@@ -27,6 +27,9 @@ export interface FollowingWidgetProps {
     lastMessage?: { content: string; isMine: boolean } | null;
     participants?: { id: string; name: string; imgId: string | null }[];
     creatorId?: string;
+    isInbox?: boolean;
+    viewerRole?: "guest" | "team";
+    inbox?: { name: string };
   }>;
   incomingRequestsCount: number;
 
@@ -68,6 +71,9 @@ interface RowUser {
 
 interface RowGroup {
   isGroup: true;
+  /** A Shared Inbox thread — opened by conversation like a group, but it
+   * has no group options (leave/rename) to offer. */
+  isInbox?: boolean;
   id: string;
   name: string;
   conversation: any;
@@ -95,22 +101,38 @@ export function FollowingWidget({
   const threads = allConversations.filter((c) => !c.isIncomingRequest);
 
   const rows: Row[] = threads
-    .map((c): Row =>
-      c.isGroup
-        ? {
-            isGroup: true,
-            id: c.id,
-            name: c.name || "Group",
-            conversation: c,
-          }
-        : {
-            isGroup: false,
-            id: c.otherUser!.id,
-            name: c.otherUser!.name || "Unknown Citizen",
-            imgId: c.otherUser!.imgId,
-            conversation: c,
-          },
-    )
+    .map((c): Row => {
+      if (c.isGroup) {
+        return {
+          isGroup: true,
+          id: c.id,
+          name: c.name || "Group",
+          conversation: c,
+        };
+      }
+      // A Shared Inbox thread belongs to a Venue or Event, not to a person:
+      // the guest has no `otherUser` at all, and for the team `otherUser` is
+      // the guest — opening that as a 1:1 would start a separate DM instead
+      // of this thread. Both open by conversation.
+      if (c.isInbox || !c.otherUser) {
+        return {
+          isGroup: true,
+          isInbox: true,
+          id: c.id,
+          name:
+            (c.viewerRole === "guest" ? c.inbox?.name : c.otherUser?.name) ||
+            "Inbox",
+          conversation: c,
+        };
+      }
+      return {
+        isGroup: false,
+        id: c.otherUser.id,
+        name: c.otherUser.name || "Unknown Citizen",
+        imgId: c.otherUser.imgId,
+        conversation: c,
+      };
+    })
     .sort((a, b) => {
       const aConv = a.conversation;
       const bConv = b.conversation;
@@ -250,12 +272,13 @@ export function FollowingWidget({
                       </div>
                     </button>
 
-                    {groupOptionsRender(
-                      conversation.id,
-                      followedUser.name,
-                      conversation.isMuted,
-                      conversation.isPinned,
-                    )}
+                    {!followedUser.isInbox &&
+                      groupOptionsRender(
+                        conversation.id,
+                        followedUser.name,
+                        conversation.isMuted,
+                        conversation.isPinned,
+                      )}
                   </div>
                 );
               }

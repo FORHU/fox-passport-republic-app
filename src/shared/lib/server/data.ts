@@ -248,7 +248,7 @@ function normalizeVenue(v: any) {
     bathroomCount: Number(v.bathroomCount || v.bathrooms || 0),
     status: v.status || "draft",
     bookings: v.bookingsCount ?? v.bookings ?? null,
-    revenue: v.revenue ? `₱${Number(v.revenue).toLocaleString()}` : null,
+    revenue: v.revenue ? Number(v.revenue) : null,
     facilities: v.facilities || [],
     recommendedCapacity: v.recommendedCapacity || 0,
     seatingArrangements: v.seatingArrangements || [],

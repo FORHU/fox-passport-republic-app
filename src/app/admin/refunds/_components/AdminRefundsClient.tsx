@@ -13,6 +13,7 @@ import {
   issueItemizedRefund,
   type DisputeRecord,
 } from "@/features/booking/api/bookings";
+import { currencySymbol } from "@/shared/lib/currency";
 
 const DISPUTE_STATUS_STYLES: Record<string, string> = {
   pending: "bg-yellow-500/10 text-yellow-400",
@@ -216,7 +217,7 @@ export default function AdminRefundsClient() {
             </div>
             <div>
               <label className="text-xs text-white/50 block mb-1">
-                Amount (₱)
+                Amount ({currencySymbol()})
               </label>
               <input
                 type="number"

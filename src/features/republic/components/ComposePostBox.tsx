@@ -28,7 +28,7 @@ import {
   type PendingMediaTag,
 } from "@/features/republic/components/PhotoTagEditor";
 import { useAuthStore } from "@/shared/auth/useAuthStore";
-import { isPartnerUser } from "@/shared/auth/roles";
+import { hasPermission } from "@/shared/lib/permissions";
 import api from "@/shared/lib/axios";
 import { StyledSelect } from "@/shared/components/ui/StyledSelect";
 
@@ -196,7 +196,11 @@ export function ComposePostBox({
   }
 
   const roleTypes = user.roleType ?? [];
-  const isPartner = isPartnerUser(user);
+  // Mirrors the API (FeedSvc.createPost): investors, and anyone holding
+  // `feed:post-for-anyone`, may post every marketplace type.
+  const isPartner =
+    roleTypes.includes("investor") ||
+    hasPermission(user, "feed:post-for-anyone");
   const isVenueFoxer = isPartner || roleTypes.includes("venueFoxer");
   const isGearFoxer = isPartner || roleTypes.includes("gearFoxer");
   const isServiceFoxer = isPartner || roleTypes.includes("serviceFoxer");

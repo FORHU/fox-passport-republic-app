@@ -2,6 +2,7 @@ import React from "react";
 import { PartnershipProposal } from "../types/partnership.types";
 import { ProposalStatusBadge } from "./ProposalStatusBadge";
 import { ProposalActions } from "./ProposalActions";
+import { Money } from "@/shared/components/ui/Money";
 
 export function ProposalCard({ proposal }: { proposal: PartnershipProposal }) {
   return (
@@ -22,7 +23,7 @@ export function ProposalCard({ proposal }: { proposal: PartnershipProposal }) {
               <p>
                 <span className="font-medium text-white/40">Amount:</span>{" "}
                 <span className="text-[#ccff00]">
-                  ₱{Number(proposal.proposedAmount).toLocaleString()}
+                  <Money amount={proposal.proposedAmount} />
                 </span>
               </p>
             )}

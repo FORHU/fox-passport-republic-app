@@ -2,6 +2,8 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { useQueryClient } from "@tanstack/react-query";
+import { serviceQueryKey } from "@/features/service/hooks/useService";
 import {} from "sonner";
 import { useAuthStore } from "@/shared/auth/useAuthStore";
 import { useServicesBuilder } from "@/features/service/hooks/useServicesBuilder";
@@ -83,6 +85,7 @@ function invertBillingRateToUnitLabel(billingRate: unknown): string {
 
 export function useHostServiceEdit(serviceId: string) {
   const router = useRouter();
+  const queryClient = useQueryClient();
   const user = useAuthStore((s) => s.user);
   const hostId = user?.id;
 
@@ -206,6 +209,8 @@ export function useHostServiceEdit(serviceId: string) {
       };
 
       await updateService(serviceId, payload as any);
+      // The public booking page reads this cache entry.
+      queryClient.invalidateQueries({ queryKey: serviceQueryKey(serviceId) });
 
       services.setIsNotification(true);
       setTimeout(() => {

@@ -39,10 +39,25 @@ export const useMessageStore = create<MessageState>((set) => ({
       const existing =
         state.messagesByConversation[message.conversationId] ?? [];
       if (existing.some((m) => m.id === message.id)) return state;
+      // Threads render oldest → newest (newest at the bottom). A socket push
+      // and the sender's own REST response can land out of order, so slot
+      // the message in by `createdAt` rather than blindly appending.
+      const at = new Date(message.createdAt).getTime();
+      let index = existing.length;
+      while (
+        index > 0 &&
+        new Date(existing[index - 1].createdAt).getTime() > at
+      ) {
+        index--;
+      }
       return {
         messagesByConversation: {
           ...state.messagesByConversation,
-          [message.conversationId]: [...existing, message],
+          [message.conversationId]: [
+            ...existing.slice(0, index),
+            message,
+            ...existing.slice(index),
+          ],
         },
       };
     }),

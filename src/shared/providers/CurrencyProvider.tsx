@@ -14,6 +14,7 @@ import api from "@/shared/lib/axios";
 import {
   DEFAULT_CURRENCY,
   convertCurrency,
+  formatCompactCurrency,
   formatCurrency,
 } from "@/shared/lib/currency";
 
@@ -27,6 +28,8 @@ interface CurrencyContextValue {
   convert: (amount: number, from?: string) => number;
   /** Converts then formats — the one most call sites want. */
   format: (amount: number, from?: string) => string;
+  /** Like `format`, in short form ("$1.2K") for tight spaces. */
+  formatCompact: (amount: number, from?: string) => string;
   isConverting: boolean;
 }
 
@@ -91,9 +94,22 @@ export function CurrencyProvider({ children }: { children: React.ReactNode }) {
     [convert, currency],
   );
 
+  const formatCompact = useCallback(
+    (amount: number, from: string = DEFAULT_CURRENCY) =>
+      formatCompactCurrency(convert(amount, from), currency),
+    [convert, currency],
+  );
+
   const value = useMemo(
-    () => ({ currency, setCurrency, convert, format, isConverting: !data }),
-    [currency, setCurrency, convert, format, data],
+    () => ({
+      currency,
+      setCurrency,
+      convert,
+      format,
+      formatCompact,
+      isConverting: !data,
+    }),
+    [currency, setCurrency, convert, format, formatCompact, data],
   );
 
   return (
@@ -107,4 +123,11 @@ export function useCurrency(): CurrencyContextValue {
     throw new Error("useCurrency must be used within a CurrencyProvider");
   }
   return ctx;
+}
+
+/** Like `useCurrency`, but `null` outside a CurrencyProvider instead of
+ * throwing — for leaf components (see `Money`) that should still render,
+ * unconverted, when mounted on their own. */
+export function useOptionalCurrency(): CurrencyContextValue | null {
+  return useContext(CurrencyContext);
 }

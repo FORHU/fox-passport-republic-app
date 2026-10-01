@@ -7,6 +7,9 @@ import {
   fetchCancellationPolicies,
 } from "@/shared/api/cancellation-policies";
 import { Check, ChevronDown } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
+
+const NO_POLICIES: CancellationPolicy[] = [];
 
 interface Props {
   value: string | null;
@@ -19,8 +22,13 @@ export default function CancellationPolicyPicker({
   onChange,
   label = "Cancellation Policy",
 }: Props) {
-  const [policies, setPolicies] = useState<CancellationPolicy[]>([]);
-  const [loading, setLoading] = useState(true);
+  // Platform reference data that rarely changes — cached for 10 minutes so
+  // every listing form reuses one fetch.
+  const { data: policies = NO_POLICIES, isPending: loading } = useQuery({
+    queryKey: ["cancellation-policies"],
+    queryFn: fetchCancellationPolicies,
+    staleTime: 10 * 60_000,
+  });
   const [open, setOpen] = useState(false);
   const [triggerRect, setTriggerRect] = useState<DOMRect | null>(null);
   const [mounted, setMounted] = useState(false);
@@ -29,10 +37,6 @@ export default function CancellationPolicyPicker({
 
   useEffect(() => {
     setMounted(true);
-    fetchCancellationPolicies()
-      .then(setPolicies)
-      .catch(() => {})
-      .finally(() => setLoading(false));
   }, []);
 
   useEffect(() => {

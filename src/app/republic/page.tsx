@@ -1,10 +1,22 @@
 "use client";
 
-import { useState, useEffect, useCallback, useRef, Suspense } from "react";
+import {
+  useState,
+  useEffect,
+  useCallback,
+  useMemo,
+  useRef,
+  Suspense,
+} from "react";
+import {
+  useInfiniteQuery,
+  useQueryClient,
+  type InfiniteData,
+} from "@tanstack/react-query";
 import { useRouter, useSearchParams } from "next/navigation";
 import { CheckCircle2, Inbox, Search } from "lucide-react";
 import { FeedPost, FeedTab } from "@/features/republic/types";
-import { getFeed, getPostById } from "@/shared/api/feed";
+import { getFeed, getPostById, type FeedResponse } from "@/shared/api/feed";
 import { RepublicTabs } from "@/features/republic/components/RepublicTabs";
 import { ComposePostTrigger } from "@/features/republic/components/ComposePostTrigger";
 import { ComposePostModal } from "@/features/republic/components/ComposePostModal";
@@ -38,10 +50,7 @@ function RepublicFeedContent() {
   const [mode, setMode] = useState<"recent" | "top">("recent");
   const [search, setSearch] = useState(initialSearch);
   const [searchInput, setSearchInput] = useState(initialSearch);
-  const [posts, setPosts] = useState<FeedPost[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [nextCursor, setNextCursor] = useState<string | null>(null);
-  const [loadingMore, setLoadingMore] = useState(false);
+  const queryClient = useQueryClient();
   const [composeOpen, setComposeOpen] = useState(false);
   const [activePost, setActivePost] = useState<FeedPost | null>(null);
   const postsListRef = useRef<HTMLDivElement>(null);
@@ -99,7 +108,7 @@ function RepublicFeedContent() {
   const handleTabChange = useCallback(
     (tab: FeedTab) => {
       // Re-selecting the already-active tab would replace the URL with
-      // itself — a no-op navigation NavigationOverlay can't detect as
+      // itself — a no-op navigation RouteProgressBar can't detect as
       // "completed", so skip it entirely rather than relying on that guard.
       if (tab === activeTab) return;
       setActiveTab(tab);
@@ -119,55 +128,66 @@ function RepublicFeedContent() {
     [router, activeTab],
   );
 
-  // Fetch 10 posts at a time. A cursor means this is a "load more" call from
-  // the scroll sentinel, so its results append onto what's already on screen
-  // — true infinite scroll, the last-loaded post flows straight into the
-  // next batch instead of the page being swapped out from under the reader.
-  // No cursor means a fresh load (initial mount, or the tab/search/mode
-  // changed), so it replaces whatever was there before.
-  const fetchPosts = useCallback(
-    async (
-      tab: FeedTab,
-      term: string,
-      currentMode: "recent" | "top",
-      cursor?: string,
-    ) => {
-      try {
-        if (!cursor) setLoading(true);
-        const res = await getFeed({
-          tab,
-          search: term.trim().length > 0 ? term.trim() : undefined,
-          cursor,
-          limit: 10,
-          mode: currentMode,
-        });
-
-        if (cursor) {
-          setPosts((prev) => [...prev, ...res.data]);
-        } else {
-          setPosts(res.data);
-        }
-        setNextCursor(res.nextCursor ?? null);
-      } catch (err) {
-        console.error("Failed to load feed posts:", err);
-      } finally {
-        setLoading(false);
-        setLoadingMore(false);
-      }
-    },
-    [],
+  // 10 posts a page, cached per tab/search/mode. Scrolling appends the next
+  // page onto what's already on screen — true infinite scroll, the
+  // last-loaded post flows straight into the next batch. Coming back to the
+  // feed (or to a tab already visited) paints the cached pages at once
+  // instead of a spinner. `staleTime: 0` still refetches behind them on
+  // every visit, since PostCard keeps reactions, saves and edits in its own
+  // state rather than in this cache.
+  const term = search.trim();
+  const feedQueryKey = ["feed", activeTab, term, mode];
+  const feedQuery = useInfiniteQuery({
+    queryKey: feedQueryKey,
+    queryFn: ({ pageParam }) =>
+      getFeed({
+        tab: activeTab,
+        search: term.length > 0 ? term : undefined,
+        cursor: pageParam,
+        limit: 10,
+        mode,
+      }),
+    initialPageParam: undefined as string | undefined,
+    getNextPageParam: (lastPage) => lastPage.nextCursor ?? undefined,
+    staleTime: 0,
+  });
+  const posts = useMemo<FeedPost[]>(
+    () => feedQuery.data?.pages.flatMap((page) => page.data) ?? [],
+    [feedQuery.data],
   );
+  const loading = feedQuery.isPending;
+  const loadingMore = feedQuery.isFetchingNextPage;
+  const hasMore = feedQuery.hasNextPage;
 
   useEffect(() => {
-    fetchPosts(activeTab, search, mode);
-  }, [activeTab, search, mode, fetchPosts]);
+    if (feedQuery.isError)
+      console.error("Failed to load feed posts:", feedQuery.error);
+  }, [feedQuery.isError, feedQuery.error]);
+
+  const removePost = useCallback(
+    (id: string) => {
+      queryClient.setQueryData<InfiniteData<FeedResponse>>(
+        feedQueryKey,
+        (old) =>
+          old && {
+            ...old,
+            pages: old.pages.map((page) => ({
+              ...page,
+              data: page.data.filter((p) => p.id !== id),
+            })),
+          },
+      );
+    },
+    // feedQueryKey is rebuilt each render from these three.
+    [queryClient, activeTab, term, mode],
+  );
 
   // Shared success handler for the compose modal, wherever it was opened
-  // from — refetches the current feed view rather than assuming a full
-  // reload is needed.
+  // from — refetches every cached feed view (and the landing teaser), so
+  // the new post shows up on whichever tab the author goes to next.
   const handleDesktopPostCreated = useCallback(() => {
-    fetchPosts(activeTab, search, mode);
-  }, [fetchPosts, activeTab, search, mode]);
+    queryClient.invalidateQueries({ queryKey: ["feed"] });
+  }, [queryClient]);
 
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -182,11 +202,11 @@ function RepublicFeedContent() {
   // scrolling down keep surfacing more posts appended to the bottom of the
   // list. No scroll reset here: unlike a tab switch, this shouldn't yank the
   // reader back to the top of a list that's simply grown underneath them.
+  const { fetchNextPage } = feedQuery;
   const handleLoadMore = useCallback(() => {
-    if (!nextCursor || loadingMore || loading) return;
-    setLoadingMore(true);
-    fetchPosts(activeTab, search, mode, nextCursor);
-  }, [nextCursor, loadingMore, loading, activeTab, search, mode, fetchPosts]);
+    if (!hasMore || loadingMore || loading) return;
+    fetchNextPage();
+  }, [hasMore, loadingMore, loading, fetchNextPage]);
 
   // `handleLoadMore` is recreated on every render (it closes over nextCursor/
   // loading/loadingMore so its own internal guard stays correct), which used
@@ -393,7 +413,7 @@ function RepublicFeedContent() {
                       post={post}
                       onOpenDetail={handleOpenDetail}
                       onPostDeleted={(id) => {
-                        setPosts((prev) => prev.filter((p) => p.id !== id));
+                        removePost(id);
                       }}
                       renderShareModal={(postToShare, onClose) => (
                         <SharePostModal post={postToShare} onClose={onClose} />
@@ -409,7 +429,7 @@ function RepublicFeedContent() {
                       <span className="w-5 h-5 rounded-full border-2 border-lime-400 border-t-transparent animate-spin" />
                       <span>Loading more posts...</span>
                     </div>
-                  ) : nextCursor ? (
+                  ) : hasMore ? (
                     <div className="text-center py-6">
                       <span className="text-[11px] font-mono text-zinc-500 uppercase tracking-wider">
                         Scroll for more
@@ -447,7 +467,7 @@ function RepublicFeedContent() {
           post={activePost}
           onClose={handleCloseDetail}
           onPostDeleted={(id) => {
-            setPosts((prev) => prev.filter((p) => p.id !== id));
+            removePost(id);
             handleCloseDetail();
           }}
         />

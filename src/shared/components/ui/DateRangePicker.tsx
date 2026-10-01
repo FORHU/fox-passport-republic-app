@@ -10,7 +10,7 @@ export function diffDays(start: string, end: string): number {
 }
 
 export function formatDate(dateStr: string): string {
-  return new Date(dateStr + "T00:00:00").toLocaleDateString("en-PH", {
+  return new Date(dateStr + "T00:00:00").toLocaleDateString(undefined, {
     weekday: "short",
     month: "short",
     day: "numeric",
@@ -242,7 +242,7 @@ export default function DateRangePicker({
 
   const toDisplay = (d: string) =>
     d
-      ? new Date(d + "T00:00:00").toLocaleDateString("en-PH", {
+      ? new Date(d + "T00:00:00").toLocaleDateString(undefined, {
           month: "short",
           day: "numeric",
           year: "numeric",

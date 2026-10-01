@@ -85,7 +85,7 @@ function RoleBadge({
 }
 
 function fmt(date: string) {
-  return new Date(date).toLocaleDateString("en-PH", {
+  return new Date(date).toLocaleDateString(undefined, {
     month: "short",
     day: "numeric",
     year: "numeric",

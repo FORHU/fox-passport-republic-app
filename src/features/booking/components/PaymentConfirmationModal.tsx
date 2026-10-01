@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import { X } from "lucide-react";
+import { formatCurrency } from "@/shared/lib/currency";
 
 interface PaymentConfirmationModalProps {
   amount: number;
@@ -84,7 +85,7 @@ export default function PaymentConfirmationModal({
               Total due
             </span>
             <span className="font-display text-3xl font-bold text-accent">
-              ₱{amount.toLocaleString()}
+              {formatCurrency(amount)}
             </span>
           </div>
 

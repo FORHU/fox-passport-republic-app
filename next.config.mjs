@@ -18,6 +18,17 @@ const nextConfig = {
   reactStrictMode: false,
   allowedDevOrigins: ["192.168.1.34"],
 
+  // Keep a visited dynamic page's server payload in the client router cache
+  // for 30s (Next 15+ defaults this to 0, i.e. every revisit re-renders on
+  // the server — nearly every page here is `force-dynamic`). Matches React
+  // Query's 30s staleTime in QueryProvider, so hopping back to a page you
+  // just left is instant on both layers. `router.refresh()` still bypasses it.
+  experimental: {
+    staleTimes: {
+      dynamic: 30,
+    },
+  },
+
   images: {
     remotePatterns: [
       { protocol: 'https', hostname: 'images.unsplash.com' },

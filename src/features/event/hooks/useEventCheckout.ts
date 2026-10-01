@@ -7,6 +7,7 @@ import {
 } from "@/features/event/api/checkout";
 import type { Id } from "@/shared/lib/api-types";
 import type { CheckoutErrorResponse } from "@/shared/types/payment";
+import { formatCurrency } from "@/shared/lib/currency";
 
 export const useEventPaymentSummary = (
   eventId: Id,
@@ -62,7 +63,7 @@ export const useCancelEventMutation = (eventId: Id) => {
     onSuccess: (data) => {
       toast.success(
         data.totalRefunded > 0
-          ? `Event cancelled — ₱${data.totalRefunded.toLocaleString()} refunded.`
+          ? `Event cancelled — ${formatCurrency(data.totalRefunded)} refunded.`
           : "Event cancelled.",
       );
       queryClient.invalidateQueries({ queryKey: ["eventPaymentSummary", eventId] });

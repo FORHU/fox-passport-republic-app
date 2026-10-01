@@ -4,6 +4,8 @@ import Link from "next/link";
 import Image from "next/image";
 import { useSearchParams } from "next/navigation";
 
+import { Money } from "@/shared/components/ui/Money";
+
 interface Venue {
   id: string;
   title: string;
@@ -62,7 +64,7 @@ export default function ListingCard({ venue }: { venue: Venue }) {
         {/* Price Row */}
         <div className="mt-0.5 md:mt-1 flex items-baseline gap-0.5">
           <span className="font-semibold text-gray-900 text-[10px] md:text-base">
-            ₱{venue.price.toLocaleString()}
+            <Money amount={venue.price} />
           </span>
           <span className="text-gray-500 text-[8px] md:text-sm font-light">
             night

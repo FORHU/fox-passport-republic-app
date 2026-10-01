@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { useExperienceBuilderData } from "@/features/venue/hooks/useExperienceBuilderData";
+import { Money } from "@/shared/components/ui/Money";
 
 const SERVICE_CATEGORIES = [
   { id: "foxer", label: "Curator", icon: "person_search" },
@@ -246,7 +247,7 @@ export function CustomExperienceBuilderModal({
                           {foxer.name}
                         </h4>
                         <span className="text-xs font-bold text-accent">
-                          ₱{foxer.fee.toLocaleString()}
+                          <Money amount={foxer.fee} />
                         </span>
                       </div>
                       <p className="text-xs text-text-muted mt-1">
@@ -290,7 +291,7 @@ export function CustomExperienceBuilderModal({
                           {svc.name}
                         </h4>
                         <span className="text-xs font-bold text-accent">
-                          ₱{svc.price.toLocaleString()}
+                          <Money amount={svc.price} />
                         </span>
                       </div>
                       <p className="text-xs text-text-muted mt-1 leading-relaxed line-clamp-2">
@@ -335,7 +336,7 @@ export function CustomExperienceBuilderModal({
                 </div>
               </div>
               <span className="text-sm font-bold text-white">
-                ₱{(venuePrice * 2).toLocaleString()}
+                <Money amount={venuePrice * 2} />
               </span>
             </div>
 
@@ -356,10 +357,9 @@ export function CustomExperienceBuilderModal({
                   </div>
                 </div>
                 <span className="text-sm font-bold text-white">
-                  ₱
-                  {foxers
-                    .find((f) => f.id === selectedFoxer)
-                    ?.fee.toLocaleString()}
+                  <Money
+                    amount={foxers.find((f) => f.id === selectedFoxer)?.fee}
+                  />
                 </span>
                 <button
                   onClick={() => setSelectedFoxer(null)}
@@ -396,7 +396,7 @@ export function CustomExperienceBuilderModal({
                         {svc.name}
                       </span>
                       <span className="text-white font-bold">
-                        ₱{svc.price.toLocaleString()}
+                        <Money amount={svc.price} />
                       </span>
                       <button
                         onClick={() => handleServiceToggle(svc.id)}
@@ -417,7 +417,7 @@ export function CustomExperienceBuilderModal({
             <div className="flex justify-between items-end mb-4">
               <span className="text-sm text-text-muted">Total Estimate</span>
               <span className="text-3xl font-display font-bold text-accent">
-                ₱{calculateTotal().toLocaleString()}
+                <Money amount={calculateTotal()} />
               </span>
             </div>
             <button
@@ -450,7 +450,7 @@ export function CustomExperienceBuilderModal({
         <div>
           <p className="text-[10px] text-white/40">Total Estimate</p>
           <span className="text-lg font-display font-bold text-accent">
-            ₱{calculateTotal().toLocaleString()}
+            <Money amount={calculateTotal()} />
           </span>
         </div>
         <button

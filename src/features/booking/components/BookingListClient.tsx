@@ -15,6 +15,7 @@ import CancelBookingModal from "@/features/booking/components/CancelBookingModal
 import { toast } from "sonner";
 import { getDashboardPath } from "@/shared/lib/dashboard-path";
 import { pollWhileVisible } from "@/shared/lib/realtime";
+import { formatCurrency } from "@/shared/lib/currency";
 
 const STATUS_LABEL: Record<string, { label: string; color: string }> = {
   pending: { label: "Pending", color: "text-yellow-400 bg-yellow-500/10" },
@@ -354,7 +355,7 @@ function BookingCard({
   const statusInfo = STATUS_LABEL[booking.status] || STATUS_LABEL.pending;
   const eventName = booking.event?.name || "Venue Booking";
   const startDate = booking.startAt
-    ? new Date(booking.startAt).toLocaleDateString("en-PH", {
+    ? new Date(booking.startAt).toLocaleDateString(undefined, {
         month: "short",
         day: "numeric",
         year: "numeric",
@@ -432,7 +433,7 @@ function BookingCard({
             {pastDueUnpaid ? "Unpaid & Expired" : statusInfo.label}
           </span>
           <span className="text-xl font-display font-bold text-accent">
-            ₱{displayTotal.toLocaleString()}
+            {formatCurrency(displayTotal)}
           </span>
         </div>
       </div>

@@ -11,6 +11,9 @@ const SUPPLY_ROLE_TYPES: RoleType[] = [
   "performerFoxer",
   // Invitations and the teams they help run live on the dashboard.
   "organizer",
+  // Partnerships, investments and payouts live on the dashboard too —
+  // `requireHost()` already admits them; this link just never sent them.
+  "investor",
 ];
 
 /**

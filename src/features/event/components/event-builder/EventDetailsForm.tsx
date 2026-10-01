@@ -5,10 +5,7 @@ import { EVENT_CATEGORIES } from "@/features/event/data/eventBuilderData";
 import { countWords } from "@/features/event/utils/textStats";
 import CancellationPolicyPicker from "@/shared/components/ui/CancellationPolicyPicker";
 import { StyledSelect } from "@/shared/components/ui/StyledSelect";
-import {
-  MapboxLocationInput,
-  MapboxContextItem,
-} from "@/shared/components/ui/MapboxLocationInput";
+import { CascadingLocationFields } from "@/shared/components/ui/CascadingLocationFields";
 import DateTimePicker from "./DateTimePicker";
 
 interface EventDetailsFormProps {
@@ -18,6 +15,9 @@ interface EventDetailsFormProps {
   categoryOther: string;
   date: string;
   location: string;
+  targetCity?: string;
+  targetState?: string;
+  targetCountry?: string;
   maxAttendees: number;
   showGuide: boolean;
   cancellationPolicyId: string | null;
@@ -42,7 +42,9 @@ export function EventDetailsForm({
   category,
   categoryOther,
   date,
-  location,
+  targetCity = "",
+  targetState = "",
+  targetCountry = "",
   maxAttendees,
   showGuide,
   cancellationPolicyId,
@@ -138,33 +140,24 @@ export function EventDetailsForm({
             <DateTimePicker value={date} onChange={onDateChange} />
           </div>
           <div className="flex-1">
-            <label className="text-[10px] uppercase font-bold text-white/40 tracking-widest mb-2 block">
-              Where
-            </label>
-            <MapboxLocationInput
-              value={location}
-              onChange={onLocationChange}
-              type="place"
-              placeholder="e.g. BGC, Taguig"
-              onSelect={(
-                val: string,
-                context?: MapboxContextItem[],
-                center?: [number, number],
-              ) => {
-                onLocationChange(val);
-                if (onTargetCityChange) onTargetCityChange(val);
-                const region = context?.find((c) =>
-                  c.id.startsWith("region"),
-                )?.text;
-                const countryName = context?.find((c) =>
-                  c.id.startsWith("country"),
-                )?.text;
-                if (region && onTargetStateChange) onTargetStateChange(region);
-                if (countryName && onTargetCountryChange)
-                  onTargetCountryChange(countryName);
-                if (center && onLatLngChange)
-                  onLatLngChange(center[1], center[0]);
+            {/* Where — country → state → city, each locked until the one
+                before it is picked. `location` stays the display string the
+                listing shows ("City, State"). */}
+            <CascadingLocationFields
+              value={{
+                country: targetCountry,
+                state: targetState,
+                city: targetCity,
               }}
+              onChange={(next) => {
+                onTargetCountryChange?.(next.country);
+                onTargetStateChange?.(next.state);
+                onTargetCityChange?.(next.city);
+                onLocationChange(
+                  [next.city, next.state].filter(Boolean).join(", "),
+                );
+              }}
+              onCoordinates={(lat, lng) => onLatLngChange?.(lat, lng)}
             />
           </div>
           <div className="flex-1">

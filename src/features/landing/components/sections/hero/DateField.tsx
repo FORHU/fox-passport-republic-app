@@ -45,7 +45,7 @@ export function DateField({
   };
 
   const display = value
-    ? new Date(value + "T00:00:00").toLocaleDateString("en-PH", {
+    ? new Date(value + "T00:00:00").toLocaleDateString(undefined, {
         month: "short",
         day: "numeric",
         year: "numeric",

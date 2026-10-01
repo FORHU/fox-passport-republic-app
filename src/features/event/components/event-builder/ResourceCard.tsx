@@ -3,6 +3,7 @@
 import React from "react";
 import Link from "next/link";
 import { ResourceItem } from "@/features/event/data/eventBuilderData";
+import { Money } from "@/shared/components/ui/Money";
 
 interface ResourceCardProps {
   item: ResourceItem;
@@ -53,7 +54,7 @@ export function ResourceCard({
               {item.name}
             </h4>
             <span className="text-xs text-accent font-bold font-mono shrink-0">
-              ₱{item.cost.toLocaleString()}
+              <Money amount={item.cost} />
             </span>
           </div>
           <p className="text-[11px] text-gray-500 mt-1 line-clamp-2">

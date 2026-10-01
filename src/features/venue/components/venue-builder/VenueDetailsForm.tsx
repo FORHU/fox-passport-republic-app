@@ -7,21 +7,8 @@ import {
 } from "@/features/venue/data/venueBuilderData";
 import CancellationPolicyPicker from "@/shared/components/ui/CancellationPolicyPicker";
 import { StyledSelect } from "@/shared/components/ui/StyledSelect";
-import SearchableDropdown from "@/shared/components/ui/SearchableDropdown";
-import { COUNTRIES, COUNTRY_CODES } from "@/shared/data/countries";
-import {
-  STATIC_CITY_LISTS,
-  STATIC_REGION_LISTS,
-} from "@/shared/data/locationLists";
-import {
-  PH_CITY_TO_PROVINCE,
-  PH_TOWNS_BY_PROVINCE,
-} from "@/shared/data/location";
-import {
-  searchCitiesInCountry,
-  searchRegionsInCountry,
-  geocodeCountryCenter,
-} from "@/shared/lib/geocoding";
+import { CascadingLocationFields } from "@/shared/components/ui/CascadingLocationFields";
+import { geocodeCountryCenter } from "@/shared/lib/geocoding";
 import { VenuePolygonMapPicker } from "@/features/venue/components/venue-builder/VenuePolygonMapPicker";
 
 interface VenueDetailsFormProps {
@@ -91,14 +78,6 @@ export function VenueDetailsForm({
   onRemoveImage,
   onCloseGuide,
 }: VenueDetailsFormProps) {
-  const isPH = country === "Philippines";
-  // Once a province is picked, the city list narrows to just that
-  // province's towns instead of the generic curated major-cities list.
-  const isPHProvinceScoped = isPH && Boolean(state && PH_TOWNS_BY_PROVINCE[state]);
-  const cityOptions = isPHProvinceScoped
-    ? PH_TOWNS_BY_PROVINCE[state]
-    : STATIC_CITY_LISTS[country];
-
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const openFilePicker = useCallback(() => {
@@ -222,106 +201,25 @@ export function VenueDetailsForm({
               </div>
             </div>
 
-            {/* Country, City, State — Country drives what's offered in the
-                other two: a curated static list where we have one (the
-                Philippines, plus the US/Europe for cities), live Mapbox
-                search scoped to the chosen country otherwise. */}
-            <div className="grid grid-cols-3 gap-4">
-              <div className="relative">
-                <label className="text-[10px] uppercase font-bold text-white/40 tracking-widest mb-2 block">
-                  Country
-                </label>
-                <SearchableDropdown
-                  value={country}
-                  options={COUNTRIES}
-                  placeholder="Select country..."
-                  searchPlaceholder="Search countries..."
-                  onChange={(val) => {
-                    onCountryChange(val);
-                    onCityChange("");
-                    onStateChange("");
-                    const code = val ? COUNTRY_CODES[val] : undefined;
-                    if (code) {
-                      geocodeCountryCenter(code).then((center) => {
-                        if (center) onLatLngChange(center[1], center[0]);
-                      });
-                    }
-                  }}
-                />
-              </div>
-              <div className="relative">
-                <label className="text-[10px] uppercase font-bold text-white/40 tracking-widest mb-2 block">
-                  City
-                </label>
-                <SearchableDropdown
-                  key={`${country}-${isPHProvinceScoped ? state : ""}`}
-                  value={city}
-                  disabled={!country}
-                  options={cityOptions}
-                  asyncSearch={
-                    !cityOptions && COUNTRY_CODES[country]
-                      ? (q) => searchCitiesInCountry(q, COUNTRY_CODES[country])
-                      : undefined
+            {/* Country → State → City, each locked until the one before it is
+                picked (shared/components/ui/CascadingLocationFields). A new
+                country also recentres the map on it. */}
+            <CascadingLocationFields
+              value={{ country, state, city }}
+              onChange={(next, { countryCode: code }) => {
+                if (next.country !== country) {
+                  if (code) {
+                    geocodeCountryCenter(code).then((center) => {
+                      if (center) onLatLngChange(center[1], center[0]);
+                    });
                   }
-                  asyncHint="Type at least 2 letters..."
-                  placeholder={
-                    country ? "Select city..." : "Select a country first"
-                  }
-                  searchPlaceholder="Search cities..."
-                  onChange={(val) => {
-                    onCityChange(val);
-                    // The Philippines is the one country we have a real
-                    // city -> province mapping for, so picking a city there
-                    // resolves the correct province automatically instead of
-                    // leaving it to an unrelated alphabetical list.
-                    if (isPH) {
-                      const province = PH_CITY_TO_PROVINCE[val];
-                      if (province && province !== state) {
-                        onStateChange(province);
-                      }
-                    }
-                  }}
-                />
-              </div>
-              <div className="relative">
-                <label className="text-[10px] uppercase font-bold text-white/40 tracking-widest mb-2 block">
-                  State/Province
-                </label>
-                <SearchableDropdown
-                  key={country || "no-country"}
-                  value={state}
-                  disabled={!country}
-                  options={STATIC_REGION_LISTS[country]}
-                  asyncSearch={
-                    !STATIC_REGION_LISTS[country] && COUNTRY_CODES[country]
-                      ? (q) =>
-                          searchRegionsInCountry(q, COUNTRY_CODES[country])
-                      : undefined
-                  }
-                  asyncHint="Type at least 2 letters..."
-                  onChange={(val) => {
-                    onStateChange(val);
-                    // Narrowing/changing the province can leave a
-                    // previously-picked city stranded in the wrong one —
-                    // clear it rather than show a mismatched pair.
-                    if (
-                      isPH &&
-                      city &&
-                      val &&
-                      !(PH_TOWNS_BY_PROVINCE[val] ?? []).includes(city)
-                    ) {
-                      onCityChange("");
-                    }
-                  }}
-                  placeholder={
-                    country
-                      ? "Select state/province..."
-                      : "Select a country first"
-                  }
-                  searchPlaceholder="Search states/provinces..."
-                />
-              </div>
-            </div>
+                }
+                onCountryChange(next.country);
+                onStateChange(next.state);
+                onCityChange(next.city);
+              }}
+              onCoordinates={(lat, lng) => onLatLngChange(lat, lng)}
+            />
 
             {/* Service Area */}
             <div>

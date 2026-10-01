@@ -48,11 +48,6 @@ export async function requireAuth() {
   return user;
 }
 
-export async function checkRole(_userId: string, role: string) {
-  const user = await getUser();
-  return user?.systemRole === role;
-}
-
 export async function requireAdmin() {
   const user = await requireAuth();
   // Capability, not role: admin_secretary reaches the console; what they may

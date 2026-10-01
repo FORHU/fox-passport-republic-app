@@ -5,8 +5,14 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useFavorites } from "@/shared/hooks/useFavorites";
 import type { Favorite } from "@/shared/api/favorites";
+import { useCurrency } from "@/shared/providers/CurrencyProvider";
 
-function formatPrice(favorite: Favorite): string {
+// `format` is the viewer's display-currency formatter (useCurrency), passed in
+// since this helper sits outside the component.
+function formatPrice(
+  favorite: Favorite,
+  format: (amount: number) => string,
+): string {
   const target = favorite.venue ?? favorite.event;
   if (!target || target.price == null) return "Inquire for price";
   const amount = Number(target.price);
@@ -17,7 +23,7 @@ function formatPrice(favorite: Favorite): string {
         ? "/hour"
         : "/night"
       : "/event";
-  return `₱${amount.toLocaleString()}${suffix}`;
+  return `${format(amount)}${suffix}`;
 }
 
 function imageOf(favorite: Favorite): string | undefined {
@@ -27,6 +33,7 @@ function imageOf(favorite: Favorite): string | undefined {
 }
 
 export default function MobileWishlistView() {
+  const { format } = useCurrency();
   const router = useRouter();
   const { favorites, isLoading, toggleFavorite } = useFavorites();
 
@@ -236,7 +243,7 @@ export default function MobileWishlistView() {
                       margin: 0,
                     }}
                   >
-                    {formatPrice(favorite)}
+                    {formatPrice(favorite, format)}
                   </p>
                 </div>
               </button>

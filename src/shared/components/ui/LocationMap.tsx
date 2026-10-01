@@ -36,8 +36,10 @@ export function LocationMap({
     [lng, lat],
   );
 
-  const handleMapReady = useCallback(
-    (map: any) => {
+  // `fit` only on first load — after a dark/light switch the layers need
+  // re-adding, but the viewer's pan/zoom should be left alone.
+  const drawBoundary = useCallback(
+    (map: any, fit: boolean) => {
       if (!hasBoundary || !boundary) return;
       const ring = [...boundary];
       const closedRing =
@@ -82,6 +84,7 @@ export function LocationMap({
           layout: { "line-join": "round", "line-cap": "round" },
         });
       }
+      if (!fit) return;
 
       let minLng = ring[0][0];
       let maxLng = ring[0][0];
@@ -103,6 +106,14 @@ export function LocationMap({
     },
     [boundary, hasBoundary],
   );
+  const handleMapReady = useCallback(
+    (map: any) => drawBoundary(map, true),
+    [drawBoundary],
+  );
+  const handleStyleLoad = useCallback(
+    (map: any) => drawBoundary(map, false),
+    [drawBoundary],
+  );
 
   return (
     <MapBoxView
@@ -111,6 +122,7 @@ export function LocationMap({
       markers={markers}
       className={className}
       onMapReady={handleMapReady}
+      onStyleLoad={handleStyleLoad}
     />
   );
 }

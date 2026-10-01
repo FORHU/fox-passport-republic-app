@@ -4,6 +4,7 @@ import React, { useEffect, useRef, useState } from "react";
 import {
   getEffectiveMapboxToken,
   getMapStyle,
+  MapThemeControl,
   setupMapboxFallback,
 } from "@/shared/lib/mapbox";
 import {
@@ -200,6 +201,7 @@ export function VenuePolygonMapPicker({
         new mapboxgl.NavigationControl({ showCompass: false }),
         "top-right",
       );
+      map.addControl(new MapThemeControl(), "top-right");
 
       // Unconditional: an undo (or Clear) that reopens or empties a
       // previously-closed shape must tell the parent the boundary is gone
@@ -534,8 +536,18 @@ export function VenuePolygonMapPicker({
         return true;
       };
 
+      let initialLoadDone = false;
       map.on("load", () => {
+        initialLoadDone = true;
         rebuildMarkers();
+        redraw();
+        if (referenceRef.current.length > 0) renderReferenceLayer();
+      });
+      // A dark/light switch reloads the style and drops the shape layers;
+      // vertex markers are DOM elements and survive it, so only the layers
+      // need redrawing.
+      map.on("style.load", () => {
+        if (!initialLoadDone) return; // first load — handled above
         redraw();
         if (referenceRef.current.length > 0) renderReferenceLayer();
       });

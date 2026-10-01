@@ -4,6 +4,7 @@ import React from "react";
 import { EventTemplate } from "@/shared/api/event-templates";
 import { CATEGORY_EMOJI, STRIPE_BG } from "./constants";
 import { SectionLabel } from "./SectionLabel";
+import { useCurrency } from "@/shared/providers/CurrencyProvider";
 
 interface MobileTrendingStripProps {
   trending: EventTemplate[];
@@ -51,6 +52,7 @@ function SkeletonCard({
 }
 
 function TemplateCard({ t }: { t: EventTemplate }) {
+  const { format } = useCurrency();
   const city = t.templateVenues?.[0]?.venue?.city ?? t.targetCity;
   const price = t.estimatedTotal ?? t.templateVenues?.[0]?.venue?.price;
   const img = t.images?.[0]?.url;
@@ -117,7 +119,7 @@ function TemplateCard({ t }: { t: EventTemplate }) {
           {t.name}
         </p>
         <p style={{ fontSize: 11, color: "rgba(255,255,255,0.4)", margin: 0 }}>
-          {[city, price ? `₱${Number(price).toLocaleString()}` : null]
+          {[city, price ? format(Number(price)) : null]
             .filter(Boolean)
             .join(" · ")}
         </p>

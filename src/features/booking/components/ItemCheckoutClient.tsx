@@ -14,6 +14,7 @@ import { getDashboardPath } from "@/shared/lib/dashboard-path";
 import { smartBack } from "@/shared/lib/navigation";
 import { useCurrency } from "@/shared/providers/CurrencyProvider";
 import { DEFAULT_CURRENCY } from "@/shared/lib/currency";
+import { formatCurrency } from "@/shared/lib/currency";
 
 const stripePromise = loadStripe(
   process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY || "",
@@ -57,7 +58,7 @@ export default function ItemCheckoutClient() {
   const typeConfig = itemType ? TYPE_CONFIG[itemType] : TYPE_CONFIG.service;
 
   const formattedDate = scheduledDate
-    ? new Date(scheduledDate).toLocaleDateString("en-PH", {
+    ? new Date(scheduledDate).toLocaleDateString(undefined, {
         year: "numeric",
         month: "long",
         day: "numeric",
@@ -397,7 +398,7 @@ export default function ItemCheckoutClient() {
                         Total
                       </span>
                       <span className="text-3xl font-display font-bold text-accent text-shadow-glow">
-                        ₱{totalAmount.toLocaleString()}
+                        {formatCurrency(totalAmount)}
                       </span>
                     </div>
                     {/* Charging always happens in PHP — this is a display-only

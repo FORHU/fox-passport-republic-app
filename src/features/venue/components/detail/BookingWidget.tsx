@@ -3,6 +3,8 @@
 import React from "react";
 import { useRouter } from "next/navigation";
 
+import { Money } from "@/shared/components/ui/Money";
+
 interface VenueBookingWidgetProps {
   venueId: string;
   price: number;
@@ -41,7 +43,7 @@ export function BookingWidget({
         <div className="flex justify-between items-end mb-5 sm:mb-6 relative z-10">
           <div>
             <span className="text-2xl sm:text-3xl font-display font-bold text-white">
-              ₱{price.toLocaleString()}
+              <Money amount={price} />
             </span>
             <span className="text-xs sm:text-sm text-text-muted">
               {" "}

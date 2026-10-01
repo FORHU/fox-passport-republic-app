@@ -48,6 +48,8 @@ export interface PublicCitizenProfile {
   country?: string | null;
   roleType: string[];
   systemRole: string;
+  /** When an admin approved their government ID — the Verified badge. */
+  identityVerifiedAt?: string | null;
   createdAt: string;
   foxerSpecializations?: Array<{
     id: string;

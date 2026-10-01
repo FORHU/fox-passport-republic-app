@@ -11,7 +11,7 @@ import NotificationSocketBridge from "@/features/notifications/components/Notifi
 import MessageSocketBridge from "@/features/messages/components/MessageSocketBridge";
 import ChatWindowsWrapper from "@/app/ChatWindowsWrapper";
 import SessionExpiredToast from "@/features/auth/components/SessionExpiredToast";
-import NavigationOverlay from "@/shared/components/ui/NavigationOverlay";
+import RouteProgressBar from "@/shared/components/ui/RouteProgressBar";
 
 // Import the Master Provider
 import Providers from "@/shared/providers";
@@ -106,7 +106,7 @@ export default function RootLayout({
       >
         <Providers>
           <Suspense fallback={null}>
-            <NavigationOverlay />
+            <RouteProgressBar />
           </Suspense>
 
           {/* Notifications surface bottom-right — out of the way of the fixed

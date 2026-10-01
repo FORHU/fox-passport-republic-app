@@ -19,6 +19,7 @@ import {
 import { formatCurrency } from "@/shared/lib/currency";
 import { toast } from "sonner";
 import { X, Plus, Ticket, Copy, Upload } from "lucide-react";
+import { currencySymbol } from "@/shared/lib/currency";
 
 function Empty() {
   return (
@@ -247,7 +248,7 @@ function PromotionModal({
             </div>
             <div className="space-y-1">
               <label className="text-[10px] uppercase font-bold text-white/40 tracking-widest">
-                {discountType === "percentage" ? "Percent Off" : "Amount Off (₱)"}
+                {discountType === "percentage" ? "Percent Off" : `Amount Off (${currencySymbol()})`}
               </label>
               <input
                 type="text"
@@ -263,7 +264,7 @@ function PromotionModal({
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1">
               <label className="text-[10px] uppercase font-bold text-white/40 tracking-widest">
-                Min Spend (₱)
+                Min Spend ({currencySymbol()})
               </label>
               <input
                 type="text"
@@ -276,7 +277,7 @@ function PromotionModal({
             </div>
             <div className="space-y-1">
               <label className="text-[10px] uppercase font-bold text-white/40 tracking-widest">
-                Max Discount (₱)
+                Max Discount ({currencySymbol()})
               </label>
               <input
                 type="text"

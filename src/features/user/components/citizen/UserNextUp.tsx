@@ -98,7 +98,7 @@ export const UserNextUp: React.FC<UserNextUpProps> = ({
                 .filter(Boolean)
                 .join(", ") || "Location TBD";
             const time = date
-              ? date.toLocaleTimeString("en-PH", {
+              ? date.toLocaleTimeString(undefined, {
                   hour: "numeric",
                   minute: "2-digit",
                 })
@@ -113,7 +113,7 @@ export const UserNextUp: React.FC<UserNextUpProps> = ({
                 <div className="flex flex-col items-center justify-center w-14 h-14 rounded-2xl bg-surface-highlight/60 shrink-0">
                   <span className="text-[10px] font-bold text-accent uppercase leading-none">
                     {date
-                      ? date.toLocaleDateString("en-PH", { month: "short" })
+                      ? date.toLocaleDateString(undefined, { month: "short" })
                       : "—"}
                   </span>
                   <span className="text-lg font-bold text-white leading-none mt-0.5">

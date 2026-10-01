@@ -3,6 +3,7 @@
 import React from "react";
 import { useExperienceBuilder } from "@/features/venue/hooks/useVenueDetail";
 import { useExperienceBuilderData } from "@/features/venue/hooks/useExperienceBuilderData";
+import { Money } from "@/shared/components/ui/Money";
 
 const SERVICE_CATEGORIES = [
   { id: "foxer", label: "Curator", icon: "person_search" },
@@ -231,7 +232,7 @@ export function CustomExperienceBuilder({
                         />
                         <div className="flex flex-col items-end">
                           <span className="text-accent font-bold font-display text-lg">
-                            ₱{foxer.fee.toLocaleString()}
+                            <Money amount={foxer.fee} />
                           </span>
                           <div className="flex items-center text-yellow-400 text-xs font-bold gap-1 bg-black/30 px-2 py-1 rounded-full mt-1">
                             <span className="material-symbols-outlined text-[14px] fill-current">
@@ -330,7 +331,7 @@ export function CustomExperienceBuilder({
                     </div>
                     <div className="pt-4 border-t border-white/5 flex justify-between items-center">
                       <span className="text-white font-display font-bold">
-                        +₱{svc.price.toLocaleString()}
+                        +<Money amount={svc.price} />
                       </span>
                       <span className="text-xs text-text-muted uppercase tracking-wider font-bold">
                         Add to build
@@ -387,7 +388,7 @@ export function CustomExperienceBuilder({
                 </div>
               </div>
               <span className="text-sm font-bold text-white">
-                ₱{(venuePrice * 2).toLocaleString()}
+                <Money amount={venuePrice * 2} />
               </span>
             </div>
 
@@ -408,7 +409,7 @@ export function CustomExperienceBuilder({
                   </div>
                 </div>
                 <span className="text-sm font-bold text-white shrink-0">
-                  ₱{selectedFoxerData.fee.toLocaleString()}
+                  <Money amount={selectedFoxerData.fee} />
                 </span>
                 <button
                   onClick={() => setSelectedFoxer(null)}
@@ -456,7 +457,7 @@ export function CustomExperienceBuilder({
                       {s.name}
                     </p>
                     <span className="text-sm font-bold text-white shrink-0">
-                      ₱{s.price.toLocaleString()}
+                      <Money amount={s.price} />
                     </span>
                     <button
                       onClick={() => toggleService(s.id)}
@@ -477,7 +478,7 @@ export function CustomExperienceBuilder({
             <div className="flex justify-between items-end mb-4">
               <span className="text-sm text-text-muted">Total Estimate</span>
               <span className="text-3xl font-display font-bold text-accent">
-                ₱{total.toLocaleString()}
+                <Money amount={total} />
               </span>
             </div>
             <button
@@ -511,7 +512,7 @@ export function CustomExperienceBuilder({
               Total Estimate
             </p>
             <p className="text-xl font-display font-bold text-accent">
-              ₱{total.toLocaleString()}
+              <Money amount={total} />
             </p>
           </div>
           <div className="flex items-center gap-2">
@@ -564,7 +565,7 @@ export function CustomExperienceBuilder({
                 <div className="flex justify-between text-sm">
                   <span className="text-white/80">Venue Base (2 Nights)</span>
                   <span className="font-bold text-white">
-                    ₱{(venuePrice * 2).toLocaleString()}
+                    <Money amount={venuePrice * 2} />
                   </span>
                 </div>
                 {selectedFoxerData && (
@@ -573,7 +574,7 @@ export function CustomExperienceBuilder({
                       {selectedFoxerData.name} (Curator)
                     </span>
                     <span className="font-bold text-white">
-                      ₱{selectedFoxerData.fee.toLocaleString()}
+                      <Money amount={selectedFoxerData.fee} />
                     </span>
                   </div>
                 )}
@@ -581,7 +582,7 @@ export function CustomExperienceBuilder({
                   <div key={s.id} className="flex justify-between text-sm">
                     <span className="text-white/80">{s.name}</span>
                     <span className="font-bold text-white">
-                      ₱{s.price.toLocaleString()}
+                      <Money amount={s.price} />
                     </span>
                   </div>
                 ))}
@@ -593,7 +594,7 @@ export function CustomExperienceBuilder({
                     Total
                   </span>
                   <span className="text-2xl font-display font-bold text-accent">
-                    ₱{total.toLocaleString()}
+                    <Money amount={total} />
                   </span>
                 </div>
                 <button

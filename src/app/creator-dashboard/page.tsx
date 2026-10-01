@@ -7,10 +7,17 @@ import { OrganizingSection } from "@/features/appointment/components/OrganizingS
 import { OpenToOrganizersSection } from "@/features/appointment/components/OpenToOrganizersSection";
 import { OrganizerAttention } from "./_components/OrganizerAttention";
 import { MobilePendingRequests } from "./_components/MobilePendingRequests";
+import { PartnershipsOverview } from "@/features/partnership/components/PartnershipsOverview";
+import { hasPermission } from "@/shared/lib/permissions";
+import { RoleGettingStarted } from "./_components/RoleGettingStarted";
 
 export default async function Dashboard() {
   const user = await requireHost();
   const data = await getHostDashboard(user.id);
+  const isInvestor = hasPermission(user, "partnership:propose");
+  const receivesProposals =
+    hasPermission(user, "template:manage") ||
+    hasPermission(user, "venue:manage");
 
   return (
     <>
@@ -18,9 +25,20 @@ export default async function Dashboard() {
         user={user}
         organizing={
           <div className="space-y-6">
+            <RoleGettingStarted
+              totals={{
+                venues: data.venues?.length ?? 0,
+                events: data.events?.length ?? 0,
+                assets: data.inventory?.length ?? 0,
+                services: data.services?.length ?? 0,
+              }}
+            />
             <OrganizerAttention />
             <OrganizingSection />
             <OpenToOrganizersSection />
+            {(isInvestor || receivesProposals) && (
+              <PartnershipsOverview isInvestor={isInvestor} />
+            )}
           </div>
         }
         pendingRequests={<MobilePendingRequests />}

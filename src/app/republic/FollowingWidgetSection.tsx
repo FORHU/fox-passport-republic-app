@@ -15,7 +15,10 @@ import {
   useSetConversationPinned,
   useDeleteConversation,
 } from "@/features/messages/hooks/useMessages";
-import { useChatWindowsStore } from "@/features/messages/store/useChatWindowsStore";
+import {
+  openConversationWindow,
+  useChatWindowsStore,
+} from "@/features/messages/store/useChatWindowsStore";
 import { MessageRequestsModal } from "@/features/messages/components/MessageRequestsModal";
 import type { Conversation } from "@/features/messages/types";
 import { FollowingWidget } from "@/features/republic/components/FollowingWidget";
@@ -169,7 +172,6 @@ export default function FollowingWidgetSection() {
   ).length;
 
   const openChatWindow = useChatWindowsStore((s) => s.openChat);
-  const openGroupChatWindow = useChatWindowsStore((s) => s.openGroupChat);
   const setConversationId = useChatWindowsStore((s) => s.setConversationId);
   const startConversation = useStartConversation();
 
@@ -197,14 +199,10 @@ export default function FollowingWidgetSection() {
     );
   };
 
+  // Opens by conversation, not by person — groups and Shared Inbox threads
+  // alike. The shared opener picks the right window kind for each.
   const handleOpenGroup = (conversation: Conversation) => {
-    openGroupChatWindow({
-      conversationId: conversation.id,
-      name: conversation.name ?? "Group",
-      participants: conversation.participants ?? [],
-      creatorId: conversation.creatorId,
-      imgId: conversation.imgId,
-    });
+    openConversationWindow(conversation);
   };
 
   const handleSelectRequest = (

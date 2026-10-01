@@ -380,6 +380,12 @@ export function useHostEventEdit(eventId: string) {
             found?.venue?.location ??
             "",
         );
+        // Without these the builder store kept whatever target location it
+        // last held (it persists across events), and saving an edit sent
+        // that instead of this template's own.
+        builder.setTargetCountry(found?.targetCountry ?? "");
+        builder.setTargetState(found?.targetState ?? "");
+        builder.setTargetCity(found?.targetCity ?? "");
         builder.setMaxAttendees(
           Number(found?.maxAttendees ?? found?.capacity ?? 100) || 100,
         );

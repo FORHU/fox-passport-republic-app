@@ -11,6 +11,7 @@ import { config } from "@/shared/lib/config";
 import {
   getEffectiveMapboxToken,
   getMapStyle,
+  MapThemeControl,
   setupMapboxFallback,
 } from "@/shared/lib/mapbox";
 import { useUserLocation } from "@/shared/hooks/useUserLocation";
@@ -237,6 +238,7 @@ export default function InvestmentLocationPicker({
         new mapboxgl.NavigationControl({ showCompass: false }),
         "top-right",
       );
+      map.addControl(new MapThemeControl(), "top-right");
       const geolocate = new mapboxgl.GeolocateControl({
         positionOptions: { enableHighAccuracy: true },
         trackUserLocation: false,

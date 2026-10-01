@@ -25,6 +25,7 @@ import {
   fetchVenuesNear,
   ViewportBounds,
 } from "@/features/venue/api/venues";
+import { Money } from "@/shared/components/ui/Money";
 
 // A searched country has an exact bbox from Mapbox; a searched city
 // sometimes doesn't (small towns), so pad a fixed radius around its center
@@ -172,7 +173,7 @@ function VenueListCard({
           </div>
           <div className="flex items-center justify-between mt-auto pt-2">
             <p className="text-sm font-bold text-white">
-              ₱{venue.price.toLocaleString()}
+              <Money amount={venue.price} />
               <span className="text-[10px] font-normal text-white/40">
                 /night
               </span>
@@ -300,7 +301,7 @@ function VenueDetailCard({
                     {comp.name}
                   </span>
                   <span className="text-[10px] text-lime-400 font-bold">
-                    ₱{comp.price.toLocaleString()}
+                    <Money amount={comp.price} />
                   </span>
                 </button>
               ))}
@@ -310,7 +311,7 @@ function VenueDetailCard({
 
         <div className="flex items-center justify-between pt-2 border-t border-white/10">
           <p className="text-base font-bold text-white">
-            ₱{venue.price.toLocaleString()}
+            <Money amount={venue.price} />
             <span className="text-xs font-normal text-white/40">/night</span>
           </p>
           <Link

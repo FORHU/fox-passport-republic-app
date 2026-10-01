@@ -28,6 +28,7 @@ import { setPostReaction, editPost, voteOnPoll } from "@/shared/api/feed";
 import { renderUsernameMentions } from "@/shared/lib/mentions";
 import { useAuthStore } from "@/shared/auth/useAuthStore";
 import { Badge } from "@/shared/components/ui/badge";
+import { Money } from "@/shared/components/ui/Money";
 
 const VIDEO_EXTENSIONS = [".mp4", ".mov", ".webm", ".m4v"];
 const isVideoUrl = (url: string) => {
@@ -541,8 +542,7 @@ export function PostCard({
               <span>📍 {post.venue.city}</span>
               <span>👥 Up to {post.venue.capacity} guests</span>
               <span className="text-lime-400 font-bold">
-                ₱{Number(post.venue.price).toLocaleString()} /{" "}
-                {post.venue.billingRate}
+                <Money amount={post.venue.price} /> / {post.venue.billingRate}
               </span>
             </div>
           </div>
@@ -585,8 +585,7 @@ export function PostCard({
               </span>
             </div>
             <p className="text-xs text-lime-400 font-bold mt-1">
-              ₱{Number(post.asset.price).toLocaleString()} /{" "}
-              {post.asset.billingRate}
+              <Money amount={post.asset.price} /> / {post.asset.billingRate}
             </p>
           </div>
 
@@ -630,7 +629,7 @@ export function PostCard({
             <div className="flex items-center gap-2 text-xs text-zinc-400 mt-1">
               <span>📍 {post.service.city}</span>
               <span className="text-lime-400 font-bold">
-                ₱{Number(post.service.price).toLocaleString()} /{" "}
+                <Money amount={post.service.price} /> /{" "}
                 {post.service.billingRate}
               </span>
             </div>

@@ -1,6 +1,8 @@
 "use client";
 
 import React from "react";
+import { Money } from "@/shared/components/ui/Money";
+import { currencySymbol } from "@/shared/lib/currency";
 
 interface RevenueProjectorProps {
   baseRate: number;
@@ -49,7 +51,7 @@ export function RevenueProjector({
           </h4>
           <div className="mb-4">
             <label className="text-[10px] text-text-muted block mb-2">
-              Nightly Rate (₱)
+              Nightly Rate ({currencySymbol()})
             </label>
             <input
               type="number"
@@ -95,7 +97,7 @@ export function RevenueProjector({
             Over-Capacity Requests
           </h4>
           <label className="text-[10px] text-text-muted block mb-2">
-            Extra Guest Rate (₱, optional)
+            Extra Guest Rate ({currencySymbol()}, optional)
           </label>
           <input
             type="number"
@@ -124,7 +126,7 @@ export function RevenueProjector({
             <div className="flex justify-between text-xs">
               <span className="text-text-muted">Rental Income</span>
               <span className="text-white font-mono">
-                ₱{monthlyBase.toLocaleString()}
+                <Money amount={monthlyBase} />
               </span>
             </div>
             <p className="text-[10px] text-white/30 -mt-2">
@@ -133,7 +135,7 @@ export function RevenueProjector({
             <div className="flex justify-between text-xs">
               <span className="text-text-muted">Add-on Revenue</span>
               <span className="text-white font-mono">
-                ₱{monthlyAddons.toLocaleString()}
+                <Money amount={monthlyAddons} />
               </span>
             </div>
             <p className="text-[10px] text-white/30 -mt-2">
@@ -144,7 +146,7 @@ export function RevenueProjector({
             <div className="flex justify-between text-lg font-bold">
               <span className="text-white">Total Yield</span>
               <span className="text-accent font-mono">
-                ₱{total.toLocaleString()}
+                <Money amount={total} />
               </span>
             </div>
           </div>

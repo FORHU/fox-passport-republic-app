@@ -6,6 +6,7 @@ import api from "@/shared/lib/axios";
 import { toast } from "sonner";
 import { useQueryClient } from "@tanstack/react-query";
 import { LocationMap } from "@/shared/components/ui/LocationMap";
+import { Money } from "@/shared/components/ui/Money";
 
 interface VenueTableProps {
   venues: any[];
@@ -565,10 +566,7 @@ export const AdminVenuesTable: React.FC<VenueTableProps> = ({
                                         payments
                                       </span>
                                       <span className="text-green-400 font-bold">
-                                        ₱
-                                        {Number(
-                                          venue.price ?? 0,
-                                        ).toLocaleString()}
+                                        <Money amount={venue.price} />
                                       </span>
                                       <span className="text-white/40">
                                         / night

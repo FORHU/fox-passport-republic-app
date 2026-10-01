@@ -13,6 +13,9 @@ interface SearchableDropdownProps {
   placeholder: string;
   searchPlaceholder: string;
   disabled?: boolean;
+  /** Offer what was typed as a value of its own when nothing matches it —
+   * for lists that can't be complete (e.g. every town in a country). */
+  allowCustom?: boolean;
 }
 
 export default function SearchableDropdown({
@@ -23,6 +26,7 @@ export default function SearchableDropdown({
   placeholder,
   searchPlaceholder,
   disabled = false,
+  allowCustom = false,
   onChange,
 }: SearchableDropdownProps & { onChange: (val: string) => void }) {
   const [open, setOpen] = useState(false);
@@ -201,6 +205,22 @@ export default function SearchableDropdown({
                     {opt}
                   </button>
                 ))}
+                {allowCustom &&
+                  query.trim().length > 0 &&
+                  !filtered.some(
+                    (o) => o.toLowerCase() === query.trim().toLowerCase(),
+                  ) && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        onChange(query.trim());
+                        setOpen(false);
+                      }}
+                      className="w-full text-left px-3 py-2 rounded-lg text-sm text-accent hover:bg-white/10 transition-all"
+                    >
+                      Use &ldquo;{query.trim()}&rdquo;
+                    </button>
+                  )}
                 {filtered.length === 0 && asyncSearch && !loading && (
                   <div className="px-3 py-2 text-sm text-white/30">
                     {query.trim().length < 2 ? asyncHint : "No matches"}

@@ -10,15 +10,14 @@ function normalizeStatus(status: unknown): string {
   return raw;
 }
 
-function formatPeso(value: unknown): string {
+function toAmount(value: unknown): number {
   const num =
     typeof value === "string"
       ? parseFloat(value)
       : typeof value === "number"
         ? value
         : NaN;
-  if (!Number.isFinite(num)) return "₱0";
-  return `₱${num.toLocaleString()}`;
+  return Number.isFinite(num) ? num : 0;
 }
 
 export function mapBackendAssetToInventoryItem(
@@ -91,16 +90,16 @@ export function mapBackendServiceToServiceItem(
     other: "text-accent bg-accent/20",
   };
 
-  const price = formatPeso(service.price);
-  const unit = service.billingRate;
-  const displayPrice = unit ? `${price} ${unit}` : price;
+  const price = toAmount(service.price);
+  const priceUnit = service.billingRate || undefined;
   const img =
     service.images?.[0]?.url || service.images?.[0]?.imageUrl || undefined;
 
   return {
     id: service.id,
     name: service.name,
-    price: displayPrice,
+    price,
+    priceUnit,
     status,
     icon: iconMap[slug] || "room_service",
     color: colorMap[slug] || "text-accent bg-accent/20",

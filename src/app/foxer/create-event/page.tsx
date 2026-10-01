@@ -28,6 +28,9 @@ export default function EventCreationBuilder() {
     categoryOther,
     date,
     location,
+    targetCity,
+    targetState,
+    targetCountry,
     maxAttendees,
     gallery,
     cancellationPolicyId,
@@ -121,6 +124,9 @@ export default function EventCreationBuilder() {
                 categoryOther={categoryOther}
                 date={date}
                 location={location}
+                targetCity={targetCity}
+                targetState={targetState}
+                targetCountry={targetCountry}
                 maxAttendees={maxAttendees}
                 showGuide={showGuide}
                 cancellationPolicyId={cancellationPolicyId}

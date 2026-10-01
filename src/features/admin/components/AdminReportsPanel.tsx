@@ -65,7 +65,7 @@ const targetLabels = {
 };
 
 function dateLabel(value: string) {
-  return new Date(value).toLocaleString("en-PH", {
+  return new Date(value).toLocaleString(undefined, {
     dateStyle: "medium",
     timeStyle: "short",
   });

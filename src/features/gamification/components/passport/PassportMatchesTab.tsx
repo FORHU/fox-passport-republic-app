@@ -11,6 +11,7 @@ import {
   IncomingMatchRequest,
 } from "@/features/gamification/api/passport";
 import { useRespondToMatch } from "@/features/gamification/hooks/usePassport";
+import { Money } from "@/shared/components/ui/Money";
 
 export interface PassportMatchesTabProps {
   user: any;
@@ -238,7 +239,7 @@ export function PassportMatchesTab({
                       <div className="flex flex-col items-end gap-2 shrink-0">
                         {req.totalAmount > 0 && (
                           <span className="text-sm font-black text-white">
-                            ₱{req.totalAmount.toLocaleString()}
+                            <Money amount={req.totalAmount} />
                           </span>
                         )}
                         <span

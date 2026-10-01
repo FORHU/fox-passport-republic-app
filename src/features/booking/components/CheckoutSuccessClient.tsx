@@ -8,6 +8,7 @@ import { useCheckoutStore } from "@/features/booking/store/useCheckoutStore";
 import { useAuthStore } from "@/shared/auth/useAuthStore";
 import { confirmBookingPayment } from "@/features/booking/api/bookings";
 import { getDashboardPath } from "@/shared/lib/dashboard-path";
+import { formatCurrency } from "@/shared/lib/currency";
 
 export default function CheckoutSuccessClient() {
   const router = useRouter();
@@ -182,7 +183,7 @@ export default function CheckoutSuccessClient() {
                       {checkInDate
                         ? new Date(
                             checkInDate + "T00:00:00",
-                          ).toLocaleDateString("en-PH", {
+                          ).toLocaleDateString(undefined, {
                             month: "short",
                             day: "numeric",
                             year: "numeric",
@@ -231,7 +232,7 @@ export default function CheckoutSuccessClient() {
               <div>
                 <p className="text-text-muted text-sm">Amount Paid</p>
                 <span className="text-3xl font-display font-bold text-white">
-                  ₱{totalAmount.toLocaleString()}.00
+                  {formatCurrency(totalAmount)}
                 </span>
               </div>
               <div className="flex gap-3 w-full sm:w-auto">

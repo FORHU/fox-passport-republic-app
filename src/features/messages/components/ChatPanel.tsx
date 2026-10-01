@@ -72,6 +72,8 @@ import {
   BUBBLE_GAP,
   EDGE_OFFSET,
 } from "../constants";
+import { RoleBadges } from "@/shared/components/ui/RoleBadges";
+import { VerifiedBadge } from "@/shared/components/ui/VerifiedBadge";
 
 // Hover-revealed "..." trigger on a message row, opening a tiny menu of
 // Reply/Forward/Delete — one component instead of separate always-visible
@@ -436,7 +438,10 @@ export default function ChatPanel({
   const isMulti = isGroup || !!inbox;
 
   const participantsById = useMemo(() => {
-    const map = new Map<string, { name: string; imgId?: string | null }>();
+    const map = new Map<
+      string,
+      { name: string; imgId?: string | null; roleType?: string[] }
+    >();
     (participants ?? []).forEach((p) => map.set(p.id, p));
     return map;
   }, [participants]);
@@ -480,7 +485,10 @@ export default function ChatPanel({
   // In a Shared Inbox thread each message carries its real sender, which is
   // the only way to name the teammate who wrote it.
   const inboxSenders = useMemo(() => {
-    const map = new Map<string, { name: string; imgId?: string | null }>();
+    const map = new Map<
+      string,
+      { name: string; imgId?: string | null; roleType?: string[] }
+    >();
     if (!inbox) return map;
     for (const m of messages) {
       if (m.sender) map.set(m.senderId, m.sender);
@@ -516,6 +524,15 @@ export default function ChatPanel({
   >(null);
   const [confirmingLeaveGroup, setConfirmingLeaveGroup] = useState(false);
   const { data: conversations = [] } = useConversations();
+  // Platform roles for the role badges — so you can tell a Venue Foxer from
+  // an Organizer or a plain Citizen. None for yourself.
+  const activeConversation = conversations.find((c) => c.id === conversationId);
+  const getSenderRoles = (senderId: string) => {
+    if (senderId === currentUserId) return undefined;
+    if (inbox) return inboxSenders.get(senderId)?.roleType;
+    if (isGroup) return participantsById.get(senderId)?.roleType;
+    return activeConversation?.otherUser?.roleType;
+  };
   const { data: pinnedMessage } = usePinnedMessage(conversationId);
   const setPinnedMessageMutation = useSetPinnedMessage();
   const [searchOpen, setSearchOpen] = useState(false);
@@ -690,7 +707,12 @@ export default function ChatPanel({
   // Messages that arrived from the other person while minimized — shown as
   // a badge on the bubble, cleared the moment it's reopened.
   const [bubbleUnread, setBubbleUnread] = useState(0);
-  const bottomRef = useRef<HTMLDivElement>(null);
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const contentRef = useRef<HTMLDivElement>(null);
+  // Whether the reader is parked at the newest message — only then do new
+  // messages and late-loading images pull the view down; someone scrolled
+  // up reading history is left where they are.
+  const stickToBottomRef = useRef(true);
   const markedRef = useRef<string | undefined>(undefined);
   const prevMessageCountRef = useRef(0);
   // Which conversation's history has already had its first scroll-to-bottom
@@ -732,15 +754,48 @@ export default function ChatPanel({
     prevMessageCountRef.current = messages.length;
   }, [messages, minimized, currentUserId]);
 
+  // Scrolls the message list itself rather than `scrollIntoView`, which also
+  // scrolls every scrollable ancestor — including the page behind the panel.
+  const scrollToBottom = (behavior: ScrollBehavior) => {
+    const el = scrollRef.current;
+    if (el) el.scrollTo({ top: el.scrollHeight, behavior });
+  };
+
+  const handleMessagesScroll = () => {
+    const el = scrollRef.current;
+    if (!el) return;
+    stickToBottomRef.current =
+      el.scrollHeight - el.scrollTop - el.clientHeight < 80;
+  };
+
+  useEffect(() => {
+    stickToBottomRef.current = true;
+  }, [conversationId]);
+
   useEffect(() => {
     if (minimized || messages.length === 0) return;
     const isFirstLoadForConversation =
       scrolledConversationRef.current !== conversationId;
-    bottomRef.current?.scrollIntoView({
-      behavior: isFirstLoadForConversation ? "auto" : "smooth",
-    });
+    // Your own message always brings you down to it, even mid-history.
+    const sentByMe = messages[messages.length - 1]?.senderId === currentUserId;
+    if (isFirstLoadForConversation || sentByMe || stickToBottomRef.current) {
+      stickToBottomRef.current = true;
+      scrollToBottom(isFirstLoadForConversation ? "auto" : "smooth");
+    }
     scrolledConversationRef.current = conversationId;
   }, [messages.length, minimized, conversationId]);
+
+  // Images, link previews and videos finish loading after the first scroll
+  // and grow the thread — keep the newest message in view while they do.
+  useEffect(() => {
+    const content = contentRef.current;
+    if (minimized || !content || typeof ResizeObserver === "undefined") return;
+    const observer = new ResizeObserver(() => {
+      if (stickToBottomRef.current) scrollToBottom("auto");
+    });
+    observer.observe(content);
+    return () => observer.disconnect();
+  }, [minimized, conversationId, mounted]);
 
   // Throttled to at most once every 2s — a "typing" event per keystroke
   // would flood the socket for no benefit, since the receiving side only
@@ -1232,6 +1287,20 @@ export default function ChatPanel({
                       <span className="text-white text-sm font-bold truncate">
                         {otherUserName}
                       </span>
+                      {!isGroup && (
+                        <>
+                          <VerifiedBadge
+                            verifiedAt={
+                              activeConversation?.otherUser?.identityVerifiedAt
+                            }
+                            size="xs"
+                          />
+                          <RoleBadges
+                            roleType={activeConversation?.otherUser?.roleType}
+                            className="shrink-0"
+                          />
+                        </>
+                      )}
                       {isGroup && (
                         <button
                           type="button"
@@ -1427,454 +1496,468 @@ export default function ChatPanel({
               </button>
             )}
 
-            {/* Messages */}
-            <div className="flex-1 overflow-y-auto px-3 py-3 space-y-2">
-              {showRequestPrompt && (
-                <div className="flex flex-col items-center text-center gap-2 py-4">
-                  <div className="relative h-14 w-14 rounded-full bg-white/10 border border-white/10 flex items-center justify-center text-base font-black text-white/50 overflow-hidden shrink-0">
-                    {otherUserImgId ? (
-                      <Image
-                        src={otherUserImgId}
-                        alt=""
-                        fill
-                        sizes="56px"
-                        className="object-cover"
-                      />
-                    ) : (
-                      otherUserName?.charAt(0)?.toUpperCase()
-                    )}
+            {/* Messages — oldest at the top, newest just above the composer.
+                The inner `mt-auto` wrapper anchors a short thread to the
+                bottom instead of leaving it floating at the top. */}
+            <div
+              ref={scrollRef}
+              onScroll={handleMessagesScroll}
+              className="flex-1 overflow-y-auto px-3 py-3 flex flex-col"
+            >
+              <div ref={contentRef} className="mt-auto space-y-2">
+                {showRequestPrompt && (
+                  <div className="flex flex-col items-center text-center gap-2 py-4">
+                    <div className="relative h-14 w-14 rounded-full bg-white/10 border border-white/10 flex items-center justify-center text-base font-black text-white/50 overflow-hidden shrink-0">
+                      {otherUserImgId ? (
+                        <Image
+                          src={otherUserImgId}
+                          alt=""
+                          fill
+                          sizes="56px"
+                          className="object-cover"
+                        />
+                      ) : (
+                        otherUserName?.charAt(0)?.toUpperCase()
+                      )}
+                    </div>
+                    <p className="text-sm font-bold text-white">
+                      {otherUserName}
+                    </p>
+                    <p className="text-[11px] text-white/40 max-w-[90%]">
+                      You&apos;re not connected on the Republic yet. Accept to
+                      start chatting with {otherUserName}.
+                    </p>
                   </div>
-                  <p className="text-sm font-bold text-white">
-                    {otherUserName}
-                  </p>
-                  <p className="text-[11px] text-white/40 max-w-[90%]">
-                    You&apos;re not connected on the Republic yet. Accept to
-                    start chatting with {otherUserName}.
-                  </p>
-                </div>
-              )}
+                )}
 
-              {!conversationId || isLoading ? (
-                <div className="flex items-center justify-center py-10 text-white/30 text-xs">
-                  Loading…
-                </div>
-              ) : messages.length === 0 ? (
-                <div className="flex flex-col items-center justify-center py-10 gap-2 text-center opacity-40">
-                  <MessageCircle className="h-8 w-8" strokeWidth={1.5} />
-                  <p className="text-xs text-white/60">No messages yet</p>
-                  <p className="text-[11px] text-white/40">
-                    Say hello to get things started.
-                  </p>
-                </div>
-              ) : (
-                messages.map((m, idx) => {
-                  if (m.type === "system") {
+                {!conversationId || isLoading ? (
+                  <div className="flex items-center justify-center py-10 text-white/30 text-xs">
+                    Loading…
+                  </div>
+                ) : messages.length === 0 ? (
+                  <div className="flex flex-col items-center justify-center py-10 gap-2 text-center opacity-40">
+                    <MessageCircle className="h-8 w-8" strokeWidth={1.5} />
+                    <p className="text-xs text-white/60">No messages yet</p>
+                    <p className="text-[11px] text-white/40">
+                      Say hello to get things started.
+                    </p>
+                  </div>
+                ) : (
+                  messages.map((m, idx) => {
+                    if (m.type === "system") {
+                      return (
+                        <p
+                          key={m.id}
+                          className="text-center text-[10px] text-white/35 py-1"
+                        >
+                          {m.content}
+                        </p>
+                      );
+                    }
+
+                    const isMine = m.senderId === currentUserId;
+                    const time = new Date(m.createdAt).toLocaleTimeString(
+                      "en-US",
+                      {
+                        hour: "numeric",
+                        minute: "2-digit",
+                      },
+                    );
+                    // The other person's small avatar only sits next to the
+                    // last bubble in a run of their consecutive messages —
+                    // same as Messenger — with an equal-size invisible spacer
+                    // on every other message in that run so bubbles still
+                    // line up under it instead of hugging the edge.
+                    const isLastInGroup =
+                      idx === messages.length - 1 ||
+                      messages[idx + 1].senderId !== m.senderId;
+                    const senderImgId = getSenderImgId(m.senderId);
+                    const senderName = getSenderName(m.senderId);
+                    const chatHead = !isMine && (
+                      <div className="h-6 w-6 shrink-0 self-end">
+                        {isLastInGroup &&
+                          (senderImgId ? (
+                            <Image
+                              src={senderImgId}
+                              alt=""
+                              width={24}
+                              height={24}
+                              className="h-6 w-6 rounded-full object-cover"
+                            />
+                          ) : (
+                            <div className="h-6 w-6 rounded-full bg-white/10 border border-white/10 flex items-center justify-center text-[9px] font-black text-white/50">
+                              {senderName?.charAt(0)?.toUpperCase()}
+                            </div>
+                          ))}
+                      </div>
+                    );
+                    const groupSenderLabel = isMulti && !isMine && (
+                      <p className="flex items-center gap-1 text-[9px] font-bold text-white/40 mb-0.5 ml-1">
+                        {senderName}
+                        <RoleBadges
+                          roleType={getSenderRoles(m.senderId)}
+                          max={1}
+                        />
+                      </p>
+                    );
+
+                    if (m.sharedPost) {
+                      const actionsMenu = (
+                        <MessageActions
+                          isMine={isMine}
+                          onReply={() => handleReply(m)}
+                          onForward={() => setForwardingMessage(m)}
+                          isPinned={pinnedMessage?.id === m.id}
+                          onTogglePin={() => handleTogglePin(m)}
+                          onEdit={isMine ? () => handleStartEdit(m) : undefined}
+                          onDelete={
+                            isMine ? () => handleDeleteMessage(m.id) : undefined
+                          }
+                          onReact={(emoji) => handleReactToMessage(m.id, emoji)}
+                        />
+                      );
+                      const contentNode = (
+                        <div className="max-w-[80%]">
+                          {groupSenderLabel}
+                          {m.isForwarded && (
+                            <p className="mb-0.5 flex items-center gap-1 text-[9px] italic text-white/35">
+                              <Forward className="h-2.5 w-2.5" />
+                              Forwarded
+                            </p>
+                          )}
+                          {m.replyTo && (
+                            <div className="mb-1 rounded-lg border-l-2 border-white/20 bg-white/5 px-2 py-1">
+                              <p className="text-[9px] font-bold text-white/50">
+                                {getSenderName(m.replyTo.senderId)}
+                              </p>
+                              <p className="text-[10px] text-white/40 truncate max-w-[220px]">
+                                {m.replyTo.content ||
+                                  (m.replyTo.attachmentUrls.length > 0
+                                    ? "📷 Photo"
+                                    : "")}
+                              </p>
+                            </div>
+                          )}
+                          <a
+                            href={`/republic?postId=${m.sharedPost.id}`}
+                            className="block overflow-hidden rounded-2xl border border-white/10 bg-white/5 hover:bg-white/10 transition-colors"
+                          >
+                            {m.sharedPost.mediaUrls[0] && (
+                              <div className="relative h-32 w-full">
+                                <Image
+                                  src={m.sharedPost.mediaUrls[0]}
+                                  alt=""
+                                  fill
+                                  sizes="280px"
+                                  className="object-cover"
+                                />
+                              </div>
+                            )}
+                            <div className="p-2.5">
+                              <p className="text-[10px] font-bold text-white/70">
+                                {m.sharedPost.author.name}
+                              </p>
+                              <p className="text-xs text-white/60 line-clamp-2 mt-0.5">
+                                {m.sharedPost.content}
+                              </p>
+                            </div>
+                          </a>
+                          <EditableCaption
+                            message={m}
+                            isEditing={editingMessageId === m.id}
+                            editContent={editContent}
+                            onChangeEditContent={setEditContent}
+                            onSave={handleSaveEdit}
+                            onCancel={handleCancelEdit}
+                            mentionCandidates={mentionCandidates}
+                            mentionClassName={
+                              isMine
+                                ? "font-bold text-black underline decoration-black/40 hover:decoration-black"
+                                : undefined
+                            }
+                            bubbleClassName={`mt-1 rounded-2xl px-3 py-2 text-xs whitespace-pre-wrap break-words ${
+                              isMine
+                                ? "bg-[#ccff00] text-black rounded-br-sm"
+                                : "bg-white/10 text-white rounded-bl-sm"
+                            }`}
+                          />
+                          <p
+                            className={`text-[9px] mt-1 text-white/30 ${isMine ? "text-right" : ""}`}
+                          >
+                            {time}
+                          </p>
+                          <ReactionBadges
+                            reactions={m.reactions}
+                            isMine={isMine}
+                          />
+                        </div>
+                      );
+                      return (
+                        <div
+                          key={m.id}
+                          className={`group flex items-center gap-1 ${isMine ? "justify-end" : "justify-start"}`}
+                        >
+                          {isMine ? (
+                            <>
+                              {actionsMenu}
+                              {contentNode}
+                            </>
+                          ) : (
+                            <>
+                              {chatHead}
+                              {contentNode}
+                              {actionsMenu}
+                            </>
+                          )}
+                        </div>
+                      );
+                    }
+
+                    if (m.attachmentUrls && m.attachmentUrls.length > 0) {
+                      const actionsMenu = (
+                        <MessageActions
+                          isMine={isMine}
+                          onReply={() => handleReply(m)}
+                          onForward={() => setForwardingMessage(m)}
+                          isPinned={pinnedMessage?.id === m.id}
+                          onTogglePin={() => handleTogglePin(m)}
+                          onEdit={isMine ? () => handleStartEdit(m) : undefined}
+                          onDelete={
+                            isMine ? () => handleDeleteMessage(m.id) : undefined
+                          }
+                          onReact={(emoji) => handleReactToMessage(m.id, emoji)}
+                        />
+                      );
+                      const contentNode = (
+                        <div className="max-w-[80%]">
+                          {groupSenderLabel}
+                          {m.isForwarded && (
+                            <p className="mb-0.5 flex items-center gap-1 text-[9px] italic text-white/35">
+                              <Forward className="h-2.5 w-2.5" />
+                              Forwarded
+                            </p>
+                          )}
+                          {m.replyTo && (
+                            <div className="mb-1 rounded-lg border-l-2 border-white/20 bg-white/5 px-2 py-1">
+                              <p className="text-[9px] font-bold text-white/50">
+                                {getSenderName(m.replyTo.senderId)}
+                              </p>
+                              <p className="text-[10px] text-white/40 truncate max-w-[220px]">
+                                {m.replyTo.content ||
+                                  (m.replyTo.attachmentUrls.length > 0
+                                    ? "📷 Photo"
+                                    : "")}
+                              </p>
+                            </div>
+                          )}
+                          <div
+                            className={`grid gap-1 overflow-hidden rounded-2xl ${
+                              m.attachmentUrls.length === 1
+                                ? "grid-cols-1"
+                                : "grid-cols-2"
+                            }`}
+                          >
+                            {m.attachmentUrls.map((url, idx) => (
+                              <button
+                                key={idx}
+                                type="button"
+                                onClick={() =>
+                                  setLightboxGallery({
+                                    urls: m.attachmentUrls!,
+                                    index: idx,
+                                  })
+                                }
+                                className="cursor-pointer"
+                              >
+                                <AttachmentThumb url={url} />
+                              </button>
+                            ))}
+                          </div>
+                          <EditableCaption
+                            message={m}
+                            isEditing={editingMessageId === m.id}
+                            editContent={editContent}
+                            onChangeEditContent={setEditContent}
+                            onSave={handleSaveEdit}
+                            onCancel={handleCancelEdit}
+                            mentionCandidates={mentionCandidates}
+                            mentionClassName={
+                              isMine
+                                ? "font-bold text-black underline decoration-black/40 hover:decoration-black"
+                                : undefined
+                            }
+                            bubbleClassName={`mt-1 rounded-2xl px-3 py-2 text-xs whitespace-pre-wrap break-words ${
+                              isMine
+                                ? "bg-[#ccff00] text-black rounded-br-sm"
+                                : "bg-white/10 text-white rounded-bl-sm"
+                            }`}
+                          />
+                          <p
+                            className={`text-[9px] mt-1 text-white/30 ${isMine ? "text-right" : ""}`}
+                          >
+                            {time}
+                          </p>
+                          <ReactionBadges
+                            reactions={m.reactions}
+                            isMine={isMine}
+                          />
+                        </div>
+                      );
+                      return (
+                        <div
+                          key={m.id}
+                          className={`group flex items-center gap-1 ${isMine ? "justify-end" : "justify-start"}`}
+                        >
+                          {isMine ? (
+                            <>
+                              {actionsMenu}
+                              {contentNode}
+                            </>
+                          ) : (
+                            <>
+                              {chatHead}
+                              {contentNode}
+                              {actionsMenu}
+                            </>
+                          )}
+                        </div>
+                      );
+                    }
+
+                    const actionsMenu = (
+                      <MessageActions
+                        isMine={isMine}
+                        onReply={() => handleReply(m)}
+                        onForward={() => setForwardingMessage(m)}
+                        isPinned={pinnedMessage?.id === m.id}
+                        onTogglePin={() => handleTogglePin(m)}
+                        onEdit={isMine ? () => handleStartEdit(m) : undefined}
+                        onDelete={
+                          isMine ? () => handleDeleteMessage(m.id) : undefined
+                        }
+                        onReact={(emoji) => handleReactToMessage(m.id, emoji)}
+                      />
+                    );
+                    const contentNode = (
+                      <div className="max-w-[80%]">
+                        {groupSenderLabel}
+                        {m.isForwarded && (
+                          <p className="mb-0.5 flex items-center gap-1 text-[9px] italic text-white/35">
+                            <Forward className="h-2.5 w-2.5" />
+                            Forwarded
+                          </p>
+                        )}
+                        <div
+                          className={`rounded-2xl px-3 py-2 text-xs ${
+                            isMine
+                              ? "bg-[#ccff00] text-black rounded-br-sm"
+                              : "bg-white/10 text-white rounded-bl-sm"
+                          }`}
+                        >
+                          {m.replyTo && (
+                            <div
+                              className={`mb-1 rounded-lg border-l-2 px-2 py-1 ${
+                                isMine
+                                  ? "border-black/20 bg-black/10"
+                                  : "border-white/20 bg-white/5"
+                              }`}
+                            >
+                              <p
+                                className={`text-[9px] font-bold ${isMine ? "text-black/60" : "text-white/50"}`}
+                              >
+                                {getSenderName(m.replyTo.senderId)}
+                              </p>
+                              <p
+                                className={`text-[10px] truncate max-w-[220px] ${isMine ? "text-black/50" : "text-white/40"}`}
+                              >
+                                {m.replyTo.content ||
+                                  (m.replyTo.attachmentUrls.length > 0
+                                    ? "📷 Photo"
+                                    : "")}
+                              </p>
+                            </div>
+                          )}
+                          <EditableCaption
+                            message={m}
+                            isEditing={editingMessageId === m.id}
+                            editContent={editContent}
+                            onChangeEditContent={setEditContent}
+                            onSave={handleSaveEdit}
+                            onCancel={handleCancelEdit}
+                            mentionCandidates={mentionCandidates}
+                            mentionClassName={
+                              isMine
+                                ? "font-bold text-black underline decoration-black/40 hover:decoration-black"
+                                : undefined
+                            }
+                            bubbleClassName="whitespace-pre-wrap break-words"
+                          />
+                          <p
+                            className={`text-[9px] mt-1 ${isMine ? "text-black/50" : "text-white/30"}`}
+                          >
+                            {time}
+                          </p>
+                        </div>
+                        <ReactionBadges
+                          reactions={m.reactions}
+                          isMine={isMine}
+                        />
+                      </div>
+                    );
                     return (
-                      <p
+                      <div
                         key={m.id}
-                        className="text-center text-[10px] text-white/35 py-1"
+                        className={`group flex items-center gap-1 ${isMine ? "justify-end" : "justify-start"}`}
                       >
-                        {m.content}
+                        {isMine ? (
+                          <>
+                            {actionsMenu}
+                            {contentNode}
+                          </>
+                        ) : (
+                          <>
+                            {chatHead}
+                            {contentNode}
+                            {actionsMenu}
+                          </>
+                        )}
+                      </div>
+                    );
+                  })
+                )}
+                {(() => {
+                  const lastMine = [...messages]
+                    .reverse()
+                    .find((m) => m.senderId === currentUserId);
+                  if (!lastMine) return null;
+
+                  if (!isGroup) {
+                    if (!lastMine.readAt) return null;
+                    return (
+                      <p className="text-right text-[9px] text-white/30 pr-1">
+                        Seen
                       </p>
                     );
                   }
 
-                  const isMine = m.senderId === currentUserId;
-                  const time = new Date(m.createdAt).toLocaleTimeString(
-                    "en-US",
-                    {
-                      hour: "numeric",
-                      minute: "2-digit",
-                    },
-                  );
-                  // The other person's small avatar only sits next to the
-                  // last bubble in a run of their consecutive messages —
-                  // same as Messenger — with an equal-size invisible spacer
-                  // on every other message in that run so bubbles still
-                  // line up under it instead of hugging the edge.
-                  const isLastInGroup =
-                    idx === messages.length - 1 ||
-                    messages[idx + 1].senderId !== m.senderId;
-                  const senderImgId = getSenderImgId(m.senderId);
-                  const senderName = getSenderName(m.senderId);
-                  const chatHead = !isMine && (
-                    <div className="h-6 w-6 shrink-0 self-end">
-                      {isLastInGroup &&
-                        (senderImgId ? (
-                          <Image
-                            src={senderImgId}
-                            alt=""
-                            width={24}
-                            height={24}
-                            className="h-6 w-6 rounded-full object-cover"
-                          />
-                        ) : (
-                          <div className="h-6 w-6 rounded-full bg-white/10 border border-white/10 flex items-center justify-center text-[9px] font-black text-white/50">
-                            {senderName?.charAt(0)?.toUpperCase()}
-                          </div>
-                        ))}
-                    </div>
-                  );
-                  const groupSenderLabel = isMulti && !isMine && (
-                    <p className="text-[9px] font-bold text-white/40 mb-0.5 ml-1">
-                      {senderName}
-                    </p>
-                  );
-
-                  if (m.sharedPost) {
-                    const actionsMenu = (
-                      <MessageActions
-                        isMine={isMine}
-                        onReply={() => handleReply(m)}
-                        onForward={() => setForwardingMessage(m)}
-                        isPinned={pinnedMessage?.id === m.id}
-                        onTogglePin={() => handleTogglePin(m)}
-                        onEdit={isMine ? () => handleStartEdit(m) : undefined}
-                        onDelete={
-                          isMine ? () => handleDeleteMessage(m.id) : undefined
-                        }
-                        onReact={(emoji) => handleReactToMessage(m.id, emoji)}
-                      />
-                    );
-                    const contentNode = (
-                      <div className="max-w-[80%]">
-                        {groupSenderLabel}
-                        {m.isForwarded && (
-                          <p className="mb-0.5 flex items-center gap-1 text-[9px] italic text-white/35">
-                            <Forward className="h-2.5 w-2.5" />
-                            Forwarded
-                          </p>
-                        )}
-                        {m.replyTo && (
-                          <div className="mb-1 rounded-lg border-l-2 border-white/20 bg-white/5 px-2 py-1">
-                            <p className="text-[9px] font-bold text-white/50">
-                              {getSenderName(m.replyTo.senderId)}
-                            </p>
-                            <p className="text-[10px] text-white/40 truncate max-w-[220px]">
-                              {m.replyTo.content ||
-                                (m.replyTo.attachmentUrls.length > 0
-                                  ? "📷 Photo"
-                                  : "")}
-                            </p>
-                          </div>
-                        )}
-                        <a
-                          href={`/republic?postId=${m.sharedPost.id}`}
-                          className="block overflow-hidden rounded-2xl border border-white/10 bg-white/5 hover:bg-white/10 transition-colors"
-                        >
-                          {m.sharedPost.mediaUrls[0] && (
-                            <div className="relative h-32 w-full">
-                              <Image
-                                src={m.sharedPost.mediaUrls[0]}
-                                alt=""
-                                fill
-                                sizes="280px"
-                                className="object-cover"
-                              />
-                            </div>
-                          )}
-                          <div className="p-2.5">
-                            <p className="text-[10px] font-bold text-white/70">
-                              {m.sharedPost.author.name}
-                            </p>
-                            <p className="text-xs text-white/60 line-clamp-2 mt-0.5">
-                              {m.sharedPost.content}
-                            </p>
-                          </div>
-                        </a>
-                        <EditableCaption
-                          message={m}
-                          isEditing={editingMessageId === m.id}
-                          editContent={editContent}
-                          onChangeEditContent={setEditContent}
-                          onSave={handleSaveEdit}
-                          onCancel={handleCancelEdit}
-                          mentionCandidates={mentionCandidates}
-                          mentionClassName={
-                            isMine
-                              ? "font-bold text-black underline decoration-black/40 hover:decoration-black"
-                              : undefined
-                          }
-                          bubbleClassName={`mt-1 rounded-2xl px-3 py-2 text-xs whitespace-pre-wrap break-words ${
-                            isMine
-                              ? "bg-[#ccff00] text-black rounded-br-sm"
-                              : "bg-white/10 text-white rounded-bl-sm"
-                          }`}
-                        />
-                        <p
-                          className={`text-[9px] mt-1 text-white/30 ${isMine ? "text-right" : ""}`}
-                        >
-                          {time}
-                        </p>
-                        <ReactionBadges
-                          reactions={m.reactions}
-                          isMine={isMine}
-                        />
-                      </div>
-                    );
-                    return (
-                      <div
-                        key={m.id}
-                        className={`group flex items-center gap-1 ${isMine ? "justify-end" : "justify-start"}`}
-                      >
-                        {isMine ? (
-                          <>
-                            {actionsMenu}
-                            {contentNode}
-                          </>
-                        ) : (
-                          <>
-                            {chatHead}
-                            {contentNode}
-                            {actionsMenu}
-                          </>
-                        )}
-                      </div>
-                    );
-                  }
-
-                  if (m.attachmentUrls && m.attachmentUrls.length > 0) {
-                    const actionsMenu = (
-                      <MessageActions
-                        isMine={isMine}
-                        onReply={() => handleReply(m)}
-                        onForward={() => setForwardingMessage(m)}
-                        isPinned={pinnedMessage?.id === m.id}
-                        onTogglePin={() => handleTogglePin(m)}
-                        onEdit={isMine ? () => handleStartEdit(m) : undefined}
-                        onDelete={
-                          isMine ? () => handleDeleteMessage(m.id) : undefined
-                        }
-                        onReact={(emoji) => handleReactToMessage(m.id, emoji)}
-                      />
-                    );
-                    const contentNode = (
-                      <div className="max-w-[80%]">
-                        {groupSenderLabel}
-                        {m.isForwarded && (
-                          <p className="mb-0.5 flex items-center gap-1 text-[9px] italic text-white/35">
-                            <Forward className="h-2.5 w-2.5" />
-                            Forwarded
-                          </p>
-                        )}
-                        {m.replyTo && (
-                          <div className="mb-1 rounded-lg border-l-2 border-white/20 bg-white/5 px-2 py-1">
-                            <p className="text-[9px] font-bold text-white/50">
-                              {getSenderName(m.replyTo.senderId)}
-                            </p>
-                            <p className="text-[10px] text-white/40 truncate max-w-[220px]">
-                              {m.replyTo.content ||
-                                (m.replyTo.attachmentUrls.length > 0
-                                  ? "📷 Photo"
-                                  : "")}
-                            </p>
-                          </div>
-                        )}
-                        <div
-                          className={`grid gap-1 overflow-hidden rounded-2xl ${
-                            m.attachmentUrls.length === 1
-                              ? "grid-cols-1"
-                              : "grid-cols-2"
-                          }`}
-                        >
-                          {m.attachmentUrls.map((url, idx) => (
-                            <button
-                              key={idx}
-                              type="button"
-                              onClick={() =>
-                                setLightboxGallery({
-                                  urls: m.attachmentUrls!,
-                                  index: idx,
-                                })
-                              }
-                              className="cursor-pointer"
-                            >
-                              <AttachmentThumb url={url} />
-                            </button>
-                          ))}
-                        </div>
-                        <EditableCaption
-                          message={m}
-                          isEditing={editingMessageId === m.id}
-                          editContent={editContent}
-                          onChangeEditContent={setEditContent}
-                          onSave={handleSaveEdit}
-                          onCancel={handleCancelEdit}
-                          mentionCandidates={mentionCandidates}
-                          mentionClassName={
-                            isMine
-                              ? "font-bold text-black underline decoration-black/40 hover:decoration-black"
-                              : undefined
-                          }
-                          bubbleClassName={`mt-1 rounded-2xl px-3 py-2 text-xs whitespace-pre-wrap break-words ${
-                            isMine
-                              ? "bg-[#ccff00] text-black rounded-br-sm"
-                              : "bg-white/10 text-white rounded-bl-sm"
-                          }`}
-                        />
-                        <p
-                          className={`text-[9px] mt-1 text-white/30 ${isMine ? "text-right" : ""}`}
-                        >
-                          {time}
-                        </p>
-                        <ReactionBadges
-                          reactions={m.reactions}
-                          isMine={isMine}
-                        />
-                      </div>
-                    );
-                    return (
-                      <div
-                        key={m.id}
-                        className={`group flex items-center gap-1 ${isMine ? "justify-end" : "justify-start"}`}
-                      >
-                        {isMine ? (
-                          <>
-                            {actionsMenu}
-                            {contentNode}
-                          </>
-                        ) : (
-                          <>
-                            {chatHead}
-                            {contentNode}
-                            {actionsMenu}
-                          </>
-                        )}
-                      </div>
-                    );
-                  }
-
-                  const actionsMenu = (
-                    <MessageActions
-                      isMine={isMine}
-                      onReply={() => handleReply(m)}
-                      onForward={() => setForwardingMessage(m)}
-                      isPinned={pinnedMessage?.id === m.id}
-                      onTogglePin={() => handleTogglePin(m)}
-                      onEdit={isMine ? () => handleStartEdit(m) : undefined}
-                      onDelete={
-                        isMine ? () => handleDeleteMessage(m.id) : undefined
-                      }
-                      onReact={(emoji) => handleReactToMessage(m.id, emoji)}
-                    />
-                  );
-                  const contentNode = (
-                    <div className="max-w-[80%]">
-                      {groupSenderLabel}
-                      {m.isForwarded && (
-                        <p className="mb-0.5 flex items-center gap-1 text-[9px] italic text-white/35">
-                          <Forward className="h-2.5 w-2.5" />
-                          Forwarded
-                        </p>
-                      )}
-                      <div
-                        className={`rounded-2xl px-3 py-2 text-xs ${
-                          isMine
-                            ? "bg-[#ccff00] text-black rounded-br-sm"
-                            : "bg-white/10 text-white rounded-bl-sm"
-                        }`}
-                      >
-                        {m.replyTo && (
-                          <div
-                            className={`mb-1 rounded-lg border-l-2 px-2 py-1 ${
-                              isMine
-                                ? "border-black/20 bg-black/10"
-                                : "border-white/20 bg-white/5"
-                            }`}
-                          >
-                            <p
-                              className={`text-[9px] font-bold ${isMine ? "text-black/60" : "text-white/50"}`}
-                            >
-                              {getSenderName(m.replyTo.senderId)}
-                            </p>
-                            <p
-                              className={`text-[10px] truncate max-w-[220px] ${isMine ? "text-black/50" : "text-white/40"}`}
-                            >
-                              {m.replyTo.content ||
-                                (m.replyTo.attachmentUrls.length > 0
-                                  ? "📷 Photo"
-                                  : "")}
-                            </p>
-                          </div>
-                        )}
-                        <EditableCaption
-                          message={m}
-                          isEditing={editingMessageId === m.id}
-                          editContent={editContent}
-                          onChangeEditContent={setEditContent}
-                          onSave={handleSaveEdit}
-                          onCancel={handleCancelEdit}
-                          mentionCandidates={mentionCandidates}
-                          mentionClassName={
-                            isMine
-                              ? "font-bold text-black underline decoration-black/40 hover:decoration-black"
-                              : undefined
-                          }
-                          bubbleClassName="whitespace-pre-wrap break-words"
-                        />
-                        <p
-                          className={`text-[9px] mt-1 ${isMine ? "text-black/50" : "text-white/30"}`}
-                        >
-                          {time}
-                        </p>
-                      </div>
-                      <ReactionBadges reactions={m.reactions} isMine={isMine} />
-                    </div>
-                  );
-                  return (
-                    <div
-                      key={m.id}
-                      className={`group flex items-center gap-1 ${isMine ? "justify-end" : "justify-start"}`}
-                    >
-                      {isMine ? (
-                        <>
-                          {actionsMenu}
-                          {contentNode}
-                        </>
-                      ) : (
-                        <>
-                          {chatHead}
-                          {contentNode}
-                          {actionsMenu}
-                        </>
-                      )}
-                    </div>
-                  );
-                })
-              )}
-              {(() => {
-                const lastMine = [...messages]
-                  .reverse()
-                  .find((m) => m.senderId === currentUserId);
-                if (!lastMine) return null;
-
-                if (!isGroup) {
-                  if (!lastMine.readAt) return null;
+                  // Group: name whoever's read cursor has caught up to this
+                  // message, instead of a single ambiguous "Seen".
+                  const lastMineAt = new Date(lastMine.createdAt).getTime();
+                  const seenByNames = readReceipts
+                    .filter(
+                      (r) =>
+                        r.userId !== currentUserId &&
+                        new Date(r.lastReadAt).getTime() >= lastMineAt,
+                    )
+                    .map((r) => getSenderName(r.userId));
+                  if (seenByNames.length === 0) return null;
                   return (
                     <p className="text-right text-[9px] text-white/30 pr-1">
-                      Seen
+                      Seen by {seenByNames.join(", ")}
                     </p>
                   );
-                }
-
-                // Group: name whoever's read cursor has caught up to this
-                // message, instead of a single ambiguous "Seen".
-                const lastMineAt = new Date(lastMine.createdAt).getTime();
-                const seenByNames = readReceipts
-                  .filter(
-                    (r) =>
-                      r.userId !== currentUserId &&
-                      new Date(r.lastReadAt).getTime() >= lastMineAt,
-                  )
-                  .map((r) => getSenderName(r.userId));
-                if (seenByNames.length === 0) return null;
-                return (
-                  <p className="text-right text-[9px] text-white/30 pr-1">
-                    Seen by {seenByNames.join(", ")}
-                  </p>
-                );
-              })()}
-              <div ref={bottomRef} />
+                })()}
+              </div>
             </div>
 
             {/* Footer */}

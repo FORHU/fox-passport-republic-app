@@ -11,6 +11,7 @@ import {
 } from "@/shared/api/favorites";
 import { useAuthStore } from "@/shared/auth/useAuthStore";
 import { toast } from "sonner";
+import { Money } from "@/shared/components/ui/Money";
 
 const FALLBACK_IMAGES = [
   "https://images.unsplash.com/photo-1492684223066-81342ee5ff30?w=600&auto=format&fit=crop",
@@ -139,7 +140,7 @@ export const EventPackagesSection: React.FC<EventPackagesSectionProps> = ({
                   )}
                   {template.estimatedTotal > 0 && (
                     <span className="text-white/70 font-bold text-sm">
-                      ₱{template.estimatedTotal.toLocaleString()} est.
+                      <Money amount={template.estimatedTotal} /> est.
                     </span>
                   )}
                 </div>

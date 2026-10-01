@@ -1,16 +1,17 @@
 ﻿"use client";
 
-import React, { useEffect, useState } from "react";
+import React from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import Link from "next/link";
 import Image from "next/image";
 import { useAuthStore } from "@/shared/auth/useAuthStore";
 import { fetchFoxerBookings } from "@/features/booking/api/bookings";
 import ProviderBookingRowActions from "@/features/booking/components/ProviderBookingRowActions";
 import {
-  fetchMyPayouts,
   PAYOUT_SOURCE_LABEL,
   type Payout,
 } from "@/features/dashboard/api/payouts";
+import { useMyPayouts } from "@/features/dashboard/hooks/useMyPayouts";
 import { formatCurrency } from "@/shared/lib/currency";
 
 type Booking = Record<string, unknown>;
@@ -72,6 +73,8 @@ const STATUS_CFG: Record<
 // getting paid — their real payout record is the ledger below, which reads
 // from the role-agnostic `/payouts/me` instead.
 const BOOKING_PAYOUT_ROLES = ["gearFoxer", "serviceFoxer", "performerFoxer"];
+const NO_PAYOUTS: Payout[] = [];
+const NO_TOTALS = { paid: 0, pending: 0 };
 
 export default function FoxerEarningsClient() {
   const { user } = useAuthStore();
@@ -81,39 +84,23 @@ export default function FoxerEarningsClient() {
   );
   const isInvestor = roleType.includes("investor");
 
-  const [serviceBookings, setServiceBookings] = useState<Booking[]>([]);
-  const [assetBookings, setAssetBookings] = useState<Booking[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [payouts, setPayouts] = useState<Payout[]>([]);
-  const [payoutTotals, setPayoutTotals] = useState({ paid: 0, pending: 0 });
-  const [payoutsLoading, setPayoutsLoading] = useState(true);
-  const [bookingsVersion, setBookingsVersion] = useState(0);
+  const queryClient = useQueryClient();
+  const { data: payoutsData, isPending: payoutsLoading } = useMyPayouts(1, 20);
+  const payouts: Payout[] = payoutsData?.payouts ?? NO_PAYOUTS;
+  const payoutTotals = payoutsData?.totals ?? NO_TOTALS;
 
-  useEffect(() => {
-    fetchMyPayouts(1, 20)
-      .then(({ payouts, totals }) => {
-        setPayouts(payouts);
-        setPayoutTotals(totals);
-      })
-      .catch(() => {})
-      .finally(() => setPayoutsLoading(false));
-  }, []);
-
-  useEffect(() => {
-    if (!hasBookingPayouts) {
-      setLoading(false);
-      return;
-    }
-    const id = user?.id ?? (user as { userId?: string })?.userId;
-    if (!id) return;
-    fetchFoxerBookings(id)
-      .then(({ services, assets }) => {
-        setServiceBookings(services);
-        setAssetBookings(assets);
-      })
-      .catch(() => {})
-      .finally(() => setLoading(false));
-  }, [user, hasBookingPayouts, bookingsVersion]);
+  // Under `host-data`, which the `bookings` socket topic invalidates — a
+  // status change on any of these reaches the page on its own.
+  const ownerId = user?.id ?? (user as { userId?: string })?.userId;
+  const bookingsQueryKey = ["host-data", "earnings-bookings", ownerId];
+  const bookingsQuery = useQuery({
+    queryKey: bookingsQueryKey,
+    queryFn: () => fetchFoxerBookings(ownerId!),
+    enabled: hasBookingPayouts && !!ownerId,
+  });
+  const serviceBookings: Booking[] = bookingsQuery.data?.services ?? [];
+  const assetBookings: Booking[] = bookingsQuery.data?.assets ?? [];
+  const loading = hasBookingPayouts && bookingsQuery.isPending;
 
   const allBookings: any[] = (
     [
@@ -471,7 +458,7 @@ export default function FoxerEarningsClient() {
                       <span className="material-symbols-outlined text-[12px]">
                         event
                       </span>
-                      {new Date(date).toLocaleDateString("en-PH", {
+                      {new Date(date).toLocaleDateString(undefined, {
                         month: "short",
                         day: "numeric",
                         year: "numeric",
@@ -489,7 +476,11 @@ export default function FoxerEarningsClient() {
                       bookingType={booking._type}
                       bookingId={booking.id}
                       status={booking.status}
-                      onChanged={() => setBookingsVersion((v) => v + 1)}
+                      onChanged={() =>
+                        queryClient.invalidateQueries({
+                          queryKey: bookingsQueryKey,
+                        })
+                      }
                     />
                     <Link
                       href={`/booking/fulfillment/${booking._type}/${booking.id}`}

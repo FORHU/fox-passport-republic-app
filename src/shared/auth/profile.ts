@@ -30,7 +30,10 @@ export interface ProfileData {
   systemRole: SystemRole;
   roleType: RoleType[];
   permissions: readonly Permission[];
-  identityVerified?: boolean;
+  /** Whether the account's email is confirmed — booking requires it. */
+  isEmailVerified?: boolean;
+  /** When an admin approved their government ID — the Verified badge. */
+  identityVerifiedAt?: string | null;
   isPrivate: boolean;
   preferredCurrency: string;
   createdAt: string;

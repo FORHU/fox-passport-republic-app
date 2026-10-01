@@ -19,6 +19,7 @@ import type {
   ItemBookingPayment,
   ItemBookingRefund,
 } from "@/features/booking/types/booking.types";
+import { formatCurrency } from "@/shared/lib/currency";
 
 type BookingType = "service" | "asset";
 
@@ -153,12 +154,12 @@ export default function FulfillmentPassClient({
   const scheduledDate = new Date(
     isService ? booking.scheduledDate : booking.startDate,
   );
-  const formattedDate = scheduledDate.toLocaleDateString("en-PH", {
+  const formattedDate = scheduledDate.toLocaleDateString(undefined, {
     month: "short",
     day: "numeric",
     year: "numeric",
   });
-  const formattedTime = scheduledDate.toLocaleTimeString("en-PH", {
+  const formattedTime = scheduledDate.toLocaleTimeString(undefined, {
     hour: "2-digit",
     minute: "2-digit",
   });
@@ -310,7 +311,7 @@ export default function FulfillmentPassClient({
                   </span>
                   <span className="text-xs text-white/40">Amount: </span>
                   <span className="text-xs text-white font-bold">
-                    ₱{booking.totalAmount?.toLocaleString()}
+                    {formatCurrency(booking.totalAmount)}
                   </span>
                 </div>
                 {!isService && (
@@ -402,7 +403,7 @@ export default function FulfillmentPassClient({
                         : ""}
                     </span>
                     <span className="font-bold text-white">
-                      ₱{Number(latestPayment.amount).toLocaleString()}
+                      {formatCurrency(Number(latestPayment.amount))}
                     </span>
                   </div>
                   {refunds.length > 0 && (

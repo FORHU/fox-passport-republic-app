@@ -2,6 +2,7 @@
 
 import React from "react";
 import { toast } from "sonner";
+import { formatCurrency } from "@/shared/lib/currency";
 
 interface Transaction {
   type: "purchase" | "topup";
@@ -40,7 +41,7 @@ export const UserWallet: React.FC<UserWalletProps> = ({
             <div>
               {/* Internal title removed */}
               <h3 className="text-4xl font-display font-bold text-white tracking-tight">
-                ₱{walletBalance.toLocaleString()}
+                {formatCurrency(walletBalance)}
                 <span className="text-lg text-indigo-300"></span>
               </h3>
             </div>
@@ -102,8 +103,8 @@ export const UserWallet: React.FC<UserWalletProps> = ({
                 <span
                   className={`text-sm font-bold ${tx.amount > 0 ? "text-accent" : "text-white"}`}
                 >
-                  {tx.amount > 0 ? "+" : ""} ₱
-                  {Math.abs(tx.amount).toLocaleString()}
+                  {tx.amount > 0 ? "+" : ""}
+                  {formatCurrency(Math.abs(tx.amount))}
                 </span>
               </div>
             ))}

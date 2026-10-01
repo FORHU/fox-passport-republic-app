@@ -1,11 +1,13 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 import { toast } from "sonner";
-import { fetchAssetAvailability } from "@/features/booking/api/bookings";
+import { useAssetAvailability } from "@/features/booking/hooks/useAvailability";
 import AvailabilityCalendar from "@/features/booking/components/AvailabilityCalendar";
 
 const noop = () => {};
+const NO_RANGES: { startDate: string; endDate: string; bookedQty: number }[] =
+  [];
 
 /**
  * A gear Foxer's own read on their asset's calendar — the same booked-range
@@ -14,21 +16,13 @@ const noop = () => {};
  * for assets today, unlike a venue's `blockedDates` — this is demand only.
  */
 export function AssetAvailabilitySection({ assetId }: { assetId: string }) {
-  const [bookedRanges, setBookedRanges] = useState<
-    { startDate: string; endDate: string; bookedQty: number }[]
-  >([]);
-  const [totalQty, setTotalQty] = useState(0);
-  const [loading, setLoading] = useState(true);
+  const { data, isPending: loading, isError } = useAssetAvailability(assetId);
+  const bookedRanges = data?.bookedRanges ?? NO_RANGES;
+  const totalQty = data?.totalQty ?? 0;
 
   useEffect(() => {
-    fetchAssetAvailability(assetId)
-      .then((d) => {
-        setBookedRanges(d.bookedRanges);
-        setTotalQty(d.totalQty);
-      })
-      .catch(() => toast.error("Could not load this asset's calendar."))
-      .finally(() => setLoading(false));
-  }, [assetId]);
+    if (isError) toast.error("Could not load this asset's calendar.");
+  }, [isError]);
 
   return (
     <div className="rounded-[2rem] border-2 border-dashed border-white/10 bg-[#0f111a]/30 p-8">

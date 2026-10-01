@@ -107,6 +107,7 @@ export function KycDocumentSection({
             <FileUploader
               label={label}
               accept={accept}
+              private
               onUploadComplete={(id) => onUpload(field, id)}
               validateFile={validateAgainstOtherSlots(field)}
               onFileSelected={registerFile(field)}

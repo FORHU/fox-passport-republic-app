@@ -6,6 +6,8 @@ import {
   ListingType,
 } from "@/features/asset/data/listingBuilderData";
 
+import { Money } from "@/shared/components/ui/Money";
+
 interface ListingStatusPanelProps {
   activeType: ListingType;
   categories: CategoryItem[];
@@ -81,7 +83,7 @@ export function ListingStatusPanel({
             <span className="text-sm font-bold text-white">Listing Price</span>
             <div className="text-right">
               <span className="block text-lg font-bold text-accent font-mono">
-                ₱{price.toLocaleString()}
+                <Money amount={price} />
               </span>
               <span className="text-[10px] text-text-muted uppercase">
                 {unit}

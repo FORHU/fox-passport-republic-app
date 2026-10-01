@@ -16,6 +16,7 @@ import CancelBookingModal from "./CancelBookingModal";
 import RequestBookingEditModal from "./RequestBookingEditModal";
 import BookingEditRequestStatusCard from "./BookingEditRequestStatusCard";
 import { getDashboardPath } from "@/shared/lib/dashboard-path";
+import { formatCurrency } from "@/shared/lib/currency";
 
 const STATUS_LABEL: Record<string, { label: string; color: string }> = {
   pending: { label: "Pending", color: "text-yellow-400 bg-yellow-500/10" },
@@ -401,7 +402,7 @@ export default function BookingDetailClient({
                 </p>
                 <p className="text-white font-semibold">
                   {booking.startAt
-                    ? new Date(booking.startAt).toLocaleDateString("en-PH", {
+                    ? new Date(booking.startAt).toLocaleDateString(undefined, {
                         month: "long",
                         day: "numeric",
                         year: "numeric",
@@ -415,7 +416,7 @@ export default function BookingDetailClient({
                 </p>
                 <p className="text-white font-semibold">
                   {booking.endAt
-                    ? new Date(booking.endAt).toLocaleDateString("en-PH", {
+                    ? new Date(booking.endAt).toLocaleDateString(undefined, {
                         month: "long",
                         day: "numeric",
                         year: "numeric",
@@ -436,7 +437,7 @@ export default function BookingDetailClient({
                   Total Amount
                 </p>
                 <p className="text-accent font-display font-bold text-xl">
-                  ₱{displayTotal.toLocaleString()}
+                  {formatCurrency(displayTotal)}
                 </p>
               </div>
             </div>
@@ -474,7 +475,7 @@ export default function BookingDetailClient({
                 </p>
                 <p className="text-white font-semibold">
                   {booking.createdAt
-                    ? new Date(booking.createdAt).toLocaleDateString("en-PH", {
+                    ? new Date(booking.createdAt).toLocaleDateString(undefined, {
                         month: "long",
                         day: "numeric",
                         year: "numeric",
@@ -495,7 +496,7 @@ export default function BookingDetailClient({
                 <div key={i} className="flex justify-between text-sm">
                   <span className="text-text-muted">{item.label}</span>
                   <span className="text-white">
-                    ₱{item.amount.toLocaleString()}
+                    {formatCurrency(item.amount)}
                   </span>
                 </div>
               ))}
@@ -506,7 +507,7 @@ export default function BookingDetailClient({
                 <div className="flex justify-between text-sm">
                   <span className="text-text-muted">Subtotal</span>
                   <span className="text-white">
-                    ₱{subtotalAmount.toLocaleString()}
+                    {formatCurrency(subtotalAmount)}
                   </span>
                 </div>
               )}
@@ -514,7 +515,7 @@ export default function BookingDetailClient({
                 <div className="flex justify-between text-sm">
                   <span className="text-text-muted">Host Markup</span>
                   <span className="text-white">
-                    ₱{hostMarkupAmount.toLocaleString()}
+                    {formatCurrency(hostMarkupAmount)}
                   </span>
                 </div>
               )}
@@ -522,7 +523,7 @@ export default function BookingDetailClient({
                 <div className="flex justify-between text-sm">
                   <span className="text-text-muted">Platform Fee</span>
                   <span className="text-white">
-                    ₱{platformFeeAmount.toLocaleString()}
+                    {formatCurrency(platformFeeAmount)}
                   </span>
                 </div>
               )}
@@ -538,7 +539,7 @@ export default function BookingDetailClient({
                 </span>
               </div>
               <span className="text-2xl font-display font-bold text-accent">
-                ₱{displayTotal.toLocaleString()}
+                {formatCurrency(displayTotal)}
               </span>
             </div>
           </div>
@@ -619,7 +620,7 @@ export default function BookingDetailClient({
                         <p className="text-text-muted text-xs">
                           {payment.createdAt
                             ? new Date(payment.createdAt).toLocaleDateString(
-                                "en-PH",
+                                undefined,
                                 {
                                   month: "short",
                                   day: "numeric",
@@ -633,7 +634,7 @@ export default function BookingDetailClient({
                       </div>
                       <div className="flex items-center gap-3">
                         <span className="text-white font-bold">
-                          ₱{payment.amount?.toLocaleString() || "0"}
+                          {formatCurrency(Number(payment.amount ?? 0))}
                         </span>
                         <span
                           className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${pStatus.color}`}
@@ -649,7 +650,7 @@ export default function BookingDetailClient({
                 <div className="flex items-center justify-between pt-4 mt-2 border-t border-white/10">
                   <span className="text-text-muted text-sm">Total Paid</span>
                   <span className="text-accent font-display font-bold text-lg">
-                    ₱{totalPaid.toLocaleString()}
+                    {formatCurrency(totalPaid)}
                   </span>
                 </div>
               )}

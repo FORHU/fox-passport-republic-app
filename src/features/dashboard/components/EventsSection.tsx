@@ -8,6 +8,8 @@ import { StatusBadge } from "./StatusBadge";
 import { EmptyState } from "./EmptyState";
 import { PaginationBar } from "./PaginationBar";
 
+import { Money } from "@/shared/components/ui/Money";
+
 interface EventsSectionProps {
   events: EventItem[];
   onStatusChange: (id: number | string, status: string) => void;
@@ -137,7 +139,13 @@ export function EventsSection({
                         <div className="text-[10px] text-white/40 uppercase">
                           Revenue
                         </div>
-                        <div className="text-sm font-bold">{ev.revenue}</div>
+                        <div className="text-sm font-bold">
+                          {ev.revenue != null ? (
+                            <Money amount={ev.revenue} />
+                          ) : (
+                            "—"
+                          )}
+                        </div>
                       </div>
                       <div className="flex justify-end gap-2">
                         <button

@@ -20,6 +20,7 @@ import { toast } from "sonner";
 import {
   getEffectiveMapboxToken,
   getMapStyle,
+  MapThemeControl,
   setupMapboxFallback,
 } from "@/shared/lib/mapbox";
 import "mapbox-gl/dist/mapbox-gl.css";
@@ -301,6 +302,7 @@ export default function PartnerInventoryMap({
         new mapboxgl.NavigationControl({ showCompass: false }),
         "top-right",
       );
+      map.addControl(new MapThemeControl(), "top-right");
       const geolocate = new mapboxgl.GeolocateControl({
         positionOptions: { enableHighAccuracy: true },
         trackUserLocation: false,

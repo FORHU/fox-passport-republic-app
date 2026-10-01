@@ -1,8 +1,12 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
-import api from "@/shared/lib/axios";
+import { useQuery } from "@tanstack/react-query";
 import { useAuthStore } from "@/shared/auth/useAuthStore";
+import {
+  fetchCalendar,
+  type CalendarEntry,
+  type CalendarRole,
+} from "@/shared/api/calendar";
 
 export interface CalendarBooking {
   id: string;
@@ -10,6 +14,10 @@ export interface CalendarBooking {
   startDate: Date;
   endDate: Date;
   type: "event" | "venue" | "inventory" | "service";
+  /** Which hat the viewer wears for it — guest, host, organizer, venue, supplier. */
+  role?: CalendarRole;
+  href?: string | null;
+  status?: string;
 }
 
 export interface MonthItem {
@@ -79,140 +87,62 @@ export function toMonthItems(
     }));
 }
 
-function extractList(resp: unknown): any[] {
-  const body = (resp as { data?: unknown })?.data;
-  const list =
-    (body as any)?.data ??
-    (body as any)?.bookings ??
-    (body as any)?.items ??
-    body;
-  return Array.isArray(list) ? list : [];
+function toBooking(entry: CalendarEntry): CalendarBooking {
+  return {
+    id: entry.id,
+    title: entry.title,
+    startDate: entry.start,
+    endDate: entry.end,
+    type:
+      entry.kind === "asset"
+        ? "inventory"
+        : entry.kind === "service"
+          ? "service"
+          : entry.role === "venue"
+            ? "venue"
+            : "event",
+    role: entry.role,
+    href: entry.href,
+    status: entry.status,
+  };
 }
 
-export function useCalendarBookings() {
-  const user = useAuthStore((state) => state.user);
-  const [bookings, setBookings] = useState<CalendarBooking[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  const load = useCallback(async () => {
-    if (!user?.id) {
-      setBookings([]);
-      setError(null);
-      setIsLoading(false);
-      return;
-    }
-
-    setError(null);
-    const results: CalendarBooking[] = [];
-
-    // 1. User's own bookings (events/venues they booked as an attendee)
-    try {
-      const resp = await api.get(`/bookings/user/${user.id}`);
-      for (const b of extractList(resp)) {
-        const ev = b.event ?? b.eventTemplate ?? {};
-        const start =
-          ev.startDatetime ?? b.checkIn ?? b.startDatetime ?? b.startDate;
-        if (!start) continue;
-        results.push({
-          id: `booking-${b.id}`,
-          title:
-            ev.name ?? ev.title ?? b.venue?.title ?? b.venue?.name ?? "Booking",
-          startDate: new Date(start),
-          endDate: new Date(
-            ev.endDatetime ?? b.checkOut ?? b.endDatetime ?? b.endDate ?? start,
-          ),
-          type: b.venue ? "venue" : "event",
-        });
-      }
-    } catch {}
-
-    // 2. Asset/equipment bookings
-    try {
-      const resp = await api.get("/asset/bookings", {
-        params: { ownerId: user.id },
-      });
-      for (const b of extractList(resp)) {
-        const start = b.startDate ?? b.startDatetime;
-        if (!start) continue;
-        results.push({
-          id: `asset-${b.id}`,
-          title: b.asset?.name ?? b.assetName ?? "Equipment Rental",
-          startDate: new Date(start),
-          endDate: new Date(b.endDate ?? b.endDatetime ?? start),
-          type: "inventory",
-        });
-      }
-    } catch {}
-
-    // 3. Service bookings
-    try {
-      const resp = await api.get("/service/bookings", {
-        params: { ownerId: user.id },
-      });
-      for (const b of extractList(resp)) {
-        const start = b.startDate ?? b.startDatetime ?? b.scheduledDate;
-        if (!start) continue;
-        results.push({
-          id: `service-${b.id}`,
-          title: b.service?.name ?? b.serviceName ?? "Service",
-          startDate: new Date(start),
-          endDate: new Date(b.endDate ?? b.endDatetime ?? start),
-          type: "service",
-        });
-      }
-    } catch {}
-
-    // 4. Creator's own scheduled event templates
-    try {
-      const resp = await api.get("/event-templates", {
-        params: { ownerId: user.id },
-      });
-      const raw = resp?.data;
-      const list = raw?.templates ?? raw?.data ?? raw;
-      for (const ev of Array.isArray(list) ? list : []) {
-        const start = ev.startDatetime ?? ev.startDate;
-        if (!start) continue;
-        // Avoid duplicates with booking-side events
-        const alreadyAdded = results.some(
-          (r) => r.id === `event-template-${ev.id}`,
-        );
-        if (alreadyAdded) continue;
-        results.push({
-          id: `event-template-${ev.id}`,
-          title: ev.name ?? ev.title ?? "My Event",
-          startDate: new Date(start),
-          endDate: new Date(ev.endDatetime ?? ev.endDate ?? start),
-          type: "event",
-        });
-      }
-    } catch {}
-
-    // 5. Events the user helps run for someone else (Organizer or Check-in
-    // Helper appointments). Venue appointments have no date, so only events.
-    try {
-      const resp = await api.get("/appointments/mine");
-      const list = resp?.data?.data;
-      for (const ap of Array.isArray(list) ? list : []) {
-        if (ap.state !== "active" || !ap.event?.startAt) continue;
-        results.push({
-          id: `organizing-${ap.id}`,
-          title: ap.event.name ?? "Event",
-          startDate: new Date(ap.event.startAt),
-          endDate: new Date(ap.event.endAt ?? ap.event.startAt),
-          type: "event",
-        });
-      }
-    } catch {}
-
-    setBookings(results);
-    setIsLoading(false);
-  }, [user]);
-
-  useEffect(() => {
-    const timer = setTimeout(() => load(), 0);
-    return () => clearTimeout(timer);
-  }, [load]);
-
-  return { bookings, isLoading, error, refetch: load };
+/** Two months back to a year ahead — what the month widgets page through. */
+function defaultRange() {
+  const now = new Date();
+  return {
+    from: new Date(now.getFullYear(), now.getMonth() - 2, 1),
+    to: new Date(now.getFullYear(), now.getMonth() + 13, 1),
+  };
 }
+
+/**
+ * The signed-in person's calendar, for every role they hold, from the API's
+ * `/calendar` — one scoped list instead of the five endpoints this used to
+ * stitch together client-side (several reading field names the API never
+ * sends, which left a citizen's own event bookings off their calendar).
+ * Cached under `calendar`, which the `bookings` and `events` socket topics
+ * invalidate.
+ */
+export function useCalendarBookings(range?: { from: Date; to: Date }) {
+  const userId = useAuthStore((state) => state.user?.id);
+  const { from, to } = range ?? defaultRange();
+
+  const query = useQuery({
+    queryKey: ["calendar", userId, from.toISOString(), to.toISOString()],
+    queryFn: () => fetchCalendar(from, to),
+    enabled: !!userId,
+    // Paging to the next month keeps the current one on screen meanwhile.
+    placeholderData: (previous) => previous,
+    select: (entries) => entries.map(toBooking),
+  });
+
+  return {
+    bookings: query.data ?? NO_BOOKINGS,
+    isLoading: !!userId && query.isPending,
+    error: query.isError ? "Could not load your calendar." : null,
+    refetch: query.refetch,
+  };
+}
+
+const NO_BOOKINGS: CalendarBooking[] = [];

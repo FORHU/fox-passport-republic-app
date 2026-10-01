@@ -4,6 +4,9 @@ import { EventPaymentPanel } from "../EventPaymentPanel";
 import * as eventHooks from "@/features/event/hooks/useEventCheckout";
 
 vi.mock("@/features/event/hooks/useEventCheckout");
+vi.mock("next/navigation", () => ({
+  useRouter: () => ({ push: vi.fn() }),
+}));
 
 describe("EventPaymentPanel", () => {
   const mockCheckout = vi.fn();

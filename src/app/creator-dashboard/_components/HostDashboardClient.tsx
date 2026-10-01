@@ -35,6 +35,8 @@ import type { EventItem } from "@/features/dashboard/data/dashboardData";
 import StripeConnectSection from "@/features/dashboard/components/StripeConnectSection";
 import { OrganizingSection } from "@/features/appointment/components/OrganizingSection";
 import { OpenToOrganizersSection } from "@/features/appointment/components/OpenToOrganizersSection";
+import { PartnershipsOverview } from "@/features/partnership/components/PartnershipsOverview";
+import { RoleGettingStarted } from "./RoleGettingStarted";
 
 interface HostDashboardClientProps {
   initialData: {
@@ -81,7 +83,7 @@ function mapEvent(e: unknown): EventItem {
     status: (ev?.status as string) || "draft",
     booked: (ev?.bookedCount ?? ev?.booked) as number | null,
     capacity: (ev?.capacity as number | null) ?? null,
-    revenue: ev?.revenue ? `₱${Number(ev.revenue).toLocaleString()}` : null,
+    revenue: ev?.revenue ? Number(ev.revenue) : null,
     img: pickImage((ev?.images ?? ev?.gallery ?? []) as unknown[]),
   };
 }
@@ -255,6 +257,15 @@ export default function HostDashboardClient({
             access={access}
           />
 
+          <RoleGettingStarted
+            totals={{
+              venues: totalVenues ?? 0,
+              events: totalEvents ?? 0,
+              assets: totalAssets ?? 0,
+              services: totalServices ?? 0,
+            }}
+          />
+
           {/* KPIs and match requests measure a Foxer's own listings — an
               Organizer or Investor supplies none, so there is nothing here
               for them to read (see useRoleAccess.hasListings). */}
@@ -273,6 +284,13 @@ export default function HostDashboardClient({
               <OrganizerAttention />
               <OrganizingSection />
               <OpenToOrganizersSection />
+              {(access.canProposePartnerships ||
+                access.canManageEvents ||
+                access.canManageVenues) && (
+                <PartnershipsOverview
+                  isInvestor={access.canProposePartnerships}
+                />
+              )}
 
               {access.canManageEvents && (
                 <EventsSection
@@ -378,7 +396,9 @@ export default function HostDashboardClient({
                   </div>
                   <div className="flex items-center gap-2 shrink-0">
                     <button
-                      onClick={() => router.push("/creator-dashboard/apply")}
+                      // The role picker, not /creator-dashboard/apply — that one is
+                      // the Event Foxer form only, though this offers every role.
+                      onClick={() => router.push("/onboarding")}
                       className="px-3.5 py-1.5 rounded-full bg-[#ccff00]/10 border border-[#ccff00]/30 text-[#ccff00] text-xs font-bold hover:bg-[#ccff00]/20 transition-colors whitespace-nowrap"
                     >
                       Apply for Roles

@@ -20,6 +20,9 @@ const NAV_ICONS: Record<string, string> = {
   "Check In": "qr_code_scanner",
   Earnings: "account_balance_wallet",
   Promotions: "sell",
+  Partnerships: "handshake",
+  Affiliations: "link",
+  Team: "groups",
 };
 
 interface DashboardHeaderProps {
@@ -95,6 +98,11 @@ export function DashboardHeader({
       label: "Performers",
       href: "/creator-dashboard/performers",
     },
+    // An Investor's whole workspace — it had no way in from the nav.
+    access.canProposePartnerships && {
+      label: "Partnerships",
+      href: "/creator-dashboard/partnerships",
+    },
   ].filter(Boolean) as { label: string; href: string }[];
 
   // Secondary tools & operations
@@ -104,6 +112,18 @@ export function DashboardHeader({
       label: "Team",
       href: "/creator-dashboard/team",
     },
+    // Event Foxer ↔ venue approvals — an Event Foxer can't publish without
+    // one, and this was only reachable from a link inside the event builder.
+    (access.canManageEvents || access.canManageVenues) && {
+      label: "Affiliations",
+      href: "/foxer/affiliations",
+    },
+    // Owners receive the proposals Investors send them.
+    !access.canProposePartnerships &&
+      (access.canManageEvents || access.canManageVenues) && {
+        label: "Partnerships",
+        href: "/creator-dashboard/partnerships",
+      },
     access.canManagePromotions && {
       label: "Promotions",
       href: "/creator-dashboard/promotions",

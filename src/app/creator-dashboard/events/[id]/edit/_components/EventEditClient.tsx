@@ -30,6 +30,9 @@ function EventEditContent({ id }: Props) {
     categoryOther,
     date,
     location,
+    targetCity,
+    targetState,
+    targetCountry,
     maxAttendees,
     showGuide,
     cancellationPolicyId,
@@ -52,6 +55,9 @@ function EventEditContent({ id }: Props) {
     setCategoryOther,
     setDate,
     setLocation,
+    setTargetCity,
+    setTargetState,
+    setTargetCountry,
     setMaxAttendees,
     setCancellationPolicyId,
     setShowGuide,
@@ -134,6 +140,9 @@ function EventEditContent({ id }: Props) {
                   categoryOther={categoryOther}
                   date={date}
                   location={location}
+                  targetCity={targetCity}
+                  targetState={targetState}
+                  targetCountry={targetCountry}
                   maxAttendees={maxAttendees}
                   showGuide={showGuide}
                   cancellationPolicyId={cancellationPolicyId}
@@ -143,6 +152,9 @@ function EventEditContent({ id }: Props) {
                   onCategoryOtherChange={setCategoryOther}
                   onDateChange={setDate}
                   onLocationChange={setLocation}
+                  onTargetCityChange={setTargetCity}
+                  onTargetStateChange={setTargetState}
+                  onTargetCountryChange={setTargetCountry}
                   onMaxAttendeesChange={setMaxAttendees}
                   onCancellationPolicyChange={setCancellationPolicyId}
                   onCloseGuide={() => setShowGuide(false)}

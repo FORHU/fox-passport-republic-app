@@ -77,7 +77,12 @@ export const pollWhileVisible = () => {
 export const TOPIC_QUERY_KEYS: Record<string, string[][]> = {
   "admin:pending": [["admin-data"]],
   venues: [["host-venues"], ["host-venue-stats"], ["host-data"]],
-  events: [["user-upcoming-events"], ["host-data"], ["admin-data"]],
+  events: [
+    ["user-upcoming-events"],
+    ["host-data"],
+    ["admin-data"],
+    ["calendar"],
+  ],
   // `user-bookings` is the citizen's own list at /booking. It was the last
   // screen still fetching in a `useEffect`, which put it outside the cache and
   // out of reach of every emit above it.
@@ -86,6 +91,11 @@ export const TOPIC_QUERY_KEYS: Record<string, string[][]> = {
     ["user-upcoming-events"],
     ["admin-data"],
     ["user-bookings"],
+    // Every calendar of booked dates (features/booking/hooks/useAvailability
+    // and the venue one), so a date someone just took greys out live.
+    ["availability"],
+    // Everyone's calendar (/calendar) — a new booking lands on it at once.
+    ["calendar"],
   ],
   // The admin disputes and refunds tables. React Query matches keys by prefix,
   // so this one entry also covers the per-type tables keyed
@@ -96,6 +106,9 @@ export const TOPIC_QUERY_KEYS: Record<string, string[][]> = {
   // `["me"]` is the shared profile key `useProfile` and `useSessionManager` both
   // read, so the new role reaches the UI without waiting out the 5-minute poll.
   roles: [["me"]],
+  // An ID submitted or reviewed: the admin queue and the applicant's /kyc
+  // status share the ["identity"] prefix, and `["me"]` carries the badge.
+  identity: [["identity"], ["me"]],
 };
 
 /**

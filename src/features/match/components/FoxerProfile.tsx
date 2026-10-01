@@ -11,6 +11,7 @@ import {
   type FoxerSpecialization,
 } from "@/shared/api/foxers";
 import { smartBack } from "@/shared/lib/navigation";
+import { Money } from "@/shared/components/ui/Money";
 
 function ProfileSpecializationChip({ spec }: { spec: FoxerSpecialization }) {
   const label = spec.category.replace(/_/g, " ");
@@ -431,8 +432,8 @@ const FoxerProfile: React.FC = () => {
                           )}
                           {(tmpl as any).estimatedTotal > 0 && (
                             <p className="text-xs text-accent font-bold mt-2">
-                              From ₱
-                              {(tmpl as any).estimatedTotal.toLocaleString()}
+                              From{" "}
+                              <Money amount={(tmpl as any).estimatedTotal} />
                             </p>
                           )}
                         </div>
@@ -490,7 +491,7 @@ const FoxerProfile: React.FC = () => {
                               </p>
                             </div>
                             <span className="text-[10px] font-bold uppercase tracking-widest px-3 py-1 bg-black/40 rounded-full text-accent border border-accent/20 shrink-0">
-                              ₱{venue.price.toLocaleString()} /{" "}
+                              <Money amount={venue.price} /> /{" "}
                               {venue.billingRate}
                             </span>
                           </div>
@@ -556,7 +557,7 @@ const FoxerProfile: React.FC = () => {
                               </p>
                             </div>
                             <span className="text-[10px] font-bold uppercase tracking-widest px-3 py-1 bg-black/40 rounded-full text-accent border border-accent/20 shrink-0">
-                              ₱{asset.price.toLocaleString()} /{" "}
+                              <Money amount={asset.price} /> /{" "}
                               {asset.billingRate}
                             </span>
                           </div>
@@ -619,7 +620,7 @@ const FoxerProfile: React.FC = () => {
                               </p>
                             </div>
                             <span className="text-[10px] font-bold uppercase tracking-widest px-3 py-1 bg-black/40 rounded-full text-accent border border-accent/20 shrink-0">
-                              ₱{svc.price.toLocaleString()} / {svc.billingRate}
+                              <Money amount={svc.price} /> / {svc.billingRate}
                             </span>
                           </div>
                           {svc.tags.length > 0 && (

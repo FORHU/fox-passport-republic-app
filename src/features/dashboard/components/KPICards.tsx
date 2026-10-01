@@ -3,6 +3,8 @@
 import React from "react";
 import { KPI_DATA } from "@/features/dashboard/data/dashboardData";
 
+import { Money } from "@/shared/components/ui/Money";
+
 interface KPIStats {
   totalRevenue?: number;
   totalBookings?: number;
@@ -20,7 +22,7 @@ export function KPICards({ stats, isLoading }: KPICardsProps = {}) {
       const val = stats.totalRevenue;
       return {
         ...kpi,
-        value: isLoading ? "…" : `₱${val.toLocaleString()}`,
+        value: isLoading ? "…" : <Money amount={val} />,
         barWidth: val > 0 ? "60%" : "0%",
         trendType: val > 0 ? "up" : "flat",
       };

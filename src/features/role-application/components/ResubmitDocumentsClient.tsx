@@ -153,6 +153,7 @@ export default function ResubmitDocumentsClient({
                       key={key}
                       label={`${field.label} *`}
                       accept={field.accept}
+                      private
                       onUploadComplete={(fileId) =>
                         setReplacements((prev) => ({
                           ...prev,

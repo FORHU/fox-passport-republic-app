@@ -6,6 +6,7 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useAuthStore } from "@/shared/auth/useAuthStore";
 import { getDashboardPath } from "@/shared/lib/dashboard-path";
+import { formatCurrency } from "@/shared/lib/currency";
 
 export default function VenueRequestPendingClient() {
   const router = useRouter();
@@ -173,7 +174,7 @@ export default function VenueRequestPendingClient() {
                     Amount (if approved)
                   </p>
                   <p className="text-white font-bold">
-                    ₱{total.toLocaleString()}
+                    {formatCurrency(total)}
                   </p>
                 </div>
               )}

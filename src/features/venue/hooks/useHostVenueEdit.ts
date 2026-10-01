@@ -8,6 +8,8 @@ import {
   useState,
 } from "react";
 import { useRouter } from "next/navigation";
+import { useQueryClient } from "@tanstack/react-query";
+import { venueQueryKey } from "@/features/venue/hooks/useVenue";
 import { toast } from "sonner";
 import { useAuthStore } from "@/shared/auth/useAuthStore";
 import { useVenueBuilder } from "@/features/venue/hooks/useVenueBuilder";
@@ -145,6 +147,7 @@ const MAX_VENUE_PHOTOS = 5;
 
 export function useHostVenueEdit(venueId: string) {
   const router = useRouter();
+  const queryClient = useQueryClient();
   const user = useAuthStore((s) => s.user);
   const hostId = user?.id;
 
@@ -286,6 +289,8 @@ export function useHostVenueEdit(venueId: string) {
       }
 
       await updateVenue(venueId, payload);
+      // The booking page and the listing-details form read this cache entry.
+      queryClient.invalidateQueries({ queryKey: venueQueryKey(venueId) });
 
       if (!isAlreadyLive) setExistingStatus(normalizedTarget);
       toast.success(

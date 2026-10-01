@@ -518,6 +518,24 @@ body {
   animation: fadeIn 0.5s ease-out;
 }
 
+/* RouteProgressBar's indeterminate sweep */
+@keyframes route-progress {
+  from { transform: translateX(-100%); }
+  to   { transform: translateX(300%); }
+}
+
+.route-progress-indicator {
+  animation: route-progress 1.1s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .route-progress-indicator {
+    animation: none;
+    width: 100%;
+    opacity: 0.6;
+  }
+}
+
 /* Scroll reveal animations */
 .reveal-on-scroll {
   opacity: 0;
