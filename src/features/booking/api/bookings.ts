@@ -356,13 +356,21 @@ export async function fetchTemplateAvailability(
   return resp.data?.data ?? { bookedDates: [] };
 }
 
+// `bookedDates` covers every booking the provider holds, across all their
+// services; `travelBlockedDates` are the days either side of one in another
+// city from `location` (all of them when no location is given yet).
 export async function fetchServiceAvailability(
   serviceId: string,
-): Promise<{ bookedDates: string[] }> {
-  const resp = await api.get(
-    `/service/bookings/availability?serviceId=${serviceId}`,
-  );
-  return resp.data?.data ?? { bookedDates: [] };
+  location?: string,
+): Promise<{ bookedDates: string[]; travelBlockedDates: string[] }> {
+  const resp = await api.get("/service/bookings/availability", {
+    params: { serviceId, location: location || undefined },
+  });
+  const data = resp.data?.data;
+  return {
+    bookedDates: data?.bookedDates ?? [],
+    travelBlockedDates: data?.travelBlockedDates ?? [],
+  };
 }
 
 export async function fetchAssetAvailability(assetId: string): Promise<{

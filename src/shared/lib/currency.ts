@@ -44,3 +44,35 @@ export function convertCurrency(
   const amountInBase = amount / fromRate;
   return amountInBase * toRate;
 }
+
+/**
+ * Short form for tight spaces (KPI tiles, map pins): "₱1.2M", "$4.5K".
+ * Same no-conversion rule as `formatCurrency`.
+ */
+export function formatCompactCurrency(
+  amount: number,
+  currency: string = DEFAULT_CURRENCY,
+): string {
+  return new Intl.NumberFormat(undefined, {
+    style: "currency",
+    currency,
+    notation: "compact",
+    maximumFractionDigits: 1,
+  }).format(amount);
+}
+
+/**
+ * Just the symbol for `currency` ("₱", "$", "€") — for labels on amount
+ * inputs such as "Min Spend (₱)", instead of a hardcoded literal. Inputs are
+ * entered in the platform currency (`DEFAULT_CURRENCY`), which is what gets
+ * stored and charged, so that's the default here.
+ */
+export function currencySymbol(currency: string = DEFAULT_CURRENCY): string {
+  const part = new Intl.NumberFormat(undefined, {
+    style: "currency",
+    currency,
+  })
+    .formatToParts(0)
+    .find((p) => p.type === "currency");
+  return part?.value ?? currency;
+}

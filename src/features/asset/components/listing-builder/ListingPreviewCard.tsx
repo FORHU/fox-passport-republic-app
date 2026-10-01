@@ -2,6 +2,7 @@
 
 import React, { useRef } from "react";
 import { ListingType } from "@/features/asset/data/listingBuilderData";
+import { Money } from "@/shared/components/ui/Money";
 
 interface ListingPreviewCardProps {
   activeType: ListingType;
@@ -220,7 +221,7 @@ export function ListingPreviewCard({
                     {unit}
                   </p>
                   <p className="text-lg font-mono font-bold text-white">
-                    ₱{price.toLocaleString()}
+                    <Money amount={price} />
                   </p>
                 </div>
                 <span className="text-xs font-bold text-white/50 bg-white/5 px-2 py-1 rounded capitalize">

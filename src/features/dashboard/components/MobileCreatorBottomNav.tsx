@@ -16,20 +16,40 @@ const BASE_TABS = [
 
 export default function MobileCreatorBottomNav() {
   const pathname = usePathname();
-  const { canReceivePayouts, hasListings } = useRoleAccess();
+  const access = useRoleAccess();
+  const { canReceivePayouts, hasListings, canProposePartnerships } = access;
+
+  // The Listings tab opens the first listing type this person actually
+  // manages — it used to always open Venues, an empty page for a Gear,
+  // Talent, Performer or Event Foxer.
+  const listingsHref = access.canManageVenues
+    ? "/creator-dashboard/venues"
+    : access.canManageEvents
+      ? "/creator-dashboard/events"
+      : access.canManageInventory
+        ? "/creator-dashboard/assets"
+        : access.canManageServices
+          ? "/creator-dashboard/services"
+          : "/creator-dashboard/performers";
 
   // An Organizer gets no platform pay (ADR 0005) — the tab used to sit here
   // regardless, pointing at a page that (now correctly) bounces them
   // straight back to this same dashboard.
   // The Listings tab is a Foxer's own inventory — nothing there for someone
-  // who supplies nothing.
+  // who supplies nothing. An Investor's equivalent is their partnerships.
   const tabs = [
     BASE_TABS[0],
     hasListings && {
       icon: "grid_view",
       label: "Listings",
-      href: "/creator-dashboard/venues",
+      href: listingsHref,
     },
+    !hasListings &&
+      canProposePartnerships && {
+        icon: "handshake",
+        label: "Partners",
+        href: "/creator-dashboard/partnerships",
+      },
     BASE_TABS[1],
     canReceivePayouts && {
       icon: "account_balance_wallet",

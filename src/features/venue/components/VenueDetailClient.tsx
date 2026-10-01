@@ -21,6 +21,7 @@ import { Venue } from "../hooks/useVenuesByCategory";
 import { Host } from "../types/venue";
 import { useAuthStore } from "@/shared/auth/useAuthStore";
 import { ReportModal } from "@/shared/components/ReportModal";
+import { Money } from "@/shared/components/ui/Money";
 
 interface VenueDetailClientProps {
   venue: Venue;
@@ -158,7 +159,7 @@ export default function VenueDetailClient({
               From
             </p>
             <p className="text-xl font-display font-bold text-[#ccff00]">
-              ₱{venuePrice.toLocaleString()}
+              <Money amount={venuePrice} />
               <span className="text-xs text-white/40 font-normal">/night</span>
             </p>
           </div>
@@ -321,7 +322,7 @@ export default function VenueDetailClient({
                             {pkg.name}
                           </h4>
                           <p className="text-accent font-bold text-sm mb-2">
-                            ₱{Number(pkg.price).toLocaleString()}
+                            <Money amount={pkg.price} />
                           </p>
                           <p className="text-gray-400 text-sm whitespace-pre-line">
                             {pkg.description}
@@ -361,7 +362,7 @@ export default function VenueDetailClient({
                               {asset.name}
                             </p>
                             <p className="text-accent text-xs">
-                              ₱{Number(asset.price).toLocaleString()} /{" "}
+                              <Money amount={asset.price} /> /{" "}
                               {asset.billingRate}
                             </p>
                           </div>
@@ -380,7 +381,7 @@ export default function VenueDetailClient({
                               {service.name}
                             </p>
                             <p className="text-accent text-xs">
-                              ₱{Number(service.price).toLocaleString()} /{" "}
+                              <Money amount={service.price} /> /{" "}
                               {service.billingRate}
                             </p>
                           </div>
@@ -492,7 +493,7 @@ export default function VenueDetailClient({
         <div>
           <div className="flex items-baseline gap-1">
             <span className="text-xl font-display font-bold text-white">
-              ₱{venuePrice.toLocaleString()}
+              <Money amount={venuePrice} />
             </span>
             <span className="text-xs text-text-muted">
               / {venue.billingRate === "hour" ? "hr" : "day"}

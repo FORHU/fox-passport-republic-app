@@ -4,6 +4,7 @@ import React, { useEffect, useState } from "react";
 import api from "@/shared/lib/axios";
 import { toast } from "sonner";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { Money } from "@/shared/components/ui/Money";
 
 type RoleStatus =
   | "pending"
@@ -412,7 +413,7 @@ function ApplicationDetailDrawer({
                           Investment Range
                         </span>
                         <span className="text-white text-sm font-medium">
-                          ₱{Number(data.investmentRange).toLocaleString()}
+                          <Money amount={data.investmentRange} />
                         </span>
                       </div>
                     )}

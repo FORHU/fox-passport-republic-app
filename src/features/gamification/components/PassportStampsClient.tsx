@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React from "react";
+import { useQuery } from "@tanstack/react-query";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -124,19 +125,17 @@ function StampCard({ stamp, index }: { stamp: Stamp; index: number }) {
 
 export default function PassportStampsClient({ userId }: Props) {
   const router = useRouter();
-  const [stamps, setStamps] = useState<Stamp[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
+  const stampsQuery = useQuery({
+    queryKey: ["passport-stamps", userId],
+    queryFn: () => fetchStamps(userId),
+    enabled: !!userId,
+  });
+  const stamps: Stamp[] = stampsQuery.data ?? [];
+  const loading = stampsQuery.isPending;
+  const error = stampsQuery.isError
+    ? "Could not load your passport stamps"
+    : "";
   const { categories } = useCategories();
-
-  useEffect(() => {
-    if (!userId) return;
-    setLoading(true);
-    fetchStamps(userId)
-      .then(setStamps)
-      .catch(() => setError("Could not load your passport stamps"))
-      .finally(() => setLoading(false));
-  }, [userId]);
 
   const featuredCategories = categories
     .filter((c) => !c.parentCategoryId)

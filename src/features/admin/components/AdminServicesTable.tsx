@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import api from "@/shared/lib/axios";
 import { toast } from "sonner";
 import { useQueryClient } from "@tanstack/react-query";
+import { Money } from "@/shared/components/ui/Money";
 
 interface ServicesTableProps {
   services: any[];
@@ -267,7 +268,7 @@ export const AdminServicesTable: React.FC<ServicesTableProps> = ({
                           .join(", ") || "—"}
                       </td>
                       <td className="p-6 text-green-400 font-bold">
-                        ₱{Number(service.price || 0).toLocaleString()}
+                        <Money amount={service.price || 0} />
                         <span className="text-white/30 font-normal text-[10px] ml-1">
                           /{service.billingRate || "event"}
                         </span>

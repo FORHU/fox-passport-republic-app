@@ -7,6 +7,7 @@ import { useUIStore } from "@/shared/store/useUIStore";
 import { useAdminPendingVenues } from "@/features/admin/hooks/useAdminPendingVenues";
 import { useAdminPendingAssets } from "@/features/admin/hooks/useAdminPendingAssets";
 import { useAdminPendingServices } from "@/features/admin/hooks/useAdminPendingServices";
+import { Money } from "@/shared/components/ui/Money";
 
 /**
  * The mobile admin overview.
@@ -26,12 +27,6 @@ export interface MobileAdminStats {
   totalBookings?: number;
   totalRevenue?: number;
   pendingApprovals?: number;
-}
-
-function formatCurrency(value: number) {
-  if (value >= 1_000_000) return `₱${(value / 1_000_000).toFixed(1)}M`;
-  if (value >= 1_000) return `₱${(value / 1_000).toFixed(1)}K`;
-  return `₱${value.toLocaleString()}`;
 }
 
 type PendingKind = "venue" | "asset" | "service";
@@ -75,7 +70,7 @@ export default function MobileAdminView({
   const KPI_CARDS = [
     {
       label: "Revenue",
-      value: formatCurrency(stats?.totalRevenue ?? 0),
+      value: <Money amount={stats?.totalRevenue ?? 0} compact />,
       icon: "payments",
       valueColor: "#ccff00",
       iconColor: "#ccff00",

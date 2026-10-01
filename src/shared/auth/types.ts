@@ -28,8 +28,8 @@ export interface User {
   permissions?: readonly Permission[];
   isEventFoxer?: boolean;
   mobileNumber?: string;
-  identityVerified?: boolean;
   isEmailVerified?: boolean;
+  identityVerifiedAt?: string | null;
   imgId?: string; // profile image URL (CloudFront)
   city?: string;
   country?: string;

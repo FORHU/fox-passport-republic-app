@@ -13,6 +13,7 @@ import {
   PaymentElement,
 } from "@stripe/react-stripe-js";
 import PaymentConfirmationModal from "./PaymentConfirmationModal";
+import { formatCurrency } from "@/shared/lib/currency";
 
 interface StripePaymentFormProps {
   totalAmount: number;
@@ -129,7 +130,7 @@ const StripePaymentForm = forwardRef<
               </>
             ) : (
               <>
-                Confirm & Pay ₱{totalAmount.toLocaleString()}
+                Confirm & Pay {formatCurrency(totalAmount)}
                 <span className="material-symbols-outlined">arrow_forward</span>
               </>
             )}

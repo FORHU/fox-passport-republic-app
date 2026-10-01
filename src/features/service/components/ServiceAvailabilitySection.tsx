@@ -1,11 +1,12 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 import { toast } from "sonner";
-import { fetchServiceAvailability } from "@/features/booking/api/bookings";
+import { useServiceAvailability } from "@/features/booking/hooks/useAvailability";
 import AvailabilityCalendar from "@/features/booking/components/AvailabilityCalendar";
 
 const noop = () => {};
+const NO_DATES: string[] = [];
 
 /**
  * A Talent/Performer Foxer's own read on their service's calendar — the
@@ -18,15 +19,16 @@ export function ServiceAvailabilitySection({
 }: {
   serviceId: string;
 }) {
-  const [bookedDates, setBookedDates] = useState<string[]>([]);
-  const [loading, setLoading] = useState(true);
+  const {
+    data,
+    isPending: loading,
+    isError,
+  } = useServiceAvailability(serviceId);
+  const bookedDates = data?.bookedDates ?? NO_DATES;
 
   useEffect(() => {
-    fetchServiceAvailability(serviceId)
-      .then((d) => setBookedDates(d.bookedDates))
-      .catch(() => toast.error("Could not load this service's calendar."))
-      .finally(() => setLoading(false));
-  }, [serviceId]);
+    if (isError) toast.error("Could not load this service's calendar.");
+  }, [isError]);
 
   return (
     <div className="rounded-[2rem] border-2 border-dashed border-white/10 bg-[#0f111a]/30 p-8">
@@ -38,8 +40,9 @@ export function ServiceAvailabilitySection({
           Availability
         </h3>
         <p className="text-xs text-text-muted">
-          Days a citizen has already booked this service — updates
-          automatically as bookings come in.
+          Days you&apos;re already booked — on this or any of your other services,
+          since you can only be in one place a day. Updates automatically as
+          bookings come in.
         </p>
       </div>
 

@@ -2,6 +2,8 @@
 
 import React from "react";
 import { ResourceItem } from "@/features/event/data/eventBuilderData";
+import { Money } from "@/shared/components/ui/Money";
+import { currencySymbol } from "@/shared/lib/currency";
 
 interface CorePackageDropZoneProps {
   baseItems: ResourceItem[];
@@ -80,7 +82,7 @@ export function CorePackageDropZone({
                   <div>
                     <p className="font-bold text-white text-sm">{item.name}</p>
                     <p className="text-[10px] text-text-muted">
-                      Listing price: ₱{item.cost.toLocaleString()}
+                      Listing price: <Money amount={item.cost} />
                     </p>
                   </div>
                 </div>
@@ -98,7 +100,7 @@ export function CorePackageDropZone({
               <div className="flex items-center gap-3 pt-2 border-t border-white/5">
                 <div className="flex-1">
                   <label className="text-[10px] text-white/40 uppercase tracking-widest block mb-1">
-                    Agreed Price (₱)
+                    Agreed Price ({currencySymbol()})
                   </label>
                   <input
                     type="number"

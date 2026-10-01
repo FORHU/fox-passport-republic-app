@@ -1,16 +1,18 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { fetchServiceById } from "@/features/service/api/services";
+import { useService } from "@/features/service/hooks/useService";
 import type { BackendService } from "@/shared/lib/api-types";
 import {
   bookService,
-  fetchServiceAvailability,
   previewServiceBookingPrice,
 } from "@/features/booking/api/bookings";
+import { useServiceAvailability } from "@/features/booking/hooks/useAvailability";
+
+const NO_DATES: string[] = [];
 import { useItemBookingStore } from "@/features/booking/store/useItemBookingStore";
 import { useAuthStore } from "@/shared/auth/useAuthStore";
 import { toast } from "sonner";
@@ -33,10 +35,11 @@ export default function ServiceBookingClient({
   const { setBookingDetails, setBookingId } = useItemBookingStore();
   const { format } = useCurrency();
 
-  const [service, setService] = useState<BackendService | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const serviceQuery = useService(serviceId);
+  const service: BackendService | null = serviceQuery.data ?? null;
+  // Only the first load shows the spinner — a revisit renders from cache.
+  const isLoading = serviceQuery.isPending;
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [bookedDates, setBookedDates] = useState<string[]>([]);
   const [errors, setErrors] = useState<{ dates?: string; location?: string }>(
     {},
   );
@@ -48,6 +51,29 @@ export default function ServiceBookingClient({
   const [guestCount, setGuestCount] = useState(50);
   const [eventLocation, setEventLocation] = useState("");
   const [projectNotes, setProjectNotes] = useState("");
+
+  // The provider is one person: days they're booked on any of their services
+  // are out, and so are the days either side of a booking in another city
+  // (travel). Which travel days apply depends on where this event is, so
+  // the calendar re-asks once the location stops changing.
+  const [availabilityLocation, setAvailabilityLocation] = useState("");
+  useEffect(() => {
+    const timer = setTimeout(
+      () => setAvailabilityLocation(eventLocation.trim()),
+      500,
+    );
+    return () => clearTimeout(timer);
+  }, [eventLocation]);
+  const { data: availability } = useServiceAvailability(
+    serviceId,
+    availabilityLocation,
+  );
+  const providerBookedDates = availability?.bookedDates ?? NO_DATES;
+  const travelBlockedDates = availability?.travelBlockedDates ?? NO_DATES;
+  const bookedDates = useMemo(
+    () => [...new Set([...providerBookedDates, ...travelBlockedDates])].sort(),
+    [providerBookedDates, travelBlockedDates],
+  );
   const [voucherCodeInput, setVoucherCodeInput] = useState("");
   const [appliedVoucherCode, setAppliedVoucherCode] = useState<string | null>(
     null,
@@ -58,14 +84,8 @@ export default function ServiceBookingClient({
   const [autoApplied, setAutoApplied] = useState(false);
 
   useEffect(() => {
-    fetchServiceById(serviceId)
-      .then(setService)
-      .catch(() => toast.error("Could not load service details."))
-      .finally(() => setIsLoading(false));
-    fetchServiceAvailability(serviceId)
-      .then((d) => setBookedDates(d.bookedDates))
-      .catch(() => {});
-  }, [serviceId]);
+    if (serviceQuery.isError) toast.error("Could not load service details.");
+  }, [serviceQuery.isError]);
 
   // A range check is close enough for a heads-up — service bookings pick
   // individual days, not a range, so this spans the earliest to latest
@@ -96,7 +116,10 @@ export default function ServiceBookingClient({
 
   // Shared by handleApplyVoucher and handleProceed so the two never compute
   // the schedule differently.
-  function computeSchedule(): { scheduledDate: string; endDate: string } | null {
+  function computeSchedule(): {
+    scheduledDate: string;
+    endDate: string;
+  } | null {
     if (bookingDates.length === 0) return null;
     const firstDate = bookingDates[0];
     const lastDate = bookingDates[bookingDates.length - 1];
@@ -164,7 +187,6 @@ export default function ServiceBookingClient({
     return () => {
       cancelled = true;
     };
-     
   }, [service, bookingDates, callTime, durationHours, voucherCodeInput]);
 
   const handleProceed = async () => {
@@ -186,14 +208,15 @@ export default function ServiceBookingClient({
       return;
     }
 
-    const isIdentityBlocked =
-      user?.identityVerified !== true || user?.isEmailVerified !== true;
-
-    if (isIdentityBlocked) {
-      toast.error(
-        "Please complete both email and identity verification before making a booking.",
+    // Booking needs a verified email — the one check the API enforces. This
+    // used to also require `identityVerified`, a flag nothing ever sets, so
+    // every booking bounced to /kyc. Only an explicit `false` blocks here;
+    // the API still has the final say.
+    if (user?.isEmailVerified === false) {
+      toast.error("Please verify your email address before booking.");
+      router.push(
+        `/kyc?next=${encodeURIComponent(window.location.pathname + window.location.search)}`,
       );
-      router.push("/kyc");
       return;
     }
 
@@ -422,7 +445,7 @@ export default function ServiceBookingClient({
                         {bookingDates.length === 1
                           ? new Date(
                               bookingDates[0] + "T00:00:00",
-                            ).toLocaleDateString("en-PH", {
+                            ).toLocaleDateString(undefined, {
                               weekday: "short",
                               month: "short",
                               day: "numeric",
@@ -459,7 +482,7 @@ export default function ServiceBookingClient({
                           className="flex items-center gap-1 px-2.5 py-1 bg-orange-400/10 border border-orange-400/20 rounded-full text-[10px] font-bold text-orange-400"
                         >
                           {new Date(d + "T00:00:00").toLocaleDateString(
-                            "en-PH",
+                            undefined,
                             { month: "short", day: "numeric" },
                           )}
                           <button
@@ -478,14 +501,28 @@ export default function ServiceBookingClient({
                       ))}
                     </div>
                   )}
-                  {bookedDates.length > 0 && (
+                  {providerBookedDates.length > 0 && (
                     <p className="text-[10px] text-white/30 mt-2 flex items-center gap-1">
                       <span className="material-symbols-outlined text-[12px] text-red-400">
                         info
                       </span>
-                      {bookedDates.length} date
-                      {bookedDates.length !== 1 ? "s" : ""} already booked —
-                      shown in red
+                      {providerBookedDates.length} date
+                      {providerBookedDates.length !== 1 ? "s" : ""} already
+                      booked — shown in red
+                    </p>
+                  )}
+                  {travelBlockedDates.length > 0 && (
+                    <p className="text-[10px] text-white/30 mt-1 flex items-start gap-1">
+                      <span className="material-symbols-outlined text-[12px] text-red-400">
+                        flight
+                      </span>
+                      <span>
+                        {travelBlockedDates.length} more date
+                        {travelBlockedDates.length !== 1 ? "s are" : " is"} kept
+                        free for travel to or from a booking in another city.
+                        {!availabilityLocation &&
+                          " Add your event location below — if it's in the same city, they may open up."}
+                      </span>
                     </p>
                   )}
                   <ScheduleConflictWarning conflicts={scheduleConflicts} />
@@ -780,7 +817,8 @@ export default function ServiceBookingClient({
                       <span className="material-symbols-outlined text-[12px] align-middle mr-1">
                         lock
                       </span>
-                      Secure encrypted checkout · Payment held safely until confirmed
+                      Secure encrypted checkout · Payment held safely until
+                      confirmed
                     </p>
                   </div>
                 </div>

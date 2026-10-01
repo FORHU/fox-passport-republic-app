@@ -80,7 +80,7 @@ export const UserCalendarWidget: React.FC<UserCalendarWidgetProps> = ({
           My Calendar
         </h3>
         <Link
-          href="/creator-dashboard/calendar"
+          href="/calendar"
           className="text-sm text-gray-400 hover:text-white transition-colors flex items-center gap-1"
         >
           Full Calendar{" "}

@@ -10,6 +10,7 @@ import {
   type ProviderLineItem,
 } from "@/features/event/api/marketplaceItems";
 import { LineItemStatusBadge } from "@/features/event/components/LineItemStatusBadge";
+import { Money } from "@/shared/components/ui/Money";
 
 type Kind = "asset" | "service" | "venue";
 
@@ -139,7 +140,7 @@ export default function ProviderMarketplaceRequestsClient() {
                   </div>
                   <div className="flex items-center gap-3 shrink-0">
                     <span className="text-sm font-bold text-white">
-                      ₱{Number(item.agreedPrice ?? 0).toLocaleString()}
+                      <Money amount={item.agreedPrice ?? 0} />
                     </span>
                     <LineItemStatusBadge
                       status={item.status}

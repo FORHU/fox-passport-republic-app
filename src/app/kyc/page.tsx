@@ -1,25 +1,20 @@
-import Link from "next/link";
-import MobileKYCView from "@/features/role-application/components/MobileKYCView";
+import { Suspense } from "react";
+import type { Metadata } from "next";
+import { VerificationClient } from "./_components/VerificationClient";
 
+export const metadata: Metadata = {
+  title: "Verification | Fox Passport Republic",
+  description:
+    "Verify your email to book, verify your ID for a Verified badge, and track the documents on your role applications.",
+};
+
+// Replaced a static mock (hardcoded "Verified" / "In Review" rows on mobile,
+// "verify from your role application" on desktop) that every booking was
+// redirected to — a dead end for anyone not applying for a role.
 export default function KYCPage() {
   return (
-    <>
-      <div className="lg:hidden">
-        <MobileKYCView />
-      </div>
-      <div className="hidden lg:flex min-h-screen items-center justify-center bg-[#050608]">
-        <div className="text-center">
-          <p className="text-white/40 text-sm mb-4">
-            Document verification is completed from your role application.
-          </p>
-          <Link
-            href="/"
-            className="inline-block h-10 px-6 rounded-full bg-accent text-black text-sm font-bold hover:bg-[#b3e600] transition-colors leading-10"
-          >
-            Return home
-          </Link>
-        </div>
-      </div>
-    </>
+    <Suspense fallback={null}>
+      <VerificationClient />
+    </Suspense>
   );
 }

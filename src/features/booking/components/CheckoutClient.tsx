@@ -16,6 +16,7 @@ import StripePaymentForm from "./StripePaymentForm";
 import { getDashboardPath } from "@/shared/lib/dashboard-path";
 import { smartBack } from "@/shared/lib/navigation";
 import { toast } from "sonner";
+import { formatCurrency } from "@/shared/lib/currency";
 
 const stripePromise = loadStripe(
   process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY || "",
@@ -414,7 +415,7 @@ export default function CheckoutClient() {
                         {checkInDate
                           ? new Date(
                               checkInDate + "T00:00:00",
-                            ).toLocaleDateString("en-PH", {
+                            ).toLocaleDateString(undefined, {
                               month: "short",
                               day: "numeric",
                             })
@@ -439,7 +440,7 @@ export default function CheckoutClient() {
                         <span className="text-white/50">×{guestCount}</span>
                       </span>
                       <span className="text-white font-medium">
-                        ₱{totalAmount.toLocaleString()}
+                        {formatCurrency(totalAmount)}
                       </span>
                     </div>
                   </div>
@@ -449,7 +450,7 @@ export default function CheckoutClient() {
                         Total
                       </span>
                       <span className="text-3xl font-display font-bold text-accent text-shadow-glow">
-                        ₱{totalAmount.toLocaleString()}
+                        {formatCurrency(totalAmount)}
                       </span>
                     </div>
                   </div>

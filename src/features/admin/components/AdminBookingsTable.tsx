@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import { formatCurrency } from "@/shared/lib/currency";
 
 const STATUS_STYLE: Record<string, string> = {
   confirmed: "bg-green-400/10 text-green-400 border-green-400/20",
@@ -24,7 +25,7 @@ function StatusBadge({ status }: { status: string }) {
 
 function fmt(iso: string) {
   if (!iso) return "—";
-  return new Date(iso).toLocaleDateString("en-PH", {
+  return new Date(iso).toLocaleDateString(undefined, {
     month: "short",
     day: "numeric",
     year: "numeric",
@@ -32,7 +33,7 @@ function fmt(iso: string) {
 }
 
 function money(n: number) {
-  return `₱${Number(n ?? 0).toLocaleString()}`;
+  return formatCurrency(Number(n ?? 0));
 }
 
 // ── Service Bookings tab ──────────────────────────────────────────────────────

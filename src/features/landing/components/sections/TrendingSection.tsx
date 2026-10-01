@@ -4,6 +4,7 @@ import { useState } from "react";
 import { motion } from "motion/react";
 import { useQuery } from "@tanstack/react-query";
 import { fetchTrendingTemplates } from "@/shared/api/event-templates";
+import { Money } from "@/shared/components/ui/Money";
 
 const CATEGORY_OPTIONS = [
   { label: "All", value: undefined },
@@ -159,7 +160,7 @@ export default function TrendingSection() {
                         </div>
                         {price ? (
                           <span className="text-white font-bold bg-white/10 px-2 py-0.5 sm:px-3 sm:py-1 rounded-lg text-xs sm:text-sm group-hover:bg-[#ccff00] group-hover:text-black transition-colors">
-                            ₱{price.toLocaleString()}
+                            <Money amount={price} />
                           </span>
                         ) : (
                           <span className="bg-white text-black text-xs font-bold px-3 py-1 rounded hover:bg-[#ccff00] cursor-pointer transition-colors">

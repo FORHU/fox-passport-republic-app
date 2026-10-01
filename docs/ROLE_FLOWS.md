@@ -262,3 +262,35 @@ plain citizen to sign up to attend/participate in a published event**
 
 If a public "apply to attend" flow is wanted, that's new work, not something
 already built and undiscovered.
+
+---
+
+## Evaluation — 2026-10-01
+
+**The authorization model itself is sound.** The API is the only place a grant
+is written (`permissionsForUser()` merges SystemRole + RoleType grants); the
+app is *told* permissions and never computes them (`shared/lib/permissions.ts`,
+`useRoleAccess`), and the API re-derives every guard. Approve / reject /
+revision-requested is a clean state machine, and Organizer authority is
+correctly per-appointment rather than per-role (ADR 0005). See `RBAC.md` §23
+for the conformance audit.
+
+**Where it fell short was the experience around it** — what each role sees
+after approval. Found and fixed in this pass:
+
+| Gap | Fix |
+|---|---|
+| Nothing explained a role before its application form | `RoleDetailsModal` on /onboarding: what the role does, what the form asks for (`features/onboarding/roleCatalog.ts`) |
+| Investor's "My Dashboard" link went to `/user`, though `requireHost()` admits them to `/creator-dashboard` | `investor` added to `getDashboardPath`'s supply roles |
+| Investor had no dashboard content and no nav entry — `/creator-dashboard/partnerships` was orphaned | `PartnershipsOverview` card on the overview (desktop + mobile), Partnerships nav link (`partnership:propose`); owners get the link too, and the card while proposals await them |
+| Event Foxers can't publish without a venue affiliation, but `/foxer/affiliations` was only reachable from one card inside the event builder | Affiliations nav link for `template:manage` / `venue:manage` |
+| Mobile "Listings" tab always opened Venues — empty for Gear/Talent/Performer/Event Foxers | Opens the first listing type the person actually manages; Investors get a Partners tab instead |
+| No per-role guidance after approval | `RoleGettingStarted` checklist — one tab per held role, steps tick off from real data (first listing, payouts connected, venue approval, first team, first proposal) |
+| Chat gave no hint who you were talking to | Role badges (`RoleBadges`) in the chat header, group sender labels and the Messages list; the API's conversation `PARTICIPANT_SELECT` now includes `roleType` |
+| The dashboard's "Apply for Roles" hint (offering every role) opened the Event Foxer form at `/creator-dashboard/apply` | Opens the `/onboarding` role picker |
+
+**Still open:**
+- `RBAC.md` §21 — no test asserts a route's 401/403/200 triad yet.
+- Admin `requireRole`/`requireAdmin`/`requireHost` guard functions are still
+  defined (unused) in the API's `auth.middleware.ts`.
+- No public "sign up to attend" flow (see the section above) — unchanged.

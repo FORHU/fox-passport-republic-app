@@ -7,81 +7,10 @@ import { useAuthStore } from "@/shared/auth/useAuthStore";
 import RequireAuth from "@/shared/auth/RequireAuth";
 import api from "@/shared/lib/axios";
 import { isFoxerRole } from "@/shared/constants/roles";
+import { ROLES, type RoleCatalogEntry } from "../roleCatalog";
+import { RoleDetailsModal } from "./RoleDetailsModal";
 
 type Step = 1 | 2 | 3;
-
-const ROLES = [
-  {
-    type: "service",
-    roleType: "serviceFoxer",
-    href: "/foxer/apply?type=service",
-    color: "#00d2ff",
-    icon: "design_services",
-    tag: "Talent Foxer",
-    title: "Talent Provider",
-    desc: "Offer catering, design, staffing, and professional services.",
-  },
-  {
-    type: "performer",
-    roleType: "performerFoxer",
-    href: "/foxer/apply?type=performer",
-    color: "#f59e0b",
-    icon: "theater_comedy",
-    tag: "Performer Foxer",
-    title: "Performer",
-    desc: "Offer photography, DJ, live music, hosting, and more.",
-  },
-  {
-    type: "asset",
-    roleType: "gearFoxer",
-    href: "/foxer/apply?type=asset",
-    color: "#a78bfa",
-    icon: "inventory_2",
-    tag: "Gear Foxer",
-    title: "Gear Provider",
-    desc: "Rent out sound systems, lighting, furniture, and event equipment.",
-  },
-  {
-    type: "venue",
-    roleType: "venueFoxer",
-    href: "/venue-foxer/apply",
-    color: "#ccff00",
-    icon: "apartment",
-    tag: "Venue Foxer",
-    title: "Space Provider",
-    desc: "List and manage your venues for others to host memorable events.",
-  },
-  {
-    type: "event",
-    roleType: "eventFoxer",
-    href: "/creator-dashboard/apply",
-    color: "#ff00aa",
-    icon: "travel_explore",
-    tag: "Event Foxer",
-    title: "Event Foxer",
-    desc: "Create and organize events, coordinating every detail end-to-end.",
-  },
-  {
-    type: "organizer",
-    roleType: "organizer",
-    href: "/foxer/apply?type=organizer",
-    color: "#e879f9",
-    icon: "assignment_ind",
-    tag: "Organizer",
-    title: "Organizer",
-    desc: "Help Mayors and Event Owners run their venues and events, once they invite you.",
-  },
-  {
-    type: "investor",
-    roleType: "investor",
-    href: "/foxer/apply-investor",
-    color: "#10b981",
-    icon: "diamond",
-    tag: "Partner Foxer",
-    title: "Investor",
-    desc: "Deploy equipment inventory or capital, and earn a revenue share.",
-  },
-];
 
 export default function OnboardingClient({ user: serverUser }: { user: any }) {
   const router = useRouter();
@@ -105,6 +34,9 @@ export default function OnboardingClient({ user: serverUser }: { user: any }) {
   const [name, setName] = useState(user?.name ?? "");
   const [city, setCity] = useState("");
   const [isSaving, setIsSaving] = useState(false);
+  // The role whose details modal is open — picking a role explains it first
+  // instead of dropping straight into its application form.
+  const [viewingRole, setViewingRole] = useState<RoleCatalogEntry | null>(null);
 
   useEffect(() => {
     api
@@ -545,10 +477,12 @@ export default function OnboardingClient({ user: serverUser }: { user: any }) {
                   }
 
                   return (
-                    <Link
+                    <button
+                      type="button"
                       key={role.type}
-                      href={role.href}
-                      className={`group relative bg-[#1a1a24] rounded-[1.5rem] p-6 text-left border border-white/5 hover:bg-[#1e1e2c] transition-all duration-300 hover:-translate-y-1 flex flex-col ${isLastOdd ? "sm:col-span-2 sm:mx-auto sm:w-full sm:max-w-[calc(50%-0.5rem)]" : ""}`}
+                      onClick={() => setViewingRole(role)}
+                      aria-haspopup="dialog"
+                      className={`group relative bg-[#1a1a24] rounded-[1.5rem] p-6 text-left border border-white/5 hover:bg-[#1e1e2c] transition-all duration-300 hover:-translate-y-1 flex flex-col cursor-pointer ${isLastOdd ? "sm:col-span-2 sm:mx-auto sm:w-full sm:max-w-[calc(50%-0.5rem)]" : ""}`}
                     >
                       <div
                         className="absolute inset-0 rounded-[1.5rem] opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"
@@ -574,13 +508,26 @@ export default function OnboardingClient({ user: serverUser }: { user: any }) {
                       <h3 className="text-lg font-display font-bold text-white mb-1">
                         {role.title}
                       </h3>
-                      <p className="text-xs text-white/40 group-hover:text-white/70 mt-auto transition-colors">
+                      <p className="text-xs text-white/40 group-hover:text-white/70 transition-colors">
                         {role.desc}
                       </p>
-                    </Link>
+                      <span
+                        className="mt-auto pt-3 inline-flex items-center gap-1 text-[11px] font-bold opacity-70 group-hover:opacity-100 transition-opacity"
+                        style={{ color: role.color }}
+                      >
+                        Learn more & apply
+                        <span className="material-symbols-outlined text-[14px]">
+                          arrow_forward
+                        </span>
+                      </span>
+                    </button>
                   );
                 })}
               </div>
+              <RoleDetailsModal
+                role={viewingRole}
+                onClose={() => setViewingRole(null)}
+              />
 
               <div className="mt-6 flex items-center justify-between">
                 <button

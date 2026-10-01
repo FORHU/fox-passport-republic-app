@@ -14,6 +14,7 @@ import RequireAuth from "@/shared/auth/RequireAuth";
 import Link from "next/link";
 import FileUploader from "@/shared/components/layout/FileUploader";
 import { ApplicationFlowHeader } from "./ApplicationFlowHeader";
+import { currencySymbol } from "@/shared/lib/currency";
 
 // Same vocabulary CreateInvestmentWizard uses for its two investment
 // streams — kept identical here so a declared "interest" always matches the
@@ -145,7 +146,7 @@ export default function InvestorApplicationClient() {
             {/* Investment Range */}
             <div className="space-y-2">
               <label className="text-sm font-bold text-white/80 uppercase tracking-wider">
-                Investment Range (₱) *
+                Investment Range ({currencySymbol()}) *
               </label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-white/40">

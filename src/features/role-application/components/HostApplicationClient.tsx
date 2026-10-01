@@ -9,6 +9,11 @@ import FileUploader from "@/shared/components/layout/FileUploader";
 import { KycDocumentSection } from "./KycDocumentSection";
 import SpecializationPicker from "./SpecializationPicker";
 import { ApplicationFlowHeader } from "./ApplicationFlowHeader";
+import {
+  CascadingLocationFields,
+  type LocationValue,
+} from "@/shared/components/ui/CascadingLocationFields";
+import { toast } from "sonner";
 
 const EVENT_CATEGORY_OPTIONS = [
   { value: "corporate", label: "Corporate" },
@@ -20,6 +25,13 @@ const EVENT_CATEGORY_OPTIONS = [
 
 export default function HostApplicationClient() {
   const { mutate: applyRole, isPending } = useApplyRole();
+  // Picked as country → state → city; saved as one "City, State, Country"
+  // string in `formData.location`, which is what the application stores.
+  const [place, setPlace] = useState<LocationValue>({
+    country: "",
+    state: "",
+    city: "",
+  });
   const [formData, setFormData] = useState({
     bio: "",
     experience: "",
@@ -50,6 +62,10 @@ export default function HostApplicationClient() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    if (!place.city) {
+      toast.error("Choose your base location — country, state and city.");
+      return;
+    }
     applyRole({
       roleType: "eventFoxer",
       data: {
@@ -124,24 +140,23 @@ export default function HostApplicationClient() {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="space-y-2">
-                <label className="text-sm font-bold text-white/80 uppercase tracking-wider">
+              <div className="space-y-2 md:col-span-2">
+                <label className="text-sm font-bold text-white/80 uppercase tracking-wider flex items-center gap-2">
+                  <MapPin size={16} className="text-white/40" />
                   Base Location *
                 </label>
-                <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-white/40">
-                    <MapPin size={18} />
-                  </div>
-                  <input
-                    required
-                    type="text"
-                    name="location"
-                    value={formData.location}
-                    onChange={handleChange}
-                    className="w-full bg-white/5 border border-white/10 rounded-xl py-3 pl-12 pr-4 text-white placeholder:text-white/30 focus:outline-none focus:border-[#ff00aa]/50 focus:bg-white/10 transition-colors"
-                    placeholder="City, Country"
-                  />
-                </div>
+                <CascadingLocationFields
+                  value={place}
+                  onChange={(next) => {
+                    setPlace(next);
+                    setFormData((prev) => ({
+                      ...prev,
+                      location: [next.city, next.state, next.country]
+                        .filter(Boolean)
+                        .join(", "),
+                    }));
+                  }}
+                />
               </div>
 
               <div className="space-y-2">

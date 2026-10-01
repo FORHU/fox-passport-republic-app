@@ -10,6 +10,7 @@ import {
 import { useUserLocation } from "@/shared/hooks/useUserLocation";
 import { createGeoCircle } from "@/shared/lib/geoCircle";
 import { getEffectiveMapboxToken } from "@/shared/lib/mapbox";
+import { useMapThemeStore } from "@/shared/store/useMapThemeStore";
 import "mapbox-gl/dist/mapbox-gl.css";
 
 const TERRAIN_DEM_SOURCE_ID = "venues-map-mapbox-dem";
@@ -257,6 +258,12 @@ export function VenuesMap({
   // setupMapboxFallback's style swap, wiping the map out from under the user.
   const hasMapboxToken = !!getEffectiveMapboxToken();
   const [is3D, setIs3D] = useState(false);
+  // Read by the style.load handler: a dark/light switch drops the terrain,
+  // sky and building layers, and 3D should survive it.
+  const is3DRef = useRef(false);
+  useEffect(() => {
+    is3DRef.current = is3D;
+  }, [is3D]);
   const spiderMarkersRef = useRef<any[]>([]);
   const homeMarkerRef = useRef<any>(null);
   const homeMarkerElRef = useRef<HTMLDivElement | null>(null);
@@ -841,7 +848,10 @@ export function VenuesMap({
               type: "fill-extrusion",
               minzoom: 14,
               paint: {
-                "fill-extrusion-color": "#2a2d3a",
+                "fill-extrusion-color":
+                  useMapThemeStore.getState().theme === "light"
+                    ? "#d4d4d8"
+                    : "#2a2d3a",
                 "fill-extrusion-height": ["get", "height"],
                 "fill-extrusion-base": ["get", "min_height"],
                 "fill-extrusion-opacity": 0.85,
@@ -867,7 +877,8 @@ export function VenuesMap({
           // ignore
         }
         if (map.getLayer(SKY_LAYER_ID)) map.removeLayer(SKY_LAYER_ID);
-        if (map.getLayer(BUILDINGS_LAYER_ID)) map.removeLayer(BUILDINGS_LAYER_ID);
+        if (map.getLayer(BUILDINGS_LAYER_ID))
+          map.removeLayer(BUILDINGS_LAYER_ID);
         map.easeTo({ pitch: 0, bearing: 0, duration: 800 });
       };
 
@@ -905,6 +916,9 @@ export function VenuesMap({
       });
       map.on("style.load", render);
       map.on("style.load", renderHomeIndicator);
+      map.on("style.load", () => {
+        if (is3DRef.current) enable3D();
+      });
       (map as any).__rerender = render;
       (map as any).__flyToVenue = flyToVenue;
       (map as any).__flyToInitial = flyToInitial;
@@ -1010,7 +1024,9 @@ export function VenuesMap({
           type="button"
           onClick={handleToggle3D}
           aria-pressed={is3D}
-          aria-label={is3D ? "Switch to flat map view" : "Switch to 3D terrain view"}
+          aria-label={
+            is3D ? "Switch to flat map view" : "Switch to 3D terrain view"
+          }
           title={is3D ? "Switch to flat map view" : "Switch to 3D terrain view"}
           className={`absolute bottom-4 right-4 z-20 w-9 h-9 flex items-center justify-center rounded-full backdrop-blur-xl border shadow-2xl transition-colors cursor-pointer ${
             is3D

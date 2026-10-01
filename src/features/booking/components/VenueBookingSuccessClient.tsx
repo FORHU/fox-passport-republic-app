@@ -7,6 +7,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useAuthStore } from "@/shared/auth/useAuthStore";
 import { confirmBookingPayment } from "@/features/booking/api/bookings";
 import { getDashboardPath } from "@/shared/lib/dashboard-path";
+import { formatCurrency } from "@/shared/lib/currency";
 
 export default function VenueBookingSuccessClient() {
   const router = useRouter();
@@ -190,7 +191,7 @@ export default function VenueBookingSuccessClient() {
                       <span className="material-symbols-outlined text-[16px] text-accent">
                         payments
                       </span>
-                      ₱{totalAmount.toLocaleString()}
+                      {formatCurrency(totalAmount)}
                     </p>
                   </div>
                 </div>
@@ -201,7 +202,7 @@ export default function VenueBookingSuccessClient() {
               <div>
                 <p className="text-text-muted text-sm">Total Charged</p>
                 <span className="text-3xl font-display font-bold text-white">
-                  ₱{totalAmount.toLocaleString()}.00
+                  {formatCurrency(totalAmount)}
                 </span>
               </div>
               <div className="flex gap-3 w-full sm:w-auto">

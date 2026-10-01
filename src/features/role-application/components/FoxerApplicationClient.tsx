@@ -23,6 +23,11 @@ import {
 } from "./KycDocumentSection";
 import SpecializationPicker from "./SpecializationPicker";
 import { ApplicationFlowHeader } from "./ApplicationFlowHeader";
+import {
+  CascadingLocationFields,
+  type LocationValue,
+} from "@/shared/components/ui/CascadingLocationFields";
+import { toast } from "sonner";
 
 const SERVICE_CATEGORY_OPTIONS = [
   { value: "design", label: "Design" },
@@ -126,6 +131,13 @@ export default function FoxerApplicationClient({
   >([]);
 
   // Organizer Form State — mirrors the API's OrganizerApplication
+  // Picked as country → state → city; saved as one string in
+  // `organizerData.location`, which is what the application stores.
+  const [organizerPlace, setOrganizerPlace] = useState<LocationValue>({
+    country: "",
+    state: "",
+    city: "",
+  });
   const [organizerData, setOrganizerData] = useState({
     bio: "",
     experience: "",
@@ -220,6 +232,10 @@ export default function FoxerApplicationClient({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (providerType === "organizer") {
+      if (!organizerPlace.city) {
+        toast.error("Choose where you usually work — country, state and city.");
+        return;
+      }
       applyRole({
         roleType: "organizer",
         data: {
@@ -468,28 +484,22 @@ export default function FoxerApplicationClient({
                 </div>
 
                 <div className="space-y-2">
-                  <label className="text-sm font-bold text-white/80 uppercase tracking-wider">
-                    Location *
+                  <label className="text-sm font-bold text-white/80 uppercase tracking-wider flex items-center gap-2">
+                    <MapPin size={16} className="text-white/40" />
+                    Where you usually work *
                   </label>
-                  <div className="relative">
-                    <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-white/40">
-                      <MapPin size={18} />
-                    </div>
-                    <input
-                      required
-                      type="text"
-                      name="location"
-                      value={organizerData.location}
-                      onChange={(e) =>
-                        setOrganizerData((prev) => ({
-                          ...prev,
-                          location: e.target.value,
-                        }))
-                      }
-                      className="w-full bg-white/5 border border-white/10 rounded-xl py-3 pl-12 pr-4 text-white placeholder:text-white/30 focus:outline-none focus:border-[#e879f9]/50 focus:bg-white/10 transition-colors"
-                      placeholder="City where you usually work"
-                    />
-                  </div>
+                  <CascadingLocationFields
+                    value={organizerPlace}
+                    onChange={(next) => {
+                      setOrganizerPlace(next);
+                      setOrganizerData((prev) => ({
+                        ...prev,
+                        location: [next.city, next.state, next.country]
+                          .filter(Boolean)
+                          .join(", "),
+                      }));
+                    }}
+                  />
                 </div>
 
                 <SpecializationPicker

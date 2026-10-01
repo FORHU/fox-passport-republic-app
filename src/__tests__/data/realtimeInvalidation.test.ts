@@ -28,6 +28,7 @@ const SERVER_TOPICS = [
   "disputes",
   "waitlist",
   "roles",
+  "identity",
 ];
 
 const POLLING_HOOKS = [

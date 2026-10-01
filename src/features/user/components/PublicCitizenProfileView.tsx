@@ -14,6 +14,8 @@ import {
 } from "@/shared/api/citizen";
 import { useAuthStore } from "@/shared/auth/useAuthStore";
 import { isPartnerUser } from "@/shared/auth/roles";
+import { Money } from "@/shared/components/ui/Money";
+import { VerifiedBadge } from "@/shared/components/ui/VerifiedBadge";
 
 export interface PublicCitizenProfileViewProps {
   followCounts?: { followers: number; following: number };
@@ -225,6 +227,7 @@ export default function PublicCitizenProfileView({
                 <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-white">
                   {profile.name}
                 </h1>
+                <VerifiedBadge verifiedAt={profile.identityVerifiedAt} />
                 {isPartner && (
                   <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-black bg-gradient-to-r from-amber-500/25 to-yellow-500/25 text-amber-300 border border-amber-500/40 shadow-sm">
                     <span className="material-symbols-outlined text-[14px]">
@@ -774,8 +777,7 @@ export default function PublicCitizenProfileView({
                           </h4>
                           <p className="text-xs text-zinc-400">{v.city}</p>
                           <p className="text-xs font-bold text-lime-400 mt-1">
-                            ₱{Number(v.price).toLocaleString()} /{" "}
-                            {v.billingRate}
+                            <Money amount={v.price} /> / {v.billingRate}
                           </p>
                         </div>
                       </Link>
@@ -823,8 +825,7 @@ export default function PublicCitizenProfileView({
                             {s.category.replace(/_/g, " ")}
                           </p>
                           <p className="text-xs font-bold text-lime-400 mt-1">
-                            ₱{Number(s.price).toLocaleString()} /{" "}
-                            {s.billingRate}
+                            <Money amount={s.price} /> / {s.billingRate}
                           </p>
                         </div>
                       </Link>
@@ -872,8 +873,7 @@ export default function PublicCitizenProfileView({
                             {a.category.replace(/_/g, " ")}
                           </p>
                           <p className="text-xs font-bold text-lime-400 mt-1">
-                            ₱{Number(a.price).toLocaleString()} /{" "}
-                            {a.billingRate}
+                            <Money amount={a.price} /> / {a.billingRate}
                           </p>
                         </div>
                       </Link>

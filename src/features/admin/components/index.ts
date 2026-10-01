@@ -15,6 +15,7 @@ export { AdminServicesTable } from "./AdminServicesTable";
 export { AdminBookingsTable } from "./AdminBookingsTable";
 export { AdminDisputesPanel } from "./AdminDisputesPanel";
 export { default as AdminReportsPanel } from "./AdminReportsPanel";
+export { default as AdminIdentityPanel } from "./AdminIdentityPanel";
 export { default as AdminCancellationPolicies } from "./AdminCancellationPolicies";
 export { default as AdminPlatformFeeConfigs } from "./AdminPlatformFeeConfigs";
 export { default as AdminPromotions } from "./AdminPromotions";

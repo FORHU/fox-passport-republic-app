@@ -11,6 +11,7 @@ import {
   confirmAssetBooking,
 } from "@/features/booking/api/bookings";
 import { getDashboardPath } from "@/shared/lib/dashboard-path";
+import { formatCurrency } from "@/shared/lib/currency";
 
 export default function ItemSuccessClient() {
   const router = useRouter();
@@ -53,7 +54,7 @@ export default function ItemSuccessClient() {
   const typeBadgeBg = isService ? "bg-orange-400" : "bg-purple-400";
 
   const formattedDate = scheduledDate
-    ? new Date(scheduledDate).toLocaleDateString("en-PH", {
+    ? new Date(scheduledDate).toLocaleDateString(undefined, {
         weekday: "long",
         year: "numeric",
         month: "long",
@@ -299,7 +300,7 @@ export default function ItemSuccessClient() {
                 <div>
                   <p className="text-text-muted text-sm">Amount Paid</p>
                   <span className="text-3xl font-display font-bold text-white">
-                    ₱{totalAmount.toLocaleString()}.00
+                    {formatCurrency(totalAmount)}
                   </span>
                 </div>
                 {bookingId && (

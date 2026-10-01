@@ -7,6 +7,7 @@ import { VenueItem } from "@/features/dashboard/data/dashboardData";
 import { StatusBadge } from "./StatusBadge";
 import { EmptyState } from "./EmptyState";
 import { PaginationBar } from "./PaginationBar";
+import { Money } from "@/shared/components/ui/Money";
 
 interface VenuesSectionProps {
   venues: VenueItem[];
@@ -141,7 +142,13 @@ export function VenuesSection({
                         <div className="text-[10px] text-white/40 uppercase">
                           Revenue
                         </div>
-                        <div className="text-sm font-bold">{vn.revenue}</div>
+                        <div className="text-sm font-bold">
+                          {vn.revenue != null ? (
+                            <Money amount={vn.revenue} />
+                          ) : (
+                            "—"
+                          )}
+                        </div>
                       </div>
                       <div className="flex justify-end gap-2">
                         <button

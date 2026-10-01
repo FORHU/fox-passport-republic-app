@@ -24,6 +24,8 @@ export interface RoleAccess {
    * Investor, never an Organizer: ADR 0005 is explicit that Organizers get
    * no platform pay, so Stripe onboarding has nothing for them to do. */
   canReceivePayouts: boolean;
+  /** May propose partnerships (`partnership:propose`) — the Investor role. */
+  canProposePartnerships: boolean;
 }
 
 /**
@@ -70,5 +72,6 @@ export function useRoleAccess(): RoleAccess {
       canManageServices ||
       canManagePerformers,
     canReceivePayouts: hasPermission(user, "payouts:onboard"),
+    canProposePartnerships: hasPermission(user, "partnership:propose"),
   };
 }

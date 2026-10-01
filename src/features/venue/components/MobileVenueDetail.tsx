@@ -3,6 +3,7 @@
 import React from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
+import { Money } from "@/shared/components/ui/Money";
 
 interface MobileVenueDetailProps {
   venue?: any;
@@ -316,7 +317,8 @@ export default function MobileVenueDetail({ venue }: MobileVenueDetailProps) {
                 margin: "2px 0 0",
               }}
             >
-              ₱{price.toLocaleString()}/night
+              <Money amount={price} />
+              /night
             </p>
           </div>
           <button

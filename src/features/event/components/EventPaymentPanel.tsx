@@ -1,6 +1,10 @@
 "use client";
 
 import React, { useState } from "react";
+import { useRouter } from "next/navigation";
+import { toast } from "sonner";
+import { useAuthStore } from "@/shared/auth/useAuthStore";
+import { formatCurrency as formatMoney } from "@/shared/lib/currency";
 import {
   useEventPaymentSummary,
   useEventCheckoutMutation,
@@ -19,6 +23,8 @@ export function EventPaymentPanel({
   eventId,
   disabledReason,
 }: EventPaymentPanelProps) {
+  const router = useRouter();
+  const user = useAuthStore((s) => s.user);
   const [voucherCode, setVoucherCode] = useState("");
   // No one-code limit: this event may have a different active voucher per
   // provider (venue/gear/talent), plus at most one platform-wide code — the
@@ -53,6 +59,15 @@ export function EventPaymentPanel({
   };
 
   const handlePayNow = () => {
+    // Same gate as the venue, gear and service booking pages: only an explicit
+    // `false` blocks, and the API checks again when the session is created.
+    if (user?.isEmailVerified === false) {
+      toast.error("Please verify your email address before booking.");
+      router.push(
+        `/kyc?next=${encodeURIComponent(window.location.pathname + window.location.search)}`,
+      );
+      return;
+    }
     checkout({ eventId, voucherCodes: appliedVouchers });
   };
 
@@ -65,12 +80,9 @@ export function EventPaymentPanel({
     setConfirmingCancel(false);
   };
 
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat("en-PH", {
-      style: "currency",
-      currency: "PHP",
-    }).format(amount);
-  };
+  // In the currency the API priced this event in — a charge, so no conversion.
+  const formatCurrency = (amount: number) =>
+    formatMoney(amount, summary?.currency);
 
   const errorMessage = (checkoutError as any)?.response?.data?.message;
 

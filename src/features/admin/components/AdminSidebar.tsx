@@ -83,6 +83,12 @@ const NAV_ITEMS = [
     permission: "queue:read",
   },
   {
+    label: "Identity",
+    icon: "verified_user",
+    id: "identity",
+    permission: "users:manage",
+  },
+  {
     label: "Policies",
     icon: "policy",
     id: "policies",

@@ -18,6 +18,7 @@ import api from "@/shared/lib/axios";
 import { getDashboardPath } from "@/shared/lib/dashboard-path";
 import { useCurrency } from "@/shared/providers/CurrencyProvider";
 import { DEFAULT_CURRENCY } from "@/shared/lib/currency";
+import { formatCurrency } from "@/shared/lib/currency";
 
 const stripePromise = loadStripe(
   process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY || "",
@@ -441,7 +442,7 @@ export default function VenueCheckoutClient() {
                             </>
                           ) : (
                             <>
-                              Confirm & Pay ₱{totalAmount.toLocaleString()}
+                              Confirm & Pay {formatCurrency(totalAmount)}
                               <span className="material-symbols-outlined">
                                 arrow_forward
                               </span>
@@ -594,7 +595,7 @@ export default function VenueCheckoutClient() {
                       <div className="flex justify-between text-sm">
                         <span className="text-text-muted">Subtotal</span>
                         <span className="text-white font-medium">
-                          ₱{subtotalAmount.toLocaleString()}
+                          {formatCurrency(subtotalAmount)}
                         </span>
                       </div>
                     )}
@@ -602,7 +603,7 @@ export default function VenueCheckoutClient() {
                       <div className="flex justify-between text-sm">
                         <span className="text-text-muted">Service Fee</span>
                         <span className="text-white font-medium">
-                          ₱{serviceFeeAmount.toLocaleString()}
+                          {formatCurrency(serviceFeeAmount)}
                         </span>
                       </div>
                     )}
@@ -614,7 +615,7 @@ export default function VenueCheckoutClient() {
                       </span>
                       <span className="text-3xl font-display font-bold text-accent text-shadow-glow">
                         {totalAmount > 0
-                          ? `₱${totalAmount.toLocaleString()}`
+                          ? formatCurrency(totalAmount)
                           : "Processing…"}
                       </span>
                     </div>

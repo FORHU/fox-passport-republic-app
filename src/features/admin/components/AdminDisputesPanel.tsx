@@ -10,6 +10,7 @@ import {
 import api from "@/shared/lib/axios";
 import toast from "react-hot-toast";
 import { pollWhileVisible } from "@/shared/lib/realtime";
+import { formatCurrency } from "@/shared/lib/currency";
 
 interface QueuePagination {
   page: number;
@@ -79,7 +80,7 @@ function QueuePager({
 
 function fmt(iso: string) {
   if (!iso) return "—";
-  return new Date(iso).toLocaleDateString("en-PH", {
+  return new Date(iso).toLocaleDateString(undefined, {
     month: "short",
     day: "numeric",
     year: "numeric",
@@ -87,7 +88,7 @@ function fmt(iso: string) {
 }
 
 function money(n: number) {
-  return `₱${Number(n ?? 0).toLocaleString()}`;
+  return formatCurrency(Number(n ?? 0));
 }
 
 function Empty({ label }: { label: string }) {

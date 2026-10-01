@@ -3,6 +3,7 @@
 import React from "react";
 import { useRouter } from "next/navigation";
 import {
+  CalendarDays,
   Heart,
   Briefcase,
   MessageSquare,
@@ -13,6 +14,7 @@ import {
   LogOut,
   RefreshCw,
   QrCode,
+  ShieldCheck,
 } from "lucide-react";
 import { toast } from "sonner";
 import { useLogout } from "@/shared/auth/useLogout";
@@ -56,6 +58,8 @@ export function UserMenuNavLinks({
       comingSoon: true,
     },
     { label: "My Bookings", icon: Briefcase, href: "/booking" },
+    // Every role's calendar — bookings, hosted events, venue dates, jobs.
+    { label: "Calendar", icon: CalendarDays, href: "/calendar" },
     {
       label: "QR Check-In Scanner",
       icon: QrCode,
@@ -72,6 +76,8 @@ export function UserMenuNavLinks({
       icon: Settings,
       href: "/user/settings",
     },
+    // Email check for booking, and the status of role-application documents.
+    { label: "Verification", icon: ShieldCheck, href: "/kyc" },
     {
       label: "Help Center",
       icon: HelpCircle,

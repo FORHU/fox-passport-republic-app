@@ -4,13 +4,13 @@ import React, { useState, useEffect, useMemo } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { fetchAssetById } from "@/features/asset/api/assets";
+import { useAsset } from "@/features/asset/hooks/useAsset";
 import type { BackendAsset } from "@/shared/lib/api-types";
 import {
   bookAsset,
-  fetchAssetAvailability,
   previewAssetBookingPrice,
 } from "@/features/booking/api/bookings";
+import { useAssetAvailability } from "@/features/booking/hooks/useAvailability";
 import { useItemBookingStore } from "@/features/booking/store/useItemBookingStore";
 import { useAuthStore } from "@/shared/auth/useAuthStore";
 import { toast } from "sonner";
@@ -22,6 +22,8 @@ import { getDashboardPath } from "@/shared/lib/dashboard-path";
 import { useCurrency } from "@/shared/providers/CurrencyProvider";
 
 const SERVICE_FEE = 150;
+const NO_RANGES: { startDate: string; endDate: string; bookedQty: number }[] =
+  [];
 
 function diffDays(start: string, end: string): number {
   if (!start || !end) return 1;
@@ -35,13 +37,14 @@ export default function AssetBookingClient({ assetId }: { assetId: string }) {
   const { setBookingDetails, setBookingId } = useItemBookingStore();
   const { format } = useCurrency();
 
-  const [asset, setAsset] = useState<BackendAsset | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const assetQuery = useAsset(assetId);
+  const asset: BackendAsset | null = assetQuery.data ?? null;
+  // Only the first load shows the spinner — a revisit renders from cache.
+  const isLoading = assetQuery.isPending;
+  const availabilityQuery = useAssetAvailability(assetId);
+  const bookedRanges = availabilityQuery.data?.bookedRanges ?? NO_RANGES;
+  const totalQty = availabilityQuery.data?.totalQty ?? 0;
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [bookedRanges, setBookedRanges] = useState<
-    { startDate: string; endDate: string; bookedQty: number }[]
-  >([]);
-  const [totalQty, setTotalQty] = useState(0);
   const [errors, setErrors] = useState<{ dates?: string; address?: string }>(
     {},
   );
@@ -68,17 +71,8 @@ export default function AssetBookingClient({ assetId }: { assetId: string }) {
   const [autoApplied, setAutoApplied] = useState(false);
 
   useEffect(() => {
-    fetchAssetById(assetId)
-      .then(setAsset)
-      .catch(() => toast.error("Could not load equipment details."))
-      .finally(() => setIsLoading(false));
-    fetchAssetAvailability(assetId)
-      .then((d) => {
-        setBookedRanges(d.bookedRanges);
-        setTotalQty(d.totalQty);
-      })
-      .catch(() => {});
-  }, [assetId]);
+    if (assetQuery.isError) toast.error("Could not load equipment details.");
+  }, [assetQuery.isError]);
 
   // Ensure end date is never before start date
   useEffect(() => {
@@ -177,7 +171,6 @@ export default function AssetBookingClient({ assetId }: { assetId: string }) {
     return () => {
       cancelled = true;
     };
-     
   }, [asset, startDate, endDate, quantity, voucherCodeInput]);
 
   const handleProceed = async () => {
@@ -201,14 +194,15 @@ export default function AssetBookingClient({ assetId }: { assetId: string }) {
       return;
     }
 
-    const isIdentityBlocked =
-      user?.identityVerified !== true || user?.isEmailVerified !== true;
-
-    if (isIdentityBlocked) {
-      toast.error(
-        "Please complete both email and identity verification before making a booking.",
+    // Booking needs a verified email — the one check the API enforces. This
+    // used to also require `identityVerified`, a flag nothing ever sets, so
+    // every booking bounced to /kyc. Only an explicit `false` blocks here;
+    // the API still has the final say.
+    if (user?.isEmailVerified === false) {
+      toast.error("Please verify your email address before booking.");
+      router.push(
+        `/kyc?next=${encodeURIComponent(window.location.pathname + window.location.search)}`,
       );
-      router.push("/kyc");
       return;
     }
 
@@ -430,7 +424,7 @@ export default function AssetBookingClient({ assetId }: { assetId: string }) {
                         {startDate
                           ? new Date(
                               startDate + "T00:00:00",
-                            ).toLocaleDateString("en-PH", {
+                            ).toLocaleDateString(undefined, {
                               month: "short",
                               day: "numeric",
                             })
@@ -447,7 +441,7 @@ export default function AssetBookingClient({ assetId }: { assetId: string }) {
                       <p className="text-sm font-bold text-white">
                         {endDate
                           ? new Date(endDate + "T00:00:00").toLocaleDateString(
-                              "en-PH",
+                              undefined,
                               { month: "short", day: "numeric" },
                             )
                           : "—"}
@@ -777,7 +771,8 @@ export default function AssetBookingClient({ assetId }: { assetId: string }) {
                       <span className="material-symbols-outlined text-[12px] align-middle mr-1">
                         lock
                       </span>
-                      Secure encrypted checkout · Payment held safely until confirmed
+                      Secure encrypted checkout · Payment held safely until
+                      confirmed
                     </p>
                   </div>
                 </div>

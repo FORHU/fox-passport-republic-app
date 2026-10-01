@@ -1,5 +1,7 @@
 import React from "react";
 
+import { Money } from "@/shared/components/ui/Money";
+
 interface AdminKPISectionProps {
   stats: {
     totalUsers: number;
@@ -8,12 +10,6 @@ interface AdminKPISectionProps {
     totalRevenue?: number;
     totalBookings?: number;
   };
-}
-
-function fmt(n: number) {
-  if (n >= 1_000_000) return `₱${(n / 1_000_000).toFixed(1)}M`;
-  if (n >= 1_000) return `₱${(n / 1_000).toFixed(1)}K`;
-  return `₱${n.toLocaleString()}`;
 }
 
 export const AdminKPISection: React.FC<AdminKPISectionProps> = ({ stats }) => {
@@ -53,7 +49,7 @@ export const AdminKPISection: React.FC<AdminKPISectionProps> = ({ stats }) => {
       hoverBorder: "hover:border-accent/50",
       bgIcon: "text-accent",
       label: "Total Revenue",
-      value: revenue === 0 ? "₱0" : fmt(revenue),
+      value: <Money amount={revenue} compact />,
       sub: `${stats.totalBookings ?? 0} confirmed bookings`,
       trend: revenue > 0 ? "positive" : null,
     },

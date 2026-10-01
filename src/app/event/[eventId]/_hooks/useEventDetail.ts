@@ -11,14 +11,14 @@ export function formatEventDate(dateStr: string | null | undefined) {
   const d = new Date(dateStr);
   if (isNaN(d.getTime())) return null;
   return (
-    d.toLocaleDateString("en-PH", {
+    d.toLocaleDateString(undefined, {
       weekday: "long",
       year: "numeric",
       month: "long",
       day: "numeric",
     }) +
     " · " +
-    d.toLocaleTimeString("en-PH", {
+    d.toLocaleTimeString(undefined, {
       hour: "numeric",
       minute: "2-digit",
       hour12: true,

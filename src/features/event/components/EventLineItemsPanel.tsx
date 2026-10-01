@@ -13,6 +13,7 @@ import {
   type BrowsableItem,
 } from "@/features/event/api/marketplaceItems";
 import { LineItemStatusBadge } from "./LineItemStatusBadge";
+import { Money } from "@/shared/components/ui/Money";
 
 export interface EventLineItemsPanelProps {
   eventId: string;
@@ -181,7 +182,7 @@ export function EventLineItemsPanel({
                 </div>
                 <div className="flex items-center gap-3 shrink-0">
                   <span className="text-sm font-bold text-white">
-                    ₱{item.agreedPrice.toLocaleString()}
+                    <Money amount={item.agreedPrice} />
                   </span>
                   <LineItemStatusBadge
                     status={item.status}
@@ -250,7 +251,7 @@ export function EventLineItemsPanel({
                         {bi.name}
                       </p>
                       <p className="text-xs text-white/40">
-                        ₱{bi.price.toLocaleString()} / {bi.billingRate}
+                        <Money amount={bi.price} /> / {bi.billingRate}
                         {bi.ownerName ? ` · ${bi.ownerName}` : ""}
                       </p>
                     </div>

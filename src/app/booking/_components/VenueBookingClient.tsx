@@ -5,9 +5,9 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
-  fetchVenueById,
-  fetchVenueUnavailableDates,
-} from "@/features/venue/api/venues";
+  useVenue,
+  useVenueUnavailableDates,
+} from "@/features/venue/hooks/useVenue";
 import {
   bookVenueDraft,
   previewVenueBookingPrice,
@@ -34,11 +34,15 @@ export default function VenueBookingClient({ venueId }: { venueId: string }) {
   const { user, isAuthenticated, openLogin } = useAuthStore();
   const { format } = useCurrency();
 
-  const [venue, setVenue] = useState<any>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const venueQuery = useVenue(venueId);
+  const venue: any = venueQuery.data ?? null;
+  // Only the first load shows the spinner — a revisit renders from cache.
+  const isLoading = venueQuery.isPending;
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [unavailableDates, setUnavailableDates] = useState<Set<string>>(
-    new Set(),
+  const { data: unavailability } = useVenueUnavailableDates(venueId);
+  const unavailableDates = useMemo(
+    () => new Set<string>(unavailability?.dates ?? []),
+    [unavailability],
   );
 
   const [startDate, setStartDate] = useState("");
@@ -57,28 +61,8 @@ export default function VenueBookingClient({ venueId }: { venueId: string }) {
   const [autoApplied, setAutoApplied] = useState(false);
 
   useEffect(() => {
-    fetchVenueById(venueId)
-      .then(setVenue)
-      .catch(() => toast.error("Could not load venue details."))
-      .finally(() => setIsLoading(false));
-  }, [venueId]);
-
-  // A year-out window is generous enough for any realistic booking horizon
-  // without the response growing unbounded — this is a flat list of ISO
-  // days, not a paginated range.
-  useEffect(() => {
-    const start = new Date();
-    start.setHours(0, 0, 0, 0);
-    const end = new Date(start);
-    end.setFullYear(end.getFullYear() + 1);
-    fetchVenueUnavailableDates(
-      venueId,
-      start.toISOString(),
-      end.toISOString(),
-    )
-      .then(({ dates }) => setUnavailableDates(new Set(dates)))
-      .catch(() => {});
-  }, [venueId]);
+    if (venueQuery.isError) toast.error("Could not load venue details.");
+  }, [venueQuery.isError]);
 
   useEffect(() => {
     if (startDate && endDate && endDate < startDate) {
@@ -194,7 +178,6 @@ export default function VenueBookingClient({ venueId }: { venueId: string }) {
     return () => {
       cancelled = true;
     };
-
   }, [venueId, startDate, endDate, guestCount, voucherCodeInput]);
 
   const handleProceed = async () => {
@@ -211,14 +194,15 @@ export default function VenueBookingClient({ venueId }: { venueId: string }) {
       return;
     }
 
-    const isIdentityBlocked =
-      user?.identityVerified !== true || user?.isEmailVerified !== true;
-
-    if (isIdentityBlocked) {
-      toast.error(
-        "Please complete both email and identity verification before making a booking.",
+    // Booking needs a verified email — the one check the API enforces. This
+    // used to also require `identityVerified`, a flag nothing ever sets, so
+    // every booking bounced to /kyc. Only an explicit `false` blocks here;
+    // the API still has the final say.
+    if (user?.isEmailVerified === false) {
+      toast.error("Please verify your email address before booking.");
+      router.push(
+        `/kyc?next=${encodeURIComponent(window.location.pathname + window.location.search)}`,
       );
-      router.push("/kyc");
       return;
     }
 

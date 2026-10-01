@@ -2,6 +2,7 @@
 
 import React from "react";
 import { ResourceItem } from "@/features/venue/data/venueBuilderData";
+import { Money } from "@/shared/components/ui/Money";
 
 interface FeatureDropZoneProps {
   type: "included" | "addon";
@@ -101,9 +102,8 @@ export function FeatureDropZone({
               <div className="flex flex-row items-center gap-2">
                 {item.category !== "rules" && (
                   <p className="text-[10px] text-text-muted font-mono">
-                    {isIncluded
-                      ? `₱${item.value.toLocaleString()}`
-                      : `Upsell: ₱${item.value.toLocaleString()}`}
+                    {!isIncluded && "Upsell: "}
+                    <Money amount={item.value} />
                   </p>
                 )}
                 <button

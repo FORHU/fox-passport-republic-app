@@ -2,6 +2,11 @@
 
 import React from "react";
 import { useRouter } from "next/navigation";
+import { Money } from "@/shared/components/ui/Money";
+
+// Flat platform fee added on top of the package estimate — same figure the
+// checkout pages charge, in the platform currency.
+const SERVICE_FEE = 150;
 
 export interface EventBookingSidebarProps {
   eventId: string;
@@ -40,7 +45,7 @@ export function EventBookingSidebar({
               Est. total
             </p>
             <p className="text-xl font-display font-bold text-[#ccff00]">
-              {price > 0 ? `₱${price.toLocaleString()}` : "Price on request"}
+              {price > 0 ? <Money amount={price} /> : "Price on request"}
             </p>
           </div>
           <button
@@ -61,7 +66,7 @@ export function EventBookingSidebar({
               {price > 0 ? (
                 <>
                   <span className="text-2xl font-display font-bold text-white">
-                    ₱{price.toLocaleString()}
+                    <Money amount={price} />
                   </span>
                   <span className="text-sm text-text-muted"> est. total</span>
                 </>
@@ -104,17 +109,23 @@ export function EventBookingSidebar({
                 <div className="space-y-3 text-sm text-gray-300 relative z-10 pb-4">
                   <div className="flex justify-between">
                     <span>Package estimate</span>
-                    <span>₱{price.toLocaleString()}</span>
+                    <span>
+                      <Money amount={price} />
+                    </span>
                   </div>
                   <div className="flex justify-between">
                     <span>Service fee</span>
-                    <span>₱150</span>
+                    <span>
+                      <Money amount={SERVICE_FEE} />
+                    </span>
                   </div>
                 </div>
                 <div className="h-px bg-white/10 mb-4 relative z-10" />
                 <div className="flex justify-between items-center text-white font-bold text-lg relative z-10">
                   <span>Total</span>
-                  <span>₱{(price + 150).toLocaleString()}</span>
+                  <span>
+                    <Money amount={price + SERVICE_FEE} />
+                  </span>
                 </div>
               </>
             )}

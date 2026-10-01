@@ -1,6 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import { Money } from "@/shared/components/ui/Money";
 
 interface SearchResultCardProps {
   item: any;
@@ -65,7 +66,7 @@ export default function SearchResultCard({
           </div>
           {item.price && (
             <div className="font-bold text-[#ccff00]">
-              {item.currency || "₱"} {item.price}
+              <Money amount={item.price} from={item.currency || undefined} />
             </div>
           )}
         </div>

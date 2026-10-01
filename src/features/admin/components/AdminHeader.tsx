@@ -26,6 +26,7 @@ export const AdminHeader: React.FC = () => {
     venues: "Venues",
     assets: "Assets & Gear",
     services: "Services",
+    identity: "Identity Checks",
     settings: "Settings",
   };
 

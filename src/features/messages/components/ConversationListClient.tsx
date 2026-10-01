@@ -17,6 +17,8 @@ import { UserHeader } from "@/features/user/components/citizen/UserHeader";
 import { openConversationWindow } from "../store/useChatWindowsStore";
 import { NewGroupModal } from "./NewGroupModal";
 import type { Conversation, Candidate } from "../types";
+import { RoleBadges } from "@/shared/components/ui/RoleBadges";
+import { VerifiedBadge } from "@/shared/components/ui/VerifiedBadge";
 
 interface ConversationListClientProps {
   followingUsers?: Candidate[];
@@ -278,9 +280,23 @@ export default function ConversationListClient({
                         <span className="font-bold text-white text-sm truncate">
                           {conversationTitle(c)}
                         </span>
+                        {!c.isGroup && (
+                          <>
+                            <VerifiedBadge
+                              verifiedAt={c.otherUser?.identityVerifiedAt}
+                              size="xs"
+                            />
+                            <RoleBadges
+                              roleType={c.otherUser?.roleType}
+                              max={1}
+                              className="shrink-0"
+                            />
+                          </>
+                        )}
                         {c.isInbox && c.viewerRole === "team" && c.inbox && (
                           <span className="shrink-0 text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full bg-[#e879f9]/10 text-[#e879f9] border border-[#e879f9]/20 truncate max-w-[45%]">
-                            {c.inbox.with === "supplier" ? "Supplier" : "Inbox"} · {c.inbox.name}
+                            {c.inbox.with === "supplier" ? "Supplier" : "Inbox"}{" "}
+                            · {c.inbox.name}
                           </span>
                         )}
                         {c.isMuted && (

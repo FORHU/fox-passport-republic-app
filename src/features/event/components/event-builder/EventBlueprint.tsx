@@ -7,6 +7,7 @@ import {
   VENUE_ICONS,
   TALENT_ICONS,
 } from "@/features/event/data/eventBuilderData";
+import { Money } from "@/shared/components/ui/Money";
 
 interface EventBlueprintProps {
   targetMargin: number;
@@ -52,7 +53,7 @@ function CategoryItemList({ items }: { items: ResourceItem[] }) {
             )}
           </span>
           <span className="text-white/55 font-mono text-right break-all shrink-0">
-            ₱{itemPrice(item).toLocaleString()}
+            <Money amount={itemPrice(item)} />
           </span>
         </div>
       ))}
@@ -115,7 +116,7 @@ export function EventBlueprint({
                   Venue & Infrastructure
                 </span>
                 <span className="text-white font-mono text-right break-all">
-                  ₱{venueCost.toLocaleString()}
+                  <Money amount={venueCost} />
                 </span>
               </div>
               <CategoryItemList items={venueItems} />
@@ -126,7 +127,7 @@ export function EventBlueprint({
                   Talent & Entertainment
                 </span>
                 <span className="text-white font-mono text-right break-all">
-                  ₱{talentCost.toLocaleString()}
+                  <Money amount={talentCost} />
                 </span>
               </div>
               <CategoryItemList items={talentItems} />
@@ -137,7 +138,7 @@ export function EventBlueprint({
                   Services & Equipment
                 </span>
                 <span className="text-white font-mono text-right break-all">
-                  ₱{serviceCost.toLocaleString()}
+                  <Money amount={serviceCost} />
                 </span>
               </div>
               <CategoryItemList items={serviceItems} />
@@ -146,12 +147,12 @@ export function EventBlueprint({
             <div className="flex justify-between items-start gap-3 text-sm font-bold">
               <span className="text-white shrink-0">Total Base Cost</span>
               <span className="text-white font-mono text-right break-all">
-                ₱{baseCost.toLocaleString()}
+                <Money amount={baseCost} />
               </span>
             </div>
             {listingCost !== baseCost && (
               <p className="text-[10px] text-white/30 text-right">
-                Listing prices totaled ₱{listingCost.toLocaleString()} before
+                Listing prices totaled <Money amount={listingCost} /> before
                 your agreed-price adjustments.
               </p>
             )}
@@ -194,7 +195,7 @@ export function EventBlueprint({
                 Suggested Price
               </span>
               <span className="text-base font-bold text-white font-mono text-right break-all">
-                ₱{suggestedPrice.toLocaleString()}
+                <Money amount={suggestedPrice} />
               </span>
             </div>
             <p className="text-[10px] text-white/30">

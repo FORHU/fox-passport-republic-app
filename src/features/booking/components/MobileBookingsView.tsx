@@ -8,6 +8,7 @@ import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/shared/auth/useAuthStore";
 import { fetchUserBookings } from "@/features/booking/api/bookings";
 import { pollWhileVisible } from "@/shared/lib/realtime";
+import { formatCurrency } from "@/shared/lib/currency";
 
 const STATUS_STYLE: Record<
   string,
@@ -174,7 +175,7 @@ export default function MobileBookingsView() {
           bookings.map((b) => {
             const s = STATUS_STYLE[b.status] ?? STATUS_STYLE.pending;
             const startDate = b.startAt
-              ? new Date(b.startAt).toLocaleDateString("en-PH", {
+              ? new Date(b.startAt).toLocaleDateString(undefined, {
                   month: "short",
                   day: "numeric",
                 })
@@ -231,7 +232,7 @@ export default function MobileBookingsView() {
                       margin: "3px 0 6px",
                     }}
                   >
-                    {startDate} · ₱{displayTotal.toLocaleString()}
+                    {startDate} · {formatCurrency(displayTotal)}
                   </p>
                   <span
                     style={{

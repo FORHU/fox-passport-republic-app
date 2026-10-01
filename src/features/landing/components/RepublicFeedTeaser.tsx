@@ -1,30 +1,16 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useQuery } from "@tanstack/react-query";
 import Link from "next/link";
 import { FeedPost } from "@/shared/types/feed";
 import { getFeed } from "@/shared/api/feed";
 
 export function RepublicFeedTeaser() {
-  const [posts, setPosts] = useState<FeedPost[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    let mounted = true;
-    getFeed({ limit: 4 })
-      .then((res) => {
-        if (mounted) setPosts(res.data);
-      })
-      .catch((err) => {
-        console.error("Failed to load teaser posts:", err);
-      })
-      .finally(() => {
-        if (mounted) setLoading(false);
-      });
-    return () => {
-      mounted = false;
-    };
-  }, []);
+  const { data, isPending: loading } = useQuery({
+    queryKey: ["feed", "teaser"],
+    queryFn: () => getFeed({ limit: 4 }),
+  });
+  const posts: FeedPost[] = data?.data ?? [];
 
   if (!loading && posts.length === 0) return null;
 

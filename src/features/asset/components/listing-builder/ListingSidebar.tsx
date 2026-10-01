@@ -11,13 +11,9 @@ import {
 
 import CancellationPolicyPicker from "@/shared/components/ui/CancellationPolicyPicker";
 import { StyledSelect } from "@/shared/components/ui/StyledSelect";
-import SearchableDropdown from "@/shared/components/ui/SearchableDropdown";
-import { COUNTRIES, COUNTRY_CODES } from "@/shared/data/countries";
-import { STATIC_CITY_LISTS } from "@/shared/data/locationLists";
-import {
-  searchCitiesInCountry,
-  geocodeCountryCenter,
-} from "@/shared/lib/geocoding";
+import { CascadingLocationFields } from "@/shared/components/ui/CascadingLocationFields";
+import { geocodeCountryCenter } from "@/shared/lib/geocoding";
+import { currencySymbol } from "@/shared/lib/currency";
 
 interface ListingSidebarProps {
   activeType: ListingType;
@@ -158,7 +154,9 @@ export function ListingSidebar({
           </label>
           <div className="space-y-3">
             <div className="relative flex items-center">
-              <span className="absolute left-4 text-white/30 text-sm">₱</span>
+              <span className="absolute left-4 text-white/30 text-sm">
+                {currencySymbol()}
+              </span>
               <input
                 type="number"
                 value={price || ""}
@@ -204,45 +202,25 @@ export function ListingSidebar({
           />
         </div>
 
-        {/* Location — Country drives which cities are offered: a curated
-            static list where we have one, live Mapbox search scoped to the
-            chosen country otherwise. */}
-        <div className="space-y-3">
-          <label className="text-[10px] uppercase font-bold text-white/40 tracking-widest block">
-            Location
-          </label>
-          <SearchableDropdown
-            value={country}
-            options={COUNTRIES}
-            placeholder="Select country..."
-            searchPlaceholder="Search countries..."
-            onChange={(val) => {
-              onCountryChange(val);
-              onCityChange("");
-              const code = val ? COUNTRY_CODES[val] : undefined;
+        {/* Location — Country, then City (locked until a country is picked),
+            from the shared cascading picker. Listings store no state. */}
+        <CascadingLocationFields
+          value={{ country, state: "", city }}
+          withState={false}
+          className="grid grid-cols-1 gap-3"
+          onChange={(next, { countryCode: code }) => {
+            if (next.country !== country) {
               if (code) {
                 geocodeCountryCenter(code).then((center) => {
                   if (center) onLatLngChange(center[1], center[0]);
                 });
               }
-            }}
-          />
-          <SearchableDropdown
-            key={country || "no-country"}
-            value={city}
-            disabled={!country}
-            options={STATIC_CITY_LISTS[country]}
-            asyncSearch={
-              !STATIC_CITY_LISTS[country] && COUNTRY_CODES[country]
-                ? (q) => searchCitiesInCountry(q, COUNTRY_CODES[country])
-                : undefined
+              onCountryChange(next.country);
             }
-            asyncHint="Type at least 2 letters..."
-            placeholder={country ? "Select city..." : "Select a country first"}
-            searchPlaceholder="Search cities..."
-            onChange={onCityChange}
-          />
-        </div>
+            onCityChange(next.city);
+          }}
+          onCoordinates={(lat, lng) => onLatLngChange(lat, lng)}
+        />
 
         {/* Status */}
         <div>

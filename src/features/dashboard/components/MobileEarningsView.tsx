@@ -1,16 +1,16 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React from "react";
 import Image from "next/image";
 import Link from "next/link";
 import MobileCreatorBottomNav from "./MobileCreatorBottomNav";
 import { useStripeConnect } from "../hooks/useStripeConnect";
-import {
-  fetchMyPayouts,
-  PAYOUT_SOURCE_LABEL,
-  type Payout,
-} from "../api/payouts";
+import { useMyPayouts } from "../hooks/useMyPayouts";
+import { PAYOUT_SOURCE_LABEL, type Payout } from "../api/payouts";
 import { formatCurrency } from "@/shared/lib/currency";
+
+const NO_PAYOUTS: Payout[] = [];
+const NO_TOTALS = { paid: 0, pending: 0 };
 
 const DONE = {
   icon: "check_circle",
@@ -33,19 +33,9 @@ const TODO = {
 
 export default function MobileEarningsView() {
   const { status, loading: stripeLoading } = useStripeConnect();
-  const [payouts, setPayouts] = useState<Payout[]>([]);
-  const [totals, setTotals] = useState({ paid: 0, pending: 0 });
-  const [payoutsLoading, setPayoutsLoading] = useState(true);
-
-  useEffect(() => {
-    fetchMyPayouts(1, 10)
-      .then((r) => {
-        setPayouts(r.payouts);
-        setTotals(r.totals);
-      })
-      .catch(() => {})
-      .finally(() => setPayoutsLoading(false));
-  }, []);
+  const { data: payoutsData, isPending: payoutsLoading } = useMyPayouts(1, 10);
+  const payouts: Payout[] = payoutsData?.payouts ?? NO_PAYOUTS;
+  const totals = payoutsData?.totals ?? NO_TOTALS;
 
   const checklist = stripeLoading
     ? []
@@ -171,7 +161,8 @@ export default function MobileEarningsView() {
               margin: "0 0 12px",
             }}
           >
-            Paid out so far: {payoutsLoading ? "—" : formatCurrency(totals.paid)}
+            Paid out so far:{" "}
+            {payoutsLoading ? "—" : formatCurrency(totals.paid)}
           </p>
           {!payoutsReady && (
             <Link
@@ -189,7 +180,9 @@ export default function MobileEarningsView() {
                 padding: 14,
               }}
             >
-              {status?.hasStripeAccount ? "Finish Payout Setup" : "Connect Bank"}
+              {status?.hasStripeAccount
+                ? "Finish Payout Setup"
+                : "Connect Bank"}
             </Link>
           )}
         </div>
@@ -292,7 +285,9 @@ export default function MobileEarningsView() {
           Recent Payouts
         </p>
         {payoutsLoading ? (
-          <p style={{ fontSize: 12, color: "rgba(255,255,255,0.4)" }}>Loading…</p>
+          <p style={{ fontSize: 12, color: "rgba(255,255,255,0.4)" }}>
+            Loading…
+          </p>
         ) : payouts.length === 0 ? (
           <p style={{ fontSize: 12, color: "rgba(255,255,255,0.4)" }}>
             No payouts yet.
@@ -322,7 +317,8 @@ export default function MobileEarningsView() {
                       margin: "0 0 2px",
                     }}
                   >
-                    {PAYOUT_SOURCE_LABEL[payout.sourceType] ?? payout.sourceType}
+                    {PAYOUT_SOURCE_LABEL[payout.sourceType] ??
+                      payout.sourceType}
                   </p>
                   <p
                     style={{

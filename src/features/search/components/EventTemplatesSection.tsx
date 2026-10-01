@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import SearchPagination from "./SearchPagination";
+import { Money } from "@/shared/components/ui/Money";
 
 function TemplateCard({ item }: { item: any }) {
   return (
@@ -53,7 +54,7 @@ function TemplateCard({ item }: { item: any }) {
           </span>
           {item.price ? (
             <span className="font-bold text-[#ccff00] text-sm">
-              ₱{item.price}
+              <Money amount={item.price} />
             </span>
           ) : null}
         </div>

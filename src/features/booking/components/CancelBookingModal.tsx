@@ -7,6 +7,8 @@ import {
 } from "@/features/booking/api/bookings";
 import { X } from "lucide-react";
 
+import { formatCurrency } from "@/shared/lib/currency";
+
 interface CancelBookingModalProps {
   bookingId: string;
   onClose: () => void;
@@ -177,7 +179,7 @@ export default function CancelBookingModal({
               <div className="flex items-center justify-between">
                 <span className="text-text-muted text-sm">Total Paid</span>
                 <span className="text-white font-bold">
-                  ₱{state.eligibleData.totalPaid.toLocaleString()}
+                  {formatCurrency(state.eligibleData.totalPaid)}
                 </span>
               </div>
               <div className="flex items-center justify-between">
@@ -193,7 +195,7 @@ export default function CancelBookingModal({
                   Estimated Refund
                 </span>
                 <span className="text-accent font-display font-bold text-xl">
-                  ₱{state.eligibleData.estimatedRefund.toLocaleString()}
+                  {formatCurrency(state.eligibleData.estimatedRefund)}
                 </span>
               </div>
               {state.eligibleData.hoursUntilStart > 0 && (
@@ -293,10 +295,10 @@ export default function CancelBookingModal({
                         }`}
                       >
                         {isSuccess
-                          ? `+₱${(refund.amount || 0).toLocaleString()}`
+                          ? `+${formatCurrency(refund.amount || 0)}`
                           : isFailed
-                            ? `-₱${(refund.amount || 0).toLocaleString()} (failed)`
-                            : `₱${(refund.amount || 0).toLocaleString()} (${refund.status || "pending"})`}
+                            ? `−${formatCurrency(refund.amount || 0)} (failed)`
+                            : `${formatCurrency(refund.amount || 0)} (${refund.status || "pending"})`}
                       </span>
                     </div>
                   );

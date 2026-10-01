@@ -20,6 +20,7 @@ import DateRangePicker, {
   formatDate,
 } from "@/shared/components/ui/DateRangePicker";
 import { smartBack } from "@/shared/lib/navigation";
+import { Money } from "@/shared/components/ui/Money";
 
 interface Foxer {
   id: string;
@@ -851,7 +852,7 @@ const MatchConfig: React.FC<MatchConfigProps> = ({ fetchTemplate }) => {
                         </span>
                         {foxer.basePrice > 0 ? (
                           <span className="text-2xl font-display font-bold text-accent">
-                            ₱{(foxer.basePrice * guests).toLocaleString()}
+                            <Money amount={foxer.basePrice * guests} />
                           </span>
                         ) : (
                           <span className="text-sm font-bold text-white/50 italic">
@@ -1036,7 +1037,7 @@ const MatchConfig: React.FC<MatchConfigProps> = ({ fetchTemplate }) => {
                       )}
                       {!!templateDetail.estimatedTotal && (
                         <span className="px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wide bg-accent/10 text-accent border border-accent/20">
-                          ~₱{templateDetail.estimatedTotal.toLocaleString()}{" "}
+                          ~<Money amount={templateDetail.estimatedTotal} />{" "}
                           estimated
                         </span>
                       )}
@@ -1110,7 +1111,7 @@ const MatchConfig: React.FC<MatchConfigProps> = ({ fetchTemplate }) => {
                                   </p>
                                   {item.price > 0 && (
                                     <p className="text-xs text-white/50 mt-0.5">
-                                      ₱{item.price.toLocaleString()}
+                                      <Money amount={item.price} />
                                       {item.billingRate
                                         ? ` / ${item.billingRate}`
                                         : ""}

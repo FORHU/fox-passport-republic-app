@@ -4,13 +4,8 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useState, useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
 import MapboxLocationPicker from "./MapboxLocationPicker";
-import SearchableDropdown from "@/shared/components/ui/SearchableDropdown";
-import { COUNTRIES, COUNTRY_CODES } from "@/shared/data/countries";
-import {
-  STATIC_CITY_LISTS,
-  ALL_STATIC_CITIES,
-} from "@/shared/data/locationLists";
-import { searchCitiesInCountry } from "@/shared/lib/geocoding";
+import { CascadingLocationFields } from "@/shared/components/ui/CascadingLocationFields";
+import { Money } from "@/shared/components/ui/Money";
 
 const CATEGORIES = ["wedding", "corporate", "birthday", "social", "other"];
 
@@ -149,11 +144,6 @@ export default function SearchFilters({ onClose }: SearchFiltersProps = {}) {
     () => searchParams?.get("country") || "",
   );
   const [city, setCity] = useState(() => searchParams?.get("city") || "");
-  const staticCityList = country
-    ? STATIC_CITY_LISTS[country]
-    : ALL_STATIC_CITIES;
-  const usesStaticCities = Boolean(staticCityList);
-  const countryCode = country ? COUNTRY_CODES[country] : undefined;
   const [label, setLabel] = useState(() => searchParams?.get("label") || "");
   const [lat, setLat] = useState<number | undefined>(() =>
     searchParams?.get("lat") ? Number(searchParams.get("lat")) : undefined,
@@ -263,34 +253,24 @@ export default function SearchFilters({ onClose }: SearchFiltersProps = {}) {
         <label className="block text-xs font-bold text-white/50 uppercase tracking-wider">
           City / Area
         </label>
-        <SearchableDropdown
-          value={country}
-          options={COUNTRIES}
-          placeholder="All countries"
-          searchPlaceholder="Search countries..."
-          onChange={(val) => {
-            setCountry(val);
-            setCity("");
-            updateParams({ country: val, city: "", label: "" });
-          }}
-        />
-        <SearchableDropdown
-          key={country || "philippines"}
-          value={city}
-          options={usesStaticCities ? staticCityList : undefined}
-          asyncSearch={
-            !usesStaticCities && countryCode
-              ? (q) => searchCitiesInCountry(q, countryCode)
-              : undefined
-          }
-          asyncHint="Type at least 2 letters..."
-          placeholder="All cities"
-          searchPlaceholder={
-            usesStaticCities ? "Search cities..." : "Type a city name..."
-          }
-          onChange={(val) => {
-            setCity(val);
-            updateParams({ city: val, label: val || label });
+        {/* Country, then City — locked until a country is picked. */}
+        <CascadingLocationFields
+          value={{ country, state: "", city }}
+          withState={false}
+          className="grid grid-cols-1 gap-2"
+          onChange={(next) => {
+            if (next.country !== country) {
+              setCountry(next.country);
+              setCity(next.city);
+              updateParams({
+                country: next.country,
+                city: next.city,
+                label: next.city,
+              });
+              return;
+            }
+            setCity(next.city);
+            updateParams({ city: next.city, label: next.city || label });
           }}
         />
       </div>
@@ -319,7 +299,7 @@ export default function SearchFilters({ onClose }: SearchFiltersProps = {}) {
         <label className="block text-xs font-bold text-white/50 uppercase tracking-wider">
           Max Price:{" "}
           <span className="text-[#ccff00]">
-            {maxPrice ? `₱${maxPrice}` : "Any"}
+            {maxPrice ? <Money amount={maxPrice} /> : "Any"}
           </span>
         </label>
         <input

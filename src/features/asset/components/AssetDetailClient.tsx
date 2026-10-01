@@ -4,10 +4,11 @@ import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { fetchAssetById } from "@/features/asset/api/assets";
+import { useAsset } from "@/features/asset/hooks/useAsset";
 import { useCanPartner } from "@/shared/hooks/useCanPartner";
 import { toast } from "sonner";
 import type { BackendAsset } from "@/shared/lib/api-types";
+import { Money } from "@/shared/components/ui/Money";
 
 function getFeatures(asset: BackendAsset) {
   const features = [];
@@ -27,16 +28,15 @@ export default function AssetDetailClient({ assetId }: { assetId: string }) {
   const router = useRouter();
   const canPartner = useCanPartner();
 
-  const [asset, setAsset] = useState<BackendAsset | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const assetQuery = useAsset(assetId);
+  const asset: BackendAsset | null = assetQuery.data ?? null;
+  // Only the first load shows the spinner — a revisit renders from cache.
+  const isLoading = assetQuery.isPending;
   const [activeImg, setActiveImg] = useState(0);
 
   useEffect(() => {
-    fetchAssetById(assetId)
-      .then(setAsset)
-      .catch(() => toast.error("Could not load equipment details."))
-      .finally(() => setIsLoading(false));
-  }, [assetId]);
+    if (assetQuery.isError) toast.error("Could not load equipment details.");
+  }, [assetQuery.isError]);
 
   if (isLoading) {
     return (
@@ -266,7 +266,7 @@ export default function AssetDetailClient({ assetId }: { assetId: string }) {
                     </span>
                     <div className="text-right">
                       <span className="text-4xl font-display font-bold text-white">
-                        ₱{price.toLocaleString()}
+                        <Money amount={price} />
                       </span>
                       <p className="text-[10px] text-accent font-bold uppercase leading-none mt-1">
                         Per {billingUnit}

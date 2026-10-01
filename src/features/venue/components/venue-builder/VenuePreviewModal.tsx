@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import { GalleryItem } from "@/features/venue/data/venueBuilderData";
+import { Money } from "@/shared/components/ui/Money";
 
 interface ResourceItem {
   id: string;
@@ -260,7 +261,7 @@ export function VenuePreviewModal({
                           </div>
                           {item.value > 0 && (
                             <div className="text-[10px] text-[#ccff00] font-bold mt-0.5">
-                              +₱{item.value.toLocaleString()}
+                              +<Money amount={item.value} />
                             </div>
                           )}
                         </div>
@@ -290,7 +291,7 @@ export function VenuePreviewModal({
               <div className="bg-[#0f111a] border border-white/10 rounded-3xl p-6 shadow-2xl">
                 <div className="mb-5">
                   <div className="text-2xl font-display font-bold text-[#ccff00]">
-                    ₱{baseRate > 0 ? baseRate.toLocaleString() : "—"}
+                    {baseRate > 0 ? <Money amount={baseRate} /> : "—"}
                     <span className="text-sm font-normal text-white/50 ml-1">
                       / night
                     </span>
@@ -342,7 +343,8 @@ export function VenuePreviewModal({
                 <div className="mt-4 space-y-2 text-xs text-white/40">
                   <div className="flex justify-between">
                     <span>
-                      ₱{baseRate > 0 ? baseRate.toLocaleString() : "—"} × nights
+                      {baseRate > 0 ? <Money amount={baseRate} /> : "—"} ×
+                      nights
                     </span>
                     <span>—</span>
                   </div>
