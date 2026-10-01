@@ -13,6 +13,7 @@ import MobileHomePage from "@/features/landing/components/MobileHomePage";
 import ListingCard from "@/features/landing/components/ListingCard";
 import AuthModal from "@/features/auth/components/AuthModal";
 import GoogleAuthErrorToast from "@/features/auth/components/GoogleAuthErrorToast";
+import FacebookAuthErrorToast from "@/features/auth/components/FacebookAuthErrorToast";
 import { filterVenues } from "@/features/venue/helpers/filterVenues";
 
 // --- Shared Components & Server Utils ---
@@ -147,6 +148,7 @@ export default function Home({ searchParams }: HomePageProps) {
     <>
       <Suspense fallback={null}>
         <GoogleAuthErrorToast />
+        <FacebookAuthErrorToast />
       </Suspense>
       <Suspense
         fallback={
