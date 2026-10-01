@@ -1,6 +1,17 @@
 /** @type {import('next').NextConfig} */
 const isWindows = process.platform === "win32";
 
+// Derive the API origin from NEXT_PUBLIC_API_URL (.env) — no hardcoded fallback.
+// If the variable is missing the URL constructor will throw and the build will
+// surface the misconfiguration immediately rather than silently using a wrong host.
+const apiOrigin = (() => {
+  const raw = process.env.NEXT_PUBLIC_API_URL;
+  if (!raw) throw new Error("NEXT_PUBLIC_API_URL is not set in .env");
+  const { protocol, hostname, port } = new URL(raw);
+  return `${protocol}//${hostname}${port ? `:${port}` : ""}`;
+})();
+
+
 const nextConfig = {
   turbopack: {},
   ...(isWindows ? {} : { output: "standalone" }),
@@ -54,7 +65,7 @@ const nextConfig = {
           "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.stripe.com https://*.stripe.network",
           "style-src 'self' 'unsafe-inline' https://*.stripe.com",
           "frame-src https://*.stripe.com https://*.stripe.network",
-          "connect-src 'self' https://*.stripe.com https://*.stripe.network http://localhost:6002",
+          `connect-src 'self' https://*.stripe.com https://*.stripe.network ${apiOrigin}`,
           "img-src 'self' data: https://*.stripe.com",
         ].join('; '),
       },
