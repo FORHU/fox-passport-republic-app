@@ -55,9 +55,10 @@ export default function DataDeletionPage() {
             Data Deletion Instructions
           </h1>
           <p className="text-gray-400 text-sm sm:text-base max-w-2xl leading-relaxed">
-            In compliance with Meta Platform Terms, Google API Services User Data Policy, and the
-            Philippine Data Privacy Act of 2012, FoxPassport provides transparent instructions on
-            how to request the deletion of your account and personal data.
+            In compliance with Meta Platform Terms, Google API Services User
+            Data Policy, and the Philippine Data Privacy Act of 2012,
+            FoxPassport provides transparent instructions on how to request the
+            deletion of your account and personal data.
           </p>
         </div>
 
@@ -73,8 +74,8 @@ export default function DataDeletionPage() {
           </div>
           <div className="rounded-2xl border border-white/10 bg-white/[0.02] p-6 sm:p-8 backdrop-blur-md space-y-4 text-sm sm:text-base leading-relaxed text-gray-300">
             <p>
-              You may request complete erasure of your FoxPassport account, profile information, and
-              associated records at any time:
+              You may request complete erasure of your FoxPassport account,
+              profile information, and associated records at any time:
             </p>
             <ol className="list-decimal pl-6 space-y-3">
               <li>
@@ -85,20 +86,25 @@ export default function DataDeletionPage() {
                 >
                   support@foxpassport.com
                 </a>{" "}
-                using the email address registered with your FoxPassport account.
+                using the email address registered with your FoxPassport
+                account.
               </li>
               <li>
                 Include the subject line:{" "}
-                <strong className="text-white">&ldquo;Data Deletion Request&rdquo;</strong>.
+                <strong className="text-white">
+                  &ldquo;Data Deletion Request&rdquo;
+                </strong>
+                .
               </li>
               <li>
-                Our data protection team will verify your identity to ensure unauthorized parties cannot
-                request deletion on your behalf.
+                Our data protection team will verify your identity to ensure
+                unauthorized parties cannot request deletion on your behalf.
               </li>
               <li>
-                Once verified, your account, personal data, and login credentials will be permanently
-                purged from our active databases within thirty (30) calendar days. A confirmation receipt
-                will be sent to your email.
+                Once verified, your account, personal data, and login
+                credentials will be permanently purged from our active databases
+                within thirty (30) calendar days. A confirmation receipt will be
+                sent to your email.
               </li>
             </ol>
           </div>
@@ -116,28 +122,36 @@ export default function DataDeletionPage() {
           </div>
           <div className="rounded-2xl border border-[#1877F2]/20 bg-[#1877F2]/[0.03] p-6 sm:p-8 space-y-4 text-sm sm:text-base leading-relaxed text-gray-300">
             <p>
-              If you used Facebook Login to connect with FoxPassport and want to revoke our application&rsquo;s
-              access to your Facebook profile:
+              If you used Facebook Login to connect with FoxPassport and want to
+              revoke our application&rsquo;s access to your Facebook profile:
             </p>
             <ol className="list-decimal pl-6 space-y-3">
               <li>
                 Log in to your Facebook account and navigate to{" "}
-                <strong className="text-white">Settings &amp; Privacy &rarr; Settings</strong>.
+                <strong className="text-white">
+                  Settings &amp; Privacy &rarr; Settings
+                </strong>
+                .
               </li>
               <li>
                 In the left-hand menu, select{" "}
-                <strong className="text-white">Apps and Websites</strong> to view services linked to your
-                Facebook profile.
+                <strong className="text-white">Apps and Websites</strong> to
+                view services linked to your Facebook profile.
               </li>
               <li>
-                Locate <strong className="text-white">FoxPassport</strong> in the active list.
+                Locate <strong className="text-white">FoxPassport</strong> in
+                the active list.
               </li>
               <li>
                 Click <strong className="text-white">Remove</strong>.
               </li>
               <li>
-                To also purge historical identity tokens stored in FoxPassport databases, send a note with
-                subject <strong className="text-white">&ldquo;Meta Data Deletion Request&rdquo;</strong> to{" "}
+                To also purge historical identity tokens stored in FoxPassport
+                databases, send a note with subject{" "}
+                <strong className="text-white">
+                  &ldquo;Meta Data Deletion Request&rdquo;
+                </strong>{" "}
+                to{" "}
                 <a
                   href="mailto:support@foxpassport.com?subject=Meta%20Data%20Deletion%20Request"
                   className="font-semibold text-[#ccff00] hover:underline"
@@ -183,14 +197,24 @@ export default function DataDeletionPage() {
           </h2>
           <div className="rounded-2xl border border-white/10 bg-white/[0.02] p-6 sm:p-8 space-y-3 text-sm sm:text-base leading-relaxed text-gray-300">
             <p>
-              Certain transaction records (such as completed booking payments, invoices, and payouts) must
-              be retained for the statutory period required under Philippine commercial, accounting, and tax
-              laws. When this applies:
+              Certain transaction records (such as completed booking payments,
+              invoices, and payouts) must be retained for the statutory period
+              required under Philippine commercial, accounting, and tax laws.
+              When this applies:
             </p>
             <ul className="list-disc pl-6 space-y-2">
-              <li>All direct personal identifiers are unlinked or anonymized where permitted.</li>
-              <li>Only the minimal financial audit records required by law are preserved.</li>
-              <li>The retained records are securely archived and never repurposed for marketing.</li>
+              <li>
+                All direct personal identifiers are unlinked or anonymized where
+                permitted.
+              </li>
+              <li>
+                Only the minimal financial audit records required by law are
+                preserved.
+              </li>
+              <li>
+                The retained records are securely archived and never repurposed
+                for marketing.
+              </li>
             </ul>
           </div>
         </section>
@@ -198,7 +222,8 @@ export default function DataDeletionPage() {
         {/* Questions */}
         <div className="rounded-xl border border-white/10 bg-white/[0.03] p-6 text-center">
           <p className="text-sm text-gray-300">
-            Need assistance or have questions regarding data privacy? Contact our Data Privacy Officer at{" "}
+            Need assistance or have questions regarding data privacy? Contact
+            our Data Privacy Officer at{" "}
             <a
               href="mailto:support@foxpassport.com"
               className="text-[#ccff00] font-semibold hover:underline"

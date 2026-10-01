@@ -2,7 +2,15 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import LandingHeader from "@/features/landing/components/sections/LandingHeader";
 import LandingFooter from "@/features/landing/components/sections/LandingFooter";
-import { FileText, ArrowLeft, Shield, CheckCircle, Scale, CreditCard, RefreshCw } from "lucide-react";
+import {
+  FileText,
+  ArrowLeft,
+  Shield,
+  CheckCircle,
+  Scale,
+  CreditCard,
+  RefreshCw,
+} from "lucide-react";
 
 export const metadata: Metadata = {
   title: "Terms of Service | FoxPassport",
@@ -86,8 +94,9 @@ export default function TermsOfServicePage() {
             Terms of Service
           </h1>
           <p className="text-gray-400 text-sm sm:text-base max-w-2xl leading-relaxed">
-            These terms form a legally binding agreement between you and Fox Passport Republic, Inc.
-            Please read them carefully before creating an account or making bookings.
+            These terms form a legally binding agreement between you and Fox
+            Passport Republic, Inc. Please read them carefully before creating
+            an account or making bookings.
           </p>
           <div className="mt-4 flex flex-wrap items-center gap-4 text-xs text-gray-500 font-mono">
             <span>Version 1.0</span>
@@ -105,95 +114,113 @@ export default function TermsOfServicePage() {
         {/* Introduction Box */}
         <div className="rounded-2xl border border-white/10 bg-white/[0.02] p-6 sm:p-8 backdrop-blur-md mb-12">
           <p className="text-sm sm:text-base leading-relaxed text-gray-300">
-            Welcome to FoxPassport. By accessing our platform via web, mobile application, or API, you
-            agree to comply with and be bound by the following Terms of Service. If you do not agree to
-            these terms, you may not access or use the Service.
+            Welcome to FoxPassport. By accessing our platform via web, mobile
+            application, or API, you agree to comply with and be bound by the
+            following Terms of Service. If you do not agree to these terms, you
+            may not access or use the Service.
           </p>
         </div>
 
         {/* Clause 1 */}
         <Clause num={1} title="What the Republic Is" icon={Shield}>
           <p>
-            Fox Passport Republic, Inc. (&ldquo;the Republic,&rdquo; &ldquo;we,&rdquo; &ldquo;us&rdquo;) operates a
-            marketplace and social platform connecting Citizens booking venues, gear, and services with Foxers
-            &mdash; independent hosts registered under one or more roles: Venue Foxer, Event Foxer, Gear Foxer,
-            Service Foxer, or Investor. By creating an account you agree to these Terms, regardless of which role
-            you hold.
+            Fox Passport Republic, Inc. (&ldquo;the Republic,&rdquo;
+            &ldquo;we,&rdquo; &ldquo;us&rdquo;) operates a marketplace and
+            social platform connecting Citizens booking venues, gear, and
+            services with Foxers &mdash; independent hosts registered under one
+            or more roles: Venue Foxer, Event Foxer, Gear Foxer, Service Foxer,
+            or Investor. By creating an account you agree to these Terms,
+            regardless of which role you hold.
           </p>
         </Clause>
 
         {/* Clause 2 */}
         <Clause num={2} title="Your Passport & Progression" icon={CheckCircle}>
           <p>
-            Every account is issued a <strong className="text-white">Passport</strong>: a digital record of paths,
-            XP, badges, and event stamps earned through completed bookings and community participation.
-            Passport progress is personal, non-transferable, and holds no cash or monetary value. We reserve the
-            right to adjust XP or revoke badges awarded in technical error, but never as an arbitrary substitute for
-            a refund determination, which is strictly governed under §6.
+            Every account is issued a{" "}
+            <strong className="text-white">Passport</strong>: a digital record
+            of paths, XP, badges, and event stamps earned through completed
+            bookings and community participation. Passport progress is personal,
+            non-transferable, and holds no cash or monetary value. We reserve
+            the right to adjust XP or revoke badges awarded in technical error,
+            but never as an arbitrary substitute for a refund determination,
+            which is strictly governed under §6.
           </p>
         </Clause>
 
         {/* Clause 3 */}
         <Clause num={3} title="Bookings & Bidding" icon={FileText}>
           <p>
-            A booking request submitted through a venue, asset, or service listing is an offer. It becomes a binding,
-            confirmed booking only when the host Foxer explicitly accepts it or, for instant-book listings, when
-            checkout successfully completes.
+            A booking request submitted through a venue, asset, or service
+            listing is an offer. It becomes a binding, confirmed booking only
+            when the host Foxer explicitly accepts it or, for instant-book
+            listings, when checkout successfully completes.
           </p>
           <p>
-            Event Service Bids and Event Asset Bids submitted against a published Event Template expire automatically
-            if not accepted within the specified offer window.
+            Event Service Bids and Event Asset Bids submitted against a
+            published Event Template expire automatically if not accepted within
+            the specified offer window.
           </p>
         </Clause>
 
         {/* Clause 4 */}
         <Clause num={4} title="Payments, Fees & Invoices" icon={CreditCard}>
           <p>
-            All charges are collected into a single Invoice per checkout, inclusive of applicable taxes and any
-            platform fee clearly disclosed prior to payment. Payments are processed by certified third-party payment
-            gateways (including Stripe); FoxPassport never stores or has access to your full credit or debit card number.
+            All charges are collected into a single Invoice per checkout,
+            inclusive of applicable taxes and any platform fee clearly disclosed
+            prior to payment. Payments are processed by certified third-party
+            payment gateways (including Stripe); FoxPassport never stores or has
+            access to your full credit or debit card number.
           </p>
           <p>
-            Payouts to Foxers and venue hosts are released on the schedule shown in their dashboard, net of the
-            applicable platform fee in effect at booking confirmation.
+            Payouts to Foxers and venue hosts are released on the schedule shown
+            in their dashboard, net of the applicable platform fee in effect at
+            booking confirmation.
           </p>
         </Clause>
 
         {/* Clause 5 */}
         <Clause num={5} title="Partnerships & Sponsorships">
           <p>
-            Partner accounts may submit Partnership Proposals &mdash; investment, sponsorship, resource contribution,
-            or co-marketing partnerships &mdash; against published events or venues. A proposal remains non-binding
-            until both parties formally confirm terms outside the expiring-offer window.
+            Partner accounts may submit Partnership Proposals &mdash;
+            investment, sponsorship, resource contribution, or co-marketing
+            partnerships &mdash; against published events or venues. A proposal
+            remains non-binding until both parties formally confirm terms
+            outside the expiring-offer window.
           </p>
         </Clause>
 
         {/* Clause 6 */}
         <Clause num={6} title="Cancellations & Refunds" icon={RefreshCw}>
           <p>
-            Refund eligibility strictly follows the cancellation policy attached to the listing at the time of
-            booking. Disputed transactions are reviewed by Republic Secretariat staff, whose determination is
-            binding for platform-fee purposes and does not limit your statutory rights under applicable consumer
-            protection law.
+            Refund eligibility strictly follows the cancellation policy attached
+            to the listing at the time of booking. Disputed transactions are
+            reviewed by Republic Secretariat staff, whose determination is
+            binding for platform-fee purposes and does not limit your statutory
+            rights under applicable consumer protection law.
           </p>
         </Clause>
 
         {/* Clause 7 */}
         <Clause num={7} title="Community Conduct on the Republic Feed">
           <p>
-            Posts, comments, and media shared on the Republic Feed are public by default unless marked with limited
-            visibility at publication. We reserve the right to remove prohibited content or suspend posting privileges
-            for harassment, hate speech, fraudulent claims, or repeated false reporting.
+            Posts, comments, and media shared on the Republic Feed are public by
+            default unless marked with limited visibility at publication. We
+            reserve the right to remove prohibited content or suspend posting
+            privileges for harassment, hate speech, fraudulent claims, or
+            repeated false reporting.
           </p>
         </Clause>
 
         {/* Clause 8 */}
         <Clause num={8} title="Changes to These Terms">
           <p>
-            We will notify active account holders at least fourteen (14) calendar days before any material changes to
-            these Terms take effect. Continued use of FoxPassport after that date constitutes your acceptance of the
-            revised Terms. If you do not agree with the updates, you may close your account without penalty prior to
-            the effective date.
+            We will notify active account holders at least fourteen (14)
+            calendar days before any material changes to these Terms take
+            effect. Continued use of FoxPassport after that date constitutes
+            your acceptance of the revised Terms. If you do not agree with the
+            updates, you may close your account without penalty prior to the
+            effective date.
           </p>
         </Clause>
 
