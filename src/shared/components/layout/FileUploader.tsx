@@ -23,6 +23,8 @@ interface FileUploaderProps {
   onFileSelected?: (file: File) => void;
   /** Called when the slot is cleared, either manually or after a failed/rejected selection. */
   onFileCleared?: () => void;
+  /** An identity document: stored in the private bucket, never at a public URL. */
+  private?: boolean;
 }
 
 export default function FileUploader({
@@ -33,8 +35,9 @@ export default function FileUploader({
   validateFile,
   onFileSelected,
   onFileCleared,
+  private: isPrivate = false,
 }: FileUploaderProps) {
-  const { uploadFile } = useFileUpload();
+  const { uploadFile, uploadPrivateFile } = useFileUpload();
   const [fileName, setFileName] = useState<string | null>(null);
   const [status, setStatus] = useState<
     "idle" | "uploading" | "success" | "error"
@@ -76,7 +79,9 @@ export default function FileUploader({
     setStatus("uploading");
     onFileSelected?.(file);
 
-    const result = await uploadFile(file);
+    const result = isPrivate
+      ? await uploadPrivateFile(file)
+      : await uploadFile(file);
 
     if (result) {
       setStatus("success");

@@ -78,7 +78,6 @@ export default function CheckoutClient() {
   useEffect(() => {
     if (clientSecret || totalAmount <= 0) return;
     fetchPaymentIntent();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // A cached clientSecret can point at a PaymentIntent that's since gone

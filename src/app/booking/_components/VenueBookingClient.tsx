@@ -27,8 +27,6 @@ import { toastRequireLogin } from "@/shared/lib/toast";
 import { getDashboardPath } from "@/shared/lib/dashboard-path";
 import { useCurrency } from "@/shared/providers/CurrencyProvider";
 
-const SERVICE_FEE_RATE = 0.1;
-
 export default function VenueBookingClient({ venueId }: { venueId: string }) {
   const router = useRouter();
   const { user, isAuthenticated, openLogin } = useAuthStore();
@@ -59,6 +57,9 @@ export default function VenueBookingClient({ venueId }: { venueId: string }) {
   const [voucherError, setVoucherError] = useState<string | null>(null);
   const [voucherChecking, setVoucherChecking] = useState(false);
   const [autoApplied, setAutoApplied] = useState(false);
+  // The platform fee the API will actually charge, from the live price
+  // preview. Null until a preview has answered — no dates yet, or signed out.
+  const [platformFee, setPlatformFee] = useState<number | null>(null);
 
   useEffect(() => {
     if (venueQuery.isError) toast.error("Could not load venue details.");
@@ -102,7 +103,7 @@ export default function VenueBookingClient({ venueId }: { venueId: string }) {
     ? extraGuestRate * rateMultiplier * extraGuests
     : 0;
   const subtotal = baseAmount + overageAmount;
-  const serviceFee = Math.round(subtotal * SERVICE_FEE_RATE);
+  const serviceFee = platformFee ?? 0;
   const total = Math.max(0, subtotal + serviceFee - voucherDiscount);
   const rateUnit =
     venue?.billingRate === "hourly"
@@ -155,30 +156,52 @@ export default function VenueBookingClient({ venueId }: { venueId: string }) {
     }
   };
 
-  // Silently checks for an auto-apply, no-code-needed promotion whenever the
-  // dates change — skipped once the citizen has typed their own code.
+  // Re-prices whenever the dates or guests change: picks up the real
+  // platform fee, re-checks a manually applied voucher, and — only while the
+  // citizen hasn't typed their own code — looks for an auto-apply promotion.
   useEffect(() => {
-    if (!startDate || !endDate || voucherCodeInput.trim()) return;
+    if (!startDate || !endDate) {
+      setPlatformFee(null);
+      return;
+    }
     let cancelled = false;
+    const manualCode =
+      !autoApplied && appliedVoucherCode ? appliedVoucherCode : undefined;
     previewVenueBookingPrice({
       venueId,
       startDate: new Date(`${startDate}T00:00:00`).toISOString(),
       endDate: new Date(`${endDate}T23:59:59`).toISOString(),
       guestCount,
+      voucherCode: manualCode,
     })
       .then((preview) => {
         if (cancelled) return;
+        setPlatformFee(preview.platformFeeAmount);
+        if (manualCode) {
+          setVoucherDiscount(preview.discountAmount);
+          return;
+        }
+        if (voucherCodeInput.trim()) return;
         if (preview.discountAmount > 0 && preview.voucherCode) {
           setAppliedVoucherCode(preview.voucherCode);
           setVoucherDiscount(preview.discountAmount);
           setAutoApplied(true);
         }
       })
-      .catch(() => {});
+      .catch(() => {
+        if (!cancelled) setPlatformFee(null);
+      });
     return () => {
       cancelled = true;
     };
-  }, [venueId, startDate, endDate, guestCount, voucherCodeInput]);
+  }, [
+    venueId,
+    startDate,
+    endDate,
+    guestCount,
+    voucherCodeInput,
+    appliedVoucherCode,
+  ]);
 
   const handleProceed = async () => {
     if (!startDate || !endDate) {
@@ -511,9 +534,15 @@ export default function VenueBookingClient({ venueId }: { venueId: string }) {
                       </div>
                     )}
                     <div className="flex justify-between text-sm">
-                      <span className="text-text-muted">Service Fee (10%)</span>
+                      <span className="text-text-muted">Service fee</span>
                       <span className="text-white">
-                        {format(serviceFee)}
+                        {platformFee === null ? (
+                          <span className="text-white/40">
+                            Added at checkout
+                          </span>
+                        ) : (
+                          format(platformFee)
+                        )}
                       </span>
                     </div>
 

@@ -81,5 +81,30 @@ export const useFileUpload = () => {
     }
   };
 
-  return { uploadFile, isUploading };
+  /**
+   * An identity document (ID, clearance, proof of funds): sent through the
+   * API into the private bucket. There is no URL to get back — admins open
+   * it through a short-lived link the API makes when they review it.
+   */
+  const uploadPrivateFile = async (
+    file: File,
+  ): Promise<{ fileId: string } | null> => {
+    setIsUploading(true);
+    try {
+      const form = new FormData();
+      form.append("file", file);
+      const { data } = await api.post("/files/upload-private", form);
+      return { fileId: data.fileId };
+    } catch (error: any) {
+      toast.error(
+        error.response?.data?.message ||
+          "Upload failed. Please check your connection.",
+      );
+      return null;
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
+  return { uploadFile, uploadPrivateFile, isUploading };
 };

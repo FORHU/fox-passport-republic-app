@@ -4,13 +4,12 @@ import React from "react";
 import { useRouter } from "next/navigation";
 import { Money } from "@/shared/components/ui/Money";
 
-// Flat platform fee added on top of the package estimate — same figure the
-// checkout pages charge, in the platform currency.
-const SERVICE_FEE = 150;
-
 export interface EventBookingSidebarProps {
   eventId: string;
+  /** The API's estimate, platform fee included. */
   price: number;
+  /** The platform fee inside `price`, or null when unknown (added at checkout). */
+  platformFee?: number | null;
   isPreview?: boolean;
   onCustomExperienceClick: () => void;
 }
@@ -18,10 +17,14 @@ export interface EventBookingSidebarProps {
 export function EventBookingSidebar({
   eventId,
   price,
+  platformFee = null,
   isPreview = false,
   onCustomExperienceClick,
 }: EventBookingSidebarProps) {
   const router = useRouter();
+  // `price` already carries the fee when the API priced it, so the package
+  // line is the remainder and the total is `price` itself — never fee + fee.
+  const packageAmount = platformFee === null ? price : price - platformFee;
 
   const handleReserve = () => {
     router.push(`/booking/config?templateId=${eventId}`);
@@ -110,13 +113,17 @@ export function EventBookingSidebar({
                   <div className="flex justify-between">
                     <span>Package estimate</span>
                     <span>
-                      <Money amount={price} />
+                      <Money amount={packageAmount} />
                     </span>
                   </div>
                   <div className="flex justify-between">
                     <span>Service fee</span>
                     <span>
-                      <Money amount={SERVICE_FEE} />
+                      {platformFee === null ? (
+                        <span className="text-white/40">Added at checkout</span>
+                      ) : (
+                        <Money amount={platformFee} />
+                      )}
                     </span>
                   </div>
                 </div>
@@ -124,7 +131,7 @@ export function EventBookingSidebar({
                 <div className="flex justify-between items-center text-white font-bold text-lg relative z-10">
                   <span>Total</span>
                   <span>
-                    <Money amount={price + SERVICE_FEE} />
+                    <Money amount={price} />
                   </span>
                 </div>
               </>

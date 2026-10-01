@@ -19,5 +19,4 @@ export { default as AdminIdentityPanel } from "./AdminIdentityPanel";
 export { default as AdminCancellationPolicies } from "./AdminCancellationPolicies";
 export { default as AdminPlatformFeeConfigs } from "./AdminPlatformFeeConfigs";
 export { default as AdminPromotions } from "./AdminPromotions";
-export * from "./constants";
 export * from "./types";
