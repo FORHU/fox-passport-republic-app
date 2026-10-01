@@ -118,15 +118,24 @@ export default function LandingFooter() {
             &copy; 2024 FoxPassport Inc. All rights reserved.
           </p>
           <div className="flex gap-4 sm:gap-6">
-            {["Privacy", "Terms", "Cookies"].map((item) => (
-              <a
-                key={item}
-                className="text-[10px] text-gray-500 hover:text-white font-medium transition-colors"
-                href="#"
-              >
-                {item}
-              </a>
-            ))}
+            <a
+              className="text-[10px] text-gray-500 hover:text-white font-medium transition-colors"
+              href="/privacy"
+            >
+              Privacy
+            </a>
+            <a
+              className="text-[10px] text-gray-500 hover:text-white font-medium transition-colors"
+              href="/data-deletion"
+            >
+              Data Deletion
+            </a>
+            <a
+              className="text-[10px] text-gray-500 hover:text-white font-medium transition-colors"
+              href="/terms"
+            >
+              Terms
+            </a>
           </div>
         </div>
       </div>

@@ -69,3 +69,31 @@ export async function completeGoogleAuth(
     return null;
   }
 }
+
+interface FacebookExchangeResponse {
+  data?: {
+    user?: User;
+    isNewUser?: boolean;
+  };
+}
+
+/**
+ * Redeems the opaque single-use code the API put on the Facebook redirect.
+ */
+export async function completeFacebookAuth(
+  exchangeCode: string,
+): Promise<{ user: User; isNewUser: boolean } | null> {
+  try {
+    const { data } = await api.post<FacebookExchangeResponse>(
+      "/auth/facebook/exchange",
+      { code: exchangeCode },
+    );
+
+    const session = data?.data;
+    if (!session?.user) return null;
+
+    return { user: session.user, isNewUser: Boolean(session.isNewUser) };
+  } catch {
+    return null;
+  }
+}
