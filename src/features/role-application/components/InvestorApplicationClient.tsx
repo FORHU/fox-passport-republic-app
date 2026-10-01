@@ -212,6 +212,7 @@ export default function InvestorApplicationClient() {
               <FileUploader
                 label="Proof of Funds (optional)"
                 accept="image/*,application/pdf"
+                private
                 onUploadComplete={(id) => setProofFileId(id)}
               />
             </div>

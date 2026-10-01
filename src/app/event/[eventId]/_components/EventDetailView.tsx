@@ -36,6 +36,7 @@ export interface EventDetailViewProps {
   isPreview?: boolean;
   isDraft?: boolean;
   price: number;
+  platformFee: number | null;
   inclusions: InclusionItem[];
   cancellationPolicy: {
     name: string;
@@ -53,6 +54,7 @@ export function EventDetailView({
   isPreview = false,
   isDraft = false,
   price,
+  platformFee,
   inclusions,
   cancellationPolicy,
   eventDate,
@@ -370,6 +372,7 @@ export function EventDetailView({
               <EventBookingSidebar
                 eventId={eventId}
                 price={price}
+                platformFee={platformFee}
                 isPreview={isPreview}
                 onCustomExperienceClick={() => setIsCustomBookingOpen(true)}
               />

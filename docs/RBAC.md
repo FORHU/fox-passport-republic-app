@@ -909,7 +909,7 @@ from memory.
 | § | Claim | State | Evidence |
 |---|---|---|---|
 | 1–4 | Two repos, API sole authority, app holds no secret, grant table is the source of truth | **Holds** | `ACCESS_TOKEN_SECRET` absent from the app and pinned absent by `middlewareSecrets.test.ts` |
-| 5 | Permissions instead of hard-coded role checks | **Holds — re-verified 12 Sep** | The 62-route gap this row described is closed: zero `requireRole`/`requireAdmin`/`requireHost` call sites remain in any `*.routes.ts` file (`requirePermission` appears 77 times across the API). `admin.routes.ts` specifically: 36 of 36 registrations gate on a capability. The old guard functions are still *defined*, unused, in `auth.middleware.ts` — deletion is `RBAC-PLAN.md` Phase 3's one remaining piece. |
+| 5 | Permissions instead of hard-coded role checks | **Holds — re-verified 12 Sep** | The 62-route gap this row described is closed: zero `requireRole`/`requireAdmin`/`requireHost` call sites remain in any `*.routes.ts` file (`requirePermission` appears 77 times across the API). `admin.routes.ts` specifically: 36 of 36 registrations gate on a capability. The old guard functions are gone from `auth.middleware.ts`, and the app's dead `checkRole()` was deleted 1 Oct. |
 | 6 | 401 / 403 / 200 pipeline | **Holds** where `requirePermission` is used | `auth.middleware.ts` |
 | 7 | Server re-derives; claim is UX only | **Holds** | `toAuthenticatedUser` drops the `permissions` claim |
 | 8 | Page authorization off a live profile | **Holds**, but by role helper | `requireAdmin()` → `canAccessAdmin()` on a live `/profile`. There is no app-side `requirePermission(...)`; §8's example does not exist yet. |
@@ -918,9 +918,9 @@ from memory.
 | 11 | RBAC + ownership as separate layers | **Partial** | Ownership checks exist inside services (`booking.userId !== requesterId`). They are not paired with a permission. (The example above used to cite a permission, `venues:manage`, that never existed — fixed 12 Sep; the real one is `venue:manage`.) |
 | 12 | One authorization model | **Holds — re-verified 12 Sep, contradicted this row's own neighbor above until now** | This was true when written; it stopped being true when `ROLE_TYPE_GRANTS` shipped. `RoleType` is not a second model — it's a second grant *input*, merged with `SystemRole`'s through `permissionsForUser()`, exactly as the "One RBAC implementation..." paragraph directly above this table already (correctly) describes. Zero `requireHost`/`requireRole` call sites remain. This row just never got updated to match. |
 | 13–19 | Realtime, layering, proxy, payments, data | **Holds** | |
-| 20.5 | No hard-coded role checks outside RBAC | **Holds — re-verified 12 Sep** | was "the 62 above" (row 5); that gap is closed |
+| 20.5 | No hard-coded role checks outside RBAC | **Holds — enforced 1 Oct** | 20 role-name checks had crept back (feed and investment services); replaced with `content:moderate`, `feed:post-for-anyone` and `investments:manage`, and now pinned by `rbac.no-role-guards.spec.ts` |
 | 20.15 | Every protected operation requires explicit authorization | **Holds** | every non-public route carries `authenticate` plus a guard |
-| 21 | Full permission matrix, per-route 401/403/200 | **Not yet** | `permissions.spec.ts` tests `can()` exhaustively; no test asserts a route's 401/403/200 triad |
+| 21 | Full permission matrix, per-route 401/403/200 | **Holds — 1 Oct** | `permissions.spec.ts` tests `can()` exhaustively. `rbac.route-matrix.spec.ts` walks the mounted app (guards tag themselves with their permissions), finds every protected route — 111 on 1 Oct — and asserts 401 without a token and 403 for every `SystemRole` lacking the permission; the allowed leg is asserted through `can()`, since letting a request through would run a real controller. `rbac.no-role-guards.spec.ts` fails on any `systemRole === "…"` outside `permissions.ts`. |
 
 ## Closing the gap
 

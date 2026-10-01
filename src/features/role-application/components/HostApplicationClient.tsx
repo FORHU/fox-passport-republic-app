@@ -192,6 +192,7 @@ export default function HostApplicationClient() {
 
             <FileUploader
               label="Portfolio / Resume (Optional)"
+              private
               onUploadComplete={(id) => handleFileUpload("portfolioFileId", id)}
             />
 

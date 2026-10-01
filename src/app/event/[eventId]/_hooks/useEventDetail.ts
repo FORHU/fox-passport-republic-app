@@ -130,6 +130,13 @@ export function useEventDetail(
       : estimated > 0
         ? estimated
         : 0;
+  // The share of `price` that is the platform fee, when the API told us —
+  // only for its own estimate, which already includes it. A preview priced
+  // from the builder's items has no fee in it yet.
+  const platformFee: number | null =
+    price === estimated && price > 0 && template?.platformFeeAmount != null
+      ? Number(template.platformFeeAmount)
+      : null;
 
   const eventDate = formatEventDate(template?.date);
   const isDraft =
@@ -170,6 +177,7 @@ export function useEventDetail(
     template,
     loadError,
     price,
+    platformFee,
     inclusions,
     cancellationPolicy,
     eventDate,

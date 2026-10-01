@@ -38,6 +38,9 @@ export const PERMISSIONS = [
   "fees:manage",
   "promotions:manage",
   "promotions:manage-own",
+  "content:moderate",
+  "feed:post-for-anyone",
+  "investments:manage",
 
   // The supply side — held through RoleType, not SystemRole
   "venue:manage",

@@ -23,8 +23,6 @@ import { useScheduleConflicts } from "@/shared/hooks/useScheduleConflicts";
 import { getDashboardPath } from "@/shared/lib/dashboard-path";
 import { useCurrency } from "@/shared/providers/CurrencyProvider";
 
-const SERVICE_FEE = 150;
-
 export default function ServiceBookingClient({
   serviceId,
 }: {
@@ -82,6 +80,10 @@ export default function ServiceBookingClient({
   const [voucherError, setVoucherError] = useState<string | null>(null);
   const [voucherChecking, setVoucherChecking] = useState(false);
   const [autoApplied, setAutoApplied] = useState(false);
+  // The platform fee the API will actually charge (its rate, minus any
+  // provider perk), from the live price preview. Null until a preview has
+  // answered — no dates picked yet, or not signed in.
+  const [platformFee, setPlatformFee] = useState<number | null>(null);
 
   useEffect(() => {
     if (serviceQuery.isError) toast.error("Could not load service details.");
@@ -103,7 +105,7 @@ export default function ServiceBookingClient({
   const sessionCount = Math.max(1, bookingDates.length);
   const subtotal =
     (isPerSession ? unitPrice : unitPrice * durationHours) * sessionCount;
-  const total = Math.max(0, subtotal - voucherDiscount) + SERVICE_FEE;
+  const total = Math.max(0, subtotal - voucherDiscount) + (platformFee ?? 0);
 
   const rateLabel = isPerSession
     ? `${format(unitPrice)} / session`
@@ -160,19 +162,33 @@ export default function ServiceBookingClient({
     }
   };
 
-  // Silently checks for an auto-apply, no-code-needed promotion whenever the
-  // schedule changes — skipped once the citizen has typed their own code.
+  // Re-prices whenever the schedule changes: picks up the real platform fee,
+  // re-checks a manually applied voucher against the new amount, and — only
+  // while the citizen hasn't typed their own code — looks for an auto-apply
+  // promotion, so a typed voucher is never clobbered.
   useEffect(() => {
     const schedule = computeSchedule();
-    if (!service || !schedule || voucherCodeInput.trim()) return;
+    if (!service || !schedule) {
+      setPlatformFee(null);
+      return;
+    }
     let cancelled = false;
+    const manualCode =
+      !autoApplied && appliedVoucherCode ? appliedVoucherCode : undefined;
     previewServiceBookingPrice({
       serviceId: service.id,
       scheduledDate: schedule.scheduledDate,
       endDate: schedule.endDate,
+      voucherCode: manualCode,
     })
       .then((preview) => {
         if (cancelled) return;
+        setPlatformFee(preview.platformFeeAmount);
+        if (manualCode) {
+          setVoucherDiscount(preview.discountAmount);
+          return;
+        }
+        if (voucherCodeInput.trim()) return;
         if (preview.discountAmount > 0 && preview.voucherCode) {
           setAppliedVoucherCode(preview.voucherCode);
           setVoucherDiscount(preview.discountAmount);
@@ -183,11 +199,20 @@ export default function ServiceBookingClient({
           setAutoApplied(false);
         }
       })
-      .catch(() => {});
+      .catch(() => {
+        if (!cancelled) setPlatformFee(null);
+      });
     return () => {
       cancelled = true;
     };
-  }, [service, bookingDates, callTime, durationHours, voucherCodeInput]);
+  }, [
+    service,
+    bookingDates,
+    callTime,
+    durationHours,
+    voucherCodeInput,
+    appliedVoucherCode,
+  ]);
 
   const handleProceed = async () => {
     const newErrors: typeof errors = {};
@@ -736,9 +761,15 @@ export default function ServiceBookingClient({
                       </span>
                     </div>
                     <div className="flex justify-between text-sm">
-                      <span className="text-text-muted">Service Fee</span>
+                      <span className="text-text-muted">Service fee</span>
                       <span className="text-white font-medium">
-                        {format(SERVICE_FEE)}
+                        {platformFee === null ? (
+                          <span className="text-white/40">
+                            Added at checkout
+                          </span>
+                        ) : (
+                          format(platformFee)
+                        )}
                       </span>
                     </div>
                     {voucherDiscount > 0 && (

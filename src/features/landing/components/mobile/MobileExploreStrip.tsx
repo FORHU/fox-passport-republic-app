@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import Link from "next/link";
 import { FEATURE_CARDS, STRIPE_BG } from "./constants";
 import { SectionLabel } from "./SectionLabel";
 
@@ -19,10 +20,12 @@ export function MobileExploreStrip() {
           paddingLeft: 20,
         }}
       >
-        {FEATURE_CARDS.map((card, i) => (
-          <div
-            key={i}
+        {FEATURE_CARDS.map((card) => (
+          <Link
+            key={card.href}
+            href={card.href}
             style={{
+              display: "block",
               flexShrink: 0,
               width: 190,
               height: 220,
@@ -102,7 +105,7 @@ export function MobileExploreStrip() {
                 {card.meta}
               </p>
             </div>
-          </div>
+          </Link>
         ))}
         <div style={{ flexShrink: 0, width: 6 }} />
       </div>

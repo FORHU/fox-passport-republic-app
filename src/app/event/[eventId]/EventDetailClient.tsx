@@ -19,6 +19,7 @@ function EventDetailContent({
     template,
     loadError,
     price,
+    platformFee,
     inclusions,
     cancellationPolicy,
     eventDate,
@@ -64,6 +65,7 @@ function EventDetailContent({
       isPreview={isPreview}
       isDraft={isDraft}
       price={price}
+      platformFee={platformFee}
       inclusions={inclusions}
       cancellationPolicy={cancellationPolicy}
       eventDate={eventDate}

@@ -62,8 +62,18 @@ export default function BookingConfigurationClient() {
   const templateLocation =
     [template?.targetCity, template?.targetState].filter(Boolean).join(", ") ||
     "Location TBD";
-  const basePrice = template?.estimatedTotal ?? 0;
-  const serviceFee = 150;
+  // The API's estimate already includes its platform fee. Split it out, so
+  // the package line is items + host markup and the fee can follow any
+  // optional items the citizen removes (it's a percentage of the package).
+  const estimatedTotal = template?.estimatedTotal ?? 0;
+  const knownFee =
+    template?.platformFeeAmount != null
+      ? Number(template.platformFeeAmount)
+      : null;
+  const basePrice =
+    knownFee !== null ? estimatedTotal - knownFee : estimatedTotal;
+  const feeRate =
+    knownFee !== null && basePrice > 0 ? knownFee / basePrice : null;
   const currentAttendees = template?.currentAttendees ?? 0;
   const isFull =
     template?.maxAttendees != null && currentAttendees >= template.maxAttendees;
@@ -103,7 +113,10 @@ export default function BookingConfigurationClient() {
     .filter((item) => excludedItemIds.has(item.id))
     .reduce((sum, item) => sum + (item.price ?? 0), 0);
 
-  const totalAmount = basePrice - optOutSavings + serviceFee;
+  const packageAmount = Math.max(0, basePrice - optOutSavings);
+  // Null when the API didn't break the fee out — then it's added at checkout.
+  const serviceFee = feeRate !== null ? packageAmount * feeRate : null;
+  const totalAmount = packageAmount + (serviceFee ?? 0);
   const includedServices: any[] =
     template?.templateServices
       ?.filter((ts: any) => !ts.isOptional)
@@ -646,9 +659,15 @@ export default function BookingConfigurationClient() {
                       </div>
                     )}
                     <div className="flex justify-between text-sm">
-                      <span className="text-text-muted">Service Fee</span>
+                      <span className="text-text-muted">Service fee</span>
                       <span className="text-white">
-                        <Money amount={serviceFee} />
+                        {serviceFee === null ? (
+                          <span className="text-white/40">
+                            Added at checkout
+                          </span>
+                        ) : (
+                          <Money amount={serviceFee} />
+                        )}
                       </span>
                     </div>
                     <div className="h-px bg-white/10 my-2"></div>
