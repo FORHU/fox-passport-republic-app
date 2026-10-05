@@ -461,9 +461,6 @@ export default function VenueDetailClient({
                   ...host,
                   reviews: venue.reviews || 0,
                   description: host.bio || "",
-                  createdAt: venue.host?.id
-                    ? new Date().toISOString()
-                    : undefined,
                 }}
               />
 

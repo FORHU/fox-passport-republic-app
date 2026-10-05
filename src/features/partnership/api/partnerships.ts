@@ -11,12 +11,18 @@ import {
 // object where a list was expected.
 
 export const getPartnershipProposals = async (
-  _roleType?: string,
-  _targetId?: string,
+  roleType?: string,
+  targetId?: string,
 ): Promise<PartnershipProposal[]> => {
-  // The API filters by partnerId / targetEventId / targetVenueId; every
-  // caller wants the viewer's own proposals, which it returns unfiltered.
-  const response = await api.get("/partnerships/proposals");
+  // The API filters by partnerId / targetEventId / targetVenueId. With no
+  // arguments it returns the viewer's own proposals.
+  const params: Record<string, string> = {};
+  if (targetId) {
+    if (roleType === "venue") params.targetVenueId = targetId;
+    else if (roleType === "event") params.targetEventId = targetId;
+    else if (roleType === "partner") params.partnerId = targetId;
+  }
+  const response = await api.get("/partnerships/proposals", { params });
   return response.data?.data ?? [];
 };
 

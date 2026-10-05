@@ -75,7 +75,8 @@ export function EventDetailView({
   const { data: lineItems } = useQuery({
     queryKey: ["eventLineItems", eventId],
     queryFn: () => fetchEventLineItems(eventId),
-    enabled: !!eventId,
+    // Guests can't own an event, so there's nothing to ask for.
+    enabled: !!eventId && !!user,
   });
   const isRealEvent = lineItems?.isEvent === true;
 
