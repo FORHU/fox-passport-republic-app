@@ -107,7 +107,7 @@ export function IdentitySection() {
       : { label: "Optional", color: "#94a3b8", icon: "badge" };
 
   return (
-    <section className="rounded-[1.5rem] border border-white/10 bg-[#0f111a] p-6">
+    <section className="rounded-[1.5rem] border border-white/10 bg-surface p-6">
       <div className="flex items-start justify-between gap-4">
         <div>
           <h2 className="text-lg font-bold text-white flex items-center gap-1.5">
@@ -192,7 +192,7 @@ export function IdentitySection() {
               className="mt-2 w-full sm:w-72 rounded-xl border border-white/10 bg-white/5 px-4 py-2.5 text-sm text-white focus:outline-none focus:border-accent/60"
             >
               {ID_TYPES.map((t) => (
-                <option key={t.value} value={t.value} className="bg-[#0f111a]">
+                <option key={t.value} value={t.value} className="bg-surface">
                   {t.label}
                 </option>
               ))}

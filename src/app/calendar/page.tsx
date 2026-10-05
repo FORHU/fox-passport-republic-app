@@ -12,7 +12,7 @@ export const metadata: Metadata = {
 // Mayor's venue dates. What's on it is scoped by the API.
 export default function CalendarPage() {
   return (
-    <div className="min-h-screen bg-[#050608]">
+    <div className="min-h-screen bg-canvas">
       <LandingHeader />
       <main className="mx-auto max-w-7xl px-4 pt-28 pb-20">
         <h1 className="text-3xl font-display font-bold text-white mb-6">

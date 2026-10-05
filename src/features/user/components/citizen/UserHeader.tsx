@@ -55,17 +55,17 @@ export const UserHeader: React.FC<UserHeaderProps> = ({
               />
             </div>
             <div className="relative">
-              <h2 className="text-2xl font-display font-bold tracking-tight text-white group-hover:text-[#ccff00] transition-colors">
+              <h2 className="text-2xl font-display font-bold tracking-tight text-white group-hover:text-accent transition-colors">
                 FoxPassport
               </h2>
-              <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-[#ccff00] group-hover:w-full transition-all duration-300"></span>
+              <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-accent group-hover:w-full transition-all duration-300"></span>
             </div>
           </Link>
 
           <nav className="hidden md:flex items-center gap-2 bg-black/20 p-1.5 rounded-full border border-white/5">
             <Link
               href="/user"
-              className="px-6 py-2.5 rounded-full text-sm font-bold text-black bg-[#ccff00] hover:bg-[#b8e600] hover:shadow-[0_0_15px_rgba(204,255,0,0.5)] transition-all transform hover:-translate-y-0.5"
+              className="px-6 py-2.5 rounded-full text-sm font-bold text-black bg-accent hover:bg-accent-hover hover:shadow-[0_0_15px_rgba(204,255,0,0.5)] transition-all transform hover:-translate-y-0.5"
             >
               Dashboard
             </Link>
@@ -95,7 +95,7 @@ export const UserHeader: React.FC<UserHeaderProps> = ({
             {isAuthenticated ? (
               <div className="hidden sm:flex items-center gap-3 pl-2">
                 <div className="text-right hidden lg:block">
-                  <p className="text-xs text-[#ccff00] font-bold uppercase tracking-wide">
+                  <p className="text-xs text-accent font-bold uppercase tracking-wide">
                     Hey, {displayName}
                   </p>
                   <p className="text-sm font-bold text-white">{roleLabel}</p>
@@ -105,7 +105,7 @@ export const UserHeader: React.FC<UserHeaderProps> = ({
             ) : (
               <Link
                 href="/"
-                className="hidden sm:flex items-center gap-2 rounded-full bg-[#ccff00] px-6 py-2.5 text-sm font-bold text-black hover:bg-[#b8e600] transition-all"
+                className="hidden sm:flex items-center gap-2 rounded-full bg-accent px-6 py-2.5 text-sm font-bold text-black hover:bg-accent-hover transition-all"
               >
                 Sign In
               </Link>

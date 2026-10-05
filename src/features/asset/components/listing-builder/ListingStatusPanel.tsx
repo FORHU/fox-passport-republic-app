@@ -39,7 +39,7 @@ export function ListingStatusPanel({
       : categories.find((c) => c.id === category)?.label || "-";
 
   return (
-    <aside className="w-80 shrink-0 border-l border-white/5 bg-[#0f111a] flex flex-col shadow-2xl z-10">
+    <aside className="w-80 shrink-0 border-l border-white/5 bg-surface flex flex-col shadow-2xl z-10">
       <div className="p-6 border-b border-white/5">
         <h3 className="font-display font-bold text-white text-lg">
           Listing Status
@@ -93,7 +93,7 @@ export function ListingStatusPanel({
         </div>
       </div>
 
-      <div className="p-6 border-t border-white/5 bg-[#0f111a]">
+      <div className="p-6 border-t border-white/5 bg-surface">
         <button
           onClick={
             previewHref ? () => window.open(previewHref, "_blank") : undefined

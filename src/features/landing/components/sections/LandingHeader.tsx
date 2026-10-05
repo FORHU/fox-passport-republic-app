@@ -67,10 +67,10 @@ export default function LandingHeader({
                 />
               </div>
               <div className="relative">
-                <h2 className="text-sm sm:text-2xl font-display font-bold tracking-tight text-white group-hover:text-[#ccff00] transition-colors">
+                <h2 className="text-sm sm:text-2xl font-display font-bold tracking-tight text-white group-hover:text-accent transition-colors">
                   FoxPassport
                 </h2>
-                <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-[#ccff00] group-hover:w-full transition-all duration-300"></span>
+                <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-accent group-hover:w-full transition-all duration-300"></span>
               </div>
             </Link>
 
@@ -84,7 +84,7 @@ export default function LandingHeader({
                       href={tab.href}
                       className={
                         active
-                          ? "px-6 py-2.5 rounded-full text-sm font-bold text-black bg-[#ccff00] hover:bg-[#b8e600] hover:shadow-[0_0_15px_rgba(204,255,0,0.5)] transition-all transform hover:-translate-y-0.5"
+                          ? "px-6 py-2.5 rounded-full text-sm font-bold text-black bg-accent hover:bg-accent-hover hover:shadow-[0_0_15px_rgba(204,255,0,0.5)] transition-all transform hover:-translate-y-0.5"
                           : "px-6 py-2.5 rounded-full text-sm font-medium text-white/70 hover:text-white hover:bg-white/10 transition-all hover:scale-105"
                       }
                     >
@@ -126,7 +126,7 @@ export default function LandingHeader({
                     value={search.value}
                     onChange={(e) => search.onChange(e.target.value)}
                     placeholder={search.placeholder ?? "Search anything..."}
-                    className="w-full bg-white/6 border border-white/10 rounded-full py-1.5 sm:py-2 pl-10 pr-3 text-xs sm:text-sm font-semibold text-white placeholder:text-white/30 focus:outline-none focus:border-[#ccff00]/40 focus:bg-white/10 transition-all"
+                    className="w-full bg-white/6 border border-white/10 rounded-full py-1.5 sm:py-2 pl-10 pr-3 text-xs sm:text-sm font-semibold text-white placeholder:text-white/30 focus:outline-none focus:border-accent/40 focus:bg-white/10 transition-all"
                   />
                 </div>
               )}

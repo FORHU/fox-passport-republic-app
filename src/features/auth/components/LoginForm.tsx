@@ -114,13 +114,13 @@ export default function LoginForm() {
     <div className="animate-in fade-in slide-in-from-right-8 duration-300">
       {/* Header */}
       <div className="text-center mb-5 sm:mb-8">
-        <div className="mx-auto mb-3 sm:mb-4 flex h-12 w-12 sm:h-16 sm:w-16 items-center justify-center rounded-2xl bg-linear-to-tr from-[#ccff00] to-green-500 text-black shadow-[0_0_20px_rgba(204,255,0,0.3)] rotate-3 hover:rotate-12 transition-transform duration-500">
+        <div className="mx-auto mb-3 sm:mb-4 flex h-12 w-12 sm:h-16 sm:w-16 items-center justify-center rounded-2xl bg-linear-to-tr from-accent to-green-500 text-black shadow-[0_0_20px_rgba(204,255,0,0.3)] rotate-3 hover:rotate-12 transition-transform duration-500">
           <span className="material-symbols-outlined text-[24px] sm:text-[32px]">
             waving_hand
           </span>
         </div>
         <h2 className="text-2xl sm:text-3xl font-display font-bold text-white mb-2 tracking-tight">
-          Vibe <span className="text-[#ccff00]">Check In</span>
+          Vibe <span className="text-accent">Check In</span>
         </h2>
         <p className="text-gray-400 text-sm">
           Unlock your core memories. Enter the portal.
@@ -150,14 +150,14 @@ export default function LoginForm() {
             Email
           </label>
           <div className="relative group">
-            <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-white/50 group-focus-within:text-[#ccff00] transition-colors">
+            <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-white/50 group-focus-within:text-accent transition-colors">
               <span className="material-symbols-outlined text-[20px]">
                 mail
               </span>
             </div>
             <input
               {...register("email")}
-              className="block w-full rounded-2xl bg-black/30 border border-white/10 pl-11 pr-4 py-2.5 sm:py-3.5 text-white placeholder-white/30 focus:border-[#ccff00] focus:ring-1 focus:ring-[#ccff00] text-sm transition-all hover:border-white/20 outline-none"
+              className="block w-full rounded-2xl bg-black/30 border border-white/10 pl-11 pr-4 py-2.5 sm:py-3.5 text-white placeholder-white/30 focus:border-accent focus:ring-1 focus:ring-accent text-sm transition-all hover:border-white/20 outline-none"
               id="email"
               placeholder="foxer@example.com"
               type="email"
@@ -176,14 +176,14 @@ export default function LoginForm() {
             Password
           </label>
           <div className="relative group">
-            <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-white/50 group-focus-within:text-[#ccff00] transition-colors">
+            <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-white/50 group-focus-within:text-accent transition-colors">
               <span className="material-symbols-outlined text-[20px]">
                 lock
               </span>
             </div>
             <input
               {...register("password")}
-              className="block w-full rounded-2xl bg-black/30 border border-white/10 pl-11 pr-12 py-2.5 sm:py-3.5 text-white placeholder-white/30 focus:border-[#ccff00] focus:ring-1 focus:ring-[#ccff00] text-sm transition-all hover:border-white/20 outline-none"
+              className="block w-full rounded-2xl bg-black/30 border border-white/10 pl-11 pr-12 py-2.5 sm:py-3.5 text-white placeholder-white/30 focus:border-accent focus:ring-1 focus:ring-accent text-sm transition-all hover:border-white/20 outline-none"
               id="password"
               placeholder="••••••••"
               type={showPassword ? "text" : "password"}
@@ -209,7 +209,7 @@ export default function LoginForm() {
         <div className="flex items-center justify-between">
           <label className="flex items-center gap-2 cursor-pointer group">
             <input
-              className="w-4 h-4 rounded border-white/20 bg-white/5 text-[#ccff00] focus:ring-[#ccff00] focus:ring-offset-0 transition-colors"
+              className="w-4 h-4 rounded border-white/20 bg-white/5 text-accent focus:ring-accent focus:ring-offset-0 transition-colors"
               type="checkbox"
             />
             <span className="text-xs text-gray-400 group-hover:text-white transition-colors">
@@ -219,7 +219,7 @@ export default function LoginForm() {
           <button
             type="button"
             onClick={() => setView("forgot-password")}
-            className="text-xs font-bold text-[#ccff00] hover:text-white hover:underline decoration-[#ccff00] underline-offset-4 transition-all"
+            className="text-xs font-bold text-accent hover:text-white hover:underline decoration-accent underline-offset-4 transition-all"
           >
             Forgot password?
           </button>
@@ -229,7 +229,7 @@ export default function LoginForm() {
         <button
           type="submit"
           disabled={loginMutation.isPending}
-          className="relative w-full overflow-hidden rounded-xl bg-[#ccff00] py-3 sm:py-4 text-sm font-bold uppercase tracking-wider text-black shadow-[0_0_20px_rgba(204,255,0,0.4)] transition-all hover:scale-[1.02] hover:shadow-[0_0_30px_rgba(204,255,0,0.6)] group disabled:opacity-70 disabled:cursor-not-allowed"
+          className="relative w-full overflow-hidden rounded-xl bg-accent py-3 sm:py-4 text-sm font-bold uppercase tracking-wider text-black shadow-[0_0_20px_rgba(204,255,0,0.4)] transition-all hover:scale-[1.02] hover:shadow-[0_0_30px_rgba(204,255,0,0.6)] group disabled:opacity-70 disabled:cursor-not-allowed"
         >
           {loginMutation.isPending ? (
             <span className="relative z-10 flex items-center justify-center gap-2">
@@ -256,10 +256,10 @@ export default function LoginForm() {
           New to FoxPassport?{" "}
           <button
             onClick={toggleView}
-            className="font-bold text-white hover:text-[#ccff00] transition-colors relative inline-block group"
+            className="font-bold text-white hover:text-accent transition-colors relative inline-block group"
           >
             Create an account
-            <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-[#ccff00] transition-all group-hover:w-full"></span>
+            <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-accent transition-all group-hover:w-full"></span>
           </button>
         </p>
       </div>

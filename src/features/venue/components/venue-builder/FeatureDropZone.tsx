@@ -41,7 +41,7 @@ export function FeatureDropZone({
     ? isIncluded
       ? "border-accent bg-accent/5"
       : "border-secondary bg-secondary/5"
-    : "border-white/10 bg-[#0f111a]/30";
+    : "border-white/10 bg-surface/30";
 
   return (
     <div
@@ -77,7 +77,7 @@ export function FeatureDropZone({
           {items.map((item, idx) => (
             <div
               key={`${item.id}-${idx}`}
-              className="bg-[#1a1d2d] border border-white/5 rounded-xl p-3 flex items-center justify-between"
+              className="bg-surface-raised border border-white/5 rounded-xl p-3 flex items-center justify-between"
             >
               <div className="flex items-center gap-3">
                 <div

@@ -69,8 +69,8 @@ export default function InvestorApplicationClient() {
   return (
     <RequireAuth>
       <ApplicationFlowHeader />
-      <div className="min-h-screen bg-[#0f111a] flex items-center justify-center p-4 pt-24 pb-12 font-body">
-        <div className="w-full max-w-2xl bg-[#1a1a24] rounded-[2.5rem] p-8 md:p-12 border border-white/5 shadow-2xl relative overflow-hidden">
+      <div className="min-h-screen bg-surface flex items-center justify-center p-4 pt-24 pb-12 font-body">
+        <div className="w-full max-w-2xl bg-surface-raised rounded-[2.5rem] p-8 md:p-12 border border-white/5 shadow-2xl relative overflow-hidden">
           <div
             className="absolute top-0 right-0 -mr-20 -mt-20 w-64 h-64 blur-[100px] rounded-full pointer-events-none"
             style={{ backgroundColor: `${ACCENT}1a` }}

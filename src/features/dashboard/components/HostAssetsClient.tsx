@@ -74,7 +74,7 @@ export default function HostAssetsClient({
   return (
     <RequireAuth>
       <div
-        className="bg-[#02040a] text-white min-h-screen font-body antialiased"
+        className="bg-canvas text-white min-h-screen font-body antialiased"
         style={{
           background:
             "radial-gradient(circle at 15% 50%, rgba(124,58,237,0.15) 0%, transparent 40%), radial-gradient(circle at 85% 30%, rgba(219,39,119,0.1) 0%, transparent 40%), radial-gradient(circle at 50% 0%, rgba(204,255,0,0.05) 0%, transparent 50%), #02040a",
@@ -101,7 +101,7 @@ export default function HostAssetsClient({
               <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
                 <button
                   onClick={() => router.push("/foxer/create-listing")}
-                  className="flex items-center gap-2 px-5 py-2.5 rounded-full bg-[#ccff00] text-black text-sm font-bold hover:opacity-90 transition-opacity shrink-0"
+                  className="flex items-center gap-2 px-5 py-2.5 rounded-full bg-accent text-black text-sm font-bold hover:opacity-90 transition-opacity shrink-0"
                 >
                   <span className="material-symbols-outlined text-[16px]">
                     add
@@ -116,7 +116,7 @@ export default function HostAssetsClient({
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     placeholder="Search assets..."
-                    className="w-full bg-white/5 border border-white/10 rounded-full px-4 py-2 pl-11 text-sm placeholder:text-white/40 focus:outline-none focus:border-[#ccff00]"
+                    className="w-full bg-white/5 border border-white/10 rounded-full px-4 py-2 pl-11 text-sm placeholder:text-white/40 focus:outline-none focus:border-accent"
                   />
                 </div>
 

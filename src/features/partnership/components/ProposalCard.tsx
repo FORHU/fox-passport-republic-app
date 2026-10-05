@@ -22,7 +22,7 @@ export function ProposalCard({ proposal }: { proposal: PartnershipProposal }) {
             {proposal.proposedAmount != null && (
               <p>
                 <span className="font-medium text-white/40">Amount:</span>{" "}
-                <span className="text-[#ccff00]">
+                <span className="text-accent">
                   <Money amount={proposal.proposedAmount} />
                 </span>
               </p>

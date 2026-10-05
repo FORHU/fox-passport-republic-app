@@ -77,7 +77,7 @@ export default function MobileCreatorBottomNav() {
         background: "rgba(8,8,11,0.92)",
         backdropFilter: "blur(20px)",
         WebkitBackdropFilter: "blur(20px)",
-        borderTop: "1px solid rgba(255,255,255,0.08)",
+        borderTop: "1px solid color-mix(in srgb, var(--color-white) 8%, transparent)",
         display: "flex",
         alignItems: "center",
         justifyContent: "space-around",

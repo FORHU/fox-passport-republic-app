@@ -22,10 +22,10 @@ export default function MobilePassportView({ user }: Props) {
   return (
     <div
       style={{
-        background: "#050608",
+        background: "var(--canvas)",
         minHeight: "100svh",
         position: "relative",
-        color: "#fff",
+        color: "var(--color-white)",
       }}
     >
       {/* Lime radial glow */}
@@ -55,7 +55,7 @@ export default function MobilePassportView({ user }: Props) {
           background: "rgba(5,6,8,0.9)",
           backdropFilter: "blur(20px)",
           WebkitBackdropFilter: "blur(20px)",
-          borderBottom: "1px solid rgba(255,255,255,0.08)",
+          borderBottom: "1px solid color-mix(in srgb, var(--color-white) 8%, transparent)",
           display: "flex",
           alignItems: "center",
           padding: "0 16px",
@@ -91,8 +91,8 @@ export default function MobilePassportView({ user }: Props) {
             width: 36,
             height: 36,
             borderRadius: 999,
-            background: "rgba(255,255,255,0.1)",
-            border: "1px solid rgba(255,255,255,0.15)",
+            background: "color-mix(in srgb, var(--color-white) 10%, transparent)",
+            border: "1px solid color-mix(in srgb, var(--color-white) 15%, transparent)",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
@@ -134,7 +134,7 @@ export default function MobilePassportView({ user }: Props) {
               fontWeight: 800,
               letterSpacing: "1.5px",
               textTransform: "uppercase",
-              color: "rgba(255,255,255,0.35)",
+              color: "color-mix(in srgb, var(--color-white) 35%, transparent)",
               margin: "0 0 12px",
             }}
           >
@@ -192,7 +192,7 @@ export default function MobilePassportView({ user }: Props) {
               fontWeight: 800,
               letterSpacing: "1.5px",
               textTransform: "uppercase",
-              color: "rgba(255,255,255,0.35)",
+              color: "color-mix(in srgb, var(--color-white) 35%, transparent)",
               margin: "0 0 12px",
             }}
           >
@@ -200,8 +200,8 @@ export default function MobilePassportView({ user }: Props) {
           </p>
           <div
             style={{
-              background: "rgba(255,255,255,0.04)",
-              border: "1px solid rgba(255,255,255,0.08)",
+              background: "color-mix(in srgb, var(--color-white) 4%, transparent)",
+              border: "1px solid color-mix(in srgb, var(--color-white) 8%, transparent)",
               borderRadius: 18,
               padding: 16,
             }}
@@ -214,14 +214,14 @@ export default function MobilePassportView({ user }: Props) {
                 marginBottom: 10,
               }}
             >
-              <span style={{ fontWeight: 700, color: "#fff" }}>Night Owl</span>
-              <span style={{ color: "rgba(255,255,255,0.4)" }}>3/5 events</span>
+              <span style={{ fontWeight: 700, color: "var(--color-white)" }}>Night Owl</span>
+              <span style={{ color: "color-mix(in srgb, var(--color-white) 40%, transparent)" }}>3/5 events</span>
             </div>
             <div
               style={{
                 height: 6,
                 borderRadius: 6,
-                background: "rgba(255,255,255,0.1)",
+                background: "color-mix(in srgb, var(--color-white) 10%, transparent)",
               }}
             >
               <div

@@ -49,20 +49,20 @@ export default function NotificationBell() {
       >
         <Bell size={18} />
         {unreadCount > 0 && (
-          <span className="absolute -top-1 -right-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-[#ccff00] px-1 text-[10px] font-bold text-black">
+          <span className="absolute -top-1 -right-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-accent px-1 text-[10px] font-bold text-black">
             {unreadCount > 9 ? "9+" : unreadCount}
           </span>
         )}
       </button>
 
       {isOpen && (
-        <div className="absolute right-0 top-full mt-2 w-80 max-h-96 overflow-y-auto hide-scrollbar rounded-2xl border border-white/10 bg-[#0f111a] shadow-2xl z-50 animate-in fade-in slide-in-from-top-2 duration-200">
+        <div className="absolute right-0 top-full mt-2 w-80 max-h-96 overflow-y-auto hide-scrollbar rounded-2xl border border-white/10 bg-surface shadow-2xl z-50 animate-in fade-in slide-in-from-top-2 duration-200">
           <div className="flex items-center justify-between px-4 py-3 border-b border-white/5">
             <h3 className="text-sm font-bold text-white">Notifications</h3>
             {unreadCount > 0 && (
               <button
                 onClick={() => markAllAsRead()}
-                className="text-xs font-medium text-[#ccff00] hover:underline"
+                className="text-xs font-medium text-accent hover:underline"
               >
                 Mark all as read
               </button>
@@ -90,11 +90,11 @@ export default function NotificationBell() {
                     onClick={() => handleItemClick(n)}
                     className={`px-4 py-3 cursor-pointer hover:bg-white/5 transition-all duration-200 ${
                       !n.isRead ? "bg-white/3" : ""
-                    } ${isExpanded ? "bg-[#ccff00]/5 ring-1 ring-inset ring-[#ccff00]/40" : ""}`}
+                    } ${isExpanded ? "bg-accent/5 ring-1 ring-inset ring-accent/40" : ""}`}
                   >
                     <div className="flex items-start gap-2">
                       {!n.isRead && (
-                        <span className="mt-1.5 h-1.5 w-1.5 rounded-full bg-[#ccff00] shrink-0" />
+                        <span className="mt-1.5 h-1.5 w-1.5 rounded-full bg-accent shrink-0" />
                       )}
                       <div className="flex-1 min-w-0">
                         <div className="flex items-start justify-between gap-2">
@@ -104,7 +104,7 @@ export default function NotificationBell() {
                           <ChevronDown
                             size={14}
                             className={`text-white/40 shrink-0 mt-0.5 transition-transform duration-200 ${
-                              isExpanded ? "rotate-180 text-[#ccff00]" : ""
+                              isExpanded ? "rotate-180 text-accent" : ""
                             }`}
                           />
                         </div>
@@ -142,7 +142,7 @@ export default function NotificationBell() {
             <div className="border-t border-white/5 px-4 py-3">
               <Link
                 href="/notifications"
-                className="flex items-center justify-center gap-1 text-xs font-medium text-[#ccff00] hover:underline"
+                className="flex items-center justify-center gap-1 text-xs font-medium text-accent hover:underline"
               >
                 View all notifications
                 <ChevronDown size={12} className="-rotate-90" />

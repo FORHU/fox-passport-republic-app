@@ -64,17 +64,17 @@ export default function MayorApplicationClient() {
   return (
     <RequireAuth>
       <ApplicationFlowHeader />
-      <div className="min-h-screen bg-[#0f111a] flex items-center justify-center p-4 pt-24 pb-12 font-body">
-        <div className="w-full max-w-2xl bg-[#1a1a24] rounded-[2.5rem] p-8 md:p-12 border border-white/5 shadow-2xl relative overflow-hidden">
+      <div className="min-h-screen bg-surface flex items-center justify-center p-4 pt-24 pb-12 font-body">
+        <div className="w-full max-w-2xl bg-surface-raised rounded-[2.5rem] p-8 md:p-12 border border-white/5 shadow-2xl relative overflow-hidden">
           {/* Background Glow */}
-          <div className="absolute top-0 right-0 -mr-20 -mt-20 w-64 h-64 bg-[#ccff00]/10 blur-[100px] rounded-full pointer-events-none" />
+          <div className="absolute top-0 right-0 -mr-20 -mt-20 w-64 h-64 bg-accent/10 blur-[100px] rounded-full pointer-events-none" />
 
           <div className="mb-10 text-center relative z-10">
-            <div className="w-16 h-16 bg-[#ccff00]/20 rounded-2xl flex items-center justify-center mx-auto mb-6 text-[#ccff00]">
+            <div className="w-16 h-16 bg-accent/20 rounded-2xl flex items-center justify-center mx-auto mb-6 text-accent">
               <Building2 size={32} />
             </div>
             <h1 className="text-3xl md:text-4xl font-display font-bold text-white mb-2">
-              Apply to be a <span className="text-[#ccff00]">Venue Foxer</span>
+              Apply to be a <span className="text-accent">Venue Foxer</span>
             </h1>
             <p className="text-white/60">
               Provide your details below to start listing and managing venues in
@@ -125,7 +125,7 @@ export default function MayorApplicationClient() {
                   name="businessName"
                   value={formData.businessName}
                   onChange={handleChange}
-                  className="w-full bg-white/5 border border-white/10 rounded-xl py-3 pl-12 pr-4 text-white placeholder:text-white/30 focus:outline-none focus:border-[#ccff00]/50 focus:bg-white/10 transition-colors"
+                  className="w-full bg-white/5 border border-white/10 rounded-xl py-3 pl-12 pr-4 text-white placeholder:text-white/30 focus:outline-none focus:border-accent/50 focus:bg-white/10 transition-colors"
                   placeholder="The Neon Lounge"
                 />
               </div>
@@ -146,7 +146,7 @@ export default function MayorApplicationClient() {
                   name="contactNumber"
                   value={formData.contactNumber}
                   onChange={handleChange}
-                  className="w-full bg-white/5 border border-white/10 rounded-xl py-3 pl-12 pr-4 text-white placeholder:text-white/30 focus:outline-none focus:border-[#ccff00]/50 focus:bg-white/10 transition-colors"
+                  className="w-full bg-white/5 border border-white/10 rounded-xl py-3 pl-12 pr-4 text-white placeholder:text-white/30 focus:outline-none focus:border-accent/50 focus:bg-white/10 transition-colors"
                   placeholder="+63 900 000 0000"
                 />
               </div>
@@ -167,7 +167,7 @@ export default function MayorApplicationClient() {
                   name="address"
                   value={formData.address}
                   onChange={handleChange}
-                  className="w-full bg-white/5 border border-white/10 rounded-xl py-3 pl-12 pr-4 text-white placeholder:text-white/30 focus:outline-none focus:border-[#ccff00]/50 focus:bg-white/10 transition-colors"
+                  className="w-full bg-white/5 border border-white/10 rounded-xl py-3 pl-12 pr-4 text-white placeholder:text-white/30 focus:outline-none focus:border-accent/50 focus:bg-white/10 transition-colors"
                   placeholder="123 Makati Ave, Metro Manila"
                 />
               </div>
@@ -188,7 +188,7 @@ export default function MayorApplicationClient() {
                   name="tinNumber"
                   value={formData.tinNumber}
                   onChange={handleChange}
-                  className="w-full bg-white/5 border border-white/10 rounded-xl py-3 pl-12 pr-4 text-white placeholder:text-white/30 focus:outline-none focus:border-[#ccff00]/50 focus:bg-white/10 transition-colors"
+                  className="w-full bg-white/5 border border-white/10 rounded-xl py-3 pl-12 pr-4 text-white placeholder:text-white/30 focus:outline-none focus:border-accent/50 focus:bg-white/10 transition-colors"
                   placeholder="000-000-000-000"
                 />
               </div>
@@ -208,7 +208,7 @@ export default function MayorApplicationClient() {
                   value={formData.description}
                   onChange={handleChange}
                   rows={4}
-                  className="w-full bg-white/5 border border-white/10 rounded-xl py-3 pl-12 pr-4 text-white placeholder:text-white/30 focus:outline-none focus:border-[#ccff00]/50 focus:bg-white/10 transition-colors resize-none"
+                  className="w-full bg-white/5 border border-white/10 rounded-xl py-3 pl-12 pr-4 text-white placeholder:text-white/30 focus:outline-none focus:border-accent/50 focus:bg-white/10 transition-colors resize-none"
                   placeholder="Tell us a bit about your spaces and what makes them unique..."
                 />
               </div>
@@ -234,7 +234,7 @@ export default function MayorApplicationClient() {
               <button
                 type="submit"
                 disabled={isPending}
-                className="w-full flex-1 flex items-center justify-center gap-2 bg-[#ccff00] text-black font-bold py-3 px-6 rounded-xl hover:brightness-110 hover:shadow-[0_0_20px_rgba(204,255,0,0.4)] transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full flex-1 flex items-center justify-center gap-2 bg-accent text-black font-bold py-3 px-6 rounded-xl hover:brightness-110 hover:shadow-[0_0_20px_rgba(204,255,0,0.4)] transition-all disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {isPending ? "Submitting..." : "Submit Application"}
                 {!isPending && <ArrowRight size={18} />}

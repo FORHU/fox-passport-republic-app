@@ -178,7 +178,7 @@ export default function CheckoutClient() {
                     src={user.imgId}
                   />
                 ) : (
-                  <div className="h-full w-full bg-[#ccff00] flex items-center justify-center">
+                  <div className="h-full w-full bg-accent flex items-center justify-center">
                     <span className="text-black text-sm font-bold">
                       {user?.name?.charAt(0).toUpperCase() ||
                         user?.email?.charAt(0).toUpperCase() ||

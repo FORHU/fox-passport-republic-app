@@ -92,7 +92,7 @@ export const BidApplicationModal: React.FC<BidApplicationModalProps> = ({
             <input
               type="number"
               placeholder="e.g. 5000"
-              className="w-full bg-white/5 border border-white/10 rounded-lg p-3 text-white focus:border-[#ccff00] focus:outline-none transition-colors"
+              className="w-full bg-white/5 border border-white/10 rounded-lg p-3 text-white focus:border-accent focus:outline-none transition-colors"
               value={proposedPrice}
               onChange={(e) => setProposedPrice(e.target.value)}
             />
@@ -101,7 +101,7 @@ export const BidApplicationModal: React.FC<BidApplicationModalProps> = ({
             <label className="text-sm text-white/70">Message (Optional)</label>
             <textarea
               placeholder="Why are you a good fit?"
-              className="w-full bg-white/5 border border-white/10 rounded-lg p-3 text-white min-h-[100px] focus:border-[#ccff00] focus:outline-none transition-colors"
+              className="w-full bg-white/5 border border-white/10 rounded-lg p-3 text-white min-h-[100px] focus:border-accent focus:outline-none transition-colors"
               value={message}
               onChange={(e) => setMessage(e.target.value)}
             />
@@ -118,7 +118,7 @@ export const BidApplicationModal: React.FC<BidApplicationModalProps> = ({
           <button
             onClick={handleSubmit}
             disabled={isSubmitting}
-            className="px-4 py-2 rounded-full bg-[#ccff00] text-black font-semibold hover:bg-[#ccff00]/90 transition-colors"
+            className="px-4 py-2 rounded-full bg-accent text-black font-semibold hover:bg-accent/90 transition-colors"
           >
             Submit Application
           </button>

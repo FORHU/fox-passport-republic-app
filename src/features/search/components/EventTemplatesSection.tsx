@@ -8,7 +8,7 @@ function TemplateCard({ item }: { item: any }) {
   return (
     <Link
       href={`/event/${item.id}`}
-      className="group bg-[#11121a] border border-white/10 rounded-2xl overflow-hidden hover:border-[#ccff00]/50 transition-colors shrink-0 w-[70vw] max-w-64 sm:w-auto sm:max-w-none snap-center"
+      className="group bg-surface border border-white/10 rounded-2xl overflow-hidden hover:border-accent/50 transition-colors shrink-0 w-[70vw] max-w-64 sm:w-auto sm:max-w-none snap-center"
     >
       <div className="h-44 bg-white/5 relative overflow-hidden">
         {item.images && item.images.length > 0 ? (
@@ -23,13 +23,13 @@ function TemplateCard({ item }: { item: any }) {
           </div>
         )}
         {item.category && (
-          <div className="absolute top-4 left-4 bg-black/60 backdrop-blur-md px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider text-[#ccff00] capitalize">
+          <div className="absolute top-4 left-4 bg-black/60 backdrop-blur-md px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider text-accent capitalize">
             {String(item.category).replace(/_/g, " ")}
           </div>
         )}
         {item.rating != null && (
           <div className="absolute top-4 right-4 bg-black/60 backdrop-blur-md px-2.5 py-1 rounded-full text-[10px] font-bold text-white flex items-center gap-1">
-            <span className="material-symbols-outlined text-[12px] text-[#ccff00]">
+            <span className="material-symbols-outlined text-[12px] text-accent">
               star
             </span>
             {item.rating}
@@ -53,7 +53,7 @@ function TemplateCard({ item }: { item: any }) {
             {item.targetCity || item.city || "Location TBD"}
           </span>
           {item.price ? (
-            <span className="font-bold text-[#ccff00] text-sm">
+            <span className="font-bold text-accent text-sm">
               <Money amount={item.price} />
             </span>
           ) : null}
@@ -93,7 +93,7 @@ export default function EventTemplatesSection({
           {Array.from({ length: 6 }).map((_, i) => (
             <div
               key={i}
-              className="bg-[#11121a] border border-white/10 rounded-2xl h-64 animate-pulse shrink-0 w-[70vw] max-w-64 sm:w-auto sm:max-w-none snap-center"
+              className="bg-surface border border-white/10 rounded-2xl h-64 animate-pulse shrink-0 w-[70vw] max-w-64 sm:w-auto sm:max-w-none snap-center"
             />
           ))}
         </div>

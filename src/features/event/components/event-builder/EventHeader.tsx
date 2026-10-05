@@ -40,7 +40,7 @@ export function EventHeader({
         : "bg-green-500 animate-pulse";
 
   return (
-    <header className="h-16 border-b border-white/5 flex items-center justify-between px-4 sm:px-6 bg-[#0f111a] z-20">
+    <header className="h-16 border-b border-white/5 flex items-center justify-between px-4 sm:px-6 bg-surface z-20">
       <div className="flex items-center gap-2 sm:gap-4 min-w-0">
         <button
           onClick={onBack}

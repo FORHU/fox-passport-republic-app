@@ -17,8 +17,8 @@ export const BrandLogo: React.FC<BrandLogoProps> = ({
 }) => {
   // Determine text color classes
   let textBaseClass = "text-white";
-  let hoverTextClass = "group-hover:text-[#ccff00]";
-  let underlineBgClass = "bg-[#ccff00]";
+  let hoverTextClass = "group-hover:text-accent";
+  let underlineBgClass = "bg-accent";
 
   if (variant === "dark") {
     textBaseClass = "text-black";

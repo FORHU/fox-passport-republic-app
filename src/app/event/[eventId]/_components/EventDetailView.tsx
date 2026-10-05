@@ -162,7 +162,7 @@ export function EventDetailView({
               {!isPreview && (
                 <button
                   onClick={handleProposePartnership}
-                  className="hidden sm:flex items-center gap-2 px-4 py-2 rounded-full border border-white/10 hover:bg-[#ccff00]/10 hover:border-[#ccff00]/30 text-sm font-medium text-white hover:text-[#ccff00] transition-colors cursor-pointer"
+                  className="hidden sm:flex items-center gap-2 px-4 py-2 rounded-full border border-white/10 hover:bg-accent/10 hover:border-accent/30 text-sm font-medium text-white hover:text-accent transition-colors cursor-pointer"
                 >
                   <span className="material-symbols-outlined text-[18px]">
                     handshake

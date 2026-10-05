@@ -33,7 +33,7 @@ export function UserIdentityCard() {
             className="h-14 w-14 sm:h-16 sm:w-16 rounded-2xl object-cover"
           />
         ) : (
-          <div className="h-14 w-14 sm:h-16 sm:w-16 rounded-2xl bg-[#ccff00] flex items-center justify-center">
+          <div className="h-14 w-14 sm:h-16 sm:w-16 rounded-2xl bg-accent flex items-center justify-center">
             <span className="text-2xl sm:text-3xl font-display font-bold text-black">
               {initial}
             </span>

@@ -246,7 +246,7 @@ export default function AdminRefundsClient() {
           <button
             onClick={handleItemizedRefund}
             disabled={submitting}
-            className="h-9 px-5 rounded-full bg-accent text-black text-sm font-bold hover:bg-[#b3e600] transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+            className="h-9 px-5 rounded-full bg-accent text-black text-sm font-bold hover:bg-accent-hover transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
           >
             {submitting ? (
               <>
@@ -329,7 +329,7 @@ export default function AdminRefundsClient() {
                           <button
                             onClick={() => handleResolve(d.id, "approve")}
                             disabled={isBusy}
-                            className="h-8 px-3 rounded-full bg-accent text-black text-xs font-bold hover:bg-[#b3e600] transition-colors disabled:opacity-50"
+                            className="h-8 px-3 rounded-full bg-accent text-black text-xs font-bold hover:bg-accent-hover transition-colors disabled:opacity-50"
                           >
                             {isBusy ? "…" : "Approve"}
                           </button>

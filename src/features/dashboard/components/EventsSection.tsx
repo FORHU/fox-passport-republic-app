@@ -40,12 +40,12 @@ export function EventsSection({
     <section id="events">
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-2xl font-display font-bold flex items-center gap-2">
-          <span className="material-symbols-outlined text-[#ccff00]">hub</span>
+          <span className="material-symbols-outlined text-accent">hub</span>
           My Active Events
         </h2>
         {showViewAllLink && (
           <Link
-            className="text-xs font-bold text-[#ccff00] border border-[#ccff00]/30 px-4 py-2 rounded-full hover:bg-[#ccff00] hover:text-black transition-all flex items-center gap-1"
+            className="text-xs font-bold text-accent border border-accent/30 px-4 py-2 rounded-full hover:bg-accent hover:text-black transition-all flex items-center gap-1"
             href={viewAllHref}
           >
             View All
@@ -60,7 +60,7 @@ export function EventsSection({
           events.map((ev) => (
             <div
               key={ev.id}
-              className={`bg-[#0f111a] border border-white/5 p-5 rounded-3xl hover:bg-white/5 transition-all group border-l-4 ${
+              className={`bg-surface border border-white/5 p-5 rounded-3xl hover:bg-white/5 transition-all group border-l-4 ${
                 ev.status === "Ongoing"
                   ? "border-l-green-500"
                   : "border-l-yellow-500"
@@ -128,7 +128,7 @@ export function EventsSection({
                         </div>
                         <div className="h-1.5 w-full bg-white/10 rounded-full mt-1">
                           <div
-                            className="h-full bg-[#ccff00] rounded-full"
+                            className="h-full bg-accent rounded-full"
                             style={{
                               width: `${(ev.booked! / ev.capacity!) * 100}%`,
                             }}
@@ -157,7 +157,7 @@ export function EventsSection({
                           </span>
                         </button>
                         <button
-                          className="h-9 w-9 rounded-full bg-white/5 hover:bg-[#ccff00] hover:text-black flex items-center justify-center"
+                          className="h-9 w-9 rounded-full bg-white/5 hover:bg-accent hover:text-black flex items-center justify-center"
                           onClick={(e) => e.stopPropagation()}
                         >
                           <span className="material-symbols-outlined text-[18px]">

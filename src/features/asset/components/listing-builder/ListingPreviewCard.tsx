@@ -58,7 +58,7 @@ export function ListingPreviewCard({
   };
 
   return (
-    <main className="flex-1 overflow-y-auto p-8 bg-[#02040a] flex flex-col items-center">
+    <main className="flex-1 overflow-y-auto p-8 bg-canvas flex flex-col items-center">
       <input
         ref={fileInputRef}
         type="file"
@@ -93,7 +93,7 @@ export function ListingPreviewCard({
         )}
 
         {/* Title & Description Inputs */}
-        <div className="rounded-[2rem] overflow-hidden border border-white/10 bg-[#0f111a] p-8 space-y-8 w-full">
+        <div className="rounded-[2rem] overflow-hidden border border-white/10 bg-surface p-8 space-y-8 w-full">
           <div>
             <label className="text-[10px] uppercase font-bold text-white/40 tracking-widest mb-2 block">
               {activeType === "inventory" ? "Item Title" : "Service Title"}
@@ -128,7 +128,7 @@ export function ListingPreviewCard({
           {image && (
             <div className="absolute -inset-1 bg-gradient-to-r from-primary to-accent rounded-[2.2rem] blur opacity-25 group-hover:opacity-50 transition duration-500" />
           )}
-          <div className="relative bg-[#161b26] rounded-[2rem] overflow-hidden border border-white/10 shadow-2xl">
+          <div className="relative bg-surface-raised rounded-[2rem] overflow-hidden border border-white/10 shadow-2xl">
             {/* Image Area */}
             <div
               className={`relative aspect-square overflow-hidden bg-black/50 group/img ${

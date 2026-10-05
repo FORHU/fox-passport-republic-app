@@ -37,7 +37,7 @@ export default function PaymentConfirmationModal({
 
   return createPortal(
     <div
-      className="fixed inset-0 z-[1000] flex items-center justify-center bg-[#050608] p-4 animate-in fade-in duration-200"
+      className="fixed inset-0 z-[1000] flex items-center justify-center bg-canvas p-4 animate-in fade-in duration-200"
       role="presentation"
     >
       <section

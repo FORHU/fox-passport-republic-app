@@ -77,7 +77,7 @@ export default function MobileEarningsView() {
   return (
     <div
       className="lg:hidden"
-      style={{ background: "#050608", minHeight: "100svh", color: "#fff" }}
+      style={{ background: "var(--canvas)", minHeight: "100svh", color: "var(--color-white)" }}
     >
       {/* Standard nav bar */}
       <div
@@ -91,7 +91,7 @@ export default function MobileEarningsView() {
           background: "rgba(5,6,8,0.9)",
           backdropFilter: "blur(20px)",
           WebkitBackdropFilter: "blur(20px)",
-          borderBottom: "1px solid rgba(255,255,255,0.08)",
+          borderBottom: "1px solid color-mix(in srgb, var(--color-white) 8%, transparent)",
           display: "flex",
           alignItems: "center",
           padding: "0 16px",
@@ -123,7 +123,7 @@ export default function MobileEarningsView() {
         {/* Pending Payouts card */}
         <div
           style={{
-            background: "linear-gradient(135deg,#161616,#0a0a0a)",
+            background: "linear-gradient(135deg,#161616,var(--canvas))",
             border: "1px solid rgba(204,255,0,0.2)",
             borderRadius: 22,
             padding: 20,
@@ -136,7 +136,7 @@ export default function MobileEarningsView() {
               fontWeight: 700,
               letterSpacing: "1.5px",
               textTransform: "uppercase",
-              color: "rgba(255,255,255,0.4)",
+              color: "color-mix(in srgb, var(--color-white) 40%, transparent)",
               margin: "0 0 6px",
             }}
           >
@@ -147,7 +147,7 @@ export default function MobileEarningsView() {
               fontFamily: 'var(--font-display,"Space Grotesk",sans-serif)',
               fontSize: 30,
               fontWeight: 700,
-              color: "#ccff00",
+              color: "var(--accent-text)",
               margin: "0 0 16px",
               lineHeight: 1,
             }}
@@ -157,7 +157,7 @@ export default function MobileEarningsView() {
           <p
             style={{
               fontSize: 11,
-              color: "rgba(255,255,255,0.4)",
+              color: "color-mix(in srgb, var(--color-white) 40%, transparent)",
               margin: "0 0 12px",
             }}
           >
@@ -194,7 +194,7 @@ export default function MobileEarningsView() {
             fontWeight: 800,
             letterSpacing: "1.5px",
             textTransform: "uppercase",
-            color: "rgba(255,255,255,0.35)",
+            color: "color-mix(in srgb, var(--color-white) 35%, transparent)",
             margin: "0 0 10px",
           }}
         >
@@ -215,8 +215,8 @@ export default function MobileEarningsView() {
                 display: "flex",
                 alignItems: "center",
                 gap: 12,
-                background: "rgba(255,255,255,0.04)",
-                border: "1px solid rgba(255,255,255,0.06)",
+                background: "color-mix(in srgb, var(--color-white) 4%, transparent)",
+                border: "1px solid color-mix(in srgb, var(--color-white) 6%, transparent)",
                 borderRadius: 14,
                 padding: 12,
               }}
@@ -249,7 +249,7 @@ export default function MobileEarningsView() {
                   style={{
                     fontSize: 12,
                     fontWeight: 700,
-                    color: "#fff",
+                    color: "var(--color-white)",
                     margin: "0 0 2px",
                   }}
                 >
@@ -278,18 +278,18 @@ export default function MobileEarningsView() {
             fontWeight: 800,
             letterSpacing: "1.5px",
             textTransform: "uppercase",
-            color: "rgba(255,255,255,0.35)",
+            color: "color-mix(in srgb, var(--color-white) 35%, transparent)",
             margin: "0 0 10px",
           }}
         >
           Recent Payouts
         </p>
         {payoutsLoading ? (
-          <p style={{ fontSize: 12, color: "rgba(255,255,255,0.4)" }}>
+          <p style={{ fontSize: 12, color: "color-mix(in srgb, var(--color-white) 40%, transparent)" }}>
             Loading…
           </p>
         ) : payouts.length === 0 ? (
-          <p style={{ fontSize: 12, color: "rgba(255,255,255,0.4)" }}>
+          <p style={{ fontSize: 12, color: "color-mix(in srgb, var(--color-white) 40%, transparent)" }}>
             No payouts yet.
           </p>
         ) : (
@@ -313,7 +313,7 @@ export default function MobileEarningsView() {
                     style={{
                       fontSize: 12,
                       fontWeight: 700,
-                      color: "#fff",
+                      color: "var(--color-white)",
                       margin: "0 0 2px",
                     }}
                   >
@@ -323,7 +323,7 @@ export default function MobileEarningsView() {
                   <p
                     style={{
                       fontSize: 10,
-                      color: "rgba(255,255,255,0.4)",
+                      color: "color-mix(in srgb, var(--color-white) 40%, transparent)",
                       margin: 0,
                     }}
                   >

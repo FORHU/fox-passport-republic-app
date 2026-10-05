@@ -239,7 +239,7 @@ export default function DateTimePicker({ value, onChange }: Props) {
           width: Math.max(triggerRect.width, 320),
           zIndex: 9999,
         }}
-        className="bg-[#0f111a] border border-white/10 rounded-2xl shadow-2xl shadow-black/60 overflow-hidden"
+        className="bg-surface border border-white/10 rounded-2xl shadow-2xl shadow-black/60 overflow-hidden"
       >
         {/* Calendar header */}
         <div className="flex items-center justify-between px-4 pt-4 pb-2">

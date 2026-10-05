@@ -27,7 +27,7 @@ export default function MobileVenueDetail({ venue }: MobileVenueDetailProps) {
   return (
     <div
       style={{
-        background: "#050608",
+        background: "var(--canvas)",
         minHeight: "100vh",
         position: "relative",
         overflow: "hidden",
@@ -44,7 +44,7 @@ export default function MobileVenueDetail({ venue }: MobileVenueDetailProps) {
         ) : (
           <div
             className="stripe"
-            style={{ width: "100%", height: "100%", background: "#111" }}
+            style={{ width: "100%", height: "100%", background: "var(--surface)" }}
           />
         )}
         <div
@@ -93,7 +93,7 @@ export default function MobileVenueDetail({ venue }: MobileVenueDetailProps) {
           background: "rgba(5,6,8,0.9)",
           backdropFilter: "blur(20px)",
           WebkitBackdropFilter: "blur(20px)",
-          borderBottom: "1px solid rgba(255,255,255,0.08)",
+          borderBottom: "1px solid color-mix(in srgb, var(--color-white) 8%, transparent)",
           display: "flex",
           alignItems: "center",
           padding: "0 16px",
@@ -113,8 +113,8 @@ export default function MobileVenueDetail({ venue }: MobileVenueDetailProps) {
             width: 36,
             height: 36,
             borderRadius: 999,
-            background: "rgba(255,255,255,0.08)",
-            border: "1px solid rgba(255,255,255,0.12)",
+            background: "color-mix(in srgb, var(--color-white) 8%, transparent)",
+            border: "1px solid color-mix(in srgb, var(--color-white) 12%, transparent)",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
@@ -142,8 +142,8 @@ export default function MobileVenueDetail({ venue }: MobileVenueDetailProps) {
             width: 36,
             height: 36,
             borderRadius: 999,
-            background: "rgba(255,255,255,0.08)",
-            border: "1px solid rgba(255,255,255,0.12)",
+            background: "color-mix(in srgb, var(--color-white) 8%, transparent)",
+            border: "1px solid color-mix(in srgb, var(--color-white) 12%, transparent)",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
@@ -165,7 +165,7 @@ export default function MobileVenueDetail({ venue }: MobileVenueDetailProps) {
           bottom: 0,
           left: 0,
           right: 0,
-          background: "#050608",
+          background: "var(--canvas)",
           borderRadius: "28px 28px 0 0",
           overflowY: "auto",
           paddingBottom: 112,
@@ -185,7 +185,7 @@ export default function MobileVenueDetail({ venue }: MobileVenueDetailProps) {
               width: 36,
               height: 4,
               borderRadius: 99,
-              background: "rgba(255,255,255,0.2)",
+              background: "color-mix(in srgb, var(--color-white) 20%, transparent)",
             }}
           />
         </div>
@@ -195,7 +195,7 @@ export default function MobileVenueDetail({ venue }: MobileVenueDetailProps) {
             style={{
               display: "inline-block",
               background: "rgba(204,255,0,0.12)",
-              color: "#ccff00",
+              color: "var(--accent-text)",
               fontSize: 10,
               fontWeight: 700,
               letterSpacing: "0.08em",
@@ -213,7 +213,7 @@ export default function MobileVenueDetail({ venue }: MobileVenueDetailProps) {
             style={{
               fontSize: 22,
               fontWeight: 700,
-              color: "#fff",
+              color: "var(--color-white)",
               marginBottom: 6,
               lineHeight: 1.2,
             }}
@@ -226,7 +226,7 @@ export default function MobileVenueDetail({ venue }: MobileVenueDetailProps) {
               display: "flex",
               alignItems: "center",
               gap: 4,
-              color: "rgba(255,255,255,0.45)",
+              color: "color-mix(in srgb, var(--color-white) 45%, transparent)",
               fontSize: 12,
               marginBottom: 16,
             }}
@@ -255,8 +255,8 @@ export default function MobileVenueDetail({ venue }: MobileVenueDetailProps) {
               <div
                 key={a.label}
                 style={{
-                  background: "rgba(255,255,255,0.04)",
-                  border: "1px solid rgba(255,255,255,0.07)",
+                  background: "color-mix(in srgb, var(--color-white) 4%, transparent)",
+                  border: "1px solid color-mix(in srgb, var(--color-white) 7%, transparent)",
                   borderRadius: 12,
                   padding: 10,
                   display: "flex",
@@ -267,14 +267,14 @@ export default function MobileVenueDetail({ venue }: MobileVenueDetailProps) {
               >
                 <span
                   className="material-symbols-outlined"
-                  style={{ fontSize: 17, color: "rgba(255,255,255,0.6)" }}
+                  style={{ fontSize: 17, color: "color-mix(in srgb, var(--color-white) 60%, transparent)" }}
                 >
                   {a.icon}
                 </span>
                 <p
                   style={{
                     fontSize: 9,
-                    color: "rgba(255,255,255,0.4)",
+                    color: "color-mix(in srgb, var(--color-white) 40%, transparent)",
                     margin: 0,
                     fontWeight: 700,
                   }}
@@ -289,7 +289,7 @@ export default function MobileVenueDetail({ venue }: MobileVenueDetailProps) {
         {/* Footer: price + CTA */}
         <div
           style={{
-            borderTop: "1px solid rgba(255,255,255,0.08)",
+            borderTop: "1px solid color-mix(in srgb, var(--color-white) 8%, transparent)",
             padding: "16px 20px",
             display: "flex",
             alignItems: "center",
@@ -300,7 +300,7 @@ export default function MobileVenueDetail({ venue }: MobileVenueDetailProps) {
             <p
               style={{
                 fontSize: 10,
-                color: "rgba(255,255,255,0.4)",
+                color: "color-mix(in srgb, var(--color-white) 40%, transparent)",
                 margin: 0,
                 fontWeight: 700,
                 textTransform: "uppercase",
@@ -313,7 +313,7 @@ export default function MobileVenueDetail({ venue }: MobileVenueDetailProps) {
               style={{
                 fontSize: 20,
                 fontWeight: 700,
-                color: "#ccff00",
+                color: "var(--accent-text)",
                 margin: "2px 0 0",
               }}
             >

@@ -37,9 +37,9 @@ export default function MobileHomePage() {
   return (
     <div
       style={{
-        background: "#050608",
+        background: "var(--canvas)",
         minHeight: "100svh",
-        color: "#fff",
+        color: "var(--color-white)",
         overflowX: "hidden",
       }}
     >

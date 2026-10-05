@@ -970,7 +970,7 @@ const MatchConfig: React.FC<MatchConfigProps> = ({ fetchTemplate }) => {
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 10 }}
               onClick={(e) => e.stopPropagation()}
-              className="bg-[#0f111a] border border-white/10 rounded-[2rem] max-w-2xl w-full max-h-[85vh] flex flex-col overflow-hidden"
+              className="bg-surface border border-white/10 rounded-[2rem] max-w-2xl w-full max-h-[85vh] flex flex-col overflow-hidden"
             >
               <div className="flex items-start justify-between gap-4 p-8 pb-0">
                 <div>
@@ -1181,7 +1181,7 @@ const MatchConfig: React.FC<MatchConfigProps> = ({ fetchTemplate }) => {
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 10 }}
               onClick={(e) => e.stopPropagation()}
-              className="bg-[#0f111a] border border-white/10 rounded-[2rem] p-8 max-w-md w-full space-y-6 text-center"
+              className="bg-surface border border-white/10 rounded-[2rem] p-8 max-w-md w-full space-y-6 text-center"
             >
               <div className="mx-auto h-16 w-16 rounded-full bg-accent/10 border border-accent/20 flex items-center justify-center">
                 <span className="material-symbols-outlined text-accent text-4xl">

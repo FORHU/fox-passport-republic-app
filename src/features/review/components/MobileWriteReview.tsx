@@ -24,11 +24,11 @@ export default function MobileWriteReview({ venue, onSubmit }: Props) {
   return (
     <div
       style={{
-        background: "#050608",
+        background: "var(--canvas)",
         minHeight: "100svh",
         display: "flex",
         flexDirection: "column",
-        color: "#fff",
+        color: "var(--color-white)",
         position: "relative",
       }}
     >
@@ -60,8 +60,8 @@ export default function MobileWriteReview({ venue, onSubmit }: Props) {
             width: 36,
             height: 36,
             borderRadius: 999,
-            background: "rgba(255,255,255,0.08)",
-            border: "1px solid rgba(255,255,255,0.12)",
+            background: "color-mix(in srgb, var(--color-white) 8%, transparent)",
+            border: "1px solid color-mix(in srgb, var(--color-white) 12%, transparent)",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
@@ -113,7 +113,7 @@ export default function MobileWriteReview({ venue, onSubmit }: Props) {
           style={{
             fontSize: 15,
             fontWeight: 700,
-            color: "#fff",
+            color: "var(--color-white)",
             margin: "0 0 4px",
           }}
         >
@@ -122,7 +122,7 @@ export default function MobileWriteReview({ venue, onSubmit }: Props) {
         <p
           style={{
             fontSize: 11,
-            color: "rgba(255,255,255,0.45)",
+            color: "color-mix(in srgb, var(--color-white) 45%, transparent)",
             margin: "0 0 28px",
           }}
         >
@@ -175,11 +175,11 @@ export default function MobileWriteReview({ venue, onSubmit }: Props) {
             width: "100%",
             flex: 1,
             minHeight: 140,
-            background: "rgba(255,255,255,0.04)",
-            border: "1px solid rgba(255,255,255,0.08)",
+            background: "color-mix(in srgb, var(--color-white) 4%, transparent)",
+            border: "1px solid color-mix(in srgb, var(--color-white) 8%, transparent)",
             borderRadius: 18,
             padding: 16,
-            color: "#fff",
+            color: "var(--color-white)",
             fontSize: 13,
             resize: "none",
             outline: "none",

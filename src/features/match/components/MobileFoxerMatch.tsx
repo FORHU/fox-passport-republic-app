@@ -38,11 +38,11 @@ export default function MobileFoxerMatch({ foxer }: Props) {
   return (
     <div
       style={{
-        background: "#050608",
+        background: "var(--canvas)",
         minHeight: "100svh",
         position: "relative",
         overflow: "hidden",
-        color: "#fff",
+        color: "var(--color-white)",
       }}
     >
       {/* Nav bar */}
@@ -57,7 +57,7 @@ export default function MobileFoxerMatch({ foxer }: Props) {
           background: "rgba(5,6,8,0.9)",
           backdropFilter: "blur(20px)",
           WebkitBackdropFilter: "blur(20px)",
-          borderBottom: "1px solid rgba(255,255,255,0.08)",
+          borderBottom: "1px solid color-mix(in srgb, var(--color-white) 8%, transparent)",
           display: "flex",
           alignItems: "center",
           padding: "0 16px",
@@ -77,8 +77,8 @@ export default function MobileFoxerMatch({ foxer }: Props) {
             width: 36,
             height: 36,
             borderRadius: 999,
-            background: "rgba(255,255,255,0.08)",
-            border: "1px solid rgba(255,255,255,0.12)",
+            background: "color-mix(in srgb, var(--color-white) 8%, transparent)",
+            border: "1px solid color-mix(in srgb, var(--color-white) 12%, transparent)",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
@@ -120,8 +120,8 @@ export default function MobileFoxerMatch({ foxer }: Props) {
             left: 24,
             right: 8,
             bottom: 0,
-            background: "rgba(255,255,255,0.03)",
-            border: "1px solid rgba(255,255,255,0.06)",
+            background: "color-mix(in srgb, var(--color-white) 3%, transparent)",
+            border: "1px solid color-mix(in srgb, var(--color-white) 6%, transparent)",
             borderRadius: 26,
           }}
         />
@@ -135,7 +135,7 @@ export default function MobileFoxerMatch({ foxer }: Props) {
             right: 16,
             bottom: 20,
             background: "#101018",
-            border: "1px solid rgba(255,255,255,0.1)",
+            border: "1px solid color-mix(in srgb, var(--color-white) 10%, transparent)",
             borderRadius: 26,
             overflow: "hidden",
             boxShadow: "0 20px 40px rgba(0,0,0,0.4)",
@@ -162,7 +162,7 @@ export default function MobileFoxerMatch({ foxer }: Props) {
                 top: 14,
                 right: 14,
                 background: "rgba(34,197,94,0.85)",
-                color: "#fff",
+                color: "var(--color-white)",
                 fontSize: 10,
                 fontWeight: 800,
                 padding: "5px 10px",
@@ -180,7 +180,7 @@ export default function MobileFoxerMatch({ foxer }: Props) {
                 fontFamily: 'var(--font-display,"Space Grotesk",sans-serif)',
                 fontSize: 18,
                 fontWeight: 700,
-                color: "#fff",
+                color: "var(--color-white)",
                 margin: "0 0 4px",
               }}
             >
@@ -189,7 +189,7 @@ export default function MobileFoxerMatch({ foxer }: Props) {
             <p
               style={{
                 fontSize: 11,
-                color: "#ccff00",
+                color: "var(--accent-text)",
                 fontWeight: 700,
                 margin: "0 0 10px",
                 textTransform: "uppercase",
@@ -201,7 +201,7 @@ export default function MobileFoxerMatch({ foxer }: Props) {
             <p
               style={{
                 fontSize: 12,
-                color: "rgba(255,255,255,0.4)",
+                color: "color-mix(in srgb, var(--color-white) 40%, transparent)",
                 margin: 0,
                 lineHeight: 1.5,
               }}
@@ -227,7 +227,7 @@ export default function MobileFoxerMatch({ foxer }: Props) {
             width: 52,
             height: 52,
             borderRadius: 999,
-            background: "rgba(255,255,255,0.08)",
+            background: "color-mix(in srgb, var(--color-white) 8%, transparent)",
             border: "1px solid rgba(239,68,68,0.3)",
             display: "flex",
             alignItems: "center",

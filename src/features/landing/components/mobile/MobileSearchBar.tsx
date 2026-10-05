@@ -61,11 +61,11 @@ export function MobileSearchBar() {
   };
 
   const fieldStyle = (err?: string): React.CSSProperties => ({
-    background: "rgba(255,255,255,0.06)",
-    border: `1px solid ${err ? "rgba(239,68,68,0.6)" : "rgba(255,255,255,0.1)"}`,
+    background: "color-mix(in srgb, var(--color-white) 6%, transparent)",
+    border: `1px solid ${err ? "rgba(239,68,68,0.6)" : "color-mix(in srgb, var(--color-white) 10%, transparent)"}`,
     borderRadius: 14,
     padding: "10px 14px",
-    color: "#fff",
+    color: "var(--color-white)",
     fontSize: 13,
     outline: "none",
     width: "100%",
@@ -75,8 +75,8 @@ export function MobileSearchBar() {
   return (
     <div
       style={{
-        background: "rgba(255,255,255,0.04)",
-        border: "1px solid rgba(255,255,255,0.08)",
+        background: "color-mix(in srgb, var(--color-white) 4%, transparent)",
+        border: "1px solid color-mix(in srgb, var(--color-white) 8%, transparent)",
         borderRadius: 22,
         padding: 16,
         marginBottom: 28,
@@ -86,7 +86,7 @@ export function MobileSearchBar() {
         style={{
           fontSize: 11,
           fontWeight: 700,
-          color: "rgba(255,255,255,0.35)",
+          color: "color-mix(in srgb, var(--color-white) 35%, transparent)",
           letterSpacing: "0.1em",
           textTransform: "uppercase",
           marginBottom: 12,
@@ -109,7 +109,7 @@ export function MobileSearchBar() {
             style={{
               fontSize: 9,
               fontWeight: 700,
-              color: "rgba(255,255,255,0.4)",
+              color: "color-mix(in srgb, var(--color-white) 40%, transparent)",
               letterSpacing: "0.1em",
               textTransform: "uppercase",
               display: "block",
@@ -150,7 +150,7 @@ export function MobileSearchBar() {
             style={{
               fontSize: 9,
               fontWeight: 700,
-              color: "rgba(255,255,255,0.4)",
+              color: "color-mix(in srgb, var(--color-white) 40%, transparent)",
               letterSpacing: "0.1em",
               textTransform: "uppercase",
               display: "block",
@@ -194,7 +194,7 @@ export function MobileSearchBar() {
           style={{
             fontSize: 9,
             fontWeight: 700,
-            color: "rgba(255,255,255,0.4)",
+            color: "color-mix(in srgb, var(--color-white) 40%, transparent)",
             letterSpacing: "0.1em",
             textTransform: "uppercase",
             display: "block",
@@ -225,8 +225,8 @@ export function MobileSearchBar() {
                 top: "calc(100% + 6px)",
                 left: 0,
                 right: 0,
-                background: "#11121a",
-                border: "1px solid rgba(255,255,255,0.1)",
+                background: "var(--surface)",
+                border: "1px solid color-mix(in srgb, var(--color-white) 10%, transparent)",
                 borderRadius: 14,
                 listStyle: "none",
                 margin: 0,
@@ -247,7 +247,7 @@ export function MobileSearchBar() {
                   style={{
                     padding: "8px 12px",
                     fontSize: 13,
-                    color: "#fff",
+                    color: "var(--color-white)",
                     borderRadius: 10,
                     cursor: "pointer",
                     fontWeight: 600,
@@ -285,7 +285,7 @@ export function MobileSearchBar() {
           style={{
             fontSize: 9,
             fontWeight: 700,
-            color: "rgba(255,255,255,0.4)",
+            color: "color-mix(in srgb, var(--color-white) 40%, transparent)",
             letterSpacing: "0.1em",
             textTransform: "uppercase",
             display: "block",

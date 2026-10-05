@@ -137,7 +137,7 @@ export default function ConversationListClient({
   };
 
   return (
-    <div className="min-h-screen bg-[#02040a] text-white font-body antialiased">
+    <div className="min-h-screen bg-canvas text-white font-body antialiased">
       <UserHeader isAuthenticated={isAuthenticated} />
 
       <div className="max-w-2xl mx-auto pt-32 pb-20 px-4 sm:px-8">
@@ -185,7 +185,7 @@ export default function ConversationListClient({
                   <button
                     key={c.id}
                     onClick={() => openConversation(c)}
-                    className="w-full flex items-center gap-4 p-4 rounded-2xl border border-[#ccff00]/20 bg-[#ccff00]/5 hover:bg-[#ccff00]/10 transition-colors text-left"
+                    className="w-full flex items-center gap-4 p-4 rounded-2xl border border-accent/20 bg-accent/5 hover:bg-accent/10 transition-colors text-left"
                   >
                     <div className="relative h-11 w-11 rounded-full bg-white/10 border border-white/10 flex items-center justify-center text-sm font-black text-white/50 overflow-hidden shrink-0">
                       {c.otherUser?.imgId ? (
@@ -217,7 +217,7 @@ export default function ConversationListClient({
                       <button
                         onClick={(e) => handleAccept(c.id, e)}
                         disabled={acceptRequest.isPending}
-                        className="h-8 px-3 rounded-lg bg-[#ccff00] text-black text-xs font-black hover:bg-[#b8e600] transition-colors disabled:opacity-50 cursor-pointer"
+                        className="h-8 px-3 rounded-lg bg-accent text-black text-xs font-black hover:bg-accent-hover transition-colors disabled:opacity-50 cursor-pointer"
                       >
                         Accept
                       </button>
@@ -275,7 +275,7 @@ export default function ConversationListClient({
                     <div className="flex-1 min-w-0">
                       <p className="flex items-center gap-1.5 min-w-0">
                         {c.isPinned && (
-                          <Pin className="h-3 w-3 shrink-0 text-[#ccff00]/70" />
+                          <Pin className="h-3 w-3 shrink-0 text-accent/70" />
                         )}
                         <span className="font-bold text-white text-sm truncate">
                           {conversationTitle(c)}

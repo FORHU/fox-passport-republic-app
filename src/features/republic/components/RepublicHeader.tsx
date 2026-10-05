@@ -21,7 +21,7 @@ export default function RepublicHeader() {
   ];
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 h-16 bg-[#09090e]/95 backdrop-blur-2xl border-b border-zinc-800/80 px-4 sm:px-6 flex items-center justify-between shadow-2xl transition-all">
+    <header className="fixed top-0 left-0 right-0 z-50 h-16 bg-canvas/95 backdrop-blur-2xl border-b border-zinc-800/80 px-4 sm:px-6 flex items-center justify-between shadow-2xl transition-all">
       {/* ── LEFT: Logo + Home link ────────────────────────────────────────── */}
       <div className="flex items-center gap-3">
         <Link

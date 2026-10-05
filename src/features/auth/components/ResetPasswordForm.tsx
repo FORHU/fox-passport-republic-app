@@ -59,7 +59,7 @@ export default function ResetPasswordForm() {
           </label>
           <input
             {...register("otpCode")}
-            className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 sm:py-3.5 text-white placeholder-white/20 focus:outline-none focus:ring-1 focus:ring-[#ccff00] focus:border-[#ccff00]/50 focus:bg-white/10 transition-all font-medium text-center text-2xl tracking-widest"
+            className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 sm:py-3.5 text-white placeholder-white/20 focus:outline-none focus:ring-1 focus:ring-accent focus:border-accent/50 focus:bg-white/10 transition-all font-medium text-center text-2xl tracking-widest"
             placeholder="------"
             maxLength={6}
             type="text"
@@ -77,7 +77,7 @@ export default function ResetPasswordForm() {
           </label>
           <input
             {...register("newPassword")}
-            className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 sm:py-3.5 text-sm text-white placeholder-white/20 focus:outline-none focus:ring-1 focus:ring-[#ccff00] focus:border-[#ccff00]/50 focus:bg-white/10 transition-all font-medium"
+            className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 sm:py-3.5 text-sm text-white placeholder-white/20 focus:outline-none focus:ring-1 focus:ring-accent focus:border-accent/50 focus:bg-white/10 transition-all font-medium"
             placeholder="••••••••"
             type="password"
           />
@@ -94,7 +94,7 @@ export default function ResetPasswordForm() {
           </label>
           <input
             {...register("confirmPassword")}
-            className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 sm:py-3.5 text-sm text-white placeholder-white/20 focus:outline-none focus:ring-1 focus:ring-[#ccff00] focus:border-[#ccff00]/50 focus:bg-white/10 transition-all font-medium"
+            className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 sm:py-3.5 text-sm text-white placeholder-white/20 focus:outline-none focus:ring-1 focus:ring-accent focus:border-accent/50 focus:bg-white/10 transition-all font-medium"
             placeholder="••••••••"
             type="password"
           />
@@ -108,7 +108,7 @@ export default function ResetPasswordForm() {
         <button
           type="submit"
           disabled={resetPasswordMutation.isPending}
-          className="btn-neon w-full py-3 sm:py-4 mt-2 rounded-xl bg-[#ccff00] text-black font-bold text-sm sm:text-lg hover:shadow-[0_0_20px_rgba(204,255,0,0.4)] transition-all flex items-center justify-center gap-2 disabled:opacity-70"
+          className="btn-neon w-full py-3 sm:py-4 mt-2 rounded-xl bg-accent text-black font-bold text-sm sm:text-lg hover:shadow-[0_0_20px_rgba(204,255,0,0.4)] transition-all flex items-center justify-center gap-2 disabled:opacity-70"
         >
           {resetPasswordMutation.isPending ? (
             <Loader2 className="animate-spin w-5 h-5" />
@@ -122,7 +122,7 @@ export default function ResetPasswordForm() {
         <button
           onClick={() => pendingEmail && resendMutation.mutate(pendingEmail)}
           disabled={resendMutation.isPending}
-          className="text-sm font-bold text-[#ccff00] hover:underline transition-colors block w-full"
+          className="text-sm font-bold text-accent hover:underline transition-colors block w-full"
         >
           {resendMutation.isPending ? "Sending..." : "Resend code"}
         </button>

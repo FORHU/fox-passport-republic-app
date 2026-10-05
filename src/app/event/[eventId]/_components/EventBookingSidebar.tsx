@@ -39,7 +39,7 @@ export function EventBookingSidebar({
           style={{
             background: "rgba(18,18,24,0.92)",
             backdropFilter: "blur(20px)",
-            border: "1px solid rgba(255,255,255,0.1)",
+            border: "1px solid color-mix(in srgb, var(--color-white) 10%, transparent)",
             boxShadow: "0 20px 50px rgba(0,0,0,0.5)",
           }}
         >
@@ -47,13 +47,13 @@ export function EventBookingSidebar({
             <p className="text-[10px] text-white/40 font-bold uppercase tracking-wider">
               Est. total
             </p>
-            <p className="text-xl font-display font-bold text-[#ccff00]">
+            <p className="text-xl font-display font-bold text-accent">
               {price > 0 ? <Money amount={price} /> : "Price on request"}
             </p>
           </div>
           <button
             onClick={handleReserve}
-            className="px-6 py-3 rounded-full bg-[#ccff00] text-black font-bold text-sm cursor-pointer shadow-[0_4px_16px_rgba(204,255,0,0.35)]"
+            className="px-6 py-3 rounded-full bg-accent text-black font-bold text-sm cursor-pointer shadow-[0_4px_16px_rgba(204,255,0,0.35)]"
           >
             Reserve
           </button>

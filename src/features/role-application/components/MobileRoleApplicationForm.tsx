@@ -62,7 +62,7 @@ export default function MobileRoleApplicationForm({
   const config = ROLE_CONFIG[activeRole];
 
   return (
-    <div style={{ background: "#050608", minHeight: "100svh", color: "#fff" }}>
+    <div style={{ background: "var(--canvas)", minHeight: "100svh", color: "var(--color-white)" }}>
       <ApplicationFlowHeader />
 
       {/* Content */}
@@ -128,7 +128,7 @@ export default function MobileRoleApplicationForm({
               fontWeight: 800,
               letterSpacing: "1px",
               textTransform: "uppercase",
-              color: "rgba(255,255,255,0.5)",
+              color: "color-mix(in srgb, var(--color-white) 50%, transparent)",
               display: "block",
               marginBottom: 6,
             }}
@@ -143,12 +143,12 @@ export default function MobileRoleApplicationForm({
             style={{
               width: "100%",
               boxSizing: "border-box",
-              background: "rgba(255,255,255,0.04)",
-              border: "1px solid rgba(255,255,255,0.10)",
+              background: "color-mix(in srgb, var(--color-white) 4%, transparent)",
+              border: "1px solid color-mix(in srgb, var(--color-white) 10%, transparent)",
               borderRadius: 12,
               padding: 14,
               fontSize: 13,
-              color: "#fff",
+              color: "var(--color-white)",
               outline: "none",
             }}
           />
@@ -162,7 +162,7 @@ export default function MobileRoleApplicationForm({
               fontWeight: 800,
               letterSpacing: "1px",
               textTransform: "uppercase",
-              color: "rgba(255,255,255,0.5)",
+              color: "color-mix(in srgb, var(--color-white) 50%, transparent)",
               display: "block",
               marginBottom: 6,
             }}
@@ -173,8 +173,8 @@ export default function MobileRoleApplicationForm({
             onClick={() => setShowDropdown(!showDropdown)}
             style={{
               width: "100%",
-              background: "rgba(255,255,255,0.04)",
-              border: "1px solid rgba(255,255,255,0.10)",
+              background: "color-mix(in srgb, var(--color-white) 4%, transparent)",
+              border: "1px solid color-mix(in srgb, var(--color-white) 10%, transparent)",
               borderRadius: 12,
               padding: 14,
               fontSize: 13,
@@ -191,7 +191,7 @@ export default function MobileRoleApplicationForm({
             <span>{experience || "Select range"}</span>
             <span
               className="material-symbols-outlined"
-              style={{ fontSize: 18, color: "rgba(255,255,255,0.4)" }}
+              style={{ fontSize: 18, color: "color-mix(in srgb, var(--color-white) 40%, transparent)" }}
             >
               {showDropdown ? "expand_less" : "expand_more"}
             </span>
@@ -204,7 +204,7 @@ export default function MobileRoleApplicationForm({
                 left: 0,
                 right: 0,
                 background: "rgba(20,20,28,0.97)",
-                border: "1px solid rgba(255,255,255,0.10)",
+                border: "1px solid color-mix(in srgb, var(--color-white) 10%, transparent)",
                 borderRadius: 12,
                 zIndex: 10,
                 overflow: "hidden",
@@ -243,7 +243,7 @@ export default function MobileRoleApplicationForm({
               fontWeight: 800,
               letterSpacing: "1px",
               textTransform: "uppercase",
-              color: "rgba(255,255,255,0.5)",
+              color: "color-mix(in srgb, var(--color-white) 50%, transparent)",
               display: "block",
               marginBottom: 6,
             }}
@@ -252,7 +252,7 @@ export default function MobileRoleApplicationForm({
           </label>
           <div
             style={{
-              border: "1.5px dashed rgba(255,255,255,0.15)",
+              border: "1.5px dashed color-mix(in srgb, var(--color-white) 15%, transparent)",
               borderRadius: 14,
               padding: 24,
               textAlign: "center",
@@ -263,7 +263,7 @@ export default function MobileRoleApplicationForm({
               className="material-symbols-outlined"
               style={{
                 fontSize: 24,
-                color: "rgba(255,255,255,0.3)",
+                color: "color-mix(in srgb, var(--color-white) 30%, transparent)",
                 display: "block",
                 marginBottom: 8,
               }}
@@ -273,7 +273,7 @@ export default function MobileRoleApplicationForm({
             <p
               style={{
                 fontSize: 11,
-                color: "rgba(255,255,255,0.3)",
+                color: "color-mix(in srgb, var(--color-white) 30%, transparent)",
                 margin: 0,
               }}
             >

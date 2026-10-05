@@ -66,7 +66,7 @@ export default function SpecializationPicker({
                     }
                   : {
                       backgroundColor: "transparent",
-                      borderColor: "rgba(255,255,255,0.12)",
+                      borderColor: "color-mix(in srgb, var(--color-white) 12%, transparent)",
                       color: disabled
                         ? "rgba(255,255,255,0.2)"
                         : "rgba(255,255,255,0.55)",

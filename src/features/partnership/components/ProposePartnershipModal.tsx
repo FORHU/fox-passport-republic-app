@@ -72,7 +72,7 @@ export default function ProposePartnershipModal({
       onClick={onClose}
     >
       <div
-        className="bg-[#0f111a] border border-white/10 rounded-2xl p-6 max-w-lg w-full mx-4 max-h-[90vh] overflow-y-auto"
+        className="bg-surface border border-white/10 rounded-2xl p-6 max-w-lg w-full mx-4 max-h-[90vh] overflow-y-auto"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between mb-6">
@@ -109,7 +109,7 @@ export default function ProposePartnershipModal({
                 { value: "resource", label: "Resource Contribution" },
                 { value: "business", label: "Business Partnership" },
               ]}
-              className="bg-[#1a1d24]"
+              className="bg-surface-raised"
             />
           </div>
 
@@ -121,7 +121,7 @@ export default function ProposePartnershipModal({
               {...register("title", { required: "Title is required" })}
               type="text"
               placeholder="e.g. Stage Sponsorship"
-              className="w-full bg-[#1a1d24] border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-[#ccff00]"
+              className="w-full bg-surface-raised border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-accent"
             />
             {errors.title && (
               <p className="text-red-400 text-xs mt-1">
@@ -144,7 +144,7 @@ export default function ProposePartnershipModal({
                 })}
                 type="number"
                 placeholder="0.00"
-                className="w-full bg-[#1a1d24] border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-[#ccff00]"
+                className="w-full bg-surface-raised border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-accent"
               />
               {errors.proposedAmount && (
                 <p className="text-red-400 text-xs mt-1">
@@ -164,7 +164,7 @@ export default function ProposePartnershipModal({
               })}
               placeholder="Describe your proposal..."
               rows={4}
-              className="w-full bg-[#1a1d24] border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-[#ccff00] resize-none"
+              className="w-full bg-surface-raised border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-accent resize-none"
             />
             {errors.description && (
               <p className="text-red-400 text-xs mt-1">
@@ -181,7 +181,7 @@ export default function ProposePartnershipModal({
               {...register("proposedBenefits" as any)}
               placeholder="What benefits do you expect or offer?"
               rows={3}
-              className="w-full bg-[#1a1d24] border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-[#ccff00] resize-none"
+              className="w-full bg-surface-raised border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-accent resize-none"
             />
           </div>
 
@@ -197,7 +197,7 @@ export default function ProposePartnershipModal({
             <button
               type="submit"
               disabled={isPending}
-              className="flex-1 py-3 rounded-xl bg-[#ccff00] text-black font-bold hover:bg-[#b8e600] transition disabled:opacity-50"
+              className="flex-1 py-3 rounded-xl bg-accent text-black font-bold hover:bg-accent-hover transition disabled:opacity-50"
             >
               {isPending ? "Submitting..." : "Submit Proposal"}
             </button>

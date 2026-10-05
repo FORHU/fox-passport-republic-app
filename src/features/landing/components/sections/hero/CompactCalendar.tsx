@@ -65,19 +65,19 @@ export function CompactCalendar({
         <button
           type="button"
           onClick={prevMonth}
-          className="h-7 w-7 rounded-lg hover:bg-white/10 flex items-center justify-center text-white/40 hover:text-[#ccff00] active:scale-90 transition-all duration-200"
+          className="h-7 w-7 rounded-lg hover:bg-white/10 flex items-center justify-center text-white/40 hover:text-accent active:scale-90 transition-all duration-200"
         >
           <span className="material-symbols-outlined text-[16px]">
             chevron_left
           </span>
         </button>
-        <p className="text-xs font-bold text-[#ccff00] tracking-wide select-none">
+        <p className="text-xs font-bold text-accent tracking-wide select-none">
           {MONTHS[viewMonth]} {viewYear}
         </p>
         <button
           type="button"
           onClick={nextMonth}
-          className="h-7 w-7 rounded-lg hover:bg-white/10 flex items-center justify-center text-white/40 hover:text-[#ccff00] active:scale-90 transition-all duration-200"
+          className="h-7 w-7 rounded-lg hover:bg-white/10 flex items-center justify-center text-white/40 hover:text-accent active:scale-90 transition-all duration-200"
         >
           <span className="material-symbols-outlined text-[16px]">
             chevron_right
@@ -111,7 +111,7 @@ export function CompactCalendar({
               className={[
                 "h-8 w-full text-[13px] font-semibold transition-all duration-150 flex items-center justify-center",
                 sel
-                  ? "bg-[#ccff00] text-black rounded-full z-10 shadow-[0_0_12px_rgba(204,255,0,0.4)] scale-105"
+                  ? "bg-accent text-black rounded-full z-10 shadow-[0_0_12px_rgba(204,255,0,0.4)] scale-105"
                   : "",
                 !sel && !past
                   ? "text-white/90 hover:bg-white/10 hover:rounded-full hover:scale-105 cursor-pointer active:scale-95"

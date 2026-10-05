@@ -22,7 +22,7 @@ export function RoleDetailsModal({ role, onClose }: RoleDetailsModalProps) {
       <Dialog.Portal>
         <Dialog.Overlay className="fixed inset-0 z-[100] bg-black/70 backdrop-blur-sm data-[state=open]:animate-in data-[state=open]:fade-in-0" />
         {role && (
-          <Dialog.Content className="fixed left-1/2 top-1/2 z-[101] w-[calc(100%-2rem)] max-w-lg -translate-x-1/2 -translate-y-1/2 max-h-[85vh] overflow-y-auto rounded-[1.5rem] border border-white/10 bg-[#14141c] p-6 shadow-2xl focus:outline-none data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:zoom-in-95">
+          <Dialog.Content className="fixed left-1/2 top-1/2 z-[101] w-[calc(100%-2rem)] max-w-lg -translate-x-1/2 -translate-y-1/2 max-h-[85vh] overflow-y-auto rounded-[1.5rem] border border-white/10 bg-surface p-6 shadow-2xl focus:outline-none data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:zoom-in-95">
             <Dialog.Close
               aria-label="Close"
               className="absolute top-4 right-4 h-8 w-8 rounded-full flex items-center justify-center text-white/40 hover:bg-white/10 hover:text-white transition-colors cursor-pointer"

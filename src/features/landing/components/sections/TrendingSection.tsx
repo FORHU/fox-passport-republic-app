@@ -67,7 +67,7 @@ export default function TrendingSection() {
           transition={{ duration: 0.5, ease: [0, 0, 0.2, 1] }}
         >
           <div>
-            <span className="text-[#ccff00] font-bold uppercase tracking-widest text-xs mb-2 block animate-pulse">
+            <span className="text-accent font-bold uppercase tracking-widest text-xs mb-2 block animate-pulse">
               Don&apos;t Sleep On These
             </span>
             <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-display font-bold text-white">
@@ -143,7 +143,7 @@ export default function TrendingSection() {
                     <div className="p-2.5 sm:p-6 flex flex-col flex-1">
                       <div className="flex justify-between items-start mb-2 sm:mb-4">
                         <div>
-                          <div className="text-[#ccff00] font-bold text-xs mb-1 uppercase tracking-wider">
+                          <div className="text-accent font-bold text-xs mb-1 uppercase tracking-wider">
                             {t.targetCity ?? "Philippines"}
                           </div>
                           <h3 className="text-base sm:text-xl font-bold text-white leading-tight font-display group-hover:text-primary-glow transition-colors glitch-hover">
@@ -159,11 +159,11 @@ export default function TrendingSection() {
                           {city}
                         </div>
                         {price ? (
-                          <span className="text-white font-bold bg-white/10 px-2 py-0.5 sm:px-3 sm:py-1 rounded-lg text-xs sm:text-sm group-hover:bg-[#ccff00] group-hover:text-black transition-colors">
+                          <span className="text-white font-bold bg-white/10 px-2 py-0.5 sm:px-3 sm:py-1 rounded-lg text-xs sm:text-sm group-hover:bg-accent group-hover:text-black transition-colors">
                             <Money amount={price} />
                           </span>
                         ) : (
-                          <span className="bg-white text-black text-xs font-bold px-3 py-1 rounded hover:bg-[#ccff00] cursor-pointer transition-colors">
+                          <span className="bg-white text-black text-xs font-bold px-3 py-1 rounded hover:bg-accent cursor-pointer transition-colors">
                             RSVP
                           </span>
                         )}
@@ -200,14 +200,14 @@ export default function TrendingSection() {
         {/* Load More */}
         <div className="flex mt-10 sm:mt-16 justify-center">
           <button className="group relative px-6 py-2.5 rounded-full bg-transparent text-sm text-white font-bold transition-all flex items-center gap-2 overflow-visible">
-            <span className="absolute -inset-4 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-[#ccff00]/30 blur-xl" />
-            <span className="absolute -inset-2 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-[#ccff00]/40 blur-lg" />
-            <span className="absolute inset-0 rounded-full border-2 border-white/20 group-hover:border-[#ccff00] group-hover:shadow-[0_0_20px_rgba(204,255,0,0.6),0_0_40px_rgba(204,255,0,0.3)] transition-all duration-300" />
+            <span className="absolute -inset-4 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-accent/30 blur-xl" />
+            <span className="absolute -inset-2 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-accent/40 blur-lg" />
+            <span className="absolute inset-0 rounded-full border-2 border-white/20 group-hover:border-accent group-hover:shadow-[0_0_20px_rgba(204,255,0,0.6),0_0_40px_rgba(204,255,0,0.3)] transition-all duration-300" />
             <span className="absolute inset-0.5 rounded-full bg-[#0a0b0f]" />
-            <span className="relative z-10 group-hover:text-[#ccff00] transition-colors">
+            <span className="relative z-10 group-hover:text-accent transition-colors">
               Load More Vibes
             </span>
-            <span className="relative z-10 material-symbols-outlined group-hover:text-[#ccff00] animate-bounce">
+            <span className="relative z-10 material-symbols-outlined group-hover:text-accent animate-bounce">
               arrow_downward
             </span>
           </button>

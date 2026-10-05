@@ -15,8 +15,8 @@ const BTN_GLASS: React.CSSProperties = {
   width: 34,
   height: 34,
   borderRadius: "50%",
-  border: "1px solid rgba(255,255,255,0.15)",
-  background: "rgba(255,255,255,0.08)",
+  border: "1px solid color-mix(in srgb, var(--color-white) 15%, transparent)",
+  background: "color-mix(in srgb, var(--color-white) 8%, transparent)",
   display: "flex",
   alignItems: "center",
   justifyContent: "center",
@@ -37,12 +37,12 @@ export default function MobileBookingConfig() {
   return (
     <div
       style={{
-        background: "#050608",
+        background: "var(--canvas)",
         minHeight: "100svh",
         position: "relative",
         display: "flex",
         flexDirection: "column",
-        color: "#fff",
+        color: "var(--color-white)",
       }}
     >
       {/* Nav bar */}
@@ -57,7 +57,7 @@ export default function MobileBookingConfig() {
           background: "rgba(5,6,8,0.9)",
           backdropFilter: "blur(20px)",
           WebkitBackdropFilter: "blur(20px)",
-          borderBottom: "1px solid rgba(255,255,255,0.08)",
+          borderBottom: "1px solid color-mix(in srgb, var(--color-white) 8%, transparent)",
           display: "flex",
           alignItems: "center",
           padding: "0 16px",
@@ -77,8 +77,8 @@ export default function MobileBookingConfig() {
             width: 36,
             height: 36,
             borderRadius: 999,
-            background: "rgba(255,255,255,0.08)",
-            border: "1px solid rgba(255,255,255,0.12)",
+            background: "color-mix(in srgb, var(--color-white) 8%, transparent)",
+            border: "1px solid color-mix(in srgb, var(--color-white) 12%, transparent)",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
@@ -118,8 +118,8 @@ export default function MobileBookingConfig() {
         {/* Calendar card */}
         <div
           style={{
-            background: "rgba(255,255,255,0.04)",
-            border: "1px solid rgba(255,255,255,0.08)",
+            background: "color-mix(in srgb, var(--color-white) 4%, transparent)",
+            border: "1px solid color-mix(in srgb, var(--color-white) 8%, transparent)",
             borderRadius: 20,
             padding: 16,
           }}
@@ -136,21 +136,21 @@ export default function MobileBookingConfig() {
             <button style={BTN_GLASS}>
               <span
                 className="material-symbols-outlined"
-                style={{ fontSize: 17, color: "rgba(255,255,255,0.6)" }}
+                style={{ fontSize: 17, color: "color-mix(in srgb, var(--color-white) 60%, transparent)" }}
               >
                 chevron_left
               </span>
             </button>
             <span
               className="font-display"
-              style={{ fontSize: 14, fontWeight: 700, color: "#ccff00" }}
+              style={{ fontSize: 14, fontWeight: 700, color: "var(--accent-text)" }}
             >
               {MONTH_LABEL}
             </span>
             <button style={BTN_GLASS}>
               <span
                 className="material-symbols-outlined"
-                style={{ fontSize: 17, color: "rgba(255,255,255,0.6)" }}
+                style={{ fontSize: 17, color: "color-mix(in srgb, var(--color-white) 60%, transparent)" }}
               >
                 chevron_right
               </span>
@@ -173,7 +173,7 @@ export default function MobileBookingConfig() {
                   textAlign: "center",
                   fontSize: 10,
                   fontWeight: 700,
-                  color: "rgba(255,255,255,0.3)",
+                  color: "color-mix(in srgb, var(--color-white) 30%, transparent)",
                   paddingBottom: 4,
                 }}
               >
@@ -228,8 +228,8 @@ export default function MobileBookingConfig() {
         {/* Guest counter card */}
         <div
           style={{
-            background: "rgba(255,255,255,0.04)",
-            border: "1px solid rgba(255,255,255,0.08)",
+            background: "color-mix(in srgb, var(--color-white) 4%, transparent)",
+            border: "1px solid color-mix(in srgb, var(--color-white) 8%, transparent)",
             borderRadius: 18,
             padding: 16,
             display: "flex",
@@ -242,7 +242,7 @@ export default function MobileBookingConfig() {
               style={{
                 fontSize: 14,
                 fontWeight: 700,
-                color: "#fff",
+                color: "var(--color-white)",
                 margin: 0,
               }}
             >
@@ -251,7 +251,7 @@ export default function MobileBookingConfig() {
             <p
               style={{
                 fontSize: 11,
-                color: "rgba(255,255,255,0.4)",
+                color: "color-mix(in srgb, var(--color-white) 40%, transparent)",
                 marginTop: 3,
               }}
             >
@@ -266,7 +266,7 @@ export default function MobileBookingConfig() {
             >
               <span
                 className="material-symbols-outlined"
-                style={{ fontSize: 18, color: "rgba(255,255,255,0.7)" }}
+                style={{ fontSize: 18, color: "color-mix(in srgb, var(--color-white) 70%, transparent)" }}
               >
                 remove
               </span>
@@ -276,7 +276,7 @@ export default function MobileBookingConfig() {
               style={{
                 fontSize: 15,
                 fontWeight: 700,
-                color: "#fff",
+                color: "var(--color-white)",
                 minWidth: 20,
                 textAlign: "center",
               }}
@@ -289,7 +289,7 @@ export default function MobileBookingConfig() {
             >
               <span
                 className="material-symbols-outlined"
-                style={{ fontSize: 18, color: "rgba(255,255,255,0.7)" }}
+                style={{ fontSize: 18, color: "color-mix(in srgb, var(--color-white) 70%, transparent)" }}
               >
                 add
               </span>
@@ -301,7 +301,7 @@ export default function MobileBookingConfig() {
       {/* Sticky footer */}
       <div
         style={{
-          borderTop: "1px solid rgba(255,255,255,0.08)",
+          borderTop: "1px solid color-mix(in srgb, var(--color-white) 8%, transparent)",
           padding: "16px 20px 30px",
         }}
       >

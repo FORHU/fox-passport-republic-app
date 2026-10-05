@@ -34,7 +34,7 @@ function Section({
     <section id={id} className="scroll-mt-28 mb-12 sm:mb-16">
       <div className="flex items-center gap-3 mb-4">
         {Icon && (
-          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-white/5 border border-white/10 text-[#ccff00]">
+          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-white/5 border border-white/10 text-accent">
             <Icon className="h-5 w-5" />
           </div>
         )}
@@ -51,7 +51,7 @@ function Section({
 
 export default function PrivacyPolicyPage() {
   return (
-    <div className="min-h-screen bg-[#070709] text-gray-200 antialiased selection:bg-[#ccff00] selection:text-black">
+    <div className="min-h-screen bg-canvas text-gray-200 antialiased selection:bg-accent selection:text-black">
       {/* Navigation Header */}
       <LandingHeader />
 
@@ -61,7 +61,7 @@ export default function PrivacyPolicyPage() {
         <div className="mb-6 flex items-center gap-2">
           <Link
             href="/"
-            className="inline-flex items-center gap-1.5 text-xs font-semibold text-gray-400 hover:text-[#ccff00] transition-colors"
+            className="inline-flex items-center gap-1.5 text-xs font-semibold text-gray-400 hover:text-accent transition-colors"
           >
             <ArrowLeft className="h-3.5 w-3.5" />
             Back to Home
@@ -72,7 +72,7 @@ export default function PrivacyPolicyPage() {
 
         {/* Hero Section */}
         <div className="border-b border-white/10 pb-8 sm:pb-12 mb-10 sm:mb-14">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#ccff00]/10 border border-[#ccff00]/20 text-[#ccff00] text-xs font-semibold uppercase tracking-wider mb-4">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-accent/10 border border-accent/20 text-accent text-xs font-semibold uppercase tracking-wider mb-4">
             <Shield className="h-3.5 w-3.5" />
             Legal Charter
           </div>
@@ -90,7 +90,7 @@ export default function PrivacyPolicyPage() {
             <span>&bull;</span>
             <Link
               href="/data-deletion"
-              className="text-[#ccff00] hover:underline"
+              className="text-accent hover:underline"
             >
               Data Deletion Instructions &rarr;
             </Link>
@@ -209,7 +209,7 @@ export default function PrivacyPolicyPage() {
                 Section 6 and our{" "}
                 <Link
                   href="/data-deletion"
-                  className="text-[#ccff00] underline font-medium"
+                  className="text-accent underline font-medium"
                 >
                   Data Deletion Page
                 </Link>
@@ -322,7 +322,7 @@ export default function PrivacyPolicyPage() {
             revoking Google/Facebook permissions, please visit our{" "}
             <Link
               href="/data-deletion"
-              className="text-[#ccff00] font-semibold underline hover:text-[#b8e600]"
+              className="text-accent font-semibold underline hover:text-accent-hover"
             >
               Data Deletion Instructions Page
             </Link>
@@ -383,7 +383,7 @@ export default function PrivacyPolicyPage() {
               Email:{" "}
               <a
                 href="mailto:support@foxpassport.com"
-                className="text-[#ccff00] font-medium hover:underline"
+                className="text-accent font-medium hover:underline"
               >
                 support@foxpassport.com
               </a>

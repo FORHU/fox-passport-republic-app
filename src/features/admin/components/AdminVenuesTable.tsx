@@ -106,7 +106,7 @@ function TagList({
   if (!items?.length) return null;
   return (
     <div>
-      <p className="text-[9px] uppercase font-bold text-[#ccff00] tracking-[0.2em] mb-2 flex items-center gap-1">
+      <p className="text-[9px] uppercase font-bold text-accent tracking-[0.2em] mb-2 flex items-center gap-1">
         <span className="material-symbols-outlined text-[13px]">{icon}</span>
         {label}
       </p>
@@ -242,7 +242,7 @@ export const AdminVenuesTable: React.FC<VenueTableProps> = ({
           onClick={closeRejectDialog}
         >
           <div
-            className="bg-[#0f111a] border border-white/10 rounded-2xl p-8 max-w-sm w-full mx-4 space-y-4"
+            className="bg-surface border border-white/10 rounded-2xl p-8 max-w-sm w-full mx-4 space-y-4"
             onClick={(e) => e.stopPropagation()}
           >
             <h3 className="text-white font-bold text-lg">
@@ -485,7 +485,7 @@ export const AdminVenuesTable: React.FC<VenueTableProps> = ({
                             <div className="rounded-3xl bg-black/40 border border-white/5 shadow-2xl overflow-hidden">
                               {/* Gallery */}
                               <div className="p-6 border-b border-white/5">
-                                <p className="text-[10px] uppercase font-bold text-[#ccff00] tracking-[0.2em] mb-3">
+                                <p className="text-[10px] uppercase font-bold text-accent tracking-[0.2em] mb-3">
                                   Gallery ({images.length} photo
                                   {images.length !== 1 ? "s" : ""})
                                 </p>
@@ -495,7 +495,7 @@ export const AdminVenuesTable: React.FC<VenueTableProps> = ({
                                       <button
                                         key={idx}
                                         onClick={() => setLightboxImg(url)}
-                                        className="relative shrink-0 w-36 h-24 rounded-xl overflow-hidden border border-white/10 hover:border-[#ccff00]/60 transition-all group/img"
+                                        className="relative shrink-0 w-36 h-24 rounded-xl overflow-hidden border border-white/10 hover:border-accent/60 transition-all group/img"
                                       >
                                         <img
                                           src={url}
@@ -507,7 +507,7 @@ export const AdminVenuesTable: React.FC<VenueTableProps> = ({
                                           }}
                                         />
                                         {idx === 0 && (
-                                          <div className="absolute top-1 left-1 bg-[#ccff00] text-black text-[8px] font-bold px-1.5 py-0.5 rounded">
+                                          <div className="absolute top-1 left-1 bg-accent text-black text-[8px] font-bold px-1.5 py-0.5 rounded">
                                             Cover
                                           </div>
                                         )}
@@ -529,7 +529,7 @@ export const AdminVenuesTable: React.FC<VenueTableProps> = ({
                               {/* Core details */}
                               <div className="grid grid-cols-2 md:grid-cols-4 gap-6 p-6 border-b border-white/5">
                                 <div>
-                                  <p className="text-[9px] uppercase font-bold text-[#ccff00] tracking-[0.2em] mb-2">
+                                  <p className="text-[9px] uppercase font-bold text-accent tracking-[0.2em] mb-2">
                                     Description
                                   </p>
                                   <p className="text-xs text-white/70 leading-relaxed">
@@ -538,7 +538,7 @@ export const AdminVenuesTable: React.FC<VenueTableProps> = ({
                                   </p>
                                 </div>
                                 <div>
-                                  <p className="text-[9px] uppercase font-bold text-[#ccff00] tracking-[0.2em] mb-2">
+                                  <p className="text-[9px] uppercase font-bold text-accent tracking-[0.2em] mb-2">
                                     Venue Type
                                   </p>
                                   <span className="px-3 py-1 rounded-full bg-white/5 text-white text-[10px] font-bold border border-white/10 capitalize">
@@ -546,7 +546,7 @@ export const AdminVenuesTable: React.FC<VenueTableProps> = ({
                                   </span>
                                 </div>
                                 <div>
-                                  <p className="text-[9px] uppercase font-bold text-[#ccff00] tracking-[0.2em] mb-2">
+                                  <p className="text-[9px] uppercase font-bold text-accent tracking-[0.2em] mb-2">
                                     Specifications
                                   </p>
                                   <div className="space-y-1.5 text-xs">
@@ -589,7 +589,7 @@ export const AdminVenuesTable: React.FC<VenueTableProps> = ({
                                   </div>
                                 </div>
                                 <div>
-                                  <p className="text-[9px] uppercase font-bold text-[#ccff00] tracking-[0.2em] mb-2">
+                                  <p className="text-[9px] uppercase font-bold text-accent tracking-[0.2em] mb-2">
                                     Current Status
                                   </p>
                                   <span
@@ -616,7 +616,7 @@ export const AdminVenuesTable: React.FC<VenueTableProps> = ({
                                   can actually see what they're approving. */}
                               {venue.lat != null && venue.lng != null && (
                                 <div className="p-6 border-b border-white/5">
-                                  <p className="text-[9px] uppercase font-bold text-[#ccff00] tracking-[0.2em] mb-3">
+                                  <p className="text-[9px] uppercase font-bold text-accent tracking-[0.2em] mb-3">
                                     Service Area
                                   </p>
                                   <LocationMap

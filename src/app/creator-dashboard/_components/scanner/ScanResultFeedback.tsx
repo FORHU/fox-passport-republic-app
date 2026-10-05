@@ -32,7 +32,7 @@ export function ScanResultFeedback({
         </div>
         <button
           onClick={onReset}
-          className="px-8 py-3 rounded-full bg-[#ccff00] text-black font-black text-xs hover:bg-[#b8e600] transition-all flex items-center gap-2 shadow-[0_0_20px_rgba(204,255,0,0.3)] cursor-pointer"
+          className="px-8 py-3 rounded-full bg-accent text-black font-black text-xs hover:bg-accent-hover transition-all flex items-center gap-2 shadow-[0_0_20px_rgba(204,255,0,0.3)] cursor-pointer"
         >
           <span className="material-symbols-outlined text-[16px]">
             how_to_reg
@@ -93,7 +93,7 @@ export function ScanResultFeedback({
         </div>
         <button
           onClick={onReset}
-          className="px-8 py-3 rounded-full bg-[#ccff00] text-black font-black text-xs hover:bg-[#b8e600] transition-all flex items-center gap-2 shadow-md cursor-pointer"
+          className="px-8 py-3 rounded-full bg-accent text-black font-black text-xs hover:bg-accent-hover transition-all flex items-center gap-2 shadow-md cursor-pointer"
         >
           <span className="material-symbols-outlined text-[16px]">refresh</span>
           Try Again

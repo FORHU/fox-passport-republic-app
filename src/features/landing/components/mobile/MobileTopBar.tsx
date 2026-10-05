@@ -23,7 +23,7 @@ export function MobileTopBar({ user }: MobileTopBarProps) {
         background: "rgba(5,6,8,0.7)",
         backdropFilter: "blur(20px)",
         WebkitBackdropFilter: "blur(20px)",
-        borderBottom: "1px solid rgba(255,255,255,0.05)",
+        borderBottom: "1px solid color-mix(in srgb, var(--color-white) 5%, transparent)",
       }}
     >
       <BrandLogo logoSize={32} textSize="text-lg" />

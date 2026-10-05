@@ -68,7 +68,7 @@ export function HeroShowcaseGrid() {
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-30">
           <Link
             href="/search"
-            className="bg-[#ccff00] text-black px-6 py-3 rounded-full font-display font-bold uppercase tracking-widest text-base shadow-[0_0_30px_#ccff00] animate-pulse hover:scale-110 transition-transform block text-center"
+            className="bg-accent text-black px-6 py-3 rounded-full font-display font-bold uppercase tracking-widest text-base shadow-[0_0_30px_#ccff00] animate-pulse hover:scale-110 transition-transform block text-center"
           >
             Book Now
           </Link>

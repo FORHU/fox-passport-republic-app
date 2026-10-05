@@ -43,7 +43,7 @@ function CategoryDropdown({
       <button
         type="button"
         onClick={() => setOpen((o) => !o)}
-        className="w-full flex items-center justify-between bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-white text-sm focus:outline-none focus:border-[#ccff00]/50 transition-all"
+        className="w-full flex items-center justify-between bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-white text-sm focus:outline-none focus:border-accent/50 transition-all"
       >
         <span className={selected ? "capitalize text-white" : "text-white/30"}>
           {selected || "All categories"}
@@ -77,7 +77,7 @@ function CategoryDropdown({
                 onClick={() => onChange("")}
                 className={`w-full text-left px-3 py-2 rounded-lg text-sm capitalize transition-all ${
                   !value
-                    ? "bg-[#ccff00]/15 text-[#ccff00] font-bold"
+                    ? "bg-accent/15 text-accent font-bold"
                     : "text-white/70 hover:bg-white/10 hover:text-white"
                 }`}
               >
@@ -90,7 +90,7 @@ function CategoryDropdown({
                   onClick={() => onChange(cat)}
                   className={`w-full text-left px-3 py-2 rounded-lg text-sm capitalize transition-all ${
                     value === cat
-                      ? "bg-[#ccff00]/15 text-[#ccff00] font-bold"
+                      ? "bg-accent/15 text-accent font-bold"
                       : "text-white/70 hover:bg-white/10 hover:text-white"
                   }`}
                 >
@@ -206,18 +206,18 @@ export default function SearchFilters({ onClose }: SearchFiltersProps = {}) {
   ).length;
 
   const inputClass =
-    "w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-white text-sm placeholder:text-white/30 focus:outline-none focus:border-[#ccff00]/50";
+    "w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-white text-sm placeholder:text-white/30 focus:outline-none focus:border-accent/50";
 
   return (
-    <div className="bg-[#11121a] border border-white/10 rounded-2xl p-6 space-y-6 h-fit">
+    <div className="bg-surface border border-white/10 rounded-2xl p-6 space-y-6 h-fit">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <span className="h-2 w-2 rounded-full bg-[#ccff00] animate-pulse" />
+          <span className="h-2 w-2 rounded-full bg-accent animate-pulse" />
           <h3 className="text-lg font-display font-bold tracking-tight text-white">
             Filters
           </h3>
           {activeFiltersCount > 0 && (
-            <span className="ml-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#ccff00] text-black">
+            <span className="ml-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-accent text-black">
               {activeFiltersCount}
             </span>
           )}
@@ -298,7 +298,7 @@ export default function SearchFilters({ onClose }: SearchFiltersProps = {}) {
       <div className="space-y-2">
         <label className="block text-xs font-bold text-white/50 uppercase tracking-wider">
           Max Price:{" "}
-          <span className="text-[#ccff00]">
+          <span className="text-accent">
             {maxPrice ? <Money amount={maxPrice} /> : "Any"}
           </span>
         </label>
@@ -338,7 +338,7 @@ export default function SearchFilters({ onClose }: SearchFiltersProps = {}) {
             commitMaxPrice((e.target as HTMLInputElement).value)
           }
           onKeyUp={(e) => commitMaxPrice((e.target as HTMLInputElement).value)}
-          className="w-full accent-[#ccff00]"
+          className="w-full accent-accent"
         />
       </div>
 
@@ -347,7 +347,7 @@ export default function SearchFilters({ onClose }: SearchFiltersProps = {}) {
           <button
             type="button"
             onClick={onClose}
-            className="w-full py-3 rounded-xl bg-[#ccff00] text-black font-bold text-sm hover:bg-[#b8e600] transition-all shadow-[0_0_20px_rgba(204,255,0,0.3)] flex items-center justify-center gap-2"
+            className="w-full py-3 rounded-xl bg-accent text-black font-bold text-sm hover:bg-accent-hover transition-all shadow-[0_0_20px_rgba(204,255,0,0.3)] flex items-center justify-center gap-2"
           >
             <span>Show Results</span>
             {activeFiltersCount > 0 && (
