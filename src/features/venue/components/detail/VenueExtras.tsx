@@ -565,7 +565,7 @@ export function VenueMap({
           </div>
         </div>
       ) : (
-        <div className="h-80 w-full rounded-2xl bg-[#1f2235] relative overflow-hidden flex items-center justify-center border border-white/10 group">
+        <div className="h-80 w-full rounded-2xl bg-surface-raised relative overflow-hidden flex items-center justify-center border border-white/10 group">
           <div
             className="absolute inset-0 opacity-20"
             style={{

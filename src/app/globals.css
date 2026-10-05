@@ -929,7 +929,8 @@ body {
     [class~="bg-yellow-400"],
     [class~="bg-sky-400"],
     [class~="bg-emerald-400"],
-    [class~="bg-blue-400"]
+    [class~="bg-blue-400"],
+    [class~="bg-[#00d2ff]"]
   ) {
   --color-black: #000000;
   --color-lime-300: oklch(89.7% 0.196 126.665);

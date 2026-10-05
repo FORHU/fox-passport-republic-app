@@ -115,7 +115,7 @@ export default function VenueAffiliationDashboardClient() {
   };
 
   return (
-    <div className="min-h-screen bg-[#0a0c14] text-white px-6 py-10 max-w-3xl mx-auto">
+    <div className="min-h-screen bg-canvas text-white px-6 py-10 max-w-3xl mx-auto">
       <button
         onClick={() => router.back()}
         className="text-white/50 hover:text-white text-sm mb-6 flex items-center gap-1"

@@ -25,7 +25,7 @@ function SkeletonCard({
         borderRadius: 20,
         overflow: "hidden",
         border: "1px solid color-mix(in srgb, var(--color-white) 7%, transparent)",
-        background: "#111318",
+        background: "var(--surface)",
       }}
     >
       <div style={{ height, background: "color-mix(in srgb, var(--color-white) 4%, transparent)" }} />
@@ -65,7 +65,7 @@ function TemplateCard({ t }: { t: EventTemplate }) {
         borderRadius: 20,
         overflow: "hidden",
         border: "1px solid color-mix(in srgb, var(--color-white) 7%, transparent)",
-        background: "#111318",
+        background: "var(--surface)",
         cursor: "pointer",
       }}
     >

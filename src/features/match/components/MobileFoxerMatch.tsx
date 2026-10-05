@@ -134,7 +134,7 @@ export default function MobileFoxerMatch({ foxer }: Props) {
             left: 0,
             right: 16,
             bottom: 20,
-            background: "#101018",
+            background: "var(--surface)",
             border: "1px solid color-mix(in srgb, var(--color-white) 10%, transparent)",
             borderRadius: 26,
             overflow: "hidden",

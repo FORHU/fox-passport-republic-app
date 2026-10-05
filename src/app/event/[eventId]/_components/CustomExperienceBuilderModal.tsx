@@ -198,7 +198,7 @@ export function CustomExperienceBuilderModal({
 
         {/* Center: Interactive catalog */}
         <main
-          className="flex-1 overflow-y-auto p-6 bg-[#04060c]"
+          className="flex-1 overflow-y-auto p-6 bg-canvas"
           onDragOver={handleDragOver}
           onDragLeave={handleDragLeave}
           onDrop={handleDrop}

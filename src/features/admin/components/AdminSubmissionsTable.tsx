@@ -214,7 +214,7 @@ function FilePreviewModal({
       onClick={onClose}
     >
       <div
-        className="w-full h-full max-w-4xl bg-[#0d0f18] border border-white/10 rounded-2xl flex flex-col overflow-hidden"
+        className="w-full h-full max-w-4xl bg-surface border border-white/10 rounded-2xl flex flex-col overflow-hidden"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="p-4 border-b border-white/5 flex items-center justify-between gap-4 shrink-0">
@@ -297,7 +297,7 @@ function ApplicationDetailDrawer({
       onClick={onClose}
     >
       <div
-        className="w-full sm:w-[520px] sm:h-full bg-[#0d0f18] border-t sm:border-t-0 sm:border-l border-white/10 flex flex-col max-h-[90vh] sm:max-h-full overflow-hidden"
+        className="w-full sm:w-[520px] sm:h-full bg-surface border-t sm:border-t-0 sm:border-l border-white/10 flex flex-col max-h-[90vh] sm:max-h-full overflow-hidden"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}

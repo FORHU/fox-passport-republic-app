@@ -197,7 +197,7 @@ export const PassportClient: React.FC<PassportClientProps> = ({ user }) => {
         </Sheet>
 
         {/* Main View Area */}
-        <main className="flex-1 bg-[#0d0d0d] p-4 sm:p-8 lg:p-12 overflow-y-auto relative custom-scrollbar">
+        <main className="flex-1 bg-canvas p-4 sm:p-8 lg:p-12 overflow-y-auto relative custom-scrollbar">
           <div className="max-w-4xl mx-auto space-y-8 sm:space-y-12">
             {/* Header Title Bar */}
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-white/5 pb-6">

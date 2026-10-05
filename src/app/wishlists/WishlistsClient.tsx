@@ -82,7 +82,7 @@ export default function WishlistsClient() {
                   <Link
                     key={favorite.id}
                     href={href}
-                    className="group block rounded-2xl overflow-hidden border border-[#1f2229] bg-[#111318] hover:border-[#2a2e38] transition-colors"
+                    className="group block rounded-2xl overflow-hidden border border-white/10 bg-surface hover:border-white/20 transition-colors"
                   >
                     {/* Thumbnail */}
                     <div

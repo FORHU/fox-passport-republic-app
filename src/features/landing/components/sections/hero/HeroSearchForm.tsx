@@ -61,7 +61,7 @@ export function HeroSearchForm() {
         <div className="absolute -inset-x-1 sm:-inset-1 bg-linear-to-r from-primary via-purple-600 to-secondary rounded-full sm:rounded-[2.5rem] blur opacity-40 group-hover:opacity-70 transition duration-500 group-hover:duration-200 animate-pulse"></div>
 
         {/* Outer Capsule Glass Panel */}
-        <div className="relative glass-panel bg-[#151326]/85 backdrop-blur-2xl p-1 sm:p-2.5 rounded-full sm:rounded-[2.5rem] border border-white/10 group-hover:border-white/20 transition-all shadow-[0_0_35px_rgba(139,92,246,0.3)]">
+        <div className="relative glass-panel bg-surface/85 dark:bg-[#151326]/85 backdrop-blur-2xl p-1 sm:p-2.5 rounded-full sm:rounded-[2.5rem] border border-white/10 group-hover:border-white/20 transition-all shadow-[0_0_35px_rgba(139,92,246,0.3)]">
           <div className="flex flex-row items-center gap-0.5 sm:gap-1 lg:gap-2 px-0.5 sm:px-1">
             {/* 1. CATEGORY */}
             <CategoryField

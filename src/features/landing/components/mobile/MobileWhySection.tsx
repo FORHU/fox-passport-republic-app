@@ -20,7 +20,7 @@ export function MobileWhySection() {
               width: 180,
               borderRadius: 20,
               border: "1px solid color-mix(in srgb, var(--color-white) 7%, transparent)",
-              background: "#111318",
+              background: "var(--surface)",
               padding: "18px 16px",
             }}
           >

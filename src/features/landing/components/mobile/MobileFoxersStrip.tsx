@@ -26,7 +26,7 @@ function FoxerCard({ f }: { f: Foxer }) {
         borderRadius: 20,
         overflow: "hidden",
         border: "1px solid color-mix(in srgb, var(--color-white) 7%, transparent)",
-        background: "#111318",
+        background: "var(--surface)",
         padding: "14px 12px",
         textAlign: "center",
         cursor: "pointer",
@@ -112,7 +112,7 @@ export function MobileFoxersStrip({ foxers }: MobileFoxersStripProps) {
                   borderRadius: 20,
                   overflow: "hidden",
                   border: "1px solid color-mix(in srgb, var(--color-white) 7%, transparent)",
-                  background: "#111318",
+                  background: "var(--surface)",
                   padding: "14px 12px",
                 }}
               >

@@ -137,7 +137,7 @@ export default function FoxersMatchSection() {
               <span className="absolute -inset-4 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-accent/30 blur-xl" />
               <span className="absolute -inset-2 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-accent/40 blur-lg" />
               <span className="absolute inset-0 rounded-full border-2 border-white/20 group-hover:border-accent group-hover:shadow-[0_0_20px_rgba(204,255,0,0.6),0_0_40px_rgba(204,255,0,0.3)] transition-all duration-300" />
-              <span className="absolute inset-0.5 rounded-full bg-[#0a0b0f]" />
+              <span className="absolute inset-0.5 rounded-full bg-canvas" />
               <span className="relative z-10 group-hover:text-accent transition-colors">
                 Load More Foxers
               </span>

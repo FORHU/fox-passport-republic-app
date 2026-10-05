@@ -6,7 +6,7 @@ import { Money } from "@/shared/components/ui/Money";
 
 export function ProposalCard({ proposal }: { proposal: PartnershipProposal }) {
   return (
-    <div className="bg-[#151821] border border-white/5 rounded-2xl p-5 hover:border-white/10 transition-colors duration-200">
+    <div className="bg-surface border border-white/5 rounded-2xl p-5 hover:border-white/10 transition-colors duration-200">
       <div className="flex flex-col md:flex-row md:items-start justify-between gap-4">
         <div className="flex-1 space-y-3">
           <div className="flex items-center gap-3">

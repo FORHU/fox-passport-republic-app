@@ -81,7 +81,7 @@ export function TermsPrivacyModal({
         if (e.target === e.currentTarget) onClose();
       }}
     >
-      <div className="flex h-[min(640px,84vh)] w-full max-w-lg flex-col overflow-hidden rounded-2xl border border-white/15 bg-[#111213] shadow-2xl">
+      <div className="flex h-[min(640px,84vh)] w-full max-w-lg flex-col overflow-hidden rounded-2xl border border-white/15 bg-surface shadow-2xl">
         {/* Header */}
         <div className="flex-shrink-0 px-5 pt-5">
           <div className="flex items-start justify-between gap-3">
@@ -138,7 +138,7 @@ export function TermsPrivacyModal({
             {activeTab === "terms" ? <TermsContent /> : <PrivacyContent />}
           </div>
           <div
-            className={`pointer-events-none absolute inset-x-0 bottom-0 flex h-16 items-end justify-center bg-gradient-to-t from-[#111213] to-transparent pb-2 transition-opacity ${
+            className={`pointer-events-none absolute inset-x-0 bottom-0 flex h-16 items-end justify-center bg-gradient-to-t from-surface to-transparent pb-2 transition-opacity ${
               progress >= READ_THRESHOLD_PCT ? "opacity-0" : "opacity-100"
             }`}
           >

@@ -304,7 +304,7 @@ function MessageActions({
           <div
             ref={menuRef}
             style={{ top: coords.top, left: coords.left, width: MENU_WIDTH }}
-            className="fixed z-[200] overflow-hidden rounded-lg border border-white/10 bg-[#151515] py-1 shadow-xl"
+            className="fixed z-[200] overflow-hidden rounded-lg border border-white/10 bg-surface py-1 shadow-xl"
           >
             <div className="flex items-center justify-between px-2 py-1">
               {QUICK_REACTIONS.map((emoji) => (

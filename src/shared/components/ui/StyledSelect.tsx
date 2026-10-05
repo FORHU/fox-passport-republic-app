@@ -148,7 +148,7 @@ export function StyledSelect({
         <div
           role="listbox"
           className={cn(
-            "absolute z-30 mt-1.5 w-full max-h-64 overflow-y-auto bg-[#12141c] border border-white/10 rounded-xl p-1.5 shadow-[0_10px_30px_rgba(0,0,0,0.5)]",
+            "absolute z-30 mt-1.5 w-full max-h-64 overflow-y-auto bg-surface border border-white/10 rounded-xl p-1.5 shadow-[0_10px_30px_rgba(0,0,0,0.5)]",
             panelClassName,
           )}
         >
