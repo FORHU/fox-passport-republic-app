@@ -359,7 +359,7 @@ export default function ItemSuccessClient() {
               </span>
             </div>
             <p className="text-xs text-gray-500 font-medium">
-              © 2024 FoxPassport Inc. All rights reserved.
+              © {new Date().getFullYear()} FoxPassport Inc. All rights reserved.
             </p>
           </div>
         </div>

@@ -19,7 +19,8 @@ export function MobileWhySection() {
               flexShrink: 0,
               width: 180,
               borderRadius: 20,
-              border: "1px solid color-mix(in srgb, var(--color-white) 7%, transparent)",
+              border:
+                "1px solid color-mix(in srgb, var(--color-white) 7%, transparent)",
               background: "var(--surface)",
               padding: "18px 16px",
             }}
@@ -57,7 +58,8 @@ export function MobileWhySection() {
             <p
               style={{
                 fontSize: 11,
-                color: "color-mix(in srgb, var(--color-white) 45%, transparent)",
+                color:
+                  "color-mix(in srgb, var(--color-white) 45%, transparent)",
                 lineHeight: 1.5,
                 margin: 0,
               }}

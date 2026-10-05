@@ -30,7 +30,8 @@ export function MobileNewsletter() {
         position: "relative",
         background:
           "linear-gradient(135deg,#2d0080 0%,#1a0040 50%,#050608 100%)",
-        border: "1px solid color-mix(in srgb, var(--color-white) 8%, transparent)",
+        border:
+          "1px solid color-mix(in srgb, var(--color-white) 8%, transparent)",
         padding: "28px 20px",
       }}
     >
@@ -90,7 +91,13 @@ export function MobileNewsletter() {
           your inbox.
         </p>
         {status === "success" ? (
-          <p style={{ color: "var(--accent-text)", fontWeight: 700, fontSize: 14 }}>
+          <p
+            style={{
+              color: "var(--accent-text)",
+              fontWeight: 700,
+              fontSize: 14,
+            }}
+          >
             You&apos;re on the list! 🎉
           </p>
         ) : (
@@ -104,8 +111,10 @@ export function MobileNewsletter() {
               }}
               placeholder="your@email.com"
               style={{
-                background: "color-mix(in srgb, var(--color-black) 40%, transparent)",
-                border: "1px solid color-mix(in srgb, var(--color-white) 15%, transparent)",
+                background:
+                  "color-mix(in srgb, var(--color-black) 40%, transparent)",
+                border:
+                  "1px solid color-mix(in srgb, var(--color-white) 15%, transparent)",
                 borderRadius: 14,
                 padding: "12px 16px",
                 color: "var(--color-white)",

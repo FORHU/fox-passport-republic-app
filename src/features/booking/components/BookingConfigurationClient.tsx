@@ -876,18 +876,18 @@ export default function BookingConfigurationClient() {
               </span>
             </div>
             <p className="text-xs text-gray-500 font-medium">
-              © 2024 FoxPassport Inc. All rights reserved.
+              © {new Date().getFullYear()} FoxPassport Inc. All rights reserved.
             </p>
             <div className="flex gap-6">
               <a
                 className="text-xs text-gray-500 hover:text-white font-medium transition-colors"
-                href="#"
+                href="/privacy"
               >
                 Privacy
               </a>
               <a
                 className="text-xs text-gray-500 hover:text-white font-medium transition-colors"
-                href="#"
+                href="/terms"
               >
                 Terms
               </a>

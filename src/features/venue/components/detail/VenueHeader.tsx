@@ -3,6 +3,7 @@
 import React from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { joinPlace } from "@/shared/lib/place";
 
 interface VenueNavHeaderProps {
   title: string;
@@ -119,7 +120,7 @@ export function VenueHero({
         </div>
         <span>·</span>
         <span className="flex items-center gap-1 text-white underline decoration-dotted cursor-pointer">
-          {location}, {province}
+          {joinPlace(location, province)}
         </span>
       </div>
     </div>

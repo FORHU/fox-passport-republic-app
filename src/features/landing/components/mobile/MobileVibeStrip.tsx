@@ -29,7 +29,8 @@ export function MobileVibeStrip({ categories }: MobileVibeStripProps) {
               height: 80,
               position: "relative",
               cursor: "pointer",
-              border: "1px solid color-mix(in srgb, var(--color-white) 7%, transparent)",
+              border:
+                "1px solid color-mix(in srgb, var(--color-white) 7%, transparent)",
             }}
           >
             {cat.image ? (

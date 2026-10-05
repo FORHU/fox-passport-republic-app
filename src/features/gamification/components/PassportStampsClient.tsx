@@ -14,7 +14,7 @@ interface Props {
 
 function formatEarnedAt(iso: string): string {
   const d = new Date(iso);
-  if (isNaN(d.getTime())) return "â€”";
+  if (isNaN(d.getTime())) return "—";
   return d.toLocaleDateString("en-US", {
     month: "short",
     day: "2-digit",
@@ -91,7 +91,7 @@ function StampCard({ stamp, index }: { stamp: Stamp; index: number }) {
           ) : (
             <div className="flex h-full w-full items-center justify-center bg-black">
               <div className="flex h-20 w-20 items-center justify-center rounded-full ring-2 ring-accent/70">
-                {/* Brand fox as a white silhouette on black â€” always visible */}
+                {/* Brand fox as a white silhouette on black — always visible */}
                 <img
                   src="/foxonlylogo.png"
                   alt=""
@@ -208,7 +208,7 @@ export default function PassportStampsClient({ userId }: Props) {
                 No stamps yet
               </h3>
               <p className="relative z-10 text-text-muted max-w-md mx-auto mb-8">
-                Your passport is blank â€” book and attend an event to collect
+                Your passport is blank — book and attend an event to collect
                 your first stamp!
               </p>
 

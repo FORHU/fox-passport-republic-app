@@ -66,7 +66,7 @@ async function HomeContent({ searchParams }: HomePageProps) {
   // --- SEARCH/FILTER RESULTS VIEW ---
   if (isSearchMode) {
     return (
-      <main className="min-h-screen bg-background bg-gradient-dark text-text-main font-body pt-[76px] md:pt-[90px] pb-20">
+      <main className="min-h-screen bg-background bg-gradient-dark text-text-main font-body pt-28 md:pt-32 pb-20">
         <LandingHeader />
         <AuthModal />
 

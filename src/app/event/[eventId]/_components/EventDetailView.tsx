@@ -15,6 +15,8 @@ import { EventShareModal } from "./EventShareModal";
 import { EventPaymentPanel } from "@/features/event/components/EventPaymentPanel";
 import { EventLineItemsPanel } from "@/features/event/components/EventLineItemsPanel";
 import ProposePartnershipModal from "@/features/partnership/components/ProposePartnershipModal";
+import { useQuery } from "@tanstack/react-query";
+import { fetchEventLineItems } from "@/features/event/api/marketplaceItems";
 import { useAuthStore } from "@/shared/auth/useAuthStore";
 import { useRouter as useNavigationRouter } from "next/navigation";
 
@@ -68,6 +70,14 @@ export function EventDetailView({
   const [isShareOpen, setIsShareOpen] = useState(false);
   const [isPartnershipOpen, setIsPartnershipOpen] = useState(false);
   const [hasBlockingItems, setHasBlockingItems] = useState(false);
+  // Same query (and cache entry) the line-items panel uses, so asking here
+  // costs no extra request. Nothing is shown until it says this is an event.
+  const { data: lineItems } = useQuery({
+    queryKey: ["eventLineItems", eventId],
+    queryFn: () => fetchEventLineItems(eventId),
+    enabled: !!eventId,
+  });
+  const isRealEvent = lineItems?.isEvent === true;
 
   const templateImages: string[] = (template?.images ?? [])
     .map((img: any) => img.url)
@@ -337,25 +347,32 @@ export function EventDetailView({
                   cancellationPolicyId={template?.cancellationPolicyId}
                 />
 
-                <div className="h-px bg-white/10 w-full" />
+                {/* Booked items and payment belong to a real event. On a public
+                    template there is none, and the panels would only say "No
+                    items booked yet" and "Event not found". */}
+                {isRealEvent && (
+                  <>
+                    <div className="h-px bg-white/10 w-full" />
 
-                {/* Booked items — ad-hoc marketplace add/remove, status */}
-                <EventLineItemsPanel
-                  eventId={eventId}
-                  onBlockingChange={setHasBlockingItems}
-                />
+                    {/* Booked items — ad-hoc marketplace add/remove, status */}
+                    <EventLineItemsPanel
+                      eventId={eventId}
+                      onBlockingChange={setHasBlockingItems}
+                    />
 
-                <div className="h-px bg-white/10 w-full" />
+                    <div className="h-px bg-white/10 w-full" />
 
-                {/* Central Payment Panel */}
-                <EventPaymentPanel
-                  eventId={eventId}
-                  disabledReason={
-                    hasBlockingItems
-                      ? "Resolve items awaiting provider confirmation above before paying."
-                      : null
-                  }
-                />
+                    {/* Central Payment Panel */}
+                    <EventPaymentPanel
+                      eventId={eventId}
+                      disabledReason={
+                        hasBlockingItems
+                          ? "Resolve items awaiting provider confirmation above before paying."
+                          : null
+                      }
+                    />
+                  </>
+                )}
 
                 <div className="h-px bg-white/10 w-full" />
 
@@ -393,24 +410,24 @@ export function EventDetailView({
                 </span>
               </div>
               <p className="text-xs text-gray-500">
-                © 2024 FoxPassport Republic. All rights reserved.
+                © {new Date().getFullYear()} FoxPassport Republic. All rights reserved.
               </p>
               <div className="flex gap-6">
                 <a
                   className="text-xs text-gray-500 hover:text-white transition-colors"
-                  href="#"
+                  href="/privacy"
                 >
                   Privacy
                 </a>
                 <a
                   className="text-xs text-gray-500 hover:text-white transition-colors"
-                  href="#"
+                  href="/terms"
                 >
                   Terms
                 </a>
                 <a
                   className="text-xs text-gray-500 hover:text-white transition-colors"
-                  href="#"
+                  href="/privacy"
                 >
                   Cookies
                 </a>

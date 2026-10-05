@@ -115,7 +115,7 @@ export default function LandingFooter() {
         {/* Bottom Bar */}
         <div className="border-t border-white/5 pt-4 sm:pt-8 flex flex-col sm:flex-row justify-between items-center gap-3">
           <p className="text-[10px] text-gray-500 font-medium text-center sm:text-left">
-            &copy; 2024 FoxPassport Inc. All rights reserved.
+            © {new Date().getFullYear()} FoxPassport Inc. All rights reserved.
           </p>
           <div className="flex gap-4 sm:gap-6">
             <a

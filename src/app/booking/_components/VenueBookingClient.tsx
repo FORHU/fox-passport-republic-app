@@ -267,7 +267,7 @@ export default function VenueBookingClient({ venueId }: { venueId: string }) {
       <div className="min-h-screen bg-background bg-gradient-dark flex items-center justify-center">
         <div className="flex flex-col items-center gap-4">
           <span className="h-10 w-10 rounded-full border-2 border-white/20 border-t-accent animate-spin" />
-          <p className="text-text-muted text-sm">Loading venue detailsâ€¦</p>
+          <p className="text-text-muted text-sm">Loading venue details…</p>
         </div>
       </div>
     );
@@ -673,7 +673,7 @@ export default function VenueBookingClient({ venueId }: { venueId: string }) {
               </span>
             </div>
             <p className="text-xs text-gray-500 font-medium">
-              Â© 2024 FoxPassport Inc. All rights reserved.
+              © {new Date().getFullYear()} FoxPassport Inc. All rights reserved.
             </p>
           </div>
         </div>

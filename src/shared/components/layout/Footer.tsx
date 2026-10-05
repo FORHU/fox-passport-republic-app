@@ -141,13 +141,13 @@ export default function Footer() {
             {/* Left Side - Copyright */}
             {/* Text: Smaller (text-[10px]) on mobile, text-xs on desktop */}
             <div className="text-[10px] md:text-xs text-gray-600 text-center md:text-left">
-              <span>© 2025 FoxPassport, Inc.</span>
+              <span>© {new Date().getFullYear()} FoxPassport, Inc.</span>
               <span className="mx-1 md:mx-2">·</span>
-              <a href="#" className="hover:underline">
+              <a href="/privacy" className="hover:underline">
                 Privacy
               </a>
               <span className="mx-1 md:mx-2">·</span>
-              <a href="#" className="hover:underline">
+              <a href="/terms" className="hover:underline">
                 Terms
               </a>
               <span className="mx-1 md:mx-2">·</span>

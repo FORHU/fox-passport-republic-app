@@ -9,6 +9,7 @@ import ReviewReplyModal from "@/shared/components/ui/ReviewReplyModal";
 
 import { useAuthStore } from "@/shared/auth/useAuthStore";
 import { toast } from "sonner";
+import { joinPlace } from "@/shared/lib/place";
 
 interface VenueCalendarProps {
   checkInDate: number | null;
@@ -548,7 +549,7 @@ export function VenueMap({
         Location
       </h3>
       <p className="text-text-muted text-sm mb-6">
-        {location}, {province}
+        {joinPlace(location, province)}
       </p>
       {lat && lng ? (
         <div className="relative rounded-2xl overflow-hidden border border-white/10">

@@ -54,7 +54,7 @@ export default function MobilePassportView({ user }: Props) {
           right: 0,
           height: 64,
           zIndex: 5,
-          background: "rgba(5,6,8,0.9)",
+          background: "color-mix(in srgb, var(--canvas) 90%, transparent)",
           backdropFilter: "blur(20px)",
           WebkitBackdropFilter: "blur(20px)",
           borderBottom:

@@ -14,7 +14,7 @@ export function MobileHeroHeader() {
           right: 0,
           height: 380,
           background:
-            "linear-gradient(180deg,rgba(124,58,237,0.3) 0%,rgba(219,39,119,0.08) 60%,rgba(5,6,8,0) 100%)",
+            "linear-gradient(180deg,rgba(124,58,237,0.3) 0%,rgba(219,39,119,0.08) 60%,color-mix(in srgb, var(--canvas) 0%, transparent) 100%)",
           pointerEvents: "none",
           zIndex: 0,
         }}

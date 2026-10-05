@@ -33,7 +33,8 @@ export function MobileExploreStrip() {
               position: "relative",
               overflow: "hidden",
               background: `${STRIPE_BG},linear-gradient(135deg,${card.accent}22 0%,#111318 100%)`,
-              border: "1px solid color-mix(in srgb, var(--color-white) 7%, transparent)",
+              border:
+                "1px solid color-mix(in srgb, var(--color-white) 7%, transparent)",
               cursor: "pointer",
             }}
           >
@@ -98,7 +99,8 @@ export function MobileExploreStrip() {
               <p
                 style={{
                   fontSize: 11,
-                  color: "color-mix(in srgb, var(--color-white) 50%, transparent)",
+                  color:
+                    "color-mix(in srgb, var(--color-white) 50%, transparent)",
                   margin: 0,
                 }}
               >

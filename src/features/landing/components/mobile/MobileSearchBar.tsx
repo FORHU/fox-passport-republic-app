@@ -76,7 +76,8 @@ export function MobileSearchBar() {
     <div
       style={{
         background: "color-mix(in srgb, var(--color-white) 4%, transparent)",
-        border: "1px solid color-mix(in srgb, var(--color-white) 8%, transparent)",
+        border:
+          "1px solid color-mix(in srgb, var(--color-white) 8%, transparent)",
         borderRadius: 22,
         padding: 16,
         marginBottom: 28,
@@ -226,7 +227,8 @@ export function MobileSearchBar() {
                 left: 0,
                 right: 0,
                 background: "var(--surface)",
-                border: "1px solid color-mix(in srgb, var(--color-white) 10%, transparent)",
+                border:
+                  "1px solid color-mix(in srgb, var(--color-white) 10%, transparent)",
                 borderRadius: 14,
                 listStyle: "none",
                 margin: 0,
@@ -321,8 +323,8 @@ export function MobileSearchBar() {
                   border: "none",
                   cursor: "pointer",
                   transition: "all 0.15s",
-                  background: active ? "#ccff00" : "rgba(255,255,255,0.07)",
-                  color: active ? "#000" : "rgba(255,255,255,0.6)",
+                  background: active ? "#ccff00" : "color-mix(in srgb, var(--color-white) 7%, transparent)",
+                  color: active ? "#000" : "color-mix(in srgb, var(--color-white) 60%, transparent)",
                 }}
               >
                 {cat}

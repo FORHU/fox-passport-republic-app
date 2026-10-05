@@ -91,7 +91,7 @@ export default function MobileRoleApplicationForm({
                   gap: 6,
                   padding: "8px 14px",
                   borderRadius: 999,
-                  background: active ? "#ccff00" : "rgba(255,255,255,0.06)",
+                  background: active ? "#ccff00" : "color-mix(in srgb, var(--color-white) 6%, transparent)",
                   border: active ? "none" : "1px solid rgba(255,255,255,0.1)",
                   cursor: "pointer",
                 }}
@@ -100,7 +100,7 @@ export default function MobileRoleApplicationForm({
                   className="material-symbols-outlined"
                   style={{
                     fontSize: 15,
-                    color: active ? "#000" : "rgba(255,255,255,0.5)",
+                    color: active ? "#000" : "color-mix(in srgb, var(--color-white) 50%, transparent)",
                   }}
                 >
                   {tab.icon}
@@ -109,7 +109,7 @@ export default function MobileRoleApplicationForm({
                   style={{
                     fontSize: 12,
                     fontWeight: 700,
-                    color: active ? "#000" : "rgba(255,255,255,0.6)",
+                    color: active ? "#000" : "color-mix(in srgb, var(--color-white) 60%, transparent)",
                     whiteSpace: "nowrap",
                   }}
                 >

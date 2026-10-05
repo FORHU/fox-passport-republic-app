@@ -47,7 +47,9 @@ export function HeroShowcaseGrid() {
               src="https://images.unsplash.com/photo-1530103862676-de8c9debad1d?w=800&auto=format&fit=crop"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-80 group-hover:opacity-100 transition-opacity"></div>
-            <span className="absolute bottom-4 left-4 text-white font-display font-bold text-lg tracking-wide group-hover:translate-x-2 transition-transform">
+            {/* Bottom-right: the centered Book Now pill covers this card's
+                bottom-left corner. */}
+            <span className="absolute bottom-4 right-4 text-white font-display font-bold text-lg tracking-wide group-hover:-translate-x-2 transition-transform">
               Celebrations
             </span>
           </div>
