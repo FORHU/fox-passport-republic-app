@@ -897,6 +897,14 @@ body {
   }
 }
 
+/* Highlighted text: `selection:text-black` is built from --color-black, which
+ * the swap turns white — white on lime is unreadable. Pin real black on lime.
+ * Unlayered, so it wins over the selection: utilities. */
+.light ::selection {
+  background-color: #ccff00;
+  color: #000000;
+}
+
 /* The logo artwork is a white fox — draw it dark on light backgrounds. */
 .light img[src*="foxonlylogo"] {
   filter: invert(1);

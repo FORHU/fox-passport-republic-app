@@ -40,9 +40,9 @@ function FacebookCallbackContent() {
 
       if (isNewUser) {
         localStorage.setItem("fp_new_user", "1");
-        router.replace("/onboarding");
+        window.location.href = "/onboarding";
       } else {
-        router.replace("/");
+        window.location.href = "/";
       }
     });
   }, [searchParams, router, login]);

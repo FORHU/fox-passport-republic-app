@@ -25,6 +25,7 @@ export const PRE_SESSION_AUTH_PATHS = [
   "/auth/resend-verification-otp",
   "/auth/refresh-token",
   "/auth/google/exchange",
+  "/auth/facebook/exchange",
 ] as const;
 
 /**

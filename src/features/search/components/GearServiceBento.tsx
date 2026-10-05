@@ -19,7 +19,7 @@ function BentoColumn({
 }) {
   const router = useRouter();
   return (
-    <div className="bg-[#0f1018] border border-white/10 rounded-3xl p-5 space-y-3">
+    <div className="bg-surface border border-white/10 rounded-3xl p-5 space-y-3">
       <div className="flex items-center gap-2 pb-2 border-b border-white/10">
         <span className="material-symbols-outlined text-accent text-[20px]">
           {icon}
