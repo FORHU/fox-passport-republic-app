@@ -940,7 +940,7 @@ body {
 
 /* Neon lime and orange fills (primary buttons, the avatar, the active
  * Light/Dark pill, badges, the amber/orange gradient buttons) blur into a
- * white page. Give them a thin black edge in light mode — an inset outline, so
+ * white page. Give them a thin dark edge in light mode — an inset outline, so
  * nothing shifts by a pixel and existing glows stay. React writes inline
  * colours back as rgb(), hence the rgb() matches next to the hex ones. */
 .light
@@ -967,7 +967,7 @@ body {
     [style*="background: rgb(204, 255, 0)"],
     [style*="background-color: rgb(204, 255, 0)"]
   ):not([class~="bg-clip-text"]) {
-  outline: 1.5px solid #000000;
+  outline: 1.5px solid rgb(14 16 24 / 0.85);
   outline-offset: -1.5px;
 }
 
