@@ -44,7 +44,7 @@ export function InventorySection({
         </h2>
         {showViewAllLink && (
           <Link
-            className="text-xs font-bold text-[#ccff00] border border-[#ccff00]/30 px-4 py-2 rounded-full hover:bg-[#ccff00] hover:text-black flex items-center gap-1"
+            className="text-xs font-bold text-accent border border-accent/30 px-4 py-2 rounded-full hover:bg-accent hover:text-black flex items-center gap-1"
             href={viewAllHref}
           >
             View All
@@ -63,7 +63,7 @@ export function InventorySection({
           inventory.map((it) => (
             <div
               key={it.id}
-              className={`relative bg-[#0f111a]/60 border border-white/5 rounded-lg group hover:border-purple-500/50 transition-all ${onEdit ? "cursor-pointer" : ""}`}
+              className={`relative bg-surface/60 border border-white/5 rounded-lg group hover:border-purple-500/50 transition-all ${onEdit ? "cursor-pointer" : ""}`}
               onClick={() => onEdit?.(it.id)}
               role={onEdit ? "button" : undefined}
               tabIndex={onEdit ? 0 : undefined}
@@ -156,7 +156,7 @@ export function ServicesSection({
         </h2>
         {showViewAllLink && (
           <Link
-            className="text-xs font-bold text-[#ccff00] border border-[#ccff00]/30 px-4 py-2 rounded-full hover:bg-[#ccff00] hover:text-black flex items-center gap-1"
+            className="text-xs font-bold text-accent border border-accent/30 px-4 py-2 rounded-full hover:bg-accent hover:text-black flex items-center gap-1"
             href={viewAllHref}
           >
             View All
@@ -171,7 +171,7 @@ export function ServicesSection({
           services.map((sv) => (
             <div
               key={sv.id}
-              className={`flex items-center justify-between p-4 rounded-2xl bg-[#0f111a]/60 border border-white/5 hover:bg-white/5 ${onEdit ? "cursor-pointer" : ""}`}
+              className={`flex items-center justify-between p-4 rounded-2xl bg-surface/60 border border-white/5 hover:bg-white/5 ${onEdit ? "cursor-pointer" : ""}`}
               onClick={() => onEdit?.(sv.id)}
               role={onEdit ? "button" : undefined}
               tabIndex={onEdit ? 0 : undefined}

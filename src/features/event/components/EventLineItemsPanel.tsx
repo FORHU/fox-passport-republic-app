@@ -258,7 +258,7 @@ export function EventLineItemsPanel({
                     <button
                       onClick={() => addMutation.mutate(bi)}
                       disabled={isBusy}
-                      className="shrink-0 h-8 px-3 rounded-full bg-accent text-black text-xs font-bold hover:bg-[#b3e600] transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1"
+                      className="shrink-0 h-8 px-3 rounded-full bg-accent text-black text-xs font-bold hover:bg-accent-hover transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1"
                     >
                       {isBusy ? (
                         <span className="h-3.5 w-3.5 rounded-full border-2 border-black/20 border-t-black animate-spin" />

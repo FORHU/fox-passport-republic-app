@@ -145,12 +145,12 @@ export default function SignupForm() {
       <form className="space-y-4" onSubmit={handleSubmit(onSignup, onInvalid)}>
         {/* Full Name */}
         <div className="group">
-          <label className="block text-xs font-bold text-white/90 tracking-wide mb-1.5 ml-1 group-focus-within:text-[#ccff00] transition-colors">
+          <label className="block text-xs font-bold text-white/90 tracking-wide mb-1.5 ml-1 group-focus-within:text-accent transition-colors">
             FULL NAME
           </label>
           <input
             {...register("name")}
-            className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 sm:py-3.5 text-sm text-white placeholder-white/20 focus:outline-none focus:ring-1 focus:ring-[#ccff00] focus:border-[#ccff00]/50 focus:bg-white/10 transition-all font-medium"
+            className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 sm:py-3.5 text-sm text-white placeholder-white/20 focus:outline-none focus:ring-1 focus:ring-accent focus:border-accent/50 focus:bg-white/10 transition-all font-medium"
             placeholder="e.g. Fox Mulder"
             type="text"
             autoComplete="name"
@@ -164,12 +164,12 @@ export default function SignupForm() {
 
         {/* Email Address */}
         <div className="group">
-          <label className="block text-xs font-bold text-white/90 tracking-wide mb-1.5 ml-1 group-focus-within:text-[#ccff00] transition-colors">
+          <label className="block text-xs font-bold text-white/90 tracking-wide mb-1.5 ml-1 group-focus-within:text-accent transition-colors">
             EMAIL ADDRESS
           </label>
           <input
             {...register("email")}
-            className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 sm:py-3.5 text-sm text-white placeholder-white/20 focus:outline-none focus:ring-1 focus:ring-[#ccff00] focus:border-[#ccff00]/50 focus:bg-white/10 transition-all font-medium"
+            className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 sm:py-3.5 text-sm text-white placeholder-white/20 focus:outline-none focus:ring-1 focus:ring-accent focus:border-accent/50 focus:bg-white/10 transition-all font-medium"
             placeholder="name@example.com"
             type="email"
             autoComplete="email"
@@ -183,12 +183,12 @@ export default function SignupForm() {
 
         {/* Username */}
         <div className="group">
-          <label className="block text-xs font-bold text-white/90 tracking-wide mb-1.5 ml-1 group-focus-within:text-[#ccff00] transition-colors">
+          <label className="block text-xs font-bold text-white/90 tracking-wide mb-1.5 ml-1 group-focus-within:text-accent transition-colors">
             USERNAME
           </label>
           <input
             {...register("username")}
-            className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 sm:py-3.5 text-sm text-white placeholder-white/20 focus:outline-none focus:ring-1 focus:ring-[#ccff00] focus:border-[#ccff00]/50 focus:bg-white/10 transition-all font-medium"
+            className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 sm:py-3.5 text-sm text-white placeholder-white/20 focus:outline-none focus:ring-1 focus:ring-accent focus:border-accent/50 focus:bg-white/10 transition-all font-medium"
             placeholder="fox_mulder"
             type="text"
             autoComplete="off"
@@ -202,13 +202,13 @@ export default function SignupForm() {
 
         {/* Password */}
         <div className="group">
-          <label className="block text-xs font-bold text-white/90 tracking-wide mb-1.5 ml-1 group-focus-within:text-[#ccff00] transition-colors">
+          <label className="block text-xs font-bold text-white/90 tracking-wide mb-1.5 ml-1 group-focus-within:text-accent transition-colors">
             PASSWORD
           </label>
           <div className="relative">
             <input
               {...register("password")}
-              className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 sm:py-3.5 pr-12 text-sm text-white placeholder-white/20 focus:outline-none focus:ring-1 focus:ring-[#ccff00] focus:border-[#ccff00]/50 focus:bg-white/10 transition-all font-medium"
+              className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 sm:py-3.5 pr-12 text-sm text-white placeholder-white/20 focus:outline-none focus:ring-1 focus:ring-accent focus:border-accent/50 focus:bg-white/10 transition-all font-medium"
               placeholder="••••••••"
               type={showPassword ? "text" : "password"}
               autoComplete="new-password"
@@ -233,13 +233,13 @@ export default function SignupForm() {
 
         {/* Confirm Password */}
         <div className="group">
-          <label className="block text-xs font-bold text-white/90 tracking-wide mb-1.5 ml-1 group-focus-within:text-[#ccff00] transition-colors">
+          <label className="block text-xs font-bold text-white/90 tracking-wide mb-1.5 ml-1 group-focus-within:text-accent transition-colors">
             CONFIRM PASSWORD
           </label>
           <div className="relative">
             <input
               {...register("confirmPassword")}
-              className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 sm:py-3.5 pr-12 text-sm text-white placeholder-white/20 focus:outline-none focus:ring-1 focus:ring-[#ccff00] focus:border-[#ccff00]/50 focus:bg-white/10 transition-all font-medium"
+              className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 sm:py-3.5 pr-12 text-sm text-white placeholder-white/20 focus:outline-none focus:ring-1 focus:ring-accent focus:border-accent/50 focus:bg-white/10 transition-all font-medium"
               placeholder="••••••••"
               type={showConfirmPassword ? "text" : "password"}
               autoComplete="new-password"
@@ -266,7 +266,7 @@ export default function SignupForm() {
         <div className="flex items-center gap-3 pt-2">
           <div className="relative flex h-5 w-5 shrink-0 items-center">
             <input
-              className="peer h-5 w-5 cursor-pointer appearance-none rounded-md border border-white/20 bg-white/5 checked:border-[#ccff00] checked:bg-[#ccff00] transition-all hover:border-[#ccff00]/50"
+              className="peer h-5 w-5 cursor-pointer appearance-none rounded-md border border-white/20 bg-white/5 checked:border-accent checked:bg-accent transition-all hover:border-accent/50"
               id="terms"
               type="checkbox"
               checked={agreedToTerms}
@@ -293,7 +293,7 @@ export default function SignupForm() {
             <button
               type="button"
               onClick={() => setCharterTab("terms")}
-              className="text-white hover:text-[#ccff00] underline decoration-[#ccff00]/30 underline-offset-2 transition-colors"
+              className="text-white hover:text-accent underline decoration-accent/30 underline-offset-2 transition-colors"
             >
               Terms of Service
             </button>{" "}
@@ -301,7 +301,7 @@ export default function SignupForm() {
             <button
               type="button"
               onClick={() => setCharterTab("privacy")}
-              className="text-white hover:text-[#ccff00] underline decoration-[#ccff00]/30 underline-offset-2 transition-colors"
+              className="text-white hover:text-accent underline decoration-accent/30 underline-offset-2 transition-colors"
             >
               Privacy Policy
             </button>
@@ -322,7 +322,7 @@ export default function SignupForm() {
         <button
           type="submit"
           disabled={signupMutation.isPending}
-          className="btn-neon w-full py-3 sm:py-4 mt-2 rounded-xl bg-[#ccff00] text-black font-bold text-sm sm:text-lg hover:shadow-[0_0_20px_rgba(204,255,0,0.4)] hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-2 group disabled:opacity-70 disabled:cursor-not-allowed text-center relative overflow-hidden"
+          className="btn-neon w-full py-3 sm:py-4 mt-2 rounded-xl bg-accent text-black font-bold text-sm sm:text-lg hover:shadow-[0_0_20px_rgba(204,255,0,0.4)] hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-2 group disabled:opacity-70 disabled:cursor-not-allowed text-center relative overflow-hidden"
         >
           {signupMutation.isPending ? (
             <Loader2 className="animate-spin w-5 h-5" />
@@ -346,10 +346,10 @@ export default function SignupForm() {
           Already have an account?{" "}
           <button
             onClick={toggleView}
-            className="font-bold text-white hover:text-[#ccff00] transition-colors relative inline-block group"
+            className="font-bold text-white hover:text-accent transition-colors relative inline-block group"
           >
             Log in
-            <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-[#ccff00] transition-all group-hover:w-full"></span>
+            <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-accent transition-all group-hover:w-full"></span>
           </button>
         </p>
       </div>

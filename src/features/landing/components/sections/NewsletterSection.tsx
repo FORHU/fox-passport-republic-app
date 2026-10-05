@@ -34,7 +34,7 @@ export default function NewsletterSection() {
         >
           {/* Background Effects */}
           <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none">
-            <div className="absolute top-[-50%] left-[-20%] w-full h-full rounded-full bg-[#ccff00] blur-[150px] opacity-20 animate-pulse-slow"></div>
+            <div className="absolute top-[-50%] left-[-20%] w-full h-full rounded-full bg-accent blur-[150px] opacity-20 animate-pulse-slow"></div>
             <div className="absolute bottom-[-50%] right-[-20%] w-full h-full rounded-full bg-secondary blur-[150px] opacity-30"></div>
             <div
               className="absolute inset-0 opacity-10 animate-spin-slow origin-center"
@@ -65,7 +65,7 @@ export default function NewsletterSection() {
 
             {status === "success" ? (
               <div className="max-w-lg mx-auto py-4 sm:py-6 text-center">
-                <p className="text-[#ccff00] font-bold text-base sm:text-xl mb-1">
+                <p className="text-accent font-bold text-base sm:text-xl mb-1">
                   You&apos;re on the list!
                 </p>
                 <p className="text-white/60 text-xs sm:text-sm">
@@ -78,7 +78,7 @@ export default function NewsletterSection() {
                 className="flex flex-col sm:flex-row gap-3 sm:gap-4 max-w-lg mx-auto"
               >
                 <input
-                  className="flex-1 rounded-full bg-black/40 border border-white/20 text-white placeholder-gray-400 px-4 py-3 sm:px-8 sm:py-5 focus:outline-none focus:ring-2 focus:ring-[#ccff00] focus:bg-black/60 transition-all font-medium backdrop-blur-sm text-xs sm:text-base disabled:opacity-50"
+                  className="flex-1 rounded-full bg-black/40 border border-white/20 text-white placeholder-gray-400 px-4 py-3 sm:px-8 sm:py-5 focus:outline-none focus:ring-2 focus:ring-accent focus:bg-black/60 transition-all font-medium backdrop-blur-sm text-xs sm:text-base disabled:opacity-50"
                   placeholder="your@email.com"
                   type="email"
                   value={email}
@@ -90,7 +90,7 @@ export default function NewsletterSection() {
                   disabled={status === "loading"}
                 />
                 <button
-                  className="bg-[#ccff00] text-black font-bold text-xs sm:text-lg px-5 py-3 sm:px-10 sm:py-5 rounded-full hover:bg-white transition-all shadow-[0_0_20px_rgba(204,255,0,0.4)] hover:shadow-[0_0_40px_rgba(255,255,255,0.4)] hover:-translate-y-1 active:translate-y-0 disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:translate-y-0"
+                  className="bg-accent text-black font-bold text-xs sm:text-lg px-5 py-3 sm:px-10 sm:py-5 rounded-full hover:bg-white transition-all shadow-[0_0_20px_rgba(204,255,0,0.4)] hover:shadow-[0_0_40px_rgba(255,255,255,0.4)] hover:-translate-y-1 active:translate-y-0 disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:translate-y-0"
                   type="submit"
                   disabled={status === "loading"}
                 >

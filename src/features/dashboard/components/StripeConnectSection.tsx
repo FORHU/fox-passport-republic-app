@@ -15,7 +15,7 @@ function StatusBadge({ enabled, label }: { enabled: boolean; label: string }) {
   return (
     <div className="flex items-center gap-2">
       {enabled ? (
-        <CheckCircle size={14} className="text-[#ccff00]" />
+        <CheckCircle size={14} className="text-accent" />
       ) : (
         <AlertCircle size={14} className="text-white/30" />
       )}
@@ -55,7 +55,7 @@ export default function StripeConnectSection() {
           <span
             className={`text-xs px-3 py-1 rounded-full border font-medium ${
               isComplete
-                ? "text-[#ccff00] bg-[#ccff00]/10 border-[#ccff00]/20"
+                ? "text-accent bg-accent/10 border-accent/20"
                 : status.hasStripeAccount
                   ? "text-yellow-400 bg-yellow-400/10 border-yellow-400/20"
                   : "text-white/40 bg-white/5 border-white/10"
@@ -122,7 +122,7 @@ export default function StripeConnectSection() {
             </Link>
           ) : (
             <div className="flex flex-col gap-3">
-              <div className="flex items-center justify-center gap-2 text-[#ccff00] text-sm py-2">
+              <div className="flex items-center justify-center gap-2 text-accent text-sm py-2">
                 <CheckCircle size={14} />
                 You&apos;re all set to receive payouts
               </div>

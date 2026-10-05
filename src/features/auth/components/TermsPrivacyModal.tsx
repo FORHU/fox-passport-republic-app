@@ -81,13 +81,13 @@ export function TermsPrivacyModal({
         if (e.target === e.currentTarget) onClose();
       }}
     >
-      <div className="flex h-[min(640px,84vh)] w-full max-w-lg flex-col overflow-hidden rounded-2xl border border-white/15 bg-[#111213] shadow-2xl">
+      <div className="flex h-[min(640px,84vh)] w-full max-w-lg flex-col overflow-hidden rounded-2xl border border-white/15 bg-surface shadow-2xl">
         {/* Header */}
         <div className="flex-shrink-0 px-5 pt-5">
           <div className="flex items-start justify-between gap-3">
             <div>
               <h2 className="flex items-center gap-2 text-lg font-bold text-white">
-                <span className="h-2 w-2 flex-shrink-0 rotate-45 rounded-sm bg-[#ccff00]" />
+                <span className="h-2 w-2 flex-shrink-0 rotate-45 rounded-sm bg-accent" />
                 The Republic Charter
               </h2>
               <p className="mt-1 text-xs text-white/50">
@@ -123,7 +123,7 @@ export function TermsPrivacyModal({
         {/* Scroll progress rail */}
         <div className="mx-5 mt-3.5 h-[2px] flex-shrink-0 overflow-hidden rounded-full bg-white/10">
           <div
-            className="h-full bg-[#ccff00] transition-[width] duration-100"
+            className="h-full bg-accent transition-[width] duration-100"
             style={{ width: `${progress}%` }}
           />
         </div>
@@ -138,7 +138,7 @@ export function TermsPrivacyModal({
             {activeTab === "terms" ? <TermsContent /> : <PrivacyContent />}
           </div>
           <div
-            className={`pointer-events-none absolute inset-x-0 bottom-0 flex h-16 items-end justify-center bg-gradient-to-t from-[#111213] to-transparent pb-2 transition-opacity ${
+            className={`pointer-events-none absolute inset-x-0 bottom-0 flex h-16 items-end justify-center bg-gradient-to-t from-surface to-transparent pb-2 transition-opacity ${
               progress >= READ_THRESHOLD_PCT ? "opacity-0" : "opacity-100"
             }`}
           >
@@ -152,12 +152,12 @@ export function TermsPrivacyModal({
         <div className="flex-shrink-0 border-t border-white/10 px-5 py-4">
           <p className="mb-3 flex items-center gap-2 text-[11.5px] text-white/35">
             <span
-              className={`h-1.5 w-1.5 flex-shrink-0 rounded-full ${readTerms ? "bg-[#ccff00]" : "bg-white/25"}`}
+              className={`h-1.5 w-1.5 flex-shrink-0 rounded-full ${readTerms ? "bg-accent" : "bg-white/25"}`}
             />
             {readTerms ? "Terms read" : "Reading Terms of Service"}
             <span className="text-white/20">·</span>
             <span
-              className={`h-1.5 w-1.5 flex-shrink-0 rounded-full ${readPrivacy ? "bg-[#ccff00]" : "bg-white/25"}`}
+              className={`h-1.5 w-1.5 flex-shrink-0 rounded-full ${readPrivacy ? "bg-accent" : "bg-white/25"}`}
             />
             {readPrivacy ? "Privacy read" : "Reading Privacy Policy"}
           </p>
@@ -178,7 +178,7 @@ export function TermsPrivacyModal({
               }}
               className={`flex-1 rounded-xl py-3 text-sm font-bold transition-all ${
                 bothRead
-                  ? "bg-[#ccff00] text-black shadow-[0_8px_24px_-8px_rgba(204,255,0,0.45)]"
+                  ? "bg-accent text-black shadow-[0_8px_24px_-8px_rgba(204,255,0,0.45)]"
                   : "cursor-not-allowed bg-white/[0.08] text-white/30"
               }`}
             >
@@ -213,7 +213,7 @@ function TabButton({
     >
       <span
         className={`flex h-3.5 w-3.5 flex-shrink-0 items-center justify-center rounded-full border transition-colors ${
-          read ? "border-[#ccff00] bg-[#ccff00]" : "border-white/30"
+          read ? "border-accent bg-accent" : "border-white/30"
         }`}
       >
         {read && <Check className="h-2 w-2 text-black" strokeWidth={4} />}
@@ -234,7 +234,7 @@ function Clause({
 }) {
   return (
     <div className="mb-[18px]">
-      <span className="mr-1.5 font-mono text-[11px] text-[#ccff00]">
+      <span className="mr-1.5 font-mono text-[11px] text-accent">
         §{num}
       </span>
       <h4 className="inline font-display text-[13.5px] font-semibold text-white">

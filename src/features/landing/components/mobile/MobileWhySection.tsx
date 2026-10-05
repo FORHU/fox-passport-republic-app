@@ -19,8 +19,8 @@ export function MobileWhySection() {
               flexShrink: 0,
               width: 180,
               borderRadius: 20,
-              border: "1px solid rgba(255,255,255,0.07)",
-              background: "#111318",
+              border: "1px solid color-mix(in srgb, var(--color-white) 7%, transparent)",
+              background: "var(--surface)",
               padding: "18px 16px",
             }}
           >
@@ -47,7 +47,7 @@ export function MobileWhySection() {
               style={{
                 fontSize: 13,
                 fontWeight: 700,
-                color: "#fff",
+                color: "var(--color-white)",
                 marginBottom: 8,
                 lineHeight: 1.3,
               }}
@@ -57,7 +57,7 @@ export function MobileWhySection() {
             <p
               style={{
                 fontSize: 11,
-                color: "rgba(255,255,255,0.45)",
+                color: "color-mix(in srgb, var(--color-white) 45%, transparent)",
                 lineHeight: 1.5,
                 margin: 0,
               }}

@@ -133,7 +133,7 @@ function PromotionModal({
       onClick={onClose}
     >
       <div
-        className="bg-[#0f111a] border border-white/10 rounded-2xl p-6 sm:p-8 max-w-xl w-full mx-4 max-h-[90vh] overflow-y-auto"
+        className="bg-surface border border-white/10 rounded-2xl p-6 sm:p-8 max-w-xl w-full mx-4 max-h-[90vh] overflow-y-auto"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center gap-4 mb-6">
@@ -197,19 +197,19 @@ function PromotionModal({
                 onChange={(e) => setTransactionType(e.target.value)}
                 className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-3 text-sm text-white focus:border-accent/40 outline-none transition-all"
               >
-                <option className="bg-[#0f111a] text-white" value="">
+                <option className="bg-surface text-white" value="">
                   Any
                 </option>
-                <option className="bg-[#0f111a] text-white" value="event">
+                <option className="bg-surface text-white" value="event">
                   event
                 </option>
-                <option className="bg-[#0f111a] text-white" value="sponsorship">
+                <option className="bg-surface text-white" value="sponsorship">
                   sponsorship
                 </option>
-                <option className="bg-[#0f111a] text-white" value="asset">
+                <option className="bg-surface text-white" value="asset">
                   asset (gear)
                 </option>
-                <option className="bg-[#0f111a] text-white" value="service">
+                <option className="bg-surface text-white" value="service">
                   service (talent)
                 </option>
               </select>
@@ -238,10 +238,10 @@ function PromotionModal({
                 onChange={(e) => setDiscountType(e.target.value as DiscountType)}
                 className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-3 text-sm text-white focus:border-accent/40 outline-none transition-all"
               >
-                <option className="bg-[#0f111a] text-white" value="percentage">
+                <option className="bg-surface text-white" value="percentage">
                   Percentage
                 </option>
-                <option className="bg-[#0f111a] text-white" value="fixed">
+                <option className="bg-surface text-white" value="fixed">
                   Fixed amount
                 </option>
               </select>

@@ -57,7 +57,7 @@ function ServiceEditContent({ id }: Props) {
 
   if (!id)
     return (
-      <div className="fixed inset-0 z-[80] bg-[#02040a] text-white flex items-center justify-center">
+      <div className="fixed inset-0 z-[80] bg-canvas text-white flex items-center justify-center">
         <div className="glass-panel rounded-[2rem] p-12 border border-red-500/20">
           <div className="flex flex-col items-center gap-3 text-center">
             <AlertTriangle className="h-8 w-8 text-red-400" />
@@ -69,7 +69,7 @@ function ServiceEditContent({ id }: Props) {
 
   if (prefillError)
     return (
-      <div className="fixed inset-0 z-[80] bg-[#02040a]/90 text-white flex items-center justify-center">
+      <div className="fixed inset-0 z-[80] bg-canvas/90 text-white flex items-center justify-center">
         <div className="glass-panel rounded-[2rem] p-12 border border-red-500/20 text-center max-w-lg w-full">
           <div className="flex flex-col items-center gap-3 text-center">
             <AlertTriangle className="h-8 w-8 text-red-400" />
@@ -88,10 +88,10 @@ function ServiceEditContent({ id }: Props) {
 
   if (isPrefilling)
     return (
-      <div className="fixed inset-0 z-[80] bg-[#02040a]/90 text-white flex items-center justify-center">
+      <div className="fixed inset-0 z-[80] bg-canvas/90 text-white flex items-center justify-center">
         <div className="glass-panel rounded-[2rem] p-12 border border-white/5">
           <div className="flex flex-col items-center gap-3">
-            <Loader2 className="h-8 w-8 text-[#ccff00] animate-spin" />
+            <Loader2 className="h-8 w-8 text-accent animate-spin" />
             <div className="text-sm text-white/50">Loading service...</div>
           </div>
         </div>
@@ -100,7 +100,7 @@ function ServiceEditContent({ id }: Props) {
 
   return (
     <RequireAuth>
-      <div className="fixed inset-0 z-60 bg-[#02040a] text-white flex flex-col font-body">
+      <div className="fixed inset-0 z-60 bg-canvas text-white flex flex-col font-body">
         <ListingHeader
           activeType={activeType}
           title={title}
@@ -169,7 +169,7 @@ function ServiceEditContent({ id }: Props) {
 
 export default function ServiceEditClient({ id }: Props) {
   return (
-    <Suspense fallback={<div className="fixed inset-0 bg-[#02040a]" />}>
+    <Suspense fallback={<div className="fixed inset-0 bg-canvas" />}>
       <ServiceEditContent id={id} />
     </Suspense>
   );

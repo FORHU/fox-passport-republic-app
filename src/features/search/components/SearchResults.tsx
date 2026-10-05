@@ -5,7 +5,7 @@ import SearchResultCard from "@/features/search/components/SearchResultCard";
 
 function SkeletonCard() {
   return (
-    <div className="bg-[#11121a] border border-white/10 rounded-2xl overflow-hidden animate-pulse">
+    <div className="bg-surface border border-white/10 rounded-2xl overflow-hidden animate-pulse">
       <div className="h-48 bg-white/5" />
       <div className="p-6 space-y-3">
         <div className="h-5 bg-white/5 rounded w-3/4" />

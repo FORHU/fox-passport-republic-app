@@ -11,10 +11,10 @@ export default function AuthPage() {
       <div className="lg:hidden">
         <MobileAuthPage />
       </div>
-      <div className="hidden lg:flex min-h-screen items-center justify-center bg-[#050608]">
+      <div className="hidden lg:flex min-h-screen items-center justify-center bg-canvas">
         <button
           onClick={openLogin}
-          className="h-10 px-6 rounded-full bg-accent text-black text-sm font-bold hover:bg-[#b3e600] transition-colors"
+          className="h-10 px-6 rounded-full bg-accent text-black text-sm font-bold hover:bg-accent-hover transition-colors"
         >
           Sign in
         </button>

@@ -63,7 +63,7 @@ export function EventDetailsForm({
   onCloseGuide,
 }: EventDetailsFormProps) {
   return (
-    <div className="relative rounded-[2rem] overflow-hidden border border-white/10 bg-[#0f111a] p-8">
+    <div className="relative rounded-[2rem] overflow-hidden border border-white/10 bg-surface p-8">
       {/* Guide Banner */}
       {showGuide && (
         <div className="bg-accent/5 border border-accent/20 rounded-2xl p-4 flex items-start gap-4 relative mb-8">

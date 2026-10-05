@@ -17,13 +17,13 @@ const STATUS_STYLE: Record<
   pending: { bg: "rgba(234,179,8,0.12)", color: "#facc15", label: "Pending" },
   confirmed: {
     bg: "rgba(204,255,0,0.12)",
-    color: "#ccff00",
+    color: "var(--accent-text)",
     label: "Confirmed",
   },
   active: { bg: "rgba(74,222,128,0.12)", color: "#4ade80", label: "Active" },
   completed: {
     bg: "rgba(255,255,255,0.08)",
-    color: "rgba(255,255,255,0.5)",
+    color: "color-mix(in srgb, var(--color-white) 50%, transparent)",
     label: "Completed",
   },
   cancelled: {
@@ -76,10 +76,10 @@ export default function MobileBookingsView() {
   return (
     <div
       style={{
-        background: "#050608",
+        background: "var(--canvas)",
         minHeight: "100svh",
         position: "relative",
-        color: "#fff",
+        color: "var(--color-white)",
       }}
     >
       {/* Nav bar */}
@@ -94,7 +94,7 @@ export default function MobileBookingsView() {
           background: "rgba(5,6,8,0.9)",
           backdropFilter: "blur(20px)",
           WebkitBackdropFilter: "blur(20px)",
-          borderBottom: "1px solid rgba(255,255,255,0.08)",
+          borderBottom: "1px solid color-mix(in srgb, var(--color-white) 8%, transparent)",
           display: "flex",
           alignItems: "center",
           padding: "0 16px",
@@ -149,7 +149,7 @@ export default function MobileBookingsView() {
                 width: 32,
                 height: 32,
                 borderRadius: "50%",
-                border: "2px solid rgba(255,255,255,0.15)",
+                border: "2px solid color-mix(in srgb, var(--color-white) 15%, transparent)",
                 borderTopColor: "#ccff00",
                 animation: "spin 0.8s linear infinite",
               }}
@@ -160,14 +160,14 @@ export default function MobileBookingsView() {
           <div style={{ textAlign: "center", padding: "60px 20px" }}>
             <span
               className="material-symbols-outlined"
-              style={{ fontSize: 48, color: "rgba(255,255,255,0.2)" }}
+              style={{ fontSize: 48, color: "color-mix(in srgb, var(--color-white) 20%, transparent)" }}
             >
               book_online
             </span>
             <p style={{ fontSize: 13, fontWeight: 700, margin: "12px 0 4px" }}>
               No bookings yet
             </p>
-            <p style={{ fontSize: 11, color: "rgba(255,255,255,0.4)" }}>
+            <p style={{ fontSize: 11, color: "color-mix(in srgb, var(--color-white) 40%, transparent)" }}>
               Start by exploring venues and booking your next event.
             </p>
           </div>
@@ -194,8 +194,8 @@ export default function MobileBookingsView() {
                   gap: 12,
                   textAlign: "left",
                   width: "100%",
-                  background: "rgba(255,255,255,0.04)",
-                  border: "1px solid rgba(255,255,255,0.07)",
+                  background: "color-mix(in srgb, var(--color-white) 4%, transparent)",
+                  border: "1px solid color-mix(in srgb, var(--color-white) 7%, transparent)",
                   borderRadius: 16,
                   padding: 12,
                   cursor: "pointer",
@@ -219,7 +219,7 @@ export default function MobileBookingsView() {
                     style={{
                       fontSize: 12,
                       fontWeight: 700,
-                      color: "#fff",
+                      color: "var(--color-white)",
                       margin: 0,
                     }}
                   >
@@ -228,7 +228,7 @@ export default function MobileBookingsView() {
                   <p
                     style={{
                       fontSize: 10,
-                      color: "rgba(255,255,255,0.4)",
+                      color: "color-mix(in srgb, var(--color-white) 40%, transparent)",
                       margin: "3px 0 6px",
                     }}
                   >

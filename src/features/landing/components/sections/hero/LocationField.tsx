@@ -97,11 +97,11 @@ export function LocationField({
       )}
 
       {showSuggestions && cities.length > 0 && (
-        <ul className="absolute top-[calc(100%+8px)] left-0 w-full min-w-[200px] bg-[#11121a] border border-white/10 rounded-xl shadow-[0_0_20px_rgba(0,0,0,0.5)] z-50 overflow-hidden max-h-60 overflow-y-auto p-0 list-none m-0">
+        <ul className="absolute top-[calc(100%+8px)] left-0 w-full min-w-[200px] bg-surface border border-white/10 rounded-xl shadow-[0_0_20px_rgba(0,0,0,0.5)] z-50 overflow-hidden max-h-60 overflow-y-auto p-0 list-none m-0">
           {cities.map((loc) => (
             <li
               key={loc}
-              className="px-4 py-3 text-sm text-white hover:bg-[#ccff00] hover:text-black cursor-pointer font-bold transition-colors list-none"
+              className="px-4 py-3 text-sm text-white hover:bg-accent hover:text-black cursor-pointer font-bold transition-colors list-none"
               onClick={() => {
                 onChange(loc);
                 onClearError();
@@ -122,7 +122,7 @@ export function LocationField({
             style={{ top: pos.top, left: pos.left, width: pos.width }}
             onMouseDown={(e) => e.stopPropagation()}
           >
-            <div className="glass-card rounded-xl border border-white/10 p-1.5 shadow-[0_0_30px_rgba(0,0,0,0.5)] bg-[#11121a] max-h-64 overflow-y-auto">
+            <div className="glass-card rounded-xl border border-white/10 p-1.5 shadow-[0_0_30px_rgba(0,0,0,0.5)] bg-surface max-h-64 overflow-y-auto">
               {locations.map((loc) => {
                 const val = loc === "All Locations" ? "" : loc;
                 const isSelected = value === val;
@@ -137,7 +137,7 @@ export function LocationField({
                     }}
                     className={`w-full text-left px-3 py-2 rounded-lg text-xs sm:text-sm font-semibold transition-all cursor-pointer ${
                       isSelected
-                        ? "bg-[#ccff00]/15 text-[#ccff00]"
+                        ? "bg-accent/15 text-accent"
                         : "text-white/70 hover:bg-white/10 hover:text-white"
                     }`}
                   >

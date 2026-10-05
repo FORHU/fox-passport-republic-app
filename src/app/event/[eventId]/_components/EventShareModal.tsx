@@ -79,7 +79,7 @@ export function EventShareModal({
   return (
     <div className="fixed inset-0 z-100 flex items-center justify-center p-4 bg-black/70 backdrop-blur-md animate-in fade-in duration-200">
       <div
-        className="w-full max-w-md rounded-3xl border border-white/10 bg-[#121218]/95 p-6 shadow-2xl backdrop-blur-xl relative"
+        className="w-full max-w-md rounded-3xl border border-white/10 bg-surface/95 p-6 shadow-2xl backdrop-blur-xl relative"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Close Button */}

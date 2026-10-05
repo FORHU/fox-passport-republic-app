@@ -122,7 +122,7 @@ export const PassportClient: React.FC<PassportClientProps> = ({ user }) => {
   const userInitials = userName.charAt(0).toUpperCase();
 
   return (
-    <div className="min-h-screen bg-[#0a0a0a] p-3 sm:p-6 lg:p-10 relative pb-28 sm:pb-6 lg:pb-10">
+    <div className="min-h-screen bg-canvas p-3 sm:p-6 lg:p-10 relative pb-28 sm:pb-6 lg:pb-10">
       {/* Background Grid Pattern */}
       <div
         className="fixed inset-0 opacity-[0.03] pointer-events-none"
@@ -197,7 +197,7 @@ export const PassportClient: React.FC<PassportClientProps> = ({ user }) => {
         </Sheet>
 
         {/* Main View Area */}
-        <main className="flex-1 bg-[#0d0d0d] p-4 sm:p-8 lg:p-12 overflow-y-auto relative custom-scrollbar">
+        <main className="flex-1 bg-canvas p-4 sm:p-8 lg:p-12 overflow-y-auto relative custom-scrollbar">
           <div className="max-w-4xl mx-auto space-y-8 sm:space-y-12">
             {/* Header Title Bar */}
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-white/5 pb-6">
@@ -224,7 +224,7 @@ export const PassportClient: React.FC<PassportClientProps> = ({ user }) => {
                   onClick={() => setActiveTab("matches")}
                   className={`flex-1 py-1.5 rounded-xl text-[11px] font-bold transition-all ${
                     activeTab === "matches"
-                      ? "bg-[#ccff00] text-black shadow-md"
+                      ? "bg-accent text-black shadow-md"
                       : "text-white/50"
                   }`}
                 >
@@ -234,7 +234,7 @@ export const PassportClient: React.FC<PassportClientProps> = ({ user }) => {
                   onClick={() => setActiveTab("progress")}
                   className={`flex-1 py-1.5 rounded-xl text-[11px] font-bold transition-all ${
                     activeTab === "progress"
-                      ? "bg-[#ccff00] text-black shadow-md"
+                      ? "bg-accent text-black shadow-md"
                       : "text-white/50"
                   }`}
                 >
@@ -244,7 +244,7 @@ export const PassportClient: React.FC<PassportClientProps> = ({ user }) => {
                   onClick={() => setActiveTab("stamps")}
                   className={`flex-1 py-1.5 rounded-xl text-[11px] font-bold transition-all ${
                     activeTab === "stamps"
-                      ? "bg-[#ccff00] text-black shadow-md"
+                      ? "bg-accent text-black shadow-md"
                       : "text-white/50"
                   }`}
                 >

@@ -16,6 +16,7 @@ import RouteProgressBar from "@/shared/components/ui/RouteProgressBar";
 // Import the Master Provider
 import Providers from "@/shared/providers";
 import WebsiteJsonLd from "@/shared/components/seo/WebsiteJsonLd";
+import { THEME_INIT_SCRIPT } from "@/shared/lib/theme";
 
 const appUrl = (
   process.env.NEXT_PUBLIC_APP_URL || "https://foxpassport.com"
@@ -81,8 +82,12 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="dark">
+    // `dark` is the server default; the script below swaps it for `light` before
+    // the first paint when that was the saved choice — hence the suppressed
+    // hydration warning on <html>, whose class the script may have changed.
+    <html lang="en" className="dark" suppressHydrationWarning>
       <head>
+        <script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link
           rel="preconnect"
@@ -119,8 +124,8 @@ export default function RootLayout({
             offset={20}
             toastOptions={{
               duration: 4000,
-              className: "!bg-[#13141f] !border !border-white/10 !text-white !shadow-[0_10px_35px_rgba(0,0,0,0.55)] !rounded-2xl",
-              descriptionClassName: "!text-zinc-400",
+              className: "!bg-surface-raised !border !border-white/10 !text-white !shadow-[0_10px_35px_rgba(0,0,0,0.25)] !rounded-2xl",
+              descriptionClassName: "!text-white/60",
             }}
             icons={{
               success: <CheckCircle2 className="h-[18px] w-[18px] text-lime-400" strokeWidth={2} />,

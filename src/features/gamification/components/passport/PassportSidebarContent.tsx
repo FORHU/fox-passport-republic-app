@@ -66,10 +66,10 @@ export const PassportSidebarContent: React.FC<PassportSidebarContentProps> = ({
             />
           </div>
           <div className="relative">
-            <span className="font-display font-bold text-xl tracking-tight text-white group-hover:text-[#ccff00] transition-colors">
+            <span className="font-display font-bold text-xl tracking-tight text-white group-hover:text-accent transition-colors">
               FoxPassport
             </span>
-            <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-[#ccff00] group-hover:w-full transition-all duration-300"></span>
+            <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-accent group-hover:w-full transition-all duration-300"></span>
           </div>
         </Link>
         <button
@@ -86,7 +86,7 @@ export const PassportSidebarContent: React.FC<PassportSidebarContentProps> = ({
 
       <div className="flex flex-col items-center text-center mb-6">
         <div className="relative mb-4">
-          <div className="h-20 w-20 rounded-[1.5rem] bg-white/5 border border-white/10 p-2 group transition-all duration-500 hover:border-[#ccff00]/30">
+          <div className="h-20 w-20 rounded-[1.5rem] bg-white/5 border border-white/10 p-2 group transition-all duration-500 hover:border-accent/30">
             <div className="h-full w-full rounded-xl bg-white/10 flex items-center justify-center text-3xl font-display font-bold text-white/20 overflow-hidden relative">
               {user?.imgId ? (
                 <img
@@ -99,7 +99,7 @@ export const PassportSidebarContent: React.FC<PassportSidebarContentProps> = ({
               )}
             </div>
           </div>
-          <div className="absolute -bottom-1.5 -right-1.5 h-6 w-6 bg-[#ccff00] rounded-full border-[3px] border-black flex items-center justify-center shadow-lg">
+          <div className="absolute -bottom-1.5 -right-1.5 h-6 w-6 bg-accent rounded-full border-[3px] border-black flex items-center justify-center shadow-lg">
             <span className="material-symbols-outlined text-black text-[14px] font-bold">
               verified
             </span>
@@ -137,13 +137,13 @@ export const PassportSidebarContent: React.FC<PassportSidebarContentProps> = ({
         <div className="space-y-2">
           <div className="flex justify-between text-[10px] font-black uppercase tracking-[0.2em] text-white/30">
             <span>Mastery XP</span>
-            <span className="text-[#ccff00] font-mono">
+            <span className="text-accent font-mono">
               {formatXP(totalXP)}
             </span>
           </div>
           <div className="w-full bg-white/5 rounded-full h-1.5 overflow-hidden border border-white/5">
             <div
-              className="h-full bg-gradient-to-r from-[#22c55e] to-[#ccff00] transition-all duration-1000 shadow-[0_0_10px_#ccff0044]"
+              className="h-full bg-gradient-to-r from-[#22c55e] to-accent transition-all duration-1000 shadow-[0_0_10px_#ccff0044]"
               style={{
                 width: `${Math.min(100, (totalXP / maxTotalXP) * 100)}%`,
               }}
@@ -183,7 +183,7 @@ export const PassportSidebarContent: React.FC<PassportSidebarContentProps> = ({
                 <p className="text-[9px] font-black uppercase tracking-widest text-white/30">
                   Perks
                 </p>
-                <span className="text-[9px] font-mono font-bold text-[#ccff00]">
+                <span className="text-[9px] font-mono font-bold text-accent">
                   {totalEarned}
                   <span className="text-white/20">/{totalAll}</span>
                 </span>
@@ -234,7 +234,7 @@ export const PassportSidebarContent: React.FC<PassportSidebarContentProps> = ({
                                 style={
                                   perkTab === "unlocked"
                                     ? { backgroundColor: color, color: "#000" }
-                                    : { color: "rgba(255,255,255,0.3)" }
+                                    : { color: "color-mix(in srgb, var(--color-white) 30%, transparent)" }
                                 }
                               >
                                 Active
@@ -302,7 +302,7 @@ export const PassportSidebarContent: React.FC<PassportSidebarContentProps> = ({
                                       <span className="material-symbols-outlined text-[13px] text-white/15">
                                         {meta!.icon}
                                       </span>
-                                      <div className="absolute -bottom-1 -right-1 h-3 w-3 bg-[#111] rounded-full border border-white/10 flex items-center justify-center">
+                                      <div className="absolute -bottom-1 -right-1 h-3 w-3 bg-surface rounded-full border border-white/10 flex items-center justify-center">
                                         <span className="material-symbols-outlined text-[7px] text-white/25">
                                           lock
                                         </span>
@@ -336,7 +336,7 @@ export const PassportSidebarContent: React.FC<PassportSidebarContentProps> = ({
             setActiveTab("matches");
             onTabSelect();
           }}
-          className={`w-full py-2.5 rounded-xl font-bold text-xs transition-all flex items-center justify-center gap-2 cursor-pointer ${activeTab === "matches" ? "bg-[#ccff00] text-black shadow-[0_0_20px_rgba(204,255,0,0.3)]" : "bg-white/5 text-white/60 hover:text-white hover:bg-white/10 border border-white/5"}`}
+          className={`w-full py-2.5 rounded-xl font-bold text-xs transition-all flex items-center justify-center gap-2 cursor-pointer ${activeTab === "matches" ? "bg-accent text-black shadow-[0_0_20px_rgba(204,255,0,0.3)]" : "bg-white/5 text-white/60 hover:text-white hover:bg-white/10 border border-white/5"}`}
         >
           <span className="material-symbols-outlined text-[16px]">
             handshake
@@ -348,7 +348,7 @@ export const PassportSidebarContent: React.FC<PassportSidebarContentProps> = ({
             setActiveTab("progress");
             onTabSelect();
           }}
-          className={`w-full py-2.5 rounded-xl font-bold text-xs transition-all flex items-center justify-center gap-2 cursor-pointer ${activeTab === "progress" ? "bg-[#ccff00] text-black shadow-[0_0_20px_rgba(204,255,0,0.3)]" : "bg-white/5 text-white/60 hover:text-white hover:bg-white/10 border border-white/5"}`}
+          className={`w-full py-2.5 rounded-xl font-bold text-xs transition-all flex items-center justify-center gap-2 cursor-pointer ${activeTab === "progress" ? "bg-accent text-black shadow-[0_0_20px_rgba(204,255,0,0.3)]" : "bg-white/5 text-white/60 hover:text-white hover:bg-white/10 border border-white/5"}`}
         >
           <span className="material-symbols-outlined text-[16px]">
             analytics
@@ -360,7 +360,7 @@ export const PassportSidebarContent: React.FC<PassportSidebarContentProps> = ({
             setActiveTab("stamps");
             onTabSelect();
           }}
-          className={`w-full py-2.5 rounded-xl font-bold text-xs transition-all flex items-center justify-center gap-2 cursor-pointer ${activeTab === "stamps" ? "bg-[#ccff00] text-black shadow-[0_0_20px_rgba(204,255,0,0.3)]" : "bg-white/5 text-white/60 hover:text-white hover:bg-white/10 border border-white/5"}`}
+          className={`w-full py-2.5 rounded-xl font-bold text-xs transition-all flex items-center justify-center gap-2 cursor-pointer ${activeTab === "stamps" ? "bg-accent text-black shadow-[0_0_20px_rgba(204,255,0,0.3)]" : "bg-white/5 text-white/60 hover:text-white hover:bg-white/10 border border-white/5"}`}
         >
           <span className="material-symbols-outlined text-[16px]">
             menu_book

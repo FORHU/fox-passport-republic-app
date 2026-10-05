@@ -311,14 +311,14 @@ export function MapBoxViewImpl({
 
   return (
     <div
-      className={`relative overflow-hidden rounded-2xl bg-[#0f111a] border border-white/10 ${className}`}
+      className={`relative overflow-hidden rounded-2xl bg-surface border border-white/10 ${className}`}
       style={style}
     >
       <div ref={containerRef} className="w-full h-full" />
 
       {/* Loading Skeleton / Spinner */}
       {!isLoaded && (
-        <div className="absolute inset-0 bg-[#0f111a] flex flex-col items-center justify-center gap-3 z-10 animate-in fade-in">
+        <div className="absolute inset-0 bg-surface flex flex-col items-center justify-center gap-3 z-10 animate-in fade-in">
           <div className="w-8 h-8 rounded-full border-2 border-primary/20 border-t-primary animate-spin" />
           <span className="text-[11px] font-bold uppercase tracking-widest text-white/40 font-mono">
             Loading Map View...

@@ -15,7 +15,7 @@ export default function LandingFooter() {
             </p>
             <div className="flex gap-3">
               <a
-                className="h-9 w-9 sm:h-12 sm:w-12 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-white hover:bg-[#ccff00] hover:text-black hover:border-[#ccff00] hover:shadow-[0_0_20px_rgba(204,255,0,0.4)] transition-all duration-300"
+                className="h-9 w-9 sm:h-12 sm:w-12 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-white hover:bg-accent hover:text-black hover:border-accent hover:shadow-[0_0_20px_rgba(204,255,0,0.4)] transition-all duration-300"
                 href="#"
               >
                 <span className="sr-only">Twitter</span>
@@ -57,7 +57,7 @@ export default function LandingFooter() {
                 (item) => (
                   <li key={item}>
                     <a
-                      className="text-xs text-gray-400 hover:text-[#ccff00] font-medium transition-colors"
+                      className="text-xs text-gray-400 hover:text-accent font-medium transition-colors"
                       href={item === "Republic Foxer" ? "/republic" : "#"}
                     >
                       {item}
@@ -77,7 +77,7 @@ export default function LandingFooter() {
               {["About", "Careers", "Blog"].map((item) => (
                 <li key={item}>
                   <a
-                    className="text-xs text-gray-400 hover:text-[#ccff00] font-medium transition-colors"
+                    className="text-xs text-gray-400 hover:text-accent font-medium transition-colors"
                     href="#"
                   >
                     {item}

@@ -51,7 +51,7 @@ export default function GoogleAuthCallbackPage() {
   }, [searchParams, router, login]);
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-[#050608]">
+    <div className="flex min-h-screen items-center justify-center bg-canvas">
       <Loader2 className="h-8 w-8 animate-spin text-white/60" />
     </div>
   );

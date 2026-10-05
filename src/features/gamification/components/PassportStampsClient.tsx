@@ -104,7 +104,7 @@ function StampCard({ stamp, index }: { stamp: Stamp; index: number }) {
               </div>
             </div>
           )}
-          <div className="absolute inset-0 bg-gradient-to-t from-[#ccff00] via-black to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-t from-accent via-black to-transparent" />
           <div className="absolute bottom-0 left-0 right-0 p-3">
             <h3 className="text-white font-display font-bold text-sm leading-tight drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)] line-clamp-3">
               {stamp.eventName}

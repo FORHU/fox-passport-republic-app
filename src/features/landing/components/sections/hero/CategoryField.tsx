@@ -81,7 +81,7 @@ export function CategoryField({
             style={{ top: pos.top, left: pos.left, width: pos.width }}
             onMouseDown={(e) => e.stopPropagation()}
           >
-            <div className="glass-card rounded-xl border border-white/10 p-1.5 shadow-[0_0_30px_rgba(0,0,0,0.5)] bg-[#11121a]">
+            <div className="glass-card rounded-xl border border-white/10 p-1.5 shadow-[0_0_30px_rgba(0,0,0,0.5)] bg-surface">
               {CATEGORIES.map((cat) => (
                 <button
                   key={cat}
@@ -93,7 +93,7 @@ export function CategoryField({
                   }}
                   className={`w-full text-left px-3 py-2 rounded-lg text-xs sm:text-sm capitalize transition-all cursor-pointer ${
                     value === cat
-                      ? "bg-[#ccff00]/15 text-[#ccff00] font-bold"
+                      ? "bg-accent/15 text-accent font-bold"
                       : "text-white/70 hover:bg-white/10 hover:text-white"
                   }`}
                 >

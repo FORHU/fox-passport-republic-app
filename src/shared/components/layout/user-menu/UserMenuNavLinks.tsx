@@ -19,6 +19,7 @@ import {
 import { toast } from "sonner";
 import { useLogout } from "@/shared/auth/useLogout";
 import { CurrencySwitcher } from "@/shared/components/layout/CurrencySwitcher";
+import { ThemeSwitcher } from "@/shared/components/layout/ThemeSwitcher";
 import { useUnreadMessagesCount } from "@/features/messages/hooks/useUnreadMessagesCount";
 
 interface UserMenuNavLinksProps {
@@ -102,7 +103,7 @@ export function UserMenuNavLinks({
             }}
             className="w-full flex items-center gap-3 px-2 py-2.5 rounded-lg hover:bg-white/5 transition-colors group cursor-pointer"
           >
-            <item.icon className="w-4 h-4 text-white/40 group-hover:text-[#ccff00] transition-colors shrink-0" />
+            <item.icon className="w-4 h-4 text-white/40 group-hover:text-accent transition-colors shrink-0" />
             <span className="text-sm text-white/70 group-hover:text-white transition-colors">
               {item.label}
             </span>
@@ -112,23 +113,24 @@ export function UserMenuNavLinks({
               </span>
             )}
             {(item as { badge?: string | number }).badge !== undefined && (
-              <span className="ml-auto flex h-5 min-w-5 items-center justify-center rounded-full bg-[#ccff00] px-1.5 text-[10px] font-bold text-black">
+              <span className="ml-auto flex h-5 min-w-5 items-center justify-center rounded-full bg-accent px-1.5 text-[10px] font-bold text-black">
                 {(item as { badge?: string | number }).badge}
               </span>
             )}
           </button>
         ))}
         <CurrencySwitcher />
+        <ThemeSwitcher />
         {!isAdmin && (
           <button
             onClick={() => {
               onClose();
               router.push("/onboarding");
             }}
-            className="w-full flex items-center gap-3 px-2 py-2.5 rounded-lg hover:bg-[#ccff00]/5 transition-colors group cursor-pointer"
+            className="w-full flex items-center gap-3 px-2 py-2.5 rounded-lg hover:bg-accent/5 transition-colors group cursor-pointer"
           >
-            <UserPlus className="w-4 h-4 text-[#ccff00]/60 group-hover:text-[#ccff00] transition-colors shrink-0" />
-            <span className="text-sm text-[#ccff00]/60 group-hover:text-[#ccff00] transition-colors font-medium">
+            <UserPlus className="w-4 h-4 text-accent/60 group-hover:text-accent transition-colors shrink-0" />
+            <span className="text-sm text-accent/60 group-hover:text-accent transition-colors font-medium">
               Apply for a Role
             </span>
           </button>

@@ -114,7 +114,7 @@ export default function ItemSuccessClient() {
                   src={user.imgId}
                 />
               ) : (
-                <div className="h-full w-full bg-[#ccff00] flex items-center justify-center text-black font-bold text-sm">
+                <div className="h-full w-full bg-accent flex items-center justify-center text-black font-bold text-sm">
                   {user?.name?.charAt(0)?.toUpperCase() ?? "U"}
                 </div>
               )}

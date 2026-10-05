@@ -45,7 +45,7 @@ const PATH_CONFIG: Record<string, { color: string; label: string }> = {
   serviceFoxer: { color: "#f97316", label: "Talent Foxer" },
   performerFoxer: { color: "#f59e0b", label: "Performer Foxer" },
   eventFoxer: { color: "#3b82f6", label: "Event Foxer" },
-  venueFoxer: { color: "#ccff00", label: "Venue Foxer" },
+  venueFoxer: { color: "var(--accent-text)", label: "Venue Foxer" },
   organizer: { color: "#e879f9", label: "Organizer" },
 };
 
@@ -104,7 +104,7 @@ export default function BadgeCard({
         className="relative z-10 w-14 h-14 rounded-2xl flex items-center justify-center mb-3 transition-transform duration-500 group-hover:scale-110"
         style={{
           background: locked ? "rgba(255,255,255,0.04)" : `${cfg.glow}18`,
-          border: `1px solid ${locked ? "rgba(255,255,255,0.08)" : cfg.glow + "40"}`,
+          border: `1px solid ${locked ? "color-mix(in srgb, var(--color-white) 8%, transparent)" : cfg.glow + "40"}`,
           boxShadow: locked ? "none" : `0 0 20px ${cfg.glow}25`,
         }}
       >
@@ -139,7 +139,7 @@ export default function BadgeCard({
               background: locked
                 ? "rgba(255,255,255,0.04)"
                 : `${pathCfg.color}12`,
-              border: `1px solid ${locked ? "rgba(255,255,255,0.08)" : pathCfg.color + "35"}`,
+              border: `1px solid ${locked ? "color-mix(in srgb, var(--color-white) 8%, transparent)" : pathCfg.color + "35"}`,
             }}
           >
             <span

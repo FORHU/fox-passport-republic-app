@@ -40,7 +40,7 @@ export const CategoryHeader: React.FC<CategoryHeaderProps> = ({ category }) => {
               Explore
             </Link>
             <div className="h-4 w-px bg-white/10"></div>
-            <span className="px-6 py-2.5 rounded-full text-sm font-bold text-black bg-[#ccff00] shadow-[0_0_15px_rgba(204,255,0,0.3)] flex items-center gap-2">
+            <span className="px-6 py-2.5 rounded-full text-sm font-bold text-black bg-accent shadow-[0_0_15px_rgba(204,255,0,0.3)] flex items-center gap-2">
               <DynamicIcon
                 name={category.icon || "Grid3X3"}
                 className="w-4 h-4"
@@ -50,7 +50,7 @@ export const CategoryHeader: React.FC<CategoryHeaderProps> = ({ category }) => {
           </nav>
 
           {/* Mobile category badge */}
-          <span className="md:hidden flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold text-black bg-[#ccff00]">
+          <span className="md:hidden flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold text-black bg-accent">
             <DynamicIcon
               name={category.icon || "Grid3X3"}
               className="w-3.5 h-3.5"

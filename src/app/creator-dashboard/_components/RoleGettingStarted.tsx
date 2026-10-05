@@ -227,7 +227,7 @@ export function RoleGettingStarted({ totals }: { totals: ListingTotals }) {
   };
 
   return (
-    <section className="rounded-[2rem] border border-white/10 bg-[#0f111a]/60 p-6 sm:p-8 mb-10">
+    <section className="rounded-[2rem] border border-white/10 bg-surface/60 p-6 sm:p-8 mb-10">
       <div className="flex flex-wrap items-start justify-between gap-4 mb-5">
         <div>
           <h2 className="text-xl font-display font-bold text-white">
@@ -296,7 +296,7 @@ export function RoleGettingStarted({ totals }: { totals: ListingTotals }) {
               <span
                 className="material-symbols-outlined text-[22px] shrink-0"
                 style={{
-                  color: step.done ? badge.color : "rgba(255,255,255,0.25)",
+                  color: step.done ? badge.color : "color-mix(in srgb, var(--color-white) 25%, transparent)",
                 }}
                 aria-hidden="true"
               >

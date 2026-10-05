@@ -73,7 +73,7 @@ export function PassportProgressTab({
               key={path.path}
               className="relative flex flex-col items-center text-center rounded-3xl overflow-hidden p-5 gap-3"
               style={{
-                background: `radial-gradient(ellipse at 50% 0%, ${path.color}18 0%, transparent 70%), rgba(255,255,255,0.03)`,
+                background: `radial-gradient(ellipse at 50% 0%, ${path.color}18 0%, transparent 70%), color-mix(in srgb, var(--color-white) 3%, transparent)`,
                 border: `1px solid ${path.color}22`,
               }}
             >
@@ -139,7 +139,7 @@ export function PassportProgressTab({
       <section>
         <div className="flex items-center gap-4 mb-8">
           <h3 className="text-xl font-display font-bold text-white flex items-center gap-3">
-            <span className="material-symbols-outlined text-[#ccff00]">
+            <span className="material-symbols-outlined text-accent">
               award_star
             </span>{" "}
             Collection
@@ -150,7 +150,7 @@ export function PassportProgressTab({
               onClick={() => setShowAllBadges(false)}
               className={`px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest transition-all cursor-pointer ${
                 !showAllBadges
-                  ? "bg-[#ccff00] text-black shadow-glow-accent"
+                  ? "bg-accent text-black shadow-glow-accent"
                   : "text-white/40 hover:text-white"
               }`}
             >
@@ -160,7 +160,7 @@ export function PassportProgressTab({
               onClick={() => setShowAllBadges(true)}
               className={`px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest transition-all cursor-pointer ${
                 showAllBadges
-                  ? "bg-[#ccff00] text-black shadow-glow-accent"
+                  ? "bg-accent text-black shadow-glow-accent"
                   : "text-white/40 hover:text-white"
               }`}
             >
@@ -182,10 +182,10 @@ export function PassportProgressTab({
       </section>
 
       {/* Mastery Guides Section */}
-      <section className="bg-gradient-to-br from-[#ccff00]/10 to-transparent border border-[#ccff00]/10 rounded-[3rem] p-8 relative overflow-hidden group">
-        <div className="absolute top-0 right-0 w-48 h-48 bg-[#ccff00]/5 rounded-full blur-[60px] -mr-24 -mt-24 group-hover:bg-[#ccff00]/10 transition-all duration-700"></div>
+      <section className="bg-gradient-to-br from-accent/10 to-transparent border border-accent/10 rounded-[3rem] p-8 relative overflow-hidden group">
+        <div className="absolute top-0 right-0 w-48 h-48 bg-accent/5 rounded-full blur-[60px] -mr-24 -mt-24 group-hover:bg-accent/10 transition-all duration-700"></div>
         <h3 className="text-lg font-display font-bold text-white mb-8 relative z-10 flex items-center gap-2">
-          <span className="material-symbols-outlined text-[#ccff00]">
+          <span className="material-symbols-outlined text-accent">
             auto_awesome
           </span>{" "}
           Mastery Guides
@@ -194,31 +194,31 @@ export function PassportProgressTab({
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 relative z-10">
           {/* User Path Guide - Always shown */}
           <div className="space-y-4">
-            <p className="text-[10px] font-black text-[#ccff00] uppercase tracking-widest opacity-60">
+            <p className="text-[10px] font-black text-accent uppercase tracking-widest opacity-60">
               Citizen Activities
             </p>
             <div className="space-y-3">
               <div className="flex justify-between items-center p-4 rounded-2xl bg-white/5 border border-white/5 hover:bg-white/10 transition-all">
                 <div className="flex items-center gap-3">
-                  <span className="material-symbols-outlined text-[#ccff00] text-sm">
+                  <span className="material-symbols-outlined text-accent text-sm">
                     confirmation_number
                   </span>
                   <span className="text-sm text-white/70">
                     Book an Experience
                   </span>
                 </div>
-                <span className="font-mono text-sm text-[#ccff00] font-bold">
+                <span className="font-mono text-sm text-accent font-bold">
                   +{XP_REWARDS.bookEvent} XP
                 </span>
               </div>
               <div className="flex justify-between items-center p-4 rounded-2xl bg-white/5 border border-white/5 hover:bg-white/10 transition-all">
                 <div className="flex items-center gap-3">
-                  <span className="material-symbols-outlined text-[#ccff00] text-sm">
+                  <span className="material-symbols-outlined text-accent text-sm">
                     local_activity
                   </span>
                   <span className="text-sm text-white/70">Attend an Event</span>
                 </div>
-                <span className="font-mono text-sm text-[#ccff00] font-bold">
+                <span className="font-mono text-sm text-accent font-bold">
                   +{XP_REWARDS.attendEvent} XP
                 </span>
               </div>

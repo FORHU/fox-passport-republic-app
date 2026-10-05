@@ -24,17 +24,17 @@ function SkeletonCard({
         width,
         borderRadius: 20,
         overflow: "hidden",
-        border: "1px solid rgba(255,255,255,0.07)",
-        background: "#111318",
+        border: "1px solid color-mix(in srgb, var(--color-white) 7%, transparent)",
+        background: "var(--surface)",
       }}
     >
-      <div style={{ height, background: "rgba(255,255,255,0.04)" }} />
+      <div style={{ height, background: "color-mix(in srgb, var(--color-white) 4%, transparent)" }} />
       <div style={{ padding: "12px 14px" }}>
         <div
           style={{
             height: 12,
             borderRadius: 6,
-            background: "rgba(255,255,255,0.07)",
+            background: "color-mix(in srgb, var(--color-white) 7%, transparent)",
             marginBottom: 8,
           }}
         />
@@ -43,7 +43,7 @@ function SkeletonCard({
             height: 10,
             width: "60%",
             borderRadius: 6,
-            background: "rgba(255,255,255,0.04)",
+            background: "color-mix(in srgb, var(--color-white) 4%, transparent)",
           }}
         />
       </div>
@@ -64,8 +64,8 @@ function TemplateCard({ t }: { t: EventTemplate }) {
         width: 200,
         borderRadius: 20,
         overflow: "hidden",
-        border: "1px solid rgba(255,255,255,0.07)",
-        background: "#111318",
+        border: "1px solid color-mix(in srgb, var(--color-white) 7%, transparent)",
+        background: "var(--surface)",
         cursor: "pointer",
       }}
     >
@@ -91,13 +91,13 @@ function TemplateCard({ t }: { t: EventTemplate }) {
               position: "absolute",
               top: 10,
               left: 10,
-              background: "rgba(0,0,0,0.55)",
+              background: "color-mix(in srgb, var(--color-black) 55%, transparent)",
               backdropFilter: "blur(8px)",
               borderRadius: 999,
               padding: "3px 9px",
               fontSize: 10,
               fontWeight: 700,
-              color: "#fff",
+              color: "var(--color-white)",
               textTransform: "uppercase",
               letterSpacing: "0.06em",
             }}
@@ -111,14 +111,14 @@ function TemplateCard({ t }: { t: EventTemplate }) {
           style={{
             fontSize: 13,
             fontWeight: 700,
-            color: "#fff",
+            color: "var(--color-white)",
             marginBottom: 4,
             lineHeight: 1.3,
           }}
         >
           {t.name}
         </p>
-        <p style={{ fontSize: 11, color: "rgba(255,255,255,0.4)", margin: 0 }}>
+        <p style={{ fontSize: 11, color: "color-mix(in srgb, var(--color-white) 40%, transparent)", margin: 0 }}>
           {[city, price ? format(Number(price)) : null]
             .filter(Boolean)
             .join(" · ")}

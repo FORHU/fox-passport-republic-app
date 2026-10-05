@@ -60,14 +60,14 @@ export function MobilePendingRequests() {
             fontWeight: 700,
             letterSpacing: "0.1em",
             textTransform: "uppercase",
-            color: "rgba(255,255,255,0.4)",
+            color: "color-mix(in srgb, var(--color-white) 40%, transparent)",
             margin: 0,
           }}
         >
           Pending Requests
         </p>
         {pending.length > 0 && (
-          <span style={{ fontSize: 11, color: "#ccff00", fontWeight: 600 }}>
+          <span style={{ fontSize: 11, color: "var(--accent-text)", fontWeight: 600 }}>
             {pending.length} new
           </span>
         )}
@@ -79,7 +79,7 @@ export function MobilePendingRequests() {
             padding: "20px 0",
             textAlign: "center",
             fontSize: 12,
-            color: "rgba(255,255,255,0.3)",
+            color: "color-mix(in srgb, var(--color-white) 30%, transparent)",
           }}
         >
           Loading…
@@ -90,7 +90,7 @@ export function MobilePendingRequests() {
             padding: "20px 0",
             textAlign: "center",
             fontSize: 12,
-            color: "rgba(255,255,255,0.3)",
+            color: "color-mix(in srgb, var(--color-white) 30%, transparent)",
           }}
         >
           No pending requests
@@ -101,8 +101,8 @@ export function MobilePendingRequests() {
             <div
               key={req.id}
               style={{
-                background: "rgba(255,255,255,0.04)",
-                border: "1px solid rgba(255,255,255,0.07)",
+                background: "color-mix(in srgb, var(--color-white) 4%, transparent)",
+                border: "1px solid color-mix(in srgb, var(--color-white) 7%, transparent)",
                 borderRadius: 16,
                 padding: "12px 14px",
                 display: "flex",
@@ -118,7 +118,7 @@ export function MobilePendingRequests() {
                   flexShrink: 0,
                   overflow: "hidden",
                   background: STRIPE_BG,
-                  border: "1px solid rgba(255,255,255,0.07)",
+                  border: "1px solid color-mix(in srgb, var(--color-white) 7%, transparent)",
                 }}
               />
               <div style={{ flex: 1, minWidth: 0 }}>
@@ -126,7 +126,7 @@ export function MobilePendingRequests() {
                   style={{
                     fontSize: 13,
                     fontWeight: 600,
-                    color: "#fff",
+                    color: "var(--color-white)",
                     margin: "0 0 2px",
                     overflow: "hidden",
                     textOverflow: "ellipsis",
@@ -138,7 +138,7 @@ export function MobilePendingRequests() {
                 <p
                   style={{
                     fontSize: 11,
-                    color: "rgba(255,255,255,0.4)",
+                    color: "color-mix(in srgb, var(--color-white) 40%, transparent)",
                     margin: 0,
                   }}
                 >
@@ -159,13 +159,13 @@ export function MobilePendingRequests() {
           marginTop: 12,
           padding: "10px 0",
           borderRadius: 12,
-          border: "1px solid rgba(255,255,255,0.1)",
+          border: "1px solid color-mix(in srgb, var(--color-white) 10%, transparent)",
           fontSize: 11,
           fontWeight: 700,
           textTransform: "uppercase",
           letterSpacing: "0.08em",
           textAlign: "center",
-          color: "#fff",
+          color: "var(--color-white)",
         }}
       >
         View All

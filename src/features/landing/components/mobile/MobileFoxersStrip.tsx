@@ -25,8 +25,8 @@ function FoxerCard({ f }: { f: Foxer }) {
         width: 130,
         borderRadius: 20,
         overflow: "hidden",
-        border: "1px solid rgba(255,255,255,0.07)",
-        background: "#111318",
+        border: "1px solid color-mix(in srgb, var(--color-white) 7%, transparent)",
+        background: "var(--surface)",
         padding: "14px 12px",
         textAlign: "center",
         cursor: "pointer",
@@ -53,7 +53,7 @@ function FoxerCard({ f }: { f: Foxer }) {
             style={{ width: "100%", height: "100%", objectFit: "cover" }}
           />
         ) : (
-          <span style={{ fontSize: 20, fontWeight: 700, color: "#fff" }}>
+          <span style={{ fontSize: 20, fontWeight: 700, color: "var(--color-white)" }}>
             {initial}
           </span>
         )}
@@ -62,7 +62,7 @@ function FoxerCard({ f }: { f: Foxer }) {
         style={{
           fontSize: 12,
           fontWeight: 700,
-          color: "#fff",
+          color: "var(--color-white)",
           marginBottom: 3,
           lineHeight: 1.2,
           overflow: "hidden",
@@ -75,7 +75,7 @@ function FoxerCard({ f }: { f: Foxer }) {
       <p
         style={{
           fontSize: 10,
-          color: "#ccff00",
+          color: "var(--accent-text)",
           fontWeight: 600,
           marginBottom: rating ? 4 : 0,
           overflow: "hidden",
@@ -86,7 +86,7 @@ function FoxerCard({ f }: { f: Foxer }) {
         {roleLabel}
       </p>
       {rating && (
-        <p style={{ fontSize: 10, color: "rgba(255,255,255,0.4)" }}>
+        <p style={{ fontSize: 10, color: "color-mix(in srgb, var(--color-white) 40%, transparent)" }}>
           ★ {rating}
         </p>
       )}
@@ -111,8 +111,8 @@ export function MobileFoxersStrip({ foxers }: MobileFoxersStripProps) {
                   width: 130,
                   borderRadius: 20,
                   overflow: "hidden",
-                  border: "1px solid rgba(255,255,255,0.07)",
-                  background: "#111318",
+                  border: "1px solid color-mix(in srgb, var(--color-white) 7%, transparent)",
+                  background: "var(--surface)",
                   padding: "14px 12px",
                 }}
               >
@@ -121,7 +121,7 @@ export function MobileFoxersStrip({ foxers }: MobileFoxersStripProps) {
                     width: 56,
                     height: 56,
                     borderRadius: "50%",
-                    background: "rgba(255,255,255,0.06)",
+                    background: "color-mix(in srgb, var(--color-white) 6%, transparent)",
                     margin: "0 auto 10px",
                   }}
                 />
@@ -129,7 +129,7 @@ export function MobileFoxersStrip({ foxers }: MobileFoxersStripProps) {
                   style={{
                     height: 10,
                     borderRadius: 6,
-                    background: "rgba(255,255,255,0.06)",
+                    background: "color-mix(in srgb, var(--color-white) 6%, transparent)",
                     marginBottom: 6,
                   }}
                 />
@@ -138,7 +138,7 @@ export function MobileFoxersStrip({ foxers }: MobileFoxersStripProps) {
                     height: 9,
                     width: "60%",
                     borderRadius: 6,
-                    background: "rgba(255,255,255,0.04)",
+                    background: "color-mix(in srgb, var(--color-white) 4%, transparent)",
                     margin: "0 auto",
                   }}
                 />

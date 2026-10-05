@@ -81,7 +81,7 @@ export function PassportMatchesTab({
               onClick={() => setMatchSubTab("client-inbox")}
               className={`px-3 sm:px-8 py-2 rounded-full font-bold text-xs transition-all cursor-pointer ${
                 matchSubTab === "client-inbox"
-                  ? "bg-[#ccff00] text-black shadow-glow-accent"
+                  ? "bg-accent text-black shadow-glow-accent"
                   : "text-white/40 hover:text-white"
               }`}
             >
@@ -98,7 +98,7 @@ export function PassportMatchesTab({
               onClick={() => setMatchSubTab("outgoing")}
               className={`px-3 sm:px-8 py-2 rounded-full font-bold text-xs transition-all cursor-pointer ${
                 matchSubTab === "outgoing"
-                  ? "bg-[#ccff00] text-black shadow-glow-accent"
+                  ? "bg-accent text-black shadow-glow-accent"
                   : "text-white/40 hover:text-white"
               }`}
             >
@@ -110,7 +110,7 @@ export function PassportMatchesTab({
               onClick={() => setMatchSubTab("incoming")}
               className={`px-3 sm:px-8 py-2 rounded-full font-bold text-xs transition-all cursor-pointer ${
                 matchSubTab === "incoming"
-                  ? "bg-[#ccff00] text-black shadow-glow-accent"
+                  ? "bg-accent text-black shadow-glow-accent"
                   : "text-white/40 hover:text-white"
               }`}
             >
@@ -121,7 +121,7 @@ export function PassportMatchesTab({
             onClick={() => setMatchSubTab("ranks")}
             className={`px-3 sm:px-8 py-2 rounded-full font-bold text-xs transition-all cursor-pointer ${
               matchSubTab === "ranks"
-                ? "bg-[#ccff00] text-black shadow-glow-accent"
+                ? "bg-accent text-black shadow-glow-accent"
                 : "text-white/40 hover:text-white"
             }`}
           >
@@ -174,7 +174,7 @@ export function PassportMatchesTab({
                     }`}
                     style={{
                       borderColor: `${sc}20`,
-                      background: `linear-gradient(135deg, rgba(255,255,255,0.04) 0%, rgba(255,255,255,0.02) 100%)`,
+                      background: `linear-gradient(135deg, color-mix(in srgb, var(--color-white) 4%, transparent) 0%, color-mix(in srgb, var(--color-white) 2%, transparent) 100%)`,
                     }}
                   >
                     <div
@@ -314,10 +314,10 @@ export function PassportMatchesTab({
               <div
                 key={group.templateId}
                 className="rounded-2xl border border-white/5 overflow-hidden"
-                style={{ background: "rgba(255,255,255,0.02)" }}
+                style={{ background: "color-mix(in srgb, var(--color-white) 2%, transparent)" }}
               >
-                <div className="flex items-center gap-3 px-5 py-3.5 border-b border-white/5 bg-[#ccff00]/5">
-                  <span className="material-symbols-outlined text-[#ccff00] text-base">
+                <div className="flex items-center gap-3 px-5 py-3.5 border-b border-white/5 bg-accent/5">
+                  <span className="material-symbols-outlined text-accent text-base">
                     event
                   </span>
                   <div className="min-w-0">
@@ -422,7 +422,7 @@ export function PassportMatchesTab({
                   className="group relative rounded-2xl border overflow-hidden transition-all hover:scale-[1.01]"
                   style={{
                     borderColor: `${sc}20`,
-                    background: "rgba(255,255,255,0.03)",
+                    background: "color-mix(in srgb, var(--color-white) 3%, transparent)",
                   }}
                 >
                   <div
@@ -596,7 +596,7 @@ export function PassportMatchesTab({
                                 {entry.user?.name ?? "Citizen"}
                               </p>
                               {isYou && (
-                                <span className="text-[8px] font-black uppercase tracking-widest bg-[#ccff00] text-black px-1.5 py-0.5 rounded-full shrink-0">
+                                <span className="text-[8px] font-black uppercase tracking-widest bg-accent text-black px-1.5 py-0.5 rounded-full shrink-0">
                                   You
                                 </span>
                               )}
@@ -619,7 +619,7 @@ export function PassportMatchesTab({
                             </p>
                           </div>
                           <div className="flex items-center gap-3 shrink-0">
-                            <span className="text-sm font-mono font-bold text-[#ccff00]">
+                            <span className="text-sm font-mono font-bold text-accent">
                               {formatXP(entry.totalXP)} XP
                             </span>
                           </div>

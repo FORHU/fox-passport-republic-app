@@ -27,7 +27,7 @@ export default function MobileFoxerProfile({ foxer }: MobileFoxerProfileProps) {
     <div
       className="pb-28"
       style={{
-        background: "#050608",
+        background: "var(--canvas)",
         minHeight: "100vh",
         overflow: "hidden",
         position: "relative",
@@ -59,7 +59,7 @@ export default function MobileFoxerProfile({ foxer }: MobileFoxerProfileProps) {
           background: "rgba(5,6,8,0.9)",
           backdropFilter: "blur(20px)",
           WebkitBackdropFilter: "blur(20px)",
-          borderBottom: "1px solid rgba(255,255,255,0.08)",
+          borderBottom: "1px solid color-mix(in srgb, var(--color-white) 8%, transparent)",
           display: "flex",
           alignItems: "center",
           padding: "0 16px",
@@ -79,8 +79,8 @@ export default function MobileFoxerProfile({ foxer }: MobileFoxerProfileProps) {
             width: 36,
             height: 36,
             borderRadius: 999,
-            background: "rgba(255,255,255,0.08)",
-            border: "1px solid rgba(255,255,255,0.12)",
+            background: "color-mix(in srgb, var(--color-white) 8%, transparent)",
+            border: "1px solid color-mix(in srgb, var(--color-white) 12%, transparent)",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
@@ -108,8 +108,8 @@ export default function MobileFoxerProfile({ foxer }: MobileFoxerProfileProps) {
             width: 36,
             height: 36,
             borderRadius: 999,
-            background: "rgba(255,255,255,0.08)",
-            border: "1px solid rgba(255,255,255,0.12)",
+            background: "color-mix(in srgb, var(--color-white) 8%, transparent)",
+            border: "1px solid color-mix(in srgb, var(--color-white) 12%, transparent)",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
@@ -158,7 +158,7 @@ export default function MobileFoxerProfile({ foxer }: MobileFoxerProfileProps) {
               style={{
                 width: "100%",
                 height: "100%",
-                background: "#1a1a1a",
+                background: "var(--surface-raised)",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
@@ -166,7 +166,7 @@ export default function MobileFoxerProfile({ foxer }: MobileFoxerProfileProps) {
             >
               <span
                 className="font-display"
-                style={{ fontSize: 28, fontWeight: 700, color: "#fff" }}
+                style={{ fontSize: 28, fontWeight: 700, color: "var(--color-white)" }}
               >
                 {initial}
               </span>
@@ -179,7 +179,7 @@ export default function MobileFoxerProfile({ foxer }: MobileFoxerProfileProps) {
           style={{
             fontSize: 19,
             fontWeight: 700,
-            color: "#fff",
+            color: "var(--color-white)",
             marginBottom: 6,
           }}
         >
@@ -191,7 +191,7 @@ export default function MobileFoxerProfile({ foxer }: MobileFoxerProfileProps) {
             fontWeight: 700,
             textTransform: "uppercase",
             letterSpacing: "0.08em",
-            color: "#ccff00",
+            color: "var(--accent-text)",
           }}
         >
           {role} · {rating} ({reviewCount})
@@ -230,11 +230,11 @@ export default function MobileFoxerProfile({ foxer }: MobileFoxerProfileProps) {
             height: 44,
             borderRadius: "50%",
             background: "transparent",
-            border: "1px solid rgba(255,255,255,0.2)",
+            border: "1px solid color-mix(in srgb, var(--color-white) 20%, transparent)",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
-            color: "#fff",
+            color: "var(--color-white)",
             cursor: "pointer",
             flexShrink: 0,
           }}
@@ -252,7 +252,7 @@ export default function MobileFoxerProfile({ foxer }: MobileFoxerProfileProps) {
           fontWeight: 700,
           letterSpacing: "0.12em",
           textTransform: "uppercase",
-          color: "rgba(255,255,255,0.35)",
+          color: "color-mix(in srgb, var(--color-white) 35%, transparent)",
           padding: "0 20px 12px",
           position: "relative",
           zIndex: 1,
@@ -281,8 +281,8 @@ export default function MobileFoxerProfile({ foxer }: MobileFoxerProfileProps) {
               width: 130,
               height: 100,
               borderRadius: 14,
-              background: "#111",
-              border: "1px solid rgba(255,255,255,0.07)",
+              background: "var(--surface)",
+              border: "1px solid color-mix(in srgb, var(--color-white) 7%, transparent)",
               display: "flex",
               alignItems: "flex-end",
               padding: 10,
@@ -302,7 +302,7 @@ export default function MobileFoxerProfile({ foxer }: MobileFoxerProfileProps) {
               style={{
                 fontSize: 11,
                 fontWeight: 600,
-                color: "#fff",
+                color: "var(--color-white)",
                 position: "relative",
                 zIndex: 1,
               }}

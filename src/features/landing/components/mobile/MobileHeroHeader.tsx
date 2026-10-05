@@ -61,7 +61,7 @@ export function MobileHeroHeader() {
           style={{
             fontSize: 10,
             fontWeight: 700,
-            color: "#ccff00",
+            color: "var(--accent-text)",
             letterSpacing: "0.12em",
             textTransform: "uppercase",
           }}
@@ -74,7 +74,7 @@ export function MobileHeroHeader() {
           fontFamily: 'var(--font-display,"Space Grotesk",sans-serif)',
           fontSize: 34,
           fontWeight: 800,
-          color: "#fff",
+          color: "var(--color-white)",
           lineHeight: 1.05,
           margin: "0 0 6px",
           letterSpacing: "-0.5px",
@@ -95,7 +95,7 @@ export function MobileHeroHeader() {
       <p
         style={{
           fontSize: 13,
-          color: "rgba(255,255,255,0.45)",
+          color: "color-mix(in srgb, var(--color-white) 45%, transparent)",
           margin: "0 0 28px",
           lineHeight: 1.5,
         }}

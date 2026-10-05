@@ -39,7 +39,7 @@ const CATEGORIES = [
   {
     label: "Outdoor",
     icon: "park",
-    color: "#ccff00",
+    color: "var(--accent-text)",
     gradient: "rgba(204,255,0,0.15)",
   },
 ];
@@ -51,10 +51,10 @@ export default function MobileCategoryGrid() {
     <div
       className="lg:hidden"
       style={{
-        background: "#050608",
+        background: "var(--canvas)",
         minHeight: "100svh",
         fontFamily: 'var(--font-body, "Plus Jakarta Sans", sans-serif)',
-        color: "#fff",
+        color: "var(--color-white)",
         paddingBottom: 112,
         position: "relative",
       }}
@@ -71,7 +71,7 @@ export default function MobileCategoryGrid() {
           background: "rgba(5,6,8,0.9)",
           backdropFilter: "blur(20px)",
           WebkitBackdropFilter: "blur(20px)",
-          borderBottom: "1px solid rgba(255,255,255,0.08)",
+          borderBottom: "1px solid color-mix(in srgb, var(--color-white) 8%, transparent)",
           display: "flex",
           alignItems: "center",
           padding: "0 16px",
@@ -91,8 +91,8 @@ export default function MobileCategoryGrid() {
             width: 36,
             height: 36,
             borderRadius: 999,
-            background: "rgba(255,255,255,0.08)",
-            border: "1px solid rgba(255,255,255,0.12)",
+            background: "color-mix(in srgb, var(--color-white) 8%, transparent)",
+            border: "1px solid color-mix(in srgb, var(--color-white) 12%, transparent)",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
@@ -119,7 +119,7 @@ export default function MobileCategoryGrid() {
 
       {/* Subtitle */}
       <div style={{ padding: "142px 20px 12px" }}>
-        <p style={{ fontSize: 12, color: "rgba(255,255,255,0.4)", margin: 0 }}>
+        <p style={{ fontSize: 12, color: "color-mix(in srgb, var(--color-white) 40%, transparent)", margin: 0 }}>
           Find exactly the kind of night you want
         </p>
       </div>
@@ -142,7 +142,7 @@ export default function MobileCategoryGrid() {
               borderRadius: 20,
               overflow: "hidden",
               background: `${STRIPE_BG}, #0e0f14`,
-              border: "1px solid rgba(255,255,255,0.07)",
+              border: "1px solid color-mix(in srgb, var(--color-white) 7%, transparent)",
               cursor: "pointer",
               textAlign: "left",
               padding: 0,
@@ -175,7 +175,7 @@ export default function MobileCategoryGrid() {
                 fontFamily: 'var(--font-display,"Space Grotesk",sans-serif)',
                 fontSize: 14,
                 fontWeight: 700,
-                color: "#fff",
+                color: "var(--color-white)",
               }}
             >
               {cat.label}

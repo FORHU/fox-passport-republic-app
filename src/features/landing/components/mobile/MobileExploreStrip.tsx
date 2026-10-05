@@ -33,7 +33,7 @@ export function MobileExploreStrip() {
               position: "relative",
               overflow: "hidden",
               background: `${STRIPE_BG},linear-gradient(135deg,${card.accent}22 0%,#111318 100%)`,
-              border: "1px solid rgba(255,255,255,0.07)",
+              border: "1px solid color-mix(in srgb, var(--color-white) 7%, transparent)",
               cursor: "pointer",
             }}
           >
@@ -88,7 +88,7 @@ export function MobileExploreStrip() {
                   fontFamily: 'var(--font-display,"Space Grotesk",sans-serif)',
                   fontSize: 14,
                   fontWeight: 700,
-                  color: "#fff",
+                  color: "var(--color-white)",
                   margin: "0 0 4px",
                   lineHeight: 1.2,
                 }}
@@ -98,7 +98,7 @@ export function MobileExploreStrip() {
               <p
                 style={{
                   fontSize: 11,
-                  color: "rgba(255,255,255,0.5)",
+                  color: "color-mix(in srgb, var(--color-white) 50%, transparent)",
                   margin: 0,
                 }}
               >

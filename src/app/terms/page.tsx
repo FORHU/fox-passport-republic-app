@@ -42,11 +42,11 @@ function Clause({
     <section className="scroll-mt-28 mb-10 sm:mb-14">
       <div className="flex items-center gap-3 mb-3">
         {Icon ? (
-          <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-white/5 border border-white/10 text-[#ccff00]">
+          <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-white/5 border border-white/10 text-accent">
             <Icon className="h-4 w-4" />
           </div>
         ) : (
-          <span className="font-mono text-xs text-[#ccff00] px-2 py-0.5 rounded bg-[#ccff00]/10 border border-[#ccff00]/20">
+          <span className="font-mono text-xs text-accent px-2 py-0.5 rounded bg-accent/10 border border-accent/20">
             §{num}
           </span>
         )}
@@ -63,7 +63,7 @@ function Clause({
 
 export default function TermsOfServicePage() {
   return (
-    <div className="min-h-screen bg-[#070709] text-gray-200 antialiased selection:bg-[#ccff00] selection:text-black">
+    <div className="min-h-screen bg-canvas text-gray-200 antialiased selection:bg-accent selection:text-black">
       {/* Navigation Header */}
       <LandingHeader />
 
@@ -73,7 +73,7 @@ export default function TermsOfServicePage() {
         <div className="mb-6 flex items-center gap-2">
           <Link
             href="/"
-            className="inline-flex items-center gap-1.5 text-xs font-semibold text-gray-400 hover:text-[#ccff00] transition-colors"
+            className="inline-flex items-center gap-1.5 text-xs font-semibold text-gray-400 hover:text-accent transition-colors"
           >
             <ArrowLeft className="h-3.5 w-3.5" />
             Back to Home
@@ -86,7 +86,7 @@ export default function TermsOfServicePage() {
 
         {/* Hero Section */}
         <div className="border-b border-white/10 pb-8 sm:pb-12 mb-10 sm:mb-14">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#ccff00]/10 border border-[#ccff00]/20 text-[#ccff00] text-xs font-semibold uppercase tracking-wider mb-4">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-accent/10 border border-accent/20 text-accent text-xs font-semibold uppercase tracking-wider mb-4">
             <Scale className="h-3.5 w-3.5" />
             The Republic Charter
           </div>
@@ -105,7 +105,7 @@ export default function TermsOfServicePage() {
             <span>&bull;</span>
             <span>Last updated: {LAST_UPDATED}</span>
             <span>&bull;</span>
-            <Link href="/privacy" className="text-[#ccff00] hover:underline">
+            <Link href="/privacy" className="text-accent hover:underline">
               Privacy Policy &rarr;
             </Link>
           </div>
@@ -230,7 +230,7 @@ export default function TermsOfServicePage() {
             Questions regarding these Terms? Contact us at{" "}
             <a
               href="mailto:support@foxpassport.com"
-              className="text-[#ccff00] font-semibold hover:underline"
+              className="text-accent font-semibold hover:underline"
             >
               support@foxpassport.com
             </a>

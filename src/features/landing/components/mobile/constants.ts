@@ -65,7 +65,7 @@ export const FEATURES = [
   },
   {
     icon: "bolt",
-    color: "#ccff00",
+    color: "var(--accent-text)",
     bg: "rgba(204,255,0,0.12)",
     title: "Instant Booking",
     desc: "Skip the DMs. Book your spot instantly and get tickets to your phone.",

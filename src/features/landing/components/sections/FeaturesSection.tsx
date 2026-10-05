@@ -52,9 +52,9 @@ export default function FeaturesSection() {
           <motion.div
             custom={1}
             variants={cardVariants}
-            className={`${CARD_BASE} hover:border-[#ccff00]/50 hover:shadow-[0_0_30px_-5px_rgba(204,255,0,0.3)]`}
+            className={`${CARD_BASE} hover:border-accent/50 hover:shadow-[0_0_30px_-5px_rgba(204,255,0,0.3)]`}
           >
-            <div className="h-9 w-9 sm:h-16 sm:w-16 rounded-xl sm:rounded-2xl bg-[#ccff00]/10 text-[#ccff00] flex items-center justify-center mb-3 sm:mb-6 group-hover:scale-110 group-hover:rotate-12 group-hover:bg-[#ccff00] group-hover:text-black transition-all shadow-[0_0_20px_rgba(204,255,0,0.2)]">
+            <div className="h-9 w-9 sm:h-16 sm:w-16 rounded-xl sm:rounded-2xl bg-accent/10 text-accent flex items-center justify-center mb-3 sm:mb-6 group-hover:scale-110 group-hover:rotate-12 group-hover:bg-accent group-hover:text-black transition-all shadow-[0_0_20px_rgba(204,255,0,0.2)]">
               <span className="material-symbols-outlined text-[22px] sm:text-[36px]">
                 bolt
               </span>

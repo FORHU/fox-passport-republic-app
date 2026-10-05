@@ -12,7 +12,7 @@ type View = "month" | "week" | "day" | "agenda";
 
 const ROLE_META: Record<CalendarRole, { label: string; color: string }> = {
   guest: { label: "My bookings", color: "#f59e0b" },
-  host: { label: "Events I host", color: "#ccff00" },
+  host: { label: "Events I host", color: "var(--accent-text)" },
   organizer: { label: "Organizing", color: "#e879f9" },
   venue: { label: "At my venues", color: "#ec4899" },
   supplier: { label: "Supplying", color: "#38bdf8" },
@@ -184,7 +184,7 @@ export function CalendarView() {
   };
 
   return (
-    <div className="rounded-[1.5rem] border border-white/10 bg-[#0b0d14] text-white overflow-hidden">
+    <div className="rounded-[1.5rem] border border-white/10 bg-surface text-white overflow-hidden">
       {/* Toolbar */}
       <div className="flex flex-wrap items-center gap-3 border-b border-white/10 p-4">
         <button
@@ -687,7 +687,7 @@ function EntryDetails({
         role="dialog"
         aria-modal="true"
         aria-labelledby="calendar-entry-title"
-        className="w-full max-w-sm rounded-2xl border border-white/10 bg-[#14141c] p-5 shadow-2xl"
+        className="w-full max-w-sm rounded-2xl border border-white/10 bg-surface p-5 shadow-2xl"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-start gap-3">

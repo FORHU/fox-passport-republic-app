@@ -23,7 +23,7 @@ export default function SuppliersPageClient({ eventId }: { eventId: string }) {
   const eventName = bids.data?.find((b) => b.event)?.event?.name;
 
   return (
-    <div className="bg-[#02040a] text-white min-h-screen font-body antialiased">
+    <div className="bg-canvas text-white min-h-screen font-body antialiased">
       <DashboardHeader />
       <main className="pt-28 pb-28 sm:pb-20">
         <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8 space-y-8">

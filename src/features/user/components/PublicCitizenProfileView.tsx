@@ -161,7 +161,7 @@ export default function PublicCitizenProfileView({
   };
 
   return (
-    <div className="min-h-screen bg-[#09090b] text-white pt-20 pb-28 px-4 sm:px-6 selection:bg-lime-400 selection:text-black">
+    <div className="min-h-screen bg-canvas text-white pt-20 pb-28 px-4 sm:px-6 selection:bg-lime-400 selection:text-black">
       <div className="max-w-4xl mx-auto space-y-6">
         {/* Navigation Breadcrumb */}
         <div className="flex items-center justify-between">
@@ -408,7 +408,7 @@ export default function PublicCitizenProfileView({
         </div>
 
         {/* ── INTERACTIVE TABS HEADER ────────────────────────────────── */}
-        <div className="sticky top-0 z-20 flex border-b border-zinc-800/80 gap-6 overflow-x-auto scrollbar-none text-sm font-bold bg-[#09090b]/95 backdrop-blur-xl pt-2">
+        <div className="sticky top-0 z-20 flex border-b border-zinc-800/80 gap-6 overflow-x-auto scrollbar-none text-sm font-bold bg-canvas/95 backdrop-blur-xl pt-2">
           <button
             onClick={() => setActiveTab("stamps")}
             className={`pb-3 flex items-center gap-2 transition-colors relative ${

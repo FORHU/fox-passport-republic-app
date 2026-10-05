@@ -61,7 +61,7 @@ export const ProgressDashboard: React.FC<ProgressDashboardProps> = ({
                 before the eye even reaches the headline. */}
             <Link
               href="/"
-              className="flex items-center gap-1.5 w-fit text-white/40 hover:text-[#ccff00] text-xs font-semibold transition-colors group"
+              className="flex items-center gap-1.5 w-fit text-white/40 hover:text-accent text-xs font-semibold transition-colors group"
             >
               <span className="material-symbols-outlined text-[16px] group-hover:-translate-x-0.5 transition-transform">
                 arrow_back
@@ -78,7 +78,7 @@ export const ProgressDashboard: React.FC<ProgressDashboardProps> = ({
 
             <h1 className="text-5xl md:text-7xl font-display font-bold text-white tracking-tight leading-[0.85]">
               Progress <br />
-              <span className="text-[#ccff00] underline decoration-[#ccff00]/20">
+              <span className="text-accent underline decoration-accent/20">
                 Dashboard
               </span>
             </h1>
@@ -90,13 +90,13 @@ export const ProgressDashboard: React.FC<ProgressDashboardProps> = ({
           </div>
 
           <div className="glass-card p-8 rounded-[2.5rem] min-w-[320px] border-t border-white/10 shadow-glow relative overflow-hidden group">
-            <div className="absolute top-[-20%] right-[-20%] w-full h-full bg-[#ccff00]/5 rounded-full blur-[60px] pointer-events-none group-hover:bg-[#ccff00]/10 transition-all duration-500"></div>
+            <div className="absolute top-[-20%] right-[-20%] w-full h-full bg-accent/5 rounded-full blur-[60px] pointer-events-none group-hover:bg-accent/10 transition-all duration-500"></div>
 
             <div className="relative z-10 flex justify-between items-center mb-4">
               <span className="text-xs font-bold uppercase tracking-widest text-white/50">
                 Total Mastery
               </span>
-              <span className="text-[#ccff00] text-2xl">⭐</span>
+              <span className="text-accent text-2xl">⭐</span>
             </div>
 
             <div className="text-5xl font-display font-bold text-white mb-4">
@@ -105,7 +105,7 @@ export const ProgressDashboard: React.FC<ProgressDashboardProps> = ({
 
             <div className="w-full bg-white/10 rounded-full h-3 mb-2 overflow-hidden">
               <div
-                className="bg-linear-to-r from-[#ccff00] to-green-500 h-full rounded-full shadow-[0_0_10px_#ccff00]"
+                className="bg-linear-to-r from-accent to-green-500 h-full rounded-full shadow-[0_0_10px_#ccff00]"
                 style={{
                   width: `${Math.min((totalXP / maxTotalXP) * 100, 100)}%`,
                 }}
@@ -167,10 +167,10 @@ export const ProgressDashboard: React.FC<ProgressDashboardProps> = ({
       <section className="space-y-8">
         <div className="flex items-center justify-between">
           <h2 className="text-3xl font-display font-bold text-white flex items-center gap-3">
-            <span className="material-symbols-outlined text-[#ccff00] text-[32px]">
+            <span className="material-symbols-outlined text-accent text-[32px]">
               award_star
             </span>
-            Recent Drops <span className="text-[#ccff00]">&</span> Badges
+            Recent Drops <span className="text-accent">&</span> Badges
           </h2>
           <button
             onClick={() => router.push("/user/passport")}
@@ -201,7 +201,7 @@ export const ProgressDashboard: React.FC<ProgressDashboardProps> = ({
           <div className="flex items-center justify-between">
             <div>
               <h2 className="text-3xl font-display font-bold text-white mb-2">
-                My <span className="text-[#ccff00]">Passport</span>
+                My <span className="text-accent">Passport</span>
               </h2>
               <p className="text-white/50">
                 Collection of events you&apos;ve attended
@@ -235,7 +235,7 @@ export const ProgressDashboard: React.FC<ProgressDashboardProps> = ({
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           <div className="space-y-2">
-            <h3 className="text-lg font-bold text-[#ccff00]">User Path</h3>
+            <h3 className="text-lg font-bold text-accent">User Path</h3>
             <ul className="space-y-1 text-sm text-white/50">
               <li>• Book an event: +{XP_REWARDS.bookEvent} XP</li>
               <li>• Attend an event: +{XP_REWARDS.attendEvent} XP</li>
@@ -245,7 +245,7 @@ export const ProgressDashboard: React.FC<ProgressDashboardProps> = ({
           </div>
 
           <div className="space-y-2">
-            <h3 className="text-lg font-bold text-[#ccff00]">Foxer Path</h3>
+            <h3 className="text-lg font-bold text-accent">Foxer Path</h3>
             <ul className="space-y-1 text-sm text-white/50">
               <li>• Create listing: +{XP_REWARDS.createListing} XP</li>
               <li>• Listing booked: +{XP_REWARDS.listingBooked} XP</li>
@@ -255,7 +255,7 @@ export const ProgressDashboard: React.FC<ProgressDashboardProps> = ({
           </div>
 
           <div className="space-y-2">
-            <h3 className="text-lg font-bold text-[#ccff00]">
+            <h3 className="text-lg font-bold text-accent">
               Venue Foxer Path
             </h3>
             <ul className="space-y-1 text-sm text-white/50">

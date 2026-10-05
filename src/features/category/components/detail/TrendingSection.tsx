@@ -23,7 +23,7 @@ export const TrendingSection: React.FC<TrendingSectionProps> = ({
         </h2>
         <Link
           href={`/categories/${category.slug ?? category.id}`}
-          className="text-sm font-bold text-white hover:text-[#ccff00] transition-colors flex items-center gap-2 group"
+          className="text-sm font-bold text-white hover:text-accent transition-colors flex items-center gap-2 group"
         >
           View all{" "}
           <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
@@ -44,7 +44,7 @@ export const TrendingSection: React.FC<TrendingSectionProps> = ({
             <Link
               key={template.id}
               href={`/event/${template.id}`}
-              className="group bg-white/5 border border-white/5 rounded-[2rem] overflow-hidden hover:border-white/20 hover:-translate-y-1 hover:shadow-2xl hover:shadow-[#ccff00]/5 transition-all duration-300 block"
+              className="group bg-white/5 border border-white/5 rounded-[2rem] overflow-hidden hover:border-white/20 hover:-translate-y-1 hover:shadow-2xl hover:shadow-accent/5 transition-all duration-300 block"
             >
               <div className="relative aspect-4/3 overflow-hidden">
                 <Image
@@ -56,14 +56,14 @@ export const TrendingSection: React.FC<TrendingSectionProps> = ({
                 />
                 <div className="absolute inset-0 bg-linear-to-t from-black/60 to-transparent" />
                 {template.bookingCount > 0 && (
-                  <div className="absolute top-3 left-3 bg-[#ccff00] text-black text-[10px] font-black px-2.5 py-1 rounded-full uppercase tracking-widest">
+                  <div className="absolute top-3 left-3 bg-accent text-black text-[10px] font-black px-2.5 py-1 rounded-full uppercase tracking-widest">
                     🔥 {template.bookingCount} booked
                   </div>
                 )}
               </div>
 
               <div className="p-5">
-                <h4 className="font-bold text-white text-base mb-1 group-hover:text-[#ccff00] transition-colors line-clamp-1">
+                <h4 className="font-bold text-white text-base mb-1 group-hover:text-accent transition-colors line-clamp-1">
                   {template.name}
                 </h4>
                 {location && (
@@ -76,7 +76,7 @@ export const TrendingSection: React.FC<TrendingSectionProps> = ({
                   <span className="text-xs text-gray-500">
                     by {template.owner?.name ?? "Organizer"}
                   </span>
-                  <span className="h-7 w-7 rounded-full bg-white/10 flex items-center justify-center text-white group-hover:bg-[#ccff00] group-hover:text-black transition-colors">
+                  <span className="h-7 w-7 rounded-full bg-white/10 flex items-center justify-center text-white group-hover:bg-accent group-hover:text-black transition-colors">
                     <ArrowRight className="w-3.5 h-3.5" />
                   </span>
                 </div>

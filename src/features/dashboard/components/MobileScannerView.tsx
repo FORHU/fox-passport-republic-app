@@ -6,7 +6,7 @@ export default function MobileScannerView() {
   return (
     <div
       style={{
-        background: "#050608",
+        background: "var(--canvas)",
         minHeight: "100vh",
         display: "flex",
         flexDirection: "column",
@@ -34,7 +34,7 @@ export default function MobileScannerView() {
         <p
           style={{
             fontSize: "11px",
-            color: "rgba(255,255,255,0.45)",
+            color: "color-mix(in srgb, var(--color-white) 45%, transparent)",
             margin: 0,
           }}
         >
@@ -105,7 +105,7 @@ export default function MobileScannerView() {
         <p
           style={{
             fontSize: "12px",
-            color: "rgba(255,255,255,0.4)",
+            color: "color-mix(in srgb, var(--color-white) 40%, transparent)",
             marginBottom: "16px",
           }}
         >
@@ -114,13 +114,13 @@ export default function MobileScannerView() {
         <button
           style={{
             width: "100%",
-            background: "rgba(255,255,255,0.04)",
-            border: "1px solid rgba(255,255,255,0.12)",
+            background: "color-mix(in srgb, var(--color-white) 4%, transparent)",
+            border: "1px solid color-mix(in srgb, var(--color-white) 12%, transparent)",
             borderRadius: "14px",
             padding: "14px",
             fontSize: "13px",
             fontWeight: 700,
-            color: "#fff",
+            color: "var(--color-white)",
             cursor: "pointer",
           }}
         >

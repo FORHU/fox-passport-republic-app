@@ -21,7 +21,7 @@ export function PaginationBar({
         <button
           disabled={page === 1}
           onClick={() => onPageChange(page - 1)}
-          className="h-8 w-8 rounded-full border border-white/10 flex items-center justify-center text-white/60 hover:border-[#ccff00] hover:text-[#ccff00] disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+          className="h-8 w-8 rounded-full border border-white/10 flex items-center justify-center text-white/60 hover:border-accent hover:text-accent disabled:opacity-30 disabled:cursor-not-allowed transition-all"
         >
           <span className="material-symbols-outlined text-[16px]">
             chevron_left
@@ -33,8 +33,8 @@ export function PaginationBar({
             onClick={() => onPageChange(p)}
             className={`h-8 w-8 rounded-full text-xs font-bold transition-all ${
               p === page
-                ? "bg-[#ccff00] text-black"
-                : "border border-white/10 text-white/60 hover:border-[#ccff00] hover:text-[#ccff00]"
+                ? "bg-accent text-black"
+                : "border border-white/10 text-white/60 hover:border-accent hover:text-accent"
             }`}
           >
             {p}
@@ -43,7 +43,7 @@ export function PaginationBar({
         <button
           disabled={page === totalPages}
           onClick={() => onPageChange(page + 1)}
-          className="h-8 w-8 rounded-full border border-white/10 flex items-center justify-center text-white/60 hover:border-[#ccff00] hover:text-[#ccff00] disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+          className="h-8 w-8 rounded-full border border-white/10 flex items-center justify-center text-white/60 hover:border-accent hover:text-accent disabled:opacity-30 disabled:cursor-not-allowed transition-all"
         >
           <span className="material-symbols-outlined text-[16px]">
             chevron_right

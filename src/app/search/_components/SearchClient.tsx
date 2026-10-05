@@ -129,7 +129,7 @@ export default function SearchClient() {
   };
 
   return (
-    <div className="min-h-screen bg-[#0c0d14] text-white relative">
+    <div className="min-h-screen bg-surface text-white relative">
       <LandingHeader
         onSignIn={() => useAuthStore.getState().openLogin()}
         search={{ value: searchQuery, onChange: setSearchQuery }}
@@ -166,7 +166,7 @@ export default function SearchClient() {
                 </span>
                 Filters
                 {(category || city || maxPrice) && (
-                  <span className="h-1.5 w-1.5 rounded-full bg-[#ccff00]" />
+                  <span className="h-1.5 w-1.5 rounded-full bg-accent" />
                 )}
               </button>
             </SheetTrigger>
@@ -197,7 +197,7 @@ export default function SearchClient() {
 
           <SheetContent
             side="bottom"
-            className="bg-[#0c0d14] border-white/10 h-[80vh] max-h-[90vh] overflow-y-auto rounded-t-3xl p-4 sm:p-6"
+            className="bg-surface border-white/10 h-[80vh] max-h-[90vh] overflow-y-auto rounded-t-3xl p-4 sm:p-6"
           >
             <SheetTitle className="sr-only">Filters</SheetTitle>
             <SearchFilters onClose={() => setFiltersOpen(false)} />

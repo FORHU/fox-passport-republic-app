@@ -44,7 +44,7 @@ export default function SessionTimeoutModal({
 
   return (
     <div className="fixed inset-0 z-[999] flex items-center justify-center bg-black/70 backdrop-blur-sm">
-      <div className="bg-[#0f111a] border border-white/10 rounded-2xl p-8 max-w-sm w-full mx-4 space-y-5">
+      <div className="bg-surface border border-white/10 rounded-2xl p-8 max-w-sm w-full mx-4 space-y-5">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-xl bg-yellow-500/20 flex items-center justify-center shrink-0">
             <Clock className="text-yellow-400" size={20} />
@@ -71,7 +71,7 @@ export default function SessionTimeoutModal({
           <button
             onClick={onStayLoggedIn}
             disabled={isLoggingOut}
-            className="flex-1 py-2.5 rounded-xl bg-[#ccff00] text-black font-bold text-sm hover:opacity-90 active:scale-95 transition-all disabled:opacity-40 disabled:pointer-events-none"
+            className="flex-1 py-2.5 rounded-xl bg-accent text-black font-bold text-sm hover:opacity-90 active:scale-95 transition-all disabled:opacity-40 disabled:pointer-events-none"
           >
             Stay Logged In
           </button>

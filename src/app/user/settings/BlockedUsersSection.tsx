@@ -9,7 +9,7 @@ export default function BlockedUsersSection() {
   const users = data?.data ?? [];
 
   return (
-    <div className="bg-[#0f111a] border border-white/5 rounded-[2rem] p-8 space-y-6">
+    <div className="bg-surface border border-white/5 rounded-[2rem] p-8 space-y-6">
       <div>
         <h2 className="text-lg font-display font-bold mb-1">
           Blocked Citizens

@@ -37,13 +37,13 @@ export default function PaymentConfirmationModal({
 
   return createPortal(
     <div
-      className="fixed inset-0 z-[1000] flex items-center justify-center bg-[#050608] p-4 animate-in fade-in duration-200"
+      className="fixed inset-0 z-[1000] flex items-center justify-center bg-canvas p-4 animate-in fade-in duration-200"
       role="presentation"
     >
       <section
         aria-labelledby="payment-confirmation-title"
         aria-modal="true"
-        className="relative w-full max-w-2xl overflow-hidden rounded-[2.5rem] border border-white/15 bg-[#10131d] p-10 shadow-[0_0_80px_rgba(204,255,0,0.12)] animate-in fade-in zoom-in-95 slide-in-from-bottom-4 duration-300"
+        className="relative w-full max-w-2xl overflow-hidden rounded-[2.5rem] border border-white/15 bg-surface p-10 shadow-[0_0_80px_rgba(204,255,0,0.12)] animate-in fade-in zoom-in-95 slide-in-from-bottom-4 duration-300"
         role="dialog"
       >
         <div className="pointer-events-none absolute -right-20 -top-24 h-56 w-56 rounded-full bg-accent/15 blur-3xl" />

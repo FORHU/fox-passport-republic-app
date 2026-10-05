@@ -38,7 +38,7 @@ export default function PartnershipsDashboardPage() {
   };
 
   return (
-    <div className="bg-[#02040a] text-white min-h-screen font-body antialiased">
+    <div className="bg-canvas text-white min-h-screen font-body antialiased">
       <DashboardHeader />
       <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-10 pt-32 space-y-8">
         <div>
@@ -53,7 +53,7 @@ export default function PartnershipsDashboardPage() {
             onClick={() => setActiveTab("incoming")}
             className={`pb-4 px-2 font-medium transition-colors border-b-2 ${
               activeTab === "incoming"
-                ? "text-white border-[#ccff00]"
+                ? "text-white border-accent"
                 : "text-white/50 border-transparent hover:text-white"
             }`}
           >
@@ -63,7 +63,7 @@ export default function PartnershipsDashboardPage() {
             onClick={() => setActiveTab("sent")}
             className={`pb-4 px-2 font-medium transition-colors border-b-2 ${
               activeTab === "sent"
-                ? "text-white border-[#ccff00]"
+                ? "text-white border-accent"
                 : "text-white/50 border-transparent hover:text-white"
             }`}
           >
@@ -73,7 +73,7 @@ export default function PartnershipsDashboardPage() {
             onClick={() => setActiveTab("active")}
             className={`pb-4 px-2 font-medium transition-colors border-b-2 ${
               activeTab === "active"
-                ? "text-white border-[#ccff00]"
+                ? "text-white border-accent"
                 : "text-white/50 border-transparent hover:text-white"
             }`}
           >

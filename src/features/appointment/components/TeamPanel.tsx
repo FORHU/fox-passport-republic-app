@@ -116,7 +116,7 @@ export function TeamPanel({ target, unavailableMessage }: TeamPanelProps) {
   const accepting = settings.data?.acceptsOrganizerRequests ?? false;
 
   return (
-    <div className="relative rounded-[2rem] overflow-hidden border border-white/10 bg-[#0f111a] p-8 space-y-6">
+    <div className="relative rounded-[2rem] overflow-hidden border border-white/10 bg-surface p-8 space-y-6">
       <div>
         <div className="flex items-center gap-2 mb-1">
           <Users className="w-5 h-5 text-accent" />

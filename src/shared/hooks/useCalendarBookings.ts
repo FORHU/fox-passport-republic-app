@@ -31,7 +31,7 @@ export interface MonthItem {
 export function getBgColor(type: CalendarBooking["type"]): string {
   switch (type) {
     case "event":
-      return "bg-[#ccff00] text-black";
+      return "bg-accent text-black";
     case "venue":
       return "bg-pink-500 text-white";
     case "inventory":

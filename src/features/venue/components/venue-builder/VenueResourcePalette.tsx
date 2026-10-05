@@ -69,7 +69,7 @@ export function VenueResourcePalette({
   return (
     <>
       {/* Category Navigation */}
-      <nav className="w-16 sm:w-20 md:w-24 shrink-0 bg-[#0f111a] border-r border-white/5 flex flex-col items-center py-4 sm:py-6 gap-3 sm:gap-6 overflow-y-auto hide-scrollbar z-20">
+      <nav className="w-16 sm:w-20 md:w-24 shrink-0 bg-surface border-r border-white/5 flex flex-col items-center py-4 sm:py-6 gap-3 sm:gap-6 overflow-y-auto hide-scrollbar z-20">
         {RESOURCE_CATEGORIES.map((cat) => (
           <button
             key={cat.id}
@@ -91,7 +91,7 @@ export function VenueResourcePalette({
       </nav>
 
       {/* Resource List */}
-      <aside className="w-full sm:w-72 md:w-80 shrink-0 border-r border-white/5 bg-[#0f111a] flex flex-col relative z-10">
+      <aside className="w-full sm:w-72 md:w-80 shrink-0 border-r border-white/5 bg-surface flex flex-col relative z-10">
         <div className="p-6 pb-2">
           <h3 className="font-display font-bold text-lg text-white mb-1">
             {currentCategoryLabel}
@@ -100,7 +100,7 @@ export function VenueResourcePalette({
         </div>
 
         <div className="px-6 pb-4 space-y-4 pt-2">
-          <div className="bg-[#1a1d2d] border border-white/10 rounded-xl p-4 shadow-xl overflow-hidden">
+          <div className="bg-surface-raised border border-white/10 rounded-xl p-4 shadow-xl overflow-hidden">
             <div className="flex justify-between items-center mb-4">
               <span className="text-[10px] font-bold text-accent uppercase tracking-[0.2em]">
                 Add {currentCategoryLabel} Item
@@ -210,7 +210,7 @@ export function VenueResourcePalette({
               placeholder="Search items..."
               value={searchQuery}
               onChange={(e) => onSearchChange(e.target.value)}
-              className="w-full bg-[#1a1d2d]/50 border border-white/5 rounded-xl py-2 pl-10 pr-4 text-xs text-white focus:border-accent outline-none placeholder:text-white/10"
+              className="w-full bg-surface-raised/50 border border-white/5 rounded-xl py-2 pl-10 pr-4 text-xs text-white focus:border-accent outline-none placeholder:text-white/10"
             />
           </div>
         </div>
@@ -221,7 +221,7 @@ export function VenueResourcePalette({
               key={item.id}
               draggable
               onDragStart={(e) => onDragStart(e, item)}
-              className="group bg-[#161b26] hover:bg-[#1c2230] border border-white/5 hover:border-white/10 rounded-2xl p-4 cursor-grab relative"
+              className="group bg-surface-raised hover:bg-surface-raised border border-white/5 hover:border-white/10 rounded-2xl p-4 cursor-grab relative"
             >
               <div className="flex gap-4">
                 <div className="h-12 w-12 rounded-xl bg-black/40 flex items-center justify-center overflow-hidden shrink-0 border border-white/5">
