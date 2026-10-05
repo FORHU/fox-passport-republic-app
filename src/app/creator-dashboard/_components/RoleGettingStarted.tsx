@@ -46,7 +46,14 @@ function readDismissed(): RoleType[] {
  * connected, a venue approval…), so it reflects where they actually are, and
  * a role's tab disappears once its steps are all done or it's dismissed.
  */
-export function RoleGettingStarted({ totals }: { totals: ListingTotals }) {
+export function RoleGettingStarted({
+  totals,
+  onlyRole,
+}: {
+  totals: ListingTotals;
+  /** Show just this role's checklist (for a page that belongs to one role). */
+  onlyRole?: RoleType;
+}) {
   const user = useAuthStore((s) => s.user);
   const access = useRoleAccess();
   const roleType = user?.roleType ?? [];
@@ -203,7 +210,10 @@ export function RoleGettingStarted({ totals }: { totals: ListingTotals }) {
       ],
     });
 
-  const visible = checklists.filter(
+  const shown = onlyRole
+    ? checklists.filter((c) => c.role === onlyRole)
+    : checklists;
+  const visible = shown.filter(
     (c) =>
       !dismissed.includes(c.role) && !c.steps.every((s) => s.done === true),
   );
@@ -211,7 +221,7 @@ export function RoleGettingStarted({ totals }: { totals: ListingTotals }) {
   const current =
     visible.find((c) => c.role === activeRole) ?? visible[0] ?? null;
 
-  const hiddenCount = checklists.filter(
+  const hiddenCount = shown.filter(
     (c) =>
       dismissed.includes(c.role) && !c.steps.every((s) => s.done === true),
   ).length;
