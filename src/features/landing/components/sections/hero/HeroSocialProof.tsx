@@ -1,50 +1,83 @@
 "use client";
 
 import React from "react";
+import Link from "next/link";
+import { useQuery } from "@tanstack/react-query";
+import api from "@/shared/lib/axios";
+
+interface FoxerPreview {
+  id: string;
+  name: string;
+  imgId?: string | null;
+}
+
+/** A few real Foxers and the real total — nothing here is made up. */
+async function fetchFoxerPreview(): Promise<{
+  foxers: FoxerPreview[];
+  total: number;
+}> {
+  const res = await api.get("/users/foxers", { params: { limit: 3, page: 1 } });
+  return {
+    foxers: res.data?.data ?? [],
+    total: res.data?.pagination?.total ?? 0,
+  };
+}
+
+const compact = (n: number) =>
+  new Intl.NumberFormat(undefined, {
+    notation: "compact",
+    maximumFractionDigits: 1,
+  }).format(n);
 
 export function HeroSocialProof() {
+  const { data } = useQuery({
+    queryKey: ["foxers", "hero-preview"],
+    queryFn: fetchFoxerPreview,
+    staleTime: 1000 * 60 * 10,
+  });
+
+  // Until there's something true to say, say nothing.
+  if (!data || data.total === 0) return null;
+
+  const extra = data.total - data.foxers.length;
+
   return (
-    <div className="flex items-center justify-center lg:justify-start gap-6 pt-4">
+    <div className="flex items-center justify-center lg:justify-start gap-4 pt-4">
       <div className="flex -space-x-4 hover:space-x-0 transition-all duration-500">
-        <img
-          alt="User"
-          className="h-8 w-8 sm:h-10 sm:w-10 rounded-full border-2 border-background object-cover hover:scale-110 hover:z-10 transition-transform"
-          src="https://lh3.googleusercontent.com/aida-public/AB6AXuD-A0KmDrOi8KQZt5YVraaoL54kpKL4sLPhBoZj6kgs089hsWPz2qJfdMww3r4NpGGBYTSIrptbwjoMo0ZmnZFpuLCt3lExTQAv1QauCbCl6k3vscDYH5z0t7EqZ-NulKXiQjy8VxqCwlvvy4h_vf5j2Lf7cN1haDT24rR_FzF8rO9swBYh5KVGtV09ogFZmVJAcrnGZCXHQEkJR8TzFmrSMkK0jRaOzO43L1j7KQZ0WraTBcdonNTmEh2phQsvKrYuVv6P1wDPPAM"
-        />
-        <img
-          alt="User"
-          className="h-8 w-8 sm:h-10 sm:w-10 rounded-full border-2 border-background object-cover hover:scale-110 hover:z-10 transition-transform"
-          src="https://lh3.googleusercontent.com/aida-public/AB6AXuAawAmjQLUXCUHrFlbDS_ydJnuUpm_WUNW9I5alXTGfJCNDU8_Gnn4cey4Tt_fcRefnkP3AK4S1C13YiOGOnCLmz3aSgwJP_JwChCJBNSCeFugn97n0lpqg6JVBy926WV4xcXgfaLeBW6GNWknG__nTJeUYtmKctJxCDA5ODZq2ZxpowxJKzUXEpcS9W1ThdbCuR0rXQTeqeW2URDNRYLxCNmXPoWUlxq_9LdMzamdZIYkwK2XK3b0k_kVV4njSFnmyGojp2293vrU"
-        />
-        <img
-          alt="User"
-          className="h-8 w-8 sm:h-10 sm:w-10 rounded-full border-2 border-background object-cover hover:scale-110 hover:z-10 transition-transform"
-          src="https://lh3.googleusercontent.com/aida-public/AB6AXuDgd--zxF5w1ZztnRmVlmV-feUqN_qBWaBYUT5CujXc0w-0AUuWAmHt_hqnGMMe6m_fRhEWkVx4s-GPtdMKYzlfSOQqHXDOj1gZA2nyUJx9g-k_T2GXeIiYRFWE4OhzISNwTdKHnUtx3za3LKNh05jbmOS4npA_2XzCQ6-b0jqwzXF4Zy5LKfBRtJpHKvZknn8VWcB24VzWfO5VUZJ4zVgdHD766vR4O1OP3A6j3meIxBZLNL5KDybSUXLKzRdPbfxAQ2NIKRBRKsA"
-        />
-        <div className="flex h-8 w-8 sm:h-10 sm:w-10 items-center justify-center rounded-full bg-surface-highlight text-white border-2 border-background text-[10px] sm:text-xs font-bold hover:bg-accent hover:text-black transition-colors cursor-pointer">
-          +2k
-        </div>
+        {data.foxers.map((foxer) =>
+          foxer.imgId ? (
+            <img
+              key={foxer.id}
+              alt={foxer.name}
+              title={foxer.name}
+              className="h-8 w-8 sm:h-10 sm:w-10 rounded-full border-2 border-background object-cover hover:scale-110 hover:z-10 transition-transform"
+              src={foxer.imgId}
+            />
+          ) : (
+            <div
+              key={foxer.id}
+              title={foxer.name}
+              className="flex h-8 w-8 sm:h-10 sm:w-10 items-center justify-center rounded-full border-2 border-background bg-surface-highlight text-white text-xs font-bold hover:scale-110 hover:z-10 transition-transform"
+            >
+              {foxer.name?.charAt(0)?.toUpperCase() || "F"}
+            </div>
+          ),
+        )}
+        {extra > 0 && (
+          <div className="flex h-8 w-8 sm:h-10 sm:w-10 items-center justify-center rounded-full bg-surface-highlight text-white border-2 border-background text-[10px] sm:text-xs font-bold">
+            +{compact(extra)}
+          </div>
+        )}
       </div>
-      <div className="text-xs sm:text-sm font-medium text-text-muted group cursor-default">
-        <div className="flex text-accent mb-0.5 group-hover:gap-0.5 transition-all">
-          <span className="material-symbols-outlined text-[14px] sm:text-[18px] fill-current animate-pulse">
-            star
-          </span>
-          <span className="material-symbols-outlined text-[14px] sm:text-[18px] fill-current animate-pulse delay-75">
-            star
-          </span>
-          <span className="material-symbols-outlined text-[14px] sm:text-[18px] fill-current animate-pulse delay-100">
-            star
-          </span>
-          <span className="material-symbols-outlined text-[14px] sm:text-[18px] fill-current animate-pulse delay-150">
-            star
-          </span>
-          <span className="material-symbols-outlined text-[14px] sm:text-[18px] fill-current animate-pulse delay-200">
-            star
-          </span>
-        </div>
-        Verified by Citizens
-      </div>
+      <Link
+        href="/search"
+        className="text-xs sm:text-sm font-medium text-text-muted hover:text-white transition-colors"
+      >
+        <span className="block font-bold text-white">
+          {compact(data.total)} verified Foxer{data.total === 1 ? "" : "s"}
+        </span>
+        ready to make your event happen
+      </Link>
     </div>
   );
 }

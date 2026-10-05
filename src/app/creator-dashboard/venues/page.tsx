@@ -12,7 +12,7 @@ export default async function HostVenuesPage() {
   return (
     <>
       <div className="lg:hidden">
-        <MobileMyListingsView />
+        <MobileMyListingsView venues={venues} />
       </div>
       <div className="hidden lg:block">
         <HostVenuesClient initialVenues={venues} />

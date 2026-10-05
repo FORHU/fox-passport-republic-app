@@ -5,12 +5,71 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/shared/auth/useAuthStore";
 import RequireAuth from "@/shared/auth/RequireAuth";
+import { toast } from "sonner";
 import api from "@/shared/lib/axios";
 import { isFoxerRole } from "@/shared/constants/roles";
 import { ROLES, type RoleCatalogEntry } from "../roleCatalog";
 import { RoleDetailsModal } from "./RoleDetailsModal";
+import {
+  CascadingLocationFields,
+  type LocationValue,
+} from "@/shared/components/ui/CascadingLocationFields";
 
 type Step = 1 | 2 | 3;
+
+/** The card every step sits in — the role-application form's look. */
+const STEP_CARD =
+  "animate-in fade-in duration-300 relative bg-surface-raised rounded-[2.5rem] p-6 sm:p-10 md:p-12 border border-white/5 shadow-2xl overflow-hidden";
+
+function StepHeader({
+  icon,
+  color = "var(--accent-text)",
+  title,
+  subtitle,
+}: {
+  icon: string;
+  color?: string;
+  title: React.ReactNode;
+  subtitle: string;
+}) {
+  return (
+    <>
+      <div
+        className="pointer-events-none absolute top-0 right-0 -mr-20 -mt-20 h-64 w-64 rounded-full opacity-20 blur-[100px]"
+        style={{ backgroundColor: color }}
+      />
+      <div className="relative text-center mb-10">
+        <div
+          className="h-16 w-16 rounded-2xl flex items-center justify-center mx-auto mb-6"
+          style={{ background: `color-mix(in srgb, ${color} 15%, transparent)` }}
+        >
+          <span
+            className="material-symbols-outlined text-[32px]"
+            style={{ color }}
+          >
+            {icon}
+          </span>
+        </div>
+        <h1 className="text-3xl md:text-4xl font-display font-bold text-white mb-2">
+          {title}
+        </h1>
+        <p className="text-white/60">{subtitle}</p>
+      </div>
+    </>
+  );
+}
+
+/** Back on the left, the step's own action on the right, under a divider. */
+function StepFooter({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="relative mt-10 pt-6 border-t border-white/5 flex flex-col-reverse sm:flex-row sm:items-center gap-3">
+      {children}
+    </div>
+  );
+}
+
+const BACK_BUTTON =
+  "inline-flex items-center justify-center gap-1.5 py-3 px-4 text-sm font-bold text-white/40 hover:text-white transition-colors";
 
 export default function OnboardingClient({ user: serverUser }: { user: any }) {
   const router = useRouter();
@@ -32,7 +91,24 @@ export default function OnboardingClient({ user: serverUser }: { user: any }) {
     { id: string; roleType: string }[]
   >([]);
   const [name, setName] = useState(user?.name ?? "");
-  const [city, setCity] = useState("");
+  // Their home address: country → state/province → city, plus an optional
+  // barangay (district outside the Philippines).
+  const [address, setAddress] = useState<LocationValue>({
+    country: user?.country ?? "",
+    state: user?.state ?? "",
+    city: user?.city ?? "",
+  });
+  const [district, setDistrict] = useState(user?.district ?? "");
+  const districtLabel = /^philippines$/i.test(address.country.trim())
+    ? "Barangay"
+    : "District";
+  // What still blocks Continue, named so the button can say why.
+  const missing = [
+    !name.trim() && "display name",
+    !address.country.trim() && "country",
+    !address.city.trim() && "city",
+  ].filter(Boolean) as string[];
+  const profileComplete = missing.length === 0;
   const [isSaving, setIsSaving] = useState(false);
   // The role whose details modal is open — picking a role explains it first
   // instead of dropping straight into its application form.
@@ -62,168 +138,241 @@ export default function OnboardingClient({ user: serverUser }: { user: any }) {
   const goBackFromRoles = () => setStep(hasCommittedRoles ? 1 : 2);
 
   const handleProfileContinue = async () => {
-    if (name.trim()) {
-      try {
-        setIsSaving(true);
-        await api.put("/profile", {
+    if (!profileComplete) return;
+    try {
+      setIsSaving(true);
+      await api.put("/profile", {
+        name: name.trim(),
+        country: address.country.trim(),
+        state: address.state.trim(),
+        city: address.city.trim(),
+        district: district.trim(),
+      });
+      if (user)
+        setUser({
+          ...user,
           name: name.trim(),
-          ...(city.trim() ? { city: city.trim() } : {}),
+          country: address.country.trim(),
+          state: address.state.trim(),
+          city: address.city.trim(),
+          district: district.trim(),
         });
-        if (user) setUser({ ...user, name: name.trim() });
-      } catch {
-        // Non-blocking — continue even if save fails
-      } finally {
-        setIsSaving(false);
-      }
+      goAfterProfile();
+    } catch (err: any) {
+      // Stay on the step: moving on would let them believe it was saved.
+      toast.error(
+        err?.response?.data?.message ??
+          "Couldn't save your profile. Please try again.",
+      );
+    } finally {
+      setIsSaving(false);
     }
-    goAfterProfile();
   };
+
+  // The journey shown in the stepper — someone already committed to a role
+  // skips the "what brings you here" step.
+  const journey: { step: Step; label: string }[] = hasCommittedRoles
+    ? [
+        { step: 1, label: "Profile" },
+        { step: 3, label: "Roles" },
+      ]
+    : [
+        { step: 1, label: "Profile" },
+        { step: 2, label: "Interests" },
+        { step: 3, label: "Roles" },
+      ];
+  const currentIndex = journey.findIndex((j) => j.step === step);
+
+  // One label style for every field, the location dropdowns included.
+  const labelClass =
+    "text-xs font-bold text-white/60 uppercase tracking-wider block mb-2";
+  const inputClass =
+    "w-full bg-white/5 border border-white/10 rounded-xl py-3.5 pl-12 pr-4 text-white placeholder:text-white/30 focus:outline-none focus:border-accent/50 focus:bg-white/10 transition-colors disabled:opacity-40 disabled:cursor-not-allowed";
 
   return (
     <RequireAuth>
-      <div className="min-h-screen bg-surface flex items-center justify-center p-4 pt-20 pb-12 font-body">
-        <div className="w-full max-w-2xl">
-          {/* Exit — always visible */}
-          <div className="flex items-center justify-between mb-8">
+      {/* The app-wide page background (booking, checkout, admin, …). */}
+      <div className="relative min-h-screen flex items-center justify-center bg-background bg-gradient-dark text-text-main overflow-hidden px-4 py-12 font-body selection:bg-accent selection:text-black">
+        <div className="relative w-full max-w-2xl mx-auto">
+          {/* Exit + stepper */}
+          <div className="flex items-center justify-between gap-4 mb-8">
             <Link
               href="/"
-              className="flex items-center gap-1.5 text-sm text-white/30 hover:text-white/70 transition-colors"
+              className="flex items-center gap-1.5 text-sm font-bold text-white/40 hover:text-white transition-colors"
             >
-              <span className="material-symbols-outlined text-[16px]">
+              <span className="material-symbols-outlined text-[18px]">
                 arrow_back
               </span>
               Home
             </Link>
 
-            {/* Step progress */}
-            <div className="flex items-center gap-2">
-              {hasCommittedRoles
-                ? // 2-step journey: Profile → Roles
-                  [1, 3].map((s) => {
-                    const active = step === s;
-                    const done = s === 1 && step === 3;
-                    return (
-                      <div
-                        key={s}
-                        className="h-1.5 rounded-full transition-all duration-300"
-                        style={{
-                          width: active ? 32 : 8,
-                          backgroundColor:
-                            active || done
-                              ? "#ccff00"
-                              : "rgba(255,255,255,0.1)",
-                        }}
+            <ol className="flex items-center gap-2">
+              {journey.map((j, i) => {
+                const active = i === currentIndex;
+                const done = i < currentIndex;
+                return (
+                  <li key={j.step} className="flex items-center gap-2">
+                    {i > 0 && (
+                      <span
+                        className={`h-px w-4 sm:w-8 ${done || active ? "bg-accent/60" : "bg-white/10"}`}
                       />
-                    );
-                  })
-                : // 3-step journey: Profile → Intent → Roles
-                  ([1, 2, 3] as Step[]).map((s) => {
-                    const active = step === s;
-                    const done = step > s;
-                    return (
-                      <div
-                        key={s}
-                        className="h-1.5 rounded-full transition-all duration-300"
-                        style={{
-                          width: active ? 32 : 8,
-                          backgroundColor:
-                            active || done
-                              ? "#ccff00"
-                              : "rgba(255,255,255,0.1)",
-                        }}
-                      />
-                    );
-                  })}
-            </div>
-
-            {/* spacer to balance the back link */}
-            <div className="w-16" />
+                    )}
+                    <span
+                      className={`flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-bold uppercase tracking-wider transition-colors ${
+                        active
+                          ? "bg-accent text-black"
+                          : done
+                            ? "bg-accent/15 text-accent"
+                            : "bg-white/5 text-white/40"
+                      }`}
+                      aria-current={active ? "step" : undefined}
+                    >
+                      {done ? (
+                        <span className="material-symbols-outlined text-[14px]">
+                          check
+                        </span>
+                      ) : (
+                        <span>{i + 1}</span>
+                      )}
+                      <span className={active ? "inline" : "hidden sm:inline"}>
+                        {j.label}
+                      </span>
+                    </span>
+                  </li>
+                );
+              })}
+            </ol>
           </div>
 
           {/* ── Step 1: Profile setup ── */}
           {step === 1 && (
-            <div className="animate-in fade-in duration-300">
-              <div className="text-center mb-10">
-                <div className="mb-5 h-16 w-16 mx-auto rounded-full bg-accent/10 flex items-center justify-center text-4xl shadow-[0_0_20px_rgba(204,255,0,0.25)]">
-                  👋
-                </div>
-                <h2 className="text-4xl font-display font-bold text-white mb-3">
-                  {hasExistingRoles ? "Back again," : "Welcome,"}{" "}
-                  <span className="text-accent">
-                    {user?.name?.split(" ")[0] || "Friend"}!
-                  </span>
-                </h2>
-                <p className="text-white/50">
-                  {hasExistingRoles
+            <div className={STEP_CARD}>
+              <StepHeader
+                icon="waving_hand"
+                title={
+                  <>
+                    {hasExistingRoles ? "Back again," : "Welcome,"}{" "}
+                    <span className="text-accent">
+                      {user?.name?.split(" ")[0] || "Friend"}!
+                    </span>
+                  </>
+                }
+                subtitle={
+                  hasExistingRoles
                     ? "Update your profile or continue to manage your roles."
-                    : "Let's set up your profile first."}
-                </p>
-              </div>
+                    : "Let's set up your profile first."
+                }
+              />
 
-              <div className="bg-surface-raised rounded-[2rem] p-8 border border-white/5 space-y-6">
+              <div className="relative space-y-6">
                 <div>
-                  <label className="text-xs font-bold text-white/60 uppercase tracking-wider block mb-2">
+                  <label htmlFor="onboarding-name" className={labelClass}>
                     Display Name <span className="text-accent">*</span>
                   </label>
-                  <input
-                    type="text"
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    className="w-full bg-white/5 border border-white/10 rounded-xl py-3.5 px-4 text-white placeholder:text-white/20 focus:outline-none focus:border-accent/50 focus:bg-white/[0.07] transition-colors"
-                    placeholder="Your full name"
-                  />
-                </div>
-                <div>
-                  <label className="text-xs font-bold text-white/60 uppercase tracking-wider block mb-2">
-                    Your City{" "}
-                    <span className="text-white/30 normal-case font-normal tracking-normal">
-                      — optional
+                  <div className="relative">
+                    <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-[20px] text-white/40 pointer-events-none">
+                      person
                     </span>
-                  </label>
-                  <input
-                    type="text"
-                    value={city}
-                    onChange={(e) => setCity(e.target.value)}
-                    className="w-full bg-white/5 border border-white/10 rounded-xl py-3.5 px-4 text-white placeholder:text-white/20 focus:outline-none focus:border-accent/50 focus:bg-white/[0.07] transition-colors"
-                    placeholder="e.g. Manila, Cebu, Davao"
-                  />
+                    <input
+                      id="onboarding-name"
+                      type="text"
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
+                      className={inputClass}
+                      placeholder="How others will see you"
+                    />
+                  </div>
                 </div>
+
+                <fieldset className="rounded-2xl border border-white/5 bg-white/[0.02] p-4 sm:p-5">
+                  <legend className="sr-only">Your address</legend>
+                  <p className="text-sm font-bold text-white/80 uppercase tracking-wider flex items-center gap-2 mb-1">
+                    <span className="material-symbols-outlined text-[18px] text-white/40">
+                      location_on
+                    </span>
+                    Your Address <span className="text-accent">*</span>
+                  </p>
+                  <p className="text-xs text-white/40 mb-5">
+                    Used to show you events, venues and Foxers near you.
+                  </p>
+
+                  {/* Country on its own row; state and city share the next. */}
+                  <CascadingLocationFields
+                    value={address}
+                    onChange={(next) => setAddress(next)}
+                    labelClassName={labelClass}
+                    className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:[&>*:first-child]:col-span-2"
+                  />
+
+                  <div className="mt-4">
+                    <label htmlFor="onboarding-district" className={labelClass}>
+                      {districtLabel}{" "}
+                      <span className="normal-case font-normal tracking-normal text-white/30">
+                        — optional
+                      </span>
+                    </label>
+                    <div className="relative">
+                      <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-[20px] text-white/40 pointer-events-none">
+                        home_pin
+                      </span>
+                      <input
+                        id="onboarding-district"
+                        type="text"
+                        value={district}
+                        onChange={(e) => setDistrict(e.target.value)}
+                        disabled={!address.city.trim()}
+                        className={inputClass}
+                        placeholder={
+                          address.city.trim()
+                            ? `Your ${districtLabel.toLowerCase()}`
+                            : "Select a city first"
+                        }
+                      />
+                    </div>
+                  </div>
+                </fieldset>
               </div>
 
-              <div className="mt-6 flex gap-3">
+              <StepFooter>
+                {!profileComplete && (
+                  <p
+                    className="text-xs text-white/40 text-center sm:text-left"
+                    aria-live="polite"
+                  >
+                    Add your {missing.join(", ")} to continue.
+                  </p>
+                )}
                 <button
-                  onClick={goAfterProfile}
-                  className="flex-1 py-3.5 rounded-xl border border-white/10 text-white/40 text-sm hover:bg-white/5 transition-colors"
-                >
-                  Skip
-                </button>
-                <button
+                  type="button"
                   onClick={handleProfileContinue}
-                  disabled={isSaving || !name.trim()}
-                  className="flex-2 py-3.5 rounded-xl bg-accent text-black font-bold hover:brightness-110 transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+                  disabled={isSaving || !profileComplete}
+                  className="sm:ml-auto py-3.5 px-8 rounded-xl bg-accent text-black font-bold hover:bg-accent-hover transition-colors disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                 >
-                  {isSaving ? "Saving…" : "Continue →"}
+                  {isSaving ? "Saving…" : "Continue"}
+                  {!isSaving && (
+                    <span className="material-symbols-outlined text-[18px]">
+                      arrow_forward
+                    </span>
+                  )}
                 </button>
-              </div>
+              </StepFooter>
             </div>
           )}
 
           {/* ── Step 2: Intent (new users only) ── */}
           {step === 2 && (
-            <div className="animate-in fade-in duration-300">
-              <div className="text-center mb-10">
-                <h2 className="text-4xl font-display font-bold text-white mb-3">
-                  What brings you here?
-                </h2>
-                <p className="text-white/50">
-                  Choose how you plan to use FoxPassport.
-                </p>
-              </div>
+            <div className={STEP_CARD}>
+              <StepHeader
+                icon="explore"
+                color="#a78bfa"
+                title="What brings you here?"
+                subtitle="Choose how you plan to use FoxPassport."
+              />
 
-              <div className="space-y-4">
+              <div className="relative space-y-3">
                 <button
                   onClick={() => router.push("/search")}
-                  className="group w-full bg-surface-raised rounded-[1.5rem] p-7 text-left border border-white/5 hover:border-accent/40 hover:bg-surface-raised transition-all duration-300"
+                  className="group w-full bg-white/[0.03] rounded-[1.5rem] p-5 sm:p-6 text-left border border-white/5 hover:border-accent/40 hover:bg-white/[0.06] transition-all duration-300"
                 >
                   <div className="flex items-center gap-4">
                     <div className="h-12 w-12 rounded-xl bg-accent/15 flex items-center justify-center shrink-0">
@@ -251,7 +400,7 @@ export default function OnboardingClient({ user: serverUser }: { user: any }) {
 
                 <button
                   onClick={() => setStep(3)}
-                  className="group w-full bg-surface-raised rounded-[1.5rem] p-7 text-left border border-white/5 hover:border-[#ff00aa]/40 hover:bg-surface-raised transition-all duration-300"
+                  className="group w-full bg-white/[0.03] rounded-[1.5rem] p-5 sm:p-6 text-left border border-white/5 hover:border-[#ff00aa]/40 hover:bg-white/[0.06] transition-all duration-300"
                 >
                   <div className="flex items-center gap-4">
                     <div className="h-12 w-12 rounded-xl bg-[#ff00aa]/15 flex items-center justify-center shrink-0">
@@ -279,7 +428,7 @@ export default function OnboardingClient({ user: serverUser }: { user: any }) {
 
                 <button
                   onClick={() => setStep(3)}
-                  className="group w-full bg-surface-raised rounded-[1.5rem] p-7 text-left border border-white/5 hover:border-white/20 hover:bg-surface-raised transition-all duration-300"
+                  className="group w-full bg-white/[0.03] rounded-[1.5rem] p-5 sm:p-6 text-left border border-white/5 hover:border-white/20 hover:bg-white/[0.06] transition-all duration-300"
                 >
                   <div className="flex items-center gap-4">
                     <div className="h-12 w-12 rounded-xl bg-white/5 flex items-center justify-center shrink-0">
@@ -303,36 +452,44 @@ export default function OnboardingClient({ user: serverUser }: { user: any }) {
                 </button>
               </div>
 
-              <button
-                onClick={() => setStep(1)}
-                className="mt-6 text-sm text-white/30 hover:text-white/60 transition-colors mx-auto block"
-              >
-                ← Back
-              </button>
+              <StepFooter>
+                <button
+                  type="button"
+                  onClick={() => setStep(1)}
+                  className={BACK_BUTTON}
+                >
+                  <span className="material-symbols-outlined text-[18px]">
+                    arrow_back
+                  </span>
+                  Back
+                </button>
+              </StepFooter>
             </div>
           )}
 
           {/* ── Step 3: Role selection ── */}
           {step === 3 && (
-            <div className="animate-in fade-in duration-300">
-              <div className="text-center mb-10">
-                <h2 className="text-4xl font-display font-bold text-white mb-3">
-                  {hasExistingRoles
+            <div className={STEP_CARD}>
+              <StepHeader
+                icon="badge"
+                color="#ec4899"
+                title={
+                  hasExistingRoles
                     ? "Your roles"
                     : pendingRoles.length > 0
                       ? "Application submitted"
-                      : "Choose your role"}
-                </h2>
-                <p className="text-white/50">
-                  {hasExistingRoles
+                      : "Choose your role"
+                }
+                subtitle={
+                  hasExistingRoles
                     ? "Active roles are shown below. Apply for additional roles anytime."
                     : pendingRoles.length > 0
                       ? "We're reviewing your application. You'll be notified once approved."
-                      : "Select how you want to contribute. You can hold multiple roles over time."}
-                </p>
-              </div>
+                      : "Select how you want to contribute. You can hold multiple roles over time."
+                }
+              />
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="relative grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {ROLES.map((role, idx) => {
                   // An odd count leaves the last card alone in its row —
                   // give it the full row instead of a lopsided empty gap.
@@ -352,7 +509,7 @@ export default function OnboardingClient({ user: serverUser }: { user: any }) {
                     return (
                       <div
                         key={role.type}
-                        className={`relative bg-surface-raised rounded-[1.5rem] p-6 border border-green-500/20 flex flex-col ${isLastOdd ? "sm:col-span-2 sm:mx-auto sm:w-full sm:max-w-[calc(50%-0.5rem)]" : ""}`}
+                        className={`relative bg-white/[0.03] rounded-[1.5rem] p-6 border border-green-500/20 flex flex-col ${isLastOdd ? "sm:col-span-2 sm:mx-auto sm:w-full sm:max-w-[calc(50%-0.5rem)]" : ""}`}
                         style={{
                           boxShadow: "inset 0 0 0 1px rgba(34,197,94,0.15)",
                         }}
@@ -374,12 +531,6 @@ export default function OnboardingClient({ user: serverUser }: { user: any }) {
                             {role.icon}
                           </span>
                         </div>
-                        <p
-                          className="text-[10px] font-bold uppercase tracking-widest mb-1"
-                          style={{ color: role.color }}
-                        >
-                          {role.tag}
-                        </p>
                         <h3 className="text-lg font-display font-bold text-white mb-1">
                           {role.title}
                         </h3>
@@ -394,7 +545,7 @@ export default function OnboardingClient({ user: serverUser }: { user: any }) {
                     return (
                       <div
                         key={role.type}
-                        className={`relative bg-surface-raised rounded-[1.5rem] p-6 border border-amber-500/20 flex flex-col ${isLastOdd ? "sm:col-span-2 sm:mx-auto sm:w-full sm:max-w-[calc(50%-0.5rem)]" : ""}`}
+                        className={`relative bg-white/[0.03] rounded-[1.5rem] p-6 border border-amber-500/20 flex flex-col ${isLastOdd ? "sm:col-span-2 sm:mx-auto sm:w-full sm:max-w-[calc(50%-0.5rem)]" : ""}`}
                         style={{
                           boxShadow: "inset 0 0 0 1px rgba(245,158,11,0.12)",
                         }}
@@ -416,12 +567,6 @@ export default function OnboardingClient({ user: serverUser }: { user: any }) {
                             {role.icon}
                           </span>
                         </div>
-                        <p
-                          className="text-[10px] font-bold uppercase tracking-widest mb-1 opacity-60"
-                          style={{ color: role.color }}
-                        >
-                          {role.tag}
-                        </p>
                         <h3 className="text-lg font-display font-bold text-white mb-1">
                           {role.title}
                         </h3>
@@ -437,7 +582,7 @@ export default function OnboardingClient({ user: serverUser }: { user: any }) {
                       <Link
                         key={role.type}
                         href={`/foxer/resubmit/${revisionRequest.id}`}
-                        className={`group relative bg-surface-raised rounded-[1.5rem] p-6 text-left border border-orange-500/20 hover:bg-surface-raised transition-all duration-300 flex flex-col ${isLastOdd ? "sm:col-span-2 sm:mx-auto sm:w-full sm:max-w-[calc(50%-0.5rem)]" : ""}`}
+                        className={`group relative bg-white/[0.03] rounded-[1.5rem] p-6 text-left border border-orange-500/20 hover:bg-white/[0.06] transition-all duration-300 flex flex-col ${isLastOdd ? "sm:col-span-2 sm:mx-auto sm:w-full sm:max-w-[calc(50%-0.5rem)]" : ""}`}
                         style={{
                           boxShadow: "inset 0 0 0 1px rgba(249,115,22,0.15)",
                         }}
@@ -459,12 +604,6 @@ export default function OnboardingClient({ user: serverUser }: { user: any }) {
                             {role.icon}
                           </span>
                         </div>
-                        <p
-                          className="text-[10px] font-bold uppercase tracking-widest mb-1"
-                          style={{ color: role.color }}
-                        >
-                          {role.tag}
-                        </p>
                         <h3 className="text-lg font-display font-bold text-white mb-1">
                           {role.title}
                         </h3>
@@ -482,7 +621,7 @@ export default function OnboardingClient({ user: serverUser }: { user: any }) {
                       key={role.type}
                       onClick={() => setViewingRole(role)}
                       aria-haspopup="dialog"
-                      className={`group relative bg-surface-raised rounded-[1.5rem] p-6 text-left border border-white/5 hover:bg-surface-raised transition-all duration-300 hover:-translate-y-1 flex flex-col cursor-pointer ${isLastOdd ? "sm:col-span-2 sm:mx-auto sm:w-full sm:max-w-[calc(50%-0.5rem)]" : ""}`}
+                      className={`group relative bg-white/[0.03] rounded-[1.5rem] p-6 text-left border border-white/5 hover:bg-white/[0.06] transition-all duration-300 hover:-translate-y-1 flex flex-col cursor-pointer ${isLastOdd ? "sm:col-span-2 sm:mx-auto sm:w-full sm:max-w-[calc(50%-0.5rem)]" : ""}`}
                     >
                       <div
                         className="absolute inset-0 rounded-[1.5rem] opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"
@@ -499,12 +638,6 @@ export default function OnboardingClient({ user: serverUser }: { user: any }) {
                           {role.icon}
                         </span>
                       </div>
-                      <p
-                        className="text-[10px] font-bold uppercase tracking-widest mb-1"
-                        style={{ color: role.color }}
-                      >
-                        {role.tag}
-                      </p>
                       <h3 className="text-lg font-display font-bold text-white mb-1">
                         {role.title}
                       </h3>
@@ -529,18 +662,23 @@ export default function OnboardingClient({ user: serverUser }: { user: any }) {
                 onClose={() => setViewingRole(null)}
               />
 
-              <div className="mt-6 flex items-center justify-between">
+              <StepFooter>
                 <button
+                  type="button"
                   onClick={goBackFromRoles}
-                  className="text-sm text-white/30 hover:text-white/60 transition-colors"
+                  className={BACK_BUTTON}
                 >
-                  ← Back
+                  <span className="material-symbols-outlined text-[18px]">
+                    arrow_back
+                  </span>
+                  Back
                 </button>
                 <button
+                  type="button"
                   onClick={() =>
                     router.push(hasExistingRoles ? "/creator-dashboard" : "/")
                   }
-                  className="py-2.5 px-6 rounded-xl border border-white/10 text-white/50 text-sm hover:bg-white/5 transition-colors"
+                  className="sm:ml-auto py-3 px-6 rounded-xl border border-white/10 text-white/70 text-sm font-bold hover:bg-white/5 hover:text-white transition-colors"
                 >
                   {hasExistingRoles
                     ? "Go to Dashboard"
@@ -548,7 +686,7 @@ export default function OnboardingClient({ user: serverUser }: { user: any }) {
                       ? "Back to Home"
                       : "Skip for now"}
                 </button>
-              </div>
+              </StepFooter>
             </div>
           )}
         </div>

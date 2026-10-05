@@ -1,63 +1,60 @@
 "use client";
 
-import React, { useState } from "react";
+import React from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import MobileCreatorBottomNav from "./MobileCreatorBottomNav";
 
 const STRIPE_BG = `repeating-linear-gradient(135deg,rgba(255,255,255,0.03) 0px,rgba(255,255,255,0.03) 1px,transparent 1px,transparent 12px)`;
 
-type FilterTab = "Venues" | "Events" | "Assets" | "Services";
-const FILTER_TABS: FilterTab[] = ["Venues", "Events", "Assets", "Services"];
+// This page lists venues; the other kinds of listing each have their own
+// dashboard page, so the tabs go there rather than filtering in place.
+const FILTER_TABS = [
+  { label: "Venues", href: "/creator-dashboard/venues" },
+  { label: "Events", href: "/creator-dashboard/events" },
+  { label: "Assets", href: "/creator-dashboard/assets" },
+  { label: "Services", href: "/creator-dashboard/services" },
+] as const;
 
-type StatusKey = "AVAILABLE" | "PENDING" | "PUBLISHED" | "RESERVED" | "DRAFT";
-const STATUS_STYLE: Record<StatusKey, { bg: string; color: string }> = {
-  AVAILABLE: { bg: "rgba(16,185,129,0.15)", color: "#10b981" },
-  PENDING: { bg: "rgba(245,158,11,0.15)", color: "#f59e0b" },
-  PUBLISHED: { bg: "rgba(59,130,246,0.15)", color: "#3b82f6" },
-  RESERVED: { bg: "rgba(167,139,250,0.15)", color: "#a78bfa" },
-  DRAFT: { bg: "color-mix(in srgb, var(--color-white) 7%, transparent)", color: "color-mix(in srgb, var(--color-white) 35%, transparent)" },
+// The API's VenueStatus values.
+const STATUS_STYLE: Record<string, { bg: string; color: string }> = {
+  available: { bg: "rgba(16,185,129,0.15)", color: "#10b981" },
+  pending: { bg: "rgba(245,158,11,0.15)", color: "#f59e0b" },
+  rejected: { bg: "rgba(239,68,68,0.15)", color: "#ef4444" },
+  archived: {
+    bg: "color-mix(in srgb, var(--color-white) 7%, transparent)",
+    color: "color-mix(in srgb, var(--color-white) 35%, transparent)",
+  },
+  draft: {
+    bg: "color-mix(in srgb, var(--color-white) 7%, transparent)",
+    color: "color-mix(in srgb, var(--color-white) 35%, transparent)",
+  },
 };
 
-const LISTINGS = [
-  {
-    id: "1",
-    name: "Skyline Loft",
-    type: "Venue · Makati",
-    status: "AVAILABLE" as StatusKey,
-  },
-  {
-    id: "2",
-    name: "Garden Pavilion",
-    type: "Venue · Quezon City",
-    status: "PUBLISHED" as StatusKey,
-  },
-  {
-    id: "3",
-    name: "Neon Nights",
-    type: "Event Template",
-    status: "PENDING" as StatusKey,
-  },
-  {
-    id: "4",
-    name: "Pro Sound Rig",
-    type: "Gear · Audio",
-    status: "RESERVED" as StatusKey,
-  },
-  {
-    id: "5",
-    name: "Sarah Reyes Photography",
-    type: "Service · Photography",
-    status: "DRAFT" as StatusKey,
-  },
-];
+interface VenueRow {
+  id: string;
+  title: string;
+  type?: string;
+  city?: string;
+  status?: string;
+  images?: string[];
+}
 
-export default function MobileMyListingsView() {
+export default function MobileMyListingsView({
+  venues,
+}: {
+  venues: VenueRow[];
+}) {
   const router = useRouter();
-  const [activeTab, setActiveTab] = useState<FilterTab>("Venues");
 
   return (
-    <div style={{ background: "var(--canvas)", minHeight: "100svh", color: "var(--color-white)" }}>
+    <div
+      style={{
+        background: "var(--canvas)",
+        minHeight: "100svh",
+        color: "var(--color-white)",
+      }}
+    >
       {/* Standard nav bar */}
       <div
         style={{
@@ -67,10 +64,11 @@ export default function MobileMyListingsView() {
           right: 0,
           height: 64,
           zIndex: 5,
-          background: "rgba(5,6,8,0.9)",
+          background: "color-mix(in srgb, var(--canvas) 90%, transparent)",
           backdropFilter: "blur(20px)",
           WebkitBackdropFilter: "blur(20px)",
-          borderBottom: "1px solid color-mix(in srgb, var(--color-white) 8%, transparent)",
+          borderBottom:
+            "1px solid color-mix(in srgb, var(--color-white) 8%, transparent)",
           display: "flex",
           alignItems: "center",
           padding: "0 16px",
@@ -96,12 +94,14 @@ export default function MobileMyListingsView() {
           My Listings
         </p>
         <button
+          type="button"
+          aria-label="Add a venue"
           onClick={() => router.push("/venue-foxer/create-venue")}
+          className="bg-accent"
           style={{
             width: 34,
             height: 34,
             borderRadius: 999,
-            background: "#ccff00",
             border: "none",
             display: "flex",
             alignItems: "center",
@@ -125,7 +125,7 @@ export default function MobileMyListingsView() {
 
       {/* Content */}
       <div style={{ padding: "142px 20px 112px" }}>
-        {/* Filter tabs */}
+        {/* Listing type tabs */}
         <div
           className="no-scrollbar"
           style={{
@@ -137,124 +137,207 @@ export default function MobileMyListingsView() {
           }}
         >
           {FILTER_TABS.map((tab) => {
-            const active = activeTab === tab;
+            const active = tab.label === "Venues";
             return (
               <button
-                key={tab}
-                onClick={() => setActiveTab(tab)}
+                key={tab.label}
+                type="button"
+                onClick={() => !active && router.push(tab.href)}
+                aria-current={active ? "page" : undefined}
+                className={
+                  active
+                    ? "bg-accent text-black"
+                    : "bg-white/5 border border-white/10 text-white/55"
+                }
                 style={{
                   flexShrink: 0,
                   padding: "7px 16px",
                   borderRadius: 999,
-                  background: active ? "#ccff00" : "rgba(255,255,255,0.06)",
-                  border: active ? "none" : "1px solid rgba(255,255,255,0.1)",
                   fontSize: 12,
                   fontWeight: 700,
-                  color: active ? "#000" : "rgba(255,255,255,0.55)",
                   cursor: "pointer",
                 }}
               >
-                {tab}
+                {tab.label}
               </button>
             );
           })}
         </div>
 
-        {/* Listing rows */}
-        <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-          {LISTINGS.map((item) => {
-            const s = STATUS_STYLE[item.status];
-            return (
-              <button
-                key={item.id}
-                onClick={() =>
-                  router.push(`/creator-dashboard/listing/${item.id}`)
-                }
-                style={{
-                  width: "100%",
-                  background: "color-mix(in srgb, var(--color-white) 4%, transparent)",
-                  border: "1px solid color-mix(in srgb, var(--color-white) 7%, transparent)",
-                  borderRadius: 16,
-                  padding: "12px 14px",
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 12,
-                  cursor: "pointer",
-                  textAlign: "left",
-                }}
-              >
-                {/* Stripe thumbnail */}
-                <div
+        {venues.length === 0 ? (
+          <div
+            style={{
+              textAlign: "center",
+              padding: "48px 20px",
+              borderRadius: 20,
+              border:
+                "1px dashed color-mix(in srgb, var(--color-white) 12%, transparent)",
+            }}
+          >
+            <span
+              className="material-symbols-outlined"
+              style={{
+                fontSize: 36,
+                color:
+                  "color-mix(in srgb, var(--color-white) 30%, transparent)",
+              }}
+            >
+              storefront
+            </span>
+            <p style={{ fontSize: 15, fontWeight: 700, margin: "10px 0 4px" }}>
+              No venues yet
+            </p>
+            <p
+              style={{
+                fontSize: 12,
+                color:
+                  "color-mix(in srgb, var(--color-white) 45%, transparent)",
+                margin: "0 0 18px",
+              }}
+            >
+              List your first space so people can book it.
+            </p>
+            <button
+              type="button"
+              onClick={() => router.push("/venue-foxer/create-venue")}
+              className="bg-accent text-black"
+              style={{
+                padding: "10px 20px",
+                borderRadius: 12,
+                fontSize: 13,
+                fontWeight: 700,
+                border: "none",
+                cursor: "pointer",
+              }}
+            >
+              Add a venue
+            </button>
+          </div>
+        ) : (
+          <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+            {venues.map((venue) => {
+              const status = (venue.status || "draft").toLowerCase();
+              const s = STATUS_STYLE[status] ?? STATUS_STYLE.draft;
+              const thumb = venue.images?.[0];
+              return (
+                <button
+                  key={venue.id}
+                  type="button"
+                  onClick={() =>
+                    router.push(`/creator-dashboard/venues/${venue.id}/edit`)
+                  }
                   style={{
-                    width: 48,
-                    height: 48,
-                    borderRadius: 12,
-                    flexShrink: 0,
-                    overflow: "hidden",
-                    background: STRIPE_BG,
-                    border: "1px solid color-mix(in srgb, var(--color-white) 7%, transparent)",
-                  }}
-                />
-
-                {/* Info */}
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <p
-                    style={{
-                      fontSize: 14,
-                      fontWeight: 600,
-                      color: "var(--color-white)",
-                      margin: "0 0 3px",
-                      overflow: "hidden",
-                      textOverflow: "ellipsis",
-                      whiteSpace: "nowrap",
-                    }}
-                  >
-                    {item.name}
-                  </p>
-                  <p
-                    style={{
-                      fontSize: 11,
-                      color: "color-mix(in srgb, var(--color-white) 40%, transparent)",
-                      margin: 0,
-                    }}
-                  >
-                    {item.type}
-                  </p>
-                </div>
-
-                {/* Status badge */}
-                <div
-                  style={{
+                    width: "100%",
+                    background:
+                      "color-mix(in srgb, var(--color-white) 4%, transparent)",
+                    border:
+                      "1px solid color-mix(in srgb, var(--color-white) 7%, transparent)",
+                    borderRadius: 16,
+                    padding: "12px 14px",
                     display: "flex",
                     alignItems: "center",
-                    gap: 8,
-                    flexShrink: 0,
+                    gap: 12,
+                    cursor: "pointer",
+                    textAlign: "left",
                   }}
                 >
-                  <span
+                  {/* Thumbnail — striped placeholder until a photo is added */}
+                  <div
                     style={{
-                      fontSize: 10,
-                      fontWeight: 700,
-                      letterSpacing: "0.06em",
-                      padding: "4px 10px",
-                      borderRadius: 999,
-                      background: s.bg,
-                      color: s.color,
+                      width: 48,
+                      height: 48,
+                      borderRadius: 12,
+                      flexShrink: 0,
+                      overflow: "hidden",
+                      background: STRIPE_BG,
+                      border:
+                        "1px solid color-mix(in srgb, var(--color-white) 7%, transparent)",
                     }}
                   >
-                    {item.status}
-                  </span>
-                  <span
-                    className="material-symbols-outlined"
-                    style={{ fontSize: 16, color: "color-mix(in srgb, var(--color-white) 25%, transparent)" }}
+                    {thumb && (
+                      <img
+                        src={thumb}
+                        alt=""
+                        style={{
+                          width: "100%",
+                          height: "100%",
+                          objectFit: "cover",
+                        }}
+                      />
+                    )}
+                  </div>
+
+                  {/* Info */}
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <p
+                      style={{
+                        fontSize: 14,
+                        fontWeight: 600,
+                        color: "var(--color-white)",
+                        margin: "0 0 3px",
+                        overflow: "hidden",
+                        textOverflow: "ellipsis",
+                        whiteSpace: "nowrap",
+                      }}
+                    >
+                      {venue.title}
+                    </p>
+                    <p
+                      style={{
+                        fontSize: 11,
+                        color:
+                          "color-mix(in srgb, var(--color-white) 40%, transparent)",
+                        margin: 0,
+                        overflow: "hidden",
+                        textOverflow: "ellipsis",
+                        whiteSpace: "nowrap",
+                      }}
+                    >
+                      {[venue.type || "Venue", venue.city]
+                        .filter(Boolean)
+                        .join(" · ")}
+                    </p>
+                  </div>
+
+                  {/* Status badge */}
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 8,
+                      flexShrink: 0,
+                    }}
                   >
-                    chevron_right
-                  </span>
-                </div>
-              </button>
-            );
-          })}
-        </div>
+                    <span
+                      style={{
+                        fontSize: 10,
+                        fontWeight: 700,
+                        letterSpacing: "0.06em",
+                        padding: "4px 10px",
+                        borderRadius: 999,
+                        background: s.bg,
+                        color: s.color,
+                        textTransform: "uppercase",
+                      }}
+                    >
+                      {status}
+                    </span>
+                    <span
+                      className="material-symbols-outlined"
+                      style={{
+                        fontSize: 16,
+                        color:
+                          "color-mix(in srgb, var(--color-white) 25%, transparent)",
+                      }}
+                    >
+                      chevron_right
+                    </span>
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+        )}
       </div>
 
       <MobileCreatorBottomNav />

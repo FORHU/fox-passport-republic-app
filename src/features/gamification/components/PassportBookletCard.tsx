@@ -12,7 +12,7 @@ interface PassportBookletCardProps {
 export default function PassportBookletCard({
   user,
   level = 1,
-  citizenNo = "FX-2026-00481",
+  citizenNo,
 }: PassportBookletCardProps) {
   const name: string = user?.name ?? "Juan Dela Cruz";
   const tierLabel = getPathLabel("user", level);
@@ -133,7 +133,7 @@ export default function PassportBookletCard({
           marginBottom: 16,
         }}
       >
-        Citizen No. {citizenNo}
+        {citizenNo ? `Citizen No. ${citizenNo}` : " "}
       </p>
 
       {/* Bottom right: level + role */}

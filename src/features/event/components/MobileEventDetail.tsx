@@ -28,11 +28,18 @@ export default function MobileEventDetail({
 }: MobileEventDetailProps) {
   const router = useRouter();
 
-  const name = event?.name ?? "Neon Nights: Rooftop Reception";
-  const category = event?.category ?? "Wedding";
-  const locationText = event?.targetCity ?? "Baguio City";
-  const maxAttendees = event?.maxAttendees ?? 120;
-  const price = event?.estimatedTotal ?? 48500;
+  // No invented details: anything the template lacks is simply left out.
+  const name = event?.name || "Untitled event";
+  const category = event?.category || "Other";
+  const locationText: string = event?.targetCity || "";
+  const maxAttendees: number | null = event?.maxAttendees ?? null;
+  const price: number | null = event?.estimatedTotal ?? null;
+  const detailLine = [
+    locationText,
+    maxAttendees ? `Up to ${maxAttendees} guests` : "",
+  ]
+    .filter(Boolean)
+    .join(" · ");
 
   const pill = CATEGORY_PILL[category] ?? CATEGORY_PILL["Other"];
 
@@ -102,7 +109,8 @@ export default function MobileEventDetail({
             width: 36,
             height: 36,
             borderRadius: 999,
-            background: "color-mix(in srgb, var(--color-black) 40%, transparent)",
+            background:
+              "color-mix(in srgb, var(--color-black) 40%, transparent)",
             backdropFilter: "blur(10px)",
             WebkitBackdropFilter: "blur(10px)",
             border: "none",
@@ -136,7 +144,8 @@ export default function MobileEventDetail({
             width: 36,
             height: 36,
             borderRadius: 999,
-            background: "color-mix(in srgb, var(--color-black) 40%, transparent)",
+            background:
+              "color-mix(in srgb, var(--color-black) 40%, transparent)",
             backdropFilter: "blur(10px)",
             WebkitBackdropFilter: "blur(10px)",
             border: "none",
@@ -158,7 +167,8 @@ export default function MobileEventDetail({
             width: 36,
             height: 36,
             borderRadius: 999,
-            background: "color-mix(in srgb, var(--color-black) 40%, transparent)",
+            background:
+              "color-mix(in srgb, var(--color-black) 40%, transparent)",
             backdropFilter: "blur(10px)",
             WebkitBackdropFilter: "blur(10px)",
             border: "none",
@@ -182,7 +192,8 @@ export default function MobileEventDetail({
         style={{
           top: 402,
           background: "rgba(18,18,24,0.9)",
-          border: "1px solid color-mix(in srgb, var(--color-white) 10%, transparent)",
+          border:
+            "1px solid color-mix(in srgb, var(--color-white) 10%, transparent)",
           backdropFilter: "blur(20px)",
           WebkitBackdropFilter: "blur(20px)",
           borderRadius: 24,
@@ -234,9 +245,7 @@ export default function MobileEventDetail({
           <span className="material-symbols-outlined" style={{ fontSize: 14 }}>
             location_on
           </span>
-          <span>
-            {locationText} · Up to {maxAttendees} guests
-          </span>
+          <span>{detailLine || "Details coming soon"}</span>
         </div>
 
         {/* Avatar stack */}
@@ -268,7 +277,12 @@ export default function MobileEventDetail({
               </div>
             ))}
           </div>
-          <span style={{ color: "color-mix(in srgb, var(--color-white) 40%, transparent)", fontSize: 11 }}>
+          <span
+            style={{
+              color: "color-mix(in srgb, var(--color-white) 40%, transparent)",
+              fontSize: 11,
+            }}
+          >
             +42 curated
           </span>
         </div>
@@ -279,7 +293,8 @@ export default function MobileEventDetail({
             <p
               style={{
                 fontSize: 10,
-                color: "color-mix(in srgb, var(--color-white) 40%, transparent)",
+                color:
+                  "color-mix(in srgb, var(--color-white) 40%, transparent)",
                 margin: 0,
                 textTransform: "uppercase",
                 letterSpacing: "0.08em",
@@ -297,7 +312,7 @@ export default function MobileEventDetail({
                 margin: "2px 0 0",
               }}
             >
-              <Money amount={price} />
+              {price != null ? <Money amount={price} /> : "—"}
             </p>
           </div>
           <button
