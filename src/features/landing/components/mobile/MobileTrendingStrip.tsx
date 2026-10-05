@@ -8,6 +8,9 @@ import { useCurrency } from "@/shared/providers/CurrencyProvider";
 
 interface MobileTrendingStripProps {
   trending: EventTemplate[];
+  title?: string;
+  /** Shown under the title — e.g. the Near me / Everywhere toggle. */
+  toolbar?: React.ReactNode;
 }
 
 function SkeletonCard({
@@ -24,17 +27,24 @@ function SkeletonCard({
         width,
         borderRadius: 20,
         overflow: "hidden",
-        border: "1px solid color-mix(in srgb, var(--color-white) 7%, transparent)",
+        border:
+          "1px solid color-mix(in srgb, var(--color-white) 7%, transparent)",
         background: "var(--surface)",
       }}
     >
-      <div style={{ height, background: "color-mix(in srgb, var(--color-white) 4%, transparent)" }} />
+      <div
+        style={{
+          height,
+          background: "color-mix(in srgb, var(--color-white) 4%, transparent)",
+        }}
+      />
       <div style={{ padding: "12px 14px" }}>
         <div
           style={{
             height: 12,
             borderRadius: 6,
-            background: "color-mix(in srgb, var(--color-white) 7%, transparent)",
+            background:
+              "color-mix(in srgb, var(--color-white) 7%, transparent)",
             marginBottom: 8,
           }}
         />
@@ -43,7 +53,8 @@ function SkeletonCard({
             height: 10,
             width: "60%",
             borderRadius: 6,
-            background: "color-mix(in srgb, var(--color-white) 4%, transparent)",
+            background:
+              "color-mix(in srgb, var(--color-white) 4%, transparent)",
           }}
         />
       </div>
@@ -64,7 +75,8 @@ function TemplateCard({ t }: { t: EventTemplate }) {
         width: 200,
         borderRadius: 20,
         overflow: "hidden",
-        border: "1px solid color-mix(in srgb, var(--color-white) 7%, transparent)",
+        border:
+          "1px solid color-mix(in srgb, var(--color-white) 7%, transparent)",
         background: "var(--surface)",
         cursor: "pointer",
       }}
@@ -91,7 +103,8 @@ function TemplateCard({ t }: { t: EventTemplate }) {
               position: "absolute",
               top: 10,
               left: 10,
-              background: "color-mix(in srgb, var(--color-black) 55%, transparent)",
+              background:
+                "color-mix(in srgb, var(--color-black) 55%, transparent)",
               backdropFilter: "blur(8px)",
               borderRadius: 999,
               padding: "3px 9px",
@@ -118,7 +131,13 @@ function TemplateCard({ t }: { t: EventTemplate }) {
         >
           {t.name}
         </p>
-        <p style={{ fontSize: 11, color: "color-mix(in srgb, var(--color-white) 40%, transparent)", margin: 0 }}>
+        <p
+          style={{
+            fontSize: 11,
+            color: "color-mix(in srgb, var(--color-white) 40%, transparent)",
+            margin: 0,
+          }}
+        >
           {[city, price ? format(Number(price)) : null]
             .filter(Boolean)
             .join(" · ")}
@@ -128,10 +147,15 @@ function TemplateCard({ t }: { t: EventTemplate }) {
   );
 }
 
-export function MobileTrendingStrip({ trending }: MobileTrendingStripProps) {
+export function MobileTrendingStrip({
+  trending,
+  title = "Trending This Week",
+  toolbar,
+}: MobileTrendingStripProps) {
   return (
     <div style={{ padding: "0 20px 36px", position: "relative", zIndex: 1 }}>
-      <SectionLabel>Trending This Week</SectionLabel>
+      <SectionLabel>{title}</SectionLabel>
+      {toolbar && <div style={{ marginBottom: 12 }}>{toolbar}</div>}
       <div
         className="no-scrollbar"
         style={{ display: "flex", gap: 14, overflowX: "auto" }}

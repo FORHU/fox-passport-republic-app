@@ -4,7 +4,8 @@ import { useState } from "react";
 import { motion } from "motion/react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useQuery } from "@tanstack/react-query";
+import { useNearbyFirst } from "@/shared/hooks/useNearbyFirst";
+import { NearbyToggle } from "@/shared/components/ui/NearbyToggle";
 import {
   fetchFoxers,
   type Foxer,
@@ -32,11 +33,17 @@ export default function FoxersMatchSection() {
   const [activeRole, setActiveRole] = useState<RoleFilter>(undefined);
   const [showCount, setShowCount] = useState(INITIAL_COUNT);
 
-  const { data: foxers = [], isLoading } = useQuery({
-    queryKey: ["foxers", "landing", activeRole],
-    queryFn: () => fetchFoxers(30, 1, activeRole),
-    staleTime: 1000 * 60 * 5,
-  });
+  // Foxers in their own city first, everywhere as the fallback.
+  const {
+    data: foxers,
+    isLoading,
+    city: homeCity,
+    scope,
+    setScope,
+    nearEmpty,
+  } = useNearbyFirst(["foxers", "landing", activeRole], (city) =>
+    fetchFoxers(30, 1, activeRole, city),
+  );
 
   const handleFilterChange = (value: RoleFilter) => {
     setActiveRole(value);
@@ -65,6 +72,16 @@ export default function FoxersMatchSection() {
               Browse Certified Foxers available for your dates. These pros know
               the scene inside out.
             </p>
+            <NearbyToggle
+              city={homeCity}
+              scope={scope}
+              onChange={(next) => {
+                setScope(next);
+                setShowCount(INITIAL_COUNT);
+              }}
+              nearEmpty={nearEmpty}
+              className="mt-3"
+            />
           </div>
         </motion.div>
 

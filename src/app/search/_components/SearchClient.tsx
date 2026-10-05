@@ -30,6 +30,8 @@ export default function SearchClient() {
   const category = searchParams?.get("category") || "";
   const city = searchParams?.get("label") || searchParams?.get("city") || "";
   const maxPrice = searchParams?.get("maxPrice") || "";
+  // The city from their onboarding address, for the "near me" shortcut.
+  const homeCity = useAuthStore((s) => s.user?.city)?.trim() || "";
 
   const [searchQuery, setSearchQuery] = useState(q);
   const [filtersOpen, setFiltersOpen] = useState(false);
@@ -137,6 +139,27 @@ export default function SearchClient() {
 
       {/* Body — top padding clears the fixed nav above */}
       <div className="max-w-7xl mx-auto px-4 sm:px-8 pt-16 sm:pt-28 pb-28 sm:pb-12">
+        {/* One tap to scope to their own city — offered, not forced, so a
+            search meant to cover everywhere isn't quietly narrowed. */}
+        {!city && homeCity && (
+          <button
+            type="button"
+            onClick={() => {
+              const params = new URLSearchParams(
+                searchParams?.toString() || "",
+              );
+              params.set("city", homeCity);
+              router.replace(`/search?${params.toString()}`);
+            }}
+            className="mb-4 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-accent/30 bg-accent/10 text-xs font-bold text-accent hover:bg-accent/20 transition-colors"
+          >
+            <span className="material-symbols-outlined text-[14px]">
+              near_me
+            </span>
+            Show results near {homeCity}
+          </button>
+        )}
+
         {/* Active filter badges */}
         {(category || city) && (
           <div className="flex flex-wrap items-center gap-2 text-xs text-white/50 mb-4">

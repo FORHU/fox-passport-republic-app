@@ -1,7 +1,8 @@
 "use client";
 
 import React from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useNearbyFirst } from "@/shared/hooks/useNearbyFirst";
+import { NearbyToggle } from "@/shared/components/ui/NearbyToggle";
 import {
   fetchTrendingTemplates,
   EventTemplate,
@@ -24,15 +25,16 @@ import { MobileNewsletter } from "./mobile/MobileNewsletter";
 export default function MobileHomePage() {
   const user = useAuthStore((s) => s.user);
   const { displayedCategories } = useLandingPage();
-  const { data: trending = [] } = useQuery<EventTemplate[]>({
-    queryKey: ["trending-mobile"],
-    queryFn: () => fetchTrendingTemplates(undefined, 8),
-  });
-  const { data: foxers = [] } = useQuery<Foxer[]>({
-    queryKey: ["foxers-mobile"],
-    queryFn: () => fetchFoxers(10, 1),
-    staleTime: 1000 * 60 * 5,
-  });
+  // Both strips start in the user's own city and fall back to everywhere.
+  const trendingNearby = useNearbyFirst<EventTemplate>(
+    ["trending-mobile"],
+    (city) => fetchTrendingTemplates(undefined, 8, city),
+  );
+  const foxersNearby = useNearbyFirst<Foxer>(["foxers-mobile"], (city) =>
+    fetchFoxers(10, 1, undefined, city),
+  );
+  const trending = trendingNearby.data;
+  const foxers = foxersNearby.data;
 
   return (
     <div
@@ -61,10 +63,35 @@ export default function MobileHomePage() {
       <MobileVibeStrip categories={displayedCategories} />
 
       {/* Trending Events */}
-      <MobileTrendingStrip trending={trending} />
+      <MobileTrendingStrip
+        trending={trending}
+        title={
+          trendingNearby.usingNear
+            ? `Trending in ${trendingNearby.city}`
+            : undefined
+        }
+        toolbar={
+          <NearbyToggle
+            city={trendingNearby.city}
+            scope={trendingNearby.scope}
+            onChange={trendingNearby.setScope}
+            nearEmpty={trendingNearby.nearEmpty}
+          />
+        }
+      />
 
       {/* Who's vibe matches yours? */}
-      <MobileFoxersStrip foxers={foxers} />
+      <MobileFoxersStrip
+        foxers={foxers}
+        toolbar={
+          <NearbyToggle
+            city={foxersNearby.city}
+            scope={foxersNearby.scope}
+            onChange={foxersNearby.setScope}
+            nearEmpty={foxersNearby.nearEmpty}
+          />
+        }
+      />
 
       {/* Why FoxPassport? */}
       <MobileWhySection />

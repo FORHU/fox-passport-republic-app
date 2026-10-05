@@ -2,7 +2,8 @@
 
 import { useState } from "react";
 import { motion } from "motion/react";
-import { useQuery } from "@tanstack/react-query";
+import { useNearbyFirst } from "@/shared/hooks/useNearbyFirst";
+import { NearbyToggle } from "@/shared/components/ui/NearbyToggle";
 import { fetchTrendingTemplates } from "@/shared/api/event-templates";
 import { Money } from "@/shared/components/ui/Money";
 
@@ -43,17 +44,20 @@ export default function TrendingSection() {
     undefined,
   );
 
+  // Their own city first (from onboarding), everywhere as the fallback.
   const {
-    data: templates = [],
+    data: templates,
     isLoading,
     isError,
     error,
-  } = useQuery({
-    queryKey: ["trending-templates", activeCategory],
-    queryFn: () => fetchTrendingTemplates(activeCategory, 8),
-    staleTime: 1000 * 60 * 5,
-    retry: 1,
-  });
+    city: homeCity,
+    scope,
+    setScope,
+    usingNear,
+    nearEmpty,
+  } = useNearbyFirst(["trending-templates", activeCategory], (city) =>
+    fetchTrendingTemplates(activeCategory, 8, city),
+  );
 
   return (
     <section className="py-6 sm:py-20">
@@ -71,11 +75,18 @@ export default function TrendingSection() {
               Don&apos;t Sleep On These
             </span>
             <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-display font-bold text-white">
-              Trending This Week
+              {usingNear ? `Trending in ${homeCity}` : "Trending This Week"}
             </h2>
             <p className="text-[10px] sm:text-sm text-text-muted mt-1">
               Explore hot experiences and events
             </p>
+            <NearbyToggle
+              city={homeCity}
+              scope={scope}
+              onChange={setScope}
+              nearEmpty={nearEmpty}
+              className="mt-3"
+            />
           </div>
           <div className="flex gap-1.5 sm:gap-2 overflow-x-auto hide-scrollbar flex-nowrap w-full pb-1">
             {CATEGORY_OPTIONS.map((opt) => (
@@ -101,9 +112,7 @@ export default function TrendingSection() {
             : templates.slice(0, 4).map((t, i) => {
                 const imageUrl = t.images?.[0]?.url ?? FALLBACK_IMG;
                 const city =
-                  t.templateVenues?.[0]?.venue?.city ??
-                  t.targetCity ??
-                  "Philippines";
+                  t.templateVenues?.[0]?.venue?.city ?? t.targetCity ?? "";
                 const price = t.templateVenues?.[0]?.venue?.price;
                 const emoji = CATEGORY_EMOJI[t.category] ?? "✨";
 
@@ -144,7 +153,7 @@ export default function TrendingSection() {
                       <div className="flex justify-between items-start mb-2 sm:mb-4">
                         <div>
                           <div className="text-accent font-bold text-xs mb-1 uppercase tracking-wider">
-                            {t.targetCity ?? "Philippines"}
+                            {city}
                           </div>
                           <h3 className="text-base sm:text-xl font-bold text-white leading-tight font-display group-hover:text-primary-glow transition-colors glitch-hover">
                             {t.name}

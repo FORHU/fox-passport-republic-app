@@ -7,6 +7,8 @@ import { SectionLabel } from "./SectionLabel";
 
 interface MobileFoxersStripProps {
   foxers: Foxer[];
+  /** Shown under the title — e.g. the Near me / Everywhere toggle. */
+  toolbar?: React.ReactNode;
 }
 
 function FoxerCard({ f }: { f: Foxer }) {
@@ -25,7 +27,8 @@ function FoxerCard({ f }: { f: Foxer }) {
         width: 130,
         borderRadius: 20,
         overflow: "hidden",
-        border: "1px solid color-mix(in srgb, var(--color-white) 7%, transparent)",
+        border:
+          "1px solid color-mix(in srgb, var(--color-white) 7%, transparent)",
         background: "var(--surface)",
         padding: "14px 12px",
         textAlign: "center",
@@ -53,7 +56,13 @@ function FoxerCard({ f }: { f: Foxer }) {
             style={{ width: "100%", height: "100%", objectFit: "cover" }}
           />
         ) : (
-          <span style={{ fontSize: 20, fontWeight: 700, color: "var(--color-white)" }}>
+          <span
+            style={{
+              fontSize: 20,
+              fontWeight: 700,
+              color: "var(--color-white)",
+            }}
+          >
             {initial}
           </span>
         )}
@@ -86,7 +95,12 @@ function FoxerCard({ f }: { f: Foxer }) {
         {roleLabel}
       </p>
       {rating && (
-        <p style={{ fontSize: 10, color: "color-mix(in srgb, var(--color-white) 40%, transparent)" }}>
+        <p
+          style={{
+            fontSize: 10,
+            color: "color-mix(in srgb, var(--color-white) 40%, transparent)",
+          }}
+        >
           ★ {rating}
         </p>
       )}
@@ -94,10 +108,11 @@ function FoxerCard({ f }: { f: Foxer }) {
   );
 }
 
-export function MobileFoxersStrip({ foxers }: MobileFoxersStripProps) {
+export function MobileFoxersStrip({ foxers, toolbar }: MobileFoxersStripProps) {
   return (
     <div style={{ padding: "0 20px 36px", position: "relative", zIndex: 1 }}>
       <SectionLabel>Who&apos;s Vibe Matches Yours?</SectionLabel>
+      {toolbar && <div style={{ marginBottom: 12 }}>{toolbar}</div>}
       <div
         className="no-scrollbar"
         style={{ display: "flex", gap: 12, overflowX: "auto" }}
@@ -111,7 +126,8 @@ export function MobileFoxersStrip({ foxers }: MobileFoxersStripProps) {
                   width: 130,
                   borderRadius: 20,
                   overflow: "hidden",
-                  border: "1px solid color-mix(in srgb, var(--color-white) 7%, transparent)",
+                  border:
+                    "1px solid color-mix(in srgb, var(--color-white) 7%, transparent)",
                   background: "var(--surface)",
                   padding: "14px 12px",
                 }}
@@ -121,7 +137,8 @@ export function MobileFoxersStrip({ foxers }: MobileFoxersStripProps) {
                     width: 56,
                     height: 56,
                     borderRadius: "50%",
-                    background: "color-mix(in srgb, var(--color-white) 6%, transparent)",
+                    background:
+                      "color-mix(in srgb, var(--color-white) 6%, transparent)",
                     margin: "0 auto 10px",
                   }}
                 />
@@ -129,7 +146,8 @@ export function MobileFoxersStrip({ foxers }: MobileFoxersStripProps) {
                   style={{
                     height: 10,
                     borderRadius: 6,
-                    background: "color-mix(in srgb, var(--color-white) 6%, transparent)",
+                    background:
+                      "color-mix(in srgb, var(--color-white) 6%, transparent)",
                     marginBottom: 6,
                   }}
                 />
@@ -138,7 +156,8 @@ export function MobileFoxersStrip({ foxers }: MobileFoxersStripProps) {
                     height: 9,
                     width: "60%",
                     borderRadius: 6,
-                    background: "color-mix(in srgb, var(--color-white) 4%, transparent)",
+                    background:
+                      "color-mix(in srgb, var(--color-white) 4%, transparent)",
                     margin: "0 auto",
                   }}
                 />

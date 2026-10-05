@@ -23,9 +23,11 @@ export interface EventTemplate {
 export async function fetchTrendingTemplates(
   category?: string,
   limit = 8,
+  city?: string,
 ): Promise<EventTemplate[]> {
   const params: Record<string, string | number> = { limit };
   if (category) params.category = category;
+  if (city) params.city = city;
   const res = await api.get("/event-templates/browse", { params });
   const raw = res.data?.data ?? res.data?.templates ?? [];
   return Array.isArray(raw) ? raw : [];
