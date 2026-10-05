@@ -39,7 +39,7 @@ export default function MobileEventDetail({
   return (
     <div
       className="relative overflow-hidden pb-28"
-      style={{ background: "#050608", minHeight: "100vh" }}
+      style={{ background: "var(--canvas)", minHeight: "100vh" }}
     >
       {/* Hero — pink gradient + hero image / stripe placeholder */}
       <div
@@ -102,7 +102,7 @@ export default function MobileEventDetail({
             width: 36,
             height: 36,
             borderRadius: 999,
-            background: "rgba(0,0,0,0.4)",
+            background: "color-mix(in srgb, var(--color-black) 40%, transparent)",
             backdropFilter: "blur(10px)",
             WebkitBackdropFilter: "blur(10px)",
             border: "none",
@@ -111,7 +111,7 @@ export default function MobileEventDetail({
             justifyContent: "center",
             cursor: "pointer",
             flexShrink: 0,
-            color: "#fff",
+            color: "var(--color-white)",
           }}
         >
           <span className="material-symbols-outlined" style={{ fontSize: 16 }}>
@@ -125,7 +125,7 @@ export default function MobileEventDetail({
             fontWeight: 700,
             fontFamily: 'var(--font-display,"Space Grotesk",sans-serif)',
             margin: 0,
-            color: "#fff",
+            color: "var(--color-white)",
           }}
         >
           Event
@@ -136,7 +136,7 @@ export default function MobileEventDetail({
             width: 36,
             height: 36,
             borderRadius: 999,
-            background: "rgba(0,0,0,0.4)",
+            background: "color-mix(in srgb, var(--color-black) 40%, transparent)",
             backdropFilter: "blur(10px)",
             WebkitBackdropFilter: "blur(10px)",
             border: "none",
@@ -145,7 +145,7 @@ export default function MobileEventDetail({
             justifyContent: "center",
             cursor: "pointer",
             flexShrink: 0,
-            color: "#fff",
+            color: "var(--color-white)",
           }}
           aria-label="Share event"
         >
@@ -158,7 +158,7 @@ export default function MobileEventDetail({
             width: 36,
             height: 36,
             borderRadius: 999,
-            background: "rgba(0,0,0,0.4)",
+            background: "color-mix(in srgb, var(--color-black) 40%, transparent)",
             backdropFilter: "blur(10px)",
             WebkitBackdropFilter: "blur(10px)",
             border: "none",
@@ -167,7 +167,7 @@ export default function MobileEventDetail({
             justifyContent: "center",
             cursor: "pointer",
             flexShrink: 0,
-            color: "#fff",
+            color: "var(--color-white)",
           }}
         >
           <span className="material-symbols-outlined" style={{ fontSize: 16 }}>
@@ -182,7 +182,7 @@ export default function MobileEventDetail({
         style={{
           top: 402,
           background: "rgba(18,18,24,0.9)",
-          border: "1px solid rgba(255,255,255,0.1)",
+          border: "1px solid color-mix(in srgb, var(--color-white) 10%, transparent)",
           backdropFilter: "blur(20px)",
           WebkitBackdropFilter: "blur(20px)",
           borderRadius: 24,
@@ -214,7 +214,7 @@ export default function MobileEventDetail({
           style={{
             fontSize: 24,
             fontWeight: 700,
-            color: "#fff",
+            color: "var(--color-white)",
             lineHeight: 1.1,
             marginBottom: 6,
           }}
@@ -226,7 +226,7 @@ export default function MobileEventDetail({
         <div
           className="flex items-center gap-1"
           style={{
-            color: "rgba(255,255,255,0.5)",
+            color: "color-mix(in srgb, var(--color-white) 50%, transparent)",
             fontSize: 12,
             marginBottom: 16,
           }}
@@ -261,14 +261,14 @@ export default function MobileEventDetail({
               >
                 <span
                   className="material-symbols-outlined"
-                  style={{ fontSize: 14, color: "#fff" }}
+                  style={{ fontSize: 14, color: "var(--color-white)" }}
                 >
                   person
                 </span>
               </div>
             ))}
           </div>
-          <span style={{ color: "rgba(255,255,255,0.4)", fontSize: 11 }}>
+          <span style={{ color: "color-mix(in srgb, var(--color-white) 40%, transparent)", fontSize: 11 }}>
             +42 curated
           </span>
         </div>
@@ -279,7 +279,7 @@ export default function MobileEventDetail({
             <p
               style={{
                 fontSize: 10,
-                color: "rgba(255,255,255,0.4)",
+                color: "color-mix(in srgb, var(--color-white) 40%, transparent)",
                 margin: 0,
                 textTransform: "uppercase",
                 letterSpacing: "0.08em",
@@ -293,7 +293,7 @@ export default function MobileEventDetail({
               style={{
                 fontSize: 22,
                 fontWeight: 700,
-                color: "#ccff00",
+                color: "var(--accent-text)",
                 margin: "2px 0 0",
               }}
             >

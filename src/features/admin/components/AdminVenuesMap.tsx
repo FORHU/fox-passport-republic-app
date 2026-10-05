@@ -63,7 +63,7 @@ function AdminVenueListCard({
       onClick={onSelect}
       className={`group cursor-pointer rounded-2xl border transition-all overflow-hidden bg-white/5 hover:bg-white/10 ${
         selected
-          ? "border-[#ccff00] ring-1 ring-[#ccff00]"
+          ? "border-accent ring-1 ring-accent"
           : "border-white/10 hover:border-white/20"
       }`}
     >
@@ -107,7 +107,7 @@ function AdminVenueListCard({
               href={`/venues/${venue.id}`}
               onClick={(e) => e.stopPropagation()}
               target="_blank"
-              className="text-[10px] font-bold uppercase tracking-wider px-3 py-1.5 rounded-full bg-[#ccff00] text-black hover:bg-[#b8e600] transition-colors shrink-0"
+              className="text-[10px] font-bold uppercase tracking-wider px-3 py-1.5 rounded-full bg-accent text-black hover:bg-accent-hover transition-colors shrink-0"
             >
               View Listing
             </Link>
@@ -134,7 +134,7 @@ function VenueDetailCard({
       animate={{ x: 0, opacity: 1 }}
       exit={{ x: -40, opacity: 0 }}
       transition={{ duration: 0.3, ease: [0, 0, 0.2, 1] }}
-      className="absolute bottom-6 left-6 z-20 w-[calc(100%-3rem)] max-w-sm rounded-[2rem] border border-white/10 bg-[#0b0d14]/95 backdrop-blur-xl shadow-2xl overflow-hidden"
+      className="absolute bottom-6 left-6 z-20 w-[calc(100%-3rem)] max-w-sm rounded-[2rem] border border-white/10 bg-surface/95 backdrop-blur-xl shadow-2xl overflow-hidden"
     >
       <div className="relative h-40 w-full bg-white/5">
         <Image
@@ -195,7 +195,7 @@ function VenueDetailCard({
           <Link
             href={`/venues/${venue.id}`}
             target="_blank"
-            className="text-xs font-bold uppercase tracking-wider px-4 py-2 rounded-full bg-[#ccff00] text-black hover:bg-[#b8e600] transition-colors ml-auto"
+            className="text-xs font-bold uppercase tracking-wider px-4 py-2 rounded-full bg-accent text-black hover:bg-accent-hover transition-colors ml-auto"
           >
             View Listing
           </Link>

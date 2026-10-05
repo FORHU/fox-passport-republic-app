@@ -90,7 +90,7 @@ export function EventBlueprint({
   );
   return (
     <aside
-      className={`${inDrawer ? "flex w-full border-l-0" : "hidden md:flex w-80"} shrink-0 border-l border-white/5 bg-[#0f111a] flex-col shadow-2xl z-10`}
+      className={`${inDrawer ? "flex w-full border-l-0" : "hidden md:flex w-80"} shrink-0 border-l border-white/5 bg-surface flex-col shadow-2xl z-10`}
     >
       <div className="p-6 border-b border-white/5">
         <h3 className="font-display font-bold text-white text-lg">
@@ -160,7 +160,7 @@ export function EventBlueprint({
         </div>
 
         {/* Pricing Strategy */}
-        <div className="bg-[#161b26] rounded-xl p-5 border border-white/5">
+        <div className="bg-surface-raised rounded-xl p-5 border border-white/5">
           <h4 className="text-[10px] font-bold text-accent uppercase tracking-widest mb-4 flex items-center gap-2">
             <span className="material-symbols-outlined text-[14px]">
               price_check
@@ -207,7 +207,7 @@ export function EventBlueprint({
       </div>
 
       {/* Footer with Health */}
-      <div className="p-6 border-t border-white/5 bg-[#0f111a]">
+      <div className="p-6 border-t border-white/5 bg-surface">
         <div className="flex items-center gap-3 mb-3">
           <div className="h-10 w-10 rounded-full bg-accent flex items-center justify-center text-black font-bold text-sm shrink-0">
             {blueprintHealth.score}%

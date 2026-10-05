@@ -22,7 +22,7 @@ export default function PassportBookletCard({
     <div
       style={{
         borderRadius: 22,
-        background: "linear-gradient(135deg, #161616 0%, #0a0a0a 100%)",
+        background: "linear-gradient(135deg, #161616 0%, var(--canvas) 100%)",
         border: "1px solid rgba(204,255,0,0.25)",
         padding: 22,
         boxShadow: "0 20px 50px rgba(0,0,0,0.5)",
@@ -57,7 +57,7 @@ export default function PassportBookletCard({
               fontWeight: 700,
               letterSpacing: "0.12em",
               textTransform: "uppercase",
-              color: "#ccff00",
+              color: "var(--accent-text)",
               marginBottom: 2,
             }}
           >
@@ -68,7 +68,7 @@ export default function PassportBookletCard({
             style={{
               fontSize: 20,
               fontWeight: 700,
-              color: "#fff",
+              color: "var(--color-white)",
               lineHeight: 1,
             }}
           >
@@ -83,7 +83,7 @@ export default function PassportBookletCard({
             height: 44,
             borderRadius: "50%",
             background: "#7c3aed",
-            border: "2px solid rgba(255,255,255,0.1)",
+            border: "2px solid color-mix(in srgb, var(--color-white) 10%, transparent)",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
@@ -104,7 +104,7 @@ export default function PassportBookletCard({
           ) : (
             <span
               className="font-display"
-              style={{ fontSize: 18, fontWeight: 700, color: "#fff" }}
+              style={{ fontSize: 18, fontWeight: 700, color: "var(--color-white)" }}
             >
               {initial}
             </span>
@@ -116,7 +116,7 @@ export default function PassportBookletCard({
       <p
         style={{
           fontSize: 13,
-          color: "rgba(255,255,255,0.6)",
+          color: "color-mix(in srgb, var(--color-white) 60%, transparent)",
           marginBottom: 4,
         }}
       >
@@ -127,7 +127,7 @@ export default function PassportBookletCard({
       <p
         style={{
           fontSize: 10,
-          color: "rgba(255,255,255,0.3)",
+          color: "color-mix(in srgb, var(--color-white) 30%, transparent)",
           letterSpacing: "0.1em",
           textTransform: "uppercase",
           marginBottom: 16,
@@ -143,7 +143,7 @@ export default function PassportBookletCard({
             height: 1,
             flex: 1,
             marginRight: 12,
-            background: "rgba(255,255,255,0.06)",
+            background: "color-mix(in srgb, var(--color-white) 6%, transparent)",
           }}
         />
         <div className="flex flex-col items-end">
@@ -152,7 +152,7 @@ export default function PassportBookletCard({
             style={{
               fontSize: 26,
               fontWeight: 700,
-              color: "#ccff00",
+              color: "var(--accent-text)",
               lineHeight: 1,
             }}
           >
@@ -161,7 +161,7 @@ export default function PassportBookletCard({
           <span
             style={{
               fontSize: 9,
-              color: "rgba(255,255,255,0.35)",
+              color: "color-mix(in srgb, var(--color-white) 35%, transparent)",
               textTransform: "uppercase",
               letterSpacing: "0.1em",
               marginTop: 2,

@@ -31,7 +31,7 @@ export function ServiceAvailabilitySection({
   }, [isError]);
 
   return (
-    <div className="rounded-[2rem] border-2 border-dashed border-white/10 bg-[#0f111a]/30 p-8">
+    <div className="rounded-[2rem] border-2 border-dashed border-white/10 bg-surface/30 p-8">
       <div className="mb-6">
         <h3 className="text-lg font-bold text-white flex items-center gap-2">
           <span className="material-symbols-outlined text-accent">

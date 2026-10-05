@@ -569,11 +569,11 @@ export function VenueMap({
           <div
             className="absolute inset-0 opacity-20"
             style={{
-              backgroundImage: "radial-gradient(#ffffff 1px, transparent 1px)",
+              backgroundImage: "radial-gradient(var(--color-white) 1px, transparent 1px)",
               backgroundSize: "20px 20px",
             }}
           />
-          <div className="absolute inset-0 bg-linear-to-t from-[#02040a] via-transparent to-transparent opacity-50" />
+          <div className="absolute inset-0 bg-linear-to-t from-canvas via-transparent to-transparent opacity-50" />
           <div className="relative z-10 flex flex-col items-center gap-2 group-hover:-translate-y-2 transition-transform duration-300">
             <div className="h-16 w-16 rounded-full bg-accent/20 flex items-center justify-center animate-pulse">
               <div className="h-4 w-4 bg-accent rounded-full shadow-[0_0_20px_#ccff00]" />
@@ -614,7 +614,7 @@ export function HostBio({ host }: HostBioProps) {
           className="w-16 h-16 rounded-full object-cover border-2 border-white/10"
           alt="Venue Foxer"
         />
-        <div className="absolute -bottom-1 -right-1 bg-accent text-black rounded-full p-1 border-4 border-[#0f111a] shadow-sm flex items-center justify-center">
+        <div className="absolute -bottom-1 -right-1 bg-accent text-black rounded-full p-1 border-4 border-surface shadow-sm flex items-center justify-center">
           <span className="material-symbols-outlined text-[14px]">
             verified
           </span>

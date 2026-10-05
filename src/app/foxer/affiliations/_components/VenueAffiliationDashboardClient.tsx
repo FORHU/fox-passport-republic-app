@@ -175,7 +175,7 @@ export default function VenueAffiliationDashboardClient() {
               return (
                 <div
                   key={aff.id}
-                  className="flex items-center justify-between gap-3 bg-[#161b26] border border-white/5 rounded-xl p-4"
+                  className="flex items-center justify-between gap-3 bg-surface-raised border border-white/5 rounded-xl p-4"
                 >
                   <div className="min-w-0">
                     <p className="font-bold text-white text-sm truncate">

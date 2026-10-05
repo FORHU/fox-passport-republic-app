@@ -51,7 +51,7 @@ export function KPICards({ stats, isLoading }: KPICardsProps = {}) {
       {resolvedData.map((kpi) => (
         <div
           key={kpi.id}
-          className="bg-[#0f111a]/80 backdrop-blur border border-white/5 rounded-2xl sm:rounded-3xl p-4 sm:p-5 lg:p-6 relative overflow-hidden group"
+          className="bg-surface/80 backdrop-blur border border-white/5 rounded-2xl sm:rounded-3xl p-4 sm:p-5 lg:p-6 relative overflow-hidden group"
         >
           <div className="absolute top-3 right-3 sm:top-4 sm:right-4 opacity-20 group-hover:opacity-30 transition-opacity">
             <span

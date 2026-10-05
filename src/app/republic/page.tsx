@@ -275,7 +275,7 @@ function RepublicFeedContent() {
   }, []);
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#09090e] text-white pt-16 sm:pt-28 selection:bg-lime-400 selection:text-black">
+    <div className="min-h-screen flex flex-col bg-canvas text-white pt-16 sm:pt-28 selection:bg-lime-400 selection:text-black">
       {/* ── SAME FLOATING PILL HEADER USED ON / , /search, /venues/map ──────── */}
       <LandingHeader />
 
@@ -499,7 +499,7 @@ export default function RepublicFeedPage() {
   return (
     <Suspense
       fallback={
-        <div className="min-h-screen bg-[#09090e] flex items-center justify-center">
+        <div className="min-h-screen bg-canvas flex items-center justify-center">
           <div className="flex flex-col items-center gap-3 text-zinc-500 text-xs">
             <span className="w-8 h-8 rounded-full border-2 border-lime-400 border-t-transparent animate-spin" />
             <span>Loading Republic Feed...</span>

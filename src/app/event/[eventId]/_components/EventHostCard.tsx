@@ -41,7 +41,7 @@ export function EventHostCard({
                 </span>
               </div>
             )}
-            <div className="absolute -bottom-1 -right-1 bg-[#7c3aed] text-white rounded-full p-1 border-4 border-[#0f111a] flex items-center justify-center shadow-sm">
+            <div className="absolute -bottom-1 -right-1 bg-[#7c3aed] text-white rounded-full p-1 border-4 border-surface flex items-center justify-center shadow-sm">
               <span className="material-symbols-outlined text-[14px]">
                 verified
               </span>
@@ -76,7 +76,7 @@ export function EventHostCard({
             </span>
           </div>
         )}
-        <div className="absolute -bottom-1 -right-1 bg-[#7c3aed] text-white rounded-full p-1 border-4 border-[#0f111a] shadow-sm flex items-center justify-center">
+        <div className="absolute -bottom-1 -right-1 bg-[#7c3aed] text-white rounded-full p-1 border-4 border-surface shadow-sm flex items-center justify-center">
           <span className="material-symbols-outlined text-[14px]">
             verified
           </span>

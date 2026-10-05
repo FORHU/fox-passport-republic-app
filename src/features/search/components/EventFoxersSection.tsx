@@ -66,7 +66,7 @@ const ROLE_META: Record<
   venueFoxer: {
     label: "Venue Foxer",
     description: "Provides the space for your event",
-    color: "#ccff00",
+    color: "var(--accent-text)",
   },
 };
 
@@ -79,7 +79,7 @@ function getRoleMeta(foxer: Foxer) {
   return {
     label: "Foxer",
     description: "FoxPassport verified professional",
-    color: "#ffffff",
+    color: "var(--color-white)",
   };
 }
 

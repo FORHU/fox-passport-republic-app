@@ -119,7 +119,7 @@ export function OrganizingSection() {
         {teams.length > 0 && (
           <Link
             href="/creator-dashboard/check-in"
-            className="shrink-0 inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-[#ccff00]/10 border border-[#ccff00]/30 text-[#ccff00] text-xs font-bold hover:bg-[#ccff00]/20 transition-colors"
+            className="shrink-0 inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-accent/10 border border-accent/30 text-accent text-xs font-bold hover:bg-accent/20 transition-colors"
           >
             <ScanLine className="w-3.5 h-3.5" />
             Check in guests

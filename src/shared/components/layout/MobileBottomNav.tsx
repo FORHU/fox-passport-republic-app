@@ -110,7 +110,7 @@ export default function MobileBottomNav({
               ? "2px solid #ccff00"
               : "2px solid rgba(255,255,255,0.2)",
             boxShadow: active ? "0 0 8px rgba(204,255,0,0.5)" : "none",
-            background: "rgba(255,255,255,0.08)",
+            background: "color-mix(in srgb, var(--color-white) 8%, transparent)",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
@@ -125,7 +125,7 @@ export default function MobileBottomNav({
               style={{ width: "100%", height: "100%", objectFit: "cover" }}
             />
           ) : (
-            <span style={{ fontSize: 11, fontWeight: 700, color: "#ccff00" }}>
+            <span style={{ fontSize: 11, fontWeight: 700, color: "var(--accent-text)" }}>
               {userInitial}
             </span>
           )}
@@ -167,7 +167,7 @@ export default function MobileBottomNav({
         background: "rgba(14,14,20,0.92)",
         backdropFilter: "blur(28px)",
         WebkitBackdropFilter: "blur(28px)",
-        border: "1px solid rgba(255,255,255,0.08)",
+        border: "1px solid color-mix(in srgb, var(--color-white) 8%, transparent)",
         borderRadius: 999,
         boxShadow:
           "0 -2px 0 rgba(255,255,255,0.04) inset, 0 16px 48px rgba(0,0,0,0.7)",

@@ -55,12 +55,12 @@ export function UserMenuRoleSection({
                 <div
                   className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${
                     unlocked
-                      ? "bg-[#ccff00]/10 border border-[#ccff00]/20"
+                      ? "bg-accent/10 border border-accent/20"
                       : "bg-white/5 border border-white/10"
                   }`}
                 >
                   {unlocked ? (
-                    <Icon className="w-4 h-4 text-[#ccff00]" />
+                    <Icon className="w-4 h-4 text-accent" />
                   ) : (
                     <Lock className="w-3.5 h-3.5 text-white/40" />
                   )}
@@ -69,7 +69,7 @@ export function UserMenuRoleSection({
                   <p
                     className={`text-sm font-medium truncate ${
                       unlocked
-                        ? "text-white group-hover:text-[#ccff00]"
+                        ? "text-white group-hover:text-accent"
                         : "text-white/40"
                     }`}
                   >

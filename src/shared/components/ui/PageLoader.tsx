@@ -5,7 +5,7 @@ import React from "react";
 // any client component that wants the same look while it renders.
 export default function PageLoader({ label = "Loading…" }: { label?: string }) {
   return (
-    <div className="flex h-screen w-full flex-col items-center justify-center gap-4 bg-[#02040a]">
+    <div className="flex h-screen w-full flex-col items-center justify-center gap-4 bg-canvas">
       <div className="h-10 w-10 rounded-full border-4 border-accent/20 border-t-accent animate-spin" />
       <p className="font-display text-sm uppercase tracking-widest text-white/40">
         {label}

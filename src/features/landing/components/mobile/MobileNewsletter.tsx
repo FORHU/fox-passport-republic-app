@@ -30,7 +30,7 @@ export function MobileNewsletter() {
         position: "relative",
         background:
           "linear-gradient(135deg,#2d0080 0%,#1a0040 50%,#050608 100%)",
-        border: "1px solid rgba(255,255,255,0.08)",
+        border: "1px solid color-mix(in srgb, var(--color-white) 8%, transparent)",
         padding: "28px 20px",
       }}
     >
@@ -51,7 +51,7 @@ export function MobileNewsletter() {
         <span
           style={{
             display: "inline-block",
-            background: "#fff",
+            background: "var(--color-white)",
             color: "#000",
             fontSize: 9,
             fontWeight: 700,
@@ -69,7 +69,7 @@ export function MobileNewsletter() {
             fontFamily: 'var(--font-display,"Space Grotesk",sans-serif)',
             fontSize: 28,
             fontWeight: 700,
-            color: "#fff",
+            color: "var(--color-white)",
             lineHeight: 1.1,
             marginBottom: 10,
           }}
@@ -81,7 +81,7 @@ export function MobileNewsletter() {
         <p
           style={{
             fontSize: 12,
-            color: "rgba(255,255,255,0.55)",
+            color: "color-mix(in srgb, var(--color-white) 55%, transparent)",
             marginBottom: 18,
             lineHeight: 1.5,
           }}
@@ -90,7 +90,7 @@ export function MobileNewsletter() {
           your inbox.
         </p>
         {status === "success" ? (
-          <p style={{ color: "#ccff00", fontWeight: 700, fontSize: 14 }}>
+          <p style={{ color: "var(--accent-text)", fontWeight: 700, fontSize: 14 }}>
             You&apos;re on the list! 🎉
           </p>
         ) : (
@@ -104,11 +104,11 @@ export function MobileNewsletter() {
               }}
               placeholder="your@email.com"
               style={{
-                background: "rgba(0,0,0,0.4)",
-                border: "1px solid rgba(255,255,255,0.15)",
+                background: "color-mix(in srgb, var(--color-black) 40%, transparent)",
+                border: "1px solid color-mix(in srgb, var(--color-white) 15%, transparent)",
                 borderRadius: 14,
                 padding: "12px 16px",
-                color: "#fff",
+                color: "var(--color-white)",
                 fontSize: 14,
                 outline: "none",
               }}
@@ -141,7 +141,7 @@ export function MobileNewsletter() {
         <p
           style={{
             fontSize: 9,
-            color: "rgba(255,255,255,0.3)",
+            color: "color-mix(in srgb, var(--color-white) 30%, transparent)",
             marginTop: 14,
             letterSpacing: "0.08em",
             textTransform: "uppercase",

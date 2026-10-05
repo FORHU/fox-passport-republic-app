@@ -146,7 +146,7 @@ export function VenueListingDetailsForm({ venueId }: { venueId: string }) {
 
   if (venueQuery.isLoading) {
     return (
-      <div className="rounded-[2rem] border border-white/10 bg-[#0f111a] p-8 flex items-center gap-2 text-xs text-white/40">
+      <div className="rounded-[2rem] border border-white/10 bg-surface p-8 flex items-center gap-2 text-xs text-white/40">
         <Loader2 className="w-4 h-4 animate-spin text-accent" />
         Loading the listing…
       </div>
@@ -154,7 +154,7 @@ export function VenueListingDetailsForm({ venueId }: { venueId: string }) {
   }
   if (venueQuery.isError) {
     return (
-      <div className="rounded-[2rem] border border-red-500/20 bg-[#0f111a] p-8 text-xs text-red-300/80">
+      <div className="rounded-[2rem] border border-red-500/20 bg-surface p-8 text-xs text-red-300/80">
         Couldn&apos;t load this venue&apos;s listing.
       </div>
     );
@@ -166,7 +166,7 @@ export function VenueListingDetailsForm({ venueId }: { venueId: string }) {
         e.preventDefault();
         if (hasChanges) save.mutate();
       }}
-      className="rounded-[2rem] border border-white/10 bg-[#0f111a] p-8 space-y-6"
+      className="rounded-[2rem] border border-white/10 bg-surface p-8 space-y-6"
     >
       <div>
         <h3 className="font-display font-bold text-white text-lg">

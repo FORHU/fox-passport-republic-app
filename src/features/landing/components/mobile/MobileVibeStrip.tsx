@@ -29,7 +29,7 @@ export function MobileVibeStrip({ categories }: MobileVibeStripProps) {
               height: 80,
               position: "relative",
               cursor: "pointer",
-              border: "1px solid rgba(255,255,255,0.07)",
+              border: "1px solid color-mix(in srgb, var(--color-white) 7%, transparent)",
             }}
           >
             {cat.image ? (
@@ -67,7 +67,7 @@ export function MobileVibeStrip({ categories }: MobileVibeStripProps) {
                 right: 10,
                 fontSize: 11,
                 fontWeight: 700,
-                color: "#fff",
+                color: "var(--color-white)",
                 margin: 0,
                 lineHeight: 1.2,
               }}

@@ -40,10 +40,10 @@ export default function MobileWishlistView() {
   return (
     <div
       style={{
-        background: "#050608",
+        background: "var(--canvas)",
         minHeight: "100svh",
         position: "relative",
-        color: "#fff",
+        color: "var(--color-white)",
       }}
     >
       {/* Nav bar */}
@@ -58,7 +58,7 @@ export default function MobileWishlistView() {
           background: "rgba(5,6,8,0.9)",
           backdropFilter: "blur(20px)",
           WebkitBackdropFilter: "blur(20px)",
-          borderBottom: "1px solid rgba(255,255,255,0.08)",
+          borderBottom: "1px solid color-mix(in srgb, var(--color-white) 8%, transparent)",
           display: "flex",
           alignItems: "center",
           padding: "0 16px",
@@ -78,8 +78,8 @@ export default function MobileWishlistView() {
             width: 36,
             height: 36,
             borderRadius: 999,
-            background: "rgba(255,255,255,0.08)",
-            border: "1px solid rgba(255,255,255,0.12)",
+            background: "color-mix(in srgb, var(--color-white) 8%, transparent)",
+            border: "1px solid color-mix(in srgb, var(--color-white) 12%, transparent)",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
@@ -108,7 +108,7 @@ export default function MobileWishlistView() {
         <p
           style={{
             padding: "142px 16px 0",
-            color: "rgba(255,255,255,0.4)",
+            color: "color-mix(in srgb, var(--color-white) 40%, transparent)",
             fontSize: 13,
           }}
         >
@@ -119,10 +119,10 @@ export default function MobileWishlistView() {
           style={{
             padding: "180px 20px 0",
             textAlign: "center",
-            color: "rgba(255,255,255,0.4)",
+            color: "color-mix(in srgb, var(--color-white) 40%, transparent)",
           }}
         >
-          <p style={{ fontWeight: 700, color: "#fff", marginBottom: 4 }}>
+          <p style={{ fontWeight: 700, color: "var(--color-white)", marginBottom: 4 }}>
             Nothing saved yet
           </p>
           <p style={{ fontSize: 13 }}>
@@ -228,7 +228,7 @@ export default function MobileWishlistView() {
                     style={{
                       fontSize: 13,
                       fontWeight: 700,
-                      color: "#fff",
+                      color: "var(--color-white)",
                       margin: "0 0 3px",
                       lineHeight: 1.2,
                     }}
@@ -239,7 +239,7 @@ export default function MobileWishlistView() {
                     style={{
                       fontSize: 12,
                       fontWeight: 700,
-                      color: "#ccff00",
+                      color: "var(--accent-text)",
                       margin: 0,
                     }}
                   >

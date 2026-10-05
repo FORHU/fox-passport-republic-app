@@ -232,7 +232,7 @@ export default function HostDashboardClient({
 
   return (
     <div
-      className="bg-[#02040a] text-white min-h-screen font-body antialiased"
+      className="bg-canvas text-white min-h-screen font-body antialiased"
       style={{
         background:
           "radial-gradient(circle at 15% 50%, rgba(124,58,237,0.15) 0%, transparent 40%), radial-gradient(circle at 85% 30%, rgba(219,39,119,0.1) 0%, transparent 40%), radial-gradient(circle at 50% 0%, rgba(204,255,0,0.05) 0%, transparent 50%), #02040a",
@@ -385,7 +385,7 @@ export default function HostDashboardClient({
               {!discoveryHintDismissed && !access.hasListings && (
                 <div className="rounded-2xl border border-white/10 bg-white/3 p-4 sm:p-5 flex items-center justify-between gap-4 text-xs text-white/60">
                   <div className="flex items-center gap-3 min-w-0">
-                    <span className="material-symbols-outlined text-[#ccff00] text-lg shrink-0">
+                    <span className="material-symbols-outlined text-accent text-lg shrink-0">
                       auto_awesome
                     </span>
                     <p className="truncate">
@@ -399,7 +399,7 @@ export default function HostDashboardClient({
                       // The role picker, not /creator-dashboard/apply — that one is
                       // the Event Foxer form only, though this offers every role.
                       onClick={() => router.push("/onboarding")}
-                      className="px-3.5 py-1.5 rounded-full bg-[#ccff00]/10 border border-[#ccff00]/30 text-[#ccff00] text-xs font-bold hover:bg-[#ccff00]/20 transition-colors whitespace-nowrap"
+                      className="px-3.5 py-1.5 rounded-full bg-accent/10 border border-accent/30 text-accent text-xs font-bold hover:bg-accent/20 transition-colors whitespace-nowrap"
                     >
                       Apply for Roles
                     </button>

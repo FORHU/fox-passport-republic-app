@@ -147,7 +147,7 @@ function EditableCaption({
    * message's content can match against. See renderNamedMentions. */
   mentionCandidates?: MentionableUser[];
   /** Overrides renderNamedMentions' default lime-on-dark styling — needed on
-   * the lime `bg-[#ccff00]` bubble ("mine"), where lime-on-lime text is
+   * the lime `bg-accent` bubble ("mine"), where lime-on-lime text is
    * nearly unreadable. */
   mentionClassName?: string;
 }) {
@@ -162,7 +162,7 @@ function EditableCaption({
             if (e.key === "Enter") onSave();
             if (e.key === "Escape") onCancel();
           }}
-          className="flex-1 min-w-0 bg-white/5 border border-white/10 rounded-lg px-2 py-1.5 text-xs text-white focus:outline-none focus:border-[#ccff00]/40"
+          className="flex-1 min-w-0 bg-white/5 border border-white/10 rounded-lg px-2 py-1.5 text-xs text-white focus:outline-none focus:border-accent/40"
         />
         <button
           type="button"
@@ -1043,7 +1043,7 @@ export default function ChatPanel({
           type="button"
           onClick={handleReopen}
           aria-label={`Reopen chat with ${otherUserName}${bubbleUnread > 0 ? ` (${bubbleUnread} new)` : ""}`}
-          className="relative flex h-full w-full items-center justify-center rounded-full bg-[#0a0a0a] border border-white/10 shadow-2xl overflow-hidden cursor-pointer hover:scale-105 transition-transform"
+          className="relative flex h-full w-full items-center justify-center rounded-full bg-canvas border border-white/10 shadow-2xl overflow-hidden cursor-pointer hover:scale-105 transition-transform"
         >
           {otherUserImgId ? (
             <Image
@@ -1060,7 +1060,7 @@ export default function ChatPanel({
           )}
         </button>
         {bubbleUnread > 0 && (
-          <span className="pointer-events-none absolute -top-1 -left-1 h-5 min-w-5 px-1 rounded-full bg-[#ff00aa] border-2 border-[#0a0a0a] text-white text-[10px] font-black flex items-center justify-center">
+          <span className="pointer-events-none absolute -top-1 -left-1 h-5 min-w-5 px-1 rounded-full bg-[#ff00aa] border-2 border-canvas text-white text-[10px] font-black flex items-center justify-center">
             {bubbleUnread > 9 ? "9+" : bubbleUnread}
           </span>
         )}
@@ -1202,7 +1202,7 @@ export default function ChatPanel({
           style={{ right, width: PANEL_WIDTH }}
           className="fixed bottom-0 z-[100] max-w-[calc(100vw-2rem)]"
         >
-          <div className="flex h-[460px] max-h-[calc(100vh-1rem)] w-full flex-col rounded-t-2xl border border-white/10 border-b-0 bg-[#0a0a0a] shadow-2xl animate-in slide-in-from-bottom-6 duration-200">
+          <div className="flex h-[460px] max-h-[calc(100vh-1rem)] w-full flex-col rounded-t-2xl border border-white/10 border-b-0 bg-canvas shadow-2xl animate-in slide-in-from-bottom-6 duration-200">
             {/* Header */}
             <div className="flex items-center justify-between gap-2 border-b border-white/5 px-3 py-2.5 shrink-0">
               <div className="flex items-center gap-2 min-w-0">
@@ -1247,7 +1247,7 @@ export default function ChatPanel({
                     </div>
                   )}
                   {!isGroup && presence?.online && (
-                    <span className="absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full bg-lime-400 border-2 border-[#0a0a0a]" />
+                    <span className="absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full bg-lime-400 border-2 border-canvas" />
                   )}
                 </div>
                 <input
@@ -1270,7 +1270,7 @@ export default function ChatPanel({
                         }}
                         placeholder="Group name"
                         maxLength={100}
-                        className="flex-1 min-w-0 bg-white/5 border border-white/10 rounded-lg px-2 py-0.5 text-sm text-white placeholder:text-white/30 focus:outline-none focus:border-[#ccff00]/40"
+                        className="flex-1 min-w-0 bg-white/5 border border-white/10 rounded-lg px-2 py-0.5 text-sm text-white placeholder:text-white/30 focus:outline-none focus:border-accent/40"
                       />
                       <button
                         type="button"
@@ -1421,7 +1421,7 @@ export default function ChatPanel({
             </div>
 
             {searchOpen && (
-              <div className="border-b border-white/10 bg-[#111] px-3 py-2">
+              <div className="border-b border-white/10 bg-surface px-3 py-2">
                 <form
                   onSubmit={handleSearchSubmit}
                   className="flex items-center gap-2"
@@ -1677,7 +1677,7 @@ export default function ChatPanel({
                             }
                             bubbleClassName={`mt-1 rounded-2xl px-3 py-2 text-xs whitespace-pre-wrap break-words ${
                               isMine
-                                ? "bg-[#ccff00] text-black rounded-br-sm"
+                                ? "bg-accent text-black rounded-br-sm"
                                 : "bg-white/10 text-white rounded-bl-sm"
                             }`}
                           />
@@ -1788,7 +1788,7 @@ export default function ChatPanel({
                             }
                             bubbleClassName={`mt-1 rounded-2xl px-3 py-2 text-xs whitespace-pre-wrap break-words ${
                               isMine
-                                ? "bg-[#ccff00] text-black rounded-br-sm"
+                                ? "bg-accent text-black rounded-br-sm"
                                 : "bg-white/10 text-white rounded-bl-sm"
                             }`}
                           />
@@ -1850,7 +1850,7 @@ export default function ChatPanel({
                         <div
                           className={`rounded-2xl px-3 py-2 text-xs ${
                             isMine
-                              ? "bg-[#ccff00] text-black rounded-br-sm"
+                              ? "bg-accent text-black rounded-br-sm"
                               : "bg-white/10 text-white rounded-bl-sm"
                           }`}
                         >
@@ -1967,7 +1967,7 @@ export default function ChatPanel({
                   <button
                     onClick={handleAccept}
                     disabled={acceptRequest.isPending}
-                    className="flex-1 h-9 rounded-xl bg-[#ccff00] text-black text-xs font-black hover:bg-[#b8e600] transition-colors disabled:opacity-50 cursor-pointer"
+                    className="flex-1 h-9 rounded-xl bg-accent text-black text-xs font-black hover:bg-accent-hover transition-colors disabled:opacity-50 cursor-pointer"
                   >
                     Accept
                   </button>
@@ -1982,7 +1982,7 @@ export default function ChatPanel({
               ) : (
                 <div className="flex flex-col gap-2">
                   {replyingTo && (
-                    <div className="flex items-center gap-2 rounded-lg border-l-2 border-[#ccff00]/60 bg-white/5 px-2.5 py-1.5">
+                    <div className="flex items-center gap-2 rounded-lg border-l-2 border-accent/60 bg-white/5 px-2.5 py-1.5">
                       <div className="flex-1 min-w-0">
                         <p className="text-[9px] font-bold text-white/50">
                           Replying to{" "}
@@ -2134,7 +2134,7 @@ export default function ChatPanel({
                         }}
                         placeholder="Type a message…"
                         disabled={!conversationId}
-                        className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-xs text-white placeholder:text-white/30 focus:outline-none focus:border-[#ccff00]/40 disabled:opacity-50"
+                        className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-xs text-white placeholder:text-white/30 focus:outline-none focus:border-accent/40 disabled:opacity-50"
                       />
                     </div>
                     <button
@@ -2144,7 +2144,7 @@ export default function ChatPanel({
                         (!content.trim() && pendingAttachments.length === 0) ||
                         sendMutation.isPending
                       }
-                      className="h-9 w-9 rounded-xl bg-[#ccff00] text-black flex items-center justify-center disabled:opacity-30 disabled:cursor-not-allowed shrink-0"
+                      className="h-9 w-9 rounded-xl bg-accent text-black flex items-center justify-center disabled:opacity-30 disabled:cursor-not-allowed shrink-0"
                     >
                       <Send className="h-[18px] w-[18px]" strokeWidth={2} />
                     </button>

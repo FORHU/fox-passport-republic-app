@@ -51,9 +51,9 @@ export default function MobileVenueStudio({}: Props) {
   return (
     <div
       style={{
-        background: "#050608",
+        background: "var(--canvas)",
         minHeight: "100svh",
-        color: "#fff",
+        color: "var(--color-white)",
         display: "flex",
         flexDirection: "column",
       }}
@@ -70,7 +70,7 @@ export default function MobileVenueStudio({}: Props) {
           background: "rgba(5,6,8,0.9)",
           backdropFilter: "blur(20px)",
           WebkitBackdropFilter: "blur(20px)",
-          borderBottom: "1px solid rgba(255,255,255,0.08)",
+          borderBottom: "1px solid color-mix(in srgb, var(--color-white) 8%, transparent)",
           display: "flex",
           alignItems: "center",
           padding: "0 16px",
@@ -90,8 +90,8 @@ export default function MobileVenueStudio({}: Props) {
             width: 36,
             height: 36,
             borderRadius: 999,
-            background: "rgba(255,255,255,0.08)",
-            border: "1px solid rgba(255,255,255,0.12)",
+            background: "color-mix(in srgb, var(--color-white) 8%, transparent)",
+            border: "1px solid color-mix(in srgb, var(--color-white) 12%, transparent)",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
@@ -119,8 +119,8 @@ export default function MobileVenueStudio({}: Props) {
             width: 36,
             height: 36,
             borderRadius: 999,
-            background: "rgba(255,255,255,0.08)",
-            border: "1px solid rgba(255,255,255,0.12)",
+            background: "color-mix(in srgb, var(--color-white) 8%, transparent)",
+            border: "1px solid color-mix(in srgb, var(--color-white) 12%, transparent)",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
@@ -146,7 +146,7 @@ export default function MobileVenueStudio({}: Props) {
           background: "rgba(5,6,8,0.95)",
           display: "flex",
           overflowX: "auto",
-          borderBottom: "1px solid rgba(255,255,255,0.06)",
+          borderBottom: "1px solid color-mix(in srgb, var(--color-white) 6%, transparent)",
         }}
       >
         {STUDIO_TABS.map((tab) => {
@@ -198,7 +198,7 @@ export default function MobileVenueStudio({}: Props) {
                 display: "flex",
                 alignItems: "center",
                 gap: 10,
-                border: `1.5px solid ${active ? "rgba(204,255,0,0.5)" : "rgba(255,255,255,0.09)"}`,
+                border: `1.5px solid ${active ? "rgba(204,255,0,0.5)" : "color-mix(in srgb, var(--color-white) 9%, transparent)"}`,
                 background: active
                   ? `${STRIPE_BG}, rgba(204,255,0,0.06)`
                   : "rgba(255,255,255,0.03)",
@@ -241,7 +241,7 @@ export default function MobileVenueStudio({}: Props) {
           right: 0,
           zIndex: 5,
           padding: "16px 20px 30px",
-          borderTop: "1px solid rgba(255,255,255,0.08)",
+          borderTop: "1px solid color-mix(in srgb, var(--color-white) 8%, transparent)",
           background: "rgba(5,6,8,0.95)",
           backdropFilter: "blur(20px)",
           WebkitBackdropFilter: "blur(20px)",

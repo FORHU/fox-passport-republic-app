@@ -146,9 +146,9 @@ export function CustomExperienceBuilderModal({
   }
 
   return (
-    <div className="fixed inset-0 z-60 bg-[#02040a] text-white flex flex-col animate-in slide-in-from-bottom-4 duration-300">
+    <div className="fixed inset-0 z-60 bg-canvas text-white flex flex-col animate-in slide-in-from-bottom-4 duration-300">
       {/* Header */}
-      <header className="h-16 border-b border-white/10 px-6 flex items-center justify-between bg-[#080b14]/80 backdrop-blur-md">
+      <header className="h-16 border-b border-white/10 px-6 flex items-center justify-between bg-canvas/80 backdrop-blur-md">
         <div className="flex items-center gap-3">
           <div className="h-8 w-8 rounded-lg bg-accent/10 flex items-center justify-center text-accent">
             <span className="material-symbols-outlined text-[20px]">
@@ -174,7 +174,7 @@ export function CustomExperienceBuilderModal({
 
       <div className="flex-1 flex overflow-hidden">
         {/* Left: Category selector navigation */}
-        <aside className="w-64 border-r border-white/5 bg-[#080b14] flex flex-col p-4 gap-2">
+        <aside className="w-64 border-r border-white/5 bg-canvas flex flex-col p-4 gap-2">
           <p className="text-[10px] font-bold text-text-muted uppercase tracking-wider px-3 mb-1">
             Service Palette
           </p>
@@ -310,7 +310,7 @@ export function CustomExperienceBuilderModal({
           onDragOver={handleDragOver}
           onDragLeave={handleDragLeave}
           onDrop={handleDrop}
-          className={`hidden md:flex w-80 border-l border-white/5 bg-[#080b14] flex-col transition-all ${
+          className={`hidden md:flex w-80 border-l border-white/5 bg-canvas flex-col transition-all ${
             isDragOver ? "bg-accent/5 ring-2 ring-accent/40" : ""
           }`}
         >
@@ -446,7 +446,7 @@ export function CustomExperienceBuilderModal({
       </div>
 
       {/* Mobile submit bar — replaces the hidden right sidebar on small screens */}
-      <div className="md:hidden flex items-center justify-between px-4 py-3 bg-[#0f111a] border-t border-white/10 shrink-0">
+      <div className="md:hidden flex items-center justify-between px-4 py-3 bg-surface border-t border-white/10 shrink-0">
         <div>
           <p className="text-[10px] text-white/40">Total Estimate</p>
           <span className="text-lg font-display font-bold text-accent">

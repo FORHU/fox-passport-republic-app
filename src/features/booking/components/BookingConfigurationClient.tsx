@@ -194,7 +194,7 @@ export default function BookingConfigurationClient() {
                     src={user.imgId}
                   />
                 ) : (
-                  <div className="h-full w-full flex items-center justify-center bg-[#ccff00] text-black font-bold text-sm">
+                  <div className="h-full w-full flex items-center justify-center bg-accent text-black font-bold text-sm">
                     {user?.name?.charAt(0)?.toUpperCase() ?? "U"}
                   </div>
                 )}

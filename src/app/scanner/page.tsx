@@ -5,7 +5,7 @@ import MobileBottomNav from "@/shared/components/layout/MobileBottomNav";
 
 export default function ScannerPage() {
   return (
-    <div className="min-h-screen bg-[#050608] text-white flex flex-col justify-between p-4 sm:p-6 pb-28">
+    <div className="min-h-screen bg-canvas text-white flex flex-col justify-between p-4 sm:p-6 pb-28">
       {/* Top back navigation bar */}
       <div className="max-w-lg w-full mx-auto mb-4 flex items-center justify-between">
         <Link
@@ -17,7 +17,7 @@ export default function ScannerPage() {
           </span>
           Dashboard
         </Link>
-        <span className="text-[11px] font-mono text-[#ccff00]">
+        <span className="text-[11px] font-mono text-accent">
           FoxCheck v2.4
         </span>
       </div>

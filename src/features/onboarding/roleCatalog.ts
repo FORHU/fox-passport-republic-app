@@ -88,7 +88,7 @@ export const ROLES: RoleCatalogEntry[] = [
     type: "venue",
     roleType: "venueFoxer",
     href: "/venue-foxer/apply",
-    color: "#ccff00",
+    color: "var(--accent-text)",
     icon: "apartment",
     tag: "Venue Foxer",
     title: "Space Provider",

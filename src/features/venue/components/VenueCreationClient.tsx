@@ -109,7 +109,7 @@ export default function VenueCreationClient() {
         baseRate={baseRate}
       />
 
-      <div className="fixed inset-0 z-60 bg-[#02040a] text-white flex flex-col font-body">
+      <div className="fixed inset-0 z-60 bg-canvas text-white flex flex-col font-body">
         <VenueHeader
           venueName={venueName}
           isSubmitting={isSubmitting}
@@ -119,13 +119,13 @@ export default function VenueCreationClient() {
         />
 
         {/* Mobile View Selector Tabs */}
-        <div className="xl:hidden flex items-center bg-[#0f111a] border-b border-white/10 px-3 py-2 gap-2 shrink-0">
+        <div className="xl:hidden flex items-center bg-surface border-b border-white/10 px-3 py-2 gap-2 shrink-0">
           <button
             type="button"
             onClick={() => setMobileTab("details")}
             className={`flex-1 py-2 px-2 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
               mobileTab === "details"
-                ? "bg-[#ccff00] text-black shadow-md"
+                ? "bg-accent text-black shadow-md"
                 : "text-white/60 hover:text-white"
             }`}
           >
@@ -137,7 +137,7 @@ export default function VenueCreationClient() {
             onClick={() => setMobileTab("resources")}
             className={`flex-1 py-2 px-2 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
               mobileTab === "resources"
-                ? "bg-[#ccff00] text-black shadow-md"
+                ? "bg-accent text-black shadow-md"
                 : "text-white/60 hover:text-white"
             }`}
           >
@@ -151,7 +151,7 @@ export default function VenueCreationClient() {
             onClick={() => setMobileTab("revenue")}
             className={`flex-1 py-2 px-2 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
               mobileTab === "revenue"
-                ? "bg-[#ccff00] text-black shadow-md"
+                ? "bg-accent text-black shadow-md"
                 : "text-white/60 hover:text-white"
             }`}
           >
@@ -190,7 +190,7 @@ export default function VenueCreationClient() {
           <main
             className={`${
               mobileTab === "details" ? "flex" : "hidden"
-            } xl:flex flex-1 overflow-y-auto p-4 sm:p-8 bg-[#02040a] gap-8`}
+            } xl:flex flex-1 overflow-y-auto p-4 sm:p-8 bg-canvas gap-8`}
           >
             <div className="flex-1 min-w-0 space-y-8">
               <VenueDetailsForm

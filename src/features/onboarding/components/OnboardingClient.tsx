@@ -81,7 +81,7 @@ export default function OnboardingClient({ user: serverUser }: { user: any }) {
 
   return (
     <RequireAuth>
-      <div className="min-h-screen bg-[#0f111a] flex items-center justify-center p-4 pt-20 pb-12 font-body">
+      <div className="min-h-screen bg-surface flex items-center justify-center p-4 pt-20 pb-12 font-body">
         <div className="w-full max-w-2xl">
           {/* Exit — always visible */}
           <div className="flex items-center justify-between mb-8">
@@ -144,12 +144,12 @@ export default function OnboardingClient({ user: serverUser }: { user: any }) {
           {step === 1 && (
             <div className="animate-in fade-in duration-300">
               <div className="text-center mb-10">
-                <div className="mb-5 h-16 w-16 mx-auto rounded-full bg-[#ccff00]/10 flex items-center justify-center text-4xl shadow-[0_0_20px_rgba(204,255,0,0.25)]">
+                <div className="mb-5 h-16 w-16 mx-auto rounded-full bg-accent/10 flex items-center justify-center text-4xl shadow-[0_0_20px_rgba(204,255,0,0.25)]">
                   👋
                 </div>
                 <h2 className="text-4xl font-display font-bold text-white mb-3">
                   {hasExistingRoles ? "Back again," : "Welcome,"}{" "}
-                  <span className="text-[#ccff00]">
+                  <span className="text-accent">
                     {user?.name?.split(" ")[0] || "Friend"}!
                   </span>
                 </h2>
@@ -160,16 +160,16 @@ export default function OnboardingClient({ user: serverUser }: { user: any }) {
                 </p>
               </div>
 
-              <div className="bg-[#1a1a24] rounded-[2rem] p-8 border border-white/5 space-y-6">
+              <div className="bg-surface-raised rounded-[2rem] p-8 border border-white/5 space-y-6">
                 <div>
                   <label className="text-xs font-bold text-white/60 uppercase tracking-wider block mb-2">
-                    Display Name <span className="text-[#ccff00]">*</span>
+                    Display Name <span className="text-accent">*</span>
                   </label>
                   <input
                     type="text"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
-                    className="w-full bg-white/5 border border-white/10 rounded-xl py-3.5 px-4 text-white placeholder:text-white/20 focus:outline-none focus:border-[#ccff00]/50 focus:bg-white/[0.07] transition-colors"
+                    className="w-full bg-white/5 border border-white/10 rounded-xl py-3.5 px-4 text-white placeholder:text-white/20 focus:outline-none focus:border-accent/50 focus:bg-white/[0.07] transition-colors"
                     placeholder="Your full name"
                   />
                 </div>
@@ -184,7 +184,7 @@ export default function OnboardingClient({ user: serverUser }: { user: any }) {
                     type="text"
                     value={city}
                     onChange={(e) => setCity(e.target.value)}
-                    className="w-full bg-white/5 border border-white/10 rounded-xl py-3.5 px-4 text-white placeholder:text-white/20 focus:outline-none focus:border-[#ccff00]/50 focus:bg-white/[0.07] transition-colors"
+                    className="w-full bg-white/5 border border-white/10 rounded-xl py-3.5 px-4 text-white placeholder:text-white/20 focus:outline-none focus:border-accent/50 focus:bg-white/[0.07] transition-colors"
                     placeholder="e.g. Manila, Cebu, Davao"
                   />
                 </div>
@@ -200,7 +200,7 @@ export default function OnboardingClient({ user: serverUser }: { user: any }) {
                 <button
                   onClick={handleProfileContinue}
                   disabled={isSaving || !name.trim()}
-                  className="flex-2 py-3.5 rounded-xl bg-[#ccff00] text-black font-bold hover:brightness-110 transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+                  className="flex-2 py-3.5 rounded-xl bg-accent text-black font-bold hover:brightness-110 transition-all disabled:opacity-40 disabled:cursor-not-allowed"
                 >
                   {isSaving ? "Saving…" : "Continue →"}
                 </button>
@@ -223,13 +223,13 @@ export default function OnboardingClient({ user: serverUser }: { user: any }) {
               <div className="space-y-4">
                 <button
                   onClick={() => router.push("/search")}
-                  className="group w-full bg-[#1a1a24] rounded-[1.5rem] p-7 text-left border border-white/5 hover:border-[#ccff00]/40 hover:bg-[#1e1e2c] transition-all duration-300"
+                  className="group w-full bg-surface-raised rounded-[1.5rem] p-7 text-left border border-white/5 hover:border-accent/40 hover:bg-surface-raised transition-all duration-300"
                 >
                   <div className="flex items-center gap-4">
-                    <div className="h-12 w-12 rounded-xl bg-[#ccff00]/15 flex items-center justify-center shrink-0">
+                    <div className="h-12 w-12 rounded-xl bg-accent/15 flex items-center justify-center shrink-0">
                       <span
                         className="material-symbols-outlined text-[24px]"
-                        style={{ color: "#ccff00" }}
+                        style={{ color: "var(--accent-text)" }}
                       >
                         local_activity
                       </span>
@@ -243,7 +243,7 @@ export default function OnboardingClient({ user: serverUser }: { user: any }) {
                         perfect event.
                       </p>
                     </div>
-                    <span className="material-symbols-outlined text-white/20 group-hover:text-[#ccff00] transition-colors">
+                    <span className="material-symbols-outlined text-white/20 group-hover:text-accent transition-colors">
                       arrow_forward
                     </span>
                   </div>
@@ -251,7 +251,7 @@ export default function OnboardingClient({ user: serverUser }: { user: any }) {
 
                 <button
                   onClick={() => setStep(3)}
-                  className="group w-full bg-[#1a1a24] rounded-[1.5rem] p-7 text-left border border-white/5 hover:border-[#ff00aa]/40 hover:bg-[#1e1e2c] transition-all duration-300"
+                  className="group w-full bg-surface-raised rounded-[1.5rem] p-7 text-left border border-white/5 hover:border-[#ff00aa]/40 hover:bg-surface-raised transition-all duration-300"
                 >
                   <div className="flex items-center gap-4">
                     <div className="h-12 w-12 rounded-xl bg-[#ff00aa]/15 flex items-center justify-center shrink-0">
@@ -279,7 +279,7 @@ export default function OnboardingClient({ user: serverUser }: { user: any }) {
 
                 <button
                   onClick={() => setStep(3)}
-                  className="group w-full bg-[#1a1a24] rounded-[1.5rem] p-7 text-left border border-white/5 hover:border-white/20 hover:bg-[#1e1e2c] transition-all duration-300"
+                  className="group w-full bg-surface-raised rounded-[1.5rem] p-7 text-left border border-white/5 hover:border-white/20 hover:bg-surface-raised transition-all duration-300"
                 >
                   <div className="flex items-center gap-4">
                     <div className="h-12 w-12 rounded-xl bg-white/5 flex items-center justify-center shrink-0">
@@ -352,7 +352,7 @@ export default function OnboardingClient({ user: serverUser }: { user: any }) {
                     return (
                       <div
                         key={role.type}
-                        className={`relative bg-[#1a1a24] rounded-[1.5rem] p-6 border border-green-500/20 flex flex-col ${isLastOdd ? "sm:col-span-2 sm:mx-auto sm:w-full sm:max-w-[calc(50%-0.5rem)]" : ""}`}
+                        className={`relative bg-surface-raised rounded-[1.5rem] p-6 border border-green-500/20 flex flex-col ${isLastOdd ? "sm:col-span-2 sm:mx-auto sm:w-full sm:max-w-[calc(50%-0.5rem)]" : ""}`}
                         style={{
                           boxShadow: "inset 0 0 0 1px rgba(34,197,94,0.15)",
                         }}
@@ -394,7 +394,7 @@ export default function OnboardingClient({ user: serverUser }: { user: any }) {
                     return (
                       <div
                         key={role.type}
-                        className={`relative bg-[#1a1a24] rounded-[1.5rem] p-6 border border-amber-500/20 flex flex-col ${isLastOdd ? "sm:col-span-2 sm:mx-auto sm:w-full sm:max-w-[calc(50%-0.5rem)]" : ""}`}
+                        className={`relative bg-surface-raised rounded-[1.5rem] p-6 border border-amber-500/20 flex flex-col ${isLastOdd ? "sm:col-span-2 sm:mx-auto sm:w-full sm:max-w-[calc(50%-0.5rem)]" : ""}`}
                         style={{
                           boxShadow: "inset 0 0 0 1px rgba(245,158,11,0.12)",
                         }}
@@ -437,7 +437,7 @@ export default function OnboardingClient({ user: serverUser }: { user: any }) {
                       <Link
                         key={role.type}
                         href={`/foxer/resubmit/${revisionRequest.id}`}
-                        className={`group relative bg-[#1a1a24] rounded-[1.5rem] p-6 text-left border border-orange-500/20 hover:bg-[#1e1e2c] transition-all duration-300 flex flex-col ${isLastOdd ? "sm:col-span-2 sm:mx-auto sm:w-full sm:max-w-[calc(50%-0.5rem)]" : ""}`}
+                        className={`group relative bg-surface-raised rounded-[1.5rem] p-6 text-left border border-orange-500/20 hover:bg-surface-raised transition-all duration-300 flex flex-col ${isLastOdd ? "sm:col-span-2 sm:mx-auto sm:w-full sm:max-w-[calc(50%-0.5rem)]" : ""}`}
                         style={{
                           boxShadow: "inset 0 0 0 1px rgba(249,115,22,0.15)",
                         }}
@@ -482,7 +482,7 @@ export default function OnboardingClient({ user: serverUser }: { user: any }) {
                       key={role.type}
                       onClick={() => setViewingRole(role)}
                       aria-haspopup="dialog"
-                      className={`group relative bg-[#1a1a24] rounded-[1.5rem] p-6 text-left border border-white/5 hover:bg-[#1e1e2c] transition-all duration-300 hover:-translate-y-1 flex flex-col cursor-pointer ${isLastOdd ? "sm:col-span-2 sm:mx-auto sm:w-full sm:max-w-[calc(50%-0.5rem)]" : ""}`}
+                      className={`group relative bg-surface-raised rounded-[1.5rem] p-6 text-left border border-white/5 hover:bg-surface-raised transition-all duration-300 hover:-translate-y-1 flex flex-col cursor-pointer ${isLastOdd ? "sm:col-span-2 sm:mx-auto sm:w-full sm:max-w-[calc(50%-0.5rem)]" : ""}`}
                     >
                       <div
                         className="absolute inset-0 rounded-[1.5rem] opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"

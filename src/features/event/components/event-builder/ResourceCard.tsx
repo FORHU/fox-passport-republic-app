@@ -28,10 +28,10 @@ export function ResourceCard({
     <div
       draggable={!isGatedVenue}
       onDragStart={(e) => !isGatedVenue && onDragStart(e, item)}
-      className={`group bg-[#161b26] border border-white/5 rounded-2xl p-4 transition-colors relative ${
+      className={`group bg-surface-raised border border-white/5 rounded-2xl p-4 transition-colors relative ${
         isGatedVenue
           ? "opacity-60"
-          : "hover:bg-[#1c2230] hover:border-white/10 cursor-grab"
+          : "hover:bg-surface-raised hover:border-white/10 cursor-grab"
       }`}
     >
       <div className="flex gap-4">

@@ -85,7 +85,7 @@ function CategoriesContent({
   // --- VIEW: SPECIFIC CATEGORY (Legacy/Type Filter) ---
   if (type) {
     return (
-      <div className="min-h-screen bg-[#0a0a0a] flex flex-col">
+      <div className="min-h-screen bg-canvas flex flex-col">
         <LandingHeader onSignIn={openLogin} />
 
         <div className="flex-1 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 pt-24">
@@ -111,7 +111,7 @@ function CategoriesContent({
 
           {eventsLoading || venuesLoading ? (
             <div className="bg-white/5 rounded-2xl shadow-sm border border-white/10 p-6 min-h-[500px] flex items-center justify-center">
-              <Loader2 className="w-8 h-8 text-[#ccff00] animate-spin" />
+              <Loader2 className="w-8 h-8 text-accent animate-spin" />
             </div>
           ) : (
             <>
@@ -166,10 +166,10 @@ function CategoriesContent({
   // --- LOADING STATE ---
   if (categoriesLoading && displayCategories.length === 0) {
     return (
-      <div className="min-h-screen bg-[#0a0a0a]">
+      <div className="min-h-screen bg-canvas">
         <LandingHeader onSignIn={openLogin} />
         <div className="pt-24 pb-16 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col items-center justify-center min-h-[60vh]">
-          <Loader2 className="w-10 h-10 text-[#ccff00] animate-spin mb-4" />
+          <Loader2 className="w-10 h-10 text-accent animate-spin mb-4" />
           <p className="text-gray-400">Loading categories...</p>
         </div>
       </div>
@@ -179,7 +179,7 @@ function CategoriesContent({
   // --- ERROR STATE ---
   if (categoriesError || displayCategories.length === 0) {
     return (
-      <div className="min-h-screen bg-[#0a0a0a]">
+      <div className="min-h-screen bg-canvas">
         <LandingHeader onSignIn={openLogin} />
         <div className="pt-24 pb-16 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col items-center justify-center min-h-[60vh]">
           <AlertCircle className="w-12 h-12 text-red-500 mb-4" />
@@ -199,7 +199,7 @@ function CategoriesContent({
 
   // --- VIEW: ALL CATEGORIES LIST ---
   return (
-    <div className="min-h-screen bg-[#0a0a0a] flex flex-col">
+    <div className="min-h-screen bg-canvas flex flex-col">
       <LandingHeader onSignIn={openLogin} />
 
       <main className="flex-grow container mx-auto px-6 lg:px-20 py-10">

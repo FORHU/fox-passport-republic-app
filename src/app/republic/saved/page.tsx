@@ -84,7 +84,7 @@ export default function SavedPostsPage() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-[#09090e] text-white pt-16 sm:pt-28 selection:bg-lime-400 selection:text-black">
+    <div className="min-h-screen bg-canvas text-white pt-16 sm:pt-28 selection:bg-lime-400 selection:text-black">
       <LandingHeader />
 
       <div className="max-w-2xl mx-auto px-3 sm:px-6 w-full pb-16 pt-5">

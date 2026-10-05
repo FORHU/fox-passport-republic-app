@@ -150,7 +150,7 @@ export default function VenueDetailClient({
           style={{
             background: "rgba(18,18,24,0.92)",
             backdropFilter: "blur(20px)",
-            border: "1px solid rgba(255,255,255,0.1)",
+            border: "1px solid color-mix(in srgb, var(--color-white) 10%, transparent)",
             boxShadow: "0 20px 50px rgba(0,0,0,0.5)",
           }}
         >
@@ -158,14 +158,14 @@ export default function VenueDetailClient({
             <p className="text-[10px] text-white/40 font-bold uppercase tracking-wider">
               From
             </p>
-            <p className="text-xl font-display font-bold text-[#ccff00]">
+            <p className="text-xl font-display font-bold text-accent">
               <Money amount={venuePrice} />
               <span className="text-xs text-white/40 font-normal">/night</span>
             </p>
           </div>
           <button
             onClick={() => router.push(`/booking/venue/${venue.id}`)}
-            className="px-6 py-3 rounded-full bg-[#ccff00] text-black font-bold text-sm"
+            className="px-6 py-3 rounded-full bg-accent text-black font-bold text-sm"
             style={{ boxShadow: "0 4px 16px rgba(204,255,0,0.35)" }}
           >
             Book Now
@@ -201,7 +201,7 @@ export default function VenueDetailClient({
                       className="w-16 h-16 rounded-full object-cover border-2 border-white/10"
                       alt={host.name}
                     />
-                    <div className="absolute -bottom-1 -right-1 bg-accent text-black rounded-full p-1 border-4 border-[#0f111a] flex items-center justify-center shadow-sm">
+                    <div className="absolute -bottom-1 -right-1 bg-accent text-black rounded-full p-1 border-4 border-surface flex items-center justify-center shadow-sm">
                       <span className="material-symbols-outlined text-[14px]">
                         verified
                       </span>
@@ -211,7 +211,7 @@ export default function VenueDetailClient({
                     <h3 className="font-display font-bold text-white text-lg">
                       Listed by {host.name}
                     </h3>
-                    <p className="text-[#ccff00] text-xs font-bold uppercase tracking-wider mb-2">
+                    <p className="text-accent text-xs font-bold uppercase tracking-wider mb-2">
                       Venue Foxer · Space Provider
                     </p>
                     <p className="text-sm text-text-muted leading-relaxed">
@@ -489,7 +489,7 @@ export default function VenueDetailClient({
       </main>
 
       {/* Floating Mobile Booking Footer (Hidden on lg+) */}
-      <div className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-[#0f111a]/95 backdrop-blur-xl border-t border-white/10 px-5 py-3.5 flex items-center justify-between shadow-[0_-10px_30px_rgba(0,0,0,0.8)]">
+      <div className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-surface/95 backdrop-blur-xl border-t border-white/10 px-5 py-3.5 flex items-center justify-between shadow-[0_-10px_30px_rgba(0,0,0,0.8)]">
         <div>
           <div className="flex items-baseline gap-1">
             <span className="text-xl font-display font-bold text-white">

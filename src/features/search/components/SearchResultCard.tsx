@@ -26,7 +26,7 @@ export default function SearchResultCard({
       onClick={() =>
         router.push(DETAIL_PATH[item._type ?? type]?.(item.id) ?? "#")
       }
-      className="bg-[#11121a] border border-white/10 rounded-2xl overflow-hidden hover:border-[#ccff00]/50 transition-colors group cursor-pointer"
+      className="bg-surface border border-white/10 rounded-2xl overflow-hidden hover:border-accent/50 transition-colors group cursor-pointer"
     >
       <div className="h-48 bg-white/5 relative overflow-hidden">
         {item.images && item.images.length > 0 ? (
@@ -41,7 +41,7 @@ export default function SearchResultCard({
           </div>
         )}
         {item.category && (
-          <div className="absolute top-4 left-4 bg-black/60 backdrop-blur-md px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider text-[#ccff00] capitalize">
+          <div className="absolute top-4 left-4 bg-black/60 backdrop-blur-md px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider text-accent capitalize">
             {String(item.category).replace(/_/g, " ")}
           </div>
         )}
@@ -65,7 +65,7 @@ export default function SearchResultCard({
             </span>
           </div>
           {item.price && (
-            <div className="font-bold text-[#ccff00]">
+            <div className="font-bold text-accent">
               <Money amount={item.price} from={item.currency || undefined} />
             </div>
           )}

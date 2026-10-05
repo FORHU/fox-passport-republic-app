@@ -21,7 +21,7 @@ function BentoColumn({
   return (
     <div className="bg-[#0f1018] border border-white/10 rounded-3xl p-5 space-y-3">
       <div className="flex items-center gap-2 pb-2 border-b border-white/10">
-        <span className="material-symbols-outlined text-[#ccff00] text-[20px]">
+        <span className="material-symbols-outlined text-accent text-[20px]">
           {icon}
         </span>
         <h3 className="text-lg font-display font-bold tracking-tight text-white">
@@ -43,7 +43,7 @@ function BentoColumn({
           <div
             key={i}
             onClick={() => router.push(`/foxer/${row.foxerId}`)}
-            className="flex items-center gap-3 p-3 rounded-xl bg-white/[0.03] border border-white/5 hover:border-[#ccff00]/40 hover:bg-white/5 transition-all cursor-pointer group"
+            className="flex items-center gap-3 p-3 rounded-xl bg-white/[0.03] border border-white/5 hover:border-accent/40 hover:bg-white/5 transition-all cursor-pointer group"
           >
             <div className="h-12 w-12 rounded-xl bg-white/5 overflow-hidden shrink-0 flex items-center justify-center">
               {row.img ? (
@@ -59,14 +59,14 @@ function BentoColumn({
               )}
             </div>
             <div className="min-w-0 flex-1">
-              <p className="text-sm font-bold text-white truncate group-hover:text-[#ccff00] transition-colors">
+              <p className="text-sm font-bold text-white truncate group-hover:text-accent transition-colors">
                 {row.itemName}
               </p>
               <p className="text-[11px] text-white/40 truncate">
                 {row.name} · {row.category.replace(/_/g, " ")}
               </p>
             </div>
-            <span className="text-xs font-bold text-[#ccff00] whitespace-nowrap">
+            <span className="text-xs font-bold text-accent whitespace-nowrap">
               <Money amount={row.price} />
               <span className="text-white/40 font-normal">
                 /{row.billingRate}
@@ -134,7 +134,7 @@ export default function GearServiceBento({
               onClick={() => setTab(t.key)}
               className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-sm font-bold transition-all ${
                 tab === t.key
-                  ? "bg-[#ccff00] text-black"
+                  ? "bg-accent text-black"
                   : "text-white/50 hover:text-white"
               }`}
             >

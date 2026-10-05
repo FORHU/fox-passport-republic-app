@@ -100,17 +100,17 @@ export default function MapboxLocationPicker({
           onChange={(e) => setQuery(e.target.value)}
           onFocus={() => suggestions.length > 0 && setShowDropdown(true)}
           placeholder="Search epicenter..."
-          className="w-full bg-white/5 border border-white/10 rounded-xl pl-10 pr-4 py-2.5 text-white text-sm placeholder:text-white/30 focus:outline-none focus:border-[#ccff00]/50"
+          className="w-full bg-white/5 border border-white/10 rounded-xl pl-10 pr-4 py-2.5 text-white text-sm placeholder:text-white/30 focus:outline-none focus:border-accent/50"
         />
         {loading && (
-          <span className="absolute right-3 top-1/2 -translate-y-1/2 h-2 w-2 rounded-full bg-[#ccff00] animate-pulse" />
+          <span className="absolute right-3 top-1/2 -translate-y-1/2 h-2 w-2 rounded-full bg-accent animate-pulse" />
         )}
         {showDropdown && suggestions.length > 0 && (
-          <ul className="absolute top-[calc(100%+8px)] left-0 w-full bg-[#11121a] border border-white/10 rounded-xl shadow-[0_0_20px_rgba(0,0,0,0.5)] z-50 overflow-hidden max-h-60 overflow-y-auto">
+          <ul className="absolute top-[calc(100%+8px)] left-0 w-full bg-surface border border-white/10 rounded-xl shadow-[0_0_20px_rgba(0,0,0,0.5)] z-50 overflow-hidden max-h-60 overflow-y-auto">
             {suggestions.map((s) => (
               <li
                 key={s.id}
-                className="px-4 py-3 text-sm text-white hover:bg-[#ccff00] hover:text-black cursor-pointer font-bold transition-colors"
+                className="px-4 py-3 text-sm text-white hover:bg-accent hover:text-black cursor-pointer font-bold transition-colors"
                 onClick={() => {
                   onChange({
                     label: s.place_name,
@@ -129,7 +129,7 @@ export default function MapboxLocationPicker({
       </div>
       {lat != null && lng != null && (
         <div className="flex items-center gap-2 text-[11px] text-white/40">
-          <span className="h-2 w-2 rounded-full bg-[#ccff00] animate-pulse" />
+          <span className="h-2 w-2 rounded-full bg-accent animate-pulse" />
           <span>
             {lat.toFixed(4)}, {lng.toFixed(4)}
           </span>

@@ -46,7 +46,7 @@ export function LockedSection({
             <p className="text-white font-bold text-base">{title}</p>
             <p className="text-white/40 text-sm mt-1">
               Apply as{" "}
-              <span className="text-[#ccff00] font-semibold">
+              <span className="text-accent font-semibold">
                 {requiredRole}
               </span>{" "}
               to unlock this feature
@@ -54,7 +54,7 @@ export function LockedSection({
           </div>
           <button
             onClick={() => router.push(applyHref)}
-            className="px-6 py-2 rounded-full bg-[#ccff00]/10 border border-[#ccff00]/30 text-[#ccff00] text-sm font-bold hover:bg-[#ccff00]/20 transition-all"
+            className="px-6 py-2 rounded-full bg-accent/10 border border-accent/30 text-accent text-sm font-bold hover:bg-accent/20 transition-all"
           >
             Apply as {requiredRole}
           </button>
