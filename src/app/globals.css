@@ -536,6 +536,33 @@ body {
   }
 }
 
+/* PageLoader: the branded loading screen */
+@keyframes fp-loader-pulse {
+  0%, 100% { transform: scale(1); opacity: 0.55; }
+  50%      { transform: scale(1.18); opacity: 0; }
+}
+@keyframes fp-loader-bob {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-5px); }
+}
+@keyframes fp-loader-sweep {
+  from { transform: translateX(-100%); }
+  to   { transform: translateX(260%); }
+}
+
+.fp-loader-logo { filter: brightness(0) invert(1); }
+.light .fp-loader-logo { filter: brightness(0); }
+.fp-loader-ring  { animation: fp-loader-pulse 1.8s ease-out infinite; }
+.fp-loader-ring2 { animation: fp-loader-pulse 1.8s ease-out 0.6s infinite; }
+.fp-loader-mark  { animation: fp-loader-bob 1.8s ease-in-out infinite; }
+.fp-loader-sweep { animation: fp-loader-sweep 1.2s ease-in-out infinite; }
+
+@media (prefers-reduced-motion: reduce) {
+  .fp-loader-ring, .fp-loader-ring2, .fp-loader-mark { animation: none; }
+  .fp-loader-ring2 { display: none; }
+  .fp-loader-sweep { animation: none; width: 100%; opacity: 0.6; }
+}
+
 /* Scroll reveal animations */
 .reveal-on-scroll {
   opacity: 0;

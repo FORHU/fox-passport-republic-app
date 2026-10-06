@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Loader2 } from "lucide-react";
+import PageLoader from "@/shared/components/ui/PageLoader";
 import { toast } from "sonner";
 
 import { useAuthStore } from "@/shared/auth/useAuthStore";
@@ -48,9 +48,7 @@ function FacebookCallbackContent() {
   }, [searchParams, router, login]);
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-canvas">
-      <Loader2 className="h-8 w-8 animate-spin text-white/60" />
-    </div>
+    <PageLoader label="Signing you in" />
   );
 }
 
@@ -58,9 +56,7 @@ export default function FacebookAuthCallbackPage() {
   return (
     <Suspense
       fallback={
-        <div className="flex min-h-screen items-center justify-center bg-canvas">
-          <Loader2 className="h-8 w-8 animate-spin text-white/60" />
-        </div>
+        <PageLoader label="Signing you in" />
       }
     >
       <FacebookCallbackContent />
