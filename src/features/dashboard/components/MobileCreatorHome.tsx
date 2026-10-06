@@ -82,7 +82,11 @@ export default function MobileCreatorHome({
   return (
     <div
       className="lg:hidden"
-      style={{ background: "var(--canvas)", minHeight: "100svh", color: "var(--color-white)" }}
+      style={{
+        background: "var(--canvas)",
+        minHeight: "100svh",
+        color: "var(--color-white)",
+      }}
     >
       {/* Same DashboardHeader the desktop creator dashboard uses — MobileCreatorHome
           used to draw its own bespoke top bar here, which meant "Creator Studio"
@@ -104,10 +108,15 @@ export default function MobileCreatorHome({
               lineHeight: 1.2,
             }}
           >
-            Good morning, <span style={{ color: "var(--accent-text)" }}>{firstName}.</span>
+            Good morning,{" "}
+            <span style={{ color: "var(--accent-text)" }}>{firstName}.</span>
           </p>
           <p
-            style={{ fontSize: 13, color: "color-mix(in srgb, var(--color-white) 40%, transparent)", margin: 0 }}
+            style={{
+              fontSize: 13,
+              color: "color-mix(in srgb, var(--color-white) 40%, transparent)",
+              margin: 0,
+            }}
           >
             Here&apos;s what&apos;s happening today.
           </p>
@@ -119,14 +128,19 @@ export default function MobileCreatorHome({
             with a listing of their own to measure. An Organizer or Investor
             supplies nothing, so there is nothing here for them to read. */}
         {hasListings && (
-          <div style={{ display: "flex", gap: 12, marginBottom: 28 }}>
+          <div
+            data-tour="host-kpis"
+            style={{ display: "flex", gap: 12, marginBottom: 28 }}
+          >
             {kpiCards.map((kpi) => (
               <div
                 key={kpi.label}
                 style={{
                   flex: 1,
-                  background: "color-mix(in srgb, var(--color-white) 4%, transparent)",
-                  border: "1px solid color-mix(in srgb, var(--color-white) 7%, transparent)",
+                  background:
+                    "color-mix(in srgb, var(--color-white) 4%, transparent)",
+                  border:
+                    "1px solid color-mix(in srgb, var(--color-white) 7%, transparent)",
                   borderRadius: 18,
                   padding: "16px 14px",
                 }}
@@ -152,7 +166,8 @@ export default function MobileCreatorHome({
                 </div>
                 <p
                   style={{
-                    fontFamily: 'var(--font-display,"Space Grotesk",sans-serif)',
+                    fontFamily:
+                      'var(--font-display,"Space Grotesk",sans-serif)',
                     fontSize: 22,
                     fontWeight: 700,
                     color: "var(--color-white)",
@@ -166,7 +181,8 @@ export default function MobileCreatorHome({
                     fontSize: 10,
                     fontWeight: 700,
                     letterSpacing: "0.08em",
-                    color: "color-mix(in srgb, var(--color-white) 40%, transparent)",
+                    color:
+                      "color-mix(in srgb, var(--color-white) 40%, transparent)",
                     margin: 0,
                   }}
                 >
@@ -177,56 +193,68 @@ export default function MobileCreatorHome({
           </div>
         )}
 
-        {pendingRequests}
+        <div data-tour="host-requests">{pendingRequests}</div>
 
         {/* Quick Actions */}
         {quickActions.length > 0 && (
-        <div>
-          <p
-            style={{
-              fontSize: 12,
-              fontWeight: 700,
-              letterSpacing: "0.1em",
-              textTransform: "uppercase",
-              color: "color-mix(in srgb, var(--color-white) 40%, transparent)",
-              margin: "0 0 14px",
-            }}
-          >
-            Quick Actions
-          </p>
-          <div
-            style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}
-          >
-            {quickActions.map((action) => (
-              <Link
-                key={action.label}
-                href={action.href}
-                style={{
-                  background: `${STRIPE_BG}, color-mix(in srgb, var(--color-white) 3%, transparent)`,
-                  border: "1px solid color-mix(in srgb, var(--color-white) 7%, transparent)",
-                  borderRadius: 16,
-                  padding: "16px 14px",
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 10,
-                  cursor: "pointer",
-                  textAlign: "left",
-                  textDecoration: "none",
-                }}
-              >
-                <span
-                  className="material-symbols-outlined"
-                  style={{ fontSize: 20, color: action.color }}
+          <div data-tour="host-create">
+            <p
+              style={{
+                fontSize: 12,
+                fontWeight: 700,
+                letterSpacing: "0.1em",
+                textTransform: "uppercase",
+                color:
+                  "color-mix(in srgb, var(--color-white) 40%, transparent)",
+                margin: "0 0 14px",
+              }}
+            >
+              Quick Actions
+            </p>
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "1fr 1fr",
+                gap: 10,
+              }}
+            >
+              {quickActions.map((action) => (
+                <Link
+                  key={action.label}
+                  href={action.href}
+                  style={{
+                    background: `${STRIPE_BG}, color-mix(in srgb, var(--color-white) 3%, transparent)`,
+                    border:
+                      "1px solid color-mix(in srgb, var(--color-white) 7%, transparent)",
+                    borderRadius: 16,
+                    padding: "16px 14px",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 10,
+                    cursor: "pointer",
+                    textAlign: "left",
+                    textDecoration: "none",
+                  }}
                 >
-                  {action.icon}
-                </span>
-                <span style={{ fontSize: 13, fontWeight: 600, color: "var(--color-white)" }}>
-                  {action.label}
-                </span>
-              </Link>
-            ))}
+                  <span
+                    className="material-symbols-outlined"
+                    style={{ fontSize: 20, color: action.color }}
+                  >
+                    {action.icon}
+                  </span>
+                  <span
+                    style={{
+                      fontSize: 13,
+                      fontWeight: 600,
+                      color: "var(--color-white)",
+                    }}
+                  >
+                    {action.label}
+                  </span>
+                </Link>
+              ))}
+            </div>
           </div>
-        </div>
         )}
       </div>
 

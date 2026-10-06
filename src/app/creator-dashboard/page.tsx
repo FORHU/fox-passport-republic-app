@@ -10,6 +10,8 @@ import { MobilePendingRequests } from "./_components/MobilePendingRequests";
 import { PartnershipsOverview } from "@/features/partnership/components/PartnershipsOverview";
 import { hasPermission } from "@/shared/lib/permissions";
 import { RoleGettingStarted } from "./_components/RoleGettingStarted";
+import { TourReplayButton } from "@/shared/components/ui/ProductTour";
+import { CREATOR_TOUR_KEY } from "./_components/creatorTour";
 
 export default async function Dashboard() {
   const user = await requireHost();
@@ -25,19 +27,32 @@ export default async function Dashboard() {
         user={user}
         organizing={
           <div className="space-y-6">
-            <RoleGettingStarted
-              totals={{
-                venues: data.venues?.length ?? 0,
-                events: data.events?.length ?? 0,
-                assets: data.inventory?.length ?? 0,
-                services: data.services?.length ?? 0,
-              }}
-            />
-            <OrganizerAttention />
-            <OrganizingSection />
-            <OpenToOrganizersSection />
+            <div className="flex justify-end -mb-3">
+              <TourReplayButton tourKey={CREATOR_TOUR_KEY} />
+            </div>
+            <div data-tour="host-guide">
+              <RoleGettingStarted
+                totals={{
+                  venues: data.venues?.length ?? 0,
+                  events: data.events?.length ?? 0,
+                  assets: data.inventory?.length ?? 0,
+                  services: data.services?.length ?? 0,
+                }}
+              />
+            </div>
+            <div data-tour="host-attention">
+              <OrganizerAttention />
+            </div>
+            <div data-tour="host-organizing">
+              <OrganizingSection />
+            </div>
+            <div data-tour="host-open">
+              <OpenToOrganizersSection />
+            </div>
             {(isInvestor || receivesProposals) && (
-              <PartnershipsOverview isInvestor={isInvestor} />
+              <div data-tour="host-partnerships">
+                <PartnershipsOverview isInvestor={isInvestor} />
+              </div>
             )}
           </div>
         }

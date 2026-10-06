@@ -298,11 +298,15 @@ export default function HostDashboardClient({
 
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
             <div className="lg:col-span-8 space-y-10">
-              <OrganizerAttention />
+              <div data-tour="host-attention">
+                <OrganizerAttention />
+              </div>
               <div data-tour="host-organizing">
                 <OrganizingSection />
               </div>
-              <OpenToOrganizersSection />
+              <div data-tour="host-open">
+                <OpenToOrganizersSection />
+              </div>
               {(access.canProposePartnerships ||
                 access.canManageEvents ||
                 access.canManageVenues) && (

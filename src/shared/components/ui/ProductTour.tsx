@@ -7,6 +7,7 @@ import {
   useRef,
   useState,
 } from "react";
+import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "motion/react";
 import { useAuthStore } from "@/shared/auth/useAuthStore";
 
@@ -46,10 +47,14 @@ function markSeen(key: string) {
 
 function findTarget(target?: string): HTMLElement | null {
   if (!target) return null;
-  const el = document.querySelector<HTMLElement>(`[data-tour="${target}"]`);
-  if (!el) return null;
-  const r = el.getBoundingClientRect();
-  return r.width > 0 && r.height > 0 ? el : null;
+  // The same marker can exist twice (a phone layout and a desktop one, one of
+  // them hidden), so take the first copy that is actually on screen.
+  const els = document.querySelectorAll<HTMLElement>(`[data-tour="${target}"]`);
+  for (const el of els) {
+    const r = el.getBoundingClientRect();
+    if (r.width > 0 && r.height > 0) return el;
+  }
+  return null;
 }
 
 /** Ask a mounted `ProductTour` with this key to start again. */
@@ -225,7 +230,9 @@ export function ProductTour({
         : { left, bottom: 16, width: cardWidth };
   }
 
-  return (
+  // In the body, not where the component sits: a page can mount it inside a
+  // layout that is hidden at this screen size, which would hide the tour too.
+  return createPortal(
     <div className="fixed inset-0 z-[200]" role="presentation">
       {/* Click-catcher: the page underneath is not interactive mid-tour. */}
       <div className="absolute inset-0" onClick={close} />
@@ -304,6 +311,7 @@ export function ProductTour({
           </div>
         </motion.div>
       </AnimatePresence>
-    </div>
+    </div>,
+    document.body,
   );
 }

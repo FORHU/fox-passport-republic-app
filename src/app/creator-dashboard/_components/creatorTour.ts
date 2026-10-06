@@ -76,11 +76,23 @@ export function creatorTourSteps(
       body: "Your stage and creative gigs. Keep your availability current so the right events find you.",
     });
   if (isOrganizer)
-    steps.push({
-      target: "host-organizing",
-      title: "Teams you organize for",
-      body: "Venues and events you've joined as an Organizer, and invitations waiting for your answer.",
-    });
+    steps.push(
+      {
+        target: "host-attention",
+        title: "Needs your attention",
+        body: "Invitations and requests waiting on you, such as a team asking you to join or a booking you need to look over.",
+      },
+      {
+        target: "host-organizing",
+        title: "Teams you organize for",
+        body: "Venues and events you have joined as an Organizer, and the people you work with on each.",
+      },
+      {
+        target: "host-open",
+        title: "Open to Organizers",
+        body: "Venues and events looking for an Organizer. Ask to join one to start working with a team.",
+      },
+    );
   if (
     access.canProposePartnerships ||
     access.canManageEvents ||
