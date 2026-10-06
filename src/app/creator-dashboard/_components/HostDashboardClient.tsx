@@ -37,6 +37,11 @@ import { OrganizingSection } from "@/features/appointment/components/OrganizingS
 import { OpenToOrganizersSection } from "@/features/appointment/components/OpenToOrganizersSection";
 import { PartnershipsOverview } from "@/features/partnership/components/PartnershipsOverview";
 import { RoleGettingStarted } from "./RoleGettingStarted";
+import {
+  ProductTour,
+  TourReplayButton,
+} from "@/shared/components/ui/ProductTour";
+import { CREATOR_TOUR_KEY, creatorTourSteps } from "./creatorTour";
 
 interface HostDashboardClientProps {
   initialData: {
@@ -243,38 +248,50 @@ export default function HostDashboardClient({
 
       <main className="pt-32 pb-28 sm:pb-20">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <WelcomeBanner
-            isCreateMenuOpen={isCreateMenuOpen}
-            menuRef={menuRef}
-            onToggleCreateMenu={handleToggleCreateMenu}
-            onNavigateToCreateEvent={handleNavigateToCreateEvent}
-            onNavigateToCreateVenue={handleNavigateToCreateVenue}
-            onNavigateToCreateInventory={handleNavigateToCreateInventory}
-            onNavigateToCreateService={handleNavigateToCreateService}
-            onNavigateToCreatePerformerService={() =>
-              router.push("/foxer/create-service?type=performer")
-            }
-            access={access}
-          />
+          <div className="flex justify-end -mb-4">
+            <TourReplayButton tourKey={CREATOR_TOUR_KEY} />
+          </div>
+          <div data-tour="host-create">
+            <WelcomeBanner
+              isCreateMenuOpen={isCreateMenuOpen}
+              menuRef={menuRef}
+              onToggleCreateMenu={handleToggleCreateMenu}
+              onNavigateToCreateEvent={handleNavigateToCreateEvent}
+              onNavigateToCreateVenue={handleNavigateToCreateVenue}
+              onNavigateToCreateInventory={handleNavigateToCreateInventory}
+              onNavigateToCreateService={handleNavigateToCreateService}
+              onNavigateToCreatePerformerService={() =>
+                router.push("/foxer/create-service?type=performer")
+              }
+              access={access}
+            />
+          </div>
 
-          <RoleGettingStarted
-            totals={{
-              venues: totalVenues ?? 0,
-              events: totalEvents ?? 0,
-              assets: totalAssets ?? 0,
-              services: totalServices ?? 0,
-            }}
-          />
+          <div data-tour="host-guide">
+            <RoleGettingStarted
+              totals={{
+                venues: totalVenues ?? 0,
+                events: totalEvents ?? 0,
+                assets: totalAssets ?? 0,
+                services: totalServices ?? 0,
+              }}
+            />
+          </div>
 
           {/* KPIs and match requests measure a Foxer's own listings — an
               Organizer or Investor supplies none, so there is nothing here
               for them to read (see useRoleAccess.hasListings). */}
           {access.hasListings && (
-            <KPICards stats={foxerStats} isLoading={statsLoading} />
+            <div data-tour="host-kpis">
+              <KPICards stats={foxerStats} isLoading={statsLoading} />
+            </div>
           )}
 
           {access.hasListings && (
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 mb-10">
+            <div
+              data-tour="host-requests"
+              className="grid grid-cols-1 lg:grid-cols-12 gap-6 mb-10"
+            >
               <PendingRequests />
             </div>
           )}
@@ -282,91 +299,82 @@ export default function HostDashboardClient({
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
             <div className="lg:col-span-8 space-y-10">
               <OrganizerAttention />
-              <OrganizingSection />
+              <div data-tour="host-organizing">
+                <OrganizingSection />
+              </div>
               <OpenToOrganizersSection />
               {(access.canProposePartnerships ||
                 access.canManageEvents ||
                 access.canManageVenues) && (
-                <PartnershipsOverview
-                  isInvestor={access.canProposePartnerships}
-                />
+                <div data-tour="host-partnerships">
+                  <PartnershipsOverview
+                    isInvestor={access.canProposePartnerships}
+                  />
+                </div>
               )}
 
               {access.canManageEvents && (
-                <EventsSection
-                  events={events}
-                  onStatusChange={() => {}}
-                  onDelete={handleDeleteEvent}
-                  onEdit={(id) =>
-                    router.push(`/creator-dashboard/events/${id}/edit`)
-                  }
-                  page={eventsPage}
-                  totalPages={totalEventPages}
-                  onPageChange={setEventsPage}
-                />
+                <div data-tour="host-events">
+                  <EventsSection
+                    events={events}
+                    onStatusChange={() => {}}
+                    onDelete={handleDeleteEvent}
+                    onEdit={(id) =>
+                      router.push(`/creator-dashboard/events/${id}/edit`)
+                    }
+                    page={eventsPage}
+                    totalPages={totalEventPages}
+                    onPageChange={setEventsPage}
+                  />
+                </div>
               )}
 
               {access.canManageVenues && (
-                <VenuesSection
-                  venues={venues}
-                  onStatusChange={() => {}}
-                  onEdit={(id) =>
-                    router.push(`/creator-dashboard/venues/${id}/edit`)
-                  }
-                  onView={(id) => router.push(`/venues/${id}`)}
-                  page={venuesPage}
-                  totalPages={totalVenuePages}
-                  onPageChange={setVenuesPage}
-                />
+                <div data-tour="host-venues">
+                  <VenuesSection
+                    venues={venues}
+                    onStatusChange={() => {}}
+                    onEdit={(id) =>
+                      router.push(`/creator-dashboard/venues/${id}/edit`)
+                    }
+                    onView={(id) => router.push(`/venues/${id}`)}
+                    page={venuesPage}
+                    totalPages={totalVenuePages}
+                    onPageChange={setVenuesPage}
+                  />
+                </div>
               )}
 
               {access.canManageInventory && (
-                <InventorySection
-                  inventory={inventory}
-                  onStatusChange={handleInventoryStatusChange}
-                  page={assetsPage}
-                  totalPages={totalAssetPages}
-                  onPageChange={setAssetsPage}
-                />
+                <div data-tour="host-inventory">
+                  <InventorySection
+                    inventory={inventory}
+                    onStatusChange={handleInventoryStatusChange}
+                    page={assetsPage}
+                    totalPages={totalAssetPages}
+                    onPageChange={setAssetsPage}
+                  />
+                </div>
               )}
 
               {/* Pure Service Foxer (Talent / Operational) */}
               {access.canManageServices && !access.canManagePerformers && (
-                <ServicesSection
-                  services={services}
-                  onStatusChange={() => {}}
-                  page={servicesPage}
-                  totalPages={totalServicePages}
-                  onPageChange={setServicesPage}
-                />
-              )}
-
-              {/* Pure Performer Foxer (Stage / Entertainment / Creative) */}
-              {access.canManagePerformers && !access.canManageServices && (
-                <PerformersSection
-                  services={services}
-                  onStatusChange={() => {}}
-                  page={servicesPage}
-                  totalPages={totalServicePages}
-                  onPageChange={setServicesPage}
-                  onEdit={(id) =>
-                    router.push(`/creator-dashboard/services/${id}/edit`)
-                  }
-                />
-              )}
-
-              {/* Multi-role holder (Both Talent Services & Stage Gigs) */}
-              {access.canManageServices && access.canManagePerformers && (
-                <>
+                <div data-tour="host-services">
                   <ServicesSection
-                    services={services.filter((s) => !isPerformerService(s))}
+                    services={services}
                     onStatusChange={() => {}}
                     page={servicesPage}
                     totalPages={totalServicePages}
                     onPageChange={setServicesPage}
                   />
+                </div>
+              )}
+
+              {/* Pure Performer Foxer (Stage / Entertainment / Creative) */}
+              {access.canManagePerformers && !access.canManageServices && (
+                <div data-tour="host-performers">
                   <PerformersSection
-                    services={services.filter(isPerformerService)}
+                    services={services}
                     onStatusChange={() => {}}
                     page={servicesPage}
                     totalPages={totalServicePages}
@@ -375,6 +383,33 @@ export default function HostDashboardClient({
                       router.push(`/creator-dashboard/services/${id}/edit`)
                     }
                   />
+                </div>
+              )}
+
+              {/* Multi-role holder (Both Talent Services & Stage Gigs) */}
+              {access.canManageServices && access.canManagePerformers && (
+                <>
+                  <div data-tour="host-services">
+                    <ServicesSection
+                      services={services.filter((s) => !isPerformerService(s))}
+                      onStatusChange={() => {}}
+                      page={servicesPage}
+                      totalPages={totalServicePages}
+                      onPageChange={setServicesPage}
+                    />
+                  </div>
+                  <div data-tour="host-performers">
+                    <PerformersSection
+                      services={services.filter(isPerformerService)}
+                      onStatusChange={() => {}}
+                      page={servicesPage}
+                      totalPages={totalServicePages}
+                      onPageChange={setServicesPage}
+                      onEdit={(id) =>
+                        router.push(`/creator-dashboard/services/${id}/edit`)
+                      }
+                    />
+                  </div>
                 </>
               )}
 
@@ -421,14 +456,24 @@ export default function HostDashboardClient({
               <div className="sticky top-32 space-y-6">
                 {/* Organizers get no platform pay (ADR 0005) — nothing here
                     for them to onboard for. */}
-                {access.canReceivePayouts && <StripeConnectSection />}
-                <CalendarWidget />
+                {access.canReceivePayouts && (
+                  <div data-tour="host-payouts">
+                    <StripeConnectSection />
+                  </div>
+                )}
+                <div data-tour="host-calendar">
+                  <CalendarWidget />
+                </div>
                 <CreatorProfile />
               </div>
             </div>
           </div>
         </div>
       </main>
+      <ProductTour
+        tourKey={CREATOR_TOUR_KEY}
+        steps={creatorTourSteps(access, isOrganizer)}
+      />
     </div>
   );
 }
