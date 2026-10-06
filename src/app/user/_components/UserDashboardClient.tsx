@@ -13,6 +13,49 @@ import { UserSavedVibes } from "@/features/user/components/citizen/UserSavedVibe
 import { UserFooter } from "@/features/user/components/citizen/UserFooter";
 import { hasPermission } from "@/shared/lib/permissions";
 import { isFoxer } from "@/shared/constants/roles";
+import {
+  ProductTour,
+  TourReplayButton,
+  type TourStep,
+} from "@/shared/components/ui/ProductTour";
+
+const CITIZEN_TOUR_KEY = "citizen-dashboard";
+
+const CITIZEN_TOUR: TourStep[] = [
+  {
+    title: "Welcome to your dashboard",
+    body: "This is home base: your passport, your upcoming events and what's worth booking next. Here's a quick look around.",
+  },
+  {
+    target: "user-identity",
+    title: "Your FoxPassport",
+    body: "Your level, stamps and citizen number. Every event you attend adds to it.",
+  },
+  {
+    target: "user-next-up",
+    title: "Next up",
+    body: "Your upcoming bookings, soonest first. Open one for details, tickets and messages.",
+  },
+  {
+    target: "user-calendar",
+    title: "Your calendar",
+    body: "Everything you've booked on one calendar, so you can spot a clash before you book.",
+  },
+  {
+    target: "user-for-you",
+    title: "Picked for you",
+    body: "Events and Foxers that fit what you like and where you are.",
+  },
+  {
+    target: "user-wallet",
+    title: "Wallet and saved vibes",
+    body: "Your balance and recent payments, plus the event styles you've saved to come back to.",
+  },
+  {
+    title: "That's it",
+    body: "You can replay this tour any time with the Take the tour button at the top of the page.",
+  },
+];
 
 interface UserDashboardClientProps {
   user: any;
@@ -54,7 +97,12 @@ function UserDashboardContent({
 
       <main className="grow pt-28 sm:pt-36 px-4 pb-28 sm:pb-20">
         <div className="mx-auto max-w-7xl">
-          <UserIdentityCard />
+          <div className="flex justify-end mb-2">
+            <TourReplayButton tourKey={CITIZEN_TOUR_KEY} />
+          </div>
+          <div data-tour="user-identity">
+            <UserIdentityCard />
+          </div>
 
           <UserWelcome
             upcomingEventsCount={displayDashboardData.upcomingEvents}
@@ -63,24 +111,33 @@ function UserDashboardContent({
 
           {/* Row 1: Next Up & Journey */}
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 mb-8">
-            <div className="lg:col-span-8 flex flex-col">
+            <div
+              data-tour="user-next-up"
+              className="lg:col-span-8 flex flex-col"
+            >
               <UserNextUp
                 bookings={upcomingEvents}
                 isLoading={isLoading}
                 className="flex-1"
               />
             </div>
-            <div className="lg:col-span-4 flex flex-col">
+            <div
+              data-tour="user-calendar"
+              className="lg:col-span-4 flex flex-col"
+            >
               <UserCalendarWidget className="flex-1" />
             </div>
           </div>
 
           {/* Row 2: For You & Wallet/Saved Vibes */}
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-            <div className="lg:col-span-8">
+            <div data-tour="user-for-you" className="lg:col-span-8">
               <UserForYou canSeeVenues={canSeeVenues} venues={venues} />
             </div>
-            <div className="lg:col-span-4 flex flex-col gap-6 h-full">
+            <div
+              data-tour="user-wallet"
+              className="lg:col-span-4 flex flex-col gap-6 h-full"
+            >
               <UserWallet
                 walletBalance={walletBalance}
                 recentTransactions={recentTransactions}
@@ -92,6 +149,7 @@ function UserDashboardContent({
       </main>
 
       <UserFooter />
+      <ProductTour tourKey={CITIZEN_TOUR_KEY} steps={CITIZEN_TOUR} />
     </div>
   );
 }
