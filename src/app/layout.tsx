@@ -96,7 +96,7 @@ export default function RootLayout({
         />
         {/* eslint-disable-next-line @next/next/no-page-custom-font -- root layout loads these once for the whole app; tailwind.config.ts references the literal Google Font family names, which next/font/google cannot preserve */}
         <link
-          href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@300;400;500;600;700&display=swap"
+          href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@300;400;500;600;700&family=Archivo:wght@500;800;900&family=Space+Mono:wght@400;700&display=swap"
           rel="stylesheet"
         />
         {/* eslint-disable-next-line @next/next/no-page-custom-font -- variable icon font (wght/FILL axes) isn't expressible via next/font/google */}

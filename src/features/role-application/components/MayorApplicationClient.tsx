@@ -2,19 +2,11 @@
 
 import React, { useState } from "react";
 import { useApplyRole } from "@/features/role-application/hooks/useApplyRole";
-import {
-  Building2,
-  Phone,
-  MapPin,
-  Hash,
-  AlignLeft,
-  ArrowRight,
-} from "lucide-react";
-import RequireAuth from "@/shared/auth/RequireAuth";
+import { Building2, Phone, MapPin, Hash, AlignLeft } from "lucide-react";
 import Link from "next/link";
-import { KycDocumentSection } from "./KycDocumentSection";
+import { KycDocumentSection, FOXER_KYC_DOCUMENTS } from "./KycDocumentSection";
 import SpecializationPicker from "./SpecializationPicker";
-import { ApplicationFlowHeader } from "./ApplicationFlowHeader";
+import { ApplicationWizard, WizardStep } from "./ApplicationWizard";
 
 const VENUE_CATEGORY_OPTIONS = [
   { value: "indoor", label: "Indoor" },
@@ -25,6 +17,14 @@ const VENUE_CATEGORY_OPTIONS = [
   { value: "garden", label: "Garden" },
   { value: "other", label: "Other" },
 ];
+
+const ACCENT = "#ccff00";
+
+const LABEL = "text-sm font-bold text-white/80 uppercase tracking-wider";
+const INPUT =
+  "w-full bg-white/5 border border-white/10 rounded-xl py-3 pl-12 pr-4 text-white placeholder:text-white/30 focus:outline-none focus:border-accent/50 focus:bg-white/10 transition-colors";
+const ICON =
+  "pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4 text-white/40";
 
 export default function MayorApplicationClient() {
   const { mutate: applyRole, isPending } = useApplyRole();
@@ -53,196 +53,187 @@ export default function MayorApplicationClient() {
     setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    applyRole({
-      roleType: "venueFoxer",
-      data: { ...formData, specializations },
-    });
-  };
+  const uploaded = FOXER_KYC_DOCUMENTS.filter(
+    (d) => formData[d.field as keyof typeof formData],
+  ).length;
+
+  const specializationLabels = specializations
+    .map((v) => VENUE_CATEGORY_OPTIONS.find((o) => o.value === v)?.label ?? v)
+    .join(", ");
 
   return (
-    <RequireAuth>
-      <ApplicationFlowHeader />
-      <div className="min-h-screen bg-surface flex items-center justify-center p-4 pt-24 pb-12 font-body">
-        <div className="w-full max-w-2xl bg-surface-raised rounded-[2.5rem] p-8 md:p-12 border border-white/5 shadow-2xl relative overflow-hidden">
-          {/* Background Glow */}
-          <div className="absolute top-0 right-0 -mr-20 -mt-20 w-64 h-64 bg-accent/10 blur-[100px] rounded-full pointer-events-none" />
-
-          <div className="mb-10 text-center relative z-10">
-            <div className="w-16 h-16 bg-accent/20 rounded-2xl flex items-center justify-center mx-auto mb-6 text-accent">
-              <Building2 size={32} />
+    <ApplicationWizard
+      accent={ACCENT}
+      icon={<Building2 size={32} />}
+      title={
+        <>
+          Apply to be a <span style={{ color: ACCENT }}>Venue Foxer</span>
+        </>
+      }
+      subtitle="Provide your details to start listing and managing venues in the FoxPassport ecosystem."
+      // Every other role application is its own page too — this is the one
+      // place a venueFoxer applicant would otherwise be stuck.
+      intro={
+        <p className="text-center text-xs text-white/40">
+          Looking for a different role?{" "}
+          <Link
+            href="/foxer/apply"
+            className="text-white/70 underline hover:text-white"
+          >
+            Talent, Gear, Performer, or Organizer
+          </Link>
+          ,{" "}
+          <Link
+            href="/creator-dashboard/apply"
+            className="text-white/70 underline hover:text-white"
+          >
+            Event Foxer
+          </Link>
+          , or{" "}
+          <Link
+            href="/foxer/apply-investor"
+            className="text-white/70 underline hover:text-white"
+          >
+            Investor
+          </Link>
+          .
+        </p>
+      }
+      summary={[
+        { label: "Business / venue name", value: formData.businessName },
+        { label: "Contact number", value: formData.contactNumber },
+        { label: "Address", value: formData.address },
+        { label: "TIN number", value: formData.tinNumber },
+        { label: "Description", value: formData.description },
+        { label: "Specializations", value: specializationLabels },
+        {
+          label: "Identity documents",
+          value: `${uploaded} of ${FOXER_KYC_DOCUMENTS.length} uploaded`,
+        },
+      ]}
+      agreement="By submitting this application, you confirm the details are accurate and agree to FoxPassport's Venue Foxer policies. Your application will be reviewed by our team."
+      isPending={isPending}
+      onSubmit={() =>
+        applyRole({
+          roleType: "venueFoxer",
+          data: { ...formData, specializations },
+        })
+      }
+    >
+      <WizardStep
+        label="Your venue"
+        title="Your business"
+        description="Who you are and where your venues are."
+      >
+        <div className="space-y-2">
+          <label className={LABEL}>Business / Venue Name *</label>
+          <div className="relative">
+            <div className={ICON}>
+              <Building2 size={18} />
             </div>
-            <h1 className="text-3xl md:text-4xl font-display font-bold text-white mb-2">
-              Apply to be a <span className="text-accent">Venue Foxer</span>
-            </h1>
-            <p className="text-white/60">
-              Provide your details below to start listing and managing venues in
-              the FoxPassport ecosystem.
-            </p>
-          </div>
-
-          {/* Every other role application is its own page too — this is the
-              one place a venueFoxer applicant would otherwise be stuck. */}
-          <p className="text-xs text-white/40 text-center -mt-5 mb-8 relative z-10">
-            Looking for a different role?{" "}
-            <Link
-              href="/foxer/apply"
-              className="text-white/70 underline hover:text-white"
-            >
-              Talent, Gear, Performer, or Organizer
-            </Link>
-            ,{" "}
-            <Link
-              href="/creator-dashboard/apply"
-              className="text-white/70 underline hover:text-white"
-            >
-              Event Foxer
-            </Link>
-            , or{" "}
-            <Link
-              href="/foxer/apply-investor"
-              className="text-white/70 underline hover:text-white"
-            >
-              Investor
-            </Link>
-            .
-          </p>
-
-          <form onSubmit={handleSubmit} className="space-y-6 relative z-10">
-            {/* Business Name */}
-            <div className="space-y-2">
-              <label className="text-sm font-bold text-white/80 uppercase tracking-wider">
-                Business / Venue Name *
-              </label>
-              <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-white/40">
-                  <Building2 size={18} />
-                </div>
-                <input
-                  required
-                  type="text"
-                  name="businessName"
-                  value={formData.businessName}
-                  onChange={handleChange}
-                  className="w-full bg-white/5 border border-white/10 rounded-xl py-3 pl-12 pr-4 text-white placeholder:text-white/30 focus:outline-none focus:border-accent/50 focus:bg-white/10 transition-colors"
-                  placeholder="The Neon Lounge"
-                />
-              </div>
-            </div>
-
-            {/* Contact Number */}
-            <div className="space-y-2">
-              <label className="text-sm font-bold text-white/80 uppercase tracking-wider">
-                Contact Number *
-              </label>
-              <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-white/40">
-                  <Phone size={18} />
-                </div>
-                <input
-                  required
-                  type="tel"
-                  name="contactNumber"
-                  value={formData.contactNumber}
-                  onChange={handleChange}
-                  className="w-full bg-white/5 border border-white/10 rounded-xl py-3 pl-12 pr-4 text-white placeholder:text-white/30 focus:outline-none focus:border-accent/50 focus:bg-white/10 transition-colors"
-                  placeholder="+63 900 000 0000"
-                />
-              </div>
-            </div>
-
-            {/* Address */}
-            <div className="space-y-2">
-              <label className="text-sm font-bold text-white/80 uppercase tracking-wider">
-                Complete Address *
-              </label>
-              <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-white/40">
-                  <MapPin size={18} />
-                </div>
-                <input
-                  required
-                  type="text"
-                  name="address"
-                  value={formData.address}
-                  onChange={handleChange}
-                  className="w-full bg-white/5 border border-white/10 rounded-xl py-3 pl-12 pr-4 text-white placeholder:text-white/30 focus:outline-none focus:border-accent/50 focus:bg-white/10 transition-colors"
-                  placeholder="123 Makati Ave, Metro Manila"
-                />
-              </div>
-            </div>
-
-            {/* TIN Number */}
-            <div className="space-y-2">
-              <label className="text-sm font-bold text-white/80 uppercase tracking-wider">
-                TIN Number *
-              </label>
-              <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-white/40">
-                  <Hash size={18} />
-                </div>
-                <input
-                  required
-                  type="text"
-                  name="tinNumber"
-                  value={formData.tinNumber}
-                  onChange={handleChange}
-                  className="w-full bg-white/5 border border-white/10 rounded-xl py-3 pl-12 pr-4 text-white placeholder:text-white/30 focus:outline-none focus:border-accent/50 focus:bg-white/10 transition-colors"
-                  placeholder="000-000-000-000"
-                />
-              </div>
-            </div>
-
-            {/* Description */}
-            <div className="space-y-2">
-              <label className="text-sm font-bold text-white/80 uppercase tracking-wider">
-                Description (Optional)
-              </label>
-              <div className="relative">
-                <div className="absolute top-3 left-0 pl-4 flex items-start pointer-events-none text-white/40">
-                  <AlignLeft size={18} />
-                </div>
-                <textarea
-                  name="description"
-                  value={formData.description}
-                  onChange={handleChange}
-                  rows={4}
-                  className="w-full bg-white/5 border border-white/10 rounded-xl py-3 pl-12 pr-4 text-white placeholder:text-white/30 focus:outline-none focus:border-accent/50 focus:bg-white/10 transition-colors resize-none"
-                  placeholder="Tell us a bit about your spaces and what makes them unique..."
-                />
-              </div>
-            </div>
-
-            <SpecializationPicker
-              options={VENUE_CATEGORY_OPTIONS}
-              value={specializations}
-              onChange={setSpecializations}
-              accentColor="#ccff00"
+            <input
+              required
+              type="text"
+              name="businessName"
+              value={formData.businessName}
+              onChange={handleChange}
+              className={INPUT}
+              placeholder="The Neon Lounge"
             />
-
-            <KycDocumentSection onUpload={handleFileUpload} />
-
-            {/* Actions */}
-            <div className="pt-6 flex flex-col sm:flex-row gap-4 items-center">
-              <Link
-                href="/onboarding"
-                className="w-full sm:w-auto px-6 py-3 rounded-xl border border-white/10 text-white hover:bg-white/5 transition-colors text-center font-medium"
-              >
-                Back
-              </Link>
-              <button
-                type="submit"
-                disabled={isPending}
-                className="w-full flex-1 flex items-center justify-center gap-2 bg-accent text-black font-bold py-3 px-6 rounded-xl hover:brightness-110 hover:shadow-[0_0_20px_rgba(204,255,0,0.4)] transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {isPending ? "Submitting..." : "Submit Application"}
-                {!isPending && <ArrowRight size={18} />}
-              </button>
-            </div>
-          </form>
+          </div>
         </div>
-      </div>
-    </RequireAuth>
+
+        <div className="space-y-2">
+          <label className={LABEL}>Contact Number *</label>
+          <div className="relative">
+            <div className={ICON}>
+              <Phone size={18} />
+            </div>
+            <input
+              required
+              type="tel"
+              name="contactNumber"
+              value={formData.contactNumber}
+              onChange={handleChange}
+              className={INPUT}
+              placeholder="+63 900 000 0000"
+            />
+          </div>
+        </div>
+
+        <div className="space-y-2">
+          <label className={LABEL}>Complete Address *</label>
+          <div className="relative">
+            <div className={ICON}>
+              <MapPin size={18} />
+            </div>
+            <input
+              required
+              type="text"
+              name="address"
+              value={formData.address}
+              onChange={handleChange}
+              className={INPUT}
+              placeholder="123 Makati Ave, Metro Manila"
+            />
+          </div>
+        </div>
+
+        <div className="space-y-2">
+          <label className={LABEL}>TIN Number *</label>
+          <div className="relative">
+            <div className={ICON}>
+              <Hash size={18} />
+            </div>
+            <input
+              required
+              type="text"
+              name="tinNumber"
+              value={formData.tinNumber}
+              onChange={handleChange}
+              className={INPUT}
+              placeholder="000-000-000-000"
+            />
+          </div>
+        </div>
+
+        <div className="space-y-2">
+          <label className={LABEL}>Description (Optional)</label>
+          <div className="relative">
+            <div className="pointer-events-none absolute left-0 top-3 flex items-start pl-4 text-white/40">
+              <AlignLeft size={18} />
+            </div>
+            <textarea
+              name="description"
+              value={formData.description}
+              onChange={handleChange}
+              rows={4}
+              className={`${INPUT} resize-none`}
+              placeholder="Tell us a bit about your spaces and what makes them unique..."
+            />
+          </div>
+        </div>
+
+        <SpecializationPicker
+          options={VENUE_CATEGORY_OPTIONS}
+          value={specializations}
+          onChange={setSpecializations}
+          accentColor={ACCENT}
+        />
+      </WizardStep>
+
+      <WizardStep
+        label="Documents"
+        title="Verify your business"
+        description="Upload each document marked with an asterisk. Your files are private."
+        validate={() =>
+          uploaded < FOXER_KYC_DOCUMENTS.length
+            ? "Upload all the required documents before continuing."
+            : null
+        }
+      >
+        <KycDocumentSection onUpload={handleFileUpload} compact />
+      </WizardStep>
+    </ApplicationWizard>
   );
 }

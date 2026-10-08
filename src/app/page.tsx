@@ -1,4 +1,16 @@
 import { Suspense } from "react";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: { absolute: "FoxPassport — Book any event, anywhere" },
+  description:
+    "Book the venue, the gear and the crew for any event: concerts, weddings, festivals and private parties. Search by event type, city and date.",
+  openGraph: {
+    title: "FoxPassport — Book any event, anywhere",
+    description:
+      "Book the venue, the gear and the crew for any event, in one booking.",
+  },
+};
 
 // Skip static generation for this page - it fetches dynamic data
 export const dynamic = "force-dynamic";
@@ -6,8 +18,7 @@ export const dynamic = "force-dynamic";
 // --- Features ---
 // Server component: import leaves directly, not feature barrels, so the whole
 // client graph of each feature doesn't get pulled into this page's bundle.
-import FoxerLandingPage from "@/features/landing/components/FoxerLandingPage";
-import MobileHomePage from "@/features/landing/components/MobileHomePage";
+import JourneyLanding from "@/features/landing/journey/JourneyLanding";
 import WelcomeGuide from "@/features/onboarding/components/WelcomeGuide";
 
 // --- Search Results Components ---
@@ -21,7 +32,7 @@ import { filterVenues } from "@/features/venue/helpers/filterVenues";
 
 // --- Shared Components & Server Utils ---
 import LandingHeader from "@/features/landing/components/sections/LandingHeader";
-import { getVenues, getFeaturedEventTemplates } from "@/shared/lib/server/data";
+import { getVenues } from "@/shared/lib/server/data";
 import { getUser } from "@/shared/lib/server/auth";
 import { hasPermission } from "@/shared/lib/permissions";
 import { isFoxer } from "@/shared/constants/roles";
@@ -49,13 +60,12 @@ async function HomeContent({ searchParams }: HomePageProps) {
   // The two views need different data, so only fetch what the branch we are
   // about to render actually uses. `getVenues()` used to run unconditionally and
   // was then discarded on the default landing page - the most visited route in
-  // the app - because that branch renders FoxerLandingPage, which takes no
-  // venues. Fetching in parallel with the profile also removes the waterfall:
+  // the app - because that branch renders the landing page, which loads its own
+  // data. Fetching in parallel with the profile also removes the waterfall:
   // neither depends on the other.
-  const [user, venues, featuredTemplates] = await Promise.all([
+  const [user, venues] = await Promise.all([
     getUser(),
     isSearchMode ? getVenues() : Promise.resolve([]),
-    isSearchMode ? Promise.resolve([]) : getFeaturedEventTemplates(4),
   ]);
 
   const canSeeVenues = userCanSeeVenues(user);
@@ -142,16 +152,11 @@ async function HomeContent({ searchParams }: HomePageProps) {
     );
   }
 
-  // --- NEW FOXERNEW LANDING PAGE (Default) ---
+  // --- LANDING PAGE (Default) ---
   return (
     <>
       <WelcomeGuide />
-      <div className="lg:hidden">
-        <MobileHomePage />
-      </div>
-      <div className="hidden lg:block">
-        <FoxerLandingPage featuredTemplates={featuredTemplates} />
-      </div>
+      <JourneyLanding />
     </>
   );
 }

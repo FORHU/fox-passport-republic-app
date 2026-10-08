@@ -27,6 +27,18 @@ export interface MapBoxViewProps {
   minZoom?: number;
   maxZoom?: number;
   interactive?: boolean;
+  /** Open with this style instead of the app's dark or light one. The map
+   * then leaves theming to the caller (a Standard style takes a light preset
+   * rather than being swapped). */
+  styleUrl?: string;
+  /** How long labels and symbols take to fade in, in ms. 0 stops them
+   * shimmering when the camera is driven by something like scroll. */
+  fadeDuration?: number;
+  /** Show the built-in spinner while loading. On by default. */
+  showLoader?: boolean;
+  /** Tilt of the camera in degrees, and its compass bearing. */
+  pitch?: number;
+  bearing?: number;
   doubleClickZoom?: boolean;
   showNavigation?: boolean;
   showGeolocate?: boolean;
@@ -52,6 +64,11 @@ export function MapBoxViewImpl({
   minZoom = 1,
   maxZoom = 20,
   interactive = true,
+  styleUrl,
+  fadeDuration,
+  showLoader = true,
+  pitch = 0,
+  bearing = 0,
   doubleClickZoom = true,
   showNavigation = true,
   showGeolocate = false,
@@ -94,6 +111,10 @@ export function MapBoxViewImpl({
     minZoom,
     maxZoom,
     interactive,
+    styleUrl,
+    fadeDuration,
+    pitch,
+    bearing,
     doubleClickZoom,
     showNavigation,
     showGeolocate,
@@ -113,6 +134,10 @@ export function MapBoxViewImpl({
         minZoom: initMinZoom,
         maxZoom: initMaxZoom,
         interactive: initInteractive,
+        styleUrl: initStyleUrl,
+        fadeDuration: initFade,
+        pitch: initPitch,
+        bearing: initBearing,
         doubleClickZoom: initDoubleClickZoom,
         showNavigation: initShowNavigation,
         showGeolocate: initShowGeolocate,
@@ -123,7 +148,10 @@ export function MapBoxViewImpl({
 
       const map = new mapboxgl.Map({
         container: containerRef.current,
-        style: getMapStyle() as any,
+        style: (initStyleUrl ?? getMapStyle()) as any,
+        pitch: initPitch,
+        bearing: initBearing,
+        ...(initFade !== undefined ? { fadeDuration: initFade } : {}),
         center: initCenter,
         zoom: initZoom,
         minZoom: initMinZoom,
@@ -317,7 +345,7 @@ export function MapBoxViewImpl({
       <div ref={containerRef} className="w-full h-full" />
 
       {/* Loading Skeleton / Spinner */}
-      {!isLoaded && (
+      {showLoader && !isLoaded && (
         <div className="absolute inset-0 bg-surface flex flex-col items-center justify-center gap-3 z-10 animate-in fade-in">
           <div className="w-8 h-8 rounded-full border-2 border-primary/20 border-t-primary animate-spin" />
           <span className="text-[11px] font-bold uppercase tracking-widest text-white/40 font-mono">

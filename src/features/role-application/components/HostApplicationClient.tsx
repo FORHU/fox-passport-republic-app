@@ -1,19 +1,17 @@
-﻿"use client";
+"use client";
 
 import React, { useState } from "react";
 import { useApplyRole } from "@/features/role-application/hooks/useApplyRole";
-import { Globe, ArrowRight, ShieldCheck, MapPin } from "lucide-react";
-import RequireAuth from "@/shared/auth/RequireAuth";
+import { Globe, ShieldCheck, MapPin } from "lucide-react";
 import Link from "next/link";
 import FileUploader from "@/shared/components/layout/FileUploader";
-import { KycDocumentSection } from "./KycDocumentSection";
+import { KycDocumentSection, FOXER_KYC_DOCUMENTS } from "./KycDocumentSection";
 import SpecializationPicker from "./SpecializationPicker";
-import { ApplicationFlowHeader } from "./ApplicationFlowHeader";
+import { ApplicationWizard, WizardStep } from "./ApplicationWizard";
 import {
   CascadingLocationFields,
   type LocationValue,
 } from "@/shared/components/ui/CascadingLocationFields";
-import { toast } from "sonner";
 
 const EVENT_CATEGORY_OPTIONS = [
   { value: "corporate", label: "Corporate" },
@@ -22,6 +20,12 @@ const EVENT_CATEGORY_OPTIONS = [
   { value: "social", label: "Social" },
   { value: "other", label: "Other" },
 ];
+
+const ACCENT = "#ff00aa";
+
+const LABEL = "text-sm font-bold text-white/80 uppercase tracking-wider";
+const INPUT =
+  "w-full bg-white/5 border border-white/10 rounded-xl py-3 px-4 text-white placeholder:text-white/30 focus:outline-none focus:border-[#ff00aa]/50 focus:bg-white/10 transition-colors";
 
 export default function HostApplicationClient() {
   const { mutate: applyRole, isPending } = useApplyRole();
@@ -60,174 +64,165 @@ export default function HostApplicationClient() {
     setFormData((prev) => ({ ...prev, experience: digits }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!place.city) {
-      toast.error("Choose your base location — country, state and city.");
-      return;
-    }
-    applyRole({
-      roleType: "eventFoxer",
-      data: {
-        ...formData,
-        specializations,
-      },
-    });
-  };
+  const uploaded = FOXER_KYC_DOCUMENTS.filter(
+    (d) => formData[d.field as keyof typeof formData],
+  ).length;
+
+  const specializationLabels = specializations
+    .map((v) => EVENT_CATEGORY_OPTIONS.find((o) => o.value === v)?.label ?? v)
+    .join(", ");
 
   return (
-    <RequireAuth>
-      <ApplicationFlowHeader />
-      <div className="min-h-screen bg-surface flex flex-col items-center justify-center p-4 pt-24 pb-12 font-body">
-        <div className="w-full max-w-2xl bg-surface-raised rounded-[2.5rem] p-8 md:p-12 border border-white/5 shadow-2xl relative overflow-hidden">
-          {/* Background Glow */}
-          <div className="absolute top-0 right-0 -mr-20 -mt-20 w-64 h-64 bg-[#ff00aa]/10 blur-[100px] rounded-full pointer-events-none" />
-
-          <div className="mb-10 text-center relative z-10">
-            <div className="w-16 h-16 bg-[#ff00aa]/20 rounded-2xl flex items-center justify-center mx-auto mb-6 text-[#ff00aa]">
-              <Globe size={32} />
-            </div>
-            <h1 className="text-3xl md:text-4xl font-display font-bold text-white mb-2">
-              Become an <span className="text-[#ff00aa]">Event Foxer</span>
-            </h1>
-            <p className="text-white/60">
-              Apply to become an authorized Event Foxer. Event Foxers use venues
-              provided by Venue Foxers to create unforgettable experiences.
-            </p>
-          </div>
-
-          {/* Every other role application is its own page too — this is the
-              one place an eventFoxer applicant would otherwise be stuck. */}
-          <p className="text-xs text-white/40 text-center -mt-5 mb-8 relative z-10">
-            Looking for a different role?{" "}
-            <Link
-              href="/foxer/apply"
-              className="text-white/70 underline hover:text-white"
-            >
-              Talent, Gear, Performer, or Organizer
-            </Link>
-            ,{" "}
-            <Link
-              href="/venue-foxer/apply"
-              className="text-white/70 underline hover:text-white"
-            >
-              Venue Foxer
-            </Link>
-            , or{" "}
-            <Link
-              href="/foxer/apply-investor"
-              className="text-white/70 underline hover:text-white"
-            >
-              Investor
-            </Link>
-            .
-          </p>
-
-          <form onSubmit={handleSubmit} className="space-y-6 relative z-10">
-            <div className="space-y-2">
-              <label className="text-sm font-bold text-white/80 uppercase tracking-wider">
-                Bio / Experience *
-              </label>
-              <textarea
-                required
-                name="bio"
-                value={formData.bio}
-                onChange={handleChange}
-                rows={4}
-                className="w-full bg-white/5 border border-white/10 rounded-xl py-3 px-4 text-white placeholder:text-white/30 focus:outline-none focus:border-[#ff00aa]/50 focus:bg-white/10 transition-colors resize-none"
-                placeholder="Tell us about your background in event organizing..."
-              />
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="space-y-2 md:col-span-2">
-                <label className="text-sm font-bold text-white/80 uppercase tracking-wider flex items-center gap-2">
-                  <MapPin size={16} className="text-white/40" />
-                  Base Location *
-                </label>
-                <CascadingLocationFields
-                  value={place}
-                  onChange={(next) => {
-                    setPlace(next);
-                    setFormData((prev) => ({
-                      ...prev,
-                      location: [next.city, next.state, next.country]
-                        .filter(Boolean)
-                        .join(", "),
-                    }));
-                  }}
-                />
-              </div>
-
-              <div className="space-y-2">
-                <label className="text-sm font-bold text-white/80 uppercase tracking-wider">
-                  Years of Experience
-                </label>
-                <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-white/40">
-                    <ShieldCheck size={18} />
-                  </div>
-                  <input
-                    type="text"
-                    inputMode="numeric"
-                    pattern="[0-9]*"
-                    name="experience"
-                    value={formData.experience}
-                    onChange={handleExperienceChange}
-                    className="w-full bg-white/5 border border-white/10 rounded-xl py-3 pl-12 pr-4 text-white placeholder:text-white/30 focus:outline-none focus:border-[#ff00aa]/50 focus:bg-white/10 transition-colors"
-                    placeholder="e.g. 5"
-                  />
-                </div>
-              </div>
-            </div>
-
-            <SpecializationPicker
-              options={EVENT_CATEGORY_OPTIONS}
-              value={specializations}
-              onChange={setSpecializations}
-              accentColor="#ff00aa"
-            />
-
-            <KycDocumentSection onUpload={handleFileUpload} />
-
-            <FileUploader
-              label="Portfolio / Resume (Optional)"
-              private
-              onUploadComplete={(id) => handleFileUpload("portfolioFileId", id)}
-            />
-
-            <div className="p-4 bg-[#ff00aa]/10 border border-[#ff00aa]/20 rounded-2xl flex items-start gap-3">
-              <ShieldCheck
-                className="text-[#ff00aa] shrink-0 mt-0.5"
-                size={20}
-              />
-              <p className="text-xs text-[#ff00aa]/80 leading-relaxed">
-                By submitting this application, you agree to comply with
-                FoxPassport&apos;s Event Foxer policies and quality standards.
-                Your application will be reviewed by our team.
-              </p>
-            </div>
-
-            {/* Actions */}
-            <div className="pt-6 flex flex-col sm:flex-row gap-4 items-center">
-              <Link
-                href="/onboarding"
-                className="w-full sm:w-auto px-6 py-3 rounded-xl border border-white/10 text-white hover:bg-white/5 transition-colors text-center font-medium"
-              >
-                Back
-              </Link>
-              <button
-                type="submit"
-                disabled={isPending}
-                className="w-full flex-1 flex items-center justify-center gap-2 bg-[#ff00aa] text-white font-bold py-3 px-6 rounded-xl hover:brightness-110 hover:shadow-[0_0_20px_rgba(255,0,170,0.4)] transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {isPending ? "Submitting..." : "Submit Application"}
-                {!isPending && <ArrowRight size={18} />}
-              </button>
-            </div>
-          </form>
+    <ApplicationWizard
+      accent={ACCENT}
+      icon={<Globe size={32} />}
+      title={
+        <>
+          Become an <span style={{ color: ACCENT }}>Event Foxer</span>
+        </>
+      }
+      subtitle="Event Foxers use venues provided by Venue Foxers to create unforgettable experiences."
+      // Every other role application is its own page too — this is the one
+      // place an eventFoxer applicant would otherwise be stuck.
+      intro={
+        <p className="text-center text-xs text-white/40">
+          Looking for a different role?{" "}
+          <Link
+            href="/foxer/apply"
+            className="text-white/70 underline hover:text-white"
+          >
+            Talent, Gear, Performer, or Organizer
+          </Link>
+          ,{" "}
+          <Link
+            href="/venue-foxer/apply"
+            className="text-white/70 underline hover:text-white"
+          >
+            Venue Foxer
+          </Link>
+          , or{" "}
+          <Link
+            href="/foxer/apply-investor"
+            className="text-white/70 underline hover:text-white"
+          >
+            Investor
+          </Link>
+          .
+        </p>
+      }
+      summary={[
+        { label: "About you", value: formData.bio },
+        { label: "Base location", value: formData.location },
+        {
+          label: "Years of experience",
+          value: formData.experience,
+        },
+        { label: "Specializations", value: specializationLabels },
+        {
+          label: "Identity documents",
+          value: `${uploaded} of ${FOXER_KYC_DOCUMENTS.length} uploaded`,
+        },
+        {
+          label: "Portfolio / resume",
+          value: formData.portfolioFileId ? "Uploaded" : "",
+        },
+      ]}
+      agreement="By submitting this application, you agree to comply with FoxPassport's Event Foxer policies and quality standards. Your application will be reviewed by our team."
+      isPending={isPending}
+      onSubmit={() =>
+        applyRole({
+          roleType: "eventFoxer",
+          data: { ...formData, specializations },
+        })
+      }
+    >
+      <WizardStep
+        label="About you"
+        title="About you"
+        description="Your background in organizing events, and where you're based."
+        validate={() =>
+          place.city
+            ? null
+            : "Choose your base location — country, state and city."
+        }
+      >
+        <div className="space-y-2">
+          <label className={LABEL}>Bio / Experience *</label>
+          <textarea
+            required
+            name="bio"
+            value={formData.bio}
+            onChange={handleChange}
+            rows={4}
+            className={`${INPUT} resize-none`}
+            placeholder="Tell us about your background in event organizing..."
+          />
         </div>
-      </div>
-    </RequireAuth>
+
+        <div className="space-y-2">
+          <label className={`${LABEL} flex items-center gap-2`}>
+            <MapPin size={16} className="text-white/40" />
+            Base Location *
+          </label>
+          <CascadingLocationFields
+            value={place}
+            onChange={(next) => {
+              setPlace(next);
+              setFormData((prev) => ({
+                ...prev,
+                location: [next.city, next.state, next.country]
+                  .filter(Boolean)
+                  .join(", "),
+              }));
+            }}
+          />
+        </div>
+
+        <div className="space-y-2">
+          <label className={LABEL}>Years of Experience</label>
+          <div className="relative">
+            <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4 text-white/40">
+              <ShieldCheck size={18} />
+            </div>
+            <input
+              type="text"
+              inputMode="numeric"
+              pattern="[0-9]*"
+              name="experience"
+              value={formData.experience}
+              onChange={handleExperienceChange}
+              className={`${INPUT} pl-12`}
+              placeholder="e.g. 5"
+            />
+          </div>
+        </div>
+
+        <SpecializationPicker
+          options={EVENT_CATEGORY_OPTIONS}
+          value={specializations}
+          onChange={setSpecializations}
+          accentColor={ACCENT}
+        />
+      </WizardStep>
+
+      <WizardStep
+        label="Documents"
+        title="Verify your identity"
+        description="Upload each document marked with an asterisk. Your files are private."
+        validate={() =>
+          uploaded < FOXER_KYC_DOCUMENTS.length
+            ? "Upload all the required documents before continuing."
+            : null
+        }
+      >
+        <KycDocumentSection onUpload={handleFileUpload} compact />
+
+        <FileUploader
+          label="Portfolio / Resume (Optional)"
+          private
+          onUploadComplete={(id) => handleFileUpload("portfolioFileId", id)}
+        />
+      </WizardStep>
+    </ApplicationWizard>
   );
 }

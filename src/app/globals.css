@@ -1093,3 +1093,25 @@ body {
   --color-purple-300: oklch(82.7% 0.119 306.383);
   --color-purple-400: oklch(71.4% 0.203 305.504);
 }
+
+/* Landing page: display and label faces, and the two stamp inks. The inks flip
+   with the theme so a stamp reads on black in dark mode and on white in light. */
+:root {
+  --stamp-red: #ff6b5e;
+  --stamp-blue: #86a8ff;
+}
+.light {
+  --stamp-red: #b3261e;
+  --stamp-blue: #1f3a8a;
+}
+
+.font-landing-display {
+  font-family: "Archivo", var(--font-display), system-ui, sans-serif;
+  font-weight: 900;
+  letter-spacing: -0.035em;
+  text-transform: uppercase;
+}
+
+.font-landing-mono {
+  font-family: "Space Mono", ui-monospace, monospace;
+}
