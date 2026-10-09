@@ -58,8 +58,10 @@ export default function MobilePassportHeader({
         </p>
         <button
           style={{
-            background: "color-mix(in srgb, var(--color-white) 6%, transparent)",
-            border: "1px solid color-mix(in srgb, var(--color-white) 8%, transparent)",
+            background:
+              "color-mix(in srgb, var(--color-white) 6%, transparent)",
+            border:
+              "1px solid color-mix(in srgb, var(--color-white) 8%, transparent)",
             borderRadius: "50%",
             width: 34,
             height: 34,
@@ -79,7 +81,11 @@ export default function MobilePassportHeader({
       <div style={{ padding: "0 20px 20px" }}>
         <PassportBookletCard
           user={user}
-          citizenNo={user?.citizenId ?? undefined}
+          citizenNo={
+            user?.id
+              ? `FP-${String(user.id).slice(0, 8).toUpperCase()}`
+              : undefined
+          }
         />
       </div>
 
@@ -169,8 +175,10 @@ export default function MobilePassportHeader({
         </p>
         <div
           style={{
-            background: "color-mix(in srgb, var(--color-white) 4%, transparent)",
-            border: "1px solid color-mix(in srgb, var(--color-white) 7%, transparent)",
+            background:
+              "color-mix(in srgb, var(--color-white) 4%, transparent)",
+            border:
+              "1px solid color-mix(in srgb, var(--color-white) 7%, transparent)",
             borderRadius: 18,
             padding: 14,
           }}
@@ -186,11 +194,23 @@ export default function MobilePassportHeader({
               >
                 nights_stay
               </span>
-              <span style={{ fontSize: 13, fontWeight: 600, color: "var(--color-white)" }}>
+              <span
+                style={{
+                  fontSize: 13,
+                  fontWeight: 600,
+                  color: "var(--color-white)",
+                }}
+              >
                 Night Owl
               </span>
             </div>
-            <span style={{ fontSize: 11, color: "color-mix(in srgb, var(--color-white) 40%, transparent)" }}>
+            <span
+              style={{
+                fontSize: 11,
+                color:
+                  "color-mix(in srgb, var(--color-white) 40%, transparent)",
+              }}
+            >
               3 / 5 events
             </span>
           </div>
@@ -199,7 +219,8 @@ export default function MobilePassportHeader({
             style={{
               height: 5,
               borderRadius: 99,
-              background: "color-mix(in srgb, var(--color-white) 8%, transparent)",
+              background:
+                "color-mix(in srgb, var(--color-white) 8%, transparent)",
               overflow: "hidden",
             }}
           >

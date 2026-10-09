@@ -7,7 +7,7 @@ import {
   useAuthStatus,
   useAuthStore,
 } from "@/shared/auth/useAuthStore"; // Import store
-import { Loader2 } from "lucide-react";
+import PageLoader from "@/shared/components/ui/PageLoader";
 
 interface RequireAuthProps {
   children: React.ReactNode;
@@ -39,9 +39,7 @@ export default function RequireAuth({
   // Show spinner while deciding
   if (isLoading) {
     return (
-      <div className="h-screen w-full flex items-center justify-center">
-        <Loader2 className="animate-spin text-pink-600" size={30} />
-      </div>
+      <PageLoader />
     );
   }
 

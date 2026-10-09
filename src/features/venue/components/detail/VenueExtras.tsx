@@ -9,6 +9,7 @@ import ReviewReplyModal from "@/shared/components/ui/ReviewReplyModal";
 
 import { useAuthStore } from "@/shared/auth/useAuthStore";
 import { toast } from "sonner";
+import { joinPlace } from "@/shared/lib/place";
 
 interface VenueCalendarProps {
   checkInDate: number | null;
@@ -548,7 +549,7 @@ export function VenueMap({
         Location
       </h3>
       <p className="text-text-muted text-sm mb-6">
-        {location}, {province}
+        {joinPlace(location, province)}
       </p>
       {lat && lng ? (
         <div className="relative rounded-2xl overflow-hidden border border-white/10">
@@ -604,7 +605,7 @@ export function HostBio({ host }: HostBioProps) {
         year: "numeric",
         month: "long",
       })
-    : "Recently";
+    : "";
 
   return (
     <div className="flex gap-6 items-start">
@@ -624,18 +625,24 @@ export function HostBio({ host }: HostBioProps) {
         <h3 className="text-xl font-bold text-white mb-1">
           Listed by {host.name}
         </h3>
-        <p className="text-text-muted text-sm mb-4">Joined {joinedDate}</p>
-        <div className="flex gap-4 text-sm text-white mb-4">
-          <span className="flex items-center gap-1">
-            <span className="material-symbols-outlined text-[16px] text-accent">
-              star
-            </span>{" "}
-            {host.reviews} Reviews
-          </span>
-        </div>
-        <p className="text-sm text-gray-300 leading-relaxed mb-4">
-          {host.description}
-        </p>
+        {joinedDate && (
+          <p className="text-text-muted text-sm mb-4">Joined {joinedDate}</p>
+        )}
+        {host.reviews > 0 && (
+          <div className="flex gap-4 text-sm text-white mb-4">
+            <span className="flex items-center gap-1">
+              <span className="material-symbols-outlined text-[16px] text-accent">
+                star
+              </span>{" "}
+              {host.reviews} Reviews
+            </span>
+          </div>
+        )}
+        {host.description && (
+          <p className="text-sm text-gray-300 leading-relaxed mb-4">
+            {host.description}
+          </p>
+        )}
         <div className="flex items-center gap-4">
           <button className="px-6 py-3 rounded-xl border border-white/10 text-sm font-bold text-white hover:bg-white hover:text-black transition-colors">
             Contact Owner

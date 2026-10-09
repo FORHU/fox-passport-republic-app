@@ -33,6 +33,10 @@ export interface EventLineItemsResult {
    * `EventRequestRepo.findById` already includes `bookings: true`. */
   bookingId?: string;
   clientId?: string;
+  /** Whether the page's id is an event this viewer can see. False for a
+   * public template (or an event they have no access to), where there are
+   * no booked items or payment to show. */
+  isEvent?: boolean;
 }
 
 /**
@@ -55,12 +59,12 @@ export async function fetchEventLineItems(
     resp = await api.get(`/event-requests/${eventId}`);
   } catch (err: any) {
     if (err?.response?.status === 404 || err?.response?.status === 403) {
-      return { items: [] };
+      return { items: [], isEvent: false };
     }
     throw err;
   }
   const event = resp.data?.data;
-  if (!event) return { items: [] };
+  if (!event) return { items: [], isEvent: false };
 
   const assets: EventLineItem[] = (event.assetTransactions ?? []).map(
     (t: any) => ({
@@ -106,6 +110,7 @@ export async function fetchEventLineItems(
     items: [...venues, ...assets, ...services],
     bookingId: event.bookings?.[0]?.id,
     clientId: event.clientId,
+    isEvent: true,
   };
 }
 

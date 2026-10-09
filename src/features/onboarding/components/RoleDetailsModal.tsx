@@ -41,12 +41,6 @@ export function RoleDetailsModal({ role, onClose }: RoleDetailsModalProps) {
                 {role.icon}
               </span>
             </div>
-            <p
-              className="text-[10px] font-bold uppercase tracking-widest mb-1"
-              style={{ color: role.color }}
-            >
-              {role.tag}
-            </p>
             <Dialog.Title className="text-2xl font-display font-bold text-white mb-1">
               {role.title}
             </Dialog.Title>

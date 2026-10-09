@@ -701,7 +701,11 @@ export default function BookingConfigurationClient() {
                     ) : (
                       <>
                         <button
-                          disabled={isCreatingBooking || isLoadingTemplate}
+                          disabled={
+                            isCreatingBooking ||
+                            isLoadingTemplate ||
+                            !(totalAmount > 0)
+                          }
                           onClick={async () => {
                             setConfig({
                               templateId: templateId ?? undefined,
@@ -794,12 +798,19 @@ export default function BookingConfigurationClient() {
                             )}
                           </span>
                         </button>
-                        <p className="text-center text-[10px] text-text-muted mt-3">
-                          <span className="material-symbols-outlined text-[12px] align-middle mr-1">
-                            lock
-                          </span>
-                          Secure encrypted checkout
-                        </p>
+                        {!isLoadingTemplate && !(totalAmount > 0) ? (
+                          <p className="text-center text-xs text-text-muted mt-3">
+                            Pricing for this event isn&apos;t set yet, so it
+                            can&apos;t be booked online.
+                          </p>
+                        ) : (
+                          <p className="text-center text-[10px] text-text-muted mt-3">
+                            <span className="material-symbols-outlined text-[12px] align-middle mr-1">
+                              lock
+                            </span>
+                            Secure encrypted checkout
+                          </p>
+                        )}
                       </>
                     )}
                   </div>
@@ -876,18 +887,18 @@ export default function BookingConfigurationClient() {
               </span>
             </div>
             <p className="text-xs text-gray-500 font-medium">
-              © 2024 FoxPassport Inc. All rights reserved.
+              © {new Date().getFullYear()} FoxPassport Inc. All rights reserved.
             </p>
             <div className="flex gap-6">
               <a
                 className="text-xs text-gray-500 hover:text-white font-medium transition-colors"
-                href="#"
+                href="/privacy"
               >
                 Privacy
               </a>
               <a
                 className="text-xs text-gray-500 hover:text-white font-medium transition-colors"
-                href="#"
+                href="/terms"
               >
                 Terms
               </a>

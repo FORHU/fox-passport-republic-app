@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -25,9 +25,10 @@ export default function CheckoutSuccessClient() {
   } = useCheckoutStore();
   const { user } = useAuthStore();
   const confirmed = useRef(false);
-  const [orderNumber] = useState(() =>
-    Math.floor(10000 + Math.random() * 90000),
-  );
+  // The real booking id, shortened — not a number made up on each render.
+  const orderNumber = draftBookingId
+    ? draftBookingId.slice(0, 8).toUpperCase()
+    : null;
 
   // Confirm payment on the backend once, using the Stripe payment_intent from the redirect URL
   useEffect(() => {
@@ -137,7 +138,7 @@ export default function CheckoutSuccessClient() {
             <p className="text-lg text-text-muted max-w-lg mx-auto">
               You&apos;re all set for{" "}
               <span className="text-accent font-bold">
-                {venueName || "Neon Nights"}
+                {venueName || "your booking"}
               </span>
               . We&apos;ve sent the receipt and digital ticket to your email.
             </p>
@@ -165,10 +166,10 @@ export default function CheckoutSuccessClient() {
               <div className="grow flex flex-col justify-center">
                 <div className="text-accent font-bold text-xs mb-2 uppercase tracking-widest flex items-center gap-2">
                   <span className="flex h-2 w-2 rounded-full bg-accent animate-pulse"></span>
-                  Confirmed • Order #FP-{orderNumber}
+                  Confirmed{orderNumber ? ` • Order #FP-${orderNumber}` : ""}
                 </div>
                 <h3 className="font-display font-bold text-white text-3xl leading-tight mb-4">
-                  {venueName || "Neon Nights: Retro Wave Party"}
+                  {venueName || "Your booking"}
                 </h3>
 
                 <div className="grid grid-cols-2 gap-y-4 gap-x-8 text-sm">
@@ -269,26 +270,20 @@ export default function CheckoutSuccessClient() {
               </span>
             </div>
             <p className="text-xs text-gray-500 font-medium">
-              © 2024 FoxPassport Inc. All rights reserved.
+              © {new Date().getFullYear()} FoxPassport Inc. All rights reserved.
             </p>
             <div className="flex gap-6">
               <a
                 className="text-xs text-gray-500 hover:text-white font-medium transition-colors"
-                href="#"
+                href="/privacy"
               >
                 Privacy
               </a>
               <a
                 className="text-xs text-gray-500 hover:text-white font-medium transition-colors"
-                href="#"
+                href="/terms"
               >
                 Terms
-              </a>
-              <a
-                className="text-xs text-gray-500 hover:text-white font-medium transition-colors"
-                href="#"
-              >
-                Cookies
               </a>
             </div>
           </div>

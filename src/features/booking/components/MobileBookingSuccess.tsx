@@ -3,22 +3,33 @@
 import React from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
+import { useCheckoutStore } from "@/features/booking/store/useCheckoutStore";
 
 type Props = {
-  ticketCode?: string;
-  eventName?: string;
-  eventDate?: string;
   onClose?: () => void;
 };
 
-export default function MobileBookingSuccess({
-  ticketCode = "FX-98214",
-  eventName = "Neon Nights Reception",
-  eventDate = "Aug 14",
-  onClose,
-}: Props) {
+/** Phone version of the checkout success page — the same booking the
+ * desktop CheckoutSuccessClient shows, from the checkout store. */
+export default function MobileBookingSuccess({ onClose }: Props) {
   const router = useRouter();
   const handleClose = onClose ?? (() => router.back());
+  const { venueName, checkInDate, draftBookingId } = useCheckoutStore();
+
+  const eventName = venueName || "your booking";
+  const eventDate = checkInDate
+    ? new Date(checkInDate + "T00:00:00").toLocaleDateString(undefined, {
+        month: "short",
+        day: "numeric",
+        year: "numeric",
+      })
+    : null;
+  const ticketCode = draftBookingId
+    ? `FP-${draftBookingId.slice(0, 8).toUpperCase()}`
+    : null;
+  const bookingHref = draftBookingId
+    ? `/booking/${draftBookingId}`
+    : "/booking";
 
   return (
     <div
@@ -75,8 +86,10 @@ export default function MobileBookingSuccess({
             width: 36,
             height: 36,
             borderRadius: 999,
-            background: "color-mix(in srgb, var(--color-white) 8%, transparent)",
-            border: "1px solid color-mix(in srgb, var(--color-white) 12%, transparent)",
+            background:
+              "color-mix(in srgb, var(--color-white) 8%, transparent)",
+            border:
+              "1px solid color-mix(in srgb, var(--color-white) 12%, transparent)",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
@@ -136,51 +149,74 @@ export default function MobileBookingSuccess({
           }}
         >
           Your booking for{" "}
-          <span style={{ color: "color-mix(in srgb, var(--color-white) 80%, transparent)", fontWeight: 600 }}>
+          <span
+            style={{
+              color: "color-mix(in srgb, var(--color-white) 80%, transparent)",
+              fontWeight: 600,
+            }}
+          >
             {eventName}
-          </span>{" "}
-          on{" "}
-          <span style={{ color: "color-mix(in srgb, var(--color-white) 80%, transparent)", fontWeight: 600 }}>
-            {eventDate}
-          </span>{" "}
-          is confirmed. A stamp has been added to your Passport.
+          </span>
+          {eventDate && (
+            <>
+              {" "}
+              on{" "}
+              <span
+                style={{
+                  color:
+                    "color-mix(in srgb, var(--color-white) 80%, transparent)",
+                  fontWeight: 600,
+                }}
+              >
+                {eventDate}
+              </span>
+            </>
+          )}{" "}
+          is confirmed. We&apos;ve emailed you the receipt.
         </p>
 
-        {/* Confirmation row */}
-        <div
-          className="w-full flex justify-between items-center"
-          style={{
-            background: "color-mix(in srgb, var(--color-white) 4%, transparent)",
-            border: "1px solid color-mix(in srgb, var(--color-white) 7%, transparent)",
-            borderRadius: 18,
-            padding: "14px 18px",
-            marginBottom: 28,
-          }}
-        >
-          <span
+        {/* Confirmation row — only once there is a real booking id */}
+        {ticketCode && (
+          <div
+            className="w-full flex justify-between items-center"
             style={{
-              fontSize: 12,
-              color: "color-mix(in srgb, var(--color-white) 40%, transparent)",
-              fontWeight: 500,
+              background:
+                "color-mix(in srgb, var(--color-white) 4%, transparent)",
+              border:
+                "1px solid color-mix(in srgb, var(--color-white) 7%, transparent)",
+              borderRadius: 18,
+              padding: "14px 18px",
+              marginBottom: 28,
             }}
           >
-            Confirmation
-          </span>
-          <span
-            style={{
-              fontSize: 13,
-              color: "var(--color-white)",
-              fontFamily: "monospace",
-              fontWeight: 700,
-              letterSpacing: "0.05em",
-            }}
-          >
-            {ticketCode}
-          </span>
-        </div>
+            <span
+              style={{
+                fontSize: 12,
+                color:
+                  "color-mix(in srgb, var(--color-white) 40%, transparent)",
+                fontWeight: 500,
+              }}
+            >
+              Confirmation
+            </span>
+            <span
+              style={{
+                fontSize: 13,
+                color: "var(--color-white)",
+                fontFamily: "monospace",
+                fontWeight: 700,
+                letterSpacing: "0.05em",
+              }}
+            >
+              {ticketCode}
+            </span>
+          </div>
+        )}
 
         {/* CTA */}
         <button
+          type="button"
+          onClick={() => router.push(bookingHref)}
           className="w-full font-bold"
           style={{
             background: "#ccff00",

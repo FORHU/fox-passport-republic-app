@@ -46,7 +46,14 @@ function readDismissed(): RoleType[] {
  * connected, a venue approval…), so it reflects where they actually are, and
  * a role's tab disappears once its steps are all done or it's dismissed.
  */
-export function RoleGettingStarted({ totals }: { totals: ListingTotals }) {
+export function RoleGettingStarted({
+  totals,
+  onlyRole,
+}: {
+  totals: ListingTotals;
+  /** Show just this role's checklist (for a page that belongs to one role). */
+  onlyRole?: RoleType;
+}) {
   const user = useAuthStore((s) => s.user);
   const access = useRoleAccess();
   const roleType = user?.roleType ?? [];
@@ -203,7 +210,10 @@ export function RoleGettingStarted({ totals }: { totals: ListingTotals }) {
       ],
     });
 
-  const visible = checklists.filter(
+  const shown = onlyRole
+    ? checklists.filter((c) => c.role === onlyRole)
+    : checklists;
+  const visible = shown.filter(
     (c) =>
       !dismissed.includes(c.role) && !c.steps.every((s) => s.done === true),
   );
@@ -211,7 +221,34 @@ export function RoleGettingStarted({ totals }: { totals: ListingTotals }) {
   const current =
     visible.find((c) => c.role === activeRole) ?? visible[0] ?? null;
 
-  if (!current) return null;
+  const hiddenCount = shown.filter(
+    (c) =>
+      dismissed.includes(c.role) && !c.steps.every((s) => s.done === true),
+  ).length;
+
+  const restore = () => {
+    setDismissed([]);
+    try {
+      localStorage.removeItem(DISMISS_KEY);
+    } catch {
+      // Storage unavailable — nothing was persisted to clear.
+    }
+  };
+
+  if (!current) {
+    if (hiddenCount === 0) return null;
+    return (
+      <div className="mb-10 flex justify-end">
+        <button
+          type="button"
+          onClick={restore}
+          className="text-xs text-white/50 hover:text-white transition-colors cursor-pointer"
+        >
+          Show getting-started guide
+        </button>
+      </div>
+    );
+  }
 
   const doneCount = current.steps.filter((s) => s.done === true).length;
   const badge = ROLE_BADGE[current.role];
@@ -237,13 +274,24 @@ export function RoleGettingStarted({ totals }: { totals: ListingTotals }) {
             {doneCount} of {current.steps.length} done
           </p>
         </div>
-        <button
-          type="button"
-          onClick={() => dismiss(current.role)}
-          className="text-xs text-white/40 hover:text-white/70 transition-colors cursor-pointer"
-        >
-          Hide this guide
-        </button>
+        <div className="flex items-center gap-4">
+          {hiddenCount > 0 && (
+            <button
+              type="button"
+              onClick={restore}
+              className="text-xs text-white/40 hover:text-white/70 transition-colors cursor-pointer"
+            >
+              Show hidden guides
+            </button>
+          )}
+          <button
+            type="button"
+            onClick={() => dismiss(current.role)}
+            className="text-xs text-white/40 hover:text-white/70 transition-colors cursor-pointer"
+          >
+            Hide this guide
+          </button>
+        </div>
       </div>
 
       {visible.length > 1 && (

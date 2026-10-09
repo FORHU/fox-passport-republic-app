@@ -4,6 +4,7 @@ import { config } from "@/shared/lib/config";
 import type { Foxer } from "@/shared/api/foxers";
 import type { EventTemplateDetail } from "@/features/event/api/event-templates";
 import { requireAuth } from "./auth";
+import { joinPlace } from "../place";
 
 async function getAuthToken(): Promise<string | null> {
   // `fox_token` (httpOnly) is the only source of truth for the access token.
@@ -223,16 +224,11 @@ function normalizeVenue(v: any) {
       : null,
     title: v.title || v.name || "Untitled Venue",
     type: v.type || v.venueType || "Venue",
-    loc:
-      v.location ||
-      [v.city, v.province, v.country].filter(Boolean).join(", ") ||
-      "",
+    loc: v.location || joinPlace(v.city, v.state ?? v.province, v.country),
     cap: v.capacity ? `${v.capacity} guests` : "—",
-    location:
-      v.location ||
-      [v.city, v.province, v.country].filter(Boolean).join(", ") ||
-      "",
-    province: v.province || v.country || "",
+    location: v.location || joinPlace(v.city, v.state ?? v.province, v.country),
+    // The region shown after the location — the API calls it `state`.
+    province: v.province || v.state || v.country || "",
     price: Number(v.price || v.pricePerNight || 0),
     rating: Number(v.rating || v.averageRating || 0),
     reviews: Number(v.reviews || v.reviewCount || 0),

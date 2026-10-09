@@ -4,20 +4,22 @@ import React from "react";
 import Image from "next/image";
 import Link from "next/link";
 import PassportBookletCard from "./PassportBookletCard";
+import { useMyPassport } from "../hooks/usePassport";
 
 interface Props {
   user?: any;
 }
 
-const STAMPS = [
-  { icon: "queue_music", label: "DJ Night", collected: true },
-  { icon: "celebration", label: "Party", collected: true },
-  { icon: "groups", label: "Social", collected: true },
-  { icon: "lock", label: "Locked", collected: false },
-];
-
 export default function MobilePassportView({ user }: Props) {
-  const level: number = user?.passport?.level ?? 4;
+  // The same passport the desktop PassportClient reads.
+  const { paths, stamps, badges, isLoading } = useMyPassport();
+  const level =
+    paths.find((p) => p.path === "user")?.level ??
+    Math.max(1, ...paths.map((p) => p.level));
+  const citizenNo = user?.id
+    ? `FP-${String(user.id).slice(0, 8).toUpperCase()}`
+    : undefined;
+  const nextBadge = badges.find((b) => !b.earnedAt);
 
   return (
     <div
@@ -52,10 +54,11 @@ export default function MobilePassportView({ user }: Props) {
           right: 0,
           height: 64,
           zIndex: 5,
-          background: "rgba(5,6,8,0.9)",
+          background: "color-mix(in srgb, var(--canvas) 90%, transparent)",
           backdropFilter: "blur(20px)",
           WebkitBackdropFilter: "blur(20px)",
-          borderBottom: "1px solid color-mix(in srgb, var(--color-white) 8%, transparent)",
+          borderBottom:
+            "1px solid color-mix(in srgb, var(--color-white) 8%, transparent)",
           display: "flex",
           alignItems: "center",
           padding: "0 16px",
@@ -91,8 +94,10 @@ export default function MobilePassportView({ user }: Props) {
             width: 36,
             height: 36,
             borderRadius: 999,
-            background: "color-mix(in srgb, var(--color-white) 10%, transparent)",
-            border: "1px solid color-mix(in srgb, var(--color-white) 15%, transparent)",
+            background:
+              "color-mix(in srgb, var(--color-white) 10%, transparent)",
+            border:
+              "1px solid color-mix(in srgb, var(--color-white) 15%, transparent)",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
@@ -120,11 +125,7 @@ export default function MobilePassportView({ user }: Props) {
         }}
       >
         {/* Passport booklet card */}
-        <PassportBookletCard
-          user={user}
-          level={level}
-          citizenNo={user?.citizenId ?? "FX-2026-00481"}
-        />
+        <PassportBookletCard user={user} level={level} citizenNo={citizenNo} />
 
         {/* Stamps Collected */}
         <div>
@@ -140,101 +141,185 @@ export default function MobilePassportView({ user }: Props) {
           >
             Stamps Collected
           </p>
-          <div
-            className="no-scrollbar"
-            style={{
-              display: "flex",
-              gap: 12,
-              overflowX: "auto",
-              paddingBottom: 4,
-            }}
-          >
-            {STAMPS.map((stamp) => (
-              <div
-                key={stamp.label}
-                style={{
-                  flexShrink: 0,
-                  width: 78,
-                  height: 78,
-                  borderRadius: "50%",
-                  border: stamp.collected
-                    ? "2px dashed #ccff00"
-                    : "2px dashed rgba(255,255,255,0.15)",
-                  background: stamp.collected
-                    ? "rgba(204,255,0,0.08)"
-                    : "rgba(255,255,255,0.03)",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                }}
-              >
-                <span
-                  className="material-symbols-outlined"
+          {isLoading ? (
+            <div style={{ display: "flex", gap: 12 }}>
+              {[0, 1, 2].map((i) => (
+                <div
+                  key={i}
+                  className="animate-pulse"
                   style={{
-                    fontSize: 26,
-                    color: stamp.collected
-                      ? "#ccff00"
-                      : "rgba(255,255,255,0.2)",
+                    width: 78,
+                    height: 78,
+                    borderRadius: "50%",
+                    background:
+                      "color-mix(in srgb, var(--color-white) 6%, transparent)",
                   }}
-                >
-                  {stamp.icon}
-                </span>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Next Badge */}
-        <div>
-          <p
-            style={{
-              fontSize: 11,
-              fontWeight: 800,
-              letterSpacing: "1.5px",
-              textTransform: "uppercase",
-              color: "color-mix(in srgb, var(--color-white) 35%, transparent)",
-              margin: "0 0 12px",
-            }}
-          >
-            Next Badge
-          </p>
-          <div
-            style={{
-              background: "color-mix(in srgb, var(--color-white) 4%, transparent)",
-              border: "1px solid color-mix(in srgb, var(--color-white) 8%, transparent)",
-              borderRadius: 18,
-              padding: 16,
-            }}
-          >
+                />
+              ))}
+            </div>
+          ) : stamps.length === 0 ? (
             <div
+              style={{
+                borderRadius: 18,
+                border:
+                  "1px dashed color-mix(in srgb, var(--color-white) 12%, transparent)",
+                padding: "18px 16px",
+                fontSize: 12,
+                color:
+                  "color-mix(in srgb, var(--color-white) 50%, transparent)",
+              }}
+            >
+              No stamps yet — attend your first event to earn one.{" "}
+              <Link href="/search" className="text-accent font-bold">
+                Find an event
+              </Link>
+            </div>
+          ) : (
+            <div
+              className="no-scrollbar"
               style={{
                 display: "flex",
-                justifyContent: "space-between",
-                fontSize: 12,
-                marginBottom: 10,
+                gap: 12,
+                overflowX: "auto",
+                paddingBottom: 4,
               }}
             >
-              <span style={{ fontWeight: 700, color: "var(--color-white)" }}>Night Owl</span>
-              <span style={{ color: "color-mix(in srgb, var(--color-white) 40%, transparent)" }}>3/5 events</span>
+              {stamps.map((stamp) => (
+                <div
+                  key={stamp.id}
+                  style={{ flexShrink: 0, width: 78, textAlign: "center" }}
+                >
+                  <div
+                    style={{
+                      width: 78,
+                      height: 78,
+                      borderRadius: "50%",
+                      border: "2px dashed var(--accent-text)",
+                      background: "rgba(204,255,0,0.08)",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      overflow: "hidden",
+                    }}
+                  >
+                    {stamp.imageUrl ? (
+                      <img
+                        src={stamp.imageUrl}
+                        alt=""
+                        style={{
+                          width: "100%",
+                          height: "100%",
+                          objectFit: "cover",
+                        }}
+                      />
+                    ) : (
+                      <span
+                        className="material-symbols-outlined"
+                        style={{ fontSize: 26, color: "var(--accent-text)" }}
+                      >
+                        approval
+                      </span>
+                    )}
+                  </div>
+                  <p
+                    style={{
+                      fontSize: 10,
+                      margin: "6px 0 0",
+                      color:
+                        "color-mix(in srgb, var(--color-white) 55%, transparent)",
+                      overflow: "hidden",
+                      textOverflow: "ellipsis",
+                      whiteSpace: "nowrap",
+                    }}
+                  >
+                    {stamp.eventTitle}
+                  </p>
+                </div>
+              ))}
             </div>
+          )}
+        </div>
+
+        {/* Next Badge — the first one not yet earned */}
+        {nextBadge && (
+          <div>
+            <p
+              style={{
+                fontSize: 11,
+                fontWeight: 800,
+                letterSpacing: "1.5px",
+                textTransform: "uppercase",
+                color:
+                  "color-mix(in srgb, var(--color-white) 35%, transparent)",
+                margin: "0 0 12px",
+              }}
+            >
+              Next Badge
+            </p>
             <div
               style={{
-                height: 6,
-                borderRadius: 6,
-                background: "color-mix(in srgb, var(--color-white) 10%, transparent)",
+                background:
+                  "color-mix(in srgb, var(--color-white) 4%, transparent)",
+                border:
+                  "1px solid color-mix(in srgb, var(--color-white) 8%, transparent)",
+                borderRadius: 18,
+                padding: 16,
+                display: "flex",
+                gap: 12,
+                alignItems: "center",
               }}
             >
-              <div
-                style={{
-                  width: "60%",
-                  height: "100%",
-                  borderRadius: 6,
-                  background: "#ccff00",
-                }}
-              />
+              <span
+                className="material-symbols-outlined"
+                style={{ fontSize: 28, color: nextBadge.color }}
+              >
+                {nextBadge.icon}
+              </span>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <p
+                  style={{
+                    fontSize: 13,
+                    fontWeight: 700,
+                    margin: "0 0 2px",
+                    color: "var(--color-white)",
+                  }}
+                >
+                  {nextBadge.name}
+                </p>
+                <p
+                  style={{
+                    fontSize: 11,
+                    margin: 0,
+                    color:
+                      "color-mix(in srgb, var(--color-white) 45%, transparent)",
+                  }}
+                >
+                  {nextBadge.description}
+                </p>
+                {nextBadge.maxProgress ? (
+                  <div
+                    style={{
+                      height: 6,
+                      borderRadius: 6,
+                      marginTop: 10,
+                      background:
+                        "color-mix(in srgb, var(--color-white) 10%, transparent)",
+                    }}
+                  >
+                    <div
+                      className="bg-accent"
+                      style={{
+                        width: `${Math.min(100, ((nextBadge.progress ?? 0) / nextBadge.maxProgress) * 100)}%`,
+                        height: "100%",
+                        borderRadius: 6,
+                      }}
+                    />
+                  </div>
+                ) : null}
+              </div>
             </div>
           </div>
-        </div>
+        )}
       </div>
     </div>
   );

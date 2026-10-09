@@ -1,5 +1,6 @@
 "use client";
 
+import PageLoader from "@/shared/components/ui/PageLoader";
 import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
@@ -155,9 +156,7 @@ export default function AdminRefundsClient() {
 
   if (authLoading || !user || !canAccessAdmin(user)) {
     return (
-      <div className="min-h-screen bg-black text-white flex items-center justify-center">
-        <span className="h-6 w-6 rounded-full border-2 border-white/20 border-t-white/60 animate-spin" />
-      </div>
+      <PageLoader />
     );
   }
 

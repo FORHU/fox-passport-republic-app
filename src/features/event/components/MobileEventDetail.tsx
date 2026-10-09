@@ -12,11 +12,11 @@ interface MobileEventDetailProps {
 }
 
 const CATEGORY_PILL: Record<string, { bg: string; color: string }> = {
-  Wedding: { bg: "rgba(219,39,119,0.15)", color: "#f472b6" },
-  Corporate: { bg: "rgba(59,130,246,0.15)", color: "#93c5fd" },
-  Birthday: { bg: "rgba(249,115,22,0.15)", color: "#fdba74" },
-  Social: { bg: "rgba(34,197,94,0.15)", color: "#86efac" },
-  Other: { bg: "rgba(168,85,247,0.15)", color: "#d8b4fe" },
+  Wedding: { bg: "rgba(219,39,119,0.15)", color: "color-mix(in srgb, #db2777 55%, var(--color-white))" },
+  Corporate: { bg: "rgba(59,130,246,0.15)", color: "color-mix(in srgb, #3b82f6 55%, var(--color-white))" },
+  Birthday: { bg: "rgba(249,115,22,0.15)", color: "color-mix(in srgb, #f97316 55%, var(--color-white))" },
+  Social: { bg: "rgba(34,197,94,0.15)", color: "color-mix(in srgb, #22c55e 55%, var(--color-white))" },
+  Other: { bg: "rgba(168,85,247,0.15)", color: "color-mix(in srgb, #a855f7 55%, var(--color-white))" },
 };
 
 const AVATAR_COLORS = ["#7c3aed", "#db2777", "#f97316", "#3b82f6"];
@@ -28,13 +28,23 @@ export default function MobileEventDetail({
 }: MobileEventDetailProps) {
   const router = useRouter();
 
-  const name = event?.name ?? "Neon Nights: Rooftop Reception";
-  const category = event?.category ?? "Wedding";
-  const locationText = event?.targetCity ?? "Baguio City";
-  const maxAttendees = event?.maxAttendees ?? 120;
-  const price = event?.estimatedTotal ?? 48500;
+  // No invented details: anything the template lacks is simply left out.
+  const name = event?.name || "Untitled event";
+  const category = event?.category || "Other";
+  const locationText: string = event?.targetCity || "";
+  const maxAttendees: number | null = event?.maxAttendees ?? null;
+  const price: number | null = event?.estimatedTotal ?? null;
+  const detailLine = [
+    locationText,
+    maxAttendees ? `Up to ${maxAttendees} guests` : "",
+  ]
+    .filter(Boolean)
+    .join(" · ");
 
-  const pill = CATEGORY_PILL[category] ?? CATEGORY_PILL["Other"];
+  // The API sends categories lowercase ("birthday"); the colour map is keyed
+  // by display name ("Birthday").
+  const categoryKey = category.charAt(0).toUpperCase() + category.slice(1);
+  const pill = CATEGORY_PILL[categoryKey] ?? CATEGORY_PILL["Other"];
 
   return (
     <div
@@ -50,7 +60,7 @@ export default function MobileEventDetail({
           right: 0,
           height: 420,
           background:
-            "linear-gradient(180deg, rgba(219,39,119,0.2) 0%, rgba(5,6,8,0.3) 70%, #050608 100%)",
+            "linear-gradient(180deg, rgba(219,39,119,0.2) 0%, color-mix(in srgb, var(--canvas) 30%, transparent) 70%, var(--canvas) 100%)",
           pointerEvents: "none",
         }}
       />
@@ -102,7 +112,8 @@ export default function MobileEventDetail({
             width: 36,
             height: 36,
             borderRadius: 999,
-            background: "color-mix(in srgb, var(--color-black) 40%, transparent)",
+            background:
+              "color-mix(in srgb, var(--color-black) 40%, transparent)",
             backdropFilter: "blur(10px)",
             WebkitBackdropFilter: "blur(10px)",
             border: "none",
@@ -136,7 +147,8 @@ export default function MobileEventDetail({
             width: 36,
             height: 36,
             borderRadius: 999,
-            background: "color-mix(in srgb, var(--color-black) 40%, transparent)",
+            background:
+              "color-mix(in srgb, var(--color-black) 40%, transparent)",
             backdropFilter: "blur(10px)",
             WebkitBackdropFilter: "blur(10px)",
             border: "none",
@@ -158,7 +170,8 @@ export default function MobileEventDetail({
             width: 36,
             height: 36,
             borderRadius: 999,
-            background: "color-mix(in srgb, var(--color-black) 40%, transparent)",
+            background:
+              "color-mix(in srgb, var(--color-black) 40%, transparent)",
             backdropFilter: "blur(10px)",
             WebkitBackdropFilter: "blur(10px)",
             border: "none",
@@ -181,13 +194,14 @@ export default function MobileEventDetail({
         className="absolute inset-x-5"
         style={{
           top: 402,
-          background: "rgba(18,18,24,0.9)",
-          border: "1px solid color-mix(in srgb, var(--color-white) 10%, transparent)",
+          background: "color-mix(in srgb, var(--surface) 92%, transparent)",
+          border:
+            "1px solid color-mix(in srgb, var(--color-white) 10%, transparent)",
           backdropFilter: "blur(20px)",
           WebkitBackdropFilter: "blur(20px)",
           borderRadius: 24,
           padding: 20,
-          boxShadow: "0 20px 50px rgba(0,0,0,0.5)",
+          boxShadow: "0 20px 50px rgba(0,0,0,0.3)",
         }}
       >
         {/* Category pill */}
@@ -234,9 +248,7 @@ export default function MobileEventDetail({
           <span className="material-symbols-outlined" style={{ fontSize: 14 }}>
             location_on
           </span>
-          <span>
-            {locationText} · Up to {maxAttendees} guests
-          </span>
+          <span>{detailLine || "Details coming soon"}</span>
         </div>
 
         {/* Avatar stack */}
@@ -250,7 +262,7 @@ export default function MobileEventDetail({
                   height: 30,
                   borderRadius: "50%",
                   background: color,
-                  border: "2px solid rgba(18,18,24,0.9)",
+                  border: "2px solid var(--surface)",
                   marginLeft: i === 0 ? 0 : -8,
                   zIndex: 4 - i,
                   position: "relative",
@@ -268,7 +280,12 @@ export default function MobileEventDetail({
               </div>
             ))}
           </div>
-          <span style={{ color: "color-mix(in srgb, var(--color-white) 40%, transparent)", fontSize: 11 }}>
+          <span
+            style={{
+              color: "color-mix(in srgb, var(--color-white) 40%, transparent)",
+              fontSize: 11,
+            }}
+          >
             +42 curated
           </span>
         </div>
@@ -279,7 +296,8 @@ export default function MobileEventDetail({
             <p
               style={{
                 fontSize: 10,
-                color: "color-mix(in srgb, var(--color-white) 40%, transparent)",
+                color:
+                  "color-mix(in srgb, var(--color-white) 40%, transparent)",
                 margin: 0,
                 textTransform: "uppercase",
                 letterSpacing: "0.08em",
@@ -297,7 +315,7 @@ export default function MobileEventDetail({
                 margin: "2px 0 0",
               }}
             >
-              <Money amount={price} />
+              {price ? <Money amount={price} /> : "Price on request"}
             </p>
           </div>
           <button

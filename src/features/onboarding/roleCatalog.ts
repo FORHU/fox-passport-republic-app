@@ -11,7 +11,6 @@ export interface RoleCatalogEntry {
   href: string;
   color: string;
   icon: string;
-  tag: string;
   title: string;
   desc: string;
   /** What someone holding this role does day to day. */
@@ -30,8 +29,7 @@ export const ROLES: RoleCatalogEntry[] = [
     href: "/foxer/apply?type=service",
     color: "#00d2ff",
     icon: "design_services",
-    tag: "Talent Foxer",
-    title: "Talent Provider",
+    title: "Talent Foxer",
     desc: "Offer catering, design, staffing, and professional services.",
     responsibilities: [
       "List services like catering, event design, and staffing, with your own packages and pricing.",
@@ -50,8 +48,7 @@ export const ROLES: RoleCatalogEntry[] = [
     href: "/foxer/apply?type=performer",
     color: "#f59e0b",
     icon: "theater_comedy",
-    tag: "Performer Foxer",
-    title: "Performer",
+    title: "Performer Foxer",
     desc: "Offer photography, DJ, live music, hosting, and more.",
     responsibilities: [
       "List performances like photography, videography, DJ sets, live music, and hosting.",
@@ -70,8 +67,7 @@ export const ROLES: RoleCatalogEntry[] = [
     href: "/foxer/apply?type=asset",
     color: "#a78bfa",
     icon: "inventory_2",
-    tag: "Gear Foxer",
-    title: "Gear Provider",
+    title: "Gear Foxer",
     desc: "Rent out sound systems, lighting, furniture, and event equipment.",
     responsibilities: [
       "List sound systems, lighting, furniture, and other event equipment for rent.",
@@ -90,8 +86,7 @@ export const ROLES: RoleCatalogEntry[] = [
     href: "/venue-foxer/apply",
     color: "var(--accent-text)",
     icon: "apartment",
-    tag: "Venue Foxer",
-    title: "Space Provider",
+    title: "Venue Foxer",
     desc: "List and manage your venues for others to host memorable events.",
     responsibilities: [
       "List your venues with photos, capacity, availability, and pricing, and take bookings.",
@@ -110,7 +105,6 @@ export const ROLES: RoleCatalogEntry[] = [
     href: "/creator-dashboard/apply",
     color: "#ff00aa",
     icon: "travel_explore",
-    tag: "Event Foxer",
     title: "Event Foxer",
     desc: "Create and organize events, coordinating every detail end-to-end.",
     responsibilities: [
@@ -130,7 +124,6 @@ export const ROLES: RoleCatalogEntry[] = [
     href: "/foxer/apply?type=organizer",
     color: "#e879f9",
     icon: "assignment_ind",
-    tag: "Organizer",
     title: "Organizer",
     desc: "Help Mayors and Event Owners run their venues and events, once they invite you.",
     responsibilities: [
@@ -149,8 +142,7 @@ export const ROLES: RoleCatalogEntry[] = [
     href: "/foxer/apply-investor",
     color: "#10b981",
     icon: "diamond",
-    tag: "Partner Foxer",
-    title: "Investor",
+    title: "Partner Foxer",
     desc: "Deploy equipment inventory or capital, and earn a revenue share.",
     responsibilities: [
       "Register the equipment inventory or capital you want to put to work.",

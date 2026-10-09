@@ -31,8 +31,11 @@ export interface User {
   isEmailVerified?: boolean;
   identityVerifiedAt?: string | null;
   imgId?: string; // profile image URL (CloudFront)
-  city?: string;
   country?: string;
+  state?: string;
+  city?: string;
+  /** Barangay in the Philippines; district elsewhere. Optional. */
+  district?: string;
   // Display-only — see src/shared/lib/currency.ts. Never affects what a
   // booking actually charges, only how amounts are shown to this user.
   preferredCurrency?: string;

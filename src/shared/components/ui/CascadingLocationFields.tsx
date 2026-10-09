@@ -30,6 +30,8 @@ interface CascadingLocationFieldsProps {
   /** Called with the browser's coordinates after "Use my location", for
    * forms that also keep a map pin. */
   onCoordinates?: (lat: number, lng: number) => void;
+  /** Override the field label style, to match the surrounding form. */
+  labelClassName?: string;
   className?: string;
 }
 
@@ -52,6 +54,7 @@ export function CascadingLocationFields({
   allowGeolocate = true,
   onCoordinates,
   className = "grid grid-cols-1 sm:grid-cols-3 gap-4",
+  labelClassName,
 }: CascadingLocationFieldsProps) {
   const [locating, setLocating] = useState(false);
 
@@ -134,6 +137,7 @@ export function CascadingLocationFields({
   };
 
   const labelClass =
+    labelClassName ??
     "text-[10px] uppercase font-bold text-white/40 tracking-widest mb-2 block";
 
   return (
