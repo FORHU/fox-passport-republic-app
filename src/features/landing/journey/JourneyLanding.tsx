@@ -17,8 +17,10 @@ export default function JourneyLanding() {
       <LandingHeader />
       <main>
         <JourneyHero />
-        <EventGrid />
-        <EventTypes />
+        <div className="landing-chart-background">
+          <EventGrid />
+          <EventTypes />
+        </div>
         <Itinerary />
         <EarnBlock />
         <ClosingCta />

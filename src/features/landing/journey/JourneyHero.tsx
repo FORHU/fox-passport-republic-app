@@ -243,6 +243,15 @@ export const CITY_LIGHTS_RASTER_SOURCE = {
     "NASA Earth Observatory / NASA EOSDIS Global Imagery Browse Services (GIBS)",
 } as const;
 
+export const CITY_LIGHTS_RASTER_PAINT = {
+  "raster-opacity": 0.48,
+  "raster-fade-duration": 0,
+  "raster-brightness-min": 0.02,
+  "raster-brightness-max": 0.9,
+  "raster-contrast": 0.35,
+  "raster-saturation": -0.1,
+} as const;
+
 // Land and water in real colours, so the map is not just black and grey. These
 // are paint changes on the basemap's own layers, so they cost nothing to draw.
 const TINTS = {
@@ -349,6 +358,7 @@ function projectVisibleEventLocations(
     })
     .filter(({ dot }) => dot > minDot)
     .sort((a, b) => b.dot - a.dot)
+    .slice(0, MAX_EVENT_CALLOUT_CANDIDATES)
     .map(({ location }) => ({
       location,
       point: projectEventLocation(map, location),
@@ -378,19 +388,20 @@ function placeEventCallouts(
   const placed: PositionedEventCallout[] = [];
 
   points.forEach(({ location, point }, index) => {
+    if (placed.length >= MAX_EVENT_CALLOUTS) return;
     const blockers = [
       ...occupied,
       ...markers.filter((_, markerIndex) => markerIndex !== index),
     ];
-    const placement = getEventCalloutPlacement(
-      point,
-      width,
-      height,
-      blockers,
-    );
+    const placement = getEventCalloutPlacement(point, width, height, blockers);
     if (!placement) return;
 
-    const callout = { location, markerX: point.x, markerY: point.y, ...placement };
+    const callout = {
+      location,
+      markerX: point.x,
+      markerY: point.y,
+      ...placement,
+    };
     placed.push(callout);
     occupied.push({
       left: placement.left,
@@ -441,8 +452,10 @@ export function isEventCalloutInsideMap(
   );
 }
 
-const EVENT_CALLOUT_WIDTH = 224;
-const EVENT_CALLOUT_HEIGHT = 96;
+const EVENT_CALLOUT_WIDTH = 184;
+const EVENT_CALLOUT_HEIGHT = 76;
+const MAX_EVENT_CALLOUT_CANDIDATES = 24;
+const MAX_EVENT_CALLOUTS = 8;
 
 export function getEventCalloutPlacement(
   point: { x: number; y: number },
@@ -559,6 +572,7 @@ function JourneyMap({
   // What was last sent to the map, so an update that changes nothing is free.
   const sent = useRef({ route: "", plane: "" });
   const eventFocusInitialized = useRef(false);
+  const lastCalloutUpdate = useRef(0);
   const plane = useRef<{
     head: LngLat | null;
     shown: number;
@@ -733,11 +747,18 @@ function JourneyMap({
       });
 
       const { width, height } = map.getContainer().getBoundingClientRect();
-      onEventCalloutPointsChange(
-        p <= IDLE_END
-          ? projectVisibleEventLocations(map, eventLocations, width, height)
-          : [],
-      );
+      if (p <= IDLE_END) {
+        const now = performance.now();
+        if (now - lastCalloutUpdate.current >= 100) {
+          lastCalloutUpdate.current = now;
+          onEventCalloutPointsChange(
+            projectVisibleEventLocations(map, eventLocations, width, height),
+          );
+        }
+      } else {
+        lastCalloutUpdate.current = 0;
+        onEventCalloutPointsChange([]);
+      }
 
       const route = map.getSource("journey-route");
       const key = `${done.length}:${done[done.length - 1]?.join(",") ?? ""}`;
@@ -780,14 +801,7 @@ function JourneyMap({
         drawPlane();
       }
     },
-    [
-      pts,
-      legs,
-      outZoom,
-      drawPlane,
-      eventLocations,
-      onEventCalloutPointsChange,
-    ],
+    [pts, legs, outZoom, drawPlane, eventLocations, onEventCalloutPointsChange],
   );
 
   const addLayers = useCallback(
@@ -829,12 +843,7 @@ function JourneyMap({
             id: "journey-city-light-imagery",
             type: "raster",
             source: "journey-city-lights",
-            paint: {
-              "raster-opacity": 0.58,
-              "raster-fade-duration": 0,
-              "raster-brightness-min": 0.02,
-              "raster-brightness-max": 0.82,
-            },
+            paint: CITY_LIGHTS_RASTER_PAINT,
           },
           firstLabelLayer,
         );
@@ -1496,7 +1505,10 @@ function GlobeEventCallouts({
 
   return (
     <div className="pointer-events-none absolute inset-0 z-20">
-      <svg aria-hidden className="absolute inset-0 h-full w-full overflow-visible">
+      <svg
+        aria-hidden
+        className="absolute inset-0 h-full w-full overflow-visible"
+      >
         {callouts.map((callout) => (
           <g key={callout.location.key}>
             <line
@@ -1565,15 +1577,15 @@ function GlobeEventCalloutCard({
       animate={{ opacity: 1, scale: 1, y: 0 }}
       exit={reduce ? undefined : { opacity: 0, scale: 0.88, y: 8 }}
       transition={{ duration: 0.42, ease: [0.22, 1, 0.36, 1] }}
-      className="pointer-events-auto absolute w-[min(224px,calc(100vw-1.5rem))] rounded-xl border border-white/20 bg-surface/95 p-2 text-white shadow-[0_12px_36px_rgba(0,0,0,0.3)] backdrop-blur-md"
+      className="pointer-events-auto absolute w-[min(184px,calc(100vw-1.5rem))] rounded-lg border border-white/20 bg-surface/95 p-1.5 text-white shadow-[0_8px_24px_rgba(0,0,0,0.3)] backdrop-blur-md"
       style={{ left: callout.left, top: callout.top }}
       aria-live="polite"
     >
       <Link
         href={`/event/${event.id}`}
-        className="group flex items-center gap-2"
+        className="group flex items-center gap-1.5"
       >
-        <div className="h-11 w-11 shrink-0 overflow-hidden rounded-lg bg-gradient-to-br from-sky-400/40 via-emerald-400/20 to-accent/20">
+        <div className="h-9 w-9 shrink-0 overflow-hidden rounded-md bg-gradient-to-br from-sky-400/40 via-emerald-400/20 to-accent/20">
           {image && (
             <img
               src={image}
@@ -1589,10 +1601,10 @@ function GlobeEventCalloutCard({
             {location.city} · {location.events.length}{" "}
             {location.events.length === 1 ? "event" : "events"}
           </p>
-          <h2 className="font-landing-display mt-0.5 line-clamp-2 text-sm leading-tight">
+          <h2 className="font-landing-display mt-0.5 line-clamp-2 text-xs leading-tight">
             {event.name}
           </h2>
-          <p className="font-landing-mono mt-1 text-[9px] font-bold uppercase tracking-[0.1em] text-white/65">
+          <p className="font-landing-mono mt-0.5 text-[8px] font-bold uppercase tracking-[0.1em] text-white/65">
             View event <span aria-hidden>→</span>
           </p>
         </div>
@@ -1707,7 +1719,9 @@ function TourHero() {
     o > 0.01 ? "visible" : "hidden",
   );
   const [drawn, setDrawn] = useState(false);
-  const [eventCallouts, setEventCallouts] = useState<PositionedEventCallout[]>([]);
+  const [eventCallouts, setEventCallouts] = useState<PositionedEventCallout[]>(
+    [],
+  );
   const onDrawn = useCallback(() => setDrawn(true), []);
   const onEventCalloutPointsChange = useCallback(
     (points: ProjectedEventLocation[]) => {

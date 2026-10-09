@@ -31,6 +31,7 @@ import {
 } from "@/features/landing/journey/booking";
 import {
   CITY_LIGHTS_RASTER_SOURCE,
+  CITY_LIGHTS_RASTER_PAINT,
   applyJourneyMapTheme,
   closestVisibleEventLocation,
   getVisibleEventCalloutPlacements,
@@ -215,6 +216,12 @@ describe("landing map theme", () => {
       "/VIIRS_CityLights_2012/",
     );
     expect(CITY_LIGHTS_RASTER_SOURCE.tiles[0]).toContain("{z}/{y}/{x}.jpg");
+    expect(CITY_LIGHTS_RASTER_PAINT).toMatchObject({
+      "raster-opacity": 0.48,
+      "raster-contrast": 0.35,
+      "raster-saturation": -0.1,
+      "raster-brightness-max": 0.9,
+    });
   });
 
   it("uses an Earth-like daylight palette in light mode", () => {
@@ -376,13 +383,39 @@ describe("rotating globe event focus", () => {
         const a = cards[i];
         const b = cards[j];
         expect(
-          a.left < b.left + 224 &&
-            a.left + 224 > b.left &&
-            a.top < b.top + 96 &&
-            a.top + 96 > b.top,
+          a.left < b.left + 184 &&
+            a.left + 184 > b.left &&
+            a.top < b.top + 76 &&
+            a.top + 76 > b.top,
         ).toBe(false);
       }
     }
+  });
+
+  it("bounds callout projection and rendering when many locations are available", () => {
+    const locations: LandingEventLocation[] = Array.from(
+      { length: 100 },
+      (_, index) => ({
+        key: `location-${index}`,
+        city: `City ${index}`,
+        lat: 0,
+        lng: index * 0.1,
+        events: [{ id: `event-${index}`, name: `Event ${index}` }],
+      }),
+    );
+    const project = vi.fn(([_lng, _lat]: [number, number]) => ({
+      x: 600,
+      y: 350,
+    }));
+    const map = {
+      getCenter: () => ({ lng: 0, lat: 0 }),
+      project,
+    };
+
+    const cards = getVisibleEventCalloutPlacements(map, locations, 1200, 700);
+
+    expect(project).toHaveBeenCalledTimes(24);
+    expect(cards.length).toBeLessThanOrEqual(8);
   });
 
   it("projects the event callout from the exact event coordinates", () => {
@@ -420,7 +453,7 @@ describe("rotating globe event focus", () => {
       }),
     ).toEqual({
       left: 616,
-      top: 202,
+      top: 212,
       edgeX: 616,
       edgeY: 250,
     });

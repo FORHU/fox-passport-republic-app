@@ -504,12 +504,11 @@ export function destinationEventCards(
     destination.photos[0]?.src;
 
   return EVENT_TYPES.flatMap((type) => {
-    const event =
-      localEvents.find(
-        (item) =>
-          item.category === type.value &&
-          item.images?.some((image) => Boolean(image.url)),
-      );
+    const event = localEvents.find(
+      (item) =>
+        item.category === type.value &&
+        item.images?.some((image) => Boolean(image.url)),
+    );
     const image = event?.images?.find((item) => Boolean(item.url))?.url;
     const cardImage = image ?? destinationImage;
     return cardImage
@@ -525,7 +524,7 @@ export function EventGrid() {
   return (
     <section
       id="events"
-      className="scroll-mt-4 bg-canvas px-5 pb-12 pt-14 sm:px-10 sm:pb-16 sm:pt-20"
+      className="scroll-mt-4 bg-transparent px-5 pb-12 pt-14 sm:px-10 sm:pb-16 sm:pt-20"
     >
       <div className="mx-auto max-w-6xl">
         <div className="mb-8 flex flex-wrap items-end justify-between gap-4 border-b border-white/15 pb-5">
@@ -618,7 +617,7 @@ export function EventTypes() {
   }, [events]);
 
   return (
-    <section className="bg-canvas px-5 pb-14 sm:px-10 sm:pb-20">
+    <section className="bg-transparent px-5 pb-14 sm:px-10 sm:pb-20">
       <div className="mx-auto max-w-6xl">
         <div className="mb-6 border-b border-white/15 pb-5">
           <Reveal>
