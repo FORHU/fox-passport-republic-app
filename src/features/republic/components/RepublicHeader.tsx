@@ -8,6 +8,7 @@ import { useAuthStore } from "@/shared/auth/useAuthStore";
 import UserMenuButton from "@/shared/components/layout/UserMenuButton";
 import NotificationBell from "@/shared/components/layout/NotificationBell";
 import { Badge } from "@/shared/components/ui/badge";
+import { assetUrl } from "@/shared/lib/assets";
 
 export default function RepublicHeader() {
   const { isAuthenticated, openLogin } = useAuthStore();
@@ -30,7 +31,7 @@ export default function RepublicHeader() {
         >
           <div className="flex h-9 w-9 items-center justify-center group-hover:scale-105 transition-transform overflow-hidden shrink-0">
             <Image
-              src="/foxonlylogo.png"
+              src={assetUrl("foxonlylogo.png")}
               alt="FoxPassport Logo"
               width={36}
               height={36}

@@ -35,9 +35,9 @@ const typeLabel = (value?: string) =>
 // ---------------------------------------------------------------------------
 
 const FIELD_LABEL =
-  "font-landing-mono mb-1 block text-[11px] font-bold uppercase tracking-[0.2em] text-white/70";
+  "font-landing-mono mb-1 block text-xs font-bold uppercase tracking-[0.16em] text-white/80";
 const FIELD =
-  "w-full bg-transparent text-base text-white placeholder:text-white/35 focus:outline-none";
+  "w-full bg-transparent text-base text-white placeholder:text-white/70 focus:outline-none";
 
 /**
  * The kind-of-event picker. A native select opens the operating system's own
@@ -95,7 +95,7 @@ function KindPicker({
         onKeyDown={onKeyDown}
         className={`${FIELD} flex cursor-pointer items-center justify-between gap-2 text-left`}
       >
-        <span className={value ? "" : "text-white/80"}>
+        <span className={value ? "" : "text-white/70"}>
           {options[at].label}
         </span>
         <span
@@ -231,8 +231,8 @@ function DatePicker({
         onClick={() => setOpen((o) => !o)}
         className={`${FIELD} flex cursor-pointer items-center justify-between gap-2 text-left`}
       >
-        <span className={value ? "" : "text-white/35"}>{shown}</span>
-        <span aria-hidden className="text-sm text-white/60">
+        <span className={value ? "" : "text-white/70"}>{shown}</span>
+        <span aria-hidden className="text-sm text-white/70">
           ▦
         </span>
       </button>

@@ -17,6 +17,7 @@ import RequestBookingEditModal from "./RequestBookingEditModal";
 import BookingEditRequestStatusCard from "./BookingEditRequestStatusCard";
 import { getDashboardPath } from "@/shared/lib/dashboard-path";
 import { formatCurrency } from "@/shared/lib/currency";
+import { assetUrl } from "@/shared/lib/assets";
 
 const STATUS_LABEL: Record<string, { label: string; color: string }> = {
   pending: { label: "Pending", color: "text-yellow-400 bg-yellow-500/10" },
@@ -264,7 +265,7 @@ export default function BookingDetailClient({
             >
               <div className="flex h-8 w-8 sm:h-10 sm:w-10 items-center justify-center overflow-hidden group-hover:scale-110 transition-transform duration-300">
                 <Image
-                  src="/foxonlylogo.png"
+                  src={assetUrl("foxonlylogo.png")}
                   alt="FoxPassport Logo"
                   width={40}
                   height={40}

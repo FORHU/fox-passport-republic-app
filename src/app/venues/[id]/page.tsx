@@ -5,6 +5,7 @@ import { getVenueById } from "@/shared/lib/server/data";
 import { notFound } from "next/navigation";
 import VenueDetailPageClient from "./_components/VenueDetailPageClient";
 import PlaceJsonLd from "@/shared/components/seo/PlaceJsonLd";
+import { assetUrl } from "@/shared/lib/assets";
 
 interface VenueDetailPageProps {
   params: Promise<{ id: string }>;
@@ -37,7 +38,7 @@ export async function generateMetadata({
     )
     .filter((url: string) => url.length > 0);
 
-  const ogImages = images.length > 0 ? images : ["/foxonlylogo.png"];
+  const ogImages = images.length > 0 ? images : [assetUrl("foxonlylogo.png")];
 
   return {
     title,

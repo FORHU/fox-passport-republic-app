@@ -26,6 +26,7 @@ import {
   ViewportBounds,
 } from "@/features/venue/api/venues";
 import { Money } from "@/shared/components/ui/Money";
+import { assetUrl } from "@/shared/lib/assets";
 
 // A searched country has an exact bbox from Mapbox; a searched city
 // sometimes doesn't (small towns), so pad a fixed radius around its center
@@ -68,7 +69,7 @@ interface ListVenue extends MapVenue {
   category: string;
 }
 
-const FALLBACK_VENUE_IMG = "/herobackground.jpg";
+const FALLBACK_VENUE_IMG = assetUrl("herobackground.jpg");
 
 function resolveVenueImage(v: any): string {
   if (typeof v === "string" && v.trim().length > 0) {

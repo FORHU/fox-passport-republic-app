@@ -27,6 +27,7 @@ import { toast } from "sonner";
 import { toastRequireLogin } from "@/shared/lib/toast";
 import { getDashboardPath } from "@/shared/lib/dashboard-path";
 import { useCurrency } from "@/shared/providers/CurrencyProvider";
+import { assetUrl } from "@/shared/lib/assets";
 
 export default function VenueBookingClient({ venueId }: { venueId: string }) {
   const router = useRouter();
@@ -297,7 +298,7 @@ export default function VenueBookingClient({ venueId }: { venueId: string }) {
             >
               <div className="flex h-10 w-10 items-center justify-center overflow-hidden group-hover:scale-110 transition-transform duration-300">
                 <Image
-                  src="/foxonlylogo.png"
+                  src={assetUrl("foxonlylogo.png")}
                   alt="FoxPassport Logo"
                   width={40}
                   height={40}

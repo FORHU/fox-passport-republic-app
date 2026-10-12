@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import { useQueryClient } from "@tanstack/react-query";
 import { LocationMap } from "@/shared/components/ui/LocationMap";
 import { Money } from "@/shared/components/ui/Money";
+import { assetUrl } from "@/shared/lib/assets";
 
 interface VenueTableProps {
   venues: any[];
@@ -376,7 +377,7 @@ export const AdminVenuesTable: React.FC<VenueTableProps> = ({
                                 src={coverImg}
                                 onError={(e) => {
                                   (e.target as HTMLImageElement).src =
-                                    "/herobackground.jpg";
+                                    assetUrl("herobackground.jpg");
                                 }}
                               />
                             </div>
@@ -503,7 +504,7 @@ export const AdminVenuesTable: React.FC<VenueTableProps> = ({
                                           className="w-full h-full object-cover group-hover/img:scale-105 transition-transform duration-500"
                                           onError={(e) => {
                                             (e.target as HTMLImageElement).src =
-                                              "/herobackground.jpg";
+                                              assetUrl("herobackground.jpg");
                                           }}
                                         />
                                         {idx === 0 && (

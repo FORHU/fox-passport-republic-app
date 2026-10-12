@@ -5,6 +5,7 @@ import type { Foxer } from "@/shared/api/foxers";
 import type { EventTemplateDetail } from "@/features/event/api/event-templates";
 import { requireAuth } from "./auth";
 import { joinPlace } from "../place";
+import { assetUrl } from "@/shared/lib/assets";
 
 async function getAuthToken(): Promise<string | null> {
   // `fox_token` (httpOnly) is the only source of truth for the access token.
@@ -192,7 +193,7 @@ function extractOne(body: any): any {
   );
 }
 
-const FALLBACK_IMG = "/herobackground.jpg";
+const FALLBACK_IMG = assetUrl("herobackground.jpg");
 
 function normalizeImages(images: any[]): string[] {
   if (!Array.isArray(images) || images.length === 0) return [FALLBACK_IMG];

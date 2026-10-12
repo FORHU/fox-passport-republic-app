@@ -9,6 +9,7 @@ import UserMenuButton from "@/shared/components/layout/UserMenuButton";
 import NotificationBell from "@/shared/components/layout/NotificationBell";
 import MobileBottomNav from "@/shared/components/layout/MobileBottomNav";
 import { Badge } from "@/shared/components/ui/badge";
+import { assetUrl } from "@/shared/lib/assets";
 
 interface LandingHeaderProps {
   /** Optional — defaults to the auth store's own `openLogin`, so a server
@@ -59,7 +60,7 @@ export default function LandingHeader({
             >
               <div className="flex h-8 w-8 sm:h-12 sm:w-12 items-center justify-center group-hover:scale-110 transition-transform duration-300 overflow-hidden shrink-0">
                 <Image
-                  src="/foxonlylogo.png"
+                  src={assetUrl("foxonlylogo.png")}
                   alt="FoxPassport Logo"
                   width={48}
                   height={48}

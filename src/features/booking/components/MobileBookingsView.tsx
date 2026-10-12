@@ -9,6 +9,7 @@ import { useAuthStore } from "@/shared/auth/useAuthStore";
 import { fetchUserBookings } from "@/features/booking/api/bookings";
 import { pollWhileVisible } from "@/shared/lib/realtime";
 import { formatCurrency } from "@/shared/lib/currency";
+import { assetUrl } from "@/shared/lib/assets";
 
 const STATUS_STYLE: Record<
   string,
@@ -107,7 +108,7 @@ export default function MobileBookingsView() {
           style={{ display: "flex", alignItems: "center", flexShrink: 0 }}
         >
           <Image
-            src="/foxonlylogo.png"
+            src={assetUrl("foxonlylogo.png")}
             alt="FoxPassport"
             width={22}
             height={22}

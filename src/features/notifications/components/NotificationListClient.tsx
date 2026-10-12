@@ -8,6 +8,7 @@ import { useAuthStore } from "@/shared/auth/useAuthStore";
 import { useNotifications } from "../hooks/useNotifications";
 import { Notification } from "../types";
 import { getDashboardPath } from "@/shared/lib/dashboard-path";
+import { assetUrl } from "@/shared/lib/assets";
 
 const TYPE_META: Record<string, { icon: string; color: string; bg: string }> = {
   BOOKING_CONFIRMED: {
@@ -115,7 +116,7 @@ export default function NotificationListClient() {
             >
               <div className="flex h-10 w-10 items-center justify-center overflow-hidden group-hover:scale-110 transition-transform duration-300">
                 <Image
-                  src="/foxonlylogo.png"
+                  src={assetUrl("foxonlylogo.png")}
                   alt="FoxPassport Logo"
                   width={40}
                   height={40}
