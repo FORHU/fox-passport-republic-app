@@ -2,8 +2,8 @@
 
 import React, { useEffect } from "react";
 import { toast } from "sonner";
-import { useServiceAvailability } from "@/features/booking/hooks/useAvailability";
-import AvailabilityCalendar from "@/features/booking/components/AvailabilityCalendar";
+import { useServiceAvailability } from "@/shared/hooks/useAvailability";
+import AvailabilityCalendar from "@/shared/components/ui/AvailabilityCalendar";
 
 const noop = () => {};
 const NO_DATES: string[] = [];

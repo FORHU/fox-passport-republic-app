@@ -470,6 +470,9 @@ function RepublicFeedContent() {
             removePost(id);
             handleCloseDetail();
           }}
+          renderShareModal={(postToShare, onClose) => (
+            <SharePostModal post={postToShare} onClose={onClose} />
+          )}
         />
       )}
 

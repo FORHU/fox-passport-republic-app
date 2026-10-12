@@ -14,7 +14,7 @@ import api from "@/shared/lib/axios";
 import {
   searchVenues,
   type VenueSearchResult,
-} from "@/features/venue/api/venues";
+} from "@/shared/api/venues";
 import { formatCurrency } from "@/shared/lib/currency";
 import { StyledSelect } from "@/shared/components/ui/StyledSelect";
 

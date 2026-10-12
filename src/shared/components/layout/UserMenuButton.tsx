@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { Menu } from "lucide-react";
 import { useUserMenu } from "@/shared/auth/useUserMenu";
-import { useUnreadMessagesCount } from "@/features/messages/hooks/useUnreadMessagesCount";
+import { useUnreadMessagesCount } from "@/shared/hooks/useUnreadMessagesCount";
 import { useAuthStore } from "@/shared/auth/useAuthStore";
 import { refreshSession } from "@/shared/auth/session-api";
 import { toast } from "sonner";
