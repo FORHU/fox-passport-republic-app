@@ -2,7 +2,7 @@ import { cookies } from "next/headers";
 import { cache } from "react";
 import { config } from "@/shared/lib/config";
 import type { Foxer } from "@/shared/api/foxers";
-import type { EventTemplateDetail } from "@/features/event/api/event-templates";
+import type { EventTemplateDetail } from "@/shared/api/event-templates";
 import { requireAuth } from "./auth";
 
 async function getAuthToken(): Promise<string | null> {

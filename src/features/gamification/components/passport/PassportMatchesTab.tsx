@@ -4,7 +4,6 @@ import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import { motion } from "motion/react";
 import { formatXP } from "@/features/gamification/lib/gamification";
-import MessageButton from "@/features/messages/components/MessageButton";
 import {
   ClientMatchRequest,
   OutgoingMatchGroup,

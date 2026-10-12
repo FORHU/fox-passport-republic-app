@@ -1,7 +1,6 @@
 "use client";
 
-import React from "react";
-import type { ScheduleConflict } from "@/features/booking/api/bookings";
+import type { ScheduleConflict } from "@/shared/api/schedule-conflicts";
 
 const TYPE_LABEL: Record<ScheduleConflict["type"], string> = {
   venue: "Venue",

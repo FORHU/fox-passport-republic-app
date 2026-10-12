@@ -3,12 +3,11 @@
 import { useEffect } from "react";
 import { FeedPost } from "../types";
 import { PostCard } from "./PostCard";
-import { SharePostModal } from "@/features/messages/components/SharePostModal";
-
 interface PostDetailModalProps {
   post: FeedPost;
   onClose: () => void;
   onPostDeleted?: (id: string) => void;
+  renderShareModal?: (postToShare: any, onClose: () => void) => React.ReactNode;
 }
 
 // Facebook-style "click a post, see it full-screen with comments" modal.
@@ -20,6 +19,7 @@ export function PostDetailModal({
   post,
   onClose,
   onPostDeleted,
+  renderShareModal,
 }: PostDetailModalProps) {
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
@@ -57,9 +57,7 @@ export function PostDetailModal({
             post={post}
             variant="modal"
             onPostDeleted={onPostDeleted}
-            renderShareModal={(postToShare, onCloseShare) => (
-              <SharePostModal post={postToShare} onClose={onCloseShare} />
-            )}
+            renderShareModal={renderShareModal}
           />
         </div>
       </div>

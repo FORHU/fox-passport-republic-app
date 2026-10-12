@@ -1,4 +1,4 @@
-﻿import api from "@/shared/lib/axios";
+import api from "@/shared/lib/axios";
 import type {
   BookingEditRequest,
   BookingKind,
@@ -349,37 +349,11 @@ export async function confirmBookingEditDeltaPayment(
   return resp.data?.data;
 }
 
-export async function fetchTemplateAvailability(
-  templateId: string,
-): Promise<{ bookedDates: string[] }> {
-  const resp = await api.get(`/bookings/availability?templateId=${templateId}`);
-  return resp.data?.data ?? { bookedDates: [] };
-}
-
-// `bookedDates` covers every booking the provider holds, across all their
-// services; `travelBlockedDates` are the days either side of one in another
-// city from `location` (all of them when no location is given yet).
-export async function fetchServiceAvailability(
-  serviceId: string,
-  location?: string,
-): Promise<{ bookedDates: string[]; travelBlockedDates: string[] }> {
-  const resp = await api.get("/service/bookings/availability", {
-    params: { serviceId, location: location || undefined },
-  });
-  const data = resp.data?.data;
-  return {
-    bookedDates: data?.bookedDates ?? [],
-    travelBlockedDates: data?.travelBlockedDates ?? [],
-  };
-}
-
-export async function fetchAssetAvailability(assetId: string): Promise<{
-  bookedRanges: { startDate: string; endDate: string; bookedQty: number }[];
-  totalQty: number;
-}> {
-  const resp = await api.get(`/asset/bookings/availability?assetId=${assetId}`);
-  return resp.data?.data ?? { bookedRanges: [], totalQty: 0 };
-}
+export {
+  fetchTemplateAvailability,
+  fetchServiceAvailability,
+  fetchAssetAvailability,
+} from "@/shared/api/availability";
 
 // 6. Direct Venue Booking — creates Event + VenueTransaction + Booking in one call
 export async function bookVenueDraft(payload: {
@@ -419,28 +393,10 @@ export async function previewVenueBookingPrice(params: {
   return resp.data?.data;
 }
 
-export interface ScheduleConflict {
-  id: string;
-  type: "venue" | "event" | "asset" | "service";
-  title: string;
-  startDate: string;
-  endDate: string;
-}
-
-// Informational only — every one of the citizen's own bookings (across all
-// three booking models) whose dates overlap the range being configured.
-// Nothing about this blocks a booking; it's a heads-up shown alongside the
-// date picker, same spirit as DateRangePicker's `disabledDates` but for the
-// citizen's own schedule rather than the item's availability.
-export async function fetchScheduleConflicts(
-  startDate: string,
-  endDate: string,
-): Promise<ScheduleConflict[]> {
-  const resp = await api.get("/bookings/schedule-conflicts", {
-    params: { startDate, endDate },
-  });
-  return Array.isArray(resp.data?.data) ? resp.data.data : [];
-}
+export {
+  type ScheduleConflict,
+  fetchScheduleConflicts,
+} from "@/shared/api/schedule-conflicts";
 
 export async function fetchUserBookings(
   userId: string,

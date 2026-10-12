@@ -13,7 +13,6 @@ import {
   useDeclineConversationRequest,
 } from "../hooks/useMessages";
 import { useAuthStore } from "@/shared/auth/useAuthStore";
-import { UserHeader } from "@/features/user/components/citizen/UserHeader";
 import { openConversationWindow } from "../store/useChatWindowsStore";
 import { NewGroupModal } from "./NewGroupModal";
 import type { Conversation, Candidate } from "../types";

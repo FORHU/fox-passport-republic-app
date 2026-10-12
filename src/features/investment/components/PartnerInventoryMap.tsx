@@ -14,7 +14,6 @@ import {
   cancelInvestment,
   InventoryCategory,
 } from "@/shared/api/investments";
-import MessageButton from "@/features/messages/components/MessageButton";
 import { useAuthStore } from "@/shared/auth/useAuthStore";
 import { toast } from "sonner";
 import {

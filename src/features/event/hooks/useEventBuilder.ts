@@ -13,7 +13,6 @@ import {
 } from "@/features/event/data/eventBuilderData";
 import { useFileUpload } from "@/shared/hooks/useFileUpload";
 import { useAuthStore } from "@/shared/auth/useAuthStore";
-import { fetchMyAffiliations } from "@/features/venue-affiliation/api/venueAffiliations";
 import { countWords } from "@/features/event/utils/textStats";
 
 // `category` on the backend is a fixed enum (corporate/birthday/wedding/
