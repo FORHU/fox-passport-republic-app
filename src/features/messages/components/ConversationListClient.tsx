@@ -21,10 +21,12 @@ import { VerifiedBadge } from "@/shared/components/ui/VerifiedBadge";
 
 interface ConversationListClientProps {
   followingUsers?: Candidate[];
+  renderHeader?: (isAuthenticated: boolean) => React.ReactNode;
 }
 
 export default function ConversationListClient({
   followingUsers,
+  renderHeader,
 }: ConversationListClientProps = {}) {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -137,7 +139,7 @@ export default function ConversationListClient({
 
   return (
     <div className="min-h-screen bg-canvas text-white font-body antialiased">
-      <UserHeader isAuthenticated={isAuthenticated} />
+      {renderHeader ? renderHeader(isAuthenticated) : null}
 
       <div className="max-w-2xl mx-auto pt-32 pb-20 px-4 sm:px-8">
         <div className="flex items-center gap-3 mb-8">

@@ -7,6 +7,7 @@ import React, {
   useState,
   useCallback,
 } from "react";
+import { useRouter } from "next/navigation";
 import { useUserLocation } from "@/shared/hooks/useUserLocation";
 import {
   PartnerInvestment,
@@ -44,6 +45,7 @@ interface PartnerInventoryMapProps {
   // false there. The dedicated /republic/investments map page is the map,
   // so it keeps free dragging (the default).
   dragPan?: boolean;
+  renderMessageButton?: (props: any) => React.ReactNode;
 }
 
 export default function PartnerInventoryMap({
@@ -51,8 +53,10 @@ export default function PartnerInventoryMap({
   selectedCategory,
   onSelectInvestment,
   dragPan = true,
+  renderMessageButton,
 }: PartnerInventoryMapProps) {
   const containerRef = useRef<HTMLDivElement>(null);
+  const router = useRouter();
   const mapRef = useRef<any>(null);
   const markersRef = useRef<any[]>([]);
 
@@ -593,18 +597,34 @@ export default function PartnerInventoryMap({
 
             <div className="mt-4 flex items-center gap-2">
               {selectedPin.partner &&
-                selectedPin.partner.id !== currentUserId && (
-                  <MessageButton
-                    otherUserId={selectedPin.partner.id}
-                    otherUserName={selectedPin.partner.name}
-                    otherUserImgId={selectedPin.partner.imgId}
-                    contextType="investment"
-                    contextId={selectedPin.id}
-                    contextLabel={selectedPin.title}
-                    label="Request Tool Dispatch"
+                selectedPin.partner.id !== currentUserId &&
+                (renderMessageButton ? (
+                  renderMessageButton({
+                    otherUserId: selectedPin.partner.id,
+                    otherUserName: selectedPin.partner.name,
+                    otherUserImgId: selectedPin.partner.imgId,
+                    contextType: "investment",
+                    contextId: selectedPin.id,
+                    contextLabel: selectedPin.title,
+                    label: "Request Tool Dispatch",
+                    className:
+                      "flex-1 px-4 py-2.5 rounded-xl bg-gradient-to-r from-amber-400 to-yellow-500 hover:from-amber-300 hover:to-yellow-400 text-black font-black text-xs flex items-center justify-center gap-1.5 shadow-lg transition-all cursor-pointer",
+                  })
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (selectedPin?.partner) {
+                        router.push(
+                          `/messages?userId=${selectedPin.partner.id}&contextType=investment&contextId=${selectedPin.id}`,
+                        );
+                      }
+                    }}
                     className="flex-1 px-4 py-2.5 rounded-xl bg-gradient-to-r from-amber-400 to-yellow-500 hover:from-amber-300 hover:to-yellow-400 text-black font-black text-xs flex items-center justify-center gap-1.5 shadow-lg transition-all cursor-pointer"
-                  />
-                )}
+                  >
+                    Request Tool Dispatch
+                  </button>
+                ))}
 
               {selectedPin.partner?.id === currentUserId && (
                 <button
