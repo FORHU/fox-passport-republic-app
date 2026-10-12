@@ -13,7 +13,7 @@ export default function MessagesPage() {
   return (
     <Suspense
       fallback={
-        <div className="min-h-screen flex items-center justify-center bg-[#0a0a0a]">
+        <div className="min-h-screen flex items-center justify-center bg-canvas">
           <span className="h-10 w-10 rounded-full border-2 border-white/20 border-t-accent animate-spin" />
         </div>
       }

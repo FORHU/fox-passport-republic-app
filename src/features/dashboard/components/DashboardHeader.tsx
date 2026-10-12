@@ -164,7 +164,7 @@ export function DashboardHeader({
                 />
               </div>
               <div className="flex flex-col min-w-0">
-                <h2 className="text-sm sm:text-base font-display font-bold text-white group-hover:text-[#ccff00] transition-colors truncate">
+                <h2 className="text-sm sm:text-base font-display font-bold text-white group-hover:text-accent transition-colors truncate">
                   FoxPassport
                 </h2>
                 <span className="hidden xl:block text-[9px] text-white/50 uppercase tracking-widest font-bold">
@@ -186,7 +186,7 @@ export function DashboardHeader({
                     href={link.href}
                     className={
                       isActive
-                        ? "px-3.5 py-1.5 lg:px-4 lg:py-2 rounded-full text-xs lg:text-sm font-bold text-black bg-[#ccff00] shadow-[0_0_15px_rgba(204,255,0,0.3)] transition-all whitespace-nowrap"
+                        ? "px-3.5 py-1.5 lg:px-4 lg:py-2 rounded-full text-xs lg:text-sm font-bold text-black bg-accent shadow-[0_0_15px_rgba(204,255,0,0.3)] transition-all whitespace-nowrap"
                         : "px-3 py-1.5 lg:px-3.5 lg:py-2 rounded-full text-xs lg:text-sm font-medium text-white/65 hover:text-white hover:bg-white/10 transition-colors whitespace-nowrap"
                     }
                   >
@@ -203,7 +203,7 @@ export function DashboardHeader({
                     onClick={() => setMoreMenuOpen((v) => !v)}
                     className={`px-3 py-1.5 lg:px-3.5 lg:py-2 rounded-full text-xs lg:text-sm font-medium flex items-center gap-1 transition-colors whitespace-nowrap ${
                       secondaryLinks.some((l) => pathname.startsWith(l.href))
-                        ? "text-[#ccff00] bg-white/10 font-bold"
+                        ? "text-accent bg-white/10 font-bold"
                         : "text-white/65 hover:text-white hover:bg-white/10"
                     }`}
                   >
@@ -218,7 +218,7 @@ export function DashboardHeader({
                   </button>
 
                   {moreMenuOpen && (
-                    <div className="absolute right-0 top-full mt-2 w-48 bg-[#0f111a]/95 backdrop-blur-2xl border border-white/10 rounded-2xl shadow-2xl p-1.5 z-50 animate-in fade-in slide-in-from-top-2 duration-150">
+                    <div className="absolute right-0 top-full mt-2 w-48 bg-surface/95 backdrop-blur-2xl border border-white/10 rounded-2xl shadow-2xl p-1.5 z-50 animate-in fade-in slide-in-from-top-2 duration-150">
                       {secondaryLinks.map((link) => {
                         const isActive = pathname.startsWith(link.href);
                         const icon = NAV_ICONS[link.label] ?? "arrow_forward";
@@ -229,7 +229,7 @@ export function DashboardHeader({
                             onClick={() => setMoreMenuOpen(false)}
                             className={`flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold transition-colors ${
                               isActive
-                                ? "bg-[#ccff00] text-black shadow-md"
+                                ? "bg-accent text-black shadow-md"
                                 : "text-white/80 hover:bg-white/10 hover:text-white"
                             }`}
                           >
@@ -257,7 +257,7 @@ export function DashboardHeader({
                   <div className="text-xs sm:text-sm font-bold text-white truncate">
                     {user?.name || user?.email || "Creator"}
                   </div>
-                  <div className="text-[11px] text-[#ccff00]/80 font-semibold truncate">
+                  <div className="text-[11px] text-accent/80 font-semibold truncate">
                     {primaryRoleLabel}
                   </div>
                 </div>
@@ -277,7 +277,7 @@ export function DashboardHeader({
             background: "rgba(15,17,26,0.92)",
             backdropFilter: "blur(24px)",
             WebkitBackdropFilter: "blur(24px)",
-            border: "1px solid rgba(255,255,255,0.12)",
+            border: "1px solid color-mix(in srgb, var(--color-white) 12%, transparent)",
             borderRadius: 999,
             boxShadow: "0 10px 40px rgba(0,0,0,0.65)",
           }}
@@ -360,7 +360,7 @@ export function WelcomeBanner({
     {
       label: "Event",
       icon: "event",
-      iconColor: "text-[#ccff00]",
+      iconColor: "text-accent",
       allowed: access.canManageEvents,
       requiredRole: "Event Foxer",
       applyHref: "/creator-dashboard/apply",
@@ -407,8 +407,8 @@ export function WelcomeBanner({
   return (
     <div className="flex flex-col lg:flex-row justify-between items-start lg:items-end gap-6 mb-10">
       <div>
-        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 border border-[#ccff00]/30 shadow-[0_0_15px_rgba(204,255,0,0.1)] mb-3">
-          <span className="flex h-2 w-2 rounded-full bg-[#ccff00] shadow-[0_0_10px_#ccff00] animate-pulse" />
+        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 border border-accent/30 shadow-[0_0_15px_rgba(204,255,0,0.1)] mb-3">
+          <span className="flex h-2 w-2 rounded-full bg-accent shadow-[0_0_10px_#ccff00] animate-pulse" />
           <span className="text-xs font-bold uppercase tracking-widest text-white/90">
             Creator Studio
           </span>
@@ -468,7 +468,7 @@ export function WelcomeBanner({
         <div className="relative" ref={menuRef}>
           <button
             onClick={onToggleCreateMenu}
-            className="w-full sm:w-auto px-6 py-3 rounded-full bg-[#ccff00] text-black font-bold flex items-center justify-center gap-2 text-sm shadow-[0_0_20px_rgba(204,255,0,0.3)] hover:shadow-[0_0_30px_rgba(204,255,0,0.5)] hover:scale-105 transition-all"
+            className="w-full sm:w-auto px-6 py-3 rounded-full bg-accent text-black font-bold flex items-center justify-center gap-2 text-sm shadow-[0_0_20px_rgba(204,255,0,0.3)] hover:shadow-[0_0_30px_rgba(204,255,0,0.5)] hover:scale-105 transition-all"
           >
             <span className="material-symbols-outlined text-[18px]">
               add_circle
@@ -477,7 +477,7 @@ export function WelcomeBanner({
           </button>
 
           {isCreateMenuOpen && (
-            <div className="absolute right-0 top-full mt-2 w-56 bg-[#0f111a] border border-white/10 rounded-2xl shadow-2xl z-50 overflow-hidden">
+            <div className="absolute right-0 top-full mt-2 w-56 bg-surface border border-white/10 rounded-2xl shadow-2xl z-50 overflow-hidden">
               {createItems.map((item, i) => (
                 <React.Fragment key={item.label}>
                   {i === 2 && <div className="h-px bg-white/5" />}
@@ -505,7 +505,7 @@ export function WelcomeBanner({
                         {item.icon}
                       </span>
                       <span className="flex-1 text-white/60">{item.label}</span>
-                      <span className="material-symbols-outlined text-[14px] text-white/30 group-hover:text-[#ccff00]/60 transition-colors">
+                      <span className="material-symbols-outlined text-[14px] text-white/30 group-hover:text-accent/60 transition-colors">
                         lock
                       </span>
                     </button>

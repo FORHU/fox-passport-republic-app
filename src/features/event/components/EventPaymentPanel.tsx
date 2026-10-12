@@ -234,7 +234,7 @@ export function EventPaymentPanel({
             onClick={handlePayNow}
             disabled={isCheckoutLoading || !!disabledReason}
             title={disabledReason ?? undefined}
-            className="w-full flex items-center justify-center gap-2 bg-accent text-black font-bold py-3 px-4 rounded-xl hover:bg-[#b3e600] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full flex items-center justify-center gap-2 bg-accent text-black font-bold py-3 px-4 rounded-xl hover:bg-accent-hover transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {isCheckoutLoading ? (
               <>

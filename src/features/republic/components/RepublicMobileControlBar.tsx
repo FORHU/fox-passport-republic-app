@@ -33,7 +33,7 @@ export function RepublicMobileControlBar({
   return (
     <>
       {/* Sticky tabs + compose button — mobile only */}
-      <div className="md:hidden sticky top-16 z-40 py-2.5 bg-[#09090e]/95 backdrop-blur-2xl border-b border-zinc-800/80 -mx-3 px-3 shadow-[0_8px_24px_rgba(0,0,0,0.7)] flex items-center justify-between gap-2 transform-gpu">
+      <div className="md:hidden sticky top-16 z-40 py-2.5 bg-canvas/95 backdrop-blur-2xl border-b border-zinc-800/80 -mx-3 px-3 shadow-[0_8px_24px_rgba(0,0,0,0.7)] flex items-center justify-between gap-2 transform-gpu">
         {/* Stream Tabs (horizontal swipeable pills) */}
         <div className="flex-1 min-w-0">
           <RepublicTabs

@@ -33,7 +33,7 @@ export function LiveCameraScanner({
         <button
           onClick={onStartScanner}
           disabled={isStarting}
-          className="px-8 py-3 rounded-full bg-[#ccff00] text-black font-black text-xs hover:bg-[#b8e600] transition-all flex items-center gap-2 shadow-md cursor-pointer"
+          className="px-8 py-3 rounded-full bg-accent text-black font-black text-xs hover:bg-accent-hover transition-all flex items-center gap-2 shadow-md cursor-pointer"
         >
           <span className="material-symbols-outlined text-[18px]">
             videocam

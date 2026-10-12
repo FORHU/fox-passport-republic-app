@@ -68,8 +68,8 @@ export function AuthStoreProvider({ children }: { children: React.ReactNode }) {
 
   if (isLoading) {
     return (
-      <div className="h-screen w-full flex items-center justify-center bg-[#0f111a]">
-        <Loader2 className="animate-spin text-[#ccff00]" size={40} />
+      <div className="h-screen w-full flex items-center justify-center bg-surface">
+        <Loader2 className="animate-spin text-accent" size={40} />
       </div>
     );
   }

@@ -76,9 +76,9 @@ export function VenuePreviewModal({
   const displayCapacity = capacity ? `${capacity} guests` : "—";
 
   return (
-    <div className="fixed inset-0 z-[200] flex flex-col bg-[#02040a] text-white overflow-hidden">
+    <div className="fixed inset-0 z-[200] flex flex-col bg-canvas text-white overflow-hidden">
       {/* Preview header bar */}
-      <div className="shrink-0 h-12 bg-[#ccff00] flex items-center justify-between px-6 z-10">
+      <div className="shrink-0 h-12 bg-accent flex items-center justify-between px-6 z-10">
         <div className="flex items-center gap-2 text-black text-xs font-bold">
           <span className="material-symbols-outlined text-[16px]">
             visibility
@@ -106,7 +106,7 @@ export function VenuePreviewModal({
               (e.target as HTMLImageElement).src = "/herobackground.jpg";
             }}
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-[#02040a] via-transparent to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-t from-canvas via-transparent to-transparent" />
 
           {/* Venue type badge */}
           <div className="absolute top-6 left-6 bg-black/60 backdrop-blur px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider">
@@ -132,7 +132,7 @@ export function VenuePreviewModal({
                   </span>
                   {displayCapacity}
                 </span>
-                <span className="flex items-center gap-1 text-[#ccff00]">
+                <span className="flex items-center gap-1 text-accent">
                   <span className="material-symbols-outlined text-[16px]">
                     star
                   </span>
@@ -153,7 +153,7 @@ export function VenuePreviewModal({
                   onClick={() => setActiveImage(idx)}
                   className={`relative shrink-0 w-28 h-20 rounded-xl overflow-hidden border-2 transition-all ${
                     activeImage === idx
-                      ? "border-[#ccff00] scale-105"
+                      ? "border-accent scale-105"
                       : "border-white/10 opacity-60 hover:opacity-100"
                   }`}
                 >
@@ -167,7 +167,7 @@ export function VenuePreviewModal({
                     }}
                   />
                   {idx === 0 && (
-                    <div className="absolute top-1 left-1 bg-[#ccff00] text-black text-[8px] font-bold px-1.5 py-0.5 rounded">
+                    <div className="absolute top-1 left-1 bg-accent text-black text-[8px] font-bold px-1.5 py-0.5 rounded">
                       Cover
                     </div>
                   )}
@@ -224,7 +224,7 @@ export function VenuePreviewModal({
                         key={item.id}
                         className="flex items-center gap-3 bg-white/5 border border-white/5 rounded-xl p-3"
                       >
-                        <span className="material-symbols-outlined text-[#ccff00] text-[18px]">
+                        <span className="material-symbols-outlined text-accent text-[18px]">
                           {item.icon}
                         </span>
                         <span className="text-xs font-medium text-white/80">
@@ -250,9 +250,9 @@ export function VenuePreviewModal({
                     {addonItems.map((item) => (
                       <div
                         key={item.id}
-                        className="flex items-start gap-3 bg-[#ccff00]/5 border border-[#ccff00]/10 rounded-xl p-3"
+                        className="flex items-start gap-3 bg-accent/5 border border-accent/10 rounded-xl p-3"
                       >
-                        <span className="material-symbols-outlined text-[#ccff00] text-[18px] shrink-0">
+                        <span className="material-symbols-outlined text-accent text-[18px] shrink-0">
                           {item.icon}
                         </span>
                         <div>
@@ -260,7 +260,7 @@ export function VenuePreviewModal({
                             {item.name}
                           </div>
                           {item.value > 0 && (
-                            <div className="text-[10px] text-[#ccff00] font-bold mt-0.5">
+                            <div className="text-[10px] text-accent font-bold mt-0.5">
                               +<Money amount={item.value} />
                             </div>
                           )}
@@ -288,9 +288,9 @@ export function VenuePreviewModal({
 
             {/* Right column — booking card */}
             <div className="lg:sticky lg:top-6 self-start">
-              <div className="bg-[#0f111a] border border-white/10 rounded-3xl p-6 shadow-2xl">
+              <div className="bg-surface border border-white/10 rounded-3xl p-6 shadow-2xl">
                 <div className="mb-5">
-                  <div className="text-2xl font-display font-bold text-[#ccff00]">
+                  <div className="text-2xl font-display font-bold text-accent">
                     {baseRate > 0 ? <Money amount={baseRate} /> : "—"}
                     <span className="text-sm font-normal text-white/50 ml-1">
                       / night
@@ -335,7 +335,7 @@ export function VenuePreviewModal({
 
                 <button
                   disabled
-                  className="w-full py-3 rounded-xl bg-[#ccff00] text-black font-bold text-sm opacity-50 cursor-not-allowed"
+                  className="w-full py-3 rounded-xl bg-accent text-black font-bold text-sm opacity-50 cursor-not-allowed"
                 >
                   Reserve (Preview only)
                 </button>
@@ -361,7 +361,7 @@ export function VenuePreviewModal({
               </div>
 
               {/* Venue details summary */}
-              <div className="mt-4 bg-[#0f111a] border border-white/10 rounded-2xl p-5 space-y-3 text-xs">
+              <div className="mt-4 bg-surface border border-white/10 rounded-2xl p-5 space-y-3 text-xs">
                 <h3 className="font-bold text-white/80 text-sm">
                   Venue Details
                 </h3>

@@ -19,7 +19,7 @@ export const metadata: Metadata = {
 
 export default function DataDeletionPage() {
   return (
-    <div className="min-h-screen bg-[#070709] text-gray-200 antialiased selection:bg-[#ccff00] selection:text-black">
+    <div className="min-h-screen bg-canvas text-gray-200 antialiased selection:bg-accent selection:text-black">
       {/* Navigation Header */}
       <LandingHeader />
 
@@ -29,7 +29,7 @@ export default function DataDeletionPage() {
         <div className="mb-6 flex items-center gap-2">
           <Link
             href="/"
-            className="inline-flex items-center gap-1.5 text-xs font-semibold text-gray-400 hover:text-[#ccff00] transition-colors"
+            className="inline-flex items-center gap-1.5 text-xs font-semibold text-gray-400 hover:text-accent transition-colors"
           >
             <ArrowLeft className="h-3.5 w-3.5" />
             Back to Home
@@ -37,7 +37,7 @@ export default function DataDeletionPage() {
           <span className="text-gray-600">/</span>
           <Link
             href="/privacy"
-            className="text-xs text-gray-400 hover:text-[#ccff00] transition-colors"
+            className="text-xs text-gray-400 hover:text-accent transition-colors"
           >
             Privacy Policy
           </Link>
@@ -47,7 +47,7 @@ export default function DataDeletionPage() {
 
         {/* Hero Section */}
         <div className="border-b border-white/10 pb-8 sm:pb-12 mb-10 sm:mb-14">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#ccff00]/10 border border-[#ccff00]/20 text-[#ccff00] text-xs font-semibold uppercase tracking-wider mb-4">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-accent/10 border border-accent/20 text-accent text-xs font-semibold uppercase tracking-wider mb-4">
             <Trash2 className="h-3.5 w-3.5" />
             User Data Controls
           </div>
@@ -65,7 +65,7 @@ export default function DataDeletionPage() {
         {/* Method 1: Email Request */}
         <section className="mb-12">
           <div className="flex items-center gap-3 mb-4">
-            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-white/5 border border-white/10 text-[#ccff00]">
+            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-white/5 border border-white/10 text-accent">
               <Mail className="h-5 w-5" />
             </div>
             <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-white font-display">
@@ -82,7 +82,7 @@ export default function DataDeletionPage() {
                 Send an email to{" "}
                 <a
                   href="mailto:support@foxpassport.com?subject=Data%20Deletion%20Request"
-                  className="font-semibold text-[#ccff00] hover:underline"
+                  className="font-semibold text-accent hover:underline"
                 >
                   support@foxpassport.com
                 </a>{" "}
@@ -154,7 +154,7 @@ export default function DataDeletionPage() {
                 to{" "}
                 <a
                   href="mailto:support@foxpassport.com?subject=Meta%20Data%20Deletion%20Request"
-                  className="font-semibold text-[#ccff00] hover:underline"
+                  className="font-semibold text-accent hover:underline"
                 >
                   support@foxpassport.com
                 </a>
@@ -167,7 +167,7 @@ export default function DataDeletionPage() {
         {/* Method 3: Google Account Disconnection */}
         <section className="mb-12">
           <div className="flex items-center gap-3 mb-4">
-            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-white/5 border border-white/10 text-[#ccff00]">
+            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-white/5 border border-white/10 text-accent">
               <ShieldCheck className="h-5 w-5" />
             </div>
             <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-white font-display">
@@ -181,7 +181,7 @@ export default function DataDeletionPage() {
                 href="https://myaccount.google.com/permissions"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="font-semibold text-[#ccff00] hover:underline"
+                className="font-semibold text-accent hover:underline"
               >
                 Google Account Third-Party Permissions
               </a>{" "}
@@ -226,7 +226,7 @@ export default function DataDeletionPage() {
             our Data Privacy Officer at{" "}
             <a
               href="mailto:support@foxpassport.com"
-              className="text-[#ccff00] font-semibold hover:underline"
+              className="text-accent font-semibold hover:underline"
             >
               support@foxpassport.com
             </a>

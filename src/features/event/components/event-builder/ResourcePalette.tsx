@@ -34,7 +34,7 @@ export function ResourcePalette({
     <>
       {/* Category Navigation */}
       <nav
-        className={`${docked} w-24 shrink-0 bg-[#0f111a] border-r border-white/5 flex-col items-center py-6 gap-6 overflow-y-auto hide-scrollbar z-20 ${inDrawer ? "flex w-full border-r-0 border-b" : "flex"}`}
+        className={`${docked} w-24 shrink-0 bg-surface border-r border-white/5 flex-col items-center py-6 gap-6 overflow-y-auto hide-scrollbar z-20 ${inDrawer ? "flex w-full border-r-0 border-b" : "flex"}`}
       >
         {RESOURCE_CATEGORIES.map((cat) => (
           <button
@@ -58,7 +58,7 @@ export function ResourcePalette({
 
       {/* Resource List */}
       <aside
-        className={`${docked} w-80 shrink-0 border-r border-white/5 bg-[#0f111a] flex-col relative z-10 ${inDrawer ? "flex w-full border-r-0" : "flex"}`}
+        className={`${docked} w-80 shrink-0 border-r border-white/5 bg-surface flex-col relative z-10 ${inDrawer ? "flex w-full border-r-0" : "flex"}`}
       >
         <div className="p-6">
           <h3 className="font-display font-bold text-xl text-white mb-1">
@@ -77,7 +77,7 @@ export function ResourcePalette({
               placeholder="Search assets..."
               value={searchQuery}
               onChange={(e) => onSearchChange(e.target.value)}
-              className="w-full bg-[#1a1d2d] border border-white/10 rounded-xl py-2.5 pl-10 pr-4 text-sm text-white focus:border-accent outline-none placeholder:text-white/20"
+              className="w-full bg-surface-raised border border-white/10 rounded-xl py-2.5 pl-10 pr-4 text-sm text-white focus:border-accent outline-none placeholder:text-white/20"
             />
           </div>
         </div>

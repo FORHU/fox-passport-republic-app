@@ -133,10 +133,10 @@ export function LocationSearchControl({
           onChange={(e) => setQuery(e.target.value)}
           onFocus={() => results.length > 0 && setIsOpen(true)}
           placeholder={placeholder}
-          className="w-full bg-[#0b0d14]/95 backdrop-blur-xl border border-white/10 rounded-full py-2 pl-9 pr-8 text-xs text-white placeholder:text-white/40 shadow-2xl focus:outline-none focus:border-[#ccff00] focus:ring-1 focus:ring-[#ccff00]/50 transition-all"
+          className="w-full bg-surface/95 backdrop-blur-xl border border-white/10 rounded-full py-2 pl-9 pr-8 text-xs text-white placeholder:text-white/40 shadow-2xl focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent/50 transition-all"
         />
         {isLoading ? (
-          <Loader2 className="absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[#ccff00] animate-spin" />
+          <Loader2 className="absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-accent animate-spin" />
         ) : query ? (
           <button
             type="button"
@@ -152,7 +152,7 @@ export function LocationSearchControl({
       </div>
 
       {isOpen && results.length > 0 && (
-        <div className="absolute top-[calc(100%+6px)] left-0 w-full rounded-2xl bg-[#0b0d14]/95 backdrop-blur-xl border border-white/10 shadow-2xl overflow-hidden z-30">
+        <div className="absolute top-[calc(100%+6px)] left-0 w-full rounded-2xl bg-surface/95 backdrop-blur-xl border border-white/10 shadow-2xl overflow-hidden z-30">
           {results.map((r, i) => (
             <button
               key={`${r.name}-${i}`}
@@ -161,9 +161,9 @@ export function LocationSearchControl({
               className="w-full flex items-center gap-2 px-3.5 py-2.5 text-left text-xs text-white/80 hover:bg-white/10 hover:text-white transition-colors cursor-pointer border-b border-white/5 last:border-b-0"
             >
               {r.placeType === "country" ? (
-                <Globe2 className="w-3.5 h-3.5 text-[#ccff00] shrink-0" />
+                <Globe2 className="w-3.5 h-3.5 text-accent shrink-0" />
               ) : (
-                <MapPin className="w-3.5 h-3.5 text-[#ccff00] shrink-0" />
+                <MapPin className="w-3.5 h-3.5 text-accent shrink-0" />
               )}
               <span className="truncate flex-1">{r.placeName}</span>
               <span className="shrink-0 text-[9px] font-bold uppercase tracking-wider text-white/30">

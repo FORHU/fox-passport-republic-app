@@ -1,5 +1,6 @@
 "use client";
 
+import PageLoader from "@/shared/components/ui/PageLoader";
 import React, { useState, useEffect, useMemo } from "react";
 import Image from "next/image";
 import Link from "next/link";
@@ -303,14 +304,7 @@ export default function ServiceBookingClient({
   };
 
   if (isLoading) {
-    return (
-      <div className="min-h-screen bg-background bg-gradient-dark flex items-center justify-center">
-        <div className="flex flex-col items-center gap-4">
-          <span className="h-10 w-10 rounded-full border-2 border-white/20 border-t-accent animate-spin" />
-          <p className="text-text-muted text-sm">Loading service details…</p>
-        </div>
-      </div>
-    );
+    return <PageLoader label="Loading service details" />;
   }
 
   if (!service) {
@@ -380,7 +374,7 @@ export default function ServiceBookingClient({
                   src={user.imgId}
                 />
               ) : (
-                <div className="h-full w-full bg-[#ccff00] flex items-center justify-center text-black font-bold text-sm">
+                <div className="h-full w-full bg-accent flex items-center justify-center text-black font-bold text-sm">
                   {user?.name?.charAt(0)?.toUpperCase() ?? "U"}
                 </div>
               )}
@@ -926,7 +920,7 @@ export default function ServiceBookingClient({
               </span>
             </div>
             <p className="text-xs text-gray-500 font-medium">
-              © 2024 FoxPassport Inc. All rights reserved.
+              © {new Date().getFullYear()} FoxPassport Inc. All rights reserved.
             </p>
           </div>
         </div>

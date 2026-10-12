@@ -90,11 +90,11 @@ export default function ResubmitDocumentsClient({
   return (
     <RequireAuth>
       <ApplicationFlowHeader />
-      <div className="min-h-screen bg-[#0f111a] flex flex-col items-center justify-center p-4 pt-24 pb-12 font-body">
-        <div className="w-full max-w-2xl bg-[#1a1a24] rounded-[2.5rem] p-8 md:p-12 border border-white/5 shadow-2xl">
+      <div className="min-h-screen bg-surface flex flex-col items-center justify-center p-4 pt-24 pb-12 font-body">
+        <div className="w-full max-w-2xl bg-surface-raised rounded-[2.5rem] p-8 md:p-12 border border-white/5 shadow-2xl">
           {loading ? (
             <div className="flex items-center justify-center py-16 text-white/30 gap-3">
-              <div className="w-5 h-5 border-2 border-white/20 border-t-[#ccff00] rounded-full animate-spin" />
+              <div className="w-5 h-5 border-2 border-white/20 border-t-accent rounded-full animate-spin" />
               Loading application…
             </div>
           ) : !request || request.status !== "revision_requested" ? (
@@ -108,7 +108,7 @@ export default function ResubmitDocumentsClient({
               </p>
               <button
                 onClick={() => router.push("/onboarding")}
-                className="mt-4 px-6 py-3 rounded-xl bg-[#ccff00] text-black font-bold hover:brightness-110 transition-all"
+                className="mt-4 px-6 py-3 rounded-xl bg-accent text-black font-bold hover:brightness-110 transition-all"
               >
                 Back to Onboarding
               </button>
@@ -182,7 +182,7 @@ export default function ResubmitDocumentsClient({
                 <button
                   onClick={handleSubmit}
                   disabled={!allReplaced || submitting}
-                  className="w-full flex-1 flex items-center justify-center gap-2 text-black font-bold py-3 px-6 rounded-xl bg-[#ccff00] hover:brightness-110 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="w-full flex-1 flex items-center justify-center gap-2 text-black font-bold py-3 px-6 rounded-xl bg-accent hover:brightness-110 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {submitting ? "Submitting…" : "Resubmit Documents"}
                   {!submitting && <ArrowRight size={18} />}

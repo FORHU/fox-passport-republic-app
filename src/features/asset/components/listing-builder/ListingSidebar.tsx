@@ -71,7 +71,7 @@ export function ListingSidebar({
   const units = activeType === "inventory" ? INVENTORY_UNITS : SERVICE_UNITS;
 
   return (
-    <aside className="w-80 shrink-0 border-r border-white/5 bg-[#0f111a] flex flex-col relative z-10">
+    <aside className="w-80 shrink-0 border-r border-white/5 bg-surface flex flex-col relative z-10">
       <div className="p-6 border-b border-white/5">
         <h3 className="font-display font-bold text-lg text-white mb-1">
           Details
@@ -137,7 +137,7 @@ export function ListingSidebar({
                   onClick={() => onConditionChange(cond)}
                   className={`px-4 py-2 rounded-lg border text-xs font-bold capitalize transition-all ${
                     condition === cond
-                      ? "border-[#ccff00] bg-[#ccff00]/10 text-[#ccff00]"
+                      ? "border-accent bg-accent/10 text-accent"
                       : "border-white/10 bg-white/5 text-white/60 hover:text-white hover:border-white/20"
                   }`}
                 >
@@ -168,7 +168,7 @@ export function ListingSidebar({
                 <button
                   type="button"
                   onClick={() => onPriceChange(price + 100)}
-                  className="h-4 w-6 rounded bg-white/10 flex items-center justify-center text-white/50 hover:bg-[#ccff00]/20 hover:text-[#ccff00] transition-colors"
+                  className="h-4 w-6 rounded bg-white/10 flex items-center justify-center text-white/50 hover:bg-accent/20 hover:text-accent transition-colors"
                 >
                   <span className="material-symbols-outlined text-[12px]">
                     expand_less
@@ -177,7 +177,7 @@ export function ListingSidebar({
                 <button
                   type="button"
                   onClick={() => onPriceChange(Math.max(0, price - 100))}
-                  className="h-4 w-6 rounded bg-white/10 flex items-center justify-center text-white/50 hover:bg-[#ccff00]/20 hover:text-[#ccff00] transition-colors"
+                  className="h-4 w-6 rounded bg-white/10 flex items-center justify-center text-white/50 hover:bg-accent/20 hover:text-accent transition-colors"
                 >
                   <span className="material-symbols-outlined text-[12px]">
                     expand_more

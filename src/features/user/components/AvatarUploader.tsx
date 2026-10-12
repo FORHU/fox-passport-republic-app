@@ -81,7 +81,7 @@ export default function AvatarUploader({
       {/* Avatar drop zone */}
       <div
         className={`relative h-24 w-24 rounded-[1.75rem] cursor-pointer transition-all duration-200 ${
-          isDragging ? "ring-2 ring-[#ccff00] scale-105" : "hover:scale-105"
+          isDragging ? "ring-2 ring-accent scale-105" : "hover:scale-105"
         }`}
         onClick={() => !isUploading && inputRef.current?.click()}
         onDrop={handleDrop}
@@ -110,7 +110,7 @@ export default function AvatarUploader({
               isDragging ? "opacity-100" : "opacity-0 hover:opacity-100"
             }`}
           >
-            <span className="material-symbols-outlined text-[#ccff00] text-[28px]">
+            <span className="material-symbols-outlined text-accent text-[28px]">
               photo_camera
             </span>
             <span className="text-[10px] text-white font-bold mt-1 tracking-widest uppercase">
@@ -122,14 +122,14 @@ export default function AvatarUploader({
         {/* Upload spinner overlay */}
         {isUploading && (
           <div className="absolute inset-0 rounded-[1.75rem] flex items-center justify-center bg-black/70">
-            <span className="material-symbols-outlined text-[#ccff00] text-[28px] animate-spin">
+            <span className="material-symbols-outlined text-accent text-[28px] animate-spin">
               progress_activity
             </span>
           </div>
         )}
 
         {/* Verified badge */}
-        <div className="absolute -bottom-1 -right-1 h-6 w-6 bg-[#ccff00] rounded-full border-2 border-[#0f111a] flex items-center justify-center">
+        <div className="absolute -bottom-1 -right-1 h-6 w-6 bg-accent rounded-full border-2 border-surface flex items-center justify-center">
           <span className="material-symbols-outlined text-black text-[12px] font-bold">
             verified
           </span>

@@ -151,7 +151,7 @@ export default function ProviderMarketplaceRequestsClient() {
                         <button
                           onClick={() => handleReview(item, kind, "confirm")}
                           disabled={isBusy}
-                          className="h-8 px-3 rounded-full bg-accent text-black text-xs font-bold hover:bg-[#b3e600] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                          className="h-8 px-3 rounded-full bg-accent text-black text-xs font-bold hover:bg-accent-hover transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                           {isBusy ? "…" : "Confirm"}
                         </button>

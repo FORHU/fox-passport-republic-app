@@ -36,7 +36,7 @@ export default function BadgeModal({
             initial={{ opacity: 0, scale: 0.9, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.9, y: 20 }}
-            className="relative w-full max-w-md bg-linear-to-br from-[#0f392b] to-[#04221a] rounded-[3rem] p-8 border border-white/10 shadow-2xl overflow-hidden"
+            className="relative w-full max-w-md bg-linear-to-br from-emerald-50 to-emerald-100 dark:from-[#0f392b] dark:to-[#04221a] rounded-[3rem] p-8 border border-white/10 shadow-2xl overflow-hidden"
           >
             {/* Close Button */}
             <button
@@ -68,7 +68,7 @@ export default function BadgeModal({
                   <div className="absolute inset-0 bg-black/20 backdrop-blur-sm"></div>
                   <span
                     className="material-symbols-outlined relative z-10 text-[56px] drop-shadow-[0_0_15px_rgba(255,255,255,0.5)]"
-                    style={{ color: "white" }}
+                    style={{ color: "var(--color-white)" }}
                   >
                     {badge.icon}
                   </span>

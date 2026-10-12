@@ -159,12 +159,12 @@ function PromotionModal({
       onClick={onClose}
     >
       <div
-        className="bg-[#0f111a] border border-white/10 rounded-2xl p-6 sm:p-8 max-w-xl w-full mx-4 max-h-[90vh] overflow-y-auto"
+        className="bg-surface border border-white/10 rounded-2xl p-6 sm:p-8 max-w-xl w-full mx-4 max-h-[90vh] overflow-y-auto"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center gap-4 mb-6">
-          <div className="w-10 h-10 rounded-xl bg-[#ccff00]/10 flex items-center justify-center shrink-0 border border-[#ccff00]/20">
-            <span className="material-symbols-outlined text-[#ccff00] text-[20px]">
+          <div className="w-10 h-10 rounded-xl bg-accent/10 flex items-center justify-center shrink-0 border border-accent/20">
+            <span className="material-symbols-outlined text-accent text-[20px]">
               sell
             </span>
           </div>
@@ -204,14 +204,14 @@ function PromotionModal({
               <select
                 value={scope}
                 onChange={(e) => setScope(e.target.value)}
-                className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-3 text-sm text-white focus:border-[#ccff00]/40 outline-none transition-all"
+                className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-3 text-sm text-white focus:border-accent/40 outline-none transition-all"
               >
-                <option className="bg-[#0f111a] text-white" value="">
+                <option className="bg-surface text-white" value="">
                   Select a listing…
                 </option>
                 {listingOptions.map((o) => (
                   <option
-                    className="bg-[#0f111a] text-white"
+                    className="bg-surface text-white"
                     key={`${o.kind}:${o.id}`}
                     value={`${o.kind}:${o.id}`}
                   >
@@ -231,7 +231,7 @@ function PromotionModal({
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="e.g. Off-Season Sale"
-              className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white placeholder-white/20 focus:border-[#ccff00]/40 outline-none transition-all"
+              className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white placeholder-white/20 focus:border-accent/40 outline-none transition-all"
             />
           </div>
 
@@ -246,7 +246,7 @@ function PromotionModal({
               type="text"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white placeholder-white/20 focus:border-[#ccff00]/40 outline-none transition-all"
+              className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white placeholder-white/20 focus:border-accent/40 outline-none transition-all"
             />
           </div>
 
@@ -260,12 +260,12 @@ function PromotionModal({
                 onChange={(e) =>
                   setDiscountType(e.target.value as DiscountType)
                 }
-                className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-3 text-sm text-white focus:border-[#ccff00]/40 outline-none transition-all"
+                className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-3 text-sm text-white focus:border-accent/40 outline-none transition-all"
               >
-                <option className="bg-[#0f111a] text-white" value="percentage">
+                <option className="bg-surface text-white" value="percentage">
                   Percentage
                 </option>
-                <option className="bg-[#0f111a] text-white" value="fixed">
+                <option className="bg-surface text-white" value="fixed">
                   Fixed amount
                 </option>
               </select>
@@ -284,7 +284,7 @@ function PromotionModal({
                 placeholder={
                   discountType === "percentage" ? "e.g. 10" : "e.g. 200"
                 }
-                className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-3 text-sm text-white placeholder-white/20 focus:border-[#ccff00]/40 outline-none transition-all"
+                className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-3 text-sm text-white placeholder-white/20 focus:border-accent/40 outline-none transition-all"
               />
             </div>
           </div>
@@ -300,7 +300,7 @@ function PromotionModal({
                 value={minSubtotal}
                 onChange={(e) => setMinSubtotal(e.target.value)}
                 placeholder="Optional"
-                className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-3 text-sm text-white placeholder-white/20 focus:border-[#ccff00]/40 outline-none transition-all"
+                className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-3 text-sm text-white placeholder-white/20 focus:border-accent/40 outline-none transition-all"
               />
             </div>
             <div className="space-y-1">
@@ -313,7 +313,7 @@ function PromotionModal({
                 value={maxDiscount}
                 onChange={(e) => setMaxDiscount(e.target.value)}
                 placeholder="Optional cap"
-                className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-3 text-sm text-white placeholder-white/20 focus:border-[#ccff00]/40 outline-none transition-all"
+                className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-3 text-sm text-white placeholder-white/20 focus:border-accent/40 outline-none transition-all"
               />
             </div>
           </div>
@@ -329,7 +329,7 @@ function PromotionModal({
                 value={usageLimit}
                 onChange={(e) => setUsageLimit(e.target.value)}
                 placeholder="Unlimited"
-                className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-3 text-sm text-white placeholder-white/20 focus:border-[#ccff00]/40 outline-none transition-all"
+                className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-3 text-sm text-white placeholder-white/20 focus:border-accent/40 outline-none transition-all"
               />
             </div>
             <div className="space-y-1">
@@ -341,7 +341,7 @@ function PromotionModal({
                 inputMode="numeric"
                 value={perUserLimit}
                 onChange={(e) => setPerUserLimit(e.target.value)}
-                className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-3 text-sm text-white placeholder-white/20 focus:border-[#ccff00]/40 outline-none transition-all"
+                className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-3 text-sm text-white placeholder-white/20 focus:border-accent/40 outline-none transition-all"
               />
             </div>
           </div>
@@ -355,7 +355,7 @@ function PromotionModal({
                 type="date"
                 value={startDate}
                 onChange={(e) => setStartDate(e.target.value)}
-                className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:border-[#ccff00]/40 outline-none transition-all"
+                className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:border-accent/40 outline-none transition-all"
               />
             </div>
             <div className="space-y-1">
@@ -366,7 +366,7 @@ function PromotionModal({
                 type="date"
                 value={endDate}
                 onChange={(e) => setEndDate(e.target.value)}
-                className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:border-[#ccff00]/40 outline-none transition-all"
+                className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:border-accent/40 outline-none transition-all"
               />
             </div>
           </div>
@@ -376,7 +376,7 @@ function PromotionModal({
               type="checkbox"
               checked={autoApply}
               onChange={(e) => setAutoApply(e.target.checked)}
-              className="mt-0.5 accent-[#ccff00]"
+              className="mt-0.5 accent-accent"
             />
             <span>
               <span className="block text-sm font-semibold text-white">
@@ -400,7 +400,7 @@ function PromotionModal({
             <button
               type="submit"
               disabled={saving}
-              className="flex-1 py-3 rounded-xl bg-[#ccff00] text-black font-bold text-sm hover:opacity-90 transition-all disabled:opacity-50 active:scale-[0.98]"
+              className="flex-1 py-3 rounded-xl bg-accent text-black font-bold text-sm hover:opacity-90 transition-all disabled:opacity-50 active:scale-[0.98]"
             >
               {saving ? (
                 <span className="flex items-center justify-center gap-2">
@@ -573,7 +573,7 @@ function VoucherPanel({
             inputMode="numeric"
             value={count}
             onChange={(e) => setCount(e.target.value)}
-            className="w-20 bg-white/5 border border-white/10 rounded-lg px-2 py-1.5 text-xs text-white outline-none focus:border-[#ccff00]/40"
+            className="w-20 bg-white/5 border border-white/10 rounded-lg px-2 py-1.5 text-xs text-white outline-none focus:border-accent/40"
           />
         </div>
         <div className="space-y-1">
@@ -585,13 +585,13 @@ function VoucherPanel({
             value={prefix}
             onChange={(e) => setPrefix(e.target.value)}
             placeholder="e.g. SUMMER"
-            className="w-32 bg-white/5 border border-white/10 rounded-lg px-2 py-1.5 text-xs text-white outline-none focus:border-[#ccff00]/40"
+            className="w-32 bg-white/5 border border-white/10 rounded-lg px-2 py-1.5 text-xs text-white outline-none focus:border-accent/40"
           />
         </div>
         <button
           onClick={handleGenerate}
           disabled={generating}
-          className="px-3 py-1.5 rounded-lg bg-[#ccff00] text-black font-bold text-xs hover:opacity-90 disabled:opacity-50 flex items-center gap-1.5"
+          className="px-3 py-1.5 rounded-lg bg-accent text-black font-bold text-xs hover:opacity-90 disabled:opacity-50 flex items-center gap-1.5"
         >
           <Ticket size={13} />
           {generating ? "Generating…" : "Generate Codes"}
@@ -612,12 +612,12 @@ function VoucherPanel({
             onChange={(e) => setImportText(e.target.value)}
             placeholder="Paste your own codes — one per line, or comma-separated (e.g. from a printed flyer)"
             rows={3}
-            className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-xs text-white placeholder-white/20 outline-none focus:border-[#ccff00]/40 font-mono"
+            className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-xs text-white placeholder-white/20 outline-none focus:border-accent/40 font-mono"
           />
           <button
             onClick={handleImport}
             disabled={importing || !importText.trim()}
-            className="px-3 py-1.5 rounded-lg bg-[#ccff00] text-black font-bold text-xs hover:opacity-90 disabled:opacity-50"
+            className="px-3 py-1.5 rounded-lg bg-accent text-black font-bold text-xs hover:opacity-90 disabled:opacity-50"
           >
             {importing ? "Importing…" : "Import"}
           </button>
@@ -641,7 +641,7 @@ function VoucherPanel({
             >
               <span>{v.code}</span>
               {v._count && v._count.redemptions > 0 && (
-                <span className="text-[#ccff00]/70 no-underline">
+                <span className="text-accent/70 no-underline">
                   ×{v._count.redemptions}
                 </span>
               )}
@@ -753,7 +753,7 @@ export default function FoxerPromotionsClient({
   return (
     <RequireAuth>
       <div
-        className="bg-[#02040a] text-white min-h-screen font-body antialiased"
+        className="bg-canvas text-white min-h-screen font-body antialiased"
         style={{
           background:
             "radial-gradient(circle at 15% 50%, rgba(124,58,237,0.15) 0%, transparent 40%), radial-gradient(circle at 85% 30%, rgba(219,39,119,0.1) 0%, transparent 40%), radial-gradient(circle at 50% 0%, rgba(204,255,0,0.05) 0%, transparent 50%), #02040a",
@@ -767,7 +767,7 @@ export default function FoxerPromotionsClient({
             <div className="flex items-center justify-between gap-4 flex-wrap">
               <div>
                 <h1 className="text-2xl font-display font-bold text-white flex items-center gap-2">
-                  <span className="material-symbols-outlined text-[#ccff00]">
+                  <span className="material-symbols-outlined text-accent">
                     sell
                   </span>
                   My Promotions
@@ -779,7 +779,7 @@ export default function FoxerPromotionsClient({
               </div>
               <button
                 onClick={handleCreate}
-                className="px-5 py-2.5 rounded-xl bg-[#ccff00] text-black font-bold text-sm hover:opacity-90 transition-all flex items-center gap-2 shrink-0 active:scale-[0.97]"
+                className="px-5 py-2.5 rounded-xl bg-accent text-black font-bold text-sm hover:opacity-90 transition-all flex items-center gap-2 shrink-0 active:scale-[0.97]"
               >
                 <Plus size={16} />
                 <span>New Promotion</span>
@@ -788,7 +788,7 @@ export default function FoxerPromotionsClient({
 
             {loading ? (
               <div className="flex items-center justify-center py-20">
-                <span className="h-8 w-8 rounded-full border-2 border-white/20 border-t-[#ccff00] animate-spin" />
+                <span className="h-8 w-8 rounded-full border-2 border-white/20 border-t-accent animate-spin" />
               </div>
             ) : promotions.length === 0 ? (
               <Empty />
@@ -819,7 +819,7 @@ export default function FoxerPromotionsClient({
                               Deactivated
                             </span>
                           )}
-                          <span className="px-2 py-0.5 rounded-md text-[9px] font-bold uppercase tracking-wider bg-[#ccff00]/10 text-[#ccff00] border border-[#ccff00]/20">
+                          <span className="px-2 py-0.5 rounded-md text-[9px] font-bold uppercase tracking-wider bg-accent/10 text-accent border border-accent/20">
                             {describeDiscount(promo)}
                           </span>
                           {promo.autoApply ? (

@@ -91,7 +91,7 @@ export default function StripeDashboardClient() {
 
   return (
     <div
-      className="bg-[#02040a] text-white min-h-screen font-body antialiased"
+      className="bg-canvas text-white min-h-screen font-body antialiased"
       style={{
         background:
           "radial-gradient(circle at 15% 50%, rgba(124,58,237,0.15) 0%, transparent 40%), radial-gradient(circle at 85% 30%, rgba(219,39,119,0.1) 0%, transparent 40%), #02040a",
@@ -123,7 +123,7 @@ export default function StripeDashboardClient() {
 
         {loading && (
           <div className="flex items-center justify-center py-20">
-            <Loader2 className="animate-spin text-[#ccff00]" size={32} />
+            <Loader2 className="animate-spin text-accent" size={32} />
           </div>
         )}
 
@@ -146,7 +146,7 @@ export default function StripeDashboardClient() {
                   onClick={() => setActiveTab(tab.id)}
                   className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition ${
                     activeTab === tab.id
-                      ? "bg-[#ccff00] text-black"
+                      ? "bg-accent text-black"
                       : "text-white/50 hover:text-white"
                   }`}
                 >

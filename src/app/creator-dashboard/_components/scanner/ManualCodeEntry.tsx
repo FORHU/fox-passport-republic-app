@@ -18,7 +18,7 @@ export function ManualCodeEntry({
   return (
     <form onSubmit={onSubmit} className="space-y-4 py-2">
       <div className="p-4 rounded-2xl bg-white/5 border border-white/5 space-y-2">
-        <div className="flex items-center gap-2 text-[#ccff00] text-xs font-bold">
+        <div className="flex items-center gap-2 text-accent text-xs font-bold">
           <span className="material-symbols-outlined text-[16px]">info</span>
           <span>Testing without a mobile device?</span>
         </div>
@@ -48,7 +48,7 @@ export function ManualCodeEntry({
             value={manualCode}
             onChange={(e) => setManualCode(e.target.value)}
             placeholder="e.g. TKT-A1B2C3D4 or BKG-123456"
-            className="w-full bg-white/5 border border-white/10 focus:border-[#ccff00] rounded-2xl pl-10 pr-4 py-3 text-sm text-white font-mono placeholder:text-white/30 focus:outline-none transition-colors"
+            className="w-full bg-white/5 border border-white/10 focus:border-accent rounded-2xl pl-10 pr-4 py-3 text-sm text-white font-mono placeholder:text-white/30 focus:outline-none transition-colors"
             autoFocus
           />
         </div>
@@ -57,7 +57,7 @@ export function ManualCodeEntry({
       <button
         type="submit"
         disabled={!manualCode.trim() || isProcessing}
-        className="w-full py-3.5 rounded-2xl bg-[#ccff00] hover:bg-[#b8e600] text-black font-black text-sm flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(204,255,0,0.3)] transition-all disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
+        className="w-full py-3.5 rounded-2xl bg-accent hover:bg-accent-hover text-black font-black text-sm flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(204,255,0,0.3)] transition-all disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
       >
         <span className="material-symbols-outlined text-[18px]">
           how_to_reg

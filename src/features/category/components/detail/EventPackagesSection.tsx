@@ -107,7 +107,7 @@ export const EventPackagesSection: React.FC<EventPackagesSectionProps> = ({
             <Link
               href={`/event/${template.id}`}
               key={template.id}
-              className="group bg-white/5 border border-white/5 rounded-[2rem] overflow-hidden hover:border-white/20 hover:-translate-y-1 hover:shadow-2xl hover:shadow-[#ccff00]/5 transition-all duration-300 block"
+              className="group bg-white/5 border border-white/5 rounded-[2rem] overflow-hidden hover:border-white/20 hover:-translate-y-1 hover:shadow-2xl hover:shadow-accent/5 transition-all duration-300 block"
             >
               <div className="relative h-52 overflow-hidden">
                 <Image
@@ -119,13 +119,13 @@ export const EventPackagesSection: React.FC<EventPackagesSectionProps> = ({
                 />
                 <div className="absolute inset-0 bg-linear-to-t from-black/60 to-transparent" />
                 <FavoriteHeart templateId={String(template.id)} />
-                <div className="absolute top-4 right-4 bg-black/60 backdrop-blur-md px-3 py-1 rounded-full text-xs font-bold text-[#ccff00] capitalize">
+                <div className="absolute top-4 right-4 bg-black/60 backdrop-blur-md px-3 py-1 rounded-full text-xs font-bold text-accent capitalize">
                   {template.category}
                 </div>
               </div>
 
               <div className="p-6">
-                <h4 className="font-bold text-white text-lg mb-2 group-hover:text-[#ccff00] transition-colors line-clamp-1">
+                <h4 className="font-bold text-white text-lg mb-2 group-hover:text-accent transition-colors line-clamp-1">
                   {template.name}
                 </h4>
                 <p className="text-gray-400 text-sm mb-4 line-clamp-2">
@@ -149,7 +149,7 @@ export const EventPackagesSection: React.FC<EventPackagesSectionProps> = ({
                   <span className="text-xs text-gray-500">
                     by {template.owner?.name ?? "Event Foxer"}
                   </span>
-                  <span className="h-8 w-8 rounded-full bg-white/10 flex items-center justify-center text-white group-hover:bg-[#ccff00] group-hover:text-black transition-colors">
+                  <span className="h-8 w-8 rounded-full bg-white/10 flex items-center justify-center text-white group-hover:bg-accent group-hover:text-black transition-colors">
                     <ArrowRight className="w-4 h-4" />
                   </span>
                 </div>

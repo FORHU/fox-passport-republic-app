@@ -113,7 +113,7 @@ export function PerformersSection({
             return (
               <div
                 key={sv.id}
-                className={`relative group bg-[#0e111a]/80 border border-amber-500/15 rounded-2xl overflow-hidden hover:border-amber-400/50 hover:shadow-[0_0_25px_rgba(245,158,11,0.15)] transition-all duration-300 flex flex-col ${
+                className={`relative group bg-surface/80 border border-amber-500/15 rounded-2xl overflow-hidden hover:border-amber-400/50 hover:shadow-[0_0_25px_rgba(245,158,11,0.15)] transition-all duration-300 flex flex-col ${
                   onEdit ? "cursor-pointer" : ""
                 }`}
                 onClick={() => onEdit?.(sv.id)}
@@ -140,7 +140,7 @@ export function PerformersSection({
                       </span>
                     </div>
                   )}
-                  <div className="absolute inset-0 bg-linear-to-t from-[#0e111a] via-transparent to-black/40 pointer-events-none" />
+                  <div className="absolute inset-0 bg-linear-to-t from-surface via-transparent to-black/40 pointer-events-none" />
 
                   {/* Category Pill */}
                   <div className="absolute top-3 left-3 z-10 flex items-center gap-1.5 px-3 py-1 rounded-full bg-black/70 backdrop-blur-md border border-amber-400/30 text-amber-300 text-xs font-bold uppercase tracking-wider shadow-lg">

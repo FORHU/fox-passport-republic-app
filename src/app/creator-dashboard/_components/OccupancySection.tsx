@@ -25,12 +25,12 @@ export function PendingRequests() {
   const totalPending = pendingAll.length;
 
   return (
-    <div className="lg:col-span-12 bg-[#0f111a]/80 backdrop-blur border border-white/5 rounded-[2rem] p-6 flex flex-col">
+    <div className="lg:col-span-12 bg-surface/80 backdrop-blur border border-white/5 rounded-[2rem] p-6 flex flex-col">
       <div className="flex justify-between items-center mb-4">
         <div className="flex items-center gap-1 bg-white/5 p-1 rounded-full border border-white/10">
           <button
             onClick={() => setTab("pending")}
-            className={`px-3 py-1 rounded-full text-xs font-bold transition-all flex items-center gap-1.5 ${tab === "pending" ? "bg-[#ccff00] text-black" : "text-white/40 hover:text-white"}`}
+            className={`px-3 py-1 rounded-full text-xs font-bold transition-all flex items-center gap-1.5 ${tab === "pending" ? "bg-accent text-black" : "text-white/40 hover:text-white"}`}
           >
             Pending
             {totalPending > 0 && (
@@ -41,7 +41,7 @@ export function PendingRequests() {
           </button>
           <button
             onClick={() => setTab("confirmed")}
-            className={`px-3 py-1 rounded-full text-xs font-bold transition-all ${tab === "confirmed" ? "bg-[#ccff00] text-black" : "text-white/40 hover:text-white"}`}
+            className={`px-3 py-1 rounded-full text-xs font-bold transition-all ${tab === "confirmed" ? "bg-accent text-black" : "text-white/40 hover:text-white"}`}
           >
             Confirmed
           </button>
@@ -106,7 +106,7 @@ export function PendingRequests() {
                     })}
                   </p>
                   {req.template && (
-                    <p className="text-[10px] text-[#ccff00]/60 truncate">
+                    <p className="text-[10px] text-accent/60 truncate">
                       {req.template.name}
                     </p>
                   )}

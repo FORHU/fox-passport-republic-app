@@ -216,7 +216,7 @@ export default function VenueCheckoutClient() {
                     src={user.imgId}
                   />
                 ) : (
-                  <div className="h-full w-full bg-[#ccff00] flex items-center justify-center">
+                  <div className="h-full w-full bg-accent flex items-center justify-center">
                     <span className="text-black text-sm font-bold">
                       {user?.name?.charAt(0).toUpperCase() ||
                         user?.email?.charAt(0).toUpperCase() ||
@@ -431,7 +431,7 @@ export default function VenueCheckoutClient() {
                           type="button"
                           disabled={notReady}
                           onClick={() => formRef.current?.submit()}
-                          className="w-full rounded-2xl bg-[#ccff00] py-4 px-6 text-black font-bold text-lg transition-all flex items-center justify-center gap-2
+                          className="w-full rounded-2xl bg-accent py-4 px-6 text-black font-bold text-lg transition-all flex items-center justify-center gap-2
                                      disabled:opacity-40 disabled:cursor-not-allowed disabled:shadow-none
                                      enabled:hover:shadow-[0_0_30px_rgba(204,255,0,0.4)] enabled:active:scale-95"
                         >
@@ -465,7 +465,7 @@ export default function VenueCheckoutClient() {
                     <span className="material-symbols-outlined text-[14px] text-green-500">
                       lock
                     </span>
-                    Encrypted & Secure Â· Powered by Stripe
+                    Encrypted & Secure · Powered by Stripe
                   </div>
 
                   {paymentSuccess && (
@@ -665,24 +665,24 @@ export default function VenueCheckoutClient() {
               </span>
             </div>
             <p className="text-xs text-gray-500 font-medium">
-              Â© 2024 FoxPassport Inc. All rights reserved.
+              © {new Date().getFullYear()} FoxPassport Inc. All rights reserved.
             </p>
             <div className="flex gap-6">
               <a
                 className="text-xs text-gray-500 hover:text-white font-medium transition-colors"
-                href="#"
+                href="/privacy"
               >
                 Privacy
               </a>
               <a
                 className="text-xs text-gray-500 hover:text-white font-medium transition-colors"
-                href="#"
+                href="/terms"
               >
                 Terms
               </a>
               <a
                 className="text-xs text-gray-500 hover:text-white font-medium transition-colors"
-                href="#"
+                href="/privacy"
               >
                 Cookies
               </a>

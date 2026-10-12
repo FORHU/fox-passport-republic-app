@@ -28,7 +28,7 @@ export function EventGallery({
   };
 
   return (
-    <div className="rounded-[2rem] overflow-hidden border border-white/10 bg-[#0f111a] p-8">
+    <div className="rounded-[2rem] overflow-hidden border border-white/10 bg-surface p-8">
       <input
         type="file"
         ref={fileInputRef}

@@ -8,7 +8,7 @@ export const dynamic = "force-dynamic";
 
 export default function RepublicInvestmentsMapPage() {
   return (
-    <div className="min-h-screen bg-[#09090b] text-white pt-20 pb-36 px-3 sm:px-6 selection:bg-amber-400 selection:text-black">
+    <div className="min-h-screen bg-canvas text-white pt-20 pb-36 px-3 sm:px-6 selection:bg-amber-400 selection:text-black">
       {/* Full-width docked header */}
       <RepublicHeader />
 

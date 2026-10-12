@@ -86,7 +86,7 @@ export function VerificationClient() {
   return (
     <>
       <LandingHeader />
-      <main className="min-h-screen bg-[#050608] px-4 pt-28 pb-20">
+      <main className="min-h-screen bg-canvas px-4 pt-28 pb-20">
         <div className="mx-auto max-w-2xl space-y-6">
           <div>
             <h1 className="text-3xl font-display font-bold text-white">
@@ -98,7 +98,7 @@ export function VerificationClient() {
           </div>
 
           {/* Email — the only thing booking requires */}
-          <section className="rounded-[1.5rem] border border-white/10 bg-[#0f111a] p-6">
+          <section className="rounded-[1.5rem] border border-white/10 bg-surface p-6">
             <div className="flex items-start justify-between gap-4">
               <div>
                 <h2 className="text-lg font-bold text-white">Email address</h2>
@@ -199,7 +199,7 @@ export function VerificationClient() {
           <IdentitySection />
 
           {/* Documents — only for role applications */}
-          <section className="rounded-[1.5rem] border border-white/10 bg-[#0f111a] p-6">
+          <section className="rounded-[1.5rem] border border-white/10 bg-surface p-6">
             <h2 className="text-lg font-bold text-white">Documents</h2>
             <p className="text-sm text-white/50 mt-1">
               Only needed to offer something on FoxPassport — listing a venue,

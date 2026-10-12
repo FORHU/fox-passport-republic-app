@@ -49,7 +49,7 @@ export function PartnershipsOverview({
   ];
 
   return (
-    <section className="rounded-[2rem] border border-white/10 bg-[#0f111a]/60 p-6 sm:p-8">
+    <section className="rounded-[2rem] border border-white/10 bg-surface/60 p-6 sm:p-8">
       <div className="flex flex-wrap items-start justify-between gap-4 mb-6">
         <div>
           <h2 className="text-xl font-display font-bold text-white flex items-center gap-2">

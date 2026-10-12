@@ -71,10 +71,12 @@ export async function fetchFoxers(
   page = 1,
   roleType?: string,
   q?: string,
+  city?: string,
 ): Promise<Foxer[]> {
   const params: Record<string, any> = { limit, page };
   if (roleType) params.roleType = roleType;
   if (q) params.q = q;
+  if (city) params.city = city;
   const res = await api.get("/users/foxers", { params });
   return res.data?.data ?? [];
 }

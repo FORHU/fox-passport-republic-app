@@ -95,7 +95,7 @@ export function VenueAffiliatesSection({
   };
 
   return (
-    <div className="rounded-[2rem] border-2 border-dashed border-white/10 bg-[#0f111a]/30 p-8">
+    <div className="rounded-[2rem] border-2 border-dashed border-white/10 bg-surface/30 p-8">
       <div className="flex justify-between items-center mb-6">
         <div>
           <h3 className="text-lg font-bold text-white flex items-center gap-2">
@@ -161,7 +161,7 @@ export function VenueAffiliatesSection({
             return (
               <div
                 key={aff.id}
-                className="bg-[#1a1d2d] border border-white/5 rounded-xl p-3 flex items-center justify-between gap-3"
+                className="bg-surface-raised border border-white/5 rounded-xl p-3 flex items-center justify-between gap-3"
               >
                 <div className="min-w-0">
                   <p className="font-bold text-white text-sm truncate">

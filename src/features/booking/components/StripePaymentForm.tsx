@@ -121,7 +121,7 @@ const StripePaymentForm = forwardRef<
             type="button"
             disabled={!stripe || !elements || isProcessing}
             onClick={handleSubmit}
-            className="w-full rounded-2xl bg-[#ccff00] py-4 px-6 text-black font-bold text-lg hover:shadow-[0_0_30px_rgba(204,255,0,0.4)] transition-all active:scale-95 flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:shadow-none"
+            className="w-full rounded-2xl bg-accent py-4 px-6 text-black font-bold text-lg hover:shadow-[0_0_30px_rgba(204,255,0,0.4)] transition-all active:scale-95 flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:shadow-none"
           >
             {isProcessing ? (
               <>

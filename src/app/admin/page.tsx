@@ -88,7 +88,7 @@ export default async function AdminDashboard() {
 
               <footer className="mt-auto border-t border-white/5 py-8 px-4 sm:px-8 text-center text-xs text-gray-600">
                 <p>
-                  &copy; 2024 FoxPassport Admin Dashboard. All rights reserved.
+                  © {new Date().getFullYear()} FoxPassport Admin Dashboard. All rights reserved.
                 </p>
               </footer>
             </main>

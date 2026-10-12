@@ -9,7 +9,7 @@ export default function CreateVenueWizard() {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
-      <div className="relative bg-[#1a1a24] rounded-2xl shadow-2xl border border-white/10 w-full max-w-2xl mx-4 p-8">
+      <div className="relative bg-surface-raised rounded-2xl shadow-2xl border border-white/10 w-full max-w-2xl mx-4 p-8">
         {/* Close Button */}
         <button
           onClick={closeModal}
@@ -33,7 +33,7 @@ export default function CreateVenueWizard() {
         <div className="flex flex-col items-center gap-4">
           <a
             href="/venue-foxer/create-venue"
-            className="w-full py-4 bg-[#ccff00] text-black font-bold rounded-xl hover:brightness-110 transition-all text-center"
+            className="w-full py-4 bg-accent text-black font-bold rounded-xl hover:brightness-110 transition-all text-center"
           >
             Open Venue Builder
           </a>

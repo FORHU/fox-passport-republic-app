@@ -59,7 +59,7 @@ export const OpenSlotsBoard: React.FC = () => {
             <div className="mt-4 pt-4 border-t border-white/10">
               <button
                 onClick={() => setSelectedEventId(evt.id)}
-                className="w-full px-4 py-2 rounded-full bg-white/10 hover:bg-[#ccff00] hover:text-black transition-colors font-medium text-white"
+                className="w-full px-4 py-2 rounded-full bg-white/10 hover:bg-accent hover:text-black transition-colors font-medium text-white"
               >
                 Apply for Slot
               </button>

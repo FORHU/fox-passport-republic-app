@@ -220,13 +220,13 @@ export default function CreateInvestmentWizard() {
   };
 
   return (
-    <div className="min-h-screen bg-[#09090b] text-white pb-28 selection:bg-amber-400 selection:text-black">
+    <div className="min-h-screen bg-canvas text-white pb-28 selection:bg-amber-400 selection:text-black">
       {/* Sticky flow header — same structure as the Venue Studio header used
           in /mayor/create-venue (back button, tool name + role badge, draft
           status), so the Mayor and Partner creation flows read as the same
           tool instead of one having a header and the other just blank
           padding at the top. */}
-      <header className="h-16 border-b border-white/5 flex items-center justify-between px-4 sm:px-6 bg-[#0f111a] sticky top-0 z-20">
+      <header className="h-16 border-b border-white/5 flex items-center justify-between px-4 sm:px-6 bg-surface sticky top-0 z-20">
         <div className="flex items-center gap-4 min-w-0">
           <button
             type="button"

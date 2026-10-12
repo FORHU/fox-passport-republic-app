@@ -31,7 +31,7 @@ export interface MonthItem {
 export function getBgColor(type: CalendarBooking["type"]): string {
   switch (type) {
     case "event":
-      return "bg-[#ccff00] text-black";
+      return "bg-accent text-black";
     case "venue":
       return "bg-pink-500 text-white";
     case "inventory":
@@ -107,12 +107,14 @@ function toBooking(entry: CalendarEntry): CalendarBooking {
   };
 }
 
-/** Two months back to a year ahead — what the month widgets page through. */
+/** Two months back to ten ahead — what the month widgets page through. It
+ * must stay inside the API's 400-day limit on /calendar (MAX_RANGE_DAYS);
+ * the old +13 months asked for ~457 days and every widget got a 400. */
 function defaultRange() {
   const now = new Date();
   return {
     from: new Date(now.getFullYear(), now.getMonth() - 2, 1),
-    to: new Date(now.getFullYear(), now.getMonth() + 13, 1),
+    to: new Date(now.getFullYear(), now.getMonth() + 11, 1),
   };
 }
 

@@ -66,7 +66,7 @@ const AdminAuthGuard: React.FC<AdminAuthGuardProps> = ({ children }) => {
       <div className="min-h-screen bg-background bg-gradient-dark flex items-center justify-center p-4">
         {/* ... login prompt UI ... */}
         <div className="glass-card rounded-[2rem] p-10 max-w-md w-full text-center border border-white/10 relative overflow-hidden">
-          <div className="relative z-10 w-24 h-24 bg-[#ccff00]/30 rounded-full flex items-center justify-center mx-auto mb-8 border-2 border-[#ccff00] shadow-[0_0_60px_#ccff00,0_0_100px_rgba(204,255,0,0.5)]">
+          <div className="relative z-10 w-24 h-24 bg-accent/30 rounded-full flex items-center justify-center mx-auto mb-8 border-2 border-accent shadow-[0_0_60px_#ccff00,0_0_100px_rgba(204,255,0,0.5)]">
             <span className="material-symbols-outlined text-[48px] text-black drop-shadow-[0_0_15px_#ccff00]">
               lock
             </span>

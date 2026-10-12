@@ -20,7 +20,7 @@ export default function MobilePassportHeader({
   return (
     <div
       style={{
-        background: "#050608",
+        background: "var(--canvas)",
         position: "relative",
         overflow: "hidden",
         paddingBottom: 24,
@@ -51,22 +51,24 @@ export default function MobilePassportHeader({
             fontWeight: 700,
             letterSpacing: "0.12em",
             textTransform: "uppercase",
-            color: "rgba(255,255,255,0.35)",
+            color: "color-mix(in srgb, var(--color-white) 35%, transparent)",
           }}
         >
           Passport
         </p>
         <button
           style={{
-            background: "rgba(255,255,255,0.06)",
-            border: "1px solid rgba(255,255,255,0.08)",
+            background:
+              "color-mix(in srgb, var(--color-white) 6%, transparent)",
+            border:
+              "1px solid color-mix(in srgb, var(--color-white) 8%, transparent)",
             borderRadius: "50%",
             width: 34,
             height: 34,
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
-            color: "rgba(255,255,255,0.5)",
+            color: "color-mix(in srgb, var(--color-white) 50%, transparent)",
           }}
         >
           <span className="material-symbols-outlined" style={{ fontSize: 18 }}>
@@ -79,7 +81,11 @@ export default function MobilePassportHeader({
       <div style={{ padding: "0 20px 20px" }}>
         <PassportBookletCard
           user={user}
-          citizenNo={user?.citizenId ?? undefined}
+          citizenNo={
+            user?.id
+              ? `FP-${String(user.id).slice(0, 8).toUpperCase()}`
+              : undefined
+          }
         />
       </div>
 
@@ -90,7 +96,7 @@ export default function MobilePassportHeader({
           fontWeight: 700,
           letterSpacing: "0.12em",
           textTransform: "uppercase",
-          color: "rgba(255,255,255,0.35)",
+          color: "color-mix(in srgb, var(--color-white) 35%, transparent)",
           padding: "0 20px 12px",
         }}
       >
@@ -161,7 +167,7 @@ export default function MobilePassportHeader({
             fontWeight: 700,
             letterSpacing: "0.12em",
             textTransform: "uppercase",
-            color: "rgba(255,255,255,0.35)",
+            color: "color-mix(in srgb, var(--color-white) 35%, transparent)",
             marginBottom: 10,
           }}
         >
@@ -169,8 +175,10 @@ export default function MobilePassportHeader({
         </p>
         <div
           style={{
-            background: "rgba(255,255,255,0.04)",
-            border: "1px solid rgba(255,255,255,0.07)",
+            background:
+              "color-mix(in srgb, var(--color-white) 4%, transparent)",
+            border:
+              "1px solid color-mix(in srgb, var(--color-white) 7%, transparent)",
             borderRadius: 18,
             padding: 14,
           }}
@@ -182,15 +190,27 @@ export default function MobilePassportHeader({
             <div className="flex items-center gap-2">
               <span
                 className="material-symbols-outlined"
-                style={{ fontSize: 20, color: "#ccff00" }}
+                style={{ fontSize: 20, color: "var(--accent-text)" }}
               >
                 nights_stay
               </span>
-              <span style={{ fontSize: 13, fontWeight: 600, color: "#fff" }}>
+              <span
+                style={{
+                  fontSize: 13,
+                  fontWeight: 600,
+                  color: "var(--color-white)",
+                }}
+              >
                 Night Owl
               </span>
             </div>
-            <span style={{ fontSize: 11, color: "rgba(255,255,255,0.4)" }}>
+            <span
+              style={{
+                fontSize: 11,
+                color:
+                  "color-mix(in srgb, var(--color-white) 40%, transparent)",
+              }}
+            >
               3 / 5 events
             </span>
           </div>
@@ -199,7 +219,8 @@ export default function MobilePassportHeader({
             style={{
               height: 5,
               borderRadius: 99,
-              background: "rgba(255,255,255,0.08)",
+              background:
+                "color-mix(in srgb, var(--color-white) 8%, transparent)",
               overflow: "hidden",
             }}
           >

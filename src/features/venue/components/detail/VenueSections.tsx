@@ -22,7 +22,7 @@ export function CuratorSection({ host }: CuratorSectionProps) {
             className="w-16 h-16 rounded-full object-cover border-2 border-white/10"
             alt={host.name}
           />
-          <div className="absolute -bottom-1 -right-1 bg-accent text-black rounded-full p-1 border-4 border-[#0f111a] flex items-center justify-center shadow-sm">
+          <div className="absolute -bottom-1 -right-1 bg-accent text-black rounded-full p-1 border-4 border-surface flex items-center justify-center shadow-sm">
             <span className="material-symbols-outlined text-[14px]">
               verified
             </span>

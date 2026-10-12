@@ -32,7 +32,7 @@ export function RevenueProjector({
   onPreview,
 }: RevenueProjectorProps) {
   return (
-    <aside className="w-full xl:w-80 shrink-0 border-l border-white/5 bg-[#0f111a] flex flex-col shadow-2xl z-10">
+    <aside className="w-full xl:w-80 shrink-0 border-l border-white/5 bg-surface flex flex-col shadow-2xl z-10">
       <div className="p-6 border-b border-white/5">
         <h3 className="font-display font-bold text-white text-lg">
           Revenue Projector
@@ -42,7 +42,7 @@ export function RevenueProjector({
 
       <div className="flex-1 overflow-y-auto p-6 space-y-8">
         {/* Base Pricing */}
-        <div className="bg-[#161b26] rounded-xl p-5 border border-white/5">
+        <div className="bg-surface-raised rounded-xl p-5 border border-white/5">
           <h4 className="text-[10px] font-bold text-white uppercase tracking-wider mb-4 flex items-center gap-2">
             <span className="material-symbols-outlined text-accent text-[14px]">
               payments
@@ -89,7 +89,7 @@ export function RevenueProjector({
         </div>
 
         {/* Over-Capacity Requests */}
-        <div className="bg-[#161b26] rounded-xl p-5 border border-white/5">
+        <div className="bg-surface-raised rounded-xl p-5 border border-white/5">
           <h4 className="text-[10px] font-bold text-white uppercase tracking-wider mb-4 flex items-center gap-2">
             <span className="material-symbols-outlined text-accent text-[14px]">
               groups
@@ -153,7 +153,7 @@ export function RevenueProjector({
         </div>
       </div>
 
-      <div className="p-6 border-t border-white/5 bg-[#0f111a]">
+      <div className="p-6 border-t border-white/5 bg-surface">
         <button
           onClick={onPreview}
           className="w-full py-3 rounded-xl border border-white/10 hover:bg-white hover:text-black transition-all text-sm font-bold text-white flex items-center justify-center gap-2"

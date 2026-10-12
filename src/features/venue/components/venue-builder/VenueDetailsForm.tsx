@@ -121,7 +121,7 @@ export function VenueDetailsForm({
       )}
 
       {/* Form */}
-      <div className="relative rounded-[2rem] overflow-hidden border border-white/10 bg-[#0f111a] p-8">
+      <div className="relative rounded-[2rem] overflow-hidden border border-white/10 bg-surface p-8">
         <div className="space-y-8">
           <div className="space-y-6">
             {/* Venue Name */}

@@ -87,7 +87,7 @@ export default function CancelBookingModal({
       className="fixed inset-0 z-[999] flex items-center justify-center bg-black/70 backdrop-blur-sm p-4"
       onClick={handleBackdropClick}
     >
-      <div className="bg-[#0f111a] border border-white/10 rounded-2xl p-8 max-w-lg w-full mx-4 space-y-5 relative max-h-[90vh] overflow-y-auto">
+      <div className="bg-surface border border-white/10 rounded-2xl p-8 max-w-lg w-full mx-4 space-y-5 relative max-h-[90vh] overflow-y-auto">
         <button
           onClick={onClose}
           disabled={state.phase === "confirming"}

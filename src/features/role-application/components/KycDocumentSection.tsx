@@ -14,7 +14,11 @@ export interface KycDocument {
 // The business-verification set every Foxer role has always asked for.
 export const FOXER_KYC_DOCUMENTS: KycDocument[] = [
   { field: "validId1FileId", label: "Primary Valid ID *" },
-  { field: "nbiFileId", label: "NBI Clearance (PDF) *", accept: "application/pdf" },
+  {
+    field: "nbiFileId",
+    label: "NBI Clearance (PDF) *",
+    accept: "application/pdf",
+  },
   { field: "tinIdFileId", label: "TIN ID / Certificate *" },
   { field: "birPermitFileId", label: "BIR 2303 / Permit *" },
   { field: "selfieFileId", label: "Verification Selfie *" },
@@ -36,6 +40,8 @@ interface KycDocumentSectionProps {
   title?: string;
   description?: string;
   documents?: KycDocument[];
+  /** Drop the heading and top rule — for a wizard step that has its own. */
+  compact?: boolean;
 }
 
 interface FileSignature {
@@ -48,6 +54,7 @@ export function KycDocumentSection({
   title = "Identity Verification",
   description = "Please provide the following documents to verify your identity and business status.",
   documents = FOXER_KYC_DOCUMENTS,
+  compact = false,
 }: KycDocumentSectionProps) {
   // Tracks the file picked for each slot so the same document can't be reused
   // across two different required uploads (e.g. ID photo also submitted as the selfie).
@@ -82,16 +89,24 @@ export function KycDocumentSection({
   };
 
   return (
-    <div className="space-y-6 pt-6 border-t border-white/5">
-      <div className="flex items-start gap-4 mb-4">
-        <div className="w-12 h-12 rounded-xl bg-accent/20 flex items-center justify-center text-accent shrink-0">
-          <ShieldCheck size={24} />
+    <div
+      className={
+        compact ? "space-y-6" : "space-y-6 pt-6 border-t border-white/5"
+      }
+    >
+      {!compact && (
+        <div className="flex items-start gap-4 mb-4">
+          <div className="w-12 h-12 rounded-xl bg-accent/20 flex items-center justify-center text-accent shrink-0">
+            <ShieldCheck size={24} />
+          </div>
+          <div>
+            <h3 className="text-xl font-display font-bold text-white">
+              {title}
+            </h3>
+            <p className="text-sm text-white/50">{description}</p>
+          </div>
         </div>
-        <div>
-          <h3 className="text-xl font-display font-bold text-white">{title}</h3>
-          <p className="text-sm text-white/50">{description}</p>
-        </div>
-      </div>
+      )}
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {documents.map(({ field, label, accept }, i) => (

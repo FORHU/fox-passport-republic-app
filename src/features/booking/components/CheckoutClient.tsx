@@ -178,7 +178,7 @@ export default function CheckoutClient() {
                     src={user.imgId}
                   />
                 ) : (
-                  <div className="h-full w-full bg-[#ccff00] flex items-center justify-center">
+                  <div className="h-full w-full bg-accent flex items-center justify-center">
                     <span className="text-black text-sm font-bold">
                       {user?.name?.charAt(0).toUpperCase() ||
                         user?.email?.charAt(0).toUpperCase() ||
@@ -490,24 +490,24 @@ export default function CheckoutClient() {
               </span>
             </div>
             <p className="text-xs text-gray-500 font-medium">
-              © 2024 FoxPassport Inc. All rights reserved.
+              © {new Date().getFullYear()} FoxPassport Inc. All rights reserved.
             </p>
             <div className="flex gap-6">
               <a
                 className="text-xs text-gray-500 hover:text-white font-medium transition-colors"
-                href="#"
+                href="/privacy"
               >
                 Privacy
               </a>
               <a
                 className="text-xs text-gray-500 hover:text-white font-medium transition-colors"
-                href="#"
+                href="/terms"
               >
                 Terms
               </a>
               <a
                 className="text-xs text-gray-500 hover:text-white font-medium transition-colors"
-                href="#"
+                href="/privacy"
               >
                 Cookies
               </a>

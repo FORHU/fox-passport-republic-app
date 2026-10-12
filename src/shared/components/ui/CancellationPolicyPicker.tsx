@@ -82,7 +82,7 @@ export default function CancellationPolicyPicker({
           maxHeight: "60vh",
           overflowY: "auto",
         }}
-        className="bg-[#0f111a] border border-white/10 rounded-xl shadow-2xl shadow-black/50"
+        className="bg-surface border border-white/10 rounded-xl shadow-2xl shadow-black/50"
       >
         {policies.length === 0 ? (
           <div className="p-4 text-center text-white/20 text-xs">
@@ -138,7 +138,7 @@ export default function CancellationPolicyPicker({
                           <span
                             className={`text-[10px] font-bold ${
                               rule.refundPercent === 100
-                                ? "text-[#ccff00]"
+                                ? "text-accent"
                                 : rule.refundPercent > 0
                                   ? "text-yellow-400"
                                   : "text-red-400"

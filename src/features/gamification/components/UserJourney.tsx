@@ -12,7 +12,7 @@ interface UserJourneyProps {
 const MILESTONES = [
   { label: "Traveler", level: 1, color: "#10b981", pct: 0 },
   { label: "Citizen", level: 10, color: "#bef264", pct: 50 },
-  { label: "Diplomat", level: 20, color: "#ffffff", pct: 100 },
+  { label: "Diplomat", level: 20, color: "var(--color-white)", pct: 100 },
 ];
 
 export const UserJourney: React.FC<UserJourneyProps> = ({
@@ -154,7 +154,7 @@ export const UserJourney: React.FC<UserJourneyProps> = ({
                       <div className="flex flex-col items-center">
                         <span
                           style={{
-                            color: reached ? m.color : "rgba(255,255,255,0.4)",
+                            color: reached ? m.color : "color-mix(in srgb, var(--color-white) 40%, transparent)",
                           }}
                         >
                           {m.label}

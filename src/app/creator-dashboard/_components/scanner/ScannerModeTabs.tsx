@@ -19,7 +19,7 @@ export function ScannerModeTabs({
         onClick={() => onSelectTab("manual")}
         className={`py-2 px-1 sm:px-3 rounded-xl text-[11px] sm:text-xs font-bold transition-all flex items-center justify-center gap-1 sm:gap-1.5 cursor-pointer ${
           activeTab === "manual"
-            ? "bg-[#ccff00] text-black shadow-md"
+            ? "bg-accent text-black shadow-md"
             : "text-white/60 hover:text-white"
         }`}
       >
@@ -33,7 +33,7 @@ export function ScannerModeTabs({
         onClick={() => onSelectTab("upload")}
         className={`py-2 px-1 sm:px-3 rounded-xl text-[11px] sm:text-xs font-bold transition-all flex items-center justify-center gap-1 sm:gap-1.5 cursor-pointer ${
           activeTab === "upload"
-            ? "bg-[#ccff00] text-black shadow-md"
+            ? "bg-accent text-black shadow-md"
             : "text-white/60 hover:text-white"
         }`}
       >
@@ -47,7 +47,7 @@ export function ScannerModeTabs({
         onClick={() => onSelectTab("camera")}
         className={`py-2 px-1 sm:px-3 rounded-xl text-[11px] sm:text-xs font-bold transition-all flex items-center justify-center gap-1 sm:gap-1.5 cursor-pointer ${
           activeTab === "camera"
-            ? "bg-[#ccff00] text-black shadow-md"
+            ? "bg-accent text-black shadow-md"
             : "text-white/60 hover:text-white"
         }`}
       >

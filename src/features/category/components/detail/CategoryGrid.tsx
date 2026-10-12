@@ -54,7 +54,7 @@ export const CategoryGrid: React.FC<CategoryGridProps> = ({ category }) => {
             </div>
 
             <div className="relative z-10 mt-auto">
-              <h3 className="text-2xl font-bold text-white mb-3 group-hover:text-[#ccff00] transition-colors drop-shadow-md">
+              <h3 className="text-2xl font-bold text-white mb-3 group-hover:text-accent transition-colors drop-shadow-md">
                 {sub.name}
               </h3>
               <div className="flex items-center gap-2 text-sm text-gray-400 group-hover:text-white transition-colors font-medium">

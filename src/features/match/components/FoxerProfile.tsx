@@ -275,29 +275,32 @@ const FoxerProfile: React.FC = () => {
                 </div>
               </motion.div>
 
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.1 }}
-                className="glass-card rounded-[2.5rem] p-8 space-y-6"
-              >
-                <h3 className="text-lg font-bold flex items-center gap-2">
-                  <span className="material-symbols-outlined text-accent">
-                    inventory_2
-                  </span>
-                  {isHost ? "Event Categories" : "Skills & Services"}
-                </h3>
-                <div className="flex flex-wrap gap-2">
-                  {chipLabels.map((label) => (
-                    <span
-                      key={label}
-                      className="px-3 py-1 bg-white/5 border border-white/10 rounded-full text-[10px] font-bold text-white/70 uppercase"
-                    >
-                      {label}
+              {/* An empty heading-only card says nothing — skip it. */}
+              {chipLabels.length > 0 && (
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.1 }}
+                  className="glass-card rounded-[2.5rem] p-8 space-y-6"
+                >
+                  <h3 className="text-lg font-bold flex items-center gap-2">
+                    <span className="material-symbols-outlined text-accent">
+                      inventory_2
                     </span>
-                  ))}
-                </div>
-              </motion.div>
+                    {isHost ? "Event Categories" : "Skills & Services"}
+                  </h3>
+                  <div className="flex flex-wrap gap-2">
+                    {chipLabels.map((label) => (
+                      <span
+                        key={label}
+                        className="px-3 py-1 bg-white/5 border border-white/10 rounded-full text-[10px] font-bold text-white/70 uppercase"
+                      >
+                        {label}
+                      </span>
+                    ))}
+                  </div>
+                </motion.div>
+              )}
 
               {(foxer.foxerSpecializations?.length ?? 0) > 0 &&
                 (() => {

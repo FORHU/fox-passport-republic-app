@@ -28,7 +28,7 @@ export function VenueEditSwitch({
 
   if (access.isLoading) {
     return (
-      <div className="min-h-screen bg-[#02040a] flex items-center justify-center">
+      <div className="min-h-screen bg-canvas flex items-center justify-center">
         <Loader2 className="w-6 h-6 animate-spin text-accent" />
       </div>
     );
@@ -40,7 +40,7 @@ export function VenueEditSwitch({
     access.data?.permissions.includes(permission) ?? false;
 
   return (
-    <div className="bg-[#02040a] text-white min-h-screen font-body antialiased">
+    <div className="bg-canvas text-white min-h-screen font-body antialiased">
       <DashboardHeader />
       <main className="pt-28 pb-28 sm:pb-20">
         <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8 space-y-8">

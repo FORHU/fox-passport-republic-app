@@ -37,9 +37,9 @@ export default function AuthModal() {
 
       <div className="relative w-full max-w-xl transform transition-all">
         {/* Background Blobs */}
-        <div className="absolute -top-20 -left-20 w-56 h-56 bg-[#ccff00] rounded-full blur-[100px] opacity-20 animate-pulse-slow pointer-events-none"></div>
+        <div className="absolute -top-20 -left-20 w-56 h-56 bg-accent rounded-full blur-[100px] opacity-20 animate-pulse-slow pointer-events-none"></div>
         <div
-          className="absolute -bottom-20 -right-20 w-56 h-56 bg-[#ccff00] rounded-full blur-[100px] opacity-10 animate-pulse-slow pointer-events-none"
+          className="absolute -bottom-20 -right-20 w-56 h-56 bg-accent rounded-full blur-[100px] opacity-10 animate-pulse-slow pointer-events-none"
           style={{ animationDelay: "1.5s" }}
         ></div>
 

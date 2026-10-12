@@ -19,7 +19,7 @@ export function ApplicationFlowHeader() {
   const router = useRouter();
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 bg-[#050608]/90 backdrop-blur-xl border-b border-white/5 h-14 sm:h-16 flex items-center px-4 sm:px-6 gap-3">
+    <header className="fixed top-0 left-0 right-0 z-50 bg-canvas/90 backdrop-blur-xl border-b border-white/5 h-14 sm:h-16 flex items-center px-4 sm:px-6 gap-3">
       <Image
         src="/foxonlylogo.png"
         alt="FoxPassport"

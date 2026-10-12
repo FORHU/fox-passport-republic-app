@@ -117,7 +117,7 @@ function VenueListCard({
       onClick={onSelect}
       className={`group cursor-pointer rounded-2xl border transition-all overflow-hidden bg-white/5 hover:bg-white/10 ${
         selected
-          ? "border-[#ccff00] ring-1 ring-[#ccff00] bg-white/10 shadow-[0_0_20px_rgba(204,255,0,0.15)]"
+          ? "border-accent ring-1 ring-accent bg-white/10 shadow-[0_0_20px_rgba(204,255,0,0.15)]"
           : "border-white/10 hover:border-white/20"
       }`}
     >
@@ -157,7 +157,7 @@ function VenueListCard({
           <div className="flex items-center gap-3 mt-1.5 text-[11px] text-white/50">
             {venue.rating > 0 && (
               <span className="flex items-center gap-1">
-                <Star className="w-3 h-3 fill-[#ccff00] text-[#ccff00]" />
+                <Star className="w-3 h-3 fill-accent text-accent" />
                 {venue.rating.toFixed(1)}
                 {venue.reviews > 0 && (
                   <span className="text-white/30">({venue.reviews})</span>
@@ -181,7 +181,7 @@ function VenueListCard({
             <Link
               href={`/venues/${venue.id}`}
               onClick={(e) => e.stopPropagation()}
-              className="text-[10px] font-bold uppercase tracking-wider px-3 py-1.5 rounded-full bg-[#ccff00] text-black hover:bg-[#b8e600] transition-colors"
+              className="text-[10px] font-bold uppercase tracking-wider px-3 py-1.5 rounded-full bg-accent text-black hover:bg-accent-hover transition-colors"
             >
               Book Now
             </Link>
@@ -212,7 +212,7 @@ function VenueDetailCard({
       animate={{ y: 0, opacity: 1 }}
       exit={{ y: 20, opacity: 0 }}
       transition={{ duration: 0.25, ease: [0, 0, 0.2, 1] }}
-      className="absolute bottom-6 left-6 z-20 w-[calc(100%-3rem)] sm:max-w-sm rounded-[2rem] border border-[#ccff00]/30 bg-[#0b0d14]/95 backdrop-blur-xl shadow-[0_0_40px_rgba(0,0,0,0.8)] overflow-hidden"
+      className="absolute bottom-6 left-6 z-20 w-[calc(100%-3rem)] sm:max-w-sm rounded-[2rem] border border-accent/30 bg-surface/95 backdrop-blur-xl shadow-[0_0_40px_rgba(0,0,0,0.8)] overflow-hidden"
     >
       <div className="relative h-40 w-full bg-white/5">
         <Image
@@ -256,7 +256,7 @@ function VenueDetailCard({
         <div className="flex items-center gap-4 text-xs text-white/60">
           {venue.rating > 0 && (
             <span className="flex items-center gap-1">
-              <Star className="w-3.5 h-3.5 fill-[#ccff00] text-[#ccff00]" />
+              <Star className="w-3.5 h-3.5 fill-accent text-accent" />
               {venue.rating.toFixed(1)}
               {venue.reviews > 0 && (
                 <span className="text-white/30">
@@ -297,7 +297,7 @@ function VenueDetailCard({
                   onClick={() => onSelectCompanion?.(comp.id)}
                   className="shrink-0 flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-left text-xs transition-colors cursor-pointer group"
                 >
-                  <span className="font-bold text-white truncate max-w-[130px] group-hover:text-[#ccff00] transition-colors">
+                  <span className="font-bold text-white truncate max-w-[130px] group-hover:text-accent transition-colors">
                     {comp.name}
                   </span>
                   <span className="text-[10px] text-lime-400 font-bold">
@@ -316,7 +316,7 @@ function VenueDetailCard({
           </p>
           <Link
             href={`/venues/${venue.id}`}
-            className="text-xs font-bold uppercase tracking-wider px-4 py-2 rounded-full bg-[#ccff00] text-black hover:bg-[#b8e600] transition-colors"
+            className="text-xs font-bold uppercase tracking-wider px-4 py-2 rounded-full bg-accent text-black hover:bg-accent-hover transition-colors"
           >
             Book Now
           </Link>
@@ -686,7 +686,7 @@ export function VenuesMapPageClient({
   };
 
   return (
-    <div className="h-screen w-full bg-[#02040a] text-white font-body flex flex-col overflow-hidden">
+    <div className="h-screen w-full bg-canvas text-white font-body flex flex-col overflow-hidden">
       <div className="flex-1 w-full flex min-h-0 pt-16 sm:pt-28">
         {/* Left: scrollable venue list */}
         <div
@@ -703,7 +703,7 @@ export function VenuesMapPageClient({
                   arrow_back
                 </span>
               </button>
-              <span className="material-symbols-outlined text-[#ccff00]">
+              <span className="material-symbols-outlined text-accent">
                 map
               </span>
               Venues Map
@@ -723,7 +723,7 @@ export function VenuesMapPageClient({
                     setSearchQuery(e.target.value);
                     if (nearMeActive) setNearMeActive(false);
                   }}
-                  className="w-full bg-white/5 border border-white/10 rounded-xl py-2 pl-9 pr-4 text-sm text-white placeholder:text-white/30 focus:outline-none focus:border-[#ccff00] focus:ring-1 focus:ring-[#ccff00]/50 transition-all"
+                  className="w-full bg-white/5 border border-white/10 rounded-xl py-2 pl-9 pr-4 text-sm text-white placeholder:text-white/30 focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent/50 transition-all"
                 />
               </div>
               <button
@@ -737,7 +737,7 @@ export function VenuesMapPageClient({
                 }
                 className={`shrink-0 flex items-center justify-center h-9 w-9 rounded-xl border transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-wait ${
                   nearMeActive
-                    ? "bg-[#ccff00]/15 border-[#ccff00]/40 text-[#ccff00]"
+                    ? "bg-accent/15 border-accent/40 text-accent"
                     : "bg-white/5 border-white/10 text-white/60 hover:text-white hover:border-white/30"
                 }`}
               >
@@ -753,7 +753,7 @@ export function VenuesMapPageClient({
             <div className="flex items-center justify-between mt-1 text-xs">
               <p className="text-white/40">
                 {isLoadingViewport ? (
-                  <span className="flex items-center gap-1.5 text-[#ccff00] font-mono">
+                  <span className="flex items-center gap-1.5 text-accent font-mono">
                     <Loader2 className="w-3 h-3 animate-spin" /> Scanning
                     viewport...
                   </span>
@@ -771,7 +771,7 @@ export function VenuesMapPageClient({
                   type="button"
                   onClick={handleNearMeClear}
                   title="Clear and follow the map again"
-                  className="flex items-center gap-1 text-[10px] font-mono text-[#ccff00] bg-[#ccff00]/10 px-2 py-0.5 rounded-full border border-[#ccff00]/20 hover:bg-[#ccff00]/20 transition-colors cursor-pointer"
+                  className="flex items-center gap-1 text-[10px] font-mono text-accent bg-accent/10 px-2 py-0.5 rounded-full border border-accent/20 hover:bg-accent/20 transition-colors cursor-pointer"
                 >
                   Near you
                   <X className="w-2.5 h-2.5" />
@@ -788,7 +788,7 @@ export function VenuesMapPageClient({
                 </button>
               ) : (
                 currentBounds && (
-                  <span className="text-[10px] font-mono text-[#ccff00]/60 bg-[#ccff00]/10 px-2 py-0.5 rounded-full border border-[#ccff00]/20">
+                  <span className="text-[10px] font-mono text-accent/60 bg-accent/10 px-2 py-0.5 rounded-full border border-accent/20">
                     Live Viewport
                   </span>
                 )
@@ -870,7 +870,7 @@ export function VenuesMapPageClient({
                       ← Prev
                     </button>
                     {isLoadingMore ? (
-                      <div className="flex items-center gap-2 text-xs text-[#ccff00] font-mono">
+                      <div className="flex items-center gap-2 text-xs text-accent font-mono">
                         <Loader2 className="w-4 h-4 animate-spin" />
                         <span>Loading...</span>
                       </div>
@@ -941,7 +941,7 @@ export function VenuesMapPageClient({
             onClick={() => setMobileView("list")}
             className={`px-4 py-2 rounded-full text-xs font-bold uppercase tracking-wider transition-colors cursor-pointer ${
               mobileView === "list"
-                ? "bg-[#ccff00] text-black"
+                ? "bg-accent text-black"
                 : "text-white/60"
             }`}
           >
@@ -950,7 +950,7 @@ export function VenuesMapPageClient({
           <button
             onClick={() => setMobileView("map")}
             className={`px-4 py-2 rounded-full text-xs font-bold uppercase tracking-wider transition-colors cursor-pointer ${
-              mobileView === "map" ? "bg-[#ccff00] text-black" : "text-white/60"
+              mobileView === "map" ? "bg-accent text-black" : "text-white/60"
             }`}
           >
             Map

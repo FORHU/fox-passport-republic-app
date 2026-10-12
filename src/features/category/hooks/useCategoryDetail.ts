@@ -53,8 +53,8 @@ export function useCategoryDetail(slug: string): UseCategoryDetailReturn {
       tagline: tagline,
       image: image,
       // Create a nice glow using the lime accent since that's the theme
-      color: "from-[#ccff00] to-transparent",
-      gradient: category.gradient || "from-[#ccff00] to-transparent", // Ensure gradient is set for CategoryHero
+      color: "from-accent to-transparent",
+      gradient: category.gradient || "from-accent to-transparent", // Ensure gradient is set for CategoryHero
       spots: spotLabel,
       children: mappedChildren, // Map subCategories to children
     };

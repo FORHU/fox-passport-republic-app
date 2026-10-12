@@ -50,7 +50,7 @@ export function VenuesSection({
           </h2>
           {showViewAllLink && (
             <Link
-              className="text-xs font-bold text-[#ccff00] border border-[#ccff00]/30 px-4 py-2 rounded-full hover:bg-[#ccff00] hover:text-black transition-all flex items-center gap-1"
+              className="text-xs font-bold text-accent border border-accent/30 px-4 py-2 rounded-full hover:bg-accent hover:text-black transition-all flex items-center gap-1"
               href={viewAllHref}
             >
               View All
@@ -78,7 +78,7 @@ export function VenuesSection({
             return (
             <div
               key={vn.id}
-              className={`bg-[#0f111a]/60 backdrop-blur border border-white/5 p-5 rounded-3xl hover:bg-white/5 transition-all group border-l-4 ${
+              className={`bg-surface/60 backdrop-blur border border-white/5 p-5 rounded-3xl hover:bg-white/5 transition-all group border-l-4 ${
                 isLive ? "border-l-green-500" : "border-l-yellow-500"
               } ${primaryAction ? "cursor-pointer" : ""}`}
               onClick={() => primaryAction?.(vn.id)}
@@ -164,7 +164,7 @@ export function VenuesSection({
                           </span>
                         </button>
                         <button
-                          className="h-9 w-9 rounded-full bg-white/5 hover:bg-[#ccff00] hover:text-black flex items-center justify-center"
+                          className="h-9 w-9 rounded-full bg-white/5 hover:bg-accent hover:text-black flex items-center justify-center"
                           onClick={(e) => e.stopPropagation()}
                         >
                           <span className="material-symbols-outlined text-[18px]">

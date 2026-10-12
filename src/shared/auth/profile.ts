@@ -24,6 +24,11 @@ export interface ProfileData {
   name: string;
   phone: string;
   imgId: string;
+  /** Home address — set during onboarding. */
+  country?: string;
+  state?: string;
+  city?: string;
+  district?: string;
   // Narrowed to the same unions the auth store uses. These were `string` /
   // `string[]`, which meant a profile could not be merged into the store's User
   // without a cast - and a cast here would only have hidden the mismatch.

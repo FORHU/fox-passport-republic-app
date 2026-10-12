@@ -61,7 +61,7 @@ export default function VerifyEmailForm() {
           </label>
           <input
             {...register("otpCode")}
-            className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 sm:py-3.5 text-white placeholder-white/20 focus:outline-none focus:ring-1 focus:ring-[#ccff00] focus:border-[#ccff00]/50 focus:bg-white/10 transition-all font-medium text-center text-2xl tracking-widest"
+            className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 sm:py-3.5 text-white placeholder-white/20 focus:outline-none focus:ring-1 focus:ring-accent focus:border-accent/50 focus:bg-white/10 transition-all font-medium text-center text-2xl tracking-widest"
             placeholder="------"
             maxLength={6}
             inputMode="numeric"
@@ -78,7 +78,7 @@ export default function VerifyEmailForm() {
         <button
           type="submit"
           disabled={verifyEmailMutation.isPending}
-          className="btn-neon w-full py-3 sm:py-4 mt-2 rounded-xl bg-[#ccff00] text-black font-bold text-sm sm:text-lg hover:shadow-[0_0_20px_rgba(204,255,0,0.4)] transition-all flex items-center justify-center gap-2 disabled:opacity-70"
+          className="btn-neon w-full py-3 sm:py-4 mt-2 rounded-xl bg-accent text-black font-bold text-sm sm:text-lg hover:shadow-[0_0_20px_rgba(204,255,0,0.4)] transition-all flex items-center justify-center gap-2 disabled:opacity-70"
         >
           {verifyEmailMutation.isPending ? (
             <Loader2 className="animate-spin w-5 h-5" />
@@ -92,7 +92,7 @@ export default function VerifyEmailForm() {
         <button
           onClick={() => pendingEmail && resendMutation.mutate(pendingEmail)}
           disabled={resendMutation.isPending}
-          className="text-sm font-bold text-[#ccff00] hover:underline transition-colors block w-full"
+          className="text-sm font-bold text-accent hover:underline transition-colors block w-full"
         >
           {resendMutation.isPending ? "Sending..." : "Resend code"}
         </button>

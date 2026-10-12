@@ -1,3 +1,4 @@
+import PageLoader from "@/shared/components/ui/PageLoader";
 import React, { Suspense } from "react";
 import BookingDetailPageClient from "./_components/BookingDetailPageClient";
 import type { Metadata } from "next";
@@ -20,9 +21,7 @@ export default async function BookingDetailPage({
     <div className="min-h-screen bg-background bg-gradient-dark text-text-main font-body selection:bg-accent selection:text-black">
       <Suspense
         fallback={
-          <div className="min-h-screen flex items-center justify-center">
-            <span className="h-10 w-10 rounded-full border-2 border-white/20 border-t-accent animate-spin" />
-          </div>
+          <PageLoader />
         }
       >
         <BookingDetailPageClient bookingId={id} />

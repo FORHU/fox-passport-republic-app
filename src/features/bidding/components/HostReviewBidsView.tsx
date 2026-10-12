@@ -64,7 +64,7 @@ export const HostReviewBidsView: React.FC<HostReviewBidsViewProps> = ({
             <div className="flex justify-between items-start mb-2">
               <h4 className="text-lg font-semibold">{bid.provider?.name}</h4>
               <span
-                className={`px-2 py-1 text-xs rounded-full font-medium ${bid.status === "accepted" ? "bg-[#ccff00] text-black" : "bg-white/10 text-white"}`}
+                className={`px-2 py-1 text-xs rounded-full font-medium ${bid.status === "accepted" ? "bg-accent text-black" : "bg-white/10 text-white"}`}
               >
                 {bid.status}
               </span>
@@ -73,7 +73,7 @@ export const HostReviewBidsView: React.FC<HostReviewBidsViewProps> = ({
               {bid.proposedService?.title}
             </p>
             <div className="flex-1 mt-3">
-              <p className="font-semibold text-lg text-[#ccff00]">
+              <p className="font-semibold text-lg text-accent">
                 PHP {Number(bid.proposedPrice).toLocaleString()}
               </p>
               {bid.message && (

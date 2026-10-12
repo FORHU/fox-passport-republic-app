@@ -91,7 +91,7 @@ export default function EventCreationBuilder() {
 
   return (
     <RequireAuth>
-      <div className="fixed inset-0 z-60 bg-[#02040a] text-white flex flex-col font-body">
+      <div className="fixed inset-0 z-60 bg-canvas text-white flex flex-col font-body">
         <EventHeader
           eventTitle={eventTitle}
           isSubmitting={isSubmitting}
@@ -115,7 +115,7 @@ export default function EventCreationBuilder() {
             onSelectItem={addResourceToCore}
           />
 
-          <main className="flex-1 overflow-y-auto p-4 sm:p-6 md:p-8 bg-[#02040a] flex gap-8">
+          <main className="flex-1 overflow-y-auto p-4 sm:p-6 md:p-8 bg-canvas flex gap-8">
             <div className="flex-1 min-w-0 space-y-6 sm:space-y-8 pb-12 sm:pb-0">
               <EventDetailsForm
                 eventTitle={eventTitle}
@@ -185,7 +185,7 @@ export default function EventCreationBuilder() {
           <Sheet open={paletteOpen} onOpenChange={setPaletteOpen}>
             <SheetContent
               side="left"
-              className="bg-[#0f111a] border-white/10 w-[88vw] sm:max-w-md p-0 flex flex-col h-full"
+              className="bg-surface border-white/10 w-[88vw] sm:max-w-md p-0 flex flex-col h-full"
             >
               <SheetTitle className="sr-only">Resource Palette</SheetTitle>
               <div className="flex-1 overflow-y-auto flex flex-col pt-8">
@@ -210,7 +210,7 @@ export default function EventCreationBuilder() {
           <Sheet open={blueprintOpen} onOpenChange={setBlueprintOpen}>
             <SheetContent
               side="right"
-              className="bg-[#0f111a] border-white/10 w-[88vw] sm:max-w-md p-0 flex flex-col h-full"
+              className="bg-surface border-white/10 w-[88vw] sm:max-w-md p-0 flex flex-col h-full"
             >
               <SheetTitle className="sr-only">Financial Blueprint</SheetTitle>
               <div className="flex-1 overflow-y-auto flex flex-col pt-8">

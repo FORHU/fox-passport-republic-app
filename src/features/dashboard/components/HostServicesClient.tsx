@@ -102,7 +102,7 @@ export default function HostServicesClient({
 
   return (
     <div
-      className="bg-[#02040a] text-white min-h-screen font-body antialiased"
+      className="bg-canvas text-white min-h-screen font-body antialiased"
       style={{
         background:
           "radial-gradient(circle at 15% 50%, rgba(124,58,237,0.15) 0%, transparent 40%), radial-gradient(circle at 85% 30%, rgba(219,39,119,0.1) 0%, transparent 40%), radial-gradient(circle at 50% 0%, rgba(204,255,0,0.05) 0%, transparent 50%), #02040a",
@@ -142,7 +142,7 @@ export default function HostServicesClient({
                 className={`flex items-center gap-2 px-5 py-2.5 rounded-full text-sm font-bold hover:opacity-90 transition-opacity shrink-0 shadow-lg ${
                   isPerformerOnlyView
                     ? "bg-amber-400 text-black shadow-amber-500/20"
-                    : "bg-[#ccff00] text-black shadow-[#ccff00]/20"
+                    : "bg-accent text-black shadow-accent/20"
                 }`}
               >
                 <span className="material-symbols-outlined text-[16px]">
@@ -191,7 +191,7 @@ export default function HostServicesClient({
                 onClick={() => setActiveTab("all")}
                 className={`pb-3 px-3 font-semibold text-xs transition-colors border-b-2 ${
                   activeTab === "all"
-                    ? "text-white border-[#ccff00]"
+                    ? "text-white border-accent"
                     : "text-white/50 border-transparent hover:text-white"
                 }`}
               >

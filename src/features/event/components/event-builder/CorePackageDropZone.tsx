@@ -35,7 +35,7 @@ export function CorePackageDropZone({
       className={`min-h-[160px] rounded-[2rem] border-2 border-dashed transition-all p-8 relative ${
         isDragOver
           ? "border-accent bg-accent/5"
-          : "border-white/10 bg-[#0f111a]/30"
+          : "border-white/10 bg-surface/30"
       }`}
     >
       <div className="flex justify-between items-center mb-6">
@@ -69,7 +69,7 @@ export function CorePackageDropZone({
           {baseItems.map((item, idx) => (
             <div
               key={`${item.id}-${idx}`}
-              className="bg-[#1a1d2d] border border-white/5 rounded-xl p-3"
+              className="bg-surface-raised border border-white/5 rounded-xl p-3"
             >
               {/* Top row: icon + name + delete */}
               <div className="flex items-center justify-between mb-3">

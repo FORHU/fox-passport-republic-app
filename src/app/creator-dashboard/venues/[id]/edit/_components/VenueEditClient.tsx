@@ -90,7 +90,7 @@ function VenueEditContent({ id }: Props) {
   return (
     <RequireAuth>
       {!id ? (
-        <div className="fixed inset-0 z-[80] bg-[#02040a] text-white flex items-center justify-center">
+        <div className="fixed inset-0 z-[80] bg-canvas text-white flex items-center justify-center">
           <div className="glass-panel rounded-[2rem] p-12 border border-red-500/20">
             <div className="flex flex-col items-center gap-3 text-center">
               <AlertTriangle className="h-8 w-8 text-red-400" />
@@ -99,7 +99,7 @@ function VenueEditContent({ id }: Props) {
           </div>
         </div>
       ) : prefillError ? (
-        <div className="fixed inset-0 z-[80] bg-[#02040a]/90 text-white flex items-center justify-center">
+        <div className="fixed inset-0 z-[80] bg-canvas/90 text-white flex items-center justify-center">
           <div className="glass-panel rounded-[2rem] p-12 border border-red-500/20 text-center max-w-lg w-full">
             <div className="flex flex-col items-center gap-3 text-center">
               <AlertTriangle className="h-8 w-8 text-red-400" />
@@ -115,16 +115,16 @@ function VenueEditContent({ id }: Props) {
           </div>
         </div>
       ) : isPrefilling ? (
-        <div className="fixed inset-0 z-[80] bg-[#02040a]/90 text-white flex items-center justify-center">
+        <div className="fixed inset-0 z-[80] bg-canvas/90 text-white flex items-center justify-center">
           <div className="glass-panel rounded-[2rem] p-12 border border-white/5">
             <div className="flex flex-col items-center gap-3">
-              <Loader2 className="h-8 w-8 text-[#ccff00] animate-spin" />
+              <Loader2 className="h-8 w-8 text-accent animate-spin" />
               <div className="text-sm text-white/50">Loading venue...</div>
             </div>
           </div>
         </div>
       ) : (
-        <div className="fixed inset-0 z-60 bg-[#02040a] text-white flex flex-col font-body">
+        <div className="fixed inset-0 z-60 bg-canvas text-white flex flex-col font-body">
           <VenueHeader
             venueName={venueName}
             status={existingStatus}
@@ -147,7 +147,7 @@ function VenueEditContent({ id }: Props) {
               onRemoveResource={handleRemoveCustomResource}
               onDragStart={handleDragStart}
             />
-            <main className="flex-1 overflow-y-auto p-8 bg-[#02040a] flex gap-8">
+            <main className="flex-1 overflow-y-auto p-8 bg-canvas flex gap-8">
               <div className="flex-1 min-w-0 space-y-8">
                 <VenueDetailsForm
                   venueName={venueName}
@@ -230,7 +230,7 @@ function VenueEditContent({ id }: Props) {
 
 export default function VenueEditClient({ id }: Props) {
   return (
-    <Suspense fallback={<div className="fixed inset-0 bg-[#02040a]" />}>
+    <Suspense fallback={<div className="fixed inset-0 bg-canvas" />}>
       <VenueEditContent id={id} />
     </Suspense>
   );

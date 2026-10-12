@@ -38,9 +38,9 @@ export default function WishlistsClient() {
   const { favorites, isLoading, toggleFavorite } = useFavorites();
 
   return (
-    <div className="bg-[#02040a] text-white min-h-screen font-body antialiased">
+    <div className="bg-canvas text-white min-h-screen font-body antialiased">
       {/* Header */}
-      <header className="fixed top-0 left-0 right-0 z-50 bg-[#02040a]/80 backdrop-blur-md border-b border-white/5">
+      <header className="fixed top-0 left-0 right-0 z-50 bg-canvas/80 backdrop-blur-md border-b border-white/5">
         <div className="mx-auto max-w-7xl px-4 h-20 flex items-center gap-4">
           <button
             onClick={() => router.back()}
@@ -82,7 +82,7 @@ export default function WishlistsClient() {
                   <Link
                     key={favorite.id}
                     href={href}
-                    className="group block rounded-2xl overflow-hidden border border-[#1f2229] bg-[#111318] hover:border-[#2a2e38] transition-colors"
+                    className="group block rounded-2xl overflow-hidden border border-white/10 bg-surface hover:border-white/20 transition-colors"
                   >
                     {/* Thumbnail */}
                     <div
@@ -114,7 +114,7 @@ export default function WishlistsClient() {
                       <p className="text-xs font-bold text-white truncate">
                         {name}
                       </p>
-                      <p className="text-[11px] font-bold text-[#ccff00] mt-1">
+                      <p className="text-[11px] font-bold text-accent mt-1">
                         {formatPrice(favorite, format)}
                       </p>
                     </div>

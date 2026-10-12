@@ -729,7 +729,7 @@ export function VenuePolygonMapPicker({
                   : "Click the dark starting point (or double-click) to close the shape."}
           </p>
           {closed && !warning && (
-            <p className="text-[11px] text-[#ccff00]/70">
+            <p className="text-[11px] text-accent/70">
               ~
               {areaKm2 < 1
                 ? `${Math.round(areaKm2 * 1_000_000).toLocaleString()} m²`

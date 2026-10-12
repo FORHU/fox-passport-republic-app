@@ -94,7 +94,7 @@ export function ProposalActions({
           <>
             {paymentStatus === "paid" ? (
               <>
-                <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#ccff00]/10 border border-[#ccff00]/20 text-[#ccff00] text-sm font-bold">
+                <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-accent/10 border border-accent/20 text-accent text-sm font-bold">
                   <Check className="w-4 h-4" />
                   Paid
                 </div>
@@ -120,7 +120,7 @@ export function ProposalActions({
               <button
                 onClick={() => checkout(proposal.id)}
                 disabled={isLoading}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#ccff00] hover:bg-[#b3e600] text-black text-sm font-bold transition disabled:opacity-70 disabled:cursor-not-allowed"
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-accent hover:bg-accent-hover text-black text-sm font-bold transition disabled:opacity-70 disabled:cursor-not-allowed"
               >
                 {isCheckingOut ? (
                   <span className="h-4 w-4 rounded-full border-2 border-black/20 border-t-black/60 animate-spin" />

@@ -3,6 +3,7 @@
 import React from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { joinPlace } from "@/shared/lib/place";
 
 interface VenueNavHeaderProps {
   title: string;
@@ -62,7 +63,7 @@ export function VenueNavHeader({
             onProposePartnership && (
               <button
                 onClick={onProposePartnership}
-                className="hidden sm:flex items-center gap-2 px-4 py-2 rounded-full border border-white/10 hover:bg-[#ccff00]/10 hover:border-[#ccff00]/30 transition-colors text-sm font-medium text-white hover:text-[#ccff00] cursor-pointer"
+                className="hidden sm:flex items-center gap-2 px-4 py-2 rounded-full border border-white/10 hover:bg-accent/10 hover:border-accent/30 transition-colors text-sm font-medium text-white hover:text-accent cursor-pointer"
               >
                 <span className="material-symbols-outlined text-[18px]">
                   handshake
@@ -119,7 +120,7 @@ export function VenueHero({
         </div>
         <span>·</span>
         <span className="flex items-center gap-1 text-white underline decoration-dotted cursor-pointer">
-          {location}, {province}
+          {joinPlace(location, province)}
         </span>
       </div>
     </div>

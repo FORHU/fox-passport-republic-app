@@ -30,7 +30,7 @@ export function CalendarWidget() {
   return (
     <Link
       href="/creator-dashboard/calendar"
-      className="block bg-[#0f111a] border border-white/5 rounded-[2rem] p-6 cursor-pointer group hover:border-white/10 transition-colors"
+      className="block bg-surface border border-white/5 rounded-[2rem] p-6 cursor-pointer group hover:border-white/10 transition-colors"
     >
       <div className="flex justify-between items-center mb-4">
         <h3 className="font-display font-bold flex items-center gap-2">
@@ -70,7 +70,7 @@ export function CalendarWidget() {
               key={day}
               className={`rounded-lg h-9 flex flex-col items-center justify-center relative ${
                 isToday
-                  ? "bg-[#ccff00] text-black font-bold shadow-[0_0_10px_#ccff00]"
+                  ? "bg-accent text-black font-bold shadow-[0_0_10px_#ccff00]"
                   : evs.length
                     ? "text-white font-bold"
                     : "text-white/40"
@@ -97,7 +97,7 @@ export function CalendarWidget() {
 
 export function CreatorProfile() {
   return (
-    <div className="bg-[#0f111a] border border-white/5 rounded-[2rem] p-6 relative overflow-hidden">
+    <div className="bg-surface border border-white/5 rounded-[2rem] p-6 relative overflow-hidden">
       <div className="absolute inset-0 bg-gradient-to-br from-purple-500/10 to-transparent" />
       <h3 className="relative z-10 font-display font-bold mb-6">
         Creator Profile
@@ -106,7 +106,7 @@ export function CreatorProfile() {
         href="/user/settings"
         className="relative z-10 w-full flex items-center gap-3 p-3 rounded-xl bg-white/5 hover:bg-white/10 text-left group"
       >
-        <div className="h-9 w-9 rounded-lg bg-[#1a1d2d] border border-white/10 flex items-center justify-center group-hover:border-[#ccff00] group-hover:text-[#ccff00]">
+        <div className="h-9 w-9 rounded-lg bg-surface-raised border border-white/10 flex items-center justify-center group-hover:border-accent group-hover:text-accent">
           <span className="material-symbols-outlined text-[18px]">
             settings
           </span>

@@ -139,7 +139,7 @@ function DocPreview({
   const isPdf = file.type === "application/pdf" || file.name?.endsWith(".pdf");
   const ringClass = flagged
     ? "border-red-500/60 ring-1 ring-red-500/40"
-    : "border-white/10 group-hover:border-[#ccff00]/40";
+    : "border-white/10 group-hover:border-accent/40";
 
   return (
     <div className="space-y-1">
@@ -214,7 +214,7 @@ function FilePreviewModal({
       onClick={onClose}
     >
       <div
-        className="w-full h-full max-w-4xl bg-[#0d0f18] border border-white/10 rounded-2xl flex flex-col overflow-hidden"
+        className="w-full h-full max-w-4xl bg-surface border border-white/10 rounded-2xl flex flex-col overflow-hidden"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="p-4 border-b border-white/5 flex items-center justify-between gap-4 shrink-0">
@@ -297,7 +297,7 @@ function ApplicationDetailDrawer({
       onClick={onClose}
     >
       <div
-        className="w-full sm:w-[520px] sm:h-full bg-[#0d0f18] border-t sm:border-t-0 sm:border-l border-white/10 flex flex-col max-h-[90vh] sm:max-h-full overflow-hidden"
+        className="w-full sm:w-[520px] sm:h-full bg-surface border-t sm:border-t-0 sm:border-l border-white/10 flex flex-col max-h-[90vh] sm:max-h-full overflow-hidden"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
@@ -784,7 +784,7 @@ export const AdminSubmissionsTable: React.FC = () => {
                 onClick={() => setFilter(f)}
                 className={`px-4 py-2 rounded-full text-xs font-bold transition-colors ${
                   filter === f
-                    ? "bg-[#ccff00] text-black"
+                    ? "bg-accent text-black"
                     : "bg-white/5 text-white/60 hover:bg-white/10 hover:text-white"
                 }`}
               >
@@ -797,7 +797,7 @@ export const AdminSubmissionsTable: React.FC = () => {
         <div className="overflow-x-auto">
           {isLoading ? (
             <div className="flex items-center justify-center py-16 text-white/30 gap-3">
-              <div className="w-5 h-5 border-2 border-white/20 border-t-[#ccff00] rounded-full animate-spin" />
+              <div className="w-5 h-5 border-2 border-white/20 border-t-accent rounded-full animate-spin" />
               Loading applications...
             </div>
           ) : filtered.length === 0 ? (
@@ -827,7 +827,7 @@ export const AdminSubmissionsTable: React.FC = () => {
                     className="border-b border-white/5 hover:bg-white/5 transition-colors cursor-pointer group"
                   >
                     <td className="p-6">
-                      <div className="font-bold text-white group-hover:text-[#ccff00] transition-colors">
+                      <div className="font-bold text-white group-hover:text-accent transition-colors">
                         {app.user?.name ?? "—"}
                       </div>
                       <div className="text-xs text-white/40">
@@ -881,7 +881,7 @@ export const AdminSubmissionsTable: React.FC = () => {
       {/* Reject / Request Revision Modal */}
       {rejectModal && (
         <div className="fixed inset-0 z-999 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
-          <div className="bg-[#0f111a] border border-white/10 rounded-2xl p-8 max-w-md w-full space-y-4 max-h-[90vh] overflow-y-auto">
+          <div className="bg-surface border border-white/10 rounded-2xl p-8 max-w-md w-full space-y-4 max-h-[90vh] overflow-y-auto">
             <div>
               <h3 className="text-white font-bold text-lg">
                 Reject or Request Revision

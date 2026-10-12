@@ -70,7 +70,7 @@ export function OrganizerAttention() {
       {unread > 0 && (
         <Link
           href="/messages"
-          className={`${chip} border-[#ccff00]/30 bg-[#ccff00]/10 text-[#ccff00] hover:bg-[#ccff00]/20`}
+          className={`${chip} border-accent/30 bg-accent/10 text-accent hover:bg-accent/20`}
         >
           {unread} unread message{unread === 1 ? "" : "s"}
         </Link>

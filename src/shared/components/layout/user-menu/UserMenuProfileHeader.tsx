@@ -54,7 +54,7 @@ export function UserMenuProfileHeader({ user }: UserMenuProfileHeaderProps) {
             className="w-full h-full object-cover"
           />
         ) : (
-          <div className="w-full h-full bg-[#ccff00] flex items-center justify-center">
+          <div className="w-full h-full bg-accent flex items-center justify-center">
             <span className="text-black text-sm font-bold">{userInitial}</span>
           </div>
         )}
@@ -72,7 +72,7 @@ export function UserMenuProfileHeader({ user }: UserMenuProfileHeaderProps) {
                 type="button"
                 title={r}
                 aria-label={r}
-                className="group relative flex items-center justify-center w-6 h-6 rounded-full bg-[#ccff00]/10 text-[#ccff00] border border-[#ccff00]/20 cursor-pointer hover:bg-[#ccff00]/20 focus:bg-[#ccff00]/20 active:bg-[#ccff00]/20 transition-colors"
+                className="group relative flex items-center justify-center w-6 h-6 rounded-full bg-accent/10 text-accent border border-accent/20 cursor-pointer hover:bg-accent/20 focus:bg-accent/20 active:bg-accent/20 transition-colors"
               >
                 {getRoleIcon(r)}
                 <div className="pointer-events-none absolute bottom-full mb-1.5 opacity-0 group-hover:opacity-100 group-focus:opacity-100 group-active:opacity-100 transition-opacity whitespace-nowrap bg-black border border-white/10 text-white text-[10px] font-bold tracking-wider px-2 py-1 rounded shadow-xl z-50 capitalize">

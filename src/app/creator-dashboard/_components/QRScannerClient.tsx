@@ -34,7 +34,7 @@ export default function QRScannerClient() {
     scanState === "error";
 
   return (
-    <div className="glass-panel rounded-3xl p-4 sm:p-8 max-w-lg w-full mx-auto border border-white/10 bg-[#0f111a]/95 shadow-2xl">
+    <div className="glass-panel rounded-3xl p-4 sm:p-8 max-w-lg w-full mx-auto border border-white/10 bg-surface/95 shadow-2xl">
       {/* Hidden element for file scanning */}
       <div id="qr-file-reader-hidden" className="hidden" />
 

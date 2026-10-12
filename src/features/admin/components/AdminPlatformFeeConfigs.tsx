@@ -114,7 +114,7 @@ function FeeRuleModal({
       onClick={onClose}
     >
       <div
-        className="bg-[#0f111a] border border-white/10 rounded-2xl p-6 sm:p-8 max-w-xl w-full mx-4 max-h-[90vh] overflow-y-auto"
+        className="bg-surface border border-white/10 rounded-2xl p-6 sm:p-8 max-w-xl w-full mx-4 max-h-[90vh] overflow-y-auto"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center gap-4 mb-6">
@@ -166,11 +166,11 @@ function FeeRuleModal({
                 }
                 className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-3 text-sm text-white focus:border-accent/40 outline-none transition-all"
               >
-                <option className="bg-[#0f111a] text-white" value="">
+                <option className="bg-surface text-white" value="">
                   Any (wildcard)
                 </option>
                 {TRANSACTION_TYPES.map((t) => (
-                  <option className="bg-[#0f111a] text-white" key={t} value={t}>
+                  <option className="bg-surface text-white" key={t} value={t}>
                     {t}
                   </option>
                 ))}
@@ -187,11 +187,11 @@ function FeeRuleModal({
                 }
                 className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-3 text-sm text-white focus:border-accent/40 outline-none transition-all"
               >
-                <option className="bg-[#0f111a] text-white" value="">
+                <option className="bg-surface text-white" value="">
                   Any (wildcard)
                 </option>
                 {FEE_CATEGORIES.map((c) => (
-                  <option className="bg-[#0f111a] text-white" key={c} value={c}>
+                  <option className="bg-surface text-white" key={c} value={c}>
                     {c}
                   </option>
                 ))}
@@ -352,7 +352,7 @@ function PreviewTool() {
             className="bg-white/5 border border-white/10 rounded-xl px-3 py-2.5 text-sm text-white focus:border-accent/40 outline-none"
           >
             {TRANSACTION_TYPES.map((t) => (
-              <option className="bg-[#0f111a] text-white" key={t} value={t}>
+              <option className="bg-surface text-white" key={t} value={t}>
                 {t}
               </option>
             ))}
@@ -367,11 +367,11 @@ function PreviewTool() {
             onChange={(e) => setCategory(e.target.value as FeeCategory | "")}
             className="bg-white/5 border border-white/10 rounded-xl px-3 py-2.5 text-sm text-white focus:border-accent/40 outline-none"
           >
-            <option className="bg-[#0f111a] text-white" value="">
+            <option className="bg-surface text-white" value="">
               Any
             </option>
             {FEE_CATEGORIES.map((c) => (
-              <option className="bg-[#0f111a] text-white" key={c} value={c}>
+              <option className="bg-surface text-white" key={c} value={c}>
                 {c}
               </option>
             ))}

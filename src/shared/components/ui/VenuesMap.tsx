@@ -1030,8 +1030,8 @@ export function VenuesMap({
           title={is3D ? "Switch to flat map view" : "Switch to 3D terrain view"}
           className={`absolute bottom-4 right-4 z-20 w-9 h-9 flex items-center justify-center rounded-full backdrop-blur-xl border shadow-2xl transition-colors cursor-pointer ${
             is3D
-              ? "bg-[#ccff00] border-[#ccff00] text-black"
-              : "bg-[#0b0d14]/95 border-white/10 text-white/70 hover:text-white hover:border-[#ccff00]/50"
+              ? "bg-accent border-accent text-black"
+              : "bg-surface/95 border-white/10 text-white/70 hover:text-white hover:border-accent/50"
           }`}
         >
           <Mountain className="w-4 h-4" />

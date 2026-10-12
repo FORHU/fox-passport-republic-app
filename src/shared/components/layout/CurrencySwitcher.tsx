@@ -37,18 +37,18 @@ export function CurrencySwitcher({ onAfterSelect }: { onAfterSelect?: () => void
         }}
         className="w-full flex items-center gap-3 px-2 py-2.5 rounded-lg hover:bg-white/5 transition-colors group cursor-pointer"
       >
-        <Coins className="w-4 h-4 text-white/40 group-hover:text-[#ccff00] transition-colors shrink-0" />
+        <Coins className="w-4 h-4 text-white/40 group-hover:text-accent transition-colors shrink-0" />
         <span className="text-sm text-white/70 group-hover:text-white transition-colors">
           Currency
         </span>
-        <span className="ml-auto text-xs font-bold text-white/40 group-hover:text-[#ccff00] transition-colors">
+        <span className="ml-auto text-xs font-bold text-white/40 group-hover:text-accent transition-colors">
           {currency}
         </span>
       </button>
 
       {open && (
         <div
-          className="mt-1 mb-1 mx-2 max-h-64 overflow-y-auto custom-scrollbar rounded-lg border border-white/10 bg-[#13141f]"
+          className="mt-1 mb-1 mx-2 max-h-64 overflow-y-auto custom-scrollbar rounded-lg border border-white/10 bg-surface"
           onClick={(e) => e.stopPropagation()}
         >
           {CURRENCIES.map((code) => (
@@ -68,7 +68,7 @@ export function CurrencySwitcher({ onAfterSelect }: { onAfterSelect?: () => void
                 {CURRENCY_LABELS[code]}
               </span>
               {currency === code && (
-                <Check className="w-3.5 h-3.5 text-[#ccff00] ml-auto shrink-0" />
+                <Check className="w-3.5 h-3.5 text-accent ml-auto shrink-0" />
               )}
             </button>
           ))}

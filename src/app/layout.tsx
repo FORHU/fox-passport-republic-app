@@ -16,6 +16,7 @@ import RouteProgressBar from "@/shared/components/ui/RouteProgressBar";
 // Import the Master Provider
 import Providers from "@/shared/providers";
 import WebsiteJsonLd from "@/shared/components/seo/WebsiteJsonLd";
+import { THEME_INIT_SCRIPT } from "@/shared/lib/theme";
 
 const appUrl = (
   process.env.NEXT_PUBLIC_APP_URL || "https://foxpassport.com"
@@ -81,8 +82,12 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="dark">
+    // `dark` is the server default; the script below swaps it for `light` before
+    // the first paint when that was the saved choice — hence the suppressed
+    // hydration warning on <html>, whose class the script may have changed.
+    <html lang="en" className="dark" suppressHydrationWarning>
       <head>
+        <script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link
           rel="preconnect"
@@ -91,7 +96,7 @@ export default function RootLayout({
         />
         {/* eslint-disable-next-line @next/next/no-page-custom-font -- root layout loads these once for the whole app; tailwind.config.ts references the literal Google Font family names, which next/font/google cannot preserve */}
         <link
-          href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@300;400;500;600;700&display=swap"
+          href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@300;400;500;600;700&family=Archivo:wght@500;800;900&family=Space+Mono:wght@400;700&display=swap"
           rel="stylesheet"
         />
         {/* eslint-disable-next-line @next/next/no-page-custom-font -- variable icon font (wght/FILL axes) isn't expressible via next/font/google */}
@@ -119,8 +124,8 @@ export default function RootLayout({
             offset={20}
             toastOptions={{
               duration: 4000,
-              className: "!bg-[#13141f] !border !border-white/10 !text-white !shadow-[0_10px_35px_rgba(0,0,0,0.55)] !rounded-2xl",
-              descriptionClassName: "!text-zinc-400",
+              className: "!bg-surface-raised !border !border-white/10 !text-white !shadow-[0_10px_35px_rgba(0,0,0,0.25)] !rounded-2xl",
+              descriptionClassName: "!text-white/60",
             }}
             icons={{
               success: <CheckCircle2 className="h-[18px] w-[18px] text-lime-400" strokeWidth={2} />,
