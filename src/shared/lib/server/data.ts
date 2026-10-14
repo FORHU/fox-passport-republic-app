@@ -7,11 +7,13 @@ import { requireAuth } from "./auth";
 import { joinPlace } from "../place";
 
 async function getAuthToken(): Promise<string | null> {
-  // `fox_token` (httpOnly) is the only source of truth for the access token.
-  // There used to be a fallback that read it out of the `fox_user` cookie,
-  // which required storing the token somewhere any script could read.
   const cookieStore = await cookies();
-  return cookieStore.get("fox_token")?.value ?? null;
+  return (
+    cookieStore.get("better-auth.session_token")?.value ??
+    cookieStore.get("__Secure-better-auth.session_token")?.value ??
+    cookieStore.get("fox_token")?.value ??
+    null
+  );
 }
 
 /**
