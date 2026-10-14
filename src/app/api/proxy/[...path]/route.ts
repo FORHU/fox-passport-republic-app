@@ -160,7 +160,21 @@ async function handler(
     });
   };
 
-  let upstream = await forward(accessToken);
+  let upstream: Response;
+  try {
+    upstream = await forward(accessToken);
+  } catch (err: unknown) {
+    const errorMsg = err instanceof Error ? err.message : String(err);
+    console.warn(`[proxy] Upstream unreachable for ${target}:`, errorMsg);
+    return NextResponse.json(
+      {
+        success: false,
+        message:
+          "Backend API service is currently unreachable. Please ensure the API is running.",
+      },
+      { status: 503 },
+    );
+  }
   let refreshed: RefreshResult | null = null;
 
   // A 401 from the pre-session endpoints is "those credentials are wrong", not
@@ -173,7 +187,22 @@ async function handler(
     if (refreshToken) {
       refreshed = await refreshAccessToken(refreshToken);
       if (refreshed) {
-        upstream = await forward(refreshed.accessToken);
+        try {
+          upstream = await forward(refreshed.accessToken);
+        } catch (err: unknown) {
+          const errorMsg = err instanceof Error ? err.message : String(err);
+          console.warn(
+            `[proxy] Upstream unreachable after refresh for ${target}:`,
+            errorMsg,
+          );
+          return NextResponse.json(
+            {
+              success: false,
+              message: "Backend API service is currently unreachable.",
+            },
+            { status: 503 },
+          );
+        }
       }
     }
   }

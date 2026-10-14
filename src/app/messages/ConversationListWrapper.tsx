@@ -7,7 +7,7 @@ import { useAuthStore } from "@/shared/auth/useAuthStore";
 import { UserHeader } from "@/features/user/components/citizen/UserHeader";
 
 export default function ConversationListWrapper() {
-  const { user, isAuthenticated } = useAuthStore();
+  const { user } = useAuthStore();
   const { data: followingPage } = useFollowing(user?.id);
   return (
     <ConversationListClient

@@ -3,7 +3,7 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen } from "@testing-library/react";
 
 vi.mock("next/image", () => ({
-  default: ({ alt, ...props }: React.ComponentProps<"img">) => (
+  default: ({ alt, priority: _priority, ...props }: any) => (
     <img src="mock.png" alt={alt ?? ""} {...props} />
   ),
 }));

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useLayoutEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import "mapbox-gl/dist/mapbox-gl.css";
 import {
   getEffectiveMapboxToken,
@@ -95,7 +95,7 @@ export function MapBoxViewImpl({
   const onMapReadyRef = useRef(onMapReady);
   const onStyleLoadRef = useRef(onStyleLoad);
 
-  useLayoutEffect(() => {
+  useEffect(() => {
     onClickRef.current = onClick;
     onDblClickRef.current = onDblClick;
     onMoveEndRef.current = onMoveEnd;

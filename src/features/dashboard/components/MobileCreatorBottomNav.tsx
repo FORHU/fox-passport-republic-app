@@ -72,7 +72,8 @@ export default function MobileCreatorBottomNav() {
         bottom: 0,
         left: 0,
         right: 0,
-        height: 78,
+        minHeight: 72,
+        height: "calc(58px + env(safe-area-inset-bottom, 14px))",
         zIndex: 50,
         background: "rgba(8,8,11,0.92)",
         backdropFilter: "blur(20px)",
@@ -81,7 +82,7 @@ export default function MobileCreatorBottomNav() {
         display: "flex",
         alignItems: "center",
         justifyContent: "space-around",
-        paddingBottom: 14,
+        paddingBottom: "max(14px, env(safe-area-inset-bottom, 14px))",
       }}
     >
       {tabs.map((tab) => {

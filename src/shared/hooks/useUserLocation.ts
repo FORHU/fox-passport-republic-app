@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
-import { config } from "@/shared/lib/config";
+import { useState, useEffect, useCallback, useRef } from "react";
+import { getEffectiveMapboxToken } from "@/shared/lib/mapbox";
 import { useAuthStore } from "@/shared/auth/useAuthStore";
 
 export interface UserLocationState {
@@ -36,7 +36,9 @@ const COUNTRY_CENTROIDS: Record<
 const DEFAULT_GLOBAL: [number, number] = [120.9842, 14.5995];
 
 export function useUserLocation(): UserLocationState {
-  const { user } = useAuthStore();
+  const userCountry = useAuthStore((s) => s.user?.country);
+  const userCity = useAuthStore((s) => s.user?.city);
+
   const [coords, setCoords] = useState<[number, number]>(DEFAULT_GLOBAL);
   const [country, setCountry] = useState<string>("Detecting Country...");
   const [countryCode, setCountryCode] = useState<string>("PH");
@@ -46,17 +48,42 @@ export function useUserLocation(): UserLocationState {
   const [isDetected, setIsDetected] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
 
+  const isMountedRef = useRef<boolean>(true);
+  const abortControllerRef = useRef<AbortController | null>(null);
+  const userProfileRef = useRef({ country: userCountry, city: userCity });
+
+  useEffect(() => {
+    userProfileRef.current = { country: userCountry, city: userCity };
+  }, [userCountry, userCity]);
+
+  useEffect(() => {
+    isMountedRef.current = true;
+    return () => {
+      isMountedRef.current = false;
+      abortControllerRef.current?.abort();
+    };
+  }, []);
+
   const reverseGeocode = useCallback(async (lng: number, lat: number) => {
-    if (!config.mapboxToken) {
-      setIsLoading(false);
+    const token = getEffectiveMapboxToken();
+    if (!token) {
+      if (isMountedRef.current) {
+        setIsLoading(false);
+      }
       return;
     }
 
+    abortControllerRef.current?.abort();
+    const controller = new AbortController();
+    abortControllerRef.current = controller;
+
     try {
-      const url = `https://api.mapbox.com/geocoding/v5/mapbox.places/${lng},${lat}.json?types=country,place,region&access_token=${config.mapboxToken}`;
-      const res = await fetch(url);
+      const url = `https://api.mapbox.com/geocoding/v5/mapbox.places/${lng},${lat}.json?types=country,place,region&access_token=${token}`;
+      const res = await fetch(url, { signal: controller.signal });
       if (!res.ok) throw new Error("Geocoding failed");
       const data = await res.json();
+
+      if (!isMountedRef.current) return;
 
       let detectedCountry = "Philippines";
       let detectedCode = "PH";
@@ -84,58 +111,90 @@ export function useUserLocation(): UserLocationState {
       setRegion(detectedRegion);
       setIsDetected(true);
     } catch (err: any) {
+      if (err?.name === "AbortError") {
+        return;
+      }
       console.warn("Reverse geocode fallback:", err);
     } finally {
-      setIsLoading(false);
+      if (isMountedRef.current && abortControllerRef.current === controller) {
+        setIsLoading(false);
+      }
     }
   }, []);
 
   const detectLocation = useCallback(() => {
+    if (!isMountedRef.current) return;
     setIsLoading(true);
     setError(null);
 
     if (typeof window !== "undefined" && "geolocation" in navigator) {
       navigator.geolocation.getCurrentPosition(
         (position) => {
+          if (!isMountedRef.current) return;
           const lat = position.coords.latitude;
           const lng = position.coords.longitude;
           setCoords([lng, lat]);
           reverseGeocode(lng, lat);
         },
         (err) => {
+          if (!isMountedRef.current) return;
           console.log(
             "Geolocation permission not granted, using fallback:",
             err.message,
           );
           setError(err.message);
 
+          const { country: profileCountry, city: profileCity } =
+            userProfileRef.current;
+
           // Fallback: Check user profile country
-          const userCountryCode = user?.country
+          const matchedCountryCode = profileCountry
             ? Object.keys(COUNTRY_CENTROIDS).find(
                 (code) =>
                   COUNTRY_CENTROIDS[code].name.toLowerCase() ===
-                  user.country?.toLowerCase(),
+                  profileCountry.toLowerCase(),
               ) || "PH"
             : "PH";
 
           const fallback =
-            COUNTRY_CENTROIDS[userCountryCode] || COUNTRY_CENTROIDS.PH;
+            COUNTRY_CENTROIDS[matchedCountryCode] || COUNTRY_CENTROIDS.PH;
           setCoords(fallback.coords);
-          setCountry(user?.country || fallback.name);
-          setCountryCode(userCountryCode);
-          setCity(user?.city || "");
+          setCountry(profileCountry || fallback.name);
+          setCountryCode(matchedCountryCode);
+          setCity(profileCity || "");
           setIsLoading(false);
         },
-        { enableHighAccuracy: true, timeout: 6000 },
+        { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 },
       );
     } else {
-      setIsLoading(false);
+      if (isMountedRef.current) {
+        setIsLoading(false);
+      }
     }
-  }, [reverseGeocode, user]);
+  }, [reverseGeocode]);
 
   useEffect(() => {
     detectLocation();
   }, [detectLocation]);
+
+  // Sync fallback if user profile becomes available and geolocation wasn't detected
+  useEffect(() => {
+    if (isDetected || !userCountry) return;
+
+    const matchedCountryCode = Object.keys(COUNTRY_CENTROIDS).find(
+      (code) =>
+        COUNTRY_CENTROIDS[code].name.toLowerCase() ===
+        userCountry.toLowerCase(),
+    );
+
+    if (matchedCountryCode && COUNTRY_CENTROIDS[matchedCountryCode]) {
+      const fallback = COUNTRY_CENTROIDS[matchedCountryCode];
+      setCoords(fallback.coords);
+      setCountry(userCountry);
+      setCountryCode(matchedCountryCode);
+      if (userCity) setCity(userCity);
+    }
+  }, [userCountry, userCity, isDetected]);
 
   return {
     coords,

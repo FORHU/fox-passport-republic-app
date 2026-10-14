@@ -161,8 +161,9 @@ export default function MobileBottomNav({
 
   return (
     <div
-      className="lg:hidden fixed bottom-4 left-4 right-4 z-50 grid"
+      className="lg:hidden fixed left-4 right-4 z-50 grid"
       style={{
+        bottom: "max(1rem, env(safe-area-inset-bottom, 1rem))",
         height: 68,
         background: "rgba(14,14,20,0.92)",
         backdropFilter: "blur(28px)",
