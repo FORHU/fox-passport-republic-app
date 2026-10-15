@@ -43,6 +43,7 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 ### 5. Completion
 - Report the branch used in the task completion summary.
 - Do not merge into protected or shared branches, push changes, or open a pull request unless requested or authorized by the project's workflow.
+- **Never delete branches (local or remote):** Do not delete any branch (`git branch -d`, `git branch -D`, or `git push --delete`), even after a merge or PR is completed, unless explicitly instructed by the user. Preserve all branches for audit trails, rollback, and recovery.
 
 ---
 
