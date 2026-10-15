@@ -12,8 +12,6 @@ export const metadata: Metadata = {
   },
 };
 
-// Skip static generation for this page - it fetches dynamic data
-export const dynamic = "force-dynamic";
 
 // --- Features ---
 // Server component: import leaves directly, not feature barrels, so the whole
