@@ -125,6 +125,10 @@ describe("axios 401 handler", () => {
     Object.defineProperty(window, "location", {
       configurable: true,
       value: {
+        protocol: "http:",
+        hostname: "localhost",
+        host: "localhost",
+        origin: "http://localhost",
         get href() {
           return "http://localhost/";
         },

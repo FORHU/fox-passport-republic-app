@@ -20,14 +20,23 @@ export const config = {
  * cross-origin URL since they're a full-page navigation, not a fetch.
  */
 export function getBrowserApiUrl(): string {
-  if (typeof window === "undefined") return config.apiUrl;
+  if (
+    typeof window === "undefined" ||
+    !window.location?.protocol ||
+    !window.location?.hostname
+  ) {
+    return config.apiUrl || "http://localhost:6002";
+  }
   // Parse the configured API URL to extract the port and path prefix so we
   // never hardcode "6002" here — the .env value is the single source of truth.
   try {
-    const parsed = new URL(config.apiUrl);
-    return `${window.location.protocol}//${window.location.hostname}${parsed.port ? `:${parsed.port}` : ""}${parsed.pathname}`;
+    const raw = config.apiUrl || "http://localhost:6002";
+    const parsed = new URL(raw);
+    const protocol = window.location.protocol || "http:";
+    const hostname = window.location.hostname || "localhost";
+    return `${protocol}//${hostname}${parsed.port ? `:${parsed.port}` : ""}${parsed.pathname}`;
   } catch {
     // Malformed NEXT_PUBLIC_API_URL — fall back to the raw env value.
-    return config.apiUrl;
+    return config.apiUrl || "http://localhost:6002";
   }
 }
