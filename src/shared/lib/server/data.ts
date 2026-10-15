@@ -3,6 +3,12 @@ import { cache } from "react";
 import { config } from "@/shared/lib/config";
 import type { Foxer } from "@/shared/api/foxers";
 import type { EventTemplateDetail } from "@/shared/api/event-templates";
+import {
+  filterLandingVenues,
+  loadLandingEvents,
+  type LandingEvent,
+  type LandingVenue,
+} from "@/features/landing/journey/landing-shared";
 import { requireAuth } from "./auth";
 import { joinPlace } from "../place";
 
@@ -102,7 +108,7 @@ async function serverFetch(
   return res.json();
 }
 
-async function publicServerFetch<T = Record<string, unknown>>(
+export async function publicServerFetch<T = Record<string, unknown>>(
   endpoint: string,
   params?: Record<string, string>,
   options: { revalidate?: number | false; tags?: string[] } = { revalidate: 60 },
@@ -625,6 +631,48 @@ export async function getPublicFoxers(limit = 100) {
     return extractList(body);
   } catch (error) {
     console.error("Failed to fetch public foxers:", error);
+    return [];
+  }
+}
+
+export async function getLandingFoxerTotal(): Promise<number> {
+  try {
+    const body = await publicServerFetch<{ pagination?: { total?: number } }>(
+      "/users/foxers",
+      { limit: "1", page: "1" },
+      { revalidate: 300, tags: ["foxers"] },
+    );
+    return body?.pagination?.total ?? 0;
+  } catch {
+    return 0;
+  }
+}
+
+export async function getLandingVenues(limit = 80): Promise<LandingVenue[]> {
+  try {
+    const body = await publicServerFetch<{ venues?: any[]; data?: any[] }>(
+      "/venues",
+      { limit: String(limit) },
+      { revalidate: 60, tags: ["venues"] },
+    );
+    const list = body?.venues ?? body?.data ?? [];
+    return filterLandingVenues(list);
+  } catch {
+    return [];
+  }
+}
+
+export async function getLandingEvents(limit = 40): Promise<LandingEvent[]> {
+  try {
+    return await loadLandingEvents(limit, async (page, pageLimit) => {
+      const body = await publicServerFetch<{ data?: LandingEvent[] }>(
+        "/event-templates/browse",
+        { page: String(page), limit: String(pageLimit) },
+        { revalidate: 60, tags: ["event-templates"] },
+      );
+      return (body?.data ?? []) as LandingEvent[];
+    });
+  } catch {
     return [];
   }
 }

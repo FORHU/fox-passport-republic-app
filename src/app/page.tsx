@@ -30,7 +30,17 @@ import { filterVenues } from "@/features/venue/helpers/filterVenues";
 
 // --- Shared Components & Server Utils ---
 import LandingHeader from "@/features/landing/components/sections/LandingHeader";
-import { getVenues } from "@/shared/lib/server/data";
+import {
+  QueryClient,
+  dehydrate,
+  HydrationBoundary,
+} from "@tanstack/react-query";
+import {
+  getLandingEvents,
+  getLandingFoxerTotal,
+  getLandingVenues,
+  getVenues,
+} from "@/shared/lib/server/data";
 import { getUser } from "@/shared/lib/server/auth";
 import { hasPermission } from "@/shared/lib/permissions";
 import { isFoxer } from "@/shared/constants/roles";
@@ -145,11 +155,32 @@ async function HomeContent({ searchParams }: HomePageProps) {
   }
 
   // --- LANDING PAGE (Default) ---
+  const queryClient = new QueryClient();
+
+  await Promise.all([
+    queryClient.prefetchQuery({
+      queryKey: ["landing", "foxer-total"],
+      queryFn: getLandingFoxerTotal,
+    }),
+    queryClient.prefetchQuery({
+      queryKey: ["landing", "venues", 80],
+      queryFn: () => getLandingVenues(80),
+    }),
+    queryClient.prefetchQuery({
+      queryKey: ["landing", "events", 40],
+      queryFn: () => getLandingEvents(40),
+    }),
+    queryClient.prefetchQuery({
+      queryKey: ["landing", "events", 300],
+      queryFn: () => getLandingEvents(300),
+    }),
+  ]);
+
   return (
-    <>
+    <HydrationBoundary state={dehydrate(queryClient)}>
       <WelcomeGuide />
       <JourneyLanding />
-    </>
+    </HydrationBoundary>
   );
 }
 
