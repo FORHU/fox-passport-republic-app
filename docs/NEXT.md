@@ -17,7 +17,9 @@ here.
 | `RBAC.md` | Target state, migration history (invariants, prior art), and template-boundary conformance. `RBAC-PLAN.md` was folded in here 13 Sep now that the migration is done. |
 | `ARCHITECTURE.md` | The system as built — now also carries the durable parts of `app-architecture.md` (template-gap inventory, the two "don't fix these" call-outs), folded in 13 Sep once Feature Isolation hit 0 violations and the rest of that doc was just stale violation-tracking. |
 | `api-audit.md` | The record: API, data-fetching and auth findings. 8 open (re-audited 12 Sep — §3.4c closed, §4.12 partially closed). |
-| `BUSINESS-STRATEGY-MASTER.md` | Business Strategy layer, one level above `DYNAMIC-EVENTS-PRODUCT-MASTER.md` in the Strategic Hierarchy. Added 14 Sep, reconciled the same day against current implementation — see its §1a for what was adjusted and why. |
+| `findings/BUSINESS-STRATEGY-MASTER.md` | Business Strategy layer, one level above `DYNAMIC-EVENTS-PRODUCT-MASTER.md` in the Strategic Hierarchy. Added 14 Sep, reconciled the same day against current implementation (see its §1a). Moved to `findings/` and re-reconciled 15 Oct against the full feature audit (see its §1b). |
+| `findings/foxpassport-feature-audit.md` | Full feature inventory (API, web, mobile) mapped against the strategy doc: built vs. partial vs. not built, plus gaps in both directions. Added 15 Oct. |
+| `findings/mobile-ux-consolidation-strategy.md` | Mobile UX Consolidation Strategy & Information Architecture: resolves feature congestion, dual-mode (Citizen vs. Creator Studio) paradigm, 5-tab mobile structure, and delivery roadmap. Added 16 Oct. |
 | `responsive-plan.md` | Responsive and touch backlog. 21 open. |
 | `roles-and-spaces.md` | The Foxer role model and the page split. 12 open (3 resolved — `useRoleAccess` blocker closed, `LockedSection` removed, hint added). |
 | `CENTRAL-PAYMENT-FRONTEND-PLAN.md` | Central Payment frontend. Built and reviewed 13 Sep — one panel deliberately not built, see the doc. |
