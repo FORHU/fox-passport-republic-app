@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import api from "@/shared/lib/axios";
+import { pollWhileVisible } from "@/shared/lib/realtime";
 
 export interface WaitlistStatus {
   isOnWaitlist: boolean;
@@ -67,7 +68,7 @@ export function useUserWaitlist() {
     queryKey: ["waitlist", "user"],
     queryFn: () =>
       api.get("/waitlist/user").then((r) => r.data?.data as WaitlistEntry[]),
-    refetchInterval: 30_000,
+    refetchInterval: pollWhileVisible,
   });
 }
 
@@ -89,6 +90,6 @@ export function useWaitlistNotification() {
       api
         .get("/waitlist/notification")
         .then((r) => r.data?.data as WaitlistNotification),
-    refetchInterval: 15_000,
+    refetchInterval: pollWhileVisible,
   });
 }

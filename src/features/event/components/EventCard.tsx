@@ -5,10 +5,8 @@ import Image from "next/image";
 import Link from "next/link";
 import { Heart, Star, MapPin } from "lucide-react";
 import { Event } from "@/features/event/types/event";
-import {
-  addFavorite,
-  removeFavoriteByListing,
-} from "@/features/user/api/favorites";
+import { addFavorite, removeFavoriteByListing } from "@/shared/api/favorites";
+import { Money } from "@/shared/components/ui/Money";
 
 interface EventCardProps {
   event: Event;
@@ -115,8 +113,7 @@ export const EventCard: React.FC<EventCardProps> = ({ event }) => {
         {price !== null && (
           <p className="text-gray-900">
             <span className="font-semibold">
-              {currency === "PHP" ? "₱" : "$"}
-              {price.toLocaleString()}
+              <Money amount={price} from={currency} />
             </span>
             <span className="text-gray-500 text-sm"> / event</span>
           </p>

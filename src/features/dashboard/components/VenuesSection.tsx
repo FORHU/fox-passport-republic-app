@@ -7,6 +7,7 @@ import { VenueItem } from "@/features/dashboard/data/dashboardData";
 import { StatusBadge } from "./StatusBadge";
 import { EmptyState } from "./EmptyState";
 import { PaginationBar } from "./PaginationBar";
+import { Money } from "@/shared/components/ui/Money";
 
 interface VenuesSectionProps {
   venues: VenueItem[];
@@ -15,6 +16,11 @@ interface VenuesSectionProps {
   showHeading?: boolean;
   viewAllHref?: string;
   onEdit?: (id: number | string) => void;
+  /** Opens the venue's own (read-only) page — used instead of `onEdit` for
+   * a live venue, so clicking into it doesn't drop the host straight into
+   * the builder with a resubmission prompt. Falls back to `onEdit` if not
+   * given. */
+  onView?: (id: number | string) => void;
   page?: number;
   totalPages?: number;
   onPageChange?: (page: number) => void;
@@ -27,6 +33,7 @@ export function VenuesSection({
   showHeading = true,
   viewAllHref = "/creator-dashboard/venues",
   onEdit,
+  onView,
   page,
   totalPages,
   onPageChange,
@@ -43,7 +50,7 @@ export function VenuesSection({
           </h2>
           {showViewAllLink && (
             <Link
-              className="text-xs font-bold text-[#ccff00] border border-[#ccff00]/30 px-4 py-2 rounded-full hover:bg-[#ccff00] hover:text-black transition-all flex items-center gap-1"
+              className="text-xs font-bold text-accent border border-accent/30 px-4 py-2 rounded-full hover:bg-accent hover:text-black transition-all flex items-center gap-1"
               href={viewAllHref}
             >
               View All
@@ -56,22 +63,30 @@ export function VenuesSection({
       )}
       <div className="space-y-4">
         {venues.length > 0 ? (
-          venues.map((vn) => (
+          venues.map((vn) => {
+            const statusLower = (vn.status || "").toLowerCase();
+            const isLive = ["published", "available"].includes(statusLower);
+            const isPending = statusLower === "pending";
+            const isRejected = statusLower === "rejected";
+            const isArchived = statusLower === "archived";
+            // A live venue already has something to look at — clicking in
+            // opens that (read-only) instead of dropping straight into the
+            // builder, which used to prompt "Submit for Review" on a venue
+            // that's already approved. A draft/pending one has nothing to
+            // view yet, so clicking it still goes straight to editing.
+            const primaryAction = isLive ? (onView ?? onEdit) : onEdit;
+            return (
             <div
               key={vn.id}
-              className={`bg-[#0f111a]/60 backdrop-blur border border-white/5 p-5 rounded-3xl hover:bg-white/5 transition-all group border-l-4 ${
-                ["published", "available"].includes(
-                  (vn.status || "").toLowerCase(),
-                )
-                  ? "border-l-green-500"
-                  : "border-l-yellow-500"
-              } ${onEdit ? "cursor-pointer" : ""}`}
-              onClick={() => onEdit?.(vn.id)}
-              role={onEdit ? "button" : undefined}
-              tabIndex={onEdit ? 0 : undefined}
+              className={`bg-surface/60 backdrop-blur border border-white/5 p-5 rounded-3xl hover:bg-white/5 transition-all group border-l-4 ${
+                isLive ? "border-l-green-500" : "border-l-yellow-500"
+              } ${primaryAction ? "cursor-pointer" : ""}`}
+              onClick={() => primaryAction?.(vn.id)}
+              role={primaryAction ? "button" : undefined}
+              tabIndex={primaryAction ? 0 : undefined}
               onKeyDown={(e) => {
-                if (!onEdit) return;
-                if (e.key === "Enter" || e.key === " ") onEdit(vn.id);
+                if (!primaryAction) return;
+                if (e.key === "Enter" || e.key === " ") primaryAction(vn.id);
               }}
             >
               <div className="flex flex-col sm:flex-row gap-5">
@@ -115,9 +130,7 @@ export function VenuesSection({
                       onStatusChange={(s) => onStatusChange(vn.id, s)}
                     />
                   </div>
-                  {["published", "available"].includes(
-                    (vn.status || "").toLowerCase(),
-                  ) ? (
+                  {isLive ? (
                     <div className="mt-4 grid grid-cols-3 gap-4 border-t border-white/5 pt-4">
                       <div>
                         <div className="text-[10px] text-white/40 uppercase">
@@ -129,19 +142,29 @@ export function VenuesSection({
                         <div className="text-[10px] text-white/40 uppercase">
                           Revenue
                         </div>
-                        <div className="text-sm font-bold">{vn.revenue}</div>
+                        <div className="text-sm font-bold">
+                          {vn.revenue != null ? (
+                            <Money amount={vn.revenue} />
+                          ) : (
+                            "—"
+                          )}
+                        </div>
                       </div>
                       <div className="flex justify-end gap-2">
                         <button
+                          title="Edit details"
                           className="h-9 w-9 rounded-full bg-white/5 hover:bg-white hover:text-black flex items-center justify-center"
-                          onClick={(e) => e.stopPropagation()}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onEdit?.(vn.id);
+                          }}
                         >
                           <span className="material-symbols-outlined text-[18px]">
                             edit
                           </span>
                         </button>
                         <button
-                          className="h-9 w-9 rounded-full bg-white/5 hover:bg-[#ccff00] hover:text-black flex items-center justify-center"
+                          className="h-9 w-9 rounded-full bg-white/5 hover:bg-accent hover:text-black flex items-center justify-center"
                           onClick={(e) => e.stopPropagation()}
                         >
                           <span className="material-symbols-outlined text-[18px]">
@@ -152,39 +175,52 @@ export function VenuesSection({
                     </div>
                   ) : (
                     <div className="mt-4 flex justify-between items-center border-t border-white/5 pt-4">
-                      <div className="flex items-center gap-2 text-yellow-400">
+                      <div
+                        className={`flex items-center gap-2 ${
+                          isPending
+                            ? "text-yellow-400"
+                            : isRejected
+                              ? "text-red-400"
+                              : isArchived
+                                ? "text-white/40"
+                                : "text-yellow-400"
+                        }`}
+                      >
                         <span className="material-symbols-outlined text-[18px]">
-                          {(vn.status || "").toLowerCase() === "pending_review"
+                          {isPending
                             ? "policy"
-                            : "edit_square"}
+                            : isRejected
+                              ? "cancel"
+                              : isArchived
+                                ? "inventory_2"
+                                : "edit_square"}
                         </span>
                         <span className="text-xs">
-                          {(vn.status || "").toLowerCase() === "pending_review"
+                          {isPending
                             ? "Pending Admin Review"
-                            : "Draft / Work in Progress"}
+                            : isRejected
+                              ? "Rejected — edit and resubmit"
+                              : isArchived
+                                ? "Archived"
+                                : "Draft / Work in Progress"}
                         </span>
                       </div>
                       <button
                         className="px-4 py-2 rounded-full bg-white/10 text-xs font-bold hover:bg-white hover:text-black"
                         onClick={(e) => {
                           e.stopPropagation();
-                          if (
-                            (vn.status || "").toLowerCase() !== "pending_review"
-                          ) {
-                            onEdit?.(vn.id);
-                          }
+                          if (!isPending) onEdit?.(vn.id);
                         }}
                       >
-                        {(vn.status || "").toLowerCase() === "pending_review"
-                          ? "Contact Support"
-                          : "Continue Editing"}
+                        {isPending ? "Contact Support" : "Continue Editing"}
                       </button>
                     </div>
                   )}
                 </div>
               </div>
             </div>
-          ))
+            );
+          })
         ) : (
           <EmptyState type="venues" href="/venue-foxer/create-venue" />
         )}

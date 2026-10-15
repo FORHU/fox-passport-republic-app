@@ -1,7 +1,9 @@
-﻿"use client";
+"use client";
 
 import React from "react";
 import { ResourceItem } from "@/features/event/data/eventBuilderData";
+import { Money } from "@/shared/components/ui/Money";
+import { currencySymbol } from "@/shared/lib/currency";
 
 interface CorePackageDropZoneProps {
   baseItems: ResourceItem[];
@@ -33,7 +35,7 @@ export function CorePackageDropZone({
       className={`min-h-[160px] rounded-[2rem] border-2 border-dashed transition-all p-8 relative ${
         isDragOver
           ? "border-accent bg-accent/5"
-          : "border-white/10 bg-[#0f111a]/30"
+          : "border-white/10 bg-surface/30"
       }`}
     >
       <div className="flex justify-between items-center mb-6">
@@ -58,8 +60,8 @@ export function CorePackageDropZone({
           <span className="material-symbols-outlined text-3xl mb-2 opacity-30">
             add_circle_outline
           </span>
-          <p className="text-sm opacity-50">
-            Drop venues, talent, services here
+          <p className="text-sm opacity-50 text-center px-4">
+            Drop items here or tap &ldquo;Add&rdquo; from the Assets palette
           </p>
         </div>
       ) : (
@@ -67,7 +69,7 @@ export function CorePackageDropZone({
           {baseItems.map((item, idx) => (
             <div
               key={`${item.id}-${idx}`}
-              className="bg-[#1a1d2d] border border-white/5 rounded-xl p-3"
+              className="bg-surface-raised border border-white/5 rounded-xl p-3"
             >
               {/* Top row: icon + name + delete */}
               <div className="flex items-center justify-between mb-3">
@@ -80,7 +82,7 @@ export function CorePackageDropZone({
                   <div>
                     <p className="font-bold text-white text-sm">{item.name}</p>
                     <p className="text-[10px] text-text-muted">
-                      Listing price: ₱{item.cost.toLocaleString()}
+                      Listing price: <Money amount={item.cost} />
                     </p>
                   </div>
                 </div>
@@ -98,7 +100,7 @@ export function CorePackageDropZone({
               <div className="flex items-center gap-3 pt-2 border-t border-white/5">
                 <div className="flex-1">
                   <label className="text-[10px] text-white/40 uppercase tracking-widest block mb-1">
-                    Agreed Price (₱)
+                    Agreed Price ({currencySymbol()})
                   </label>
                   <input
                     type="number"

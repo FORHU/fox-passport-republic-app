@@ -7,6 +7,7 @@ import { useUIStore } from "@/shared/store/useUIStore";
 import { useAdminPendingVenues } from "@/features/admin/hooks/useAdminPendingVenues";
 import { useAdminPendingAssets } from "@/features/admin/hooks/useAdminPendingAssets";
 import { useAdminPendingServices } from "@/features/admin/hooks/useAdminPendingServices";
+import { Money } from "@/shared/components/ui/Money";
 
 /**
  * The mobile admin overview.
@@ -26,12 +27,6 @@ export interface MobileAdminStats {
   totalBookings?: number;
   totalRevenue?: number;
   pendingApprovals?: number;
-}
-
-function formatCurrency(value: number) {
-  if (value >= 1_000_000) return `₱${(value / 1_000_000).toFixed(1)}M`;
-  if (value >= 1_000) return `₱${(value / 1_000).toFixed(1)}K`;
-  return `₱${value.toLocaleString()}`;
 }
 
 type PendingKind = "venue" | "asset" | "service";
@@ -75,7 +70,7 @@ export default function MobileAdminView({
   const KPI_CARDS = [
     {
       label: "Revenue",
-      value: formatCurrency(stats?.totalRevenue ?? 0),
+      value: <Money amount={stats?.totalRevenue ?? 0} compact />,
       icon: "payments",
       valueColor: "#ccff00",
       iconColor: "#ccff00",
@@ -164,10 +159,10 @@ export default function MobileAdminView({
     <div
       className="lg:hidden"
       style={{
-        background: "#050608",
+        background: "var(--canvas)",
         minHeight: "100svh",
         fontFamily: 'var(--font-body, "Plus Jakarta Sans", sans-serif)',
-        color: "#fff",
+        color: "var(--color-white)",
       }}
     >
       {/* Header */}
@@ -186,8 +181,8 @@ export default function MobileAdminView({
             width: 36,
             height: 36,
             borderRadius: 10,
-            background: "rgba(255,255,255,0.06)",
-            border: "1px solid rgba(255,255,255,0.08)",
+            background: "color-mix(in srgb, var(--color-white) 6%, transparent)",
+            border: "1px solid color-mix(in srgb, var(--color-white) 8%, transparent)",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
@@ -196,7 +191,7 @@ export default function MobileAdminView({
         >
           <span
             className="material-symbols-outlined"
-            style={{ fontSize: 20, color: "rgba(255,255,255,0.7)" }}
+            style={{ fontSize: 20, color: "color-mix(in srgb, var(--color-white) 70%, transparent)" }}
           >
             menu
           </span>
@@ -207,7 +202,7 @@ export default function MobileAdminView({
             fontFamily: 'var(--font-display, "Space Grotesk", sans-serif)',
             fontSize: 16,
             fontWeight: 700,
-            color: "#fff",
+            color: "var(--color-white)",
           }}
         >
           Overview
@@ -224,7 +219,7 @@ export default function MobileAdminView({
             justifyContent: "center",
             fontSize: 14,
             fontWeight: 700,
-            color: "#fff",
+            color: "var(--color-white)",
           }}
         >
           A
@@ -247,8 +242,8 @@ export default function MobileAdminView({
             style={{
               flexShrink: 0,
               width: 130,
-              background: "rgba(255,255,255,0.04)",
-              border: "1px solid rgba(255,255,255,0.07)",
+              background: "color-mix(in srgb, var(--color-white) 4%, transparent)",
+              border: "1px solid color-mix(in srgb, var(--color-white) 7%, transparent)",
               borderRadius: 18,
               padding: "16px 14px",
             }}
@@ -286,7 +281,7 @@ export default function MobileAdminView({
             <p
               style={{
                 fontSize: 11,
-                color: "rgba(255,255,255,0.4)",
+                color: "color-mix(in srgb, var(--color-white) 40%, transparent)",
                 margin: 0,
               }}
             >
@@ -304,7 +299,7 @@ export default function MobileAdminView({
             fontWeight: 700,
             letterSpacing: "0.1em",
             textTransform: "uppercase",
-            color: "rgba(255,255,255,0.4)",
+            color: "color-mix(in srgb, var(--color-white) 40%, transparent)",
             margin: "0 0 14px",
           }}
         >
@@ -313,7 +308,7 @@ export default function MobileAdminView({
 
         {APPROVALS.length === 0 && (
           <p
-            style={{ fontSize: 13, color: "rgba(255,255,255,0.35)", margin: 0 }}
+            style={{ fontSize: 13, color: "color-mix(in srgb, var(--color-white) 35%, transparent)", margin: 0 }}
           >
             Nothing waiting for review.
           </p>
@@ -324,8 +319,8 @@ export default function MobileAdminView({
             <div
               key={item.id}
               style={{
-                background: "rgba(255,255,255,0.04)",
-                border: "1px solid rgba(255,255,255,0.07)",
+                background: "color-mix(in srgb, var(--color-white) 4%, transparent)",
+                border: "1px solid color-mix(in srgb, var(--color-white) 7%, transparent)",
                 borderRadius: 16,
                 padding: "14px 16px",
                 display: "flex",
@@ -358,7 +353,7 @@ export default function MobileAdminView({
                   style={{
                     fontSize: 13,
                     fontWeight: 600,
-                    color: "#fff",
+                    color: "var(--color-white)",
                     margin: "0 0 2px",
                     overflow: "hidden",
                     textOverflow: "ellipsis",
@@ -370,7 +365,7 @@ export default function MobileAdminView({
                 <p
                   style={{
                     fontSize: 11,
-                    color: "rgba(255,255,255,0.4)",
+                    color: "color-mix(in srgb, var(--color-white) 40%, transparent)",
                     margin: 0,
                   }}
                 >
@@ -381,7 +376,9 @@ export default function MobileAdminView({
               <div
                 style={{
                   display:
-                    rejectingKey === `${item.kind}:${item.id}` ? "none" : "flex",
+                    rejectingKey === `${item.kind}:${item.id}`
+                      ? "none"
+                      : "flex",
                   gap: 8,
                   flexShrink: 0,
                 }}
@@ -456,19 +453,20 @@ export default function MobileAdminView({
                     value={rejectReason}
                     onChange={(e) => setRejectReason(e.target.value)}
                     onKeyDown={(e) => {
-                      if (e.key === "Enter") review(item, "reject", rejectReason);
+                      if (e.key === "Enter")
+                        review(item, "reject", rejectReason);
                       if (e.key === "Escape") setRejectingKey(null);
                     }}
                     placeholder="Reason"
                     aria-label={`Reason for rejecting ${item.name}`}
                     style={{
                       width: 108,
-                      background: "rgba(255,255,255,0.06)",
-                      border: "1px solid rgba(255,255,255,0.12)",
+                      background: "color-mix(in srgb, var(--color-white) 6%, transparent)",
+                      border: "1px solid color-mix(in srgb, var(--color-white) 12%, transparent)",
                       borderRadius: 10,
                       padding: "7px 10px",
                       fontSize: 12,
-                      color: "#fff",
+                      color: "var(--color-white)",
                       outline: "none",
                     }}
                   />
@@ -503,8 +501,8 @@ export default function MobileAdminView({
                       width: 32,
                       height: 32,
                       borderRadius: "50%",
-                      background: "rgba(255,255,255,0.06)",
-                      border: "1px solid rgba(255,255,255,0.1)",
+                      background: "color-mix(in srgb, var(--color-white) 6%, transparent)",
+                      border: "1px solid color-mix(in srgb, var(--color-white) 10%, transparent)",
                       display: "flex",
                       alignItems: "center",
                       justifyContent: "center",
@@ -514,7 +512,7 @@ export default function MobileAdminView({
                   >
                     <span
                       className="material-symbols-outlined"
-                      style={{ fontSize: 16, color: "rgba(255,255,255,0.5)" }}
+                      style={{ fontSize: 16, color: "color-mix(in srgb, var(--color-white) 50%, transparent)" }}
                     >
                       close
                     </span>

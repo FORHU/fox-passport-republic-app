@@ -1,4 +1,3 @@
-/* eslint-disable @next/next/no-img-element */
 "use client";
 
 import React, { useRef, useCallback } from "react";
@@ -6,16 +5,17 @@ import {
   GalleryItem,
   VENUE_TYPES,
 } from "@/features/venue/data/venueBuilderData";
-import CancellationPolicyPicker from "@/features/cancellation-policy/components/CancellationPolicyPicker";
-import {
-  MapboxLocationInput,
-  MapboxContextItem,
-} from "@/shared/components/ui/MapboxLocationInput";
+import CancellationPolicyPicker from "@/shared/components/ui/CancellationPolicyPicker";
+import { StyledSelect } from "@/shared/components/ui/StyledSelect";
+import { CascadingLocationFields } from "@/shared/components/ui/CascadingLocationFields";
+import { geocodeCountryCenter } from "@/shared/lib/geocoding";
+import { VenuePolygonMapPicker } from "@/features/venue/components/venue-builder/VenuePolygonMapPicker";
 
 interface VenueDetailsFormProps {
   venueName: string;
   description: string;
   venueType: string;
+  venueTypeOther: string;
   capacity: string;
   location: string;
   city: string;
@@ -23,18 +23,22 @@ interface VenueDetailsFormProps {
   country: string;
   lat?: number | null;
   lng?: number | null;
+  boundary?: [number, number][] | null;
+  excludeVenueId?: string;
   gallery: GalleryItem[];
   showGuide: boolean;
   cancellationPolicyId: string | null;
   onNameChange: (name: string) => void;
   onDescriptionChange: (desc: string) => void;
   onTypeChange: (type: string) => void;
+  onTypeOtherChange: (type: string) => void;
   onCapacityChange: (cap: string) => void;
   onLocationChange: (loc: string) => void;
   onCityChange: (city: string) => void;
   onStateChange: (state: string) => void;
   onCountryChange: (country: string) => void;
   onLatLngChange?: (lat: number, lng: number) => void;
+  onBoundaryChange?: (boundary: [number, number][] | null) => void;
   onCancellationPolicyChange: (policyId: string | null) => void;
   onAddImage: (files: File[]) => void;
   onRemoveImage: (id: string) => void;
@@ -45,23 +49,30 @@ export function VenueDetailsForm({
   venueName,
   description,
   venueType,
+  venueTypeOther,
   capacity,
   location,
   city,
   state,
   country,
+  lat = null,
+  lng = null,
+  boundary = null,
+  excludeVenueId,
   gallery,
   showGuide,
   cancellationPolicyId,
   onNameChange,
   onDescriptionChange,
   onTypeChange,
+  onTypeOtherChange,
   onCapacityChange,
   onLocationChange,
   onCityChange,
   onStateChange,
   onCountryChange,
   onLatLngChange = () => {},
+  onBoundaryChange = () => {},
   onCancellationPolicyChange,
   onAddImage,
   onRemoveImage,
@@ -110,8 +121,8 @@ export function VenueDetailsForm({
       )}
 
       {/* Form */}
-      <div className="relative rounded-[2rem] overflow-hidden border border-white/10 bg-[#0f111a] p-8">
-        <div className="max-w-4xl space-y-8">
+      <div className="relative rounded-[2rem] overflow-hidden border border-white/10 bg-surface p-8">
+        <div className="space-y-8">
           <div className="space-y-6">
             {/* Venue Name */}
             <div>
@@ -138,20 +149,21 @@ export function VenueDetailsForm({
                 <label className="text-[10px] uppercase font-bold text-white/40 tracking-widest mb-2 block">
                   Type
                 </label>
-                <select
+                <StyledSelect
                   value={venueType}
-                  onChange={(e) => onTypeChange(e.target.value)}
-                  className="w-full bg-white/5 border border-white/5 rounded-xl px-4 py-3 text-sm text-white appearance-none cursor-pointer"
-                >
-                  <option value="" className="bg-[#0f111a]">
-                    Select...
-                  </option>
-                  {VENUE_TYPES.map((t) => (
-                    <option key={t} value={t} className="bg-[#0f111a]">
-                      {t}
-                    </option>
-                  ))}
-                </select>
+                  onChange={onTypeChange}
+                  options={VENUE_TYPES}
+                  placeholder="Select..."
+                />
+                {venueType === "Other" && (
+                  <input
+                    type="text"
+                    value={venueTypeOther}
+                    onChange={(e) => onTypeOtherChange(e.target.value)}
+                    placeholder="Please specify the venue type..."
+                    className="w-full mt-2 bg-white/5 border border-white/5 rounded-xl px-4 py-3 text-sm text-white placeholder-white/30 focus:border-accent/30 outline-none transition-colors"
+                  />
+                )}
               </div>
               <div className="flex-1">
                 <label className="text-[10px] uppercase font-bold text-white/40 tracking-widest mb-2 block">
@@ -189,65 +201,38 @@ export function VenueDetailsForm({
               </div>
             </div>
 
-            {/* Country, City, State */}
-            <div className="grid grid-cols-3 gap-4">
-              <div className="relative">
-                <label className="text-[10px] uppercase font-bold text-white/40 tracking-widest mb-2 block">
-                  Country
-                </label>
-                <MapboxLocationInput
-                  value={country}
-                  onChange={onCountryChange}
-                  type="country"
-                  placeholder="Country"
-                  onSelect={(val: string) => onCountryChange(val)}
-                />
-              </div>
-              <div className="relative">
-                <label className="text-[10px] uppercase font-bold text-white/40 tracking-widest mb-2 block">
-                  City
-                </label>
-                <MapboxLocationInput
-                  value={city}
-                  onChange={onCityChange}
-                  type="place"
-                  placeholder="City"
-                  onSelect={(
-                    val: string,
-                    context?: MapboxContextItem[],
-                    center?: [number, number],
-                  ) => {
-                    onCityChange(val);
-                    const region = context?.find((c) =>
-                      c.id.startsWith("region"),
-                    )?.text;
-                    const countryName = context?.find((c) =>
-                      c.id.startsWith("country"),
-                    )?.text;
-                    if (region) onStateChange(region);
-                    if (countryName) onCountryChange(countryName);
-                    if (center) onLatLngChange(center[1], center[0]); // center is [lng, lat]
-                  }}
-                />
-              </div>
-              <div className="relative">
-                <label className="text-[10px] uppercase font-bold text-white/40 tracking-widest mb-2 block">
-                  State/Province
-                </label>
-                <MapboxLocationInput
-                  value={state}
-                  onChange={onStateChange}
-                  type="region"
-                  placeholder="State/Province"
-                  onSelect={(val: string, context?: MapboxContextItem[]) => {
-                    onStateChange(val);
-                    const countryName = context?.find((c) =>
-                      c.id.startsWith("country"),
-                    )?.text;
-                    if (countryName) onCountryChange(countryName);
-                  }}
-                />
-              </div>
+            {/* Country → State → City, each locked until the one before it is
+                picked (shared/components/ui/CascadingLocationFields). A new
+                country also recentres the map on it. */}
+            <CascadingLocationFields
+              value={{ country, state, city }}
+              onChange={(next, { countryCode: code }) => {
+                if (next.country !== country) {
+                  if (code) {
+                    geocodeCountryCenter(code).then((center) => {
+                      if (center) onLatLngChange(center[1], center[0]);
+                    });
+                  }
+                }
+                onCountryChange(next.country);
+                onStateChange(next.state);
+                onCityChange(next.city);
+              }}
+              onCoordinates={(lat, lng) => onLatLngChange(lat, lng)}
+            />
+
+            {/* Service Area */}
+            <div>
+              <label className="text-[10px] uppercase font-bold text-white/40 tracking-widest mb-2 block">
+                Service Area
+              </label>
+              <VenuePolygonMapPicker
+                boundary={boundary}
+                focusLat={lat}
+                focusLng={lng}
+                excludeVenueId={excludeVenueId}
+                onChange={onBoundaryChange}
+              />
             </div>
 
             {/* Cancellation Policy */}

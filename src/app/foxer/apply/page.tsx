@@ -1,6 +1,5 @@
-﻿import React from "react";
+import React from "react";
 import FoxerApplicationClient from "@/features/role-application/components/FoxerApplicationClient";
-import MobileRoleApplicationForm from "@/features/role-application/components/MobileRoleApplicationForm";
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -15,15 +14,15 @@ export default async function FoxerApplicationPage({
   searchParams: Promise<{ type?: string }>;
 }) {
   const { type } = await searchParams;
-  const initialType = type === "asset" ? "asset" : "service";
-  return (
-    <>
-      <div className="lg:hidden">
-        <MobileRoleApplicationForm />
-      </div>
-      <div className="hidden lg:block">
-        <FoxerApplicationClient initialType={initialType} />
-      </div>
-    </>
-  );
+  const initialType =
+    type === "asset"
+      ? "asset"
+      : type === "performer"
+        ? "performer"
+        : type === "organizer"
+          ? "organizer"
+          : "service";
+  // One responsive form for every screen size. There used to be a separate
+  // phone version that never submitted anything.
+  return <FoxerApplicationClient initialType={initialType} />;
 }

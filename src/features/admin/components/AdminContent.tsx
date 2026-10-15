@@ -8,13 +8,18 @@ import {
   AdminSubmissionsTable,
   AdminBookingsTable,
   AdminVenuesTable,
+  AdminVenuesMap,
   AdminEventsTable,
   AdminCategoriesTable,
   AdminCitizenTable,
   AdminAssetsTable,
   AdminServicesTable,
   AdminCancellationPolicies,
+  AdminPlatformFeeConfigs,
+  AdminPromotions,
   AdminDisputesPanel,
+  AdminReportsPanel,
+  AdminIdentityPanel,
 } from "@/features/admin/components";
 import { useAdminData } from "@/features/admin/hooks/useAdminData";
 import { useAdminPendingVenues } from "@/features/admin/hooks/useAdminPendingVenues";
@@ -56,7 +61,7 @@ export const AdminContent: React.FC<Props> = ({
   const { data: venues, isLoading: loadingVenues } = useAdminData(
     "venues",
     initialVenues,
-    activeTab === "venues",
+    activeTab === "venues" || activeTab === "map",
   );
   const { data: services, isLoading: loadingServices } = useAdminData(
     "services",
@@ -72,11 +77,6 @@ export const AdminContent: React.FC<Props> = ({
     "events",
     initialEvents,
     activeTab === "events",
-  );
-  const { data: citizens, isLoading: loadingCitizens } = useAdminData(
-    "citizens",
-    initialCitizens,
-    activeTab === "citizens",
   );
   const { data: categories, isLoading: loadingCategories } = useAdminData(
     "categories",
@@ -139,7 +139,7 @@ export const AdminContent: React.FC<Props> = ({
       )}
 
       {activeTab === "citizens" && (
-        <AdminCitizenTable citizens={citizens} isLoading={loadingCitizens} />
+        <AdminCitizenTable initialCitizens={initialCitizens} />
       )}
 
       {activeTab === "events" && (
@@ -157,6 +157,10 @@ export const AdminContent: React.FC<Props> = ({
         <AdminVenuesTable venues={venues} isLoading={loadingVenues} />
       )}
 
+      {activeTab === "map" && (
+        <AdminVenuesMap venues={venues} isLoading={loadingVenues} />
+      )}
+
       {activeTab === "assets" && (
         <AdminAssetsTable assets={assets} isLoading={loadingAssets} />
       )}
@@ -167,7 +171,15 @@ export const AdminContent: React.FC<Props> = ({
 
       {activeTab === "disputes" && <AdminDisputesPanel />}
 
+      {activeTab === "reports" && <AdminReportsPanel />}
+
+      {activeTab === "identity" && <AdminIdentityPanel />}
+
       {activeTab === "policies" && <AdminCancellationPolicies />}
+
+      {activeTab === "platform-fees" && <AdminPlatformFeeConfigs />}
+
+      {activeTab === "promotions" && <AdminPromotions />}
 
       {activeTab === "settings" && (
         <div className="glass-card rounded-[2rem] p-12 border border-white/5 flex flex-col items-center gap-4 text-center">

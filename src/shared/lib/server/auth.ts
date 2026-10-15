@@ -1,6 +1,11 @@
 import { cache } from "react";
 import { redirect } from "next/navigation";
 import { getServerApi } from "./data";
+import {
+  hasPermission,
+  canAccessAdmin,
+  type Permission,
+} from "@/shared/lib/permissions";
 
 // Memoised per render pass. requireAuth/requireHost are called by a page and
 // then again inside the data helpers it calls, so the profile lookup - a
@@ -43,16 +48,42 @@ export async function requireAuth() {
   return user;
 }
 
-export async function checkRole(_userId: string, role: string) {
-  const user = await getUser();
-  return user?.systemRole === role;
-}
-
 export async function requireAdmin() {
   const user = await requireAuth();
-  // `SystemRole` is only `user | admin` — there is no `super_admin` tier.
-  if (user?.systemRole !== "admin") {
+  // Capability, not role: admin_secretary reaches the console; what they may
+  // do inside it is enforced per route by the API.
+  if (!canAccessAdmin(user)) {
     redirect("/");
+  }
+  return user;
+}
+
+/**
+ * Server-side guard enforcing an explicit Permission.
+ * Redirects to the creator dashboard (or specified fallback) if unheld.
+ */
+export async function requirePermission(
+  permission: Permission,
+  redirectTo = "/creator-dashboard",
+) {
+  const user = await requireAuth();
+  if (!hasPermission(user, permission)) {
+    redirect(redirectTo);
+  }
+  return user;
+}
+
+/**
+ * Server-side guard requiring at least one of the provided permissions.
+ */
+export async function requireAnyPermission(
+  permissions: readonly Permission[],
+  redirectTo = "/creator-dashboard",
+) {
+  const user = await requireAuth();
+  const allowed = permissions.some((p) => hasPermission(user, p));
+  if (!allowed) {
+    redirect(redirectTo);
   }
   return user;
 }
@@ -64,6 +95,13 @@ export async function requireAdmin() {
  * The old `host`/`mayor`/`foxer` values checked here were RoleType names from
  * before the Foxer rename, compared against `systemRole`, which can only ever
  * be `user` or `admin` — so that branch never matched anything.
+ *
+ * `performerFoxer` and `investor` were missing from this list even after
+ * both gained real dashboard content (a payout ledger, Stripe Connect
+ * onboarding) — a performerFoxer or investor hit the redirect below and
+ * could never reach `/creator-dashboard/earnings` or `/stripe-onboard` at
+ * all, despite the API granting both roles `payouts:onboard`. Every RoleType
+ * in ROLE_TYPES (shared/constants/roles.ts) belongs here now.
  */
 export async function requireHost() {
   const user = await requireAuth();
@@ -73,10 +111,17 @@ export async function requireHost() {
     "venueFoxer",
     "gearFoxer",
     "serviceFoxer",
+    "performerFoxer",
+    "investor",
+    // Holds nothing to manage of their own, but the dashboard is where they
+    // answer invitations and find the teams they help run (ADR 0005).
+    "organizer",
   ];
 
+  // Host areas are an admin override over someone else's data, which the
+  // secretary deliberately does not have.
   const hasAccess =
-    user?.systemRole === "admin" ||
+    hasPermission(user, "bookings:read:all") ||
     roleType.some((r) => hostRoleTypes.includes(r));
 
   if (!hasAccess) {

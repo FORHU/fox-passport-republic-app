@@ -32,7 +32,7 @@ export function ListingHeader({
       : "Service created successfully! Redirecting...";
   return (
     <>
-      <header className="h-16 border-b border-white/5 flex items-center justify-between px-6 bg-[#0f111a] z-20">
+      <header className="h-16 border-b border-white/5 flex items-center justify-between px-6 bg-surface z-20">
         <div className="flex items-center gap-4">
           <button
             onClick={onBack}

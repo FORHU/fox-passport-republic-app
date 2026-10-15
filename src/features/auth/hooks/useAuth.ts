@@ -1,35 +1,60 @@
-﻿"use client";
+"use client";
 
 import { useMutation } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
-import axios from "axios";
 import { toast } from "sonner";
-import { useAuthStore } from "@/features/auth/store/useAuthStore";
+import api from "@/shared/lib/axios";
+import { useAuthStore } from "@/shared/auth/useAuthStore";
 import { LoginFormData, SignupFormData } from "@/shared/lib/schema";
-import { LoginResponse } from "@/features/auth/types/auth";
-import { config } from "@/shared/lib/config";
-import {
-  setAuthCookies,
-  clearAuthCookies,
-} from "@/shared/lib/server/auth-actions";
+import { LoginResponse } from "@/shared/auth/types";
+import { canAccessAdmin } from "@/shared/lib/permissions";
 
-// --- AXIOS SETUP ---
-const api = axios.create({
-  baseURL: config.apiUrl,
-  withCredentials: true,
-  headers: {
-    "Content-Type": "application/json",
-  },
-});
+// These used to go through a private axios instance pointed straight at
+// `config.apiUrl` - the one place the browser talked to the API directly, and
+// the one that establishes the session. They share the proxy client with every
+// other request now, so there is a single browser-facing auth boundary.
+//
+// `withCredentials` went with it: /api/proxy is same-origin, so cookies ride
+// along without being asked to.
+
+import { authClient } from "@/shared/auth/auth-client";
 
 // --- REAL API FUNCTIONS ---
 
 const realLogin = async (data: LoginFormData): Promise<LoginResponse> => {
-  const payload = {
+  try {
+    const result = await authClient.signIn.email({
+      email: data.email,
+      password: data.password,
+    });
+
+    if (!result.error && result.data) {
+      const user = ((result.data as any)?.user || {}) as Record<string, any>;
+      const token = (result.data as any)?.session?.token || "";
+      return {
+        accessToken: token,
+        refreshToken: token,
+        user: {
+          id: user.id,
+          email: user.email,
+          name: user.name,
+          username: user.username || "",
+          systemRole: user.systemRole || "user",
+          roleType: user.roleType || [],
+          isEmailVerified: user.emailVerified ?? false,
+          ...user,
+        },
+      };
+    }
+  } catch {
+    // If Better Auth fails or encounters network issue, try legacy API login
+  }
+
+  // Fallback to legacy API login endpoint
+  const response = await api.post<LoginResponse>("/auth/login", {
     email: data.email,
     password: data.password,
-  };
-  const response = await api.post<LoginResponse>("/auth/login", payload);
+  });
   return response.data;
 };
 
@@ -58,39 +83,55 @@ const realResendOtp = async (email: string) => {
 };
 
 const realSignup = async (data: SignupFormData) => {
-  const rest: Partial<SignupFormData> = { ...data };
-  delete rest.confirmPassword;
-  const payload = {
-    ...rest,
-    name: data.name || undefined,
-    mobileNumber: data.mobileNumber || undefined,
+  const result = await authClient.signUp.email({
+    email: data.email,
+    password: data.password,
+    name: data.name,
+  });
+
+  if (result.error) {
+    throw new Error(result.error.message || "Failed to create account");
+  }
+
+  return {
+    success: true,
+    message: "Registration successful",
+    user: (result.data as any)?.user,
   };
-  const response = await api.post("/auth/register", payload);
-  return response.data;
 };
 
 // --- HOOKS ---
 
 export const useLogin = () => {
   const router = useRouter();
-  const { login, close } = useAuthStore();
+  const { login, close, setView, setPendingVerificationEmail } =
+    useAuthStore();
 
   return useMutation({
     mutationFn: realLogin,
     onSuccess: async (data) => {
       console.log("Login Success:", data);
 
+      // No cookie write here any more. The API sets them on its own login
+      // response and the proxy relays those headers, so they are committed by
+      // the browser before this callback runs at all.
+      //
+      // The ordering this replaces was load-bearing and worth remembering:
+      // `login(data)` flips `isAuthenticated` synchronously, and everything
+      // gated on that fires immediately. When the cookies were written by a
+      // separate Server Action afterwards, those requests could reach the proxy
+      // before the Set-Cookie was committed - the proxy forwarded them
+      // unauthenticated, the API answered 401, and the interceptor read that as
+      // an expired session and signed the user out seconds after signing in.
+
       // Save user to store
       login(data);
-
-      // Set cookies on server so middleware can read them
-      await setAuthCookies(data);
 
       toast.success("Welcome back!");
 
       // Close modal and redirect based on role
       close();
-      if (data.user?.systemRole === "admin") {
+      if (canAccessAdmin(data.user)) {
         router.push("/admin");
       } else if (
         typeof window !== "undefined" &&
@@ -102,8 +143,14 @@ export const useLogin = () => {
         router.push("/");
       }
     },
-    onError: (error: any) => {
+    onError: (error: any, variables) => {
       console.error("Login Error:", error);
+      if (error.response?.status === 403) {
+        setPendingVerificationEmail(variables.email);
+        setView("verify-email");
+        toast.error("Please verify your email before logging in.");
+        return;
+      }
       const msg =
         error.response?.data?.message ||
         "Login Failed. Please check your credentials.";
@@ -113,7 +160,7 @@ export const useLogin = () => {
 };
 
 export const useSignup = () => {
-  const { setView, setPendingEmail } = useAuthStore();
+  const { setView, setPendingVerificationEmail } = useAuthStore();
 
   return useMutation({
     mutationFn: realSignup,
@@ -123,7 +170,7 @@ export const useSignup = () => {
       toast.success("Account created! Please verify your email.");
 
       // Carry the email forward and show the OTP entry screen
-      setPendingEmail(variables.email);
+      setPendingVerificationEmail(variables.email);
       setView("verify-email");
     },
     onError: (error: any) => {
@@ -202,18 +249,4 @@ export const useResendOtp = () => {
   });
 };
 
-export const useLogout = () => {
-  const router = useRouter();
-  const { logout } = useAuthStore();
-
-  return async () => {
-    // Clear cookies on server
-    await clearAuthCookies();
-
-    // Clear client store
-    logout();
-
-    // Redirect to home
-    router.push("/");
-  };
-};
+export { useLogout } from "@/shared/auth/useLogout";

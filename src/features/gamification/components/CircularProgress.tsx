@@ -41,7 +41,7 @@ export default function CircularProgress({
           cy={size / 2}
           r={radius}
           fill="transparent"
-          stroke="rgba(255,255,255,0.05)"
+          stroke="color-mix(in srgb, var(--color-white) 5%, transparent)"
           strokeWidth={strokeWidth}
         />
         {/* Progress circle */}

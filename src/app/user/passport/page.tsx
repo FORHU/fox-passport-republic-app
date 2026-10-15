@@ -1,8 +1,8 @@
-﻿export const dynamic = "force-dynamic";
+export const dynamic = "force-dynamic";
 
 import { requireAuth } from "@/shared/lib/server/auth";
-import PassportClient from "@/features/user/components/PassportClient";
-import MobilePassportView from "@/features/user/components/MobilePassportView";
+import PassportClient from "@/features/gamification/components/PassportClient";
+import MobilePassportView from "@/features/gamification/components/MobilePassportView";
 
 export default async function PassportPage() {
   const user = await requireAuth();

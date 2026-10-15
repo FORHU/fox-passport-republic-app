@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 "use client";
 
 import React from "react";
@@ -39,17 +38,12 @@ function getStampMeta(title: string): StampMeta {
     return { icon: "🎊", color: "#10b981", label: "SOCIAL", shape: "circle" };
   if (t.includes("concert") || t.includes("band") || t.includes("live"))
     return { icon: "🎵", color: "#8b5cf6", label: "MUSIC", shape: "circle" };
-  return { icon: "⭐", color: "#ccff00", label: "EVENT", shape: "rect" };
+  return { icon: "⭐", color: "var(--accent-text)", label: "EVENT", shape: "rect" };
 }
 
 // Extract short city name
 function shortLocation(loc: string) {
   return loc.split(",")[0].toUpperCase();
-}
-
-// Extract year from date
-function stampYear(date: Date) {
-  return new Date(date).getFullYear();
 }
 
 // Deterministic rotation — varies per stamp so the grid looks natural

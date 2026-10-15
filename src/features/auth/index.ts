@@ -5,10 +5,10 @@ export { default as SignupForm } from "./components/SignupForm";
 export { default as ForgotPasswordForm } from "./components/ForgotPasswordForm";
 export { default as ResetPasswordForm } from "./components/ResetPasswordForm";
 export { default as VerifyEmailForm } from "./components/VerifyEmailForm";
-export { default as RequireAuth } from "./components/RequireAuth";
+export { default as RequireAuth } from "@/shared/auth/RequireAuth";
 
 // Store & Hooks
-export { useAuthStore } from "./store/useAuthStore";
+export { useAuthStore } from "@/shared/auth/useAuthStore";
 export {
   useLogin,
   useSignup,
@@ -19,8 +19,8 @@ export {
   useLogout,
 } from "./hooks/useAuth";
 export { useRoleAccess } from "./hooks/useRoleAccess";
-export { useSessionManager } from "./hooks/useSessionManager";
-export { useUserMenu } from "./hooks/useUserMenu";
+export { useSessionManager } from "@/shared/auth/useSessionManager";
+export { useUserMenu } from "@/shared/auth/useUserMenu";
 
 // Types
-export * from "./types/auth";
+export * from "@/shared/auth/types";

@@ -5,7 +5,7 @@ export const dynamic = "force-dynamic";
 
 export default function SearchPage() {
   return (
-    <Suspense fallback={<div className="min-h-screen bg-[#0c0d14]" />}>
+    <Suspense fallback={<div className="min-h-screen bg-surface" />}>
       <SearchClient />
     </Suspense>
   );

@@ -1,9 +1,9 @@
-/* eslint-disable @next/next/no-img-element */
 "use client";
 
 import React from "react";
 import { useExperienceBuilder } from "@/features/venue/hooks/useVenueDetail";
 import { useExperienceBuilderData } from "@/features/venue/hooks/useExperienceBuilderData";
+import { Money } from "@/shared/components/ui/Money";
 
 const SERVICE_CATEGORIES = [
   { id: "foxer", label: "Curator", icon: "person_search" },
@@ -44,6 +44,7 @@ export function CustomExperienceBuilder({
     setActiveCategory,
     setSelectedFoxer,
     toggleService,
+    clearServices,
     setSearchQuery,
     handleDragStart,
     handleDragOver,
@@ -90,9 +91,9 @@ export function CustomExperienceBuilder({
   }
 
   return (
-    <div className="fixed inset-0 z-60 bg-[#02040a] text-white flex flex-col animate-in slide-in-from-bottom-4 duration-300">
+    <div className="fixed inset-0 z-60 bg-canvas text-white flex flex-col animate-in slide-in-from-bottom-4 duration-300">
       {/* Header */}
-      <header className="h-20 border-b border-white/5 flex items-center justify-between px-6 bg-[#0f111a]/50 backdrop-blur-md sticky top-0 z-20">
+      <header className="h-20 border-b border-white/5 flex items-center justify-between px-6 bg-surface/50 backdrop-blur-md sticky top-0 z-20">
         <div className="flex items-center gap-4">
           <div className="h-10 w-10 bg-accent rounded-lg flex items-center justify-center text-black shadow-[0_0_15px_rgba(204,255,0,0.4)]">
             <span className="material-symbols-outlined">design_services</span>
@@ -116,7 +117,7 @@ export function CustomExperienceBuilder({
 
       <div className="flex-1 flex overflow-hidden">
         {/* Left Sidebar: Categories */}
-        <aside className="w-20 md:w-64 shrink-0 border-r border-white/5 bg-[#0f111a]/30 flex flex-col">
+        <aside className="w-20 md:w-64 shrink-0 border-r border-white/5 bg-surface/30 flex flex-col">
           <div className="p-4 space-y-2 overflow-y-auto flex-1">
             {SERVICE_CATEGORIES.map((cat) => (
               <button
@@ -151,9 +152,9 @@ export function CustomExperienceBuilder({
         </aside>
 
         {/* Center: Main Content Area */}
-        <main className="flex-1 overflow-y-auto p-6 md:p-10 relative bg-linear-to-b from-[#02040a] to-[#0f111a]">
+        <main className="flex-1 overflow-y-auto p-6 md:p-10 relative bg-linear-to-b from-canvas to-surface">
           {activeCategory !== "foxer" && (
-            <div className="mb-8 sticky top-0 z-10 pt-2 pb-4 bg-[#02040a]/95 backdrop-blur-sm -mt-2 -mx-2 px-2">
+            <div className="mb-8 sticky top-0 z-10 pt-2 pb-4 bg-canvas/95 backdrop-blur-sm -mt-2 -mx-2 px-2">
               <div className="relative max-w-2xl">
                 <span className="absolute left-4 top-1/2 -translate-y-1/2 text-text-muted material-symbols-outlined">
                   search
@@ -231,7 +232,7 @@ export function CustomExperienceBuilder({
                         />
                         <div className="flex flex-col items-end">
                           <span className="text-accent font-bold font-display text-lg">
-                            ₱{foxer.fee.toLocaleString()}
+                            <Money amount={foxer.fee} />
                           </span>
                           <div className="flex items-center text-yellow-400 text-xs font-bold gap-1 bg-black/30 px-2 py-1 rounded-full mt-1">
                             <span className="material-symbols-outlined text-[14px] fill-current">
@@ -330,7 +331,7 @@ export function CustomExperienceBuilder({
                     </div>
                     <div className="pt-4 border-t border-white/5 flex justify-between items-center">
                       <span className="text-white font-display font-bold">
-                        +₱{svc.price.toLocaleString()}
+                        +<Money amount={svc.price} />
                       </span>
                       <span className="text-xs text-text-muted uppercase tracking-wider font-bold">
                         Add to build
@@ -345,7 +346,7 @@ export function CustomExperienceBuilder({
 
         {/* Right Sidebar: Summary / Drop Zone */}
         <aside
-          className={`w-80 shrink-0 bg-[#0f111a] border-l border-white/5 flex flex-col shadow-2xl relative z-10 transition-all duration-300 ${
+          className={`w-80 shrink-0 bg-surface border-l border-white/5 flex flex-col shadow-2xl relative z-10 transition-all duration-300 ${
             isDragOver
               ? "bg-white/5 border-accent shadow-[inset_0_0_40px_rgba(204,255,0,0.1)]"
               : ""
@@ -387,32 +388,32 @@ export function CustomExperienceBuilder({
                 </div>
               </div>
               <span className="text-sm font-bold text-white">
-                ₱{(venuePrice * 2).toLocaleString()}
+                <Money amount={venuePrice * 2} />
               </span>
             </div>
 
             {/* Selected Foxer */}
             {selectedFoxerData ? (
-              <div className="flex justify-between items-start animate-in fade-in slide-in-from-right-4 group relative">
-                <div className="flex gap-3">
-                  <div className="h-8 w-8 rounded bg-accent/20 flex items-center justify-center text-accent">
+              <div className="flex items-start gap-2 animate-in fade-in slide-in-from-right-4 group">
+                <div className="flex gap-3 flex-1 min-w-0">
+                  <div className="h-8 w-8 rounded bg-accent/20 flex items-center justify-center text-accent shrink-0">
                     <span className="material-symbols-outlined text-[16px]">
                       person
                     </span>
                   </div>
-                  <div>
-                    <p className="text-sm font-bold text-white">
+                  <div className="min-w-0">
+                    <p className="text-sm font-bold text-white truncate">
                       {selectedFoxerData.name}
                     </p>
                     <p className="text-xs text-text-muted">Curator Fee</p>
                   </div>
                 </div>
-                <span className="text-sm font-bold text-white">
-                  ₱{selectedFoxerData.fee.toLocaleString()}
+                <span className="text-sm font-bold text-white shrink-0">
+                  <Money amount={selectedFoxerData.fee} />
                 </span>
                 <button
                   onClick={() => setSelectedFoxer(null)}
-                  className="absolute -right-2 -top-2 opacity-0 group-hover:opacity-100 p-1 text-red-400 hover:text-red-300 transition-opacity"
+                  className="shrink-0 w-5 flex justify-center opacity-0 group-hover:opacity-100 text-red-400 hover:text-red-300 transition-opacity"
                 >
                   <span className="material-symbols-outlined text-[16px]">
                     cancel
@@ -436,21 +437,31 @@ export function CustomExperienceBuilder({
             {/* Selected Services */}
             {selectedServicesData.length > 0 && (
               <div className="space-y-4 pt-4 border-t border-white/5">
-                <p className="text-xs font-bold text-text-muted uppercase tracking-wider">
-                  Add-ons
-                </p>
+                <div className="flex items-center justify-between">
+                  <p className="text-xs font-bold text-text-muted uppercase tracking-wider">
+                    Add-ons
+                  </p>
+                  <button
+                    onClick={clearServices}
+                    className="text-xs font-bold text-red-400 hover:text-red-300 transition-colors"
+                  >
+                    Remove all
+                  </button>
+                </div>
                 {selectedServicesData.map((s) => (
                   <div
                     key={s.id}
-                    className="flex justify-between items-start animate-in fade-in slide-in-from-right-4 group relative"
+                    className="flex items-start gap-2 animate-in fade-in slide-in-from-right-4 group"
                   >
-                    <p className="text-sm text-gray-300 w-2/3">{s.name}</p>
-                    <span className="text-sm font-bold text-white">
-                      ₱{s.price.toLocaleString()}
+                    <p className="text-sm text-gray-300 truncate flex-1 min-w-0">
+                      {s.name}
+                    </p>
+                    <span className="text-sm font-bold text-white shrink-0">
+                      <Money amount={s.price} />
                     </span>
                     <button
                       onClick={() => toggleService(s.id)}
-                      className="absolute -right-2 top-0 opacity-0 group-hover:opacity-100 p-1 text-red-400 hover:text-red-300 transition-opacity"
+                      className="shrink-0 w-5 flex justify-center opacity-0 group-hover:opacity-100 text-red-400 hover:text-red-300 transition-opacity"
                     >
                       <span className="material-symbols-outlined text-[16px]">
                         cancel
@@ -467,7 +478,7 @@ export function CustomExperienceBuilder({
             <div className="flex justify-between items-end mb-4">
               <span className="text-sm text-text-muted">Total Estimate</span>
               <span className="text-3xl font-display font-bold text-accent">
-                ₱{total.toLocaleString()}
+                <Money amount={total} />
               </span>
             </div>
             <button
@@ -495,13 +506,13 @@ export function CustomExperienceBuilder({
         </aside>
 
         {/* Mobile & Tablet Floating Bottom Bar (Hidden on lg+) */}
-        <div className="lg:hidden fixed bottom-0 left-0 right-0 z-30 bg-[#0f111a]/95 backdrop-blur-xl border-t border-white/10 p-4 flex items-center justify-between shadow-2xl">
+        <div className="lg:hidden fixed bottom-0 left-0 right-0 z-30 bg-surface/95 backdrop-blur-xl border-t border-white/10 p-4 flex items-center justify-between shadow-2xl">
           <div>
             <p className="text-[10px] text-text-muted uppercase tracking-wider font-bold">
               Total Estimate
             </p>
             <p className="text-xl font-display font-bold text-accent">
-              ₱{total.toLocaleString()}
+              <Money amount={total} />
             </p>
           </div>
           <div className="flex items-center gap-2">
@@ -529,7 +540,7 @@ export function CustomExperienceBuilder({
         {/* Mobile Slide-Over Blueprint Drawer */}
         {mobileSummaryOpen && (
           <div className="lg:hidden fixed inset-0 z-50 bg-black/70 backdrop-blur-md flex flex-col justify-end animate-in fade-in duration-200">
-            <div className="bg-[#0f111a] border-t border-white/10 rounded-t-3xl max-h-[85vh] flex flex-col p-6 shadow-2xl animate-in slide-in-from-bottom duration-300">
+            <div className="bg-surface border-t border-white/10 rounded-t-3xl max-h-[85vh] flex flex-col p-6 shadow-2xl animate-in slide-in-from-bottom duration-300">
               <div className="flex items-center justify-between pb-4 border-b border-white/10">
                 <div>
                   <h3 className="font-display font-bold text-white text-lg">
@@ -554,7 +565,7 @@ export function CustomExperienceBuilder({
                 <div className="flex justify-between text-sm">
                   <span className="text-white/80">Venue Base (2 Nights)</span>
                   <span className="font-bold text-white">
-                    ₱{(venuePrice * 2).toLocaleString()}
+                    <Money amount={venuePrice * 2} />
                   </span>
                 </div>
                 {selectedFoxerData && (
@@ -563,7 +574,7 @@ export function CustomExperienceBuilder({
                       {selectedFoxerData.name} (Curator)
                     </span>
                     <span className="font-bold text-white">
-                      ₱{selectedFoxerData.fee.toLocaleString()}
+                      <Money amount={selectedFoxerData.fee} />
                     </span>
                   </div>
                 )}
@@ -571,7 +582,7 @@ export function CustomExperienceBuilder({
                   <div key={s.id} className="flex justify-between text-sm">
                     <span className="text-white/80">{s.name}</span>
                     <span className="font-bold text-white">
-                      ₱{s.price.toLocaleString()}
+                      <Money amount={s.price} />
                     </span>
                   </div>
                 ))}
@@ -583,7 +594,7 @@ export function CustomExperienceBuilder({
                     Total
                   </span>
                   <span className="text-2xl font-display font-bold text-accent">
-                    ₱{total.toLocaleString()}
+                    <Money amount={total} />
                   </span>
                 </div>
                 <button

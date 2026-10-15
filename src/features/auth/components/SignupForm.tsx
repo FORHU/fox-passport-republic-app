@@ -1,14 +1,15 @@
-﻿"use client";
+"use client";
 
 import React from "react";
 import { useForm, SubmitHandler, FieldErrors } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Loader2 } from "lucide-react";
+import { Loader2, Check } from "lucide-react";
 
 import { useSignup } from "@/features/auth/hooks/useAuth";
 import { signupSchema, SignupFormData } from "@/shared/lib/schema";
-import { useAuthStore } from "@/features/auth/store/useAuthStore";
-import { config } from "@/shared/lib/config";
+import { useAuthStore } from "@/shared/auth/useAuthStore";
+import { config, getBrowserApiUrl } from "@/shared/lib/config";
+import { TermsPrivacyModal } from "@/features/auth/components/TermsPrivacyModal";
 
 import { toast } from "sonner";
 
@@ -16,7 +17,15 @@ import { toast } from "sonner";
 const SocialButtons = () => (
   <div className="grid grid-cols-2 gap-3 mb-4 sm:mb-6">
     <a
+      // `config.apiUrl` is only the no-JS/SSR fallback (identical on server
+      // and client, so hydration never mismatches this attribute) — the
+      // click handler overrides it with the host this page actually
+      // loaded from, same reasoning as LoginForm's identical button.
       href={`${config.apiUrl}/auth/google`}
+      onClick={(e) => {
+        e.preventDefault();
+        window.location.href = `${getBrowserApiUrl()}/auth/google?origin=${encodeURIComponent(window.location.origin)}`;
+      }}
       className="group flex items-center justify-center gap-2 sm:gap-3 py-2 sm:py-3 px-3 sm:px-4 rounded-xl bg-white/5 border border-white/10 hover:bg-white hover:text-black hover:border-white transition-all duration-300"
     >
       <svg
@@ -44,17 +53,16 @@ const SocialButtons = () => (
       </svg>
       <span className="font-bold text-sm">Google</span>
     </a>
-    <button
-      type="button"
-      disabled
-      title="Facebook sign-in coming soon"
-      className="relative flex items-center justify-center gap-2 sm:gap-3 py-2 sm:py-3 px-3 sm:px-4 rounded-xl bg-white/5 border border-white/10 opacity-50 cursor-not-allowed"
+    <a
+      href={`${config.apiUrl}/auth/facebook`}
+      onClick={(e) => {
+        e.preventDefault();
+        window.location.href = `${getBrowserApiUrl()}/auth/facebook?origin=${encodeURIComponent(window.location.origin)}`;
+      }}
+      className="group flex items-center justify-center gap-2 sm:gap-3 py-2 sm:py-3 px-3 sm:px-4 rounded-xl bg-white/5 border border-white/10 hover:bg-[#1877F2] hover:text-white hover:border-[#1877F2] transition-all duration-300"
     >
-      <span className="absolute -top-2 -right-2 rounded-full bg-amber-400 text-black text-[9px] font-bold px-1.5 py-0.5 leading-none whitespace-nowrap">
-        Soon
-      </span>
       <svg
-        className="w-4 h-4 sm:w-5 sm:h-5"
+        className="w-4 h-4 sm:w-5 sm:h-5 group-hover:scale-110 transition-transform"
         fill="currentColor"
         viewBox="0 0 24 24"
         xmlns="http://www.w3.org/2000/svg"
@@ -62,10 +70,11 @@ const SocialButtons = () => (
         <path
           d="M24 12.073C24 5.405 18.627 0 12 0S0 5.405 0 12.073C0 18.1 4.388 23.094 10.125 24V15.563H7.078V12.073H10.125V9.429C10.125 6.423 11.916 4.761 14.656 4.761C15.968 4.761 17.344 4.995 17.344 4.995V7.948H15.83C14.34 7.948 13.875 8.873 13.875 9.822V12.073H17.203L16.671 15.563H13.875V24C19.612 23.094 24 18.1 24 12.073Z"
           fill="#1877F2"
+          className="group-hover:fill-white transition-colors"
         ></path>
       </svg>
       <span className="font-bold text-sm">Facebook</span>
-    </button>
+    </a>
   </div>
 );
 
@@ -74,6 +83,11 @@ export default function SignupForm() {
   const { toggleView } = useAuthStore();
   const [showPassword, setShowPassword] = React.useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = React.useState(false);
+  const [agreedToTerms, setAgreedToTerms] = React.useState(false);
+  const [hasReadCharter, setHasReadCharter] = React.useState(false);
+  const [charterTab, setCharterTab] = React.useState<
+    "terms" | "privacy" | null
+  >(null);
 
   const {
     register,
@@ -131,14 +145,15 @@ export default function SignupForm() {
       <form className="space-y-4" onSubmit={handleSubmit(onSignup, onInvalid)}>
         {/* Full Name */}
         <div className="group">
-          <label className="block text-xs font-bold text-white/90 tracking-wide mb-1.5 ml-1 group-focus-within:text-[#ccff00] transition-colors">
+          <label className="block text-xs font-bold text-white/90 tracking-wide mb-1.5 ml-1 group-focus-within:text-accent transition-colors">
             FULL NAME
           </label>
           <input
             {...register("name")}
-            className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 sm:py-3.5 text-sm text-white placeholder-white/20 focus:outline-none focus:ring-1 focus:ring-[#ccff00] focus:border-[#ccff00]/50 focus:bg-white/10 transition-all font-medium"
+            className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 sm:py-3.5 text-sm text-white placeholder-white/20 focus:outline-none focus:ring-1 focus:ring-accent focus:border-accent/50 focus:bg-white/10 transition-all font-medium"
             placeholder="e.g. Fox Mulder"
             type="text"
+            autoComplete="name"
           />
           {errors.name && (
             <span className="text-xs text-red-500 ml-1">
@@ -149,14 +164,15 @@ export default function SignupForm() {
 
         {/* Email Address */}
         <div className="group">
-          <label className="block text-xs font-bold text-white/90 tracking-wide mb-1.5 ml-1 group-focus-within:text-[#ccff00] transition-colors">
+          <label className="block text-xs font-bold text-white/90 tracking-wide mb-1.5 ml-1 group-focus-within:text-accent transition-colors">
             EMAIL ADDRESS
           </label>
           <input
             {...register("email")}
-            className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 sm:py-3.5 text-sm text-white placeholder-white/20 focus:outline-none focus:ring-1 focus:ring-[#ccff00] focus:border-[#ccff00]/50 focus:bg-white/10 transition-all font-medium"
+            className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 sm:py-3.5 text-sm text-white placeholder-white/20 focus:outline-none focus:ring-1 focus:ring-accent focus:border-accent/50 focus:bg-white/10 transition-all font-medium"
             placeholder="name@example.com"
             type="email"
+            autoComplete="email"
           />
           {errors.email && (
             <span className="text-xs text-red-500 ml-1">
@@ -167,14 +183,15 @@ export default function SignupForm() {
 
         {/* Username */}
         <div className="group">
-          <label className="block text-xs font-bold text-white/90 tracking-wide mb-1.5 ml-1 group-focus-within:text-[#ccff00] transition-colors">
+          <label className="block text-xs font-bold text-white/90 tracking-wide mb-1.5 ml-1 group-focus-within:text-accent transition-colors">
             USERNAME
           </label>
           <input
             {...register("username")}
-            className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 sm:py-3.5 text-sm text-white placeholder-white/20 focus:outline-none focus:ring-1 focus:ring-[#ccff00] focus:border-[#ccff00]/50 focus:bg-white/10 transition-all font-medium"
+            className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 sm:py-3.5 text-sm text-white placeholder-white/20 focus:outline-none focus:ring-1 focus:ring-accent focus:border-accent/50 focus:bg-white/10 transition-all font-medium"
             placeholder="fox_mulder"
             type="text"
+            autoComplete="off"
           />
           {errors.username && (
             <span className="text-xs text-red-500 ml-1">
@@ -185,15 +202,16 @@ export default function SignupForm() {
 
         {/* Password */}
         <div className="group">
-          <label className="block text-xs font-bold text-white/90 tracking-wide mb-1.5 ml-1 group-focus-within:text-[#ccff00] transition-colors">
+          <label className="block text-xs font-bold text-white/90 tracking-wide mb-1.5 ml-1 group-focus-within:text-accent transition-colors">
             PASSWORD
           </label>
           <div className="relative">
             <input
               {...register("password")}
-              className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 sm:py-3.5 pr-12 text-sm text-white placeholder-white/20 focus:outline-none focus:ring-1 focus:ring-[#ccff00] focus:border-[#ccff00]/50 focus:bg-white/10 transition-all font-medium"
+              className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 sm:py-3.5 pr-12 text-sm text-white placeholder-white/20 focus:outline-none focus:ring-1 focus:ring-accent focus:border-accent/50 focus:bg-white/10 transition-all font-medium"
               placeholder="••••••••"
               type={showPassword ? "text" : "password"}
+              autoComplete="new-password"
             />
             <button
               type="button"
@@ -215,15 +233,16 @@ export default function SignupForm() {
 
         {/* Confirm Password */}
         <div className="group">
-          <label className="block text-xs font-bold text-white/90 tracking-wide mb-1.5 ml-1 group-focus-within:text-[#ccff00] transition-colors">
+          <label className="block text-xs font-bold text-white/90 tracking-wide mb-1.5 ml-1 group-focus-within:text-accent transition-colors">
             CONFIRM PASSWORD
           </label>
           <div className="relative">
             <input
               {...register("confirmPassword")}
-              className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 sm:py-3.5 pr-12 text-sm text-white placeholder-white/20 focus:outline-none focus:ring-1 focus:ring-[#ccff00] focus:border-[#ccff00]/50 focus:bg-white/10 transition-all font-medium"
+              className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 sm:py-3.5 pr-12 text-sm text-white placeholder-white/20 focus:outline-none focus:ring-1 focus:ring-accent focus:border-accent/50 focus:bg-white/10 transition-all font-medium"
               placeholder="••••••••"
               type={showConfirmPassword ? "text" : "password"}
+              autoComplete="new-password"
             />
             <button
               type="button"
@@ -245,17 +264,25 @@ export default function SignupForm() {
 
         {/* Terms */}
         <div className="flex items-center gap-3 pt-2">
-          <div className="relative flex items-center">
+          <div className="relative flex h-5 w-5 shrink-0 items-center">
             <input
-              className="peer h-5 w-5 cursor-pointer appearance-none rounded-md border border-white/20 bg-white/5 checked:border-[#ccff00] checked:bg-[#ccff00] transition-all hover:border-[#ccff00]/50"
+              className="peer h-5 w-5 cursor-pointer appearance-none rounded-md border border-white/20 bg-white/5 checked:border-accent checked:bg-accent transition-all hover:border-accent/50"
               id="terms"
               type="checkbox"
+              checked={agreedToTerms}
+              onChange={(e) => {
+                // Reading the charter is mandatory before it can be
+                // checked; unchecking never needs that gate.
+                if (e.target.checked && !hasReadCharter) {
+                  setCharterTab("terms");
+                  return;
+                }
+                setAgreedToTerms(e.target.checked);
+              }}
               required
             />
-            <span className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-black opacity-0 peer-checked:opacity-100 transition-opacity pointer-events-none">
-              <span className="material-symbols-outlined text-[16px] font-bold">
-                check
-              </span>
+            <span className="pointer-events-none absolute inset-0 flex items-center justify-center text-black opacity-0 transition-opacity peer-checked:opacity-100">
+              <Check className="h-3.5 w-3.5" strokeWidth={3.5} />
             </span>
           </div>
           <label
@@ -263,28 +290,39 @@ export default function SignupForm() {
             htmlFor="terms"
           >
             I agree to the{" "}
-            <a
-              className="text-white hover:text-[#ccff00] underline decoration-[#ccff00]/30 underline-offset-2 transition-colors"
-              href="#"
+            <button
+              type="button"
+              onClick={() => setCharterTab("terms")}
+              className="text-white hover:text-accent underline decoration-accent/30 underline-offset-2 transition-colors"
             >
               Terms of Service
-            </a>{" "}
+            </button>{" "}
             &{" "}
-            <a
-              className="text-white hover:text-[#ccff00] underline decoration-[#ccff00]/30 underline-offset-2 transition-colors"
-              href="#"
+            <button
+              type="button"
+              onClick={() => setCharterTab("privacy")}
+              className="text-white hover:text-accent underline decoration-accent/30 underline-offset-2 transition-colors"
             >
               Privacy Policy
-            </a>
+            </button>
           </label>
         </div>
+
+        {charterTab && (
+          <TermsPrivacyModal
+            initialTab={charterTab}
+            onClose={() => setCharterTab(null)}
+            onAccept={() => setAgreedToTerms(true)}
+            onBothRead={() => setHasReadCharter(true)}
+          />
+        )}
 
         {/* Submit Button */}
         {/* Submit Button */}
         <button
           type="submit"
           disabled={signupMutation.isPending}
-          className="btn-neon w-full py-3 sm:py-4 mt-2 rounded-xl bg-[#ccff00] text-black font-bold text-sm sm:text-lg hover:shadow-[0_0_20px_rgba(204,255,0,0.4)] hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-2 group disabled:opacity-70 disabled:cursor-not-allowed text-center relative overflow-hidden"
+          className="btn-neon w-full py-3 sm:py-4 mt-2 rounded-xl bg-accent text-black font-bold text-sm sm:text-lg hover:shadow-[0_0_20px_rgba(204,255,0,0.4)] hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-2 group disabled:opacity-70 disabled:cursor-not-allowed text-center relative overflow-hidden"
         >
           {signupMutation.isPending ? (
             <Loader2 className="animate-spin w-5 h-5" />
@@ -308,10 +346,10 @@ export default function SignupForm() {
           Already have an account?{" "}
           <button
             onClick={toggleView}
-            className="font-bold text-white hover:text-[#ccff00] transition-colors relative inline-block group"
+            className="font-bold text-white hover:text-accent transition-colors relative inline-block group"
           >
             Log in
-            <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-[#ccff00] transition-all group-hover:w-full"></span>
+            <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-accent transition-all group-hover:w-full"></span>
           </button>
         </p>
       </div>

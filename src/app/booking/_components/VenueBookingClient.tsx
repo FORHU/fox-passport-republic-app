@@ -1,0 +1,677 @@
+﻿"use client";
+
+import PageLoader from "@/shared/components/ui/PageLoader";
+import React, { useState, useEffect, useMemo } from "react";
+import Image from "next/image";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import {
+  useVenue,
+  useVenueUnavailableDates,
+} from "@/features/venue/hooks/useVenue";
+import {
+  bookVenueDraft,
+  previewVenueBookingPrice,
+} from "@/features/booking/api/bookings";
+import { useAuthStore } from "@/shared/auth/useAuthStore";
+import { StepperControl } from "@/shared/components/ui/StepperControl";
+import { ProgressIndicator } from "@/shared/components/ui/ProgressIndicator";
+import { FormSection } from "@/shared/components/ui/FormSection";
+import { PaymentProtectionTimeline } from "@/shared/components/ui/PaymentProtectionTimeline";
+import DateRangePicker, {
+  diffDays,
+} from "@/shared/components/ui/DateRangePicker";
+import { ScheduleConflictWarning } from "@/shared/components/ui/ScheduleConflictWarning";
+import { useScheduleConflicts } from "@/shared/hooks/useScheduleConflicts";
+import { toast } from "sonner";
+import { toastRequireLogin } from "@/shared/lib/toast";
+import { getDashboardPath } from "@/shared/lib/dashboard-path";
+import { useCurrency } from "@/shared/providers/CurrencyProvider";
+
+export default function VenueBookingClient({ venueId }: { venueId: string }) {
+  const router = useRouter();
+  const { user, isAuthenticated, openLogin } = useAuthStore();
+  const { format } = useCurrency();
+
+  const venueQuery = useVenue(venueId);
+  const venue: any = venueQuery.data ?? null;
+  // Only the first load shows the spinner — a revisit renders from cache.
+  const isLoading = venueQuery.isPending;
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const { data: unavailability } = useVenueUnavailableDates(venueId);
+  const unavailableDates = useMemo(
+    () => new Set<string>(unavailability?.dates ?? []),
+    [unavailability],
+  );
+
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
+  const [guestCount, setGuestCount] = useState(2);
+  const [specialRequests, setSpecialRequests] = useState("");
+  const [errors, setErrors] = useState<{ dates?: string }>({});
+
+  const [voucherCodeInput, setVoucherCodeInput] = useState("");
+  const [appliedVoucherCode, setAppliedVoucherCode] = useState<string | null>(
+    null,
+  );
+  const [voucherDiscount, setVoucherDiscount] = useState(0);
+  const [voucherError, setVoucherError] = useState<string | null>(null);
+  const [voucherChecking, setVoucherChecking] = useState(false);
+  const [autoApplied, setAutoApplied] = useState(false);
+  // The platform fee the API will actually charge, from the live price
+  // preview. Null until a preview has answered — no dates yet, or signed out.
+  const [platformFee, setPlatformFee] = useState<number | null>(null);
+
+  useEffect(() => {
+    if (venueQuery.isError) toast.error("Could not load venue details.");
+  }, [venueQuery.isError]);
+
+  useEffect(() => {
+    if (startDate && endDate && endDate < startDate) {
+      setEndDate(startDate);
+    }
+  }, [startDate, endDate]);
+
+  const scheduleConflicts = useScheduleConflicts(startDate, endDate);
+
+  const baseRate = Number(venue?.price ?? 0);
+  const capacity = Number(venue?.capacity ?? 0) || undefined;
+  const extraGuestRate =
+    venue?.extraGuestRate != null ? Number(venue.extraGuestRate) : null;
+  const days = useMemo(
+    () => diffDays(startDate, endDate),
+    [startDate, endDate],
+  );
+  // Mirrors BookingSvc.priceVenueBooking exactly — a venue's `price` is a
+  // flat package rate for up to `capacity` guests, never multiplied by
+  // guest count. Only guests beyond capacity add anything, at the venue's
+  // own `extraGuestRate`, which itself scales with duration the same way
+  // the base price does (not by guests a second time in some other unit).
+  const rateMultiplier =
+    venue?.billingRate === "hourly"
+      ? days * 24
+      : venue?.billingRate === "daily"
+        ? days
+        : venue?.billingRate === "weekly"
+          ? Math.ceil(days / 7)
+          : venue?.billingRate === "monthly"
+            ? Math.ceil(days / 30)
+            : 1;
+  const extraGuests = capacity ? Math.max(0, guestCount - capacity) : 0;
+  const needsApproval = extraGuests > 0;
+  const baseAmount = baseRate * rateMultiplier;
+  const overageAmount = extraGuestRate
+    ? extraGuestRate * rateMultiplier * extraGuests
+    : 0;
+  const subtotal = baseAmount + overageAmount;
+  const serviceFee = platformFee ?? 0;
+  const total = Math.max(0, subtotal + serviceFee - voucherDiscount);
+  const rateUnit =
+    venue?.billingRate === "hourly"
+      ? "hr"
+      : venue?.billingRate === "weekly"
+        ? "week"
+        : venue?.billingRate === "monthly"
+          ? "month"
+          : "day";
+
+  const imageUrl =
+    venue?.images?.[0]?.url ?? venue?.images?.[0]?.imageUrl ?? null;
+
+  // Reset a previously-applied voucher when the dates change — a discount
+  // validated against one date range isn't guaranteed valid for another.
+  useEffect(() => {
+    setAppliedVoucherCode(null);
+    setVoucherDiscount(0);
+    setVoucherError(null);
+  }, [startDate, endDate]);
+
+  const handleApplyVoucher = async () => {
+    if (!voucherCodeInput.trim()) return;
+    if (!startDate || !endDate) {
+      setVoucherError("Pick your dates first.");
+      return;
+    }
+    setVoucherChecking(true);
+    setVoucherError(null);
+    try {
+      const preview = await previewVenueBookingPrice({
+        venueId,
+        startDate: new Date(`${startDate}T00:00:00`).toISOString(),
+        endDate: new Date(`${endDate}T23:59:59`).toISOString(),
+        guestCount,
+        voucherCode: voucherCodeInput.trim(),
+      });
+      setAppliedVoucherCode(voucherCodeInput.trim().toUpperCase());
+      setVoucherDiscount(preview.discountAmount);
+      setAutoApplied(false);
+      toast.success("Voucher applied.");
+    } catch (err: any) {
+      setAppliedVoucherCode(null);
+      setVoucherDiscount(0);
+      setVoucherError(
+        err?.response?.data?.message || "Invalid or expired voucher code.",
+      );
+    } finally {
+      setVoucherChecking(false);
+    }
+  };
+
+  // Re-prices whenever the dates or guests change: picks up the real
+  // platform fee, re-checks a manually applied voucher, and — only while the
+  // citizen hasn't typed their own code — looks for an auto-apply promotion.
+  useEffect(() => {
+    if (!startDate || !endDate) {
+      setPlatformFee(null);
+      return;
+    }
+    let cancelled = false;
+    const manualCode =
+      !autoApplied && appliedVoucherCode ? appliedVoucherCode : undefined;
+    previewVenueBookingPrice({
+      venueId,
+      startDate: new Date(`${startDate}T00:00:00`).toISOString(),
+      endDate: new Date(`${endDate}T23:59:59`).toISOString(),
+      guestCount,
+      voucherCode: manualCode,
+    })
+      .then((preview) => {
+        if (cancelled) return;
+        setPlatformFee(preview.platformFeeAmount);
+        if (manualCode) {
+          setVoucherDiscount(preview.discountAmount);
+          return;
+        }
+        if (voucherCodeInput.trim()) return;
+        if (preview.discountAmount > 0 && preview.voucherCode) {
+          setAppliedVoucherCode(preview.voucherCode);
+          setVoucherDiscount(preview.discountAmount);
+          setAutoApplied(true);
+        }
+      })
+      .catch(() => {
+        if (!cancelled) setPlatformFee(null);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [
+    venueId,
+    startDate,
+    endDate,
+    guestCount,
+    voucherCodeInput,
+    appliedVoucherCode,
+  ]);
+
+  const handleProceed = async () => {
+    if (!startDate || !endDate) {
+      setErrors({ dates: "Please select both start and end dates." });
+      return;
+    }
+    setErrors({});
+    if (!venue) return;
+
+    if (!isAuthenticated) {
+      toastRequireLogin("Please log in to complete your booking.");
+      openLogin();
+      return;
+    }
+
+    // Booking needs a verified email — the one check the API enforces. This
+    // used to also require `identityVerified`, a flag nothing ever sets, so
+    // every booking bounced to /kyc. Only an explicit `false` blocks here;
+    // the API still has the final say.
+    if (user?.isEmailVerified === false) {
+      toast.error("Please verify your email address before booking.");
+      router.push(
+        `/kyc?next=${encodeURIComponent(window.location.pathname + window.location.search)}`,
+      );
+      return;
+    }
+
+    setIsSubmitting(true);
+    try {
+      const result = await bookVenueDraft({
+        venueId,
+        startDate: new Date(`${startDate}T00:00:00`).toISOString(),
+        endDate: new Date(`${endDate}T23:59:59`).toISOString(),
+        guestCount,
+        totalAmount: total,
+        specialRequests: specialRequests.trim() || undefined,
+        voucherCode: appliedVoucherCode ?? undefined,
+      });
+
+      if (needsApproval) {
+        router.push(
+          `/booking/venue/pending?bookingId=${result.bookingId}&extraGuests=${extraGuests}&total=${total}`,
+        );
+        return;
+      }
+
+      router.push(
+        `/booking/venue/checkout?bookingId=${result.bookingId}&total=${total}&subtotal=${subtotal}&serviceFee=${serviceFee}`,
+      );
+    } catch (err: any) {
+      toast.error(
+        err?.response?.data?.message ||
+          err?.message ||
+          "Could not create booking. Please try again.",
+      );
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  if (isLoading) {
+    return <PageLoader label="Loading venue details" />;
+  }
+
+  if (!venue) {
+    return (
+      <div className="min-h-screen bg-background bg-gradient-dark flex items-center justify-center text-center p-8">
+        <div>
+          <h2 className="text-2xl font-bold text-white mb-3">
+            Venue Not Found
+          </h2>
+          <Link
+            href="/"
+            className="px-6 py-3 rounded-xl bg-accent text-black font-bold hover:bg-accent/90 transition-colors"
+          >
+            Browse Venues
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="bg-background bg-gradient-dark text-text-main antialiased min-h-screen flex flex-col selection:bg-accent selection:text-black font-body">
+      {/* Header */}
+      <header className="fixed top-6 left-0 right-0 z-50">
+        <div className="mx-auto max-w-7xl px-4">
+          <div className="glass-panel rounded-full px-6 h-20 flex items-center justify-between shadow-2xl hover:bg-black/40 transition-colors duration-500">
+            <Link
+              href="/"
+              className="flex items-center gap-3 group cursor-pointer"
+            >
+              <div className="flex h-10 w-10 items-center justify-center overflow-hidden group-hover:scale-110 transition-transform duration-300">
+                <Image
+                  src="/foxonlylogo.png"
+                  alt="FoxPassport Logo"
+                  width={40}
+                  height={40}
+                  className="object-contain"
+                  priority
+                />
+              </div>
+              <h2 className="text-2xl font-display font-bold tracking-tight text-white group-hover:text-accent transition-colors">
+                FoxPassport
+              </h2>
+            </Link>
+            <nav className="hidden md:flex items-center gap-2 bg-black/20 p-1.5 rounded-full border border-white/5">
+              <Link
+                href="/"
+                className="px-6 py-2.5 rounded-full text-sm font-medium text-white/70 hover:text-white hover:bg-white/10 transition-all"
+              >
+                Explore
+              </Link>
+              <Link
+                href="/booking"
+                className="px-6 py-2.5 rounded-full text-sm font-bold text-black bg-accent hover:bg-accent/90 transition-all"
+              >
+                Bookings
+              </Link>
+            </nav>
+            <div
+              className="h-10 w-10 rounded-full border border-white/10 overflow-hidden cursor-pointer hover:border-accent transition-colors"
+              onClick={() => router.push(getDashboardPath(user))}
+            >
+              {user?.imgId ? (
+                <img
+                  alt="User"
+                  className="h-full w-full object-cover"
+                  src={user.imgId}
+                />
+              ) : (
+                <div className="h-full w-full bg-accent flex items-center justify-center text-black font-bold text-sm">
+                  {user?.name?.charAt(0)?.toUpperCase() ?? "U"}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <main className="grow pt-32 pb-28 sm:pb-20">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          {/* Breadcrumb + heading */}
+          <div className="mb-8">
+            <div className="flex items-center gap-2 text-sm text-text-muted mb-4">
+              <Link href="/" className="hover:text-white transition-colors">
+                Explore
+              </Link>
+              <span className="material-symbols-outlined text-[14px]">
+                chevron_right
+              </span>
+              <span className="text-white/60">Venues</span>
+              <span className="material-symbols-outlined text-[14px]">
+                chevron_right
+              </span>
+              <span className="text-accent font-semibold">{venue.name}</span>
+            </div>
+            <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
+              <div>
+                <div className="flex items-center gap-2 mb-2">
+                  <span className="px-3 py-1 bg-accent/20 border border-accent/30 rounded-full text-[10px] font-bold text-accent uppercase tracking-widest">
+                    Venue Direct Booking
+                  </span>
+                </div>
+                <h1 className="text-4xl md:text-5xl font-display font-bold text-white">
+                  Book This Venue
+                </h1>
+              </div>
+              <ProgressIndicator
+                steps={[
+                  { number: 1, label: "Configure" },
+                  { number: 2, label: "Pay" },
+                ]}
+                currentStep={1}
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 relative">
+            {/* Left: Form */}
+            <div className="lg:col-span-8 space-y-8">
+              {/* Date Range */}
+              <FormSection icon="date_range" title="Select Dates">
+                <DateRangePicker
+                  startDate={startDate}
+                  endDate={endDate}
+                  onStartChange={(d) => {
+                    setStartDate(d);
+                    setErrors({});
+                  }}
+                  onEndChange={(d) => {
+                    setEndDate(d);
+                    setErrors({});
+                  }}
+                  errors={errors}
+                  startLabel="Start Date"
+                  endLabel="End Date"
+                  showSummary={false}
+                  disabledDates={unavailableDates}
+                />
+                <p className="text-xs text-white/40 mt-3 flex items-center gap-1.5">
+                  <span className="material-symbols-outlined text-[13px] text-red-400/60">
+                    event_busy
+                  </span>
+                  Dates already booked or blocked by the Venue Foxer are
+                  unavailable.
+                </p>
+                <ScheduleConflictWarning conflicts={scheduleConflicts} />
+              </FormSection>
+
+              {/* Guest Count */}
+              <FormSection icon="group" title="Number of Guests">
+                <StepperControl
+                  value={guestCount}
+                  onChange={setGuestCount}
+                  min={1}
+                  max={extraGuestRate ? undefined : capacity}
+                  step={1}
+                  label="Total Guests"
+                  icon="person"
+                />
+                {capacity && (
+                  <p className="text-xs text-white/40 mt-3 flex items-center gap-1.5">
+                    <span className="material-symbols-outlined text-[13px] text-accent/70">
+                      info
+                    </span>
+                    {extraGuestRate
+                      ? `This venue's package covers ${capacity} guests. Beyond that, it's sent to the Venue Foxer as a request — they confirm the venue can actually fit everyone before you pay.`
+                      : `This venue fits up to ${capacity} guests.`}
+                  </p>
+                )}
+                {needsApproval && (
+                  <div className="flex items-start gap-2.5 mt-3 px-4 py-3 bg-amber-500/10 border border-amber-500/25 rounded-xl">
+                    <span className="material-symbols-outlined text-amber-400 text-[16px] mt-0.5 shrink-0">
+                      hourglass_top
+                    </span>
+                    <p className="text-xs text-amber-300">
+                      {extraGuests} guest{extraGuests !== 1 ? "s" : ""} over
+                      capacity — this becomes a <strong>Request</strong> the
+                      Venue Foxer must approve before you can pay.
+                    </p>
+                  </div>
+                )}
+              </FormSection>
+
+              {/* Special Requests */}
+              <FormSection icon="edit_note" title="Special Requests">
+                <textarea
+                  value={specialRequests}
+                  onChange={(e) => setSpecialRequests(e.target.value)}
+                  className="w-full bg-black/20 border border-white/10 rounded-2xl p-4 text-white placeholder-text-muted/50 focus:border-accent focus:ring-1 focus:ring-accent transition-all resize-none h-32 outline-none"
+                  placeholder="Any special requirements, setup needs, or questions for the Venue Foxer..."
+                />
+              </FormSection>
+            </div>
+
+            {/* Right: Summary */}
+            <div className="lg:col-span-4">
+              <div className="sticky top-32 space-y-6">
+                <div className="glass-card rounded-[2.5rem] overflow-hidden border border-white/10 shadow-glow">
+                  <div className="relative h-48">
+                    {imageUrl ? (
+                      <img
+                        alt={venue.name}
+                        className="w-full h-full object-cover"
+                        src={imageUrl}
+                      />
+                    ) : (
+                      <div className="w-full h-full bg-surface-highlight/50 flex items-center justify-center">
+                        <span className="material-symbols-outlined text-white/20 text-[64px]">
+                          apartment
+                        </span>
+                      </div>
+                    )}
+                    <div className="absolute inset-0 bg-linear-to-t from-surface via-surface/50 to-transparent" />
+                    <div className="absolute bottom-4 left-6 right-6">
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className="bg-accent text-black text-[10px] font-bold px-2 py-0.5 rounded uppercase tracking-wider">
+                          {venue.category ?? "Venue"}
+                        </span>
+                      </div>
+                      <h3 className="text-xl font-display font-bold text-white leading-tight">
+                        {venue.name}
+                      </h3>
+                    </div>
+                  </div>
+
+                  <div className="p-6 space-y-4">
+                    <div className="flex justify-between text-sm">
+                      <span className="text-text-muted">Rate</span>
+                      <span className="text-white font-medium">
+                        {format(baseRate)} / {rateUnit}
+                      </span>
+                    </div>
+                    <div className="flex justify-between text-sm">
+                      <span className="text-text-muted">Duration</span>
+                      <span className="text-white font-medium">
+                        {days} day{days !== 1 ? "s" : ""}
+                      </span>
+                    </div>
+                    <div className="flex justify-between text-sm">
+                      <span className="text-text-muted">
+                        Guests{capacity ? ` (up to ${capacity} included)` : ""}
+                      </span>
+                      <span className="text-white font-medium">
+                        {guestCount}
+                      </span>
+                    </div>
+                    <div className="h-px bg-white/10 my-2" />
+                    <div className="flex justify-between text-sm">
+                      <span className="text-text-muted">Base package</span>
+                      <span className="text-white">{format(baseAmount)}</span>
+                    </div>
+                    {needsApproval && (
+                      <div className="flex justify-between text-sm">
+                        <span className="text-amber-400">
+                          +{extraGuests} extra guest
+                          {extraGuests !== 1 ? "s" : ""}
+                        </span>
+                        <span className="text-amber-400">
+                          {format(overageAmount)}
+                        </span>
+                      </div>
+                    )}
+                    <div className="flex justify-between text-sm">
+                      <span className="text-text-muted">Service fee</span>
+                      <span className="text-white">
+                        {platformFee === null ? (
+                          <span className="text-white/40">
+                            Added at checkout
+                          </span>
+                        ) : (
+                          format(platformFee)
+                        )}
+                      </span>
+                    </div>
+
+                    <div className="pt-1">
+                      {appliedVoucherCode ? (
+                        <div className="flex items-center justify-between text-sm bg-accent/10 border border-accent/20 rounded-xl px-3 py-2">
+                          <span className="text-accent font-semibold flex items-center gap-1.5">
+                            <span className="material-symbols-outlined text-[14px]">
+                              sell
+                            </span>
+                            {autoApplied
+                              ? "Discount applied automatically"
+                              : `${appliedVoucherCode} applied`}
+                          </span>
+                          {!autoApplied && (
+                            <button
+                              onClick={() => {
+                                setAppliedVoucherCode(null);
+                                setVoucherDiscount(0);
+                                setVoucherCodeInput("");
+                              }}
+                              className="text-white/40 hover:text-white text-xs"
+                            >
+                              Remove
+                            </button>
+                          )}
+                        </div>
+                      ) : (
+                        <div className="flex gap-2">
+                          <input
+                            type="text"
+                            value={voucherCodeInput}
+                            onChange={(e) => {
+                              setVoucherCodeInput(e.target.value);
+                              setVoucherError(null);
+                            }}
+                            placeholder="Voucher code"
+                            className="flex-1 min-w-0 bg-black/20 border border-white/10 rounded-xl px-3 py-2 text-sm text-white placeholder-text-muted/50 focus:border-accent outline-none transition-all uppercase"
+                          />
+                          <button
+                            onClick={handleApplyVoucher}
+                            disabled={voucherChecking || !voucherCodeInput.trim()}
+                            className="shrink-0 px-4 py-2 rounded-xl bg-white/10 text-white text-sm font-semibold hover:bg-white/20 transition-all disabled:opacity-50"
+                          >
+                            {voucherChecking ? "..." : "Apply"}
+                          </button>
+                        </div>
+                      )}
+                      {voucherError && (
+                        <p className="text-red-400 text-xs mt-1.5">
+                          {voucherError}
+                        </p>
+                      )}
+                    </div>
+
+                    {voucherDiscount > 0 && (
+                      <div className="flex justify-between text-sm">
+                        <span className="text-accent">Voucher discount</span>
+                        <span className="text-accent">
+                          -{format(voucherDiscount)}
+                        </span>
+                      </div>
+                    )}
+
+                    <div className="h-px bg-white/10 my-2" />
+                    <div className="flex justify-between items-end">
+                      <span className="text-sm font-bold text-white">
+                        Total
+                      </span>
+                      <span className="text-2xl font-display font-bold text-accent">
+                        {format(total)}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="px-6 pb-6">
+                    <button
+                      disabled={isSubmitting}
+                      onClick={handleProceed}
+                      className="w-full rounded-xl bg-accent py-4 text-black font-bold text-lg hover:shadow-[0_0_20px_rgba(204,255,0,0.4)] transition-all active:scale-95 flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed"
+                    >
+                      {isSubmitting ? (
+                        <>
+                          <span className="h-5 w-5 rounded-full border-2 border-black/20 border-t-black animate-spin" />{" "}
+                          {needsApproval ? "Sending request…" : "Creating booking…"}
+                        </>
+                      ) : needsApproval ? (
+                        <>
+                          Request to Book{" "}
+                          <span className="material-symbols-outlined">
+                            hourglass_top
+                          </span>
+                        </>
+                      ) : (
+                        <>
+                          Proceed to Payment{" "}
+                          <span className="material-symbols-outlined">
+                            arrow_forward
+                          </span>
+                        </>
+                      )}
+                    </button>
+                    <p className="text-center text-[10px] text-text-muted mt-3">
+                      <span className="material-symbols-outlined text-[12px] align-middle mr-1">
+                        lock
+                      </span>
+                      Secure encrypted checkout · Payment held safely until confirmed
+                    </p>
+                  </div>
+                </div>
+
+                <PaymentProtectionTimeline />
+              </div>
+            </div>
+          </div>
+        </div>
+      </main>
+
+      <footer className="bg-black pt-10 pb-10 border-t border-white/10">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="flex flex-col md:flex-row justify-between items-center gap-4">
+            <div className="flex items-center gap-2">
+              <span className="material-symbols-outlined text-white">
+                explore
+              </span>
+              <span className="text-xl font-display font-bold text-white">
+                FoxPassport
+              </span>
+            </div>
+            <p className="text-xs text-gray-500 font-medium">
+              © {new Date().getFullYear()} FoxPassport Inc. All rights reserved.
+            </p>
+          </div>
+        </div>
+      </footer>
+    </div>
+  );
+}

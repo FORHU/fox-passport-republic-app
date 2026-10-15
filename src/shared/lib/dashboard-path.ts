@@ -1,4 +1,5 @@
-import type { RoleType, User } from "@/features/auth/types/auth";
+import type { RoleType, User } from "@/shared/auth/types";
+import { canAccessAdmin } from "@/shared/lib/permissions";
 
 /** RoleTypes that grant access to the supply-side dashboard. */
 const SUPPLY_ROLE_TYPES: RoleType[] = [
@@ -6,6 +7,13 @@ const SUPPLY_ROLE_TYPES: RoleType[] = [
   "venueFoxer",
   "gearFoxer",
   "serviceFoxer",
+  // Their payouts and Stripe onboarding live on the creator dashboard.
+  "performerFoxer",
+  // Invitations and the teams they help run live on the dashboard.
+  "organizer",
+  // Partnerships, investments and payouts live on the dashboard too —
+  // `requireHost()` already admits them; this link just never sent them.
+  "investor",
 ];
 
 /**
@@ -22,7 +30,7 @@ export function getDashboardPath(
   user: Pick<User, "systemRole" | "roleType"> | null | undefined,
 ): string {
   if (!user) return "/user";
-  if (user.systemRole === "admin") return "/admin";
+  if (canAccessAdmin(user)) return "/admin";
 
   const roleTypes = user.roleType ?? [];
   if (roleTypes.some((role) => SUPPLY_ROLE_TYPES.includes(role))) {

@@ -1,12 +1,10 @@
-/* eslint-disable @next/next/no-img-element */
 "use client";
 
+import { useCallback, useRef } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import {
-  type Foxer,
-  type FoxerSpecialization,
-} from "@/features/user/api/foxers";
+import { type Foxer, type FoxerSpecialization } from "@/shared/api/foxers";
 import SearchPagination from "./SearchPagination";
 
 const FALLBACK_AVATAR =
@@ -37,6 +35,7 @@ function getPrimaryRole(foxer: Foxer): string {
   if (roles.includes("eventFoxer")) return "eventFoxer";
   if (roles.includes("gearFoxer")) return "gearFoxer";
   if (roles.includes("serviceFoxer")) return "serviceFoxer";
+  if (roles.includes("performerFoxer")) return "performerFoxer";
   return "";
 }
 
@@ -56,13 +55,18 @@ const ROLE_META: Record<
   },
   serviceFoxer: {
     label: "Talent Foxer",
-    description: "Provides services like photography, catering & entertainment",
+    description: "Provides services like catering, design & staffing",
     color: "#00d2ff",
+  },
+  performerFoxer: {
+    label: "Performer Foxer",
+    description: "Provides photography, DJ, live music & more",
+    color: "#f59e0b",
   },
   venueFoxer: {
     label: "Venue Foxer",
     description: "Provides the space for your event",
-    color: "#ccff00",
+    color: "var(--accent-text)",
   },
 };
 
@@ -71,11 +75,71 @@ function getRoleMeta(foxer: Foxer) {
   if (roles.includes("eventFoxer")) return ROLE_META.eventFoxer;
   if (roles.includes("gearFoxer")) return ROLE_META.gearFoxer;
   if (roles.includes("serviceFoxer")) return ROLE_META.serviceFoxer;
+  if (roles.includes("performerFoxer")) return ROLE_META.performerFoxer;
   return {
     label: "Foxer",
     description: "FoxPassport verified professional",
-    color: "#ffffff",
+    color: "var(--color-white)",
   };
+}
+
+function VenueCarousel({ images }: { images: string[] }) {
+  const scrollRef = useRef<HTMLDivElement>(null);
+
+  const scroll = useCallback(
+    (dir: number) => (e: React.MouseEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
+      scrollRef.current?.scrollBy({ left: dir * 160, behavior: "smooth" });
+    },
+    [],
+  );
+
+  return (
+    <div className="relative">
+      <div
+        ref={scrollRef}
+        className="flex gap-3 overflow-x-auto snap-x snap-mandatory hide-scrollbar scroll-smooth"
+      >
+        {images.map((img, idx) => (
+          <div
+            key={idx}
+            className="relative h-24 w-36 shrink-0 snap-start rounded-2xl overflow-hidden border border-white/10"
+          >
+            <Image
+              src={img}
+              alt="Venue"
+              fill
+              sizes="144px"
+              className="object-cover"
+            />
+          </div>
+        ))}
+      </div>
+      {images.length > 1 && (
+        <>
+          <button
+            type="button"
+            onClick={scroll(-1)}
+            className="absolute left-0 top-1/2 -translate-x-1/2 -translate-y-1/2 h-7 w-7 rounded-full bg-black/80 border border-white/10 flex items-center justify-center text-white/70 hover:text-white hover:bg-black cursor-pointer z-20"
+          >
+            <span className="material-symbols-outlined text-[16px]">
+              chevron_left
+            </span>
+          </button>
+          <button
+            type="button"
+            onClick={scroll(1)}
+            className="absolute right-0 top-1/2 translate-x-1/2 -translate-y-1/2 h-7 w-7 rounded-full bg-black/80 border border-white/10 flex items-center justify-center text-white/70 hover:text-white hover:bg-black cursor-pointer z-20"
+          >
+            <span className="material-symbols-outlined text-[16px]">
+              chevron_right
+            </span>
+          </button>
+        </>
+      )}
+    </div>
+  );
 }
 
 function FoxerCard({ foxer }: { foxer: Foxer }) {
@@ -93,6 +157,10 @@ function FoxerCard({ foxer }: { foxer: Foxer }) {
   )
     .filter(Boolean)
     .slice(0, 3);
+
+  const venueImages = (foxer.venues ?? [])
+    .flatMap((v) => v.images.map((img) => img.url))
+    .filter(Boolean);
 
   const tags =
     isHost && hasTemplates
@@ -126,9 +194,11 @@ function FoxerCard({ foxer }: { foxer: Foxer }) {
       <div className="flex items-start justify-between gap-2 mb-3 relative z-10 pointer-events-none">
         <div className="flex gap-3 sm:gap-4 min-w-0">
           <div className="relative shrink-0">
-            <img
+            <Image
               src={avatarUrl}
               alt={foxer.name}
+              width={64}
+              height={64}
               className="h-12 w-12 sm:h-16 sm:w-16 rounded-full object-cover border-2 border-surface-highlight group-hover:scale-105 transition-transform"
               onError={(e) => {
                 (e.target as HTMLImageElement).src = FALLBACK_AVATAR;
@@ -206,21 +276,34 @@ function FoxerCard({ foxer }: { foxer: Foxer }) {
         );
       })()}
 
-      {portfolioImages.length > 0 && (
-        <div className="flex justify-between gap-3 mb-8 relative z-10 pointer-events-none">
-          {portfolioImages.map((img, idx) => (
-            <div
-              key={idx}
-              className="h-20 flex-1 rounded-2xl overflow-hidden border border-white/10 group-hover:scale-105 transition-transform duration-300 first:-rotate-3 last:rotate-3"
-            >
-              <img
-                src={img}
-                alt="Work"
-                className="h-full w-full object-cover"
-              />
-            </div>
-          ))}
+      {isHost && venueImages.length > 0 ? (
+        <div className="mb-8 relative z-10">
+          <p className="text-[9px] uppercase tracking-widest text-white/35 font-bold mb-2 pointer-events-none">
+            Venues
+          </p>
+          <div className="pointer-events-auto">
+            <VenueCarousel images={venueImages} />
+          </div>
         </div>
+      ) : (
+        portfolioImages.length > 0 && (
+          <div className="flex justify-between gap-3 mb-8 relative z-10 pointer-events-none">
+            {portfolioImages.map((img, idx) => (
+              <div
+                key={idx}
+                className="relative h-20 flex-1 rounded-2xl overflow-hidden border border-white/10 group-hover:scale-105 transition-transform duration-300 first:-rotate-3 last:rotate-3"
+              >
+                <Image
+                  src={img}
+                  alt="Work"
+                  fill
+                  sizes="120px"
+                  className="object-cover"
+                />
+              </div>
+            ))}
+          </div>
+        )
       )}
 
       <div className="flex gap-3 relative z-20 mt-auto pt-2">
@@ -295,7 +378,7 @@ export default function EventFoxersSection({
             Event Foxers
           </h2>
           <p className="text-white/50 text-sm mt-1">
-            Organizers who specialize in your vibe.
+            Event Foxers who specialize in your vibe.
           </p>
         </div>
         <span className="flex items-center gap-2 text-xs text-white/40">

@@ -1,9 +1,10 @@
-/* eslint-disable @next/next/no-img-element */
 "use client";
 
 import React from "react";
 import Image from "next/image";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useLogout } from "@/shared/auth/useLogout";
 
 interface Props {
   user?: any;
@@ -24,6 +25,7 @@ const ROWS = [
 
 export default function MobileSettingsView({ user }: Props) {
   const router = useRouter();
+  const logout = useLogout();
 
   const name: string = user?.name ?? "Juan Dela Cruz";
   const email: string = user?.email ?? "juan@email.com";
@@ -33,13 +35,13 @@ export default function MobileSettingsView({ user }: Props) {
   return (
     <div
       style={{
-        background: "#050608",
+        background: "var(--canvas)",
         minHeight: "100svh",
         position: "relative",
-        color: "#fff",
+        color: "var(--color-white)",
       }}
     >
-      {/* Nav bar — no back button, top-level page */}
+      {/* Nav bar */}
       <div
         style={{
           position: "fixed",
@@ -48,23 +50,29 @@ export default function MobileSettingsView({ user }: Props) {
           right: 0,
           height: 64,
           zIndex: 5,
-          background: "rgba(5,6,8,0.9)",
+          background: "color-mix(in srgb, var(--canvas) 90%, transparent)",
           backdropFilter: "blur(20px)",
           WebkitBackdropFilter: "blur(20px)",
-          borderBottom: "1px solid rgba(255,255,255,0.08)",
+          borderBottom: "1px solid color-mix(in srgb, var(--color-white) 8%, transparent)",
           display: "flex",
           alignItems: "center",
           padding: "0 16px",
           gap: 10,
         }}
       >
-        <Image
-          src="/foxonlylogo.png"
-          alt="FoxPassport"
-          width={22}
-          height={22}
-          style={{ objectFit: "contain" }}
-        />
+        <Link
+          href="/user"
+          aria-label="Back to profile"
+          style={{ display: "flex", alignItems: "center", flexShrink: 0 }}
+        >
+          <Image
+            src="/foxonlylogo.png"
+            alt="FoxPassport"
+            width={22}
+            height={22}
+            style={{ objectFit: "contain" }}
+          />
+        </Link>
         <p
           style={{
             flex: 1,
@@ -111,7 +119,7 @@ export default function MobileSettingsView({ user }: Props) {
             ) : (
               <span
                 className="font-display"
-                style={{ fontSize: 30, fontWeight: 700, color: "#fff" }}
+                style={{ fontSize: 30, fontWeight: 700, color: "var(--color-white)" }}
               >
                 {initial}
               </span>
@@ -122,14 +130,14 @@ export default function MobileSettingsView({ user }: Props) {
             style={{
               fontSize: 19,
               fontWeight: 700,
-              color: "#fff",
+              color: "var(--color-white)",
               margin: "0 0 4px",
             }}
           >
             {name}
           </h2>
           <p
-            style={{ fontSize: 11, color: "rgba(255,255,255,0.4)", margin: 0 }}
+            style={{ fontSize: 11, color: "color-mix(in srgb, var(--color-white) 40%, transparent)", margin: 0 }}
           >
             {email}
           </p>
@@ -140,15 +148,15 @@ export default function MobileSettingsView({ user }: Props) {
           {ROWS.map((row) => (
             <button
               key={row.label}
-              onClick={() => (row.href ? router.push(row.href) : undefined)}
+              onClick={() => (row.href ? router.push(row.href) : logout())}
               style={{
                 display: "flex",
                 alignItems: "center",
                 gap: 14,
                 width: "100%",
                 textAlign: "left",
-                background: "rgba(255,255,255,0.04)",
-                border: "1px solid rgba(255,255,255,0.07)",
+                background: "color-mix(in srgb, var(--color-white) 4%, transparent)",
+                border: "1px solid color-mix(in srgb, var(--color-white) 7%, transparent)",
                 borderRadius: 18,
                 padding: "14px 16px",
                 cursor: "pointer",
@@ -178,7 +186,7 @@ export default function MobileSettingsView({ user }: Props) {
               </span>
               <span
                 className="material-symbols-outlined"
-                style={{ fontSize: 18, color: "rgba(255,255,255,0.2)" }}
+                style={{ fontSize: 18, color: "color-mix(in srgb, var(--color-white) 20%, transparent)" }}
               >
                 chevron_right
               </span>

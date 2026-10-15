@@ -6,6 +6,8 @@ import {
   ListingType,
 } from "@/features/asset/data/listingBuilderData";
 
+import { Money } from "@/shared/components/ui/Money";
+
 interface ListingStatusPanelProps {
   activeType: ListingType;
   categories: CategoryItem[];
@@ -37,7 +39,7 @@ export function ListingStatusPanel({
       : categories.find((c) => c.id === category)?.label || "-";
 
   return (
-    <aside className="w-80 shrink-0 border-l border-white/5 bg-[#0f111a] flex flex-col shadow-2xl z-10">
+    <aside className="w-80 shrink-0 border-l border-white/5 bg-surface flex flex-col shadow-2xl z-10">
       <div className="p-6 border-b border-white/5">
         <h3 className="font-display font-bold text-white text-lg">
           Listing Status
@@ -81,7 +83,7 @@ export function ListingStatusPanel({
             <span className="text-sm font-bold text-white">Listing Price</span>
             <div className="text-right">
               <span className="block text-lg font-bold text-accent font-mono">
-                ₱{price.toLocaleString()}
+                <Money amount={price} />
               </span>
               <span className="text-[10px] text-text-muted uppercase">
                 {unit}
@@ -91,7 +93,7 @@ export function ListingStatusPanel({
         </div>
       </div>
 
-      <div className="p-6 border-t border-white/5 bg-[#0f111a]">
+      <div className="p-6 border-t border-white/5 bg-surface">
         <button
           onClick={
             previewHref ? () => window.open(previewHref, "_blank") : undefined

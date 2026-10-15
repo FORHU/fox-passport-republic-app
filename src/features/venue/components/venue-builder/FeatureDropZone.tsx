@@ -1,8 +1,8 @@
-/* eslint-disable @next/next/no-img-element */
 "use client";
 
 import React from "react";
 import { ResourceItem } from "@/features/venue/data/venueBuilderData";
+import { Money } from "@/shared/components/ui/Money";
 
 interface FeatureDropZoneProps {
   type: "included" | "addon";
@@ -26,8 +26,8 @@ export function FeatureDropZone({
   const isIncluded = type === "included";
   const title = isIncluded ? "Standard Features" : "Monetized Add-ons";
   const subtitle = isIncluded
-    ? "Included in base rental."
-    : "Optional paid upgrades.";
+    ? "Included in base rental — values are for reference only and don't add to your revenue projection."
+    : "Optional paid upgrades — their value feeds into Add-on Revenue in the projector.";
   const icon = isIncluded ? "check_circle" : "monetization_on";
   const iconColor = isIncluded ? "text-accent" : "text-secondary";
   const itemBgColor = isIncluded
@@ -41,7 +41,7 @@ export function FeatureDropZone({
     ? isIncluded
       ? "border-accent bg-accent/5"
       : "border-secondary bg-secondary/5"
-    : "border-white/10 bg-[#0f111a]/30";
+    : "border-white/10 bg-surface/30";
 
   return (
     <div
@@ -77,7 +77,7 @@ export function FeatureDropZone({
           {items.map((item, idx) => (
             <div
               key={`${item.id}-${idx}`}
-              className="bg-[#1a1d2d] border border-white/5 rounded-xl p-3 flex items-center justify-between"
+              className="bg-surface-raised border border-white/5 rounded-xl p-3 flex items-center justify-between"
             >
               <div className="flex items-center gap-3">
                 <div
@@ -102,9 +102,8 @@ export function FeatureDropZone({
               <div className="flex flex-row items-center gap-2">
                 {item.category !== "rules" && (
                   <p className="text-[10px] text-text-muted font-mono">
-                    {isIncluded
-                      ? `₱${item.value.toLocaleString()}`
-                      : `Upsell: ₱${item.value.toLocaleString()}`}
+                    {!isIncluded && "Upsell: "}
+                    <Money amount={item.value} />
                   </p>
                 )}
                 <button

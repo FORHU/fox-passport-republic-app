@@ -3,6 +3,8 @@
 import React from "react";
 import { useRouter } from "next/navigation";
 
+import { Money } from "@/shared/components/ui/Money";
+
 interface VenueBookingWidgetProps {
   venueId: string;
   price: number;
@@ -12,6 +14,7 @@ interface VenueBookingWidgetProps {
   capacity?: string;
   onContactOwner: () => void;
   onCustomExperience?: () => void;
+  onReportListing?: () => void;
 }
 
 export function BookingWidget({
@@ -23,6 +26,7 @@ export function BookingWidget({
   capacity,
   onContactOwner,
   onCustomExperience,
+  onReportListing,
 }: VenueBookingWidgetProps) {
   const router = useRouter();
 
@@ -39,7 +43,7 @@ export function BookingWidget({
         <div className="flex justify-between items-end mb-5 sm:mb-6 relative z-10">
           <div>
             <span className="text-2xl sm:text-3xl font-display font-bold text-white">
-              ₱{price.toLocaleString()}
+              <Money amount={price} />
             </span>
             <span className="text-xs sm:text-sm text-text-muted">
               {" "}
@@ -100,12 +104,17 @@ export function BookingWidget({
         )}
       </div>
 
-      <div className="mt-4 flex items-center justify-center gap-2 text-xs text-text-muted">
+      <button
+        type="button"
+        onClick={onReportListing}
+        disabled={!onReportListing}
+        className="mt-4 flex items-center justify-center gap-2 text-xs text-text-muted mx-auto disabled:cursor-not-allowed"
+      >
         <span className="material-symbols-outlined text-[14px]">flag</span>
         <span className="underline cursor-pointer hover:text-white">
           Report this listing
         </span>
-      </div>
+      </button>
     </div>
   );
 }

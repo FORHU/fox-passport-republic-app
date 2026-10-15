@@ -1,18 +1,16 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { toast } from "sonner";
-import { useAuthStore } from "@/features/auth/store/useAuthStore";
+import { useQueryClient } from "@tanstack/react-query";
+import { assetQueryKey } from "@/features/asset/hooks/useAsset";
+import { useAuthStore } from "@/shared/auth/useAuthStore";
 import { useInventoryBuilder } from "@/features/asset/hooks/useInventoryBuilder";
 import { fetchAssetsByOwnerId, updateAsset } from "@/features/asset/api/assets";
 import type { Id } from "@/shared/lib/api-types";
 import {
   ASSET_CATEGORIES,
   CONDITIONS,
-  STATUSES,
-  INVENTORY_UNITS,
 } from "@/features/asset/data/listingBuilderData";
 
 function belongsToHost(record: any, hostId: Id): boolean {
@@ -101,6 +99,7 @@ function mapCategoryToInventory(category: any): {
 
 export function useHostAssetEdit(assetId: string) {
   const router = useRouter();
+  const queryClient = useQueryClient();
   const user = useAuthStore((s) => s.user);
   const hostId = user?.id || user?.userId;
 
@@ -178,7 +177,6 @@ export function useHostAssetEdit(assetId: string) {
     return () => {
       cancelled = true;
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [assetId, hostId]);
 
   const handleBack = useCallback(() => {
@@ -257,6 +255,8 @@ export function useHostAssetEdit(assetId: string) {
       };
 
       await updateAsset(assetId, payload as any);
+      // The public detail and booking pages read this cache entry.
+      queryClient.invalidateQueries({ queryKey: assetQueryKey(assetId) });
 
       inventory.setIsNotification(true);
       setTimeout(() => {

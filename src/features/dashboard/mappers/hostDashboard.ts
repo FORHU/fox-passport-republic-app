@@ -39,9 +39,7 @@ export function mapBackendEventToEventItem(event: unknown): EventItem {
     .toUpperCase();
 
   const totalPrice = ev?.totalPrice ?? ev?.total_price;
-  const revenue = totalPrice
-    ? `₱${(Number(totalPrice) / 1000).toFixed(1)}k`
-    : "₱0";
+  const revenue = totalPrice ? Number(totalPrice) : null;
 
   const img =
     ev?.image ??
@@ -93,7 +91,7 @@ export function mapBackendVenueToVenueItem(venue: unknown): VenueItem {
     cap: v?.capacity ? `${v.capacity} Cap` : "N/A",
     status,
     bookings: v?.bookings ?? "New",
-    revenue: v?.revenue ?? "₱0",
+    revenue: v?.revenue != null ? Number(v.revenue) : null,
     img,
   };
 }

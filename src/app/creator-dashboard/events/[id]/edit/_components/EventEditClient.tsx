@@ -2,7 +2,7 @@
 
 import React, { Suspense } from "react";
 import { useRouter } from "next/navigation";
-import RequireAuth from "@/features/auth/components/RequireAuth";
+import RequireAuth from "@/shared/auth/RequireAuth";
 import { Loader2, AlertTriangle } from "lucide-react";
 import {
   ResourcePalette,
@@ -12,6 +12,7 @@ import {
   CorePackageDropZone,
   EventBlueprint,
 } from "@/features/event/components/event-builder";
+import { TeamPanel } from "@/features/appointment/components/TeamPanel";
 import { useHostEventEdit } from "@/features/event/hooks/useHostEventEdit";
 
 interface Props {
@@ -26,8 +27,12 @@ function EventEditContent({ id }: Props) {
     eventTitle,
     description,
     category,
+    categoryOther,
     date,
     location,
+    targetCity,
+    targetState,
+    targetCountry,
     maxAttendees,
     showGuide,
     cancellationPolicyId,
@@ -42,12 +47,17 @@ function EventEditContent({ id }: Props) {
     isSubmitting,
     saveStatus,
     isDragOver,
+    activeEventId,
     setActiveCategory,
     setEventTitle,
     setDescription,
     setCategory,
+    setCategoryOther,
     setDate,
     setLocation,
+    setTargetCity,
+    setTargetState,
+    setTargetCountry,
     setMaxAttendees,
     setCancellationPolicyId,
     setShowGuide,
@@ -69,7 +79,7 @@ function EventEditContent({ id }: Props) {
   return (
     <RequireAuth>
       {!id ? (
-        <div className="fixed inset-0 z-80 bg-[#02040a] text-white flex items-center justify-center">
+        <div className="fixed inset-0 z-80 bg-canvas text-white flex items-center justify-center">
           <div className="glass-panel rounded-[2rem] p-12 border border-red-500/20">
             <div className="flex flex-col items-center gap-3 text-center">
               <AlertTriangle className="h-8 w-8 text-red-400" />
@@ -78,7 +88,7 @@ function EventEditContent({ id }: Props) {
           </div>
         </div>
       ) : prefillError ? (
-        <div className="fixed inset-0 z-80 bg-[#02040a]/90 text-white flex items-center justify-center">
+        <div className="fixed inset-0 z-80 bg-canvas/90 text-white flex items-center justify-center">
           <div className="glass-panel rounded-[2rem] p-12 border border-red-500/20 text-center max-w-lg w-full">
             <div className="flex flex-col items-center gap-3 text-center">
               <AlertTriangle className="h-8 w-8 text-red-400" />
@@ -94,16 +104,16 @@ function EventEditContent({ id }: Props) {
           </div>
         </div>
       ) : isPrefilling ? (
-        <div className="fixed inset-0 z-80 bg-[#02040a]/90 text-white flex items-center justify-center">
+        <div className="fixed inset-0 z-80 bg-canvas/90 text-white flex items-center justify-center">
           <div className="glass-panel rounded-[2rem] p-12 border border-white/5">
             <div className="flex flex-col items-center gap-3">
-              <Loader2 className="h-8 w-8 text-[#ccff00] animate-spin" />
+              <Loader2 className="h-8 w-8 text-accent animate-spin" />
               <div className="text-sm text-white/50">Loading event...</div>
             </div>
           </div>
         </div>
       ) : (
-        <div className="fixed inset-0 z-60 bg-[#02040a] text-white flex flex-col font-body">
+        <div className="fixed inset-0 z-60 bg-canvas text-white flex flex-col font-body">
           <EventHeader
             eventTitle={eventTitle}
             isSubmitting={isSubmitting}
@@ -121,22 +131,30 @@ function EventEditContent({ id }: Props) {
               onSearchChange={setSearchQuery}
               onDragStart={handleDragStart}
             />
-            <main className="flex-1 overflow-y-auto p-8 bg-[#02040a] flex gap-8">
-              <div className="flex-1 max-w-4xl mx-auto space-y-8">
+            <main className="flex-1 overflow-y-auto p-8 bg-canvas flex gap-8">
+              <div className="flex-1 min-w-0 space-y-8">
                 <EventDetailsForm
                   eventTitle={eventTitle}
                   description={description}
                   category={category}
+                  categoryOther={categoryOther}
                   date={date}
                   location={location}
+                  targetCity={targetCity}
+                  targetState={targetState}
+                  targetCountry={targetCountry}
                   maxAttendees={maxAttendees}
                   showGuide={showGuide}
                   cancellationPolicyId={cancellationPolicyId}
                   onTitleChange={setEventTitle}
                   onDescriptionChange={setDescription}
                   onCategoryChange={setCategory}
+                  onCategoryOtherChange={setCategoryOther}
                   onDateChange={setDate}
                   onLocationChange={setLocation}
+                  onTargetCityChange={setTargetCity}
+                  onTargetStateChange={setTargetState}
+                  onTargetCountryChange={setTargetCountry}
                   onMaxAttendeesChange={setMaxAttendees}
                   onCancellationPolicyChange={setCancellationPolicyId}
                   onCloseGuide={() => setShowGuide(false)}
@@ -155,14 +173,23 @@ function EventEditContent({ id }: Props) {
                   onRemoveItem={removeBaseItem}
                   onUpdateItem={updateBaseItem}
                 />
+                <TeamPanel
+                  target={
+                    activeEventId ? { type: "event", id: activeEventId } : null
+                  }
+                  unavailableMessage="You can add organizers and helpers once this event is booked and scheduled."
+                />
               </div>
             </main>
             <EventBlueprint
               targetMargin={targetMargin}
               baseCost={financials.baseCost}
+              listingCost={financials.listingCost}
               suggestedPrice={financials.suggestedPrice}
               venueCost={financials.venueCost}
               talentCost={financials.talentCost}
+              serviceCost={financials.serviceCost}
+              baseItems={baseItems}
               blueprintHealth={blueprintHealth}
               onMarginChange={(m: number) => setTargetMargin(m)}
               onPreview={async () => {
@@ -179,7 +206,7 @@ function EventEditContent({ id }: Props) {
 
 export default function EventEditClient({ id }: Props) {
   return (
-    <Suspense fallback={<div className="fixed inset-0 bg-[#02040a]" />}>
+    <Suspense fallback={<div className="fixed inset-0 bg-canvas" />}>
       <EventEditContent id={id} />
     </Suspense>
   );

@@ -1,17 +1,22 @@
-/* eslint-disable react-hooks/set-state-in-effect, @next/next/no-img-element */
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { loadStripe } from "@stripe/stripe-js";
 import { Elements } from "@stripe/react-stripe-js";
 import { useCheckoutStore } from "@/features/booking/store/useCheckoutStore";
-import { useAuthStore } from "@/features/auth/store/useAuthStore";
-import { createPaymentIntent } from "@/features/booking/api/bookings";
+import { useAuthStore } from "@/shared/auth/useAuthStore";
+import {
+  createPaymentIntent,
+  confirmBookingPayment,
+} from "@/features/booking/api/bookings";
 import StripePaymentForm from "./StripePaymentForm";
 import { getDashboardPath } from "@/shared/lib/dashboard-path";
+import { smartBack } from "@/shared/lib/navigation";
+import { toast } from "sonner";
+import { formatCurrency } from "@/shared/lib/currency";
 
 const stripePromise = loadStripe(
   process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY || "",
@@ -37,10 +42,19 @@ export default function CheckoutClient() {
 
   const dashboardPath = getDashboardPath(user);
 
-  // Request a PaymentIntent when the component mounts (if not already fetched)
-  useEffect(() => {
-    if (clientSecret || totalAmount <= 0) return;
+  const onPaymentSuccess = async (paymentIntentId: string) => {
+    toast.success("Payment successful! Your booking is confirmed.");
+    try {
+      if (draftBookingId && totalAmount > 0) {
+        await confirmBookingPayment(draftBookingId, paymentIntentId, totalAmount);
+      }
+    } catch {
+      // Booking was already confirmed via webhook — safe to ignore
+    }
+    router.push("/checkout/success");
+  };
 
+  const fetchPaymentIntent = useCallback(() => {
     setLoadingIntent(true);
     setIntentError(null);
 
@@ -58,7 +72,22 @@ export default function CheckoutClient() {
         ),
       )
       .finally(() => setLoadingIntent(false));
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [totalAmount, draftBookingId, venueName, setClientSecret]);
+
+  // Request a PaymentIntent when the component mounts (if not already fetched)
+  useEffect(() => {
+    if (clientSecret || totalAmount <= 0) return;
+    fetchPaymentIntent();
+  }, []);
+
+  // A cached clientSecret can point at a PaymentIntent that's since gone
+  // terminal (succeeded/canceled from an earlier attempt) — Stripe Elements
+  // can't be initialized with one, so self-heal by clearing it and pulling a
+  // fresh PaymentIntent instead of leaving the user stuck.
+  const handleElementsLoadError = useCallback(() => {
+    setClientSecret(null);
+    fetchPaymentIntent();
+  }, [fetchPaymentIntent, setClientSecret]);
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -149,7 +178,7 @@ export default function CheckoutClient() {
                     src={user.imgId}
                   />
                 ) : (
-                  <div className="h-full w-full bg-[#ccff00] flex items-center justify-center">
+                  <div className="h-full w-full bg-accent flex items-center justify-center">
                     <span className="text-black text-sm font-bold">
                       {user?.name?.charAt(0).toUpperCase() ||
                         user?.email?.charAt(0).toUpperCase() ||
@@ -168,26 +197,37 @@ export default function CheckoutClient() {
         <div className="absolute bottom-40 left-0 w-[500px] h-[500px] bg-secondary/10 rounded-full blur-[120px] pointer-events-none mix-blend-screen"></div>
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 relative z-10">
           <div className="mb-10 reveal-on-scroll">
-            <div className="flex items-center gap-2 text-text-muted text-sm mb-4 font-display">
-              <Link
-                href="/"
-                className="hover:text-white cursor-pointer transition-colors"
+            <div className="flex items-center justify-between mb-4 gap-4">
+              <button
+                onClick={() => smartBack(router, "/booking")}
+                className="flex items-center gap-2 text-sm text-text-muted hover:text-white transition-colors shrink-0"
               >
-                Home
-              </Link>
-              <span className="material-symbols-outlined text-[14px]">
-                chevron_right
-              </span>
-              <Link
-                href="/booking"
-                className="hover:text-white cursor-pointer transition-colors"
-              >
-                Events
-              </Link>
-              <span className="material-symbols-outlined text-[14px]">
-                chevron_right
-              </span>
-              <span className="text-accent font-bold">Checkout</span>
+                <span className="material-symbols-outlined text-[18px]">
+                  arrow_back
+                </span>
+                Back
+              </button>
+              <div className="flex items-center gap-2 text-text-muted text-sm font-display min-w-0">
+                <Link
+                  href="/"
+                  className="hover:text-white cursor-pointer transition-colors"
+                >
+                  Home
+                </Link>
+                <span className="material-symbols-outlined text-[14px]">
+                  chevron_right
+                </span>
+                <Link
+                  href="/booking"
+                  className="hover:text-white cursor-pointer transition-colors"
+                >
+                  Events
+                </Link>
+                <span className="material-symbols-outlined text-[14px]">
+                  chevron_right
+                </span>
+                <span className="text-accent font-bold">Checkout</span>
+              </div>
             </div>
             <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
               <div>
@@ -282,8 +322,16 @@ export default function CheckoutClient() {
                   !intentError &&
                   clientSecret &&
                   elementsOptions && (
-                    <Elements stripe={stripePromise} options={elementsOptions}>
-                      <StripePaymentForm totalAmount={totalAmount} />
+                    <Elements
+                      key={clientSecret}
+                      stripe={stripePromise}
+                      options={elementsOptions}
+                    >
+                      <StripePaymentForm
+                        totalAmount={totalAmount}
+                        onSuccess={onPaymentSuccess}
+                        onLoadError={handleElementsLoadError}
+                      />
                     </Elements>
                   )}
 
@@ -366,7 +414,7 @@ export default function CheckoutClient() {
                         {checkInDate
                           ? new Date(
                               checkInDate + "T00:00:00",
-                            ).toLocaleDateString("en-PH", {
+                            ).toLocaleDateString(undefined, {
                               month: "short",
                               day: "numeric",
                             })
@@ -391,7 +439,7 @@ export default function CheckoutClient() {
                         <span className="text-white/50">×{guestCount}</span>
                       </span>
                       <span className="text-white font-medium">
-                        ₱{totalAmount.toLocaleString()}
+                        {formatCurrency(totalAmount)}
                       </span>
                     </div>
                   </div>
@@ -401,7 +449,7 @@ export default function CheckoutClient() {
                         Total
                       </span>
                       <span className="text-3xl font-display font-bold text-accent text-shadow-glow">
-                        ₱{totalAmount.toLocaleString()}
+                        {formatCurrency(totalAmount)}
                       </span>
                     </div>
                   </div>
@@ -442,24 +490,24 @@ export default function CheckoutClient() {
               </span>
             </div>
             <p className="text-xs text-gray-500 font-medium">
-              © 2024 FoxPassport Inc. All rights reserved.
+              © {new Date().getFullYear()} FoxPassport Inc. All rights reserved.
             </p>
             <div className="flex gap-6">
               <a
                 className="text-xs text-gray-500 hover:text-white font-medium transition-colors"
-                href="#"
+                href="/privacy"
               >
                 Privacy
               </a>
               <a
                 className="text-xs text-gray-500 hover:text-white font-medium transition-colors"
-                href="#"
+                href="/terms"
               >
                 Terms
               </a>
               <a
                 className="text-xs text-gray-500 hover:text-white font-medium transition-colors"
-                href="#"
+                href="/privacy"
               >
                 Cookies
               </a>

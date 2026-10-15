@@ -1,26 +1,30 @@
-﻿"use client";
+"use client";
 
 import React from "react";
 import { EVENT_CATEGORIES } from "@/features/event/data/eventBuilderData";
-import CancellationPolicyPicker from "@/features/cancellation-policy/components/CancellationPolicyPicker";
-import {
-  MapboxLocationInput,
-  MapboxContextItem,
-} from "@/shared/components/ui/MapboxLocationInput";
+import { countWords } from "@/features/event/utils/textStats";
+import CancellationPolicyPicker from "@/shared/components/ui/CancellationPolicyPicker";
+import { StyledSelect } from "@/shared/components/ui/StyledSelect";
+import { CascadingLocationFields } from "@/shared/components/ui/CascadingLocationFields";
 import DateTimePicker from "./DateTimePicker";
 
 interface EventDetailsFormProps {
   eventTitle: string;
   description: string;
   category: string;
+  categoryOther: string;
   date: string;
   location: string;
+  targetCity?: string;
+  targetState?: string;
+  targetCountry?: string;
   maxAttendees: number;
   showGuide: boolean;
   cancellationPolicyId: string | null;
   onTitleChange: (title: string) => void;
   onDescriptionChange: (desc: string) => void;
   onCategoryChange: (cat: string) => void;
+  onCategoryOtherChange: (cat: string) => void;
   onDateChange: (date: string) => void;
   onLocationChange: (loc: string) => void;
   onTargetCityChange?: (city: string) => void;
@@ -36,14 +40,18 @@ export function EventDetailsForm({
   eventTitle,
   description,
   category,
+  categoryOther,
   date,
-  location,
+  targetCity = "",
+  targetState = "",
+  targetCountry = "",
   maxAttendees,
   showGuide,
   cancellationPolicyId,
   onTitleChange,
   onDescriptionChange,
   onCategoryChange,
+  onCategoryOtherChange,
   onDateChange,
   onLocationChange,
   onTargetCityChange,
@@ -55,7 +63,7 @@ export function EventDetailsForm({
   onCloseGuide,
 }: EventDetailsFormProps) {
   return (
-    <div className="relative rounded-[2rem] overflow-hidden border border-white/10 bg-[#0f111a] p-8">
+    <div className="relative rounded-[2rem] overflow-hidden border border-white/10 bg-surface p-8">
       {/* Guide Banner */}
       {showGuide && (
         <div className="bg-accent/5 border border-accent/20 rounded-2xl p-4 flex items-start gap-4 relative mb-8">
@@ -98,27 +106,29 @@ export function EventDetailsForm({
         {/* Category - Moved below Title */}
         <div>
           <label className="text-[10px] uppercase font-bold text-white/40 tracking-widest mb-2 block text-justify">
-            Landing Page Category
+            Event Category <span className="text-accent">*</span>
           </label>
-          <div className="relative max-w-md">
-            <select
+          <div className="max-w-md">
+            <StyledSelect
               value={category}
-              onChange={(e) => onCategoryChange(e.target.value)}
-              className="w-full bg-white/5 border border-white/5 rounded-xl px-4 py-3 text-sm text-white appearance-none cursor-pointer focus:border-accent/30 outline-none"
-            >
-              <option value="" className="bg-[#0f111a] text-gray-500">
-                Select Category...
-              </option>
-              {EVENT_CATEGORIES.map((cat) => (
-                <option key={cat} value={cat} className="bg-[#0f111a]">
-                  {cat}
-                </option>
-              ))}
-            </select>
-            <span className="material-symbols-outlined absolute right-4 top-1/2 -translate-y-1/2 text-white/30 pointer-events-none">
-              expand_more
-            </span>
+              onChange={onCategoryChange}
+              options={EVENT_CATEGORIES}
+              placeholder="Select Category..."
+            />
           </div>
+          {category === "Other" && (
+            <input
+              type="text"
+              value={categoryOther}
+              onChange={(e) => onCategoryOtherChange(e.target.value)}
+              placeholder="Please specify the event category..."
+              className="w-full max-w-md mt-2 bg-white/5 border border-white/5 rounded-xl p-4 text-sm text-white placeholder-white/30 focus:border-accent/30 outline-none transition-colors"
+            />
+          )}
+          <p className="text-[10px] text-white/30 mt-1.5">
+            Determines which category page and filters your event appears
+            under.
+          </p>
         </div>
 
         {/* Date & Location */}
@@ -130,33 +140,24 @@ export function EventDetailsForm({
             <DateTimePicker value={date} onChange={onDateChange} />
           </div>
           <div className="flex-1">
-            <label className="text-[10px] uppercase font-bold text-white/40 tracking-widest mb-2 block">
-              Where
-            </label>
-            <MapboxLocationInput
-              value={location}
-              onChange={onLocationChange}
-              type="place"
-              placeholder="e.g. BGC, Taguig"
-              onSelect={(
-                val: string,
-                context?: MapboxContextItem[],
-                center?: [number, number],
-              ) => {
-                onLocationChange(val);
-                if (onTargetCityChange) onTargetCityChange(val);
-                const region = context?.find((c) =>
-                  c.id.startsWith("region"),
-                )?.text;
-                const countryName = context?.find((c) =>
-                  c.id.startsWith("country"),
-                )?.text;
-                if (region && onTargetStateChange) onTargetStateChange(region);
-                if (countryName && onTargetCountryChange)
-                  onTargetCountryChange(countryName);
-                if (center && onLatLngChange)
-                  onLatLngChange(center[1], center[0]);
+            {/* Where — country → state → city, each locked until the one
+                before it is picked. `location` stays the display string the
+                listing shows ("City, State"). */}
+            <CascadingLocationFields
+              value={{
+                country: targetCountry,
+                state: targetState,
+                city: targetCity,
               }}
+              onChange={(next) => {
+                onTargetCountryChange?.(next.country);
+                onTargetStateChange?.(next.state);
+                onTargetCityChange?.(next.city);
+                onLocationChange(
+                  [next.city, next.state].filter(Boolean).join(", "),
+                );
+              }}
+              onCoordinates={(lat, lng) => onLatLngChange?.(lat, lng)}
             />
           </div>
           <div className="flex-1">
@@ -192,10 +193,7 @@ export function EventDetailsForm({
         {/* Description */}
         <div>
           {(() => {
-            const wordCount =
-              description.trim() === ""
-                ? 0
-                : description.trim().split(/\s+/).length;
+            const wordCount = countWords(description);
             const tooShort = wordCount < 100;
             const atLimit = wordCount >= 500;
             const borderColor = atLimit
@@ -215,8 +213,7 @@ export function EventDetailsForm({
               e: React.ChangeEvent<HTMLTextAreaElement>,
             ) => {
               const val = e.target.value;
-              const words = val.trim() === "" ? [] : val.trim().split(/\s+/);
-              if (words.length > 500) return;
+              if (countWords(val) > 500) return;
               onDescriptionChange(val);
             };
 

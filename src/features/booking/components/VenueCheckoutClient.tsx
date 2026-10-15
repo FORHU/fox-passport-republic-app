@@ -1,5 +1,4 @@
-﻿/* eslint-disable @next/next/no-img-element */
-"use client";
+﻿"use client";
 
 import React, { useEffect, useState, useRef } from "react";
 import Image from "next/image";
@@ -8,7 +7,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { loadStripe } from "@stripe/stripe-js";
 import { Elements } from "@stripe/react-stripe-js";
 import { toast } from "sonner";
-import { useAuthStore } from "@/features/auth/store/useAuthStore";
+import { useAuthStore } from "@/shared/auth/useAuthStore";
 import {
   createPaymentIntent,
   confirmBookingPayment,
@@ -17,6 +16,9 @@ import { ProgressIndicator } from "@/shared/components/ui/ProgressIndicator";
 import StripePaymentForm from "./StripePaymentForm";
 import api from "@/shared/lib/axios";
 import { getDashboardPath } from "@/shared/lib/dashboard-path";
+import { useCurrency } from "@/shared/providers/CurrencyProvider";
+import { DEFAULT_CURRENCY } from "@/shared/lib/currency";
+import { formatCurrency } from "@/shared/lib/currency";
 
 const stripePromise = loadStripe(
   process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY || "",
@@ -28,12 +30,22 @@ export default function VenueCheckoutClient() {
   const bookingId = searchParams.get("bookingId");
   const totalParam = searchParams.get("total");
   const totalAmount = totalParam ? Number(totalParam) : 0;
+  const subtotalParam = searchParams.get("subtotal");
+  const subtotalAmount = subtotalParam ? Number(subtotalParam) : 0;
+  const serviceFeeParam = searchParams.get("serviceFee");
+  const serviceFeeAmount = serviceFeeParam ? Number(serviceFeeParam) : 0;
   const { user } = useAuthStore();
+  const { currency, format } = useCurrency();
   const confirmed = useRef(false);
 
   const [clientSecret, setClientSecret] = useState<string | null>(null);
   const [loadingIntent, setLoadingIntent] = useState(false);
   const [intentError, setIntentError] = useState<string | null>(null);
+  // Distinguishes "still waiting on the Venue Foxer" from an actual payment
+  // failure — same wording the server uses in PaymentSvc.createPaymentIntent's
+  // pending-request gate, matched here rather than adding a second signal
+  // (an error code) just for this one string.
+  const isAwaitingApproval = !!intentError?.includes("awaiting the Venue Foxer");
   const [paymentSuccess, setPaymentSuccess] = useState(false);
   const [email, setEmail] = useState(user?.email || "");
   const [mobileNumber, setMobileNumber] = useState(user?.mobileNumber || "");
@@ -50,14 +62,14 @@ export default function VenueCheckoutClient() {
         await confirmBookingPayment(bookingId, piId, totalAmount);
       }
     } catch {
-      // Booking was already confirmed via webhook â€” safe to ignore
+      // Booking was already confirmed via webhook — safe to ignore
     }
 
     // Save contact info to user's profile
     try {
       await api.put("/profile", { phone: mobileNumber || undefined });
     } catch {
-      // Non-critical â€” profile update failure shouldn't block success
+      // Non-critical — profile update failure shouldn't block success
     }
   };
 
@@ -72,7 +84,7 @@ export default function VenueCheckoutClient() {
       toast.success("Payment successful! Your venue is booked.");
       confirmBookingPayment(bookingId, pi, totalAmount).catch(() => {});
     }
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  }, []);
 
   useEffect(() => {
     if (!bookingId || clientSecret) return;
@@ -94,7 +106,6 @@ export default function VenueCheckoutClient() {
         ),
       )
       .finally(() => setLoadingIntent(false));
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [bookingId]);
 
   useEffect(() => {
@@ -205,7 +216,7 @@ export default function VenueCheckoutClient() {
                     src={user.imgId}
                   />
                 ) : (
-                  <div className="h-full w-full bg-[#ccff00] flex items-center justify-center">
+                  <div className="h-full w-full bg-accent flex items-center justify-center">
                     <span className="text-black text-sm font-bold">
                       {user?.name?.charAt(0).toUpperCase() ||
                         user?.email?.charAt(0).toUpperCase() ||
@@ -272,7 +283,7 @@ export default function VenueCheckoutClient() {
                   {/* Payment Panel */}
                   <div className="glass-panel rounded-[2rem] p-8">
                     <h2 className="text-2xl font-display font-bold text-white mb-6 flex items-center gap-3">
-                      <span className="flex items-center justify-center w-8 h-8 rounded-full bg-primary text-white text-sm">
+                      <span className="flex items-center justify-center w-8 h-8 rounded-full bg-accent text-black text-sm font-bold">
                         1
                       </span>
                       Payment
@@ -296,7 +307,7 @@ export default function VenueCheckoutClient() {
                     ) : loadingIntent ? (
                       <div className="flex items-center gap-3 py-8 justify-center text-white/50">
                         <span className="h-5 w-5 rounded-full border-2 border-white/20 border-t-white/60 animate-spin" />
-                        Initializing secure paymentâ€¦
+                        Initializing secure payment…
                       </div>
                     ) : (
                       <StripePaymentForm
@@ -309,12 +320,26 @@ export default function VenueCheckoutClient() {
                     )}
 
                     {intentError && (
-                      <div className="flex items-start gap-3 bg-red-500/10 border border-red-500/30 rounded-xl p-4 mt-4">
-                        <span className="material-symbols-outlined text-red-400 text-[18px] mt-0.5 shrink-0">
-                          error
+                      <div
+                        className={`flex items-start gap-3 rounded-xl p-4 mt-4 border ${
+                          isAwaitingApproval
+                            ? "bg-amber-500/10 border-amber-500/30"
+                            : "bg-red-500/10 border-red-500/30"
+                        }`}
+                      >
+                        <span
+                          className={`material-symbols-outlined text-[18px] mt-0.5 shrink-0 ${
+                            isAwaitingApproval ? "text-amber-400" : "text-red-400"
+                          }`}
+                        >
+                          {isAwaitingApproval ? "hourglass_top" : "error"}
                         </span>
                         <div>
-                          <p className="text-red-400 text-sm font-medium">
+                          <p
+                            className={`text-sm font-medium ${
+                              isAwaitingApproval ? "text-amber-300" : "text-red-400"
+                            }`}
+                          >
                             {intentError}
                           </p>
                           <button
@@ -340,7 +365,7 @@ export default function VenueCheckoutClient() {
                             }}
                             className="mt-2 text-xs text-white/60 hover:text-white underline"
                           >
-                            Try again
+                            {isAwaitingApproval ? "Check again" : "Try again"}
                           </button>
                         </div>
                       </div>
@@ -383,29 +408,64 @@ export default function VenueCheckoutClient() {
                     </div>
                   </div>
 
-                  {/* Confirm & Pay Button */}
-                  {!paymentSuccess &&
-                    email &&
-                    mobileNumber &&
-                    !loadingIntent &&
-                    !intentError && (
-                      <button
-                        type="button"
-                        onClick={() => formRef.current?.submit()}
-                        className="w-full rounded-2xl bg-[#ccff00] py-4 px-6 text-black font-bold text-lg hover:shadow-[0_0_30px_rgba(204,255,0,0.4)] transition-all active:scale-95 flex items-center justify-center gap-2"
-                      >
-                        Confirm & Pay â‚±{totalAmount.toLocaleString()}
-                        <span className="material-symbols-outlined">
-                          arrow_forward
-                        </span>
-                      </button>
-                    )}
+                  {/* Confirm & Pay Button — always rendered, disabled until
+                      both contact fields are filled and the payment form is
+                      ready. This way the citizen can see the action they're
+                      working toward rather than it appearing from nowhere. */}
+                  {!paymentSuccess && !intentError && (() => {
+                    const missingEmail = !email.trim();
+                    const missingPhone = !mobileNumber.trim();
+                    const notReady = loadingIntent || missingEmail || missingPhone;
+                    const hint = loadingIntent
+                      ? "Initialising payment…"
+                      : missingEmail && missingPhone
+                        ? "Enter your email and mobile number to continue"
+                        : missingEmail
+                          ? "Enter your email to continue"
+                          : missingPhone
+                            ? "Enter your mobile number to continue"
+                            : null;
+                    return (
+                      <div className="space-y-2">
+                        <button
+                          type="button"
+                          disabled={notReady}
+                          onClick={() => formRef.current?.submit()}
+                          className="w-full rounded-2xl bg-accent py-4 px-6 text-black font-bold text-lg transition-all flex items-center justify-center gap-2
+                                     disabled:opacity-40 disabled:cursor-not-allowed disabled:shadow-none
+                                     enabled:hover:shadow-[0_0_30px_rgba(204,255,0,0.4)] enabled:active:scale-95"
+                        >
+                          {loadingIntent ? (
+                            <>
+                              <span className="h-5 w-5 rounded-full border-2 border-black/20 border-t-black animate-spin" />
+                              Initialising…
+                            </>
+                          ) : (
+                            <>
+                              Confirm & Pay {formatCurrency(totalAmount)}
+                              <span className="material-symbols-outlined">
+                                arrow_forward
+                              </span>
+                            </>
+                          )}
+                        </button>
+                        {hint && (
+                          <p className="text-center text-xs text-white/40 flex items-center justify-center gap-1">
+                            <span className="material-symbols-outlined text-[13px]">
+                              info
+                            </span>
+                            {hint}
+                          </p>
+                        )}
+                      </div>
+                    );
+                  })()}
 
                   <div className="flex items-center justify-center gap-2 text-xs text-white/40">
                     <span className="material-symbols-outlined text-[14px] text-green-500">
                       lock
                     </span>
-                    Encrypted & Secure Â· Powered by Stripe
+                    Encrypted & Secure · Powered by Stripe
                   </div>
 
                   {paymentSuccess && (
@@ -430,10 +490,10 @@ export default function VenueCheckoutClient() {
                 </Elements>
               ) : (
                 <>
-                  {/* Loading / no clientSecret yet â€” render panels without Elements */}
+                  {/* Loading / no clientSecret yet — render panels without Elements */}
                   <div className="glass-panel rounded-[2rem] p-8">
                     <h2 className="text-2xl font-display font-bold text-white mb-6 flex items-center gap-3">
-                      <span className="flex items-center justify-center w-8 h-8 rounded-full bg-primary text-white text-sm">
+                      <span className="flex items-center justify-center w-8 h-8 rounded-full bg-accent text-black text-sm font-bold">
                         1
                       </span>
                       Payment
@@ -441,7 +501,7 @@ export default function VenueCheckoutClient() {
                     {loadingIntent ? (
                       <div className="flex items-center gap-3 py-8 justify-center text-white/50">
                         <span className="h-5 w-5 rounded-full border-2 border-white/20 border-t-white/60 animate-spin" />
-                        Initializing secure paymentâ€¦
+                        Initializing secure payment…
                       </div>
                     ) : (
                       <div className="py-8 text-center text-white/40">
@@ -520,7 +580,7 @@ export default function VenueCheckoutClient() {
                         <span className="material-symbols-outlined text-[14px]">
                           receipt
                         </span>
-                        Booking ID: {bookingId.slice(0, 8)}â€¦
+                        Booking ID: {bookingId.slice(0, 8)}…
                       </p>
                     </div>
                   </div>
@@ -531,6 +591,22 @@ export default function VenueCheckoutClient() {
                         #{bookingId.slice(0, 12)}
                       </span>
                     </div>
+                    {subtotalAmount > 0 && (
+                      <div className="flex justify-between text-sm">
+                        <span className="text-text-muted">Subtotal</span>
+                        <span className="text-white font-medium">
+                          {formatCurrency(subtotalAmount)}
+                        </span>
+                      </div>
+                    )}
+                    {serviceFeeAmount > 0 && (
+                      <div className="flex justify-between text-sm">
+                        <span className="text-text-muted">Service Fee</span>
+                        <span className="text-white font-medium">
+                          {formatCurrency(serviceFeeAmount)}
+                        </span>
+                      </div>
+                    )}
                   </div>
                   <div className="border-t border-dashed border-white/20 pt-4">
                     <div className="flex justify-between items-end">
@@ -539,10 +615,18 @@ export default function VenueCheckoutClient() {
                       </span>
                       <span className="text-3xl font-display font-bold text-accent text-shadow-glow">
                         {totalAmount > 0
-                          ? `â‚±${totalAmount.toLocaleString()}`
-                          : "Processingâ€¦"}
+                          ? formatCurrency(totalAmount)
+                          : "Processing…"}
                       </span>
                     </div>
+                    {/* Charging always happens in PHP — this is a
+                        display-only estimate, never the authoritative
+                        charge amount. */}
+                    {totalAmount > 0 && currency !== DEFAULT_CURRENCY && (
+                      <p className="text-right text-xs text-text-muted mt-1">
+                        ≈ {format(totalAmount)}
+                      </p>
+                    )}
                   </div>
                 </div>
 
@@ -581,24 +665,24 @@ export default function VenueCheckoutClient() {
               </span>
             </div>
             <p className="text-xs text-gray-500 font-medium">
-              Â© 2024 FoxPassport Inc. All rights reserved.
+              © {new Date().getFullYear()} FoxPassport Inc. All rights reserved.
             </p>
             <div className="flex gap-6">
               <a
                 className="text-xs text-gray-500 hover:text-white font-medium transition-colors"
-                href="#"
+                href="/privacy"
               >
                 Privacy
               </a>
               <a
                 className="text-xs text-gray-500 hover:text-white font-medium transition-colors"
-                href="#"
+                href="/terms"
               >
                 Terms
               </a>
               <a
                 className="text-xs text-gray-500 hover:text-white font-medium transition-colors"
-                href="#"
+                href="/privacy"
               >
                 Cookies
               </a>

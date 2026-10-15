@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 "use client";
 
 import React from "react";
@@ -7,13 +6,14 @@ import {
   CONDITIONS,
   INVENTORY_UNITS,
   ListingType,
-} from "@/features/asset/data/listingBuilderData";
-import { SERVICE_UNITS } from "@/features/service/data/serviceBuilderData";
-import CancellationPolicyPicker from "@/features/cancellation-policy/components/CancellationPolicyPicker";
-import {
-  MapboxLocationInput,
-  MapboxContextItem,
-} from "@/shared/components/ui/MapboxLocationInput";
+  SERVICE_UNITS,
+} from "@/shared/data/listingBuilderData";
+
+import CancellationPolicyPicker from "@/shared/components/ui/CancellationPolicyPicker";
+import { StyledSelect } from "@/shared/components/ui/StyledSelect";
+import { CascadingLocationFields } from "@/shared/components/ui/CascadingLocationFields";
+import { geocodeCountryCenter } from "@/shared/lib/geocoding";
+import { currencySymbol } from "@/shared/lib/currency";
 
 interface ListingSidebarProps {
   activeType: ListingType;
@@ -53,7 +53,7 @@ export function ListingSidebar({
   unit,
   status,
   city = "",
-  state = "",
+  state: _state = "",
   country = "",
   cancellationPolicyId,
   onCategorySelect,
@@ -63,7 +63,7 @@ export function ListingSidebar({
   onUnitChange,
   onStatusChange,
   onCityChange = () => {},
-  onStateChange = () => {},
+  onStateChange: _onStateChange = () => {},
   onCountryChange = () => {},
   onLatLngChange = () => {},
   onCancellationPolicyChange,
@@ -71,7 +71,7 @@ export function ListingSidebar({
   const units = activeType === "inventory" ? INVENTORY_UNITS : SERVICE_UNITS;
 
   return (
-    <aside className="w-80 shrink-0 border-r border-white/5 bg-[#0f111a] flex flex-col relative z-10">
+    <aside className="w-80 shrink-0 border-r border-white/5 bg-surface flex flex-col relative z-10">
       <div className="p-6 border-b border-white/5">
         <h3 className="font-display font-bold text-lg text-white mb-1">
           Details
@@ -137,7 +137,7 @@ export function ListingSidebar({
                   onClick={() => onConditionChange(cond)}
                   className={`px-4 py-2 rounded-lg border text-xs font-bold capitalize transition-all ${
                     condition === cond
-                      ? "border-[#ccff00] bg-[#ccff00]/10 text-[#ccff00]"
+                      ? "border-accent bg-accent/10 text-accent"
                       : "border-white/10 bg-white/5 text-white/60 hover:text-white hover:border-white/20"
                   }`}
                 >
@@ -154,7 +154,9 @@ export function ListingSidebar({
           </label>
           <div className="space-y-3">
             <div className="relative flex items-center">
-              <span className="absolute left-4 text-white/30 text-sm">₱</span>
+              <span className="absolute left-4 text-white/30 text-sm">
+                {currencySymbol()}
+              </span>
               <input
                 type="number"
                 value={price || ""}
@@ -166,7 +168,7 @@ export function ListingSidebar({
                 <button
                   type="button"
                   onClick={() => onPriceChange(price + 100)}
-                  className="h-4 w-6 rounded bg-white/10 flex items-center justify-center text-white/50 hover:bg-[#ccff00]/20 hover:text-[#ccff00] transition-colors"
+                  className="h-4 w-6 rounded bg-white/10 flex items-center justify-center text-white/50 hover:bg-accent/20 hover:text-accent transition-colors"
                 >
                   <span className="material-symbols-outlined text-[12px]">
                     expand_less
@@ -175,7 +177,7 @@ export function ListingSidebar({
                 <button
                   type="button"
                   onClick={() => onPriceChange(Math.max(0, price - 100))}
-                  className="h-4 w-6 rounded bg-white/10 flex items-center justify-center text-white/50 hover:bg-[#ccff00]/20 hover:text-[#ccff00] transition-colors"
+                  className="h-4 w-6 rounded bg-white/10 flex items-center justify-center text-white/50 hover:bg-accent/20 hover:text-accent transition-colors"
                 >
                   <span className="material-symbols-outlined text-[12px]">
                     expand_more
@@ -183,25 +185,12 @@ export function ListingSidebar({
                 </button>
               </div>
             </div>
-            <div className="relative">
-              <select
-                value={unit}
-                onChange={(e) => onUnitChange(e.target.value)}
-                className="w-full bg-white/5 border border-white/5 rounded-xl px-4 py-4 text-sm text-white placeholder-white/30 focus:border-accent/30 outline-none appearance-none cursor-pointer transition-colors"
-                style={{ colorScheme: "dark" }}
-              >
-                {(units as readonly string[]).map((u) => (
-                  <option key={u} value={u} className="bg-[#0f111a]">
-                    {u}
-                  </option>
-                ))}
-              </select>
-              <span className="absolute right-4 top-1/2 -translate-y-1/2 text-white/30 pointer-events-none">
-                <span className="material-symbols-outlined text-[20px]">
-                  expand_more
-                </span>
-              </span>
-            </div>
+            <StyledSelect
+              value={unit}
+              onChange={onUnitChange}
+              options={units as readonly string[] as string[]}
+              className="py-4"
+            />
           </div>
         </div>
 
@@ -213,41 +202,25 @@ export function ListingSidebar({
           />
         </div>
 
-        {/* Location */}
-        <div className="space-y-3">
-          <label className="text-[10px] uppercase font-bold text-white/40 tracking-widest block">
-            Location
-          </label>
-          <MapboxLocationInput
-            value={city}
-            onChange={onCityChange}
-            type="place"
-            placeholder="City"
-            onSelect={(
-              val: string,
-              context?: MapboxContextItem[],
-              center?: [number, number],
-            ) => {
-              onCityChange(val);
-              const region = context?.find((c) =>
-                c.id.startsWith("region"),
-              )?.text;
-              const countryName = context?.find((c) =>
-                c.id.startsWith("country"),
-              )?.text;
-              if (region) onStateChange(region);
-              if (countryName) onCountryChange(countryName);
-              if (center) onLatLngChange(center[1], center[0]);
-            }}
-          />
-          <MapboxLocationInput
-            value={country}
-            onChange={onCountryChange}
-            type="country"
-            placeholder="Country"
-            onSelect={(val: string) => onCountryChange(val)}
-          />
-        </div>
+        {/* Location — Country, then City (locked until a country is picked),
+            from the shared cascading picker. Listings store no state. */}
+        <CascadingLocationFields
+          value={{ country, state: "", city }}
+          withState={false}
+          className="grid grid-cols-1 gap-3"
+          onChange={(next, { countryCode: code }) => {
+            if (next.country !== country) {
+              if (code) {
+                geocodeCountryCenter(code).then((center) => {
+                  if (center) onLatLngChange(center[1], center[0]);
+                });
+              }
+              onCountryChange(next.country);
+            }
+            onCityChange(next.city);
+          }}
+          onCoordinates={(lat, lng) => onLatLngChange(lat, lng)}
+        />
 
         {/* Status */}
         <div>

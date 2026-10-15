@@ -18,7 +18,7 @@ export interface EventItem {
   status: string;
   booked: number | null;
   capacity: number | null;
-  revenue: string | null;
+  revenue: number | null;
   img: string;
   isPublic?: boolean;
 }
@@ -31,7 +31,7 @@ export interface VenueItem {
   cap: string;
   status: string;
   bookings: string | null;
-  revenue: string | null;
+  revenue: number | null;
   img: string;
 }
 
@@ -47,11 +47,18 @@ export interface InventoryItem {
 export interface ServiceItem {
   id: number | string;
   name: string;
-  price: string;
+  /** In the platform currency — rendered with <Money>, which converts it. */
+  price: number;
+  /** Billing unit shown after the price, e.g. "per_hour". */
+  priceUnit?: string;
   status: string;
   icon: string;
   color: string;
   img?: string;
+  category?: string;
+  tags?: string[];
+  city?: string;
+  isWillingToTravel?: boolean;
 }
 
 export interface PendingRequest {
@@ -82,18 +89,16 @@ export const INITIAL_SERVICES: ServiceItem[] = [];
 
 export const PENDING_REQUESTS: PendingRequest[] = [];
 
-export const RECENT_ACTIVITY: ActivityItem[] = [];
-
 export const KPI_DATA = [
   {
     id: "earnings",
     label: "Total Earnings",
-    value: "₱0",
+    value: "—",
     trend: "0%",
     trendLabel: "from last month",
     icon: "video_camera_front",
-    iconColor: "text-[#ccff00]",
-    barColor: "bg-[#ccff00]",
+    iconColor: "text-accent",
+    barColor: "bg-accent",
     glowColor: "#ccff00",
     barWidth: "0%",
   },

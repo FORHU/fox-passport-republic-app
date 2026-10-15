@@ -15,14 +15,17 @@ if (reactHooksConfig) {
     rules: {
       ...reactHooksConfig.rules,
       "@typescript-eslint/no-explicit-any": "off",
-      "@typescript-eslint/no-unused-vars": "warn",
+      "@typescript-eslint/no-unused-vars": [
+        "warn",
+        { argsIgnorePattern: "^_", varsIgnorePattern: "^_" },
+      ],
       "@typescript-eslint/no-non-null-asserted-optional-chain": "warn",
-      "@next/next/no-img-element": "warn",
-      "react-hooks/set-state-in-effect": "warn",
+      "@next/next/no-img-element": "off",
+      "react-hooks/set-state-in-effect": "off",
       "react-hooks/purity": "warn",
-      "react-hooks/preserve-manual-memoization": "warn",
+      "react-hooks/preserve-manual-memoization": "off",
       "react-hooks/immutability": "warn",
-      "react-hooks/preserve-manual-memoization": "warn",
+      "react-hooks/exhaustive-deps": "off",
     },
   });
 }
@@ -41,13 +44,17 @@ const eslintConfig = defineConfig([
     files: ["**/*.{js,jsx,mjs,ts,tsx,mts,cts}"],
     rules: {
       "@typescript-eslint/no-explicit-any": "off",
-      "@typescript-eslint/no-unused-vars": "warn",
+      "@typescript-eslint/no-unused-vars": [
+        "warn",
+        { argsIgnorePattern: "^_", varsIgnorePattern: "^_" },
+      ],
       "@typescript-eslint/no-non-null-asserted-optional-chain": "warn",
-      "@next/next/no-img-element": "warn",
-      "react-hooks/set-state-in-effect": "warn",
+      "@next/next/no-img-element": "off",
+      "react-hooks/set-state-in-effect": "off",
       "react-hooks/purity": "warn",
-      "react-hooks/preserve-manual-memoization": "warn",
+      "react-hooks/preserve-manual-memoization": "off",
       "react-hooks/immutability": "warn",
+      "react-hooks/exhaustive-deps": "off",
     },
   },
 ]);

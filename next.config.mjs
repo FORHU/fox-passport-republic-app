@@ -1,10 +1,33 @@
 /** @type {import('next').NextConfig} */
 const isWindows = process.platform === "win32";
 
+// Derive the API origin from NEXT_PUBLIC_API_URL (.env) — no hardcoded fallback.
+// If the variable is missing the URL constructor will throw and the build will
+// surface the misconfiguration immediately rather than silently using a wrong host.
+const apiOrigin = (() => {
+  const raw = process.env.NEXT_PUBLIC_API_URL;
+  if (!raw) throw new Error("NEXT_PUBLIC_API_URL is not set in .env");
+  const { protocol, hostname, port } = new URL(raw);
+  return `${protocol}//${hostname}${port ? `:${port}` : ""}`;
+})();
+
+
 const nextConfig = {
   turbopack: {},
   ...(isWindows ? {} : { output: "standalone" }),
   reactStrictMode: false,
+  allowedDevOrigins: ["192.168.1.34"],
+
+  // Keep a visited dynamic page's server payload in the client router cache
+  // for 30s (Next 15+ defaults this to 0, i.e. every revisit re-renders on
+  // the server — nearly every page here is `force-dynamic`). Matches React
+  // Query's 30s staleTime in QueryProvider, so hopping back to a page you
+  // just left is instant on both layers. `router.refresh()` still bypasses it.
+  experimental: {
+    staleTimes: {
+      dynamic: 30,
+    },
+  },
 
   images: {
     remotePatterns: [
@@ -53,7 +76,7 @@ const nextConfig = {
           "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.stripe.com https://*.stripe.network",
           "style-src 'self' 'unsafe-inline' https://*.stripe.com",
           "frame-src https://*.stripe.com https://*.stripe.network",
-          "connect-src 'self' https://*.stripe.com https://*.stripe.network http://localhost:6002",
+          `connect-src 'self' https://*.stripe.com https://*.stripe.network ${apiOrigin}`,
           "img-src 'self' data: https://*.stripe.com",
         ].join('; '),
       },

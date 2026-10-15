@@ -2,47 +2,82 @@
 
 import React from "react";
 import Image from "next/image";
+import Link from "next/link";
 import MobileCreatorBottomNav from "./MobileCreatorBottomNav";
+import { useStripeConnect } from "../hooks/useStripeConnect";
+import { useMyPayouts } from "../hooks/useMyPayouts";
+import { PAYOUT_SOURCE_LABEL, type Payout } from "../api/payouts";
+import { formatCurrency } from "@/shared/lib/currency";
 
-const PAYOUT_CHECKLIST = [
-  {
-    icon: "check_circle",
-    iconColor: "#22c55e",
-    iconBg: "rgba(34,197,94,0.15)",
-    title: "Valid Government ID",
-    status: "VERIFIED",
-    statusColor: "#22c55e",
-  },
-  {
-    icon: "hourglass_top",
-    iconColor: "#f59e0b",
-    iconBg: "rgba(245,158,11,0.15)",
-    title: "Business Permit",
-    status: "IN REVIEW",
-    statusColor: "#f59e0b",
-  },
-  {
-    icon: "account_balance",
-    iconColor: "rgba(255,255,255,0.3)",
-    iconBg: "rgba(255,255,255,0.06)",
-    title: "Bank / Stripe Connect",
-    status: "NOT LINKED",
-    statusColor: "rgba(255,255,255,0.3)",
-  },
-];
+const NO_PAYOUTS: Payout[] = [];
+const NO_TOTALS = { paid: 0, pending: 0 };
 
-const PAYOUTS = [
-  { id: 1, name: "Skyline Loft booking", date: "Aug 2", amount: "15,300" },
-  { id: 2, name: "Neon Nights event", date: "Jul 28", amount: "22,000" },
-  { id: 3, name: "Garden Pavilion", date: "Jul 20", amount: "18,900" },
-  { id: 4, name: "Weekend rental", date: "Jul 15", amount: "9,500" },
-];
+const DONE = {
+  icon: "check_circle",
+  iconColor: "#22c55e",
+  iconBg: "rgba(34,197,94,0.15)",
+  statusColor: "#22c55e",
+};
+const WAITING = {
+  icon: "hourglass_top",
+  iconColor: "#f59e0b",
+  iconBg: "rgba(245,158,11,0.15)",
+  statusColor: "#f59e0b",
+};
+const TODO = {
+  icon: "account_balance",
+  iconColor: "rgba(255,255,255,0.3)",
+  iconBg: "rgba(255,255,255,0.06)",
+  statusColor: "rgba(255,255,255,0.3)",
+};
 
 export default function MobileEarningsView() {
+  const { status, loading: stripeLoading } = useStripeConnect();
+  const { data: payoutsData, isPending: payoutsLoading } = useMyPayouts(1, 10);
+  const payouts: Payout[] = payoutsData?.payouts ?? NO_PAYOUTS;
+  const totals = payoutsData?.totals ?? NO_TOTALS;
+
+  const checklist = stripeLoading
+    ? []
+    : [
+        {
+          title: "Payout account created",
+          ...(status?.hasStripeAccount ? DONE : TODO),
+          label: status?.hasStripeAccount ? "DONE" : "NOT STARTED",
+        },
+        {
+          title: "Identity & bank details",
+          ...(status?.stripeOnboardingComplete
+            ? DONE
+            : status?.hasStripeAccount
+              ? WAITING
+              : TODO),
+          label: status?.stripeOnboardingComplete
+            ? "COMPLETE"
+            : status?.hasStripeAccount
+              ? "INCOMPLETE"
+              : "NOT STARTED",
+        },
+        {
+          title: "Payouts enabled",
+          ...(status?.stripePayoutsEnabled
+            ? DONE
+            : status?.stripeOnboardingComplete
+              ? WAITING
+              : TODO),
+          label: status?.stripePayoutsEnabled
+            ? "ENABLED"
+            : status?.stripeOnboardingComplete
+              ? "IN REVIEW"
+              : "NOT YET",
+        },
+      ];
+  const payoutsReady = !!status?.stripePayoutsEnabled;
+
   return (
     <div
       className="lg:hidden"
-      style={{ background: "#050608", minHeight: "100svh", color: "#fff" }}
+      style={{ background: "var(--canvas)", minHeight: "100svh", color: "var(--color-white)" }}
     >
       {/* Standard nav bar */}
       <div
@@ -53,10 +88,10 @@ export default function MobileEarningsView() {
           right: 0,
           height: 64,
           zIndex: 5,
-          background: "rgba(5,6,8,0.9)",
+          background: "color-mix(in srgb, var(--canvas) 90%, transparent)",
           backdropFilter: "blur(20px)",
           WebkitBackdropFilter: "blur(20px)",
-          borderBottom: "1px solid rgba(255,255,255,0.08)",
+          borderBottom: "1px solid color-mix(in srgb, var(--color-white) 8%, transparent)",
           display: "flex",
           alignItems: "center",
           padding: "0 16px",
@@ -85,10 +120,10 @@ export default function MobileEarningsView() {
 
       {/* Scrollable content */}
       <div style={{ padding: "142px 20px 100px" }}>
-        {/* Available Balance card */}
+        {/* Pending Payouts card */}
         <div
           style={{
-            background: "linear-gradient(135deg,#161616,#0a0a0a)",
+            background: "linear-gradient(135deg,#161616,var(--canvas))",
             border: "1px solid rgba(204,255,0,0.2)",
             borderRadius: 22,
             padding: 20,
@@ -101,7 +136,7 @@ export default function MobileEarningsView() {
               fontWeight: 700,
               letterSpacing: "1.5px",
               textTransform: "uppercase",
-              color: "rgba(255,255,255,0.4)",
+              color: "color-mix(in srgb, var(--color-white) 40%, transparent)",
               margin: "0 0 6px",
             }}
           >
@@ -112,28 +147,44 @@ export default function MobileEarningsView() {
               fontFamily: 'var(--font-display,"Space Grotesk",sans-serif)',
               fontSize: 30,
               fontWeight: 700,
-              color: "#ccff00",
+              color: "var(--accent-text)",
               margin: "0 0 16px",
               lineHeight: 1,
             }}
           >
-            ₱64,200
+            {payoutsLoading ? "—" : formatCurrency(totals.pending)}
           </p>
-          <button
+          <p
             style={{
-              width: "100%",
-              background: "#ccff00",
-              color: "#000",
-              fontWeight: 800,
-              fontSize: 13,
-              border: "none",
-              borderRadius: 16,
-              padding: 14,
-              cursor: "pointer",
+              fontSize: 11,
+              color: "color-mix(in srgb, var(--color-white) 40%, transparent)",
+              margin: "0 0 12px",
             }}
           >
-            Withdraw
-          </button>
+            Paid out so far:{" "}
+            {payoutsLoading ? "—" : formatCurrency(totals.paid)}
+          </p>
+          {!payoutsReady && (
+            <Link
+              href="/creator-dashboard/stripe-onboard"
+              style={{
+                display: "block",
+                textAlign: "center",
+                textDecoration: "none",
+                width: "100%",
+                background: "#ccff00",
+                color: "#000",
+                fontWeight: 800,
+                fontSize: 13,
+                borderRadius: 16,
+                padding: 14,
+              }}
+            >
+              {status?.hasStripeAccount
+                ? "Finish Payout Setup"
+                : "Connect Bank"}
+            </Link>
+          )}
         </div>
 
         {/* Payout Setup */}
@@ -143,7 +194,7 @@ export default function MobileEarningsView() {
             fontWeight: 800,
             letterSpacing: "1.5px",
             textTransform: "uppercase",
-            color: "rgba(255,255,255,0.35)",
+            color: "color-mix(in srgb, var(--color-white) 35%, transparent)",
             margin: "0 0 10px",
           }}
         >
@@ -157,15 +208,15 @@ export default function MobileEarningsView() {
             marginBottom: 24,
           }}
         >
-          {PAYOUT_CHECKLIST.map((item) => (
+          {checklist.map((item) => (
             <div
               key={item.title}
               style={{
                 display: "flex",
                 alignItems: "center",
                 gap: 12,
-                background: "rgba(255,255,255,0.04)",
-                border: "1px solid rgba(255,255,255,0.06)",
+                background: "color-mix(in srgb, var(--color-white) 4%, transparent)",
+                border: "1px solid color-mix(in srgb, var(--color-white) 6%, transparent)",
                 borderRadius: 14,
                 padding: 12,
               }}
@@ -198,7 +249,7 @@ export default function MobileEarningsView() {
                   style={{
                     fontSize: 12,
                     fontWeight: 700,
-                    color: "#fff",
+                    color: "var(--color-white)",
                     margin: "0 0 2px",
                   }}
                 >
@@ -213,7 +264,7 @@ export default function MobileEarningsView() {
                     margin: 0,
                   }}
                 >
-                  {item.status}
+                  {item.label}
                 </p>
               </div>
             </div>
@@ -227,54 +278,76 @@ export default function MobileEarningsView() {
             fontWeight: 800,
             letterSpacing: "1.5px",
             textTransform: "uppercase",
-            color: "rgba(255,255,255,0.35)",
+            color: "color-mix(in srgb, var(--color-white) 35%, transparent)",
             margin: "0 0 10px",
           }}
         >
           Recent Payouts
         </p>
-        <div style={{ display: "flex", flexDirection: "column" }}>
-          {PAYOUTS.map((payout, i) => (
-            <div
-              key={payout.id}
-              style={{
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center",
-                padding: "12px 0",
-                borderBottom:
-                  i < PAYOUTS.length - 1
-                    ? "1px solid rgba(255,255,255,0.05)"
-                    : "none",
-              }}
-            >
-              <div>
-                <p
+        {payoutsLoading ? (
+          <p style={{ fontSize: 12, color: "color-mix(in srgb, var(--color-white) 40%, transparent)" }}>
+            Loading…
+          </p>
+        ) : payouts.length === 0 ? (
+          <p style={{ fontSize: 12, color: "color-mix(in srgb, var(--color-white) 40%, transparent)" }}>
+            No payouts yet.
+          </p>
+        ) : (
+          <div style={{ display: "flex", flexDirection: "column" }}>
+            {payouts.map((payout, i) => (
+              <div
+                key={payout.id}
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  padding: "12px 0",
+                  borderBottom:
+                    i < payouts.length - 1
+                      ? "1px solid rgba(255,255,255,0.05)"
+                      : "none",
+                }}
+              >
+                <div>
+                  <p
+                    style={{
+                      fontSize: 12,
+                      fontWeight: 700,
+                      color: "var(--color-white)",
+                      margin: "0 0 2px",
+                    }}
+                  >
+                    {PAYOUT_SOURCE_LABEL[payout.sourceType] ??
+                      payout.sourceType}
+                  </p>
+                  <p
+                    style={{
+                      fontSize: 10,
+                      color: "color-mix(in srgb, var(--color-white) 40%, transparent)",
+                      margin: 0,
+                    }}
+                  >
+                    {new Date(payout.createdAt).toLocaleDateString(undefined, {
+                      month: "short",
+                      day: "numeric",
+                    })}
+                    {" · "}
+                    {payout.status}
+                  </p>
+                </div>
+                <span
                   style={{
-                    fontSize: 12,
+                    fontSize: 13,
                     fontWeight: 700,
-                    color: "#fff",
-                    margin: "0 0 2px",
+                    color: payout.status === "failed" ? "#f87171" : "#22c55e",
                   }}
                 >
-                  {payout.name}
-                </p>
-                <p
-                  style={{
-                    fontSize: 10,
-                    color: "rgba(255,255,255,0.4)",
-                    margin: 0,
-                  }}
-                >
-                  {payout.date}
-                </p>
+                  {formatCurrency(payout.payoutAmount)}
+                </span>
               </div>
-              <span style={{ fontSize: 13, fontWeight: 700, color: "#22c55e" }}>
-                +₱{payout.amount}
-              </span>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
       </div>
 
       <MobileCreatorBottomNav />

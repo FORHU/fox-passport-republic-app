@@ -1,13 +1,19 @@
-﻿import { cookies } from "next/headers";
+import { cookies } from "next/headers";
+import { cache } from "react";
 import { config } from "@/shared/lib/config";
+import type { Foxer } from "@/shared/api/foxers";
+import type { EventTemplateDetail } from "@/shared/api/event-templates";
 import { requireAuth } from "./auth";
+import { joinPlace } from "../place";
 
 async function getAuthToken(): Promise<string | null> {
-  // `fox_token` (httpOnly) is the only source of truth for the access token.
-  // There used to be a fallback that read it out of the `fox_user` cookie,
-  // which required storing the token somewhere any script could read.
   const cookieStore = await cookies();
-  return cookieStore.get("fox_token")?.value ?? null;
+  return (
+    cookieStore.get("better-auth.session_token")?.value ??
+    cookieStore.get("__Secure-better-auth.session_token")?.value ??
+    cookieStore.get("fox_token")?.value ??
+    null
+  );
 }
 
 /**
@@ -25,7 +31,7 @@ async function getAuthToken(): Promise<string | null> {
  *
  * Refreshing belongs to the two places that can actually persist the result:
  * `app/api/proxy/[...path]/route.ts` for client calls, and `refreshUserSession`
- * in `auth-actions.ts` for server actions. On a protected route `middleware.ts`
+ * in `auth-actions.ts` for server actions. On a protected route `proxy.ts`
  * has already rejected an expired access token before any of this runs, so a
  * 401 reaching here means the session is genuinely over.
  */
@@ -94,6 +100,40 @@ async function serverFetch(
   }
 
   return res.json();
+}
+
+async function publicServerFetch<T = Record<string, unknown>>(
+  endpoint: string,
+  params?: Record<string, string>,
+  options: { revalidate?: number | false; tags?: string[] } = { revalidate: 60 },
+): Promise<T | null> {
+  const baseUrl = config.apiUrl;
+  let url = `${baseUrl}${endpoint}`;
+  if (params) {
+    const qs = new URLSearchParams(params).toString();
+    if (qs) url += `?${qs}`;
+  }
+
+  try {
+    const nextOptions: { revalidate?: number | false; tags?: string[] } = {};
+    if (typeof options.revalidate !== "undefined") {
+      nextOptions.revalidate = options.revalidate;
+    }
+    if (options.tags && options.tags.length > 0) {
+      nextOptions.tags = options.tags;
+    }
+
+    const res = await fetch(url, {
+      headers: { "Content-Type": "application/json" },
+      next: nextOptions,
+    });
+    if (!res.ok) {
+      return null;
+    }
+    return res.json() as Promise<T>;
+  } catch {
+    return null;
+  }
 }
 
 // Exported for other server utilities that need a raw fetch helper
@@ -195,16 +235,11 @@ function normalizeVenue(v: any) {
       : null,
     title: v.title || v.name || "Untitled Venue",
     type: v.type || v.venueType || "Venue",
-    loc:
-      v.location ||
-      [v.city, v.province, v.country].filter(Boolean).join(", ") ||
-      "",
+    loc: v.location || joinPlace(v.city, v.state ?? v.province, v.country),
     cap: v.capacity ? `${v.capacity} guests` : "—",
-    location:
-      v.location ||
-      [v.city, v.province, v.country].filter(Boolean).join(", ") ||
-      "",
-    province: v.province || v.country || "",
+    location: v.location || joinPlace(v.city, v.state ?? v.province, v.country),
+    // The region shown after the location — the API calls it `state`.
+    province: v.province || v.state || v.country || "",
     price: Number(v.price || v.pricePerNight || 0),
     rating: Number(v.rating || v.averageRating || 0),
     reviews: Number(v.reviews || v.reviewCount || 0),
@@ -220,7 +255,24 @@ function normalizeVenue(v: any) {
     bathroomCount: Number(v.bathroomCount || v.bathrooms || 0),
     status: v.status || "draft",
     bookings: v.bookingsCount ?? v.bookings ?? null,
-    revenue: v.revenue ? `₱${Number(v.revenue).toLocaleString()}` : null,
+    revenue: v.revenue ? Number(v.revenue) : null,
+    facilities: v.facilities || [],
+    recommendedCapacity: v.recommendedCapacity || 0,
+    seatingArrangements: v.seatingArrangements || [],
+    stageConfig: v.stageConfig || "",
+    setupOptions: v.setupOptions || [],
+    operatingHours: v.operatingHours || null,
+    blockedDates: v.blockedDates || [],
+    minBookingTime: v.minBookingTime || 0,
+    depositRequirements: v.depositRequirements || "",
+    floorPlanUrls: v.floorPlanUrls || [],
+    seatingLayoutUrls: v.seatingLayoutUrls || [],
+    parkingInformation: v.parkingInformation || "",
+    accessibilityInformation: v.accessibilityInformation || "",
+    entranceInstructions: v.entranceInstructions || "",
+    packages: v.packages || [],
+    recommendedAssets: v.recommendedAssets || [],
+    recommendedServices: v.recommendedServices || [],
   };
 }
 
@@ -251,12 +303,12 @@ export async function getDashboardStats() {
     };
   }
 }
-
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export async function getUserDashboard(_userId: string) {
   await requireAuth();
   try {
-    const body = await serverFetch("/bookings").catch(() => ({ data: [] }));
+    const body = await serverFetch("/bookings/upcoming").catch(() => ({
+      data: [],
+    }));
     const upcomingEvents = (body?.data || []).length;
     return { userName: "User", upcomingEvents, recommendations: 0 };
   } catch (error) {
@@ -267,7 +319,7 @@ export async function getUserDashboard(_userId: string) {
 
 export async function getVenues() {
   try {
-    const body = await serverFetch("/venues");
+    const body = await publicServerFetch("/venues");
     return extractList(body).map(normalizeVenue);
   } catch (error) {
     console.error("Failed to fetch venues:", error);
@@ -358,7 +410,10 @@ export async function getEvents(ownerId?: string) {
 
 export async function getCategories() {
   try {
-    const body = await serverFetch("/categories");
+    const body = await publicServerFetch("/categories", undefined, {
+      revalidate: 300,
+      tags: ["categories"],
+    });
     return extractList(body);
   } catch (error) {
     console.error("Failed to fetch categories:", error);
@@ -475,20 +530,39 @@ export async function getBookingById(id: string) {
   }
 }
 
-export async function getVenueById(id: string) {
+export const getVenueById = cache(async (id: string) => {
   try {
-    const body = await serverFetch(`/venues/${id}`);
+    const body = await publicServerFetch(`/venues/${id}`, undefined, {
+      revalidate: 60,
+      tags: ["venues", `venue:${id}`],
+    });
     const data = extractOne(body);
     if (!data) return null;
     return normalizeVenue(data);
   } catch {
     return null;
   }
-}
+});
+
+export const getFoxerById = cache(async (id: string): Promise<Foxer | null> => {
+  try {
+    const body = await publicServerFetch<{ data?: Foxer }>(
+      `/users/foxers/${id}`,
+      undefined,
+      { revalidate: 60, tags: ["foxers", `foxer:${id}`] },
+    );
+    return body?.data ?? null;
+  } catch {
+    return null;
+  }
+});
 
 export async function getCategoryBySlug(slug: string) {
   try {
-    const body = await serverFetch(`/categories/slug/${slug}`);
+    const body = await publicServerFetch(`/categories/slug/${slug}`, undefined, {
+      revalidate: 300,
+      tags: ["categories", `category:${slug}`],
+    });
     return extractOne(body);
   } catch (error) {
     console.error(`Failed to fetch category ${slug}:`, error);
@@ -498,9 +572,11 @@ export async function getCategoryBySlug(slug: string) {
 
 export async function getEventsByCategory(categorySlug: string) {
   try {
-    const body = await serverFetch("/event-templates/browse", {
-      category: categorySlug,
-    });
+    const body = await publicServerFetch(
+      "/event-templates/browse",
+      { category: categorySlug },
+      { revalidate: 60, tags: ["event-templates"] },
+    );
     return extractList(body);
   } catch (error) {
     console.error(
@@ -513,9 +589,11 @@ export async function getEventsByCategory(categorySlug: string) {
 
 export async function getFeaturedEventTemplates(limit = 4) {
   try {
-    const body = await serverFetch("/event-templates/browse", {
-      limit: String(limit),
-    });
+    const body = await publicServerFetch(
+      "/event-templates/browse",
+      { limit: String(limit) },
+      { revalidate: 60, tags: ["event-templates"] },
+    );
     return extractList(body);
   } catch (error) {
     console.error("Failed to fetch featured event templates:", error);
@@ -523,11 +601,57 @@ export async function getFeaturedEventTemplates(limit = 4) {
   }
 }
 
+export async function getPublicEventTemplates(limit = 100) {
+  try {
+    const body = await publicServerFetch(
+      "/event-templates/browse",
+      { limit: String(limit) },
+      { revalidate: 60, tags: ["event-templates"] },
+    );
+    return extractList(body);
+  } catch (error) {
+    console.error("Failed to fetch public event templates:", error);
+    return [];
+  }
+}
+
+export async function getPublicFoxers(limit = 100) {
+  try {
+    const body = await publicServerFetch(
+      "/users/foxers",
+      { limit: String(limit) },
+      { revalidate: 60, tags: ["foxers"] },
+    );
+    return extractList(body);
+  } catch (error) {
+    console.error("Failed to fetch public foxers:", error);
+    return [];
+  }
+}
+
+export const getPublicEventTemplateById = cache(
+  async (id: string): Promise<EventTemplateDetail | null> => {
+    try {
+      const body = await publicServerFetch<{ data?: EventTemplateDetail }>(
+        `/event-templates/browse/${id}`,
+        undefined,
+        { revalidate: 60, tags: ["event-templates", `event-template:${id}`] },
+      );
+      return body?.data ?? null;
+    } catch (error) {
+      console.error(`Failed to fetch event template ${id}:`, error);
+      return null;
+    }
+  },
+);
+
 export async function getTrendingEventsByCategory(categorySlug: string) {
   try {
-    const body = await serverFetch("/event-templates/trending", {
-      category: categorySlug,
-    });
+    const body = await publicServerFetch(
+      "/event-templates/trending",
+      { category: categorySlug },
+      { revalidate: 60, tags: ["event-templates"] },
+    );
     return extractList(body);
   } catch (error) {
     console.error(
@@ -540,7 +664,11 @@ export async function getTrendingEventsByCategory(categorySlug: string) {
 
 export async function getVenuesByCategory(categorySlug: string) {
   try {
-    const body = await serverFetch("/venues", { category: categorySlug });
+    const body = await publicServerFetch(
+      "/venues",
+      { category: categorySlug },
+      { revalidate: 60, tags: ["venues"] },
+    );
     return extractList(body).map(normalizeVenue);
   } catch (error) {
     console.error(

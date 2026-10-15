@@ -1,11 +1,10 @@
-/* eslint-disable @next/next/no-img-element */
 "use client";
 
 import React, { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useAuthStore } from "@/features/auth/store/useAuthStore";
+import { useAuthStore } from "@/shared/auth/useAuthStore";
 import { useNotifications } from "../hooks/useNotifications";
 import { Notification } from "../types";
 import { getDashboardPath } from "@/shared/lib/dashboard-path";
@@ -30,6 +29,36 @@ const TYPE_META: Record<string, { icon: string; color: string; bg: string }> = {
     icon: "block",
     color: "text-red-300",
     bg: "bg-red-500/10",
+  },
+  follow_request: {
+    icon: "person_add",
+    color: "text-lime-300",
+    bg: "bg-lime-500/10",
+  },
+  new_follower: {
+    icon: "person_add",
+    color: "text-lime-300",
+    bg: "bg-lime-500/10",
+  },
+  follow_request_accepted: {
+    icon: "how_to_reg",
+    color: "text-green-300",
+    bg: "bg-green-500/10",
+  },
+  message_request: {
+    icon: "mark_chat_unread",
+    color: "text-lime-300",
+    bg: "bg-lime-500/10",
+  },
+  message_request_accepted: {
+    icon: "forum",
+    color: "text-green-300",
+    bg: "bg-green-500/10",
+  },
+  "message:mention": {
+    icon: "alternate_email",
+    color: "text-lime-300",
+    bg: "bg-lime-500/10",
   },
 };
 
@@ -120,13 +149,15 @@ export default function NotificationListClient() {
               onClick={() => router.push(getDashboardPath(user))}
             >
               {user?.imgId ? (
-                <img
+                <Image
                   alt="User"
+                  width={40}
+                  height={40}
                   className="h-full w-full object-cover"
                   src={user.imgId}
                 />
               ) : (
-                <div className="h-full w-full bg-[#ccff00] flex items-center justify-center text-black font-bold text-sm">
+                <div className="h-full w-full bg-accent flex items-center justify-center text-black font-bold text-sm">
                   {user?.name?.charAt(0)?.toUpperCase() ?? "U"}
                 </div>
               )}

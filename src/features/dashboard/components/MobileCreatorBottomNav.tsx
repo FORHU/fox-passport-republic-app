@@ -2,25 +2,62 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useRoleAccess } from "@/shared/auth/useRoleAccess";
 
-const TABS = [
+const BASE_TABS = [
   { icon: "dashboard", label: "Overview", href: "/creator-dashboard" },
-  { icon: "grid_view", label: "Listings", href: "/creator-dashboard/venues" },
   {
     icon: "calendar_month",
     label: "Calendar",
     href: "/creator-dashboard/calendar",
-  },
-  {
-    icon: "account_balance_wallet",
-    label: "Earnings",
-    href: "/creator-dashboard/earnings",
   },
   { icon: "person", label: "Profile", href: "/user/settings" },
 ];
 
 export default function MobileCreatorBottomNav() {
   const pathname = usePathname();
+  const access = useRoleAccess();
+  const { canReceivePayouts, hasListings, canProposePartnerships } = access;
+
+  // The Listings tab opens the first listing type this person actually
+  // manages — it used to always open Venues, an empty page for a Gear,
+  // Talent, Performer or Event Foxer.
+  const listingsHref = access.canManageVenues
+    ? "/creator-dashboard/venues"
+    : access.canManageEvents
+      ? "/creator-dashboard/events"
+      : access.canManageInventory
+        ? "/creator-dashboard/assets"
+        : access.canManageServices
+          ? "/creator-dashboard/services"
+          : "/creator-dashboard/performers";
+
+  // An Organizer gets no platform pay (ADR 0005) — the tab used to sit here
+  // regardless, pointing at a page that (now correctly) bounces them
+  // straight back to this same dashboard.
+  // The Listings tab is a Foxer's own inventory — nothing there for someone
+  // who supplies nothing. An Investor's equivalent is their partnerships.
+  const tabs = [
+    BASE_TABS[0],
+    hasListings && {
+      icon: "grid_view",
+      label: "Listings",
+      href: listingsHref,
+    },
+    !hasListings &&
+      canProposePartnerships && {
+        icon: "handshake",
+        label: "Partners",
+        href: "/creator-dashboard/partnerships",
+      },
+    BASE_TABS[1],
+    canReceivePayouts && {
+      icon: "account_balance_wallet",
+      label: "Earnings",
+      href: "/creator-dashboard/earnings",
+    },
+    BASE_TABS[2],
+  ].filter((x) => x !== false);
 
   const isActive = (href: string) =>
     href === "/creator-dashboard"
@@ -35,19 +72,20 @@ export default function MobileCreatorBottomNav() {
         bottom: 0,
         left: 0,
         right: 0,
-        height: 78,
+        minHeight: 72,
+        height: "calc(58px + env(safe-area-inset-bottom, 14px))",
         zIndex: 50,
         background: "rgba(8,8,11,0.92)",
         backdropFilter: "blur(20px)",
         WebkitBackdropFilter: "blur(20px)",
-        borderTop: "1px solid rgba(255,255,255,0.08)",
+        borderTop: "1px solid color-mix(in srgb, var(--color-white) 8%, transparent)",
         display: "flex",
         alignItems: "center",
         justifyContent: "space-around",
-        paddingBottom: 14,
+        paddingBottom: "max(14px, env(safe-area-inset-bottom, 14px))",
       }}
     >
-      {TABS.map((tab) => {
+      {tabs.map((tab) => {
         const active = isActive(tab.href);
         return (
           <Link

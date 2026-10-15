@@ -1,6 +1,7 @@
-﻿import { requireAuth } from "@/shared/lib/server/auth";
+import { requireAuth } from "@/shared/lib/server/auth";
 import ProfileSettingsClient from "@/features/user/components/ProfileSettingsClient";
 import MobileSettingsView from "@/features/user/components/MobileSettingsView";
+import BlockedUsersSection from "./BlockedUsersSection";
 
 export const dynamic = "force-dynamic";
 
@@ -12,7 +13,7 @@ export default async function SettingsPage() {
         <MobileSettingsView user={user} />
       </div>
       <div className="hidden lg:block">
-        <ProfileSettingsClient />
+        <ProfileSettingsClient blockedUsersSlot={<BlockedUsersSection />} />
       </div>
     </>
   );

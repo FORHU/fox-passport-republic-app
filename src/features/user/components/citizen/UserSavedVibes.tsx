@@ -1,4 +1,6 @@
-import React from "react";
+"use client";
+
+import React, { useState } from "react";
 import Image from "next/image";
 
 interface SavedVibe {
@@ -14,10 +16,21 @@ interface UserSavedVibesProps {
   className?: string;
 }
 
+const PAGE_SIZE = 4;
+
 export const UserSavedVibes: React.FC<UserSavedVibesProps> = ({
   savedVibes,
   className = "",
 }) => {
+  const [requestedPage, setRequestedPage] = useState(0);
+  const totalPages = Math.max(1, Math.ceil(savedVibes.length / PAGE_SIZE));
+  const page = Math.min(requestedPage, totalPages - 1);
+
+  const pageItems = savedVibes.slice(
+    page * PAGE_SIZE,
+    page * PAGE_SIZE + PAGE_SIZE,
+  );
+
   return (
     <section
       className={`reveal-on-scroll flex flex-col ${className}`}
@@ -50,7 +63,7 @@ export const UserSavedVibes: React.FC<UserSavedVibesProps> = ({
           </div>
         ) : (
           <div className="space-y-4">
-            {savedVibes.map((item) => (
+            {pageItems.map((item) => (
               <div
                 key={item.id}
                 className="flex gap-4 p-2 hover:bg-white/5 rounded-2xl transition-colors cursor-pointer group"
@@ -90,10 +103,36 @@ export const UserSavedVibes: React.FC<UserSavedVibesProps> = ({
             ))}
           </div>
         )}
-        {savedVibes.length > 0 && (
-          <button className="w-full mt-6 py-3 rounded-xl border border-white/10 text-sm font-bold text-white hover:bg-white hover:text-black transition-colors">
-            View All Favorites
-          </button>
+        {totalPages > 1 && (
+          <div className="flex items-center justify-between mt-6 pt-4 border-t border-white/10">
+            <button
+              type="button"
+              onClick={() => setRequestedPage((p) => Math.max(0, p - 1))}
+              disabled={page === 0}
+              className="h-8 w-8 rounded-full border border-white/10 flex items-center justify-center text-white hover:bg-white/10 transition-colors disabled:opacity-30 disabled:hover:bg-transparent"
+              aria-label="Previous page"
+            >
+              <span className="material-symbols-outlined text-[16px]">
+                chevron_left
+              </span>
+            </button>
+            <span className="text-xs text-text-muted">
+              Page {page + 1} of {totalPages}
+            </span>
+            <button
+              type="button"
+              onClick={() =>
+                setRequestedPage((p) => Math.min(totalPages - 1, p + 1))
+              }
+              disabled={page === totalPages - 1}
+              className="h-8 w-8 rounded-full border border-white/10 flex items-center justify-center text-white hover:bg-white/10 transition-colors disabled:opacity-30 disabled:hover:bg-transparent"
+              aria-label="Next page"
+            >
+              <span className="material-symbols-outlined text-[16px]">
+                chevron_right
+              </span>
+            </button>
+          </div>
         )}
       </div>
     </section>

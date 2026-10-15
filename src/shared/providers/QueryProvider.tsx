@@ -21,9 +21,11 @@ import { useState } from "react";
  * `refetchInterval` is untouched, and the seven hooks that explicitly set
  * `refetchOnWindowFocus: true` keep it.
  *
- * `retry` is deliberately left at React Query's default — it is unrelated to
- * the refetch problem, and changing it here would alter failure behaviour
- * everywhere for no reason.
+ * These were declared here and then never passed to the client, so React
+ * Query's own defaults went on applying and the fix described above was not in
+ * force. The test that guards this file matched on its source text, so the
+ * object being present was enough to satisfy it; it now reads the client's
+ * resolved defaults instead.
  */
 const queryDefaults = {
   queries: {
@@ -45,6 +47,9 @@ export default function QueryProvider({
       new QueryClient({
         defaultOptions: {
           queries: {
+            ...queryDefaults.queries,
+            // Unrelated to the refetch problem above, and deliberately not part
+            // of `queryDefaults`: this is about failure, not freshness.
             retry: 1,
             retryDelay: 1000,
           },

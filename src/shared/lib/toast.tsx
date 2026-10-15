@@ -10,9 +10,9 @@ export function toastRequireLogin(message: string) {
       </span>
     ),
     style: {
-      background: "#13141f",
+      background: "var(--surface)",
       border: "1px solid rgba(204, 255, 0, 0.35)",
-      color: "#ffffff",
+      color: "var(--color-white)",
     },
   });
 }

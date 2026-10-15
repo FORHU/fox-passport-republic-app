@@ -8,9 +8,7 @@ export { filterVenues } from "./helpers/filterVenues";
 
 // Hooks
 export { useVenueDetail } from "./hooks/useVenueDetail";
-export { useVenuePage } from "./hooks/useVenuePage";
 export { useVenueBuilder } from "./hooks/useVenueBuilder";
-export { useVenueMapLogic } from "./hooks/useVenueMapLogic";
 export { useHostVenues } from "./hooks/useHostVenues";
 export { useHostVenueEdit } from "./hooks/useHostVenueEdit";
 export { useVenuesByCategory } from "./hooks/useVenuesByCategory";

@@ -1,14 +1,14 @@
-/* eslint-disable react-hooks/purity, react-hooks/exhaustive-deps, @next/next/no-img-element */
 "use client";
 
-import React, { useEffect, useRef, useMemo } from "react";
+import React, { useEffect, useRef } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useCheckoutStore } from "@/features/booking/store/useCheckoutStore";
-import { useAuthStore } from "@/features/auth/store/useAuthStore";
+import { useAuthStore } from "@/shared/auth/useAuthStore";
 import { confirmBookingPayment } from "@/features/booking/api/bookings";
 import { getDashboardPath } from "@/shared/lib/dashboard-path";
+import { formatCurrency } from "@/shared/lib/currency";
 
 export default function CheckoutSuccessClient() {
   const router = useRouter();
@@ -25,10 +25,10 @@ export default function CheckoutSuccessClient() {
   } = useCheckoutStore();
   const { user } = useAuthStore();
   const confirmed = useRef(false);
-  const orderNumber = useMemo(
-    () => Math.floor(10000 + Math.random() * 90000),
-    [],
-  );
+  // The real booking id, shortened — not a number made up on each render.
+  const orderNumber = draftBookingId
+    ? draftBookingId.slice(0, 8).toUpperCase()
+    : null;
 
   // Confirm payment on the backend once, using the Stripe payment_intent from the redirect URL
   useEffect(() => {
@@ -109,7 +109,7 @@ export default function CheckoutSuccessClient() {
                     src={user.imgId}
                   />
                 ) : (
-                  <div className="h-full w-full flex items-center justify-center bg-[#ccff00] text-black font-bold text-sm">
+                  <div className="h-full w-full flex items-center justify-center bg-accent text-black font-bold text-sm">
                     {user?.name?.charAt(0)?.toUpperCase() ?? "U"}
                   </div>
                 )}
@@ -124,9 +124,12 @@ export default function CheckoutSuccessClient() {
 
         <div className="w-full max-w-3xl px-4 sm:px-6 lg:px-8 relative z-10 animate-in fade-in slide-in-from-bottom-8 duration-700">
           <div className="text-center mb-10">
-            <div className="inline-flex items-center justify-center h-24 w-24 rounded-full bg-accent text-black font-bold shadow-[0_0_50px_rgba(204,255,0,0.4)] mb-6">
-              <span className="material-symbols-outlined text-5xl">
-                check_circle
+            <div className="inline-flex items-center justify-center h-28 w-28 rounded-full bg-accent text-black font-bold shadow-[0_0_50px_rgba(204,255,0,0.4)] mb-6">
+              <span
+                className="material-symbols-outlined text-8xl"
+                style={{ fontVariationSettings: "'FILL' 1, 'wght' 700" }}
+              >
+                check
               </span>
             </div>
             <h1 className="text-4xl md:text-5xl font-display font-bold text-white tracking-tight mb-4">
@@ -135,7 +138,7 @@ export default function CheckoutSuccessClient() {
             <p className="text-lg text-text-muted max-w-lg mx-auto">
               You&apos;re all set for{" "}
               <span className="text-accent font-bold">
-                {venueName || "Neon Nights"}
+                {venueName || "your booking"}
               </span>
               . We&apos;ve sent the receipt and digital ticket to your email.
             </p>
@@ -163,10 +166,10 @@ export default function CheckoutSuccessClient() {
               <div className="grow flex flex-col justify-center">
                 <div className="text-accent font-bold text-xs mb-2 uppercase tracking-widest flex items-center gap-2">
                   <span className="flex h-2 w-2 rounded-full bg-accent animate-pulse"></span>
-                  Confirmed • Order #FP-{orderNumber}
+                  Confirmed{orderNumber ? ` • Order #FP-${orderNumber}` : ""}
                 </div>
                 <h3 className="font-display font-bold text-white text-3xl leading-tight mb-4">
-                  {venueName || "Neon Nights: Retro Wave Party"}
+                  {venueName || "Your booking"}
                 </h3>
 
                 <div className="grid grid-cols-2 gap-y-4 gap-x-8 text-sm">
@@ -181,7 +184,7 @@ export default function CheckoutSuccessClient() {
                       {checkInDate
                         ? new Date(
                             checkInDate + "T00:00:00",
-                          ).toLocaleDateString("en-PH", {
+                          ).toLocaleDateString(undefined, {
                             month: "short",
                             day: "numeric",
                             year: "numeric",
@@ -230,12 +233,12 @@ export default function CheckoutSuccessClient() {
               <div>
                 <p className="text-text-muted text-sm">Amount Paid</p>
                 <span className="text-3xl font-display font-bold text-white">
-                  ₱{totalAmount.toLocaleString()}.00
+                  {formatCurrency(totalAmount)}
                 </span>
               </div>
               <div className="flex gap-3 w-full sm:w-auto">
                 <Link
-                  href="/booking"
+                  href={draftBookingId ? `/booking/${draftBookingId}` : "/booking"}
                   className="flex-1 sm:flex-none px-6 py-3 rounded-xl border border-white/10 text-white font-bold text-sm hover:bg-white/5 transition-all text-center"
                 >
                   View Receipt
@@ -267,26 +270,20 @@ export default function CheckoutSuccessClient() {
               </span>
             </div>
             <p className="text-xs text-gray-500 font-medium">
-              © 2024 FoxPassport Inc. All rights reserved.
+              © {new Date().getFullYear()} FoxPassport Inc. All rights reserved.
             </p>
             <div className="flex gap-6">
               <a
                 className="text-xs text-gray-500 hover:text-white font-medium transition-colors"
-                href="#"
+                href="/privacy"
               >
                 Privacy
               </a>
               <a
                 className="text-xs text-gray-500 hover:text-white font-medium transition-colors"
-                href="#"
+                href="/terms"
               >
                 Terms
-              </a>
-              <a
-                className="text-xs text-gray-500 hover:text-white font-medium transition-colors"
-                href="#"
-              >
-                Cookies
               </a>
             </div>
           </div>

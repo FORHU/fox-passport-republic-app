@@ -1,4 +1,3 @@
-/* eslint-disable react-hooks/set-state-in-effect */
 "use client";
 
 import { useSearchParams, useRouter } from "next/navigation";
@@ -21,7 +20,7 @@ import {
   fetchServiceFoxers,
 } from "@/features/search/api/search";
 import LandingHeader from "@/features/landing/components/sections/LandingHeader";
-import { useAuthStore } from "@/features/auth/store/useAuthStore";
+import { useAuthStore } from "@/shared/auth/useAuthStore";
 
 export default function SearchClient() {
   const searchParams = useSearchParams();
@@ -31,6 +30,8 @@ export default function SearchClient() {
   const category = searchParams?.get("category") || "";
   const city = searchParams?.get("label") || searchParams?.get("city") || "";
   const maxPrice = searchParams?.get("maxPrice") || "";
+  // The city from their onboarding address, for the "near me" shortcut.
+  const homeCity = useAuthStore((s) => s.user?.city)?.trim() || "";
 
   const [searchQuery, setSearchQuery] = useState(q);
   const [filtersOpen, setFiltersOpen] = useState(false);
@@ -71,56 +72,28 @@ export default function SearchClient() {
   );
 
   const { data: efData, isFetching: efFetching } = useQuery({
-    queryKey: [
-      "eventFoxers",
-      efPage,
-      city,
-      category,
-      maxPrice,
-      q,
-    ],
+    queryKey: ["eventFoxers", efPage, city, category, maxPrice, q],
     queryFn: () => fetchEventFoxers(efPage, 2, filters),
     staleTime: 1000 * 60 * 5,
     placeholderData: (prev: any) => prev,
   });
 
   const { data: etData, isFetching: etFetching } = useQuery({
-    queryKey: [
-      "eventTemplates",
-      etPage,
-      city,
-      category,
-      maxPrice,
-      q,
-    ],
+    queryKey: ["eventTemplates", etPage, city, category, maxPrice, q],
     queryFn: () => fetchEventTemplates(etPage, 6, filters),
     staleTime: 1000 * 60 * 5,
     placeholderData: (prev: any) => prev,
   });
 
   const { data: gfData, isFetching: gfFetching } = useQuery({
-    queryKey: [
-      "gearFoxers",
-      gsPage,
-      city,
-      category,
-      maxPrice,
-      q,
-    ],
+    queryKey: ["gearFoxers", gsPage, city, category, maxPrice, q],
     queryFn: () => fetchGearFoxers(gsPage, 5, filters),
     staleTime: 1000 * 60 * 5,
     placeholderData: (prev: any) => prev,
   });
 
   const { data: sfData, isFetching: sfFetching } = useQuery({
-    queryKey: [
-      "serviceFoxers",
-      gsPage,
-      city,
-      category,
-      maxPrice,
-      q,
-    ],
+    queryKey: ["serviceFoxers", gsPage, city, category, maxPrice, q],
     queryFn: () => fetchServiceFoxers(gsPage, 5, filters),
     staleTime: 1000 * 60 * 5,
     placeholderData: (prev: any) => prev,
@@ -158,7 +131,7 @@ export default function SearchClient() {
   };
 
   return (
-    <div className="min-h-screen bg-[#0c0d14] text-white relative">
+    <div className="min-h-screen bg-surface text-white relative">
       <LandingHeader
         onSignIn={() => useAuthStore.getState().openLogin()}
         search={{ value: searchQuery, onChange: setSearchQuery }}
@@ -166,6 +139,27 @@ export default function SearchClient() {
 
       {/* Body — top padding clears the fixed nav above */}
       <div className="max-w-7xl mx-auto px-4 sm:px-8 pt-16 sm:pt-28 pb-28 sm:pb-12">
+        {/* One tap to scope to their own city — offered, not forced, so a
+            search meant to cover everywhere isn't quietly narrowed. */}
+        {!city && homeCity && (
+          <button
+            type="button"
+            onClick={() => {
+              const params = new URLSearchParams(
+                searchParams?.toString() || "",
+              );
+              params.set("city", homeCity);
+              router.replace(`/search?${params.toString()}`);
+            }}
+            className="mb-4 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-accent/30 bg-accent/10 text-xs font-bold text-accent hover:bg-accent/20 transition-colors"
+          >
+            <span className="material-symbols-outlined text-[14px]">
+              near_me
+            </span>
+            Show results near {homeCity}
+          </button>
+        )}
+
         {/* Active filter badges */}
         {(category || city) && (
           <div className="flex flex-wrap items-center gap-2 text-xs text-white/50 mb-4">
@@ -186,8 +180,8 @@ export default function SearchClient() {
         )}
 
         <Sheet open={filtersOpen} onOpenChange={setFiltersOpen}>
-          {/* Horizontal type chips + mobile Filters trigger */}
-          <div className="flex sm:hidden items-center gap-2 overflow-x-auto hide-scrollbar mb-6 pb-0.5">
+          {/* Horizontal type chips + mobile/tablet Filters trigger */}
+          <div className="flex lg:hidden items-center gap-2 overflow-x-auto hide-scrollbar mb-6 pb-0.5">
             <SheetTrigger asChild>
               <button className="flex-none flex items-center gap-1.5 text-[11px] font-bold px-4 py-2 rounded-full transition-all whitespace-nowrap bg-white/6 border border-white/10 text-white">
                 <span className="material-symbols-outlined text-[14px]">
@@ -195,7 +189,7 @@ export default function SearchClient() {
                 </span>
                 Filters
                 {(category || city || maxPrice) && (
-                  <span className="h-1.5 w-1.5 rounded-full bg-[#ccff00]" />
+                  <span className="h-1.5 w-1.5 rounded-full bg-accent" />
                 )}
               </button>
             </SheetTrigger>
@@ -226,16 +220,16 @@ export default function SearchClient() {
 
           <SheetContent
             side="bottom"
-            className="bg-[#0c0d14] border-white/10 h-[75vh] max-h-[85vh] overflow-y-auto rounded-t-3xl p-4"
+            className="bg-surface border-white/10 h-[80vh] max-h-[90vh] overflow-y-auto rounded-t-3xl p-4 sm:p-6"
           >
             <SheetTitle className="sr-only">Filters</SheetTitle>
-            <SearchFilters />
+            <SearchFilters onClose={() => setFiltersOpen(false)} />
           </SheetContent>
         </Sheet>
 
-        <div className="flex flex-col sm:flex-row gap-8">
-          {/* Sidebar — desktop only */}
-          <aside className="hidden sm:block w-80 shrink-0 self-start sticky top-36">
+        <div className="flex flex-col lg:flex-row gap-8">
+          {/* Sidebar — desktop only (>= 1024px) */}
+          <aside className="hidden lg:block w-72 xl:w-80 shrink-0 self-start sticky top-36">
             <SearchFilters />
           </aside>
 

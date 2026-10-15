@@ -1,13 +1,15 @@
 "use client";
 
 import React, { useEffect, useMemo, useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
-import RequireAuth from "@/features/auth/components/RequireAuth";
+import RequireAuth from "@/shared/auth/RequireAuth";
 import {
   DashboardHeader,
   VenuesSection,
 } from "@/features/dashboard/components";
 import { STATUS_OPTIONS } from "@/features/dashboard/data/dashboardData";
+import { StyledSelect } from "@/shared/components/ui/StyledSelect";
 
 function normalizeValue(value: unknown): string {
   return String(value ?? "")
@@ -61,13 +63,18 @@ export default function HostVenuesClient({
     router.push(`/creator-dashboard/venues/${id}/edit`);
   };
 
+  const handleView = (id: number | string) => {
+    router.push(`/venues/${id}`);
+  };
+
   return (
     <RequireAuth>
       <div
-        className="bg-[#02040a] text-white min-h-screen font-body antialiased"
+        className="bg-canvas text-white min-h-screen font-body antialiased"
         style={{
           background:
             "radial-gradient(circle at 15% 50%, rgba(124,58,237,0.15) 0%, transparent 40%), radial-gradient(circle at 85% 30%, rgba(219,39,119,0.1) 0%, transparent 40%), radial-gradient(circle at 50% 0%, rgba(204,255,0,0.05) 0%, transparent 50%), #02040a",
+          backgroundAttachment: "fixed",
         }}
       >
         <DashboardHeader />
@@ -87,8 +94,18 @@ export default function HostVenuesClient({
                 </p>
               </div>
 
-              <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
-                <div className="relative w-full sm:w-72">
+              <div className="flex flex-col sm:flex-row items-center gap-3 w-full sm:w-auto">
+                <Link
+                  href="/venue-foxer/create-venue"
+                  className="w-full sm:w-auto px-5 py-2.5 rounded-full bg-accent hover:bg-accent-hover text-black font-bold text-xs flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(204,255,0,0.3)] transition-all cursor-pointer shrink-0"
+                >
+                  <span className="material-symbols-outlined text-[18px]">
+                    polyline
+                  </span>
+                  <span>+ Draw & Add Venue</span>
+                </Link>
+
+                <div className="relative w-full sm:w-64">
                   <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-white/40 text-[18px]">
                     search
                   </span>
@@ -96,29 +113,23 @@ export default function HostVenuesClient({
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     placeholder="Search venues..."
-                    className="w-full bg-white/5 border border-white/10 rounded-full px-4 py-2 pl-11 text-sm placeholder:text-white/40 focus:outline-none focus:border-[#ccff00]"
+                    className="w-full bg-white/5 border border-white/10 rounded-full px-4 py-2 pl-11 text-sm placeholder:text-white/40 focus:outline-none focus:border-accent"
                   />
                 </div>
 
                 <div className="w-full sm:w-56">
-                  <select
+                  <StyledSelect
                     value={status}
-                    onChange={(e) => setStatus(e.target.value)}
-                    className="w-full bg-[#0f111a] text-white border border-white/10 rounded-full px-4 py-2 text-sm focus:outline-none focus:border-[#ccff00]"
-                  >
-                    <option className="bg-[#0f111a] text-white" value="all">
-                      All Status
-                    </option>
-                    {STATUS_OPTIONS.venue.map((s) => (
-                      <option
-                        className="bg-[#0f111a] text-white"
-                        key={s}
-                        value={s}
-                      >
-                        {s}
-                      </option>
-                    ))}
-                  </select>
+                    onChange={setStatus}
+                    options={[
+                      { value: "all", label: "All Status" },
+                      ...STATUS_OPTIONS.venue.map((s) => ({
+                        value: s,
+                        label: s,
+                      })),
+                    ]}
+                    className="rounded-full"
+                  />
                 </div>
               </div>
             </div>
@@ -129,6 +140,7 @@ export default function HostVenuesClient({
               showViewAllLink={false}
               showHeading={false}
               onEdit={handleEdit}
+              onView={handleView}
             />
           </div>
         </main>

@@ -18,8 +18,9 @@ import {
   signupSchema,
   SignupFormData,
 } from "@/shared/lib/schema";
-import { useAuthStore } from "@/features/auth/store/useAuthStore";
-import { config } from "@/shared/lib/config";
+import { useAuthStore } from "@/shared/auth/useAuthStore";
+import { getBrowserApiUrl } from "@/shared/lib/config";
+import { TermsPrivacyModal } from "@/features/auth/components/TermsPrivacyModal";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -30,11 +31,11 @@ type View = "login" | "signup" | "forgot" | "verify";
 const FIELD: React.CSSProperties = {
   width: "100%",
   boxSizing: "border-box",
-  background: "rgba(255,255,255,0.05)",
-  border: "1px solid rgba(255,255,255,0.1)",
+  background: "color-mix(in srgb, var(--color-white) 5%, transparent)",
+  border: "1px solid color-mix(in srgb, var(--color-white) 10%, transparent)",
   borderRadius: 14,
   padding: "14px 16px",
-  color: "#fff",
+  color: "var(--color-white)",
   fontSize: 14,
   outline: "none",
 };
@@ -66,12 +67,12 @@ function Divider() {
       }}
     >
       <div
-        style={{ flex: 1, height: 1, background: "rgba(255,255,255,0.1)" }}
+        style={{ flex: 1, height: 1, background: "color-mix(in srgb, var(--color-white) 10%, transparent)" }}
       />
       <span
         style={{
           fontSize: 10,
-          color: "rgba(255,255,255,0.3)",
+          color: "color-mix(in srgb, var(--color-white) 30%, transparent)",
           fontWeight: 600,
           letterSpacing: "0.08em",
         }}
@@ -79,7 +80,7 @@ function Divider() {
         OR
       </span>
       <div
-        style={{ flex: 1, height: 1, background: "rgba(255,255,255,0.1)" }}
+        style={{ flex: 1, height: 1, background: "color-mix(in srgb, var(--color-white) 10%, transparent)" }}
       />
     </div>
   );
@@ -96,9 +97,9 @@ function GoogleButton({ disabled }: { disabled?: boolean }) {
         alignItems: "center",
         justifyContent: "center",
         gap: 10,
-        border: "1.5px solid rgba(255,255,255,0.15)",
+        border: "1.5px solid color-mix(in srgb, var(--color-white) 15%, transparent)",
         background: "transparent",
-        color: "#fff",
+        color: "var(--color-white)",
         fontSize: 14,
         fontWeight: 700,
         borderRadius: 14,
@@ -107,7 +108,7 @@ function GoogleButton({ disabled }: { disabled?: boolean }) {
         boxSizing: "border-box",
       }}
       onClick={() => {
-        window.location.href = `${config.apiUrl}/auth/google`;
+        window.location.href = `${getBrowserApiUrl()}/auth/google?origin=${encodeURIComponent(window.location.origin)}`;
       }}
     >
       <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
@@ -164,7 +165,7 @@ function LoginView({
           fontWeight: 800,
           letterSpacing: "0.16em",
           textTransform: "uppercase",
-          color: "#ccff00",
+          color: "var(--accent-text)",
           marginBottom: 8,
         }}
       >
@@ -175,7 +176,7 @@ function LoginView({
           fontFamily: 'var(--font-display,"Space Grotesk",sans-serif)',
           fontSize: 27,
           fontWeight: 700,
-          color: "#fff",
+          color: "var(--color-white)",
           lineHeight: 1.2,
           marginBottom: 24,
         }}
@@ -228,7 +229,7 @@ function LoginView({
                 background: "none",
                 border: "none",
                 cursor: "pointer",
-                color: "rgba(255,255,255,0.4)",
+                color: "color-mix(in srgb, var(--color-white) 40%, transparent)",
                 lineHeight: 0,
               }}
             >
@@ -252,7 +253,7 @@ function LoginView({
             style={{
               fontSize: 11,
               fontWeight: 700,
-              color: "#ccff00",
+              color: "var(--accent-text)",
               background: "none",
               border: "none",
               cursor: "pointer",
@@ -291,7 +292,7 @@ function LoginView({
         style={{
           textAlign: "center",
           fontSize: 12,
-          color: "rgba(255,255,255,0.4)",
+          color: "color-mix(in srgb, var(--color-white) 40%, transparent)",
           marginTop: 20,
         }}
       >
@@ -299,7 +300,7 @@ function LoginView({
         <button
           onClick={onSignup}
           style={{
-            color: "#ccff00",
+            color: "var(--accent-text)",
             fontWeight: 700,
             background: "none",
             border: "none",
@@ -326,6 +327,11 @@ function SignupView({
 }) {
   const signupMutation = useSignup();
   const [showPw, setShowPw] = useState(false);
+  const [agreedToTerms, setAgreedToTerms] = useState(false);
+  const [hasReadCharter, setHasReadCharter] = useState(false);
+  const [charterTab, setCharterTab] = useState<"terms" | "privacy" | null>(
+    null,
+  );
 
   const {
     register,
@@ -348,7 +354,7 @@ function SignupView({
           fontWeight: 800,
           letterSpacing: "0.16em",
           textTransform: "uppercase",
-          color: "#ccff00",
+          color: "var(--accent-text)",
           marginBottom: 8,
         }}
       >
@@ -359,7 +365,7 @@ function SignupView({
           fontFamily: 'var(--font-display,"Space Grotesk",sans-serif)',
           fontSize: 27,
           fontWeight: 700,
-          color: "#fff",
+          color: "var(--color-white)",
           lineHeight: 1.2,
           marginBottom: 8,
         }}
@@ -371,7 +377,7 @@ function SignupView({
       <p
         style={{
           fontSize: 12,
-          color: "rgba(255,255,255,0.4)",
+          color: "color-mix(in srgb, var(--color-white) 40%, transparent)",
           marginBottom: 24,
         }}
       >
@@ -392,7 +398,7 @@ function SignupView({
             style={{
               fontSize: 10,
               fontWeight: 700,
-              color: "rgba(255,255,255,0.4)",
+              color: "color-mix(in srgb, var(--color-white) 40%, transparent)",
               letterSpacing: "0.1em",
               textTransform: "uppercase",
               display: "block",
@@ -416,7 +422,7 @@ function SignupView({
             style={{
               fontSize: 10,
               fontWeight: 700,
-              color: "rgba(255,255,255,0.4)",
+              color: "color-mix(in srgb, var(--color-white) 40%, transparent)",
               letterSpacing: "0.1em",
               textTransform: "uppercase",
               display: "block",
@@ -440,7 +446,7 @@ function SignupView({
             style={{
               fontSize: 10,
               fontWeight: 700,
-              color: "rgba(255,255,255,0.4)",
+              color: "color-mix(in srgb, var(--color-white) 40%, transparent)",
               letterSpacing: "0.1em",
               textTransform: "uppercase",
               display: "block",
@@ -464,7 +470,7 @@ function SignupView({
             style={{
               fontSize: 10,
               fontWeight: 700,
-              color: "rgba(255,255,255,0.4)",
+              color: "color-mix(in srgb, var(--color-white) 40%, transparent)",
               letterSpacing: "0.1em",
               textTransform: "uppercase",
               display: "block",
@@ -495,7 +501,7 @@ function SignupView({
                 background: "none",
                 border: "none",
                 cursor: "pointer",
-                color: "rgba(255,255,255,0.4)",
+                color: "color-mix(in srgb, var(--color-white) 40%, transparent)",
                 lineHeight: 0,
               }}
             >
@@ -513,7 +519,7 @@ function SignupView({
             <span
               style={{
                 fontSize: 10,
-                color: "rgba(255,255,255,0.3)",
+                color: "color-mix(in srgb, var(--color-white) 30%, transparent)",
                 marginTop: 4,
                 display: "block",
               }}
@@ -527,7 +533,7 @@ function SignupView({
         <label
           style={{
             display: "flex",
-            alignItems: "flex-start",
+            alignItems: "center",
             gap: 10,
             cursor: "pointer",
             marginTop: 4,
@@ -536,8 +542,17 @@ function SignupView({
           <input
             type="checkbox"
             required
+            checked={agreedToTerms}
+            onChange={(e) => {
+              // Reading the charter is mandatory before it can be checked;
+              // unchecking never needs that gate.
+              if (e.target.checked && !hasReadCharter) {
+                setCharterTab("terms");
+                return;
+              }
+              setAgreedToTerms(e.target.checked);
+            }}
             style={{
-              marginTop: 2,
               accentColor: "#ccff00",
               width: 16,
               height: 16,
@@ -547,20 +562,61 @@ function SignupView({
           <span
             style={{
               fontSize: 11,
-              color: "rgba(255,255,255,0.45)",
+              color: "color-mix(in srgb, var(--color-white) 45%, transparent)",
               lineHeight: 1.5,
             }}
           >
             I agree to the{" "}
-            <span style={{ color: "#ccff00", fontWeight: 700 }}>
+            <button
+              type="button"
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                setCharterTab("terms");
+              }}
+              style={{
+                color: "var(--accent-text)",
+                fontWeight: 700,
+                background: "none",
+                border: "none",
+                padding: 0,
+                font: "inherit",
+                cursor: "pointer",
+              }}
+            >
               Terms of Service
-            </span>{" "}
+            </button>{" "}
             &{" "}
-            <span style={{ color: "#ccff00", fontWeight: 700 }}>
+            <button
+              type="button"
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                setCharterTab("privacy");
+              }}
+              style={{
+                color: "var(--accent-text)",
+                fontWeight: 700,
+                background: "none",
+                border: "none",
+                padding: 0,
+                font: "inherit",
+                cursor: "pointer",
+              }}
+            >
               Privacy Policy
-            </span>
+            </button>
           </span>
         </label>
+
+        {charterTab && (
+          <TermsPrivacyModal
+            initialTab={charterTab}
+            onClose={() => setCharterTab(null)}
+            onAccept={() => setAgreedToTerms(true)}
+            onBothRead={() => setHasReadCharter(true)}
+          />
+        )}
 
         <button
           type="submit"
@@ -590,7 +646,7 @@ function SignupView({
         style={{
           textAlign: "center",
           fontSize: 12,
-          color: "rgba(255,255,255,0.4)",
+          color: "color-mix(in srgb, var(--color-white) 40%, transparent)",
           marginTop: 20,
         }}
       >
@@ -598,7 +654,7 @@ function SignupView({
         <button
           onClick={onLogin}
           style={{
-            color: "#ccff00",
+            color: "var(--accent-text)",
             fontWeight: 700,
             background: "none",
             border: "none",
@@ -635,7 +691,7 @@ function ForgotView({ onBack }: { onBack: () => void }) {
           background: "none",
           border: "none",
           cursor: "pointer",
-          color: "rgba(255,255,255,0.45)",
+          color: "color-mix(in srgb, var(--color-white) 45%, transparent)",
           display: "flex",
           alignItems: "center",
           gap: 6,
@@ -656,7 +712,7 @@ function ForgotView({ onBack }: { onBack: () => void }) {
           fontWeight: 800,
           letterSpacing: "0.16em",
           textTransform: "uppercase",
-          color: "#ccff00",
+          color: "var(--accent-text)",
           marginBottom: 8,
         }}
       >
@@ -667,7 +723,7 @@ function ForgotView({ onBack }: { onBack: () => void }) {
           fontFamily: 'var(--font-display,"Space Grotesk",sans-serif)',
           fontSize: 27,
           fontWeight: 700,
-          color: "#fff",
+          color: "var(--color-white)",
           lineHeight: 1.2,
           marginBottom: 8,
         }}
@@ -679,7 +735,7 @@ function ForgotView({ onBack }: { onBack: () => void }) {
       <p
         style={{
           fontSize: 12,
-          color: "rgba(255,255,255,0.4)",
+          color: "color-mix(in srgb, var(--color-white) 40%, transparent)",
           marginBottom: 24,
         }}
       >
@@ -700,7 +756,7 @@ function ForgotView({ onBack }: { onBack: () => void }) {
             className="material-symbols-outlined"
             style={{
               fontSize: 32,
-              color: "#ccff00",
+              color: "var(--accent-text)",
               display: "block",
               marginBottom: 10,
             }}
@@ -711,7 +767,7 @@ function ForgotView({ onBack }: { onBack: () => void }) {
             style={{
               fontSize: 14,
               fontWeight: 700,
-              color: "#fff",
+              color: "var(--color-white)",
               marginBottom: 6,
             }}
           >
@@ -720,12 +776,12 @@ function ForgotView({ onBack }: { onBack: () => void }) {
           <p
             style={{
               fontSize: 12,
-              color: "rgba(255,255,255,0.45)",
+              color: "color-mix(in srgb, var(--color-white) 45%, transparent)",
               lineHeight: 1.5,
             }}
           >
             We sent a reset code to{" "}
-            <strong style={{ color: "#fff" }}>{email}</strong>. Check your spam
+            <strong style={{ color: "var(--color-white)" }}>{email}</strong>. Check your spam
             folder if you don&apos;t see it.
           </p>
         </div>
@@ -772,7 +828,7 @@ function ForgotView({ onBack }: { onBack: () => void }) {
 // ─── Verify Email View ────────────────────────────────────────────────────────
 
 function VerifyView({ onVerified }: { onVerified: () => void }) {
-  const { pendingEmail } = useAuthStore();
+  const { pendingEmail, setPendingVerificationEmail } = useAuthStore();
   const verifyMutation = useVerifyEmail();
   const resendMutation = useResendOtp();
   const [otp, setOtp] = useState("");
@@ -786,6 +842,7 @@ function VerifyView({ onVerified }: { onVerified: () => void }) {
         onSuccess: () => {
           if (typeof window !== "undefined")
             localStorage.setItem("fp_new_user", "true");
+          setPendingVerificationEmail("");
           toast.success("Email verified! Please log in to continue.");
           onVerified();
         },
@@ -801,7 +858,7 @@ function VerifyView({ onVerified }: { onVerified: () => void }) {
           fontWeight: 800,
           letterSpacing: "0.16em",
           textTransform: "uppercase",
-          color: "#ccff00",
+          color: "var(--accent-text)",
           marginBottom: 8,
         }}
       >
@@ -812,7 +869,7 @@ function VerifyView({ onVerified }: { onVerified: () => void }) {
           fontFamily: 'var(--font-display,"Space Grotesk",sans-serif)',
           fontSize: 27,
           fontWeight: 700,
-          color: "#fff",
+          color: "var(--color-white)",
           lineHeight: 1.2,
           marginBottom: 8,
         }}
@@ -824,12 +881,12 @@ function VerifyView({ onVerified }: { onVerified: () => void }) {
       <p
         style={{
           fontSize: 12,
-          color: "rgba(255,255,255,0.4)",
+          color: "color-mix(in srgb, var(--color-white) 40%, transparent)",
           marginBottom: 24,
         }}
       >
         Enter the 6-digit code sent to{" "}
-        <strong style={{ color: "rgba(255,255,255,0.7)" }}>
+        <strong style={{ color: "color-mix(in srgb, var(--color-white) 70%, transparent)" }}>
           {pendingEmail}
         </strong>
         .
@@ -881,13 +938,13 @@ function VerifyView({ onVerified }: { onVerified: () => void }) {
       </form>
 
       <div style={{ textAlign: "center", marginTop: 20 }}>
-        <p style={{ fontSize: 12, color: "rgba(255,255,255,0.35)" }}>
+        <p style={{ fontSize: 12, color: "color-mix(in srgb, var(--color-white) 35%, transparent)" }}>
           Didn&apos;t receive it?{" "}
           <button
             onClick={() => pendingEmail && resendMutation.mutate(pendingEmail)}
             disabled={resendMutation.isPending || !pendingEmail}
             style={{
-              color: "#ccff00",
+              color: "var(--accent-text)",
               fontWeight: 700,
               background: "none",
               border: "none",
@@ -913,7 +970,7 @@ export default function MobileAuthPage() {
   return (
     <div
       style={{
-        background: "#050608",
+        background: "var(--canvas)",
         minHeight: "100svh",
         position: "relative",
         overflow: "hidden",
@@ -956,7 +1013,7 @@ export default function MobileAuthPage() {
               fontFamily: 'var(--font-display,"Space Grotesk",sans-serif)',
               fontSize: 15,
               fontWeight: 700,
-              color: "#fff",
+              color: "var(--color-white)",
               letterSpacing: "-0.3px",
             }}
           >

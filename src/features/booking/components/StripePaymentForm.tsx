@@ -1,16 +1,24 @@
-/* eslint-disable react-hooks/immutability, react-hooks/exhaustive-deps */
 "use client";
 
-import React, { useState, forwardRef, useImperativeHandle } from "react";
+import React, {
+  useState,
+  useCallback,
+  forwardRef,
+  useImperativeHandle,
+  useRef,
+} from "react";
 import {
   useStripe,
   useElements,
   PaymentElement,
 } from "@stripe/react-stripe-js";
+import PaymentConfirmationModal from "./PaymentConfirmationModal";
+import { formatCurrency } from "@/shared/lib/currency";
 
 interface StripePaymentFormProps {
   totalAmount: number;
   onSuccess?: (paymentIntentId: string) => void;
+  onLoadError?: (message: string) => void;
   returnUrl?: string;
   hideButton?: boolean;
 }
@@ -19,54 +27,83 @@ const StripePaymentForm = forwardRef<
   { submit: () => Promise<void> },
   StripePaymentFormProps
 >(function StripePaymentForm(
-  { totalAmount, onSuccess, returnUrl, hideButton },
+  { totalAmount, onSuccess, onLoadError, returnUrl, hideButton },
   ref,
 ) {
   const stripe = useStripe();
   const elements = useElements();
   const [isProcessing, setIsProcessing] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [showConfirmation, setShowConfirmation] = useState(false);
+  const confirmationApproved = useRef(false);
 
-  useImperativeHandle(ref, () => ({ submit: handleSubmit }), [
-    stripe,
-    elements,
-    isProcessing,
-  ]);
+  const handleSubmit = useCallback(
+    async (e?: React.FormEvent) => {
+      e?.preventDefault();
+      if (!stripe || !elements) return;
 
-  const handleSubmit = async (e?: React.FormEvent) => {
-    e?.preventDefault();
-    if (!stripe || !elements) return;
+      if (!confirmationApproved.current) {
+        setShowConfirmation(true);
+        return;
+      }
+      confirmationApproved.current = false;
 
-    setIsProcessing(true);
-    setErrorMessage(null);
+      setIsProcessing(true);
+      setErrorMessage(null);
 
-    const { error, paymentIntent } = await stripe.confirmPayment({
-      elements,
-      redirect: "if_required",
-      confirmParams: {
-        return_url: returnUrl ?? `${window.location.origin}/checkout/success`,
-      },
-    });
+      const { error: submitError } = await elements.submit();
+      if (submitError) {
+        setErrorMessage(
+          submitError.message || "Payment failed. Please try again.",
+        );
+        setIsProcessing(false);
+        setShowConfirmation(false);
+        return;
+      }
 
-    if (error) {
-      setErrorMessage(error.message || "Payment failed. Please try again.");
-      setIsProcessing(false);
-      return;
-    }
+      const { error, paymentIntent } = await stripe.confirmPayment({
+        elements,
+        redirect: "if_required",
+        confirmParams: {
+          return_url:
+            returnUrl ?? `${window.location.origin}/checkout/success`,
+        },
+      });
 
-    if (
-      paymentIntent?.status === "succeeded" ||
-      paymentIntent?.status === "processing"
-    ) {
-      onSuccess?.(paymentIntent.id);
-      setIsProcessing(false);
-    }
-  };
+      if (error) {
+        setErrorMessage(error.message || "Payment failed. Please try again.");
+        setIsProcessing(false);
+        setShowConfirmation(false);
+        return;
+      }
+
+      if (
+        paymentIntent?.status === "succeeded" ||
+        paymentIntent?.status === "processing"
+      ) {
+        onSuccess?.(paymentIntent.id);
+        setIsProcessing(false);
+        setShowConfirmation(false);
+      }
+    },
+    [stripe, elements, returnUrl, onSuccess],
+  );
+
+  useImperativeHandle(ref, () => ({ submit: handleSubmit }), [handleSubmit]);
 
   return (
     <div className="space-y-6">
       <div className="stripe-elements-container">
-        <PaymentElement options={{ layout: "tabs" }} />
+        <PaymentElement
+          options={{ layout: "tabs" }}
+          onLoadError={(event) => {
+            const message =
+              event.error?.message ||
+              "Could not load the payment form. Please refresh and try again.";
+            setErrorMessage(message);
+            onLoadError?.(message);
+          }}
+        />
       </div>
 
       {errorMessage && (
@@ -84,7 +121,7 @@ const StripePaymentForm = forwardRef<
             type="button"
             disabled={!stripe || !elements || isProcessing}
             onClick={handleSubmit}
-            className="w-full rounded-2xl bg-[#ccff00] py-4 px-6 text-black font-bold text-lg hover:shadow-[0_0_30px_rgba(204,255,0,0.4)] transition-all active:scale-95 flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:shadow-none"
+            className="w-full rounded-2xl bg-accent py-4 px-6 text-black font-bold text-lg hover:shadow-[0_0_30px_rgba(204,255,0,0.4)] transition-all active:scale-95 flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:shadow-none"
           >
             {isProcessing ? (
               <>
@@ -93,7 +130,7 @@ const StripePaymentForm = forwardRef<
               </>
             ) : (
               <>
-                Confirm & Pay ₱{totalAmount.toLocaleString()}
+                Confirm & Pay {formatCurrency(totalAmount)}
                 <span className="material-symbols-outlined">arrow_forward</span>
               </>
             )}
@@ -106,6 +143,18 @@ const StripePaymentForm = forwardRef<
             Encrypted & Secure · Powered by Stripe
           </div>
         </>
+      )}
+
+      {showConfirmation && (
+        <PaymentConfirmationModal
+          amount={totalAmount}
+          isSubmitting={isProcessing}
+          onCancel={() => setShowConfirmation(false)}
+          onConfirm={() => {
+            confirmationApproved.current = true;
+            void handleSubmit();
+          }}
+        />
       )}
     </div>
   );

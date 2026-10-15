@@ -13,7 +13,7 @@ vi.mock("sonner", () => ({
   toast: { success: vi.fn(), error: vi.fn() },
 }));
 
-vi.mock("@/features/auth/store/useAuthStore", () => ({
+vi.mock("@/shared/auth/useAuthStore", () => ({
   useAuthStore: (selector: (state: { user: { id: string } }) => unknown) =>
     selector({ user: { id: "host-001" } }),
 }));
@@ -29,6 +29,7 @@ vi.mock("@/features/event/hooks/useEventBuilder", () => ({
   useEventBuilder: () => ({
     eventTitle: "Year-end Party",
     category: "Corporate",
+    categoryOther: "",
     description: "Annual company gathering",
     date: new Date("2026-12-01").toISOString(),
     baseItems: [
@@ -45,6 +46,11 @@ vi.mock("@/features/event/hooks/useEventBuilder", () => ({
     financials: { suggestedPrice: 20000 },
     setIsSubmitting: vi.fn(),
     reset: vi.fn(),
+  }),
+  withCategoryOtherNote: (description: string) => description,
+  splitCategoryOtherNote: (description: string) => ({
+    categoryOther: "",
+    description,
   }),
 }));
 

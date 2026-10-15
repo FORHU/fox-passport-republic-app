@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import React from "react";
 import {
@@ -14,6 +14,7 @@ interface ResourcePaletteProps {
   onCategoryChange: (catId: string) => void;
   onSearchChange: (query: string) => void;
   onDragStart: (e: React.DragEvent, item: ResourceItem) => void;
+  onSelectItem?: (item: ResourceItem) => void;
   /** When true, panels stack vertically and are always visible (used inside a mobile drawer). */
   inDrawer?: boolean;
 }
@@ -25,6 +26,7 @@ export function ResourcePalette({
   onCategoryChange,
   onSearchChange,
   onDragStart,
+  onSelectItem,
   inDrawer = false,
 }: ResourcePaletteProps) {
   const docked = inDrawer ? "" : "hidden md:flex";
@@ -32,7 +34,7 @@ export function ResourcePalette({
     <>
       {/* Category Navigation */}
       <nav
-        className={`${docked} w-24 shrink-0 bg-[#0f111a] border-r border-white/5 flex-col items-center py-6 gap-6 overflow-y-auto hide-scrollbar z-20 ${inDrawer ? "flex w-full border-r-0 border-b" : "flex"}`}
+        className={`${docked} w-24 shrink-0 bg-surface border-r border-white/5 flex-col items-center py-6 gap-6 overflow-y-auto hide-scrollbar z-20 ${inDrawer ? "flex w-full border-r-0 border-b" : "flex"}`}
       >
         {RESOURCE_CATEGORIES.map((cat) => (
           <button
@@ -56,7 +58,7 @@ export function ResourcePalette({
 
       {/* Resource List */}
       <aside
-        className={`${docked} w-80 shrink-0 border-r border-white/5 bg-[#0f111a] flex-col relative z-10 ${inDrawer ? "flex w-full border-r-0" : "flex"}`}
+        className={`${docked} w-80 shrink-0 border-r border-white/5 bg-surface flex-col relative z-10 ${inDrawer ? "flex w-full border-r-0" : "flex"}`}
       >
         <div className="p-6">
           <h3 className="font-display font-bold text-xl text-white mb-1">
@@ -75,14 +77,19 @@ export function ResourcePalette({
               placeholder="Search assets..."
               value={searchQuery}
               onChange={(e) => onSearchChange(e.target.value)}
-              className="w-full bg-[#1a1d2d] border border-white/10 rounded-xl py-2.5 pl-10 pr-4 text-sm text-white focus:border-accent outline-none placeholder:text-white/20"
+              className="w-full bg-surface-raised border border-white/10 rounded-xl py-2.5 pl-10 pr-4 text-sm text-white focus:border-accent outline-none placeholder:text-white/20"
             />
           </div>
         </div>
 
         <div className="flex-1 overflow-y-auto px-6 pb-6 space-y-3 custom-scrollbar">
           {filteredResources.map((item) => (
-            <ResourceCard key={item.id} item={item} onDragStart={onDragStart} />
+            <ResourceCard
+              key={item.id}
+              item={item}
+              onDragStart={onDragStart}
+              onSelect={onSelectItem}
+            />
           ))}
         </div>
       </aside>

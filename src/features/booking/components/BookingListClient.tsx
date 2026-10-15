@@ -1,15 +1,21 @@
-/* eslint-disable @next/next/no-img-element */
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
+import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useAuthStore } from "@/features/auth/store/useAuthStore";
-import { fetchUserBookings } from "@/features/booking/api/bookings";
+import { useAuthStore } from "@/shared/auth/useAuthStore";
+import { useRoleAccess } from "@/shared/auth/useRoleAccess";
+import {
+  fetchUserBookings,
+  fetchReceivedBookings,
+} from "@/features/booking/api/bookings";
 import CancelBookingModal from "@/features/booking/components/CancelBookingModal";
 import { toast } from "sonner";
 import { getDashboardPath } from "@/shared/lib/dashboard-path";
+import { pollWhileVisible } from "@/shared/lib/realtime";
+import { formatCurrency } from "@/shared/lib/currency";
 
 const STATUS_LABEL: Record<string, { label: string; color: string }> = {
   pending: { label: "Pending", color: "text-yellow-400 bg-yellow-500/10" },
@@ -25,39 +31,77 @@ const STATUS_LABEL: Record<string, { label: string; color: string }> = {
   },
 };
 
-export default function BookingListClient() {
+/** Mirrors the backend sweep's own idea of "overdue unpaid" (BookingReminderService.cancelOverdueUnpaid) — kept in sync as a client-side fallback for the window before that job catches up. */
+function isPastDueUnpaid(booking: any) {
+  return booking.status === "pending" && new Date(booking.startAt) < new Date();
+}
+
+export default function BookingListClient({
+  initialTab = "mine",
+}: {
+  /** `?tab=received` opens straight onto bookings for events you run. */
+  initialTab?: "mine" | "received";
+} = {}) {
   const router = useRouter();
   const { user } = useAuthStore();
-  const [bookings, setBookings] = useState<any[]>([]);
+  const { canManageEvents } = useRoleAccess();
+  // Organizers run events too (ADR 0005 in the API); the received list
+  // includes events they organise, not only ones they own.
+  const runsEvents =
+    canManageEvents || (user?.roleType ?? []).includes("organizer");
+  const [tab, setTab] = useState<"mine" | "received">(
+    runsEvents ? initialTab : "mine",
+  );
   const [page, setPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
-  const [isInitial, setIsInitial] = useState(true);
-  const [isFetching, setIsFetching] = useState(false);
   const [cancelTargetId, setCancelTargetId] = useState<string | null>(null);
   const limit = 4;
+  const userId = user?.id || user?.userId;
 
-  const loadBookings = () => {
-    const userId = user?.id || user?.userId;
-    if (!userId) return;
-    if (!isInitial) setIsFetching(true);
-    fetchUserBookings(userId, page, limit)
-      .then((res) => {
-        setBookings(res.bookings);
-        setTotalPages(res.pagination.totalPages || 1);
-      })
-      .catch(() => toast.error("Could not load bookings."))
-      .finally(() => {
-        setIsInitial(false);
-        setIsFetching(false);
-      });
-  };
+  /**
+   * This list used to fetch in a `useEffect` and hold its rows in component
+   * state, which put it outside React Query entirely - so the `bookings` topic
+   * the server emits on every booking change reached the dashboards and the
+   * admin tab but never this screen, the one belonging to the person the
+   * booking is for. They saw a confirmed booking by reloading.
+   *
+   * The key is prefixed `user-bookings`, which is what `TOPIC_QUERY_KEYS` maps
+   * `bookings` onto; React Query matches by prefix, so one emit refreshes
+   * whichever page is open here and the mobile view besides.
+   *
+   * "received" is a second, independent list: bookings other citizens made on
+   * events *this* user organizes, rather than bookings they made themselves.
+   * Same topic prefix, so it refreshes on the same server-sent events.
+   */
+  const { data, isPending, isFetching, isError, refetch } = useQuery({
+    queryKey: ["user-bookings", tab, userId, page, limit],
+    queryFn: () =>
+      tab === "mine"
+        ? fetchUserBookings(userId as string, page, limit)
+        : fetchReceivedBookings(userId as string, page, limit),
+    enabled: Boolean(userId),
+    // Paging replaced the whole list with a spinner before; this keeps the
+    // previous page on screen under the overlay while the next one loads.
+    placeholderData: keepPreviousData,
+    refetchInterval: pollWhileVisible,
+  });
+
+  const bookings = useMemo(() => data?.bookings ?? [], [data?.bookings]);
+  const totalPages = data?.pagination.totalPages || 1;
+
+  const { attentionBookings, otherBookings } = useMemo(() => {
+    const attention = bookings.filter(isPastDueUnpaid);
+    const others = bookings.filter((b) => !isPastDueUnpaid(b));
+    return { attentionBookings: attention, otherBookings: others };
+  }, [bookings]);
 
   useEffect(() => {
-    loadBookings();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user?.id, user?.userId, page]);
+    if (isError) toast.error("Could not load bookings.");
+  }, [isError]);
 
-  if (isInitial) {
+  // No user id means the query never runs, which is the same dead-end the
+  // effect version reached - the layout's `requireAuth` is what turns those
+  // people away.
+  if (isPending || !userId) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <span className="h-10 w-10 rounded-full border-2 border-white/20 border-t-accent animate-spin" />
@@ -102,6 +146,32 @@ export default function BookingListClient() {
                 Bookings
               </Link>
             </nav>
+            {runsEvents && (
+              <div className="hidden md:flex items-center gap-1 bg-black/20 p-1.5 rounded-full border border-white/5">
+                {(
+                  [
+                    { key: "mine", label: "Booked by Me" },
+                    { key: "received", label: "Received" },
+                  ] as const
+                ).map((t) => (
+                  <button
+                    key={t.key}
+                    type="button"
+                    onClick={() => {
+                      setTab(t.key);
+                      setPage(1);
+                    }}
+                    className={`px-4 py-2 rounded-full text-xs font-bold transition-all ${
+                      tab === t.key
+                        ? "bg-accent text-black"
+                        : "text-white/50 hover:text-white"
+                    }`}
+                  >
+                    {t.label}
+                  </button>
+                ))}
+              </div>
+            )}
             <div
               className="h-10 w-10 rounded-full border border-white/10 overflow-hidden cursor-pointer hover:border-accent transition-colors"
               onClick={() => router.push(getDashboardPath(user))}
@@ -113,7 +183,7 @@ export default function BookingListClient() {
                   src={user.imgId}
                 />
               ) : (
-                <div className="h-full w-full bg-[#ccff00] flex items-center justify-center text-black font-bold text-sm">
+                <div className="h-full w-full bg-accent flex items-center justify-center text-black font-bold text-sm">
                   {user?.name?.charAt(0)?.toUpperCase() ?? "U"}
                 </div>
               )}
@@ -135,125 +205,78 @@ export default function BookingListClient() {
               <span className="text-accent font-semibold">My Bookings</span>
             </div>
             <h1 className="text-4xl md:text-5xl font-display font-bold text-white">
-              My Bookings
+              {tab === "mine" ? "My Bookings" : "Bookings Received"}
             </h1>
           </div>
 
-          <div className="relative min-h-[520px]">
+          <div className="relative min-h-130">
             {bookings.length === 0 ? (
               <div className="text-center py-20">
                 <span className="material-symbols-outlined text-white/20 text-6xl mb-4">
                   book_online
                 </span>
                 <h3 className="text-xl font-bold text-white mb-2">
-                  No bookings yet
+                  {tab === "mine"
+                    ? "No bookings yet"
+                    : "No bookings received yet"}
                 </h3>
                 <p className="text-text-muted mb-6">
-                  Start by exploring venues and booking your next event.
+                  {tab === "mine"
+                    ? "Start by exploring venues and booking your next event."
+                    : "Once a citizen books one of your events, it'll show up here."}
                 </p>
-                <Link
-                  href="/"
-                  className="inline-block px-8 py-4 rounded-xl bg-accent text-black font-bold hover:shadow-[0_0_20px_rgba(204,255,0,0.4)] transition-all"
-                >
-                  Browse Venues
-                </Link>
+                {tab === "mine" && (
+                  <Link
+                    href="/"
+                    className="inline-block px-8 py-4 rounded-xl bg-accent text-black font-bold hover:shadow-[0_0_20px_rgba(204,255,0,0.4)] transition-all"
+                  >
+                    Browse Venues
+                  </Link>
+                )}
               </div>
             ) : (
-              <div className="grid gap-4">
-                {bookings.map((booking) => {
-                  const statusInfo =
-                    STATUS_LABEL[booking.status] || STATUS_LABEL.pending;
-                  const eventName = booking.event?.name || "Venue Booking";
-                  const startDate = booking.startAt
-                    ? new Date(booking.startAt).toLocaleDateString("en-PH", {
-                        month: "short",
-                        day: "numeric",
-                        year: "numeric",
-                      })
-                    : "—";
-                  const isCompleted = booking.status === "completed";
-                  const canCancel =
-                    booking.status === "pending" ||
-                    booking.status === "confirmed";
-                  const noReview = !booking.hasReview;
-
-                  return (
-                    <div
-                      key={booking.id}
-                      className="glass-panel rounded-2xl p-6 border border-white/5 hover:border-accent/30 transition-all"
-                    >
-                      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                        <Link
-                          href={`/booking/${booking.id}`}
-                          className="flex items-start gap-4 flex-1 min-w-0 group"
-                        >
-                          <div className="h-14 w-14 rounded-xl bg-white/5 flex items-center justify-center shrink-0 group-hover:bg-accent/10 transition-colors">
-                            <span className="material-symbols-outlined text-white/40 group-hover:text-accent text-2xl transition-colors">
-                              apartment
-                            </span>
-                          </div>
-                          <div>
-                            <h3 className="font-display font-bold text-white text-lg">
-                              {eventName}
-                            </h3>
-                            <p className="text-text-muted text-sm mt-1 flex items-center gap-2">
-                              <span className="material-symbols-outlined text-[14px]">
-                                calendar_today
-                              </span>
-                              {startDate}
-                              <span className="material-symbols-outlined text-[14px] ml-1">
-                                group
-                              </span>
-                              {booking.guestCount}{" "}
-                              {booking.guestCount === 1 ? "guest" : "guests"}
-                            </p>
-                            <p className="text-text-muted text-xs mt-1 font-mono">
-                              #{booking.id.slice(0, 12)}
-                            </p>
-                          </div>
-                        </Link>
-                        <div className="flex items-center gap-4 md:text-right shrink-0">
-                          <span
-                            className={`px-3 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider ${statusInfo.color}`}
-                          >
-                            {statusInfo.label}
-                          </span>
-                          <span className="text-xl font-display font-bold text-accent">
-                            ₱{booking.totalAmount?.toLocaleString() || "0"}
-                          </span>
-                        </div>
-                      </div>
-                      <div className="mt-4 pt-4 border-t border-white/5 flex justify-end gap-3">
-                        <Link
-                          href={`/booking/${booking.id}`}
-                          className="px-5 py-2.5 rounded-xl bg-white/5 text-white/70 font-bold text-xs hover:bg-white/10 hover:text-white transition-all"
-                        >
-                          View Details
-                        </Link>
-                        {isCompleted && noReview && (
-                          <Link
-                            href={`/reviews/write/${booking.id}`}
-                            className="px-5 py-2.5 rounded-xl bg-accent text-black font-bold text-xs hover:shadow-[0_0_20px_rgba(204,255,0,0.4)] transition-all"
-                          >
-                            Leave a Review
-                          </Link>
-                        )}
-                        {canCancel && (
-                          <button
-                            onClick={() => setCancelTargetId(booking.id)}
-                            className="px-5 py-2.5 rounded-xl border border-red-400/30 text-red-400 font-bold text-xs hover:bg-red-500/10 transition-all"
-                          >
-                            Cancel
-                          </button>
-                        )}
-                      </div>
+              <>
+                {attentionBookings.length > 0 && (
+                  <div className="mb-8">
+                    <div className="flex items-center gap-2 mb-4">
+                      <span className="material-symbols-outlined text-orange-400 text-xl">
+                        error
+                      </span>
+                      <h2 className="text-lg font-bold text-white">
+                        Needs Attention
+                      </h2>
                     </div>
-                  );
-                })}
-              </div>
+                    <p className="text-text-muted text-sm mb-4">
+                      These bookings&apos; dates have passed without payment.
+                      They&apos;ll be cancelled automatically.
+                    </p>
+                    <div className="grid gap-4">
+                      {attentionBookings.map((booking) => (
+                        <BookingCard
+                          key={booking.id}
+                          booking={booking}
+                          onCancel={setCancelTargetId}
+                          pastDueUnpaid
+                          viewerIsHost={tab === "received"}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                )}
+                <div className="grid gap-4">
+                  {otherBookings.map((booking) => (
+                    <BookingCard
+                      key={booking.id}
+                      booking={booking}
+                      onCancel={setCancelTargetId}
+                      viewerIsHost={tab === "received"}
+                    />
+                  ))}
+                </div>
+              </>
             )}
 
-            {isFetching && (
+            {isFetching && !isPending && (
               <div className="absolute inset-0 flex items-center justify-center bg-black/30 backdrop-blur-sm rounded-2xl">
                 <span className="h-8 w-8 rounded-full border-2 border-white/20 border-t-accent animate-spin" />
               </div>
@@ -307,10 +330,137 @@ export default function BookingListClient() {
             toast.success(
               "Booking cancelled. Refund (if any) will appear in 5–10 business days.",
             );
-            loadBookings();
+            refetch();
           }}
         />
       )}
+    </div>
+  );
+}
+
+function BookingCard({
+  booking,
+  onCancel,
+  pastDueUnpaid = false,
+  viewerIsHost = false,
+}: {
+  booking: any;
+  onCancel: (id: string) => void;
+  pastDueUnpaid?: boolean;
+  // The viewer organizes this booking's event rather than having made the
+  // booking themselves — cancelling and reviewing are the booker's calls, not
+  // theirs, so those actions are hidden and the booker's name is shown instead.
+  viewerIsHost?: boolean;
+}) {
+  const statusInfo = STATUS_LABEL[booking.status] || STATUS_LABEL.pending;
+  const eventName = booking.event?.name || "Venue Booking";
+  const startDate = booking.startAt
+    ? new Date(booking.startAt).toLocaleDateString(undefined, {
+        month: "short",
+        day: "numeric",
+        year: "numeric",
+      })
+    : "—";
+  const isCompleted = booking.status === "completed";
+  // Cancelling here would just race the auto-cancel sweep — nothing to offer but the notice above.
+  const canCancel =
+    !viewerIsHost &&
+    !pastDueUnpaid &&
+    (booking.status === "pending" || booking.status === "confirmed");
+  const noReview = !booking.hasReview;
+  // booking.totalAmount is the server-computed Event total (items × markup)
+  // and can be 0 for a template with no attached items even though a
+  // platform service fee was actually charged — prefer what was really paid.
+  const totalPaid = (booking.payments || [])
+    .filter((p: any) => p.status === "completed")
+    .reduce((sum: number, p: any) => sum + (p.amount || 0), 0);
+  const displayTotal = totalPaid > 0 ? totalPaid : Number(booking.totalAmount) || 0;
+
+  return (
+    <div
+      className={`glass-panel rounded-2xl p-6 border transition-all ${
+        pastDueUnpaid
+          ? "border-orange-500/30 hover:border-orange-500/50"
+          : "border-white/5 hover:border-accent/30"
+      }`}
+    >
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <Link
+          href={`/booking/${booking.id}`}
+          className="flex items-start gap-4 flex-1 min-w-0 group"
+        >
+          <div className="h-14 w-14 rounded-xl bg-white/5 flex items-center justify-center shrink-0 group-hover:bg-accent/10 transition-colors">
+            <span className="material-symbols-outlined text-white/40 group-hover:text-accent text-2xl transition-colors">
+              apartment
+            </span>
+          </div>
+          <div>
+            <h3 className="font-display font-bold text-white text-lg">
+              {eventName}
+            </h3>
+            <p className="text-text-muted text-sm mt-1 flex items-center gap-2">
+              <span className="material-symbols-outlined text-[14px]">
+                calendar_today
+              </span>
+              {startDate}
+              <span className="material-symbols-outlined text-[14px] ml-1">
+                group
+              </span>
+              {booking.guestCount}{" "}
+              {booking.guestCount === 1 ? "guest" : "guests"}
+            </p>
+            {viewerIsHost && (
+              <p className="text-text-muted text-sm mt-1 flex items-center gap-2">
+                <span className="material-symbols-outlined text-[14px]">
+                  person
+                </span>
+                Booked by {booking.user?.name || "a citizen"}
+              </p>
+            )}
+            <p className="text-text-muted text-xs mt-1 font-mono">
+              #{booking.id.slice(0, 12)}
+            </p>
+          </div>
+        </Link>
+        <div className="flex items-center gap-4 md:text-right shrink-0">
+          <span
+            className={`px-3 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider ${
+              pastDueUnpaid
+                ? "text-orange-400 bg-orange-500/10"
+                : statusInfo.color
+            }`}
+          >
+            {pastDueUnpaid ? "Unpaid & Expired" : statusInfo.label}
+          </span>
+          <span className="text-xl font-display font-bold text-accent">
+            {formatCurrency(displayTotal)}
+          </span>
+        </div>
+      </div>
+      <div className="mt-4 pt-4 border-t border-white/5 flex justify-end gap-3">
+        <Link
+          href={`/booking/${booking.id}`}
+          className="px-5 py-2.5 rounded-xl bg-white/5 text-white/70 font-bold text-xs hover:bg-white/10 hover:text-white transition-all"
+        >
+          View Details
+        </Link>
+        {!viewerIsHost && isCompleted && noReview && (
+          <Link
+            href={`/reviews/write/${booking.id}`}
+            className="px-5 py-2.5 rounded-xl bg-accent text-black font-bold text-xs hover:shadow-[0_0_20px_rgba(204,255,0,0.4)] transition-all"
+          >
+            Leave a Review
+          </Link>
+        )}
+        {canCancel && (
+          <button
+            onClick={() => onCancel(booking.id)}
+            className="px-5 py-2.5 rounded-xl border border-red-400/30 text-red-400 font-bold text-xs hover:bg-red-500/10 transition-all"
+          >
+            Cancel
+          </button>
+        )}
+      </div>
     </div>
   );
 }

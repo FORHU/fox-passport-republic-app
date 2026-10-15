@@ -38,9 +38,10 @@ export function StatusBadge({
     const lower = (status || "").toLowerCase().replace("_", " ");
     if (["published", "ongoing", "available", "active"].includes(lower))
       return "bg-green-500";
-    if (["draft", "pending review", "paused"].includes(lower))
+    if (["draft", "pending", "pending review", "paused"].includes(lower))
       return "bg-yellow-500";
     if (["rented", "maintenance"].includes(lower)) return "bg-blue-500";
+    if (["archived"].includes(lower)) return "bg-white/40";
     return "bg-red-500";
   };
 
@@ -48,10 +49,12 @@ export function StatusBadge({
     const lower = (status || "").toLowerCase().replace("_", " ");
     if (["published", "ongoing", "available", "active"].includes(lower))
       return "bg-green-500/20 text-green-400 border-green-500/30 font-bold";
-    if (["draft", "pending review"].includes(lower))
+    if (["draft", "pending", "pending review"].includes(lower))
       return "bg-yellow-500/20 text-yellow-400 border-yellow-500/30 font-bold";
     if (["rented", "maintenance"].includes(lower))
       return "bg-blue-500/20 text-blue-400 border-blue-500/30 font-bold";
+    if (["archived"].includes(lower))
+      return "bg-white/10 text-white/50 border-white/20 font-bold";
     return "bg-red-500/20 text-red-400 border-red-500/30 font-bold";
   };
 
@@ -88,7 +91,7 @@ export function StatusBadge({
       </button>
 
       {isOpen && (
-        <div className="absolute right-0 top-full mt-2 w-40 bg-[#1a1d2d] border border-white/10 rounded-xl shadow-2xl z-[200]">
+        <div className="absolute right-0 top-full mt-2 w-40 bg-surface-raised border border-white/10 rounded-xl shadow-2xl z-[200]">
           <div className="py-1">
             {options.map((option) => (
               <button

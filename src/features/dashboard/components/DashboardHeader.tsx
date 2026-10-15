@@ -1,13 +1,14 @@
 "use client";
 
-import React from "react";
+import React, { useState, useRef, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useRoleAccess, RoleAccess } from "@/features/auth/hooks/useRoleAccess";
-import { useAuthStore } from "@/features/auth/store/useAuthStore";
-import UserMenuButton from "@/features/user/components/UserMenuButton";
-import NotificationBell from "@/features/notifications/components/NotificationBell";
+import { useRoleAccess, RoleAccess } from "@/shared/auth/useRoleAccess";
+
+import { useAuthStore } from "@/shared/auth/useAuthStore";
+import UserMenuButton from "@/shared/components/layout/UserMenuButton";
+import NotificationBell from "@/shared/components/layout/NotificationBell";
 
 const NAV_ICONS: Record<string, string> = {
   Overview: "dashboard",
@@ -15,21 +16,67 @@ const NAV_ICONS: Record<string, string> = {
   Venues: "location_city",
   Assets: "inventory_2",
   Services: "design_services",
+  Performers: "theater_comedy",
   "Check In": "qr_code_scanner",
+  Earnings: "account_balance_wallet",
+  Promotions: "sell",
+  Partnerships: "handshake",
+  Affiliations: "link",
+  Team: "groups",
 };
 
-export function DashboardHeader() {
+interface DashboardHeaderProps {
+  /** The caller already renders its own mobile bottom nav (e.g.
+   * MobileCreatorHome's MobileCreatorBottomNav, which has a different tab
+   * set) — skip this one's so mobile doesn't end up with two. */
+  hideMobileBottomNav?: boolean;
+}
+
+export function DashboardHeader({
+  hideMobileBottomNav = false,
+}: DashboardHeaderProps = {}) {
   const user = useAuthStore((s) => s.user);
   const access = useRoleAccess();
   const pathname = usePathname();
+  const [moreMenuOpen, setMoreMenuOpen] = useState(false);
+  const moreMenuRef = useRef<HTMLDivElement>(null);
 
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (
+        moreMenuRef.current &&
+        !moreMenuRef.current.contains(e.target as Node)
+      ) {
+        setMoreMenuOpen(false);
+      }
+    };
+    if (moreMenuOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [moreMenuOpen]);
+
+  const roleType = user?.roleType ?? [];
   const roleLabels: string[] = [];
   if (access.isMayor) roleLabels.push("Venue Foxer");
   if (access.isHost) roleLabels.push("Event Foxer");
-  if (access.isFoxer) roleLabels.push("Foxer");
-  const roleLabel = roleLabels.length > 0 ? roleLabels.join(" · ") : "Creator";
+  if (access.canManageInventory) roleLabels.push("Gear Foxer");
+  if (access.canManageServices) roleLabels.push("Talent Foxer");
+  if (access.canManagePerformers) roleLabels.push("Performer Foxer");
+  if (roleType.includes("investor")) roleLabels.push("Partner Foxer");
+  if (roleType.includes("organizer")) roleLabels.push("Organizer");
 
-  const navLinks = [
+  // Compact role label display when user holds multiple roles
+  const primaryRoleLabel =
+    roleLabels.length === 0
+      ? "Creator"
+      : roleLabels.length === 1
+        ? roleLabels[0]
+        : `${roleLabels[0]} +${roleLabels.length - 1}`;
+  const fullRoleTooltip = roleLabels.join(" · ") || "Creator";
+
+  // Primary workspace links
+  const primaryLinks = [
     { label: "Overview", href: "/creator-dashboard" },
     access.canManageEvents && {
       label: "Events",
@@ -47,42 +94,88 @@ export function DashboardHeader() {
       label: "Services",
       href: "/creator-dashboard/services",
     },
-    (access.canManageEvents || access.isMayor) && {
-      label: "Check In",
-      href: "/creator-dashboard/check-in",
+    access.canManagePerformers && {
+      label: "Performers",
+      href: "/creator-dashboard/performers",
+    },
+    // An Investor's whole workspace — it had no way in from the nav.
+    access.canProposePartnerships && {
+      label: "Partnerships",
+      href: "/creator-dashboard/partnerships",
     },
   ].filter(Boolean) as { label: string; href: string }[];
 
+  // Secondary tools & operations
+  const secondaryLinks = [
+    // Organizers & Check-in Helpers for every Venue and Event you own.
+    (access.canManageEvents || access.canManageVenues) && {
+      label: "Team",
+      href: "/creator-dashboard/team",
+    },
+    // Event Foxer ↔ venue approvals — an Event Foxer can't publish without
+    // one, and this was only reachable from a link inside the event builder.
+    (access.canManageEvents || access.canManageVenues) && {
+      label: "Affiliations",
+      href: "/foxer/affiliations",
+    },
+    // Owners receive the proposals Investors send them.
+    !access.canProposePartnerships &&
+      (access.canManageEvents || access.canManageVenues) && {
+        label: "Partnerships",
+        href: "/creator-dashboard/partnerships",
+      },
+    access.canManagePromotions && {
+      label: "Promotions",
+      href: "/creator-dashboard/promotions",
+    },
+    // Organizers check guests in too, on the Events and Venues they help run.
+    (access.isHost || roleType.includes("organizer")) && {
+      label: "Check In",
+      href: "/creator-dashboard/check-in",
+    },
+    // An Organizer gets no platform pay (ADR 0005) — nothing to see here.
+    access.canReceivePayouts && {
+      label: "Earnings",
+      href: "/creator-dashboard/earnings",
+    },
+  ].filter(Boolean) as { label: string; href: string }[];
+
+  const allNavLinks = [...primaryLinks, ...secondaryLinks];
+  const useDropdown = allNavLinks.length > 5;
+
   return (
     <>
-      <header className="fixed top-6 left-0 right-0 z-50">
-        <div className="mx-auto max-w-7xl px-4">
-          <div className="bg-black/60 backdrop-blur-xl border border-white/10 rounded-full px-6 h-20 flex items-center justify-between shadow-2xl">
+      <header className="fixed top-2 sm:top-6 left-0 right-0 z-50">
+        <div className="mx-auto max-w-7xl px-3 sm:px-4">
+          <div className="bg-black/70 backdrop-blur-xl border border-white/10 rounded-full px-3.5 sm:px-5 h-14 sm:h-18 flex items-center justify-between shadow-2xl gap-2">
             {/* Logo */}
-            <Link href="/" className="flex items-center gap-3 group">
-              <div className="flex h-10 w-10 items-center justify-center overflow-hidden group-hover:scale-110 transition-transform duration-300">
+            <Link
+              href="/"
+              className="flex items-center gap-2 sm:gap-2.5 group min-w-0 shrink-0"
+            >
+              <div className="flex h-8 w-8 sm:h-9 sm:w-9 items-center justify-center overflow-hidden shrink-0 group-hover:scale-105 transition-transform duration-300">
                 <Image
                   src="/foxonlylogo.png"
                   alt="FoxPassport Logo"
-                  width={40}
-                  height={40}
+                  width={36}
+                  height={36}
                   className="object-contain"
                   priority
                 />
               </div>
-              <div className="flex flex-col">
-                <h2 className="text-xl font-display font-bold text-white group-hover:text-[#ccff00] transition-colors">
+              <div className="flex flex-col min-w-0">
+                <h2 className="text-sm sm:text-base font-display font-bold text-white group-hover:text-accent transition-colors truncate">
                   FoxPassport
                 </h2>
-                <span className="text-[10px] text-white/50 uppercase tracking-widest font-bold">
-                  Creator Dashboard
+                <span className="hidden xl:block text-[9px] text-white/50 uppercase tracking-widest font-bold">
+                  Creator Studio
                 </span>
               </div>
             </Link>
 
-            {/* Navigation */}
-            <nav className="hidden md:flex items-center gap-1 bg-black/30 p-1.5 rounded-full border border-white/5">
-              {navLinks.map((link) => {
+            {/* Navigation — Compact pills with clean responsive density */}
+            <nav className="hidden md:flex items-center gap-0.5 lg:gap-1 bg-black/40 p-1 rounded-full border border-white/5">
+              {(useDropdown ? primaryLinks : allNavLinks).map((link) => {
                 const isActive =
                   link.href === "/creator-dashboard"
                     ? pathname === "/creator-dashboard"
@@ -93,26 +186,79 @@ export function DashboardHeader() {
                     href={link.href}
                     className={
                       isActive
-                        ? "px-5 py-2.5 rounded-full text-sm font-bold text-black bg-[#ccff00] shadow-[0_0_15px_rgba(204,255,0,0.3)]"
-                        : "px-5 py-2.5 rounded-full text-sm font-medium text-white/60 hover:text-white hover:bg-white/10 transition-colors"
+                        ? "px-3.5 py-1.5 lg:px-4 lg:py-2 rounded-full text-xs lg:text-sm font-bold text-black bg-accent shadow-[0_0_15px_rgba(204,255,0,0.3)] transition-all whitespace-nowrap"
+                        : "px-3 py-1.5 lg:px-3.5 lg:py-2 rounded-full text-xs lg:text-sm font-medium text-white/65 hover:text-white hover:bg-white/10 transition-colors whitespace-nowrap"
                     }
                   >
                     {link.label}
                   </Link>
                 );
               })}
+
+              {/* Tools & More dropdown when nav items exceed 5 */}
+              {useDropdown && (
+                <div className="relative" ref={moreMenuRef}>
+                  <button
+                    type="button"
+                    onClick={() => setMoreMenuOpen((v) => !v)}
+                    className={`px-3 py-1.5 lg:px-3.5 lg:py-2 rounded-full text-xs lg:text-sm font-medium flex items-center gap-1 transition-colors whitespace-nowrap ${
+                      secondaryLinks.some((l) => pathname.startsWith(l.href))
+                        ? "text-accent bg-white/10 font-bold"
+                        : "text-white/65 hover:text-white hover:bg-white/10"
+                    }`}
+                  >
+                    <span>More</span>
+                    <span
+                      className={`material-symbols-outlined text-[16px] transition-transform duration-200 ${
+                        moreMenuOpen ? "rotate-180" : ""
+                      }`}
+                    >
+                      expand_more
+                    </span>
+                  </button>
+
+                  {moreMenuOpen && (
+                    <div className="absolute right-0 top-full mt-2 w-48 bg-surface/95 backdrop-blur-2xl border border-white/10 rounded-2xl shadow-2xl p-1.5 z-50 animate-in fade-in slide-in-from-top-2 duration-150">
+                      {secondaryLinks.map((link) => {
+                        const isActive = pathname.startsWith(link.href);
+                        const icon = NAV_ICONS[link.label] ?? "arrow_forward";
+                        return (
+                          <Link
+                            key={link.label}
+                            href={link.href}
+                            onClick={() => setMoreMenuOpen(false)}
+                            className={`flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold transition-colors ${
+                              isActive
+                                ? "bg-accent text-black shadow-md"
+                                : "text-white/80 hover:bg-white/10 hover:text-white"
+                            }`}
+                          >
+                            <span className="material-symbols-outlined text-[18px]">
+                              {icon}
+                            </span>
+                            <span>{link.label}</span>
+                          </Link>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+              )}
             </nav>
 
-            {/* Right Side — real user */}
-            <div className="flex items-center gap-4">
+            {/* Right Side — Real user profile & notifications */}
+            <div className="flex items-center gap-1.5 sm:gap-3 shrink-0">
               {user && <NotificationBell />}
-              <div className="flex items-center gap-3 pl-3 border-l border-white/10">
-                <div className="text-right hidden sm:block">
-                  <div className="text-sm font-bold">
+              <div className="flex items-center gap-2 sm:gap-2.5 pl-1.5 sm:pl-2.5 border-l border-white/10">
+                <div
+                  className="text-right hidden sm:block max-w-[130px] lg:max-w-[160px]"
+                  title={fullRoleTooltip}
+                >
+                  <div className="text-xs sm:text-sm font-bold text-white truncate">
                     {user?.name || user?.email || "Creator"}
                   </div>
-                  <div className="text-xs text-[#ccff00]/70 font-semibold">
-                    {roleLabel}
+                  <div className="text-[11px] text-accent/80 font-semibold truncate">
+                    {primaryRoleLabel}
                   </div>
                 </div>
                 <UserMenuButton />
@@ -123,52 +269,53 @@ export function DashboardHeader() {
       </header>
 
       {/* Mobile floating capsule bottom tab bar */}
-      <nav
-        className="md:hidden fixed bottom-5 left-5 right-5 z-50 flex items-center justify-around px-4"
-        style={{
-          height: 64,
-          background: "rgba(20,20,26,0.88)",
-          backdropFilter: "blur(24px)",
-          WebkitBackdropFilter: "blur(24px)",
-          border: "1px solid rgba(255,255,255,0.1)",
-          borderRadius: 999,
-          boxShadow: "0 10px 40px rgba(0,0,0,0.55)",
-        }}
-      >
-        {navLinks.map((link) => {
-          const isActive =
-            link.href === "/creator-dashboard"
-              ? pathname === "/creator-dashboard"
-              : pathname.startsWith(link.href);
-          const icon = NAV_ICONS[link.label] ?? "circle";
-          return (
-            <Link
-              key={link.label}
-              href={link.href}
-              className="flex flex-1 flex-col items-center justify-center gap-0.5"
-            >
-              <span
-                className="material-symbols-outlined"
-                style={{
-                  fontSize: 22,
-                  color: isActive ? "#ccff00" : "rgba(255,255,255,0.4)",
-                  fontVariationSettings: isActive ? "'FILL' 1" : "'FILL' 0",
-                }}
+      {!hideMobileBottomNav && (
+        <nav
+          className="md:hidden fixed bottom-4 left-3 right-3 z-50 flex items-center justify-around px-2"
+          style={{
+            height: 60,
+            background: "rgba(15,17,26,0.92)",
+            backdropFilter: "blur(24px)",
+            WebkitBackdropFilter: "blur(24px)",
+            border: "1px solid color-mix(in srgb, var(--color-white) 12%, transparent)",
+            borderRadius: 999,
+            boxShadow: "0 10px 40px rgba(0,0,0,0.65)",
+          }}
+        >
+          {allNavLinks.slice(0, 5).map((link) => {
+            const isActive =
+              link.href === "/creator-dashboard"
+                ? pathname === "/creator-dashboard"
+                : pathname.startsWith(link.href);
+            const icon = NAV_ICONS[link.label] ?? "circle";
+            return (
+              <Link
+                key={link.label}
+                href={link.href}
+                className="flex flex-1 flex-col items-center justify-center gap-0.5 min-w-0 py-1"
               >
-                {icon}
-              </span>
-              <span
-                className="text-[9px] font-bold whitespace-nowrap"
-                style={{
-                  color: isActive ? "#ccff00" : "rgba(255,255,255,0.4)",
-                }}
-              >
-                {link.label}
-              </span>
-            </Link>
-          );
-        })}
-      </nav>
+                <span
+                  className="material-symbols-outlined text-[20px]"
+                  style={{
+                    color: isActive ? "#ccff00" : "rgba(255,255,255,0.45)",
+                    fontVariationSettings: isActive ? "'FILL' 1" : "'FILL' 0",
+                  }}
+                >
+                  {icon}
+                </span>
+                <span
+                  className="text-[9px] font-bold truncate max-w-full px-1"
+                  style={{
+                    color: isActive ? "#ccff00" : "rgba(255,255,255,0.45)",
+                  }}
+                >
+                  {link.label}
+                </span>
+              </Link>
+            );
+          })}
+        </nav>
+      )}
     </>
   );
 }
@@ -181,6 +328,7 @@ interface WelcomeBannerProps {
   onNavigateToCreateVenue: () => void;
   onNavigateToCreateInventory: () => void;
   onNavigateToCreateService: () => void;
+  onNavigateToCreatePerformerService?: () => void;
   access: RoleAccess;
 }
 
@@ -202,6 +350,7 @@ export function WelcomeBanner({
   onNavigateToCreateVenue,
   onNavigateToCreateInventory,
   onNavigateToCreateService,
+  onNavigateToCreatePerformerService,
   access,
 }: WelcomeBannerProps) {
   const router = useRouter();
@@ -211,7 +360,7 @@ export function WelcomeBanner({
     {
       label: "Event",
       icon: "event",
-      iconColor: "text-[#ccff00]",
+      iconColor: "text-accent",
       allowed: access.canManageEvents,
       requiredRole: "Event Foxer",
       applyHref: "/creator-dashboard/apply",
@@ -244,13 +393,22 @@ export function WelcomeBanner({
       applyHref: "/onboarding",
       onClick: onNavigateToCreateService,
     },
+    {
+      label: "Performer Service",
+      icon: "theater_comedy",
+      iconColor: "text-amber-500",
+      allowed: access.canManagePerformers,
+      requiredRole: "Performer Foxer",
+      applyHref: "/onboarding",
+      onClick: onNavigateToCreatePerformerService || onNavigateToCreateService,
+    },
   ];
 
   return (
     <div className="flex flex-col lg:flex-row justify-between items-start lg:items-end gap-6 mb-10">
       <div>
-        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 border border-[#ccff00]/30 shadow-[0_0_15px_rgba(204,255,0,0.1)] mb-3">
-          <span className="flex h-2 w-2 rounded-full bg-[#ccff00] shadow-[0_0_10px_#ccff00] animate-pulse" />
+        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 border border-accent/30 shadow-[0_0_15px_rgba(204,255,0,0.1)] mb-3">
+          <span className="flex h-2 w-2 rounded-full bg-accent shadow-[0_0_10px_#ccff00] animate-pulse" />
           <span className="text-xs font-bold uppercase tracking-widest text-white/90">
             Creator Studio
           </span>
@@ -284,6 +442,11 @@ export function WelcomeBanner({
                 Services
               </span>
             ),
+            access.canManagePerformers && (
+              <span key="p" className="text-white font-bold">
+                Performers
+              </span>
+            ),
           ]
             .filter(Boolean)
             .reduce<React.ReactNode[]>(
@@ -305,7 +468,7 @@ export function WelcomeBanner({
         <div className="relative" ref={menuRef}>
           <button
             onClick={onToggleCreateMenu}
-            className="w-full sm:w-auto px-6 py-3 rounded-full bg-[#ccff00] text-black font-bold flex items-center justify-center gap-2 text-sm shadow-[0_0_20px_rgba(204,255,0,0.3)] hover:shadow-[0_0_30px_rgba(204,255,0,0.5)] hover:scale-105 transition-all"
+            className="w-full sm:w-auto px-6 py-3 rounded-full bg-accent text-black font-bold flex items-center justify-center gap-2 text-sm shadow-[0_0_20px_rgba(204,255,0,0.3)] hover:shadow-[0_0_30px_rgba(204,255,0,0.5)] hover:scale-105 transition-all"
           >
             <span className="material-symbols-outlined text-[18px]">
               add_circle
@@ -314,7 +477,7 @@ export function WelcomeBanner({
           </button>
 
           {isCreateMenuOpen && (
-            <div className="absolute right-0 top-full mt-2 w-56 bg-[#0f111a] border border-white/10 rounded-2xl shadow-2xl z-50 overflow-hidden">
+            <div className="absolute right-0 top-full mt-2 w-56 bg-surface border border-white/10 rounded-2xl shadow-2xl z-50 overflow-hidden">
               {createItems.map((item, i) => (
                 <React.Fragment key={item.label}>
                   {i === 2 && <div className="h-px bg-white/5" />}
@@ -342,7 +505,7 @@ export function WelcomeBanner({
                         {item.icon}
                       </span>
                       <span className="flex-1 text-white/60">{item.label}</span>
-                      <span className="material-symbols-outlined text-[14px] text-white/30 group-hover:text-[#ccff00]/60 transition-colors">
+                      <span className="material-symbols-outlined text-[14px] text-white/30 group-hover:text-accent/60 transition-colors">
                         lock
                       </span>
                     </button>

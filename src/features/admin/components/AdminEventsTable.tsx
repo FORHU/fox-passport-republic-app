@@ -1,4 +1,3 @@
-/* eslint-disable @next/next/no-img-element */
 "use client";
 
 import React, { useEffect, useState } from "react";
@@ -117,7 +116,7 @@ export const AdminEventsTable: React.FC<EventsTableProps> = ({
           onClick={closeRejectDialog}
         >
           <div
-            className="bg-[#0f111a] border border-white/10 rounded-2xl p-8 max-w-sm w-full mx-4 space-y-4"
+            className="bg-surface border border-white/10 rounded-2xl p-8 max-w-sm w-full mx-4 space-y-4"
             onClick={(e) => e.stopPropagation()}
           >
             <h3 className="text-white font-bold text-lg">
@@ -215,7 +214,7 @@ export const AdminEventsTable: React.FC<EventsTableProps> = ({
                       <td className="p-6 text-gray-300">
                         <div className="flex flex-col">
                           <span className="font-medium text-white/90">
-                            {event.host?.name || "Unknown Organizer"}
+                            {event.host?.name || "Unknown Event Foxer"}
                           </span>
                           <span className="text-[10px] text-white/40 font-mono tracking-tighter">
                             ID: {event.hostId}

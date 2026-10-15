@@ -1,0 +1,117 @@
+"use client";
+
+import React from "react";
+import MessageButton from "@/features/messages/components/MessageButton";
+
+export interface EventHostCardProps {
+  owner?: {
+    id?: string;
+    name?: string;
+    imgId?: string;
+  } | null;
+  variant?: "compact" | "full";
+  eventId?: string;
+  eventName?: string;
+}
+
+export function EventHostCard({
+  owner,
+  variant = "full",
+  eventId,
+  eventName,
+}: EventHostCardProps) {
+  const ownerName = owner?.name ?? "Event Foxer";
+  const ownerInitial = ownerName.charAt(0).toUpperCase();
+
+  if (variant === "compact") {
+    return (
+      <div className="bg-surface-highlight/30 border border-white/5 rounded-3xl p-6 relative overflow-hidden">
+        <div className="flex items-start gap-4">
+          <div className="relative shrink-0">
+            {owner?.imgId ? (
+              <img
+                src={owner.imgId}
+                className="w-16 h-16 rounded-full object-cover border-2 border-white/10"
+                alt={ownerName}
+              />
+            ) : (
+              <div className="w-16 h-16 rounded-full bg-accent flex items-center justify-center border-2 border-white/10">
+                <span className="text-black text-2xl font-bold">
+                  {ownerInitial}
+                </span>
+              </div>
+            )}
+            <div className="absolute -bottom-1 -right-1 bg-[#7c3aed] text-white rounded-full p-1 border-4 border-surface flex items-center justify-center shadow-sm">
+              <span className="material-symbols-outlined text-[14px]">
+                verified
+              </span>
+            </div>
+          </div>
+          <div className="flex-1">
+            <h3 className="font-display font-bold text-white text-lg">
+              Curated by {ownerName}
+            </h3>
+            <p className="text-accent text-xs font-bold uppercase tracking-wider">
+              Event Foxer
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex gap-6 items-start">
+      <div className="relative shrink-0">
+        {owner?.imgId ? (
+          <img
+            src={owner.imgId}
+            className="w-16 h-16 rounded-full object-cover border-2 border-white/10"
+            alt={ownerName}
+          />
+        ) : (
+          <div className="w-16 h-16 rounded-full bg-accent flex items-center justify-center border-2 border-white/10">
+            <span className="text-black text-2xl font-bold">
+              {ownerInitial}
+            </span>
+          </div>
+        )}
+        <div className="absolute -bottom-1 -right-1 bg-[#7c3aed] text-white rounded-full p-1 border-4 border-surface shadow-sm flex items-center justify-center">
+          <span className="material-symbols-outlined text-[14px]">
+            verified
+          </span>
+        </div>
+      </div>
+      <div>
+        <h3 className="text-xl font-bold text-white mb-1">
+          Created by {ownerName}
+        </h3>
+        <p className="text-text-muted text-sm mb-4">FoxPassport Event Foxer</p>
+        <div className="flex gap-4 text-sm text-white mb-4">
+          <span className="flex items-center gap-1">
+            <span className="material-symbols-outlined text-[16px] text-accent">
+              verified
+            </span>{" "}
+            Identity Verified
+          </span>
+        </div>
+        {owner?.id ? (
+          <MessageButton
+            otherUserId={owner.id}
+            otherUserName={ownerName}
+            otherUserImgId={owner.imgId}
+            contextType={eventId ? "event" : undefined}
+            contextId={eventId}
+            contextLabel={eventName || "Event"}
+            label="Contact Event Foxer"
+            className="inline-flex items-center gap-2 px-6 py-3 rounded-xl border border-white/10 text-sm font-bold text-white hover:bg-white hover:text-black transition-colors"
+          />
+        ) : (
+          <button className="px-6 py-3 rounded-xl border border-white/10 text-sm font-bold text-white hover:bg-white hover:text-black transition-colors cursor-pointer">
+            Contact Event Foxer
+          </button>
+        )}
+      </div>
+    </div>
+  );
+}

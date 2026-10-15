@@ -4,7 +4,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { MapPin, Users, Heart } from "lucide-react";
 import { Venue } from "@/features/venue/hooks/useVenuesByCategory";
-import { useFavorites } from "@/features/user/hooks/useFavorites";
+import { useFavorites } from "@/shared/hooks/useFavorites";
 
 interface VenueCardProps {
   venue: Venue;
@@ -13,9 +13,15 @@ interface VenueCardProps {
 export function VenueCard({ venue }: VenueCardProps) {
   const primaryImage = venue.images.find((img) => img.isPrimary);
   const imageUrl =
-    primaryImage?.imageUrl ||
-    venue.images[0]?.imageUrl ||
-    "/placeholder-venue.jpg";
+    (typeof primaryImage?.imageUrl === "string" &&
+    primaryImage.imageUrl.trim().length > 0
+      ? primaryImage.imageUrl.trim()
+      : null) ||
+    (typeof venue.images?.[0]?.imageUrl === "string" &&
+    venue.images[0].imageUrl.trim().length > 0
+      ? venue.images[0].imageUrl.trim()
+      : null) ||
+    "/herobackground.jpg";
   const pricePerDay = venue.pricing[0]?.pricePerDay || 0;
   const currency = venue.pricing[0]?.currency || "PHP";
   const { isFavorited, toggleFavorite } = useFavorites();
@@ -94,7 +100,7 @@ export function VenueCard({ venue }: VenueCardProps) {
               {venue.host.name.charAt(0).toUpperCase()}
             </div>
             <div>
-              <p className="text-xs text-gray-500">Hosted by</p>
+              <p className="text-xs text-gray-500">Listed by</p>
               <p className="text-sm font-medium text-gray-900">
                 {venue.host.name}
               </p>

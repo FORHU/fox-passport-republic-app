@@ -13,6 +13,9 @@ function unwrapListResponse(data: unknown): unknown[] {
   const templates = obj.templates;
   if (Array.isArray(templates)) return templates;
 
+  const events = obj.events;
+  if (Array.isArray(events)) return events;
+
   const d = obj.data;
   if (Array.isArray(d)) return d;
 
@@ -22,6 +25,17 @@ function unwrapListResponse(data: unknown): unknown[] {
 export async function fetchEventsByHostId(hostId: Id): Promise<any[]> {
   const resp = await api.get("/event-templates", {
     params: { ownerId: String(hostId) },
+  });
+  return unwrapListResponse(resp.data);
+}
+
+// Real, already-scheduled Event rows this user organizes (created once a
+// template is booked) — distinct from fetchEventsByHostId's EventTemplates.
+// Used by the Republic Feed compose flow, whose event_announcement post
+// type is validated server-side against a real Event id.
+export async function fetchOrganizerEvents(organizerId: Id): Promise<any[]> {
+  const resp = await api.get("/events", {
+    params: { organizerId: String(organizerId) },
   });
   return unwrapListResponse(resp.data);
 }

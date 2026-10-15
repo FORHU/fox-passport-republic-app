@@ -4,6 +4,8 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useState, useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
 import MapboxLocationPicker from "./MapboxLocationPicker";
+import { CascadingLocationFields } from "@/shared/components/ui/CascadingLocationFields";
+import { Money } from "@/shared/components/ui/Money";
 
 const CATEGORIES = ["wedding", "corporate", "birthday", "social", "other"];
 
@@ -41,13 +43,13 @@ function CategoryDropdown({
       <button
         type="button"
         onClick={() => setOpen((o) => !o)}
-        className="w-full flex items-center justify-between bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-white text-sm focus:outline-none focus:border-[#ccff00]/50 transition-all"
+        className="w-full flex items-center justify-between bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-white text-sm focus:outline-none focus:border-accent/50 transition-all"
       >
         <span className={selected ? "capitalize text-white" : "text-white/30"}>
           {selected || "All categories"}
         </span>
         <span
-          className={`material-symbols-outlined text-[18px] text-white/40 transition-transform duration-200 ${
+          className={`material-symbols-outlined text-lg text-white/40 transition-transform duration-200 ${
             open ? "rotate-180" : ""
           }`}
         >
@@ -59,7 +61,7 @@ function CategoryDropdown({
         createPortal(
           <div
             ref={menuRef}
-            className="fixed z-[101] w-[var(--cat-w)] animate-in fade-in zoom-in-95 duration-150"
+            className="fixed z-101 w-(--cat-w) animate-in fade-in zoom-in-95 duration-150"
             style={{
               top: "var(--cat-top)",
               left: "var(--cat-left)",
@@ -75,7 +77,7 @@ function CategoryDropdown({
                 onClick={() => onChange("")}
                 className={`w-full text-left px-3 py-2 rounded-lg text-sm capitalize transition-all ${
                   !value
-                    ? "bg-[#ccff00]/15 text-[#ccff00] font-bold"
+                    ? "bg-accent/15 text-accent font-bold"
                     : "text-white/70 hover:bg-white/10 hover:text-white"
                 }`}
               >
@@ -88,7 +90,7 @@ function CategoryDropdown({
                   onClick={() => onChange(cat)}
                   className={`w-full text-left px-3 py-2 rounded-lg text-sm capitalize transition-all ${
                     value === cat
-                      ? "bg-[#ccff00]/15 text-[#ccff00] font-bold"
+                      ? "bg-accent/15 text-accent font-bold"
                       : "text-white/70 hover:bg-white/10 hover:text-white"
                   }`}
                 >
@@ -125,7 +127,11 @@ function DropdownPositioner({
   return null;
 }
 
-export default function SearchFilters() {
+interface SearchFiltersProps {
+  onClose?: () => void;
+}
+
+export default function SearchFilters({ onClose }: SearchFiltersProps = {}) {
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -133,6 +139,9 @@ export default function SearchFilters() {
 
   const [category, setCategory] = useState(
     () => searchParams?.get("category") || "",
+  );
+  const [country, setCountry] = useState(
+    () => searchParams?.get("country") || "",
   );
   const [city, setCity] = useState(() => searchParams?.get("city") || "");
   const [label, setLabel] = useState(() => searchParams?.get("label") || "");
@@ -151,6 +160,7 @@ export default function SearchFilters() {
   if (searchParamsStr !== prevParamsStr) {
     setPrevParamsStr(searchParamsStr);
     setCategory(searchParams?.get("category") || "");
+    setCountry(searchParams?.get("country") || "");
     setCity(searchParams?.get("city") || "");
     setLabel(searchParams?.get("label") || "");
     setLat(
@@ -187,21 +197,41 @@ export default function SearchFilters() {
   );
   const onMaxPriceInput = (raw: string) => {
     setMaxPrice(raw);
-    if (maxPriceDebounceRef.current)
-      clearTimeout(maxPriceDebounceRef.current);
+    if (maxPriceDebounceRef.current) clearTimeout(maxPriceDebounceRef.current);
     maxPriceDebounceRef.current = setTimeout(() => commitMaxPrice(raw), 400);
   };
 
+  const activeFiltersCount = [category, country, city, label, maxPrice].filter(
+    Boolean,
+  ).length;
+
   const inputClass =
-    "w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-white text-sm placeholder:text-white/30 focus:outline-none focus:border-[#ccff00]/50";
+    "w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-white text-sm placeholder:text-white/30 focus:outline-none focus:border-accent/50";
 
   return (
-    <div className="bg-[#11121a] border border-white/10 rounded-2xl p-6 space-y-6 h-fit">
-      <div className="flex items-center gap-2">
-        <span className="h-2 w-2 rounded-full bg-[#ccff00] animate-pulse" />
-        <h3 className="text-lg font-display font-bold tracking-tight text-white">
-          Filters
-        </h3>
+    <div className="bg-surface border border-white/10 rounded-2xl p-6 space-y-6 h-fit">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <span className="h-2 w-2 rounded-full bg-accent animate-pulse" />
+          <h3 className="text-lg font-display font-bold tracking-tight text-white">
+            Filters
+          </h3>
+          {activeFiltersCount > 0 && (
+            <span className="ml-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-accent text-black">
+              {activeFiltersCount}
+            </span>
+          )}
+        </div>
+        {onClose && (
+          <button
+            type="button"
+            onClick={onClose}
+            aria-label="Close filters"
+            className="p-1 rounded-lg text-white/50 hover:text-white hover:bg-white/10 transition-colors"
+          >
+            <span className="material-symbols-outlined text-lg">close</span>
+          </button>
+        )}
       </div>
 
       {/* Category */}
@@ -223,22 +253,25 @@ export default function SearchFilters() {
         <label className="block text-xs font-bold text-white/50 uppercase tracking-wider">
           City / Area
         </label>
-        <input
-          type="text"
-          value={city}
-          onChange={(e) => setCity(e.target.value)}
-          onBlur={(e) =>
-            updateParams({
-              city: e.target.value,
-              label: e.target.value || label,
-            })
-          }
-          onKeyDown={(e) =>
-            e.key === "Enter" &&
-            updateParams({ city: (e.target as HTMLInputElement).value })
-          }
-          placeholder="e.g. Baguio"
-          className={inputClass}
+        {/* Country, then City — locked until a country is picked. */}
+        <CascadingLocationFields
+          value={{ country, state: "", city }}
+          withState={false}
+          className="grid grid-cols-1 gap-2"
+          onChange={(next) => {
+            if (next.country !== country) {
+              setCountry(next.country);
+              setCity(next.city);
+              updateParams({
+                country: next.country,
+                city: next.city,
+                label: next.city,
+              });
+              return;
+            }
+            setCity(next.city);
+            updateParams({ city: next.city, label: next.city || label });
+          }}
         />
       </div>
 
@@ -265,8 +298,8 @@ export default function SearchFilters() {
       <div className="space-y-2">
         <label className="block text-xs font-bold text-white/50 uppercase tracking-wider">
           Max Price:{" "}
-          <span className="text-[#ccff00]">
-            {maxPrice ? `₱${maxPrice}` : "Any"}
+          <span className="text-accent">
+            {maxPrice ? <Money amount={maxPrice} /> : "Any"}
           </span>
         </label>
         <input
@@ -304,34 +337,52 @@ export default function SearchFilters() {
           onTouchEnd={(e) =>
             commitMaxPrice((e.target as HTMLInputElement).value)
           }
-          onKeyUp={(e) =>
-            commitMaxPrice((e.target as HTMLInputElement).value)
-          }
-          className="w-full accent-[#ccff00]"
+          onKeyUp={(e) => commitMaxPrice((e.target as HTMLInputElement).value)}
+          className="w-full accent-accent"
         />
       </div>
 
-      <button
-        onClick={() => {
-          setCategory("");
-          setCity("");
-          setLabel("");
-          setLat(undefined);
-          setLng(undefined);
-          setMaxPrice("");
-          updateParams({
-            category: "",
-            city: "",
-            label: "",
-            lat: undefined,
-            lng: undefined,
-            maxPrice: "",
-          });
-        }}
-        className="w-full py-2.5 rounded-xl bg-white/5 border border-white/10 text-white/60 text-sm font-bold hover:bg-white/10 hover:text-white transition-all"
-      >
-        Clear Filters
-      </button>
+      <div className="space-y-2 pt-2">
+        {onClose && (
+          <button
+            type="button"
+            onClick={onClose}
+            className="w-full py-3 rounded-xl bg-accent text-black font-bold text-sm hover:bg-accent-hover transition-all shadow-[0_0_20px_rgba(204,255,0,0.3)] flex items-center justify-center gap-2"
+          >
+            <span>Show Results</span>
+            {activeFiltersCount > 0 && (
+              <span className="text-[11px] font-bold px-1.5 py-0.5 rounded-full bg-black/20 text-black">
+                {activeFiltersCount}
+              </span>
+            )}
+          </button>
+        )}
+
+        <button
+          type="button"
+          onClick={() => {
+            setCategory("");
+            setCountry("");
+            setCity("");
+            setLabel("");
+            setLat(undefined);
+            setLng(undefined);
+            setMaxPrice("");
+            updateParams({
+              category: "",
+              country: "",
+              city: "",
+              label: "",
+              lat: undefined,
+              lng: undefined,
+              maxPrice: "",
+            });
+          }}
+          className="w-full py-2.5 rounded-xl bg-white/5 border border-white/10 text-white/60 text-sm font-bold hover:bg-white/10 hover:text-white transition-all"
+        >
+          Clear Filters
+        </button>
+      </div>
     </div>
   );
 }

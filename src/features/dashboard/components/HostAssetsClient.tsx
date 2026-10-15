@@ -2,7 +2,7 @@
 
 import React, { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import RequireAuth from "@/features/auth/components/RequireAuth";
+import RequireAuth from "@/shared/auth/RequireAuth";
 import {
   DashboardHeader,
   InventorySection,
@@ -11,6 +11,7 @@ import {
   STATUS_OPTIONS,
   type InventoryItem,
 } from "@/features/dashboard/data/dashboardData";
+import { StyledSelect } from "@/shared/components/ui/StyledSelect";
 
 function normalizeValue(value: unknown): string {
   return String(value ?? "")
@@ -73,10 +74,11 @@ export default function HostAssetsClient({
   return (
     <RequireAuth>
       <div
-        className="bg-[#02040a] text-white min-h-screen font-body antialiased"
+        className="bg-canvas text-white min-h-screen font-body antialiased"
         style={{
           background:
             "radial-gradient(circle at 15% 50%, rgba(124,58,237,0.15) 0%, transparent 40%), radial-gradient(circle at 85% 30%, rgba(219,39,119,0.1) 0%, transparent 40%), radial-gradient(circle at 50% 0%, rgba(204,255,0,0.05) 0%, transparent 50%), #02040a",
+          backgroundAttachment: "fixed",
         }}
       >
         <DashboardHeader />
@@ -99,7 +101,7 @@ export default function HostAssetsClient({
               <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
                 <button
                   onClick={() => router.push("/foxer/create-listing")}
-                  className="flex items-center gap-2 px-5 py-2.5 rounded-full bg-[#ccff00] text-black text-sm font-bold hover:opacity-90 transition-opacity shrink-0"
+                  className="flex items-center gap-2 px-5 py-2.5 rounded-full bg-accent text-black text-sm font-bold hover:opacity-90 transition-opacity shrink-0"
                 >
                   <span className="material-symbols-outlined text-[16px]">
                     add
@@ -114,29 +116,23 @@ export default function HostAssetsClient({
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     placeholder="Search assets..."
-                    className="w-full bg-white/5 border border-white/10 rounded-full px-4 py-2 pl-11 text-sm placeholder:text-white/40 focus:outline-none focus:border-[#ccff00]"
+                    className="w-full bg-white/5 border border-white/10 rounded-full px-4 py-2 pl-11 text-sm placeholder:text-white/40 focus:outline-none focus:border-accent"
                   />
                 </div>
 
                 <div className="w-full sm:w-56">
-                  <select
+                  <StyledSelect
                     value={status}
-                    onChange={(e) => setStatus(e.target.value)}
-                    className="w-full bg-[#0f111a] text-white border border-white/10 rounded-full px-4 py-2 text-sm focus:outline-none focus:border-[#ccff00]"
-                  >
-                    <option className="bg-[#0f111a] text-white" value="all">
-                      All Status
-                    </option>
-                    {STATUS_OPTIONS.inventory.map((s) => (
-                      <option
-                        className="bg-[#0f111a] text-white"
-                        key={s}
-                        value={s}
-                      >
-                        {s}
-                      </option>
-                    ))}
-                  </select>
+                    onChange={setStatus}
+                    options={[
+                      { value: "all", label: "All Status" },
+                      ...STATUS_OPTIONS.inventory.map((s) => ({
+                        value: s,
+                        label: s,
+                      })),
+                    ]}
+                    className="rounded-full"
+                  />
                 </div>
               </div>
             </div>

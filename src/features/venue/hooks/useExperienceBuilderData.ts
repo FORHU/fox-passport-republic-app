@@ -1,9 +1,9 @@
-﻿"use client";
+"use client";
 
 import { useQuery } from "@tanstack/react-query";
 import api from "@/shared/lib/axios";
 
-// ─── Types matching what ExperienceBuilder renders ────────────────────────────
+// --- Types matching what ExperienceBuilder renders ----------------------------
 
 export interface LiveFoxer {
   id: string;
@@ -24,7 +24,7 @@ export interface LiveService {
   category: string;
 }
 
-// ─── API Response Types ────────────────────────────────────────────────────────
+// --- API Response Types --------------------------------------------------------
 
 interface ApiUser {
   id: string;
@@ -53,7 +53,7 @@ interface ApiAsset {
   description?: string;
 }
 
-// ─── Category icon map ─────────────────────────────────────────────────────────
+// --- Category icon map ---------------------------------------------------------
 
 const SERVICE_CATEGORY_ICON: Record<string, string> = {
   entertainment: "music_note",
@@ -72,7 +72,7 @@ const ASSET_CATEGORY_ICON: Record<string, string> = {
   other: "category",
 };
 
-// Maps API service.category → sidebar tab id
+// Maps API service.category ? sidebar tab id
 const SERVICE_CAT_TO_TAB: Record<string, string> = {
   entertainment: "media",
   catering: "catering",
@@ -81,7 +81,7 @@ const SERVICE_CAT_TO_TAB: Record<string, string> = {
   other: "catering",
 };
 
-// Maps API asset.category → sidebar tab id
+// Maps API asset.category ? sidebar tab id
 const ASSET_CAT_TO_TAB: Record<string, string> = {
   sound_system: "tech",
   decorations: "decor",
@@ -91,7 +91,7 @@ const ASSET_CAT_TO_TAB: Record<string, string> = {
   other: "tech",
 };
 
-// ─── Fetchers ─────────────────────────────────────────────────────────────────
+// --- Fetchers -----------------------------------------------------------------
 
 async function fetchFoxers(): Promise<LiveFoxer[]> {
   const res = await api.get("/users/foxers?roleType=serviceFoxer,gearFoxer");
@@ -100,7 +100,7 @@ async function fetchFoxers(): Promise<LiveFoxer[]> {
     : (res.data?.data ?? []);
   return users.map((u) => {
     const priceList = [...(u.services ?? []), ...(u.assets ?? [])]
-      .map((i) => i.price)
+      .map((i) => Number(i.price))
       .filter((p) => p > 0);
     const fee = priceList.length > 0 ? Math.min(...priceList) : 0;
     return {
@@ -108,7 +108,7 @@ async function fetchFoxers(): Promise<LiveFoxer[]> {
       name: u.name || u.username || "Foxer",
       role: u.roleType?.includes("serviceFoxer")
         ? "Talent Foxer"
-        : "Gear Foxer",
+        : "Equipment Foxer",
       fee,
       rating: 0,
       avatar:
@@ -123,11 +123,11 @@ async function fetchServices(): Promise<LiveService[]> {
   const res = await api.get("/service");
   const services: ApiService[] = Array.isArray(res.data)
     ? res.data
-    : (res.data?.data ?? []);
+    : (res.data?.services ?? res.data?.data ?? []);
   return services.map((s) => ({
     id: s.id,
     name: s.name,
-    price: s.price,
+    price: Number(s.price),
     icon: SERVICE_CATEGORY_ICON[s.category] ?? "star",
     desc: s.description ?? "",
     category: SERVICE_CAT_TO_TAB[s.category] ?? "catering",
@@ -138,18 +138,18 @@ async function fetchAssets(): Promise<LiveService[]> {
   const res = await api.get("/asset");
   const assets: ApiAsset[] = Array.isArray(res.data)
     ? res.data
-    : (res.data?.data ?? []);
+    : (res.data?.assets ?? res.data?.data ?? []);
   return assets.map((a) => ({
     id: a.id,
     name: a.name,
-    price: a.price,
+    price: Number(a.price),
     icon: ASSET_CATEGORY_ICON[a.category] ?? "category",
     desc: a.description ?? "",
     category: ASSET_CAT_TO_TAB[a.category] ?? "tech",
   }));
 }
 
-// ─── Hook ─────────────────────────────────────────────────────────────────────
+// --- Hook ---------------------------------------------------------------------
 
 export function useExperienceBuilderData(enabled = true) {
   const { data: foxers = [], isLoading: loadingFoxers } = useQuery<LiveFoxer[]>(

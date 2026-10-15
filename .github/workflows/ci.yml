@@ -35,6 +35,20 @@ jobs:
           node-version: 22
           cache: pnpm
 
+      - name: Cache node_modules
+        id: node-modules-cache
+        uses: actions/cache@v4
+        with:
+          path: node_modules
+          # `setup-node`'s `cache: pnpm` above only caches the pnpm content-store
+          # (skips re-downloading packages); pnpm still re-links the whole tree
+          # into node_modules every run. Caching node_modules itself, keyed on
+          # both lockfile and package.json (since install runs with
+          # --no-frozen-lockfile, so the lockfile alone isn't a reliable enough
+          # key if package.json drifted), turns a hit into pnpm just verifying an
+          # already-correct tree instead of a full reinstall.
+          key: ${{ runner.os }}-node-modules-${{ hashFiles('**/pnpm-lock.yaml', '**/package.json') }}
+
       - name: Install dependencies
         run: pnpm install --no-frozen-lockfile
 
@@ -43,7 +57,14 @@ jobs:
         with:
           path: |
             ${{ github.workspace }}/.next/cache
-          key: ${{ runner.os }}-nextjs-${{ hashFiles('**/pnpm-lock.yaml') }}-${{ hashFiles('**/*.js', '**/*.jsx', '**/*.ts', '**/*.tsx') }}
+          # Scoped to src/** (and the root configs the build actually reads) rather
+          # than a repo-wide **/*.js glob: that glob ran after `pnpm install` and
+          # was hashing every file under node_modules too — hundreds of thousands
+          # of vendor files that have nothing to do with app source, which made
+          # the exact key slow to compute and unstable between otherwise-identical
+          # runs, so nearly every build fell through to the restore-keys fallback
+          # instead of an exact cache hit.
+          key: ${{ runner.os }}-nextjs-${{ hashFiles('**/pnpm-lock.yaml') }}-${{ hashFiles('src/**/*.js', 'src/**/*.jsx', 'src/**/*.ts', 'src/**/*.tsx', 'next.config.mjs', 'tsconfig.json', 'tailwind.config.*') }}
           restore-keys: |
             ${{ runner.os }}-nextjs-${{ hashFiles('**/pnpm-lock.yaml') }}-
 

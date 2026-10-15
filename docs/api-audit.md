@@ -2,7 +2,7 @@
 
 Status: open — last verified 27 August 2026 (app `ccfcf75`, api `2b5e63c`)
 Scope: `fox-passport-republic-app` + `fox-passport-republic-api`
-Role: **the record.** `TOMORROW.md` is the running order; this is what was found,
+Role: **the record.** `NEXT.md` is the running order; this is what was found,
 what was fixed, and what is still open. Sections 1–2 and 4 are closed history —
 section 3 is the live list.
 
@@ -19,11 +19,26 @@ version keeps coming back otherwise.
 
 ---
 
-> **Tomorrow's queue:** [`mapanytime-comparison.md`](./mapanytime-comparison.md)
-> evaluates what to adopt from the mapanytime codebase. Short version: **do not**
-> copy its token storage (sessionStorage — its own comment says that is not XSS
-> protection, and the Flutter constraint forcing it does not apply here), **do**
-> take refresh-token rotation and Zod response contracts.
+> **`mapanytime-comparison.md` has been removed** — it evaluated what to adopt
+> from the mapanytime codebase; its conclusions were **do not** copy its token
+> storage (sessionStorage — its own comment says that is not XSS protection,
+> and the Flutter constraint forcing it does not apply here), **do** take
+> refresh-token rotation and Zod response contracts. Refresh-token rotation is
+> done (§4.9 below); Zod response contracts are still open, tracked in
+> `app-architecture.md`. Anything else the removed file argued for is in git
+> history (`git log -- docs/mapanytime-comparison.md`), not here.
+
+> **This document predates the messaging feature entirely** — every
+> conversations/messages migration (`20260828042526_add_conversations_and_messages`
+> through `20260910085939_conversation_mute_pin_settings`) landed after the last
+> verification date above, so nothing here covers it. Worth naming because this
+> audit's own habit of checking migrations for safe backfills would likely have
+> caught `20260909014607_add_conversation_requests` — a required column added
+> `NOT NULL` with no default, which only works against an empty table and broke
+> exactly that way against a real database on 12 Sep. Fixed (see
+> `fox-passport-republic-api/docs/GOTCHAS.md` #11); not a gap in this document,
+> just a reminder that migration safety needs the same eye this document gives
+> auth and data-fetching, and nobody was giving it one for messaging.
 
 ## 1. Corrections to the source audit
 
@@ -232,9 +247,10 @@ Two cautions:
 Its name (`re_name`) looks like a placeholder accepted at the prompt rather than
 a description.
 
-### 3.4c Admin responsive — correction owed to `responsive-plan.md` §2.3
+### 3.4c Admin responsive — correction folded into `responsive-plan.md` §2.3
 
-- [ ] Fold this into `responsive-plan.md` §2.3 when the branches merge
+- [x] **Done.** `responsive-plan.md` §2.3 (line 86) now cross-references this
+      section directly and carries the corrected guidance.
 
 **That section's advice is wrong and should be replaced.** It says *"Admin —
 desktop-only is an acceptable answer"* and recommends scoping admin to `lg` and
@@ -321,9 +337,10 @@ signs in.
 
 - [x] Login verified through the proxy against a live API and browser.
 - [ ] Still unexercised in a browser: mobile admin (drawer, approve/reject),
-      the venue mobile booking bars, the reconnected `NavMobileMenu`, password
-      change/reset revocation, and the proxy's multipart and
-      401-refresh-replay paths.
+      the venue mobile booking bars, password change/reset revocation, and the
+      proxy's multipart and 401-refresh-replay paths. `NavMobileMenu` was on
+      this list too; `feat/map` deleted it on 3 Sep before it was ever exercised,
+      so it can never be — see the note at §4.5.
 
 Types, lint, build and unit tests pass, but **no request has actually gone
 through the proxy** — there is no running backend here. Multipart, redirects and
@@ -479,7 +496,7 @@ a mechanical resolution:
 | File | Resolution | Why |
 |---|---|---|
 | `app/page.tsx` | **Both** | main split the landing into `MobileHomePage` / `FoxerLandingPage`; this branch hoisted fetching into a branch-aware `Promise.all`. Kept the split, fed from the parallel batch instead of a sequential re-fetch. |
-| `Navbar.tsx` | **Upstream** (+ local gap scale) | Upstream replaced the hamburger with `MobileBottomNav` (`lg:hidden fixed bottom-4`) and no longer renders `NavMobileMenu`. The local hamburger would have toggled a panel that does not exist. Kept the local `gap-2 sm:gap-3 lg:gap-4`. |
+| `Navbar.tsx` | **Upstream** (+ local gap scale) | Upstream replaced the hamburger with `MobileBottomNav` (`lg:hidden fixed bottom-4`) and no longer renders `NavMobileMenu`. The local hamburger would have toggled a panel that does not exist. Kept the local `gap-2 sm:gap-3 lg:gap-4`. *(Moot since 3 Sep — the file was deleted by `feat/map`.)* |
 | `VenueHeader.tsx` | **Local** | The local version is a coherent mobile-hero + desktop-bento split, and the unconflicted code below already implements it. Upstream's fragment carried a `key={idx}` on a div not inside a `.map()`. |
 | `SearchClient.tsx` | **Upstream** | Newer, carries the `TYPE_CHIPS` filter the local side lacked, and its `pb-28 sm:pb-12` is clearance for `MobileBottomNav` — consistent with the Navbar decision. |
 
@@ -515,6 +532,11 @@ before stashing, and both stashes applied cleanly afterwards.
       `MobileBottomNav` carries four primary destinations plus Create, the panel
       carries browse categories and the secondary/auth links that do not fit in
       a five-slot bar. Hamburger restored at `lg:hidden`, panel rendered.
+      **Superseded 3 Sep:** `feat/map` (#47) deleted `Navbar.tsx`,
+      `NavMobileMenu.tsx`, `BrowseDropdown.tsx`, `HostModal.tsx`, `useNavbar.ts`
+      and the `(main)` layout that rendered them. The reconnection above was
+      never seen in a browser and the files no longer exist. Whether that
+      deletion was intended is open — `NEXT.md` §0a.
 
 Reviewed and found correct, for the record:
 
@@ -742,19 +764,25 @@ forget, so forgetting is invisible. Either route the resources through
 `requireOwnerOrAdmin` where the owner id is derivable from the path, or delete
 it so it stops implying a guarantee that is not there.
 
-### 4.12 No boot-time validation of required environment variables
+### 4.12 No boot-time validation of required environment variables — partially fixed
 
-- [ ] Fail fast on missing secrets
+- [x] `ACCESS_TOKEN_SECRET` / `REFRESH_TOKEN_SECRET` now fail fast
+- [ ] The other 13 still don't
 
-`config.ts` reads 13 values as `process.env.X as string`. There are **no
-hardcoded fallback secrets** — checked specifically, and that part is right —
-but nothing validates presence either, so a missing `ACCESS_TOKEN_SECRET` lets
-the API boot and then fail every login at signing time.
+**Confirmed 12 Sep: the two most safety-critical ones are fixed.**
+`config.ts` now imports `requireSecret` from `./utils/require-secret` and
+routes `ACCESS_TOKEN_SECRET` and `REFRESH_TOKEN_SECRET` through it — this is
+the guard `NEXT.md` §5 refers to as refusing to start on a missing or weak
+token secret, landed after this finding was originally written.
 
-The app already does this correctly and says why: `middleware.ts` refuses to
-serve protected routes without the secret rather than defaulting. The API should
-match it. Related: `SERVICE_ACCOUNT` (`config.ts:55`) is exported and imported
-nowhere.
+**The other 13 are still bare `process.env.X as string` casts**, unvalidated:
+`DATABASE_URL`, `SECRET_KEY`, `MAILER_TRANSPORT_HOST`, `MAILER_EMAIL`,
+`MAILER_PASSWORD`, `SERVICE_ACCOUNT`, `S3_CDN_URL`, `AWS_ACCESS_KEY`,
+`AWS_SECRET_ACCESS_KEY`, `AWS_S3_BUCKET`, `AWS_REGION`, `STRIPE_SECRET_KEY`,
+`STRIPE_WEBHOOK_SECRET`, `RESEND_API_KEY`, `GOOGLE_CLIENT_ID`,
+`GOOGLE_CLIENT_SECRET` — a missing one of these still lets the API boot and
+fail at first use instead of at startup. `SERVICE_ACCOUNT` (`config.ts:101`)
+is still exported and imported nowhere, unrelated to validation but still true.
 
 ### 4.13 The seed could mint a public-password admin, and nothing stopped it running in production
 

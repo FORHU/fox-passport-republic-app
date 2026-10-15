@@ -3,15 +3,13 @@
 import { useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useAuthStore } from "@/features/auth/store/useAuthStore";
+import { useAuthStore } from "@/shared/auth/useAuthStore";
 
 interface MobileBottomNavProps {
-  onCreateClick?: () => void;
   onLoginClick?: () => void;
 }
 
 export default function MobileBottomNav({
-  onCreateClick,
   onLoginClick,
 }: MobileBottomNavProps) {
   const pathname = usePathname();
@@ -33,14 +31,6 @@ export default function MobileBottomNav({
   const handleBookingsClick = () => {
     if (isAuthenticated) {
       router.push("/booking");
-    } else {
-      onLoginClick?.();
-    }
-  };
-
-  const handleCreateClick = () => {
-    if (isAuthenticated) {
-      onCreateClick?.();
     } else {
       onLoginClick?.();
     }
@@ -120,7 +110,7 @@ export default function MobileBottomNav({
               ? "2px solid #ccff00"
               : "2px solid rgba(255,255,255,0.2)",
             boxShadow: active ? "0 0 8px rgba(204,255,0,0.5)" : "none",
-            background: "rgba(255,255,255,0.08)",
+            background: "color-mix(in srgb, var(--color-white) 8%, transparent)",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
@@ -128,7 +118,6 @@ export default function MobileBottomNav({
           }}
         >
           {avatarUrl && !imgError ? (
-            // eslint-disable-next-line @next/next/no-img-element
             <img
               src={avatarUrl}
               alt=""
@@ -136,7 +125,7 @@ export default function MobileBottomNav({
               style={{ width: "100%", height: "100%", objectFit: "cover" }}
             />
           ) : (
-            <span style={{ fontSize: 11, fontWeight: 700, color: "#ccff00" }}>
+            <span style={{ fontSize: 11, fontWeight: 700, color: "var(--accent-text)" }}>
               {userInitial}
             </span>
           )}
@@ -172,13 +161,14 @@ export default function MobileBottomNav({
 
   return (
     <div
-      className="lg:hidden fixed bottom-4 left-4 right-4 z-50 grid"
+      className="lg:hidden fixed left-4 right-4 z-50 grid"
       style={{
+        bottom: "max(1rem, env(safe-area-inset-bottom, 1rem))",
         height: 68,
         background: "rgba(14,14,20,0.92)",
         backdropFilter: "blur(28px)",
         WebkitBackdropFilter: "blur(28px)",
-        border: "1px solid rgba(255,255,255,0.08)",
+        border: "1px solid color-mix(in srgb, var(--color-white) 8%, transparent)",
         borderRadius: 999,
         boxShadow:
           "0 -2px 0 rgba(255,255,255,0.04) inset, 0 16px 48px rgba(0,0,0,0.7)",
@@ -201,54 +191,56 @@ export default function MobileBottomNav({
         );
       })}
 
-      {/* Center FAB */}
+      {/* Center Republic Foxer Tab */}
       <div className="flex items-center justify-center">
-        <button
-          onClick={handleCreateClick}
-          aria-label="Create"
+        <Link
+          href="/republic"
+          aria-label="Republic Foxer"
           style={{
-            width: 54,
-            height: 54,
+            width: 56,
+            height: 56,
             borderRadius: 999,
-            background: "linear-gradient(135deg, #d4ff33 0%, #aaee00 100%)",
+            background: isActive("/republic")
+              ? "linear-gradient(135deg, #d4ff33 0%, #aaee00 100%)"
+              : "linear-gradient(135deg, #272732 0%, #171720 100%)",
             display: "flex",
+            flexDirection: "column",
             alignItems: "center",
             justifyContent: "center",
-            transform: "translateY(-16px)",
-            boxShadow:
-              "0 0 0 4px rgba(14,14,20,0.92), 0 0 0 6px rgba(204,255,0,0.2), 0 8px 24px rgba(204,255,0,0.5)",
-            border: "none",
-            cursor: "pointer",
-            transition: "transform 0.15s, box-shadow 0.15s",
-          }}
-          onMouseDown={(e) => {
-            (e.currentTarget as HTMLButtonElement).style.transform =
-              "translateY(-14px) scale(0.94)";
-          }}
-          onMouseUp={(e) => {
-            (e.currentTarget as HTMLButtonElement).style.transform =
-              "translateY(-16px) scale(1)";
-          }}
-          onTouchStart={(e) => {
-            (e.currentTarget as HTMLButtonElement).style.transform =
-              "translateY(-14px) scale(0.94)";
-          }}
-          onTouchEnd={(e) => {
-            (e.currentTarget as HTMLButtonElement).style.transform =
-              "translateY(-16px) scale(1)";
+            transform: "translateY(-14px)",
+            boxShadow: isActive("/republic")
+              ? "0 0 0 4px rgba(14,14,20,0.92), 0 0 0 6px rgba(204,255,0,0.3), 0 8px 24px rgba(204,255,0,0.5)"
+              : "0 0 0 4px rgba(14,14,20,0.92), 0 4px 16px rgba(0,0,0,0.5)",
+            border: isActive("/republic")
+              ? "none"
+              : "1px solid rgba(255,255,255,0.12)",
+            textDecoration: "none",
+            transition: "transform 0.15s, box-shadow 0.15s, background 0.15s",
           }}
         >
           <span
             className="material-symbols-outlined"
             style={{
-              color: "#000",
-              fontSize: 26,
+              color: isActive("/republic") ? "#0a0a0f" : "#ccff00",
+              fontSize: 24,
               fontVariationSettings: "'FILL' 1, 'wght' 700",
             }}
           >
-            add
+            dynamic_feed
           </span>
-        </button>
+          <span
+            style={{
+              fontSize: 8,
+              fontWeight: 800,
+              letterSpacing: "0.02em",
+              color: isActive("/republic") ? "#0a0a0f" : "#ccff00",
+              lineHeight: 1,
+              marginTop: 1,
+            }}
+          >
+            REPUBLIC
+          </span>
+        </Link>
       </div>
 
       {/* Right tabs */}

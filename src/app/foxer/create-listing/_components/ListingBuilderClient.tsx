@@ -1,8 +1,9 @@
 "use client";
 
 import React, { Suspense } from "react";
-import RequireAuth from "@/features/auth/components/RequireAuth";
-import { useListingBuilder } from "@/features/asset/hooks/useListingBuilder";
+import RequireAuth from "@/shared/auth/RequireAuth";
+import { useListingBuilder } from "./useListingBuilder";
+
 import {
   ListingHeader,
   ListingSidebar,
@@ -57,7 +58,7 @@ function ListingBuilderContent() {
   } = useListingBuilder();
 
   return (
-    <div className="fixed inset-0 z-60 bg-[#02040a] text-white flex flex-col font-body">
+    <div className="fixed inset-0 z-60 bg-canvas text-white flex flex-col font-body">
       <ListingHeader
         activeType={activeType}
         title={title}
@@ -137,7 +138,7 @@ export default function ListingBuilderClient() {
     <RequireAuth>
       <Suspense
         fallback={
-          <div className="fixed inset-0 bg-[#02040a] flex items-center justify-center">
+          <div className="fixed inset-0 bg-canvas flex items-center justify-center">
             <span className="text-white">Loading...</span>
           </div>
         }

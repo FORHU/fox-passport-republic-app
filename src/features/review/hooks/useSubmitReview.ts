@@ -22,7 +22,12 @@ export function useSubmitReview() {
     onSuccess: () => {
       toast.success("Review submitted! Thank you for your feedback.");
       queryClient.invalidateQueries({ queryKey: ["venue-reviews"] });
-      queryClient.invalidateQueries({ queryKey: ["user-bookings"] });
+      // There was an invalidation of ["user-bookings"] here. No query has ever
+      // used that key: the bookings list this pushes to (`BookingListClient`,
+      // `MobileBookingsView`) fetches in a `useEffect` and holds its rows in
+      // component state, so it is outside the cache entirely and no key can
+      // reach it. Removed rather than renamed, because renaming it would only
+      // move a no-op somewhere less obvious.
       router.push("/booking");
     },
     onError: (error: any) => {

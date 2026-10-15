@@ -2,7 +2,7 @@
 
 import React from "react";
 import { useUIStore } from "@/shared/store/useUIStore";
-import { useAuthStore } from "@/features/auth/store/useAuthStore";
+import { useAuthStore } from "@/shared/auth/useAuthStore";
 
 function getGreeting() {
   const h = new Date().getHours();
@@ -26,6 +26,7 @@ export const AdminHeader: React.FC = () => {
     venues: "Venues",
     assets: "Assets & Gear",
     services: "Services",
+    identity: "Identity Checks",
     settings: "Settings",
   };
 

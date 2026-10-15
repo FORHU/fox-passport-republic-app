@@ -1,8 +1,7 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 "use client";
 
 import React from "react";
-import RequireAuth from "@/features/auth/components/RequireAuth";
+import RequireAuth from "@/shared/auth/RequireAuth";
 import { useServicesBuilder } from "@/features/service/hooks/useServicesBuilder";
 import {
   ListingHeader,
@@ -13,7 +12,6 @@ import {
 
 function ServiceBuilderContent() {
   const {
-    activeType,
     title,
     description,
     category,
@@ -48,7 +46,7 @@ function ServiceBuilderContent() {
   } = useServicesBuilder();
 
   return (
-    <div className="fixed inset-0 z-60 bg-[#02040a] text-white flex flex-col font-body">
+    <div className="fixed inset-0 z-60 bg-canvas text-white flex flex-col font-body">
       <ListingHeader
         activeType="service"
         title={title}

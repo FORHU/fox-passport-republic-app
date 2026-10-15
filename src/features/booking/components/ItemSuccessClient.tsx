@@ -1,17 +1,17 @@
-/* eslint-disable react-hooks/purity, @next/next/no-img-element */
 "use client";
 
-import React, { useEffect, useRef, useMemo } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useItemBookingStore } from "@/features/booking/store/useItemBookingStore";
-import { useAuthStore } from "@/features/auth/store/useAuthStore";
+import { useAuthStore } from "@/shared/auth/useAuthStore";
 import {
   confirmServiceBooking,
   confirmAssetBooking,
 } from "@/features/booking/api/bookings";
 import { getDashboardPath } from "@/shared/lib/dashboard-path";
+import { formatCurrency } from "@/shared/lib/currency";
 
 export default function ItemSuccessClient() {
   const router = useRouter();
@@ -45,7 +45,7 @@ export default function ItemSuccessClient() {
         itemType === "service" ? confirmServiceBooking : confirmAssetBooking;
       confirm(bookingId, paymentIntentId, totalAmount).catch(() => {});
     }
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  }, []);
 
   const isService = itemType === "service";
   const typeLabel = isService ? "Service" : "Equipment Rental";
@@ -54,7 +54,7 @@ export default function ItemSuccessClient() {
   const typeBadgeBg = isService ? "bg-orange-400" : "bg-purple-400";
 
   const formattedDate = scheduledDate
-    ? new Date(scheduledDate).toLocaleDateString("en-PH", {
+    ? new Date(scheduledDate).toLocaleDateString(undefined, {
         weekday: "long",
         year: "numeric",
         month: "long",
@@ -62,9 +62,8 @@ export default function ItemSuccessClient() {
       })
     : "To be confirmed";
 
-  const orderRef = useMemo(
+  const [orderRef] = useState(
     () => `FX-${Math.floor(10000 + Math.random() * 90000)}`,
-    [],
   );
 
   return (
@@ -115,7 +114,7 @@ export default function ItemSuccessClient() {
                   src={user.imgId}
                 />
               ) : (
-                <div className="h-full w-full bg-[#ccff00] flex items-center justify-center text-black font-bold text-sm">
+                <div className="h-full w-full bg-accent flex items-center justify-center text-black font-bold text-sm">
                   {user?.name?.charAt(0)?.toUpperCase() ?? "U"}
                 </div>
               )}
@@ -248,7 +247,7 @@ export default function ItemSuccessClient() {
                         2
                       </div>
                       <p className="text-sm text-text-muted">
-                        Your payment is held in escrow — the provider cannot
+                        Your payment is held safely — the provider cannot
                         access it yet.
                       </p>
                     </div>
@@ -287,8 +286,8 @@ export default function ItemSuccessClient() {
                         3
                       </div>
                       <p className="text-sm text-text-muted">
-                        Confirm receipt in good condition to release payment
-                        from escrow.
+                        Confirm receipt in good condition to release the held
+                        payment.
                       </p>
                     </div>
                   </>
@@ -301,7 +300,7 @@ export default function ItemSuccessClient() {
                 <div>
                   <p className="text-text-muted text-sm">Amount Paid</p>
                   <span className="text-3xl font-display font-bold text-white">
-                    ₱{totalAmount.toLocaleString()}.00
+                    {formatCurrency(totalAmount)}
                   </span>
                 </div>
                 {bookingId && (
@@ -360,7 +359,7 @@ export default function ItemSuccessClient() {
               </span>
             </div>
             <p className="text-xs text-gray-500 font-medium">
-              © 2024 FoxPassport Inc. All rights reserved.
+              © {new Date().getFullYear()} FoxPassport Inc. All rights reserved.
             </p>
           </div>
         </div>

@@ -10,15 +10,14 @@ function normalizeStatus(status: unknown): string {
   return raw;
 }
 
-function formatPeso(value: unknown): string {
+function toAmount(value: unknown): number {
   const num =
     typeof value === "string"
       ? parseFloat(value)
       : typeof value === "number"
         ? value
         : NaN;
-  if (!Number.isFinite(num)) return "₱0";
-  return `₱${num.toLocaleString()}`;
+  return Number.isFinite(num) ? num : 0;
 }
 
 export function mapBackendAssetToInventoryItem(
@@ -70,6 +69,9 @@ export function mapBackendServiceToServiceItem(
     photography: "camera_alt",
     videography: "videocam",
     entertainment: "music_note",
+    dj: "music_note",
+    live_band: "graphic_eq",
+    mc: "mic",
     coordination: "groups",
     other: "room_service",
   };
@@ -78,26 +80,33 @@ export function mapBackendServiceToServiceItem(
     planning: "text-accent bg-accent/20",
     decoration: "text-pink-400 bg-pink-500/20",
     catering: "text-orange-400 bg-orange-500/20",
-    photography: "text-blue-400 bg-blue-500/20",
-    videography: "text-blue-400 bg-blue-500/20",
-    entertainment: "text-purple-400 bg-purple-500/20",
+    photography: "text-amber-400 bg-amber-500/20",
+    videography: "text-amber-400 bg-amber-500/20",
+    entertainment: "text-amber-400 bg-amber-500/20",
+    dj: "text-amber-400 bg-amber-500/20",
+    live_band: "text-amber-400 bg-amber-500/20",
+    mc: "text-amber-400 bg-amber-500/20",
     coordination: "text-accent bg-accent/20",
     other: "text-accent bg-accent/20",
   };
 
-  const price = formatPeso(service.price);
-  const unit = service.billingRate;
-  const displayPrice = unit ? `${price} ${unit}` : price;
+  const price = toAmount(service.price);
+  const priceUnit = service.billingRate || undefined;
   const img =
     service.images?.[0]?.url || service.images?.[0]?.imageUrl || undefined;
 
   return {
     id: service.id,
     name: service.name,
-    price: displayPrice,
+    price,
+    priceUnit,
     status,
     icon: iconMap[slug] || "room_service",
     color: colorMap[slug] || "text-accent bg-accent/20",
     img,
+    category: slug,
+    tags: Array.isArray((service as any).tags) ? (service as any).tags : [],
+    city: (service as any).city ?? undefined,
+    isWillingToTravel: (service as any).isWillingToTravel ?? false,
   };
 }

@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useQuery } from "@tanstack/react-query";
 import api from "@/shared/lib/axios";
@@ -52,6 +52,7 @@ export interface Venue {
   spaceType?: string[];
   lat?: number | null;
   lng?: number | null;
+  boundary?: [number, number][] | null;
   category: VenueCategory | null;
   pricing: VenuePricing[];
   images: VenueImage[];
@@ -59,6 +60,23 @@ export interface Venue {
     reviews: number;
     events: number;
   };
+  facilities?: string[];
+  recommendedCapacity?: number;
+  seatingArrangements?: string[];
+  stageConfig?: string;
+  setupOptions?: string[];
+  operatingHours?: any;
+  blockedDates?: Date[];
+  minBookingTime?: number;
+  depositRequirements?: string;
+  floorPlanUrls?: string[];
+  seatingLayoutUrls?: string[];
+  parkingInformation?: string;
+  accessibilityInformation?: string;
+  entranceInstructions?: string;
+  packages?: any[];
+  recommendedAssets?: any[];
+  recommendedServices?: any[];
 }
 
 // Added explicit typing for Axios response payload structure

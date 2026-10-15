@@ -1,0 +1,385 @@
+"use client";
+
+import { useState } from "react";
+import Image from "next/image";
+import { Mail, MessagesSquare, Users, Pin, BellOff } from "lucide-react";
+import { useAuthStore } from "@/shared/auth/useAuthStore";
+
+export interface FollowingWidgetProps {
+  isLoading?: boolean;
+  conversations: Array<{
+    id: string;
+    isGroup: boolean;
+    name?: string | null;
+    imgId?: string | null;
+    otherUser?: {
+      id: string;
+      name: string | null;
+      imgId: string | null;
+    } | null;
+    status: string;
+    isIncomingRequest?: boolean;
+    lastMessageAt?: string | null;
+    isPinned?: boolean;
+    pinnedAt?: string | null;
+    isMuted?: boolean;
+    unreadCount: number;
+    lastMessage?: { content: string; isMine: boolean } | null;
+    participants?: { id: string; name: string; imgId: string | null }[];
+    creatorId?: string;
+    isInbox?: boolean;
+    viewerRole?: "guest" | "team";
+    inbox?: { name: string };
+  }>;
+  incomingRequestsCount: number;
+
+  /** A render prop, not a static node, because the modal's own `onClose`
+   * needs to reach back into this component's `requestsOpen` state — the
+   * caller doesn't own that state, so it's handed the closer instead. */
+  messageRequestsModalSlot?: (closeModal: () => void) => React.ReactNode;
+
+  onOpenChat: (target: {
+    id: string;
+    name: string;
+    imgId: string | null;
+    isIncomingRequest?: boolean;
+  }) => void;
+  onOpenGroup: (conversation: any) => void;
+
+  accountOptionsRender: (
+    targetId: string,
+    targetName: string,
+    conversationId?: string,
+    isMuted?: boolean,
+    isPinned?: boolean,
+  ) => React.ReactNode;
+  groupOptionsRender: (
+    conversationId: string,
+    groupName: string,
+    isMuted?: boolean,
+    isPinned?: boolean,
+  ) => React.ReactNode;
+}
+
+interface RowUser {
+  isGroup: false;
+  id: string;
+  name: string;
+  imgId: string | null;
+  conversation: any;
+}
+
+interface RowGroup {
+  isGroup: true;
+  /** A Shared Inbox thread — opened by conversation like a group, but it
+   * has no group options (leave/rename) to offer. */
+  isInbox?: boolean;
+  id: string;
+  name: string;
+  conversation: any;
+}
+
+type Row = RowUser | RowGroup;
+
+export function FollowingWidget({
+  isLoading,
+  conversations: allConversations,
+  incomingRequestsCount,
+  messageRequestsModalSlot,
+  onOpenChat,
+  onOpenGroup,
+  accountOptionsRender,
+  groupOptionsRender,
+}: FollowingWidgetProps) {
+  const { user } = useAuthStore();
+
+  // Every thread the user's actually part of — not gated on following,
+  // since this is "your messages" in general now, not a following-list
+  // seeded with placeholder rows. Incoming (not-yet-accepted) requests
+  // stay out of this list; they only live in the Message Requests folder
+  // above until accepted.
+  const threads = allConversations.filter((c) => !c.isIncomingRequest);
+
+  const rows: Row[] = threads
+    .map((c): Row => {
+      if (c.isGroup) {
+        return {
+          isGroup: true,
+          id: c.id,
+          name: c.name || "Group",
+          conversation: c,
+        };
+      }
+      // A Shared Inbox thread belongs to a Venue or Event, not to a person:
+      // the guest has no `otherUser` at all, and for the team `otherUser` is
+      // the guest — opening that as a 1:1 would start a separate DM instead
+      // of this thread. Both open by conversation.
+      if (c.isInbox || !c.otherUser) {
+        return {
+          isGroup: true,
+          isInbox: true,
+          id: c.id,
+          name:
+            (c.viewerRole === "guest" ? c.inbox?.name : c.otherUser?.name) ||
+            "Inbox",
+          conversation: c,
+        };
+      }
+      return {
+        isGroup: false,
+        id: c.otherUser.id,
+        name: c.otherUser.name || "Unknown Citizen",
+        imgId: c.otherUser.imgId,
+        conversation: c,
+      };
+    })
+    .sort((a, b) => {
+      const aConv = a.conversation;
+      const bConv = b.conversation;
+      if (!!aConv?.isPinned !== !!bConv?.isPinned) {
+        return aConv?.isPinned ? -1 : 1;
+      }
+      if (aConv?.isPinned && bConv?.isPinned) {
+        return (
+          new Date(bConv.pinnedAt ?? 0).getTime() -
+          new Date(aConv.pinnedAt ?? 0).getTime()
+        );
+      }
+      const aTime = aConv?.lastMessageAt;
+      const bTime = bConv?.lastMessageAt;
+      if (aTime && bTime) {
+        return new Date(bTime).getTime() - new Date(aTime).getTime();
+      }
+      if (aTime) return -1;
+      if (bTime) return 1;
+      return 0;
+    });
+
+  const [requestsOpen, setRequestsOpen] = useState(false);
+
+  if (!user) return null;
+
+  if (isLoading) {
+    return (
+      <div className="h-full rounded-3xl bg-zinc-950/60 border border-zinc-900 p-4 space-y-4 animate-pulse">
+        <div className="h-3 w-32 bg-zinc-800 rounded"></div>
+        {[1, 2, 3].map((i) => (
+          <div key={i} className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-full bg-zinc-800"></div>
+            <div className="flex-1 space-y-2">
+              <div className="h-3 w-20 bg-zinc-800 rounded"></div>
+              <div className="h-2 w-16 bg-zinc-800 rounded"></div>
+            </div>
+            <div className="w-8 h-8 rounded-lg bg-zinc-800"></div>
+          </div>
+        ))}
+      </div>
+    );
+  }
+
+  return (
+    <>
+      <div className="h-full flex flex-col rounded-3xl bg-zinc-950/60 border border-zinc-900 p-4">
+        <div className="flex items-center gap-2 shrink-0">
+          <MessagesSquare className="h-4 w-4 text-lime-400" strokeWidth={2} />
+          <div className="text-[10px] font-black uppercase tracking-wider text-zinc-400">
+            Messages
+          </div>
+        </div>
+
+        {incomingRequestsCount > 0 && (
+          <button
+            type="button"
+            onClick={() => setRequestsOpen(true)}
+            className="mt-3 shrink-0 w-full flex items-center justify-between gap-2 px-3 py-2.5 rounded-xl bg-zinc-900/80 border border-zinc-800 hover:border-lime-400/40 transition-colors cursor-pointer group"
+          >
+            <span className="flex items-center gap-2 text-xs font-bold text-zinc-300 group-hover:text-white transition-colors">
+              <Mail
+                className="h-4 w-4 text-zinc-500 group-hover:text-lime-400 transition-colors"
+                strokeWidth={2}
+              />
+              Message Requests
+            </span>
+            <span className="h-5 min-w-5 px-1.5 rounded-full bg-lime-400 text-black text-[10px] font-black flex items-center justify-center shrink-0">
+              {incomingRequestsCount}
+            </span>
+          </button>
+        )}
+
+        {rows.length === 0 ? (
+          <p className="mt-4 text-xs text-zinc-500 leading-relaxed">
+            No conversations yet. Message a citizen or partner from their
+            profile or a post to see it here.
+          </p>
+        ) : (
+          <div className="mt-4 flex-1 min-h-0 overflow-y-auto space-y-4 pr-1 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
+            {rows.map((followedUser) => {
+              if (followedUser.isGroup) {
+                const { conversation } = followedUser;
+                const lastMessage = conversation.lastMessage;
+                const preview = lastMessage
+                  ? `${lastMessage.isMine ? "You: " : ""}${lastMessage.content}`
+                  : "No messages yet";
+                const hasUnread = conversation.unreadCount > 0;
+
+                return (
+                  <div
+                    key={followedUser.id}
+                    className="flex items-center justify-between gap-2"
+                  >
+                    <button
+                      type="button"
+                      onClick={() => onOpenGroup(conversation)}
+                      className="flex items-center gap-3 min-w-0 group text-left cursor-pointer"
+                    >
+                      <div className="relative shrink-0">
+                        <div className="w-9 h-9 rounded-full overflow-hidden bg-zinc-800 border border-zinc-700/50 group-hover:border-lime-500/50 transition-colors flex items-center justify-center text-zinc-500">
+                          {conversation.imgId ? (
+                            <Image
+                              src={conversation.imgId}
+                              alt=""
+                              fill
+                              sizes="36px"
+                              className="object-cover"
+                            />
+                          ) : (
+                            <Users className="h-4 w-4" strokeWidth={2} />
+                          )}
+                        </div>
+                        {hasUnread && (
+                          <span className="absolute -top-0.5 -right-0.5 h-2.5 w-2.5 rounded-full bg-lime-400 border-2 border-zinc-950" />
+                        )}
+                      </div>
+                      <div className="flex flex-col min-w-0">
+                        <span className="flex items-center gap-1 min-w-0">
+                          {conversation.isPinned && (
+                            <Pin className="h-3 w-3 shrink-0 text-lime-400/70" />
+                          )}
+                          <span
+                            className={`text-xs truncate transition-colors ${hasUnread ? "font-black text-white" : "font-bold text-zinc-200 group-hover:text-lime-400"}`}
+                          >
+                            {followedUser.name}
+                          </span>
+                          {conversation.isMuted && (
+                            <BellOff className="h-3 w-3 shrink-0 text-zinc-500" />
+                          )}
+                        </span>
+                        <span
+                          className={`text-[10px] truncate ${hasUnread ? "text-zinc-200 font-semibold" : "text-zinc-500"}`}
+                        >
+                          {preview}
+                        </span>
+                      </div>
+                    </button>
+
+                    {!followedUser.isInbox &&
+                      groupOptionsRender(
+                        conversation.id,
+                        followedUser.name,
+                        conversation.isMuted,
+                        conversation.isPinned,
+                      )}
+                  </div>
+                );
+              }
+
+              const { conversation } = followedUser;
+              const lastMessage = conversation?.lastMessage;
+              const preview = lastMessage
+                ? `${lastMessage.isMine ? "You: " : ""}${lastMessage.content}`
+                : "No messages yet";
+              const isPendingSent = conversation?.status === "pending";
+              const hasUnread = (conversation?.unreadCount ?? 0) > 0;
+
+              return (
+                <div
+                  key={followedUser.id}
+                  className="flex items-center justify-between gap-2"
+                >
+                  <button
+                    type="button"
+                    onClick={() =>
+                      onOpenChat({
+                        id: followedUser.id,
+                        name: followedUser.name || "Citizen",
+                        imgId: followedUser.imgId,
+                      })
+                    }
+                    className="flex items-center gap-3 min-w-0 group text-left cursor-pointer"
+                  >
+                    <div className="relative shrink-0">
+                      <div className="w-9 h-9 rounded-full overflow-hidden bg-zinc-800 border border-zinc-700/50 group-hover:border-lime-500/50 transition-colors">
+                        {followedUser.imgId ? (
+                          <Image
+                            src={
+                              followedUser.imgId.startsWith("http://") ||
+                              followedUser.imgId.startsWith("https://")
+                                ? followedUser.imgId
+                                : `https://fox-passport-republic-assets.s3.ap-southeast-1.amazonaws.com/${followedUser.imgId}`
+                            }
+                            alt={followedUser.name || "User"}
+                            fill
+                            sizes="36px"
+                            className="object-cover"
+                          />
+                        ) : (
+                          <div className="w-full h-full bg-zinc-800 flex items-center justify-center text-xs font-bold text-zinc-500">
+                            {followedUser.name
+                              ? followedUser.name.charAt(0).toUpperCase()
+                              : "?"}
+                          </div>
+                        )}
+                      </div>
+                      {hasUnread && (
+                        <span className="absolute -top-0.5 -right-0.5 h-2.5 w-2.5 rounded-full bg-lime-400 border-2 border-zinc-950" />
+                      )}
+                    </div>
+                    <div className="flex flex-col min-w-0">
+                      <span className="flex items-center gap-1.5 min-w-0">
+                        {conversation?.isPinned && (
+                          <Pin className="h-3 w-3 shrink-0 text-lime-400/70" />
+                        )}
+                        <span
+                          className={`text-xs truncate transition-colors ${hasUnread ? "font-black text-white" : "font-bold text-zinc-200 group-hover:text-lime-400"}`}
+                        >
+                          {followedUser.name || "Unknown Citizen"}
+                        </span>
+                        {conversation?.isMuted && (
+                          <BellOff className="h-3 w-3 shrink-0 text-zinc-500" />
+                        )}
+                        {isPendingSent && (
+                          <span className="text-[9px] font-black uppercase tracking-wider text-amber-400/80 shrink-0">
+                            Pending
+                          </span>
+                        )}
+                      </span>
+                      <span
+                        className={`text-[10px] truncate ${hasUnread ? "text-zinc-200 font-semibold" : "text-zinc-500"}`}
+                      >
+                        {preview}
+                      </span>
+                    </div>
+                  </button>
+
+                  {accountOptionsRender(
+                    followedUser.id,
+                    followedUser.name,
+                    conversation?.id,
+                    conversation?.isMuted,
+                    conversation?.isPinned,
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
+
+      {requestsOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          {messageRequestsModalSlot?.(() => setRequestsOpen(false))}
+        </div>
+      )}
+    </>
+  );
+}

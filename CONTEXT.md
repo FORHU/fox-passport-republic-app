@@ -20,7 +20,7 @@ _Avoid_: Regular user, plain user
 
 **RoleType**
 A supply-side capability a Citizen can apply for and be approved to hold. Multiple RoleTypes may be held simultaneously — they are additive, not exclusive.
-Values: `venueFoxer`, `eventFoxer`, `gearFoxer`, `serviceFoxer`, `investor`.
+Values: `venueFoxer`, `eventFoxer`, `gearFoxer`, `serviceFoxer`, `performerFoxer`, `investor`.
 Distinct from `systemRole` (`user`/`admin`), which governs platform administration.
 There is no `super_admin` — `enum SystemRole` in `schema.prisma` has exactly two values.
 _Avoid_: Role (ambiguous with systemRole), permission
@@ -28,7 +28,7 @@ _Avoid_: Role (ambiguous with systemRole), permission
 **VenueFoxer**
 A Citizen approved to list and manage Venues. A Venue is bare space — VenueFoxers don't sell experiences standalone; they earn only when an EventFoxer selects their Venue into an Event Template.
 Code: `roleType` includes `"venueFoxer"`.
-_Avoid_: Mayor (old name)
+_Avoid_: Owner (for a venue — see **Mayor**)
 
 **EventFoxer**
 A Citizen approved to assemble Event Templates: attaches an existing Venue (from a VenueFoxer) plus Assets/Services (from GearFoxers/ServiceFoxers), then submits for admin approval. Curates and coordinates — does not supply their own Venue, Assets, or Services. Also acts as program manager for the event, coordinating all suppliers (decorations, catering, etc.) to deliver the full experience.
@@ -41,16 +41,49 @@ Code: `roleType` includes `"gearFoxer"`.
 _Avoid_: FoxerAsset, Asset Foxer (old names)
 
 **ServiceFoxer**
-A Citizen approved to supply Services (catering, entertainment, design, staffing, etc.) into the marketplace for standalone booking or attachment to Event Templates.
+A Citizen approved to supply Services (catering, design, staffing, etc.) into the marketplace for standalone booking or attachment to Event Templates. Public-facing name is **Talent Foxer** — decided 14 Sep 2026, see `docs/BUSINESS-STRATEGY-MASTER.md` §11.5. `ServiceFoxer`/`serviceFoxer` remains the code-level term; use it in code, API, and this glossary. `entertainment` is a legacy `ServiceCategory` value here — new entertainment-type supply is PerformerFoxer, not ServiceFoxer.
 Code: `roleType` includes `"serviceFoxer"`.
-_Avoid_: FoxerService, Service Foxer (old names)
+_Avoid_: FoxerService (old name)
+
+**PerformerFoxer**
+A Citizen approved to supply entertainment-type Services — photography, videography, DJ, live band, MC — via the same `Service` model ServiceFoxer uses. Public-facing name is **Performer Foxer**. Added 14 Sep 2026, re-keyed from the originally-planned `talentFoxer` to avoid colliding with ServiceFoxer's public name — see `docs/roles-and-spaces.md` §1.
+Code: `roleType` includes `"performerFoxer"`; category values `photography`/`videography`/`dj`/`live_band`/`mc` (plus legacy `entertainment` for pre-migration listings).
+_Avoid_: TalentFoxer (rejected key, collides with ServiceFoxer's public name)
 
 **Foxer**
-Umbrella term for a GearFoxer or ServiceFoxer — anyone supplying inventory. Used when the distinction between the two doesn't matter.
+Umbrella term for a GearFoxer, ServiceFoxer or PerformerFoxer — anyone supplying inventory. Used when the distinction between them doesn't matter. Same grouping as **Provider** in `docs/roles-and-spaces.md`.
 
 **Investor**
 A Citizen approved as a financial stakeholder. Application requires proof of funds and an investment range, unlike operational RoleTypes.
 Code: `roleType` includes `"investor"`.
+
+**Organizer**
+A RoleType a Citizen applies for and is admin-approved to hold, which makes them eligible to be **Appointed** to help run a specific Event or Venue. Holding the role alone grants nothing over any Event or Venue — only an Appointment does.
+_Avoid_: Delegate, staff, co-host
+
+**Mayor**
+The VenueFoxer a Venue belongs to — exactly one per Venue. The only one who can make or revoke Appointments on that Venue, and the only one who sets its prices.
+_Avoid_: Owner, venue owner
+
+**Event Owner**
+The EventFoxer who created an Event — exactly one per Event. The only one who can make or revoke Appointments on that Event, and the only one who controls its pricing and payouts. Stored in code as `Event.organizerId`, a legacy name: the Event Owner is not an Organizer by Appointment.
+_Avoid_: Host, organizer (for the Event Owner) — an Event has one Event Owner and any number of Organizers
+
+**Appointment**
+A Mayor or Event Owner naming an approved Organizer to help run one of their own Venues or Events. They may make any number of Appointments per Event or Venue. It starts from either side (the Mayor or Event Owner invites, or an Organizer requests to join one that accepts requests) and takes effect only once the other side accepts. Either side can end it at any time. The Mayor or Event Owner is always an Organizer of what they own, without applying and without an Appointment.
+_Avoid_: Assignment, delegation
+
+**Check-in Helper**
+Any user a Mayor or Event Owner adds to an Event or Venue solely to check guests in. Needs no RoleType and no admin approval — the lightweight tier beneath Organizer. Every Organizer can also check guests in, so an Organizer is never also added as a Check-in Helper.
+_Avoid_: Door staff, delegate, check-in delegate
+
+**Shared Inbox**
+The one conversation space an Event or Venue has with guests — and, for an Event, with its Suppliers. Every conversation belongs to the Event or Venue, not to whoever replied; its Mayor or Event Owner and every current Organizer read and answer it, and each reply shows who sent it.
+_Avoid_: Organizer inbox, personal thread (for these conversations)
+
+**Supplier**
+Anyone an Event depends on to happen: the Mayor of its booked Venue, and the Foxers booked to supply its Talent or Gear, or bidding to. An Event's Organizers talk to its Suppliers through its Shared Inbox, but only the Event Owner agrees prices with them.
+_Avoid_: Vendor, provider (in conversation; `providerId` in code)
 
 ---
 
@@ -64,7 +97,7 @@ _Avoid_: User ID (that's the internal UUID), account number
 A Citizen's gamification profile. Tracks stamps collected, badges earned, XP earned, and level progress per Path.
 
 **Path**
-A per-RoleType XP progression track. Each Citizen has one Path per role they hold (`user`, `eventFoxer`, `venueFoxer`, `gearFoxer`, `serviceFoxer`, `investor`). Levels and tier labels are independent per Path.
+A per-RoleType XP progression track. Each Citizen has one Path per role they hold (`user`, `eventFoxer`, `venueFoxer`, `gearFoxer`, `serviceFoxer`, `performerFoxer`, `investor`, `organizer`). Levels and tier labels are independent per Path.
 
 **Level**
 A numeric milestone within a Path, earned by accumulating XP. XP required per level scales by 15% per level (`XP_PER_LEVEL = 1000` base). Each Path has named tier labels at milestone levels:
@@ -76,7 +109,9 @@ A numeric milestone within a Path, earned by accumulating XP. XP required per le
 | VenueFoxer | Ward Officer (1) → District Head (3) → City Planner (7) → City Leader (12) → Grand Foxer (18) |
 | GearFoxer | Starter Foxer (1) → Social Butterfly (5) → Event Curator (10) → Master Foxer (15) → Elite Foxer (20) |
 | ServiceFoxer | Starter Foxer (1) → Social Butterfly (5) → Event Curator (10) → Master Foxer (15) → Elite Foxer (20) |
+| PerformerFoxer | Starter Foxer (1) → Social Butterfly (5) → Event Curator (10) → Master Foxer (15) → Elite Foxer (20) |
 | Investor | Seed Funder (1) → Angel Investor (3) → Venture Partner (6) → Major Stakeholder (10) → Elite Investor (15) |
+| Organizer | Crew Member (1) → Stage Manager (3) → Floor Lead (7) → Production Chief (12) → Master Organizer (18) |
 
 **Badge**
 A collectible unlocked by completing specific achievements within a Path. Has a rarity tier: Common, Uncommon, Rare, Epic, Legendary. Rarity determines visual treatment (color/glow).
@@ -113,6 +148,14 @@ _Avoid_: Host fee, commission
 
 **Platform Fee**
 The percentage the platform takes on every transaction, added on top of (itemsTotal + Host Markup). Not carved out of any role's earnings.
+
+**Marketplace**
+The platform-wide pool of registered, available Venues, Assets, and Services any Citizen or Foxer can browse, independent of any Event Template. Two existing views already cover it: foxer-grouped (`/search`, browsing Foxers as profiles — currently missing a VenueFoxer section) and item-grouped (`GET /venues` / `/asset` / `/service`, the same source an EventFoxer's own Event Template builder already browses). A Swap reuses the item-grouped view, filtered to the category being replaced.
+_Avoid_: Search (that's one view of the Marketplace, not the concept itself), Directory
+
+**Swap**
+A citizen's request, made while browsing an Event Template's proposed package (before submitting a Match Request), to replace one of that Template's attached items (Venue, Asset, or Service) with a same-category alternative picked from the Marketplace — e.g. swapping a Template's included florist Service for a different ServiceFoxer's florist listing. Scoped to same-category alternatives only, not a free-for-all browse. A Match Request may carry any number of Swaps, submitted as structured data (not free text) so the EventFoxer can review and click through to each exact replacement. The original, published Event Template is never modified by a Swap — it stays intact for other Citizens to book as-is. Estimated cost recalculates using the same Host Markup formula against the replacement item's price. The EventFoxer accepts or declines the whole Match Request (Swaps included) — there is no separate per-Swap approval state; disagreements are worked out over the Match's chat before a decision is made. An accepted Swap attaches its outside item directly (by id), the same way Event Template building already works — it does not require a Foxer↔Foxer Match with the outside supplier first.
+_Avoid_: Substitution, replacement (use Swap)
 
 **Match**
 A confirmed two-way connection between any two platform participants. The same entity covers two collaboration patterns:
@@ -153,4 +196,4 @@ Those belong in code comments, or in the ADRs — which live in the **API** repo
 - `0002-stripe-connect-payouts.md`
 
 Ongoing engineering trackers are in [`docs/`](./docs/); start at
-[`docs/TOMORROW.md`](./docs/TOMORROW.md).
+[`docs/NEXT.md`](./docs/NEXT.md).

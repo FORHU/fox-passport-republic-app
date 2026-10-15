@@ -2,7 +2,9 @@
 
 import * as React from "react";
 
-const MOBILE_BREAKPOINT = 768;
+// The navigation breakpoint across FoxPassport is aligned at 1024 (lg):
+// Mobile floating capsule bottom nav (< 1024) vs Desktop pill header nav (>= 1024).
+const MOBILE_BREAKPOINT = 1024;
 
 export function useIsMobile() {
   const [isMobile, setIsMobile] = React.useState<boolean | undefined>(

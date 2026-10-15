@@ -1,10 +1,9 @@
-/* eslint-disable @next/next/no-img-element -- mocking next/image for jsdom */
 import "@testing-library/jest-dom";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen } from "@testing-library/react";
 
 vi.mock("next/image", () => ({
-  default: ({ alt, ...props }: React.ComponentProps<"img">) => (
+  default: ({ alt, priority: _priority, ...props }: any) => (
     <img src="mock.png" alt={alt ?? ""} {...props} />
   ),
 }));
@@ -26,7 +25,7 @@ const mockAccess = {
   canManageServices: true,
 };
 
-vi.mock("@/features/auth/hooks/useRoleAccess", () => ({
+vi.mock("@/shared/auth/useRoleAccess", () => ({
   useRoleAccess: () => mockAccess,
   RoleAccess: {},
 }));
@@ -38,13 +37,21 @@ const mockAuthState = {
 
 type MockAuthState = typeof mockAuthState;
 
-vi.mock("@/features/auth/store/useAuthStore", () => ({
+vi.mock("@/shared/auth/useAuthStore", () => ({
   useAuthStore: <T,>(selector?: (s: MockAuthState) => T) =>
     selector ? selector(mockAuthState) : mockAuthState,
 }));
 
-vi.mock("@/features/notifications/components/NotificationBell", () => ({
+vi.mock("@/shared/components/layout/NotificationBell", () => ({
   default: () => <div data-testid="notification-bell" />,
+}));
+
+// UserMenuButton (rendered inside DashboardHeader's user menu) reads this to
+// badge the hamburger icon with unread messages — a real query, so it needs
+// mocking here the same way NotificationBell's own query dependency is
+// avoided above.
+vi.mock("@/shared/hooks/useUnreadMessagesCount", () => ({
+  useUnreadMessagesCount: () => ({ unreadCount: 0, isLoading: false }),
 }));
 
 import { DashboardHeader } from "@/features/dashboard/components/DashboardHeader";

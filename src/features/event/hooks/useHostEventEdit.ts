@@ -1,13 +1,17 @@
-/* eslint-disable @typescript-eslint/no-unused-vars, react-hooks/exhaustive-deps */
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { useAuthStore } from "@/features/auth/store/useAuthStore";
-import { useEventBuilder } from "@/features/event/hooks/useEventBuilder";
+import { useAuthStore } from "@/shared/auth/useAuthStore";
+import {
+  useEventBuilder,
+  splitCategoryOtherNote,
+  withCategoryOtherNote,
+} from "@/features/event/hooks/useEventBuilder";
 import {
   fetchEventsByHostId,
+  fetchOrganizerEvents,
   updateEvent,
   submitEventTemplate,
 } from "@/features/event/api/events";
@@ -38,19 +42,6 @@ function normalizeLower(value: unknown) {
     .toLowerCase()
     .replace(/_/g, " ")
     .replace(/\s+/g, " ");
-}
-
-function normalizeEventStatusToBackend(value: unknown): string {
-  const raw = normalizeLower(value);
-
-  // Backend EventStatus enum (prisma/schema.prisma): draft | pending | ongoing | completed | cancelled
-  if (!raw) return "draft";
-  if (raw.includes("draft")) return "draft";
-  if (raw.includes("pend")) return "pending";
-  if (raw.includes("ongoing")) return "ongoing";
-  if (raw.includes("cancel")) return "cancelled";
-  if (raw.includes("complete")) return "completed";
-  return "draft";
 }
 
 function mapEventTypeToCategory(eventType: unknown): string {
@@ -189,7 +180,9 @@ export function useHostEventEdit(eventId: string) {
 
   const [isPrefilling, setIsPrefilling] = useState(true);
   const [prefillError, setPrefillError] = useState<string | null>(null);
-  const [existingEndDatetime, setExistingEndDatetime] = useState<unknown>(null);
+  const [activeEventId, setActiveEventId] = useState<string | null>(null);
+  const existingVenueIdRef = useRef<string | null>(null);
+  const existingEndDatetimeRef = useRef<string | null>(null);
 
   const backHref = "/creator-dashboard/events";
 
@@ -200,6 +193,18 @@ export function useHostEventEdit(eventId: string) {
   const submitEvent = async (targetStatus: string) => {
     if (!builder.eventTitle) {
       toast.error("Please add an event title");
+      return;
+    }
+    if (targetStatus === "pending" && !builder.category) {
+      toast.error("Please select a category");
+      return;
+    }
+    if (
+      targetStatus === "pending" &&
+      builder.category === "Other" &&
+      !builder.categoryOther.trim()
+    ) {
+      toast.error("Please specify the event category");
       return;
     }
 
@@ -224,9 +229,14 @@ export function useHostEventEdit(eventId: string) {
         .replace(/_/g, " ");
       const eventType = safeEventTypeMapping[rawCategory] || "other";
 
+      const description = withCategoryOtherNote(
+        builder.description,
+        builder.category,
+        builder.categoryOther,
+      );
       const payload: Record<string, unknown> = {
         name: builder.eventTitle,
-        description: builder.description || undefined,
+        description: description || undefined,
         category: eventType,
         isPublic: false,
         maxAttendees:
@@ -246,8 +256,7 @@ export function useHostEventEdit(eventId: string) {
         const venueItem = builder.baseItems.find((i) =>
           VENUE_ICONS.includes(i.icon),
         );
-        const venueId =
-          venueItem?.id ?? (builder as any).existingVenueId ?? null;
+        const venueId = venueItem?.id ?? existingVenueIdRef.current ?? null;
         if (venueId) {
           try {
             await api.post(`/event-templates/${eventId}/venues`, {
@@ -327,10 +336,9 @@ export function useHostEventEdit(eventId: string) {
         if (cancelled) return;
 
         // Keep originals for update payload consistency.
-        setExistingEndDatetime(
-          found?.endDatetime ?? found?.end_datetime ?? null,
-        );
-        (builder as { existingVenueId?: string | null }).existingVenueId =
+        existingEndDatetimeRef.current =
+          found?.endDatetime ?? found?.end_datetime ?? null;
+        existingVenueIdRef.current =
           found?.venueId ??
           (found?.venue as Record<string, unknown>)?.id ??
           null;
@@ -343,10 +351,23 @@ export function useHostEventEdit(eventId: string) {
         builder.setShowGuide(false);
 
         builder.setEventTitle(found?.name ?? found?.title ?? "Untitled Event");
-        builder.setDescription(found?.description ?? "");
-        builder.setCategory(
-          mapEventTypeToCategory(found?.eventType ?? found?.type ?? ""),
+        const resolvedCategory = mapEventTypeToCategory(
+          found?.eventType ?? found?.type ?? "",
         );
+        builder.setCategory(resolvedCategory);
+        // "Other" categories fold their custom label into the description on
+        // save (the backend category is a fixed enum) — parse it back out so
+        // editing shows the original "please specify" text, not a stray note
+        // stuck at the top of the description.
+        if (resolvedCategory === "Other") {
+          const { categoryOther, description } = splitCategoryOtherNote(
+            found?.description ?? "",
+          );
+          builder.setCategoryOther(categoryOther);
+          builder.setDescription(description);
+        } else {
+          builder.setDescription(found?.description ?? "");
+        }
         builder.setDate(
           toDatetimeLocalValue(
             found?.startDatetime ?? found?.start_datetime ?? found?.date,
@@ -359,6 +380,12 @@ export function useHostEventEdit(eventId: string) {
             found?.venue?.location ??
             "",
         );
+        // Without these the builder store kept whatever target location it
+        // last held (it persists across events), and saving an edit sent
+        // that instead of this template's own.
+        builder.setTargetCountry(found?.targetCountry ?? "");
+        builder.setTargetState(found?.targetState ?? "");
+        builder.setTargetCity(found?.targetCity ?? "");
         builder.setMaxAttendees(
           Number(found?.maxAttendees ?? found?.capacity ?? 100) || 100,
         );
@@ -410,6 +437,20 @@ export function useHostEventEdit(eventId: string) {
             builder.addBaseItem(eventServiceToResourceItem(es));
           });
         }
+        // Check if there is an active/booked Event instance matching this template
+        try {
+          const orgEvents = await fetchOrganizerEvents(hostId);
+          const matchedEvent = orgEvents.find(
+            (e: any) =>
+              String(e.templateId) === String(found.id) ||
+              String(e.id) === String(found.id),
+          );
+          if (matchedEvent) {
+            setActiveEventId(String(matchedEvent.id));
+          }
+        } catch {
+          // non-fatal: if no scheduled event, delegates can be managed once booked
+        }
       } catch (error) {
         console.error("Failed to prefill event edit:", error);
         if (!cancelled) setPrefillError("Failed to load event.");
@@ -425,6 +466,7 @@ export function useHostEventEdit(eventId: string) {
 
   return {
     ...builder,
+    activeEventId,
     handleBack,
     handlePublish,
     handleSaveDraft,

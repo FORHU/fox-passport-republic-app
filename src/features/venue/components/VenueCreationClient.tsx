@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import RequireAuth from "@/features/auth/components/RequireAuth";
+import RequireAuth from "@/shared/auth/RequireAuth";
 import { useVenueBuilder } from "@/features/venue/hooks/useVenueBuilder";
 import { useVenueBuilderStore } from "@/features/venue/store/useVenueBuilderStore";
 import {
@@ -15,17 +15,20 @@ import {
 
 export default function VenueCreationClient() {
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
+  const [mobileTab, setMobileTab] = useState<
+    "details" | "resources" | "revenue"
+  >("details");
   const resetStore = useVenueBuilderStore((s) => s.reset);
 
   useEffect(() => {
     resetStore();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const {
     venueName,
     description,
     venueType,
+    venueTypeOther,
     capacity,
     location,
     city,
@@ -33,12 +36,14 @@ export default function VenueCreationClient() {
     country,
     lat,
     lng,
+    boundary,
     gallery,
     cancellationPolicyId,
     includedItems,
     addonItems,
     baseRate,
     occupancyRate,
+    extraGuestRate,
     activeCategory,
     searchQuery,
     showGuide,
@@ -51,6 +56,7 @@ export default function VenueCreationClient() {
     setVenueName,
     setDescription,
     setVenueType,
+    setVenueTypeOther,
     setCapacity,
     setLocation,
     setCity,
@@ -58,11 +64,13 @@ export default function VenueCreationClient() {
     setCountry,
     setLat,
     setLng,
+    setBoundary,
     setCancellationPolicyId,
     removeIncludedItem,
     removeAddonItem,
     setBaseRate,
     setOccupancyRate,
+    setExtraGuestRate,
     setActiveCategory,
     setSearchQuery,
     setShowGuide,
@@ -101,7 +109,7 @@ export default function VenueCreationClient() {
         baseRate={baseRate}
       />
 
-      <div className="fixed inset-0 z-60 bg-[#02040a] text-white flex flex-col font-body">
+      <div className="fixed inset-0 z-60 bg-canvas text-white flex flex-col font-body">
         <VenueHeader
           venueName={venueName}
           isSubmitting={isSubmitting}
@@ -110,29 +118,86 @@ export default function VenueCreationClient() {
           onPublish={handlePublish}
         />
 
-        <div className="flex-1 flex overflow-hidden">
-          <VenueResourcePalette
-            activeCategory={activeCategory}
-            searchQuery={searchQuery}
-            filteredResources={filteredResources}
-            catalogItems={catalogItems}
-            newItem={newItem}
-            currentCategoryLabel={currentCategoryLabel}
-            onCategoryChange={setActiveCategory}
-            onSearchChange={setSearchQuery}
-            onNewItemChange={setNewItem}
-            onAddCustomItem={handleAddCustomItem}
-            onAddCatalogItem={handleAddCatalogItem}
-            onRemoveResource={handleRemoveCustomResource}
-            onDragStart={handleDragStart}
-          />
+        {/* Mobile View Selector Tabs */}
+        <div className="xl:hidden flex items-center bg-surface border-b border-white/10 px-3 py-2 gap-2 shrink-0">
+          <button
+            type="button"
+            onClick={() => setMobileTab("details")}
+            className={`flex-1 py-2 px-2 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
+              mobileTab === "details"
+                ? "bg-accent text-black shadow-md"
+                : "text-white/60 hover:text-white"
+            }`}
+          >
+            <span className="material-symbols-outlined text-[16px]">map</span>
+            <span>Details & Map</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => setMobileTab("resources")}
+            className={`flex-1 py-2 px-2 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
+              mobileTab === "resources"
+                ? "bg-accent text-black shadow-md"
+                : "text-white/60 hover:text-white"
+            }`}
+          >
+            <span className="material-symbols-outlined text-[16px]">
+              category
+            </span>
+            <span>Resources</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => setMobileTab("revenue")}
+            className={`flex-1 py-2 px-2 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
+              mobileTab === "revenue"
+                ? "bg-accent text-black shadow-md"
+                : "text-white/60 hover:text-white"
+            }`}
+          >
+            <span className="material-symbols-outlined text-[16px]">
+              payments
+            </span>
+            <span>Pricing</span>
+          </button>
+        </div>
 
-          <main className="flex-1 overflow-y-auto p-8 bg-[#02040a] flex gap-8">
-            <div className="flex-1 max-w-4xl mx-auto space-y-8">
+        <div className="flex-1 flex overflow-hidden">
+          {/* Column 1: Resource Palette (visible on desktop or when resources tab active) */}
+          <div
+            className={`${
+              mobileTab === "resources" ? "flex w-full" : "hidden"
+            } xl:flex overflow-hidden shrink-0`}
+          >
+            <VenueResourcePalette
+              activeCategory={activeCategory}
+              searchQuery={searchQuery}
+              filteredResources={filteredResources}
+              catalogItems={catalogItems}
+              newItem={newItem}
+              currentCategoryLabel={currentCategoryLabel}
+              onCategoryChange={setActiveCategory}
+              onSearchChange={setSearchQuery}
+              onNewItemChange={setNewItem}
+              onAddCustomItem={handleAddCustomItem}
+              onAddCatalogItem={handleAddCatalogItem}
+              onRemoveResource={handleRemoveCustomResource}
+              onDragStart={handleDragStart}
+            />
+          </div>
+
+          {/* Column 2: Main Details Form & Polygon Map */}
+          <main
+            className={`${
+              mobileTab === "details" ? "flex" : "hidden"
+            } xl:flex flex-1 overflow-y-auto p-4 sm:p-8 bg-canvas gap-8`}
+          >
+            <div className="flex-1 min-w-0 space-y-8">
               <VenueDetailsForm
                 venueName={venueName}
                 description={description}
                 venueType={venueType}
+                venueTypeOther={venueTypeOther}
                 capacity={capacity}
                 location={location}
                 city={city}
@@ -140,12 +205,14 @@ export default function VenueCreationClient() {
                 country={country}
                 lat={lat}
                 lng={lng}
+                boundary={boundary}
                 gallery={gallery}
                 showGuide={showGuide}
                 cancellationPolicyId={cancellationPolicyId}
                 onNameChange={setVenueName}
                 onDescriptionChange={setDescription}
                 onTypeChange={setVenueType}
+                onTypeOtherChange={setVenueTypeOther}
                 onCapacityChange={setCapacity}
                 onLocationChange={setLocation}
                 onCityChange={setCity}
@@ -155,6 +222,7 @@ export default function VenueCreationClient() {
                   setLat(lat);
                   setLng(lng);
                 }}
+                onBoundaryChange={setBoundary}
                 onCancellationPolicyChange={setCancellationPolicyId}
                 onAddImage={addImageToGallery}
                 onRemoveImage={removeImageFromGallery}
@@ -181,16 +249,26 @@ export default function VenueCreationClient() {
             </div>
           </main>
 
-          <RevenueProjector
-            baseRate={baseRate}
-            occupancyRate={occupancyRate}
-            monthlyBase={revenue.monthlyBase}
-            monthlyAddons={revenue.monthlyAddons}
-            total={revenue.total}
-            onBaseRateChange={setBaseRate}
-            onOccupancyRateChange={setOccupancyRate}
-            onPreview={() => setIsPreviewOpen(true)}
-          />
+          {/* Column 3: Revenue & Pricing */}
+          <div
+            className={`${
+              mobileTab === "revenue" ? "flex w-full" : "hidden"
+            } xl:flex shrink-0 overflow-y-auto`}
+          >
+            <RevenueProjector
+              baseRate={baseRate}
+              occupancyRate={occupancyRate}
+              extraGuestRate={extraGuestRate}
+              capacity={capacity}
+              monthlyBase={revenue.monthlyBase}
+              monthlyAddons={revenue.monthlyAddons}
+              total={revenue.total}
+              onBaseRateChange={setBaseRate}
+              onOccupancyRateChange={setOccupancyRate}
+              onExtraGuestRateChange={setExtraGuestRate}
+              onPreview={() => setIsPreviewOpen(true)}
+            />
+          </div>
         </div>
       </div>
     </RequireAuth>

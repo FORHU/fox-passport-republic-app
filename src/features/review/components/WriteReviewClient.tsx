@@ -22,7 +22,7 @@ export default function WriteReviewClient({ booking }: WriteReviewClientProps) {
     booking.venueId || booking.event?.venueId || booking.targetId || "";
   const targetType = booking.targetType || "venue";
   const startDate = booking.startAt
-    ? new Date(booking.startAt).toLocaleDateString("en-PH", {
+    ? new Date(booking.startAt).toLocaleDateString(undefined, {
         month: "short",
         day: "numeric",
         year: "numeric",

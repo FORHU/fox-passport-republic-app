@@ -12,11 +12,49 @@ import {
   ResourceItem,
 } from "@/features/event/data/eventBuilderData";
 import { useFileUpload } from "@/shared/hooks/useFileUpload";
+import { useAuthStore } from "@/shared/auth/useAuthStore";
+import { countWords } from "@/features/event/utils/textStats";
+import { fetchMyAffiliations } from "@/shared/api/venue-affiliations";
+
+// `category` on the backend is a fixed enum (corporate/birthday/wedding/
+// social/other) — unlike a venue's free-text category, there's no field to
+// send a custom "Other" label to. It's folded into the description instead,
+// with a stable prefix so an edit reload can parse it back out.
+const CATEGORY_OTHER_PREFIX_RE = /^Event type: (.+?)\n\n/;
+
+export function withCategoryOtherNote(
+  description: string,
+  category: string,
+  categoryOther: string,
+): string {
+  if (category !== "Other" || !categoryOther.trim()) return description;
+  return `Event type: ${categoryOther.trim()}\n\n${description}`;
+}
+
+export function splitCategoryOtherNote(description: string): {
+  categoryOther: string;
+  description: string;
+} {
+  const match = description.match(CATEGORY_OTHER_PREFIX_RE);
+  if (!match) return { categoryOther: "", description };
+  return {
+    categoryOther: match[1],
+    description: description.slice(match[0].length),
+  };
+}
+
+export interface BlueprintHealthItem {
+  id: "title" | "category" | "venue" | "gallery" | "description";
+  label: string;
+  met: boolean;
+  required: boolean;
+}
 
 export function useEventBuilder() {
   const router = useRouter();
   const store = useEventBuilderStore();
   const { uploadFile } = useFileUpload();
+  const currentUserId = useAuthStore((s) => s.user?.id);
 
   const [realResources, setRealResources] = useState<
     Record<string, ResourceItem[]>
@@ -60,8 +98,37 @@ export function useEventBuilder() {
               country: v.country as string | undefined,
               lat: v.lat as number | null | undefined,
               lng: v.lng as number | null | undefined,
+              mayorId: v.mayorId as string | undefined,
             }));
         }
+
+        // A venue may only be added to the Core Package if the current user
+        // owns it, or holds an approved affiliation with "template:attach" —
+        // see EventTemplateSvc.attachVenue on the API for the enforcing
+        // check this only mirrors for UX. Owned venues never need a lookup.
+        const affiliationByVenueId = new Map<string, "approved" | "pending">();
+        try {
+          const mine = await fetchMyAffiliations();
+          for (const aff of mine.asEventFoxer) {
+            if (aff.status === "approved") {
+              affiliationByVenueId.set(aff.venueId, "approved");
+            } else if (
+              aff.status === "pending" &&
+              !affiliationByVenueId.has(aff.venueId)
+            ) {
+              affiliationByVenueId.set(aff.venueId, "pending");
+            }
+          }
+        } catch (error) {
+          console.error("Error fetching venue affiliations:", error);
+        }
+        venues = venues.map((v) => ({
+          ...v,
+          affiliationStatus:
+            v.mayorId && v.mayorId === currentUserId
+              ? "approved"
+              : (affiliationByVenueId.get(v.id) ?? "none"),
+        }));
 
         // Fetch Assets/Services
         const [assetResp, serviceResp] = await Promise.all([
@@ -79,7 +146,14 @@ export function useEventBuilder() {
             const item: ResourceItem = {
               id: a.id,
               name: a.name,
-              cost: a.price || 5000,
+              // `price` comes off the wire as a Prisma Decimal, which
+              // serializes to a numeric *string* (e.g. "5000.00") — left
+              // un-wrapped, financials' `reduce((a, i) => a + price(i), 0)`
+              // silently switches to string concatenation the moment one
+              // of these hits it, producing a corrupted total (e.g.
+              // "05000" + "1600" instead of 6600). Number(...) here matches
+              // how the venue mapping above already handles the same field.
+              cost: Number(a.price) || 5000,
               icon: "inventory_2",
               desc: a.description || "Real asset from the database.",
               imageUrl: a.images?.[0]?.url ?? undefined,
@@ -126,7 +200,8 @@ export function useEventBuilder() {
             const item: ResourceItem = {
               id: s.id,
               name: s.name,
-              cost: s.price || 7500,
+              // Same string-Decimal issue as the asset mapping above.
+              cost: Number(s.price) || 7500,
               icon: "work_outline",
               desc: s.description || "Premium service for your event.",
               imageUrl: s.images?.[0]?.url ?? undefined,
@@ -139,17 +214,36 @@ export function useEventBuilder() {
                 ? s.category.toLowerCase()
                 : s.category?.slug?.toLowerCase();
 
-            if (category === "entertainment") {
-              talent.push({ ...item, icon: "music_note" });
-            } else if (
-              ["planning", "catering", "photography", "videography"].includes(
-                category,
-              )
+            // performerFoxer-owned categories (see PERFORMER_SERVICE_CATEGORIES
+            // in the api's src/types/permissions.ts) land in the talent bucket
+            // regardless of icon — "entertainment" is the legacy/paused value,
+            // the rest are the granular categories new listings use.
+            if (
+              [
+                "entertainment",
+                "photography",
+                "videography",
+                "dj",
+                "live_band",
+                "mc",
+              ].includes(category)
             ) {
-              const iconMap: Record<string, string> = {
-                catering: "restaurant",
+              const talentIconMap: Record<string, string> = {
+                entertainment: "music_note",
                 photography: "camera_alt",
                 videography: "videocam",
+                dj: "music_note",
+                live_band: "music_note",
+                mc: "mic",
+              };
+              talent.push({
+                ...item,
+                resourceType: "talent",
+                icon: talentIconMap[category] || "music_note",
+              });
+            } else if (["planning", "catering"].includes(category)) {
+              const iconMap: Record<string, string> = {
+                catering: "restaurant",
                 planning: "event_note",
               };
               service.push({
@@ -185,28 +279,124 @@ export function useEventBuilder() {
     );
   }, [store.activeCategory, store.searchQuery, realResources]);
 
-  // Calculate financials
+  // Calculate financials. Uses each item's agreedPrice when the host has set
+  // one (the same value that gets synced to the backend in handleSaveDraft /
+  // handlePublish), falling back to the listing price otherwise — so the
+  // numbers shown here never drift from what's actually being negotiated.
   const financials = useMemo(() => {
-    const baseCost = store.baseItems.reduce((acc, item) => acc + item.cost, 0);
+    // Coerced with Number(...) at the point of use, not just at fetch time
+    // (see the Number(...) wrap added around a.price/s.price above) —
+    // `baseItems` is persisted to localStorage (see the store's `persist`
+    // middleware), so an item added before that fix stays in a citizen's
+    // browser with a string `cost` indefinitely. Without this, `reduce`
+    // silently degrades into string concatenation the moment one of these
+    // hits it, producing a corrupted total no re-fetch can repair.
+    const price = (item: ResourceItem) =>
+      Number(item.agreedPrice ?? item.cost) || 0;
+
+    const listingCost = store.baseItems.reduce(
+      (a, i) => a + (Number(i.cost) || 0),
+      0,
+    );
+    const baseCost = store.baseItems.reduce((a, i) => a + price(i), 0);
     const suggestedPrice = baseCost * (1 + store.targetMargin / 100);
 
     const venueCost = store.baseItems
-      .filter((i) => VENUE_ICONS.includes(i.icon))
-      .reduce((a, b) => a + b.cost, 0);
+      .filter((i) => i.resourceType === "venue" || VENUE_ICONS.includes(i.icon))
+      .reduce((a, i) => a + price(i), 0);
 
     const talentCost = store.baseItems
-      .filter((i) => TALENT_ICONS.includes(i.icon))
-      .reduce((a, b) => a + b.cost, 0);
+      .filter(
+        (i) => i.resourceType === "talent" || TALENT_ICONS.includes(i.icon),
+      )
+      .reduce((a, i) => a + price(i), 0);
 
-    return { baseCost, suggestedPrice, venueCost, talentCost };
+    // Everything that isn't a venue or talent item — services, equipment,
+    // decorations, etc. Filtered explicitly (rather than derived as
+    // baseCost - venueCost - talentCost) so these three buckets are always
+    // a true partition of baseCost and stay reconciled with the total shown
+    // in the UI even if new resource categories are added later.
+    const serviceCost = store.baseItems
+      .filter(
+        (i) =>
+          i.resourceType !== "venue" &&
+          !VENUE_ICONS.includes(i.icon) &&
+          i.resourceType !== "talent" &&
+          !TALENT_ICONS.includes(i.icon),
+      )
+      .reduce((a, i) => a + price(i), 0);
+
+    return {
+      baseCost,
+      listingCost,
+      suggestedPrice,
+      venueCost,
+      talentCost,
+      serviceCost,
+    };
   }, [store.baseItems, store.targetMargin]);
 
-  // Calculate blueprint health
+  // Blueprint health: a checklist mirroring what actually gates publishing
+  // (Title, Category, and an approved venue — see handlePublish's own
+  // validation) plus two recommended-but-not-required polish items (a
+  // gallery of 5+ images and a 100+ word description, matching the
+  // textarea's own word-count requirement). `readyToPublish` only depends
+  // on the required rows, so it can never disagree with handlePublish.
   const blueprintHealth = useMemo(() => {
-    if (financials.baseCost > 0 && store.gallery.length >= 5) return 100;
-    if (financials.baseCost > 0) return 60;
-    return 10;
-  }, [financials.baseCost, store.gallery.length]);
+    const hasApprovedVenue = store.baseItems.some(
+      (i) =>
+        (i.resourceType === "venue" || VENUE_ICONS.includes(i.icon)) &&
+        (!i.affiliationStatus || i.affiliationStatus === "approved"),
+    );
+
+    const items: BlueprintHealthItem[] = [
+      {
+        id: "title",
+        label: "Event title",
+        met: Boolean(store.eventTitle),
+        required: true,
+      },
+      {
+        id: "category",
+        label: "Category selected",
+        met: Boolean(store.category),
+        required: true,
+      },
+      {
+        id: "venue",
+        label: "Approved venue attached",
+        met: hasApprovedVenue,
+        required: true,
+      },
+      {
+        id: "gallery",
+        label: "5+ gallery images",
+        met: store.gallery.length >= 5,
+        required: false,
+      },
+      {
+        id: "description",
+        label: "100+ word description",
+        met: countWords(store.description) >= 100,
+        required: false,
+      },
+    ];
+
+    const score = Math.round(
+      (items.filter((i) => i.met).length / items.length) * 100,
+    );
+    const readyToPublish = items
+      .filter((i) => i.required)
+      .every((i) => i.met);
+
+    return { score, items, readyToPublish };
+  }, [
+    store.eventTitle,
+    store.category,
+    store.baseItems,
+    store.gallery.length,
+    store.description,
+  ]);
 
   // Drag handlers
   const handleDragStart = useCallback(
@@ -229,43 +419,76 @@ export function useEventBuilder() {
     store.setIsDragOver(false);
   }, [store]);
 
+  const addResourceToCore = useCallback(
+    (item: ResourceItem) => {
+      // `store.addBaseItem` already no-ops on a duplicate id, but it did so
+      // silently — this call site still fired the "Added to Core Package"
+      // success toast regardless, telling the host something happened when
+      // nothing did. Catch it here instead, before the venue-specific
+      // checks below, so every resource type (talent, service, equipment)
+      // gets an honest "already added" notice.
+      const alreadyAdded = store.baseItems.some((i) => i.id === item.id);
+      if (alreadyAdded) {
+        toast.info(`${item.name} is already in your Core Package`);
+        store.setDraggedItem(null);
+        store.setIsDragOver(false);
+        return false;
+      }
+
+      // Only one venue allowed in the Core Package
+      if (item.resourceType === "venue") {
+        if (item.affiliationStatus && item.affiliationStatus !== "approved") {
+          toast.error(
+            item.affiliationStatus === "pending"
+              ? "Your affiliation with this venue is still pending approval."
+              : "Apply to this venue first — you need an approved affiliation to host here.",
+          );
+          store.setDraggedItem(null);
+          store.setIsDragOver(false);
+          return false;
+        }
+
+        const alreadyHasVenue = store.baseItems.some(
+          (i) => i.resourceType === "venue" || VENUE_ICONS.includes(i.icon),
+        );
+        if (alreadyHasVenue) {
+          toast.error(
+            "Only one venue can be in the Core Package. Remove the existing venue first.",
+          );
+          store.setDraggedItem(null);
+          store.setIsDragOver(false);
+          return false;
+        }
+      }
+
+      store.addBaseItem(item);
+      toast.success(`Added ${item.name} to Core Package`);
+
+      // Auto-fill location fields when the first venue is added and location is empty
+      if (item.resourceType === "venue" && !store.location) {
+        const label = [item.city, item.state].filter(Boolean).join(", ");
+        if (label) store.setLocation(label);
+        if (item.city) store.setTargetCity(item.city);
+        if (item.state) store.setTargetState(item.state);
+        if (item.country) store.setTargetCountry(item.country);
+        if (item.lat != null) store.setLat(item.lat);
+        if (item.lng != null) store.setLng(item.lng);
+      }
+      return true;
+    },
+    [store],
+  );
+
   const handleDrop = useCallback(
     (e: React.DragEvent) => {
       e.preventDefault();
       store.setIsDragOver(false);
       if (store.draggedItem) {
-        const item = store.draggedItem;
-
-        // Only one venue allowed in the Core Package
-        if (item.resourceType === "venue") {
-          const alreadyHasVenue = store.baseItems.some(
-            (i) => i.resourceType === "venue" || VENUE_ICONS.includes(i.icon),
-          );
-          if (alreadyHasVenue) {
-            toast.error(
-              "Only one venue can be in the Core Package. Remove the existing venue first.",
-            );
-            store.setDraggedItem(null);
-            store.setIsDragOver(false);
-            return;
-          }
-        }
-
-        store.addBaseItem(item);
-        // Auto-fill location fields when the first venue is dropped and location is empty
-        if (item.resourceType === "venue" && !store.location) {
-          const label = [item.city, item.state].filter(Boolean).join(", ");
-          if (label) store.setLocation(label);
-          if (item.city) store.setTargetCity(item.city);
-          if (item.state) store.setTargetState(item.state);
-          if (item.country) store.setTargetCountry(item.country);
-          if (item.lat != null) store.setLat(item.lat);
-          if (item.lng != null) store.setLng(item.lng);
-        }
+        addResourceToCore(store.draggedItem);
       }
       store.setDraggedItem(null);
     },
-    [store],
+    [store, addResourceToCore],
   );
 
   // Gallery handlers
@@ -327,9 +550,14 @@ export function useEventBuilder() {
           }
         }
 
+        const description = withCategoryOtherNote(
+          store.description,
+          store.category,
+          store.categoryOther,
+        );
         const payload: Record<string, unknown> = {
           name: store.eventTitle,
-          description: store.description || undefined,
+          description: description || undefined,
           category: eventType,
           isPublic: false,
           maxAttendees: store.maxAttendees > 0 ? store.maxAttendees : undefined,
@@ -557,16 +785,30 @@ export function useEventBuilder() {
     const missing: string[] = [];
     if (!store.eventTitle) missing.push("Event Title");
     if (!store.category) missing.push("Category");
+    if (store.category === "Other" && !store.categoryOther.trim()) {
+      missing.push("Event Category (please specify)");
+    }
     if (missing.length > 0) {
       toast.error(`Please fill in: ${missing.join(", ")}`);
       return;
     }
 
-    const venueItem =
-      store.baseItems.find((i) => VENUE_ICONS.includes(i.icon)) ||
-      realResources.venue[0];
+    // No fallback to realResources.venue[0]: publishing must use the venue
+    // the organizer actually chose, never a silently-picked default — see
+    // the venue-affiliation gating work this replaced.
+    const venueItem = store.baseItems.find(
+      (i) => i.resourceType === "venue" || VENUE_ICONS.includes(i.icon),
+    );
     if (!venueItem) {
       toast.error("Please select a venue for your event");
+      return;
+    }
+    if (venueItem.affiliationStatus && venueItem.affiliationStatus !== "approved") {
+      toast.error(
+        venueItem.affiliationStatus === "pending"
+          ? "Your affiliation with this venue is still pending approval — you can't publish until it's approved."
+          : "You need an approved affiliation with this venue's owner before publishing.",
+      );
       return;
     }
 
@@ -598,9 +840,14 @@ export function useEventBuilder() {
         }
       }
 
+      const publishDescription = withCategoryOtherNote(
+        store.description,
+        store.category,
+        store.categoryOther,
+      );
       const payload: Record<string, unknown> = {
         name: store.eventTitle,
-        description: store.description || "Event created via Creator Studio.",
+        description: publishDescription || "Event created via Creator Studio.",
         category: eventType,
         isPublic: false,
         targetCity: store.targetCity || undefined,
@@ -667,7 +914,7 @@ export function useEventBuilder() {
     } finally {
       store.setIsSubmitting(false);
     }
-  }, [store, router, realResources, uploadFile]);
+  }, [store, router, uploadFile]);
 
   return {
     // State
@@ -681,6 +928,7 @@ export function useEventBuilder() {
     handleDragOver,
     handleDragLeave,
     handleDrop,
+    addResourceToCore,
     addImageToGallery,
     handleBack,
     handleSaveDraft,

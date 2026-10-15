@@ -1,6 +1,7 @@
 ﻿"use client";
 
 import React, { useRef, useState } from "react";
+import { toast } from "sonner";
 import { useFileUpload } from "@/shared/hooks/useFileUpload";
 import {
   Upload,
@@ -16,6 +17,14 @@ interface FileUploaderProps {
   onUploadComplete: (fileId: string) => void;
   accept?: string;
   maxSizeMB?: number;
+  /** Returns an error message to reject the file (e.g. duplicate check), or null to allow it. */
+  validateFile?: (file: File) => string | null;
+  /** Called once a file has been picked and passed validation, before upload starts. */
+  onFileSelected?: (file: File) => void;
+  /** Called when the slot is cleared, either manually or after a failed/rejected selection. */
+  onFileCleared?: () => void;
+  /** An identity document: stored in the private bucket, never at a public URL. */
+  private?: boolean;
 }
 
 export default function FileUploader({
@@ -23,8 +32,12 @@ export default function FileUploader({
   onUploadComplete,
   accept = "image/*,application/pdf",
   maxSizeMB = 10,
+  validateFile,
+  onFileSelected,
+  onFileCleared,
+  private: isPrivate = false,
 }: FileUploaderProps) {
-  const { uploadFile } = useFileUpload();
+  const { uploadFile, uploadPrivateFile } = useFileUpload();
   const [fileName, setFileName] = useState<string | null>(null);
   const [status, setStatus] = useState<
     "idle" | "uploading" | "success" | "error"
@@ -43,26 +56,39 @@ export default function FileUploader({
       return file.type === type;
     });
     if (!matchesType) {
-      alert(`Invalid file type. Accepted: ${accept}`);
+      toast.error(`Invalid file type. Accepted: ${accept}`);
+      if (fileInputRef.current) fileInputRef.current.value = "";
       return;
     }
 
     // Basic size validation
     if (file.size > maxSizeMB * 1024 * 1024) {
-      alert(`File too large. Maximum size is ${maxSizeMB}MB.`);
+      toast.error(`File too large. Maximum size is ${maxSizeMB}MB.`);
+      if (fileInputRef.current) fileInputRef.current.value = "";
+      return;
+    }
+
+    const validationError = validateFile?.(file);
+    if (validationError) {
+      toast.error(validationError);
+      if (fileInputRef.current) fileInputRef.current.value = "";
       return;
     }
 
     setFileName(file.name);
     setStatus("uploading");
+    onFileSelected?.(file);
 
-    const result = await uploadFile(file);
+    const result = isPrivate
+      ? await uploadPrivateFile(file)
+      : await uploadFile(file);
 
     if (result) {
       setStatus("success");
       onUploadComplete(result.fileId);
     } else {
       setStatus("error");
+      onFileCleared?.();
     }
   };
 
@@ -70,6 +96,7 @@ export default function FileUploader({
     setFileName(null);
     setStatus("idle");
     if (fileInputRef.current) fileInputRef.current.value = "";
+    onFileCleared?.();
   };
 
   const isImage = fileName?.match(/\.(jpg|jpeg|png|gif|webp)$/i);
@@ -126,8 +153,8 @@ export default function FileUploader({
 
         {status === "success" && (
           <>
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-green-500/20 flex items-center justify-center">
+            <div className="flex items-center gap-3 w-full">
+              <div className="w-10 h-10 rounded-xl bg-green-500/20 flex items-center justify-center shrink-0">
                 {isImage ? (
                   <ImageIcon className="text-green-500" size={20} />
                 ) : (
@@ -147,7 +174,7 @@ export default function FileUploader({
                   e.preventDefault();
                   reset();
                 }}
-                className="p-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-white/40 hover:text-white transition-all relative z-20"
+                className="p-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-white/40 hover:text-white transition-all relative z-20 shrink-0"
               >
                 <X size={16} />
               </button>

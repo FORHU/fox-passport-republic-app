@@ -1,4 +1,4 @@
-﻿import { useAuthStore } from "@/features/auth/store/useAuthStore";
+﻿import { useAuthStore } from "@/shared/auth/useAuthStore";
 
 /**
  * Returns true if the current user is eligible to submit a Partner Proposal.

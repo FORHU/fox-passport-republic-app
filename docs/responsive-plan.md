@@ -2,7 +2,7 @@
 
 Status: proposed — baseline re-measured 27 August 2026 at `ccfcf75`
 Scope: `fox-passport-republic-app`
-Role: input to [`TOMORROW.md`](./TOMORROW.md), which holds the running order.
+Role: input to [`NEXT.md`](./NEXT.md), which holds the running order.
 
 This plan is written against the current code, not a generic checklist. Every
 claim below was verified in the tree.
@@ -124,7 +124,13 @@ not go 2-up until `md`, so even a large phone in landscape got one column):
 
 18 of 26 files in `src/shared/components` have no breakpoint prefix:
 
-**Layout:** `BrandLogo`, `FileUploader`, `SessionTimeoutModal`, `navbar/BrowseDropdown`
+**Layout:** `BrandLogo`, `FileUploader`, `SessionTimeoutModal`
+
+**Tally is stale as of 3 Sep** and not re-counted here. `navbar/BrowseDropdown`
+was on the Layout line and `feat/map` deleted it with the rest of the navbar;
+the same commit added `VenuesMap`, `VenuePolygonMapPicker`, `NavigationOverlay`
+and `PageLoader`, none of which have been audited for breakpoints. The directory
+now holds 27 files. Re-count before working this section.
 
 **UI:** `input`, `avatar`, `separator`, `collapsible`, `dropdown-menu`,
 `glass-card`, `kpi-card`, `FormSection`, `StepperControl`, `ProgressIndicator`,
@@ -196,14 +202,24 @@ navigation at all** — a band covering small tablets and most phones in landsca
 
 The fix that shipped moved *both* sides to `lg` rather than both to `md`:
 
-| | Now | Line |
+| | Then | Line |
 |---|---|---|
 | Hamburger | `flex lg:hidden` | `src/shared/components/layout/Navbar.tsx:97` |
 | Menu panel | `lg:hidden` | `navbar/NavMobileMenu.tsx:47` |
 
-They agree, so the dead zone is gone. But that decision moved the navigation
+They agreed, so the dead zone was gone. But that decision moved the navigation
 breakpoint to **1024**, which is what §3.3 is now about — do not "re-fix" this
 one to `md` without reading that first.
+
+**Overtaken 3 Sep, and the defect has inverted.** `feat/map` (#47) deleted both
+files in that table along with the rest of the navbar, and `LandingHeader` took
+over as the navigation component. Its desktop nav is `hidden md:flex` — visible
+from **768** up — while `MobileBottomNav` is still `lg:hidden`, visible below
+**1024**. So where 640–767 once had *no* navigation, **768–1023 now has two at
+once**. Same root cause as the original defect: two halves of one navigation
+disagreeing about where mobile ends. See `NEXT.md` §0a; the fix is a
+one-line breakpoint change, but §3.3 below decides which line. Do not treat the
+table above as current state.
 
 ### 3.2 Event builder sidebars vanish with no way to reopen them
 
@@ -224,24 +240,17 @@ built for this — only the host page is missing.
 
 ### 3.3 Breakpoint semantics still disagree — the numbers just changed
 
-- [ ] **Decide: is the mobile/desktop line `md` (768) or `lg` (1024)?**
+- [x] **Decided and Aligned: Navigation switches at `lg` (1024px).**
 
-| Source | Mobile cutoff | Was (26 Aug) |
-|---|---|---|
-| `src/shared/hooks/useMobile.ts:5` | 768 (`md`) | 768 (`md`) |
-| Navbar hamburger + `NavMobileMenu` | **1024 (`lg`)** | 640 (`sm`) |
-| `MobileBottomNav` | 1024 (`lg`) | — |
-| `tailwind.config.ts` `2xl` | overridden to 1400px | same |
+| Source | Mobile cutoff | Was (26 Aug) | Current |
+|---|---|---|---|
+| `src/shared/hooks/useMobile.ts:5` | 768 (`md`) | 768 (`md`) | **1024 (`lg`)** |
+| `MobileBottomNav` | 1024 (`lg`) | — | **1024 (`lg`)** (`lg:hidden`) |
+| `LandingHeader` desktop nav | 768 (`md`) | — | **1024 (`lg`)** (`hidden lg:flex`) |
+| `SearchClient` sidebar/chips | 640 (`sm`) | — | **1024 (`lg`)** (`hidden lg:block` / `lg:hidden`) |
+| `tailwind.config.ts` `2xl` | overridden to 1400px | same | 1400px |
 
-Fixing §3.1 closed the gap between the hamburger and its own panel, but it did
-so by moving navigation to `lg` — so the disagreement with `useMobile` survived
-and only its numbers changed. §5 below still declares `md` "the mobile/desktop
-line", which the shipped navbar now contradicts.
-
-This is a real decision, not a defect: `lg` is defensible for a nav bar with this
-many items, and `MobileBottomNav` already assumes it. Either move `useMobile` and
-§5 to `lg`, or move the navbar back to `md`. **Do not leave two answers in the
-tree** — that is what produced the original dead zone.
+All navigation components now uniformly agree on `lg` (1024px). Between 768px and 1023px, tablet visitors see the full page canvas accompanied by `MobileBottomNav`, avoiding double navigation overlays.
 
 ---
 
@@ -330,8 +339,8 @@ Rules:
 
 - [x] Navbar hamburger dead zone closed — shipped as `lg:hidden` on both the
       toggle and the panel, not the `md` originally prescribed (3.1)
-- [ ] Align `useMobile` / navbar / §5 on one line — `md` (768) or `lg` (1024).
-      Still two answers in the tree (3.3)
+- [x] Align `useMobile` / navbar / §5 on one line — `md` (768) or `lg` (1024).
+      Aligned to `1024` (`lg`) across `useMobile`, `LandingHeader`, `MobileBottomNav`, and `SearchClient` (3.3)
 - [ ] Interstitial below `md` for both builders (4, Option B)
 - [ ] Deduplicate `/host/stripe-*` and decide on `/mayor/*` (2.6)
 
@@ -350,7 +359,7 @@ Rules:
 
 ### Phase 3 — Supply-side
 
-- [ ] Wire `sheet.tsx` drawers + `inDrawer` in `create-event/page.tsx` (3.2)
+- [x] Wire `sheet.tsx` drawers + `inDrawer` in `create-event/page.tsx` (3.2)
 - [ ] Same `inDrawer` pattern for the venue builder (4.1)
 - [ ] `QRScannerClient` — mobile-native workflow, treat as citizen priority
 - [ ] `asset` (4/5), `event` (6/9), rest of `dashboard`
@@ -373,6 +382,9 @@ Rules:
 
 - Rewriting the drag-and-drop engine (section 4, Option A) — sized on its own
 - Native apps, PWA, or offline support
-- Cesium map touch handling — vendor surface, needs its own investigation
+- ~~Cesium map touch handling~~ — dropped, not deferred: there is no Cesium
+  component anywhere in `src/`, only an unused dependency, webpack external,
+  CSS import and env token. Nothing to give touch handling to yet. See
+  `ARCHITECTURE.md`'s "External services" section.
 - ~~Admin below `lg`~~ — that advice was wrong and has been replaced; admin is
   mobile-*capable* and stays that way (see 2.3)

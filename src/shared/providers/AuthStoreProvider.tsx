@@ -1,28 +1,38 @@
 ﻿"use client";
 
 import React, { useEffect, useState } from "react";
-import { useAuthStore } from "@/features/auth/store/useAuthStore";
+import { useAuthStore } from "@/shared/auth/useAuthStore";
 import { Loader2 } from "lucide-react";
-import { useSessionManager } from "@/features/auth/hooks/useSessionManager";
+import { useSessionManager } from "@/shared/auth/useSessionManager";
 import SessionTimeoutModal from "@/shared/components/layout/SessionTimeoutModal";
+import { endSession } from "@/shared/auth/endSession";
 
 function SessionManager() {
   const [showWarning, setShowWarning] = useState(false);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
 
   useSessionManager(
     () => setShowWarning(true),
     () => setShowWarning(false),
   );
 
-  const handleLogout = () => {
-    setShowWarning(false);
-    useAuthStore.getState().logout();
-    window.location.href = "/";
+  const handleLogout = async () => {
+    // The modal stays up, in a pending state, rather than closing first: this
+    // awaits a round trip to /auth/logout, and dismissing the dialog before it
+    // returns left the user looking at an unchanged page with nothing to say
+    // the click had registered.
+    setIsLoggingOut(true);
+    await endSession();
+    // Same `?auth=expired` handoff as the idle-timeout and 401-interceptor
+    // paths: `SessionExpiredToast` picks it up after reload and opens the
+    // login modal, rather than landing on a bare home page.
+    window.location.href = "/?auth=expired";
   };
 
   return (
     <SessionTimeoutModal
       isOpen={showWarning}
+      isLoggingOut={isLoggingOut}
       onStayLoggedIn={() => setShowWarning(false)}
       onLogout={handleLogout}
     />
@@ -58,8 +68,8 @@ export function AuthStoreProvider({ children }: { children: React.ReactNode }) {
 
   if (isLoading) {
     return (
-      <div className="h-screen w-full flex items-center justify-center bg-[#0f111a]">
-        <Loader2 className="animate-spin text-[#ccff00]" size={40} />
+      <div className="h-screen w-full flex items-center justify-center bg-surface">
+        <Loader2 className="animate-spin text-accent" size={40} />
       </div>
     );
   }

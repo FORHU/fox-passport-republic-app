@@ -1,22 +1,25 @@
-﻿/* eslint-disable react-hooks/set-state-in-effect, @next/next/no-img-element */
-"use client";
+﻿"use client";
 
 import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useCheckoutStore } from "@/features/booking/store/useCheckoutStore";
-import { useAuthStore } from "@/features/auth/store/useAuthStore";
+import { useAuthStore } from "@/shared/auth/useAuthStore";
+import { useQuery } from "@tanstack/react-query";
 import {
   bookFromTemplate,
   getPublicTemplate,
-  fetchTemplateAvailability,
 } from "@/features/booking/api/bookings";
+import { useTemplateAvailability } from "@/features/booking/hooks/useAvailability";
 import DateRangePicker from "@/shared/components/ui/DateRangePicker";
 import { toast } from "sonner";
 import { toastRequireLogin } from "@/shared/lib/toast";
 import WaitlistButton from "@/features/booking/components/WaitlistButton";
 import { getDashboardPath } from "@/shared/lib/dashboard-path";
+import { Money } from "@/shared/components/ui/Money";
+
+const NO_DATES: string[] = [];
 
 export default function BookingConfigurationClient() {
   const router = useRouter();
@@ -26,18 +29,26 @@ export default function BookingConfigurationClient() {
     useCheckoutStore();
   const { user, isAuthenticated, openLogin } = useAuthStore();
   const [isCreatingBooking, setIsCreatingBooking] = useState(false);
-  const [template, setTemplate] = useState<any>(null);
-  const [isLoadingTemplate, setIsLoadingTemplate] = useState(!!templateId);
+  const claimed = searchParams.get("claimed") === "1";
+  const templateQuery = useQuery({
+    queryKey: ["public-template", templateId, claimed],
+    queryFn: () => getPublicTemplate(templateId!, { claimed }),
+    enabled: !!templateId,
+  });
+  const template: any = templateQuery.data ?? null;
+  // Only the first load shows the spinner — a revisit renders from cache.
+  const isLoadingTemplate = !!templateId && templateQuery.isPending;
 
   useEffect(() => {
-    if (!templateId) return;
-    setIsLoadingTemplate(true);
-    const claimed = searchParams.get("claimed") === "1";
-    getPublicTemplate(templateId, { claimed })
-      .then(setTemplate)
-      .catch(() => toast.error("Could not load event details."))
-      .finally(() => setIsLoadingTemplate(false));
-  }, [templateId, searchParams]);
+    if (templateQuery.isError) toast.error("Could not load event details.");
+  }, [templateQuery.isError]);
+
+  // Declared before the derived totals below, which read it — it used to sit
+  // further down, so a template with optional items hit it in its temporal
+  // dead zone and threw on render.
+  const [excludedItemIds, setExcludedItemIds] = useState<Set<string>>(
+    new Set(),
+  );
 
   const dashboardPath = getDashboardPath(user);
 
@@ -51,8 +62,18 @@ export default function BookingConfigurationClient() {
   const templateLocation =
     [template?.targetCity, template?.targetState].filter(Boolean).join(", ") ||
     "Location TBD";
-  const basePrice = template?.estimatedTotal ?? 0;
-  const serviceFee = 150;
+  // The API's estimate already includes its platform fee. Split it out, so
+  // the package line is items + host markup and the fee can follow any
+  // optional items the citizen removes (it's a percentage of the package).
+  const estimatedTotal = template?.estimatedTotal ?? 0;
+  const knownFee =
+    template?.platformFeeAmount != null
+      ? Number(template.platformFeeAmount)
+      : null;
+  const basePrice =
+    knownFee !== null ? estimatedTotal - knownFee : estimatedTotal;
+  const feeRate =
+    knownFee !== null && basePrice > 0 ? knownFee / basePrice : null;
   const currentAttendees = template?.currentAttendees ?? 0;
   const isFull =
     template?.maxAttendees != null && currentAttendees >= template.maxAttendees;
@@ -92,7 +113,10 @@ export default function BookingConfigurationClient() {
     .filter((item) => excludedItemIds.has(item.id))
     .reduce((sum, item) => sum + (item.price ?? 0), 0);
 
-  const totalAmount = basePrice - optOutSavings + serviceFee;
+  const packageAmount = Math.max(0, basePrice - optOutSavings);
+  // Null when the API didn't break the fee out — then it's added at checkout.
+  const serviceFee = feeRate !== null ? packageAmount * feeRate : null;
+  const totalAmount = packageAmount + (serviceFee ?? 0);
   const includedServices: any[] =
     template?.templateServices
       ?.filter((ts: any) => !ts.isOptional)
@@ -101,22 +125,15 @@ export default function BookingConfigurationClient() {
   const [guests, setGuests] = useState(2);
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
-  const [bookedDates, setBookedDates] = useState<string[]>([]);
-  const [dateError, setDateError] = useState("");
-  const [excludedItemIds, setExcludedItemIds] = useState<Set<string>>(
-    new Set(),
+  const { data: availability } = useTemplateAvailability(
+    templateId ?? undefined,
   );
+  const bookedDates = availability?.bookedDates ?? NO_DATES;
+  const [dateError, setDateError] = useState("");
 
   useEffect(() => {
     if (guestCount) setGuests(guestCount);
   }, [guestCount]);
-
-  useEffect(() => {
-    if (!templateId) return;
-    fetchTemplateAvailability(templateId)
-      .then((d) => setBookedDates(d.bookedDates))
-      .catch(() => {});
-  }, [templateId]);
 
   return (
     <div className="bg-background bg-gradient-dark text-text-main antialiased min-h-screen flex flex-col selection:bg-accent selection:text-black font-body">
@@ -177,7 +194,7 @@ export default function BookingConfigurationClient() {
                     src={user.imgId}
                   />
                 ) : (
-                  <div className="h-full w-full flex items-center justify-center bg-[#ccff00] text-black font-bold text-sm">
+                  <div className="h-full w-full flex items-center justify-center bg-accent text-black font-bold text-sm">
                     {user?.name?.charAt(0)?.toUpperCase() ?? "U"}
                   </div>
                 )}
@@ -279,7 +296,7 @@ export default function BookingConfigurationClient() {
                             </span>
                             {new Date(
                               startDate + "T00:00:00",
-                            ).toLocaleDateString("en-PH", {
+                            ).toLocaleDateString(undefined, {
                               weekday: "short",
                               month: "long",
                               day: "numeric",
@@ -287,7 +304,7 @@ export default function BookingConfigurationClient() {
                             })}
                             {" — "}
                             {new Date(endDate + "T00:00:00").toLocaleDateString(
-                              "en-PH",
+                              undefined,
                               {
                                 weekday: "short",
                                 month: "long",
@@ -361,9 +378,21 @@ export default function BookingConfigurationClient() {
                             remove
                           </span>
                         </button>
-                        <span className="text-lg sm:text-xl font-bold font-display w-6 sm:w-8 text-center text-white">
-                          {guests}
-                        </span>
+                        <input
+                          type="number"
+                          min={1}
+                          inputMode="numeric"
+                          value={guests}
+                          onChange={(e) => {
+                            const value = Number(e.target.value);
+                            if (Number.isNaN(value)) return;
+                            setGuests(Math.max(1, Math.floor(value)));
+                          }}
+                          onBlur={(e) => {
+                            if (e.target.value === "") setGuests(1);
+                          }}
+                          className="text-lg sm:text-xl font-bold font-display w-10 sm:w-12 text-center text-white bg-transparent focus:outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                        />
                         <button
                           onClick={() => setGuests(guests + 1)}
                           className="h-8 w-8 sm:h-10 sm:w-10 rounded-full bg-white text-black hover:bg-accent flex items-center justify-center transition-colors"
@@ -502,7 +531,7 @@ export default function BookingConfigurationClient() {
                               <span
                                 className={`text-sm font-bold ${excluded ? "text-white/30 line-through" : "text-yellow-400"}`}
                               >
-                                ₱{(item.price ?? 0).toLocaleString()}
+                                <Money amount={item.price ?? 0} />
                               </span>
                             </label>
                           );
@@ -513,8 +542,8 @@ export default function BookingConfigurationClient() {
                           <span className="material-symbols-outlined text-[16px]">
                             savings
                           </span>
-                          You&apos;re saving ₱{optOutSavings.toLocaleString()}{" "}
-                          by removing optional items.
+                          You&apos;re saving <Money amount={optOutSavings} /> by
+                          removing optional items.
                         </div>
                       )}
                     </div>
@@ -588,12 +617,12 @@ export default function BookingConfigurationClient() {
                             : !endDate
                               ? new Date(
                                   startDate + "T00:00:00",
-                                ).toLocaleDateString("en-PH", {
+                                ).toLocaleDateString(undefined, {
                                   month: "short",
                                   day: "numeric",
                                   year: "numeric",
                                 })
-                              : `${new Date(startDate + "T00:00:00").toLocaleDateString("en-PH", { month: "short", day: "numeric" })} — ${new Date(endDate + "T00:00:00").toLocaleDateString("en-PH", { month: "short", day: "numeric", year: "numeric" })}`}
+                              : `${new Date(startDate + "T00:00:00").toLocaleDateString(undefined, { month: "short", day: "numeric" })} — ${new Date(endDate + "T00:00:00").toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" })}`}
                         </p>
                         <p className="text-xs text-text-muted">
                           Scheduled date
@@ -618,23 +647,27 @@ export default function BookingConfigurationClient() {
                     <div className="flex justify-between text-sm">
                       <span className="text-text-muted">Package estimate</span>
                       <span className="text-white">
-                        {isLoadingTemplate
-                          ? "…"
-                          : `₱${basePrice.toLocaleString()}`}
+                        {isLoadingTemplate ? "…" : <Money amount={basePrice} />}
                       </span>
                     </div>
                     {optOutSavings > 0 && (
                       <div className="flex justify-between text-sm">
                         <span className="text-green-400">Optional removed</span>
                         <span className="text-green-400">
-                          −₱{optOutSavings.toLocaleString()}
+                          −<Money amount={optOutSavings} />
                         </span>
                       </div>
                     )}
                     <div className="flex justify-between text-sm">
-                      <span className="text-text-muted">Service Fee</span>
+                      <span className="text-text-muted">Service fee</span>
                       <span className="text-white">
-                        ₱{serviceFee.toLocaleString()}
+                        {serviceFee === null ? (
+                          <span className="text-white/40">
+                            Added at checkout
+                          </span>
+                        ) : (
+                          <Money amount={serviceFee} />
+                        )}
                       </span>
                     </div>
                     <div className="h-px bg-white/10 my-2"></div>
@@ -643,9 +676,11 @@ export default function BookingConfigurationClient() {
                         Total
                       </span>
                       <span className="text-2xl font-display font-bold text-accent">
-                        {isLoadingTemplate
-                          ? "…"
-                          : `₱${totalAmount.toLocaleString()}`}
+                        {isLoadingTemplate ? (
+                          "…"
+                        ) : (
+                          <Money amount={totalAmount} />
+                        )}
                       </span>
                     </div>
                   </div>
@@ -666,7 +701,11 @@ export default function BookingConfigurationClient() {
                     ) : (
                       <>
                         <button
-                          disabled={isCreatingBooking || isLoadingTemplate}
+                          disabled={
+                            isCreatingBooking ||
+                            isLoadingTemplate ||
+                            !(totalAmount > 0)
+                          }
                           onClick={async () => {
                             setConfig({
                               templateId: templateId ?? undefined,
@@ -716,7 +755,6 @@ export default function BookingConfigurationClient() {
                                 const result = await bookFromTemplate({
                                   templateId,
                                   guestCount: guests,
-                                  totalAmount,
                                   startAt: startAt.toISOString(),
                                   endAt: endAt.toISOString(),
                                   excludedAssetIds: optionalAssets
@@ -760,12 +798,19 @@ export default function BookingConfigurationClient() {
                             )}
                           </span>
                         </button>
-                        <p className="text-center text-[10px] text-text-muted mt-3">
-                          <span className="material-symbols-outlined text-[12px] align-middle mr-1">
-                            lock
-                          </span>
-                          Secure encrypted checkout
-                        </p>
+                        {!isLoadingTemplate && !(totalAmount > 0) ? (
+                          <p className="text-center text-xs text-text-muted mt-3">
+                            Pricing for this event isn&apos;t set yet, so it
+                            can&apos;t be booked online.
+                          </p>
+                        ) : (
+                          <p className="text-center text-[10px] text-text-muted mt-3">
+                            <span className="material-symbols-outlined text-[12px] align-middle mr-1">
+                              lock
+                            </span>
+                            Secure encrypted checkout
+                          </p>
+                        )}
                       </>
                     )}
                   </div>
@@ -785,11 +830,11 @@ export default function BookingConfigurationClient() {
                       {
                         icon: "event_available",
                         title: "Package Confirmed",
-                        desc: "The organizer reviews and locks in your event details.",
+                        desc: "The Event Foxer reviews and locks in your event details.",
                       },
                       {
                         icon: "lock",
-                        title: "Payment Held in Escrow",
+                        title: "Payment Held Safely",
                         desc: "Funds are secured — the provider cannot access them yet.",
                       },
                       {
@@ -842,18 +887,18 @@ export default function BookingConfigurationClient() {
               </span>
             </div>
             <p className="text-xs text-gray-500 font-medium">
-              © 2024 FoxPassport Inc. All rights reserved.
+              © {new Date().getFullYear()} FoxPassport Inc. All rights reserved.
             </p>
             <div className="flex gap-6">
               <a
                 className="text-xs text-gray-500 hover:text-white font-medium transition-colors"
-                href="#"
+                href="/privacy"
               >
                 Privacy
               </a>
               <a
                 className="text-xs text-gray-500 hover:text-white font-medium transition-colors"
-                href="#"
+                href="/terms"
               >
                 Terms
               </a>

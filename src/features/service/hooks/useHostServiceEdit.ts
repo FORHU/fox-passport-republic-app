@@ -1,10 +1,11 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { toast } from "sonner";
-import { useAuthStore } from "@/features/auth/store/useAuthStore";
+import { useQueryClient } from "@tanstack/react-query";
+import { serviceQueryKey } from "@/features/service/hooks/useService";
+import {} from "sonner";
+import { useAuthStore } from "@/shared/auth/useAuthStore";
 import { useServicesBuilder } from "@/features/service/hooks/useServicesBuilder";
 import {
   fetchServicesByOwnerId,
@@ -13,8 +14,6 @@ import {
 import type { Id } from "@/shared/lib/api-types";
 import {
   SERVICE_CATEGORIES,
-  SERVICE_STATUSES,
-  SERVICE_UNITS,
   BILLING_RATE_MAP,
 } from "@/features/service/data/serviceBuilderData";
 
@@ -86,6 +85,7 @@ function invertBillingRateToUnitLabel(billingRate: unknown): string {
 
 export function useHostServiceEdit(serviceId: string) {
   const router = useRouter();
+  const queryClient = useQueryClient();
   const user = useAuthStore((s) => s.user);
   const hostId = user?.id;
 
@@ -148,7 +148,6 @@ export function useHostServiceEdit(serviceId: string) {
     return () => {
       cancelled = true;
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [serviceId, hostId]);
 
   const handleBack = useCallback(() => {
@@ -210,6 +209,8 @@ export function useHostServiceEdit(serviceId: string) {
       };
 
       await updateService(serviceId, payload as any);
+      // The public booking page reads this cache entry.
+      queryClient.invalidateQueries({ queryKey: serviceQueryKey(serviceId) });
 
       services.setIsNotification(true);
       setTimeout(() => {

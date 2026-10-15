@@ -2,11 +2,11 @@
 
 import { useEffect, useRef } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Loader2 } from "lucide-react";
+import PageLoader from "@/shared/components/ui/PageLoader";
 import { toast } from "sonner";
 
-import { useAuthStore } from "@/features/auth/store/useAuthStore";
-import { completeGoogleAuth } from "@/shared/lib/server/auth-actions";
+import { useAuthStore } from "@/shared/auth/useAuthStore";
+import { completeGoogleAuth } from "@/shared/auth/session-api";
 
 export default function GoogleAuthCallbackPage() {
   const router = useRouter();
@@ -51,8 +51,6 @@ export default function GoogleAuthCallbackPage() {
   }, [searchParams, router, login]);
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-[#050608]">
-      <Loader2 className="h-8 w-8 animate-spin text-white/60" />
-    </div>
+    <PageLoader label="Signing you in" />
   );
 }

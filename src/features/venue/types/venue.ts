@@ -57,6 +57,7 @@ export interface GalleryItem {
 }
 
 export interface VenueImage {
+  id?: string;
   url?: string;
   imageUrl?: string;
   image?: string;
@@ -73,6 +74,9 @@ export interface Venue {
   province?: string;
   latitude?: number;
   longitude?: number;
+  lat?: number | null;
+  lng?: number | null;
+  boundary?: [number, number][] | null;
   image?: string;
   images?: string[];
   rating?: number;
@@ -82,6 +86,10 @@ export interface Venue {
   billingRate?: string;
   capacity?: number;
   cap?: number;
+  /** Per-extra-guest surcharge the mayor sets. When present, bookings
+   *  exceeding `capacity` are allowed but held as requests pending the
+   *  Venue Foxer's approval before payment is collected. */
+  extraGuestRate?: number | null;
   type?: string;
   venueType?: string;
   spaceType?: string[];
@@ -118,14 +126,22 @@ export interface VenueUpdatePayload {
   city?: string;
   state?: string;
   country?: string;
+  boundary?: [number, number][];
   price: number;
+  extraGuestRate?: number;
   spaceType: string[];
   amenities: string[];
   techAv: string[];
   staffing: string[];
   policies: string[];
   cancellationPolicyId?: string;
-  status: string;
+  /** Every photo, in order; replaces the venue's whole set. */
+  imgIds?: string[];
+  // Omitted when updating an already-approved venue's details — a generic
+  // update should never carry a status the backend would apply (see
+  // useHostVenueEdit's submitVenue), only a real draft/resubmit action sets
+  // this.
+  status?: string;
 }
 
 export interface POIResult {

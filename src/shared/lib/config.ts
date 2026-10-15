@@ -1,4 +1,42 @@
 export const config = {
   mapboxToken: process.env.NEXT_PUBLIC_MAPBOX_TOKEN || "",
-  apiUrl: process.env.NEXT_PUBLIC_API_URL || "http://localhost:6002/api/v1",
+  // NEXT_PUBLIC_API_URL must be set in .env — no hardcoded fallback.
+  apiUrl: process.env.NEXT_PUBLIC_API_URL as string,
 };
+
+/**
+ * The backend origin, as reachable from *this* browser right now — unlike
+ * `config.apiUrl`, which is a single value inlined into the JS bundle at
+ * build time. A phone on the LAN loads the app at e.g.
+ * `http://192.168.1.34:6001`; `config.apiUrl` still says `localhost:6002`
+ * regardless, which the phone can't resolve to anything useful.
+ *
+ * The API port and path prefix are derived from NEXT_PUBLIC_API_URL so that
+ * changing the port in .env is the only thing needed — no code edits required.
+ *
+ * Only needed for the handful of places the browser talks to the API
+ * directly instead of through `/api/proxy` (same-origin, so it never has
+ * this problem) — chiefly the Google OAuth links, which must be a real
+ * cross-origin URL since they're a full-page navigation, not a fetch.
+ */
+export function getBrowserApiUrl(): string {
+  if (
+    typeof window === "undefined" ||
+    !window.location?.protocol ||
+    !window.location?.hostname
+  ) {
+    return config.apiUrl || "http://localhost:6002";
+  }
+  // Parse the configured API URL to extract the port and path prefix so we
+  // never hardcode "6002" here — the .env value is the single source of truth.
+  try {
+    const raw = config.apiUrl || "http://localhost:6002";
+    const parsed = new URL(raw);
+    const protocol = window.location.protocol || "http:";
+    const hostname = window.location.hostname || "localhost";
+    return `${protocol}//${hostname}${parsed.port ? `:${parsed.port}` : ""}${parsed.pathname}`;
+  } catch {
+    // Malformed NEXT_PUBLIC_API_URL — fall back to the raw env value.
+    return config.apiUrl || "http://localhost:6002";
+  }
+}

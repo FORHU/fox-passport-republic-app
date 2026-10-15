@@ -5,6 +5,10 @@ export const metadata: Metadata = {
   title: "Admin Dashboard | FoxPassport",
   description:
     "FoxPassport Admin Dashboard - Manage experiences, bookings, and users",
+  robots: {
+    index: false,
+    follow: false,
+  },
 };
 
 export default function AdminLayout({

@@ -1,5 +1,4 @@
-﻿/* eslint-disable @next/next/no-img-element */
-"use client";
+﻿"use client";
 
 import React from "react";
 import Link from "next/link";
@@ -93,7 +92,7 @@ export default function WaitlistPageClient() {
                 )}
               </button>
               <p className="text-[10px] text-white/30 mt-3">
-                This offer expires soon â€” first come, first served.
+                This offer expires soon — first come, first served.
               </p>
             </div>
           )}

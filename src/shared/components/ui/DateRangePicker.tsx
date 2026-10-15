@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { createPortal } from "react-dom";
 
 export function diffDays(start: string, end: string): number {
@@ -10,7 +10,7 @@ export function diffDays(start: string, end: string): number {
 }
 
 export function formatDate(dateStr: string): string {
-  return new Date(dateStr + "T00:00:00").toLocaleDateString("en-PH", {
+  return new Date(dateStr + "T00:00:00").toLocaleDateString(undefined, {
     weekday: "short",
     month: "short",
     day: "numeric",
@@ -52,12 +52,16 @@ function CompactDatePicker({
   onStartChange,
   onEndChange,
   onDone,
+  disabledDates,
 }: {
   startValue: string;
   endValue: string;
   onStartChange: (d: string) => void;
   onEndChange: (d: string) => void;
   onDone: () => void;
+  /** Dates (YYYY-MM-DD) that can't be picked as either endpoint — e.g. a
+   *  venue's already-booked or manually blocked days. */
+  disabledDates?: Set<string>;
 }) {
   const today = new Date();
   const todayStr = today.toISOString().split("T")[0];
@@ -85,17 +89,38 @@ function CompactDatePicker({
     } else setViewMonth((m) => m + 1);
   };
 
+  // Walks every day from `a` to `b` inclusive — matches `diffDays`, which
+  // counts the end date itself as a night stayed, not a checkout-only marker.
+  const rangeHasDisabledDay = (a: string, b: string) => {
+    if (!disabledDates || disabledDates.size === 0) return false;
+    const cursor = new Date(a + "T00:00:00");
+    const last = new Date(b + "T00:00:00");
+    while (cursor <= last) {
+      const ds = toDateStr(
+        cursor.getFullYear(),
+        cursor.getMonth(),
+        cursor.getDate(),
+      );
+      if (disabledDates.has(ds)) return true;
+      cursor.setDate(cursor.getDate() + 1);
+    }
+    return false;
+  };
+
   const handleClick = (ds: string) => {
     if (ds < todayStr) return;
+    if (disabledDates?.has(ds)) return;
     if (!startValue || (startValue && endValue)) {
       onStartChange(ds);
       onEndChange("");
       return;
     }
     if (ds < startValue) {
+      if (rangeHasDisabledDay(ds, startValue)) return;
       onStartChange(ds);
       return;
     }
+    if (rangeHasDisabledDay(startValue, ds)) return;
     onEndChange(ds);
     onDone();
   };
@@ -144,6 +169,8 @@ function CompactDatePicker({
           if (day === null) return <div key={`e-${i}`} className="h-8" />;
           const ds = toDateStr(viewYear, viewMonth, day);
           const past = ds < todayStr;
+          const unavailable = !past && !!disabledDates?.has(ds);
+          const disabledCell = past || unavailable;
           const sel = isSelected(ds);
           const inRange = isInRange(ds);
 
@@ -151,19 +178,23 @@ function CompactDatePicker({
             <button
               key={ds}
               onClick={() => handleClick(ds)}
-              disabled={past}
+              disabled={disabledCell}
+              title={unavailable ? "Not available on this date" : undefined}
               className={[
-                "h-8 w-full text-[13px] font-semibold transition-all duration-150 flex items-center justify-center",
+                "h-8 w-full text-[13px] font-semibold transition-all duration-150 flex items-center justify-center relative",
                 inRange
                   ? "bg-gradient-to-r from-accent/10 via-accent/15 to-accent/10"
                   : "",
                 sel
                   ? "bg-accent text-black rounded-full z-10 shadow-[0_0_12px_rgba(204,255,0,0.4)] scale-105"
                   : "",
-                !sel && !past
+                !sel && !disabledCell
                   ? "text-white/90 hover:bg-white/10 hover:rounded-full hover:scale-105 cursor-pointer active:scale-95"
                   : "",
                 past ? "text-white/20 cursor-not-allowed" : "",
+                unavailable
+                  ? "text-red-400/50 cursor-not-allowed line-through decoration-red-400/40"
+                  : "",
                 ds === todayStr && !sel
                   ? "ring-1 ring-white/70 rounded-full animate-pulse"
                   : "",
@@ -190,6 +221,7 @@ export default function DateRangePicker({
   endLabel = "End Date",
   showSummary = true,
   stacked = false,
+  disabledDates,
 }: {
   startDate: string;
   endDate: string;
@@ -200,6 +232,9 @@ export default function DateRangePicker({
   endLabel?: string;
   showSummary?: boolean;
   stacked?: boolean;
+  /** Dates (YYYY-MM-DD) that can't be picked as either endpoint or fall
+   *  inside the selected range — e.g. a venue's booked/blocked days. */
+  disabledDates?: Set<string>;
 }) {
   const [calendarOpen, setCalendarOpen] = useState(false);
   const [popupPos, setPopupPos] = useState({ top: 0, left: 0 });
@@ -207,8 +242,7 @@ export default function DateRangePicker({
 
   const toDisplay = (d: string) =>
     d
-      ? new Date(d + "T00:00:00").toLocaleDateString("en-PH", {
-          weekday: "short",
+      ? new Date(d + "T00:00:00").toLocaleDateString(undefined, {
           month: "short",
           day: "numeric",
           year: "numeric",
@@ -216,6 +250,16 @@ export default function DateRangePicker({
       : "";
   const [localStart, setLocalStart] = useState(toDisplay(startDate));
   const [localEnd, setLocalEnd] = useState(toDisplay(endDate));
+
+  // Keep the text inputs in sync when startDate/endDate change externally
+  // (e.g. a duration-preset button in a parent component), not just when
+  // the user edits them directly.
+  useEffect(() => {
+    setLocalStart(toDisplay(startDate));
+  }, [startDate]);
+  useEffect(() => {
+    setLocalEnd(toDisplay(endDate));
+  }, [endDate]);
 
   const handleCalendarStart = (d: string) => {
     onStartChange(d);
@@ -275,11 +319,11 @@ export default function DateRangePicker({
               placeholder="Select date"
               onChange={(e) => setLocalStart(e.target.value)}
               onBlur={(e) => parseDisplay(e.target.value, onStartChange)}
-              className="w-full bg-white/5 border border-white/10 rounded-xl px-5 py-4 text-white placeholder-text-muted/50 focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent transition-all pr-12"
+              className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3.5 text-sm font-semibold text-white placeholder-text-muted/50 focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent transition-all pr-11"
             />
             <span
               onClick={openCalendar}
-              className="absolute right-4 top-1/2 -translate-y-1/2 text-white/30 cursor-pointer material-symbols-outlined"
+              className="absolute right-3.5 top-1/2 -translate-y-1/2 text-white/30 cursor-pointer material-symbols-outlined text-[18px]"
             >
               calendar_today
             </span>
@@ -296,11 +340,11 @@ export default function DateRangePicker({
               placeholder="Select date"
               onChange={(e) => setLocalEnd(e.target.value)}
               onBlur={(e) => parseDisplay(e.target.value, onEndChange)}
-              className="w-full bg-white/5 border border-white/10 rounded-xl px-5 py-4 text-white placeholder-text-muted/50 focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent transition-all pr-12"
+              className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3.5 text-sm font-semibold text-white placeholder-text-muted/50 focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent transition-all pr-11"
             />
             <span
               onClick={openCalendar}
-              className="absolute right-4 top-1/2 -translate-y-1/2 text-white/30 cursor-pointer material-symbols-outlined"
+              className="absolute right-3.5 top-1/2 -translate-y-1/2 text-white/30 cursor-pointer material-symbols-outlined text-[18px]"
             >
               calendar_today
             </span>
@@ -339,6 +383,7 @@ export default function DateRangePicker({
                 onStartChange={handleCalendarStart}
                 onEndChange={handleCalendarEnd}
                 onDone={() => setCalendarOpen(false)}
+                disabledDates={disabledDates}
               />
             </div>
           </>,

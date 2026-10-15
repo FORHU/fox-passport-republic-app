@@ -1,4 +1,3 @@
-/* eslint-disable @next/next/no-img-element */
 "use client";
 
 import React, { useEffect, useState } from "react";
@@ -6,6 +5,7 @@ import { useRouter } from "next/navigation";
 import api from "@/shared/lib/axios";
 import { toast } from "sonner";
 import { useQueryClient } from "@tanstack/react-query";
+import { Money } from "@/shared/components/ui/Money";
 
 interface ServicesTableProps {
   services: any[];
@@ -125,7 +125,7 @@ export const AdminServicesTable: React.FC<ServicesTableProps> = ({
           onClick={closeRejectDialog}
         >
           <div
-            className="bg-[#0f111a] border border-white/10 rounded-2xl p-8 max-w-sm w-full mx-4 space-y-4"
+            className="bg-surface border border-white/10 rounded-2xl p-8 max-w-sm w-full mx-4 space-y-4"
             onClick={(e) => e.stopPropagation()}
           >
             <h3 className="text-white font-bold text-lg">
@@ -268,7 +268,7 @@ export const AdminServicesTable: React.FC<ServicesTableProps> = ({
                           .join(", ") || "—"}
                       </td>
                       <td className="p-6 text-green-400 font-bold">
-                        ₱{Number(service.price || 0).toLocaleString()}
+                        <Money amount={service.price || 0} />
                         <span className="text-white/30 font-normal text-[10px] ml-1">
                           /{service.billingRate || "event"}
                         </span>
@@ -396,7 +396,7 @@ export const AdminServicesTable: React.FC<ServicesTableProps> = ({
                                           <span className="material-symbols-outlined text-[24px] text-red-400 group-hover:scale-110 transition-transform">
                                             picture_as_pdf
                                           </span>
-                                          <span className="text-[8px] text-white/40 truncate max-w-[60px]">
+                                          <span className="text-[8px] text-white/40 truncate max-w-15">
                                             {name || "File"}
                                           </span>
                                         </a>

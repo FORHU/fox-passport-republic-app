@@ -1,4 +1,3 @@
-/* eslint-disable @next/next/no-img-element */
 "use client";
 
 import React, { useCallback, useEffect, useState } from "react";
@@ -20,19 +19,33 @@ import { CustomExperienceBuilder } from "@/features/venue/components/detail/Expe
 import { useVenueDetailStore } from "@/features/venue/store/useVenueDetailStore";
 import { Venue } from "../hooks/useVenuesByCategory";
 import { Host } from "../types/venue";
+import { useAuthStore } from "@/shared/auth/useAuthStore";
+import { ReportModal } from "@/shared/components/ReportModal";
+import { Money } from "@/shared/components/ui/Money";
 
 interface VenueDetailClientProps {
   venue: Venue;
   host: Host;
+  /** Composed at the app layer — this feature doesn't import `partnership` directly. */
+  onProposePartnership?: () => void;
+  /** Opens this venue's Shared Inbox; composed at the app layer too. */
+  onContactVenue?: () => void;
+  /** For an approved Organizer: asking to join this venue's team. Composed
+   * at the app layer, like the two above. */
+  organizerSlot?: React.ReactNode;
 }
 
 export default function VenueDetailClient({
   venue,
   host,
+  onProposePartnership,
+  onContactVenue,
+  organizerSlot,
 }: VenueDetailClientProps) {
   const router = useRouter();
   const store = useVenueDetailStore();
   const [isCustomBookingOpen, setIsCustomBookingOpen] = useState(false);
+  const [isReportOpen, setIsReportOpen] = useState(false);
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -40,14 +53,59 @@ export default function VenueDetailClient({
 
   const handleBack = useCallback(() => router.back(), [router]);
 
-  const handleContactOwner = useCallback(() => {
-    toast.info(
-      "Messaging coming soon! For now, contact the owner through the platform.",
-    );
-  }, []);
+  // `venue` here is the server-normalized shape from `getVenueById`
+  // (`normalizeVenue` in shared/lib/server/data.ts), not the raw API shape
+  // the `Venue` type describes — it flattens `pricing[0].pricePerDay` down
+  // to a single `price` number and `images` down to `string[]`. Reading the
+  // typed fields directly silently produced ₱0 and broken <img> tags.
+  const venuePrice = Number((venue as any).price || 0);
 
-  // Safe fallback pricing conversions
-  const venuePrice = Number(venue.pricing?.[0]?.pricePerDay || 0);
+  const { user } = useAuthStore();
+  const handleProposePartnership = () => {
+    if (!user?.roleType?.includes("investor")) {
+      router.push("/onboarding/partner");
+    } else {
+      onProposePartnership?.();
+    }
+  };
+
+  // Same id-field fallback pattern useHostVenueEdit's belongsToHost uses —
+  // this venue record and the separately-passed `host` can each carry the
+  // owner's id under a different key depending on which code path produced
+  // them, so no single field is reliable on its own.
+  const ownerIdCandidates = [
+    (venue as any).host?.id,
+    (venue as any).mayorId,
+    (venue as any).mayor?.id,
+    (venue as any).hostId,
+    host?.id,
+  ];
+  const isOwner =
+    !!user?.id &&
+    ownerIdCandidates.some((id) => id && String(id) === String(user.id));
+
+  // Messages go to the venue's Shared Inbox, answered by its Mayor and
+  // Organizers together (CONTEXT.md) rather than to the Mayor in person.
+  // Composed at the app layer: this feature doesn't import `messages`.
+  const handleContactOwner = useCallback(() => {
+    if (!user) {
+      router.push("/auth/login");
+      return;
+    }
+    if (!onContactVenue) {
+      toast.error("Messaging isn't available here.");
+      return;
+    }
+    onContactVenue();
+  }, [user, onContactVenue, router]);
+
+  const handleReportListing = useCallback(() => {
+    if (!user) {
+      router.push("/auth/login");
+      return;
+    }
+    setIsReportOpen(true);
+  }, [user, router]);
 
   return (
     <div className="bg-background bg-gradient-dark text-text-main antialiased min-h-screen flex flex-col selection:bg-accent selection:text-black font-body">
@@ -57,10 +115,16 @@ export default function VenueDetailClient({
         onClose={() => setIsCustomBookingOpen(false)}
         venuePrice={venuePrice}
       />
-
+      {isReportOpen && (
+        <ReportModal
+          targetType="venue"
+          targetId={venue.id}
+          onClose={() => setIsReportOpen(false)}
+        />
+      )}
       <LightboxGallery
         isOpen={store.galleryOpen}
-        images={(venue.images || []).map((img) => img.imageUrl)} // 👈 Change to this
+        images={(venue as any).images || []}
         title={venue.title}
         activeIndex={store.activeImageIndex}
         onClose={() => store.setGalleryOpen(false)}
@@ -68,7 +132,16 @@ export default function VenueDetailClient({
         onPrev={() => store.prevImage(venue.images?.length || 0)}
       />
 
-      <VenueNavHeader title={venue.title} onBack={handleBack} />
+      <VenueNavHeader
+        title={venue.title}
+        onBack={handleBack}
+        onProposePartnership={handleProposePartnership}
+        onEdit={
+          isOwner
+            ? () => router.push(`/creator-dashboard/venues/${venue.id}/edit`)
+            : undefined
+        }
+      />
 
       {/* Mobile sticky bottom bar — design: "From ₱X/night  [Book Now]" */}
       {venuePrice > 0 && (
@@ -77,7 +150,7 @@ export default function VenueDetailClient({
           style={{
             background: "rgba(18,18,24,0.92)",
             backdropFilter: "blur(20px)",
-            border: "1px solid rgba(255,255,255,0.1)",
+            border: "1px solid color-mix(in srgb, var(--color-white) 10%, transparent)",
             boxShadow: "0 20px 50px rgba(0,0,0,0.5)",
           }}
         >
@@ -85,14 +158,14 @@ export default function VenueDetailClient({
             <p className="text-[10px] text-white/40 font-bold uppercase tracking-wider">
               From
             </p>
-            <p className="text-xl font-display font-bold text-[#ccff00]">
-              ₱{venuePrice.toLocaleString()}
+            <p className="text-xl font-display font-bold text-accent">
+              <Money amount={venuePrice} />
               <span className="text-xs text-white/40 font-normal">/night</span>
             </p>
           </div>
           <button
             onClick={() => router.push(`/booking/venue/${venue.id}`)}
-            className="px-6 py-3 rounded-full bg-[#ccff00] text-black font-bold text-sm"
+            className="px-6 py-3 rounded-full bg-accent text-black font-bold text-sm"
             style={{ boxShadow: "0 4px 16px rgba(204,255,0,0.35)" }}
           >
             Book Now
@@ -111,7 +184,7 @@ export default function VenueDetailClient({
           />
 
           <VenueGalleryGrid
-            images={(venue.images || []).map((img) => img.imageUrl)}
+            images={(venue as any).images || []}
             onOpenGallery={store.openGallery}
           />
 
@@ -128,7 +201,7 @@ export default function VenueDetailClient({
                       className="w-16 h-16 rounded-full object-cover border-2 border-white/10"
                       alt={host.name}
                     />
-                    <div className="absolute -bottom-1 -right-1 bg-accent text-black rounded-full p-1 border-4 border-[#0f111a] flex items-center justify-center shadow-sm">
+                    <div className="absolute -bottom-1 -right-1 bg-accent text-black rounded-full p-1 border-4 border-surface flex items-center justify-center shadow-sm">
                       <span className="material-symbols-outlined text-[14px]">
                         verified
                       </span>
@@ -138,7 +211,7 @@ export default function VenueDetailClient({
                     <h3 className="font-display font-bold text-white text-lg">
                       Listed by {host.name}
                     </h3>
-                    <p className="text-[#ccff00] text-xs font-bold uppercase tracking-wider mb-2">
+                    <p className="text-accent text-xs font-bold uppercase tracking-wider mb-2">
                       Venue Foxer · Space Provider
                     </p>
                     <p className="text-sm text-text-muted leading-relaxed">
@@ -147,6 +220,8 @@ export default function VenueDetailClient({
                   </div>
                 </div>
               </div>
+
+              {organizerSlot}
 
               {/* Venue highlights */}
               <div className="space-y-6">
@@ -209,6 +284,114 @@ export default function VenueDetailClient({
                 </p>
               </div>
 
+              {venue.facilities && venue.facilities.length > 0 && (
+                <>
+                  <div className="h-px bg-white/10 w-full" />
+                  <div>
+                    <h3 className="text-2xl font-display font-bold text-white mb-4">
+                      Facilities
+                    </h3>
+                    <div className="flex flex-wrap gap-2">
+                      {venue.facilities.map((facility, idx) => (
+                        <span
+                          key={idx}
+                          className="px-3 py-1.5 bg-white/5 border border-white/10 rounded-lg text-sm text-gray-300 capitalize"
+                        >
+                          {facility.replace(/_/g, " ")}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                </>
+              )}
+
+              {venue.packages && venue.packages.length > 0 && (
+                <>
+                  <div className="h-px bg-white/10 w-full" />
+                  <div>
+                    <h3 className="text-2xl font-display font-bold text-white mb-4">
+                      Venue Packages
+                    </h3>
+                    <div className="grid gap-4 sm:grid-cols-2">
+                      {venue.packages.map((pkg: any) => (
+                        <div
+                          key={pkg.id}
+                          className="p-4 border border-white/10 rounded-2xl bg-white/5"
+                        >
+                          <h4 className="font-bold text-lg text-white mb-1">
+                            {pkg.name}
+                          </h4>
+                          <p className="text-accent font-bold text-sm mb-2">
+                            <Money amount={pkg.price} />
+                          </p>
+                          <p className="text-gray-400 text-sm whitespace-pre-line">
+                            {pkg.description}
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </>
+              )}
+
+              {((venue.recommendedAssets &&
+                venue.recommendedAssets.length > 0) ||
+                (venue.recommendedServices &&
+                  venue.recommendedServices.length > 0)) && (
+                <>
+                  <div className="h-px bg-white/10 w-full" />
+                  <div>
+                    <h3 className="text-2xl font-display font-bold text-white mb-4">
+                      In-House Extras
+                    </h3>
+                    <p className="text-gray-400 text-sm mb-4">
+                      Enhance your event with gear and talent provided directly
+                      by the venue.
+                    </p>
+                    <div className="grid gap-4 sm:grid-cols-2">
+                      {venue.recommendedAssets?.map((asset: any) => (
+                        <div
+                          key={asset.id}
+                          className="p-3 border border-white/10 rounded-xl bg-white/5 flex gap-3 items-center"
+                        >
+                          <span className="material-symbols-outlined text-accent text-2xl">
+                            speaker
+                          </span>
+                          <div>
+                            <p className="text-white font-bold text-sm">
+                              {asset.name}
+                            </p>
+                            <p className="text-accent text-xs">
+                              <Money amount={asset.price} /> /{" "}
+                              {asset.billingRate}
+                            </p>
+                          </div>
+                        </div>
+                      ))}
+                      {venue.recommendedServices?.map((service: any) => (
+                        <div
+                          key={service.id}
+                          className="p-3 border border-white/10 rounded-xl bg-white/5 flex gap-3 items-center"
+                        >
+                          <span className="material-symbols-outlined text-accent text-2xl">
+                            person
+                          </span>
+                          <div>
+                            <p className="text-white font-bold text-sm">
+                              {service.name}
+                            </p>
+                            <p className="text-accent text-xs">
+                              <Money amount={service.price} /> /{" "}
+                              {service.billingRate}
+                            </p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </>
+              )}
+
               <div className="h-px bg-white/10 w-full" />
 
               {/* Included in this Build (Fallback Array provided to prevent crash if undefined) */}
@@ -269,6 +452,7 @@ export default function VenueDetailClient({
                 province={venue.province}
                 lat={venue.lat}
                 lng={venue.lng}
+                boundary={venue.boundary}
               />
               <div className="h-px bg-white/10 w-full" />
 
@@ -277,9 +461,6 @@ export default function VenueDetailClient({
                   ...host,
                   reviews: venue.reviews || 0,
                   description: host.bio || "",
-                  createdAt: venue.host?.id
-                    ? new Date().toISOString()
-                    : undefined,
                 }}
               />
 
@@ -297,6 +478,7 @@ export default function VenueDetailClient({
                 capacity={venue.capacity?.toString() || "0"}
                 onContactOwner={handleContactOwner}
                 onCustomExperience={() => setIsCustomBookingOpen(true)}
+                onReportListing={handleReportListing}
               />
             </div>
           </div>
@@ -304,11 +486,11 @@ export default function VenueDetailClient({
       </main>
 
       {/* Floating Mobile Booking Footer (Hidden on lg+) */}
-      <div className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-[#0f111a]/95 backdrop-blur-xl border-t border-white/10 px-5 py-3.5 flex items-center justify-between shadow-[0_-10px_30px_rgba(0,0,0,0.8)]">
+      <div className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-surface/95 backdrop-blur-xl border-t border-white/10 px-5 py-3.5 flex items-center justify-between shadow-[0_-10px_30px_rgba(0,0,0,0.8)]">
         <div>
           <div className="flex items-baseline gap-1">
             <span className="text-xl font-display font-bold text-white">
-              ₱{venuePrice.toLocaleString()}
+              <Money amount={venuePrice} />
             </span>
             <span className="text-xs text-text-muted">
               / {venue.billingRate === "hour" ? "hr" : "day"}

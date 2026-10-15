@@ -1,13 +1,19 @@
-/* eslint-disable react-hooks/exhaustive-deps */
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 import { useRouter } from "next/navigation";
+import { useQueryClient } from "@tanstack/react-query";
+import { venueQueryKey } from "@/features/venue/hooks/useVenue";
 import { toast } from "sonner";
-import { useAuthStore } from "@/features/auth/store/useAuthStore";
+import { useAuthStore } from "@/shared/auth/useAuthStore";
 import { useVenueBuilder } from "@/features/venue/hooks/useVenueBuilder";
 import { fetchVenuesByHostId, updateVenue } from "@/features/venue/api/venues";
-import api from "@/shared/lib/axios";
+import { useFileUpload } from "@/shared/hooks/useFileUpload";
 import { VENUE_TYPES } from "@/features/venue/data/venueBuilderData";
 import type { Id } from "@/shared/lib/api-types";
 import type {
@@ -27,6 +33,12 @@ function belongsToHost(record: Venue, hostId: Id): boolean {
     String(record?.user_id),
     String(record?.creatorId),
     String(record?.host?.id),
+    // The raw API venue record carries `mayorId`/`mayor`, not `hostId`/
+    // `host` — those only appear after the server-side `normalizeVenue()`
+    // pass, which this client-side fetch never goes through. Without these,
+    // every real venue fails ownership matching regardless of who owns it.
+    String((record as any)?.mayorId),
+    String((record as any)?.mayor?.id),
   ];
 
   return candidates.some((c) => c && c !== "undefined" && c === idStr);
@@ -35,9 +47,15 @@ function belongsToHost(record: Venue, hostId: Id): boolean {
 function toTitleCase(value: unknown): string {
   const s = String(value ?? "").trim();
   if (!s) return "";
-  return s.charAt(0).toUpperCase() + s.slice(1);
+  return s.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
 }
 
+// Used only for the *target* status a submit action sends to the backend
+// (from handleSaveDraft/handlePublish) — the backend only ever accepts a
+// generic update moving a venue between "draft" and "pending" (see
+// venue.service.ts's updateVenue clamp), so anything else collapses to
+// "pending" here. Do NOT use this to interpret a venue's *current*, already-
+// fetched status — see normalizeExistingVenueStatus below for that.
 function normalizeVenueStatusToBackend(value: unknown): string {
   const raw = String(value ?? "")
     .trim()
@@ -49,6 +67,27 @@ function normalizeVenueStatusToBackend(value: unknown): string {
   if (raw.includes("draft")) return "draft";
   if (raw.includes("archiv")) return "archived";
   if (raw.includes("reject")) return "rejected";
+  return "pending";
+}
+
+// Used to interpret the venue's *current* status as fetched from the
+// backend, for display and for deciding whether editing this venue should
+// even be allowed to touch its status at all. Distinct from the function
+// above: this one recognizes "available" (the live/approved status) instead
+// of collapsing it to "pending" — collapsing it there was the bug that made
+// an already-approved venue's Studio header claim it was still a draft.
+function normalizeExistingVenueStatus(value: unknown): string {
+  const raw = String(value ?? "")
+    .trim()
+    .toLowerCase()
+    .replace(/_/g, " ")
+    .replace(/\s+/g, " ");
+
+  if (!raw) return "pending";
+  if (raw.includes("draft")) return "draft";
+  if (raw.includes("archiv")) return "archived";
+  if (raw.includes("reject")) return "rejected";
+  if (raw.includes("available") || raw.includes("publish")) return "available";
   return "pending";
 }
 
@@ -102,12 +141,17 @@ interface ErrorResponse {
   message?: string;
 }
 
+/** The api's cap on a venue's `imgIds`. */
+const MAX_VENUE_PHOTOS = 5;
+
 export function useHostVenueEdit(venueId: string) {
   const router = useRouter();
+  const queryClient = useQueryClient();
   const user = useAuthStore((s) => s.user);
   const hostId = user?.id;
 
   const builder = useVenueBuilder();
+  const { uploadFile } = useFileUpload();
 
   // `useVenueBuilder` returns a fresh object literal on every render (it spreads
   // the store and rebuilds handlers, and the return itself is not memoised), so
@@ -119,7 +163,9 @@ export function useHostVenueEdit(venueId: string) {
   // Read it through a ref instead: the effect gets the current builder without
   // depending on an identity that changes every render.
   const builderRef = useRef(builder);
-  builderRef.current = builder;
+  useEffect(() => {
+    builderRef.current = builder;
+  });
 
   const backHref = "/creator-dashboard/venues";
 
@@ -137,10 +183,31 @@ export function useHostVenueEdit(venueId: string) {
       toast.error("Please fill in the required fields (Name and Type)");
       return;
     }
+    if (builder.venueType === "Other" && !builder.venueTypeOther.trim()) {
+      toast.error("Please specify the venue type");
+      return;
+    }
 
     const capacityNum = parseInt(builder.capacity || "0", 10);
     if (!Number.isFinite(capacityNum) || capacityNum < 1) {
       toast.error("Capacity must be at least 1");
+      return;
+    }
+
+    // Once a venue is already live (`available`), this Studio session is
+    // just editing its details — never resubmitting it. Sending
+    // status: "pending"/"draft" here (what a fresh submit/save would send)
+    // would silently demote an approved, publicly-bookable venue back into
+    // review and pull it out of search/booking until an admin re-approves
+    // it, even though nothing about its approval actually changed.
+    const isAlreadyLive = existingStatus === "available";
+    const normalizedTarget = normalizeVenueStatusToBackend(targetStatus);
+    if (
+      !isAlreadyLive &&
+      normalizedTarget !== "draft" &&
+      (!builder.boundary || builder.boundary.length < 3)
+    ) {
+      toast.error("Draw a service-area shape on the map before publishing");
       return;
     }
 
@@ -150,13 +217,19 @@ export function useHostVenueEdit(venueId: string) {
       const payload: VenueUpdatePayload = {
         name: builder.venueName,
         description: builder.description || "Venue updated via Studio.",
-        category: builder.venueType.toLowerCase(),
+        category: (
+          builder.venueType === "Other" && builder.venueTypeOther.trim()
+            ? builder.venueTypeOther.trim()
+            : builder.venueType
+        ).toLowerCase(),
         capacity: capacityNum,
         address: builder.location,
         city: builder.city,
         state: builder.state || undefined,
         country: builder.country,
+        boundary: builder.boundary ?? undefined,
         price: builder.baseRate,
+        extraGuestRate: builder.extraGuestRate || undefined,
         spaceType: allItems
           .filter((i) => i.category === "spaces")
           .map((i) => i.name),
@@ -173,7 +246,7 @@ export function useHostVenueEdit(venueId: string) {
           .filter((i) => i.category === "rules")
           .map((i) => i.name),
         cancellationPolicyId: builder.cancellationPolicyId || undefined,
-        status: normalizeVenueStatusToBackend(targetStatus),
+        ...(isAlreadyLive ? {} : { status: normalizedTarget }),
       };
 
       if (!venueId) {
@@ -182,22 +255,49 @@ export function useHostVenueEdit(venueId: string) {
         return;
       }
 
-      await updateVenue(venueId, payload);
-
-      // Upload any new gallery files only.
-      const galleryFiles = builder.gallery
-        .map((item: { file?: File }) => item.file)
-        .filter((f): f is File => Boolean(f));
-
-      if (galleryFiles.length > 0) {
-        const formData = new FormData();
-        galleryFiles.forEach((file) => formData.append("images", file));
-        await api.post(`/venues/${venueId}/images`, formData);
+      // Photos go the way the venue builder sends them: upload each new file,
+      // then save the whole list as `imgIds`, which replaces the venue's set -
+      // so removals stick too. (This used to POST the files to
+      // `/venues/:id/images`, a route the api never had.) Sent only when every
+      // existing photo's File id is known, so an old record can't lose one.
+      const gallery = builder.gallery;
+      const hasNewPhotos = gallery.some((item) => item.file);
+      const knowsEveryId = gallery.every((item) => item.file || item.fileId);
+      if (gallery.length > MAX_VENUE_PHOTOS) {
+        toast.error(`A venue can have up to ${MAX_VENUE_PHOTOS} photos.`);
+        return;
+      }
+      if (hasNewPhotos && !knowsEveryId) {
+        toast.error("Couldn't match this venue's photos. Reload and try again.");
+        return;
+      }
+      if (knowsEveryId && gallery.length > 0) {
+        const imgIds: string[] = [];
+        for (const item of gallery) {
+          if (!item.file) {
+            imgIds.push(item.fileId!);
+            continue;
+          }
+          const uploaded = await uploadFile(item.file);
+          if (!uploaded?.fileId) {
+            throw new Error("One or more photos failed to upload.");
+          }
+          imgIds.push(uploaded.fileId);
+        }
+        payload.imgIds = imgIds;
       }
 
-      setExistingStatus(targetStatus);
+      await updateVenue(venueId, payload);
+      // The booking page and the listing-details form read this cache entry.
+      queryClient.invalidateQueries({ queryKey: venueQueryKey(venueId) });
+
+      if (!isAlreadyLive) setExistingStatus(normalizedTarget);
       toast.success(
-        targetStatus === "draft" ? "Draft saved!" : "Venue published!",
+        isAlreadyLive
+          ? "Venue updated!"
+          : targetStatus === "draft"
+            ? "Draft saved!"
+            : "Venue published!",
       );
       setTimeout(() => {
         builder.reset();
@@ -266,7 +366,7 @@ export function useHostVenueEdit(venueId: string) {
         if (cancelled) return;
 
         setExistingStatus(
-          normalizeVenueStatusToBackend(found?.status ?? "pending_review"),
+          normalizeExistingVenueStatus(found?.status ?? "pending_review"),
         );
 
         builder.reset();
@@ -275,9 +375,24 @@ export function useHostVenueEdit(venueId: string) {
         builder.setVenueName(found?.name ?? found?.title ?? "");
         builder.setDescription(found?.description ?? "");
 
-        const rawType = found?.type ?? found?.venueType ?? "";
+        // The backend stores this as `category` (a free-text field); `type`/
+        // `venueType` are checked first only as legacy fallbacks in case an
+        // older normalized shape is ever passed in here.
+        const rawType = found?.type ?? found?.venueType ?? found?.category ?? "";
         const normalizedType = toTitleCase(String(rawType).toLowerCase());
-        builder.setVenueType(normalizedType || (VENUE_TYPES[0] as string));
+        if (normalizedType && VENUE_TYPES.includes(normalizedType)) {
+          builder.setVenueType(normalizedType);
+          builder.setVenueTypeOther("");
+        } else if (normalizedType) {
+          // A category that isn't one of the known types — e.g. a custom
+          // value entered via "Other" — round-trips back into "Other" with
+          // the original text restored.
+          builder.setVenueType("Other");
+          builder.setVenueTypeOther(normalizedType);
+        } else {
+          builder.setVenueType(VENUE_TYPES[0] as string);
+          builder.setVenueTypeOther("");
+        }
 
         builder.setCapacity(String(found?.capacity ?? found?.cap ?? ""));
 
@@ -287,6 +402,11 @@ export function useHostVenueEdit(venueId: string) {
         builder.setCity(found?.city ?? "");
         builder.setState(found?.state ?? "");
         builder.setCountry(found?.country ?? "");
+        builder.setLat(found?.lat != null ? Number(found.lat) : null);
+        builder.setLng(found?.lng != null ? Number(found.lng) : null);
+        builder.setBoundary(
+          Array.isArray(found?.boundary) ? found.boundary : null,
+        );
 
         // Gallery
         const images = (found?.venueImages ?? found?.images ?? []) as (
@@ -300,6 +420,7 @@ export function useHostVenueEdit(venueId: string) {
               img && typeof img === "object" ? (img as VenueImage) : null;
             builder.addGalleryItem({
               id: `venue-img-${found?.id}-${idx}`,
+              fileId: imgObj?.id,
               url,
               caption: imgObj?.altText ?? imgObj?.caption ?? `Image ${idx + 1}`,
             });
@@ -371,6 +492,9 @@ export function useHostVenueEdit(venueId: string) {
         );
         builder.setOccupancyRate(
           Number(found?.occupancyRate ?? found?.occupancy ?? 60),
+        );
+        builder.setExtraGuestRate(
+          found?.extraGuestRate != null ? Number(found.extraGuestRate) : 0,
         );
       } catch (err) {
         console.error("Prefill venue edit failed:", err);

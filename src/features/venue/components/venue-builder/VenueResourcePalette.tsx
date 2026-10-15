@@ -1,4 +1,3 @@
-/* eslint-disable @next/next/no-img-element */
 "use client";
 
 import React from "react";
@@ -6,6 +5,8 @@ import {
   RESOURCE_CATEGORIES,
   ResourceItem,
 } from "@/features/venue/data/venueBuilderData";
+import { Money } from "@/shared/components/ui/Money";
+import { currencySymbol } from "@/shared/lib/currency";
 
 interface VenueResourcePaletteProps {
   activeCategory: string;
@@ -68,21 +69,21 @@ export function VenueResourcePalette({
   return (
     <>
       {/* Category Navigation */}
-      <nav className="w-24 shrink-0 bg-[#0f111a] border-r border-white/5 flex flex-col items-center py-6 gap-6 overflow-y-auto hide-scrollbar z-20">
+      <nav className="w-16 sm:w-20 md:w-24 shrink-0 bg-surface border-r border-white/5 flex flex-col items-center py-4 sm:py-6 gap-3 sm:gap-6 overflow-y-auto hide-scrollbar z-20">
         {RESOURCE_CATEGORIES.map((cat) => (
           <button
             key={cat.id}
             onClick={() => onCategoryChange(cat.id)}
-            className={`flex flex-col items-center justify-center w-16 h-16 rounded-xl transition-all ${
+            className={`flex flex-col items-center justify-center w-12 h-12 sm:w-16 sm:h-16 rounded-xl transition-all ${
               activeCategory === cat.id
                 ? "bg-accent text-black font-bold shadow-[0_0_15px_rgba(204,255,0,0.4)] scale-105"
                 : "text-text-muted hover:text-white hover:bg-white/5"
             }`}
           >
-            <span className="material-symbols-outlined text-[28px] mb-1">
+            <span className="material-symbols-outlined text-[22px] sm:text-[28px] mb-0.5 sm:mb-1">
               {cat.icon}
             </span>
-            <span className="text-[9px] uppercase tracking-wider">
+            <span className="text-[8px] sm:text-[9px] uppercase tracking-wider truncate max-w-[48px] sm:max-w-none text-center">
               {cat.label}
             </span>
           </button>
@@ -90,7 +91,7 @@ export function VenueResourcePalette({
       </nav>
 
       {/* Resource List */}
-      <aside className="w-80 shrink-0 border-r border-white/5 bg-[#0f111a] flex flex-col relative z-10">
+      <aside className="w-full sm:w-72 md:w-80 shrink-0 border-r border-white/5 bg-surface flex flex-col relative z-10">
         <div className="p-6 pb-2">
           <h3 className="font-display font-bold text-lg text-white mb-1">
             {currentCategoryLabel}
@@ -99,7 +100,7 @@ export function VenueResourcePalette({
         </div>
 
         <div className="px-6 pb-4 space-y-4 pt-2">
-          <div className="bg-[#1a1d2d] border border-white/10 rounded-xl p-4 shadow-xl overflow-hidden">
+          <div className="bg-surface-raised border border-white/10 rounded-xl p-4 shadow-xl overflow-hidden">
             <div className="flex justify-between items-center mb-4">
               <span className="text-[10px] font-bold text-accent uppercase tracking-[0.2em]">
                 Add {currentCategoryLabel} Item
@@ -114,7 +115,7 @@ export function VenueResourcePalette({
                 className="hidden"
               />
 
-              <div className="flex gap-3">
+              <div className="flex items-start gap-3">
                 {/* Photo Upload Area - Hidden for Staffing and Policies */}
                 {activeCategory !== "staff" && activeCategory !== "rules" && (
                   <div className="relative group shrink-0">
@@ -171,25 +172,25 @@ export function VenueResourcePalette({
                       className="w-full bg-black/30 border border-white/5 rounded-lg px-3 py-2 text-xs text-white focus:border-accent outline-none transition-colors"
                     />
                   </div>
+
+                  {activeCategory !== "rules" && (
+                    <div className="space-y-1">
+                      <label className="text-[9px] uppercase text-white/40 font-bold ml-1">
+                        Value ({currencySymbol()})
+                      </label>
+                      <input
+                        type="number"
+                        placeholder="0"
+                        value={newItem.value}
+                        onChange={(e) =>
+                          onNewItemChange({ ...newItem, value: e.target.value })
+                        }
+                        className="w-full bg-black/30 border border-white/5 rounded-lg px-3 py-2 text-xs text-white focus:border-accent outline-none transition-colors"
+                      />
+                    </div>
+                  )}
                 </div>
               </div>
-
-              {activeCategory !== "rules" && (
-                <div className="space-y-1">
-                  <label className="text-[9px] uppercase text-white/40 font-bold ml-1">
-                    Value (₱)
-                  </label>
-                  <input
-                    type="number"
-                    placeholder="0"
-                    value={newItem.value}
-                    onChange={(e) =>
-                      onNewItemChange({ ...newItem, value: e.target.value })
-                    }
-                    className="w-full bg-black/30 border border-white/5 rounded-lg px-3 py-2 text-xs text-white focus:border-accent outline-none transition-colors"
-                  />
-                </div>
-              )}
               <button
                 onClick={onAddCustomItem}
                 disabled={!newItem.name}
@@ -209,7 +210,7 @@ export function VenueResourcePalette({
               placeholder="Search items..."
               value={searchQuery}
               onChange={(e) => onSearchChange(e.target.value)}
-              className="w-full bg-[#1a1d2d]/50 border border-white/5 rounded-xl py-2 pl-10 pr-4 text-xs text-white focus:border-accent outline-none placeholder:text-white/10"
+              className="w-full bg-surface-raised/50 border border-white/5 rounded-xl py-2 pl-10 pr-4 text-xs text-white focus:border-accent outline-none placeholder:text-white/10"
             />
           </div>
         </div>
@@ -220,7 +221,7 @@ export function VenueResourcePalette({
               key={item.id}
               draggable
               onDragStart={(e) => onDragStart(e, item)}
-              className="group bg-[#161b26] hover:bg-[#1c2230] border border-white/5 hover:border-white/10 rounded-2xl p-4 cursor-grab relative"
+              className="group bg-surface-raised hover:bg-surface-raised border border-white/5 hover:border-white/10 rounded-2xl p-4 cursor-grab relative"
             >
               <div className="flex gap-4">
                 <div className="h-12 w-12 rounded-xl bg-black/40 flex items-center justify-center overflow-hidden shrink-0 border border-white/5">
@@ -244,7 +245,7 @@ export function VenueResourcePalette({
                     <div className="flex flex-row items-center gap-2">
                       {item.category !== "rules" && (
                         <span className="text-xs text-accent font-bold font-mono">
-                          ₱{item.value.toLocaleString()}
+                          <Money amount={item.value} />
                         </span>
                       )}
                       <button

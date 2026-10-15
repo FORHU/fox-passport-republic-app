@@ -1,7 +1,7 @@
 "use client";
 
 import React, { Suspense } from "react";
-import RequireAuth from "@/features/auth/components/RequireAuth";
+import RequireAuth from "@/shared/auth/RequireAuth";
 import { Loader2, AlertTriangle } from "lucide-react";
 import {
   VenueHeader,
@@ -11,6 +11,9 @@ import {
   RevenueProjector,
 } from "@/features/venue/components/venue-builder";
 import { useHostVenueEdit } from "@/features/venue/hooks/useHostVenueEdit";
+import { VenueAffiliatesSection } from "@/features/venue-affiliation/components/VenueAffiliatesSection";
+import { VenueAvailabilitySection } from "@/features/venue/components/VenueAvailabilitySection";
+import { TeamPanel } from "@/features/appointment/components/TeamPanel";
 
 interface Props {
   id: string;
@@ -20,20 +23,26 @@ function VenueEditContent({ id }: Props) {
   const {
     isPrefilling,
     prefillError,
+    existingStatus,
     venueName,
     description,
     venueType,
+    venueTypeOther,
     capacity,
     location,
     city,
     state,
     country,
+    lat,
+    lng,
+    boundary,
     gallery,
     cancellationPolicyId,
     includedItems,
     addonItems,
     baseRate,
     occupancyRate,
+    extraGuestRate,
     activeCategory,
     searchQuery,
     showGuide,
@@ -46,16 +55,21 @@ function VenueEditContent({ id }: Props) {
     setVenueName,
     setDescription,
     setVenueType,
+    setVenueTypeOther,
     setCapacity,
     setLocation,
     setCity,
     setState,
     setCountry,
+    setLat,
+    setLng,
+    setBoundary,
     setCancellationPolicyId,
     removeIncludedItem,
     removeAddonItem,
     setBaseRate,
     setOccupancyRate,
+    setExtraGuestRate,
     setActiveCategory,
     setSearchQuery,
     setShowGuide,
@@ -76,7 +90,7 @@ function VenueEditContent({ id }: Props) {
   return (
     <RequireAuth>
       {!id ? (
-        <div className="fixed inset-0 z-[80] bg-[#02040a] text-white flex items-center justify-center">
+        <div className="fixed inset-0 z-[80] bg-canvas text-white flex items-center justify-center">
           <div className="glass-panel rounded-[2rem] p-12 border border-red-500/20">
             <div className="flex flex-col items-center gap-3 text-center">
               <AlertTriangle className="h-8 w-8 text-red-400" />
@@ -85,7 +99,7 @@ function VenueEditContent({ id }: Props) {
           </div>
         </div>
       ) : prefillError ? (
-        <div className="fixed inset-0 z-[80] bg-[#02040a]/90 text-white flex items-center justify-center">
+        <div className="fixed inset-0 z-[80] bg-canvas/90 text-white flex items-center justify-center">
           <div className="glass-panel rounded-[2rem] p-12 border border-red-500/20 text-center max-w-lg w-full">
             <div className="flex flex-col items-center gap-3 text-center">
               <AlertTriangle className="h-8 w-8 text-red-400" />
@@ -101,18 +115,19 @@ function VenueEditContent({ id }: Props) {
           </div>
         </div>
       ) : isPrefilling ? (
-        <div className="fixed inset-0 z-[80] bg-[#02040a]/90 text-white flex items-center justify-center">
+        <div className="fixed inset-0 z-[80] bg-canvas/90 text-white flex items-center justify-center">
           <div className="glass-panel rounded-[2rem] p-12 border border-white/5">
             <div className="flex flex-col items-center gap-3">
-              <Loader2 className="h-8 w-8 text-[#ccff00] animate-spin" />
+              <Loader2 className="h-8 w-8 text-accent animate-spin" />
               <div className="text-sm text-white/50">Loading venue...</div>
             </div>
           </div>
         </div>
       ) : (
-        <div className="fixed inset-0 z-60 bg-[#02040a] text-white flex flex-col font-body">
+        <div className="fixed inset-0 z-60 bg-canvas text-white flex flex-col font-body">
           <VenueHeader
             venueName={venueName}
+            status={existingStatus}
             isSubmitting={isSubmitting}
             onBack={handleBack}
             onSaveDraft={handleSaveDraft}
@@ -132,28 +147,39 @@ function VenueEditContent({ id }: Props) {
               onRemoveResource={handleRemoveCustomResource}
               onDragStart={handleDragStart}
             />
-            <main className="flex-1 overflow-y-auto p-8 bg-[#02040a] flex gap-8">
-              <div className="flex-1 max-w-4xl mx-auto space-y-8">
+            <main className="flex-1 overflow-y-auto p-8 bg-canvas flex gap-8">
+              <div className="flex-1 min-w-0 space-y-8">
                 <VenueDetailsForm
                   venueName={venueName}
                   description={description}
                   venueType={venueType}
+                  venueTypeOther={venueTypeOther}
                   capacity={capacity}
                   location={location}
                   city={city}
                   state={state}
                   country={country}
+                  lat={lat}
+                  lng={lng}
+                  boundary={boundary}
+                  excludeVenueId={id}
                   gallery={gallery}
                   showGuide={showGuide}
                   cancellationPolicyId={cancellationPolicyId}
                   onNameChange={setVenueName}
                   onDescriptionChange={setDescription}
                   onTypeChange={setVenueType}
+                  onTypeOtherChange={setVenueTypeOther}
                   onCapacityChange={setCapacity}
                   onLocationChange={setLocation}
                   onCityChange={setCity}
                   onStateChange={setState}
                   onCountryChange={setCountry}
+                  onLatLngChange={(lat, lng) => {
+                    setLat(lat);
+                    setLng(lng);
+                  }}
+                  onBoundaryChange={setBoundary}
                   onCancellationPolicyChange={setCancellationPolicyId}
                   onAddImage={addImageToGallery}
                   onRemoveImage={removeImageFromGallery}
@@ -177,16 +203,22 @@ function VenueEditContent({ id }: Props) {
                   onDrop={handleDrop}
                   onRemoveItem={removeAddonItem}
                 />
+                <VenueAvailabilitySection venueId={id} />
+                <VenueAffiliatesSection venueId={id} />
+                <TeamPanel target={{ type: "venue", id }} />
               </div>
             </main>
             <RevenueProjector
               baseRate={baseRate}
               occupancyRate={occupancyRate}
+              extraGuestRate={extraGuestRate}
+              capacity={capacity}
               monthlyBase={revenue.monthlyBase}
               monthlyAddons={revenue.monthlyAddons}
               total={revenue.total}
               onBaseRateChange={setBaseRate}
               onOccupancyRateChange={setOccupancyRate}
+              onExtraGuestRateChange={setExtraGuestRate}
               onPreview={() => window.open(`/venues/${id}`, "_blank")}
             />
           </div>
@@ -198,7 +230,7 @@ function VenueEditContent({ id }: Props) {
 
 export default function VenueEditClient({ id }: Props) {
   return (
-    <Suspense fallback={<div className="fixed inset-0 bg-[#02040a]" />}>
+    <Suspense fallback={<div className="fixed inset-0 bg-canvas" />}>
       <VenueEditContent id={id} />
     </Suspense>
   );

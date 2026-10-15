@@ -1,18 +1,15 @@
-/* eslint-disable @next/next/no-img-element */
 "use client";
 
 import React from "react";
 import { LocationMap } from "@/shared/components/ui/LocationMap";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import {
-  getReviewsByListing,
-  postReviewReply,
-  Review,
-  ReviewReply,
-} from "@/features/review/api/reviews";
-import ReviewReplyModal from "@/features/review/components/ReviewReplyModal";
-import { useAuthStore } from "@/features/auth/store/useAuthStore";
+import { getReviewsByListing, postReviewReply } from "@/shared/api/reviews";
+import type { Review, ReviewReply } from "@/shared/types/review";
+import ReviewReplyModal from "@/shared/components/ui/ReviewReplyModal";
+
+import { useAuthStore } from "@/shared/auth/useAuthStore";
 import { toast } from "sonner";
+import { joinPlace } from "@/shared/lib/place";
 
 interface VenueCalendarProps {
   checkInDate: number | null;
@@ -536,20 +533,32 @@ interface VenueMapProps {
   province: string;
   lat?: number | null;
   lng?: number | null;
+  boundary?: [number, number][] | null;
 }
 
-export function VenueMap({ location, province, lat, lng }: VenueMapProps) {
+export function VenueMap({
+  location,
+  province,
+  lat,
+  lng,
+  boundary,
+}: VenueMapProps) {
   return (
     <div>
       <h3 className="text-2xl font-display font-bold text-white mb-2">
         Location
       </h3>
       <p className="text-text-muted text-sm mb-6">
-        {location}, {province}
+        {joinPlace(location, province)}
       </p>
       {lat && lng ? (
         <div className="relative rounded-2xl overflow-hidden border border-white/10">
-          <LocationMap lat={lat} lng={lng} className="h-80 w-full" />
+          <LocationMap
+            lat={lat}
+            lng={lng}
+            boundary={boundary}
+            className="h-80 w-full"
+          />
           <div className="absolute bottom-3 left-1/2 -translate-x-1/2">
             <span className="bg-black/80 backdrop-blur-md text-white text-xs font-bold px-3 py-1.5 rounded-full border border-white/10">
               Exact location provided after booking
@@ -557,15 +566,15 @@ export function VenueMap({ location, province, lat, lng }: VenueMapProps) {
           </div>
         </div>
       ) : (
-        <div className="h-80 w-full rounded-2xl bg-[#1f2235] relative overflow-hidden flex items-center justify-center border border-white/10 group">
+        <div className="h-80 w-full rounded-2xl bg-surface-raised relative overflow-hidden flex items-center justify-center border border-white/10 group">
           <div
             className="absolute inset-0 opacity-20"
             style={{
-              backgroundImage: "radial-gradient(#ffffff 1px, transparent 1px)",
+              backgroundImage: "radial-gradient(var(--color-white) 1px, transparent 1px)",
               backgroundSize: "20px 20px",
             }}
           />
-          <div className="absolute inset-0 bg-linear-to-t from-[#02040a] via-transparent to-transparent opacity-50" />
+          <div className="absolute inset-0 bg-linear-to-t from-canvas via-transparent to-transparent opacity-50" />
           <div className="relative z-10 flex flex-col items-center gap-2 group-hover:-translate-y-2 transition-transform duration-300">
             <div className="h-16 w-16 rounded-full bg-accent/20 flex items-center justify-center animate-pulse">
               <div className="h-4 w-4 bg-accent rounded-full shadow-[0_0_20px_#ccff00]" />
@@ -596,7 +605,7 @@ export function HostBio({ host }: HostBioProps) {
         year: "numeric",
         month: "long",
       })
-    : "Recently";
+    : "";
 
   return (
     <div className="flex gap-6 items-start">
@@ -604,9 +613,9 @@ export function HostBio({ host }: HostBioProps) {
         <img
           src={host.avatar}
           className="w-16 h-16 rounded-full object-cover border-2 border-white/10"
-          alt="Venue owner"
+          alt="Venue Foxer"
         />
-        <div className="absolute -bottom-1 -right-1 bg-accent text-black rounded-full p-1 border-4 border-[#0f111a] shadow-sm flex items-center justify-center">
+        <div className="absolute -bottom-1 -right-1 bg-accent text-black rounded-full p-1 border-4 border-surface shadow-sm flex items-center justify-center">
           <span className="material-symbols-outlined text-[14px]">
             verified
           </span>
@@ -616,18 +625,24 @@ export function HostBio({ host }: HostBioProps) {
         <h3 className="text-xl font-bold text-white mb-1">
           Listed by {host.name}
         </h3>
-        <p className="text-text-muted text-sm mb-4">Joined {joinedDate}</p>
-        <div className="flex gap-4 text-sm text-white mb-4">
-          <span className="flex items-center gap-1">
-            <span className="material-symbols-outlined text-[16px] text-accent">
-              star
-            </span>{" "}
-            {host.reviews} Reviews
-          </span>
-        </div>
-        <p className="text-sm text-gray-300 leading-relaxed mb-4">
-          {host.description}
-        </p>
+        {joinedDate && (
+          <p className="text-text-muted text-sm mb-4">Joined {joinedDate}</p>
+        )}
+        {host.reviews > 0 && (
+          <div className="flex gap-4 text-sm text-white mb-4">
+            <span className="flex items-center gap-1">
+              <span className="material-symbols-outlined text-[16px] text-accent">
+                star
+              </span>{" "}
+              {host.reviews} Reviews
+            </span>
+          </div>
+        )}
+        {host.description && (
+          <p className="text-sm text-gray-300 leading-relaxed mb-4">
+            {host.description}
+          </p>
+        )}
         <div className="flex items-center gap-4">
           <button className="px-6 py-3 rounded-xl border border-white/10 text-sm font-bold text-white hover:bg-white hover:text-black transition-colors">
             Contact Owner

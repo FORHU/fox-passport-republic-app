@@ -1,14 +1,13 @@
-﻿"use client";
+"use client";
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { useProfile } from "@/features/user/hooks/useProfile";
-import { useAuthStore } from "@/features/auth/store/useAuthStore";
-import { useLogout } from "@/features/auth/hooks/useAuth";
+import { useLogout } from "@/shared/auth/useLogout";
+import { useAuthStore } from "@/shared/auth/useAuthStore";
 import AvatarUploader from "@/features/user/components/AvatarUploader";
 
-type Section = "profile" | "security" | "danger";
+type Section = "profile" | "privacy" | "security" | "danger";
 
 function SectionButton({
   active,
@@ -30,7 +29,7 @@ function SectionButton({
         active
           ? danger
             ? "bg-red-500/10 text-red-400 border border-red-500/20"
-            : "bg-[#ccff00]/10 text-[#ccff00] border border-[#ccff00]/20"
+            : "bg-accent/10 text-accent border border-accent/20"
           : "text-white/40 hover:text-white hover:bg-white/5"
       }`}
     >
@@ -63,8 +62,37 @@ function StatusBadge({
   );
 }
 
-export default function ProfileSettingsClient() {
-  const router = useRouter();
+function ToggleSwitch({
+  checked,
+  onChange,
+}: {
+  checked: boolean;
+  onChange: (checked: boolean) => void;
+}) {
+  return (
+    <button
+      type="button"
+      role="switch"
+      aria-checked={checked}
+      onClick={() => onChange(!checked)}
+      className={`relative h-6 w-11 shrink-0 rounded-full transition-colors ${
+        checked ? "bg-accent" : "bg-white/10"
+      }`}
+    >
+      <span
+        className={`absolute top-0.5 left-0.5 h-5 w-5 rounded-full bg-black transition-transform ${
+          checked ? "translate-x-5" : "translate-x-0"
+        }`}
+      />
+    </button>
+  );
+}
+
+export default function ProfileSettingsClient({
+  blockedUsersSlot,
+}: {
+  blockedUsersSlot?: React.ReactNode;
+}) {
   const logout = useLogout();
   const storeUser = useAuthStore((state) => state.user);
   const { profile, isLoading, updateProfile, changePassword, deleteAccount } =
@@ -82,6 +110,7 @@ export default function ProfileSettingsClient() {
   const [username, setUsername] = useState("");
   const [phone, setPhone] = useState("");
   const [profileImage, setProfileImage] = useState("");
+  const [isPrivate, setIsPrivate] = useState(false);
 
   // Password form
   const [currentPassword, setCurrentPassword] = useState("");
@@ -98,6 +127,7 @@ export default function ProfileSettingsClient() {
       setUsername(profile.username ?? "");
       setPhone(profile.phone ?? "");
       setProfileImage(profile.imgId ?? "");
+      setIsPrivate(profile.isPrivate ?? false);
     }
   }, [profile]);
 
@@ -115,6 +145,7 @@ export default function ProfileSettingsClient() {
         username: username.trim() || undefined,
         phone: phone.trim() || undefined,
         profileImage: profileImage.trim() || undefined,
+        isPrivate,
       });
       flash("Profile updated successfully", "success");
     } catch (err: any) {
@@ -163,8 +194,7 @@ export default function ProfileSettingsClient() {
     setIsSaving(true);
     try {
       await deleteAccount(deletePassword);
-      await logout();
-      router.push("/");
+      await logout({ promptLogin: false });
     } catch (err: any) {
       flash(
         err?.response?.data?.message ?? "Failed to delete account",
@@ -181,9 +211,9 @@ export default function ProfileSettingsClient() {
     .replace(/\b\w/g, (c) => c.toUpperCase());
 
   return (
-    <div className="min-h-screen bg-[#02040a] text-white font-body antialiased">
+    <div className="min-h-screen bg-canvas text-white font-body antialiased">
       {/* Header */}
-      <header className="fixed top-0 left-0 right-0 z-50 bg-[#02040a]/80 backdrop-blur-md border-b border-white/5">
+      <header className="fixed top-0 left-0 right-0 z-50 bg-canvas/80 backdrop-blur-md border-b border-white/5">
         <div className="mx-auto max-w-6xl px-4 h-20 flex items-center gap-4">
           <Link
             href="/user"
@@ -205,7 +235,7 @@ export default function ProfileSettingsClient() {
         <aside className="w-64 shrink-0">
           <div className="sticky top-28 space-y-6">
             {/* Avatar card */}
-            <div className="bg-[#0f111a] border border-white/5 rounded-[2rem] p-6 text-center">
+            <div className="bg-surface border border-white/5 rounded-[2rem] p-6 text-center">
               <div className="flex justify-center mb-4">
                 <AvatarUploader
                   currentUrl={profileImage || undefined}
@@ -233,6 +263,12 @@ export default function ProfileSettingsClient() {
                 onClick={() => setActiveSection("profile")}
               />
               <SectionButton
+                active={activeSection === "privacy"}
+                icon="shield"
+                label="Privacy"
+                onClick={() => setActiveSection("privacy")}
+              />
+              <SectionButton
                 active={activeSection === "security"}
                 icon="lock"
                 label="Security"
@@ -256,13 +292,13 @@ export default function ProfileSettingsClient() {
           )}
 
           {isLoading ? (
-            <div className="bg-[#0f111a] border border-white/5 rounded-[2rem] p-12 text-center text-white/30 text-sm">
+            <div className="bg-surface border border-white/5 rounded-[2rem] p-12 text-center text-white/30 text-sm">
               Loading profile…
             </div>
           ) : activeSection === "profile" ? (
             <form
               onSubmit={handleUpdateProfile}
-              className="bg-[#0f111a] border border-white/5 rounded-[2rem] p-8 space-y-6"
+              className="bg-surface border border-white/5 rounded-[2rem] p-8 space-y-6"
             >
               <div>
                 <h2 className="text-lg font-display font-bold mb-1">
@@ -321,11 +357,24 @@ export default function ProfileSettingsClient() {
                 </Field>
               </div>
 
+              <div className="flex items-center justify-between gap-4 p-4 rounded-xl bg-white/[0.02] border border-white/5">
+                <div>
+                  <p className="text-sm font-bold text-white">
+                    Private Profile
+                  </p>
+                  <p className="text-xs text-white/40 mt-0.5">
+                    New followers must be approved by you. Your followers and
+                    following lists are hidden from everyone else.
+                  </p>
+                </div>
+                <ToggleSwitch checked={isPrivate} onChange={setIsPrivate} />
+              </div>
+
               <div className="flex items-center gap-3 pt-2">
                 <button
                   type="submit"
                   disabled={isSaving}
-                  className="px-6 py-3 bg-[#ccff00] text-black font-bold text-sm rounded-xl hover:shadow-[0_0_20px_rgba(204,255,0,0.3)] transition-all disabled:opacity-50 flex items-center gap-2"
+                  className="px-6 py-3 bg-accent text-black font-bold text-sm rounded-xl hover:shadow-[0_0_20px_rgba(204,255,0,0.3)] transition-all disabled:opacity-50 flex items-center gap-2"
                 >
                   {isSaving ? (
                     <span className="material-symbols-outlined text-[18px] animate-spin">
@@ -340,10 +389,12 @@ export default function ProfileSettingsClient() {
                 </button>
               </div>
             </form>
+          ) : activeSection === "privacy" ? (
+            blockedUsersSlot
           ) : activeSection === "security" ? (
             <form
               onSubmit={handleChangePassword}
-              className="bg-[#0f111a] border border-white/5 rounded-[2rem] p-8 space-y-6"
+              className="bg-surface border border-white/5 rounded-[2rem] p-8 space-y-6"
             >
               <div>
                 <h2 className="text-lg font-display font-bold mb-1">
@@ -391,7 +442,7 @@ export default function ProfileSettingsClient() {
               <button
                 type="submit"
                 disabled={isSaving}
-                className="px-6 py-3 bg-[#ccff00] text-black font-bold text-sm rounded-xl hover:shadow-[0_0_20px_rgba(204,255,0,0.3)] transition-all disabled:opacity-50 flex items-center gap-2"
+                className="px-6 py-3 bg-accent text-black font-bold text-sm rounded-xl hover:shadow-[0_0_20px_rgba(204,255,0,0.3)] transition-all disabled:opacity-50 flex items-center gap-2"
               >
                 {isSaving ? (
                   <span className="material-symbols-outlined text-[18px] animate-spin">
@@ -408,7 +459,7 @@ export default function ProfileSettingsClient() {
           ) : (
             <form
               onSubmit={handleDeleteAccount}
-              className="bg-[#0f111a] border border-red-500/10 rounded-[2rem] p-8 space-y-6"
+              className="bg-surface border border-red-500/10 rounded-[2rem] p-8 space-y-6"
             >
               <div>
                 <h2 className="text-lg font-display font-bold text-red-400 mb-1">

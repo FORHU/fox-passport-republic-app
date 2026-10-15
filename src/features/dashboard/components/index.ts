@@ -3,14 +3,17 @@ export { StatusBadge } from "./StatusBadge";
 export { LockedSection } from "./LockedSection";
 export { DashboardHeader, WelcomeBanner } from "./DashboardHeader";
 export { KPICards } from "./KPICards";
-export { OccupancyChart, PendingRequests } from "./OccupancySection";
+
 export { EventsSection } from "./EventsSection";
 export { VenuesSection } from "./VenuesSection";
 export { InventorySection, ServicesSection } from "./InventoryServicesSection";
 export {
+  PerformersSection,
+  isPerformerService,
+} from "./PerformersSection";
+export {
   CalendarWidget,
   CreatorProfile,
-  RecentActivity,
 } from "./SidebarWidgets";
 
 export { default as StripeConnectSection } from "./StripeConnectSection";

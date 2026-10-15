@@ -4,9 +4,11 @@ export type UserPath =
   | "user"
   | "gearFoxer"
   | "serviceFoxer"
+  | "performerFoxer"
   | "eventFoxer"
   | "venueFoxer"
-  | "investor";
+  | "investor"
+  | "organizer";
 
 export type BadgeRarity = "Common" | "Uncommon" | "Rare" | "Epic" | "Legendary";
 
@@ -109,6 +111,13 @@ export const PATH_LABELS = {
     15: "Master Foxer",
     20: "Elite Foxer",
   },
+  performerFoxer: {
+    1: "Starter Foxer",
+    5: "Social Butterfly",
+    10: "Event Curator",
+    15: "Master Foxer",
+    20: "Elite Foxer",
+  },
   eventFoxer: {
     1: "Event Starter",
     3: "Event Planner",
@@ -130,6 +139,14 @@ export const PATH_LABELS = {
     10: "Major Stakeholder",
     15: "Elite Investor",
   },
+  // Earned helping run other people's Venues and Events (the API's ADR 0005).
+  organizer: {
+    1: "Crew Member",
+    3: "Stage Manager",
+    7: "Floor Lead",
+    12: "Production Chief",
+    18: "Master Organizer",
+  },
 };
 
 // Badge colors by rarity
@@ -146,9 +163,11 @@ export const PATH_COLORS: Record<UserPath, string> = {
   user: "#22c55e", // Green
   gearFoxer: "#f97316", // Orange
   serviceFoxer: "#f97316", // Orange
+  performerFoxer: "#f59e0b", // Amber
   eventFoxer: "#3b82f6", // Blue
   venueFoxer: "#a855f7", // Purple
   investor: "#eab308", // Yellow
+  organizer: "#e879f9", // Fuchsia
 };
 
 // XP rewards for different actions
@@ -160,11 +179,16 @@ export const XP_REWARDS = {
   shareEvent: 15,
   referFriend: 200,
 
-  // GearFoxer / ServiceFoxer path
+  // GearFoxer / ServiceFoxer / PerformerFoxer path
   createListing: 100,
   listingBooked: 150,
   completeEvent: 200,
   receive5StarReview: 50,
+
+  // Organizer path: mirrors ORGANIZER_XP in the API's organizer-xp.service.ts
+  organizerEventCompleted: 150,
+  organizerGuestCheckedIn: 5,
+  organizerCheckInCapPerEvent: 100,
 
   // VenueFoxer path
   uploadVenue: 75,

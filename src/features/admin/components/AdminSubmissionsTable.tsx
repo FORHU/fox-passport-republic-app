@@ -1,12 +1,16 @@
-/* eslint-disable @next/next/no-img-element */
 "use client";
 
 import React, { useEffect, useState } from "react";
 import api from "@/shared/lib/axios";
 import { toast } from "sonner";
-import { useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { Money } from "@/shared/components/ui/Money";
 
-type RoleStatus = "pending" | "approved" | "rejected";
+type RoleStatus =
+  | "pending"
+  | "approved"
+  | "rejected"
+  | "revision_requested";
 
 interface FileRecord {
   id: string;
@@ -25,11 +29,27 @@ interface ApplicationData {
   birPermitFile?: FileRecord | null;
   selfieFile?: FileRecord | null;
   portfolioFile?: FileRecord | null;
-  // investor fields
-  investmentAmount?: string;
-  businessName?: string;
-  businessType?: string;
+  backgroundClearanceFile?: FileRecord | null; // organizer only
+  // investor fields — match InvestorApplication in the Prisma schema, not
+  // the identity-verification shape every other role uses. An investor is
+  // vetted on their declared capital and interests, not KYC documents.
+  companyName?: string;
+  investmentRange?: number | string;
+  interests?: string[];
+  proofOfFunds?: FileRecord | null;
 }
+
+// The document field keys admins can flag and applicants resubmit — must
+// match DOCUMENT_FIELD_TO_DB_COLUMN in the API's role-request.service.ts.
+const DOCUMENT_FIELDS: { key: keyof ApplicationData; label: string }[] = [
+  { key: "validId1", label: "Primary Valid ID" },
+  { key: "nbiFile", label: "NBI Clearance" },
+  { key: "tinIdFile", label: "TIN ID / Certificate" },
+  { key: "birPermitFile", label: "BIR 2303 / Permit" },
+  { key: "selfieFile", label: "Verification Selfie" },
+  { key: "portfolioFile", label: "Portfolio / Resume" },
+  { key: "backgroundClearanceFile", label: "Background Clearance" },
+];
 
 interface RoleApplication {
   id: string;
@@ -37,41 +57,58 @@ interface RoleApplication {
   status: RoleStatus;
   createdAt: string;
   rejectionReason?: string;
+  flaggedDocuments?: string[];
+  revisionNote?: string;
   user: { id: string; name: string; email: string };
-  hostApplication?: ApplicationData;
-  mayorApplication?: ApplicationData;
-  foxerAssetApplication?: ApplicationData;
-  foxerServiceApplication?: ApplicationData;
+  venueFoxerApplication?: ApplicationData;
+  eventFoxerApplication?: ApplicationData;
+  gearFoxerApplication?: ApplicationData;
+  serviceFoxerApplication?: ApplicationData;
+  performerFoxerApplication?: ApplicationData;
   investorApplication?: ApplicationData;
+  organizerApplication?: ApplicationData;
 }
 
 const ROLE_LABELS: Record<string, string> = {
   eventFoxer: "Event Foxer",
   venueFoxer: "Venue Foxer",
   gearFoxer: "Gear Foxer",
-  serviceFoxer: "Service Foxer",
+  serviceFoxer: "Talent Foxer",
+  performerFoxer: "Performer Foxer",
   investor: "Investor",
+  organizer: "Organizer",
 };
 
 const STATUS_STYLES: Record<RoleStatus, string> = {
   pending: "bg-yellow-500/10 text-yellow-400 border-yellow-500/20",
   approved: "bg-green-500/10 text-green-400 border-green-500/20",
   rejected: "bg-red-500/10 text-red-400 border-red-500/20",
+  revision_requested: "bg-orange-500/10 text-orange-400 border-orange-500/20",
 };
 
 const STATUS_ICONS: Record<RoleStatus, string> = {
   pending: "hourglass_top",
   approved: "check_circle",
   rejected: "cancel",
+  revision_requested: "flag",
+};
+
+const STATUS_LABELS: Record<RoleStatus, string> = {
+  pending: "Pending",
+  approved: "Approved",
+  rejected: "Rejected",
+  revision_requested: "Needs Revision",
 };
 
 function getAppData(app: RoleApplication): ApplicationData | null {
   return (
-    app.hostApplication ??
-    app.mayorApplication ??
-    app.foxerAssetApplication ??
-    app.foxerServiceApplication ??
+    app.venueFoxerApplication ??
+    app.eventFoxerApplication ??
+    app.gearFoxerApplication ??
+    app.serviceFoxerApplication ??
+    app.performerFoxerApplication ??
     app.investorApplication ??
+    app.organizerApplication ??
     null
   );
 }
@@ -79,9 +116,13 @@ function getAppData(app: RoleApplication): ApplicationData | null {
 function DocPreview({
   label,
   file,
+  flagged,
+  onPreview,
 }: {
   label: string;
   file?: FileRecord | null;
+  flagged?: boolean;
+  onPreview: (file: FileRecord, label: string) => void;
 }) {
   if (!file)
     return (
@@ -96,18 +137,28 @@ function DocPreview({
     );
 
   const isPdf = file.type === "application/pdf" || file.name?.endsWith(".pdf");
+  const ringClass = flagged
+    ? "border-red-500/60 ring-1 ring-red-500/40"
+    : "border-white/10 group-hover:border-accent/40";
 
   return (
     <div className="space-y-1">
-      <p className="text-[10px] text-white/30 uppercase tracking-wider">
+      <p className="text-[10px] uppercase tracking-wider flex items-center gap-1.5 text-white/30">
         {label}
+        {flagged && (
+          <span className="inline-flex items-center gap-0.5 text-red-400 normal-case tracking-normal font-bold">
+            <span className="material-symbols-outlined text-[12px]">
+              flag
+            </span>
+            Flagged
+          </span>
+        )}
       </p>
       {isPdf ? (
-        <a
-          href={file.url}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="h-24 rounded-xl bg-white/5 border border-white/10 flex flex-col items-center justify-center gap-2 hover:border-[#ccff00]/40 hover:bg-white/10 transition group"
+        <button
+          type="button"
+          onClick={() => onPreview(file, label)}
+          className={`w-full h-24 rounded-xl bg-white/5 border ${ringClass} flex flex-col items-center justify-center gap-2 hover:bg-white/10 transition group`}
         >
           <span className="material-symbols-outlined text-[32px] text-red-400 group-hover:scale-110 transition-transform">
             picture_as_pdf
@@ -115,26 +166,100 @@ function DocPreview({
           <span className="text-[10px] text-white/40 group-hover:text-white/70 truncate max-w-[120px]">
             {file.name}
           </span>
-        </a>
+        </button>
       ) : (
-        <a
-          href={file.url}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="block relative group"
+        <button
+          type="button"
+          onClick={() => onPreview(file, label)}
+          className="block relative group w-full"
         >
           <img
             src={file.url}
             alt={label}
-            className="h-24 w-full object-cover rounded-xl border border-white/10 group-hover:border-[#ccff00]/40 transition"
+            className={`h-24 w-full object-cover rounded-xl border ${ringClass} transition`}
           />
           <div className="absolute inset-0 rounded-xl bg-black/50 opacity-0 group-hover:opacity-100 transition flex items-center justify-center">
             <span className="material-symbols-outlined text-white text-[24px]">
-              open_in_new
+              zoom_in
             </span>
           </div>
-        </a>
+        </button>
       )}
+    </div>
+  );
+}
+
+function FilePreviewModal({
+  file,
+  label,
+  onClose,
+}: {
+  file: FileRecord;
+  label: string;
+  onClose: () => void;
+}) {
+  const isPdf = file.type === "application/pdf" || file.name?.endsWith(".pdf");
+
+  useEffect(() => {
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = prevOverflow;
+    };
+  }, []);
+
+  return (
+    <div
+      className="fixed inset-0 z-1000 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 sm:p-8"
+      onClick={onClose}
+    >
+      <div
+        className="w-full h-full max-w-4xl bg-surface border border-white/10 rounded-2xl flex flex-col overflow-hidden"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="p-4 border-b border-white/5 flex items-center justify-between gap-4 shrink-0">
+          <div className="min-w-0">
+            <p className="text-[10px] text-white/30 uppercase tracking-wider">
+              {label}
+            </p>
+            <p className="text-white text-sm font-medium truncate">
+              {file.name}
+            </p>
+          </div>
+          <div className="flex items-center gap-2 shrink-0">
+            <a
+              href={file.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="p-1.5 rounded-lg hover:bg-white/10 text-white/40 hover:text-white transition"
+              title="Open in new tab"
+            >
+              <span className="material-symbols-outlined text-[20px]">
+                open_in_new
+              </span>
+            </a>
+            <button
+              onClick={onClose}
+              className="p-1.5 rounded-lg hover:bg-white/10 text-white/40 hover:text-white transition"
+            >
+              <span className="material-symbols-outlined text-[20px]">
+                close
+              </span>
+            </button>
+          </div>
+        </div>
+        <div className="flex-1 min-h-0 bg-black/40">
+          {isPdf ? (
+            <iframe src={file.url} title={label} className="w-full h-full" />
+          ) : (
+            <img
+              src={file.url}
+              alt={label}
+              className="w-full h-full object-contain"
+            />
+          )}
+        </div>
+      </div>
     </div>
   );
 }
@@ -149,10 +274,22 @@ function ApplicationDetailDrawer({
   app: RoleApplication;
   onClose: () => void;
   onApprove: (id: string) => void;
-  onReject: (id: string) => void;
+  onReject: (app: RoleApplication) => void;
   processing: boolean;
 }) {
   const data = getAppData(app);
+  const [previewFile, setPreviewFile] = useState<{
+    file: FileRecord;
+    label: string;
+  } | null>(null);
+
+  useEffect(() => {
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = prevOverflow;
+    };
+  }, []);
 
   return (
     <div
@@ -160,7 +297,7 @@ function ApplicationDetailDrawer({
       onClick={onClose}
     >
       <div
-        className="w-full sm:w-[520px] sm:h-full bg-[#0d0f18] border-t sm:border-t-0 sm:border-l border-white/10 flex flex-col max-h-[90vh] sm:max-h-full overflow-hidden"
+        className="w-full sm:w-[520px] sm:h-full bg-surface border-t sm:border-t-0 sm:border-l border-white/10 flex flex-col max-h-[90vh] sm:max-h-full overflow-hidden"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
@@ -179,7 +316,7 @@ function ApplicationDetailDrawer({
               <span className="material-symbols-outlined text-[13px]">
                 {STATUS_ICONS[app.status]}
               </span>
-              {app.status.charAt(0).toUpperCase() + app.status.slice(1)}
+              {STATUS_LABELS[app.status]}
             </span>
             <button
               onClick={onClose}
@@ -221,7 +358,12 @@ function ApplicationDetailDrawer({
           {/* Application-specific fields */}
           {data && (
             <>
-              {(data.bio || data.experience || data.location) && (
+              {(data.bio ||
+                data.experience ||
+                data.location ||
+                data.companyName ||
+                data.investmentRange != null ||
+                (data.interests && data.interests.length > 0)) && (
                 <div className="space-y-3">
                   <p className="text-xs text-white/40 uppercase tracking-widest font-bold">
                     Application Details
@@ -255,23 +397,41 @@ function ApplicationDetailDrawer({
                         </p>
                       </div>
                     )}
-                    {data.investmentAmount && (
+                    {data.companyName && (
                       <div className="flex justify-between items-center">
                         <span className="text-white/40 text-sm">
-                          Investment Amount
+                          Company / Organization
                         </span>
                         <span className="text-white text-sm font-medium">
-                          {data.investmentAmount}
+                          {data.companyName}
                         </span>
                       </div>
                     )}
-                    {data.businessName && (
+                    {data.investmentRange != null && (
                       <div className="flex justify-between items-center">
                         <span className="text-white/40 text-sm">
-                          Business Name
+                          Investment Range
                         </span>
                         <span className="text-white text-sm font-medium">
-                          {data.businessName}
+                          <Money amount={data.investmentRange} />
+                        </span>
+                      </div>
+                    )}
+                    {data.interests && data.interests.length > 0 && (
+                      <div className="flex justify-between items-center">
+                        <span className="text-white/40 text-sm">
+                          Interests
+                        </span>
+                        <span className="text-white text-sm font-medium text-right">
+                          {data.interests
+                            .map((i) =>
+                              i === "venue_equity"
+                                ? "Financial Capital & Venue Equity"
+                                : i === "physical_inventory"
+                                  ? "Physical Equipment & Inventory"
+                                  : i,
+                            )
+                            .join(", ")}
                         </span>
                       </div>
                     )}
@@ -279,42 +439,129 @@ function ApplicationDetailDrawer({
                 </div>
               )}
 
-              {/* Identity Documents */}
-              <div className="space-y-3">
-                <p className="text-xs text-white/40 uppercase tracking-widest font-bold flex items-center gap-2">
-                  <span className="material-symbols-outlined text-[14px] text-yellow-400">
-                    warning
-                  </span>
-                  Verify these documents carefully
-                </p>
+              {/* Identity Documents — an Investor is vetted on declared
+                  capital and interests, not identity/business documents, so
+                  none of this section applies to that role. */}
+              {app.roleType !== "investor" && (
+                <>
+                  <div className="space-y-3">
+                    <p className="text-xs text-white/40 uppercase tracking-widest font-bold flex items-center gap-2">
+                      <span className="material-symbols-outlined text-[14px] text-yellow-400">
+                        warning
+                      </span>
+                      Verify these documents carefully
+                    </p>
+                    <div className="grid grid-cols-2 gap-3">
+                      <DocPreview
+                        label="Primary Valid ID"
+                        file={data.validId1}
+                        flagged={app.flaggedDocuments?.includes("validId1")}
+                        onPreview={(file, label) =>
+                          setPreviewFile({ file, label })
+                        }
+                      />
+                      {/* An Organizer is vetted as a person, not a business, so
+                          they submit a background clearance and no tax or permit
+                          documents — see the API's docs/adr/0005. */}
+                      {app.roleType === "organizer" ? (
+                        <DocPreview
+                          label="Background Clearance"
+                          file={data.backgroundClearanceFile}
+                          flagged={app.flaggedDocuments?.includes(
+                            "backgroundClearanceFile",
+                          )}
+                          onPreview={(file, label) =>
+                            setPreviewFile({ file, label })
+                          }
+                        />
+                      ) : (
+                        <>
+                          <DocPreview
+                            label="NBI Clearance"
+                            file={data.nbiFile}
+                            flagged={app.flaggedDocuments?.includes("nbiFile")}
+                            onPreview={(file, label) =>
+                              setPreviewFile({ file, label })
+                            }
+                          />
+                          <DocPreview
+                            label="TIN ID / Certificate"
+                            file={data.tinIdFile}
+                            flagged={app.flaggedDocuments?.includes(
+                              "tinIdFile",
+                            )}
+                            onPreview={(file, label) =>
+                              setPreviewFile({ file, label })
+                            }
+                          />
+                          <DocPreview
+                            label="BIR 2303 / Permit"
+                            file={data.birPermitFile}
+                            flagged={app.flaggedDocuments?.includes(
+                              "birPermitFile",
+                            )}
+                            onPreview={(file, label) =>
+                              setPreviewFile({ file, label })
+                            }
+                          />
+                        </>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Selfie & Portfolio */}
+                  <div className="grid grid-cols-2 gap-3">
+                    <DocPreview
+                      label="Verification Selfie"
+                      file={data.selfieFile}
+                      flagged={app.flaggedDocuments?.includes("selfieFile")}
+                      onPreview={(file, label) =>
+                        setPreviewFile({ file, label })
+                      }
+                    />
+                    {data.portfolioFile !== undefined && (
+                      <DocPreview
+                        label="Portfolio / Resume"
+                        file={data.portfolioFile}
+                        flagged={app.flaggedDocuments?.includes(
+                          "portfolioFile",
+                        )}
+                        onPreview={(file, label) =>
+                          setPreviewFile({ file, label })
+                        }
+                      />
+                    )}
+                  </div>
+                </>
+              )}
+
+              {app.roleType === "investor" && (
                 <div className="grid grid-cols-2 gap-3">
-                  <DocPreview label="Primary Valid ID" file={data.validId1} />
-                  <DocPreview label="NBI Clearance" file={data.nbiFile} />
                   <DocPreview
-                    label="TIN ID / Certificate"
-                    file={data.tinIdFile}
-                  />
-                  <DocPreview
-                    label="BIR 2303 / Permit"
-                    file={data.birPermitFile}
+                    label="Proof of Funds"
+                    file={data.proofOfFunds}
+                    onPreview={(file, label) => setPreviewFile({ file, label })}
                   />
                 </div>
-              </div>
-
-              {/* Selfie & Portfolio */}
-              <div className="grid grid-cols-2 gap-3">
-                <DocPreview
-                  label="Verification Selfie"
-                  file={data.selfieFile}
-                />
-                {data.portfolioFile !== undefined && (
-                  <DocPreview
-                    label="Portfolio / Resume"
-                    file={data.portfolioFile}
-                  />
-                )}
-              </div>
+              )}
             </>
+          )}
+
+          {app.status === "revision_requested" && (
+            <div className="bg-orange-500/10 border border-orange-500/20 rounded-xl p-4">
+              <p className="text-xs text-orange-400/60 uppercase tracking-wider mb-1">
+                Needs revision — flagged above
+              </p>
+              {app.revisionNote && (
+                <p className="text-orange-300 text-sm">
+                  &quot;{app.revisionNote}&quot;
+                </p>
+              )}
+              <p className="text-orange-300/50 text-xs mt-2">
+                Only the flagged documents need to be replaced — the rest of
+                the application stands.
+              </p>
+            </div>
           )}
 
           {app.status === "rejected" && app.rejectionReason && (
@@ -340,43 +587,79 @@ function ApplicationDetailDrawer({
               Approve
             </button>
             <button
-              onClick={() => onReject(app.id)}
+              onClick={() => onReject(app)}
               disabled={processing}
               className="flex-1 py-3 rounded-xl bg-red-500/20 text-red-400 font-bold text-sm hover:bg-red-500/30 transition disabled:opacity-50"
             >
-              Reject
+              Reject / Flag Documents
             </button>
           </div>
         )}
       </div>
+
+      {previewFile && (
+        <FilePreviewModal
+          file={previewFile.file}
+          label={previewFile.label}
+          onClose={() => setPreviewFile(null)}
+        />
+      )}
     </div>
   );
 }
 
+// Under `admin-data`, which the socket's `admin:pending` topic invalidates
+// (TOPIC_QUERY_KEYS in shared/lib/realtime.ts) — the API emits it on every
+// review. This list used to be fetched once into component state, outside
+// React Query, so an approval (this admin's in another tab, or another
+// admin's) never reached it until the page was reloaded.
+const ROLE_APPLICATIONS_KEY = ["admin-data", "role-applications"];
+
 export const AdminSubmissionsTable: React.FC = () => {
   const queryClient = useQueryClient();
-  const [applications, setApplications] = useState<RoleApplication[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const {
+    data: applications = [],
+    isLoading,
+    isError,
+  } = useQuery({
+    queryKey: ROLE_APPLICATIONS_KEY,
+    queryFn: async (): Promise<RoleApplication[]> => {
+      const { data } = await api.get("/role-requests/list");
+      return data.data || [];
+    },
+  });
+  useEffect(() => {
+    if (isError) toast.error("Failed to load role applications");
+  }, [isError]);
+
+  // Apply a decision on screen at once, then refetch everything under
+  // `admin-data` — this list, and the counts and badges elsewhere in the
+  // console that the decision also changed.
+  const setApplications = (
+    update: (prev: RoleApplication[]) => RoleApplication[],
+  ) => {
+    queryClient.setQueryData<RoleApplication[]>(ROLE_APPLICATIONS_KEY, (prev) =>
+      update(prev ?? []),
+    );
+    queryClient.invalidateQueries({ queryKey: ["admin-data"] });
+  };
   const [filter, setFilter] = useState<"all" | RoleStatus>("all");
   const [processingId, setProcessingId] = useState<string | null>(null);
   const [selectedApp, setSelectedApp] = useState<RoleApplication | null>(null);
-  const [rejectModal, setRejectModal] = useState<{ id: string } | null>(null);
-  const [rejectionReason, setRejectionReason] = useState("");
-
-  const fetchApplications = async () => {
-    try {
-      const { data } = await api.get("/role-requests/list");
-      setApplications(data.data || []);
-    } catch {
-      toast.error("Failed to load role applications");
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  const [rejectModal, setRejectModal] = useState<RoleApplication | null>(
+    null,
+  );
+  const [flaggedDocs, setFlaggedDocs] = useState<Set<string>>(new Set());
+  const [reviewNote, setReviewNote] = useState("");
 
   useEffect(() => {
-    fetchApplications();
-  }, []);
+    if (!rejectModal) return;
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = prevOverflow;
+    };
+  }, [rejectModal]);
 
   const handleApprove = async (id: string) => {
     setProcessingId(id);
@@ -403,30 +686,64 @@ export const AdminSubmissionsTable: React.FC = () => {
     }
   };
 
-  const handleReject = async () => {
+  const closeRejectModal = () => {
+    setRejectModal(null);
+    setFlaggedDocs(new Set());
+    setReviewNote("");
+  };
+
+  // "Request Revision" flags only the picked documents — everything else on
+  // the application stands, and the applicant only has to replace those.
+  const handleRequestRevision = async () => {
+    if (!rejectModal || flaggedDocs.size === 0) return;
+    const id = rejectModal.id;
+    const documentList = Array.from(flaggedDocs);
+    setProcessingId(id);
+    try {
+      await api.patch(`/role-requests/review/${id}`, {
+        status: "revision_requested",
+        flaggedDocuments: documentList,
+        revisionNote: reviewNote,
+      });
+      toast.success("Revision requested — applicant notified");
+      const patch = {
+        status: "revision_requested" as RoleStatus,
+        flaggedDocuments: documentList,
+        revisionNote: reviewNote,
+      };
+      setApplications((prev) =>
+        prev.map((a) => (a.id === id ? { ...a, ...patch } : a)),
+      );
+      setSelectedApp((prev) => (prev?.id === id ? { ...prev, ...patch } : prev));
+      closeRejectModal();
+    } catch (err: any) {
+      toast.error(err.response?.data?.message || "Failed to request revision");
+    } finally {
+      setProcessingId(null);
+    }
+  };
+
+  // Full reject — nothing carries over, the applicant has to start a fresh
+  // application for this role.
+  const handleRejectEntirely = async () => {
     if (!rejectModal) return;
     const id = rejectModal.id;
     setProcessingId(id);
     try {
       await api.patch(`/role-requests/review/${id}`, {
         status: "rejected",
-        rejectionReason,
+        rejectionReason: reviewNote,
       });
       toast.success("Application rejected");
+      const patch = {
+        status: "rejected" as RoleStatus,
+        rejectionReason: reviewNote,
+      };
       setApplications((prev) =>
-        prev.map((a) =>
-          a.id === id
-            ? { ...a, status: "rejected" as RoleStatus, rejectionReason }
-            : a,
-        ),
+        prev.map((a) => (a.id === id ? { ...a, ...patch } : a)),
       );
-      setSelectedApp((prev) =>
-        prev?.id === id
-          ? { ...prev, status: "rejected" as RoleStatus, rejectionReason }
-          : prev,
-      );
-      setRejectModal(null);
-      setRejectionReason("");
+      setSelectedApp((prev) => (prev?.id === id ? { ...prev, ...patch } : prev));
+      closeRejectModal();
     } catch (err: any) {
       toast.error(err.response?.data?.message || "Failed to reject");
     } finally {
@@ -453,17 +770,25 @@ export const AdminSubmissionsTable: React.FC = () => {
             </p>
           </div>
           <div className="flex gap-2 flex-wrap">
-            {(["all", "pending", "approved", "rejected"] as const).map((f) => (
+            {(
+              [
+                "all",
+                "pending",
+                "revision_requested",
+                "approved",
+                "rejected",
+              ] as const
+            ).map((f) => (
               <button
                 key={f}
                 onClick={() => setFilter(f)}
-                className={`px-4 py-2 rounded-full text-xs font-bold capitalize transition-colors ${
+                className={`px-4 py-2 rounded-full text-xs font-bold transition-colors ${
                   filter === f
-                    ? "bg-[#ccff00] text-black"
+                    ? "bg-accent text-black"
                     : "bg-white/5 text-white/60 hover:bg-white/10 hover:text-white"
                 }`}
               >
-                {f}
+                {f === "all" ? "All" : STATUS_LABELS[f]}
               </button>
             ))}
           </div>
@@ -472,7 +797,7 @@ export const AdminSubmissionsTable: React.FC = () => {
         <div className="overflow-x-auto">
           {isLoading ? (
             <div className="flex items-center justify-center py-16 text-white/30 gap-3">
-              <div className="w-5 h-5 border-2 border-white/20 border-t-[#ccff00] rounded-full animate-spin" />
+              <div className="w-5 h-5 border-2 border-white/20 border-t-accent rounded-full animate-spin" />
               Loading applications...
             </div>
           ) : filtered.length === 0 ? (
@@ -491,8 +816,7 @@ export const AdminSubmissionsTable: React.FC = () => {
                   <th className="p-6 font-medium">Applicant</th>
                   <th className="p-6 font-medium">Role</th>
                   <th className="p-6 font-medium">Submitted</th>
-                  <th className="p-6 font-medium">Status</th>
-                  <th className="p-6 font-medium text-right">Actions</th>
+                  <th className="p-6 font-medium text-right">Status</th>
                 </tr>
               </thead>
               <tbody className="text-sm">
@@ -503,7 +827,7 @@ export const AdminSubmissionsTable: React.FC = () => {
                     className="border-b border-white/5 hover:bg-white/5 transition-colors cursor-pointer group"
                   >
                     <td className="p-6">
-                      <div className="font-bold text-white group-hover:text-[#ccff00] transition-colors">
+                      <div className="font-bold text-white group-hover:text-accent transition-colors">
                         {app.user?.name ?? "—"}
                       </div>
                       <div className="text-xs text-white/40">
@@ -522,45 +846,15 @@ export const AdminSubmissionsTable: React.FC = () => {
                         year: "numeric",
                       })}
                     </td>
-                    <td className="p-6">
+                    <td className="p-6 text-right">
                       <span
                         className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold border ${STATUS_STYLES[app.status]}`}
                       >
                         <span className="material-symbols-outlined text-[13px]">
                           {STATUS_ICONS[app.status]}
                         </span>
-                        {app.status.charAt(0).toUpperCase() +
-                          app.status.slice(1)}
+                        {STATUS_LABELS[app.status]}
                       </span>
-                    </td>
-                    <td
-                      className="p-6 text-right"
-                      onClick={(e) => e.stopPropagation()}
-                    >
-                      {app.status === "pending" ? (
-                        <div className="flex items-center justify-end gap-2">
-                          <button
-                            onClick={() => handleApprove(app.id)}
-                            disabled={processingId === app.id}
-                            className="px-3 py-1.5 rounded-lg bg-green-500/20 text-green-400 text-xs font-bold hover:bg-green-500/30 transition disabled:opacity-50"
-                          >
-                            Approve
-                          </button>
-                          <button
-                            onClick={() => setRejectModal({ id: app.id })}
-                            disabled={processingId === app.id}
-                            className="px-3 py-1.5 rounded-lg bg-red-500/20 text-red-400 text-xs font-bold hover:bg-red-500/30 transition disabled:opacity-50"
-                          >
-                            Reject
-                          </button>
-                        </div>
-                      ) : (
-                        <span className="text-xs text-white/20 italic">
-                          {app.status === "rejected" && app.rejectionReason
-                            ? `"${app.rejectionReason}"`
-                            : "—"}
-                        </span>
-                      )}
                     </td>
                   </tr>
                 ))}
@@ -576,43 +870,94 @@ export const AdminSubmissionsTable: React.FC = () => {
           app={selectedApp}
           onClose={() => setSelectedApp(null)}
           onApprove={(id) => handleApprove(id)}
-          onReject={(id) => {
+          onReject={(app) => {
             setSelectedApp(null);
-            setRejectModal({ id });
+            setRejectModal(app);
           }}
           processing={processingId === selectedApp.id}
         />
       )}
 
-      {/* Reject Modal */}
+      {/* Reject / Request Revision Modal */}
       {rejectModal && (
-        <div className="fixed inset-0 z-999 flex items-center justify-center bg-black/70 backdrop-blur-sm">
-          <div className="bg-[#0f111a] border border-white/10 rounded-2xl p-8 max-w-sm w-full mx-4 space-y-4">
-            <h3 className="text-white font-bold text-lg">Reject Application</h3>
-            <p className="text-white/50 text-sm">
-              Provide a reason for rejection (optional).
-            </p>
+        <div className="fixed inset-0 z-999 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
+          <div className="bg-surface border border-white/10 rounded-2xl p-8 max-w-md w-full space-y-4 max-h-[90vh] overflow-y-auto">
+            <div>
+              <h3 className="text-white font-bold text-lg">
+                Reject or Request Revision
+              </h3>
+              <p className="text-white/50 text-sm mt-1">
+                Flag the specific documents that are wrong — only those get
+                sent back to the applicant to re-upload. Leave nothing
+                checked to reject the whole application instead.
+              </p>
+            </div>
+
+            <div className="space-y-2">
+              {DOCUMENT_FIELDS.filter(
+                ({ key }) => getAppData(rejectModal)?.[key],
+              ).map(({ key, label }) => {
+                const checked = flaggedDocs.has(key);
+                return (
+                  <label
+                    key={key}
+                    className={`flex items-center gap-3 rounded-xl border p-3 cursor-pointer transition ${
+                      checked
+                        ? "bg-red-500/10 border-red-500/40"
+                        : "bg-white/5 border-white/10 hover:border-white/20"
+                    }`}
+                  >
+                    <input
+                      type="checkbox"
+                      checked={checked}
+                      onChange={(e) =>
+                        setFlaggedDocs((prev) => {
+                          const next = new Set(prev);
+                          if (e.target.checked) next.add(key);
+                          else next.delete(key);
+                          return next;
+                        })
+                      }
+                      className="w-4 h-4 accent-red-500"
+                    />
+                    <span className="text-white text-sm">{label}</span>
+                  </label>
+                );
+              })}
+            </div>
+
             <textarea
-              value={rejectionReason}
-              onChange={(e) => setRejectionReason(e.target.value)}
-              placeholder="e.g. Incomplete documents submitted"
+              value={reviewNote}
+              onChange={(e) => setReviewNote(e.target.value)}
+              placeholder={
+                flaggedDocs.size > 0
+                  ? "Explain what's wrong with the flagged document(s)"
+                  : "Reason for rejecting the whole application"
+              }
               rows={3}
               className="w-full bg-white/5 border border-white/10 rounded-xl p-3 text-white text-sm placeholder:text-white/30 focus:outline-none focus:border-red-500/50 resize-none"
             />
-            <div className="flex gap-3 pt-1">
+
+            <div className="flex flex-col gap-2 pt-1">
               <button
-                onClick={handleReject}
-                disabled={!!processingId}
-                className="flex-1 py-2.5 rounded-xl bg-red-500/80 text-white font-bold text-sm hover:bg-red-500 transition disabled:opacity-50"
+                onClick={handleRequestRevision}
+                disabled={!!processingId || flaggedDocs.size === 0}
+                className="w-full py-2.5 rounded-xl bg-orange-500/80 text-white font-bold text-sm hover:bg-orange-500 transition disabled:opacity-30 disabled:cursor-not-allowed"
               >
-                {processingId ? "Rejecting..." : "Confirm Reject"}
+                {processingId
+                  ? "Sending…"
+                  : `Request Revision${flaggedDocs.size > 0 ? ` (${flaggedDocs.size})` : ""}`}
               </button>
               <button
-                onClick={() => {
-                  setRejectModal(null);
-                  setRejectionReason("");
-                }}
-                className="flex-1 py-2.5 rounded-xl bg-white/5 text-white/60 font-bold text-sm hover:bg-white/10 transition"
+                onClick={handleRejectEntirely}
+                disabled={!!processingId}
+                className="w-full py-2.5 rounded-xl bg-red-500/80 text-white font-bold text-sm hover:bg-red-500 transition disabled:opacity-50"
+              >
+                {processingId ? "Rejecting…" : "Reject Entire Application"}
+              </button>
+              <button
+                onClick={closeRejectModal}
+                className="w-full py-2.5 rounded-xl bg-white/5 text-white/60 font-bold text-sm hover:bg-white/10 transition"
               >
                 Cancel
               </button>

@@ -1,4 +1,3 @@
-/* eslint-disable @next/next/no-img-element */
 "use client";
 
 import React from "react";
@@ -10,7 +9,9 @@ import {
   fetchFoxerById,
   type Foxer,
   type FoxerSpecialization,
-} from "@/features/user/api/foxers";
+} from "@/shared/api/foxers";
+import { smartBack } from "@/shared/lib/navigation";
+import { Money } from "@/shared/components/ui/Money";
 
 function ProfileSpecializationChip({ spec }: { spec: FoxerSpecialization }) {
   const label = spec.category.replace(/_/g, " ");
@@ -38,6 +39,8 @@ function getRoleLabel(foxer: Foxer): string {
   if (roles.includes("venueFoxer")) return "Venue Foxer";
   if (roles.includes("gearFoxer")) return "Gear Foxer";
   if (roles.includes("serviceFoxer")) return "Talent Foxer";
+  if (roles.includes("performerFoxer")) return "Performer Foxer";
+  if (roles.includes("investor")) return "Partner Foxer";
   return "Foxer";
 }
 
@@ -152,7 +155,7 @@ const FoxerProfile: React.FC = () => {
 
   const bio = isHost
     ? (foxer.eventTemplates?.[0]?.description ??
-      "This organizer has not added a bio yet.")
+      "This Event Foxer has not added a bio yet.")
     : isGearFoxer && hasAssets
       ? (foxer.assets?.[0]?.description ??
         "This foxer has not added a bio yet.")
@@ -181,15 +184,15 @@ const FoxerProfile: React.FC = () => {
   return (
     <div className="min-h-screen bg-background bg-gradient-dark text-text-main selection:bg-accent selection:text-black">
       <header className="fixed top-0 left-0 right-0 z-50 p-6">
-        <Link
-          href="/"
-          className="inline-flex items-center gap-2 px-4 py-2 bg-white/5 backdrop-blur-md rounded-full border border-white/10 hover:bg-white/10 transition-all text-sm font-bold"
+        <button
+          onClick={() => smartBack(router, "/search")}
+          className="inline-flex items-center gap-2 px-4 py-2 bg-white/5 backdrop-blur-md rounded-full border border-white/10 hover:bg-white/10 transition-all text-sm font-bold cursor-pointer"
         >
           <span className="material-symbols-outlined text-[18px]">
             arrow_back
           </span>
           Back to Listings
-        </Link>
+        </button>
       </header>
 
       <main className="pt-24 pb-28 sm:pb-20 px-4">
@@ -272,35 +275,39 @@ const FoxerProfile: React.FC = () => {
                 </div>
               </motion.div>
 
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.1 }}
-                className="glass-card rounded-[2.5rem] p-8 space-y-6"
-              >
-                <h3 className="text-lg font-bold flex items-center gap-2">
-                  <span className="material-symbols-outlined text-accent">
-                    inventory_2
-                  </span>
-                  {isHost ? "Event Categories" : "Skills & Services"}
-                </h3>
-                <div className="flex flex-wrap gap-2">
-                  {chipLabels.map((label) => (
-                    <span
-                      key={label}
-                      className="px-3 py-1 bg-white/5 border border-white/10 rounded-full text-[10px] font-bold text-white/70 uppercase"
-                    >
-                      {label}
+              {/* An empty heading-only card says nothing — skip it. */}
+              {chipLabels.length > 0 && (
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.1 }}
+                  className="glass-card rounded-[2.5rem] p-8 space-y-6"
+                >
+                  <h3 className="text-lg font-bold flex items-center gap-2">
+                    <span className="material-symbols-outlined text-accent">
+                      inventory_2
                     </span>
-                  ))}
-                </div>
-              </motion.div>
+                    {isHost ? "Event Categories" : "Skills & Services"}
+                  </h3>
+                  <div className="flex flex-wrap gap-2">
+                    {chipLabels.map((label) => (
+                      <span
+                        key={label}
+                        className="px-3 py-1 bg-white/5 border border-white/10 rounded-full text-[10px] font-bold text-white/70 uppercase"
+                      >
+                        {label}
+                      </span>
+                    ))}
+                  </div>
+                </motion.div>
+              )}
 
               {(foxer.foxerSpecializations?.length ?? 0) > 0 &&
                 (() => {
                   const ROLE_LABELS: Record<string, string> = {
                     eventFoxer: "Event Foxer",
-                    serviceFoxer: "Service Foxer",
+                    serviceFoxer: "Talent Foxer",
+                    performerFoxer: "Performer Foxer",
                     gearFoxer: "Gear Foxer",
                     venueFoxer: "Venue Foxer",
                   };
@@ -428,8 +435,8 @@ const FoxerProfile: React.FC = () => {
                           )}
                           {(tmpl as any).estimatedTotal > 0 && (
                             <p className="text-xs text-accent font-bold mt-2">
-                              From ₱
-                              {(tmpl as any).estimatedTotal.toLocaleString()}
+                              From{" "}
+                              <Money amount={(tmpl as any).estimatedTotal} />
                             </p>
                           )}
                         </div>
@@ -487,7 +494,7 @@ const FoxerProfile: React.FC = () => {
                               </p>
                             </div>
                             <span className="text-[10px] font-bold uppercase tracking-widest px-3 py-1 bg-black/40 rounded-full text-accent border border-accent/20 shrink-0">
-                              ₱{venue.price.toLocaleString()} /{" "}
+                              <Money amount={venue.price} /> /{" "}
                               {venue.billingRate}
                             </span>
                           </div>
@@ -553,7 +560,7 @@ const FoxerProfile: React.FC = () => {
                               </p>
                             </div>
                             <span className="text-[10px] font-bold uppercase tracking-widest px-3 py-1 bg-black/40 rounded-full text-accent border border-accent/20 shrink-0">
-                              ₱{asset.price.toLocaleString()} /{" "}
+                              <Money amount={asset.price} /> /{" "}
                               {asset.billingRate}
                             </span>
                           </div>
@@ -616,7 +623,7 @@ const FoxerProfile: React.FC = () => {
                               </p>
                             </div>
                             <span className="text-[10px] font-bold uppercase tracking-widest px-3 py-1 bg-black/40 rounded-full text-accent border border-accent/20 shrink-0">
-                              ₱{svc.price.toLocaleString()} / {svc.billingRate}
+                              <Money amount={svc.price} /> / {svc.billingRate}
                             </span>
                           </div>
                           {svc.tags.length > 0 && (

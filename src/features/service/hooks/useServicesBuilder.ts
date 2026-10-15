@@ -1,10 +1,10 @@
-/* eslint-disable react-hooks/exhaustive-deps, @typescript-eslint/no-unused-vars */
 "use client";
 
 import { useCallback, useMemo, useRef, useState, useEffect } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
-import { useListingBuilderStore } from "@/features/asset/store/useListingBuilderStore";
+
+import { useListingBuilderStore } from "@/shared/store/useListingBuilderStore";
 import api from "@/shared/lib/axios";
 import { createService, updateService } from "@/features/service/api/services";
 import { toast } from "sonner";
@@ -23,9 +23,9 @@ export function useServicesBuilder() {
   const store = useListingBuilderStore();
   const [error, setError] = useState<string | null>(null);
   const [isNotification, setIsNotification] = useState(false);
-  const [categoryMap, setCategoryMap] = useState<{ [key: string]: string }>({});
-  const { uploadFile, isUploading } = useFileUpload();
+  const { uploadFile } = useFileUpload();
   const savedDraftId = useRef<string | null>(null);
+  const [categoryMap, setCategoryMap] = useState<Record<string, string>>({});
 
   // Ensure the shared store is initialized for service mode
   useEffect(() => {
@@ -155,7 +155,10 @@ export function useServicesBuilder() {
           name: store.title,
           description: store.description || undefined,
           billingRate: BILLING_RATE_MAP[store.unit as ServiceUnit] || "hourly",
-          category: store.category || undefined,
+          category:
+            (store.category && categoryMap[store.category]) ||
+            store.category ||
+            undefined,
           price: parsedPrice > 0 ? parsedPrice : undefined,
           cancellationPolicyId: store.cancellationPolicyId || undefined,
         } as any);
@@ -164,7 +167,10 @@ export function useServicesBuilder() {
           name: store.title,
           description: store.description || " ",
           billingRate: BILLING_RATE_MAP[store.unit as ServiceUnit] || "hourly",
-          category: store.category || "other",
+          category:
+            (store.category && categoryMap[store.category]) ||
+            store.category ||
+            "other",
           price: parsedPrice > 0 ? parsedPrice : 1,
           city: "N/A",
           country: "PH",
@@ -222,7 +228,6 @@ export function useServicesBuilder() {
       if (!userId) {
         throw new Error("User not authenticated");
       }
-      const stringHostId = String(userId);
 
       if (!store.image) {
         throw new Error("An image is required for publishing");
@@ -246,7 +251,7 @@ export function useServicesBuilder() {
         name: store.title,
         description: store.description,
         billingRate: BILLING_RATE_MAP[store.unit as ServiceUnit] || "hourly",
-        category: store.category,
+        category: categoryMap[store.category] || store.category,
         price:
           typeof store.price === "string"
             ? parseFloat(store.price)

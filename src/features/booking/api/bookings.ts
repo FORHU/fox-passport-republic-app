@@ -1,4 +1,8 @@
-﻿import api from "@/shared/lib/axios";
+import api from "@/shared/lib/axios";
+import type {
+  BookingEditRequest,
+  BookingKind,
+} from "@/features/booking/types/booking.types";
 
 // Host: scan citizen QR at event door.
 // Scanning completes check-in AND triggers payout release in one call.
@@ -37,13 +41,15 @@ export async function getOwnTemplate(templateId: string) {
 export async function bookFromTemplate(payload: {
   templateId: string;
   guestCount: number;
-  totalAmount: number;
   startAt: string;
   endAt: string;
   excludedAssetIds?: string[];
   excludedServiceIds?: string[];
   excludedVenueIds?: string[];
 }): Promise<{ booking: { id: string }; eventId: string }> {
+  // Event.totalAmount is server-computed from the template's items + host
+  // markup (see api docs/adr/0001) — the endpoint rejects a client-supplied
+  // totalAmount outright, so it must never be part of this payload.
   const resp = await api.post("/bookings/from-template", payload);
   return resp.data?.data;
 }
@@ -106,7 +112,11 @@ export async function createPaymentIntent(payload: {
   return resp.data?.data;
 }
 
-// 5. Confirm Booking after Payment (records the payment in our system)
+// 5. Confirm Booking after Payment (records the payment in our system).
+// The server verifies `transactionId` with Stripe itself before trusting
+// any of this — a failure here is expected whenever the webhook already
+// settled it first, so every caller treats it as a courtesy, not the
+// source of truth (see BookingSvc.confirmPayment).
 export async function confirmBookingPayment(
   bookingId: string,
   paymentIntentId: string,
@@ -150,6 +160,36 @@ export async function cancelBooking(bookingId: string): Promise<{
 
 // --- Service & Asset Booking Flow ---
 
+export interface BookingPricePreview {
+  itemsTotal: number;
+  discountAmount: number;
+  voucherId: string | null;
+  voucherCode: string | null;
+  platformFeeAmount: number;
+  totalAmount: number;
+}
+
+export async function previewAssetBookingPrice(params: {
+  assetId: string | number;
+  startDate: string;
+  endDate: string;
+  quantity: number;
+  voucherCode?: string;
+}): Promise<BookingPricePreview> {
+  const resp = await api.get("/asset/bookings/price-preview", { params });
+  return resp.data?.data;
+}
+
+export async function previewServiceBookingPrice(params: {
+  serviceId: string | number;
+  scheduledDate: string;
+  endDate?: string;
+  voucherCode?: string;
+}): Promise<BookingPricePreview> {
+  const resp = await api.get("/service/bookings/price-preview", { params });
+  return resp.data?.data;
+}
+
 export async function bookService(payload: {
   serviceId: string | number;
   scheduledDate: string;
@@ -158,7 +198,8 @@ export async function bookService(payload: {
   location: string;
   notes?: string;
   totalAmount: number;
-}): Promise<{ id: string }> {
+  voucherCode?: string;
+}): Promise<{ id: string; totalAmount: number }> {
   const resp = await api.post("/service/bookings", payload);
   return resp.data?.data ?? resp.data;
 }
@@ -172,7 +213,8 @@ export async function bookAsset(payload: {
   deliveryAddress?: string;
   notes?: string;
   totalAmount: number;
-}): Promise<{ id: string }> {
+  voucherCode?: string;
+}): Promise<{ id: string; totalAmount: number }> {
   const resp = await api.post("/asset/bookings", payload);
   return resp.data?.data ?? resp.data;
 }
@@ -223,29 +265,95 @@ export async function reportNoShow(type: "service" | "asset", id: string) {
   return resp.data?.data;
 }
 
-export async function fetchTemplateAvailability(
-  templateId: string,
-): Promise<{ bookedDates: string[] }> {
-  const resp = await api.get(`/bookings/availability?templateId=${templateId}`);
-  return resp.data?.data ?? { bookedDates: [] };
+// The citizen cancels their own gear/talent booking. Refund is prorated by
+// the listing's own cancellation policy (see AssetBookingSvc/
+// ServiceBookingSvc's cancelWithRefund) — unlike `providerCancelBooking`
+// below, which is always a full refund since the provider caused it.
+export async function cancelItemBooking(
+  type: "service" | "asset",
+  id: string,
+): Promise<{ booking: any; refund: { amount: number; status: string } | null }> {
+  const resp = await api.delete(`/${type}/bookings/${id}`);
+  return resp.data?.data ?? resp.data;
 }
 
-export async function fetchServiceAvailability(
-  serviceId: string,
-): Promise<{ bookedDates: string[] }> {
-  const resp = await api.get(
-    `/service/bookings/availability?serviceId=${serviceId}`,
+// The owner cancels because they can't deliver (gear broke, double-booked,
+// etc.) — always a full refund, unlike the citizen-side `cancelBooking`.
+export async function providerCancelBooking(
+  type: "service" | "asset",
+  id: string,
+  reason: string,
+) {
+  const resp = await api.patch(`/${type}/bookings/${id}/provider-cancel`, {
+    reason,
+  });
+  return resp.data?.data;
+}
+
+// ── Booking Edit Requests — propose/approve/decline a guest-count or date
+// change on an existing paid Asset/Service booking. ──────────────────────
+
+export async function createBookingEditRequest(payload: {
+  bookingKind: BookingKind;
+  bookingId: string;
+  proposedQuantity?: number;
+  proposedGuestCount?: number;
+  proposedStartDate?: string;
+  proposedEndDate?: string;
+  reason?: string;
+}): Promise<BookingEditRequest> {
+  const resp = await api.post("/booking-edit-requests", payload);
+  return resp.data?.data;
+}
+
+export async function getBookingEditRequest(
+  bookingKind: BookingKind,
+  bookingId: string,
+): Promise<BookingEditRequest | null> {
+  const resp = await api.get("/booking-edit-requests", {
+    params: { bookingKind, bookingId },
+  });
+  return resp.data?.data ?? null;
+}
+
+export async function approveBookingEditRequest(
+  id: string,
+): Promise<BookingEditRequest> {
+  const resp = await api.patch(`/booking-edit-requests/${id}/approve`);
+  return resp.data?.data;
+}
+
+export async function declineBookingEditRequest(
+  id: string,
+  declineReason?: string,
+): Promise<BookingEditRequest> {
+  const resp = await api.patch(`/booking-edit-requests/${id}/decline`, {
+    declineReason,
+  });
+  return resp.data?.data;
+}
+
+export async function withdrawBookingEditRequest(
+  id: string,
+): Promise<BookingEditRequest> {
+  const resp = await api.patch(`/booking-edit-requests/${id}/withdraw`);
+  return resp.data?.data;
+}
+
+export async function confirmBookingEditDeltaPayment(
+  id: string,
+): Promise<BookingEditRequest> {
+  const resp = await api.post(
+    `/booking-edit-requests/${id}/confirm-delta-payment`,
   );
-  return resp.data?.data ?? { bookedDates: [] };
+  return resp.data?.data;
 }
 
-export async function fetchAssetAvailability(assetId: string): Promise<{
-  bookedRanges: { startDate: string; endDate: string; bookedQty: number }[];
-  totalQty: number;
-}> {
-  const resp = await api.get(`/asset/bookings/availability?assetId=${assetId}`);
-  return resp.data?.data ?? { bookedRanges: [], totalQty: 0 };
-}
+export {
+  fetchTemplateAvailability,
+  fetchServiceAvailability,
+  fetchAssetAvailability,
+} from "@/shared/api/availability";
 
 // 6. Direct Venue Booking — creates Event + VenueTransaction + Booking in one call
 export async function bookVenueDraft(payload: {
@@ -255,10 +363,40 @@ export async function bookVenueDraft(payload: {
   guestCount: number;
   totalAmount: number;
   specialRequests?: string;
+  voucherCode?: string;
 }): Promise<{ bookingId: string }> {
   const resp = await api.post("/bookings/draft", payload);
   return { bookingId: resp.data?.data?.id };
 }
+
+export interface VenueBookingPricePreview {
+  itemsTotal: number;
+  discountAmount: number;
+  voucherId: string | null;
+  voucherCode: string | null;
+  platformFeeAmount: number;
+  totalAmount: number;
+  /** True once `guestCount` exceeds the venue's capacity — this booking
+   *  would need the Venue Foxer's approval, not just payment. */
+  needsApproval: boolean;
+  extraGuests: number;
+}
+
+export async function previewVenueBookingPrice(params: {
+  venueId: string;
+  startDate: string;
+  endDate: string;
+  guestCount: number;
+  voucherCode?: string;
+}): Promise<VenueBookingPricePreview> {
+  const resp = await api.get("/bookings/venue-price-preview", { params });
+  return resp.data?.data;
+}
+
+export {
+  type ScheduleConflict,
+  fetchScheduleConflicts,
+} from "@/shared/api/schedule-conflicts";
 
 export async function fetchUserBookings(
   userId: string,
@@ -275,6 +413,35 @@ export async function fetchUserBookings(
 }> {
   const resp = await api.get(
     `/bookings/user/${userId}?page=${page}&limit=${limit}`,
+  );
+  return {
+    bookings: resp.data?.data ?? [],
+    pagination: resp.data?.pagination ?? {
+      page,
+      limit,
+      total: 0,
+      totalPages: 0,
+    },
+  };
+}
+
+// Bookings other citizens made on events *you* organize — the counterpart to
+// fetchUserBookings, which only ever returns bookings you made yourself.
+export async function fetchReceivedBookings(
+  hostId: string,
+  page = 1,
+  limit = 4,
+): Promise<{
+  bookings: any[];
+  pagination: {
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+  };
+}> {
+  const resp = await api.get(
+    `/bookings?hostId=${hostId}&page=${page}&limit=${limit}`,
   );
   return {
     bookings: resp.data?.data ?? [],
@@ -364,6 +531,33 @@ export async function issueManualRefund(payload: {
   reason: string;
 }): Promise<RefundRecord> {
   const resp = await api.post("/admin/refunds/manual", payload);
+  return resp.data?.data;
+}
+
+/**
+ * Itemized refund for a single asset/service transaction — distinct from
+ * `issueManualRefund` above, which is a whole-booking bookkeeping record
+ * with no Stripe call and no remaining-balance check. This one actually
+ * calls Stripe and validates the amount against what's left refundable on
+ * that specific line item. See the api repo's
+ * docs/adr/0005-itemized-refunds-vs-bookkeeping-refunds.md.
+ */
+export async function issueItemizedRefund(
+  transactionId: string,
+  payload: { kind: "asset" | "service"; amount: number; reason: string },
+): Promise<
+  RefundRecord & { assetTransactionId?: string; serviceTransactionId?: string; alreadyPaidOutWarning?: boolean }
+> {
+  const idempotencyKey =
+    typeof crypto !== "undefined" && "randomUUID" in crypto
+      ? crypto.randomUUID()
+      : `${Date.now()}-${Math.random()}`;
+
+  const resp = await api.post(
+    `/admin/transactions/${transactionId}/refund`,
+    payload,
+    { headers: { "Idempotency-Key": idempotencyKey } },
+  );
   return resp.data?.data;
 }
 

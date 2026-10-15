@@ -7,7 +7,7 @@ export interface ResourceItem {
   icon: string;
   desc: string;
   imageUrl?: string;
-  resourceType?: "venue" | "asset" | "service";
+  resourceType?: "venue" | "asset" | "service" | "talent";
   agreedPrice?: number;
   isOptional?: boolean;
   // Venue-only location fields for auto-fill
@@ -16,6 +16,12 @@ export interface ResourceItem {
   country?: string;
   lat?: number | null;
   lng?: number | null;
+  // Venue-only: whether the current user may attach this venue to a
+  // template — "approved" (owns it or has an approved affiliation),
+  // "pending" (application/invite awaiting a decision), or "none" (must
+  // apply first). Undefined for non-venue items, where it's meaningless.
+  affiliationStatus?: "approved" | "pending" | "none";
+  mayorId?: string;
 }
 
 export interface GalleryItem {
@@ -57,4 +63,11 @@ export const EVENT_CATEGORIES = [
 
 // Icon categories for cost breakdown calculations
 export const VENUE_ICONS = ["location_city", "warehouse", "forest"];
-export const TALENT_ICONS = ["music_note", "local_bar", "movie_filter", "mic"];
+export const TALENT_ICONS = [
+  "music_note",
+  "local_bar",
+  "movie_filter",
+  "mic",
+  "camera_alt",
+  "videocam",
+];

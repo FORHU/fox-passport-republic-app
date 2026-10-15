@@ -1,4 +1,3 @@
-/* eslint-disable @next/next/no-img-element */
 import { describe, it, expect, vi } from "vitest";
 import { render } from "@testing-library/react";
 import { ResourcePalette } from "@/features/event/components/event-builder/ResourcePalette";
@@ -22,10 +21,42 @@ const paletteProps = {
 const blueprintProps = {
   targetMargin: 20,
   baseCost: 1000,
+  listingCost: 1000,
   suggestedPrice: 1500,
   venueCost: 500,
   talentCost: 500,
-  blueprintHealth: 80,
+  serviceCost: 0,
+  blueprintHealth: {
+    score: 80,
+    items: [
+      { id: "title" as const, label: "Event title", met: true, required: true },
+      {
+        id: "category" as const,
+        label: "Category selected",
+        met: true,
+        required: true,
+      },
+      {
+        id: "venue" as const,
+        label: "Approved venue attached",
+        met: true,
+        required: true,
+      },
+      {
+        id: "gallery" as const,
+        label: "5+ gallery images",
+        met: true,
+        required: false,
+      },
+      {
+        id: "description" as const,
+        label: "100+ word description",
+        met: false,
+        required: false,
+      },
+    ],
+    readyToPublish: true,
+  },
   onMarginChange: vi.fn(),
 };
 

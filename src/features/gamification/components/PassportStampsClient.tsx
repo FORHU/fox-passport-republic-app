@@ -1,12 +1,12 @@
-﻿/* eslint-disable react-hooks/set-state-in-effect, @next/next/no-img-element */
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React from "react";
+import { useQuery } from "@tanstack/react-query";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { fetchStamps, Stamp } from "@/features/gamification/api/stamps";
-import { useCategories } from "@/features/category/hooks/useCategories";
+import { useCategories } from "@/shared/hooks/useCategories";
 
 interface Props {
   userId: string;
@@ -14,7 +14,7 @@ interface Props {
 
 function formatEarnedAt(iso: string): string {
   const d = new Date(iso);
-  if (isNaN(d.getTime())) return "â€”";
+  if (isNaN(d.getTime())) return "—";
   return d.toLocaleDateString("en-US", {
     month: "short",
     day: "2-digit",
@@ -91,7 +91,7 @@ function StampCard({ stamp, index }: { stamp: Stamp; index: number }) {
           ) : (
             <div className="flex h-full w-full items-center justify-center bg-black">
               <div className="flex h-20 w-20 items-center justify-center rounded-full ring-2 ring-accent/70">
-                {/* Brand fox as a white silhouette on black â€” always visible */}
+                {/* Brand fox as a white silhouette on black — always visible */}
                 <img
                   src="/foxonlylogo.png"
                   alt=""
@@ -104,7 +104,7 @@ function StampCard({ stamp, index }: { stamp: Stamp; index: number }) {
               </div>
             </div>
           )}
-          <div className="absolute inset-0 bg-gradient-to-t from-[#ccff00] via-black to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-t from-accent via-black to-transparent" />
           <div className="absolute bottom-0 left-0 right-0 p-3">
             <h3 className="text-white font-display font-bold text-sm leading-tight drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)] line-clamp-3">
               {stamp.eventName}
@@ -125,19 +125,17 @@ function StampCard({ stamp, index }: { stamp: Stamp; index: number }) {
 
 export default function PassportStampsClient({ userId }: Props) {
   const router = useRouter();
-  const [stamps, setStamps] = useState<Stamp[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
+  const stampsQuery = useQuery({
+    queryKey: ["passport-stamps", userId],
+    queryFn: () => fetchStamps(userId),
+    enabled: !!userId,
+  });
+  const stamps: Stamp[] = stampsQuery.data ?? [];
+  const loading = stampsQuery.isPending;
+  const error = stampsQuery.isError
+    ? "Could not load your passport stamps"
+    : "";
   const { categories } = useCategories();
-
-  useEffect(() => {
-    if (!userId) return;
-    setLoading(true);
-    fetchStamps(userId)
-      .then(setStamps)
-      .catch(() => setError("Could not load your passport stamps"))
-      .finally(() => setLoading(false));
-  }, [userId]);
 
   const featuredCategories = categories
     .filter((c) => !c.parentCategoryId)
@@ -149,6 +147,15 @@ export default function PassportStampsClient({ userId }: Props) {
       <header className="fixed top-6 left-0 right-0 z-50">
         <div className="mx-auto max-w-7xl px-4">
           <div className="glass-panel rounded-full px-6 h-20 flex items-center justify-between shadow-2xl">
+            <button
+              onClick={() => router.back()}
+              className="flex items-center gap-2 text-sm text-white/60 hover:text-white transition-colors"
+            >
+              <span className="material-symbols-outlined text-[18px]">
+                arrow_back
+              </span>
+              Back
+            </button>
             <Link href="/" className="flex items-center gap-3 group">
               <div className="flex h-10 w-10 items-center justify-center overflow-hidden group-hover:scale-110 transition-transform duration-300">
                 <Image
@@ -164,15 +171,6 @@ export default function PassportStampsClient({ userId }: Props) {
                 FoxPassport
               </h2>
             </Link>
-            <button
-              onClick={() => router.back()}
-              className="flex items-center gap-2 text-sm text-white/60 hover:text-white transition-colors"
-            >
-              <span className="material-symbols-outlined text-[18px]">
-                arrow_back
-              </span>
-              Back
-            </button>
           </div>
         </div>
       </header>
@@ -210,7 +208,7 @@ export default function PassportStampsClient({ userId }: Props) {
                 No stamps yet
               </h3>
               <p className="relative z-10 text-text-muted max-w-md mx-auto mb-8">
-                Your passport is blank â€” book and attend an event to collect
+                Your passport is blank — book and attend an event to collect
                 your first stamp!
               </p>
 

@@ -1,13 +1,13 @@
-﻿/* eslint-disable react-hooks/purity, @next/next/no-img-element */
 "use client";
 
-import React, { useEffect, useRef, useMemo } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useAuthStore } from "@/features/auth/store/useAuthStore";
+import { useAuthStore } from "@/shared/auth/useAuthStore";
 import { confirmBookingPayment } from "@/features/booking/api/bookings";
 import { getDashboardPath } from "@/shared/lib/dashboard-path";
+import { formatCurrency } from "@/shared/lib/currency";
 
 export default function VenueBookingSuccessClient() {
   const router = useRouter();
@@ -20,9 +20,8 @@ export default function VenueBookingSuccessClient() {
   const paymentIntentId = searchParams.get("payment_intent");
   const redirectStatus = searchParams.get("redirect_status");
   const totalAmount = totalParam ? Number(totalParam) : 0;
-  const orderNumber = useMemo(
-    () => Math.floor(10000 + Math.random() * 90000),
-    [],
+  const [orderNumber] = useState(() =>
+    Math.floor(10000 + Math.random() * 90000),
   );
 
   useEffect(() => {
@@ -38,7 +37,7 @@ export default function VenueBookingSuccessClient() {
         () => {},
       );
     }
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  }, []);
 
   const dashboardPath = getDashboardPath(user);
 
@@ -101,7 +100,7 @@ export default function VenueBookingSuccessClient() {
                     src={user.imgId}
                   />
                 ) : (
-                  <div className="h-full w-full flex items-center justify-center bg-[#ccff00] text-black font-bold text-sm">
+                  <div className="h-full w-full flex items-center justify-center bg-accent text-black font-bold text-sm">
                     {user?.name?.charAt(0)?.toUpperCase() ?? "U"}
                   </div>
                 )}
@@ -159,7 +158,7 @@ export default function VenueBookingSuccessClient() {
                       <span className="material-symbols-outlined text-[16px] text-accent">
                         receipt
                       </span>
-                      {bookingId ? `#${bookingId.slice(0, 12)}` : "â€”"}
+                      {bookingId ? `#${bookingId.slice(0, 12)}` : "—"}
                     </p>
                   </div>
                   <div>
@@ -192,7 +191,7 @@ export default function VenueBookingSuccessClient() {
                       <span className="material-symbols-outlined text-[16px] text-accent">
                         payments
                       </span>
-                      â‚±{totalAmount.toLocaleString()}
+                      {formatCurrency(totalAmount)}
                     </p>
                   </div>
                 </div>
@@ -203,7 +202,7 @@ export default function VenueBookingSuccessClient() {
               <div>
                 <p className="text-text-muted text-sm">Total Charged</p>
                 <span className="text-3xl font-display font-bold text-white">
-                  â‚±{totalAmount.toLocaleString()}.00
+                  {formatCurrency(totalAmount)}
                 </span>
               </div>
               <div className="flex gap-3 w-full sm:w-auto">
@@ -240,24 +239,24 @@ export default function VenueBookingSuccessClient() {
               </span>
             </div>
             <p className="text-xs text-gray-500 font-medium">
-              &copy; 2024 FoxPassport Inc. All rights reserved.
+              © {new Date().getFullYear()} FoxPassport Inc. All rights reserved.
             </p>
             <div className="flex gap-6">
               <a
                 className="text-xs text-gray-500 hover:text-white font-medium transition-colors"
-                href="#"
+                href="/privacy"
               >
                 Privacy
               </a>
               <a
                 className="text-xs text-gray-500 hover:text-white font-medium transition-colors"
-                href="#"
+                href="/terms"
               >
                 Terms
               </a>
               <a
                 className="text-xs text-gray-500 hover:text-white font-medium transition-colors"
-                href="#"
+                href="/privacy"
               >
                 Cookies
               </a>

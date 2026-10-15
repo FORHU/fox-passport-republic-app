@@ -13,6 +13,8 @@ interface VenueBuilderState {
   venueName: string;
   description: string;
   venueType: string;
+  /** Free-text type when `venueType` is "Other" — sent as the actual category. */
+  venueTypeOther: string;
   capacity: string;
   location: string;
   country: string;
@@ -28,6 +30,10 @@ interface VenueBuilderState {
   addonItems: ResourceItem[];
   baseRate: number;
   occupancyRate: number;
+  /** Rate per guest beyond `capacity`, per billing unit — same shape as
+   *  `baseRate`. 0 (falsy) means "not offering over-capacity requests":
+   *  the booking screen hard-caps guest count at `capacity` instead. */
+  extraGuestRate: number;
 
   // UI State
   activeCategory: string;
@@ -39,13 +45,17 @@ interface VenueBuilderState {
   draggedItem: ResourceItem | null;
   newItem: { name: string; value: string; desc: string };
 
+  // `lat`/`lng` are only a "recenter the map here" hint (e.g. from picking a
+  // city in the address autocomplete); the actual service area is `boundary`.
   lat: number | null;
   lng: number | null;
+  boundary: [number, number][] | null;
 
   // Actions - Venue Details
   setVenueName: (name: string) => void;
   setDescription: (desc: string) => void;
   setVenueType: (type: string) => void;
+  setVenueTypeOther: (type: string) => void;
   setCapacity: (cap: string) => void;
   setLocation: (loc: string) => void;
   setCountry: (c: string) => void;
@@ -53,6 +63,7 @@ interface VenueBuilderState {
   setState: (s: string) => void;
   setLat: (lat: number | null) => void;
   setLng: (lng: number | null) => void;
+  setBoundary: (boundary: [number, number][] | null) => void;
 
   // Actions - Gallery
   addGalleryItem: (item: GalleryItem) => void;
@@ -72,6 +83,7 @@ interface VenueBuilderState {
   removeAddonItem: (id: string) => void;
   setBaseRate: (rate: number) => void;
   setOccupancyRate: (rate: number) => void;
+  setExtraGuestRate: (rate: number) => void;
 
   // Actions - UI State
   setActiveCategory: (cat: string) => void;
@@ -94,6 +106,7 @@ const initialData = {
   venueName: "",
   description: "",
   venueType: "",
+  venueTypeOther: "",
   capacity: "",
   location: "",
   country: "",
@@ -101,12 +114,14 @@ const initialData = {
   state: "",
   lat: null as number | null,
   lng: null as number | null,
+  boundary: null as [number, number][] | null,
   gallery: [] as GalleryItem[],
   cancellationPolicyId: null as string | null,
   includedItems: [] as ResourceItem[],
   addonItems: [] as ResourceItem[],
   baseRate: 15000,
   occupancyRate: 60,
+  extraGuestRate: 0,
   activeCategory: "spaces",
   searchQuery: "",
   showGuide: true,
@@ -124,6 +139,7 @@ export const useVenueBuilderStore = create<VenueBuilderState>((set) => ({
   setVenueName: (name) => set({ venueName: name }),
   setDescription: (desc) => set({ description: desc }),
   setVenueType: (type) => set({ venueType: type }),
+  setVenueTypeOther: (type) => set({ venueTypeOther: type }),
   setCapacity: (cap) => set({ capacity: cap }),
   setLocation: (loc) => set({ location: loc }),
   setCountry: (c) => set({ country: c }),
@@ -131,6 +147,7 @@ export const useVenueBuilderStore = create<VenueBuilderState>((set) => ({
   setState: (s) => set({ state: s }),
   setLat: (lat) => set({ lat }),
   setLng: (lng) => set({ lng }),
+  setBoundary: (boundary) => set({ boundary }),
 
   // Gallery Actions
   addGalleryItem: (item) =>
@@ -180,6 +197,7 @@ export const useVenueBuilderStore = create<VenueBuilderState>((set) => ({
     })),
   setBaseRate: (rate) => set({ baseRate: rate }),
   setOccupancyRate: (rate) => set({ occupancyRate: rate }),
+  setExtraGuestRate: (rate) => set({ extraGuestRate: rate }),
 
   // UI State Actions
   setActiveCategory: (cat) =>

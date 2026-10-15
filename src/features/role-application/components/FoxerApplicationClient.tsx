@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 "use client";
 
 import React, { useState } from "react";
@@ -8,21 +7,29 @@ import {
   Package,
   Tag,
   Hash,
-  ArrowRight,
   UserCircle,
   Link as LinkIcon,
   BadgeCheck,
+  Music2,
+  ClipboardCheck,
+  MapPin,
 } from "lucide-react";
-import RequireAuth from "@/features/auth/components/RequireAuth";
 import Link from "next/link";
-import FileUploader from "@/shared/components/layout/FileUploader";
-import { KycDocumentSection } from "./KycDocumentSection";
+import {
+  KycDocumentSection,
+  FOXER_KYC_DOCUMENTS,
+  ORGANIZER_KYC_DOCUMENTS,
+} from "./KycDocumentSection";
 import SpecializationPicker from "./SpecializationPicker";
+import { ApplicationWizard, WizardStep } from "./ApplicationWizard";
+import {
+  CascadingLocationFields,
+  type LocationValue,
+} from "@/shared/components/ui/CascadingLocationFields";
 
 const SERVICE_CATEGORY_OPTIONS = [
   { value: "design", label: "Design" },
   { value: "catering", label: "Catering" },
-  { value: "entertainment", label: "Entertainment" },
   { value: "service_staff", label: "Service Staff" },
   { value: "other", label: "Other" },
 ];
@@ -34,15 +41,95 @@ const ASSET_CATEGORY_OPTIONS = [
   { value: "other", label: "Other" },
 ];
 
+// entertainment stays a legacy value on ServiceCategory (existing rows are
+// paused until reapproved as performerFoxer — see the 14 Sep migration) but
+// isn't offered here; new performer listings use these granular categories.
+const PERFORMER_CATEGORY_OPTIONS = [
+  { value: "photography", label: "Photography" },
+  { value: "videography", label: "Videography" },
+  { value: "dj", label: "DJ" },
+  { value: "live_band", label: "Live Band" },
+  { value: "mc", label: "MC / Host" },
+];
+
+// An Organizer's specializations are the kinds of events and venues they have
+// helped run, so they draw on both the API's EventCategory and VenueCategory.
+const ORGANIZER_CATEGORY_OPTIONS = [
+  { value: "wedding", label: "Weddings" },
+  { value: "birthday", label: "Birthdays" },
+  { value: "corporate", label: "Corporate" },
+  { value: "social", label: "Social" },
+  { value: "indoor", label: "Indoor Venues" },
+  { value: "outdoor", label: "Outdoor Venues" },
+  { value: "hotel", label: "Hotels" },
+  { value: "beach_resort", label: "Beach Resorts" },
+  { value: "garden", label: "Gardens" },
+];
+
+type ProviderType = "asset" | "service" | "performer" | "organizer";
+
+const PROVIDER_TABS: { type: ProviderType; label: string; color: string }[] = [
+  { type: "service", label: "Talent Foxer", color: "#00d2ff" },
+  { type: "performer", label: "Performer", color: "#f59e0b" },
+  { type: "asset", label: "Gear Provider", color: "#a78bfa" },
+  { type: "organizer", label: "Organizer", color: "#e879f9" },
+];
+
+const LABEL = "text-sm font-bold text-white/80 uppercase tracking-wider";
+const INPUT_BASE =
+  "w-full bg-white/5 border border-white/10 rounded-xl py-3 text-white placeholder:text-white/30 focus:outline-none focus:bg-white/10 transition-colors";
+
+/** A labelled text field with a leading icon, tinted to the role's colour. */
+function IconField({
+  label,
+  hint,
+  icon,
+  accent,
+  ...input
+}: {
+  label: string;
+  hint?: string;
+  icon: React.ReactNode;
+  accent: string;
+} & React.InputHTMLAttributes<HTMLInputElement>) {
+  return (
+    <div className="space-y-2">
+      <label className={LABEL}>{label}</label>
+      {hint && <p className="mb-1 text-xs text-white/40">{hint}</p>}
+      <div className="relative">
+        <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4 text-white/40">
+          {icon}
+        </div>
+        <input
+          {...input}
+          className={`${INPUT_BASE} pl-12 pr-4`}
+          onFocus={(e) => (e.currentTarget.style.borderColor = `${accent}80`)}
+          onBlur={(e) => (e.currentTarget.style.borderColor = "")}
+        />
+      </div>
+    </div>
+  );
+}
+
+const splitList = (value: string) =>
+  value
+    .split(",")
+    .map((s) => s.trim())
+    .filter(Boolean);
+
+const labelsFor = (
+  options: { value: string; label: string }[],
+  values: string[],
+) =>
+  values.map((v) => options.find((o) => o.value === v)?.label ?? v).join(", ");
+
 export default function FoxerApplicationClient({
   initialType = "service",
 }: {
-  initialType?: "asset" | "service";
+  initialType?: ProviderType;
 }) {
   const { mutate: applyRole, isPending } = useApplyRole();
-  const [providerType, setProviderType] = useState<"asset" | "service">(
-    initialType,
-  );
+  const [providerType, setProviderType] = useState<ProviderType>(initialType);
 
   // Asset Form State
   const [assetData, setAssetData] = useState({
@@ -76,9 +163,51 @@ export default function FoxerApplicationClient({
     string[]
   >([]);
 
+  // Performer Form State — same shape as PerformerFoxerApplication, which
+  // mirrors ServiceFoxerApplication (performerTypes instead of serviceTypes)
+  const [performerData, setPerformerData] = useState({
+    performerTypes: "",
+    portfolioUrls: "",
+    experience: "",
+    nbiClearanceIdNumber: "",
+    tinNumber: "",
+    validId1FileId: "",
+    nbiFileId: "",
+    tinIdFileId: "",
+    birPermitFileId: "",
+    selfieFileId: "",
+  });
+  const [performerSpecializations, setPerformerSpecializations] = useState<
+    string[]
+  >([]);
+
+  // Organizer Form State — mirrors the API's OrganizerApplication
+  // Picked as country → state → city; saved as one string in
+  // `organizerData.location`, which is what the application stores.
+  const [organizerPlace, setOrganizerPlace] = useState<LocationValue>({
+    country: "",
+    state: "",
+    city: "",
+  });
+  const [organizerData, setOrganizerData] = useState({
+    bio: "",
+    experience: "",
+    location: "",
+    validId1FileId: "",
+    backgroundClearanceFileId: "",
+    selfieFileId: "",
+  });
+  const [organizerSpecializations, setOrganizerSpecializations] = useState<
+    string[]
+  >([]);
+
   const handleFileUpload = (field: string, fileId: string) => {
-    if (providerType === "asset") {
+    if (providerType === "organizer") {
+      setOrganizerData((prev) => ({ ...prev, [field]: fileId }));
+    } else if (providerType === "asset") {
       setAssetData((prev) => ({ ...prev, [field]: fileId }));
+    } else if (providerType === "performer") {
+      setPerformerData((prev) => ({ ...prev, [field]: fileId }));
     } else {
       setServiceData((prev) => ({ ...prev, [field]: fileId }));
     }
@@ -92,17 +221,36 @@ export default function FoxerApplicationClient({
     setServiceData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
   };
 
-  const SERVICE_DIGIT_FIELD_MAX_LENGTH: Record<string, number> = {
+  const handlePerformerChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setPerformerData((prev) => ({
+      ...prev,
+      [e.target.name]: e.target.value,
+    }));
+  };
+
+  const DIGIT_FIELD_MAX_LENGTH: Record<string, number> = {
     nbiClearanceIdNumber: 18,
     tinNumber: 9,
   };
 
-  const handleServiceDigitsChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleServiceDigitsChange = (
+    e: React.ChangeEvent<HTMLInputElement>,
+  ) => {
     const { name, value } = e.target;
     const digits = value
       .replace(/\D/g, "")
-      .slice(0, SERVICE_DIGIT_FIELD_MAX_LENGTH[name]);
+      .slice(0, DIGIT_FIELD_MAX_LENGTH[name]);
     setServiceData((prev) => ({ ...prev, [name]: digits }));
+  };
+
+  const handlePerformerDigitsChange = (
+    e: React.ChangeEvent<HTMLInputElement>,
+  ) => {
+    const { name, value } = e.target;
+    const digits = value
+      .replace(/\D/g, "")
+      .slice(0, DIGIT_FIELD_MAX_LENGTH[name]);
+    setPerformerData((prev) => ({ ...prev, [name]: digits }));
   };
 
   const handleAssetTinChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -111,27 +259,55 @@ export default function FoxerApplicationClient({
   };
 
   const handleExperienceChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const raw = e.target.value;
-    if (raw === "") {
+    const digits = e.target.value.replace(/\D/g, "");
+    if (digits === "") {
       setServiceData((prev) => ({ ...prev, experience: "" }));
       return;
     }
-    const clamped = Math.min(100, Math.max(0, Number(raw)));
+    const clamped = Math.min(100, Math.max(0, Number(digits)));
     setServiceData((prev) => ({ ...prev, experience: String(clamped) }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (providerType === "asset") {
+  const handlePerformerExperienceChange = (
+    e: React.ChangeEvent<HTMLInputElement>,
+  ) => {
+    const digits = e.target.value.replace(/\D/g, "");
+    if (digits === "") {
+      setPerformerData((prev) => ({ ...prev, experience: "" }));
+      return;
+    }
+    const clamped = Math.min(100, Math.max(0, Number(digits)));
+    setPerformerData((prev) => ({ ...prev, experience: String(clamped) }));
+  };
+
+  const submit = () => {
+    if (providerType === "organizer") {
+      applyRole({
+        roleType: "organizer",
+        data: {
+          ...organizerData,
+          experience: parseInt(organizerData.experience, 10),
+          specializations: organizerSpecializations,
+        },
+      });
+    } else if (providerType === "asset") {
       applyRole({
         roleType: "gearFoxer",
         data: {
           ...assetData,
-          assetTypes: assetData.assetTypes
-            .split(",")
-            .map((s) => s.trim())
-            .filter(Boolean),
+          assetTypes: splitList(assetData.assetTypes),
           specializations: assetSpecializations,
+        },
+      });
+    } else if (providerType === "performer") {
+      applyRole({
+        roleType: "performerFoxer",
+        data: {
+          ...performerData,
+          experience: parseInt(performerData.experience, 10),
+          performerTypes: splitList(performerData.performerTypes),
+          portfolioUrls: splitList(performerData.portfolioUrls),
+          specializations: performerSpecializations,
         },
       });
     } else {
@@ -140,324 +316,533 @@ export default function FoxerApplicationClient({
         data: {
           ...serviceData,
           experience: parseInt(serviceData.experience, 10),
-          serviceTypes: serviceData.serviceTypes
-            .split(",")
-            .map((s) => s.trim())
-            .filter(Boolean),
-          portfolioUrls: serviceData.portfolioUrls
-            .split(",")
-            .map((s) => s.trim())
-            .filter(Boolean),
+          serviceTypes: splitList(serviceData.serviceTypes),
+          portfolioUrls: splitList(serviceData.portfolioUrls),
           specializations: serviceSpecializations,
         },
       });
     }
   };
 
-  return (
-    <RequireAuth>
-      <div className="min-h-screen bg-[#0f111a] flex flex-col items-center justify-center p-4 pt-24 pb-12 font-body">
-        <div className="w-full max-w-2xl bg-[#1a1a24] rounded-[2.5rem] p-8 md:p-12 border border-white/5 shadow-2xl relative overflow-hidden">
-          {/* Background Glow */}
-          <div
-            className="absolute top-0 right-0 -mr-20 -mt-20 w-64 h-64 blur-[100px] rounded-full pointer-events-none transition-colors duration-500"
-            style={{
-              backgroundColor:
-                providerType === "asset"
-                  ? "rgba(167,139,250,0.1)"
-                  : "rgba(0,210,255,0.1)",
-            }}
-          />
+  const accent =
+    PROVIDER_TABS.find((t) => t.type === providerType)?.color ?? "#00d2ff";
 
-          <div className="mb-10 text-center relative z-10">
-            <div
-              className="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-6 transition-colors duration-300"
-              style={{
-                backgroundColor:
-                  providerType === "asset"
-                    ? "rgba(167,139,250,0.2)"
-                    : "rgba(0,210,255,0.2)",
-                color: providerType === "asset" ? "#a78bfa" : "#00d2ff",
-              }}
-            >
-              {providerType === "asset" ? (
-                <Package size={32} />
-              ) : (
-                <Briefcase size={32} />
-              )}
-            </div>
-            <h1 className="text-3xl md:text-4xl font-display font-bold text-white mb-2">
-              Apply to be a{" "}
-              <span
-                style={{
-                  color: providerType === "asset" ? "#a78bfa" : "#00d2ff",
-                }}
-              >
-                Foxer
-              </span>
-            </h1>
-            <p className="text-white/60">
-              Provide your professional details to start offering services or
-              equipment in FoxPassport.
-            </p>
-          </div>
+  const countUploaded = (
+    docs: { field: string }[],
+    data: Record<string, string>,
+  ) => docs.filter((d) => data[d.field]).length;
 
-          {/* Provider Type Toggle */}
-          <div className="flex bg-white/5 p-1 rounded-xl mb-8 relative z-10">
+  const docsMessage = (done: number, total: number) =>
+    done < total
+      ? "Upload all the required documents before continuing."
+      : null;
+
+  const orgDocs = countUploaded(ORGANIZER_KYC_DOCUMENTS, organizerData);
+  const assetDocs = countUploaded(FOXER_KYC_DOCUMENTS, assetData);
+  const serviceDocs = countUploaded(FOXER_KYC_DOCUMENTS, serviceData);
+  const performerDocs = countUploaded(FOXER_KYC_DOCUMENTS, performerData);
+
+  const docsRow = (done: number, total: number) => ({
+    label: "Identity documents",
+    value: `${done} of ${total} uploaded`,
+  });
+
+  const icon =
+    providerType === "organizer" ? (
+      <ClipboardCheck size={32} />
+    ) : providerType === "asset" ? (
+      <Package size={32} />
+    ) : providerType === "performer" ? (
+      <Music2 size={32} />
+    ) : (
+      <Briefcase size={32} />
+    );
+
+  const summary =
+    providerType === "organizer"
+      ? [
+          { label: "About you", value: organizerData.bio },
+          {
+            label: "Years of experience",
+            value: organizerData.experience,
+          },
+          { label: "Where you work", value: organizerData.location },
+          {
+            label: "Specializations",
+            value: labelsFor(
+              ORGANIZER_CATEGORY_OPTIONS,
+              organizerSpecializations,
+            ),
+          },
+          docsRow(orgDocs, ORGANIZER_KYC_DOCUMENTS.length),
+        ]
+      : providerType === "asset"
+        ? [
+            { label: "Business name", value: assetData.businessName },
+            { label: "Equipment types", value: assetData.assetTypes },
+            { label: "TIN number", value: assetData.tinNumber },
+            {
+              label: "Specializations",
+              value: labelsFor(ASSET_CATEGORY_OPTIONS, assetSpecializations),
+            },
+            docsRow(assetDocs, FOXER_KYC_DOCUMENTS.length),
+          ]
+        : providerType === "performer"
+          ? [
+              { label: "Performer types", value: performerData.performerTypes },
+              {
+                label: "Years of experience",
+                value: performerData.experience,
+              },
+              { label: "Portfolio links", value: performerData.portfolioUrls },
+              {
+                label: "NBI clearance ID",
+                value: performerData.nbiClearanceIdNumber,
+              },
+              { label: "TIN number", value: performerData.tinNumber },
+              {
+                label: "Specializations",
+                value: labelsFor(
+                  PERFORMER_CATEGORY_OPTIONS,
+                  performerSpecializations,
+                ),
+              },
+              docsRow(performerDocs, FOXER_KYC_DOCUMENTS.length),
+            ]
+          : [
+              { label: "Service types", value: serviceData.serviceTypes },
+              {
+                label: "Years of experience",
+                value: serviceData.experience,
+              },
+              { label: "Portfolio links", value: serviceData.portfolioUrls },
+              {
+                label: "NBI clearance ID",
+                value: serviceData.nbiClearanceIdNumber,
+              },
+              { label: "TIN number", value: serviceData.tinNumber },
+              {
+                label: "Specializations",
+                value: labelsFor(
+                  SERVICE_CATEGORY_OPTIONS,
+                  serviceSpecializations,
+                ),
+              },
+              docsRow(serviceDocs, FOXER_KYC_DOCUMENTS.length),
+            ];
+
+  const intro = (
+    <div className="space-y-5">
+      {/* Provider Type Toggle */}
+      <div className="flex rounded-xl bg-white/5 p-1">
+        {PROVIDER_TABS.map((tab) => {
+          const active = providerType === tab.type;
+          return (
             <button
-              onClick={() => setProviderType("service")}
-              className={`flex-1 py-3 text-sm font-bold uppercase tracking-wider rounded-lg transition-all ${
-                providerType === "service"
-                  ? "bg-[#00d2ff] text-black shadow-lg"
+              key={tab.type}
+              type="button"
+              onClick={() => setProviderType(tab.type)}
+              aria-pressed={active}
+              className={`flex-1 cursor-pointer rounded-lg px-1 py-3 text-[11px] font-bold uppercase tracking-wider transition-all sm:text-sm ${
+                active
+                  ? "text-black shadow-lg"
                   : "text-white/50 hover:text-white"
               }`}
+              style={active ? { backgroundColor: tab.color } : undefined}
             >
-              Service Provider
+              {tab.label}
             </button>
-            <button
-              onClick={() => setProviderType("asset")}
-              className={`flex-1 py-3 text-sm font-bold uppercase tracking-wider rounded-lg transition-all ${
-                providerType === "asset"
-                  ? "bg-[#a78bfa] text-black shadow-lg"
-                  : "text-white/50 hover:text-white"
-              }`}
-            >
-              Gear Provider
-            </button>
-          </div>
-
-          <form onSubmit={handleSubmit} className="space-y-6 relative z-10">
-            {providerType === "service" ? (
-              // --- SERVICE PROVIDER FORM ---
-              <>
-                <div className="space-y-2">
-                  <label className="text-sm font-bold text-white/80 uppercase tracking-wider">
-                    Service Types *
-                  </label>
-                  <p className="text-xs text-white/40 mb-1">
-                    Comma-separated (e.g. Photography, DJ, Catering)
-                  </p>
-                  <div className="relative">
-                    <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-white/40">
-                      <Tag size={18} />
-                    </div>
-                    <input
-                      required
-                      type="text"
-                      name="serviceTypes"
-                      value={serviceData.serviceTypes}
-                      onChange={handleServiceChange}
-                      className="w-full bg-white/5 border border-white/10 rounded-xl py-3 pl-12 pr-4 text-white placeholder:text-white/30 focus:outline-none focus:border-[#00d2ff]/50 focus:bg-white/10 transition-colors"
-                      placeholder="Photography, Event Styling, DJ..."
-                    />
-                  </div>
-                </div>
-
-                <div className="space-y-2">
-                  <label className="text-sm font-bold text-white/80 uppercase tracking-wider">
-                    Years of Experience *
-                  </label>
-                  <div className="relative">
-                    <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-white/40">
-                      <UserCircle size={18} />
-                    </div>
-                    <input
-                      required
-                      type="number"
-                      min="0"
-                      max="100"
-                      name="experience"
-                      value={serviceData.experience}
-                      onChange={handleExperienceChange}
-                      className="w-full bg-white/5 border border-white/10 rounded-xl py-3 pl-12 pr-4 text-white placeholder:text-white/30 focus:outline-none focus:border-[#00d2ff]/50 focus:bg-white/10 transition-colors"
-                      placeholder="e.g. 3"
-                    />
-                  </div>
-                </div>
-
-                <div className="space-y-2">
-                  <label className="text-sm font-bold text-white/80 uppercase tracking-wider">
-                    Portfolio Links *
-                  </label>
-                  <div className="relative">
-                    <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-white/40">
-                      <LinkIcon size={18} />
-                    </div>
-                    <input
-                      required
-                      type="text"
-                      name="portfolioUrls"
-                      value={serviceData.portfolioUrls}
-                      onChange={handleServiceChange}
-                      className="w-full bg-white/5 border border-white/10 rounded-xl py-3 pl-12 pr-4 text-white placeholder:text-white/30 focus:outline-none focus:border-[#00d2ff]/50 focus:bg-white/10 transition-colors"
-                      placeholder="https://instagram.com/..., https://myportfolio.com"
-                    />
-                  </div>
-                </div>
-
-                <div className="space-y-2">
-                  <label className="text-sm font-bold text-white/80 uppercase tracking-wider">
-                    NBI Clearance ID *
-                  </label>
-                  <div className="relative">
-                    <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-white/40">
-                      <BadgeCheck size={18} />
-                    </div>
-                    <input
-                      required
-                      type="text"
-                      inputMode="numeric"
-                      name="nbiClearanceIdNumber"
-                      maxLength={18}
-                      value={serviceData.nbiClearanceIdNumber}
-                      onChange={handleServiceDigitsChange}
-                      className="w-full bg-white/5 border border-white/10 rounded-xl py-3 pl-12 pr-4 text-white placeholder:text-white/30 focus:outline-none focus:border-[#00d2ff]/50 focus:bg-white/10 transition-colors"
-                      placeholder="XXXX-XXXX-XXXX"
-                    />
-                  </div>
-                </div>
-
-                <div className="space-y-2">
-                  <label className="text-sm font-bold text-white/80 uppercase tracking-wider">
-                    TIN Number (Optional)
-                  </label>
-                  <div className="relative">
-                    <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-white/40">
-                      <Hash size={18} />
-                    </div>
-                    <input
-                      type="text"
-                      inputMode="numeric"
-                      name="tinNumber"
-                      maxLength={9}
-                      value={serviceData.tinNumber}
-                      onChange={handleServiceDigitsChange}
-                      className="w-full bg-white/5 border border-white/10 rounded-xl py-3 pl-12 pr-4 text-white placeholder:text-white/30 focus:outline-none focus:border-[#00d2ff]/50 focus:bg-white/10 transition-colors"
-                      placeholder="000-000-000-000"
-                    />
-                  </div>
-                </div>
-
-                <SpecializationPicker
-                  options={SERVICE_CATEGORY_OPTIONS}
-                  value={serviceSpecializations}
-                  onChange={setServiceSpecializations}
-                  accentColor="#00d2ff"
-                />
-
-                <KycDocumentSection
-                  onUpload={handleFileUpload}
-                  title="Professional Verification"
-                  description="As a service provider, we require a full background check including NBI clearance."
-                />
-              </>
-            ) : (
-              // --- ASSET PROVIDER FORM ---
-              <>
-                <div className="space-y-2">
-                  <label className="text-sm font-bold text-white/80 uppercase tracking-wider">
-                    Business Name *
-                  </label>
-                  <div className="relative">
-                    <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-white/40">
-                      <Briefcase size={18} />
-                    </div>
-                    <input
-                      required
-                      type="text"
-                      name="businessName"
-                      value={assetData.businessName}
-                      onChange={handleAssetChange}
-                      className="w-full bg-white/5 border border-white/10 rounded-xl py-3 pl-12 pr-4 text-white placeholder:text-white/30 focus:outline-none focus:border-[#00d2ff]/50 focus:bg-white/10 transition-colors"
-                      placeholder="Super Sounds Audio"
-                    />
-                  </div>
-                </div>
-
-                <div className="space-y-2">
-                  <label className="text-sm font-bold text-white/80 uppercase tracking-wider">
-                    Equipment Types *
-                  </label>
-                  <p className="text-xs text-white/40 mb-1">
-                    Comma-separated (e.g. Speakers, Microphones, Lights)
-                  </p>
-                  <div className="relative">
-                    <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-white/40">
-                      <Package size={18} />
-                    </div>
-                    <input
-                      required
-                      type="text"
-                      name="assetTypes"
-                      value={assetData.assetTypes}
-                      onChange={handleAssetChange}
-                      className="w-full bg-white/5 border border-white/10 rounded-xl py-3 pl-12 pr-4 text-white placeholder:text-white/30 focus:outline-none focus:border-[#00d2ff]/50 focus:bg-white/10 transition-colors"
-                      placeholder="Sound Systems, Lighting Rigs..."
-                    />
-                  </div>
-                </div>
-
-                <div className="space-y-2">
-                  <label className="text-sm font-bold text-white/80 uppercase tracking-wider">
-                    TIN Number *
-                  </label>
-                  <div className="relative">
-                    <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-white/40">
-                      <Hash size={18} />
-                    </div>
-                    <input
-                      required
-                      type="text"
-                      inputMode="numeric"
-                      name="tinNumber"
-                      maxLength={9}
-                      value={assetData.tinNumber}
-                      onChange={handleAssetTinChange}
-                      className="w-full bg-white/5 border border-white/10 rounded-xl py-3 pl-12 pr-4 text-white placeholder:text-white/30 focus:outline-none focus:border-[#00d2ff]/50 focus:bg-white/10 transition-colors"
-                      placeholder="000-000-000-000"
-                    />
-                  </div>
-                </div>
-
-                <SpecializationPicker
-                  options={ASSET_CATEGORY_OPTIONS}
-                  value={assetSpecializations}
-                  onChange={setAssetSpecializations}
-                  accentColor="#a78bfa"
-                />
-
-                <KycDocumentSection
-                  onUpload={handleFileUpload}
-                  title="Equipment Provider Verification"
-                  description="Verify your identity to start listing assets on FoxPassport."
-                />
-              </>
-            )}
-
-            {/* Actions */}
-            <div className="pt-6 flex flex-col sm:flex-row gap-4 items-center">
-              <Link
-                href="/onboarding"
-                className="w-full sm:w-auto px-6 py-3 rounded-xl border border-white/10 text-white hover:bg-white/5 transition-colors text-center font-medium"
-              >
-                Back
-              </Link>
-              <button
-                type="submit"
-                disabled={isPending}
-                className="w-full flex-1 flex items-center justify-center gap-2 text-black font-bold py-3 px-6 rounded-xl hover:brightness-110 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-                style={{
-                  backgroundColor:
-                    providerType === "asset" ? "#a78bfa" : "#00d2ff",
-                }}
-              >
-                {isPending ? "Submitting..." : "Submit Application"}
-                {!isPending && <ArrowRight size={18} />}
-              </button>
-            </div>
-          </form>
-        </div>
+          );
+        })}
       </div>
-    </RequireAuth>
+
+      {/* Event Foxer, Venue Foxer, and Investor have their own applications
+          with their own fields, so they link out rather than sit in the tab
+          bar. */}
+      <p className="text-center text-xs text-white/40">
+        Want to host events, list a venue, or invest instead?{" "}
+        <Link
+          href="/creator-dashboard/apply"
+          className="text-white/70 underline hover:text-white"
+        >
+          Apply as an Event Foxer
+        </Link>
+        ,{" "}
+        <Link
+          href="/venue-foxer/apply"
+          className="text-white/70 underline hover:text-white"
+        >
+          Venue Foxer
+        </Link>
+        , or{" "}
+        <Link
+          href="/foxer/apply-investor"
+          className="text-white/70 underline hover:text-white"
+        >
+          Investor
+        </Link>
+        .
+      </p>
+    </div>
+  );
+
+  return (
+    // Keyed by role so changing it starts that role's form fresh, rather than
+    // reusing the previous role's inputs and uploads.
+    <ApplicationWizard
+      key={providerType}
+      accent={accent}
+      icon={icon}
+      title={
+        providerType === "organizer" ? (
+          <>
+            Apply to be an <span style={{ color: accent }}>Organizer</span>
+          </>
+        ) : (
+          <>
+            Apply to be a <span style={{ color: accent }}>Foxer</span>
+          </>
+        )
+      }
+      subtitle={
+        providerType === "organizer"
+          ? "Once approved, Mayors and Event Owners can invite you to help run their venues and events."
+          : "Provide your professional details to start offering services, equipment, or performances in FoxPassport."
+      }
+      intro={intro}
+      summary={summary}
+      agreement="By submitting this application, you confirm the details are accurate and agree to FoxPassport's provider policies and quality standards. Your application will be reviewed by our team."
+      isPending={isPending}
+      onSubmit={submit}
+    >
+      {providerType === "organizer" ? (
+        <>
+          <WizardStep
+            label="About you"
+            title="About you"
+            description="The events and venues you've helped run, and where."
+            validate={() =>
+              organizerPlace.city
+                ? null
+                : "Choose where you usually work — country, state and city."
+            }
+          >
+            <div className="space-y-2">
+              <label className={LABEL}>About You *</label>
+              <textarea
+                required
+                name="bio"
+                rows={4}
+                value={organizerData.bio}
+                onChange={(e) =>
+                  setOrganizerData((prev) => ({
+                    ...prev,
+                    bio: e.target.value,
+                  }))
+                }
+                className={`${INPUT_BASE} resize-none px-4`}
+                placeholder="The events and venues you've helped run, and what you did there."
+              />
+            </div>
+
+            <IconField
+              label="Years of Experience *"
+              accent={accent}
+              icon={<UserCircle size={18} />}
+              required
+              type="text"
+              inputMode="numeric"
+              pattern="[0-9]*"
+              name="experience"
+              value={organizerData.experience}
+              onChange={(e) => {
+                const digits = e.target.value.replace(/\D/g, "");
+                setOrganizerData((prev) => ({
+                  ...prev,
+                  experience:
+                    digits === "" ? "" : String(Math.min(100, Number(digits))),
+                }));
+              }}
+              placeholder="e.g. 3"
+            />
+
+            <div className="space-y-2">
+              <label className={`${LABEL} flex items-center gap-2`}>
+                <MapPin size={16} className="text-white/40" />
+                Where you usually work *
+              </label>
+              <CascadingLocationFields
+                value={organizerPlace}
+                onChange={(next) => {
+                  setOrganizerPlace(next);
+                  setOrganizerData((prev) => ({
+                    ...prev,
+                    location: [next.city, next.state, next.country]
+                      .filter(Boolean)
+                      .join(", "),
+                  }));
+                }}
+              />
+            </div>
+
+            <SpecializationPicker
+              options={ORGANIZER_CATEGORY_OPTIONS}
+              value={organizerSpecializations}
+              onChange={setOrganizerSpecializations}
+              accentColor={accent}
+            />
+          </WizardStep>
+
+          <WizardStep
+            label="Documents"
+            title="Verify your identity"
+            description="Organizers see guest lists and help run other people's venues and events, so we verify who you are before anyone can invite you."
+            validate={() =>
+              docsMessage(orgDocs, ORGANIZER_KYC_DOCUMENTS.length)
+            }
+          >
+            <KycDocumentSection
+              onUpload={handleFileUpload}
+              documents={ORGANIZER_KYC_DOCUMENTS}
+              compact
+            />
+          </WizardStep>
+        </>
+      ) : providerType === "service" ? (
+        <>
+          <WizardStep
+            label="Your work"
+            title="Your work"
+            description="What you offer, how long you've done it, and where people can see it."
+          >
+            <IconField
+              label="Service Types *"
+              hint="Comma-separated (e.g. Photography, DJ, Catering)"
+              accent={accent}
+              icon={<Tag size={18} />}
+              required
+              type="text"
+              name="serviceTypes"
+              value={serviceData.serviceTypes}
+              onChange={handleServiceChange}
+              placeholder="Photography, Event Styling, DJ..."
+            />
+            <IconField
+              label="Years of Experience *"
+              accent={accent}
+              icon={<UserCircle size={18} />}
+              required
+              type="text"
+              inputMode="numeric"
+              pattern="[0-9]*"
+              name="experience"
+              value={serviceData.experience}
+              onChange={handleExperienceChange}
+              placeholder="e.g. 3"
+            />
+            <IconField
+              label="Portfolio Links *"
+              accent={accent}
+              icon={<LinkIcon size={18} />}
+              required
+              type="text"
+              name="portfolioUrls"
+              value={serviceData.portfolioUrls}
+              onChange={handleServiceChange}
+              placeholder="https://instagram.com/..., https://myportfolio.com"
+            />
+            <SpecializationPicker
+              options={SERVICE_CATEGORY_OPTIONS}
+              value={serviceSpecializations}
+              onChange={setServiceSpecializations}
+              accentColor={accent}
+            />
+          </WizardStep>
+
+          <WizardStep
+            label="Verification"
+            title="Professional verification"
+            description="As a Talent Foxer, we require a full background check including NBI clearance."
+            validate={() =>
+              docsMessage(serviceDocs, FOXER_KYC_DOCUMENTS.length)
+            }
+          >
+            <IconField
+              label="NBI Clearance ID *"
+              accent={accent}
+              icon={<BadgeCheck size={18} />}
+              required
+              type="text"
+              inputMode="numeric"
+              name="nbiClearanceIdNumber"
+              maxLength={18}
+              value={serviceData.nbiClearanceIdNumber}
+              onChange={handleServiceDigitsChange}
+              placeholder="XXXX-XXXX-XXXX"
+            />
+            <IconField
+              label="TIN Number (Optional)"
+              accent={accent}
+              icon={<Hash size={18} />}
+              type="text"
+              inputMode="numeric"
+              name="tinNumber"
+              maxLength={9}
+              value={serviceData.tinNumber}
+              onChange={handleServiceDigitsChange}
+              placeholder="000-000-000-000"
+            />
+            <KycDocumentSection onUpload={handleFileUpload} compact />
+          </WizardStep>
+        </>
+      ) : providerType === "performer" ? (
+        <>
+          <WizardStep
+            label="Your act"
+            title="Your act"
+            description="What you perform, how long you've done it, and where people can watch."
+          >
+            <IconField
+              label="Performer Types *"
+              hint="Comma-separated (e.g. DJ, Live Band, MC)"
+              accent={accent}
+              icon={<Tag size={18} />}
+              required
+              type="text"
+              name="performerTypes"
+              value={performerData.performerTypes}
+              onChange={handlePerformerChange}
+              placeholder="DJ, Live Band, Photography..."
+            />
+            <IconField
+              label="Years of Experience *"
+              accent={accent}
+              icon={<UserCircle size={18} />}
+              required
+              type="text"
+              inputMode="numeric"
+              pattern="[0-9]*"
+              name="experience"
+              value={performerData.experience}
+              onChange={handlePerformerExperienceChange}
+              placeholder="e.g. 3"
+            />
+            <IconField
+              label="Portfolio / Demo Reel Links *"
+              accent={accent}
+              icon={<LinkIcon size={18} />}
+              required
+              type="text"
+              name="portfolioUrls"
+              value={performerData.portfolioUrls}
+              onChange={handlePerformerChange}
+              placeholder="https://youtube.com/..., https://soundcloud.com/..."
+            />
+            <SpecializationPicker
+              options={PERFORMER_CATEGORY_OPTIONS}
+              value={performerSpecializations}
+              onChange={setPerformerSpecializations}
+              accentColor={accent}
+            />
+          </WizardStep>
+
+          <WizardStep
+            label="Verification"
+            title="Performer verification"
+            description="As a performer, we require a full background check including NBI clearance."
+            validate={() =>
+              docsMessage(performerDocs, FOXER_KYC_DOCUMENTS.length)
+            }
+          >
+            <IconField
+              label="NBI Clearance ID *"
+              accent={accent}
+              icon={<BadgeCheck size={18} />}
+              required
+              type="text"
+              inputMode="numeric"
+              name="nbiClearanceIdNumber"
+              maxLength={18}
+              value={performerData.nbiClearanceIdNumber}
+              onChange={handlePerformerDigitsChange}
+              placeholder="XXXX-XXXX-XXXX"
+            />
+            <IconField
+              label="TIN Number (Optional)"
+              accent={accent}
+              icon={<Hash size={18} />}
+              type="text"
+              inputMode="numeric"
+              name="tinNumber"
+              maxLength={9}
+              value={performerData.tinNumber}
+              onChange={handlePerformerDigitsChange}
+              placeholder="000-000-000-000"
+            />
+            <KycDocumentSection onUpload={handleFileUpload} compact />
+          </WizardStep>
+        </>
+      ) : (
+        <>
+          <WizardStep
+            label="Your business"
+            title="Your business"
+            description="Who you are and what you rent out."
+          >
+            <IconField
+              label="Business Name *"
+              accent={accent}
+              icon={<Briefcase size={18} />}
+              required
+              type="text"
+              name="businessName"
+              value={assetData.businessName}
+              onChange={handleAssetChange}
+              placeholder="Super Sounds Audio"
+            />
+            <IconField
+              label="Equipment Types *"
+              hint="Comma-separated (e.g. Speakers, Microphones, Lights)"
+              accent={accent}
+              icon={<Package size={18} />}
+              required
+              type="text"
+              name="assetTypes"
+              value={assetData.assetTypes}
+              onChange={handleAssetChange}
+              placeholder="Sound Systems, Lighting Rigs..."
+            />
+            <IconField
+              label="TIN Number *"
+              accent={accent}
+              icon={<Hash size={18} />}
+              required
+              type="text"
+              inputMode="numeric"
+              name="tinNumber"
+              maxLength={9}
+              value={assetData.tinNumber}
+              onChange={handleAssetTinChange}
+              placeholder="000-000-000-000"
+            />
+            <SpecializationPicker
+              options={ASSET_CATEGORY_OPTIONS}
+              value={assetSpecializations}
+              onChange={setAssetSpecializations}
+              accentColor={accent}
+            />
+          </WizardStep>
+
+          <WizardStep
+            label="Documents"
+            title="Equipment provider verification"
+            description="Verify your identity to start listing assets on FoxPassport."
+            validate={() => docsMessage(assetDocs, FOXER_KYC_DOCUMENTS.length)}
+          >
+            <KycDocumentSection onUpload={handleFileUpload} compact />
+          </WizardStep>
+        </>
+      )}
+    </ApplicationWizard>
   );
 }

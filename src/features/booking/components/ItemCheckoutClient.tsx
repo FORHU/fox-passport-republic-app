@@ -1,4 +1,3 @@
-/* eslint-disable react-hooks/set-state-in-effect, @next/next/no-img-element */
 "use client";
 
 import React, { useEffect, useState } from "react";
@@ -8,10 +7,14 @@ import { useRouter } from "next/navigation";
 import { loadStripe } from "@stripe/stripe-js";
 import { Elements } from "@stripe/react-stripe-js";
 import { useItemBookingStore } from "@/features/booking/store/useItemBookingStore";
-import { useAuthStore } from "@/features/auth/store/useAuthStore";
+import { useAuthStore } from "@/shared/auth/useAuthStore";
 import { createPaymentIntent } from "@/features/booking/api/bookings";
 import StripePaymentForm from "./StripePaymentForm";
 import { getDashboardPath } from "@/shared/lib/dashboard-path";
+import { smartBack } from "@/shared/lib/navigation";
+import { useCurrency } from "@/shared/providers/CurrencyProvider";
+import { DEFAULT_CURRENCY } from "@/shared/lib/currency";
+import { formatCurrency } from "@/shared/lib/currency";
 
 const stripePromise = loadStripe(
   process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY || "",
@@ -35,6 +38,7 @@ const TYPE_CONFIG = {
 export default function ItemCheckoutClient() {
   const router = useRouter();
   const { user } = useAuthStore();
+  const { currency, format } = useCurrency();
   const {
     itemType,
     itemName,
@@ -54,7 +58,7 @@ export default function ItemCheckoutClient() {
   const typeConfig = itemType ? TYPE_CONFIG[itemType] : TYPE_CONFIG.service;
 
   const formattedDate = scheduledDate
-    ? new Date(scheduledDate).toLocaleDateString("en-PH", {
+    ? new Date(scheduledDate).toLocaleDateString(undefined, {
         year: "numeric",
         month: "long",
         day: "numeric",
@@ -86,7 +90,7 @@ export default function ItemCheckoutClient() {
         ),
       )
       .finally(() => setLoadingIntent(false));
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  }, []);
 
   const elementsOptions = clientSecret
     ? {
@@ -168,7 +172,7 @@ export default function ItemCheckoutClient() {
                   src={user.imgId}
                 />
               ) : (
-                <div className="h-full w-full bg-[#ccff00] flex items-center justify-center text-black font-bold text-sm">
+                <div className="h-full w-full bg-accent flex items-center justify-center text-black font-bold text-sm">
                   {user?.name?.charAt(0)?.toUpperCase() ?? "U"}
                 </div>
               )}
@@ -181,21 +185,32 @@ export default function ItemCheckoutClient() {
         <div className="absolute top-20 right-0 w-[500px] h-[500px] bg-primary/20 rounded-full blur-[120px] pointer-events-none animate-pulse-slow mix-blend-screen" />
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 relative z-10">
           <div className="mb-10">
-            <div className="flex items-center gap-2 text-sm text-text-muted mb-4">
-              <Link
-                href="/categories"
-                className="hover:text-white transition-colors"
+            <div className="flex items-center justify-between mb-4 gap-4">
+              <button
+                onClick={() => smartBack(router, "/categories")}
+                className="flex items-center gap-2 text-sm text-text-muted hover:text-white transition-colors shrink-0"
               >
-                Browse
-              </Link>
-              <span className="material-symbols-outlined text-[14px]">
-                chevron_right
-              </span>
-              <span className="text-white/60">{typeConfig.label}</span>
-              <span className="material-symbols-outlined text-[14px]">
-                chevron_right
-              </span>
-              <span className="text-accent font-bold">Checkout</span>
+                <span className="material-symbols-outlined text-[18px]">
+                  arrow_back
+                </span>
+                Back
+              </button>
+              <div className="flex items-center gap-2 text-sm text-text-muted min-w-0">
+                <Link
+                  href="/categories"
+                  className="hover:text-white transition-colors"
+                >
+                  Browse
+                </Link>
+                <span className="material-symbols-outlined text-[14px]">
+                  chevron_right
+                </span>
+                <span className="text-white/60">{typeConfig.label}</span>
+                <span className="material-symbols-outlined text-[14px]">
+                  chevron_right
+                </span>
+                <span className="text-accent font-bold">Checkout</span>
+              </div>
             </div>
             <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
               <div>
@@ -383,9 +398,17 @@ export default function ItemCheckoutClient() {
                         Total
                       </span>
                       <span className="text-3xl font-display font-bold text-accent text-shadow-glow">
-                        ₱{totalAmount.toLocaleString()}
+                        {formatCurrency(totalAmount)}
                       </span>
                     </div>
+                    {/* Charging always happens in PHP — this is a display-only
+                        estimate for someone whose account currency isn't PHP,
+                        never the authoritative charge amount. */}
+                    {currency !== DEFAULT_CURRENCY && (
+                      <p className="text-right text-xs text-text-muted mt-1">
+                        ≈ {format(totalAmount)}
+                      </p>
+                    )}
                   </div>
                 </div>
 
@@ -397,11 +420,11 @@ export default function ItemCheckoutClient() {
                   </div>
                   <div>
                     <h4 className="text-white font-bold font-display text-sm mb-1">
-                      Escrow Protection
+                      Payment Protection
                     </h4>
                     <p className="text-xs text-text-muted leading-relaxed">
-                      Your payment is held securely in escrow and only released
-                      to the provider after you confirm arrival or receipt.
+                      Your payment is held safely and only released to the
+                      provider after you confirm arrival or receipt.
                     </p>
                   </div>
                 </div>
@@ -423,7 +446,7 @@ export default function ItemCheckoutClient() {
               </span>
             </div>
             <p className="text-xs text-gray-500 font-medium">
-              © 2024 FoxPassport Inc. All rights reserved.
+              © {new Date().getFullYear()} FoxPassport Inc. All rights reserved.
             </p>
           </div>
         </div>

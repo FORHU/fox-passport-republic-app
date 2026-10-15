@@ -1,13 +1,11 @@
-﻿"use client";
+"use client";
 
 import { useQuery } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
-import { useCreateVenueModal } from "@/features/venue/hooks/useCreateVenueModal";
-import {
-  useAuthActions,
-  useAuthStore,
-} from "@/features/auth/store/useAuthStore";
+import { useCreateVenueModal } from "@/shared/store/useCreateVenueModal";
+import { useAuthActions, useAuthStore } from "@/shared/auth/useAuthStore";
 import api from "@/shared/lib/axios";
+import { pollWhileVisible } from "@/shared/lib/realtime";
 
 interface Venue {
   id: string;
@@ -43,10 +41,7 @@ export const useHostDashboard = () => {
       return response.data.venues ?? [];
     },
     enabled: !!userId,
-    refetchInterval: () => {
-      if (typeof document !== "undefined" && document.hidden) return false;
-      return 10000;
-    },
+    refetchInterval: pollWhileVisible,
     refetchOnWindowFocus: true,
     staleTime: 5000,
   });

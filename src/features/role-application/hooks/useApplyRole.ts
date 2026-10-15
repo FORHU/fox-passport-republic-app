@@ -1,13 +1,18 @@
 ﻿"use client";
 
 import { useMutation } from "@tanstack/react-query";
-import axios from "axios";
 import { toast } from "sonner";
-import { useAuthStore } from "@/features/auth/store/useAuthStore";
+import api from "@/shared/lib/axios";
 import { useRouter } from "next/navigation";
 
 export type RoleType =
-  "venueFoxer" | "gearFoxer" | "serviceFoxer" | "investor" | "eventFoxer";
+  | "venueFoxer"
+  | "gearFoxer"
+  | "serviceFoxer"
+  | "performerFoxer"
+  | "investor"
+  | "eventFoxer"
+  | "organizer";
 
 interface ApplyRolePayload {
   roleType: RoleType;
@@ -22,26 +27,16 @@ interface ApplyRoleResponse {
 
 const applyRole = async (
   payload: ApplyRolePayload,
-  accessToken: string,
 ): Promise<ApplyRoleResponse> => {
-  const response = await axios.post(
-    `${process.env.NEXT_PUBLIC_API_URL}/role-requests/apply`,
-    payload,
-    {
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-      },
-    },
-  );
+  const response = await api.post("/role-requests/apply", payload);
   return response.data;
 };
 
 export const useApplyRole = () => {
-  const accessToken = useAuthStore((state) => state.accessToken);
   const router = useRouter();
 
   return useMutation({
-    mutationFn: (payload: ApplyRolePayload) => applyRole(payload, accessToken!),
+    mutationFn: (payload: ApplyRolePayload) => applyRole(payload),
     onSuccess: (data) => {
       toast.success(data.message || "Application submitted successfully!");
       setTimeout(() => {
