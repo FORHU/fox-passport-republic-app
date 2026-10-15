@@ -1,4 +1,3 @@
-export const dynamic = "force-dynamic";
 
 import { getVenues } from "@/shared/lib/server/data";
 import { VenuesMapPageClient } from "@/features/venue/components/VenuesMapPageClient";

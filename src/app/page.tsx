@@ -12,8 +12,6 @@ export const metadata: Metadata = {
   },
 };
 
-// Skip static generation for this page - it fetches dynamic data
-export const dynamic = "force-dynamic";
 
 // --- Features ---
 // Server component: import leaves directly, not feature barrels, so the whole
@@ -57,14 +55,15 @@ async function HomeContent({ searchParams }: HomePageProps) {
 
   const isSearchMode = Boolean(locationQuery || categoryQuery);
 
+  // Only fetch user & venues when the visitor has actively submitted a search/filter query.
+  // Default landing page does not need to block on /profile.
+  const [user, venues] = await Promise.all([
+    isSearchMode ? getUser() : Promise.resolve(null),
+    isSearchMode ? getVenues() : Promise.resolve([]),
+  ]);
+
   // --- SEARCH/FILTER RESULTS VIEW ---
   if (isSearchMode) {
-    // Only fetch user & venues when the visitor has actively submitted a search/filter query.
-    // Default landing page does not need to block on /profile.
-    const [user, venues] = await Promise.all([
-      getUser(),
-      getVenues(),
-    ]);
 
     const canSeeVenues = userCanSeeVenues(user);
     const filteredVenues = filterVenues(venues, locationQuery, categoryQuery);
