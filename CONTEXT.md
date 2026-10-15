@@ -41,7 +41,7 @@ Code: `roleType` includes `"gearFoxer"`.
 _Avoid_: FoxerAsset, Asset Foxer (old names)
 
 **ServiceFoxer**
-A Citizen approved to supply Services (catering, design, staffing, etc.) into the marketplace for standalone booking or attachment to Event Templates. Public-facing name is **Talent Foxer** — decided 14 Sep 2026, see `docs/BUSINESS-STRATEGY-MASTER.md` §11.5. `ServiceFoxer`/`serviceFoxer` remains the code-level term; use it in code, API, and this glossary. `entertainment` is a legacy `ServiceCategory` value here — new entertainment-type supply is PerformerFoxer, not ServiceFoxer.
+A Citizen approved to supply Services (catering, design, staffing, etc.) into the marketplace for standalone booking or attachment to Event Templates. Public-facing name is **Talent Foxer** — decided 14 Sep 2026, see `docs/findings/BUSINESS-STRATEGY-MASTER.md` §11.5. `ServiceFoxer`/`serviceFoxer` remains the code-level term; use it in code, API, and this glossary. `entertainment` is a legacy `ServiceCategory` value here — new entertainment-type supply is PerformerFoxer, not ServiceFoxer.
 Code: `roleType` includes `"serviceFoxer"`.
 _Avoid_: FoxerService (old name)
 
