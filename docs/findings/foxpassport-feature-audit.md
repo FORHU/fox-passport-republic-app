@@ -1,6 +1,6 @@
 # FoxPassport Republic — Full Feature Audit vs. BUSINESS-STRATEGY-MASTER.md
 
-Checked 15 Oct 2026 against [BUSINESS-STRATEGY-MASTER.md](../BUSINESS-STRATEGY-MASTER.md) (v3.0, all 44 sections), the API Prisma schema + 49 `src/modules`, the 87 web routes in `src/app`, and the 13 mobile pages.
+Checked 15 Oct 2026 against [BUSINESS-STRATEGY-MASTER.md](./BUSINESS-STRATEGY-MASTER.md) (v3.0, all 44 sections), the API Prisma schema + 49 `src/modules`, the 87 web routes in `src/app`, and the 13 mobile pages.
 
 **Legend:** ✅ Built · 🟡 Partial · ❌ Not built · 📄 = mentioned in the strategy doc · 🚫 = built but **not mentioned** in the strategy doc
 
