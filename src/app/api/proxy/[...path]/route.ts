@@ -103,7 +103,11 @@ async function handler(
   const target = `${config.apiUrl}/${path.join("/")}${request.nextUrl.search}`;
 
   const cookieStore = await cookies();
-  const accessToken = cookieStore.get(ACCESS_COOKIE)?.value ?? null;
+  const accessToken =
+    cookieStore.get("better-auth.session_token")?.value ??
+    cookieStore.get("__Secure-better-auth.session_token")?.value ??
+    cookieStore.get(ACCESS_COOKIE)?.value ??
+    null;
 
   // Read the body once — it may need replaying after a refresh. Methods without
   // a body give an empty buffer, which we pass as undefined.
@@ -160,7 +164,21 @@ async function handler(
     });
   };
 
-  let upstream = await forward(accessToken);
+  let upstream: Response;
+  try {
+    upstream = await forward(accessToken);
+  } catch (err: unknown) {
+    const errorMsg = err instanceof Error ? err.message : String(err);
+    console.warn(`[proxy] Upstream unreachable for ${target}:`, errorMsg);
+    return NextResponse.json(
+      {
+        success: false,
+        message:
+          "Backend API service is currently unreachable. Please ensure the API is running.",
+      },
+      { status: 503 },
+    );
+  }
   let refreshed: RefreshResult | null = null;
 
   // A 401 from the pre-session endpoints is "those credentials are wrong", not
@@ -173,7 +191,22 @@ async function handler(
     if (refreshToken) {
       refreshed = await refreshAccessToken(refreshToken);
       if (refreshed) {
-        upstream = await forward(refreshed.accessToken);
+        try {
+          upstream = await forward(refreshed.accessToken);
+        } catch (err: unknown) {
+          const errorMsg = err instanceof Error ? err.message : String(err);
+          console.warn(
+            `[proxy] Upstream unreachable after refresh for ${target}:`,
+            errorMsg,
+          );
+          return NextResponse.json(
+            {
+              success: false,
+              message: "Backend API service is currently unreachable.",
+            },
+            { status: 503 },
+          );
+        }
       }
     }
   }

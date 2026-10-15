@@ -15,10 +15,10 @@ import {
   rejectAffiliation,
   revokeAffiliation,
 } from "@/features/venue-affiliation/api/venueAffiliations";
-import { fetchEventFoxers } from "@/features/search/api/search";
+import { fetchFoxers } from "@/shared/api/foxers";
 
 async function searchEventFoxers(query: string): Promise<PickerItem[]> {
-  const { items } = await fetchEventFoxers(1, 8, { q: query });
+  const items = await fetchFoxers(8, 1, "eventFoxer", query);
   return items.map((f) => ({
     id: f.id,
     label: f.name,

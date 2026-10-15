@@ -21,7 +21,7 @@ import { toast } from "sonner";
 import { useLogout } from "@/shared/auth/useLogout";
 import { CurrencySwitcher } from "@/shared/components/layout/CurrencySwitcher";
 import { ThemeSwitcher } from "@/shared/components/layout/ThemeSwitcher";
-import { useUnreadMessagesCount } from "@/features/messages/hooks/useUnreadMessagesCount";
+import { useUnreadMessagesCount } from "@/shared/hooks/useUnreadMessagesCount";
 
 interface UserMenuNavLinksProps {
   userId?: string | null;

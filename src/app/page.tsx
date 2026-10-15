@@ -12,8 +12,6 @@ export const metadata: Metadata = {
   },
 };
 
-// Skip static generation for this page - it fetches dynamic data
-export const dynamic = "force-dynamic";
 
 // --- Features ---
 // Server component: import leaves directly, not feature barrels, so the whole
@@ -57,24 +55,18 @@ async function HomeContent({ searchParams }: HomePageProps) {
 
   const isSearchMode = Boolean(locationQuery || categoryQuery);
 
-  // The two views need different data, so only fetch what the branch we are
-  // about to render actually uses. `getVenues()` used to run unconditionally and
-  // was then discarded on the default landing page - the most visited route in
-  // the app - because that branch renders the landing page, which loads its own
-  // data. Fetching in parallel with the profile also removes the waterfall:
-  // neither depends on the other.
+  // Only fetch user & venues when the visitor has actively submitted a search/filter query.
+  // Default landing page does not need to block on /profile.
   const [user, venues] = await Promise.all([
-    getUser(),
+    isSearchMode ? getUser() : Promise.resolve(null),
     isSearchMode ? getVenues() : Promise.resolve([]),
   ]);
 
-  const canSeeVenues = userCanSeeVenues(user);
-
-  // --- FILTERING LOGIC ---
-  const filteredVenues = filterVenues(venues, locationQuery, categoryQuery);
-
   // --- SEARCH/FILTER RESULTS VIEW ---
   if (isSearchMode) {
+
+    const canSeeVenues = userCanSeeVenues(user);
+    const filteredVenues = filterVenues(venues, locationQuery, categoryQuery);
     return (
       <main className="min-h-screen bg-background bg-gradient-dark text-text-main font-body pt-28 md:pt-32 pb-20">
         <LandingHeader />

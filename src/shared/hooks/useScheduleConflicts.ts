@@ -5,7 +5,7 @@ import { useAuthStore } from "@/shared/auth/useAuthStore";
 import {
   fetchScheduleConflicts,
   ScheduleConflict,
-} from "@/features/booking/api/bookings";
+} from "@/shared/api/schedule-conflicts";
 
 /**
  * Looks up whether the citizen already has something booked over the dates

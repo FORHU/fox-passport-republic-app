@@ -376,6 +376,25 @@ function RepublicFeedContent() {
                     />
                   ))}
                 </div>
+              ) : feedQuery.isError && posts.length === 0 ? (
+                <div className="w-full rounded-3xl bg-zinc-950/60 border border-red-500/30 p-12 text-center space-y-3 shadow-xl">
+                  <span className="material-symbols-outlined text-[48px] text-red-400">
+                    cloud_off
+                  </span>
+                  <h3 className="text-base font-bold text-zinc-200">
+                    Unable to load Republic feed
+                  </h3>
+                  <p className="text-xs text-zinc-400 max-w-sm mx-auto leading-relaxed">
+                    We couldn&apos;t connect to the feed service. Please verify your connection or try again.
+                  </p>
+                  <button
+                    onClick={() => feedQuery.refetch()}
+                    className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-lime-400 hover:bg-lime-300 text-black text-xs font-bold transition-colors cursor-pointer"
+                  >
+                    <span className="material-symbols-outlined text-[16px]">refresh</span>
+                    Retry
+                  </button>
+                </div>
               ) : posts.length === 0 ? (
                 <div className="w-full rounded-3xl bg-zinc-950/60 border border-zinc-800/80 p-12 text-center space-y-3 shadow-xl">
                   <Inbox
@@ -470,6 +489,9 @@ function RepublicFeedContent() {
             removePost(id);
             handleCloseDetail();
           }}
+          renderShareModal={(postToShare, onClose) => (
+            <SharePostModal post={postToShare} onClose={onClose} />
+          )}
         />
       )}
 

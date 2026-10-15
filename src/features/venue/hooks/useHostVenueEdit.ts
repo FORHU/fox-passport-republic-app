@@ -3,7 +3,6 @@
 import {
   useCallback,
   useEffect,
-  useLayoutEffect,
   useRef,
   useState,
 } from "react";
@@ -164,7 +163,7 @@ export function useHostVenueEdit(venueId: string) {
   // Read it through a ref instead: the effect gets the current builder without
   // depending on an identity that changes every render.
   const builderRef = useRef(builder);
-  useLayoutEffect(() => {
+  useEffect(() => {
     builderRef.current = builder;
   });
 

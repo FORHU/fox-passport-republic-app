@@ -14,7 +14,7 @@ import api from "@/shared/lib/axios";
 import {
   searchVenues,
   type VenueSearchResult,
-} from "@/features/venue/api/venues";
+} from "@/shared/api/venues";
 import { formatCurrency } from "@/shared/lib/currency";
 import { StyledSelect } from "@/shared/components/ui/StyledSelect";
 
@@ -59,6 +59,32 @@ const CATEGORY_OPTIONS: {
   { id: "other", label: "General Equipment", icon: "construction" },
 ];
 
+const DRAFT_STORAGE_KEY = "foxpassport_draft_investment_wizard";
+
+const INITIAL_FORM_STATE: WizardFormState = {
+  title: "",
+  description: "",
+  inventoryCategory: "furniture_seating",
+  quantityTotal: 100,
+  itemCondition: "good",
+  usageTerms: "Free for partner venues",
+  transportPolicy: "self_pickup",
+  location: {
+    lat: 14.5995,
+    lng: 120.9842,
+    address: "",
+    city: "",
+    state: "",
+    country: "Philippines",
+    deliveryRadiusKm: 25,
+  },
+  mediaUrls: [],
+  broadcastToFeed: true,
+  targetVenue: null,
+  monetaryValue: 0,
+  revenueSharePercent: 10,
+};
+
 export default function CreateInvestmentWizard() {
   const router = useRouter();
   const [step, setStep] = useState<number>(1);
@@ -70,29 +96,52 @@ export default function CreateInvestmentWizard() {
   const [venueResults, setVenueResults] = useState<VenueSearchResult[]>([]);
   const [venueSearchLoading, setVenueSearchLoading] = useState(false);
 
-  const [form, setForm] = useState<WizardFormState>({
-    title: "",
-    description: "",
-    inventoryCategory: "furniture_seating",
-    quantityTotal: 100,
-    itemCondition: "good",
-    usageTerms: "Free for partner venues",
-    transportPolicy: "self_pickup",
-    location: {
-      lat: 14.5995,
-      lng: 120.9842,
-      address: "",
-      city: "",
-      state: "",
-      country: "Philippines",
-      deliveryRadiusKm: 25,
-    },
-    mediaUrls: [],
-    broadcastToFeed: true,
-    targetVenue: null,
-    monetaryValue: 0,
-    revenueSharePercent: 10,
-  });
+  const [form, setForm] = useState<WizardFormState>(INITIAL_FORM_STATE);
+
+  // Load saved draft from sessionStorage on initial client mount
+  useEffect(() => {
+    try {
+      const raw = sessionStorage.getItem(DRAFT_STORAGE_KEY);
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (parsed.form) {
+          setForm((prev) => ({ ...prev, ...parsed.form }));
+        }
+        if (parsed.modality) {
+          setModality(parsed.modality);
+        }
+        if (typeof parsed.step === "number" && parsed.step >= 1 && parsed.step <= 4) {
+          setStep(parsed.step);
+        }
+      }
+    } catch {
+      // Storage unavailable or disabled
+    }
+  }, []);
+
+  // Autosave current draft to sessionStorage
+  useEffect(() => {
+    try {
+      sessionStorage.setItem(
+        DRAFT_STORAGE_KEY,
+        JSON.stringify({ form, modality, step }),
+      );
+    } catch {
+      // Quota exceeded or private browsing restrictions
+    }
+  }, [form, modality, step]);
+
+  const handleResetDraft = () => {
+    if (window.confirm("Discard your current draft and reset all fields?")) {
+      try {
+        sessionStorage.removeItem(DRAFT_STORAGE_KEY);
+      } catch {}
+      setForm(INITIAL_FORM_STATE);
+      setModality("physical_inventory");
+      setStep(1);
+      toast.info("Draft reset to defaults.");
+    }
+  };
 
   // Debounced venue name search for the revenue-share target picker.
   useEffect(() => {
@@ -110,14 +159,23 @@ export default function CreateInvestmentWizard() {
     return () => clearTimeout(handle);
   }, [venueQuery, modality]);
 
-  // Direct S3 file upload
+  // Direct S3 file upload with MIME type and size guards
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (!files || files.length === 0) return;
 
+    const file = files[0];
+    if (!file.type.startsWith("image/")) {
+      toast.error("Please upload a valid image file (JPEG, PNG, WebP).");
+      return;
+    }
+    if (file.size > 10 * 1024 * 1024) {
+      toast.error("Image file is too large. Maximum size is 10MB.");
+      return;
+    }
+
     setUploadingImage(true);
     try {
-      const file = files[0];
       const formData = new FormData();
       formData.append("file", file);
 
@@ -137,34 +195,88 @@ export default function CreateInvestmentWizard() {
       toast.error(err?.response?.data?.message || "Failed to upload image");
     } finally {
       setUploadingImage(false);
+      e.target.value = "";
     }
   };
 
+  // Per-step validation
+  const validateStep = (currentStep: number): boolean => {
+    if (currentStep === 1) {
+      return true;
+    }
+
+    if (currentStep === 2) {
+      if (!form.title.trim()) {
+        toast.error(
+          modality === "venue_equity"
+            ? "Please provide an agreement title."
+            : "Please provide an equipment name (e.g. 500 Chiavari Chairs).",
+        );
+        return false;
+      }
+      if (!form.description.trim() || form.description.trim().length < 10) {
+        toast.error(
+          "Please provide a description with specifications (at least 10 characters).",
+        );
+        return false;
+      }
+      if (modality === "venue_equity") {
+        if (form.revenueSharePercent <= 0 || form.revenueSharePercent > 100) {
+          toast.error("Revenue share must be between 1% and 100%.");
+          return false;
+        }
+        if (form.monetaryValue < 0) {
+          toast.error("Capital pledged cannot be negative.");
+          return false;
+        }
+      } else {
+        if (form.quantityTotal < 1) {
+          toast.error("Quantity available must be at least 1.");
+          return false;
+        }
+      }
+      return true;
+    }
+
+    if (currentStep === 3) {
+      if (modality === "venue_equity") {
+        if (!form.targetVenue) {
+          toast.error("Please search for and select the target venue you're backing.");
+          return false;
+        }
+      } else {
+        if (
+          typeof form.location.lat !== "number" ||
+          typeof form.location.lng !== "number" ||
+          isNaN(form.location.lat) ||
+          isNaN(form.location.lng)
+        ) {
+          toast.error("Please select a valid depot location on the map.");
+          return false;
+        }
+        if (form.location.deliveryRadiusKm < 1) {
+          toast.error("Dispatch / coverage radius must be at least 1 km.");
+          return false;
+        }
+      }
+      return true;
+    }
+
+    return true;
+  };
+
+  const goToStep = (nextStep: number) => {
+    if (nextStep > step) {
+      for (let s = step; s < nextStep; s++) {
+        if (!validateStep(s)) return;
+      }
+    }
+    setStep(nextStep);
+  };
+
   const handleSubmit = async () => {
-    if (!form.title.trim()) {
-      toast.error(
-        modality === "venue_equity"
-          ? "Please provide a title for this revenue-share agreement."
-          : "Please provide an equipment name (e.g. 500 Chiavari Chairs).",
-      );
-      return;
-    }
-    if (!form.description.trim() || form.description.length < 10) {
-      toast.error(
-        "Please provide a description with specifications (at least 10 characters).",
-      );
-      return;
-    }
-    if (modality === "venue_equity") {
-      if (!form.targetVenue) {
-        toast.error("Please search for and select the venue you're backing.");
-        return;
-      }
-      if (form.revenueSharePercent <= 0 || form.revenueSharePercent > 100) {
-        toast.error("Revenue share must be between 1% and 100%.");
-        return;
-      }
-    }
+    if (!validateStep(2)) return;
+    if (!validateStep(3)) return;
 
     setIsSubmitting(true);
     try {
@@ -209,6 +321,10 @@ export default function CreateInvestmentWizard() {
         toast.success("Equipment Inventory Hub registered & published on map!");
       }
 
+      try {
+        sessionStorage.removeItem(DRAFT_STORAGE_KEY);
+      } catch {}
+
       router.push("/republic?tab=partners");
     } catch (err: any) {
       toast.error(
@@ -232,6 +348,7 @@ export default function CreateInvestmentWizard() {
             type="button"
             onClick={() => router.back()}
             className="h-8 w-8 shrink-0 flex items-center justify-center rounded-full hover:bg-white/10 cursor-pointer"
+            aria-label="Go back"
           >
             <span className="material-symbols-outlined text-[18px]">
               arrow_back
@@ -253,6 +370,18 @@ export default function CreateInvestmentWizard() {
               (Draft)
             </div>
           </div>
+        </div>
+
+        <div className="flex items-center gap-2">
+          {(Boolean(form.title) || Boolean(form.description) || step > 1 || form.mediaUrls.length > 0) && (
+            <button
+              type="button"
+              onClick={handleResetDraft}
+              className="text-xs px-2.5 py-1 rounded-lg border border-zinc-800 text-zinc-400 hover:text-white hover:border-zinc-700 transition-colors cursor-pointer"
+            >
+              Reset Draft
+            </button>
+          )}
         </div>
       </header>
 
@@ -293,13 +422,13 @@ export default function CreateInvestmentWizard() {
             <button
               key={s.num}
               type="button"
-              onClick={() => s.num < step && setStep(s.num)}
-              className={`text-left pb-1 border-b-2 transition-all ${
+              onClick={() => (s.num <= step ? setStep(s.num) : goToStep(s.num))}
+              className={`text-left pb-1 border-b-2 transition-all cursor-pointer ${
                 step === s.num
                   ? "border-amber-400 text-amber-400 font-bold"
                   : step > s.num
                     ? "border-lime-400 text-lime-400"
-                    : "border-transparent text-zinc-600"
+                    : "border-transparent text-zinc-600 hover:text-zinc-400"
               }`}
             >
               <div className="text-[10px] uppercase tracking-wider font-extrabold">
@@ -411,7 +540,7 @@ export default function CreateInvestmentWizard() {
             <div className="pt-4 flex justify-end">
               <button
                 type="button"
-                onClick={() => setStep(2)}
+                onClick={() => goToStep(2)}
                 className="px-6 py-3 rounded-xl bg-gradient-to-r from-amber-400 to-yellow-500 hover:from-amber-300 hover:to-yellow-400 text-black font-black text-xs flex items-center gap-1.5 shadow-lg transition-all cursor-pointer"
               >
                 {modality === "venue_equity"
@@ -453,11 +582,11 @@ export default function CreateInvestmentWizard() {
                 <input
                   type="number"
                   min="0"
-                  value={form.monetaryValue}
+                  value={form.monetaryValue || ""}
                   onChange={(e) =>
                     setForm({
                       ...form,
-                      monetaryValue: Number(e.target.value),
+                      monetaryValue: Math.max(0, Number(e.target.value) || 0),
                     })
                   }
                   className="w-full px-4 py-2.5 rounded-xl bg-zinc-950 border border-zinc-800 text-white focus:outline-none focus:border-amber-400 text-sm"
@@ -477,7 +606,7 @@ export default function CreateInvestmentWizard() {
                     onChange={(e) =>
                       setForm({
                         ...form,
-                        revenueSharePercent: Number(e.target.value),
+                        revenueSharePercent: Math.min(100, Math.max(1, Number(e.target.value) || 1)),
                       })
                     }
                     className="flex-1 accent-amber-400"
@@ -519,7 +648,7 @@ export default function CreateInvestmentWizard() {
               </button>
               <button
                 type="button"
-                onClick={() => setStep(3)}
+                onClick={() => goToStep(3)}
                 className="px-6 py-3 rounded-xl bg-gradient-to-r from-amber-400 to-yellow-500 hover:from-amber-300 hover:to-yellow-400 text-black font-black text-xs flex items-center gap-1.5 shadow-lg transition-all cursor-pointer"
               >
                 Choose Target Venue
@@ -622,7 +751,7 @@ export default function CreateInvestmentWizard() {
               </button>
               <button
                 type="button"
-                onClick={() => setStep(4)}
+                onClick={() => goToStep(4)}
                 disabled={!form.targetVenue}
                 className="px-6 py-3 rounded-xl bg-gradient-to-r from-amber-400 to-yellow-500 hover:from-amber-300 hover:to-yellow-400 text-black font-black text-xs flex items-center gap-1.5 shadow-lg transition-all cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
               >
@@ -693,9 +822,12 @@ export default function CreateInvestmentWizard() {
                 <input
                   type="number"
                   min="1"
-                  value={form.quantityTotal}
+                  value={form.quantityTotal || ""}
                   onChange={(e) =>
-                    setForm({ ...form, quantityTotal: Number(e.target.value) })
+                    setForm({
+                      ...form,
+                      quantityTotal: Math.max(1, parseInt(e.target.value, 10) || 1),
+                    })
                   }
                   className="w-full px-4 py-2.5 rounded-xl bg-zinc-950 border border-zinc-800 text-white focus:outline-none focus:border-amber-400 text-sm"
                 />
@@ -789,7 +921,7 @@ export default function CreateInvestmentWizard() {
               </button>
               <button
                 type="button"
-                onClick={() => setStep(3)}
+                onClick={() => goToStep(3)}
                 className="px-6 py-3 rounded-xl bg-gradient-to-r from-amber-400 to-yellow-500 hover:from-amber-300 hover:to-yellow-400 text-black font-black text-xs flex items-center gap-1.5 shadow-lg transition-all cursor-pointer"
               >
                 Set Location on Map
@@ -835,7 +967,7 @@ export default function CreateInvestmentWizard() {
               </button>
               <button
                 type="button"
-                onClick={() => setStep(4)}
+                onClick={() => goToStep(4)}
                 className="px-6 py-3 rounded-xl bg-gradient-to-r from-amber-400 to-yellow-500 hover:from-amber-300 hover:to-yellow-400 text-black font-black text-xs flex items-center gap-1.5 shadow-lg transition-all cursor-pointer"
               >
                 Review & Photos

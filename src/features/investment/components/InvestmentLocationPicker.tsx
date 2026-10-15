@@ -2,12 +2,11 @@
 
 import React, {
   useEffect,
-  useLayoutEffect,
   useRef,
   useState,
   useCallback,
 } from "react";
-import { config } from "@/shared/lib/config";
+import type mapboxgl from "mapbox-gl";
 import {
   getEffectiveMapboxToken,
   getMapStyle,
@@ -27,6 +26,15 @@ interface LocationData {
   deliveryRadiusKm: number;
 }
 
+export interface GeocodeFeature {
+  id: string;
+  place_name: string;
+  center: [number, number];
+  context?: Array<{ id: string; text: string }>;
+  place_type?: string[];
+  text?: string;
+}
+
 interface InvestmentLocationPickerProps {
   value: LocationData;
   onChange: (val: LocationData) => void;
@@ -39,8 +47,12 @@ export default function InvestmentLocationPicker({
   isPhysical,
 }: InvestmentLocationPickerProps) {
   const containerRef = useRef<HTMLDivElement>(null);
-  const mapRef = useRef<any>(null);
-  const markerRef = useRef<any>(null);
+  const mapRef = useRef<mapboxgl.Map | null>(null);
+  const markerRef = useRef<mapboxgl.Marker | null>(null);
+  const isMountedRef = useRef<boolean>(true);
+  const searchAbortRef = useRef<AbortController | null>(null);
+  const geocodeAbortRef = useRef<AbortController | null>(null);
+  const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   const {
     coords: detectedCoords,
@@ -49,11 +61,22 @@ export default function InvestmentLocationPicker({
     city: detectedCity,
     isDetected,
     locateMe,
+    isLoading: isLocationLoading,
   } = useUserLocation();
 
   const [searchQuery, setSearchQuery] = useState("");
-  const [suggestions, setSuggestions] = useState<any[]>([]);
+  const [suggestions, setSuggestions] = useState<GeocodeFeature[]>([]);
   const [isSearching, setIsSearching] = useState(false);
+
+  useEffect(() => {
+    isMountedRef.current = true;
+    return () => {
+      isMountedRef.current = false;
+      if (debounceTimerRef.current) clearTimeout(debounceTimerRef.current);
+      searchAbortRef.current?.abort();
+      geocodeAbortRef.current?.abort();
+    };
+  }, []);
 
   // Sync initial detected position if current value is default/empty
   const hasSyncedDetectedRef = useRef(false);
@@ -95,12 +118,21 @@ export default function InvestmentLocationPicker({
   // Reverse geocode a dragged pin coordinate
   const reverseGeocodePin = useCallback(
     async (lng: number, lat: number) => {
-      if (!config.mapboxToken) return;
+      const token = getEffectiveMapboxToken();
+      if (!token) return;
+
+      geocodeAbortRef.current?.abort();
+      const controller = new AbortController();
+      geocodeAbortRef.current = controller;
+
       try {
-        const url = `https://api.mapbox.com/geocoding/v5/mapbox.places/${lng},${lat}.json?access_token=${config.mapboxToken}`;
-        const res = await fetch(url);
+        const url = `https://api.mapbox.com/geocoding/v5/mapbox.places/${lng},${lat}.json?access_token=${token}`;
+        const res = await fetch(url, { signal: controller.signal });
         if (!res.ok) return;
         const data = await res.json();
+
+        if (!isMountedRef.current || geocodeAbortRef.current !== controller)
+          return;
 
         let streetAddress = "";
         let city = "";
@@ -129,45 +161,66 @@ export default function InvestmentLocationPicker({
           state: state || value.state,
           country: country || value.country,
         });
-      } catch (err) {
+      } catch (err: unknown) {
+        if ((err as Error)?.name === "AbortError") return;
         console.error("Failed to reverse geocode pin:", err);
       }
     },
     [value, onChange],
   );
 
-  // Address search with country scoping
-  const handleSearch = async (query: string) => {
+  // Address search with country scoping and debounced AbortController
+  const handleSearch = (query: string) => {
     setSearchQuery(query);
-    if (!query || query.length < 3 || !config.mapboxToken) {
+
+    if (debounceTimerRef.current) {
+      clearTimeout(debounceTimerRef.current);
+    }
+    searchAbortRef.current?.abort();
+
+    const token = getEffectiveMapboxToken();
+    if (!query || query.trim().length < 3 || !token) {
       setSuggestions([]);
+      setIsSearching(false);
       return;
     }
 
     setIsSearching(true);
-    try {
-      const countryFilter = countryCode
-        ? `&country=${countryCode.toLowerCase()}`
-        : "";
-      const proximity =
-        value.lng != null && value.lat != null
-          ? `&proximity=${value.lng},${value.lat}`
-          : "";
-      const url = `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(
-        query,
-      )}.json?access_token=${config.mapboxToken}${countryFilter}${proximity}&limit=5`;
+    debounceTimerRef.current = setTimeout(async () => {
+      const controller = new AbortController();
+      searchAbortRef.current = controller;
 
-      const res = await fetch(url);
-      const data = await res.json();
-      setSuggestions(data.features || []);
-    } catch (err) {
-      console.error("Search error:", err);
-    } finally {
-      setIsSearching(false);
-    }
+      try {
+        const countryFilter = countryCode
+          ? `&country=${countryCode.toLowerCase()}`
+          : "";
+        const proximity =
+          value.lng != null && value.lat != null
+            ? `&proximity=${value.lng},${value.lat}`
+            : "";
+        const url = `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(
+          query.trim(),
+        )}.json?access_token=${token}${countryFilter}${proximity}&limit=5`;
+
+        const res = await fetch(url, { signal: controller.signal });
+        if (!res.ok) throw new Error("Search failed");
+        const data = await res.json();
+
+        if (isMountedRef.current && searchAbortRef.current === controller) {
+          setSuggestions(data.features || []);
+        }
+      } catch (err: unknown) {
+        if ((err as Error)?.name === "AbortError") return;
+        console.error("Search error:", err);
+      } finally {
+        if (isMountedRef.current && searchAbortRef.current === controller) {
+          setIsSearching(false);
+        }
+      }
+    }, 300);
   };
 
-  const handleSelectSuggestion = (feature: any) => {
+  const handleSelectSuggestion = (feature: GeocodeFeature) => {
     const [lng, lat] = feature.center;
     setSearchQuery(feature.place_name);
     setSuggestions([]);
@@ -207,9 +260,9 @@ export default function InvestmentLocationPicker({
       : detectedCoords,
   );
   const reverseGeocodePinRef = useRef(reverseGeocodePin);
-  useLayoutEffect(() => {
+  useEffect(() => {
     reverseGeocodePinRef.current = reverseGeocodePin;
-  });
+  }, [reverseGeocodePin]);
 
   // Mount Mapbox Map
   useEffect(() => {
@@ -225,7 +278,7 @@ export default function InvestmentLocationPicker({
 
       const map = new mapboxgl.Map({
         container: containerRef.current,
-        style: getMapStyle() as any,
+        style: getMapStyle() as string | mapboxgl.Style,
         center: initialCenter,
         zoom: 12,
         attributionControl: false,
@@ -275,8 +328,13 @@ export default function InvestmentLocationPicker({
 
     return () => {
       alive = false;
+      if (markerRef.current) {
+        markerRef.current.remove();
+        markerRef.current = null;
+      }
       if (mapRef.current) {
         mapRef.current.remove();
+        mapRef.current = null;
       }
     };
   }, []);
@@ -298,6 +356,7 @@ export default function InvestmentLocationPicker({
 
         <button
           type="button"
+          disabled={isLocationLoading}
           onClick={() => {
             locateMe();
             if (mapRef.current) {
@@ -310,12 +369,16 @@ export default function InvestmentLocationPicker({
                 markerRef.current.setLngLat(detectedCoords);
             }
           }}
-          className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-zinc-800 hover:bg-zinc-700 text-white font-semibold transition-colors cursor-pointer"
+          className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-zinc-800 hover:bg-zinc-700 text-white font-semibold transition-colors cursor-pointer disabled:opacity-60"
         >
-          <span className="material-symbols-outlined text-[14px]">
-            my_location
+          <span
+            className={`material-symbols-outlined text-[14px] ${
+              isLocationLoading ? "animate-spin" : ""
+            }`}
+          >
+            {isLocationLoading ? "progress_activity" : "my_location"}
           </span>
-          Center on Me
+          {isLocationLoading ? "Locating..." : "Center on Me"}
         </button>
       </div>
 

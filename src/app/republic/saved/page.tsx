@@ -175,6 +175,9 @@ export default function SavedPostsPage() {
             handleUnsaved(id);
             setActivePost(null);
           }}
+          renderShareModal={(postToShare, onClose) => (
+            <SharePostModal post={postToShare} onClose={onClose} />
+          )}
         />
       )}
     </div>

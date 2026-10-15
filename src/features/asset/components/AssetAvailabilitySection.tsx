@@ -2,8 +2,8 @@
 
 import React, { useEffect } from "react";
 import { toast } from "sonner";
-import { useAssetAvailability } from "@/features/booking/hooks/useAvailability";
-import AvailabilityCalendar from "@/features/booking/components/AvailabilityCalendar";
+import { useAssetAvailability } from "@/shared/hooks/useAvailability";
+import AvailabilityCalendar from "@/shared/components/ui/AvailabilityCalendar";
 
 const noop = () => {};
 const NO_RANGES: { startDate: string; endDate: string; bookedQty: number }[] =

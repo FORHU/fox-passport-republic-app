@@ -3,7 +3,7 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen } from "@testing-library/react";
 
 vi.mock("next/image", () => ({
-  default: ({ alt, ...props }: React.ComponentProps<"img">) => (
+  default: ({ alt, priority: _priority, ...props }: any) => (
     <img src="mock.png" alt={alt ?? ""} {...props} />
   ),
 }));
@@ -50,7 +50,7 @@ vi.mock("@/shared/components/layout/NotificationBell", () => ({
 // badge the hamburger icon with unread messages — a real query, so it needs
 // mocking here the same way NotificationBell's own query dependency is
 // avoided above.
-vi.mock("@/features/messages/hooks/useUnreadMessagesCount", () => ({
+vi.mock("@/shared/hooks/useUnreadMessagesCount", () => ({
   useUnreadMessagesCount: () => ({ unreadCount: 0, isLoading: false }),
 }));
 

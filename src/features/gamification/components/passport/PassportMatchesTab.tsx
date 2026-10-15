@@ -3,8 +3,9 @@
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import { motion } from "motion/react";
+import Link from "next/link";
+import { MessageCircle } from "lucide-react";
 import { formatXP } from "@/features/gamification/lib/gamification";
-import MessageButton from "@/features/messages/components/MessageButton";
 import {
   ClientMatchRequest,
   OutgoingMatchGroup,
@@ -12,6 +13,17 @@ import {
 } from "@/features/gamification/api/passport";
 import { useRespondToMatch } from "@/features/gamification/hooks/usePassport";
 import { Money } from "@/shared/components/ui/Money";
+
+export interface MessageButtonRenderProps {
+  otherUserId: string;
+  otherUserName: string;
+  otherUserImgId?: string | null;
+  contextType?: string;
+  contextId?: string;
+  contextLabel?: string;
+  label?: string;
+  className?: string;
+}
 
 export interface PassportMatchesTabProps {
   user: any;
@@ -27,6 +39,7 @@ export interface PassportMatchesTabProps {
   incomingLoading: boolean;
   leaderboard: any[];
   leaderboardLoading: boolean;
+  renderMessageButton?: (props: MessageButtonRenderProps) => React.ReactNode;
 }
 
 const statusColor = (s: string) => {
@@ -57,6 +70,7 @@ export function PassportMatchesTab({
   incomingLoading,
   leaderboard,
   leaderboardLoading,
+  renderMessageButton,
 }: PassportMatchesTabProps) {
   const router = useRouter();
   const [matchSubTab, setMatchSubTab] = useState<
@@ -224,16 +238,27 @@ export function PassportMatchesTab({
                       </div>
                       {req.client?.id && (
                         <div onClick={(e) => e.stopPropagation()}>
-                          <MessageButton
-                            otherUserId={req.client.id}
-                            otherUserName={req.client.name}
-                            otherUserImgId={req.client.imgId}
-                            contextType="match_request"
-                            contextId={req.id}
-                            contextLabel={req.name}
-                            label=""
-                            className="h-8 w-8 rounded-full bg-white/5 border border-white/10 text-white/50 hover:text-white hover:bg-white/10 flex items-center justify-center transition-all shrink-0"
-                          />
+                          {renderMessageButton ? (
+                            renderMessageButton({
+                              otherUserId: req.client.id,
+                              otherUserName: req.client.name,
+                              otherUserImgId: req.client.imgId,
+                              contextType: "match_request",
+                              contextId: req.id,
+                              contextLabel: req.name,
+                              label: "",
+                              className:
+                                "h-8 w-8 rounded-full bg-white/5 border border-white/10 text-white/50 hover:text-white hover:bg-white/10 flex items-center justify-center transition-all shrink-0",
+                            })
+                          ) : (
+                            <Link
+                              href={`/messages?userId=${req.client.id}&contextType=match_request&contextId=${req.id}`}
+                              className="h-8 w-8 rounded-full bg-white/5 border border-white/10 text-white/50 hover:text-white hover:bg-white/10 flex items-center justify-center transition-all shrink-0"
+                              title="Message"
+                            >
+                              <MessageCircle className="h-4 w-4" />
+                            </Link>
+                          )}
                         </div>
                       )}
                       <div className="flex flex-col items-end gap-2 shrink-0">
@@ -361,16 +386,27 @@ export function PassportMatchesTab({
                         </div>
                         {req.provider?.id && (
                           <div onClick={(e) => e.stopPropagation()}>
-                            <MessageButton
-                              otherUserId={req.provider.id}
-                              otherUserName={req.provider.name}
-                              otherUserImgId={req.provider.imgId}
-                              contextType="match_request"
-                              contextId={req.id}
-                              contextLabel={req.item?.name ?? req.type}
-                              label=""
-                              className="h-7 w-7 rounded-full bg-white/5 border border-white/10 text-white/50 hover:text-white hover:bg-white/10 flex items-center justify-center transition-all shrink-0"
-                            />
+                            {renderMessageButton ? (
+                              renderMessageButton({
+                                otherUserId: req.provider.id,
+                                otherUserName: req.provider.name,
+                                otherUserImgId: req.provider.imgId,
+                                contextType: "match_request",
+                                contextId: req.id,
+                                contextLabel: req.item?.name ?? req.type,
+                                label: "",
+                                className:
+                                  "h-7 w-7 rounded-full bg-white/5 border border-white/10 text-white/50 hover:text-white hover:bg-white/10 flex items-center justify-center transition-all shrink-0",
+                              })
+                            ) : (
+                              <Link
+                                href={`/messages?userId=${req.provider.id}&contextType=match_request&contextId=${req.id}`}
+                                className="h-7 w-7 rounded-full bg-white/5 border border-white/10 text-white/50 hover:text-white hover:bg-white/10 flex items-center justify-center transition-all shrink-0"
+                                title="Message"
+                              >
+                                <MessageCircle className="h-3.5 w-3.5" />
+                              </Link>
+                            )}
                           </div>
                         )}
                         <span
@@ -455,16 +491,27 @@ export function PassportMatchesTab({
                     </div>
                     {req.template.owner?.id && (
                       <div onClick={(e) => e.stopPropagation()}>
-                        <MessageButton
-                          otherUserId={req.template.owner.id}
-                          otherUserName={req.template.owner.name}
-                          otherUserImgId={req.template.owner.imgId}
-                          contextType="match_request"
-                          contextId={req.id}
-                          contextLabel={req.template.name}
-                          label=""
-                          className="h-8 w-8 rounded-full bg-white/5 border border-white/10 text-white/50 hover:text-white hover:bg-white/10 flex items-center justify-center transition-all shrink-0"
-                        />
+                        {renderMessageButton ? (
+                          renderMessageButton({
+                            otherUserId: req.template.owner.id,
+                            otherUserName: req.template.owner.name,
+                            otherUserImgId: req.template.owner.imgId,
+                            contextType: "match_request",
+                            contextId: req.id,
+                            contextLabel: req.template.name,
+                            label: "",
+                            className:
+                              "h-8 w-8 rounded-full bg-white/5 border border-white/10 text-white/50 hover:text-white hover:bg-white/10 flex items-center justify-center transition-all shrink-0",
+                          })
+                        ) : (
+                          <Link
+                            href={`/messages?userId=${req.template.owner.id}&contextType=match_request&contextId=${req.id}`}
+                            className="h-8 w-8 rounded-full bg-white/5 border border-white/10 text-white/50 hover:text-white hover:bg-white/10 flex items-center justify-center transition-all shrink-0"
+                            title="Message"
+                          >
+                            <MessageCircle className="h-4 w-4" />
+                          </Link>
+                        )}
                       </div>
                     )}
                     {req.matchRequestStatus === "pending" ? (

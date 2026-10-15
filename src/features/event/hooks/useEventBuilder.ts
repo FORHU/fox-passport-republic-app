@@ -13,8 +13,8 @@ import {
 } from "@/features/event/data/eventBuilderData";
 import { useFileUpload } from "@/shared/hooks/useFileUpload";
 import { useAuthStore } from "@/shared/auth/useAuthStore";
-import { fetchMyAffiliations } from "@/features/venue-affiliation/api/venueAffiliations";
 import { countWords } from "@/features/event/utils/textStats";
+import { fetchMyAffiliations } from "@/shared/api/venue-affiliations";
 
 // `category` on the backend is a fixed enum (corporate/birthday/wedding/
 // social/other) — unlike a venue's free-text category, there's no field to

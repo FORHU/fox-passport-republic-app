@@ -17,14 +17,44 @@ import { canAccessAdmin } from "@/shared/lib/permissions";
 // `withCredentials` went with it: /api/proxy is same-origin, so cookies ride
 // along without being asked to.
 
+import { authClient } from "@/shared/auth/auth-client";
+
 // --- REAL API FUNCTIONS ---
 
 const realLogin = async (data: LoginFormData): Promise<LoginResponse> => {
-  const payload = {
+  try {
+    const result = await authClient.signIn.email({
+      email: data.email,
+      password: data.password,
+    });
+
+    if (!result.error && result.data) {
+      const user = ((result.data as any)?.user || {}) as Record<string, any>;
+      const token = (result.data as any)?.session?.token || "";
+      return {
+        accessToken: token,
+        refreshToken: token,
+        user: {
+          id: user.id,
+          email: user.email,
+          name: user.name,
+          username: user.username || "",
+          systemRole: user.systemRole || "user",
+          roleType: user.roleType || [],
+          isEmailVerified: user.emailVerified ?? false,
+          ...user,
+        },
+      };
+    }
+  } catch {
+    // If Better Auth fails or encounters network issue, try legacy API login
+  }
+
+  // Fallback to legacy API login endpoint
+  const response = await api.post<LoginResponse>("/auth/login", {
     email: data.email,
     password: data.password,
-  };
-  const response = await api.post<LoginResponse>("/auth/login", payload);
+  });
   return response.data;
 };
 
@@ -53,15 +83,21 @@ const realResendOtp = async (email: string) => {
 };
 
 const realSignup = async (data: SignupFormData) => {
-  const rest: Partial<SignupFormData> = { ...data };
-  delete rest.confirmPassword;
-  const payload = {
-    ...rest,
-    name: data.name || undefined,
-    mobileNumber: data.mobileNumber || undefined,
+  const result = await authClient.signUp.email({
+    email: data.email,
+    password: data.password,
+    name: data.name,
+  });
+
+  if (result.error) {
+    throw new Error(result.error.message || "Failed to create account");
+  }
+
+  return {
+    success: true,
+    message: "Registration successful",
+    user: (result.data as any)?.user,
   };
-  const response = await api.post("/auth/register", payload);
-  return response.data;
 };
 
 // --- HOOKS ---

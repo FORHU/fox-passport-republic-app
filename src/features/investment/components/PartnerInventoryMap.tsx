@@ -2,11 +2,12 @@
 
 import React, {
   useEffect,
-  useLayoutEffect,
   useRef,
   useState,
   useCallback,
 } from "react";
+import type mapboxgl from "mapbox-gl";
+import { useRouter } from "next/navigation";
 import { useUserLocation } from "@/shared/hooks/useUserLocation";
 import {
   PartnerInvestment,
@@ -14,7 +15,6 @@ import {
   cancelInvestment,
   InventoryCategory,
 } from "@/shared/api/investments";
-import MessageButton from "@/features/messages/components/MessageButton";
 import { useAuthStore } from "@/shared/auth/useAuthStore";
 import { toast } from "sonner";
 import {
@@ -35,6 +35,17 @@ const CATEGORY_ICONS: Record<string, string> = {
   other: "inventory_2",
 };
 
+export interface RenderMessageButtonProps {
+  otherUserId: string;
+  otherUserName: string;
+  otherUserImgId?: string | null;
+  contextType: string;
+  contextId: string;
+  contextLabel: string;
+  label: string;
+  className: string;
+}
+
 interface PartnerInventoryMapProps {
   className?: string;
   selectedCategory?: InventoryCategory;
@@ -45,6 +56,7 @@ interface PartnerInventoryMapProps {
   // false there. The dedicated /republic/investments map page is the map,
   // so it keeps free dragging (the default).
   dragPan?: boolean;
+  renderMessageButton?: (props: RenderMessageButtonProps) => React.ReactNode;
 }
 
 export default function PartnerInventoryMap({
@@ -52,12 +64,16 @@ export default function PartnerInventoryMap({
   selectedCategory,
   onSelectInvestment,
   dragPan = true,
+  renderMessageButton,
 }: PartnerInventoryMapProps) {
   const containerRef = useRef<HTMLDivElement>(null);
-  const mapRef = useRef<any>(null);
-  const markersRef = useRef<any[]>([]);
+  const router = useRouter();
+  const mapRef = useRef<mapboxgl.Map | null>(null);
+  const mapboxglRef = useRef<typeof mapboxgl | null>(null);
+  const markersRef = useRef<mapboxgl.Marker[]>([]);
 
-  const { coords, country, countryCode, city, locateMe } = useUserLocation();
+  const { coords, country, countryCode, city, locateMe, isLoading: isLocationLoading } =
+    useUserLocation();
   const [investments, setInvestments] = useState<PartnerInvestment[]>([]);
   const [selectedPin, setSelectedPin] = useState<PartnerInvestment | null>(
     null,
@@ -72,11 +88,35 @@ export default function PartnerInventoryMap({
   const categoryScrollRef = useRef<HTMLDivElement>(null);
   const [canScrollCatLeft, setCanScrollCatLeft] = useState(false);
   const [canScrollCatRight, setCanScrollCatRight] = useState(false);
+
   // Captured once for the map's initial center — later `coords` updates
   // (geolocation resolving, "Fly to My Location") are applied via setCenter
   // in the effect below instead of tearing down and recreating the map.
   const initialCoordsRef = useRef(coords);
   const dragPanRef = useRef(dragPan);
+
+  // Sync dragPan updates dynamically if the prop changes
+  useEffect(() => {
+    dragPanRef.current = dragPan;
+    if (!mapRef.current) return;
+    if (dragPan) {
+      mapRef.current.dragPan.enable();
+    } else {
+      mapRef.current.dragPan.disable();
+    }
+  }, [dragPan]);
+
+  // Dismiss selected pin card on Escape key
+  useEffect(() => {
+    if (!selectedPin) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        setSelectedPin(null);
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [selectedPin]);
 
   useEffect(() => {
     if (selectedCategory) {
@@ -110,13 +150,6 @@ export default function PartnerInventoryMap({
   // via touch/trackpad, but a mouse click-drag does nothing on a plain
   // scroll container, so it just looks stuck past the card edge. This
   // makes a mouse drag pan it directly, like a native slider/carousel.
-  //
-  // Deliberately NOT using setPointerCapture here: capturing the pointer
-  // on the row re-targets the *click* event to the row itself instead of
-  // whatever pill is under the cursor, so pill buttons stop receiving
-  // clicks entirely (confirmed while testing this - even a plain, no-drag
-  // click stopped selecting a category). Plain window-level mousemove/
-  // mouseup listeners get the same drag tracking without stealing clicks.
   const dragStateRef = useRef<{
     startX: number;
     startScrollLeft: number;
@@ -125,6 +158,7 @@ export default function PartnerInventoryMap({
   const [isDraggingCategories, setIsDraggingCategories] = useState(false);
 
   const handleCategoryMouseDown = (e: React.MouseEvent) => {
+    if (e.button !== 0) return; // Only initiate drag for primary (left) mouse clicks
     const el = categoryScrollRef.current;
     if (!el) return;
     dragStateRef.current = {
@@ -170,56 +204,74 @@ export default function PartnerInventoryMap({
     }
   };
 
-  // Fetch map pins
-  useEffect(() => {
-    let alive = true;
-    setLoading(true);
-
-    fetchInvestmentsOnMap({
-      type: "physical_inventory",
-      category:
-        activeCategory !== "all"
-          ? (activeCategory as InventoryCategory)
-          : undefined,
-    })
-      .then((data) => {
-        if (alive) {
-          setInvestments(data);
-          setLoading(false);
-        }
-      })
-      .catch((err) => {
-        console.error("Failed to load map pins:", err);
-        if (alive) setLoading(false);
-      });
-
-    return () => {
-      alive = false;
-    };
-  }, [activeCategory]);
-
+  const requestIdRef = useRef(0);
   const activeCategoryRef = useRef(activeCategory);
   useEffect(() => {
     activeCategoryRef.current = activeCategory;
   }, [activeCategory]);
 
   const investmentsRef = useRef(investments);
-  useLayoutEffect(() => {
+  useEffect(() => {
     investmentsRef.current = investments;
-  });
+  }, [investments]);
+
+  // Unified fetch helper that handles request ordering and viewport filtering
+  const fetchPins = useCallback((bounds?: mapboxgl.LngLatBounds | null) => {
+    const reqId = ++requestIdRef.current;
+    setLoading(true);
+
+    const queryParams: Parameters<typeof fetchInvestmentsOnMap>[0] = {
+      type: "physical_inventory",
+      category:
+        activeCategoryRef.current !== "all"
+          ? (activeCategoryRef.current as InventoryCategory)
+          : undefined,
+    };
+
+    if (bounds) {
+      queryParams.minLat = bounds.getSouth();
+      queryParams.maxLat = bounds.getNorth();
+      queryParams.minLng = bounds.getWest();
+      queryParams.maxLng = bounds.getEast();
+    }
+
+    fetchInvestmentsOnMap(queryParams)
+      .then((data) => {
+        if (reqId === requestIdRef.current) {
+          setInvestments(data);
+          setLoading(false);
+        }
+      })
+      .catch((err) => {
+        if (reqId === requestIdRef.current) {
+          console.error("Failed to load map pins:", err);
+          setLoading(false);
+        }
+      });
+  }, []);
+
+  // Fetch map pins on category change (uses map viewport if available)
+  useEffect(() => {
+    const bounds = mapReady && mapRef.current ? mapRef.current.getBounds() : null;
+    fetchPins(bounds);
+  }, [activeCategory, fetchPins, mapReady]);
 
   // Update pins when data changes
   const renderPins = useCallback(
-    (mapboxgl: any, map: any, items: PartnerInvestment[]) => {
+    (mb: typeof mapboxgl, map: mapboxgl.Map, items: PartnerInvestment[]) => {
       markersRef.current.forEach((m) => m.remove());
       markersRef.current = [];
 
       items.forEach((item) => {
-        if (item.lat == null || item.lng == null) return;
+        const { lat, lng } = item;
+        if (lat == null || lng == null) return;
 
         const iconName = item.inventoryCategory
           ? CATEGORY_ICONS[item.inventoryCategory] || "inventory_2"
           : "inventory_2";
+
+        const rawQty = Number(item.quantityAvailable);
+        const qty = Number.isFinite(rawQty) && rawQty > 0 ? Math.floor(rawQty) : 0;
 
         const pin = document.createElement("div");
         pin.className = "group relative cursor-pointer";
@@ -229,8 +281,8 @@ export default function PartnerInventoryMap({
               <span class="material-symbols-outlined text-[20px]">${iconName}</span>
             </div>
             ${
-              item.quantityAvailable
-                ? `<span class="absolute -bottom-2 bg-zinc-950 border border-amber-400 text-amber-300 text-[10px] font-black px-1.5 py-0.2 rounded-full shadow">${item.quantityAvailable}x</span>`
+              qty > 0
+                ? `<span class="absolute -bottom-2 bg-zinc-950 border border-amber-400 text-amber-300 text-[10px] font-black px-1.5 py-0.5 rounded-full shadow">${qty}x</span>`
                 : ""
             }
           </div>
@@ -240,14 +292,14 @@ export default function PartnerInventoryMap({
           setSelectedPin(item);
           if (onSelectInvestment) onSelectInvestment(item);
           map.flyTo({
-            center: [item.lng, item.lat],
+            center: [lng, lat],
             zoom: 14,
             essential: true,
           });
         });
 
-        const marker = new mapboxgl.Marker({ element: pin, anchor: "center" })
-          .setLngLat([item.lng, item.lat])
+        const marker = new mb.Marker({ element: pin, anchor: "center" })
+          .setLngLat([lng, lat])
           .addTo(map);
 
         markersRef.current.push(marker);
@@ -257,9 +309,9 @@ export default function PartnerInventoryMap({
   );
 
   const renderPinsRef = useRef(renderPins);
-  useLayoutEffect(() => {
+  useEffect(() => {
     renderPinsRef.current = renderPins;
-  });
+  }, [renderPins]);
 
   // Mount Mapbox
   useEffect(() => {
@@ -269,6 +321,7 @@ export default function PartnerInventoryMap({
     import("mapbox-gl").then(({ default: mapboxgl }) => {
       if (!alive || !containerRef.current) return;
 
+      mapboxglRef.current = mapboxgl;
       mapboxgl.accessToken = getEffectiveMapboxToken();
       const map = new mapboxgl.Map({
         container: containerRef.current,
@@ -276,22 +329,7 @@ export default function PartnerInventoryMap({
         center: initialCoordsRef.current,
         zoom: 11,
         attributionControl: false,
-        // Only the passthrough (dragPan: false) embed needs cooperative
-        // gestures: it sits in a normally-scrolling page, and without this
-        // Mapbox's default scroll-to-zoom would hijack the mouse wheel the
-        // moment the cursor is over the map, and single-finger touch drag
-        // would pan the map instead of scrolling the page. It requires
-        // Ctrl/Cmd+scroll to zoom and two fingers to pan on touch, letting
-        // a plain wheel scroll / single-finger drag fall through to the
-        // page instead. Once dragPan is enabled the map is meant to be
-        // freely interactive (the dedicated map page, or a card the user
-        // deliberately opened), so a normal one-finger drag should just pan
-        // it rather than showing a "use two fingers" hint.
         cooperativeGestures: !dragPanRef.current,
-        // A click-and-drag over the map is otherwise consumed to pan it —
-        // fine for the dedicated map page, but for a small card embedded in
-        // a scrolling page (see `dragPan` prop) that gesture is usually the
-        // user trying to scroll the page, and the map should let it through.
         dragPan: dragPanRef.current,
       });
       mapRef.current = map;
@@ -326,25 +364,7 @@ export default function PartnerInventoryMap({
         try {
           const b = map.getBounds();
           if (!b) return;
-          fetchInvestmentsOnMap({
-            type: "physical_inventory",
-            category:
-              activeCategoryRef.current !== "all"
-                ? (activeCategoryRef.current as InventoryCategory)
-                : undefined,
-            minLat: b.getSouth(),
-            maxLat: b.getNorth(),
-            minLng: b.getWest(),
-            maxLng: b.getEast(),
-          })
-            .then((data) => {
-              if (alive) {
-                setInvestments(data);
-              }
-            })
-            .catch((err) => {
-              console.warn("Could not query viewport investments:", err);
-            });
+          fetchPins(b);
         } catch (e) {
           console.warn("getBounds error:", e);
         }
@@ -376,13 +396,15 @@ export default function PartnerInventoryMap({
 
     return () => {
       alive = false;
+      markersRef.current.forEach((m) => m.remove());
+      markersRef.current = [];
       if (mapRef.current) {
         mapRef.current.remove();
         mapRef.current = null;
       }
       setMapReady(false);
     };
-  }, []);
+  }, [fetchPins]);
 
   const handleCancelInvestment = async () => {
     if (!selectedPin) return;
@@ -418,11 +440,23 @@ export default function PartnerInventoryMap({
     mapRef.current.flyTo({ center: coords, zoom: 12, essential: true });
   }, [coords, mapReady]);
 
+  // Re-render pins when investments or renderPins function changes
   useEffect(() => {
     if (!mapRef.current) return;
-    import("mapbox-gl").then(({ default: mapboxgl }) => {
-      renderPins(mapboxgl, mapRef.current, investments);
-    });
+    const mb = mapboxglRef.current;
+    if (mb) {
+      renderPins(mb, mapRef.current, investments);
+    } else {
+      let alive = true;
+      import("mapbox-gl").then(({ default: mapboxglModule }) => {
+        if (!alive || !mapRef.current) return;
+        mapboxglRef.current = mapboxglModule;
+        renderPins(mapboxglModule, mapRef.current, investments);
+      });
+      return () => {
+        alive = false;
+      };
+    }
   }, [investments, renderPins]);
 
   return (
@@ -444,6 +478,7 @@ export default function PartnerInventoryMap({
         <div className="flex items-center gap-2">
           <button
             type="button"
+            disabled={isLocationLoading}
             onClick={() => {
               locateMe();
               if (mapRef.current) {
@@ -454,21 +489,21 @@ export default function PartnerInventoryMap({
                 });
               }
             }}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-zinc-900 hover:bg-zinc-800 text-zinc-300 hover:text-white font-semibold transition-colors cursor-pointer border border-zinc-800"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-zinc-900 hover:bg-zinc-800 text-zinc-300 hover:text-white font-semibold transition-colors cursor-pointer border border-zinc-800 disabled:opacity-60"
           >
-            <span className="material-symbols-outlined text-[14px] text-amber-400">
-              my_location
+            <span
+              className={`material-symbols-outlined text-[14px] text-amber-400 ${
+                isLocationLoading ? "animate-spin" : ""
+              }`}
+            >
+              {isLocationLoading ? "progress_activity" : "my_location"}
             </span>
-            Fly to My Location
+            {isLocationLoading ? "Locating..." : "Fly to My Location"}
           </button>
         </div>
       </div>
 
-      {/* Category Pills — overflow-x-auto with the app's globally-hidden
-          scrollbar gives no visual hint that it scrolls, so a mouse user
-          just sees it cut off at the card edge. Edge fades hint there's
-          more, and the row itself is drag-to-scroll (mouse click-drag pans
-          it, like touch already does natively) so it reads as a slider. */}
+      {/* Category Pills */}
       <div className="relative">
         {canScrollCatLeft && (
           <div className="absolute left-0 top-0 bottom-1 w-8 bg-linear-to-r from-zinc-950 to-transparent z-10 pointer-events-none" />
@@ -478,6 +513,8 @@ export default function PartnerInventoryMap({
         )}
         <div
           ref={categoryScrollRef}
+          role="region"
+          aria-label="Filter equipment categories"
           onMouseDown={handleCategoryMouseDown}
           onClickCapture={handleCategoryClickCapture}
           className={`flex gap-2 overflow-x-auto pb-1 scrollbar-none text-xs font-bold select-none ${
@@ -559,6 +596,7 @@ export default function PartnerInventoryMap({
               </div>
               <button
                 onClick={() => setSelectedPin(null)}
+                aria-label="Close inventory hub details"
                 className="text-zinc-500 hover:text-white transition-colors"
               >
                 <span className="material-symbols-outlined text-[18px]">
@@ -594,18 +632,34 @@ export default function PartnerInventoryMap({
 
             <div className="mt-4 flex items-center gap-2">
               {selectedPin.partner &&
-                selectedPin.partner.id !== currentUserId && (
-                  <MessageButton
-                    otherUserId={selectedPin.partner.id}
-                    otherUserName={selectedPin.partner.name}
-                    otherUserImgId={selectedPin.partner.imgId}
-                    contextType="investment"
-                    contextId={selectedPin.id}
-                    contextLabel={selectedPin.title}
-                    label="Request Tool Dispatch"
+                selectedPin.partner.id !== currentUserId &&
+                (renderMessageButton ? (
+                  renderMessageButton({
+                    otherUserId: selectedPin.partner.id,
+                    otherUserName: selectedPin.partner.name,
+                    otherUserImgId: selectedPin.partner.imgId,
+                    contextType: "investment",
+                    contextId: selectedPin.id,
+                    contextLabel: selectedPin.title,
+                    label: "Request Tool Dispatch",
+                    className:
+                      "flex-1 px-4 py-2.5 rounded-xl bg-gradient-to-r from-amber-400 to-yellow-500 hover:from-amber-300 hover:to-yellow-400 text-black font-black text-xs flex items-center justify-center gap-1.5 shadow-lg transition-all cursor-pointer",
+                  })
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (selectedPin?.partner) {
+                        router.push(
+                          `/messages?userId=${selectedPin.partner.id}&contextType=investment&contextId=${selectedPin.id}`,
+                        );
+                      }
+                    }}
                     className="flex-1 px-4 py-2.5 rounded-xl bg-gradient-to-r from-amber-400 to-yellow-500 hover:from-amber-300 hover:to-yellow-400 text-black font-black text-xs flex items-center justify-center gap-1.5 shadow-lg transition-all cursor-pointer"
-                  />
-                )}
+                  >
+                    Request Tool Dispatch
+                  </button>
+                ))}
 
               {selectedPin.partner?.id === currentUserId && (
                 <button
@@ -627,3 +681,4 @@ export default function PartnerInventoryMap({
     </div>
   );
 }
+
