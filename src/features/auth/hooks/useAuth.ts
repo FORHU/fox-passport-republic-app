@@ -22,31 +22,40 @@ import { authClient } from "@/shared/auth/auth-client";
 // --- REAL API FUNCTIONS ---
 
 const realLogin = async (data: LoginFormData): Promise<LoginResponse> => {
-  const result = await authClient.signIn.email({
+  try {
+    const result = await authClient.signIn.email({
+      email: data.email,
+      password: data.password,
+    });
+
+    if (!result.error && result.data) {
+      const user = ((result.data as any)?.user || {}) as Record<string, any>;
+      const token = (result.data as any)?.session?.token || "";
+      return {
+        accessToken: token,
+        refreshToken: token,
+        user: {
+          id: user.id,
+          email: user.email,
+          name: user.name,
+          username: user.username || "",
+          systemRole: user.systemRole || "user",
+          roleType: user.roleType || [],
+          isEmailVerified: user.emailVerified ?? false,
+          ...user,
+        },
+      };
+    }
+  } catch {
+    // If Better Auth fails or encounters network issue, try legacy API login
+  }
+
+  // Fallback to legacy API login endpoint
+  const response = await api.post<LoginResponse>("/auth/login", {
     email: data.email,
     password: data.password,
   });
-
-  if (result.error) {
-    throw new Error(result.error.message || "Failed to log in");
-  }
-
-  const user = ((result.data as any)?.user || {}) as Record<string, any>;
-  const token = (result.data as any)?.session?.token || "";
-  return {
-    accessToken: token,
-    refreshToken: token,
-    user: {
-      id: user.id,
-      email: user.email,
-      name: user.name,
-      username: user.username || "",
-      systemRole: user.systemRole || "user",
-      roleType: user.roleType || [],
-      isEmailVerified: user.emailVerified ?? false,
-      ...user,
-    },
-  };
+  return response.data;
 };
 
 const realForgotPassword = async (email: string) => {
