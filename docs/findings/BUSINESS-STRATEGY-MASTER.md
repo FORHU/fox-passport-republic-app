@@ -1,11 +1,11 @@
 # FoxPassport Republic — Business Plan & Strategy Master Document
 
-**Version:** 3.0
+**Version:** 3.1
 **Status:** Active
-**Date:** 14 September 2026
+**Date:** 14 September 2026 (reconciliation update 15 October 2026)
 **Strategic Owner:** Product / Project Management
 **Business Approval:** Founding Team
-**Reconciled against current implementation:** 14 September 2026 (see §1a)
+**Reconciled against current implementation:** 14 September 2026 (see §1a); 15 October 2026 (see §1b and [`foxpassport-feature-audit.md`](./foxpassport-feature-audit.md))
 
 ---
 
@@ -53,6 +53,44 @@ Seven items:
 5. **§11.6 (Investors) — still needs a legal read.** `PartnerInvestment`/`PartnershipProposal` already model revenue-share percentages, monetary valuation, and inventory investment tied to specific events/venues — further built out than this section's "expand only when legal/regulatory requirements justify it" framing implies is already true. Unresolved as of this writing; needs the founding team's legal/compliance owner, not a doc edit.
 6. **§21 (Product Expansion Strategy) — its Phase 1–7 numbering collides with `DYNAMIC-EVENTS-PRODUCT-MASTER.md`'s own Phase 0–7.** This document's phases (Discover/Participate → Organize → Transactions → Provider Marketplace → Community → Custom Experiences → Business Tools) are business-level and unrelated to that document's Dynamic-Events-specific phases (Architecture Decision → Public Event MVP → Taxonomy → Event Configuration → Public Participation → Ticketing → Sessions/Speakers → Advanced). Same label, two different meanings, in companion documents that cross-reference each other — read "Phase" here as this document's own scheme, not `DYNAMIC-EVENTS-PRODUCT-MASTER.md`'s.
 7. **§7 (Any Event, Any Experience) doesn't close an already-open taxonomy gap.** `DYNAMIC-EVENTS-PRODUCT-MASTER.md` §11 already flags that its example taxonomy never shows where the current five `EventCategory` enum values (`corporate`, `birthday`, `wedding`, `social`, `other`) land as subcategories — still unresolved. §7's richer example list (Sports, Outdoor, Romantic, Custom Experiences, etc.) doesn't resolve it either; both documents' taxonomy examples need the same explicit mapping before any migration runs, tracked as one open item, not two.
+
+---
+
+# 1b. Feature Reconciliation (15 October 2026)
+
+Checked 15 Oct 2026 against the full feature inventory in [`foxpassport-feature-audit.md`](./foxpassport-feature-audit.md) (API Prisma schema and modules, web app routes, mobile app pages). The strategic direction in this document is unchanged. This section records two kinds of drift so business, product, and project work from the same picture.
+
+### A. Built capabilities this document did not previously reflect
+
+These already exist in the product and support the strategy. They are now referenced in the relevant sections below.
+
+| Capability | Supports | Section |
+|---|---|---|
+| **Passport gamification:** digital passport, paths, stamps, badges (with rarity), leaderboard, progress | Repeat participation, community | §19, §29 |
+| **Bidding:** Gear/Talent Foxers bid on event supply requests | Provider marketplace, transparent pricing | §17, §24 |
+| **Match requests:** citizen ↔ foxer direct requests with accept/decline | Early form of Journey B | §9, §23 |
+| **Organizer Appointments, Check-in Helpers, Shared Inbox** | Organizer tools, operations | §11.7, §21 Phase 2 |
+| **Venue ↔ EventFoxer affiliations** | Supply-side relationships | §17 |
+| **Promotions and vouchers** | Stage 3 promotion tools (already partly live) | §15 |
+| **Multi-currency display (FX rates)** | Geographic expansion readiness | §34 Stage 6 |
+| **Waitlist and booking edit requests** | Reliable availability, demand capture | §18 |
+| **Specializations (Claimed tags / Earned badges)** | Reputation, trust | §26 |
+| **Performer Foxer role** (DJ, band, photo, video, MC) | Talent supply | §11.5 |
+| **Identity verification (KYC), audit logs, idempotent payments** | Trust, transaction integrity | §26 |
+| **QR check-in** (web only) | Participation, operations | §24 |
+
+### B. Strategy items not yet built
+
+These remain target state. Listed here so they aren't read as shipped.
+
+1. **Public self-service event registration**: still not built (no `EventRegistration`). This is the core of Journey A and Year 1, so it is the most important gap (repeats §1a item 2).
+2. **Custom Experiences / "Make It Happen"**: not built and no engineering plan (repeats §1a item 3). Match requests are the closest existing building block.
+3. **Referral and campaign tracking** (§20): not built.
+4. **Social platform distribution** (§20): only Facebook and Google login exist. No TikTok, Instagram, or YouTube distribution, and sharing is minimal.
+5. **Recommendations** (§18): only follow suggestions exist. There is no experience recommender.
+6. **Analytics and premium business tools** (§15 Stage 3, §21 Phase 7): only one public event-stats endpoint exists.
+7. **Formal dispute handling** (§26): refunds and content reports exist, but there is no dispute workflow.
+8. **Mobile parity**: the mobile app covers auth, onboarding, home, search, tickets, passport, profile, and notifications only. Booking checkout, creator dashboards, messaging, and QR check-in are web-only.
 
 ---
 
@@ -618,6 +656,21 @@ Investment functionality should only be expanded when the underlying business mo
 
 ---
 
+## 11.7 Organizers and Check-in Helpers
+
+**Added 15 Oct (§1b).** These segments already exist in the product but weren't previously described here.
+
+* **Organizers**: citizens approved for the Organizer role who can be **appointed** by a Mayor (Venue Foxer) or Event Owner to help run a specific venue or event. They share the event's or venue's **Shared Inbox** with guests and suppliers.
+* **Check-in Helpers**: lightweight helpers added only to check guests in. They need no role or admin approval.
+
+Their value proposition is:
+
+> **Help run experiences without owning them.**
+
+This supports §19 (community-led growth): a successful organizer can bring other organizers and helpers into the ecosystem.
+
+---
+
 # 12. FoxPassport Ecosystem
 
 The ecosystem I recommend is:
@@ -672,7 +725,7 @@ More providers make it possible to create more types of experiences.
 
 This creates the foundation for marketplace network effects.
 
-**Current State (§1a items 2–3):** the "Registration" step of this flow, and the entire "Create an Experience" / custom-experience branch, are target state. Today only the private, EventFoxer-curated `EventTemplate → Client → Event → Booking` flow is live; public self-service registration (`EventRegistration`) is Phase 1 of Dynamic Events and hasn't shipped, and custom-experience matching (§8/§9 Journey B/§23) has no engineering plan yet at all.
+**Current State (§1a items 2–3):** the "Registration" step of this flow, and the entire "Create an Experience" / custom-experience branch, are target state. Today only the private, EventFoxer-curated `EventTemplate → Client → Event → Booking` flow is live; public self-service registration (`EventRegistration`) is Phase 1 of Dynamic Events and hasn't shipped, and custom-experience matching (§8/§9 Journey B/§23) has no engineering plan yet at all. **Update 15 Oct (§1b):** still accurate. Direct citizen ↔ foxer **match requests** and supplier **bidding** are live and are the nearest existing building blocks for the Create branch.
 
 ---
 
@@ -768,6 +821,8 @@ Introduce:
 * analytics;
 * promotion;
 * business management capabilities.
+
+**Current State (§1b):** promotion tooling is already partly live (Event Foxer **promotions and vouchers**). Analytics is minimal (one public event-stats endpoint). Premium tiers don't exist yet.
 
 ### Stage 4 — Monetize Custom Experiences
 
@@ -871,6 +926,8 @@ Demand strategy should therefore prioritize:
 * custom experience creation;
 * repeat participation.
 
+**Current State (§1b):** discovery (search, map with nearby-first, categories), wishlists, waitlists, and booking edit requests are live. Simple public registration and recommendations are not built yet.
+
 Downloads alone should not be treated as success.
 
 ---
@@ -893,6 +950,8 @@ Therefore:
 > **Acquiring the right organizers may have a multiplier effect.**
 
 Instead of relying entirely on paid advertising, I recommend building relationships with communities and organizers that can bring recurring activity to the platform.
+
+**Current State (§1b):** community infrastructure is already live: the Republic feed (posts, polls, comments, media tags), follow/block/connections, content reporting, realtime notifications, and **Passport gamification** (stamps, badges, leaderboard), which directly supports repeat participation.
 
 ---
 
@@ -942,6 +1001,8 @@ The purpose is to allow FoxPassport to meet users where they already are.
 The long-term objective is:
 
 > **Reach users everywhere we can connect, but build the actual marketplace relationship inside FoxPassport.**
+
+**Current State (§1b):** only Facebook and Google sign-in exist today. Shareable links are minimal, and referral tracking, campaign tracking, and social distribution (TikTok, Instagram, YouTube) are not built.
 
 ---
 
@@ -1152,6 +1213,8 @@ Where we already have capabilities such as:
 
 we should treat these as reusable business infrastructure.
 
+**Current State (§1b):** the reusable infrastructure also includes supplier bidding, direct match requests, waitlists, cancellation policies, promotions/vouchers, multi-currency display, organizer appointments, shared inboxes, QR check-in, and identity verification. New categories should reuse these before building new ones.
+
 We should avoid creating separate implementations for every new marketplace category unless there is a strong business reason.
 
 This reduces:
@@ -1209,6 +1272,8 @@ As the marketplace grows, we should progressively establish:
 Custom experiences require an even stronger trust model because customers may depend on multiple providers for a single experience.
 
 The level of trust infrastructure should therefore grow with marketplace activity.
+
+**Current State (§1b):** live today: identity verification (document upload with admin review), reviews and replies that require a completed booking, Claimed/Earned specializations, cancellation policies, payment protection with confirmation deadlines, refunds, content reporting, audit logs, and rate-limited authentication. There is no formal dispute workflow yet.
 
 ---
 
@@ -1875,4 +1940,4 @@ The customer proposition should remain simple:
 
 ---
 
-*Companion to `DYNAMIC-EVENTS-PRODUCT-MASTER.md` (product direction), `DYNAMIC-EVENTS-PROJECT-MASTER.md` (execution/delivery process), and `DYNAMIC-EVENTS-PLAN.md` (technical plan) — this document sits one layer above them in the Strategic Hierarchy (§3) and should be reconciled with them, not the other way around, per §37 Business Change Management.*
+*Companion to `DYNAMIC-EVENTS-PRODUCT-MASTER.md` (product direction), `DYNAMIC-EVENTS-PROJECT-MASTER.md` (execution/delivery process), and `DYNAMIC-EVENTS-PLAN.md` (technical plan) — this document sits one layer above them in the Strategic Hierarchy (§3) and should be reconciled with them, not the other way around, per §37 Business Change Management. Feature-level reconciliation lives in [`foxpassport-feature-audit.md`](./foxpassport-feature-audit.md) (see §1b).*
