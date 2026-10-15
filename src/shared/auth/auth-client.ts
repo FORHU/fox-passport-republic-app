@@ -2,11 +2,24 @@ import { createAuthClient } from "better-auth/react";
 import { getBrowserApiUrl, config } from "@/shared/lib/config";
 
 export function getBetterAuthBaseUrl(): string {
-  const url =
-    typeof window !== "undefined"
-      ? getBrowserApiUrl()
-      : config.apiUrl || "http://localhost:6002";
-  return url ? url.replace(/\/api\/v1\/?$/, "") : "http://localhost:6002";
+  try {
+    let url = "";
+    if (
+      typeof window !== "undefined" &&
+      window.location?.protocol &&
+      window.location?.hostname
+    ) {
+      url = getBrowserApiUrl();
+    } else {
+      url = config.apiUrl || "http://localhost:6002";
+    }
+    const sanitized = url ? url.replace(/\/api\/v1\/?$/, "") : "http://localhost:6002";
+    // Validate it can be parsed as a valid URL
+    new URL(sanitized);
+    return sanitized;
+  } catch {
+    return "http://localhost:6002";
+  }
 }
 
 export const authClient = createAuthClient({
