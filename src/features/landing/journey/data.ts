@@ -9,51 +9,22 @@ import { assetUrl } from "@/shared/lib/assets";
 // nothing it can't back up.
 // ---------------------------------------------------------------------------
 
-export interface LandingVenue {
-  id: string;
-  name: string;
-  city: string;
-  category: string;
-  lat: number;
-  lng: number;
-  image?: string;
-}
-
-export interface LandingEventLocation {
-  key: string;
-  city: string;
-  country?: string;
-  lat: number;
-  lng: number;
-  events: LandingEvent[];
-}
-
-export interface LandingEvent {
-  id: string;
-  name: string;
-  category?: string;
-  targetCity?: string;
-  targetCountry?: string;
-  lat?: number | null;
-  lng?: number | null;
-  description?: string;
-  images?: { url: string }[];
-  estimatedTotal?: number;
-  templateVenues?: {
-    venue?: {
-      city?: string;
-      lat?: number | null;
-      lng?: number | null;
-    };
-  }[];
-}
-
-export interface LandingFoxer {
-  id: string;
-  name: string;
-  city?: string;
-  roles: string[];
-}
+export {
+  filterLandingVenues,
+  loadLandingEvents,
+  type LandingEvent,
+  type LandingEventLocation,
+  type LandingFoxer,
+  type LandingVenue,
+} from "./landing-shared";
+import {
+  filterLandingVenues,
+  loadLandingEvents,
+  type LandingEvent,
+  type LandingEventLocation,
+  type LandingFoxer,
+  type LandingVenue,
+} from "./landing-shared";
 
 const TEN_MINUTES = 1000 * 60 * 10;
 
@@ -106,26 +77,6 @@ export function useEventsQuery(limit = 12) {
   });
 }
 
-/** Load at most 300 public templates, respecting the API's 50-item page limit. */
-export async function loadLandingEvents(
-  limit: number,
-  fetchPage: (page: number, pageLimit: number) => Promise<LandingEvent[]>,
-) {
-  const target = Math.min(300, Math.max(0, Math.floor(limit)));
-  const events: LandingEvent[] = [];
-  let page = 1;
-
-  while (events.length < target) {
-    const pageSize = Math.min(50, target - events.length);
-    const batch = await fetchPage(page, pageSize);
-    events.push(...batch);
-    if (batch.length < pageSize) break;
-    page += 1;
-  }
-
-  return events.slice(0, target);
-}
-
 export function useEvents(limit = 12) {
   return useEventsQuery(limit).data ?? [];
 }
@@ -137,34 +88,7 @@ export function useVenues(limit = 80) {
     queryFn: async () => {
       const res = await api.get("/venues", { params: { limit } });
       const list: any[] = res.data?.venues ?? res.data?.data ?? [];
-      const located = list
-        .filter(
-          (v) =>
-            typeof v.lat === "number" &&
-            typeof v.lng === "number" &&
-            v.status !== "rejected",
-        )
-        .map((v): LandingVenue => ({
-          id: v.id,
-          name: v.name,
-          city: v.city ?? "",
-          category: v.category ?? "other",
-          lat: v.lat,
-          lng: v.lng,
-          image:
-            typeof v.images?.[0] === "string"
-              ? v.images[0]
-              : v.images?.[0]?.url,
-        }));
-      // A stray bad coordinate would send the whole map to the wrong country,
-      // so keep what sits near the middle of the pack.
-      const median = (n: number[]) =>
-        [...n].sort((a, b) => a - b)[Math.floor(n.length / 2)] ?? 0;
-      const mLat = median(located.map((v) => v.lat));
-      const mLng = median(located.map((v) => v.lng));
-      return located.filter(
-        (v) => Math.abs(v.lat - mLat) < 12 && Math.abs(v.lng - mLng) < 12,
-      );
+      return filterLandingVenues(list);
     },
     staleTime: TEN_MINUTES,
   });
