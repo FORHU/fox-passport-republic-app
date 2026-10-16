@@ -7,6 +7,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { fetchStamps, Stamp } from "@/features/gamification/api/stamps";
 import { useCategories } from "@/shared/hooks/useCategories";
+import { assetUrl } from "@/shared/lib/assets";
 
 interface Props {
   userId: string;
@@ -93,7 +94,7 @@ function StampCard({ stamp, index }: { stamp: Stamp; index: number }) {
               <div className="flex h-20 w-20 items-center justify-center rounded-full ring-2 ring-accent/70">
                 {/* Brand fox as a white silhouette on black — always visible */}
                 <img
-                  src="/foxonlylogo.png"
+                  src={assetUrl("foxonlylogo.png")}
                   alt=""
                   className="h-12 w-12 object-contain"
                   style={{
@@ -159,7 +160,7 @@ export default function PassportStampsClient({ userId }: Props) {
             <Link href="/" className="flex items-center gap-3 group">
               <div className="flex h-10 w-10 items-center justify-center overflow-hidden group-hover:scale-110 transition-transform duration-300">
                 <Image
-                  src="/foxonlylogo.png"
+                  src={assetUrl("foxonlylogo.png")}
                   alt="FoxPassport Logo"
                   width={40}
                   height={40}

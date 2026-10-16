@@ -11,6 +11,22 @@ const apiOrigin = (() => {
   return `${protocol}//${hostname}${port ? `:${port}` : ""}`;
 })();
 
+// Where the static brand/marketing images live (S3 + CDN, or MinIO in dev).
+// Optional: unset, the app serves them from public/ as before.
+const assetsUrl = (() => {
+  const raw = process.env.NEXT_PUBLIC_ASSETS_URL;
+  if (!raw) return null;
+  const { protocol, hostname, port } = new URL(raw);
+  return {
+    origin: `${protocol}//${hostname}${port ? `:${port}` : ""}`,
+    pattern: {
+      protocol: protocol.replace(":", ""),
+      hostname,
+      ...(port ? { port } : {}),
+    },
+  };
+})();
+
 
 const nextConfig = {
   turbopack: {},
@@ -42,6 +58,7 @@ const nextConfig = {
       { protocol: 'https', hostname: '*.s3.amazonaws.com' },
       { protocol: 'https', hostname: '*.s3.*.amazonaws.com' },
       { protocol: 'https', hostname: 's3.amazonaws.com' },
+      ...(assetsUrl ? [assetsUrl.pattern] : []),
     ],
     unoptimized: process.env.NODE_ENV === 'development',
   },
@@ -77,7 +94,7 @@ const nextConfig = {
           "style-src 'self' 'unsafe-inline' https://*.stripe.com",
           "frame-src https://*.stripe.com https://*.stripe.network",
           `connect-src 'self' https://*.stripe.com https://*.stripe.network ${apiOrigin}`,
-          "img-src 'self' data: https://*.stripe.com",
+          `img-src 'self' data: https://*.stripe.com${assetsUrl ? ` ${assetsUrl.origin}` : ""}`,
         ].join('; '),
       },
     ];

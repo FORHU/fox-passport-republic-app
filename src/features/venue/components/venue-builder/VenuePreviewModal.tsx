@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from "react";
 import { GalleryItem } from "@/features/venue/data/venueBuilderData";
 import { Money } from "@/shared/components/ui/Money";
+import { assetUrl } from "@/shared/lib/assets";
 
 interface ResourceItem {
   id: string;
@@ -67,7 +68,7 @@ export function VenuePreviewModal({
 
   if (!isOpen) return null;
 
-  const coverImage = gallery[0]?.url || "/herobackground.jpg";
+  const coverImage = gallery[0]?.url || assetUrl("herobackground.jpg");
   const displayName = venueName || "Untitled Venue";
   const displayLocation =
     [location, city, state, country].filter(Boolean).join(", ") ||
@@ -103,7 +104,7 @@ export function VenuePreviewModal({
             alt={displayName}
             className="w-full h-full object-cover"
             onError={(e) => {
-              (e.target as HTMLImageElement).src = "/herobackground.jpg";
+              (e.target as HTMLImageElement).src = assetUrl("herobackground.jpg");
             }}
           />
           <div className="absolute inset-0 bg-gradient-to-t from-canvas via-transparent to-transparent" />
@@ -163,7 +164,7 @@ export function VenuePreviewModal({
                     className="w-full h-full object-cover"
                     onError={(e) => {
                       (e.target as HTMLImageElement).src =
-                        "/herobackground.jpg";
+                        assetUrl("herobackground.jpg");
                     }}
                   />
                   {idx === 0 && (
@@ -183,7 +184,7 @@ export function VenuePreviewModal({
                   alt=""
                   className="w-full h-full object-cover"
                   onError={(e) => {
-                    (e.target as HTMLImageElement).src = "/herobackground.jpg";
+                    (e.target as HTMLImageElement).src = assetUrl("herobackground.jpg");
                   }}
                 />
               </div>

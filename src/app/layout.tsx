@@ -17,6 +17,7 @@ import RouteProgressBar from "@/shared/components/ui/RouteProgressBar";
 import Providers from "@/shared/providers";
 import WebsiteJsonLd from "@/shared/components/seo/WebsiteJsonLd";
 import { THEME_INIT_SCRIPT } from "@/shared/lib/theme";
+import { assetUrl } from "@/shared/lib/assets";
 
 const appUrl = (
   process.env.NEXT_PUBLIC_APP_URL || "https://foxpassport.com"
@@ -42,7 +43,7 @@ export const metadata: Metadata = {
       "FoxPassport returns the power of Happiness & Experience to You. Discover curated events, unique venues, and local experiences.",
     images: [
       {
-        url: "/foxonlylogo.png",
+        url: assetUrl("foxonlylogo.png"),
         width: 1200,
         height: 630,
         alt: "FoxPassport",
@@ -54,7 +55,7 @@ export const metadata: Metadata = {
     title: "FoxPassport — Let's Make Life an Event",
     description:
       "FoxPassport returns the power of Happiness & Experience to You. Discover curated events, unique venues, and local experiences.",
-    images: ["/foxonlylogo.png"],
+    images: [assetUrl("foxonlylogo.png")],
   },
   robots: {
     index: true,

@@ -1,6 +1,13 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import Link from "next/link";
 import {
   motion,
@@ -22,6 +29,7 @@ import {
   DESTINATIONS,
   buildStops,
   buildEventLocations,
+  mergeLocationsByCity,
   eventLocationCollection,
   useEvents,
   useFoxerTotal,
@@ -33,6 +41,7 @@ import {
 import { CountUp, Kicker, MaskLines } from "./motion";
 import { Lightbox } from "./Lightbox";
 import { destinationEventCards, HeroSearch } from "./booking";
+import { InstallAppButton } from "./InstallAppButton";
 
 const ACCENT = "#ccff00";
 const STOPS = DESTINATIONS.length;
@@ -191,6 +200,13 @@ function planeImage(color: string) {
 /** An angle as the equivalent one between -180 and 180 degrees. */
 const wrapDeg = (d: number) => (((d % 360) + 540) % 360) - 180;
 
+/**
+ * How often it is decided which places get a card, and on which side. Where a
+ * card is drawn is not decided here: that is re-read from the map on every
+ * frame (see `onFrame`), so cards are fixed to the globe, not trailing it.
+ */
+const CALLOUT_UPDATE_MS = 100;
+
 /** How fast the world turns behind the closing card. */
 const SPIN_DEG_PER_SEC = 5;
 /** Up to here the world is still waiting for the first scroll. */
@@ -317,6 +333,8 @@ export function closestVisibleEventLocation(
 
 type ProjectedEventLocation = {
   location: LandingEventLocation;
+  /** See `PositionedEventCallout.dot`. */
+  dot: number;
   point: { x: number; y: number };
 };
 
@@ -335,7 +353,21 @@ export type PositionedEventCallout = {
   top: number;
   edgeX: number;
   edgeY: number;
+  /** How face-on the place is to the camera: 1 at the centre, ~0.2 at the limb. */
+  dot: number;
 };
+
+/** 1 at the middle of the visible disc, 0 at its edge, negative behind it. */
+function eventLocationDot(map: any, location: LandingEventLocation): number {
+  const center = map.getCenter();
+  const centerLat = (center.lat * Math.PI) / 180;
+  const lat = (location.lat * Math.PI) / 180;
+  const longitudeDelta = ((location.lng - center.lng) * Math.PI) / 180;
+  return (
+    Math.sin(centerLat) * Math.sin(lat) +
+    Math.cos(centerLat) * Math.cos(lat) * Math.cos(longitudeDelta)
+  );
+}
 
 function projectVisibleEventLocations(
   map: any,
@@ -343,24 +375,16 @@ function projectVisibleEventLocations(
   width: number,
   height: number,
 ): ProjectedEventLocation[] {
-  const center = map.getCenter();
-  const centerLat = (center.lat * Math.PI) / 180;
   const minDot = Math.cos((78 * Math.PI) / 180);
 
   return locations
-    .map((location) => {
-      const lat = (location.lat * Math.PI) / 180;
-      const longitudeDelta = ((location.lng - center.lng) * Math.PI) / 180;
-      const dot =
-        Math.sin(centerLat) * Math.sin(lat) +
-        Math.cos(centerLat) * Math.cos(lat) * Math.cos(longitudeDelta);
-      return { location, dot };
-    })
+    .map((location) => ({ location, dot: eventLocationDot(map, location) }))
     .filter(({ dot }) => dot > minDot)
     .sort((a, b) => b.dot - a.dot)
     .slice(0, MAX_EVENT_CALLOUT_CANDIDATES)
-    .map(({ location }) => ({
+    .map(({ location, dot }) => ({
       location,
+      dot,
       point: projectEventLocation(map, location),
     }))
     .filter(
@@ -371,12 +395,43 @@ function projectVisibleEventLocations(
     );
 }
 
+/**
+ * Cards already on screen keep their place in the queue and their side of the
+ * pin; a new one needs the place to be well clear of the limb and then goes in
+ * by event count. Ranking by distance from the centre instead meant the order
+ * changed every frame the world turned, so cards swapped pins and hopped
+ * between sides.
+ */
 function placeEventCallouts(
-  points: ProjectedEventLocation[],
+  candidates: ProjectedEventLocation[],
   width: number,
   height: number,
   avoid?: EventCalloutRect,
+  previous: PositionedEventCallout[] = [],
 ): PositionedEventCallout[] {
+  const shown = new Map(previous.map((card, i) => [card.location.key, i]));
+  const points = candidates
+    .filter(
+      ({ location, dot }) =>
+        shown.has(location.key) || dot >= EVENT_CALLOUT_ENTER_DOT,
+    )
+    .sort((a, b) => {
+      const sa = shown.get(a.location.key);
+      const sb = shown.get(b.location.key);
+      if (sa !== undefined || sb !== undefined) {
+        return (sa ?? Infinity) - (sb ?? Infinity);
+      }
+      return (
+        b.location.events.length - a.location.events.length || b.dot - a.dot
+      );
+    });
+  const size = calloutSize(width);
+  const side = new Map(
+    previous.map((card) => [
+      card.location.key,
+      { dx: card.left - card.markerX, dy: card.top - card.markerY },
+    ]),
+  );
   const markerSize = 12;
   const markers = points.map(({ point }) => ({
     left: point.x - markerSize / 2,
@@ -385,30 +440,43 @@ function placeEventCallouts(
     bottom: point.y + markerSize / 2,
   }));
   const occupied: EventCalloutRect[] = avoid ? [avoid] : [];
+  const cards: EventCalloutRect[] = [];
+  const lines: CalloutLine[] = [];
   const placed: PositionedEventCallout[] = [];
 
-  points.forEach(({ location, point }, index) => {
-    if (placed.length >= MAX_EVENT_CALLOUTS) return;
+  points.forEach(({ location, point, dot }, index) => {
+    if (placed.length >= size.max) return;
     const blockers = [
       ...occupied,
       ...markers.filter((_, markerIndex) => markerIndex !== index),
     ];
-    const placement = getEventCalloutPlacement(point, width, height, blockers);
+    const placement = getEventCalloutPlacement(
+      point,
+      width,
+      height,
+      blockers,
+      side.get(location.key),
+      { cards, lines },
+    );
     if (!placement) return;
 
     const callout = {
       location,
       markerX: point.x,
       markerY: point.y,
+      dot,
       ...placement,
     };
     placed.push(callout);
-    occupied.push({
+    const rect = {
       left: placement.left,
       top: placement.top,
-      right: placement.left + EVENT_CALLOUT_WIDTH,
-      bottom: placement.top + EVENT_CALLOUT_HEIGHT,
-    });
+      right: placement.left + size.width,
+      bottom: placement.top + size.height,
+    };
+    occupied.push(rect);
+    cards.push(rect);
+    lines.push([point.x, point.y, placement.edgeX, placement.edgeY]);
   });
 
   return placed;
@@ -420,12 +488,15 @@ export function getVisibleEventCalloutPlacements(
   width: number,
   height: number,
   avoid?: EventCalloutRect,
+  /** The cards shown a moment ago; they keep their place and side. */
+  previous?: PositionedEventCallout[],
 ): PositionedEventCallout[] {
   return placeEventCallouts(
     projectVisibleEventLocations(map, locations, width, height),
     width,
     height,
     avoid,
+    previous,
   );
 }
 
@@ -452,76 +523,167 @@ export function isEventCalloutInsideMap(
   );
 }
 
-const EVENT_CALLOUT_WIDTH = 184;
-const EVENT_CALLOUT_HEIGHT = 76;
-const MAX_EVENT_CALLOUT_CANDIDATES = 24;
-const MAX_EVENT_CALLOUTS = 8;
+const EVENT_CALLOUT_WIDTH = 208;
+const EVENT_CALLOUT_HEIGHT = 80;
+/** Below this the hero is a phone layout: smaller cards, and only two. */
+const COMPACT_BELOW = 640;
+/** The site header floats over the top of the map; cards stay under it. */
+const EVENT_CALLOUT_TOP_INSET = 88;
 
+/** Keep the card classes in `GlobeEventCalloutCard` in step with these. */
+function calloutSize(viewportWidth: number) {
+  return viewportWidth < COMPACT_BELOW
+    ? { width: 160, height: 68, max: 2 }
+    : {
+        width: EVENT_CALLOUT_WIDTH,
+        height: EVENT_CALLOUT_HEIGHT,
+        max: MAX_EVENT_CALLOUTS,
+      };
+}
+const MAX_EVENT_CALLOUT_CANDIDATES = 24;
+/** Few enough to read, and to keep clear of one another on a turning globe. */
+const MAX_EVENT_CALLOUTS = 4;
+/** A place has to be this face-on before a new card is offered for it. */
+const EVENT_CALLOUT_ENTER_DOT = 0.4;
+/** Between these a card fades, so the limb never pops one in or out. */
+const EVENT_CALLOUT_FADE_FROM_DOT = 0.22;
+
+/** Farthest a card may sit from its pin, edge to edge. Further out it is
+ * left off rather than strung across the globe on a long line. */
+const EVENT_CALLOUT_MAX_DISTANCE = 220;
+
+type CalloutLine = [x1: number, y1: number, x2: number, y2: number];
+
+/** Liang-Barsky: does the segment cross (or sit inside) the rectangle? */
+function lineHitsRect(
+  [ax, ay, bx, by]: CalloutLine,
+  rect: EventCalloutRect,
+): boolean {
+  const dx = bx - ax;
+  const dy = by - ay;
+  const p = [-dx, dx, -dy, dy];
+  const q = [ax - rect.left, rect.right - ax, ay - rect.top, rect.bottom - ay];
+  let t0 = 0;
+  let t1 = 1;
+  for (let i = 0; i < 4; i++) {
+    if (p[i] === 0) {
+      if (q[i] < 0) return false;
+      continue;
+    }
+    const t = q[i] / p[i];
+    if (p[i] < 0) {
+      if (t > t1) return false;
+      if (t > t0) t0 = t;
+    } else {
+      if (t < t0) return false;
+      if (t < t1) t1 = t;
+    }
+  }
+  return true;
+}
+
+/**
+ * The spot for a card: the one nearest its pin that is on screen, clear of
+ * everything in `avoid`, and does not put its connector through another card
+ * or another card through its connector. The side it had last time wins as
+ * long as it is still good, so cards don't flip as the globe turns.
+ */
 export function getEventCalloutPlacement(
   point: { x: number; y: number },
   width: number,
   height: number,
   avoid?: EventCalloutRect | EventCalloutRect[],
+  /** Where the card sat relative to the pin last time. */
+  prefer?: { dx: number; dy: number },
+  /** Cards and connectors already placed this frame. */
+  placed?: { cards: EventCalloutRect[]; lines: CalloutLine[] },
 ): { left: number; top: number; edgeX: number; edgeY: number } | null {
-  const cardWidth = EVENT_CALLOUT_WIDTH;
-  const cardHeight = EVENT_CALLOUT_HEIGHT;
+  const { width: cardWidth, height: cardHeight } = calloutSize(width);
   const margin = 8;
   const gap = 16;
   const avoidRects = avoid ? (Array.isArray(avoid) ? avoid : [avoid]) : [];
   const clamp = (value: number, min: number, max: number) =>
     Math.min(max, Math.max(min, value));
-  const candidates = [
+
+  const candidates: { left: number; top: number }[] = [];
+  if (prefer) {
+    candidates.push({ left: point.x + prefer.dx, top: point.y + prefer.dy });
+  }
+  candidates.push(
     { left: point.x - cardWidth / 2, top: point.y - cardHeight - gap },
     { left: point.x + gap, top: point.y - cardHeight / 2 },
     { left: point.x - cardWidth / 2, top: point.y + gap },
     { left: point.x - cardWidth - gap, top: point.y - cardHeight / 2 },
-  ];
-
+  );
   for (const rect of avoidRects) {
+    const top = clamp(
+      point.y - cardHeight / 2,
+      EVENT_CALLOUT_TOP_INSET,
+      height - cardHeight - margin,
+    );
     candidates.push(
-      {
-        left: rect.right + gap,
-        top: clamp(
-          point.y - cardHeight / 2,
-          margin,
-          height - cardHeight - margin,
-        ),
-      },
-      {
-        left: rect.left - cardWidth - gap,
-        top: clamp(
-          point.y - cardHeight / 2,
-          margin,
-          height - cardHeight - margin,
-        ),
-      },
+      { left: rect.right + gap, top },
+      { left: rect.left - cardWidth - gap, top },
     );
   }
+  // Further out in eight directions, for when the near sides are taken.
+  for (const ring of [gap + 40, gap + 80, gap + 120, gap + 160]) {
+    for (let i = 0; i < 8; i++) {
+      const angle = (i * Math.PI) / 4;
+      const ux = Math.cos(angle);
+      const uy = Math.sin(angle);
+      const reach =
+        ring + Math.abs(ux) * (cardWidth / 2) + Math.abs(uy) * (cardHeight / 2);
+      candidates.push({
+        left: point.x + ux * reach - cardWidth / 2,
+        top: point.y + uy * reach - cardHeight / 2,
+      });
+    }
+  }
 
-  const placement = candidates.find(({ left, top }) => {
+  let best: { left: number; top: number; edgeX: number; edgeY: number } | null =
+    null;
+  let bestDistance = Infinity;
+  candidates.forEach(({ left, top }, index) => {
     if (
       left < margin ||
-      top < margin ||
+      top < EVENT_CALLOUT_TOP_INSET ||
       left + cardWidth > width - margin ||
       top + cardHeight > height - margin
     ) {
-      return false;
+      return;
     }
-    return !avoidRects.some(
-      (rect) =>
-        left < rect.right &&
-        left + cardWidth > rect.left &&
-        top < rect.bottom &&
-        top + cardHeight > rect.top,
-    );
-  });
-  if (!placement) return null;
+    const rect = {
+      left,
+      top,
+      right: left + cardWidth,
+      bottom: top + cardHeight,
+    };
+    const overlaps = (other: EventCalloutRect) =>
+      rect.left < other.right &&
+      rect.right > other.left &&
+      rect.top < other.bottom &&
+      rect.bottom > other.top;
+    if (avoidRects.some(overlaps)) return;
 
-  return {
-    ...placement,
-    edgeX: clamp(point.x, placement.left, placement.left + cardWidth),
-    edgeY: clamp(point.y, placement.top, placement.top + cardHeight),
-  };
+    const edgeX = clamp(point.x, rect.left, rect.right);
+    const edgeY = clamp(point.y, rect.top, rect.bottom);
+    const distance = Math.hypot(edgeX - point.x, edgeY - point.y);
+    if (distance > EVENT_CALLOUT_MAX_DISTANCE) return;
+
+    const line: CalloutLine = [point.x, point.y, edgeX, edgeY];
+    if (placed?.cards.some((card) => lineHitsRect(line, card))) return;
+    if (placed?.lines.some((other) => lineHitsRect(other, rect))) return;
+
+    // The remembered side wins outright; otherwise the nearest spot does.
+    const remembered = prefer !== undefined && index === 0;
+    if (remembered || distance < bestDistance) {
+      best = { left, top, edgeX, edgeY };
+      bestDistance = remembered ? -1 : distance;
+    }
+  });
+
+  return best;
 }
 
 // ---------------------------------------------------------------------------
@@ -531,18 +693,30 @@ export function getEventCalloutPlacement(
 function JourneyMap({
   venues,
   eventLocations,
+  calloutLocations,
   stops,
   progress,
   onDrawn,
   onEventCalloutPointsChange,
+  onFrame,
+  spinPaused,
+  inView,
 }: {
   venues: LandingVenue[];
   eventLocations: LandingEventLocation[];
+  /** One place per city, for the cards. `eventLocations` stays one per venue point, for the dots. */
+  calloutLocations: LandingEventLocation[];
   stops: Stop[];
   progress: MotionValue<number>;
   /** Called once the map has drawn its first frame. */
   onDrawn: () => void;
   onEventCalloutPointsChange: (points: ProjectedEventLocation[]) => void;
+  /** Run right after the camera moves, before the browser paints that frame. */
+  onFrame: { current: ((map: any) => void) | null };
+  /** True while a card is under the pointer: the world holds still so it can be clicked. */
+  spinPaused: { current: boolean };
+  /** False once the hero has scrolled out of sight: nothing is drawn for it then. */
+  inView: { current: boolean };
 }) {
   const mapRef = useRef<any>(null);
   const theme = useThemeStore((st) => st.theme);
@@ -569,6 +743,9 @@ function JourneyMap({
   const direction = useRef<1 | -1>(1);
   // Degrees the world has turned since the tour ended; zero while touring.
   const spin = useRef(0);
+  // The map container's size. Read from the DOM once and on resize, not every
+  // frame: asking for it right after the cards were moved forces a layout.
+  const size = useRef({ w: 0, h: 0 });
   // What was last sent to the map, so an update that changes nothing is free.
   const sent = useRef({ route: "", plane: "" });
   const eventFocusInitialized = useRef(false);
@@ -730,9 +907,16 @@ function JourneyMap({
       let amount = 0;
       for (let i = 0; i < STOPS; i++)
         amount = Math.max(amount, cardAmount(p, i));
-      const box = map.getContainer() as HTMLElement;
-      const h = box.clientHeight;
-      const w = box.clientWidth;
+      if (!size.current.w) {
+        const box = map.getContainer() as HTMLElement;
+        size.current = { w: box.clientWidth, h: box.clientHeight };
+      }
+      const { w, h } = size.current;
+      // On a phone the headline and search fill the lower two thirds, so the
+      // world is lifted into the strip above them while the hero is up, and
+      // settles back to the middle as it fades.
+      const lift =
+        w < COMPACT_BELOW && h > w ? 0.4 * (1 - clamp01((p - 0.02) / 0.05)) : 0;
       map.jumpTo({
         center,
         zoom,
@@ -740,21 +924,23 @@ function JourneyMap({
         bearing: 0,
         padding: {
           top: h * pinPad(h, w) * amount,
-          bottom: 0,
+          bottom: h * lift,
           left: 0,
           right: 0,
         },
       });
 
-      const { width, height } = map.getContainer().getBoundingClientRect();
+      const width = w;
+      const height = h;
       if (p <= IDLE_END) {
         const now = performance.now();
-        if (now - lastCalloutUpdate.current >= 100) {
+        if (now - lastCalloutUpdate.current >= CALLOUT_UPDATE_MS) {
           lastCalloutUpdate.current = now;
           onEventCalloutPointsChange(
-            projectVisibleEventLocations(map, eventLocations, width, height),
+            projectVisibleEventLocations(map, calloutLocations, width, height),
           );
         }
+        onFrame.current?.(map);
       } else {
         lastCalloutUpdate.current = 0;
         onEventCalloutPointsChange([]);
@@ -801,7 +987,15 @@ function JourneyMap({
         drawPlane();
       }
     },
-    [pts, legs, outZoom, drawPlane, eventLocations, onEventCalloutPointsChange],
+    [
+      pts,
+      legs,
+      outZoom,
+      drawPlane,
+      calloutLocations,
+      onEventCalloutPointsChange,
+      onFrame,
+    ],
   );
 
   const addLayers = useCallback(
@@ -981,6 +1175,10 @@ function JourneyMap({
       map.once("idle", onDrawn);
       // The whole world, sized to the screen.
       const el = map.getContainer() as HTMLElement;
+      size.current = { w: el.clientWidth, h: el.clientHeight };
+      map.on("resize", () => {
+        size.current = { w: el.clientWidth, h: el.clientHeight };
+      });
       const px = Math.min(el.clientWidth, el.clientHeight * 1.4);
       wideRef.current = {
         lat: 24,
@@ -1033,18 +1231,29 @@ function JourneyMap({
     if (reduceMotion) return;
     let raf = 0;
     let last = 0;
+    // 5 degrees a second is slow enough that 30 frames look the same as 60,
+    // and on a phone that is half the GPU work for a full-screen canvas.
+    const coarse =
+      window.matchMedia("(pointer: coarse)").matches ||
+      window.innerWidth < COMPACT_BELOW;
+    const gap = coarse ? 1000 / 30 : 0;
     const tick = (now: number) => {
       raf = requestAnimationFrame(tick);
+      // `last` is when we last drew, so a skipped frame's time is not lost.
+      if (last && now - last < gap - 2) return;
       const dt = last ? Math.min(0.1, (now - last) / 1000) : 0;
       last = now;
+      // Scrolled past the hero: the tour is long over and nobody can see it.
+      if (!inView.current) return;
       const p = progress.get();
       if (!mapRef.current || (p >= IDLE_END && p < OUT_FROM + 0.06)) return;
+      if (spinPaused.current) return;
       spin.current -= dt * SPIN_DEG_PER_SEC;
       render(p);
     };
     raf = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(raf);
-  }, [progress, render, reduceMotion]);
+  }, [progress, render, reduceMotion, spinPaused, inView]);
   useMotionValueEvent(progress, "change", schedule);
 
   return (
@@ -1496,10 +1705,92 @@ function hasWebGL() {
   }
 }
 
+/** 0 at the limb, 1 once the place is comfortably face-on. */
+function limbFade(dot: number) {
+  return clamp01(
+    (dot - EVENT_CALLOUT_FADE_FROM_DOT) /
+      (EVENT_CALLOUT_ENTER_DOT - EVENT_CALLOUT_FADE_FROM_DOT),
+  );
+}
+
+type CalloutNode = { card?: HTMLElement; marker?: SVGGElement };
+type CalloutNodes = Map<string, CalloutNode>;
+
+/**
+ * Puts a card and its marker at a place on screen. Written straight to the
+ * elements, not through React, because it runs once per map frame.
+ */
+function placeCalloutNode(
+  node: CalloutNode,
+  x: number,
+  y: number,
+  dx: number,
+  dy: number,
+  opacity: number,
+) {
+  if (node.marker) {
+    node.marker.style.transform = `translate(${x}px, ${y}px)`;
+    node.marker.style.opacity = String(opacity);
+  }
+  if (node.card) {
+    node.card.style.transform = `translate3d(${x + dx}px, ${y + dy}px, 0)`;
+    node.card.style.opacity = String(opacity);
+  }
+}
+
+/**
+ * Registers an element so the per-frame loop can move it, and gives it its
+ * first position so it never shows at the corner for a frame. Nothing about
+ * position or opacity is in the element's React `style`, so a re-render never
+ * writes a stale value over the one the loop just set.
+ */
+function useCalloutNode<T extends HTMLElement | SVGGElement>(
+  nodes: { current: CalloutNodes },
+  callout: PositionedEventCallout,
+  kind: "card" | "marker",
+) {
+  const ref = useRef<T>(null);
+  const key = callout.location.key;
+
+  // Runs when the element mounts: the position it is given here is only the
+  // first one, and the per-frame loop takes over from the next frame. Re-running
+  // on every new `callout` would put an older position over the loop's.
+  useLayoutEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const node = nodes.current.get(key) ?? {};
+    if (kind === "card") node.card = el as HTMLElement;
+    else node.marker = el as SVGGElement;
+    nodes.current.set(key, node);
+    const c = callout;
+    placeCalloutNode(
+      node,
+      c.markerX,
+      c.markerY,
+      c.left - c.markerX,
+      c.top - c.markerY,
+      limbFade(c.dot),
+    );
+    return () => {
+      const current = nodes.current.get(key);
+      if (!current) return;
+      delete current[kind];
+      if (!current.card && !current.marker) nodes.current.delete(key);
+    };
+  }, [nodes, key, kind]);
+
+  return ref;
+}
+
 function GlobeEventCallouts({
   callouts,
+  nodes,
+  onHoverChange,
 }: {
   callouts: PositionedEventCallout[];
+  nodes: { current: CalloutNodes };
+  /** True while any card is hovered or focused. */
+  onHoverChange: (hovered: boolean) => void;
 }) {
   const reduce = useReducedMotion();
 
@@ -1510,33 +1801,22 @@ function GlobeEventCallouts({
         className="absolute inset-0 h-full w-full overflow-visible"
       >
         {callouts.map((callout) => (
-          <g key={callout.location.key}>
-            <line
-              x1={callout.markerX}
-              y1={callout.markerY}
-              x2={callout.edgeX}
-              y2={callout.edgeY}
-              stroke="rgba(255,255,255,0.72)"
-              strokeWidth="1"
-              strokeDasharray="3 3"
-            />
-            <circle
-              cx={callout.markerX}
-              cy={callout.markerY}
-              r="4"
-              fill="var(--accent)"
-              stroke="white"
-              strokeWidth="1"
-            />
-          </g>
+          <CalloutMarker
+            key={callout.location.key}
+            callout={callout}
+            nodes={nodes}
+          />
         ))}
       </svg>
       <AnimatePresence initial={false}>
-        {callouts.map((callout) => (
+        {callouts.map((callout, index) => (
           <GlobeEventCalloutCard
             key={callout.location.key}
             callout={callout}
+            nodes={nodes}
             reduce={reduce}
+            enterDelay={index * 0.12}
+            onHoverChange={onHoverChange}
           />
         ))}
       </AnimatePresence>
@@ -1544,15 +1824,58 @@ function GlobeEventCallouts({
   );
 }
 
-function GlobeEventCalloutCard({
+/**
+ * The marker is the origin and the connector is drawn relative to it, so
+ * moving the one element moves both.
+ */
+function CalloutMarker({
   callout,
-  reduce,
+  nodes,
 }: {
   callout: PositionedEventCallout;
+  nodes: { current: CalloutNodes };
+}) {
+  const ref = useCalloutNode<SVGGElement>(nodes, callout, "marker");
+  return (
+    <g ref={ref}>
+      <line
+        x1={0}
+        y1={0}
+        x2={callout.edgeX - callout.markerX}
+        y2={callout.edgeY - callout.markerY}
+        stroke="rgba(255,255,255,0.72)"
+        strokeWidth="1"
+        strokeDasharray="3 3"
+      />
+      <circle
+        cx={0}
+        cy={0}
+        r="4"
+        fill="var(--accent)"
+        stroke="white"
+        strokeWidth="1"
+      />
+    </g>
+  );
+}
+
+function GlobeEventCalloutCard({
+  callout,
+  nodes,
+  reduce,
+  enterDelay,
+  onHoverChange,
+}: {
+  callout: PositionedEventCallout;
+  nodes: { current: CalloutNodes };
   reduce: boolean | null;
+  enterDelay: number;
+  onHoverChange: (hovered: boolean) => void;
 }) {
   const { location } = callout;
+  const cardRef = useCalloutNode<HTMLDivElement>(nodes, callout, "card");
   const [eventIndex, setEventIndex] = useState(0);
+  const [held, setHeld] = useState(false);
   const eventCount = location.events.length;
   const event = location.events[eventIndex % eventCount];
   const image = event.images?.find((item) => item.url)?.url;
@@ -1561,55 +1884,100 @@ function GlobeEventCalloutCard({
     setEventIndex(0);
   }, [location.key]);
 
+  // Stands still while it is being looked at, so the link under the pointer is
+  // the one that was aimed at.
   useEffect(() => {
-    if (eventCount < 2 || reduce) return;
+    if (eventCount < 2 || reduce || held) return;
     const timer = window.setInterval(
       () => setEventIndex((index) => (index + 1) % eventCount),
       4200,
     );
     return () => window.clearInterval(timer);
-  }, [eventCount, location.key, reduce]);
+  }, [eventCount, location.key, reduce, held]);
+
+  // Reported from an effect so a card that leaves while hovered still lets the
+  // world turn again.
+  useEffect(() => {
+    if (!held) return;
+    onHoverChange(true);
+    return () => onHoverChange(false);
+  }, [held, onHoverChange]);
 
   return (
-    <motion.article
-      key={`${location.key}:${event.id}`}
-      initial={reduce ? false : { opacity: 0, scale: 0.76, y: 12 }}
-      animate={{ opacity: 1, scale: 1, y: 0 }}
-      exit={reduce ? undefined : { opacity: 0, scale: 0.88, y: 8 }}
-      transition={{ duration: 0.42, ease: [0.22, 1, 0.36, 1] }}
-      className="pointer-events-auto absolute w-[min(184px,calc(100vw-1.5rem))] rounded-lg border border-white/20 bg-surface/95 p-1.5 text-white shadow-[0_8px_24px_rgba(0,0,0,0.3)] backdrop-blur-md"
-      style={{ left: callout.left, top: callout.top }}
-      aria-live="polite"
+    <div
+      ref={cardRef}
+      className="pointer-events-none absolute left-0 top-0 will-change-transform"
     >
-      <Link
-        href={`/event/${event.id}`}
-        className="group flex items-center gap-1.5"
+      <motion.article
+        initial={reduce ? false : { opacity: 0, scale: 0.9, y: 8 }}
+        animate={{
+          opacity: 1,
+          scale: 1,
+          y: 0,
+          transition: {
+            duration: 0.4,
+            ease: [0.22, 1, 0.36, 1],
+            delay: enterDelay,
+          },
+        }}
+        exit={
+          reduce
+            ? undefined
+            : { opacity: 0, scale: 0.94, y: 4, transition: { duration: 0.25 } }
+        }
+        onPointerEnter={() => setHeld(true)}
+        onPointerLeave={() => setHeld(false)}
+        onFocus={() => setHeld(true)}
+        onBlur={() => setHeld(false)}
+        className="pointer-events-auto w-40 rounded-lg border border-white/20 bg-surface/95 p-1.5 text-white shadow-[0_8px_24px_rgba(0,0,0,0.3)] backdrop-blur-md sm:w-52 sm:p-2"
       >
-        <div className="h-9 w-9 shrink-0 overflow-hidden rounded-md bg-gradient-to-br from-sky-400/40 via-emerald-400/20 to-accent/20">
-          {image && (
-            <img
-              src={image}
-              alt=""
-              loading="lazy"
-              decoding="async"
-              className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
-            />
-          )}
-        </div>
-        <div className="min-w-0 flex-1">
-          <p className="font-landing-mono truncate text-[9px] font-bold uppercase tracking-[0.12em] text-[color:var(--accent-text)]">
-            {location.city} · {location.events.length}{" "}
-            {location.events.length === 1 ? "event" : "events"}
-          </p>
-          <h2 className="font-landing-display mt-0.5 line-clamp-2 text-xs leading-tight">
-            {event.name}
-          </h2>
-          <p className="font-landing-mono mt-0.5 text-[8px] font-bold uppercase tracking-[0.1em] text-white/65">
-            View event <span aria-hidden>→</span>
-          </p>
-        </div>
-      </Link>
-    </motion.article>
+        <Link
+          href={`/event/${event.id}`}
+          className="group flex items-center gap-1.5 sm:gap-2"
+        >
+          <div className="h-8 w-8 shrink-0 overflow-hidden rounded-md bg-gradient-to-br from-sky-400/40 via-emerald-400/20 to-accent/20 sm:h-10 sm:w-10">
+            <AnimatePresence mode="popLayout" initial={false}>
+              {image && (
+                <motion.img
+                  key={event.id}
+                  src={image}
+                  alt=""
+                  loading="lazy"
+                  decoding="async"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.3 }}
+                  className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                />
+              )}
+            </AnimatePresence>
+          </div>
+          <div className="min-w-0 flex-1">
+            <p className="font-landing-mono truncate text-[10px] font-bold uppercase leading-tight tracking-[0.08em] text-[color:var(--accent-text)] sm:text-[11px]">
+              {location.city}
+            </p>
+            <AnimatePresence mode="wait" initial={false}>
+              <motion.h2
+                key={event.id}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.2 }}
+                className="font-landing-display mt-0.5 line-clamp-1 text-xs leading-tight sm:line-clamp-2 sm:text-[13px]"
+              >
+                {event.name}
+              </motion.h2>
+            </AnimatePresence>
+            <p className="font-landing-mono mt-0.5 text-[10px] font-bold uppercase tracking-[0.1em] text-white/70">
+              {eventCount} {eventCount === 1 ? "event" : "events"} ·{" "}
+              <span className="text-white">View</span>{" "}
+              <span aria-hidden>→</span>
+            </p>
+          </div>
+        </Link>
+      </motion.article>
+    </div>
   );
 }
 
@@ -1652,6 +2020,7 @@ function StaticHero() {
           and the crew in one booking.
         </p>
         <HeroSearch />
+        <InstallAppButton className="mt-4" />
         <a
           href="#events"
           className="mt-6 inline-block text-sm font-bold text-white/70 underline underline-offset-4 hover:text-white"
@@ -1665,6 +2034,16 @@ function StaticHero() {
 
 function TourHero() {
   const stage = useRef<HTMLDivElement>(null);
+  const inView = useRef(true);
+  useEffect(() => {
+    const el = stage.current;
+    if (!el || typeof IntersectionObserver === "undefined") return;
+    const observer = new IntersectionObserver(([entry]) => {
+      inView.current = entry.isIntersecting;
+    });
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
   const mapViewportRef = useRef<HTMLDivElement>(null);
   const heroContentRef = useRef<HTMLDivElement>(null);
   const user = useAuthStore((s) => s.user);
@@ -1723,6 +2102,40 @@ function TourHero() {
     [],
   );
   const onDrawn = useCallback(() => setDrawn(true), []);
+  const spinPaused = useRef(false);
+  const calloutsRef = useRef<PositionedEventCallout[]>([]);
+  const calloutNodes = useRef<CalloutNodes>(new Map());
+  const onFrame = useRef<((map: any) => void) | null>(null);
+  // Every frame, each shown card and its marker are put where the map says the
+  // place is *now*. Doing this from React state meant a card sat wherever the
+  // globe was up to a tenth of a second ago.
+  useEffect(() => {
+    onFrame.current = (map) => {
+      for (const callout of calloutsRef.current) {
+        const node = calloutNodes.current.get(callout.location.key);
+        if (!node) continue;
+        const { x, y } = projectEventLocation(map, callout.location);
+        placeCalloutNode(
+          node,
+          x,
+          y,
+          callout.left - callout.markerX,
+          callout.top - callout.markerY,
+          limbFade(eventLocationDot(map, callout.location)),
+        );
+      }
+    };
+    return () => {
+      onFrame.current = null;
+    };
+  }, []);
+  const calloutLocations = useMemo(
+    () => mergeLocationsByCity(eventLocations),
+    [eventLocations],
+  );
+  const onCalloutHoverChange = useCallback((hovered: boolean) => {
+    spinPaused.current = hovered;
+  }, []);
   const onEventCalloutPointsChange = useCallback(
     (points: ProjectedEventLocation[]) => {
       const viewport = mapViewportRef.current;
@@ -1740,30 +2153,33 @@ function TourHero() {
             bottom: contentRect.bottom - viewportRect.top,
           }
         : undefined;
+      const current = calloutsRef.current;
       const next = placeEventCallouts(
         points,
         viewport.clientWidth,
         viewport.clientHeight,
         avoid,
+        current,
       );
-      setEventCallouts((current) => {
-        if (
-          current.length === next.length &&
-          current.every((callout, index) => {
-            const updated = next[index];
-            return (
-              callout.location.key === updated.location.key &&
-              Math.abs(callout.left - updated.left) < 1.5 &&
-              Math.abs(callout.top - updated.top) < 1.5 &&
-              Math.abs(callout.markerX - updated.markerX) < 1.5 &&
-              Math.abs(callout.markerY - updated.markerY) < 1.5
-            );
-          })
-        ) {
-          return current;
-        }
-        return next;
-      });
+      const unchanged =
+        current.length === next.length &&
+        current.every((callout, index) => {
+          const updated = next[index];
+          return (
+            callout.location.key === updated.location.key &&
+            // Where it sits relative to its pin; the pin's own position is
+            // read from the map every frame, so it is not compared here.
+            Math.abs(
+              callout.left - callout.markerX - (updated.left - updated.markerX),
+            ) < 1.5 &&
+            Math.abs(
+              callout.top - callout.markerY - (updated.top - updated.markerY),
+            ) < 1.5
+          );
+        });
+      if (unchanged) return;
+      calloutsRef.current = next;
+      setEventCallouts(next);
     },
     [progress],
   );
@@ -1783,10 +2199,14 @@ function TourHero() {
           <JourneyMap
             venues={venues}
             eventLocations={eventLocations}
+            calloutLocations={calloutLocations}
             stops={stops}
             progress={progress}
             onDrawn={onDrawn}
             onEventCalloutPointsChange={onEventCalloutPointsChange}
+            onFrame={onFrame}
+            spinPaused={spinPaused}
+            inView={inView}
           />
         </div>
         {theme === "dark" && (
@@ -1794,12 +2214,16 @@ function TourHero() {
             href="https://earthdata.nasa.gov/"
             target="_blank"
             rel="noreferrer"
-            className="font-landing-mono absolute right-4 top-[4.5rem] z-20 rounded-full border border-white/10 bg-black/35 px-2.5 py-1 text-[8px] font-bold uppercase tracking-[0.14em] text-white/55 backdrop-blur-sm sm:right-6"
+            className="font-landing-mono absolute right-4 top-[4.5rem] z-20 rounded-full border border-white/10 bg-black/35 px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.14em] text-white/60 backdrop-blur-sm sm:right-6"
           >
             NASA VIIRS night lights
           </a>
         )}
-        <GlobeEventCallouts callouts={eventCallouts} />
+        <GlobeEventCallouts
+          callouts={eventCallouts}
+          nodes={calloutNodes}
+          onHoverChange={onCalloutHoverChange}
+        />
         {/* Shown until the map has drawn, so the first screen is never empty. */}
         <div
           aria-hidden
@@ -1821,7 +2245,20 @@ function TourHero() {
         <motion.div
           aria-hidden
           style={{ opacity: intro }}
-          className="pointer-events-none absolute inset-0 bg-gradient-to-t from-canvas/95 via-canvas/45 to-transparent sm:bg-gradient-to-r sm:from-canvas/80 sm:via-canvas/20 sm:to-transparent"
+          className="pointer-events-none absolute inset-0 bg-gradient-to-t from-canvas/95 via-canvas/50 via-45% to-transparent to-85% sm:hidden"
+        />
+        {/* Wide screens: a pool of canvas behind the text block rather than a
+            band down the whole left side, so the place names under the
+            headline and the search bar recede and the globe to the right of
+            them is left alone. */}
+        <motion.div
+          aria-hidden
+          style={{
+            opacity: intro,
+            background:
+              "radial-gradient(ellipse 48% 56% at 17% 54%, color-mix(in srgb, var(--canvas) 86%, transparent) 0%, color-mix(in srgb, var(--canvas) 80%, transparent) 50%, color-mix(in srgb, var(--canvas) 38%, transparent) 78%, transparent 100%)",
+          }}
+          className="pointer-events-none absolute inset-0 hidden sm:block"
         />
 
         <motion.div
@@ -1845,7 +2282,10 @@ function TourHero() {
                 ]}
               />
             </h1>
-            <p className="mt-5 max-w-sm text-sm leading-relaxed text-white/70 sm:text-base">
+            <p className="mt-4 max-w-sm text-sm leading-relaxed text-white/75 sm:hidden">
+              The venue, the gear and the crew for any night, in one booking.
+            </p>
+            <p className="mt-5 hidden max-w-sm text-base leading-relaxed text-white/70 sm:block">
               Concerts, weddings, festivals and private events: the venue, the
               gear and the crew in one booking.
               {venues.length > 0
@@ -1854,6 +2294,7 @@ function TourHero() {
               Scroll to see the kinds of nights people plan.
             </p>
             <HeroSearch />
+            <InstallAppButton className="mt-4" />
           </div>
         </motion.div>
 

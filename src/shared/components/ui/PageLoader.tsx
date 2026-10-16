@@ -1,5 +1,6 @@
 import React from "react";
 import Image from "next/image";
+import { assetUrl } from "@/shared/lib/assets";
 
 interface PageLoaderProps {
   label?: string;
@@ -38,7 +39,7 @@ export default function PageLoader({
         />
         <div className="fp-loader-mark relative flex h-20 w-20 items-center justify-center rounded-full border border-white/10 bg-surface shadow-[0_0_30px_rgba(204,255,0,0.18)]">
           <Image
-            src="/foxonlylogo.png"
+            src={assetUrl("foxonlylogo.png")}
             alt=""
             width={38}
             height={38}

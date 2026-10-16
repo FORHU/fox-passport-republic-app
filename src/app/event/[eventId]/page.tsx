@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { getPublicEventTemplateById } from "@/shared/lib/server/data";
 import { EventDetailClient } from "./EventDetailClient";
 import EventJsonLd from "@/shared/components/seo/EventJsonLd";
+import { assetUrl } from "@/shared/lib/assets";
 
 interface EventPageProps {
   params: Promise<{ eventId: string }>;
@@ -33,7 +34,7 @@ export async function generateMetadata({
     )
     .filter((url: string) => url.length > 0);
 
-  const ogImages = images.length > 0 ? images : ["/foxonlylogo.png"];
+  const ogImages = images.length > 0 ? images : [assetUrl("foxonlylogo.png")];
 
   return {
     title,

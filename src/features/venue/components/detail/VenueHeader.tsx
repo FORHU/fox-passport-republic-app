@@ -4,6 +4,7 @@ import React from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { joinPlace } from "@/shared/lib/place";
+import { assetUrl } from "@/shared/lib/assets";
 
 interface VenueNavHeaderProps {
   title: string;
@@ -36,7 +37,7 @@ export function VenueNavHeader({
         >
           <div className="flex h-8 w-8 sm:h-10 sm:w-10 items-center justify-center overflow-hidden group-hover:scale-110 transition-transform duration-300">
             <Image
-              src="/foxonlylogo.png"
+              src={assetUrl("foxonlylogo.png")}
               alt="FoxPassport Logo"
               width={40}
               height={40}

@@ -1,3 +1,4 @@
+import { assetUrl } from "@/shared/lib/assets";
 export default function WebsiteJsonLd() {
   const baseUrl = (
     process.env.NEXT_PUBLIC_APP_URL || "https://foxpassport.com"
@@ -21,7 +22,7 @@ export default function WebsiteJsonLd() {
         url: baseUrl,
         logo: {
           "@type": "ImageObject",
-          url: `${baseUrl}/foxonlylogo.png`,
+          url: assetUrl("foxonlylogo.png", baseUrl),
         },
       },
     ],

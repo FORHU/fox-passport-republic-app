@@ -1,3 +1,4 @@
+import { assetUrl } from "@/shared/lib/assets";
 interface PlaceJsonLdProps {
   venue: {
     id: string;
@@ -105,7 +106,7 @@ export default function PlaceJsonLd({ venue }: PlaceJsonLdProps) {
       "@id": `${baseUrl}/#organization`,
       name: "FoxPassport",
       url: baseUrl,
-      logo: `${baseUrl}/foxonlylogo.png`,
+      logo: assetUrl("foxonlylogo.png", baseUrl),
     },
     venueNode,
   ];

@@ -15,6 +15,7 @@ import {
   RefreshCw,
   QrCode,
   ShieldCheck,
+  Smartphone,
 } from "lucide-react";
 import { toast } from "sonner";
 import { useLogout } from "@/shared/auth/useLogout";
@@ -121,6 +122,19 @@ export function UserMenuNavLinks({
         ))}
         <CurrencySwitcher />
         <ThemeSwitcher />
+        {/* The mobile app isn't built yet. A real disabled button, so it is
+            skipped by the keyboard and announced as unavailable. */}
+        <button
+          type="button"
+          disabled
+          className="w-full flex items-center gap-3 px-2 py-2.5 rounded-lg cursor-not-allowed"
+        >
+          <Smartphone className="w-4 h-4 text-white/30 shrink-0" />
+          <span className="text-sm text-white/40">Install the app</span>
+          <span className="ml-auto text-[9px] font-bold text-white/30 uppercase tracking-wider">
+            Soon
+          </span>
+        </button>
         {!isAdmin && (
           <button
             onClick={() => {

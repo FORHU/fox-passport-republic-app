@@ -42,6 +42,7 @@ import {
   TourReplayButton,
 } from "@/shared/components/ui/ProductTour";
 import { CREATOR_TOUR_KEY, creatorTourSteps } from "./creatorTour";
+import { assetUrl } from "@/shared/lib/assets";
 
 interface HostDashboardClientProps {
   initialData: {
@@ -52,7 +53,7 @@ interface HostDashboardClientProps {
   };
 }
 
-const FALLBACK_IMG = "/herobackground.jpg";
+const FALLBACK_IMG = assetUrl("herobackground.jpg");
 
 function pickImage(images: unknown[]): string {
   if (!Array.isArray(images) || images.length === 0) return FALLBACK_IMG;

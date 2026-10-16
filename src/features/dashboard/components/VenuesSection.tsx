@@ -8,6 +8,7 @@ import { StatusBadge } from "./StatusBadge";
 import { EmptyState } from "./EmptyState";
 import { PaginationBar } from "./PaginationBar";
 import { Money } from "@/shared/components/ui/Money";
+import { assetUrl } from "@/shared/lib/assets";
 
 interface VenuesSectionProps {
   venues: VenueItem[];
@@ -93,12 +94,12 @@ export function VenuesSection({
                 <div className="relative w-full sm:w-36 aspect-video sm:aspect-square rounded-2xl overflow-hidden shrink-0">
                   <Image
                     fill
-                    src={vn.img || "/herobackground.jpg"}
+                    src={vn.img || assetUrl("herobackground.jpg")}
                     alt=""
                     className={`object-cover group-hover:scale-110 transition-transform duration-700 ${(vn.status || "").toLowerCase() !== "published" ? "grayscale group-hover:grayscale-0" : ""}`}
                     onError={(e) => {
                       (e.target as HTMLImageElement).src =
-                        "/herobackground.jpg";
+                        assetUrl("herobackground.jpg");
                     }}
                   />
                   <div className="absolute top-2 left-2 bg-black/70 backdrop-blur px-2 py-1 rounded text-[10px] font-bold uppercase">
