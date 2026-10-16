@@ -1,18 +1,20 @@
 # FoxPassport Republic — Full Feature Audit vs. BUSINESS-STRATEGY-MASTER.md
 
-Checked 15 Oct 2026 against [BUSINESS-STRATEGY-MASTER.md](./BUSINESS-STRATEGY-MASTER.md) (v3.0, all 44 sections), the API Prisma schema + 49 `src/modules`, the 87 web routes in `src/app`, and the 13 mobile pages.
+Checked 15 Oct 2026 against [BUSINESS-STRATEGY-MASTER.md](./BUSINESS-STRATEGY-MASTER.md) (v3.0, all 44 sections), the API Prisma schema (90 models) and 54 `src/modules`, the 86 web pages (`page.tsx`) in `src/app`, and the mobile app.
+
+**Updated 16 Oct 2026:** the mobile app grew from 13 to 29 pages after the stacked citizen-app PRs were merged (mobile #9–#32). Mobile rows below and §2a reflect the 16 Oct state; API and web rows are unchanged from 15 Oct.
 
 **Legend:** ✅ Built · 🟡 Partial · ❌ Not built · 📄 = mentioned in the strategy doc · 🚫 = built but **not mentioned** in the strategy doc
 
 ---
 
-## 1. Corrections to my earlier summary
+## 1. Common misconceptions
 
-| My earlier claim | Actual state |
+| Claim | Actual state |
 |---|---|
 | Citizens "register for full curated events with instant ticketing" | ❌ Public self-service registration (`EventRegistration`) **does not exist** in code. Only the private EventFoxer-curated flow is live (strategy §1a item 2 confirms). |
 | Mobile app does "QR ticket verification" | ❌ Mobile has no scanner. QR check-in is **web only** (`/scanner`, `/creator-dashboard/check-in`). |
-| Mobile is a full client | 🟡 Mobile has 13 pages: auth (5), welcome, onboarding, home, search, tickets, passport, profile, notifications. No booking checkout, dashboards, or messaging. |
+| Mobile is a full client | 🟡 Citizen side, mostly yes as of 16 Oct (booking checkout, messages, feed, reviews; see §2a). Creator side, no: dashboards deep-link to the web, Foxer applications are finished on the web, and there is no QR scanner. |
 | "Escrow" | ✅ Exists but is labeled **Payment Protection** in UI (`PaymentProtectionTimeline`) with confirmation-deadline sweeps. |
 
 ---
@@ -28,7 +30,7 @@ Checked 15 Oct 2026 against [BUSINESS-STRATEGY-MASTER.md](./BUSINESS-STRATEGY-MA
 | Event detail pages | ✅ | web `/event/[eventId]` |
 | Wishlists / favorites | ✅ | `Favorite`, web `/wishlists` |
 | SEO structured data | 🚫✅ | `EventJsonLd`, `PlaceJsonLd`, `FoxerJsonLd` |
-| Recommendations ("relevant recommendations" §18) | 🟡 | only follow-suggestions; no event recommender |
+| Recommendations ("relevant recommendations" §18) | 🟡 | follow-suggestions, plus `GET /event-templates/recommendations`, which returns the newest published public templates (`orderBy createdAt desc`); no personalised recommender |
 
 ### B. Participation / Registration (📄 §9, §21 Phase 1)
 | Feature | Status | Evidence |
@@ -92,7 +94,7 @@ Checked 15 Oct 2026 against [BUSINESS-STRATEGY-MASTER.md](./BUSINESS-STRATEGY-MA
 ### G. Gamification — Passport (🚫 not in strategy doc at all)
 | Feature | Status | Evidence |
 |---|---|---|
-| Digital Passport + Paths | 🚫✅ | `Passport`, `PassportPath`, `UserPath` |
+| Digital Passport + Paths | 🚫✅ | `Passport`, `PassportPath` models; `UserPath` enum |
 | Stamps, Badges (with rarity), leaderboard | 🚫✅ | `PassportStamp`, `Badge`, `/passport/leaderboard` |
 | Progress page | 🚫✅ | web `/progress`, mobile `passport` |
 
@@ -127,7 +129,7 @@ Checked 15 Oct 2026 against [BUSINESS-STRATEGY-MASTER.md](./BUSINESS-STRATEGY-MA
 |---|---|---|
 | Analytics | 🟡 | one public endpoint `/analytics/event-stats` |
 | Admin console | ✅ | web `/admin` |
-| Product tours | 🚫✅ | `ProductTour` |
+| Product tours | 🚫✅ | web component `ProductTour` (no API model) |
 
 ### L. Custom Experiences — "Make It Happen" (📄 §8, §23, Journey B)
 | Feature | Status |
@@ -136,9 +138,39 @@ Checked 15 Oct 2026 against [BUSINESS-STRATEGY-MASTER.md](./BUSINESS-STRATEGY-MA
 
 ---
 
+## 2a. Mobile app (as of 16 Oct 2026)
+
+29 pages across 23 features in `fox-passport-republic-mobile/lib/features`, checked on `main` after the 16 Oct merges.
+
+**Bottom navigation:** Home · Search · Bookings · Messages · Passport. Tickets moved out of the tab bar and into Bookings (mobile #16).
+
+| Area | Status | Evidence |
+|---|---|---|
+| Auth (email, Google; Facebook and Apple buttons) | 🟡 | `auth` (5 pages). Apple is shown as "coming soon" because the API has no Apple support |
+| Onboarding + location gate | ✅ | `onboarding`, `location` |
+| Home around occasions, all-categories, occasion results | ✅ | `home`, `occasion` |
+| Search with filters, sorting, city, List/Map switch, globe | ✅ | `search`, `map` |
+| Event, scheduled-event and venue detail | ✅ | `event`, `venue` |
+| Booking checkout (templates, gear, services) with Stripe | ✅ | `booking_flow_page`, `item_booking_page`, `shared/payments` |
+| Bookings tab: calendar, "Needs you" block, tickets | ✅ | `tickets`, `calendar` |
+| Messages + chat, realtime | ✅ | `messages`, `shared/realtime` (Socket.IO) |
+| Republic feed: posting, likes, comments | ✅ | `republic` (no bottom tab) |
+| Reviews: read venue reviews, review a past booking | ✅ | `reviews` |
+| Foxer profile, Match me, My requests | ✅ | `foxer` |
+| Passport: tabs, stamps, badges | ✅ | `passport` |
+| Become a Foxer: roles and application status | 🟡 | `roles`; the application form opens on the web (it needs identity documents) |
+| Notifications, settings, favorites | ✅ | `notifications`, `settings`, `favorites` |
+| Creator dashboards | ❌ | deep-link to web `/creator-dashboard` |
+| QR check-in scanner | ❌ | no scanner package; web only |
+| Waitlist | ❌ | web only |
+
+---
+
 ## 3. Gaps
 
 ### Built but missing from the strategy doc (🚫)
+All of these were added to the strategy doc on 15 Oct (§1b A and §11.7). The list is kept as the record of what that reconciliation covered.
+
 1. **Passport gamification:** stamps, badges, leaderboard, paths
 2. **Bidding marketplace:** suppliers bid on events
 3. **Match requests:** client ↔ foxer direct
@@ -158,3 +190,4 @@ Checked 15 Oct 2026 against [BUSINESS-STRATEGY-MASTER.md](./BUSINESS-STRATEGY-MA
 5. **Recommendations** (§18)
 6. **Real analytics / premium business tools** (Stage 3)
 7. **Formal dispute handling** (§26)
+8. **Mobile creator tools**: QR scanner and creator dashboards (see §2a)
