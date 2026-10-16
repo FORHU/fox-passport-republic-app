@@ -5,6 +5,7 @@ import Image from "next/image";
 import { MapPin, Users, Heart } from "lucide-react";
 import { Venue } from "@/features/venue/hooks/useVenuesByCategory";
 import { useFavorites } from "@/shared/hooks/useFavorites";
+import { assetUrl } from "@/shared/lib/assets";
 
 interface VenueCardProps {
   venue: Venue;
@@ -21,7 +22,7 @@ export function VenueCard({ venue }: VenueCardProps) {
     venue.images[0].imageUrl.trim().length > 0
       ? venue.images[0].imageUrl.trim()
       : null) ||
-    "/herobackground.jpg";
+    assetUrl("herobackground.jpg");
   const pricePerDay = venue.pricing[0]?.pricePerDay || 0;
   const currency = venue.pricing[0]?.currency || "PHP";
   const { isFavorited, toggleFavorite } = useFavorites();

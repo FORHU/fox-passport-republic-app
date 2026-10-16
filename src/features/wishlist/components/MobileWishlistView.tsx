@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { useFavorites } from "@/shared/hooks/useFavorites";
 import type { Favorite } from "@/shared/api/favorites";
 import { useCurrency } from "@/shared/providers/CurrencyProvider";
+import { assetUrl } from "@/shared/lib/assets";
 
 // `format` is the viewer's display-currency formatter (useCurrency), passed in
 // since this helper sits outside the component.
@@ -66,7 +67,7 @@ export default function MobileWishlistView() {
         }}
       >
         <Image
-          src="/foxonlylogo.png"
+          src={assetUrl("foxonlylogo.png")}
           alt="FoxPassport"
           width={22}
           height={22}

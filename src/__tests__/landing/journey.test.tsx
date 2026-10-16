@@ -1,5 +1,3 @@
-import fs from "node:fs";
-import path from "node:path";
 import { describe, it, expect, vi } from "vitest";
 import { fireEvent, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
@@ -19,6 +17,7 @@ import {
   eventLocationCollection,
   formatCoords,
   loadLandingEvents,
+  mergeLocationsByCity,
   type LandingEvent,
   type LandingEventLocation,
   type LandingVenue,
@@ -167,13 +166,13 @@ describe("landing tour data", () => {
     ]);
   });
 
-  it("only points at photo files that exist", () => {
+  // The photos live in the object store, not in public/, so there is no file
+  // to stat here. This keeps a typo or a stray path from shipping; that the
+  // file is actually in the bucket is checked by looking at the page.
+  it("only points at destination photo paths", () => {
     for (const d of DESTINATIONS) {
       for (const p of d.photos) {
-        expect(
-          fs.existsSync(path.join(process.cwd(), "public", p.src)),
-          p.src,
-        ).toBe(true);
+        expect(p.src, p.src).toMatch(/\/destinations\/[a-z0-9-]+\.jpg$/);
       }
     }
   });
@@ -383,13 +382,247 @@ describe("rotating globe event focus", () => {
         const a = cards[i];
         const b = cards[j];
         expect(
-          a.left < b.left + 184 &&
-            a.left + 184 > b.left &&
-            a.top < b.top + 76 &&
-            a.top + 76 > b.top,
+          a.left < b.left + 208 &&
+            a.left + 208 > b.left &&
+            a.top < b.top + 80 &&
+            a.top + 80 > b.top,
         ).toBe(false);
       }
     }
+  });
+
+  it("shows one card per city, however many venue points it has", () => {
+    const point = (key: string, ids: string[]): LandingEventLocation => ({
+      key,
+      city: "Baguio",
+      country: "Philippines",
+      lat: 16.4,
+      lng: 120.6,
+      events: ids.map((id) => ({ id, name: id })),
+    });
+    const merged = mergeLocationsByCity([
+      point("baguio:a", ["e1", "e2"]),
+      point("baguio:b", ["e2", "e3", "e4"]),
+      {
+        key: "davao",
+        city: "Davao City",
+        lat: 7.1,
+        lng: 125.6,
+        events: [{ id: "d1", name: "d1" }],
+      },
+    ]);
+
+    expect(merged.map((l) => l.key)).toEqual(["baguio:b", "davao"]);
+    expect(merged[0].events.map((e) => e.id).sort()).toEqual([
+      "e1",
+      "e2",
+      "e3",
+      "e4",
+    ]);
+  });
+
+  it("folds districts of one metro area into its busiest member", () => {
+    const at = (
+      key: string,
+      city: string,
+      lat: number,
+      lng: number,
+      count: number,
+    ): LandingEventLocation => ({
+      key,
+      city,
+      country: "Philippines",
+      lat,
+      lng,
+      events: Array.from({ length: count }, (_, n) => ({
+        id: `${key}-${n}`,
+        name: key,
+      })),
+    });
+
+    const merged = mergeLocationsByCity([
+      at("makati", "Makati", 14.5547, 121.0244, 12),
+      at("taguig", "Taguig", 14.5176, 121.0509, 5),
+      at("manila", "Manila", 14.5995, 120.9842, 10),
+      at("cebu", "Cebu City", 10.3157, 123.8854, 15),
+    ]);
+
+    expect(merged.map((l) => [l.city, l.events.length])).toEqual([
+      ["Cebu City", 15],
+      ["Makati", 27],
+    ]);
+  });
+
+  it("leaves a card off rather than strung far from its pin", () => {
+    // A pin boxed in on every side by the hero text and the edges of the map.
+    const map = {
+      getCenter: () => ({ lng: 0, lat: 0 }),
+      project: () => ({ x: 600, y: 350 }),
+    };
+    const locations: LandingEventLocation[] = [
+      {
+        key: "boxed",
+        city: "Boxed",
+        lat: 0,
+        lng: 0,
+        events: [{ id: "b", name: "b" }],
+      },
+    ];
+    const everything = { left: 0, top: 0, right: 1200, bottom: 700 };
+
+    expect(
+      getVisibleEventCalloutPlacements(map, locations, 1200, 700, everything),
+    ).toEqual([]);
+  });
+
+  it("keeps a card off another card's connector", () => {
+    // A connector already runs straight down onto this pin from above, so the
+    // nearest spot (above it) would sit on that line.
+    const placement = getEventCalloutPlacement(
+      { x: 400, y: 300 },
+      1200,
+      700,
+      undefined,
+      undefined,
+      { cards: [], lines: [[400, 100, 400, 300]] },
+    );
+
+    expect(placement).toMatchObject({ left: 416, top: 260 });
+  });
+
+  it("on a phone offers two compact cards, under the site header", () => {
+    const locations: LandingEventLocation[] = Array.from(
+      { length: 4 },
+      (_, index) => ({
+        key: `p-${index}`,
+        city: `P${index}`,
+        lat: 0,
+        lng: index * 6 - 9,
+        events: [{ id: `${index}`, name: "x" }],
+      }),
+    );
+    const map = {
+      getCenter: () => ({ lng: 0, lat: 0 }),
+      project: ([lng]: [number, number]) => ({ x: 195 + lng * 6, y: 220 }),
+    };
+
+    const cards = getVisibleEventCalloutPlacements(map, locations, 390, 844);
+
+    expect(cards.length).toBeLessThanOrEqual(2);
+    expect(cards.length).toBeGreaterThan(0);
+    for (const card of cards) {
+      expect(card.top).toBeGreaterThanOrEqual(88);
+      expect(card.left).toBeGreaterThanOrEqual(8);
+      expect(card.left + 160).toBeLessThanOrEqual(390 - 8);
+    }
+  });
+
+  it("offers at most four cards, busiest places first rather than nearest", () => {
+    const locations: LandingEventLocation[] = Array.from(
+      { length: 6 },
+      (_, index) => ({
+        key: `place-${index}`,
+        city: `Place ${index}`,
+        lat: 0,
+        lng: index * 8 - 20,
+        events: Array.from({ length: index + 1 }, (_, n) => ({
+          id: `${index}-${n}`,
+          name: "x",
+        })),
+      }),
+    );
+    const map = {
+      getCenter: () => ({ lng: 0, lat: 0 }),
+      project: ([lng]: [number, number]) => ({ x: 600 + lng * 14, y: 350 }),
+    };
+
+    const cards = getVisibleEventCalloutPlacements(map, locations, 1200, 700);
+
+    expect(cards).toHaveLength(4);
+    expect(cards.map((c) => c.location.key)).toEqual([
+      "place-5",
+      "place-4",
+      "place-3",
+      "place-2",
+    ]);
+  });
+
+  it("keeps a card on its pin and side while the globe turns", () => {
+    const locations: LandingEventLocation[] = [
+      {
+        key: "a",
+        city: "A",
+        lat: 0,
+        lng: 0,
+        events: [{ id: "a", name: "a" }],
+      },
+      {
+        key: "b",
+        city: "B",
+        lat: 0,
+        lng: 20,
+        events: [{ id: "b", name: "b" }],
+      },
+    ];
+    const at = (centerLng: number) => ({
+      getCenter: () => ({ lng: centerLng, lat: 0 }),
+      project: ([lng]: [number, number]) => ({
+        x: 600 + (lng - centerLng) * 8,
+        y: 350,
+      }),
+    });
+
+    const first = getVisibleEventCalloutPlacements(
+      at(0),
+      locations,
+      1200,
+      700,
+    );
+    // Turned until B is the nearer one: a distance ranking would swap them.
+    const next = getVisibleEventCalloutPlacements(
+      at(15),
+      locations,
+      1200,
+      700,
+      undefined,
+      first,
+    );
+
+    expect(next.map((c) => c.location.key)).toEqual(
+      first.map((c) => c.location.key),
+    );
+    for (const card of next) {
+      const before = first.find((c) => c.location.key === card.location.key)!;
+      expect(card.left - card.markerX).toBe(before.left - before.markerX);
+      expect(card.top - card.markerY).toBe(before.top - before.markerY);
+    }
+  });
+
+  it("does not offer a new card for a place still near the limb", () => {
+    const locations: LandingEventLocation[] = [
+      {
+        key: "near",
+        city: "Near",
+        lat: 0,
+        lng: 50,
+        events: [{ id: "n", name: "n" }],
+      },
+      {
+        key: "limb",
+        city: "Limb",
+        lat: 0,
+        lng: 70,
+        events: [{ id: "l", name: "l" }],
+      },
+    ];
+    const map = {
+      getCenter: () => ({ lng: 0, lat: 0 }),
+      project: ([lng]: [number, number]) => ({ x: 600 + lng * 4, y: 350 }),
+    };
+
+    const cards = getVisibleEventCalloutPlacements(map, locations, 1200, 700);
+
+    expect(cards.map((c) => c.location.key)).toEqual(["near"]);
   });
 
   it("bounds callout projection and rendering when many locations are available", () => {
@@ -453,7 +686,7 @@ describe("rotating globe event focus", () => {
       }),
     ).toEqual({
       left: 616,
-      top: 212,
+      top: 210,
       edgeX: 616,
       edgeY: 250,
     });

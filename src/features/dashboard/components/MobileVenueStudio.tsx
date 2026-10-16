@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
+import { assetUrl } from "@/shared/lib/assets";
 
 const STUDIO_TABS = [
   "Space Types",
@@ -78,7 +79,7 @@ export default function MobileVenueStudio({}: Props) {
         }}
       >
         <Image
-          src="/foxonlylogo.png"
+          src={assetUrl("foxonlylogo.png")}
           alt="FoxPassport"
           width={22}
           height={22}

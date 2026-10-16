@@ -1,3 +1,4 @@
+import { assetUrl } from "@/shared/lib/assets";
 interface EventJsonLdProps {
   event: {
     id: string;
@@ -142,7 +143,7 @@ export default function EventJsonLd({ event }: EventJsonLdProps) {
       "@id": `${baseUrl}/#organization`,
       name: "FoxPassport",
       url: baseUrl,
-      logo: `${baseUrl}/foxonlylogo.png`,
+      logo: assetUrl("foxonlylogo.png", baseUrl),
     },
   ];
 

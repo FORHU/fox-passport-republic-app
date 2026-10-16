@@ -17,6 +17,7 @@ import { getDashboardPath } from "@/shared/lib/dashboard-path";
 import { smartBack } from "@/shared/lib/navigation";
 import { toast } from "sonner";
 import { formatCurrency } from "@/shared/lib/currency";
+import { assetUrl } from "@/shared/lib/assets";
 
 const stripePromise = loadStripe(
   process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY || "",
@@ -130,7 +131,7 @@ export default function CheckoutClient() {
             >
               <div className="flex h-10 w-10 items-center justify-center overflow-hidden group-hover:scale-110 transition-transform duration-300">
                 <Image
-                  src="/foxonlylogo.png"
+                  src={assetUrl("foxonlylogo.png")}
                   alt="FoxPassport Logo"
                   width={40}
                   height={40}

@@ -20,6 +20,7 @@ import type {
   ItemBookingRefund,
 } from "@/features/booking/types/booking.types";
 import { formatCurrency } from "@/shared/lib/currency";
+import { assetUrl } from "@/shared/lib/assets";
 
 type BookingType = "service" | "asset";
 
@@ -212,7 +213,7 @@ export default function FulfillmentPassClient({
             <Link href="/" className="flex items-center gap-3 group">
               <div className="flex h-10 w-10 items-center justify-center overflow-hidden group-hover:scale-110 transition-transform duration-300">
                 <Image
-                  src="/foxonlylogo.png"
+                  src={assetUrl("foxonlylogo.png")}
                   alt="FoxPassport Logo"
                   width={40}
                   height={40}
