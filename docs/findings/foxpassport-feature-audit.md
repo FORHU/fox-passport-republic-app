@@ -72,7 +72,7 @@ Checked 15 Oct 2026 against [BUSINESS-STRATEGY-MASTER.md](./BUSINESS-STRATEGY-MA
 | Feature | Status | Evidence |
 |---|---|---|
 | Stripe checkout + Stripe Connect onboarding/payouts | ✅ | `checkout`, `stripe-connect`, `payout` |
-| Platform fee (configurable, admin) | ✅ | `PlatformFeeConfig` |
+| Platform fee (configurable, admin) | ✅ | `PlatformFeeConfig` with `PLATFORM_FEE_PERCENT` fallback across all booking & template flows; Level-3 "lower_fees" 0% perk |
 | Invoices | ✅ | `Invoice`, `InvoiceItem` |
 | Payment protection / confirmation deadlines | ✅ | `transaction-status`, deadline sweep |
 | Refunds (incl. itemized admin refunds) | ✅ | `Refund`, `/admin/refunds` |
@@ -102,11 +102,11 @@ Checked 15 Oct 2026 against [BUSINESS-STRATEGY-MASTER.md](./BUSINESS-STRATEGY-MA
 | Feature | Status | Evidence |
 |---|---|---|
 | Identity verification / KYC (document upload + admin review) | ✅ | `IdentityVerification`, `/kyc` |
-| Reviews + replies (require completed booking) | ✅ | `Review`, `ReviewReply` |
+| Reviews + replies (require completed/attended booking) | ✅ | `Review`, `ReviewReply`; premature reviews on confirmed future bookings rejected |
 | Better Auth, email OTP, Google + Facebook OAuth | ✅ | `auth`, `/auth/google/callback` |
 | Rate limiting (Redis-backed) | ✅ | `rate-limit-store` |
 | Audit logs | 🚫✅ | `AuditLog` |
-| Dispute handling | 🟡 | refunds + reports exist; no dedicated dispute workflow |
+| Dispute handling | ✅ | Asset/service booking dispute flow (`disputed` status blocks payouts; admin resolution unblocks/triggers payouts on `completed`); refund dispute queue |
 | Privacy / Terms / Data deletion | ✅ | `/privacy`, `/terms`, `/data-deletion` |
 
 ### I. Investors / Partners (📄 §11.6)
@@ -189,5 +189,5 @@ All of these were added to the strategy doc on 15 Oct (§1b A and §11.7). The l
 4. **Social platform distribution** (§20)
 5. **Recommendations** (§18)
 6. **Real analytics / premium business tools** (Stage 3)
-7. **Formal dispute handling** (§26)
+7. **Dispute handling for public event attendees** (direct Asset/Service booking disputes and refund disputes are built; attendee disputes for public events await public registration)
 8. **Mobile creator tools**: QR scanner and creator dashboards (see §2a)
