@@ -19,6 +19,7 @@ import { useQuery } from "@tanstack/react-query";
 import { fetchEventLineItems } from "@/features/event/api/marketplaceItems";
 import { useAuthStore } from "@/shared/auth/useAuthStore";
 import { useRouter as useNavigationRouter } from "next/navigation";
+import { assetUrl } from "@/shared/lib/assets";
 
 const CATEGORY_ICONS: Record<string, string> = {
   music: "music_note",
@@ -157,7 +158,7 @@ export function EventDetailView({
             <Link href="/" className="flex items-center gap-2 sm:gap-3 group">
               <div className="flex h-8 w-8 sm:h-10 sm:w-10 items-center justify-center overflow-hidden group-hover:scale-110 transition-transform duration-300">
                 <Image
-                  src="/foxonlylogo.png"
+                  src={assetUrl("foxonlylogo.png")}
                   alt="FoxPassport Logo"
                   width={40}
                   height={40}

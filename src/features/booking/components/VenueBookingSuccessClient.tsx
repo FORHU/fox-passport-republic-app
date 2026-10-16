@@ -8,6 +8,7 @@ import { useAuthStore } from "@/shared/auth/useAuthStore";
 import { confirmBookingPayment } from "@/features/booking/api/bookings";
 import { getDashboardPath } from "@/shared/lib/dashboard-path";
 import { formatCurrency } from "@/shared/lib/currency";
+import { assetUrl } from "@/shared/lib/assets";
 
 export default function VenueBookingSuccessClient() {
   const router = useRouter();
@@ -52,7 +53,7 @@ export default function VenueBookingSuccessClient() {
             >
               <div className="flex h-10 w-10 items-center justify-center overflow-hidden group-hover:scale-110 transition-transform duration-300">
                 <Image
-                  src="/foxonlylogo.png"
+                  src={assetUrl("foxonlylogo.png")}
                   alt="FoxPassport Logo"
                   width={40}
                   height={40}

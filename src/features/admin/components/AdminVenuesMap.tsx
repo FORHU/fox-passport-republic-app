@@ -11,6 +11,7 @@ import {
   CATEGORY_COLORS,
   CATEGORY_LABELS,
 } from "@/shared/components/ui/VenuesMap";
+import { assetUrl } from "@/shared/lib/assets";
 
 interface AdminVenuesMapProps {
   venues: any[];
@@ -231,7 +232,7 @@ export const AdminVenuesMap: React.FC<AdminVenuesMapProps> = ({
             // nothing uploaded should show as a plain colored dot, not the
             // same generic stock photo on every pin.
             imageUrl: images[0] || null,
-            image: images[0] || "/herobackground.jpg",
+            image: images[0] || assetUrl("herobackground.jpg"),
             location:
               [v.city, v.state, v.country].filter(Boolean).join(", ") || "",
             status: v.status ?? "pending",

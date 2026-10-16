@@ -2,57 +2,29 @@
 
 import { useQuery } from "@tanstack/react-query";
 import api from "@/shared/lib/axios";
+import { assetUrl } from "@/shared/lib/assets";
 
 // ---------------------------------------------------------------------------
 // What the landing page reads. Everything here is real data; the page shows
 // nothing it can't back up.
 // ---------------------------------------------------------------------------
 
-export interface LandingVenue {
-  id: string;
-  name: string;
-  city: string;
-  category: string;
-  lat: number;
-  lng: number;
-  image?: string;
-}
-
-export interface LandingEventLocation {
-  key: string;
-  city: string;
-  country?: string;
-  lat: number;
-  lng: number;
-  events: LandingEvent[];
-}
-
-export interface LandingEvent {
-  id: string;
-  name: string;
-  category?: string;
-  targetCity?: string;
-  targetCountry?: string;
-  lat?: number | null;
-  lng?: number | null;
-  description?: string;
-  images?: { url: string }[];
-  estimatedTotal?: number;
-  templateVenues?: {
-    venue?: {
-      city?: string;
-      lat?: number | null;
-      lng?: number | null;
-    };
-  }[];
-}
-
-export interface LandingFoxer {
-  id: string;
-  name: string;
-  city?: string;
-  roles: string[];
-}
+export {
+  filterLandingVenues,
+  loadLandingEvents,
+  type LandingEvent,
+  type LandingEventLocation,
+  type LandingFoxer,
+  type LandingVenue,
+} from "./landing-shared";
+import {
+  filterLandingVenues,
+  loadLandingEvents,
+  type LandingEvent,
+  type LandingEventLocation,
+  type LandingFoxer,
+  type LandingVenue,
+} from "./landing-shared";
 
 const TEN_MINUTES = 1000 * 60 * 10;
 
@@ -105,26 +77,6 @@ export function useEventsQuery(limit = 12) {
   });
 }
 
-/** Load at most 300 public templates, respecting the API's 50-item page limit. */
-export async function loadLandingEvents(
-  limit: number,
-  fetchPage: (page: number, pageLimit: number) => Promise<LandingEvent[]>,
-) {
-  const target = Math.min(300, Math.max(0, Math.floor(limit)));
-  const events: LandingEvent[] = [];
-  let page = 1;
-
-  while (events.length < target) {
-    const pageSize = Math.min(50, target - events.length);
-    const batch = await fetchPage(page, pageSize);
-    events.push(...batch);
-    if (batch.length < pageSize) break;
-    page += 1;
-  }
-
-  return events.slice(0, target);
-}
-
 export function useEvents(limit = 12) {
   return useEventsQuery(limit).data ?? [];
 }
@@ -136,34 +88,7 @@ export function useVenues(limit = 80) {
     queryFn: async () => {
       const res = await api.get("/venues", { params: { limit } });
       const list: any[] = res.data?.venues ?? res.data?.data ?? [];
-      const located = list
-        .filter(
-          (v) =>
-            typeof v.lat === "number" &&
-            typeof v.lng === "number" &&
-            v.status !== "rejected",
-        )
-        .map((v): LandingVenue => ({
-          id: v.id,
-          name: v.name,
-          city: v.city ?? "",
-          category: v.category ?? "other",
-          lat: v.lat,
-          lng: v.lng,
-          image:
-            typeof v.images?.[0] === "string"
-              ? v.images[0]
-              : v.images?.[0]?.url,
-        }));
-      // A stray bad coordinate would send the whole map to the wrong country,
-      // so keep what sits near the middle of the pack.
-      const median = (n: number[]) =>
-        [...n].sort((a, b) => a - b)[Math.floor(n.length / 2)] ?? 0;
-      const mLat = median(located.map((v) => v.lat));
-      const mLng = median(located.map((v) => v.lng));
-      return located.filter(
-        (v) => Math.abs(v.lat - mLat) < 12 && Math.abs(v.lng - mLng) < 12,
-      );
+      return filterLandingVenues(list);
     },
     staleTime: TEN_MINUTES,
   });
@@ -267,6 +192,73 @@ export function buildEventLocations(
   return Array.from(locations.values());
 }
 
+/** Places closer than this are one stop on a globe: Makati and Taguig are Manila. */
+const NEARBY_DEGREES = 0.5;
+
+function poolLocations(group: LandingEventLocation[]): LandingEventLocation {
+  if (group.length === 1) return group[0];
+  const seen = new Set<string>();
+  const events = group
+    .flatMap((location) => location.events)
+    .filter((event) => !seen.has(event.id) && !!seen.add(event.id));
+  // The pin - and the key the cards are tracked by - is the point holding the
+  // most events (ties go to the first), so it stays put from frame to frame.
+  const pin = group.reduce((best, location) =>
+    location.events.length > best.events.length ? location : best,
+  );
+  return { ...pin, events };
+}
+
+function isNearby(a: LandingEventLocation, b: LandingEventLocation) {
+  const cos = Math.cos((((a.lat + b.lat) / 2) * Math.PI) / 180);
+  return Math.hypot(a.lat - b.lat, (a.lng - b.lng) * cos) < NEARBY_DEGREES;
+}
+
+/**
+ * One location per stop, with every event around it pooled.
+ *
+ * `buildEventLocations` keeps a separate point per venue coordinate, which is
+ * right for the dots on the map but wrong for the callout cards: a city with
+ * three venues got three cards that all read "Baguio · 9 events", and a metro
+ * area split into districts (Manila, Makati, Taguig) got a card for each.
+ * Points of one city are pooled first, then cities within `NEARBY_DEGREES` of
+ * a busier one are folded into it.
+ */
+export function mergeLocationsByCity(
+  locations: LandingEventLocation[],
+): LandingEventLocation[] {
+  const groups = new Map<string, LandingEventLocation[]>();
+  for (const location of locations) {
+    const id = `${normalizePlace(location.city)}|${normalizePlace(location.country ?? "")}`;
+    const group = groups.get(id);
+    if (group) group.push(location);
+    else groups.set(id, [location]);
+  }
+
+  // Busiest first, so the anchor of a cluster is its biggest member, and the
+  // result doesn't depend on the order the API happened to return things in.
+  const pooled = Array.from(groups.values())
+    .map(poolLocations)
+    .sort(
+      (a, b) =>
+        b.events.length - a.events.length || a.key.localeCompare(b.key),
+    );
+
+  const taken = new Set<LandingEventLocation>();
+  const stops: LandingEventLocation[] = [];
+  for (const anchor of pooled) {
+    if (taken.has(anchor)) continue;
+    const cluster = pooled.filter(
+      (location) =>
+        !taken.has(location) &&
+        (location === anchor || isNearby(anchor, location)),
+    );
+    cluster.forEach((location) => taken.add(location));
+    stops.push(poolLocations(cluster));
+  }
+  return stops;
+}
+
 export function eventLocationCollection(locations: LandingEventLocation[]) {
   return {
     type: "FeatureCollection" as const,
@@ -330,7 +322,7 @@ export const DESTINATIONS: Destination[] = [
     lng: -77.0369,
     photos: [
       {
-        src: "/destinations/washington-city.jpg",
+        src: assetUrl("destinations/washington-city.jpg"),
         subject: "city",
         credit: {
           author:
@@ -340,7 +332,7 @@ export const DESTINATIONS: Destination[] = [
         },
       },
       {
-        src: "/destinations/washington-1.jpg",
+        src: assetUrl("destinations/washington-1.jpg"),
         credit: {
           author: "Ted Eytan",
           license: "CC BY-SA 2.0",
@@ -348,7 +340,7 @@ export const DESTINATIONS: Destination[] = [
         },
       },
       {
-        src: "/destinations/washington-2.jpg",
+        src: assetUrl("destinations/washington-2.jpg"),
         credit: {
           author: "Mrs. Gemstone",
           license: "CC BY-SA 2.0",
@@ -356,7 +348,7 @@ export const DESTINATIONS: Destination[] = [
         },
       },
       {
-        src: "/destinations/washington-3.jpg",
+        src: assetUrl("destinations/washington-3.jpg"),
         credit: {
           author: "Ted Eytan",
           license: "CC BY-SA 2.0",
@@ -364,7 +356,7 @@ export const DESTINATIONS: Destination[] = [
         },
       },
       {
-        src: "/destinations/washington-4.jpg",
+        src: assetUrl("destinations/washington-4.jpg"),
         credit: {
           author: "Danazar",
           license: "CC BY-SA 4.0",
@@ -384,7 +376,7 @@ export const DESTINATIONS: Destination[] = [
     lng: 2.3522,
     photos: [
       {
-        src: "/destinations/paris.jpg",
+        src: assetUrl("destinations/paris.jpg"),
         credit: {
           author: "U2start",
           license: "CC BY 2.0",
@@ -392,7 +384,7 @@ export const DESTINATIONS: Destination[] = [
         },
       },
       {
-        src: "/destinations/paris-1.jpg",
+        src: assetUrl("destinations/paris-1.jpg"),
         credit: {
           author: "Like tears in rain",
           license: "CC BY-SA 4.0",
@@ -400,7 +392,7 @@ export const DESTINATIONS: Destination[] = [
         },
       },
       {
-        src: "/destinations/paris-2.jpg",
+        src: assetUrl("destinations/paris-2.jpg"),
         credit: {
           author: "Syced",
           license: "CC0",
@@ -408,7 +400,7 @@ export const DESTINATIONS: Destination[] = [
         },
       },
       {
-        src: "/destinations/paris-3.jpg",
+        src: assetUrl("destinations/paris-3.jpg"),
         credit: {
           author: "Kenneth Lu",
           license: "CC BY 2.0",
@@ -429,7 +421,7 @@ export const DESTINATIONS: Destination[] = [
     lng: 73.5093,
     photos: [
       {
-        src: "/destinations/maldives.jpg",
+        src: assetUrl("destinations/maldives.jpg"),
         credit: {
           author: "Shifaaz shamoon sotti",
           license: "CC0",
@@ -437,7 +429,7 @@ export const DESTINATIONS: Destination[] = [
         },
       },
       {
-        src: "/destinations/male-1.jpg",
+        src: assetUrl("destinations/male-1.jpg"),
         credit: {
           author: "Ibrahim Asad",
           license: "CC BY 3.0",
@@ -445,7 +437,7 @@ export const DESTINATIONS: Destination[] = [
         },
       },
       {
-        src: "/destinations/male-2.jpg",
+        src: assetUrl("destinations/male-2.jpg"),
         credit: {
           author: "The President's Office, Maldives",
           license: "CC BY 4.0",
@@ -453,7 +445,7 @@ export const DESTINATIONS: Destination[] = [
         },
       },
       {
-        src: "/destinations/male-3.jpg",
+        src: assetUrl("destinations/male-3.jpg"),
         credit: {
           author: "The President's Office, Maldives",
           license: "CC BY 4.0",
@@ -474,7 +466,7 @@ export const DESTINATIONS: Destination[] = [
     lng: 120.9842,
     photos: [
       {
-        src: "/destinations/manila-1.jpg",
+        src: assetUrl("destinations/manila-1.jpg"),
         credit: {
           author: "Patrick Cristiano",
           license: "CC BY-SA 4.0",
@@ -482,7 +474,7 @@ export const DESTINATIONS: Destination[] = [
         },
       },
       {
-        src: "/destinations/manila-2.jpg",
+        src: assetUrl("destinations/manila-2.jpg"),
         credit: {
           author: "Patrick Cristiano",
           license: "CC BY-SA 4.0",
@@ -490,7 +482,7 @@ export const DESTINATIONS: Destination[] = [
         },
       },
       {
-        src: "/destinations/manila-3.jpg",
+        src: assetUrl("destinations/manila-3.jpg"),
         credit: {
           author: "Sean Ronquillo",
           license: "CC BY-SA 4.0",
@@ -498,7 +490,7 @@ export const DESTINATIONS: Destination[] = [
         },
       },
       {
-        src: "/destinations/manila-4.jpg",
+        src: assetUrl("destinations/manila-4.jpg"),
         credit: {
           author: "Pandekate",
           license: "CC BY-SA 4.0",
@@ -518,7 +510,7 @@ export const DESTINATIONS: Destination[] = [
     lng: 139.6503,
     photos: [
       {
-        src: "/destinations/tokyo-1.jpg",
+        src: assetUrl("destinations/tokyo-1.jpg"),
         credit: {
           author: "LuxTonnerre",
           license: "CC BY 2.0",
@@ -526,7 +518,7 @@ export const DESTINATIONS: Destination[] = [
         },
       },
       {
-        src: "/destinations/tokyo-2.jpg",
+        src: assetUrl("destinations/tokyo-2.jpg"),
         credit: {
           author: "Dick Thomas Johnson",
           license: "CC BY 2.0",
@@ -534,7 +526,7 @@ export const DESTINATIONS: Destination[] = [
         },
       },
       {
-        src: "/destinations/tokyo-3.jpg",
+        src: assetUrl("destinations/tokyo-3.jpg"),
         credit: {
           author: "Guilhem Vellut",
           license: "CC BY 2.0",
@@ -542,7 +534,7 @@ export const DESTINATIONS: Destination[] = [
         },
       },
       {
-        src: "/destinations/tokyo-4.jpg",
+        src: assetUrl("destinations/tokyo-4.jpg"),
         credit: {
           author: "nagi usano",
           license: "CC BY 2.0",

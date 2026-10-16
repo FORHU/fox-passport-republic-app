@@ -1,3 +1,4 @@
+import { assetUrl } from "@/shared/lib/assets";
 interface FoxerJsonLdProps {
   foxer: {
     id: string;
@@ -48,7 +49,7 @@ export default function FoxerJsonLd({ foxer }: FoxerJsonLdProps) {
       "@id": `${baseUrl}/#organization`,
       name: "FoxPassport",
       url: baseUrl,
-      logo: `${baseUrl}/foxonlylogo.png`,
+      logo: assetUrl("foxonlylogo.png", baseUrl),
     },
     foxerNode,
   ];

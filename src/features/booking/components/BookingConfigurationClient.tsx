@@ -18,6 +18,7 @@ import { toastRequireLogin } from "@/shared/lib/toast";
 import WaitlistButton from "@/features/booking/components/WaitlistButton";
 import { getDashboardPath } from "@/shared/lib/dashboard-path";
 import { Money } from "@/shared/components/ui/Money";
+import { assetUrl } from "@/shared/lib/assets";
 
 const NO_DATES: string[] = [];
 
@@ -146,7 +147,7 @@ export default function BookingConfigurationClient() {
             >
               <div className="flex h-8 w-8 sm:h-10 sm:w-10 items-center justify-center overflow-hidden group-hover:scale-110 transition-transform duration-300">
                 <Image
-                  src="/foxonlylogo.png"
+                  src={assetUrl("foxonlylogo.png")}
                   alt="FoxPassport Logo"
                   width={40}
                   height={40}

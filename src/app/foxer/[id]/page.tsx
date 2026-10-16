@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { getFoxerById } from "@/shared/lib/server/data";
 import FoxerProfile from "@/features/match/components/FoxerProfile";
 import FoxerJsonLd from "@/shared/components/seo/FoxerJsonLd";
+import { assetUrl } from "@/shared/lib/assets";
 
 interface FoxerProfilePageProps {
   params: Promise<{ id: string }>;
@@ -39,7 +40,7 @@ export async function generateMetadata({
   const title = `${name} (${roleLabel})${locationSuffix}`;
   const description = `${name} is a ${roleLabel} on FoxPassport${locationSuffix}. Explore public services, venues, and experiences.`;
 
-  const ogImages = foxer.imgId ? [foxer.imgId] : ["/foxonlylogo.png"];
+  const ogImages = foxer.imgId ? [foxer.imgId] : [assetUrl("foxonlylogo.png")];
 
   return {
     title,

@@ -12,6 +12,7 @@ import {
   PATH_PERKS,
   PERK_META,
 } from "@/features/gamification/data/passportData";
+import { assetUrl } from "@/shared/lib/assets";
 
 export interface PassportSidebarContentProps {
   user: any;
@@ -57,7 +58,7 @@ export const PassportSidebarContent: React.FC<PassportSidebarContentProps> = ({
         >
           <div className="h-10 w-10 flex items-center justify-center group-hover:scale-105 transition-transform">
             <Image
-              src="/foxonlylogo.png"
+              src={assetUrl("foxonlylogo.png")}
               alt="FoxPassport Logo"
               width={40}
               height={40}

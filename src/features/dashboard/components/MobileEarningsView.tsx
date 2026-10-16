@@ -8,6 +8,7 @@ import { useStripeConnect } from "../hooks/useStripeConnect";
 import { useMyPayouts } from "../hooks/useMyPayouts";
 import { PAYOUT_SOURCE_LABEL, type Payout } from "../api/payouts";
 import { formatCurrency } from "@/shared/lib/currency";
+import { assetUrl } from "@/shared/lib/assets";
 
 const NO_PAYOUTS: Payout[] = [];
 const NO_TOTALS = { paid: 0, pending: 0 };
@@ -99,7 +100,7 @@ export default function MobileEarningsView() {
         }}
       >
         <Image
-          src="/foxonlylogo.png"
+          src={assetUrl("foxonlylogo.png")}
           alt="FoxPassport"
           width={22}
           height={22}

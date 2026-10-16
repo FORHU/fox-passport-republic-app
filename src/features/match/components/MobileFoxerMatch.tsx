@@ -3,6 +3,7 @@
 import React from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
+import { assetUrl } from "@/shared/lib/assets";
 
 type Props = {
   foxer?: {
@@ -65,7 +66,7 @@ export default function MobileFoxerMatch({ foxer }: Props) {
         }}
       >
         <Image
-          src="/foxonlylogo.png"
+          src={assetUrl("foxonlylogo.png")}
           alt="FoxPassport"
           width={22}
           height={22}

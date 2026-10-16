@@ -7,6 +7,7 @@ import {
   getTrendingEventsByCategory,
 } from "@/shared/lib/server/data";
 import CategoryDetailClient from "@/features/category/components/CategoryDetailClient";
+import { assetUrl } from "@/shared/lib/assets";
 
 const CATEGORY_GRADIENTS: Record<string, string> = {
   birthday: "from-lime-300 via-green-400 to-emerald-500",
@@ -50,13 +51,13 @@ export async function generateMetadata({
       description,
       url: `/categories/${id}`,
       type: "website",
-      images: ["/foxonlylogo.png"],
+      images: [assetUrl("foxonlylogo.png")],
     },
     twitter: {
       card: "summary_large_image",
       title,
       description,
-      images: ["/foxonlylogo.png"],
+      images: [assetUrl("foxonlylogo.png")],
     },
   };
 }
