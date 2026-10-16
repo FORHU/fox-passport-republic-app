@@ -90,7 +90,7 @@ These remain target state. Listed here so they aren't read as shipped.
 5. **Recommendations** (§18): only follow suggestions exist. There is no experience recommender.
 6. **Analytics and premium business tools** (§15 Stage 3, §21 Phase 7): only one public event-stats endpoint exists.
 7. **Formal dispute handling** (§26): refunds and content reports exist, but there is no dispute workflow.
-8. **Mobile parity**: the mobile app covers auth, onboarding, home, search, tickets, passport, profile, and notifications only. Booking checkout, creator dashboards, messaging, and QR check-in are web-only.
+8. **Mobile parity** (updated 16 Oct 2026): the citizen side is now largely on mobile, including booking checkout with Stripe, messages with realtime updates, the Republic feed, reviews, and Foxer profiles with Match requests (see [`foxpassport-feature-audit.md`](./foxpassport-feature-audit.md) §2a). The creator side is still web-only: creator dashboards, completing Foxer applications (identity documents), waitlists, and QR check-in.
 
 ---
 
