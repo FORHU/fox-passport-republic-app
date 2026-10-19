@@ -47,14 +47,14 @@ describe("GoogleAuthCallbackPage", () => {
     expect(mocks.toastError).toHaveBeenCalled();
   });
 
-  it("completes an existing-user session and returns home", async () => {
+  it("completes an existing-user session and enters the app", async () => {
     const user = { id: "user-1", name: "Citizen" };
     mocks.get.mockReturnValue("exchange-1");
     mocks.completeGoogleAuth.mockResolvedValue({ user, isNewUser: false });
 
     render(<GoogleAuthCallbackPage />);
 
-    await waitFor(() => expect(mocks.replace).toHaveBeenCalledWith("/"));
+    await waitFor(() => expect(mocks.replace).toHaveBeenCalledWith("/search"));
     expect(mocks.completeGoogleAuth).toHaveBeenCalledWith("exchange-1");
     expect(mocks.login).toHaveBeenCalledWith({ user });
     expect(mocks.toastSuccess).toHaveBeenCalledWith("Welcome back!");

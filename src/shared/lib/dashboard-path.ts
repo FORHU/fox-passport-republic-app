@@ -1,6 +1,9 @@
 import type { RoleType, User } from "@/shared/auth/types";
 import { canAccessAdmin } from "@/shared/lib/permissions";
 
+/** Where a signed-in user lives. "/" is the public landing page. */
+export const APP_HOME = "/search";
+
 /** RoleTypes that grant access to the supply-side dashboard. */
 const SUPPLY_ROLE_TYPES: RoleType[] = [
   "eventFoxer",

@@ -42,6 +42,8 @@ import {
   getVenues,
 } from "@/shared/lib/server/data";
 import { getUser } from "@/shared/lib/server/auth";
+import { getSignedInRedirect } from "@/shared/lib/server/home-redirect";
+import { redirect } from "next/navigation";
 import { hasPermission } from "@/shared/lib/permissions";
 import { isFoxer } from "@/shared/constants/roles";
 
@@ -184,7 +186,11 @@ async function HomeContent({ searchParams }: HomePageProps) {
   );
 }
 
-export default function Home({ searchParams }: HomePageProps) {
+export default async function Home({ searchParams }: HomePageProps) {
+  // This page is the public landing. Signed-in visitors are sent into the app.
+  const destination = await getSignedInRedirect(await searchParams);
+  if (destination) redirect(destination);
+
   return (
     <>
       <Suspense fallback={null}>
