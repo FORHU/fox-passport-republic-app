@@ -52,7 +52,7 @@ const ITINERARY = [
 
 export function Itinerary() {
   return (
-    <section className="bg-canvas px-5 py-14 sm:px-10 sm:py-20">
+    <section id="how-it-works" className="bg-canvas px-5 py-14 sm:px-10 sm:py-20">
       <div className="mx-auto max-w-6xl">
         <SectionHead
           kicker="How it works"

@@ -7,7 +7,8 @@ import { ClosingCta, EarnBlock, Itinerary } from "./sections";
 import { EventGrid, EventTypes } from "./booking";
 
 /**
- * The landing page for everyone, signed in or not. It leads with finding an
+ * The public landing page (signed-in visitors are redirected into the app
+ * from "/", see shared/lib/server/home-redirect.ts). It leads with finding an
  * event (search, then events to book and the kinds of event), then how booking
  * works, and last the people who supply events.
  */

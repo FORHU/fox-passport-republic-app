@@ -7,6 +7,7 @@ import { toast } from "sonner";
 
 import { useAuthStore } from "@/shared/auth/useAuthStore";
 import { completeFacebookAuth } from "@/shared/auth/session-api";
+import { APP_HOME } from "@/shared/lib/dashboard-path";
 
 function FacebookCallbackContent() {
   const router = useRouter();
@@ -42,7 +43,7 @@ function FacebookCallbackContent() {
         localStorage.setItem("fp_new_user", "1");
         window.location.href = "/onboarding";
       } else {
-        window.location.href = "/";
+        window.location.href = APP_HOME;
       }
     });
   }, [searchParams, router, login]);
