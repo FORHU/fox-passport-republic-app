@@ -859,7 +859,7 @@ describe("HeroSearch", () => {
     await user.click(screen.getByRole("button", { name: "Find events" }));
     expect(push).toHaveBeenCalledTimes(1);
     const url = new URL(push.mock.calls[0][0], "http://x");
-    expect(url.pathname).toBe("/search");
+    expect(url.pathname).toBe("/packages");
     expect(url.searchParams.get("category")).toBe("wedding");
     expect(url.searchParams.get("city")).toBe("Cebu");
     expect(url.searchParams.get("label")).toBe("Cebu");
@@ -905,7 +905,7 @@ describe("HeroSearch", () => {
     const user = userEvent.setup();
     render(<HeroSearch />);
     await user.click(screen.getByRole("button", { name: "Find events" }));
-    expect(push).toHaveBeenCalledWith("/search");
+    expect(push).toHaveBeenCalledWith("/packages");
   });
 });
 

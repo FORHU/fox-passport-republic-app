@@ -27,6 +27,15 @@ type AuthView =
 
 const PENDING_VERIFICATION_EMAIL_KEY = "fp_pending_verification_email";
 
+/** The package a signed-out visitor is reserving, shown beside the sign-up form. */
+export interface BookingSummary {
+  title: string;
+  image?: string;
+  place?: string;
+  date?: string;
+  price?: number;
+}
+
 interface AuthState {
   // State
   isAuthenticated: boolean;
@@ -37,11 +46,14 @@ interface AuthState {
   isOpen: boolean;
   view: AuthView;
   pendingEmail: string | null;
+  bookingSummary: BookingSummary | null;
 
   // Actions
   initialize: () => void;
   openLogin: () => void;
   openSignup: () => void;
+  /** Sign-up at the moment of booking: the same form, with the package beside it. */
+  openSignupFor: (summary: BookingSummary) => void;
   setView: (view: AuthView) => void;
   setPendingEmail: (email: string) => void;
   setPendingVerificationEmail: (email: string) => void;
@@ -68,6 +80,7 @@ export const useAuthStore = create<AuthState>((set) => ({
   isOpen: false,
   view: "login",
   pendingEmail: null,
+  bookingSummary: null,
 
   initialize: () => {
     if (typeof window === "undefined") return;
@@ -119,6 +132,8 @@ export const useAuthStore = create<AuthState>((set) => ({
 
   openLogin: () => set({ isOpen: true, view: "login" }),
   openSignup: () => set({ isOpen: true, view: "signup" }),
+  openSignupFor: (summary) =>
+    set({ isOpen: true, view: "signup", bookingSummary: summary }),
   setView: (view) => set({ view }),
   setPendingEmail: (email) => set({ pendingEmail: email }),
   setPendingVerificationEmail: (email) => {
@@ -129,7 +144,7 @@ export const useAuthStore = create<AuthState>((set) => ({
     }
     set({ pendingEmail: email });
   },
-  close: () => set({ isOpen: false }),
+  close: () => set({ isOpen: false, bookingSummary: null }),
   toggleView: () =>
     set((state) => ({
       view: state.view === "login" ? "signup" : "login",
@@ -157,6 +172,7 @@ export const useAuthStore = create<AuthState>((set) => ({
       user,
       isOpen: false,
       isLoading: false,
+      bookingSummary: null,
     });
   },
 

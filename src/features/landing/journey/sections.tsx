@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useAuthStore } from "@/shared/auth/useAuthStore";
+import { signInThen } from "@/shared/auth/returnTo";
 import { ROLES, useFoxerTotal } from "./data";
 import { CountUp, Kicker, Reveal } from "./motion";
 
@@ -90,47 +91,84 @@ export function Itinerary() {
 // For the people who supply events
 // ---------------------------------------------------------------------------
 
-/** One short block: you can earn from events too. Roles, and one way in. */
+const APPLY_CTA =
+  "group mt-6 inline-flex items-center gap-3 rounded-full bg-accent py-1.5 pl-6 pr-1.5 text-sm font-extrabold text-black transition-transform active:scale-[0.98] sm:text-base";
+
+function ApplyLabel() {
+  return (
+    <>
+      Start my free listing
+      <span
+        aria-hidden="true"
+        className="flex h-9 w-9 items-center justify-center rounded-full bg-black/10 transition-transform group-hover:translate-x-0.5"
+      >
+        →
+      </span>
+    </>
+  );
+}
+
+/**
+ * One short block: you can earn from events too. Roles, and one way in. Each
+ * card opens that role's public docs page (/earn/<key>). They used to link
+ * straight to the protected apply routes, which bounced signed-out visitors
+ * to the hero.
+ */
 export function EarnBlock() {
   const foxers = useFoxerTotal();
+  const user = useAuthStore((s) => s.user);
+
   return (
-    <section className="bg-canvas px-5 pb-14 sm:px-10 sm:pb-20">
+    <section
+      id="earn"
+      className="scroll-mt-28 bg-canvas px-5 pb-14 sm:px-10 sm:pb-20"
+    >
       <div className="mx-auto max-w-6xl">
         <Reveal>
           <div className="grid gap-8 rounded-3xl border border-white/15 bg-surface p-7 sm:p-10 lg:grid-cols-[1.1fr_1fr] lg:items-center lg:gap-14">
             <div>
-              <Kicker>Earn with FoxPassport</Kicker>
-              <h2 className="font-landing-display mt-2 text-3xl leading-[0.95] text-white sm:text-5xl">
-                Run venues, gear
-                <br />
-                or talent?
+              <h2 className="font-landing-display text-3xl leading-[0.95] text-white sm:text-5xl">
+                List your venue, gear or services once. Get booked into{" "}
+                <span className="text-(--accent-text)">
+                  complete event packages
+                </span>
+                .
               </h2>
               <p className="mt-4 max-w-md text-sm leading-relaxed text-white/70 sm:text-base">
-                List what you offer and get booked for other people&apos;s
-                events. Apply, get verified, and start earning.
-                {foxers > 0 && (
-                  <>
-                    {" "}
-                    <CountUp
-                      to={foxers}
-                      className="font-bold text-white"
-                    />{" "}
-                    verified Foxers already do.
-                  </>
-                )}
+                Event Foxers bundle your listing into packages, so you get
+                booked without selling.
               </p>
-              <Link
-                href="/onboarding"
-                className="mt-6 inline-block rounded-full bg-accent px-6 py-3 text-sm font-extrabold text-black"
-              >
-                Apply as a Foxer
-              </Link>
+              {/* /onboarding is protected: signed out, sign in first.
+                  "Free": there is no listing or setup fee, only the
+                  platform fee on bookings. */}
+              {user ? (
+                <Link href="/onboarding" className={APPLY_CTA}>
+                  <ApplyLabel />
+                </Link>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => signInThen("/onboarding")}
+                  className={`${APPLY_CTA} cursor-pointer`}
+                >
+                  <ApplyLabel />
+                </button>
+              )}
+              {foxers > 0 && (
+                <p className="mt-3 text-sm text-white/70">
+                  <CountUp
+                    to={foxers}
+                    className="font-bold text-(--accent-text)"
+                  />{" "}
+                  verified Foxers already get booked here
+                </p>
+              )}
             </div>
             <ul className="grid gap-2 sm:grid-cols-2">
               {ROLES.map((r) => (
                 <li key={r.key}>
                   <Link
-                    href={r.applyHref}
+                    href={`/earn/${r.key}`}
                     className="group flex h-full flex-col rounded-xl border border-white/15 p-4 transition-colors hover:border-accent/60 hover:bg-white/5"
                   >
                     <span className="font-landing-mono flex items-center justify-between text-[11px] font-bold uppercase tracking-wider text-white">
