@@ -13,15 +13,15 @@ Paths below are relative to each repo: **API** = `fox-passport-republic-api`, **
 
 | # | Item | Type | Status |
 |---|---|---|---|
-| 1 | Lock down the payment routes | 🚨 Security fix | ❌ |
-| 2 | Pick the real fee system; decide on the 0% Passport perk | Team decision | ❌ |
-| 3 | Redis in production: TLS support and outage visibility | Fix + decision | ❌ |
-| 4 | Merge the duplicate venue cache keys | Bug fix | ❌ |
-| 5 | Confirm the dispute flow end to end | Check | ❌ |
-| 6 | Decide whether a booking can be reviewed before it's attended | Team decision | ❌ |
-| 7 | Decide whether a wrong login code should delete the right one | UX decision | ❌ |
-| 8 | Doc fixes for items 2, 5 and 6, plus small corrections | Docs | ❌ |
-| 9 | Check the strategy doc's "Current State" notes section by section | Check | ❌ |
+| 1 | Lock down the payment routes | 🚨 Security fix | ✅ `payments:manage` + viewer checks (API) |
+| 2 | Pick the real fee system; decide on the 0% Passport perk | Team decision | ✅ `PlatformFeeConfig` + env fallback; perk kept (API #109) |
+| 3 | Redis in production: TLS support and outage visibility | Fix + decision | ✅ `REDIS_URL`/TLS; `/health` reports Redis; scheduled check alerts |
+| 4 | Merge the duplicate venue cache keys | Bug fix | ✅ both hooks were unused; deleted |
+| 5 | Confirm the dispute flow end to end | Check | ✅ resolve requires a disputed booking; customer win refunds in full; event bookings: refunds only |
+| 6 | Decide whether a booking can be reviewed before it's attended | Team decision | ✅ completed, checked in, or ended (API #109) |
+| 7 | Decide whether a wrong login code should delete the right one | UX decision | ✅ deleted only on success |
+| 8 | Doc fixes for items 2, 5 and 6, plus small corrections | Docs | ✅ |
+| 9 | Check the strategy doc's "Current State" notes section by section | Check | ✅ §18 and §26 corrected; the rest accurate |
 | 10 | Run the `VERIFY.md` browser pass | Manual testing | ❌ |
 
 ---
