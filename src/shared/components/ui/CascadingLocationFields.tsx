@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
 import SearchableDropdown from "@/shared/components/ui/SearchableDropdown";
@@ -10,6 +10,7 @@ import {
   fetchNearestPlace,
   fetchStates,
 } from "@/shared/api/geo";
+import { geocodePlace, suggestPlaces } from "@/shared/lib/geocoding";
 
 /** Stored as names — what the API's `country` / `state` / `city` columns hold. */
 export interface LocationValue {
@@ -30,6 +31,14 @@ interface CascadingLocationFieldsProps {
   /** Called with the browser's coordinates after "Use my location", for
    * forms that also keep a map pin. */
   onCoordinates?: (lat: number, lng: number) => void;
+  /** Only listed states and cities, no typed-in ones, wherever the list is
+   * complete — the Philippines (PSGC). Elsewhere the dataset has gaps, so a
+   * missing city can still be typed. */
+  strict?: boolean;
+  /** When a typed city is not in the list, suggest real places from Mapbox
+   * inside the chosen country and state. Off where the list is complete
+   * (`strict` Philippines). */
+  suggestCities?: boolean;
   /** Override the field label style, to match the surrounding form. */
   labelClassName?: string;
   className?: string;
@@ -53,6 +62,8 @@ export function CascadingLocationFields({
   withState = true,
   allowGeolocate = true,
   onCoordinates,
+  strict = false,
+  suggestCities = false,
   className = "grid grid-cols-1 sm:grid-cols-3 gap-4",
   labelClassName,
 }: CascadingLocationFieldsProps) {
@@ -69,6 +80,8 @@ export function CascadingLocationFields({
     (c) => same(c.name, value.country) || same(c.code, value.country),
   );
   const countryCode = country?.code;
+  // The PSGC list behind the Philippines has every province and city.
+  const listOnly = strict && countryCode === "PH";
 
   const states = useQuery({
     queryKey: ["geo", "states", countryCode],
@@ -92,6 +105,22 @@ export function CascadingLocationFields({
     enabled: cityReady,
     ...STATIC,
   });
+
+  // The chosen state's area, so a suggestion can't come from elsewhere.
+  const suggesting = suggestCities && !listOnly && !!countryCode;
+  const stateArea = useQuery({
+    queryKey: ["geo", "area", countryCode, value.state],
+    queryFn: () => geocodePlace(value.state, countryCode!, "region"),
+    enabled: suggesting && !!value.state,
+    ...STATIC,
+  });
+  const searchCities = useMemo(
+    () =>
+      suggesting
+        ? (q: string) => suggestPlaces(q, countryCode!, stateArea.data?.bbox)
+        : undefined,
+    [suggesting, countryCode, stateArea.data],
+  );
 
   const locateMe = () => {
     if (!navigator.geolocation) {
@@ -167,7 +196,7 @@ export function CascadingLocationFields({
               value={value.state}
               options={states.data?.map((s) => s.name)}
               disabled={!countryCode || (states.isFetched && !hasStates)}
-              allowCustom={hasStates}
+              allowCustom={hasStates && !listOnly}
               placeholder={
                 !countryCode
                   ? "Select a country first"
@@ -190,9 +219,11 @@ export function CascadingLocationFields({
           <SearchableDropdown
             key={`${countryCode ?? ""}-${cityScope}`}
             value={value.city}
-            options={cities.data}
+            options={cities.data ?? []}
+            asyncSearch={searchCities}
+            asyncHint="Type to search places…"
             disabled={!cityReady}
-            allowCustom
+            allowCustom={!listOnly || !cities.data?.length}
             placeholder={
               !countryCode
                 ? "Select a country first"

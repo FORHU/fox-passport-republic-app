@@ -73,7 +73,12 @@ export default function SearchableDropdown({
     // panel visibly chases the trigger and snaps back once it catches up.
     // Closing on scroll (what most portaled dropdowns do) avoids that
     // entirely: the panel just stays put until it's dismissed.
-    const handleScroll = () => setOpen(false);
+    // Scrolling the option list itself must not close it - this listens in the
+    // capture phase, so it hears the list's own scroll events too.
+    const handleScroll = (e: Event) => {
+      if (menuRef.current?.contains(e.target as Node)) return;
+      setOpen(false);
+    };
     window.addEventListener("scroll", handleScroll, {
       capture: true,
       passive: true,
@@ -85,8 +90,37 @@ export default function SearchableDropdown({
     };
   }, [open]);
 
+  // The static list, filtered by what was typed. Cities starting with it lead;
+  // cities that merely contain it elsewhere (e.g. "Anchorage" for "c") trail
+  // behind instead of burying the prefix match the user actually typed toward.
+  const matches = useMemo(() => {
+    const list = options ?? [];
+    const q = query.trim().toLowerCase();
+    if (!q) return list;
+    const starts: string[] = [];
+    const contains: string[] = [];
+    for (const o of list) {
+      const lower = o.toLowerCase();
+      if (lower.startsWith(q)) starts.push(o);
+      else if (lower.includes(q)) contains.push(o);
+    }
+    return [...starts, ...contains];
+  }, [options, query]);
+
+  // Rendered a page at a time, the next page added as the list is scrolled
+  // near its end - so all 250 countries are reachable without typing, and a
+  // country's thousands of cities don't all mount at once.
+  const PAGE = 150;
+  const [shown, setShown] = useState(PAGE);
+  useEffect(() => setShown(PAGE), [query, open]);
+  const listed = useMemo(() => matches.slice(0, shown), [matches, shown]);
+
+  // With both a list and `asyncSearch`, the live search only fills in when the
+  // list has nothing for what was typed - so a listed city costs no request.
+  const searchLive = !!asyncSearch && (!options || matches.length === 0);
+
   useEffect(() => {
-    if (!asyncSearch) return;
+    if (!asyncSearch || !searchLive) return;
     const q = query.trim();
     if (q.length < 2) {
       setAsyncResults([]);
@@ -106,26 +140,10 @@ export default function SearchableDropdown({
       clearTimeout(timer);
       controller.abort();
     };
-  }, [query, asyncSearch]);
+  }, [query, asyncSearch, searchLive]);
 
-  const filtered = useMemo(() => {
-    if (asyncSearch) return asyncResults;
-    const list = options ?? [];
-    const q = query.trim().toLowerCase();
-    if (!q) return list.slice(0, 150);
+  const filtered = searchLive ? asyncResults : listed;
 
-    // Cities starting with what was typed lead the list; cities that merely
-    // contain it elsewhere (e.g. "Anchorage" for "c") trail behind instead of
-    // burying the prefix match the user actually typed toward.
-    const starts: string[] = [];
-    const contains: string[] = [];
-    for (const o of list) {
-      const lower = o.toLowerCase();
-      if (lower.startsWith(q)) starts.push(o);
-      else if (lower.includes(q)) contains.push(o);
-    }
-    return [...starts, ...contains].slice(0, 150);
-  }, [options, query, asyncSearch, asyncResults]);
 
   return (
     <div ref={ref} className="relative">
@@ -173,7 +191,18 @@ export default function SearchableDropdown({
                   <span className="absolute right-3 top-1/2 -translate-y-1/2 h-2 w-2 rounded-full bg-accent animate-pulse" />
                 )}
               </div>
-              <div className="max-h-56 overflow-y-auto">
+              <div
+                className="max-h-56 overflow-y-auto"
+                onScroll={(e) => {
+                  const el = e.currentTarget;
+                  if (
+                    el.scrollTop + el.clientHeight >= el.scrollHeight - 48 &&
+                    shown < matches.length
+                  ) {
+                    setShown((n) => n + PAGE);
+                  }
+                }}
+              >
                 <button
                   type="button"
                   onClick={() => {
@@ -221,12 +250,12 @@ export default function SearchableDropdown({
                       Use &ldquo;{query.trim()}&rdquo;
                     </button>
                   )}
-                {filtered.length === 0 && asyncSearch && !loading && (
+                {filtered.length === 0 && searchLive && !loading && (
                   <div className="px-3 py-2 text-sm text-white/30">
                     {query.trim().length < 2 ? asyncHint : "No matches"}
                   </div>
                 )}
-                {filtered.length === 0 && !asyncSearch && (
+                {filtered.length === 0 && !searchLive && (
                   <div className="px-3 py-2 text-sm text-white/30">
                     No matches
                   </div>

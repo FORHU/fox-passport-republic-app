@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect } from "react";
 import { config } from "@/shared/lib/config";
+import { mapboxGeocode } from "@/shared/lib/geocoding";
 
 interface MapboxFeature {
   id: string;
@@ -58,17 +59,13 @@ export default function MapboxLocationPicker({
       if (!config.mapboxToken) return;
       setLoading(true);
       try {
-        const res = await fetch(
-          `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(
-            query,
-          )}.json?access_token=${config.mapboxToken}&types=place,locality,neighborhood,address&limit=5`,
-          { signal: controller.signal },
-        );
-        if (res.ok) {
-          const data = await res.json();
-          setSuggestions((data.features as MapboxFeature[]) || []);
-          setShowDropdown(true);
-        }
+        const features = await mapboxGeocode(query, {
+          types: "place,locality,neighborhood,address",
+          limit: 5,
+          signal: controller.signal,
+        });
+        setSuggestions(features);
+        setShowDropdown(true);
       } catch (e) {
         if ((e as Error)?.name === "AbortError") return;
         console.warn("Mapbox geocode error:", e);

@@ -114,6 +114,7 @@ export interface Venue {
   category?: string;
   country?: string;
   state?: string;
+  district?: string;
   city?: string;
 }
 
@@ -125,6 +126,7 @@ export interface VenueUpdatePayload {
   address?: string;
   city?: string;
   state?: string;
+  district?: string;
   country?: string;
   boundary?: [number, number][];
   price: number;
