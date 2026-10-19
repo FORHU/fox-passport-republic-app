@@ -32,6 +32,16 @@ const realLogin = async (data: LoginFormData): Promise<LoginResponse> => {
     if (!result.error && result.data) {
       const user = ((result.data as any)?.user || {}) as Record<string, any>;
       const token = (result.data as any)?.session?.token || "";
+      // Better Auth's user has no `permissions`, and every client-side gate
+      // (the admin console included) reads them - so take them from /profile
+      // now rather than showing "Permission Denied" until the next poll.
+      try {
+        const { data: profile } = await api.get("/profile");
+        const permissions = (profile?.data ?? profile)?.permissions;
+        if (Array.isArray(permissions)) user.permissions = permissions;
+      } catch {
+        // Login still succeeds; the profile poll fills them in later.
+      }
       return {
         accessToken: token,
         refreshToken: token,
