@@ -8,7 +8,7 @@ import { useAuthStore } from "@/shared/auth/useAuthStore";
 import { LoginFormData, SignupFormData } from "@/shared/lib/schema";
 import { LoginResponse } from "@/shared/auth/types";
 import { canAccessAdmin } from "@/shared/lib/permissions";
-import { APP_HOME } from "@/shared/lib/dashboard-path";
+import { takeReturnTo } from "@/shared/auth/returnTo";
 
 // These used to go through a private axios instance pointed straight at
 // `config.apiUrl` - the one place the browser talked to the API directly, and
@@ -32,6 +32,16 @@ const realLogin = async (data: LoginFormData): Promise<LoginResponse> => {
     if (!result.error && result.data) {
       const user = ((result.data as any)?.user || {}) as Record<string, any>;
       const token = (result.data as any)?.session?.token || "";
+      // Better Auth's user has no `permissions`, and every client-side gate
+      // (the admin console included) reads them - so take them from /profile
+      // now rather than showing "Permission Denied" until the next poll.
+      try {
+        const { data: profile } = await api.get("/profile");
+        const permissions = (profile?.data ?? profile)?.permissions;
+        if (Array.isArray(permissions)) user.permissions = permissions;
+      } catch {
+        // Login still succeeds; the profile poll fills them in later.
+      }
       return {
         accessToken: token,
         refreshToken: token,
@@ -141,7 +151,7 @@ export const useLogin = () => {
         localStorage.removeItem("fp_new_user");
         router.push("/onboarding");
       } else {
-        router.push(APP_HOME);
+        router.push(takeReturnTo());
       }
     },
     onError: (error: any, variables) => {

@@ -325,14 +325,19 @@ function DatePicker({
 }
 
 /**
- * Find an event: what, where and when, all optional. It goes to the same
- * results page the rest of the app uses.
+ * Find an event: what, where and when, all optional. It goes to the package
+ * results (/packages), which signed-out visitors can browse.
  */
-export function HeroSearch() {
+export function HeroSearch({
+  initial,
+}: {
+  /** Prefill, for the results page's "change your search" bar. */
+  initial?: { what?: string; where?: string; when?: string };
+} = {}) {
   const router = useRouter();
-  const [what, setWhat] = useState("");
-  const [where, setWhere] = useState("");
-  const [when, setWhen] = useState("");
+  const [what, setWhat] = useState(initial?.what ?? "");
+  const [where, setWhere] = useState(initial?.where ?? "");
+  const [when, setWhen] = useState(initial?.when ?? "");
 
   const submit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -343,7 +348,8 @@ export function HeroSearch() {
       q.set("label", where.trim());
     }
     if (when) q.set("startDate", when);
-    router.push(`/search${q.toString() ? `?${q}` : ""}`);
+    // Package results, open to everyone; an account is only asked for at Reserve.
+    router.push(`/packages${q.toString() ? `?${q}` : ""}`);
   };
 
   return (

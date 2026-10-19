@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import {} from "next/navigation";
@@ -18,8 +18,12 @@ import ProposePartnershipModal from "@/features/partnership/components/ProposePa
 import { useQuery } from "@tanstack/react-query";
 import { fetchEventLineItems } from "@/features/event/api/marketplaceItems";
 import { useAuthStore } from "@/shared/auth/useAuthStore";
-import { useRouter as useNavigationRouter } from "next/navigation";
+import {
+  useRouter as useNavigationRouter,
+  useSearchParams,
+} from "next/navigation";
 import { assetUrl } from "@/shared/lib/assets";
+import { signInThen } from "@/shared/auth/returnTo";
 
 const CATEGORY_ICONS: Record<string, string> = {
   music: "music_note",
@@ -87,6 +91,20 @@ export function EventDetailView({
 
   const maxAttendees: number | null = template?.maxAttendees ?? null;
   const category: string = template?.category ?? "";
+
+  // Designing a custom experience needs an account. Signed out, sign in first;
+  // `?custom=1` brings the user back here with the builder open.
+  const openCustomBuilder = () => {
+    if (user) setIsCustomBookingOpen(true);
+    else signInThen(`/event/${eventId}?custom=1`);
+  };
+
+  const searchParams = useSearchParams();
+  useEffect(() => {
+    if (searchParams.get("custom") !== "1" || !user) return;
+    setIsCustomBookingOpen(true);
+    router.replace(`/event/${eventId}`, { scroll: false });
+  }, [searchParams, user, eventId, router]);
 
   const handleProposePartnership = () => {
     // Basic redirect for non-partners, although backend may supply a clearer flag in V2
@@ -330,7 +348,7 @@ export function EventDetailView({
                 <EventInclusions
                   inclusions={inclusions}
                   isPreview={isPreview}
-                  onCustomizeClick={() => setIsCustomBookingOpen(true)}
+                  onCustomizeClick={openCustomBuilder}
                 />
 
                 {(inclusions.length > 0 || isPreview) && (
@@ -393,7 +411,14 @@ export function EventDetailView({
                 price={price}
                 platformFee={platformFee}
                 isPreview={isPreview}
-                onCustomExperienceClick={() => setIsCustomBookingOpen(true)}
+                onCustomExperienceClick={openCustomBuilder}
+                bookingSummary={{
+                  title: template.name || "Untitled Event",
+                  image: templateImages[0],
+                  place: location ?? undefined,
+                  date: eventDate ?? undefined,
+                  price: price > 0 ? price : undefined,
+                }}
               />
             </div>
           </div>

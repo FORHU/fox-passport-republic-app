@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/shared/auth/useAuthStore";
+import { takeReturnTo } from "@/shared/auth/returnTo";
 import RequireAuth from "@/shared/auth/RequireAuth";
 import { toast } from "sonner";
 import api from "@/shared/lib/axios";
@@ -371,7 +372,7 @@ export default function OnboardingClient({ user: serverUser }: { user: any }) {
 
               <div className="relative space-y-3">
                 <button
-                  onClick={() => router.push("/search")}
+                  onClick={() => router.push(takeReturnTo())}
                   className="group w-full bg-white/[0.03] rounded-[1.5rem] p-5 sm:p-6 text-left border border-white/5 hover:border-accent/40 hover:bg-white/[0.06] transition-all duration-300"
                 >
                   <div className="flex items-center gap-4">
@@ -676,7 +677,9 @@ export default function OnboardingClient({ user: serverUser }: { user: any }) {
                 <button
                   type="button"
                   onClick={() =>
-                    router.push(hasExistingRoles ? "/creator-dashboard" : "/")
+                    router.push(
+                      hasExistingRoles ? "/creator-dashboard" : takeReturnTo(),
+                    )
                   }
                   className="sm:ml-auto py-3 px-6 rounded-xl border border-white/10 text-white/70 text-sm font-bold hover:bg-white/5 hover:text-white transition-colors"
                 >

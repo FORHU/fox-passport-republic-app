@@ -76,7 +76,7 @@ export const pollWhileVisible = () => {
  */
 export const TOPIC_QUERY_KEYS: Record<string, string[][]> = {
   "admin:pending": [["admin-data"]],
-  venues: [["host-venues"], ["host-venue-stats"], ["host-data"]],
+  venues: [["host-data"]],
   events: [
     ["user-upcoming-events"],
     ["host-data"],

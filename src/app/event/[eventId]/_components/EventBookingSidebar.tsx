@@ -3,6 +3,8 @@
 import React from "react";
 import { useRouter } from "next/navigation";
 import { Money } from "@/shared/components/ui/Money";
+import { useAuthStore, type BookingSummary } from "@/shared/auth/useAuthStore";
+import { signInThen, signUpThen } from "@/shared/auth/returnTo";
 
 export interface EventBookingSidebarProps {
   eventId: string;
@@ -12,6 +14,8 @@ export interface EventBookingSidebarProps {
   platformFee?: number | null;
   isPreview?: boolean;
   onCustomExperienceClick: () => void;
+  /** Shown beside the sign-up form when a signed-out visitor reserves. */
+  bookingSummary?: BookingSummary;
 }
 
 export function EventBookingSidebar({
@@ -20,14 +24,21 @@ export function EventBookingSidebar({
   platformFee = null,
   isPreview = false,
   onCustomExperienceClick,
+  bookingSummary,
 }: EventBookingSidebarProps) {
   const router = useRouter();
+  const user = useAuthStore((s) => s.user);
   // `price` already carries the fee when the API priced it, so the package
   // line is the remainder and the total is `price` itself — never fee + fee.
   const packageAmount = platformFee === null ? price : price - platformFee;
 
+  // /booking is protected: signed out, sign in here and resume after, rather
+  // than being bounced to the landing page by proxy.ts.
   const handleReserve = () => {
-    router.push(`/booking/config?templateId=${eventId}`);
+    const path = `/booking/config?templateId=${eventId}`;
+    if (user) router.push(path);
+    else if (bookingSummary) signUpThen(path, bookingSummary);
+    else signInThen(path);
   };
 
   return (

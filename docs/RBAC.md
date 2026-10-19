@@ -528,8 +528,6 @@ admin-data
 
 venues
     ↓
-host-venues
-host-venue-stats
 host-data
 
 bookings

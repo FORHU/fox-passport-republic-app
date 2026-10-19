@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useRef, useCallback } from "react";
+import { useQuery } from "@tanstack/react-query";
 import {
   GalleryItem,
   VENUE_TYPES,
@@ -8,7 +9,12 @@ import {
 import CancellationPolicyPicker from "@/shared/components/ui/CancellationPolicyPicker";
 import { StyledSelect } from "@/shared/components/ui/StyledSelect";
 import { CascadingLocationFields } from "@/shared/components/ui/CascadingLocationFields";
-import { geocodeCountryCenter } from "@/shared/lib/geocoding";
+import {
+  geocodeCountryCenter,
+  geocodePlace,
+  type GeoMatch,
+} from "@/shared/lib/geocoding";
+import { fetchBarangays } from "@/shared/api/geo";
 import { VenuePolygonMapPicker } from "@/features/venue/components/venue-builder/VenuePolygonMapPicker";
 
 interface VenueDetailsFormProps {
@@ -20,6 +26,7 @@ interface VenueDetailsFormProps {
   location: string;
   city: string;
   state: string;
+  district: string;
   country: string;
   lat?: number | null;
   lng?: number | null;
@@ -36,6 +43,7 @@ interface VenueDetailsFormProps {
   onLocationChange: (loc: string) => void;
   onCityChange: (city: string) => void;
   onStateChange: (state: string) => void;
+  onDistrictChange: (district: string) => void;
   onCountryChange: (country: string) => void;
   onLatLngChange?: (lat: number, lng: number) => void;
   onBoundaryChange?: (boundary: [number, number][] | null) => void;
@@ -54,6 +62,7 @@ export function VenueDetailsForm({
   location,
   city,
   state,
+  district,
   country,
   lat = null,
   lng = null,
@@ -70,6 +79,7 @@ export function VenueDetailsForm({
   onLocationChange,
   onCityChange,
   onStateChange,
+  onDistrictChange,
   onCountryChange,
   onLatLngChange = () => {},
   onBoundaryChange = () => {},
@@ -79,6 +89,49 @@ export function VenueDetailsForm({
   onCloseGuide,
 }: VenueDetailsFormProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const isPhilippines = /^philippines$/i.test(country.trim());
+
+  const barangays = useQuery({
+    queryKey: ["geo", "barangays", state, city],
+    queryFn: () => fetchBarangays("PH", state, city),
+    enabled: isPhilippines && !!state && !!city,
+    staleTime: Infinity,
+  });
+
+  /**
+   * Move the map to the most specific place picked, each level searched
+   * inside the one above it, so "Baguio" in Benguet cannot land on a
+   * same-named place elsewhere.
+   */
+  const locate = useCallback(
+    async (code: string, prov?: string, town?: string, brgy?: string) => {
+      const show = (hit: GeoMatch | null) => {
+        if (hit) onLatLngChange(hit.center[1], hit.center[0]);
+      };
+      // Countries without states go straight to the city.
+      const province = prov ? await geocodePlace(prov, code, "region") : null;
+      if (!town) return show(province);
+      const townName = town.replace(/^city of /i, "");
+      const townHit =
+        (await geocodePlace(
+          townName,
+          code,
+          "place,locality,district",
+          province?.bbox,
+        )) ??
+        province;
+      if (!brgy) return show(townHit);
+      show(
+        (await geocodePlace(
+          `${brgy}, ${townName}`,
+          code,
+          "neighborhood,locality,place",
+          townHit?.bbox ?? province?.bbox,
+        )) ?? townHit,
+      );
+    },
+    [onLatLngChange],
+  );
 
   const openFilePicker = useCallback(() => {
     fileInputRef.current?.click();
@@ -202,17 +255,31 @@ export function VenueDetailsForm({
             </div>
 
             {/* Country → State → City, each locked until the one before it is
-                picked (shared/components/ui/CascadingLocationFields). A new
-                country also recentres the map on it. */}
+                picked (shared/components/ui/CascadingLocationFields). Each new
+                pick also recentres the map on it. */}
             <CascadingLocationFields
               value={{ country, state, city }}
+              strict
+              suggestCities
               onChange={(next, { countryCode: code }) => {
-                if (next.country !== country) {
-                  if (code) {
-                    geocodeCountryCenter(code).then((center) => {
-                      if (center) onLatLngChange(center[1], center[0]);
-                    });
-                  }
+                if (code && next.country !== country) {
+                  geocodeCountryCenter(code).then((center) => {
+                    if (center) onLatLngChange(center[1], center[0]);
+                  });
+                } else if (
+                  code &&
+                  (next.state || next.city) &&
+                  (next.state !== state || next.city !== city)
+                ) {
+                  locate(
+                    code,
+                    next.state || undefined,
+                    next.city || undefined,
+                  );
+                }
+                // A barangay belongs to one city; a new city clears it.
+                if (next.city !== city || next.state !== state) {
+                  onDistrictChange("");
                 }
                 onCountryChange(next.country);
                 onStateChange(next.state);
@@ -220,6 +287,42 @@ export function VenueDetailsForm({
               }}
               onCoordinates={(lat, lng) => onLatLngChange(lat, lng)}
             />
+
+            {/* Barangay in the Philippines - required, from the official
+                PSGC list for the chosen city. District elsewhere, optional. */}
+            <div>
+              <label className="text-[10px] uppercase font-bold text-white/40 tracking-widest mb-2 block">
+                {isPhilippines ? "Barangay *" : "District"}
+              </label>
+              {isPhilippines ? (
+                <StyledSelect
+                  key={`${state}-${city}`}
+                  value={district}
+                  options={barangays.data ?? []}
+                  onChange={(brgy) => {
+                    onDistrictChange(brgy);
+                    locate("PH", state, city, brgy);
+                  }}
+                  disabled={!city || barangays.isLoading}
+                  placeholder={
+                    !city
+                      ? "Pick a city first"
+                      : barangays.isLoading
+                        ? "Loading barangays..."
+                        : "Select barangay..."
+                  }
+                />
+              ) : (
+                <div className="flex items-center gap-2 bg-white/5 px-4 py-3 rounded-xl border border-white/5">
+                  <input
+                    value={district}
+                    onChange={(e) => onDistrictChange(e.target.value)}
+                    placeholder="Optional"
+                    className="bg-transparent border-none p-0 text-sm text-white placeholder-white/30 focus:ring-0 w-full"
+                  />
+                </div>
+              )}
+            </div>
 
             {/* Service Area */}
             <div>

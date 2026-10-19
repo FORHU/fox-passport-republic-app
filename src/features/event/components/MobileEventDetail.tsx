@@ -5,6 +5,8 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { Money } from "@/shared/components/ui/Money";
 import { assetUrl } from "@/shared/lib/assets";
+import { useAuthStore } from "@/shared/auth/useAuthStore";
+import { signUpThen } from "@/shared/auth/returnTo";
 
 interface MobileEventDetailProps {
   event?: any;
@@ -28,6 +30,7 @@ export default function MobileEventDetail({
   onShareClick,
 }: MobileEventDetailProps) {
   const router = useRouter();
+  const user = useAuthStore((s) => s.user);
 
   // No invented details: anything the template lacks is simply left out.
   const name = event?.name || "Untitled event";
@@ -323,7 +326,15 @@ export default function MobileEventDetail({
             disabled={isPreview}
             onClick={() => {
               if (isPreview || !event?.id) return;
-              router.push(`/booking/config?templateId=${event.id}`);
+              const path = `/booking/config?templateId=${event.id}`;
+              if (user) router.push(path);
+              else
+                signUpThen(path, {
+                  title: name,
+                  image: event?.images?.[0]?.url,
+                  place: locationText || undefined,
+                  price: price ?? undefined,
+                });
             }}
             style={{
               background: isPreview ? "rgba(204,255,0,0.3)" : "#ccff00",
