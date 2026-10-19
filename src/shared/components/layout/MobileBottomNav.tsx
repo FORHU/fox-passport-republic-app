@@ -2,41 +2,23 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 import { useAuthStore } from "@/shared/auth/useAuthStore";
 
-interface MobileBottomNavProps {
-  onLoginClick?: () => void;
-}
-
-export default function MobileBottomNav({
-  onLoginClick,
-}: MobileBottomNavProps) {
+/** The app's mobile nav — signed-in only, like the desktop app tabs. */
+export default function MobileBottomNav() {
   const pathname = usePathname();
-  const router = useRouter();
-  const { user } = useAuthStore();
+  const { user, isLoading } = useAuthStore();
   const isAuthenticated = !!user;
 
   const isActive = (href: string) =>
     href === "/" ? pathname === "/" : pathname.startsWith(href);
 
-  const handleProfileClick = () => {
-    if (isAuthenticated) {
-      router.push("/user");
-    } else {
-      onLoginClick?.();
-    }
-  };
-
-  const handleBookingsClick = () => {
-    if (isAuthenticated) {
-      router.push("/booking");
-    } else {
-      onLoginClick?.();
-    }
-  };
-
   const [imgError, setImgError] = useState(false);
+
+  // Signed-out visitors are on the landing side, which has no app nav.
+  // Nothing while the store hydrates, so the bar never flashes for them.
+  if (isLoading || !user) return null;
 
   const rawImg = user?.imgId;
   const avatarUrl = rawImg
@@ -50,23 +32,13 @@ export default function MobileBottomNav({
     "?";
 
   const tabs = [
-    { icon: "home", href: "/", label: "Home" },
-    { icon: "explore", href: "/search", label: "Explore" },
+    { icon: "group", href: "/search", label: "Foxers" },
+    { icon: "map", href: "/venues/map", label: "Map" },
   ];
 
   const rightTabs = [
-    {
-      icon: "confirmation_number",
-      href: "/booking",
-      label: "Bookings",
-      onClick: handleBookingsClick,
-    },
-    {
-      icon: "person",
-      href: "/user",
-      label: "Profile",
-      onClick: handleProfileClick,
-    },
+    { icon: "confirmation_number", href: "/booking", label: "Bookings" },
+    { icon: "person", href: "/user", label: "Profile" },
   ];
 
   const NavIcon = ({
@@ -244,37 +216,21 @@ export default function MobileBottomNav({
       </div>
 
       {/* Right tabs */}
-      {rightTabs.map((tab) => {
-        const active = isActive(tab.href);
-        const content = (
+      {rightTabs.map((tab) => (
+        <Link
+          key={tab.href}
+          href={tab.href}
+          aria-label={tab.label}
+          className="flex items-center justify-center h-full"
+        >
           <NavIcon
             icon={tab.icon}
             label={tab.label}
-            active={active}
+            active={isActive(tab.href)}
             isProfile={tab.label === "Profile"}
           />
-        );
-
-        return tab.onClick ? (
-          <button
-            key={tab.href}
-            onClick={tab.onClick}
-            aria-label={tab.label}
-            className="flex items-center justify-center h-full"
-          >
-            {content}
-          </button>
-        ) : (
-          <Link
-            key={tab.href}
-            href={tab.href}
-            aria-label={tab.label}
-            className="flex items-center justify-center h-full"
-          >
-            {content}
-          </Link>
-        );
-      })}
+        </Link>
+      ))}
     </div>
   );
 }
