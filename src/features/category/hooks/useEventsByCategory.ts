@@ -11,16 +11,6 @@ interface UseEventsByCategoryReturn {
   refetch: () => Promise<void>;
 }
 
-// Helper function to convert category name to slug
-// Matches backend slug format: "Food & Dining" -> "food-dining"
-function categoryNameToSlug(name: string): string {
-  return name
-    .toLowerCase()
-    .replace(/\s+/g, "-")
-    .replace(/[^a-z0-9-]/g, "")
-    .replace(/-+/g, "-"); // Collapse multiple hyphens into one
-}
-
 export function useEventsByCategory(
   categoryName: string | null,
 ): UseEventsByCategoryReturn {
@@ -38,11 +28,12 @@ export function useEventsByCategory(
       setLoading(true);
       setError(null);
 
-      // Convert category name to slug format
-      const slug = categoryNameToSlug(categoryName);
-
+      // Same public endpoint as the server fetch (getEventsByCategory in
+      // shared/lib/server/data.ts). There is no /events/by-category route; the
+      // API ignores a `category` that isn't one (e.g. "all") and lists every one.
       const response = await api.get<EventsApiResponse>(
-        `/events/by-category/${slug}`,
+        "/event-templates/browse",
+        { params: { category: categoryName } },
       );
 
       if (response.data.success) {

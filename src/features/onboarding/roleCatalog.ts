@@ -7,6 +7,8 @@
  */
 export interface RoleCatalogEntry {
   type: string;
+  /** URL segment of the role's public docs page, /earn/<slug>. Matches the landing ROLES key. */
+  slug: string;
   roleType: string;
   href: string;
   color: string;
@@ -25,6 +27,7 @@ const BUSINESS_DOCUMENTS =
 export const ROLES: RoleCatalogEntry[] = [
   {
     type: "service",
+    slug: "talent",
     roleType: "serviceFoxer",
     href: "/foxer/apply?type=service",
     color: "#00d2ff",
@@ -44,6 +47,7 @@ export const ROLES: RoleCatalogEntry[] = [
   },
   {
     type: "performer",
+    slug: "performer",
     roleType: "performerFoxer",
     href: "/foxer/apply?type=performer",
     color: "#f59e0b",
@@ -63,6 +67,7 @@ export const ROLES: RoleCatalogEntry[] = [
   },
   {
     type: "asset",
+    slug: "gear",
     roleType: "gearFoxer",
     href: "/foxer/apply?type=asset",
     color: "#a78bfa",
@@ -82,6 +87,7 @@ export const ROLES: RoleCatalogEntry[] = [
   },
   {
     type: "venue",
+    slug: "venue",
     roleType: "venueFoxer",
     href: "/venue-foxer/apply",
     color: "var(--accent-text)",
@@ -101,6 +107,7 @@ export const ROLES: RoleCatalogEntry[] = [
   },
   {
     type: "event",
+    slug: "event",
     roleType: "eventFoxer",
     href: "/creator-dashboard/apply",
     color: "#ff00aa",
@@ -120,6 +127,7 @@ export const ROLES: RoleCatalogEntry[] = [
   },
   {
     type: "organizer",
+    slug: "organizer",
     roleType: "organizer",
     href: "/foxer/apply?type=organizer",
     color: "#e879f9",
@@ -138,6 +146,7 @@ export const ROLES: RoleCatalogEntry[] = [
   },
   {
     type: "investor",
+    slug: "partner",
     roleType: "investor",
     href: "/foxer/apply-investor",
     color: "#10b981",
