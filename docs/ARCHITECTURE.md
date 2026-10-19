@@ -245,7 +245,7 @@ declares a permission.
 | Topic | Invalidates |
 |---|---|
 | `admin:pending` | `admin-data` |
-| `venues` | `host-venues`, `host-venue-stats`, `host-data` |
+| `venues` | `host-data` |
 | `events` | `user-upcoming-events`, `host-data`, `admin-data` |
 | `bookings` | `host-data`, `user-upcoming-events`, `admin-data`, `user-bookings` |
 | `disputes` | `admin/disputes` (prefix — covers the per-type tables) |
