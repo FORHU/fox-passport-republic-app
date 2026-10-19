@@ -32,6 +32,7 @@ function VenueEditContent({ id }: Props) {
     location,
     city,
     state,
+    district,
     country,
     lat,
     lng,
@@ -60,6 +61,7 @@ function VenueEditContent({ id }: Props) {
     setLocation,
     setCity,
     setState,
+    setDistrict,
     setCountry,
     setLat,
     setLng,
@@ -158,6 +160,7 @@ function VenueEditContent({ id }: Props) {
                   location={location}
                   city={city}
                   state={state}
+                  district={district}
                   country={country}
                   lat={lat}
                   lng={lng}
@@ -174,6 +177,7 @@ function VenueEditContent({ id }: Props) {
                   onLocationChange={setLocation}
                   onCityChange={setCity}
                   onStateChange={setState}
+                  onDistrictChange={setDistrict}
                   onCountryChange={setCountry}
                   onLatLngChange={(lat, lng) => {
                     setLat(lat);

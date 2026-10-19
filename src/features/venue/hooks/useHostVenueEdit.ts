@@ -226,6 +226,7 @@ export function useHostVenueEdit(venueId: string) {
         address: builder.location,
         city: builder.city,
         state: builder.state || undefined,
+        district: builder.district || undefined,
         country: builder.country,
         boundary: builder.boundary ?? undefined,
         price: builder.baseRate,
@@ -401,6 +402,7 @@ export function useHostVenueEdit(venueId: string) {
 
         builder.setCity(found?.city ?? "");
         builder.setState(found?.state ?? "");
+        builder.setDistrict(found?.district ?? "");
         builder.setCountry(found?.country ?? "");
         builder.setLat(found?.lat != null ? Number(found.lat) : null);
         builder.setLng(found?.lng != null ? Number(found.lng) : null);

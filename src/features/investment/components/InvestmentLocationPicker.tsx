@@ -14,6 +14,7 @@ import {
   setupMapboxFallback,
 } from "@/shared/lib/mapbox";
 import { useUserLocation } from "@/shared/hooks/useUserLocation";
+import { mapboxGeocode } from "@/shared/lib/geocoding";
 import "mapbox-gl/dist/mapbox-gl.css";
 
 interface LocationData {
@@ -126,10 +127,9 @@ export default function InvestmentLocationPicker({
       geocodeAbortRef.current = controller;
 
       try {
-        const url = `https://api.mapbox.com/geocoding/v5/mapbox.places/${lng},${lat}.json?access_token=${token}`;
-        const res = await fetch(url, { signal: controller.signal });
-        if (!res.ok) return;
-        const data = await res.json();
+        const features = await mapboxGeocode([lng, lat], {
+          signal: controller.signal,
+        });
 
         if (!isMountedRef.current || geocodeAbortRef.current !== controller)
           return;
@@ -139,9 +139,9 @@ export default function InvestmentLocationPicker({
         let state = "";
         let country = "";
 
-        if (data.features && data.features.length > 0) {
-          streetAddress = data.features[0].place_name;
-          for (const feat of data.features) {
+        if (features.length > 0) {
+          streetAddress = features[0].place_name;
+          for (const feat of features) {
             if (feat.place_type.includes("country")) {
               country = feat.text;
             } else if (feat.place_type.includes("region")) {
@@ -191,23 +191,18 @@ export default function InvestmentLocationPicker({
       searchAbortRef.current = controller;
 
       try {
-        const countryFilter = countryCode
-          ? `&country=${countryCode.toLowerCase()}`
-          : "";
-        const proximity =
-          value.lng != null && value.lat != null
-            ? `&proximity=${value.lng},${value.lat}`
-            : "";
-        const url = `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(
-          query.trim(),
-        )}.json?access_token=${token}${countryFilter}${proximity}&limit=5`;
-
-        const res = await fetch(url, { signal: controller.signal });
-        if (!res.ok) throw new Error("Search failed");
-        const data = await res.json();
+        const features = await mapboxGeocode(query.trim(), {
+          country: countryCode || undefined,
+          proximity:
+            value.lng != null && value.lat != null
+              ? [value.lng, value.lat]
+              : undefined,
+          limit: 5,
+          signal: controller.signal,
+        });
 
         if (isMountedRef.current && searchAbortRef.current === controller) {
-          setSuggestions(data.features || []);
+          setSuggestions(features);
         }
       } catch (err: unknown) {
         if ((err as Error)?.name === "AbortError") return;

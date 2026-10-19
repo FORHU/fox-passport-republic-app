@@ -33,6 +33,7 @@ export default function VenueCreationClient() {
     location,
     city,
     state,
+    district,
     country,
     lat,
     lng,
@@ -61,6 +62,7 @@ export default function VenueCreationClient() {
     setLocation,
     setCity,
     setState,
+    setDistrict,
     setCountry,
     setLat,
     setLng,
@@ -202,6 +204,7 @@ export default function VenueCreationClient() {
                 location={location}
                 city={city}
                 state={state}
+                district={district}
                 country={country}
                 lat={lat}
                 lng={lng}
@@ -217,6 +220,7 @@ export default function VenueCreationClient() {
                 onLocationChange={setLocation}
                 onCityChange={setCity}
                 onStateChange={setState}
+                onDistrictChange={setDistrict}
                 onCountryChange={setCountry}
                 onLatLngChange={(lat, lng) => {
                   setLat(lat);

@@ -20,6 +20,7 @@ interface VenueBuilderState {
   country: string;
   city: string;
   state: string;
+  district: string;
   gallery: GalleryItem[];
 
   // Cancellation Policy
@@ -61,6 +62,7 @@ interface VenueBuilderState {
   setCountry: (c: string) => void;
   setCity: (c: string) => void;
   setState: (s: string) => void;
+  setDistrict: (d: string) => void;
   setLat: (lat: number | null) => void;
   setLng: (lng: number | null) => void;
   setBoundary: (boundary: [number, number][] | null) => void;
@@ -112,6 +114,7 @@ const initialData = {
   country: "",
   city: "",
   state: "",
+  district: "",
   lat: null as number | null,
   lng: null as number | null,
   boundary: null as [number, number][] | null,
@@ -145,6 +148,7 @@ export const useVenueBuilderStore = create<VenueBuilderState>((set) => ({
   setCountry: (c) => set({ country: c }),
   setCity: (c) => set({ city: c }),
   setState: (s) => set({ state: s }),
+  setDistrict: (d) => set({ district: d }),
   setLat: (lat) => set({ lat }),
   setLng: (lng) => set({ lng }),
   setBoundary: (boundary) => set({ boundary }),
