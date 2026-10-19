@@ -32,7 +32,7 @@ const nextConfig = {
   turbopack: {},
   ...(isWindows ? {} : { output: "standalone" }),
   reactStrictMode: false,
-  allowedDevOrigins: ["192.168.1.34"],
+  allowedDevOrigins: ["192.168.1.34", "192.168.1.59"],
 
   // Keep a visited dynamic page's server payload in the client router cache
   // for 30s (Next 15+ defaults this to 0, i.e. every revisit re-renders on

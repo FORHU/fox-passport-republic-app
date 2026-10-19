@@ -25,8 +25,13 @@ interface LandingHeaderProps {
   };
 }
 
-const NAV_TABS = [
-  { label: "Explore", href: "/" },
+// Signed-out visitors get the landing page's own nav; signed-in users get the app's.
+const LANDING_TABS = [
+  { label: "Booking", href: "/#events" },
+  { label: "How It Works", href: "/#how-it-works" },
+];
+
+const APP_TABS = [
   { label: "Foxers", href: "/search" },
   { label: "Map", href: "/venues/map" },
   { label: "Foxer Republic", href: "/republic" },
@@ -36,8 +41,10 @@ export default function LandingHeader({
   onSignIn,
   search,
 }: LandingHeaderProps) {
-  const { isAuthenticated, openLogin } = useAuthStore();
+  const { isAuthenticated, isLoading, openLogin } = useAuthStore();
   const handleSignIn = onSignIn ?? openLogin;
+  // Nothing until the store hydrates, so signed-in users never flash the landing tabs.
+  const navTabs = isLoading ? [] : isAuthenticated ? APP_TABS : LANDING_TABS;
   const pathname = usePathname();
   const isTabActive = (href: string) =>
     href === "/" ? pathname === "/" : pathname?.startsWith(href);
@@ -77,7 +84,7 @@ export default function LandingHeader({
 
             {/* Desktop Navigation */}
             <nav className="hidden lg:flex items-center gap-2 bg-black/20 p-1.5 rounded-full border border-white/5">
-              {NAV_TABS.map((tab) => {
+              {navTabs.map((tab) => {
                 const active = isTabActive(tab.href);
                 return (
                   <div key={tab.href} className="relative">
@@ -154,7 +161,7 @@ export default function LandingHeader({
       </motion.header>
 
       {/* Mobile floating capsule bottom nav */}
-      <MobileBottomNav onLoginClick={handleSignIn} />
+      <MobileBottomNav />
     </>
   );
 }
