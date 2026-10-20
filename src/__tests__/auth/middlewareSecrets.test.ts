@@ -78,36 +78,25 @@ describe("the frontend holds no backend signing key", () => {
 describe("what middleware still does", () => {
   const middleware = read("src/proxy.ts");
 
-  const sessionCookies = (
-    middleware.match(/const SESSION_COOKIES = \[([^\]]+)\]/)?.[1] ?? ""
-  )
-    .match(/"[^"]+"/g)
-    ?.map((s) => s.slice(1, -1));
-
   it("gates on the presence of a session cookie", () => {
     expect(middleware).toMatch(/cookies\.get\(name\)/);
     expect(middleware).toMatch(/redirectToLogin/);
   });
 
-  it("accepts the cookie the login flow writes", () => {
-    const authActions = read("src/shared/lib/server/auth-actions.ts");
-    expect(sessionCookies, "middleware no longer names a cookie").toBeTruthy();
-    expect(
-      sessionCookies!.some((name) => authActions.includes(`"${name}"`)),
-    ).toBe(true);
-  });
-
-  // The login form signs in through Better Auth, which sets no `fox_token`.
-  // The guard once checked only `fox_token` and bounced every such user off
-  // every protected route on refresh. Whatever /api/proxy forwards as a
-  // session, the guard must let through.
-  it("accepts every cookie /api/proxy treats as a session", () => {
-    const route = read("src/app/api/proxy/[...path]/route.ts");
-    const forwarded = [
-      ...route.matchAll(/cookieStore\.get\("([^"]+)"\)/g),
-    ].map((m) => m[1]);
-    expect(forwarded.length).toBeGreaterThan(0);
-    for (const name of forwarded) expect(sessionCookies).toContain(name);
+  // The guard once checked a different list than /api/proxy and bounced every
+  // Better Auth user off every protected route on refresh. Every place that
+  // asks "is there a session?" now reads the one list, and none names a cookie
+  // of its own.
+  it.each([
+    "src/proxy.ts",
+    "src/app/api/proxy/[...path]/route.ts",
+    "src/shared/lib/server/data.ts",
+    "src/shared/lib/server/home-redirect.ts",
+    "src/shared/lib/server/auth-actions.ts",
+  ])("%s reads the shared session-cookie list", (file) => {
+    const source = read(file);
+    expect(source).toContain('from "@/shared/auth/session-cookies"');
+    expect(source).not.toMatch(/session_token"|"fox_token"/);
   });
 });
 

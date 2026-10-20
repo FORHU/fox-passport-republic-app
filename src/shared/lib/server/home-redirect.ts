@@ -1,6 +1,7 @@
 import { cookies } from "next/headers";
 import { APP_HOME } from "@/shared/lib/dashboard-path";
 import { getUser } from "./auth";
+import { SESSION_COOKIES } from "@/shared/auth/session-cookies";
 
 // Query params whose handlers live on "/" itself: the venue-search view
 // (location, category), SessionExpiredToast opening the login modal (auth),
@@ -14,12 +15,6 @@ const LANDING_PARAMS = [
   "facebookAuthError",
 ];
 
-// Same names, same order, as getAuthToken in ./data.ts.
-const SESSION_COOKIES = [
-  "better-auth.session_token",
-  "__Secure-better-auth.session_token",
-  "fox_token",
-];
 
 /**
  * Where "/" should send this visitor instead of rendering the landing page,

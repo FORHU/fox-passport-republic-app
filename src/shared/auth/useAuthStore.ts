@@ -1,27 +1,6 @@
 import { create } from "zustand";
 import { User, LoginResponse } from "@/shared/auth/types";
 
-/**
- * Reads the `fox_user` cookie `setAuthCookies` sets alongside the httpOnly
- * token cookies. Non-httpOnly by design (see `setAuthCookies`), carrying
- * profile data and no token.
- *
- * The cookie exists for the server, not for this: `getUser` in
- * `shared/lib/server/auth.ts` parses it when the API is unreachable, and
- * localStorage is invisible from there. Here it is only the fallback — see
- * `initialize`.
- */
-function readFoxUserCookie(): string | null {
-  if (typeof document === "undefined") return null;
-  const match = document.cookie.match(/(?:^|; )fox_user=([^;]*)/);
-  if (!match) return null;
-  try {
-    return decodeURIComponent(match[1]);
-  } catch {
-    return null;
-  }
-}
-
 type AuthView =
   "login" | "signup" | "forgot-password" | "reset-password" | "verify-email";
 
@@ -86,24 +65,11 @@ export const useAuthStore = create<AuthState>((set) => ({
     if (typeof window === "undefined") return;
 
     try {
-      // Tokens live in httpOnly cookies and are deliberately unreadable here.
-      // `fox_user` is profile display data only, so presence of a stored user
-      // is what rehydrates the session optimistically; the first proxied
-      // request settles whether the cookie is still valid.
-      //
-      // localStorage first, cookie second, because localStorage is the fresher
-      // of the two: `setUser` rewrites it on every profile fetch, while the
-      // `fox_user` cookie is only written at login and by `refreshUserSession`
-      // — the proxy's silent refresh does not touch it. Reading the cookie
-      // first served a stale name, avatar and `roleType` (which gates UI) on
-      // every reload until the next poll landed.
-      //
-      // The cookie remains the fallback for the case localStorage cannot
-      // cover: site storage cleared while cookies survive, e.g. by a privacy
-      // tool, where the session is still live and dropping to "logged out"
-      // would be wrong.
-      const storedUser =
-        localStorage.getItem("fox_user") ?? readFoxUserCookie();
+      // The session lives in an httpOnly cookie, deliberately unreadable here.
+      // `fox_user` in localStorage is profile display data only, so a stored
+      // user rehydrates the UI optimistically; the first proxied request
+      // settles whether the session is still valid.
+      const storedUser = localStorage.getItem("fox_user");
       const pendingVerificationEmail = localStorage.getItem(
         PENDING_VERIFICATION_EMAIL_KEY,
       );
@@ -152,7 +118,7 @@ export const useAuthStore = create<AuthState>((set) => ({
 
   setLoading: (loading) => set({ isLoading: loading }),
 
-  // `fox_user` holds profile data only. The token lives under `fox_token`;
+  // `fox_user` holds profile data only. The session is an httpOnly cookie;
   // duplicating it inside the user object just widened its exposure.
   setUser: (user) => {
     localStorage.setItem("fox_user", JSON.stringify(user));

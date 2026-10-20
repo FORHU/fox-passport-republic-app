@@ -1,19 +1,18 @@
 // src/lib/axios.ts
 import axios from "axios";
-import { isPreSessionAuthPath } from "@/shared/auth/public-endpoints";
 import { endSession } from "@/shared/auth/endSession";
 
 /**
  * Client-side API access.
  *
  * Requests go to the Next proxy (`src/app/api/proxy/[...path]/route.ts`), not
- * to the backend directly. The proxy reads the httpOnly `fox_token` cookie and
+ * to the backend directly. The proxy reads the httpOnly session cookie and
  * adds the Authorization header server-side, which is why there is no request
  * interceptor here and no token in `localStorage`.
  *
  * That removes three problems at once:
  *  - the access and refresh tokens are no longer readable by any script on the
- *    page, so `fox_token` being httpOnly is worth something again;
+ *    page, so the session cookie being httpOnly is worth something;
  *  - there is one token store instead of two that drifted apart on every
  *    client-side refresh;
  *  - refreshing is handled in one place that can actually persist the result,
@@ -43,17 +42,11 @@ export async function handleAuthError(error: unknown) {
     response?: { status?: number };
   };
 
-  // The proxy already tried a refresh. A 401 reaching here means the refresh
-  // cookie is gone or expired, so the session is genuinely over.
-  const url = err.config?.url ?? "";
+  // Better Auth sessions renew themselves, so a 401 means the session is over.
+  // (Sign-in and the other pre-session calls go through `authClient`, not this
+  // instance, so a wrong password never lands here.)
   if (
     err.response?.status === 401 &&
-    // Sign-in and the rest of the pre-session surface come through here too. A
-    // 401 from those is a wrong password, not a dead session; reading it as one
-    // would throw the user out of the login modal rather than show the error.
-    // One shared list rather than a hand-rolled pair of `includes` checks - the
-    // proxy consults the same one, and they must not drift.
-    !isPreSessionAuthPath(url) &&
     typeof window !== "undefined" &&
     !sessionEnding
   ) {
