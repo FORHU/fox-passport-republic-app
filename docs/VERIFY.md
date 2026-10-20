@@ -272,7 +272,7 @@ times to trigger focus changes.
 | B3 | citizen bookings live | **Pass** | Driven 20 Oct with Playwright on `/booking` (desktop layout) as `user@example.com`. The admin Bookings tab is read-only (no cancel action exists), so the trigger was the event's host instead: `host@example.com` called `PATCH /bookings/seed-booking-corporate-01/status` with `cancelled`, which goes through `announceBookingChanged` (the same `announceToUser(guest, "bookings")` path). `{"topic":"bookings"}` frame at +48ms; the "Q3 Team Strategy Summit" card went CONFIRMED → CANCELLED and lost its Cancel button at +157ms, no reload. Booking restored to `confirmed` afterwards. |
 | B4 | webhook → payer | **Pass**, after a fix | 10 Sep, driven end to end. See below. |
 | B5 | check-in both sides | **Pass** | Driven 12 Sep: set a test `ticketCode` on a booking with a distinct host (`host@example.com`) and guest (`jasmine.reyes@foxers.ph`), host called `PATCH /bookings/check-in`, both host's and guest's sessions received a `bookings`-topic frame within ~450ms of each other. |
-| C1 | signed-out redirects | **Pass, with a major caveat found 12 Sep** | See "proxy.ts is dead" below — the fast, pre-render redirect this check exists to verify doesn't fire at all for a non-JS request (`curl` gets 200 + full page shell for every protected route). Real, JS-executing browsers still land on `/`, correctly, via each tree's `requireAuth()` layout guard (confirmed via the `NEXT_REDIRECT` digest in the streamed RSC payload) - so the check "passes" for the client this file assumes (a browser), but the middleware layer it was written to exercise is not what's doing the work anymore. `/foxer` and `/reviews` 404 rather than redirecting - both are bare route trees with a `layout.tsx` but no `page.tsx`, so there's nothing to guard. |
+| C1 | signed-out redirects | **Pass** | Re-checked 20 Oct with `curl` against a production build: signed-out `/admin`, `/booking`, `/user`, `/checkout`, `/creator-dashboard`, `/venue-foxer` all 307 → `/?auth=required`. From 12 Sep to 20 Oct they answered 200 and only the layouts' `requireAuth()` redirected (in the RSC payload), because `proxy.ts` sat at the project root instead of next to `src/app/` — see below. `/foxer` and `/reviews` have a `layout.tsx` but no `page.tsx`. |
 | C2 | junk cookie bounced | **Pass** | Driven 12 Sep: a garbage `fox_token` value still lands on `/` (via the same `requireAuth()` path as C1, not middleware — see caveat above). |
 | C3 | no secret in app | **Pass** | Driven 12 Sep: `ACCESS_TOKEN_SECRET` greps clean across `src/` and `proxy.ts` - the only matches are the test asserting its absence and a comment explaining why it's gone. |
 | D | secretary boundary | **Pass** | Driven 12 Sep as `secretary@example.com`: `/admin` opens; sidebar shows exactly Dashboard/Events/Venues/Map/Assets/Services and no Citizens/Bookings/Disputes/Policies/Settings; `GET /users` and `GET /admin/disputes` (through the proxy, with real cookies) both 403; `GET /admin/venues/pending` (the approve queue) 200. |
@@ -311,46 +311,14 @@ future, whoever does that will discover this gap the hard way. Worth either
 deleting `PATCH /bookings/:id/dispute` and the `disputed` status on `Booking`
 if genuinely unused, or building the missing admin view for it.
 
-### proxy.ts is dead in this Next.js version — found running C1, 12 Sep
+### proxy.ts did not run — found running C1, 12 Sep; fixed 20 Oct
 
-**The app's route-guard file (`middleware.ts`, renamed to `proxy.ts` the same
-day per Next's own deprecation notice) does not register at all in Next.js
-16.3.4** - not in dev (webpack or Turbopack), not in a real `next build`.
-`.next/{dev/,}server/middleware-manifest.json` stays `{ "middleware": {},
-"sortedMiddleware": [] }` regardless of the file's name or location (project
-root or `src/`), and every one of the 16 `PROTECTED_ROUTES` trees returns a
-plain `200` with real page markup to a signed-out `curl` request - no
-redirect, at the HTTP level, at all.
-
-**This is not a live data leak.** Every protected route's own `layout.tsx`
-still calls `requireAuth()`/`requireAdmin()` server-side, which still
-correctly resolves to `redirect("/")` - confirmed by finding the literal
-`NEXT_REDIRECT;replace;/;307` digest inside the streamed RSC payload `curl`
-receives. A real, JS-executing browser processes that digest during
-hydration and navigates away before any protected data fetch resolves, which
-is exactly what Playwright observed in A1-D above. What's actually lost is
-the *fast path*: an instant 307 before any page code runs, and the only
-thing that ever protected a non-JS client (a bot, a crawler, a disabled-JS
-browser) — those now see a full, real page shell (title, layout, component
-names in the RSC payload) for every protected route, with no server-rendered
-data in it, but also no redirect.
-
-Traced as far as reasonably possible into `next`'s own source
-(`node_modules/next/dist/server/lib/router-utils/setup-dev-bundler.js`):
-the file is *detected* (the deprecation warning fires, and the "both
-middleware.ts and proxy.ts exist" conflict check works), but the
-`middlewareFilePath`/`proxyFilePath` variables that detection sets are never
-read again afterward — nothing wires the detected file into the actual
-compiled middleware entry. Reproduced with both the old and new filename;
-this is not a naming fix. This looks like an upstream Next.js 16.3.4 bug in
-the transition between the two conventions, not something fixable from this
-codebase. Worth checking after any Next.js patch update, and worth an
-upstream issue if one doesn't already exist for it.
-
-**Renamed to `proxy.ts` anyway** (matching Next's own codemod recommendation)
-since it's the objectively correct target regardless of the current bug, and
-it's a two-line diff (the file plus `src/__tests__/auth/middlewareSecrets.test.ts`,
-which reads it by literal path). `pnpm test` still 144/144 green.
+The guard never ran because it sat at the project root, and Next only
+registers a proxy at the same level as `app/` — here `src/app/`. It was
+recorded as an upstream Next.js 16.3.4 bug at the time (empty
+`middleware-manifest.json`, which a Node-runtime proxy is not listed in
+anyway). Moved to `src/proxy.ts`; the build prints `ƒ Proxy (Middleware)` and
+signed-out requests now get a 307 before any page code runs.
 
 Anything that fails: record which frame was or was not in the WS pane. "It did
 not update" and "it updated in 60 seconds" are different bugs, and the second one

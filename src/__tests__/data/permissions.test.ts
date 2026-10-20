@@ -108,7 +108,7 @@ describe("the vocabulary matches the API's", () => {
 
 describe("the gates are expressed as capabilities", () => {
   it.each([
-    "proxy.ts",
+    "src/proxy.ts",
     "src/shared/lib/server/auth.ts",
     "src/features/admin/components/AdminAuthGuard.tsx",
     "src/shared/lib/dashboard-path.ts",

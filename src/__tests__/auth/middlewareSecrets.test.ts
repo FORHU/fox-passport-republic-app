@@ -45,20 +45,17 @@ function sourceFiles(dir: string, acc: string[] = []): string[] {
 
 describe("the frontend holds no backend signing key", () => {
   it("proxy.ts does not read ACCESS_TOKEN_SECRET", () => {
-    expect(read("proxy.ts")).not.toMatch(/ACCESS_TOKEN_SECRET/);
+    expect(read("src/proxy.ts")).not.toMatch(/ACCESS_TOKEN_SECRET/);
   });
 
   it("proxy.ts does not verify the token itself", () => {
-    const middleware = read("proxy.ts");
+    const middleware = read("src/proxy.ts");
     expect(middleware).not.toMatch(/jwtVerify/);
     expect(middleware).not.toMatch(/from "jose"/);
   });
 
   it("no source file anywhere reads it", () => {
-    const offenders = [
-      join(root, "proxy.ts"),
-      ...sourceFiles(join(root, "src")),
-    ]
+    const offenders = sourceFiles(join(root, "src"))
       .filter((file) =>
         stripComments(readFileSync(file, "utf-8")).includes(
           "ACCESS_TOKEN_SECRET",
@@ -79,7 +76,7 @@ describe("the frontend holds no backend signing key", () => {
 });
 
 describe("what middleware still does", () => {
-  const middleware = read("proxy.ts");
+  const middleware = read("src/proxy.ts");
 
   it("gates on the presence of the session cookie", () => {
     expect(middleware).toMatch(/cookies\.get\(TOKEN_COOKIE\)/);
@@ -103,7 +100,7 @@ describe("what middleware still does", () => {
  * adding one to `PROTECTED_ROUTES` without guarding it fails this.
  */
 describe("every protected route tree guards itself", () => {
-  const middleware = read("proxy.ts");
+  const middleware = read("src/proxy.ts");
   const routes = (
     middleware.match(/const PROTECTED_ROUTES = \[([\s\S]*?)\]/)?.[1] ?? ""
   )
