@@ -8,7 +8,7 @@ import {
   loadLandingEvents,
   type LandingEvent,
   type LandingVenue,
-} from "@/features/landing/journey/landing-shared";
+} from "@/shared/data/landingJourney";
 import { requireAuth } from "./auth";
 import { joinPlace } from "../place";
 import { assetUrl } from "@/shared/lib/assets";
