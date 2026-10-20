@@ -80,6 +80,22 @@ describe("tour stop card", () => {
     }
   });
 
+  it("shows no venue count, even with venues nearby", () => {
+    const d = DESTINATIONS[0];
+    const near: LandingVenue = {
+      id: "v1",
+      name: "Hall",
+      city: "",
+      category: "other",
+      lat: d.lat + 0.1,
+      lng: d.lng,
+    };
+    const stop = buildStops([near])[0];
+    expect(stop.count).toBe(1);
+    render(<StopCard stop={stop} index={0} progress={motionValue(0)} />);
+    expect(screen.queryByText(/nearby/)).toBeNull();
+  });
+
   it("keeps a link where the page shows the feature", () => {
     const stops = buildStops([]);
     render(<StopCard stop={stops[0]} index={0} progress={motionValue(0)} />);
