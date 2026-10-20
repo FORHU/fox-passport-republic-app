@@ -9,7 +9,7 @@ import { useCanPartner } from "@/shared/hooks/useCanPartner";
 import { toast } from "sonner";
 import type { BackendAsset } from "@/shared/lib/api-types";
 import { Money } from "@/shared/components/ui/Money";
-import { assetUrl } from "@/shared/lib/assets";
+import { LOGO_SRC } from "@/shared/lib/assets";
 
 function getFeatures(asset: BackendAsset) {
   const features = [];
@@ -99,7 +99,7 @@ export default function AssetDetailClient({ assetId }: { assetId: string }) {
         <Link href="/" className="flex items-center gap-2 group">
           <div className="flex h-9 w-9 items-center justify-center overflow-hidden group-hover:scale-110 transition-transform duration-300">
             <Image
-              src={assetUrl("foxonlylogo.png")}
+              src={LOGO_SRC}
               alt="FoxPassport Logo"
               width={36}
               height={36}

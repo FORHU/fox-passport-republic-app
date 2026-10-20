@@ -46,17 +46,19 @@ export function StepperControl({
   };
 
   return (
-    <div className="flex items-center justify-between bg-black/20 p-4 rounded-2xl border border-white/5">
-      <div className="flex items-center gap-4">
+    <div className="flex items-center justify-between gap-3 bg-black/20 p-3 sm:p-4 rounded-2xl border border-white/5">
+      <div className="flex items-center gap-3 sm:gap-4 min-w-0">
         {icon && (
-          <div className="h-12 w-12 rounded-full bg-surface-highlight flex items-center justify-center text-white">
+          <div className="h-10 w-10 sm:h-12 sm:w-12 shrink-0 rounded-full bg-surface-highlight flex items-center justify-center text-white">
             <span className="material-symbols-outlined">{icon}</span>
           </div>
         )}
-        {label && <p className="font-bold text-white">{label}</p>}
+        {label && <p className="font-bold text-white leading-tight">{label}</p>}
       </div>
-      <div className="flex items-center gap-3 bg-surface rounded-full p-1 border border-white/10">
+      <div className="flex shrink-0 items-center gap-2 sm:gap-3 bg-surface rounded-full p-1 border border-white/10">
+        {/* type="button": inside a <form> a bare button submits it. */}
         <button
+          type="button"
           onClick={() => onChange(Math.max(min, value - step))}
           className="h-10 w-10 rounded-full bg-surface-highlight text-white hover:bg-white/10 flex items-center justify-center transition-colors"
           aria-label="Decrease"
@@ -84,6 +86,7 @@ export function StepperControl({
         />
 
         <button
+          type="button"
           onClick={() =>
             onChange(max !== undefined ? Math.min(max, value + step) : value + step)
           }

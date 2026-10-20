@@ -37,24 +37,74 @@ import {
   getEventCalloutPlacement,
   isEventCalloutInsideMap,
   projectEventLocation,
+  StopCard,
 } from "@/features/landing/journey/JourneyHero";
 import { Lightbox } from "@/features/landing/journey/Lightbox";
+import { motionValue } from "motion/react";
+
+describe("tour stop card", () => {
+  // The card used to lead with the city, so features read as tied to it.
+  it("leads with the step and keeps the city as a label", () => {
+    const paris = buildStops([])[1];
+    // Off screen at this scroll, so hidden: query by text, not accessible name.
+    render(<StopCard stop={paris} index={1} progress={motionValue(0)} />);
+    expect(screen.getByText("Book people you can trust").tagName).toBe("H3");
+    expect(screen.getByText("Step 2 of 5")).toBeTruthy();
+    expect(screen.getByText("Paris · France")).toBeTruthy();
+  });
+
+  // Feature cards used to all link somewhere generic ("Reviews" opened the
+  // packages list). Now only those a public page shows are links.
+  it("only links features to public pages that show them", () => {
+    const PUBLIC = [
+      "/packages",
+      "/venues/map",
+      "/search",
+      "/search?type=gear",
+      "/search?type=service",
+      "/republic",
+    ];
+    const features = DESTINATIONS.flatMap((d) => d.features);
+    for (const f of features) {
+      if (f.href) expect(PUBLIC, f.label).toContain(f.href);
+    }
+    expect(features.filter((f) => !f.href)).toHaveLength(11);
+  });
+
+  it("draws linkless features as plain tiles", () => {
+    const stops = buildStops([]);
+    render(<StopCard stop={stops[3]} index={3} progress={motionValue(0)} />);
+    // Each feature shows twice: the wide-screen card and the phone row.
+    for (const el of screen.getAllByText("QR check-in")) {
+      expect(el.closest("a")).toBeNull();
+    }
+  });
+
+  it("keeps a link where the page shows the feature", () => {
+    const stops = buildStops([]);
+    render(<StopCard stop={stops[0]} index={0} progress={motionValue(0)} />);
+    for (const el of screen.getAllByText("Venue map")) {
+      expect(el.closest("a")?.getAttribute("href")).toBe("/venues/map");
+    }
+  });
+});
 
 describe("landing tour data", () => {
-  it("has capital cities with several credited photos each", () => {
+  it("gives every feature a credited photo, and the card turns through them", () => {
     expect(DESTINATIONS.length).toBeGreaterThanOrEqual(4);
     for (const d of DESTINATIONS) {
-      expect(d.photos.length).toBeGreaterThanOrEqual(3);
+      expect(d.features).toHaveLength(4);
+      expect(d.photos).toEqual(d.features.map((f) => f.photo));
       for (const p of d.photos) {
+        expect(p.alt).toBeTruthy();
         expect(p.credit.author).toBeTruthy();
-        expect(p.credit.license).toBeTruthy();
-        expect(p.credit.url).toMatch(/^https:\/\/commons\.wikimedia\.org\//);
+        expect(p.credit.license).toBe("Unsplash License");
+        expect(p.credit.url).toMatch(/^https:\/\/unsplash\.com\/photos\/[\w-]+$/);
       }
     }
-    expect(DESTINATIONS[0].photos[0]).toMatchObject({
-      src: "/destinations/washington-city.jpg",
-      subject: "city",
-      credit: { license: "Public domain" },
+    expect(DESTINATIONS[3].features[0]).toMatchObject({
+      label: "QR check-in",
+      photo: { src: "/features/qr-check-in.jpg" },
     });
   });
 
@@ -169,15 +219,15 @@ describe("landing tour data", () => {
   // The photos live in the object store, not in public/, so there is no file
   // to stat here. This keeps a typo or a stray path from shipping; that the
   // file is actually in the bucket is checked by looking at the page.
-  it("only points at destination photo paths", () => {
+  it("only points at feature photo paths", () => {
     for (const d of DESTINATIONS) {
       for (const p of d.photos) {
-        expect(p.src, p.src).toMatch(/\/destinations\/[a-z0-9-]+\.jpg$/);
+        expect(p.src, p.src).toMatch(/\/features\/[a-z0-9-]+\.jpg$/);
       }
     }
   });
 
-  it("does not reuse a photo for two places", () => {
+  it("does not reuse a photo for two features", () => {
     const all = DESTINATIONS.flatMap((d) => d.photos.map((p) => p.src));
     expect(new Set(all).size).toBe(all.length);
   });
@@ -806,12 +856,12 @@ describe("destination event cards", () => {
       expect.objectContaining({
         kind: "corporate",
         event: undefined,
-        image: "/destinations/washington-city.jpg",
+        image: destination.photos[0].src,
       }),
       expect.objectContaining({
         kind: "social",
         event: undefined,
-        image: "/destinations/washington-city.jpg",
+        image: destination.photos[0].src,
       }),
     ]);
   });

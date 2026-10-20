@@ -338,7 +338,7 @@ export default function CreateInvestmentWizard() {
   return (
     <div className="min-h-screen bg-canvas text-white pb-28 selection:bg-amber-400 selection:text-black">
       {/* Sticky flow header — same structure as the Venue Studio header used
-          in /mayor/create-venue (back button, tool name + role badge, draft
+          in /venue-foxer/create-venue (back button, tool name + role badge, draft
           status), so the Mayor and Partner creation flows read as the same
           tool instead of one having a header and the other just blank
           padding at the top. */}

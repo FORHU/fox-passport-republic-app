@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useAuthStore } from "@/shared/auth/useAuthStore";
 import { signInThen } from "@/shared/auth/returnTo";
-import { ROLES as CATALOG } from "@/features/onboarding/roleCatalog";
+import { ROLES as CATALOG } from "@/shared/data/roleCatalog";
 import { ROLES } from "./data";
 
 const APPLY_CTA =

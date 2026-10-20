@@ -12,6 +12,8 @@ import Link from "next/link";
 import {
   motion,
   AnimatePresence,
+  cancelFrame,
+  frame,
   useMotionValueEvent,
   useReducedMotion,
   useScroll,
@@ -40,11 +42,15 @@ import {
 } from "./data";
 import { CountUp, Kicker, MaskLines } from "./motion";
 import { Lightbox } from "./Lightbox";
-import { destinationEventCards, HeroSearch } from "./booking";
+import { HeroSearch } from "./booking";
 import { InstallAppButton } from "./InstallAppButton";
 
 const ACCENT = "#ccff00";
 const STOPS = DESTINATIONS.length;
+// How much scrolling (in screen heights ×100) each place gets. This is the
+// tour's speed: more is a slower, calmer flight. Every 0–1 fraction below
+// scales with it, so nothing else needs retuning.
+const VH_PER_STOP = 130;
 // How close the camera is at a place. A flat map this close is cheap to draw.
 const ZOOM_IN = 6.4;
 
@@ -137,65 +143,59 @@ function lineFC(coordinates: LngLat[]) {
   };
 }
 
-function planeFC(at: LngLat | null, bearing: number) {
-  return {
-    type: "FeatureCollection" as const,
-    features: at
-      ? [
-          {
-            type: "Feature" as const,
-            properties: { bearing },
-            geometry: { type: "Point" as const, coordinates: at },
-          },
-        ]
-      : [],
-  };
-}
+const PLANE_PARTS = [
+  // wings, tail, fuselage: outlined first, then filled, like the old canvas.
+  "M72 46 L120 82 L120 91 L72 74 Z M56 46 L8 82 L8 91 L56 74 Z",
+  "M70 100 L96 114 L96 120 L70 112 Z M58 100 L32 114 L32 120 L58 112 Z",
+  "M64 4 C70 4 72 14 72 26 L72 96 C72 106 68 114 64 120 C60 114 56 106 56 96 L56 26 C56 14 58 4 64 4 Z",
+];
 
 /**
- * The plane, drawn once to a canvas and handed to the map as an image, so it is
- * a layer of the map itself: painted in the same frame as the route line and
- * never drifting off the end of it.
+ * The plane. A DOM element over the map, moved with a CSS transform in the same
+ * frame as the camera (see `drawPlane`). As a GeoJSON layer it was parsed in a
+ * worker and drawn a frame or more behind the camera, so it wobbled and lagged.
  */
-function planeImage(color: string) {
-  const size = 128;
-  const canvas = document.createElement("canvas");
-  canvas.width = size;
-  canvas.height = size;
-  const g = canvas.getContext("2d")!;
-  const fuselage = new Path2D(
-    "M64 4 C70 4 72 14 72 26 L72 96 C72 106 68 114 64 120 C60 114 56 106 56 96 L56 26 C56 14 58 4 64 4 Z",
+function PlaneGlyph({ color }: { color: string }) {
+  return (
+    <svg
+      width="64"
+      height="64"
+      viewBox="0 0 128 128"
+      aria-hidden="true"
+      style={{
+        display: "block",
+        filter: "drop-shadow(0 2px 3.5px rgba(0,0,0,0.55))",
+      }}
+    >
+      <g
+        fill="none"
+        stroke="rgba(0,0,0,0.9)"
+        strokeWidth="5"
+        strokeLinejoin="round"
+      >
+        {PLANE_PARTS.map((d) => (
+          <path key={d} d={d} />
+        ))}
+      </g>
+      <g fill={color}>
+        {PLANE_PARTS.map((d) => (
+          <path key={d} d={d} />
+        ))}
+      </g>
+      <g fill="rgba(0,0,0,0.38)">
+        <ellipse cx="90" cy="76" rx="4.6" ry="10" />
+        <ellipse cx="38" cy="76" rx="4.6" ry="10" />
+        <ellipse cx="64" cy="20" rx="5" ry="7" />
+      </g>
+    </svg>
   );
-  const wings = new Path2D(
-    "M72 46 L120 82 L120 91 L72 74 Z M56 46 L8 82 L8 91 L56 74 Z",
-  );
-  const tail = new Path2D(
-    "M70 100 L96 114 L96 120 L70 112 Z M58 100 L32 114 L32 120 L58 112 Z",
-  );
-  g.shadowColor = "rgba(0,0,0,0.55)";
-  g.shadowBlur = 7;
-  g.shadowOffsetY = 4;
-  g.lineJoin = "round";
-  g.lineWidth = 5;
-  g.strokeStyle = "rgba(0,0,0,0.9)";
-  for (const part of [wings, tail, fuselage]) g.stroke(part);
-  g.shadowColor = "transparent";
-  g.fillStyle = color;
-  for (const part of [wings, tail, fuselage]) g.fill(part);
-  g.fillStyle = "rgba(0,0,0,0.38)";
-  for (const [x, y] of [
-    [90, 76],
-    [38, 76],
-  ]) {
-    g.beginPath();
-    g.ellipse(x, y, 4.6, 10, 0, 0, Math.PI * 2);
-    g.fill();
-  }
-  g.beginPath();
-  g.ellipse(64, 20, 5, 7, 0, 0, Math.PI * 2);
-  g.fill();
-  return g.getImageData(0, 0, size, size);
 }
+
+/** Web Mercator, the space the map measures a line's length in (line-progress). */
+const mercator = ([lng, lat]: LngLat): [number, number] => {
+  const phi = (Math.max(-85, Math.min(85, lat)) * Math.PI) / 180;
+  return [lng / 360, Math.log(Math.tan(Math.PI / 4 + phi / 2)) / (2 * Math.PI)];
+};
 
 /** An angle as the equivalent one between -180 and 180 degrees. */
 const wrapDeg = (d: number) => (((d % 360) + 540) % 360) - 180;
@@ -746,8 +746,9 @@ function JourneyMap({
   // The map container's size. Read from the DOM once and on resize, not every
   // frame: asking for it right after the cards were moved forces a layout.
   const size = useRef({ w: 0, h: 0 });
-  // What was last sent to the map, so an update that changes nothing is free.
-  const sent = useRef({ route: "", plane: "" });
+  // The route trim last sent to the map, so an update that changes nothing is free.
+  const sent = useRef({ trim: -1 });
+  const planeEl = useRef<HTMLDivElement>(null);
   const eventFocusInitialized = useRef(false);
   const lastCalloutUpdate = useRef(0);
   const plane = useRef<{
@@ -777,16 +778,69 @@ function JourneyMap({
     [pts],
   );
 
+  // The whole tour as one line, set on the map once. Scrolling only trims how
+  // much of it shows (line-trim-offset), a main-thread paint change, instead of
+  // re-sending a growing GeoJSON line to the map's worker every frame.
+  const fullRoute = useMemo(
+    () => legs.flatMap((leg, i) => (i === 0 ? leg : leg.slice(1))),
+    [legs],
+  );
+  // Cumulative length along each leg's points, in the units the map measures
+  // line progress in, so a trim lands exactly on the plane.
+  const routeMetrics = useMemo(() => {
+    const cum = legs.map((leg) => {
+      const out = [0];
+      for (let i = 1; i < leg.length; i++) {
+        const [x0, y0] = mercator(leg[i - 1]);
+        const [x1, y1] = mercator(leg[i]);
+        out.push(out[i - 1] + Math.hypot(x1 - x0, y1 - y0));
+      }
+      return out;
+    });
+    const starts: number[] = [];
+    let total = 0;
+    for (const c of cum) {
+      starts.push(total);
+      total += c[c.length - 1];
+    }
+    return { cum, starts, total: total || 1 };
+  }, [legs]);
+  /** The share (0–1) of the whole route drawn when leg `k` is at arc parameter `t`. */
+  const routeAt = useCallback(
+    (k: number, t: number) => {
+      const { cum, starts, total } = routeMetrics;
+      const c = cum[k];
+      if (!c) return 0;
+      const s = clamp01(t) * (c.length - 1);
+      const i = Math.min(c.length - 2, Math.floor(s));
+      return (starts[k] + c[i] + (c[i + 1] - c[i]) * (s - i)) / total;
+    },
+    [routeMetrics],
+  );
+
+  // Runs on the map's own "render" event (see onReady), i.e. in the frame the
+  // canvas is painted, so the plane and the camera always agree. Anything that
+  // changes the plane asks for a repaint instead of drawing it directly.
   const drawPlane = useCallback(() => {
-    const source = mapRef.current?.getSource("journey-plane");
-    if (!source) return;
+    const el = planeEl.current;
+    if (!el) return;
+    const map = mapRef.current;
     const pl = plane.current;
-    const key = pl.head
-      ? `${pl.head[0].toFixed(4)},${pl.head[1].toFixed(4)},${pl.shown.toFixed(1)}`
-      : "";
-    if (key === sent.current.plane) return;
-    sent.current.plane = key;
-    source.setData(planeFC(pl.head, pl.shown));
+    if (!pl.head || !map) {
+      el.style.opacity = "0";
+      return;
+    }
+    // The copy of the point nearest the camera, so an unwrapped longitude
+    // (beyond ±180, kept continuous along the tour) still lands on screen.
+    const centerLng = map.getCenter().lng;
+    let lng = pl.head[0];
+    while (lng - centerLng > 180) lng -= 360;
+    while (lng - centerLng < -180) lng += 360;
+    const { x, y } = map.project([lng, pl.head[1]]);
+    // Matches the old layer's icon-size: 0.7 at zoom 1, full size from zoom 6.
+    const scale = 0.7 + 0.3 * clamp01((map.getZoom() - 1) / 5);
+    el.style.transform = `translate3d(${x}px, ${y}px, 0) translate(-50%, -50%) rotate(${pl.shown}deg) scale(${scale})`;
+    el.style.opacity = "1";
   }, []);
 
   // Turn the nose toward its target by the short way, a few frames at a time.
@@ -800,14 +854,14 @@ function JourneyMap({
       const diff = ((pl.target - pl.shown + 540) % 360) - 180;
       if (Math.abs(diff) < 0.5) {
         pl.shown = pl.target;
-        drawPlane();
+        mapRef.current?.triggerRepaint();
         return;
       }
       pl.shown += diff * 0.22;
-      drawPlane();
+      mapRef.current?.triggerRepaint();
       pl.raf = requestAnimationFrame(() => turnNose.current());
     };
-  }, [drawPlane]);
+  }, []);
   useEffect(
     () => () => {
       if (plane.current.raf) cancelAnimationFrame(plane.current.raf);
@@ -833,8 +887,10 @@ function JourneyMap({
 
       let center: LngLat;
       let zoom: number;
-      const done: LngLat[] = [];
-      let flying = false;
+      // How much of the route is drawn (0–1), and the plane while in the air.
+      let frac = 0;
+      let flyHead: LngLat | null = null;
+      let flyBack: LngLat | null = null;
 
       if (p <= START) {
         // The world, then down onto the first place.
@@ -858,7 +914,7 @@ function JourneyMap({
           lerp(last[1], wide.lat, t),
         ];
         zoom = lerp(ZOOM_IN, wide.zoom, t);
-        for (const leg of legs) done.push(...leg);
+        frac = 1;
       } else {
         const u = (p - START) / LEG;
         const k = Math.min(LEGS - 1, Math.floor(u));
@@ -867,12 +923,11 @@ function JourneyMap({
         const b = pts[k + 1];
         const out = outZoom[k];
 
-        for (let i = 0; i < k; i++) done.push(...legs[i]);
-
         if (f < REST_END) {
           // resting at the place just reached
           center = a;
           zoom = ZOOM_IN;
+          frac = routeAt(k, 0);
         } else if (f < OUT_END) {
           // pulling out, still over the place
           center = a;
@@ -881,24 +936,29 @@ function JourneyMap({
             out,
             smooth((f - REST_END) / (OUT_END - REST_END)),
           );
+          frac = routeAt(k, 0);
         } else if (f < FLY_END) {
           // flying, with the camera on the plane
           const t = smooth((f - OUT_END) / (FLY_END - OUT_END));
           const along = arc(a, b, t);
-          done.push(...along);
-          flying = t < 0.995;
-          center = along[along.length - 1];
+          const head = along[along.length - 1];
+          center = head;
           zoom = out;
+          frac = routeAt(k, t);
+          if (t < 0.995 && along.length > 3) {
+            flyHead = head;
+            flyBack = along[along.length - 4];
+          }
         } else if (f < IN_END) {
           // coming in on the next place
-          done.push(...legs[k]);
           center = b;
           zoom = lerp(out, ZOOM_IN, smooth((f - FLY_END) / (IN_END - FLY_END)));
+          frac = routeAt(k, 1);
         } else {
           // resting at the next place
-          done.push(...legs[k]);
           center = b;
           zoom = ZOOM_IN;
+          frac = routeAt(k, 1);
         }
       }
 
@@ -946,21 +1006,22 @@ function JourneyMap({
         onEventCalloutPointsChange([]);
       }
 
-      const route = map.getSource("journey-route");
-      const key = `${done.length}:${done[done.length - 1]?.join(",") ?? ""}`;
-      if (route && key !== sent.current.route) {
-        sent.current.route = key;
-        route.setData(lineFC(done));
+      // Reveal the pre-built route up to the plane. A paint change, applied on
+      // the main thread, so the line's head never trails the camera.
+      const trimKey = Math.round(frac * 1e5);
+      if (trimKey !== sent.current.trim && map.getLayer("journey-route")) {
+        sent.current.trim = trimKey;
+        const trim = [frac, 1];
+        map.setPaintProperty("journey-route-halo", "line-trim-offset", trim);
+        map.setPaintProperty("journey-route", "line-trim-offset", trim);
       }
-
       // The plane sits on the head of the line being drawn, nose along the
       // direction of travel (the line's own direction going forward, the
       // opposite going back), and is out of sight while resting at a place.
       const pl = plane.current;
-      const n = done.length;
-      if (flying && n > 3) {
-        const head = done[n - 1];
-        const back = done[n - 4];
+      if (flyHead && flyBack) {
+        const head = flyHead;
+        const back = flyBack;
         const along =
           (Math.atan2(
             (head[0] - back[0]) * Math.cos((head[1] * Math.PI) / 180),
@@ -981,17 +1042,16 @@ function JourneyMap({
         } else {
           pl.shown = target;
         }
-        drawPlane();
+        map.triggerRepaint();
       } else if (pl.head) {
         pl.head = null;
-        drawPlane();
+        map.triggerRepaint();
       }
     },
     [
       pts,
-      legs,
       outZoom,
-      drawPlane,
+      routeAt,
       calloutLocations,
       onEventCalloutPointsChange,
       onFrame,
@@ -1085,20 +1145,34 @@ function JourneyMap({
           "text-halo-width": 1.4,
         },
       });
-      map.addSource("journey-route", { type: "geojson", data: lineFC([]) });
+      // The whole tour, once; `render` trims it to what has been flown.
+      map.addSource("journey-route", {
+        type: "geojson",
+        data: lineFC(fullRoute),
+        lineMetrics: true,
+      });
       map.addLayer({
         id: "journey-route-halo",
         type: "line",
         source: "journey-route",
         layout: { "line-cap": "round", "line-join": "round" },
-        paint: { "line-color": ink, "line-width": 9, "line-opacity": 0.18 },
+        paint: {
+          "line-color": ink,
+          "line-width": 9,
+          "line-opacity": 0.18,
+          "line-trim-offset": [0, 1],
+        },
       });
       map.addLayer({
         id: "journey-route",
         type: "line",
         source: "journey-route",
         layout: { "line-cap": "round", "line-join": "round" },
-        paint: { "line-color": ink, "line-width": 2.6 },
+        paint: {
+          "line-color": ink,
+          "line-width": 2.6,
+          "line-trim-offset": [0, 1],
+        },
       });
       map.addSource("journey-stops", {
         type: "geojson",
@@ -1121,29 +1195,9 @@ function JourneyMap({
         source: "journey-stops",
         paint: { "circle-radius": 5, "circle-color": ink },
       });
-      // Last, so it is drawn over everything else.
-      if (!map.hasImage("journey-plane")) {
-        map.addImage("journey-plane", planeImage(ink), { pixelRatio: 2 });
-      }
-      map.addSource("journey-plane", {
-        type: "geojson",
-        data: planeFC(null, 0),
-      });
-      map.addLayer({
-        id: "journey-plane",
-        type: "symbol",
-        source: "journey-plane",
-        layout: {
-          "icon-image": "journey-plane",
-          "icon-allow-overlap": true,
-          "icon-ignore-placement": true,
-          "icon-rotate": ["get", "bearing"],
-          "icon-rotation-alignment": "map",
-          "icon-size": ["interpolate", ["linear"], ["zoom"], 1, 0.7, 6, 1],
-        },
-      });
+      // The plane is not a map layer: see PlaneGlyph and drawPlane.
     },
-    [venues, eventLocations, stops, ink, theme],
+    [venues, eventLocations, stops, ink, theme, fullRoute],
   );
 
   useEffect(() => {
@@ -1173,6 +1227,8 @@ function JourneyMap({
     (map: any) => {
       mapRef.current = map;
       map.once("idle", onDrawn);
+      // The plane is placed whenever the map paints, in that same frame.
+      map.on("render", drawPlane);
       // The whole world, sized to the screen.
       const el = map.getContainer() as HTMLElement;
       size.current = { w: el.clientWidth, h: el.clientHeight };
@@ -1188,13 +1244,13 @@ function JourneyMap({
       addLayers(map);
       render(progress.get());
     },
-    [addLayers, render, progress, setSky, onDrawn],
+    [addLayers, render, progress, setSky, onDrawn, drawPlane],
   );
 
   // After a theme change the basemap reloads and drops our layers.
   const onStyle = useCallback(
     (map: any) => {
-      sent.current = { route: "", plane: "" };
+      sent.current = { trim: -1 };
       setSky(map);
       addLayers(map);
       render(progress.get());
@@ -1203,26 +1259,30 @@ function JourneyMap({
   );
 
   // The scroll value can change several times between two frames; only the
-  // latest matters, so draw once per frame instead of once per change.
+  // latest matters, so draw once per frame instead of once per change. It is
+  // drawn in motion's own frame (the render step), the same frame the spring
+  // moved in and the cards are styled in, not on a separate animation frame
+  // that would put the map one frame behind them.
   const pending = useRef<number | null>(null);
-  const frame = useRef(0);
+  const queued = useRef(false);
+  const drawLatest = useRef<() => void>(() => {});
+  useEffect(() => {
+    drawLatest.current = () => {
+      queued.current = false;
+      if (pending.current !== null) render(pending.current);
+    };
+  }, [render]);
+  const runLatest = useCallback(() => drawLatest.current(), []);
   const schedule = useCallback(
     (p: number) => {
       pending.current = p;
-      if (frame.current) return;
-      frame.current = requestAnimationFrame(() => {
-        frame.current = 0;
-        if (pending.current !== null) render(pending.current);
-      });
+      if (queued.current) return;
+      queued.current = true;
+      frame.render(runLatest);
     },
-    [render],
+    [runLatest],
   );
-  useEffect(
-    () => () => {
-      if (frame.current) cancelAnimationFrame(frame.current);
-    },
-    [],
-  );
+  useEffect(() => () => cancelFrame(runLatest), [runLatest]);
 
   // Before the first scroll, and again once the tour is over and the camera is
   // back out, the world keeps turning behind the card. Scrolling back up hands control to the tour again.
@@ -1257,20 +1317,29 @@ function JourneyMap({
   useMotionValueEvent(progress, "change", schedule);
 
   return (
-    <MapBoxView
-      // Remount once real data is in, so the first camera matches it.
-      key={venues.length > 0 ? "loaded" : "empty"}
-      interactive={false}
-      showNavigation={false}
-      fadeDuration={0}
-      showLoader={false}
-      minZoom={0}
-      zoom={1.4}
-      center={[10, 24]}
-      className="absolute inset-0 h-full w-full"
-      onMapReady={onReady}
-      onStyleLoad={onStyle}
-    />
+    <>
+      <MapBoxView
+        // Remount once real data is in, so the first camera matches it.
+        key={venues.length > 0 ? "loaded" : "empty"}
+        interactive={false}
+        showNavigation={false}
+        fadeDuration={0}
+        showLoader={false}
+        minZoom={0}
+        zoom={1.4}
+        center={[10, 24]}
+        className="absolute inset-0 h-full w-full"
+        onMapReady={onReady}
+        onStyleLoad={onStyle}
+      />
+      <div
+        ref={planeEl}
+        className="pointer-events-none absolute left-0 top-0 z-1"
+        style={{ opacity: 0, willChange: "transform" }}
+      >
+        <PlaneGlyph color={ink} />
+      </div>
+    </>
   );
 }
 
@@ -1321,16 +1390,43 @@ function useViewport() {
   return size;
 }
 
-function StopCard({
+/**
+ * A feature card: a link where a public page shows that feature, otherwise a
+ * plain tile with no hover, so it never promises a page it doesn't open.
+ */
+function FeatureTile({
+  href,
+  className,
+  linkClassName = "",
+  style,
+  children,
+}: {
+  href?: string;
+  className: string;
+  /** Hover styles, for the link version only. */
+  linkClassName?: string;
+  style?: React.CSSProperties;
+  children: React.ReactNode;
+}) {
+  return href ? (
+    <Link href={href} className={`${className} ${linkClassName}`} style={style}>
+      {children}
+    </Link>
+  ) : (
+    <div className={className} style={style}>
+      {children}
+    </div>
+  );
+}
+
+export function StopCard({
   stop,
   index,
   progress,
-  eventCards,
 }: {
   stop: Stop;
   index: number;
   progress: MotionValue<number>;
-  eventCards: ReturnType<typeof destinationEventCards>;
 }) {
   const reduce = useReducedMotion();
   const vp = useViewport();
@@ -1397,7 +1493,7 @@ function StopCard({
         className="absolute bottom-0 left-1/2 flex w-full origin-bottom -translate-x-1/2 flex-col items-center pb-[18px]"
       >
         <div className="relative w-[min(88vw,360px)] sm:w-[420px] lg:w-[360px] xl:w-[420px]">
-          {eventCards.length > 0 && (
+          {stop.features.length > 0 && (
             <>
               <svg
                 aria-hidden
@@ -1410,10 +1506,10 @@ function StopCard({
                   { startX: 420, startY: 350, endX: 300, endY: 395 },
                   { startX: 840, startY: 350, endX: 960, endY: 395 },
                 ]
-                  .slice(0, eventCards.length)
+                  .slice(0, stop.features.length)
                   .map((line, cardIndex) => (
                     <line
-                      key={eventCards[cardIndex].kind}
+                      key={stop.features[cardIndex].label}
                       x1={line.startX}
                       y1={line.startY}
                       x2={line.endX}
@@ -1423,48 +1519,47 @@ function StopCard({
                     />
                   ))}
               </svg>
-              {eventCards.map((card, cardIndex) => {
+              {stop.features.slice(0, 4).map((feature, cardIndex) => {
                 const slot = [
                   { x: 0, y: 0 },
                   { x: 960, y: 0 },
                   { x: 0, y: 280 },
                   { x: 960, y: 280 },
                 ][cardIndex];
+                const image = feature.photo.src;
                 return (
-                  <Link
-                    key={card.kind}
-                    href={
-                      card.event
-                        ? `/event/${card.event.id}`
-                        : `/search?category=${card.kind}&city=${encodeURIComponent(stop.name)}`
-                    }
-                    className="absolute z-10 hidden h-[220px] w-[300px] flex-col justify-end overflow-hidden rounded-2xl border border-accent/45 bg-surface text-white shadow-xl transition-transform hover:scale-[1.03] xl:flex"
+                  <FeatureTile
+                    key={feature.label}
+                    href={feature.href}
+                    className="absolute z-10 hidden h-[220px] w-[300px] flex-col justify-end overflow-hidden rounded-2xl border border-accent/45 bg-surface text-white shadow-xl xl:flex"
+                    linkClassName="transition-transform hover:scale-[1.03]"
                     style={{
                       left: `calc(50% - 630px + ${slot.x}px)`,
                       top: `${slot.y}px`,
                     }}
                   >
-                    <img
-                      src={card.image}
-                      alt=""
-                      loading="lazy"
-                      decoding="async"
-                      className="absolute inset-0 h-full w-full object-cover"
-                    />
+                    {image && (
+                      <img
+                        src={image}
+                        alt=""
+                        loading="lazy"
+                        decoding="async"
+                        className="absolute inset-0 h-full w-full object-cover"
+                      />
+                    )}
                     <span
                       aria-hidden
                       className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/25 to-black/10"
                     />
                     <span className="relative z-[1] p-4">
                       <span className="font-landing-mono block truncate text-[11px] font-bold uppercase tracking-[0.14em] text-accent">
-                        {card.label}
+                        {feature.label}
                       </span>
                       <span className="font-landing-display mt-1.5 line-clamp-2 block text-lg leading-tight">
-                        {card.event?.name ??
-                          `Browse ${card.label.toLowerCase()} in ${stop.name}`}
+                        {feature.title}
                       </span>
                     </span>
-                  </Link>
+                  </FeatureTile>
                 );
               })}
             </>
@@ -1479,7 +1574,7 @@ function StopCard({
                 <img
                   key={p.src}
                   src={p.src}
-                  alt={i === active ? `${stop.name}, ${stop.region}` : ""}
+                  alt={i === active ? (p.alt ?? "") : ""}
                   loading="lazy"
                   decoding="async"
                   draggable={false}
@@ -1520,8 +1615,7 @@ function StopCard({
                 className="absolute inset-0 z-10 cursor-zoom-in"
               />
               <p className="font-landing-mono pointer-events-none absolute left-3 top-3 z-20 rounded-full bg-[#000]/60 px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.16em] text-[#fff] backdrop-blur">
-                {String(index + 1).padStart(2, "0")} /{" "}
-                {String(STOPS).padStart(2, "0")}
+                Step {index + 1} of {STOPS}
               </p>
               <div className="pointer-events-auto absolute right-3 top-3 z-20 flex items-center gap-0.5 rounded-full bg-[#000]/60 py-0.5 pl-1 pr-2 backdrop-blur">
                 {!reduce && (
@@ -1555,61 +1649,60 @@ function StopCard({
                 ))}
               </div>
               <div className="pointer-events-none absolute inset-x-4 bottom-3 z-20">
-                <h3 className="font-landing-display max-w-full whitespace-normal break-words text-2xl leading-tight text-[#fff] sm:text-3xl lg:text-4xl">
-                  {stop.name}
+                {/* The step leads; the place is only where the tour shows it. */}
+                <h3 className="font-landing-display max-w-full whitespace-normal break-words text-2xl leading-tight text-[#fff] sm:text-3xl">
+                  {stop.kind}
                 </h3>
                 <p className="font-landing-mono mt-1.5 text-[11px] font-bold uppercase tracking-[0.2em] text-[#fff]/85">
-                  {stop.region}
+                  {stop.name} · {stop.region}
                 </p>
               </div>
             </div>
             <div className="p-5">
-              <p className="font-landing-mono text-[11px] font-bold uppercase tracking-[0.2em] text-accent">
-                {stop.kind}
-              </p>
-              <p className="mt-2 text-sm leading-relaxed text-white/85">
+              <p className="text-sm leading-relaxed text-white/85">
                 {stop.tagline}
               </p>
-              {eventCards.length > 0 && (
+              {stop.features.length > 0 && (
                 <div className="mt-3 flex gap-2 overflow-x-auto pb-1 xl:hidden">
-                  {eventCards.map((card) => (
-                    <Link
-                      key={card.kind}
-                      href={
-                        card.event
-                          ? `/event/${card.event.id}`
-                          : `/search?category=${card.kind}&city=${encodeURIComponent(stop.name)}`
-                      }
-                      className="flex min-h-24 w-64 shrink-0 items-center gap-3 rounded-xl border border-accent/30 bg-white/5 p-3 text-left"
-                    >
-                      <div className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-md bg-gradient-to-br from-accent/25 via-white/10 to-sky-400/20">
-                        <img
-                          src={card.image}
-                          alt=""
-                          loading="lazy"
-                          decoding="async"
-                          className="h-full w-full object-cover"
-                        />
-                      </div>
-                      <span className="min-w-0">
-                        <span className="font-landing-mono block truncate text-[9px] font-bold uppercase tracking-[0.12em] text-accent">
-                          {card.label}
+                  {stop.features.slice(0, 4).map((feature) => {
+                    const image = feature.photo.src;
+                    return (
+                      <FeatureTile
+                        key={feature.label}
+                        href={feature.href}
+                        className="flex min-h-24 w-64 shrink-0 items-center gap-3 rounded-xl border border-accent/30 bg-white/5 p-3 text-left"
+                        linkClassName="transition-colors hover:bg-white/10"
+                      >
+                        <div className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-md bg-gradient-to-br from-accent/25 via-white/10 to-sky-400/20">
+                          {image && (
+                            <img
+                              src={image}
+                              alt=""
+                              loading="lazy"
+                              decoding="async"
+                              className="h-full w-full object-cover"
+                            />
+                          )}
+                        </div>
+                        <span className="min-w-0">
+                          <span className="font-landing-mono block truncate text-[9px] font-bold uppercase tracking-[0.12em] text-accent">
+                            {feature.label}
+                          </span>
+                          <span className="mt-0.5 line-clamp-1 block text-xs text-white/85">
+                            {feature.title}
+                          </span>
                         </span>
-                        <span className="mt-0.5 line-clamp-1 block text-xs text-white/85">
-                          {card.event?.name ??
-                            `Browse ${card.label.toLowerCase()} events`}
-                        </span>
-                      </span>
-                    </Link>
-                  ))}
+                      </FeatureTile>
+                    );
+                  })}
                 </div>
               )}
               <div className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-2">
                 <Link
-                  href={`/search?category=${stop.category}`}
+                  href="/packages"
                   className="inline-flex rounded-full bg-accent px-5 py-2.5 text-xs font-extrabold text-black transition-transform hover:scale-[1.03]"
                 >
-                  Find events like these →
+                  See packages →
                 </Link>
                 {stop.count > 0 && (
                   <span className="font-landing-mono text-[11px] font-bold uppercase tracking-[0.14em] text-white/60">
@@ -1623,10 +1716,7 @@ function StopCard({
                 rel="noreferrer noopener"
                 className="font-landing-mono mt-4 line-clamp-2 text-[10px] uppercase leading-snug tracking-[0.1em] text-white/55 hover:text-white"
               >
-                {stop.photos[active].subject === "city"
-                  ? `${stop.name} city view`
-                  : "Past event photo"}{" "}
-                · {stop.photos[active].credit.author} (
+                Photo · {stop.photos[active].credit.author} (
                 {stop.photos[active].credit.license})
               </a>
             </div>
@@ -1651,20 +1741,30 @@ function StopCard({
   );
 }
 
-/** The places along the bottom, lighting up as the tour reaches each. */
+/**
+ * The steps along the bottom, lighting up as the tour reaches each: named on
+ * wide screens, dots on smaller ones. It shows once the tour has started, like
+ * the tools across from it. A visual cue only: the card says "Step N of 5".
+ */
 function Rail({
   stops,
   progress,
+  opacity,
 }: {
   stops: Stop[];
   progress: MotionValue<number>;
+  opacity: MotionValue<number>;
 }) {
   return (
-    <div className="absolute bottom-6 left-6 z-20 hidden items-center gap-4 xl:flex">
+    <motion.div
+      aria-hidden
+      style={{ opacity }}
+      className="pointer-events-none absolute bottom-24 left-4 z-20 flex items-center gap-2 sm:bottom-6 sm:left-6 xl:gap-4"
+    >
       {stops.map((s, i) => (
-        <RailStop key={s.key} label={s.name} index={i} progress={progress} />
+        <RailStop key={s.key} label={s.kind} index={i} progress={progress} />
       ))}
-    </div>
+    </motion.div>
   );
 }
 
@@ -1686,7 +1786,7 @@ function RailStop({
       className="font-landing-mono flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.2em] text-white"
     >
       <span className="h-1.5 w-1.5 rounded-full bg-accent" />
-      {label}
+      <span className="hidden xl:inline">{label}</span>
     </motion.span>
   );
 }
@@ -2066,26 +2166,17 @@ function TourHero() {
   // The wheel and touch move in jumps; a spring turns them into a glide, and
   // the camera, the route, the plane and the cards all follow the same value.
   const reduceMotion = useReducedMotion();
+  // Soft enough that one wheel notch glides the plane rather than jumping it.
   const spring = useSpring(rawProgress, {
-    stiffness: 110,
-    damping: 26,
-    mass: 0.6,
+    stiffness: 70,
+    damping: 22,
+    mass: 0.9,
     restDelta: 0.0002,
   });
   const progress = reduceMotion ? rawProgress : spring;
 
   // Each destination, with whatever real venues are near it.
   const stops = useMemo<Stop[]>(() => buildStops(venues), [venues]);
-  const destinationEvents = useMemo(
-    () =>
-      new Map(
-        stops.map((stop) => [
-          stop.key,
-          destinationEventCards(stop, eventLocations),
-        ]),
-      ),
-    [stops, eventLocations, events],
-  );
 
   const intro = useTransform(progress, (v) => 1 - clamp01((v - 0.02) / 0.05));
   const outro = useTransform(progress, (v) => clamp01((v - 0.93) / 0.04));
@@ -2191,7 +2282,7 @@ function TourHero() {
     <section
       ref={stage}
       className="relative bg-canvas"
-      style={{ height: `${STOPS * 100 + 50}vh` }}
+      style={{ height: `${STOPS * VH_PER_STOP + 50}vh` }}
     >
       <div className="sticky top-0 h-svh overflow-hidden">
         {/* The map is a picture; the cards carry the words. */}
@@ -2291,10 +2382,19 @@ function TourHero() {
               {venues.length > 0
                 ? ` ${venues.length} venues are on the map so far.`
                 : ""}{" "}
-              Scroll to see the kinds of nights people plan.
+              Scroll to see how FoxPassport works.
             </p>
             <HeroSearch />
-            <InstallAppButton className="mt-4" />
+            {/* One row, so the skip link costs no height on a short phone. */}
+            <div className="mt-4 flex flex-wrap items-center gap-x-5 gap-y-2">
+              <InstallAppButton />
+              <a
+                href="#events"
+                className="pointer-events-auto text-sm font-bold text-white/70 underline underline-offset-4 hover:text-white"
+              >
+                Skip to events ↓
+              </a>
+            </div>
           </div>
         </motion.div>
 
@@ -2304,7 +2404,6 @@ function TourHero() {
             stop={s}
             index={i}
             progress={progress}
-            eventCards={destinationEvents.get(s.key) ?? []}
           />
         ))}
 
@@ -2324,7 +2423,7 @@ function TourHero() {
           <div className="mt-6 flex items-center justify-center gap-3">
             {user ? (
               <Link
-                href="/search"
+                href="/packages"
                 className="rounded-full bg-accent px-6 py-3 text-sm font-extrabold text-black"
               >
                 Find an event
@@ -2352,7 +2451,7 @@ function TourHero() {
           )}
         </motion.div>
 
-        <Rail stops={stops} progress={progress} />
+        <Rail stops={stops} progress={progress} opacity={tools} />
 
         {/* Always within reach once the headline search has scrolled away. */}
         <motion.div
@@ -2365,8 +2464,9 @@ function TourHero() {
           >
             Skip to events ↓
           </a>
+          {/* The same results as the hero search, which has its own search bar. */}
           <Link
-            href="/search"
+            href="/packages"
             className="rounded-full bg-accent px-5 py-2.5 text-xs font-extrabold text-black shadow-xl"
           >
             Find events

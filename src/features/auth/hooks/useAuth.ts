@@ -21,57 +21,66 @@ import { takeReturnTo } from "@/shared/auth/returnTo";
 import { authClient } from "@/shared/auth/auth-client";
 
 // --- REAL API FUNCTIONS ---
+//
+// Every flow goes through Better Auth (docs/BETTER-AUTH-CONSOLIDATION.md in the
+// API repo). Its errors are rethrown in the axios shape the hooks below read
+// (`error.response.status` / `.data.message`), so their messages still show.
+
+interface AuthClientError {
+  status?: number;
+  message?: string;
+}
+
+function fail(error: AuthClientError, fallback: string): never {
+  throw Object.assign(new Error(error.message || fallback), {
+    response: { status: error.status, data: { message: error.message } },
+  });
+}
+
+/** What the hooks read on success; Better Auth returns no message of ours. */
+const DONE: { message?: string } = {};
 
 const realLogin = async (data: LoginFormData): Promise<LoginResponse> => {
-  try {
-    const result = await authClient.signIn.email({
-      email: data.email,
-      password: data.password,
-    });
-
-    if (!result.error && result.data) {
-      const user = ((result.data as any)?.user || {}) as Record<string, any>;
-      const token = (result.data as any)?.session?.token || "";
-      // Better Auth's user has no `permissions`, and every client-side gate
-      // (the admin console included) reads them - so take them from /profile
-      // now rather than showing "Permission Denied" until the next poll.
-      try {
-        const { data: profile } = await api.get("/profile");
-        const permissions = (profile?.data ?? profile)?.permissions;
-        if (Array.isArray(permissions)) user.permissions = permissions;
-      } catch {
-        // Login still succeeds; the profile poll fills them in later.
-      }
-      return {
-        accessToken: token,
-        refreshToken: token,
-        user: {
-          id: user.id,
-          email: user.email,
-          name: user.name,
-          username: user.username || "",
-          systemRole: user.systemRole || "user",
-          roleType: user.roleType || [],
-          isEmailVerified: user.emailVerified ?? false,
-          ...user,
-        },
-      };
-    }
-  } catch {
-    // If Better Auth fails or encounters network issue, try legacy API login
-  }
-
-  // Fallback to legacy API login endpoint
-  const response = await api.post<LoginResponse>("/auth/login", {
+  const result = await authClient.signIn.email({
     email: data.email,
     password: data.password,
   });
-  return response.data;
+  if (result.error || !result.data) {
+    fail(result.error ?? {}, "Login Failed. Please check your credentials.");
+  }
+
+  const user = ((result.data as any)?.user || {}) as Record<string, any>;
+  const token = (result.data as any)?.session?.token || "";
+  // Better Auth's user has no `permissions`, and every client-side gate
+  // (the admin console included) reads them - so take them from /profile
+  // now rather than showing "Permission Denied" until the next poll.
+  try {
+    const { data: profile } = await api.get("/profile");
+    const permissions = (profile?.data ?? profile)?.permissions;
+    if (Array.isArray(permissions)) user.permissions = permissions;
+  } catch {
+    // Login still succeeds; the profile poll fills them in later.
+  }
+  return {
+    accessToken: token,
+    refreshToken: token,
+    user: {
+      id: user.id,
+      email: user.email,
+      name: user.name,
+      username: user.username || "",
+      systemRole: user.systemRole || "user",
+      roleType: user.roleType || [],
+      isEmailVerified: user.emailVerified ?? false,
+      ...user,
+    },
+  };
 };
 
 const realForgotPassword = async (email: string) => {
-  const response = await api.post("/auth/forgot-password", { email });
-  return response.data;
+  const result = await authClient.emailOtp.requestPasswordReset({ email });
+  if (result.error) fail(result.error, "Could not send a reset code.");
+  return DONE;
 };
 
 const realResetPassword = async (data: {
@@ -79,18 +88,31 @@ const realResetPassword = async (data: {
   otpCode: string;
   newPassword: string;
 }) => {
-  const response = await api.post("/auth/reset-password", data);
-  return response.data;
+  const result = await authClient.emailOtp.resetPassword({
+    email: data.email,
+    otp: data.otpCode,
+    password: data.newPassword,
+  });
+  if (result.error) fail(result.error, "Could not reset the password.");
+  return DONE;
 };
 
 const realVerifyEmail = async (data: { email: string; otpCode: string }) => {
-  const response = await api.post("/auth/verify-email", data);
-  return response.data;
+  const result = await authClient.emailOtp.verifyEmail({
+    email: data.email,
+    otp: data.otpCode,
+  });
+  if (result.error) fail(result.error, "Invalid or expired code.");
+  return DONE;
 };
 
 const realResendOtp = async (email: string) => {
-  const response = await api.post("/auth/resend-verification-otp", { email });
-  return response.data;
+  const result = await authClient.emailOtp.sendVerificationOtp({
+    email,
+    type: "email-verification",
+  });
+  if (result.error) fail(result.error, "Could not send a new code.");
+  return DONE;
 };
 
 const realSignup = async (data: SignupFormData) => {

@@ -1,7 +1,7 @@
 import React from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { assetUrl } from "@/shared/lib/assets";
+import { LOGO_SRC } from "@/shared/lib/assets";
 
 interface BrandLogoProps {
   variant?: "light" | "dark" | "adaptive";
@@ -39,7 +39,7 @@ export const BrandLogo: React.FC<BrandLogoProps> = ({
         style={{ width: logoSize, height: logoSize }}
       >
         <Image
-          src={assetUrl("foxonlylogo.png")}
+          src={LOGO_SRC}
           alt="FoxPassport Logo"
           width={logoSize}
           height={logoSize}

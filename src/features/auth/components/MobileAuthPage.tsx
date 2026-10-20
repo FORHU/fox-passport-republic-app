@@ -19,7 +19,7 @@ import {
   SignupFormData,
 } from "@/shared/lib/schema";
 import { useAuthStore } from "@/shared/auth/useAuthStore";
-import { getBrowserApiUrl } from "@/shared/lib/config";
+import { startSocialSignIn } from "@/shared/auth/session-api";
 import { TermsPrivacyModal } from "@/features/auth/components/TermsPrivacyModal";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -108,7 +108,7 @@ function GoogleButton({ disabled }: { disabled?: boolean }) {
         boxSizing: "border-box",
       }}
       onClick={() => {
-        window.location.href = `${getBrowserApiUrl()}/auth/google?origin=${encodeURIComponent(window.location.origin)}`;
+        void startSocialSignIn("google");
       }}
     >
       <svg width="18" height="18" viewBox="0 0 18 18" fill="none">

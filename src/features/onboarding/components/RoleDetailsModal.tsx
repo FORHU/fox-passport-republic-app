@@ -3,7 +3,7 @@
 import Link from "next/link";
 import * as Dialog from "@radix-ui/react-dialog";
 import { X } from "lucide-react";
-import type { RoleCatalogEntry } from "../roleCatalog";
+import type { RoleCatalogEntry } from "@/shared/data/roleCatalog";
 
 interface RoleDetailsModalProps {
   /** The role being looked at; the modal is closed while this is null. */

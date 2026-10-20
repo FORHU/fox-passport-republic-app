@@ -9,7 +9,7 @@ import { useRoleAccess, RoleAccess } from "@/shared/auth/useRoleAccess";
 import { useAuthStore } from "@/shared/auth/useAuthStore";
 import UserMenuButton from "@/shared/components/layout/UserMenuButton";
 import NotificationBell from "@/shared/components/layout/NotificationBell";
-import { assetUrl } from "@/shared/lib/assets";
+import { LOGO_SRC } from "@/shared/lib/assets";
 
 const NAV_ICONS: Record<string, string> = {
   Overview: "dashboard",
@@ -156,7 +156,7 @@ export function DashboardHeader({
             >
               <div className="flex h-8 w-8 sm:h-9 sm:w-9 items-center justify-center overflow-hidden shrink-0 group-hover:scale-105 transition-transform duration-300">
                 <Image
-                  src={assetUrl("foxonlylogo.png")}
+                  src={LOGO_SRC}
                   alt="FoxPassport Logo"
                   width={36}
                   height={36}

@@ -5,7 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useLogout } from "@/shared/auth/useLogout";
-import { assetUrl } from "@/shared/lib/assets";
+import { LOGO_SRC } from "@/shared/lib/assets";
 
 interface Props {
   user?: any;
@@ -67,7 +67,7 @@ export default function MobileSettingsView({ user }: Props) {
           style={{ display: "flex", alignItems: "center", flexShrink: 0 }}
         >
           <Image
-            src={assetUrl("foxonlylogo.png")}
+            src={LOGO_SRC}
             alt="FoxPassport"
             width={22}
             height={22}

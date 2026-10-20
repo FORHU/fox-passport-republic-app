@@ -34,6 +34,8 @@ interface VenueResourcePaletteProps {
   onAddCatalogItem?: (name: string) => void;
   onRemoveResource: (category: string, id: string) => void;
   onDragStart: (e: React.DragEvent, item: ResourceItem) => void;
+  /** Tap-to-add into a zone — the only way in on touch screens. */
+  onAddTo?: (item: ResourceItem, zone: "included" | "addon") => void;
 }
 
 export function VenueResourcePalette({
@@ -50,6 +52,7 @@ export function VenueResourcePalette({
   onAddCatalogItem,
   onRemoveResource,
   onDragStart,
+  onAddTo,
 }: VenueResourcePaletteProps) {
   const fileInputRef = React.useRef<HTMLInputElement>(null);
 
@@ -96,7 +99,9 @@ export function VenueResourcePalette({
           <h3 className="font-display font-bold text-lg text-white mb-1">
             {currentCategoryLabel}
           </h3>
-          <p className="text-xs text-text-muted">Drag features to your venue</p>
+          <p className="text-xs text-text-muted">
+            Drag or tap to add features to your venue
+          </p>
         </div>
 
         <div className="px-6 pb-4 space-y-4 pt-2">
@@ -264,6 +269,26 @@ export function VenueResourcePalette({
                   <p className="text-[11px] text-gray-500 mt-1 line-clamp-2">
                     {item.desc}
                   </p>
+                  {onAddTo && (
+                    <div className="mt-3 flex justify-end gap-1.5">
+                      {(["included", "addon"] as const).map((zone) => (
+                        <button
+                          key={zone}
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onAddTo(item, zone);
+                          }}
+                          className="px-2.5 py-1 rounded-lg bg-white/10 hover:bg-accent hover:text-black text-[11px] font-bold text-white/80 transition-all flex items-center gap-1 cursor-pointer"
+                        >
+                          <span className="material-symbols-outlined text-[14px]">
+                            add
+                          </span>
+                          {zone === "included" ? "Included" : "Add-on"}
+                        </button>
+                      ))}
+                    </div>
+                  )}
                 </div>
               </div>
             </div>

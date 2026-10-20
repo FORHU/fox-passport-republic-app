@@ -22,7 +22,7 @@ Paths below are relative to each repo: **API** = `fox-passport-republic-api`, **
 | 7 | Decide whether a wrong login code should delete the right one | UX decision | ✅ deleted only on success |
 | 8 | Doc fixes for items 2, 5 and 6, plus small corrections | Docs | ✅ |
 | 9 | Check the strategy doc's "Current State" notes section by section | Check | ✅ §18 and §26 corrected; the rest accurate |
-| 10 | Run the `VERIFY.md` browser pass | Manual testing | ❌ |
+| 10 | Run the `VERIFY.md` browser pass | Manual testing | ✅ every check driven; B3 last, 20 Oct |
 
 ---
 
@@ -114,7 +114,7 @@ Go through each note against the code, the same way as items 2, 5 and 6: §12, �
 
 ## 10. Run the `VERIFY.md` browser pass
 
-Web `docs/VERIFY.md` is a manual browser runbook for realtime: socket connection, single-use tickets, live admin queues, and reconnection. There's no record of a full run.
+Web `docs/VERIFY.md` is a manual browser runbook for realtime: socket connection, single-use tickets, live admin queues, and reconnection. Done: every check has been driven at least once (12 Sep, B3 on 20 Oct). Results are in its table.
 
 ---
 

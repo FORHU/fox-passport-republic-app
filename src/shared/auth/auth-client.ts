@@ -1,4 +1,5 @@
 import { createAuthClient } from "better-auth/react";
+import { emailOTPClient } from "better-auth/client/plugins";
 import { getBrowserApiUrl, config } from "@/shared/lib/config";
 
 export function getBetterAuthBaseUrl(): string {
@@ -24,6 +25,8 @@ export function getBetterAuthBaseUrl(): string {
 
 export const authClient = createAuthClient({
   baseURL: getBetterAuthBaseUrl(),
+  // Email verification and password-reset codes (API: emailOTP plugin).
+  plugins: [emailOTPClient()],
 });
 
 export const { signIn, signUp, signOut, useSession } = authClient;

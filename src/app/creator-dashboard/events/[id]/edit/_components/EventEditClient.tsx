@@ -1,9 +1,10 @@
 "use client";
 
-import React, { Suspense } from "react";
+import React, { Suspense, useState } from "react";
 import { useRouter } from "next/navigation";
 import RequireAuth from "@/shared/auth/RequireAuth";
 import { Loader2, AlertTriangle } from "lucide-react";
+import { Sheet, SheetContent, SheetTitle } from "@/shared/components/ui/sheet";
 import {
   ResourcePalette,
   EventHeader,
@@ -21,6 +22,10 @@ interface Props {
 
 function EventEditContent({ id }: Props) {
   const router = useRouter();
+  // Below `md` the palette and blueprint live in drawers, and resources are
+  // added with a tap — drag and drop does not fire on touch screens.
+  const [paletteOpen, setPaletteOpen] = useState(false);
+  const [blueprintOpen, setBlueprintOpen] = useState(false);
   const {
     isPrefilling,
     prefillError,
@@ -67,6 +72,7 @@ function EventEditContent({ id }: Props) {
     handleDragOver,
     handleDragLeave,
     handleDrop,
+    addResourceToCore,
     addImageToGallery,
     removeGalleryItem,
     removeBaseItem,
@@ -121,8 +127,10 @@ function EventEditContent({ id }: Props) {
             onBack={handleBack}
             onSaveDraft={handleSaveDraft}
             onPublish={handlePublish}
+            onTogglePalette={() => setPaletteOpen(true)}
+            onToggleBlueprint={() => setBlueprintOpen(true)}
           />
-          <div className="flex-1 flex overflow-hidden">
+          <div className="flex-1 flex overflow-hidden relative">
             <ResourcePalette
               activeCategory={activeCategory}
               searchQuery={searchQuery}
@@ -130,9 +138,10 @@ function EventEditContent({ id }: Props) {
               onCategoryChange={setActiveCategory}
               onSearchChange={setSearchQuery}
               onDragStart={handleDragStart}
+              onSelectItem={addResourceToCore}
             />
-            <main className="flex-1 overflow-y-auto p-8 bg-canvas flex gap-8">
-              <div className="flex-1 min-w-0 space-y-8">
+            <main className="flex-1 overflow-y-auto p-4 sm:p-6 md:p-8 bg-canvas flex gap-8">
+              <div className="flex-1 min-w-0 space-y-6 sm:space-y-8 pb-12 sm:pb-0">
                 <EventDetailsForm
                   eventTitle={eventTitle}
                   description={description}
@@ -197,6 +206,60 @@ function EventEditContent({ id }: Props) {
                 router.push(`/event/${id}?preview=1`);
               }}
             />
+
+            {/* Mobile palette drawer */}
+            <Sheet open={paletteOpen} onOpenChange={setPaletteOpen}>
+              <SheetContent
+                side="left"
+                className="bg-surface border-white/10 w-[88vw] sm:max-w-md p-0 flex flex-col h-full"
+              >
+                <SheetTitle className="sr-only">Resource Palette</SheetTitle>
+                <div className="flex-1 overflow-y-auto flex flex-col pt-8">
+                  <ResourcePalette
+                    activeCategory={activeCategory}
+                    searchQuery={searchQuery}
+                    filteredResources={filteredResources}
+                    onCategoryChange={setActiveCategory}
+                    onSearchChange={setSearchQuery}
+                    onDragStart={handleDragStart}
+                    onSelectItem={(item) => {
+                      const ok = addResourceToCore(item);
+                      if (ok) setPaletteOpen(false);
+                    }}
+                    inDrawer
+                  />
+                </div>
+              </SheetContent>
+            </Sheet>
+
+            {/* Mobile blueprint drawer */}
+            <Sheet open={blueprintOpen} onOpenChange={setBlueprintOpen}>
+              <SheetContent
+                side="right"
+                className="bg-surface border-white/10 w-[88vw] sm:max-w-md p-0 flex flex-col h-full"
+              >
+                <SheetTitle className="sr-only">Financial Blueprint</SheetTitle>
+                <div className="flex-1 overflow-y-auto flex flex-col pt-8">
+                  <EventBlueprint
+                    targetMargin={targetMargin}
+                    baseCost={financials.baseCost}
+                    listingCost={financials.listingCost}
+                    suggestedPrice={financials.suggestedPrice}
+                    venueCost={financials.venueCost}
+                    talentCost={financials.talentCost}
+                    serviceCost={financials.serviceCost}
+                    baseItems={baseItems}
+                    blueprintHealth={blueprintHealth}
+                    onMarginChange={(m: number) => setTargetMargin(m)}
+                    onPreview={async () => {
+                      await handleSaveDraft();
+                      router.push(`/event/${id}?preview=1`);
+                    }}
+                    inDrawer
+                  />
+                </div>
+              </SheetContent>
+            </Sheet>
           </div>
         </div>
       )}

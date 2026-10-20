@@ -6,7 +6,7 @@ import Image from "next/image";
 import UserMenuButton from "@/features/user/components/UserMenuButton";
 import { useAuthStore } from "@/shared/auth/useAuthStore";
 import NotificationBell from "@/shared/components/layout/NotificationBell";
-import { assetUrl } from "@/shared/lib/assets";
+import { LOGO_SRC } from "@/shared/lib/assets";
 
 interface UserHeaderProps {
   isAuthenticated: boolean;
@@ -48,7 +48,7 @@ export const UserHeader: React.FC<UserHeaderProps> = ({
           >
             <div className="flex h-12 w-12 items-center justify-center group-hover:scale-110 transition-transform duration-300 overflow-hidden">
               <Image
-                src={assetUrl("foxonlylogo.png")}
+                src={LOGO_SRC}
                 alt="FoxPassport Logo"
                 width={48}
                 height={48}
