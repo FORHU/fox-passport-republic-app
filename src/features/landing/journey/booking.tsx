@@ -505,9 +505,7 @@ export function destinationEventCards(
     ).values(),
   );
 
-  const destinationImage =
-    destination.photos.find((photo) => photo.subject === "city")?.src ??
-    destination.photos[0]?.src;
+  const destinationImage = destination.photos[0]?.src;
 
   return EVENT_TYPES.flatMap((type) => {
     const event = localEvents.find(
