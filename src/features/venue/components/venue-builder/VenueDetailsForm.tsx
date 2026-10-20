@@ -160,8 +160,8 @@ export function VenueDetailsForm({
             <h4 className="font-bold text-white text-sm mb-1">Venue Builder</h4>
             <p className="text-xs text-text-muted">
               Drag <strong>included features</strong> to &quot;Standard
-              Features&quot;. Drag <strong>extras</strong> to &quot;Monetized
-              Add-ons&quot;.
+              Features&quot; and <strong>extras</strong> to &quot;Monetized
+              Add-ons&quot; — or tap Included / Add-on on a resource.
             </p>
           </div>
           <button
