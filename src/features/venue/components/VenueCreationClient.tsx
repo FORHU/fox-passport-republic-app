@@ -81,6 +81,7 @@ export default function VenueCreationClient() {
     handleDragOver,
     handleDragLeave,
     handleDrop,
+    addResourceTo,
     handleAddCustomItem,
     handleAddCatalogItem,
     handleRemoveCustomResource,
@@ -185,6 +186,7 @@ export default function VenueCreationClient() {
               onAddCatalogItem={handleAddCatalogItem}
               onRemoveResource={handleRemoveCustomResource}
               onDragStart={handleDragStart}
+              onAddTo={addResourceTo}
             />
           </div>
 

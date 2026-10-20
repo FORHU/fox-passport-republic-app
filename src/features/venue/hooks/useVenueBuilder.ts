@@ -155,6 +155,18 @@ export function useVenueBuilder() {
     [store],
   );
 
+  // Tap-to-add, for touch screens where drag and drop does not fire.
+  const addResourceTo = useCallback(
+    (item: ResourceItem, zone: "included" | "addon") => {
+      if (zone === "included") store.addIncludedItem(item);
+      else store.addAddonItem(item);
+      toast.success(
+        `${item.name} added ${zone === "included" ? "as included" : "as an add-on"}`,
+      );
+    },
+    [store],
+  );
+
   // Custom item handlers
   const handleAddCustomItem = useCallback(() => {
     if (!store.newItem.name) return;
@@ -390,6 +402,7 @@ export function useVenueBuilder() {
     handleDragOver,
     handleDragLeave,
     handleDrop,
+    addResourceTo,
     handleAddCustomItem,
     handleAddCatalogItem,
     handleRemoveCustomResource: store.removeCustomResource,
