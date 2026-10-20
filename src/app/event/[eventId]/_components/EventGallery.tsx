@@ -17,6 +17,15 @@ export function EventGallery({
   const [activeImageIndex, setActiveImageIndex] = useState(0);
 
   const hasImages = images.length > 0;
+  // Tiles are sized by how many photos there are, so the 4×2 grid is always
+  // full: one photo fills it, fewer than five never leave empty cells.
+  const thumbs = images.slice(1, 5);
+  const thumbSpan = (idx: number) =>
+    thumbs.length === 1
+      ? "sm:col-span-2 sm:row-span-2"
+      : thumbs.length === 2 || (thumbs.length === 3 && idx === 0)
+        ? "sm:col-span-2"
+        : "";
 
   return (
     <>
@@ -64,7 +73,9 @@ export function EventGallery({
       {hasImages ? (
         <div className="grid grid-cols-2 sm:grid-cols-4 grid-rows-2 gap-2 sm:gap-3 h-52 sm:h-80 md:h-125 rounded-2xl overflow-hidden mb-8 sm:mb-12 relative">
           <div
-            className="col-span-2 row-span-2 cursor-pointer group"
+            className={`col-span-2 row-span-2 cursor-pointer group ${
+              thumbs.length === 0 ? "sm:col-span-4" : ""
+            }`}
             onClick={() => {
               setActiveImageIndex(0);
               setGalleryOpen(true);
@@ -76,10 +87,10 @@ export function EventGallery({
               alt="Main Event"
             />
           </div>
-          {images.slice(1, 5).map((img, idx) => (
+          {thumbs.map((img, idx) => (
             <div
               key={idx}
-              className="relative hidden sm:block cursor-pointer group"
+              className={`relative hidden sm:block cursor-pointer group ${thumbSpan(idx)}`}
               onClick={() => {
                 setActiveImageIndex(idx + 1);
                 setGalleryOpen(true);

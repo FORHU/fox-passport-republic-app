@@ -41,20 +41,21 @@ import {
 import { Lightbox } from "@/features/landing/journey/Lightbox";
 
 describe("landing tour data", () => {
-  it("has capital cities with several credited photos each", () => {
+  it("gives every feature a credited photo, and the card turns through them", () => {
     expect(DESTINATIONS.length).toBeGreaterThanOrEqual(4);
     for (const d of DESTINATIONS) {
-      expect(d.photos.length).toBeGreaterThanOrEqual(3);
+      expect(d.features).toHaveLength(4);
+      expect(d.photos).toEqual(d.features.map((f) => f.photo));
       for (const p of d.photos) {
+        expect(p.alt).toBeTruthy();
         expect(p.credit.author).toBeTruthy();
-        expect(p.credit.license).toBeTruthy();
-        expect(p.credit.url).toMatch(/^https:\/\/commons\.wikimedia\.org\//);
+        expect(p.credit.license).toBe("Unsplash License");
+        expect(p.credit.url).toMatch(/^https:\/\/unsplash\.com\/photos\/[\w-]+$/);
       }
     }
-    expect(DESTINATIONS[0].photos[0]).toMatchObject({
-      src: "/destinations/washington-city.jpg",
-      subject: "city",
-      credit: { license: "Public domain" },
+    expect(DESTINATIONS[3].features[0]).toMatchObject({
+      label: "QR check-in",
+      photo: { src: "/features/qr-check-in.jpg" },
     });
   });
 
@@ -169,15 +170,15 @@ describe("landing tour data", () => {
   // The photos live in the object store, not in public/, so there is no file
   // to stat here. This keeps a typo or a stray path from shipping; that the
   // file is actually in the bucket is checked by looking at the page.
-  it("only points at destination photo paths", () => {
+  it("only points at feature photo paths", () => {
     for (const d of DESTINATIONS) {
       for (const p of d.photos) {
-        expect(p.src, p.src).toMatch(/\/destinations\/[a-z0-9-]+\.jpg$/);
+        expect(p.src, p.src).toMatch(/\/features\/[a-z0-9-]+\.jpg$/);
       }
     }
   });
 
-  it("does not reuse a photo for two places", () => {
+  it("does not reuse a photo for two features", () => {
     const all = DESTINATIONS.flatMap((d) => d.photos.map((p) => p.src));
     expect(new Set(all).size).toBe(all.length);
   });
@@ -806,12 +807,12 @@ describe("destination event cards", () => {
       expect.objectContaining({
         kind: "corporate",
         event: undefined,
-        image: "/destinations/washington-city.jpg",
+        image: destination.photos[0].src,
       }),
       expect.objectContaining({
         kind: "social",
         event: undefined,
-        image: "/destinations/washington-city.jpg",
+        image: destination.photos[0].src,
       }),
     ]);
   });
