@@ -78,16 +78,36 @@ describe("the frontend holds no backend signing key", () => {
 describe("what middleware still does", () => {
   const middleware = read("src/proxy.ts");
 
-  it("gates on the presence of the session cookie", () => {
-    expect(middleware).toMatch(/cookies\.get\(TOKEN_COOKIE\)/);
+  const sessionCookies = (
+    middleware.match(/const SESSION_COOKIES = \[([^\]]+)\]/)?.[1] ?? ""
+  )
+    .match(/"[^"]+"/g)
+    ?.map((s) => s.slice(1, -1));
+
+  it("gates on the presence of a session cookie", () => {
+    expect(middleware).toMatch(/cookies\.get\(name\)/);
     expect(middleware).toMatch(/redirectToLogin/);
   });
 
-  it("reads the same cookie name the login flow writes", () => {
+  it("accepts the cookie the login flow writes", () => {
     const authActions = read("src/shared/lib/server/auth-actions.ts");
-    const name = middleware.match(/const TOKEN_COOKIE = "([^"]+)"/)?.[1];
-    expect(name, "middleware no longer names a cookie").toBeTruthy();
-    expect(authActions).toContain(`"${name}"`);
+    expect(sessionCookies, "middleware no longer names a cookie").toBeTruthy();
+    expect(
+      sessionCookies!.some((name) => authActions.includes(`"${name}"`)),
+    ).toBe(true);
+  });
+
+  // The login form signs in through Better Auth, which sets no `fox_token`.
+  // The guard once checked only `fox_token` and bounced every such user off
+  // every protected route on refresh. Whatever /api/proxy forwards as a
+  // session, the guard must let through.
+  it("accepts every cookie /api/proxy treats as a session", () => {
+    const route = read("src/app/api/proxy/[...path]/route.ts");
+    const forwarded = [
+      ...route.matchAll(/cookieStore\.get\("([^"]+)"\)/g),
+    ].map((m) => m[1]);
+    expect(forwarded.length).toBeGreaterThan(0);
+    for (const name of forwarded) expect(sessionCookies).toContain(name);
   });
 });
 

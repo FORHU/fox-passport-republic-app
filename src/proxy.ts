@@ -56,10 +56,15 @@ const PROTECTED_ROUTES = [
   "/venue-foxer",
 ];
 
-// Name of the cookie set by `setAuthCookies` in shared/lib/server/auth-actions.
-// These must stay in sync — reading a different name here silently logs
-// everyone out of every protected route.
-const TOKEN_COOKIE = "fox_token";
+// Every cookie that can carry a session. The login form signs in through
+// Better Auth (`__Secure-` prefix on https); the API's own /auth/login sets
+// `fox_token`. Same list, same order as app/api/proxy/[...path]/route.ts.
+// Missing one here silently logs those users out of every protected route.
+const SESSION_COOKIES = [
+  "better-auth.session_token",
+  "__Secure-better-auth.session_token",
+  "fox_token",
+];
 
 export default async function proxy(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
@@ -73,7 +78,9 @@ export default async function proxy(request: NextRequest) {
   // Presence only. The contents are not read, decoded, or trusted - an expired
   // or forged cookie gets past this line by design, and is refused by the API
   // and by the page's own `requireAuth`/`requireAdmin` a moment later.
-  const hasSession = Boolean(request.cookies.get(TOKEN_COOKIE)?.value);
+  const hasSession = SESSION_COOKIES.some((name) =>
+    Boolean(request.cookies.get(name)?.value),
+  );
   if (!hasSession) return redirectToLogin(request);
 
   return NextResponse.next();
