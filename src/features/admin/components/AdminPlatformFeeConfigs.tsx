@@ -14,8 +14,21 @@ import {
   deletePlatformFeeConfig,
   previewPlatformFeeConfig,
 } from "@/shared/api/platform-fee-configs";
+import AuditHistoryPanel from "./AuditHistoryPanel";
 
 import { toast } from "sonner";
+
+const FEE_HISTORY_FIELDS = {
+  name: "Name",
+  transactionType: "Transaction type",
+  category: "Category",
+  subcategory: "Subcategory",
+  percentage: "Percentage",
+  fixedAmount: "Fixed amount",
+  priority: "Priority",
+  active: "Active",
+  effectiveUntil: "Effective until",
+};
 import { X, Plus, Search } from "lucide-react";
 
 function Empty() {
@@ -410,6 +423,7 @@ export default function AdminPlatformFeeConfigs() {
   const [editRule, setEditRule] = useState<PlatformFeeConfig | null>(null);
   const [saving, setSaving] = useState(false);
   const [includeInactive, setIncludeInactive] = useState(false);
+  const [historyId, setHistoryId] = useState<string | null>(null);
 
   const load = async () => {
     setLoading(true);
@@ -552,6 +566,17 @@ export default function AdminPlatformFeeConfigs() {
                 </div>
                 <div className="flex items-center gap-1.5 shrink-0">
                   <button
+                    onClick={() =>
+                      setHistoryId(historyId === rule.id ? null : rule.id)
+                    }
+                    className="p-2 rounded-xl bg-white/5 text-white/40 hover:text-white hover:bg-white/10 transition-all opacity-0 group-hover/card:opacity-100"
+                    title="Change history"
+                  >
+                    <span className="material-symbols-outlined text-[18px]">
+                      history
+                    </span>
+                  </button>
+                  <button
                     onClick={() => handleEdit(rule)}
                     className="p-2 rounded-xl bg-white/5 text-white/40 hover:text-white hover:bg-white/10 transition-all opacity-0 group-hover/card:opacity-100"
                     title="Edit rule"
@@ -573,6 +598,13 @@ export default function AdminPlatformFeeConfigs() {
                   )}
                 </div>
               </div>
+              {historyId === rule.id && (
+                <AuditHistoryPanel
+                  resource="platform-fee-configs"
+                  id={rule.id}
+                  fields={FEE_HISTORY_FIELDS}
+                />
+              )}
             </div>
           ))}
         </div>
