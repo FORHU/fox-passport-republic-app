@@ -95,13 +95,6 @@ app today, so nothing currently relies on it working.
       allowed value on the generic `PATCH /:id/status` endpoint — a second,
       equally invisible door onto the same dead state. `fox-passport-republic-api`
       commit `58298fe`.
-- [ ] **Check this stayed deleted.** As of 24 Sep no dispute route is
-      registered in the api's `booking.routes.ts`/`booking.controller.ts`, but
-      a comment in `booking.service.ts` (above `updateStatus`) now speaks of
-      giving the Event-flow `Booking` "the same active/disputed lifecycle" as
-      asset bookings. Either the comment is loose wording, or `disputed` is
-      coming back onto the generic path — in which case this whole finding
-      re-opens, because `GET /admin/disputes` still only reads `Refund` rows.
 
 ---
 
@@ -229,15 +222,11 @@ already at zero). `e507f9a` finished the follow/block/messages boundary
 refactor and closed out the remainder. The command now exits zero and stays
 that way — if it goes non-zero again, something regressed.
 
-- [ ] **It regressed — 16 violations as of 24 Sep**, all Feature Isolation
-      Boundary, all in committed code (none from the uncommitted checkout
-      work). The clusters: `messages/MessageButton` (and `useMessages`,
-      `useChatWindowsStore`, `SharePostModal`) imported from `booking`,
-      `gamification`, `investment`, `venue` and `republic`;
-      `booking/api/bookings` + `AvailabilityCalendar` imported from `asset`
-      and `service`; `event` → `venue-affiliation`; `venue-affiliation` →
-      `search`; `investment` → `venue/api`. Re-run the command for the
-      current list rather than trusting this one.
+- [ ] **2 violations as of 20 Oct** (down from 16 on 24 Sep):
+      `features/landing/journey/RoleDocs.tsx` imports `@/features/onboarding/roleCatalog`
+      (Feature Isolation), and `shared/lib/server/data.ts` imports
+      `@/features/landing/journey/landing-shared` (Shared Kernel). Re-run the
+      command for the current list rather than trusting this one.
 
 ### Read first, in this order
 
