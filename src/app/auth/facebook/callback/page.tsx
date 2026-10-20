@@ -6,7 +6,7 @@ import PageLoader from "@/shared/components/ui/PageLoader";
 import { toast } from "sonner";
 
 import { useAuthStore } from "@/shared/auth/useAuthStore";
-import { completeFacebookAuth } from "@/shared/auth/session-api";
+import { refreshSession } from "@/shared/auth/session-api";
 import { takeReturnTo } from "@/shared/auth/returnTo";
 
 function FacebookCallbackContent() {
@@ -19,22 +19,17 @@ function FacebookCallbackContent() {
     if (ranOnce.current) return;
     ranOnce.current = true;
 
-    const exchangeCode = searchParams.get("xc");
-
-    if (!exchangeCode) {
+    // Better Auth has already set the session cookie by the time it sends the
+    // browser here; `new=1` only steers a first sign-in to onboarding.
+    const fail = () => {
       toast.error("Facebook sign-in failed. Please try again.");
       router.replace("/");
-      return;
-    }
+    };
+    if (searchParams.get("error")) return fail();
 
-    completeFacebookAuth(exchangeCode).then((session) => {
-      if (!session) {
-        toast.error("Facebook sign-in failed. Please try again.");
-        router.replace("/");
-        return;
-      }
-
-      const { user, isNewUser } = session;
+    const isNewUser = searchParams.get("new") === "1";
+    refreshSession().then((user) => {
+      if (!user) return fail();
 
       login({ user });
       toast.success(`Welcome${isNewUser ? "" : " back"}!`);

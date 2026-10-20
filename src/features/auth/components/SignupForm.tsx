@@ -8,10 +8,11 @@ import { Loader2, Check } from "lucide-react";
 import { useSignup } from "@/features/auth/hooks/useAuth";
 import { signupSchema, SignupFormData } from "@/shared/lib/schema";
 import { useAuthStore } from "@/shared/auth/useAuthStore";
-import { config, getBrowserApiUrl } from "@/shared/lib/config";
+import { config } from "@/shared/lib/config";
 import { TermsPrivacyModal } from "@/features/auth/components/TermsPrivacyModal";
 
 import { toast } from "sonner";
+import { startSocialSignIn } from "@/shared/auth/session-api";
 
 // Social buttons component
 const SocialButtons = () => (
@@ -24,7 +25,7 @@ const SocialButtons = () => (
       href={`${config.apiUrl}/auth/google`}
       onClick={(e) => {
         e.preventDefault();
-        window.location.href = `${getBrowserApiUrl()}/auth/google?origin=${encodeURIComponent(window.location.origin)}`;
+        void startSocialSignIn("google");
       }}
       className="group flex items-center justify-center gap-2 sm:gap-3 py-2 sm:py-3 px-3 sm:px-4 rounded-xl bg-white/5 border border-white/10 hover:bg-white hover:text-black hover:border-white transition-all duration-300"
     >
@@ -57,7 +58,7 @@ const SocialButtons = () => (
       href={`${config.apiUrl}/auth/facebook`}
       onClick={(e) => {
         e.preventDefault();
-        window.location.href = `${getBrowserApiUrl()}/auth/facebook?origin=${encodeURIComponent(window.location.origin)}`;
+        void startSocialSignIn("facebook");
       }}
       className="group flex items-center justify-center gap-2 sm:gap-3 py-2 sm:py-3 px-3 sm:px-4 rounded-xl bg-white/5 border border-white/10 hover:bg-[#1877F2] hover:text-white hover:border-[#1877F2] transition-all duration-300"
     >
