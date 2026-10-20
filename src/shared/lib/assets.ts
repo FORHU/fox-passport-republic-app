@@ -27,3 +27,11 @@ export function assetUrl(path: string, origin = ""): string {
   const clean = path.replace(/^\/+/, "");
   return `${ASSETS_URL || origin.replace(/\/+$/, "")}/${clean}`;
 }
+
+/**
+ * The fox logo for on-screen use: an SVG in `public/`, so it stays sharp at any
+ * size. Open Graph and JSON-LD keep `assetUrl("foxonlylogo.png")`, since social
+ * and search previews don't take SVG. The name still contains "foxonlylogo" so
+ * the light-theme invert rule in globals.css applies.
+ */
+export const LOGO_SRC = "/foxonlylogo.svg";

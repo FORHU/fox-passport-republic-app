@@ -37,8 +37,57 @@ import {
   getEventCalloutPlacement,
   isEventCalloutInsideMap,
   projectEventLocation,
+  StopCard,
 } from "@/features/landing/journey/JourneyHero";
 import { Lightbox } from "@/features/landing/journey/Lightbox";
+import { motionValue } from "motion/react";
+
+describe("tour stop card", () => {
+  // The card used to lead with the city, so features read as tied to it.
+  it("leads with the step and keeps the city as a label", () => {
+    const paris = buildStops([])[1];
+    // Off screen at this scroll, so hidden: query by text, not accessible name.
+    render(<StopCard stop={paris} index={1} progress={motionValue(0)} />);
+    expect(screen.getByText("Book people you can trust").tagName).toBe("H3");
+    expect(screen.getByText("Step 2 of 5")).toBeTruthy();
+    expect(screen.getByText("Paris · France")).toBeTruthy();
+  });
+
+  // Feature cards used to all link somewhere generic ("Reviews" opened the
+  // packages list). Now only those a public page shows are links.
+  it("only links features to public pages that show them", () => {
+    const PUBLIC = [
+      "/packages",
+      "/venues/map",
+      "/search",
+      "/search?type=gear",
+      "/search?type=service",
+      "/republic",
+    ];
+    const features = DESTINATIONS.flatMap((d) => d.features);
+    for (const f of features) {
+      if (f.href) expect(PUBLIC, f.label).toContain(f.href);
+    }
+    expect(features.filter((f) => !f.href)).toHaveLength(11);
+  });
+
+  it("draws linkless features as plain tiles", () => {
+    const stops = buildStops([]);
+    render(<StopCard stop={stops[3]} index={3} progress={motionValue(0)} />);
+    // Each feature shows twice: the wide-screen card and the phone row.
+    for (const el of screen.getAllByText("QR check-in")) {
+      expect(el.closest("a")).toBeNull();
+    }
+  });
+
+  it("keeps a link where the page shows the feature", () => {
+    const stops = buildStops([]);
+    render(<StopCard stop={stops[0]} index={0} progress={motionValue(0)} />);
+    for (const el of screen.getAllByText("Venue map")) {
+      expect(el.closest("a")?.getAttribute("href")).toBe("/venues/map");
+    }
+  });
+});
 
 describe("landing tour data", () => {
   it("gives every feature a credited photo, and the card turns through them", () => {

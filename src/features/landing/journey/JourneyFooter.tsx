@@ -4,7 +4,8 @@ const COLUMNS = [
   {
     title: "Discover",
     links: [
-      ["Search", "/search"],
+      ["Find events", "/packages"],
+      ["Find Foxers", "/search"],
       ["Categories", "/categories"],
       ["Map", "/venues/map"],
       ["Republic feed", "/republic"],
@@ -13,10 +14,11 @@ const COLUMNS = [
   {
     title: "Become a Foxer",
     links: [
-      ["See the roles", "/onboarding"],
-      ["Venue Foxer", "/venue-foxer/apply"],
-      ["Event Foxer", "/creator-dashboard/apply"],
-      ["Other roles", "/foxer/apply"],
+      // Public pages only: the apply routes need sign-in, so a signed-out
+      // visitor was bounced. The role docs ask them to sign in at Apply.
+      ["See the roles", "#earn"],
+      ["Event Foxer", "/earn/event"],
+      ["Venue Foxer", "/earn/venue"],
     ],
   },
   {

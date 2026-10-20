@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
@@ -9,7 +10,15 @@ import UserMenuButton from "@/shared/components/layout/UserMenuButton";
 import NotificationBell from "@/shared/components/layout/NotificationBell";
 import MobileBottomNav from "@/shared/components/layout/MobileBottomNav";
 import { Badge } from "@/shared/components/ui/badge";
-import { assetUrl } from "@/shared/lib/assets";
+import {
+  Sheet,
+  SheetClose,
+  SheetContent,
+  SheetFooter,
+  SheetTitle,
+  SheetTrigger,
+} from "@/shared/components/ui/sheet";
+import { LOGO_SRC } from "@/shared/lib/assets";
 
 interface LandingHeaderProps {
   /** Optional — defaults to the auth store's own `openLogin`, so a server
@@ -26,9 +35,11 @@ interface LandingHeaderProps {
 }
 
 // Signed-out visitors get the landing page's own nav; signed-in users get the app's.
+// On small screens the same links open from the menu button.
 const LANDING_TABS = [
-  { label: "Booking", href: "/#events" },
-  { label: "How It Works", href: "/#how-it-works" },
+  { label: "Find events", href: "/#events" },
+  { label: "How it works", href: "/#how-it-works" },
+  { label: "List your business", href: "/#earn" },
 ];
 
 const APP_TABS = [
@@ -43,6 +54,7 @@ export default function LandingHeader({
 }: LandingHeaderProps) {
   const { isAuthenticated, isLoading, openLogin } = useAuthStore();
   const handleSignIn = onSignIn ?? openLogin;
+  const [menuOpen, setMenuOpen] = useState(false);
   // Nothing until the store hydrates, so signed-in users never flash the landing tabs.
   const navTabs = isLoading ? [] : isAuthenticated ? APP_TABS : LANDING_TABS;
   const pathname = usePathname();
@@ -67,7 +79,7 @@ export default function LandingHeader({
             >
               <div className="flex h-8 w-8 sm:h-12 sm:w-12 items-center justify-center group-hover:scale-110 transition-transform duration-300 overflow-hidden shrink-0">
                 <Image
-                  src={assetUrl("foxonlylogo.png")}
+                  src={LOGO_SRC}
                   alt="FoxPassport Logo"
                   width={48}
                   height={48}
@@ -154,6 +166,59 @@ export default function LandingHeader({
                   <NotificationBell />
                   <UserMenuButton onSignIn={handleSignIn} />
                 </div>
+              )}
+
+              {/* Small screens, signed out: the landing links, which the
+                  desktop nav shows inline. Signed-in users have the bottom nav. */}
+              {!isLoading && !isAuthenticated && (
+                <Sheet open={menuOpen} onOpenChange={setMenuOpen}>
+                  <SheetTrigger asChild>
+                    <button
+                      type="button"
+                      aria-label="Open menu"
+                      className="lg:hidden flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-white/10 sm:bg-white/5 border border-white/15 text-white hover:bg-white/15 transition-colors cursor-pointer"
+                    >
+                      <span
+                        aria-hidden
+                        className="material-symbols-outlined text-[22px]"
+                      >
+                        menu
+                      </span>
+                    </button>
+                  </SheetTrigger>
+                  <SheetContent
+                    side="right"
+                    aria-describedby={undefined}
+                    className="bg-canvas border-white/10 text-white"
+                  >
+                    <SheetTitle className="px-6 pt-6 text-lg font-display font-bold text-white">
+                      Menu
+                    </SheetTitle>
+                    <nav className="flex flex-col gap-1 px-3">
+                      {LANDING_TABS.map((tab) => (
+                        <SheetClose asChild key={tab.href}>
+                          <Link
+                            href={tab.href}
+                            className="rounded-xl px-3 py-3 text-base font-semibold text-white/80 hover:bg-white/10 hover:text-white transition-colors"
+                          >
+                            {tab.label}
+                          </Link>
+                        </SheetClose>
+                      ))}
+                    </nav>
+                    <SheetFooter className="p-6">
+                      <SheetClose asChild>
+                        <button
+                          type="button"
+                          onClick={handleSignIn}
+                          className="w-full rounded-full bg-accent px-6 py-3 text-sm font-extrabold text-black hover:bg-accent-hover transition-colors cursor-pointer"
+                        >
+                          Sign In
+                        </button>
+                      </SheetClose>
+                    </SheetFooter>
+                  </SheetContent>
+                </Sheet>
               )}
             </div>
           </div>

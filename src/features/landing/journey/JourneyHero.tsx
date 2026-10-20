@@ -50,7 +50,7 @@ const STOPS = DESTINATIONS.length;
 // How much scrolling (in screen heights ×100) each place gets. This is the
 // tour's speed: more is a slower, calmer flight. Every 0–1 fraction below
 // scales with it, so nothing else needs retuning.
-const VH_PER_STOP = 200;
+const VH_PER_STOP = 130;
 // How close the camera is at a place. A flat map this close is cheap to draw.
 const ZOOM_IN = 6.4;
 
@@ -1390,7 +1390,36 @@ function useViewport() {
   return size;
 }
 
-function StopCard({
+/**
+ * A feature card: a link where a public page shows that feature, otherwise a
+ * plain tile with no hover, so it never promises a page it doesn't open.
+ */
+function FeatureTile({
+  href,
+  className,
+  linkClassName = "",
+  style,
+  children,
+}: {
+  href?: string;
+  className: string;
+  /** Hover styles, for the link version only. */
+  linkClassName?: string;
+  style?: React.CSSProperties;
+  children: React.ReactNode;
+}) {
+  return href ? (
+    <Link href={href} className={`${className} ${linkClassName}`} style={style}>
+      {children}
+    </Link>
+  ) : (
+    <div className={className} style={style}>
+      {children}
+    </div>
+  );
+}
+
+export function StopCard({
   stop,
   index,
   progress,
@@ -1499,10 +1528,11 @@ function StopCard({
                 ][cardIndex];
                 const image = feature.photo.src;
                 return (
-                  <Link
+                  <FeatureTile
                     key={feature.label}
                     href={feature.href}
-                    className="absolute z-10 hidden h-[220px] w-[300px] flex-col justify-end overflow-hidden rounded-2xl border border-accent/45 bg-surface text-white shadow-xl transition-transform hover:scale-[1.03] xl:flex"
+                    className="absolute z-10 hidden h-[220px] w-[300px] flex-col justify-end overflow-hidden rounded-2xl border border-accent/45 bg-surface text-white shadow-xl xl:flex"
+                    linkClassName="transition-transform hover:scale-[1.03]"
                     style={{
                       left: `calc(50% - 630px + ${slot.x}px)`,
                       top: `${slot.y}px`,
@@ -1529,7 +1559,7 @@ function StopCard({
                         {feature.title}
                       </span>
                     </span>
-                  </Link>
+                  </FeatureTile>
                 );
               })}
             </>
@@ -1585,8 +1615,7 @@ function StopCard({
                 className="absolute inset-0 z-10 cursor-zoom-in"
               />
               <p className="font-landing-mono pointer-events-none absolute left-3 top-3 z-20 rounded-full bg-[#000]/60 px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.16em] text-[#fff] backdrop-blur">
-                {String(index + 1).padStart(2, "0")} /{" "}
-                {String(STOPS).padStart(2, "0")}
+                Step {index + 1} of {STOPS}
               </p>
               <div className="pointer-events-auto absolute right-3 top-3 z-20 flex items-center gap-0.5 rounded-full bg-[#000]/60 py-0.5 pl-1 pr-2 backdrop-blur">
                 {!reduce && (
@@ -1620,19 +1649,17 @@ function StopCard({
                 ))}
               </div>
               <div className="pointer-events-none absolute inset-x-4 bottom-3 z-20">
-                <h3 className="font-landing-display max-w-full whitespace-normal break-words text-2xl leading-tight text-[#fff] sm:text-3xl lg:text-4xl">
-                  {stop.name}
+                {/* The step leads; the place is only where the tour shows it. */}
+                <h3 className="font-landing-display max-w-full whitespace-normal break-words text-2xl leading-tight text-[#fff] sm:text-3xl">
+                  {stop.kind}
                 </h3>
                 <p className="font-landing-mono mt-1.5 text-[11px] font-bold uppercase tracking-[0.2em] text-[#fff]/85">
-                  {stop.region}
+                  {stop.name} · {stop.region}
                 </p>
               </div>
             </div>
             <div className="p-5">
-              <p className="font-landing-mono text-[11px] font-bold uppercase tracking-[0.2em] text-accent">
-                {stop.kind}
-              </p>
-              <p className="mt-2 text-sm leading-relaxed text-white/85">
+              <p className="text-sm leading-relaxed text-white/85">
                 {stop.tagline}
               </p>
               {stop.features.length > 0 && (
@@ -1640,10 +1667,11 @@ function StopCard({
                   {stop.features.slice(0, 4).map((feature) => {
                     const image = feature.photo.src;
                     return (
-                      <Link
+                      <FeatureTile
                         key={feature.label}
                         href={feature.href}
                         className="flex min-h-24 w-64 shrink-0 items-center gap-3 rounded-xl border border-accent/30 bg-white/5 p-3 text-left"
+                        linkClassName="transition-colors hover:bg-white/10"
                       >
                         <div className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-md bg-gradient-to-br from-accent/25 via-white/10 to-sky-400/20">
                           {image && (
@@ -1664,7 +1692,7 @@ function StopCard({
                             {feature.title}
                           </span>
                         </span>
-                      </Link>
+                      </FeatureTile>
                     );
                   })}
                 </div>
@@ -1713,20 +1741,30 @@ function StopCard({
   );
 }
 
-/** The places along the bottom, lighting up as the tour reaches each. */
+/**
+ * The steps along the bottom, lighting up as the tour reaches each: named on
+ * wide screens, dots on smaller ones. It shows once the tour has started, like
+ * the tools across from it. A visual cue only: the card says "Step N of 5".
+ */
 function Rail({
   stops,
   progress,
+  opacity,
 }: {
   stops: Stop[];
   progress: MotionValue<number>;
+  opacity: MotionValue<number>;
 }) {
   return (
-    <div className="absolute bottom-6 left-6 z-20 hidden items-center gap-4 xl:flex">
+    <motion.div
+      aria-hidden
+      style={{ opacity }}
+      className="pointer-events-none absolute bottom-24 left-4 z-20 flex items-center gap-2 sm:bottom-6 sm:left-6 xl:gap-4"
+    >
       {stops.map((s, i) => (
-        <RailStop key={s.key} label={s.name} index={i} progress={progress} />
+        <RailStop key={s.key} label={s.kind} index={i} progress={progress} />
       ))}
-    </div>
+    </motion.div>
   );
 }
 
@@ -1748,7 +1786,7 @@ function RailStop({
       className="font-landing-mono flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.2em] text-white"
     >
       <span className="h-1.5 w-1.5 rounded-full bg-accent" />
-      {label}
+      <span className="hidden xl:inline">{label}</span>
     </motion.span>
   );
 }
@@ -2347,7 +2385,16 @@ function TourHero() {
               Scroll to see how FoxPassport works.
             </p>
             <HeroSearch />
-            <InstallAppButton className="mt-4" />
+            {/* One row, so the skip link costs no height on a short phone. */}
+            <div className="mt-4 flex flex-wrap items-center gap-x-5 gap-y-2">
+              <InstallAppButton />
+              <a
+                href="#events"
+                className="pointer-events-auto text-sm font-bold text-white/70 underline underline-offset-4 hover:text-white"
+              >
+                Skip to events ↓
+              </a>
+            </div>
           </div>
         </motion.div>
 
@@ -2376,7 +2423,7 @@ function TourHero() {
           <div className="mt-6 flex items-center justify-center gap-3">
             {user ? (
               <Link
-                href="/search"
+                href="/packages"
                 className="rounded-full bg-accent px-6 py-3 text-sm font-extrabold text-black"
               >
                 Find an event
@@ -2404,7 +2451,7 @@ function TourHero() {
           )}
         </motion.div>
 
-        <Rail stops={stops} progress={progress} />
+        <Rail stops={stops} progress={progress} opacity={tools} />
 
         {/* Always within reach once the headline search has scrolled away. */}
         <motion.div
@@ -2417,8 +2464,9 @@ function TourHero() {
           >
             Skip to events ↓
           </a>
+          {/* The same results as the hero search, which has its own search bar. */}
           <Link
-            href="/search"
+            href="/packages"
             className="rounded-full bg-accent px-5 py-2.5 text-xs font-extrabold text-black shadow-xl"
           >
             Find events

@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { assetUrl } from "@/shared/lib/assets";
+import { LOGO_SRC } from "@/shared/lib/assets";
 
 /**
  * Shared minimal header for every role-application form (Mayor, Host,
@@ -22,7 +22,7 @@ export function ApplicationFlowHeader() {
   return (
     <header className="fixed top-0 left-0 right-0 z-50 bg-canvas/90 backdrop-blur-xl border-b border-white/5 h-14 sm:h-16 flex items-center px-4 sm:px-6 gap-3">
       <Image
-        src={assetUrl("foxonlylogo.png")}
+        src={LOGO_SRC}
         alt="FoxPassport"
         width={22}
         height={22}

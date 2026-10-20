@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { useAuthStore } from "@/shared/auth/useAuthStore";
-import { assetUrl } from "@/shared/lib/assets";
+import { LOGO_SRC } from "@/shared/lib/assets";
 
 /** Set once the guide is finished or dismissed — this browser only. */
 const WELCOME_SEEN_KEY = "fp-welcome-seen";
@@ -208,7 +208,7 @@ export default function WelcomeGuide() {
                     >
                       {index === 0 ? (
                         <img
-                          src={assetUrl("foxonlylogo.png")}
+                          src={LOGO_SRC}
                           alt=""
                           className="h-14 w-14 object-contain"
                         />
