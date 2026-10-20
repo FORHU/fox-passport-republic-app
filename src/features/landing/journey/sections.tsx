@@ -213,7 +213,7 @@ export function ClosingCta() {
         <div className="mt-8 flex items-center justify-center gap-3">
           {user ? (
             <Link
-              href="/search"
+              href="/packages"
               className="rounded-full bg-accent px-7 py-3.5 text-sm font-extrabold text-black"
             >
               Find an event

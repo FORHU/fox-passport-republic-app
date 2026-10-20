@@ -564,14 +564,15 @@ export function EventGrid() {
             </p>
             <p className="mt-2 text-sm text-white/70">
               {isError
-                ? "Check your connection and try again, or search directly."
-                : "Check back soon, or search for a venue."}
+                ? "Check your connection and try again, or find a Foxer directly."
+                : "Check back soon, or find a Foxer to plan it with."}
             </p>
+            {/* No events means no packages either, so the way on is the Foxers. */}
             <Link
               href="/search"
               className="mt-5 inline-flex rounded-full bg-accent px-6 py-3 text-sm font-extrabold text-black"
             >
-              Search events
+              Find Foxers
             </Link>
           </div>
         )}
@@ -584,7 +585,7 @@ export function EventGrid() {
             <EventCard key={e.id} event={e} index={i} />
           ))}
           <Link
-            href="/search"
+            href="/packages"
             className="group flex min-h-48 flex-col justify-between rounded-2xl border border-accent/40 bg-accent/10 p-6 transition-colors hover:bg-accent/20 sm:aspect-[4/5]"
           >
             <span className="font-landing-mono text-xs font-bold uppercase tracking-[0.2em] text-[color:var(--accent-text)]">
@@ -639,7 +640,7 @@ export function EventTypes() {
             const photo = featured?.images?.find((image) => image.url)?.url;
             const href = featured
               ? `/event/${featured.id}`
-              : `/search?category=${t.value}`;
+              : `/packages?category=${t.value}`;
             return (
               <motion.div
                 key={t.value}

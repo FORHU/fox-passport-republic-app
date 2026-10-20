@@ -5,7 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import PassportBookletCard from "./PassportBookletCard";
 import { useMyPassport } from "../hooks/usePassport";
-import { assetUrl } from "@/shared/lib/assets";
+import { LOGO_SRC } from "@/shared/lib/assets";
 
 interface Props {
   user?: any;
@@ -72,7 +72,7 @@ export default function MobilePassportView({ user }: Props) {
           style={{ display: "flex", alignItems: "center", flexShrink: 0 }}
         >
           <Image
-            src={assetUrl("foxonlylogo.png")}
+            src={LOGO_SRC}
             alt="FoxPassport"
             width={22}
             height={22}

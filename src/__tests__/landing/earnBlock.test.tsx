@@ -18,6 +18,8 @@ vi.mock("@/features/landing/journey/data", async (importOriginal) => ({
 
 import { EarnBlock } from "@/features/landing/journey/sections";
 import RoleDocs from "@/features/landing/journey/RoleDocs";
+import JourneyFooter from "@/features/landing/journey/JourneyFooter";
+import LandingFooter from "@/features/landing/components/sections/LandingFooter";
 import { ROLES } from "@/features/landing/journey/data";
 
 /**
@@ -49,5 +51,22 @@ describe("Earn role docs", () => {
     expect(
       screen.getByRole("button", { name: "Apply as Venue Foxer" }),
     ).toBeTruthy();
+  });
+
+  // The footers had the same bug: their role links went to the apply routes.
+  it("points the landing footer's role links at public pages", () => {
+    render(<JourneyFooter />);
+    const column = screen.getByText("Become a Foxer").parentElement!;
+    const hrefs = Array.from(column.querySelectorAll("a")).map((a) =>
+      a.getAttribute("href"),
+    );
+    expect(hrefs).toEqual(["#earn", "/earn/event", "/earn/venue"]);
+  });
+
+  it("points the shared footer's Become a Foxer at the role docs", () => {
+    render(<LandingFooter />);
+    expect(
+      screen.getByRole("link", { name: "Become a Foxer" }).getAttribute("href"),
+    ).toBe("/earn/event");
   });
 });

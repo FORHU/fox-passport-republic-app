@@ -291,7 +291,11 @@ export interface Photo {
 export interface Feature {
   label: string;
   title: string;
-  href: string;
+  /**
+   * Only where a public page shows this feature. Without one the card is a
+   * plain tile: a link to a page about something else reads as broken.
+   */
+  href?: string;
   photo: Photo;
 }
 
@@ -301,7 +305,7 @@ export interface Destination {
   category: string;
   name: string;
   region: string;
-  /** The feature this stop presents, as the card's short label. */
+  /** The step of a booking this stop presents: the card's headline. */
   kind: string;
   /** One line on that feature. */
   tagline: string;
@@ -423,7 +427,7 @@ export const DESTINATIONS: Destination[] = (
         {
           label: "Gear",
           title: "Sound, lights, staging and furniture to rent",
-          href: "/search",
+          href: "/search?type=gear",
           photo: unsplash(
             "gear",
             "Microphones, drums and keyboards on a stage under spotlights",
@@ -434,7 +438,7 @@ export const DESTINATIONS: Destination[] = (
         {
           label: "Talent",
           title: "Catering, design and staff, by the hour or the job",
-          href: "/search",
+          href: "/search?type=service",
           photo: unsplash(
             "talent",
             "Chefs plating small dishes for service",
@@ -445,7 +449,6 @@ export const DESTINATIONS: Destination[] = (
         {
           label: "Performers",
           title: "DJs, bands, hosts and photographers",
-          href: "/search",
           photo: unsplash(
             "performers",
             "A DJ's hand over a lit mixing deck",
@@ -480,7 +483,6 @@ export const DESTINATIONS: Destination[] = (
         {
           label: "Account at booking",
           title: "Sign up only when you reserve",
-          href: "/packages",
           photo: unsplash(
             "account-at-booking",
             "A reserved sign on a table",
@@ -491,7 +493,6 @@ export const DESTINATIONS: Destination[] = (
         {
           label: "Cancellation policy",
           title: "See the cancellation terms before you book",
-          href: "/packages",
           photo: unsplash(
             "cancellation-policy",
             "An open monthly planner on a desk",
@@ -502,7 +503,6 @@ export const DESTINATIONS: Destination[] = (
         {
           label: "Secure checkout",
           title: "Pay by card through Stripe",
-          href: "/packages",
           photo: unsplash(
             "secure-checkout",
             "Someone holding a card while paying on a laptop",
@@ -526,7 +526,6 @@ export const DESTINATIONS: Destination[] = (
         {
           label: "QR check-in",
           title: "Show your booking's QR code at the door",
-          href: "/packages",
           photo: unsplash(
             "qr-check-in",
             "A guest's booking checked on a phone at the entrance",
@@ -537,7 +536,6 @@ export const DESTINATIONS: Destination[] = (
         {
           label: "Message your Foxers",
           title: "Chat with your host and suppliers before the day",
-          href: "/search",
           photo: unsplash(
             "message-your-foxers",
             "Someone writing a message on a phone",
@@ -548,7 +546,6 @@ export const DESTINATIONS: Destination[] = (
         {
           label: "Booking details",
           title: "Date, venue and guests on one booking page",
-          href: "/packages",
           photo: unsplash(
             "booking-details",
             "A guest book held in someone's hand",
@@ -559,7 +556,6 @@ export const DESTINATIONS: Destination[] = (
         {
           label: "Change requests",
           title: "Ask for a change to your booking in the app",
-          href: "/packages",
           photo: unsplash(
             "change-requests",
             "Someone working on a laptop at dusk",
@@ -582,7 +578,6 @@ export const DESTINATIONS: Destination[] = (
         {
           label: "Passport stamps",
           title: "A stamp for every event you attend",
-          href: "/packages",
           photo: unsplash(
             "passport-stamps",
             "An open passport full of stamps",
@@ -593,7 +588,6 @@ export const DESTINATIONS: Destination[] = (
         {
           label: "Badges and levels",
           title: "Earn badges and level up as you go",
-          href: "/packages",
           photo: unsplash(
             "badges-and-levels",
             "A row of gold medals with red ribbons",
@@ -604,7 +598,6 @@ export const DESTINATIONS: Destination[] = (
         {
           label: "Reviews",
           title: "Review the venues and Foxers you booked",
-          href: "/packages",
           photo: unsplash(
             "reviews",
             "A row of glitter stars on a dark background",

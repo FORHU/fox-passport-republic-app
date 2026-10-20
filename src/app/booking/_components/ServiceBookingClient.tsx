@@ -12,7 +12,7 @@ import {
   previewServiceBookingPrice,
 } from "@/features/booking/api/bookings";
 import { useServiceAvailability } from "@/features/booking/hooks/useAvailability";
-import { assetUrl } from "@/shared/lib/assets";
+import { LOGO_SRC } from "@/shared/lib/assets";
 
 const NO_DATES: string[] = [];
 import { useItemBookingStore } from "@/features/booking/store/useItemBookingStore";
@@ -338,7 +338,7 @@ export default function ServiceBookingClient({
             >
               <div className="flex h-10 w-10 items-center justify-center overflow-hidden group-hover:scale-110 transition-transform duration-300">
                 <Image
-                  src={assetUrl("foxonlylogo.png")}
+                  src={LOGO_SRC}
                   alt="FoxPassport Logo"
                   width={40}
                   height={40}

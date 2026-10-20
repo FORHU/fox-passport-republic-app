@@ -4,7 +4,7 @@ import React from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useCheckoutStore } from "@/features/booking/store/useCheckoutStore";
-import { assetUrl } from "@/shared/lib/assets";
+import { LOGO_SRC } from "@/shared/lib/assets";
 
 type Props = {
   onClose?: () => void;
@@ -64,7 +64,7 @@ export default function MobileBookingSuccess({ onClose }: Props) {
         }}
       >
         <Image
-          src={assetUrl("foxonlylogo.png")}
+          src={LOGO_SRC}
           alt="FoxPassport"
           width={22}
           height={22}
