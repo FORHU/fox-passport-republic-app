@@ -16,7 +16,7 @@ export {
   type LandingEventLocation,
   type LandingFoxer,
   type LandingVenue,
-} from "./landing-shared";
+} from "@/shared/data/landingJourney";
 import {
   filterLandingVenues,
   loadLandingEvents,
@@ -24,7 +24,7 @@ import {
   type LandingEventLocation,
   type LandingFoxer,
   type LandingVenue,
-} from "./landing-shared";
+} from "@/shared/data/landingJourney";
 
 const TEN_MINUTES = 1000 * 60 * 10;
 

@@ -9,7 +9,7 @@ import RequireAuth from "@/shared/auth/RequireAuth";
 import { toast } from "sonner";
 import api from "@/shared/lib/axios";
 import { isFoxerRole } from "@/shared/constants/roles";
-import { ROLES, type RoleCatalogEntry } from "../roleCatalog";
+import { ROLES, type RoleCatalogEntry } from "@/shared/data/roleCatalog";
 import { RoleDetailsModal } from "./RoleDetailsModal";
 import {
   CascadingLocationFields,
