@@ -267,7 +267,7 @@ times to trigger focus changes.
 | A4 | non-admin isolated | **Pass** | Same run as A3: `user@example.com`'s websocket listener, watching for any `admin:pending` frame, saw nothing. |
 | A5 | reconnect + rejoin | **Pass** | Driven 12 Sep by forcing a real disconnect (touching an API source file so nodemon restarts — Playwright's `context.setOffline()` does **not** actually drop an already-open WebSocket, a tooling gotcha worth knowing). Socket closed on restart, reconnected with a fresh `POST /auth/socket-ticket` (2 tickets, 2 socket generations total), and a subsequent `admin:pending` frame arrived correctly on the *new* socket generation — the room was genuinely rejoined, not just reconnected. |
 | A6 | Redis down degrades | **Pass** | Driven 12 Sep: stopped the `local_redis` container, signed in fresh — login succeeded (200), the page rendered normally (not blank), title resolved correctly, no visible error toast. The `/auth/socket-ticket` call correctly 503'd (console-logged, not user-facing), and the socket.io handshake opened then cleanly closed on `"Authentication ticket missing"` rather than hanging or erroring visibly. Redis restarted cleanly afterward — API logged `✅ Redis reconnected... caching resumed` with no manual intervention. |
-| B1 | dispute → admin | **Pass, but only via the asset/service path — see finding below** | First attempt used the generic `PATCH /bookings/:id/dispute` (the `Booking` model) and technically "passed" (frame arrived) but the disputed booking never appeared in `/admin/disputes` — see "Booking disputes are invisible to admins" below. Re-driven correctly against `PATCH /asset/bookings/:id/dispute`: frame arrived 394ms after the citizen's PATCH, and the booking correctly appeared in `GET /admin/asset-bookings/disputes`. |
+| B1 | dispute → admin | **Pass** | First attempt used the generic `PATCH /bookings/:id/dispute` (the `Booking` model) and technically "passed" (frame arrived) but the disputed booking never appeared in `/admin/disputes` (that generic route was deleted on 13 Sep, api `58298fe`). Re-driven correctly against `PATCH /asset/bookings/:id/dispute`: frame arrived 394ms after the citizen's PATCH, and the booking correctly appeared in `GET /admin/asset-bookings/disputes`. |
 | B2 | resolve → citizen | **Pass** (same corrected run as B1) | Admin's `PATCH /admin/asset-bookings/:id/resolve` (`{"resolution":"completed"}`) returned 200, and the citizen's `bookings`-topic frame arrived 45ms later. |
 | B3 | citizen bookings live | **Pass** | Driven 20 Oct with Playwright on `/booking` (desktop layout) as `user@example.com`. The admin Bookings tab is read-only (no cancel action exists), so the trigger was the event's host instead: `host@example.com` called `PATCH /bookings/seed-booking-corporate-01/status` with `cancelled`, which goes through `announceBookingChanged` (the same `announceToUser(guest, "bookings")` path). `{"topic":"bookings"}` frame at +48ms; the "Q3 Team Strategy Summit" card went CONFIRMED → CANCELLED and lost its Cancel button at +157ms, no reload. Booking restored to `confirmed` afterwards. |
 | B4 | webhook → payer | **Pass**, after a fix | 10 Sep, driven end to end. See below. |
@@ -278,38 +278,7 @@ times to trigger focus changes.
 | D | secretary boundary | **Pass** | Driven 12 Sep as `secretary@example.com`: `/admin` opens; sidebar shows exactly Dashboard/Events/Venues/Map/Assets/Services and no Citizens/Bookings/Disputes/Policies/Settings; `GET /users` and `GET /admin/disputes` (through the proxy, with real cookies) both 403; `GET /admin/venues/pending` (the approve queue) 200. |
 | E | focus refetch quiet | **Pass** | Driven 12 Sep: dispatched `visibilitychange`/`blur`/`focus` three times on `/admin` (a real DevTools toggle wasn't scriptable, so this simulates the same events React Query's `refetchOnWindowFocus` listens for) — zero `/admin/*` requests fired across all three toggles. |
 
-**All 16 checks in this file have now been driven at least once (12 Sep), all passing** except for the B1 caveat below. B3 was driven directly on 20 Oct. `admin_secretary`'s account was added since this file predates it and works correctly.
-
-### Booking disputes are invisible to admins — found running B1, 12 Sep
-
-**A citizen can set a plain `Booking`'s status to `disputed` (`PATCH
-/bookings/:id/dispute`), and it fires the `disputes` socket topic correctly —
-but it never shows up anywhere an admin can see it.** `GET /admin/disputes`
-(the endpoint `AdminDisputesPanel.tsx` actually calls, whose own empty-state
-copy honestly says *"No refund disputes"*) only ever queries the `Refund`
-table (`AdminSvc.getDisputes` → `refunds.map(...)`), not `Booking` rows.
-Confirmed directly: disputed `seed-booking-birthday-01`, then queried
-`GET /admin/disputes` — `{"data": [], "total": 0}`. The frame that fires is a
-real, structurally-correct `{"topic":"disputes"}` invalidation; it just
-causes a refetch of a list that was never going to contain the row, which is
-exactly the "looks live, isn't connected to anything real" failure mode this
-file's own intro warns about — just one layer deeper than usual, since even
-watching the frame doesn't catch it.
-
-**Not currently reachable from the app's UI**, which is the only reason this
-hasn't been noticed: `reportNoShow()` (`features/booking/api/bookings.ts`),
-the one UI action that calls a "dispute" endpoint, is typed
-`"service" | "asset"` only and always calls `/${type}/bookings/${id}/dispute`
-— which correctly feeds `findDisputedAssetBookings`/
-`findDisputedServiceBookings` and their own properly-wired admin panels
-(confirmed working in the corrected B1/B2 run above). The generic
-`Booking.dispute()` path is real, callable API surface with no consumer
-anywhere in the app — dead on the write side (nothing sets it) and dead on
-the read side (nothing shows it), except that it *is* still callable by
-anyone who knows the route, and if it's ever wired to a UI button in the
-future, whoever does that will discover this gap the hard way. Worth either
-deleting `PATCH /bookings/:id/dispute` and the `disputed` status on `Booking`
-if genuinely unused, or building the missing admin view for it.
+**All 16 checks in this file have now been driven at least once (12 Sep), all passing.** B3 was driven directly on 20 Oct. `admin_secretary`'s account was added since this file predates it and works correctly.
 
 ### proxy.ts is dead in this Next.js version — found running C1, 12 Sep
 
