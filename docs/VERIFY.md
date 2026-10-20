@@ -43,7 +43,7 @@ database on 8 Sep.
 
 | Account | Is |
 |---|---|
-| `admin@example.com` | admin |
+| `admin@example.com` | admin, plus all seven `roleType`s (every foxer role, investor, organizer) |
 | `secretary@example.com` | `admin_secretary` |
 | `user@example.com` | citizen |
 | `host@example.com` | eventFoxer |
@@ -269,7 +269,7 @@ times to trigger focus changes.
 | A6 | Redis down degrades | **Pass** | Driven 12 Sep: stopped the `local_redis` container, signed in fresh — login succeeded (200), the page rendered normally (not blank), title resolved correctly, no visible error toast. The `/auth/socket-ticket` call correctly 503'd (console-logged, not user-facing), and the socket.io handshake opened then cleanly closed on `"Authentication ticket missing"` rather than hanging or erroring visibly. Redis restarted cleanly afterward — API logged `✅ Redis reconnected... caching resumed` with no manual intervention. |
 | B1 | dispute → admin | **Pass, but only via the asset/service path — see finding below** | First attempt used the generic `PATCH /bookings/:id/dispute` (the `Booking` model) and technically "passed" (frame arrived) but the disputed booking never appeared in `/admin/disputes` — see "Booking disputes are invisible to admins" below. Re-driven correctly against `PATCH /asset/bookings/:id/dispute`: frame arrived 394ms after the citizen's PATCH, and the booking correctly appeared in `GET /admin/asset-bookings/disputes`. |
 | B2 | resolve → citizen | **Pass** (same corrected run as B1) | Admin's `PATCH /admin/asset-bookings/:id/resolve` (`{"resolution":"completed"}`) returned 200, and the citizen's `bookings`-topic frame arrived 45ms later. |
-| B3 | citizen bookings live | | Still not driven directly on `/booking` itself, but B1/B2/B5 all independently confirm the same `bookings`-topic pipeline delivers to a citizen session live, which is strong indirect evidence. |
+| B3 | citizen bookings live | **Pass** | Driven 20 Oct with Playwright on `/booking` (desktop layout) as `user@example.com`. The admin Bookings tab is read-only (no cancel action exists), so the trigger was the event's host instead: `host@example.com` called `PATCH /bookings/seed-booking-corporate-01/status` with `cancelled`, which goes through `announceBookingChanged` (the same `announceToUser(guest, "bookings")` path). `{"topic":"bookings"}` frame at +48ms; the "Q3 Team Strategy Summit" card went CONFIRMED → CANCELLED and lost its Cancel button at +157ms, no reload. Booking restored to `confirmed` afterwards. |
 | B4 | webhook → payer | **Pass**, after a fix | 10 Sep, driven end to end. See below. |
 | B5 | check-in both sides | **Pass** | Driven 12 Sep: set a test `ticketCode` on a booking with a distinct host (`host@example.com`) and guest (`jasmine.reyes@foxers.ph`), host called `PATCH /bookings/check-in`, both host's and guest's sessions received a `bookings`-topic frame within ~450ms of each other. |
 | C1 | signed-out redirects | **Pass, with a major caveat found 12 Sep** | See "proxy.ts is dead" below — the fast, pre-render redirect this check exists to verify doesn't fire at all for a non-JS request (`curl` gets 200 + full page shell for every protected route). Real, JS-executing browsers still land on `/`, correctly, via each tree's `requireAuth()` layout guard (confirmed via the `NEXT_REDIRECT` digest in the streamed RSC payload) - so the check "passes" for the client this file assumes (a browser), but the middleware layer it was written to exercise is not what's doing the work anymore. `/foxer` and `/reviews` 404 rather than redirecting - both are bare route trees with a `layout.tsx` but no `page.tsx`, so there's nothing to guard. |
@@ -278,7 +278,7 @@ times to trigger focus changes.
 | D | secretary boundary | **Pass** | Driven 12 Sep as `secretary@example.com`: `/admin` opens; sidebar shows exactly Dashboard/Events/Venues/Map/Assets/Services and no Citizens/Bookings/Disputes/Policies/Settings; `GET /users` and `GET /admin/disputes` (through the proxy, with real cookies) both 403; `GET /admin/venues/pending` (the approve queue) 200. |
 | E | focus refetch quiet | **Pass** | Driven 12 Sep: dispatched `visibilitychange`/`blur`/`focus` three times on `/admin` (a real DevTools toggle wasn't scriptable, so this simulates the same events React Query's `refetchOnWindowFocus` listens for) — zero `/admin/*` requests fired across all three toggles. |
 
-**All 16 checks in this file have now been driven at least once (12 Sep), all passing** except for the B1 caveat below and B3, which is only indirectly covered. `admin_secretary`'s account was added since this file predates it and works correctly.
+**All 16 checks in this file have now been driven at least once (12 Sep), all passing** except for the B1 caveat below. B3 was driven directly on 20 Oct. `admin_secretary`'s account was added since this file predates it and works correctly.
 
 ### Booking disputes are invisible to admins — found running B1, 12 Sep
 
