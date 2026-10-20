@@ -32,6 +32,7 @@ export const PERMISSIONS = [
   // Money and disputes
   "bookings:read:all",
   "payments:read:all",
+  "payments:manage",
   "disputes:resolve",
   "refunds:manage",
   "event:manage-organizers",
