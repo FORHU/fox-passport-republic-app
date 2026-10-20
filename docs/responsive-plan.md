@@ -353,7 +353,12 @@ Rules:
 
 ### Phase 1 — Shared primitives (highest leverage)
 
-- [ ] `FormSection`, `StepperControl`, `input`, `glass-card` (2.4)
+- [x] `FormSection`, `StepperControl`, `input`, `glass-card` (2.4) — 20 Oct. The
+      premise was stale: only the venue booking page uses `FormSection` and
+      `StepperControl`, and `input` / `glass-card` are imported nowhere. Fixed the
+      two in use: tighter padding below `sm`, stepper never squeezed, and its −/+
+      are `type="button"` so they cannot submit a surrounding form. **Re-audit
+      before the next item** — "the remaining 14" is from 3 Sep and likely as stale.
 - [ ] Remaining 14 shared components
 - [ ] Map surfaces (`LocationMap`, `MapboxLocationInput`, `MapboxLocationPicker`) as a separate touch task
 
