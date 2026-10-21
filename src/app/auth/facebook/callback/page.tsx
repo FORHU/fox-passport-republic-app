@@ -25,7 +25,11 @@ function FacebookCallbackContent() {
     // didn't stick) is shown so a failure can be reported, not just retried.
     const fail = (code: string) => {
       console.error("[facebook-callback] sign-in failed:", code);
-      toast.error(`Facebook sign-in failed (${code}). Please try again.`);
+      toast.error(
+        code === "email_not_found"
+          ? "Facebook didn't share an email address. Add a confirmed email to your Facebook account, or sign up with email instead."
+          : `Facebook sign-in failed (${code}). Please try again.`,
+      );
       router.replace("/");
     };
     const error = searchParams.get("error");
