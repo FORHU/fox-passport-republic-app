@@ -21,15 +21,19 @@ export default function GoogleAuthCallbackPage() {
 
     // Better Auth has already set the session cookie by the time it sends the
     // browser here; `new=1` only steers a first sign-in to onboarding.
-    const fail = () => {
-      toast.error("Google sign-in failed. Please try again.");
+    // The code (Better Auth's `?error=`, or `no_session` when the session
+    // didn't stick) is shown so a failure can be reported, not just retried.
+    const fail = (code: string) => {
+      console.error("[google-callback] sign-in failed:", code);
+      toast.error(`Google sign-in failed (${code}). Please try again.`);
       router.replace("/");
     };
-    if (searchParams.get("error")) return fail();
+    const error = searchParams.get("error");
+    if (error) return fail(error);
 
     const isNewUser = searchParams.get("new") === "1";
     refreshSession().then((user) => {
-      if (!user) return fail();
+      if (!user) return fail("no_session");
 
       login({ user });
       toast.success(`Welcome${isNewUser ? "" : " back"}!`);
