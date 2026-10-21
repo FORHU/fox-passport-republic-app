@@ -91,6 +91,7 @@ export async function fetchGearFoxers(
   // Equipment Foxer specializations are keyed by asset category (e.g. "sound_system"),
   // not event vibe, so the vibe filter doesn't apply here.
   if (filters?.maxPrice) params.maxPrice = filters.maxPrice;
+  if (filters?.q) params.q = filters.q;
   const res = await api.get("/asset/browse", { params });
   const body = res.data ?? {};
   return {
@@ -109,6 +110,7 @@ export async function fetchServiceFoxers(
   // Talent Foxer specializations are keyed by service category (e.g. "catering"),
   // not event vibe, so the vibe filter doesn't apply here.
   if (filters?.maxPrice) params.maxPrice = filters.maxPrice;
+  if (filters?.q) params.q = filters.q;
   const res = await api.get("/service/browse", { params });
   const body = res.data ?? {};
   return {
