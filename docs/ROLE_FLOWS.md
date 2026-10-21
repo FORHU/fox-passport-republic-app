@@ -280,7 +280,7 @@ after approval. Found and fixed in this pass:
 
 | Gap | Fix |
 |---|---|
-| Nothing explained a role before its application form | `RoleDetailsModal` on /onboarding: what the role does, what the form asks for (`features/onboarding/roleCatalog.ts`) |
+| Nothing explained a role before its application form | `RoleDetailsModal` on /onboarding: what the role does, what the form asks for (`shared/data/roleCatalog.ts`) |
 | Investor's "My Dashboard" link went to `/user`, though `requireHost()` admits them to `/creator-dashboard` | `investor` added to `getDashboardPath`'s supply roles |
 | Investor had no dashboard content and no nav entry — `/creator-dashboard/partnerships` was orphaned | `PartnershipsOverview` card on the overview (desktop + mobile), Partnerships nav link (`partnership:propose`); owners get the link too, and the card while proposals await them |
 | Event Foxers can't publish without a venue affiliation, but `/foxer/affiliations` was only reachable from one card inside the event builder | Affiliations nav link for `template:manage` / `venue:manage` |

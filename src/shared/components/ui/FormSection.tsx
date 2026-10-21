@@ -18,9 +18,9 @@ export function FormSection({
 }: FormSectionProps) {
   return (
     <div
-      className={`glass-card rounded-[2rem] p-8 border border-white/10 ${className}`}
+      className={`glass-card rounded-[2rem] p-5 sm:p-8 border border-white/10 ${className}`}
     >
-      <div className="flex items-center gap-3 mb-6">
+      <div className="flex items-center gap-3 mb-4 sm:mb-6">
         <span className={`material-symbols-outlined ${iconClassName} text-2xl`}>
           {icon}
         </span>

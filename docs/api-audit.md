@@ -749,20 +749,10 @@ cannot mass-assign; and `reviewMutationStatus` maps `Unauthorized → 403`,
 > assert the repository was **not called at all**, not merely that the response
 > was an error.
 
-### 4.11 `requireOwnerOrAdmin` has no call sites
+### 4.11 `requireOwnerOrAdmin` has no call sites — done: deleted
 
-- [ ] Decide: adopt it, or delete it
-
-The middleware exists and is documented, and the external audit cited it as an
-enforced RBAC control. **Nothing calls it.** Ownership is hand-rolled per
-resource instead — venue compares `mayorId` in the service, asset, service and
-event-template each read `ownerId` in the controller and pass it down. All of
-them are correct; all of them are different.
-
-That is the conditions that produced §4.10: there is no single mechanism to
-forget, so forgetting is invisible. Either route the resources through
-`requireOwnerOrAdmin` where the owner id is derivable from the path, or delete
-it so it stops implying a guarantee that is not there.
+The unused middleware is gone from the api; ownership stays checked per
+resource.
 
 ### 4.12 No boot-time validation of required environment variables — partially fixed
 

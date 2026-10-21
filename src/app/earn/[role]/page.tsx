@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import LandingHeader from "@/features/landing/components/sections/LandingHeader";
 import LandingFooter from "@/features/landing/components/sections/LandingFooter";
 import RoleDocs from "@/features/landing/journey/RoleDocs";
-import { ROLES } from "@/features/onboarding/roleCatalog";
+import { ROLES } from "@/shared/data/roleCatalog";
 
 // Public on purpose: /earn is not in proxy.ts's PROTECTED_ROUTES.
 interface RolePageProps {

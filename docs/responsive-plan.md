@@ -341,12 +341,24 @@ Rules:
       toggle and the panel, not the `md` originally prescribed (3.1)
 - [x] Align `useMobile` / navbar / §5 on one line — `md` (768) or `lg` (1024).
       Aligned to `1024` (`lg`) across `useMobile`, `LandingHeader`, `MobileBottomNav`, and `SearchClient` (3.3)
-- [ ] Interstitial below `md` for both builders (4, Option B)
-- [ ] Deduplicate `/host/stripe-*` and decide on `/mayor/*` (2.6)
+- [x] Builders usable on touch — 20 Oct, **Option A instead of B**: tap-to-add
+      already existed in event create, so it was cheaper to finish it than to
+      block phones. Event edit gained the same drawers and "Add" button; venue
+      create cards gained "Included" / "Add-on" buttons. Checked at 390px with
+      touch enabled. (Was: interstitial below `md` for both builders, §4 Option B.)
+- [x] Deduplicate `/host/stripe-*` and decide on `/mayor/*` (2.6) — 20 Oct: the
+      Stripe pages were already redirects; `/mayor`, `/mayor/apply` and
+      `/mayor/create-venue` are now all `next.config` redirects and `src/app/mayor/`
+      is gone (its two pages were unreachable copies of `/venue-foxer/*`).
 
 ### Phase 1 — Shared primitives (highest leverage)
 
-- [ ] `FormSection`, `StepperControl`, `input`, `glass-card` (2.4)
+- [x] `FormSection`, `StepperControl`, `input`, `glass-card` (2.4) — 20 Oct. The
+      premise was stale: only the venue booking page uses `FormSection` and
+      `StepperControl`, and `input` / `glass-card` are imported nowhere. Fixed the
+      two in use: tighter padding below `sm`, stepper never squeezed, and its −/+
+      are `type="button"` so they cannot submit a surrounding form. **Re-audit
+      before the next item** — "the remaining 14" is from 3 Sep and likely as stale.
 - [ ] Remaining 14 shared components
 - [ ] Map surfaces (`LocationMap`, `MapboxLocationInput`, `MapboxLocationPicker`) as a separate touch task
 

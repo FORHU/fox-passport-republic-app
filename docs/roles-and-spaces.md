@@ -122,25 +122,18 @@ fallback at `:418` that reclassifies talent-iconed items back into assets when
 `resourceType` is missing — a comment admitting the type cannot carry the
 distinction.
 
-### Promoting it is **Decided** — and it costs more than an enum value
+### Promoting it was decided — then superseded (14 Sep)
 
-Talent becomes its own resource type rather than staying a category of Service.
-That is consistent with the six-role decision, but it is worth being honest that
-it is **not** a one-line change:
+The plan here was to make talent its own resource type and drop
+`entertainment` from `ServiceCategory`. When `performerFoxer` was built
+(14 Sep, migration `20260914120000_add_performer_foxer_role`) the decision went
+the other way: **talent stays a `Service` row**, with its own categories —
+`photography`, `videography`, `dj`, `live_band`, `mc` — and `entertainment` kept
+only as a paused legacy value. The event builder's `resourceType` includes
+`"talent"` and routes those categories into the Talent bucket. Nothing below is
+left to build; it is kept as the record of the option not taken.
 
-- [ ] **`entertainment` leaves `ServiceCategory`.** The enum becomes `design`,
-      `catering`, `service_staff`, `other`.
-- [ ] **`ComponentType` gains `talent`** — it is `asset | service | venue` today.
-- [ ] **`resourceType` gains `"talent"`** in `eventBuilderData.ts`, and the
-      `slug === "entertainment"` routing at `useEventBuilder.ts:96` and `:143`
-      goes away, along with the `:418` fallback that reclassifies talent-iconed
-      items as assets.
-- [ ] **Existing services categorised `entertainment` need migrating** to the new
-      type. This is the part with data behind it — count the rows before
-      writing the migration, and note `ALTER TYPE` is forward-only, so removing
-      a value from `ServiceCategory` is a rebuild of the enum, not a drop.
-
-The alternative — keep talent as `ServiceCategory.entertainment` and stay at
+The other alternative — keep talent as `ServiceCategory.entertainment` and stay at
 five roles — was considered and rejected. It is what the code believes today and
 it is cheaper, but it leaves a supply type that has a tab, a cost line and no
 role that provides it.

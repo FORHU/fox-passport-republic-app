@@ -27,45 +27,18 @@ here.
 
 ---
 
-## 0·0aa. `proxy.ts` (formerly `middleware.ts`) does not run at all — found 12 Sep, upstream bug
+## 0·0aa. `proxy.ts` did not run — fixed 20 Oct: it was in the wrong folder
 
-**Every one of the 16 `PROTECTED_ROUTES` trees serves a plain 200 with real
-page markup to a signed-out `curl` request — no redirect, at the HTTP level,
-at all.** Found running `VERIFY.md` C1. Confirmed not a data leak: each
-tree's own `requireAuth()`/`requireAdmin()` layout guard still fires
-correctly (the `NEXT_REDIRECT;replace;/;307` digest is present in the
-streamed RSC payload), so a real, JS-executing browser still ends up
-redirected to `/` — which is exactly why unit tests and casual clicking
-around never caught this. What's actually gone is the fast pre-render
-redirect, and the only protection a non-JS client (a bot, a crawler, a
-disabled-JS browser) ever had.
-
-**Root cause: Next.js 16.3.4 doesn't wire up `middleware.ts`/`proxy.ts` at
-all**, in dev (webpack or Turbopack) or a real `next build` — reproduced with
-both filenames, at both the project root and `src/`.
-`.next/{dev/,}server/middleware-manifest.json` stays `{ "middleware": {} }`
-regardless. Traced into `next`'s own source: the file is detected (the
-middleware-to-proxy deprecation warning fires correctly) but the variable
-that detects it is never read again to actually register an entry. This
-looks like an upstream bug in the mid-migration state of this exact Next.js
-version, not anything fixable in this repo. Full writeup, including what was
-traced and how, is in `VERIFY.md`'s C1 result — **read that before
-re-investigating, so the same ground doesn't get covered twice.**
-
-**Renamed `middleware.ts` → `proxy.ts` anyway** (also updated
-`src/__tests__/auth/middlewareSecrets.test.ts`, which read it by literal
-path) since it's the correct target regardless of the current bug and
-removes the deprecation warning. `pnpm test` 144/144 green.
-
-- [ ] **Watch for a Next.js patch release** and re-test C1 after any Next.js
-      version bump — this may simply resolve itself.
-- [ ] **Consider filing an upstream issue** if one doesn't already exist
-      (searched briefly, didn't find an exact match for this symptom).
-- [ ] **Not urgent to work around** — the real security boundary
-      (`requireAuth`/`requireAdmin` plus the API's own 401/403) is intact.
-      The only exposure is a bot/crawler/no-JS client seeing an empty page
-      shell (title, layout chrome, no real data) for a protected route
-      instead of being redirected.
+From 12 Sep every protected route answered 200 to a signed-out request. This
+was written up as a Next.js 16.3.4 bug; it was not. Next registers a proxy only
+when it sits at the same level as `app/` (`node_modules/next/dist/docs/01-app/
+01-getting-started/16-proxy.md`), and this app's `app/` is `src/app/`, so a root
+`proxy.ts` is ignored. Moved to `src/proxy.ts` (with Next bumped to 16.4.2 on
+the same branch): the build now lists `ƒ Proxy (Middleware)`, and signed-out
+`/admin`, `/booking`, `/user`, `/checkout`, `/creator-dashboard`,
+`/venue-foxer` all answer 307 → `/?auth=required`. An empty
+`middleware-manifest.json` is not evidence either way — a Node-runtime proxy
+is not listed there.
 
 ---
 
@@ -95,13 +68,6 @@ app today, so nothing currently relies on it working.
       allowed value on the generic `PATCH /:id/status` endpoint — a second,
       equally invisible door onto the same dead state. `fox-passport-republic-api`
       commit `58298fe`.
-- [ ] **Check this stayed deleted.** As of 24 Sep no dispute route is
-      registered in the api's `booking.routes.ts`/`booking.controller.ts`, but
-      a comment in `booking.service.ts` (above `updateStatus`) now speaks of
-      giving the Event-flow `Booking` "the same active/disputed lifecycle" as
-      asset bookings. Either the comment is loose wording, or `disputed` is
-      coming back onto the generic path — in which case this whole finding
-      re-opens, because `GET /admin/disputes` still only reads `Refund` rows.
 
 ---
 
@@ -229,15 +195,11 @@ already at zero). `e507f9a` finished the follow/block/messages boundary
 refactor and closed out the remainder. The command now exits zero and stays
 that way — if it goes non-zero again, something regressed.
 
-- [ ] **It regressed — 16 violations as of 24 Sep**, all Feature Isolation
-      Boundary, all in committed code (none from the uncommitted checkout
-      work). The clusters: `messages/MessageButton` (and `useMessages`,
-      `useChatWindowsStore`, `SharePostModal`) imported from `booking`,
-      `gamification`, `investment`, `venue` and `republic`;
-      `booking/api/bookings` + `AvailabilityCalendar` imported from `asset`
-      and `service`; `event` → `venue-affiliation`; `venue-affiliation` →
-      `search`; `investment` → `venue/api`. Re-run the command for the
-      current list rather than trusting this one.
+- [ ] **2 violations as of 20 Oct** (down from 16 on 24 Sep):
+      `features/landing/journey/RoleDocs.tsx` imports `@/features/onboarding/roleCatalog`
+      (Feature Isolation), and `shared/lib/server/data.ts` imports
+      `@/features/landing/journey/landing-shared` (Shared Kernel). Re-run the
+      command for the current list rather than trusting this one.
 
 ### Read first, in this order
 
@@ -696,7 +658,7 @@ has signed off on.
 ## 2. Verification — completed 12 Sep for core socket and page guards
 
 `VERIFY.md` was **fully driven 12 Sep** (Playwright + curl + live DB/Redis).
-All 16 checks passed, with two findings recorded in `VERIFY.md` and §0·0aa/ab
+All 16 checks passed, with two findings recorded in `VERIFY.md` and §0·0aa/ab (both since resolved)
 above (`proxy.ts` dead upstream in Next.js 16.3.4; generic booking disputes
 invisible to admins).
 

@@ -3,17 +3,17 @@ import { render, waitFor } from "@testing-library/react";
 import GoogleAuthCallbackPage from "../page";
 
 const mocks = vi.hoisted(() => ({
-  get: vi.fn(),
+  params: {} as Record<string, string>,
   replace: vi.fn(),
   login: vi.fn(),
-  completeGoogleAuth: vi.fn(),
+  refreshSession: vi.fn(),
   toastError: vi.fn(),
   toastSuccess: vi.fn(),
 }));
 
 vi.mock("next/navigation", () => ({
   useRouter: () => ({ replace: mocks.replace }),
-  useSearchParams: () => ({ get: mocks.get }),
+  useSearchParams: () => ({ get: (k: string) => mocks.params[k] ?? null }),
 }));
 
 vi.mock("@/shared/auth/useAuthStore", () => ({
@@ -21,7 +21,7 @@ vi.mock("@/shared/auth/useAuthStore", () => ({
 }));
 
 vi.mock("@/shared/auth/session-api", () => ({
-  completeGoogleAuth: mocks.completeGoogleAuth,
+  refreshSession: mocks.refreshSession,
 }));
 
 vi.mock("sonner", () => ({
@@ -31,39 +31,49 @@ vi.mock("sonner", () => ({
   },
 }));
 
+// Better Auth sets the session cookie before redirecting here; the page only
+// loads who that is and decides where to go.
 describe("GoogleAuthCallbackPage", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    mocks.get.mockReturnValue(null);
-    mocks.completeGoogleAuth.mockResolvedValue(null);
+    mocks.params = {};
+    mocks.refreshSession.mockResolvedValue(null);
     localStorage.clear();
   });
 
-  it("redirects home when the exchange code is missing", async () => {
+  it("redirects home when Better Auth reports an error", async () => {
+    mocks.params = { error: "access_denied" };
+
     render(<GoogleAuthCallbackPage />);
 
     await waitFor(() => expect(mocks.replace).toHaveBeenCalledWith("/"));
-    expect(mocks.completeGoogleAuth).not.toHaveBeenCalled();
+    expect(mocks.refreshSession).not.toHaveBeenCalled();
     expect(mocks.toastError).toHaveBeenCalled();
   });
 
-  it("completes an existing-user session and enters the app", async () => {
+  it("redirects home when no session came back", async () => {
+    render(<GoogleAuthCallbackPage />);
+
+    await waitFor(() => expect(mocks.replace).toHaveBeenCalledWith("/"));
+    expect(mocks.login).not.toHaveBeenCalled();
+    expect(mocks.toastError).toHaveBeenCalled();
+  });
+
+  it("enters the app as an existing user", async () => {
     const user = { id: "user-1", name: "Citizen" };
-    mocks.get.mockReturnValue("exchange-1");
-    mocks.completeGoogleAuth.mockResolvedValue({ user, isNewUser: false });
+    mocks.refreshSession.mockResolvedValue(user);
 
     render(<GoogleAuthCallbackPage />);
 
     await waitFor(() => expect(mocks.replace).toHaveBeenCalledWith("/search"));
-    expect(mocks.completeGoogleAuth).toHaveBeenCalledWith("exchange-1");
     expect(mocks.login).toHaveBeenCalledWith({ user });
     expect(mocks.toastSuccess).toHaveBeenCalledWith("Welcome back!");
   });
 
   it("sends a new Google user to onboarding", async () => {
     const user = { id: "user-2", name: "New Citizen" };
-    mocks.get.mockReturnValue("exchange-2");
-    mocks.completeGoogleAuth.mockResolvedValue({ user, isNewUser: true });
+    mocks.params = { new: "1" };
+    mocks.refreshSession.mockResolvedValue(user);
 
     render(<GoogleAuthCallbackPage />);
 
