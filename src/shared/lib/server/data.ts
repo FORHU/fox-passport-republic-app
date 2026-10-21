@@ -1,4 +1,5 @@
 import { cookies } from "next/headers";
+import { SESSION_COOKIES } from "@/shared/auth/session-cookies";
 import { cache } from "react";
 import { config } from "@/shared/lib/config";
 import type { Foxer } from "@/shared/api/foxers";
@@ -16,31 +17,14 @@ import { assetUrl } from "@/shared/lib/assets";
 async function getAuthToken(): Promise<string | null> {
   const cookieStore = await cookies();
   return (
-    cookieStore.get("better-auth.session_token")?.value ??
-    cookieStore.get("__Secure-better-auth.session_token")?.value ??
-    cookieStore.get("fox_token")?.value ??
+    SESSION_COOKIES.map((name) => cookieStore.get(name)?.value).find(Boolean) ??
     null
   );
 }
 
 /**
- * This module deliberately does NOT refresh.
- *
- * It used to: on a 401 it called `/auth/refresh-token` and tried to write the
- * result back. But most callers here are Server Components, and a Server
- * Component may not set cookies — the write threw and was swallowed, so every
- * SSR load after a client refresh burned a refresh call that could never
- * persist.
- *
- * Rotation turned that from wasteful into destructive. Refresh tokens are now
- * single-use: refreshing here would revoke the live token and then drop its
- * successor on the floor, ending the session on the next request.
- *
- * Refreshing belongs to the two places that can actually persist the result:
- * `app/api/proxy/[...path]/route.ts` for client calls, and `refreshUserSession`
- * in `auth-actions.ts` for server actions. On a protected route `proxy.ts`
- * has already rejected an expired access token before any of this runs, so a
- * 401 reaching here means the session is genuinely over.
+ * No refresh here: a Better Auth session renews itself while it is used, so a
+ * 401 reaching this module means the session is genuinely over.
  */
 
 /**

@@ -35,7 +35,7 @@ describe("getSignedInRedirect", () => {
     expect(mocks.getUser).not.toHaveBeenCalled();
   });
 
-  it.each(["better-auth.session_token", "__Secure-better-auth.session_token", "fox_token"])(
+  it.each(["better-auth.session_token", "__Secure-better-auth.session_token"])(
     "sends a confirmed user with %s to the app",
     async (cookie) => {
       mocks.cookies.set(cookie, "token");
@@ -45,7 +45,7 @@ describe("getSignedInRedirect", () => {
   );
 
   it("renders the landing when the cookie is stale (no live user)", async () => {
-    mocks.cookies.set("fox_token", "expired");
+    mocks.cookies.set("better-auth.session_token", "expired");
     mocks.getUser.mockResolvedValue(null);
     expect(await getSignedInRedirect({})).toBeNull();
   });
@@ -58,7 +58,7 @@ describe("getSignedInRedirect", () => {
     ["location", "Manila"],
     ["category", "wedding"],
   ])("leaves / alone when ?%s= is present", async (key, value) => {
-    mocks.cookies.set("fox_token", "token");
+    mocks.cookies.set("better-auth.session_token", "token");
     mocks.getUser.mockResolvedValue({ id: "user-1" });
     expect(await getSignedInRedirect({ [key]: value })).toBeNull();
     expect(mocks.getUser).not.toHaveBeenCalled();

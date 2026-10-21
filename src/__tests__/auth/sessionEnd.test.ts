@@ -54,17 +54,6 @@ describe("useAuthStore.initialize — which stored profile wins", () => {
     expect(state.user?.id).toBe("a");
   });
 
-  it("falls back to the cookie when site storage was cleared", async () => {
-    setCookieUser(USER_B);
-
-    const { useAuthStore } = await import("@/shared/auth/useAuthStore");
-    useAuthStore.getState().initialize();
-
-    const state = useAuthStore.getState();
-    expect(state.isAuthenticated).toBe(true);
-    expect(state.user?.id).toBe("b");
-  });
-
   it("settles signed-out when neither source has a profile", async () => {
     const { useAuthStore } = await import("@/shared/auth/useAuthStore");
     useAuthStore.getState().initialize();
@@ -177,15 +166,13 @@ describe("axios 401 handler", () => {
     expect(assigned).toEqual(["/?auth=expired"]);
   });
 
-  it("leaves the login and refresh calls alone", async () => {
+  it("ends the session on a 401 from any proxied call", async () => {
     const { handleAuthError } = await import("@/shared/lib/axios");
+    const error = { config: { url: "/profile" }, response: { status: 401 } };
 
-    for (const url of ["/auth/login", "/auth/refresh-token"]) {
-      const error = { config: { url }, response: { status: 401 } };
-      await expect(handleAuthError(error)).rejects.toBe(error);
-    }
+    await expect(handleAuthError(error)).rejects.toBe(error);
 
-    expect(clearAuthCookies).not.toHaveBeenCalled();
-    expect(assigned).toEqual([]);
+    expect(clearAuthCookies).toHaveBeenCalledTimes(1);
+    expect(assigned).toEqual(["/?auth=expired"]);
   });
 });
