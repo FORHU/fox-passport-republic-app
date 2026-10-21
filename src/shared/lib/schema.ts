@@ -1,5 +1,39 @@
 import { z } from "zod";
 
+// --- PROFILE FIELD SCHEMAS ---
+// Kept in step with the API's PUT /profile validation (profile.controller.ts).
+
+// Saved lowercase; letters, numbers, `_` and `.` — no spaces or symbols.
+export const usernameSchema = z
+  .string()
+  .trim()
+  .toLowerCase()
+  .min(3, "Usernames need 3–30 characters.")
+  .max(30, "Usernames need 3–30 characters.")
+  .regex(
+    /^[a-z0-9._]+$/,
+    "Usernames can only use letters, numbers, dots and underscores.",
+  );
+
+// Optional: "" clears it. Spaces, dashes and brackets are formatting and are
+// stripped, leaving an optional + and 8–15 digits.
+export const phoneSchema = z
+  .string()
+  .trim()
+  .overwrite((s) => s.replace(/[\s()-]/g, ""))
+  .regex(
+    /^(\+?\d{8,15})?$/,
+    "Enter a phone number like +63 917 123 4567 (8–15 digits).",
+  );
+
+export const profileUpdateSchema = z.object({
+  name: z.string().trim(),
+  username: usernameSchema,
+  phone: phoneSchema,
+});
+
+export type ProfileUpdateFormData = z.infer<typeof profileUpdateSchema>;
+
 // --- AUTH SCHEMAS ---
 export const loginSchema = z.object({
   email: z.string().email("Please enter a valid email address"),
@@ -22,7 +56,7 @@ export const signupSchema = z
         "Password must contain at least one special character",
       ),
     confirmPassword: z.string(),
-    username: z.string().min(3, "Username must be at least 3 characters"),
+    username: usernameSchema,
     name: z
       .string()
       .min(1, "Name is required")
