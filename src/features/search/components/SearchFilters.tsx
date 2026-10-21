@@ -270,7 +270,16 @@ export default function SearchFilters({ onClose }: SearchFiltersProps = {}) {
               return;
             }
             setCity(next.city);
-            updateParams({ city: next.city, label: next.city || label });
+            if (next.city) {
+              updateParams({ city: next.city, label: next.city });
+              return;
+            }
+            // Clearing the city clears the epicenter too, so no stale place
+            // stays on screen or in the active-filter count.
+            setLabel("");
+            setLat(undefined);
+            setLng(undefined);
+            updateParams({ city: "", label: "", lat: "", lng: "" });
           }}
         />
       </div>
