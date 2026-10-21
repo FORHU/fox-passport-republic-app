@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { SESSION_COOKIES } from "@/shared/auth/session-cookies";
 
 /**
  * Navigation guard. Runs before pages are rendered.
@@ -54,16 +55,6 @@ const PROTECTED_ROUTES = [
   "/host",
   "/match",
   "/venue-foxer",
-];
-
-// Every cookie that can carry a session. The login form signs in through
-// Better Auth (`__Secure-` prefix on https); the API's own /auth/login sets
-// `fox_token`. Same list, same order as app/api/proxy/[...path]/route.ts.
-// Missing one here silently logs those users out of every protected route.
-const SESSION_COOKIES = [
-  "better-auth.session_token",
-  "__Secure-better-auth.session_token",
-  "fox_token",
 ];
 
 export default async function proxy(request: NextRequest) {

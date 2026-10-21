@@ -8,7 +8,6 @@ import { Loader2, Check } from "lucide-react";
 import { useSignup } from "@/features/auth/hooks/useAuth";
 import { signupSchema, SignupFormData } from "@/shared/lib/schema";
 import { useAuthStore } from "@/shared/auth/useAuthStore";
-import { config } from "@/shared/lib/config";
 import { TermsPrivacyModal } from "@/features/auth/components/TermsPrivacyModal";
 
 import { toast } from "sonner";
@@ -18,11 +17,8 @@ import { startSocialSignIn } from "@/shared/auth/session-api";
 const SocialButtons = () => (
   <div className="grid grid-cols-2 gap-3 mb-4 sm:mb-6">
     <a
-      // `config.apiUrl` is only the no-JS/SSR fallback (identical on server
-      // and client, so hydration never mismatches this attribute) — the
-      // click handler overrides it with the host this page actually
-      // loaded from, same reasoning as LoginForm's identical button.
-      href={`${config.apiUrl}/auth/google`}
+      // No-JS fallback: the sign-in page. The click starts Better Auth.
+      href="/auth"
       onClick={(e) => {
         e.preventDefault();
         void startSocialSignIn("google");
@@ -55,7 +51,7 @@ const SocialButtons = () => (
       <span className="font-bold text-sm">Google</span>
     </a>
     <a
-      href={`${config.apiUrl}/auth/facebook`}
+      href="/auth"
       onClick={(e) => {
         e.preventDefault();
         void startSocialSignIn("facebook");
