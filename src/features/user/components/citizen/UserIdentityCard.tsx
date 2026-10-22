@@ -2,7 +2,11 @@
 
 import React from "react";
 import { useAuthStore } from "@/shared/auth/useAuthStore";
-import { FOXER_ROLES, ROLE_BADGE } from "@/shared/constants/roles";
+import {
+  FOXER_ROLES,
+  ROLE_BADGE,
+  roleTextColor,
+} from "@/shared/constants/roles";
 
 /**
  * Who this person is, as the server actually says so — not a template of
@@ -60,7 +64,7 @@ export function UserIdentityCard() {
                 key={rt}
                 className="px-3 py-1 rounded-full text-[10px] sm:text-[11px] font-bold uppercase tracking-wide border"
                 style={{
-                  color: meta.color,
+                  color: roleTextColor(meta.color),
                   borderColor: `${meta.color}40`,
                   background: `${meta.color}1a`,
                 }}

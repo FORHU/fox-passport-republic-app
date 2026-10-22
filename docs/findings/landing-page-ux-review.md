@@ -153,6 +153,8 @@ Priority levels:
 
 #### 8. Two event sections show nearly the same thing
 
+> **Related change** on `fix/landing-ux-review`. When nothing is open to book, "Open for booking" now shows 5 example cards instead of an empty message. There is one per event type, dashed and faded, with an "Example" badge, and they aren't links. A sixth card reads "Plan it with a Foxer". Real events replace the examples as soon as there are any. A load error still shows its message. The duplication described below is still open.
+
 * **What's wrong:** "Open for booking" shows one event per type. "What are you planning?" also shows one featured event per type, so the two often show the same events. Event-type cards also have two problems:
   * The card says "Wedding · 3 events" but opens a single event, not the list of weddings.
   * The count is taken from only the 40 events loaded for the page, so it can be lower than the real number.

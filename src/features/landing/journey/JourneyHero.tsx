@@ -1704,11 +1704,6 @@ export function StopCard({
                 >
                   See packages →
                 </Link>
-                {stop.count > 0 && (
-                  <span className="font-landing-mono text-[11px] font-bold uppercase tracking-[0.14em] text-white/60">
-                    {stop.count} {stop.count === 1 ? "venue" : "venues"} nearby
-                  </span>
-                )}
               </div>
               <a
                 href={stop.photos[active].credit.url}

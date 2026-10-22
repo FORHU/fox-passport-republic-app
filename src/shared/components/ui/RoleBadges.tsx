@@ -1,5 +1,6 @@
 import {
   ROLE_BADGE,
+  roleTextColor,
   ROLE_TYPES,
   type RoleType,
 } from "@/shared/constants/roles";
@@ -40,7 +41,7 @@ export function RoleBadges({
             key={role}
             className="px-1.5 py-px rounded-full text-[9px] font-bold uppercase tracking-wide border leading-tight whitespace-nowrap"
             style={{
-              color,
+              color: roleTextColor(color),
               borderColor: `${color}40`,
               background: `${color}1a`,
             }}
