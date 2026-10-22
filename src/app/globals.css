@@ -181,6 +181,20 @@ body {
   }
 }
 
+/* An input that failed validation — pairs with <FieldControl invalid> and
+   <FieldError> (shared/components/ui/FieldError.tsx). Important so it wins over
+   whatever border/background the input's own styles set, hover and focus
+   included; the right padding leaves room for FieldControl's error icon.
+   A plain rule rather than an @utility so it is always emitted, not only once
+   Tailwind's scan has seen the class. */
+.field-invalid,
+.field-invalid:hover,
+.field-invalid:focus {
+  border-color: rgb(239 68 68 / 0.85) !important;
+  background-color: rgb(239 68 68 / 0.08) !important;
+  padding-right: 2.75rem !important;
+}
+
 @utility no-scrollbar {
   -ms-overflow-style: none;
   scrollbar-width: none;

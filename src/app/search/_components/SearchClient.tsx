@@ -28,7 +28,10 @@ export default function SearchClient() {
 
   const q = searchParams?.get("q") || "";
   const category = searchParams?.get("category") || "";
-  const city = searchParams?.get("label") || searchParams?.get("city") || "";
+  // Filter on `city` only. `label` is the map picker's display text — a whole
+  // place name ("Makati, Metro Manila, Philippines") that matched no stored
+  // city, and that outlived the city when the filter was cleared.
+  const city = searchParams?.get("city") || "";
   const maxPrice = searchParams?.get("maxPrice") || "";
   // The city from their onboarding address, for the "near me" shortcut.
   const homeCity = useAuthStore((s) => s.user?.city)?.trim() || "";
@@ -134,7 +137,11 @@ export default function SearchClient() {
     <div className="min-h-screen bg-surface text-white relative">
       <LandingHeader
         onSignIn={() => useAuthStore.getState().openLogin()}
-        search={{ value: searchQuery, onChange: setSearchQuery }}
+        search={{
+          value: searchQuery,
+          onChange: setSearchQuery,
+          placeholder: "Search names, cities or event types",
+        }}
       />
 
       {/* Body — top padding clears the fixed nav above */}

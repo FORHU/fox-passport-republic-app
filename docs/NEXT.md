@@ -723,10 +723,16 @@ invisible to admins).
       which has its own `requireAuth` layout), so `HostShell.tsx` no longer
       exists and `"/host"` in `proxy.ts`'s `PROTECTED_ROUTES` is a harmless
       stale entry that can be removed.
-- [ ] **Silent Google account linking** — an existing email signing in with
-      Google is linked without a challenge. Acceptable, or not?
-- [ ] **Single-session across a person's own devices.** Signing in on a phone
-      ends the desktop session. Deliberate, or friction?
+- [x] **Silent Google account linking** — decided 20 Oct: **keep, for Google
+      and Facebook both.** An existing email signing in with either joins that
+      account (`accountLinking.trustedProviders` in the API's `better-auth.ts`).
+      Accepted knowingly: Better Auth treats Facebook emails as unverified, so
+      trusting Facebook trades a small takeover risk for no friction.
+- [x] **Single-session across a person's own devices** — resolved 20 Oct:
+      sign-in runs on Better Auth, which keeps one session per device, so a
+      phone no longer signs out the laptop. Only the legacy custom paths still
+      revoke, and they go in consolidation phase 4 (API
+      `docs/BETTER-AUTH-CONSOLIDATION.md`).
 - [x] **`requireOwnerOrAdmin`** had zero call sites. Decided: deleted, with
       the other legacy guards, 23 Sep — see §4. Ownership stays checked inside
       each service.
