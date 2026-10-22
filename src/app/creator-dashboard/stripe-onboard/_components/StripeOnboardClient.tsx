@@ -11,6 +11,7 @@ import {
   ConnectComponentsProvider,
 } from "@stripe/react-connect-js";
 import { Loader2, ArrowLeft } from "lucide-react";
+import { stripeAppearanceColors } from "@/shared/lib/theme";
 
 export default function StripeOnboardClient() {
   const router = useRouter();
@@ -53,9 +54,7 @@ export default function StripeOnboardClient() {
           appearance: {
             overlays: "dialog",
             variables: {
-              colorPrimary: "#ccff00",
-              colorBackground: "#02040a",
-              colorText: "#ffffff",
+              ...stripeAppearanceColors(),
               borderRadius: "12px",
               fontFamily: "inherit",
             },
@@ -80,7 +79,7 @@ export default function StripeOnboardClient() {
       className="bg-canvas text-white min-h-screen font-body antialiased"
       style={{
         background:
-          "radial-gradient(circle at 15% 50%, rgba(124,58,237,0.15) 0%, transparent 40%), radial-gradient(circle at 85% 30%, rgba(219,39,119,0.1) 0%, transparent 40%), #02040a",
+          "radial-gradient(circle at 15% 50%, rgba(124,58,237,0.15) 0%, transparent 40%), radial-gradient(circle at 85% 30%, rgba(219,39,119,0.1) 0%, transparent 40%), var(--canvas)",
         backgroundAttachment: "fixed",
       }}
     >

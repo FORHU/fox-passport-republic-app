@@ -74,7 +74,7 @@ export default function HostPerformersClient({
       className="bg-canvas text-white min-h-screen font-body antialiased"
       style={{
         background:
-          "radial-gradient(circle at 15% 50%, rgba(245,158,11,0.08) 0%, transparent 40%), radial-gradient(circle at 85% 30%, rgba(124,58,237,0.08) 0%, transparent 40%), radial-gradient(circle at 50% 0%, rgba(245,158,11,0.04) 0%, transparent 50%), #02040a",
+          "radial-gradient(circle at 15% 50%, rgba(245,158,11,0.08) 0%, transparent 40%), radial-gradient(circle at 85% 30%, rgba(124,58,237,0.08) 0%, transparent 40%), radial-gradient(circle at 50% 0%, rgba(245,158,11,0.04) 0%, transparent 50%), var(--canvas)",
         backgroundAttachment: "fixed",
       }}
     >

@@ -43,8 +43,11 @@ interface VenueRow {
 
 export default function MobileMyListingsView({
   venues,
+  guide,
 }: {
   venues: VenueRow[];
+  /** Shown above the tabs, below the fixed bars rather than under them. */
+  guide?: React.ReactNode;
 }) {
   const router = useRouter();
 
@@ -126,6 +129,7 @@ export default function MobileMyListingsView({
 
       {/* Content */}
       <div style={{ padding: "142px 20px 112px" }}>
+        {guide}
         {/* Listing type tabs */}
         <div
           className="no-scrollbar"

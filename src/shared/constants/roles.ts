@@ -74,3 +74,13 @@ export const ROLE_BADGE: Record<RoleType, { label: string; color: string }> = {
   investor: { label: "Partner Foxer", color: "#10b981" },
   organizer: { label: "Organizer", color: "#e879f9" },
 };
+
+/**
+ * A role (or status) colour for use as text. The hues are bright enough on dark but too
+ * pale on white (#34d399 is about 2:1), so light mode mixes in ink
+ * (`--hue-ink-mix` in globals.css) to reach AA; dark mode gets the hue as is.
+ * Fills and borders keep the plain colour.
+ */
+export function roleTextColor(color: string): string {
+  return `color-mix(in srgb, ${color}, #0e1018 var(--hue-ink-mix, 0%))`;
+}
