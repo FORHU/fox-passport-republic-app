@@ -3,6 +3,7 @@
 import {
   useCallback,
   useEffect,
+  useId,
   useLayoutEffect,
   useRef,
   useState,
@@ -24,6 +25,9 @@ export interface TourStep {
 const START_EVENT = "fp:tour:start";
 const GAP = 14;
 const PAD = 8;
+// Room kept clear at the bottom for the control bar (its height, its gap to
+// the edge, and a little air), so the step card never sits under it.
+const BAR = 72;
 
 const seenKey = (userId: string | undefined, tourKey: string) =>
   `fp-tour-seen:${userId ?? "anon"}:${tourKey}`;
@@ -93,6 +97,8 @@ interface Rect {
  * A first-visit walkthrough. Shows once per person per browser, the first time
  * the page it sits on is opened, and can be replayed with `TourReplayButton`.
  * Each step dims the page and lights up one element; `Esc` or Skip ends it.
+ * Skip, Back and Next sit in one bar fixed to the bottom of the screen, so
+ * they stay in the same place while the step card moves to each element.
  */
 export function ProductTour({
   tourKey,
@@ -117,6 +123,7 @@ export function ProductTour({
     stepsRef.current = steps;
   });
   const nextRef = useRef<HTMLButtonElement>(null);
+  const titleId = useId();
 
   const begin = useCallback(() => {
     const usable = stepsRef.current.filter(
@@ -198,11 +205,11 @@ export function ProductTour({
   const cardWidth = Math.min(340, vw - 32);
 
   // Beside the highlighted element: below it if there is room, otherwise above.
-  // Phones get a sheet pinned to the bottom edge instead.
+  // Phones get a sheet pinned just above the control bar instead.
   let cardStyle: React.CSSProperties;
   if (!rect || narrow) {
     cardStyle = narrow
-      ? { left: 16, right: 16, bottom: 16 }
+      ? { left: 16, right: 16, bottom: BAR + GAP }
       : {
           left: "50%",
           top: "50%",
@@ -211,7 +218,7 @@ export function ProductTour({
         };
   } else {
     const below = rect.top + rect.height + PAD + GAP;
-    const roomBelow = window.innerHeight - below > 200;
+    const roomBelow = window.innerHeight - BAR - below > 200;
     const left = Math.min(
       Math.max(16, rect.left + rect.width / 2 - cardWidth / 2),
       vw - cardWidth - 16,
@@ -227,13 +234,18 @@ export function ProductTour({
             bottom: window.innerHeight - rect.top + PAD + GAP,
             width: cardWidth,
           }
-        : { left, bottom: 16, width: cardWidth };
+        : { left, bottom: BAR + GAP, width: cardWidth };
   }
 
   // In the body, not where the component sits: a page can mount it inside a
   // layout that is hidden at this screen size, which would hide the tour too.
   return createPortal(
-    <div className="fixed inset-0 z-[200]" role="presentation">
+    <div
+      className="fixed inset-0 z-[200]"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby={titleId}
+    >
       {/* Click-catcher: the page underneath is not interactive mid-tour. */}
       <div className="absolute inset-0" onClick={close} />
       {rect ? (
@@ -262,9 +274,6 @@ export function ProductTour({
       <AnimatePresence mode="wait">
         <motion.div
           key={index}
-          role="dialog"
-          aria-modal="true"
-          aria-label={step.title}
           initial={{ opacity: 0, y: 6 }}
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0 }}
@@ -275,42 +284,74 @@ export function ProductTour({
           <p className="text-[10px] font-bold uppercase tracking-widest text-accent mb-1.5">
             Step {index + 1} of {active.length}
           </p>
-          <h3 className="font-display text-lg font-bold text-white mb-1.5">
+          <h3
+            id={titleId}
+            className="font-display text-lg font-bold text-white mb-1.5"
+          >
             {step.title}
           </h3>
-          <p className="text-sm text-white/70 leading-relaxed mb-4">
-            {step.body}
-          </p>
-          <div className="flex items-center justify-between gap-3">
-            <button
-              type="button"
-              onClick={close}
-              className="text-xs text-white/40 hover:text-white/70 transition-colors cursor-pointer"
-            >
-              {last ? "Close" : "Skip tour"}
-            </button>
-            <div className="flex items-center gap-2">
-              {index > 0 && (
-                <button
-                  type="button"
-                  onClick={() => setIndex((i) => i - 1)}
-                  className="px-3 py-1.5 rounded-full border border-white/10 text-xs font-bold text-white hover:bg-white/10 transition-colors cursor-pointer"
-                >
-                  Back
-                </button>
-              )}
-              <button
-                ref={nextRef}
-                type="button"
-                onClick={() => (last ? close() : setIndex((i) => i + 1))}
-                className="px-4 py-1.5 rounded-full bg-accent text-black text-xs font-bold cursor-pointer"
-              >
-                {last ? "Done" : "Next"}
-              </button>
-            </div>
-          </div>
+          <p className="text-sm text-white/70 leading-relaxed">{step.body}</p>
         </motion.div>
       </AnimatePresence>
+
+      {/* Not keyed by step, so it holds still while the card moves. Back is
+          disabled rather than removed on the first step for the same reason. */}
+      <div
+        className="absolute left-1/2 flex -translate-x-1/2 items-center gap-1.5 rounded-full border border-white/10 bg-surface/95 p-1.5 shadow-2xl backdrop-blur"
+        style={{ bottom: "max(16px, env(safe-area-inset-bottom))" }}
+      >
+        <button
+          type="button"
+          onClick={close}
+          className="px-3 py-2 text-[11px] font-bold uppercase tracking-widest text-white/60 hover:text-white transition-colors cursor-pointer whitespace-nowrap"
+        >
+          {last ? "Close" : "Skip tour"}
+        </button>
+        <span aria-hidden className="h-6 w-px bg-white/10" />
+        <button
+          type="button"
+          aria-label="Previous step"
+          title="Previous step"
+          disabled={index === 0}
+          onClick={() => setIndex((i) => i - 1)}
+          className="flex size-10 items-center justify-center rounded-full border border-white/10 text-white hover:bg-white/10 transition-colors cursor-pointer disabled:cursor-default disabled:opacity-30 disabled:hover:bg-transparent"
+        >
+          <span className="material-symbols-outlined text-[20px]">
+            arrow_back
+          </span>
+        </button>
+        {narrow ? (
+          <span
+            aria-hidden
+            className="min-w-10 text-center text-xs font-bold tabular-nums text-white/70"
+          >
+            {index + 1}/{active.length}
+          </span>
+        ) : (
+          <span aria-hidden className="flex items-center gap-1 px-1.5">
+            {active.map((_, i) => (
+              <span
+                key={i}
+                className={`h-1.5 rounded-full transition-all duration-200 ${
+                  i === index ? "w-4 bg-accent" : "w-1.5 bg-white/25"
+                }`}
+              />
+            ))}
+          </span>
+        )}
+        <button
+          ref={nextRef}
+          type="button"
+          aria-label={last ? "Finish tour" : "Next step"}
+          title={last ? "Finish tour" : "Next step"}
+          onClick={() => (last ? close() : setIndex((i) => i + 1))}
+          className="flex size-10 items-center justify-center rounded-full bg-accent text-black cursor-pointer"
+        >
+          <span className="material-symbols-outlined text-[20px]">
+            {last ? "check" : "arrow_forward"}
+          </span>
+        </button>
+      </div>
     </div>,
     document.body,
   );

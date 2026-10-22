@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { motion, useReducedMotion } from "motion/react";
 import { Money } from "@/shared/components/ui/Money";
+import { assetUrl } from "@/shared/lib/assets";
 import {
   useEvents,
   useEventsQuery,
@@ -449,6 +450,74 @@ function EventCard({ event, index }: { event: LandingEvent; index: number }) {
 }
 
 /**
+ * What the grid shows while nothing is open to book: one template per kind,
+ * named by the kind itself (no made-up events), with local photos so it never
+ * depends on the API.
+ */
+const EXAMPLE_PHOTOS: Record<(typeof EVENT_TYPES)[number]["value"], string> = {
+  wedding: "one-booking",
+  birthday: "every-kind-of-event",
+  corporate: "talent",
+  social: "performers",
+  other: "gear",
+};
+
+/**
+ * An example in the same frame as `EventCard`, but plainly not one: dashed
+ * border, faded photo, an "Example" badge, and no link, so it can't be
+ * selected or booked.
+ */
+function ExampleEventCard({
+  type,
+  index,
+}: {
+  type: (typeof EVENT_TYPES)[number];
+  index: number;
+}) {
+  const reduce = useReducedMotion();
+  return (
+    <motion.div
+      initial={reduce ? false : { opacity: 0, y: 28 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, margin: "0px 0px -8% 0px" }}
+      transition={{ delay: (index % 3) * 0.08, duration: 0.6 }}
+    >
+      <div
+        role="img"
+        aria-label={`Example ${type.label} event, not bookable`}
+        className="relative block aspect-[4/5] overflow-hidden rounded-2xl border border-dashed border-white/25 bg-surface"
+      >
+        <img
+          src={assetUrl(`features/${EXAMPLE_PHOTOS[type.value]}.jpg`)}
+          alt=""
+          loading="lazy"
+          decoding="async"
+          className="absolute inset-0 h-full w-full object-cover opacity-70"
+        />
+        <div
+          aria-hidden
+          className="absolute inset-0 bg-gradient-to-t from-[#000]/85 via-[#000]/25 to-transparent"
+        />
+        <span className="font-landing-mono absolute left-3 top-3 rounded-full border border-dashed border-white/40 bg-[#000]/60 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.18em] text-[#fff] backdrop-blur">
+          Example
+        </span>
+        <div className="absolute inset-x-0 bottom-0 p-5">
+          <p className="font-landing-mono text-[11px] font-bold uppercase tracking-[0.2em] text-[#fff]/70">
+            {type.label}
+          </p>
+          <h3 className="font-landing-display mt-1 text-2xl leading-[0.95] text-[#fff]/90 sm:text-3xl">
+            {type.line}
+          </h3>
+          <p className="font-landing-mono mt-3 text-xs font-bold text-[#fff]/60">
+            Example · not bookable yet
+          </p>
+        </div>
+      </div>
+    </motion.div>
+  );
+}
+
+/**
  * One event for each kind, so the grid shows variety rather than the same
  * kind of event six times; anything left over fills the remaining places.
  */
@@ -525,6 +594,10 @@ export function destinationEventCards(
 export function EventGrid() {
   const { data, isPending, isError } = useEventsQuery(40);
   const shown = useMemo(() => oneOfEachKind(data ?? [], 5), [data]);
+
+  // Nothing to book (not a failure): examples keep the section from looking
+  // empty, and real events replace them as soon as there are any.
+  const examples = !isPending && !isError && shown.length === 0;
   return (
     <section
       id="events"
@@ -555,19 +628,14 @@ export function EventGrid() {
             ))}
           </div>
         )}
-        {!isPending && shown.length === 0 && (
+        {!isPending && isError && shown.length === 0 && (
           <div className="rounded-2xl border border-white/10 bg-surface p-8 text-center">
             <p className="font-landing-display text-2xl text-white">
-              {isError
-                ? "We couldn't load the events."
-                : "No events are open to book yet."}
+              We couldn&apos;t load the events.
             </p>
             <p className="mt-2 text-sm text-white/70">
-              {isError
-                ? "Check your connection and try again, or find a Foxer directly."
-                : "Check back soon, or find a Foxer to plan it with."}
+              Check your connection and try again, or find a Foxer directly.
             </p>
-            {/* No events means no packages either, so the way on is the Foxers. */}
             <Link
               href="/search"
               className="mt-5 inline-flex rounded-full bg-accent px-6 py-3 text-sm font-extrabold text-black"
@@ -576,25 +644,36 @@ export function EventGrid() {
             </Link>
           </div>
         )}
+        {examples && (
+          <p className="-mt-3 mb-6 text-sm text-white/70">
+            Nothing is open to book yet. These are examples of what you&apos;ll
+            find here.
+          </p>
+        )}
         <div
           className={`grid gap-5 sm:grid-cols-2 lg:grid-cols-3 ${
-            shown.length === 0 ? "hidden" : ""
+            shown.length === 0 && !examples ? "hidden" : ""
           }`}
         >
-          {shown.map((e, i) => (
-            <EventCard key={e.id} event={e} index={i} />
-          ))}
+          {examples
+            ? EVENT_TYPES.map((t, i) => (
+                <ExampleEventCard key={t.value} type={t} index={i} />
+              ))
+            : shown.map((e, i) => (
+                <EventCard key={e.id} event={e} index={i} />
+              ))}
+          {/* No events means no packages either, so the way on is the Foxers. */}
           <Link
-            href="/packages"
+            href={examples ? "/search" : "/packages"}
             className="group flex min-h-48 flex-col justify-between rounded-2xl border border-accent/40 bg-accent/10 p-6 transition-colors hover:bg-accent/20 sm:aspect-[4/5]"
           >
             <span className="font-landing-mono text-xs font-bold uppercase tracking-[0.2em] text-[color:var(--accent-text)]">
-              More to book
+              {examples ? "Plan your own" : "More to book"}
             </span>
             <span className="font-landing-display text-4xl leading-[0.95] text-white sm:text-5xl">
-              See all
+              {examples ? "Plan it with" : "See all"}
               <br />
-              events{" "}
+              {examples ? "a Foxer" : "events"}{" "}
               <span className="inline-block transition-transform group-hover:translate-x-1">
                 →
               </span>
@@ -610,16 +689,13 @@ export function EventGrid() {
 // Browse by kind of event
 // ---------------------------------------------------------------------------
 
-/** The five kinds of event, each with how many there are. */
+/**
+ * The five kinds of event. No counts: they came from a 40-event sample and
+ * mostly read "0 events".
+ */
 export function EventTypes() {
   const events = useEvents(40);
   const reduce = useReducedMotion();
-  const counts = useMemo(() => {
-    const map = new Map<string, number>();
-    for (const e of events)
-      if (e.category) map.set(e.category, (map.get(e.category) ?? 0) + 1);
-    return map;
-  }, [events]);
 
   return (
     <section className="bg-transparent px-5 pb-14 sm:px-10 sm:pb-20">
@@ -635,7 +711,6 @@ export function EventTypes() {
         {/* A row you swipe on a phone, five across on a desktop. */}
         <div className="-mx-5 flex snap-x gap-3 overflow-x-auto px-5 pb-2 sm:mx-0 sm:grid sm:grid-cols-2 sm:overflow-visible sm:px-0 sm:pb-0 md:grid-cols-3 xl:grid-cols-5">
           {EVENT_TYPES.map((t, i) => {
-            const n = counts.get(t.value) ?? 0;
             const featured = featuredEventForKind(events, t.value);
             const photo = featured?.images?.find((image) => image.url)?.url;
             const href = featured
@@ -671,12 +746,9 @@ export function EventTypes() {
                         : "bg-gradient-to-br from-white/[0.06] to-transparent"
                     }`}
                   />
-                  <div className="relative flex items-start justify-between gap-3 p-4">
+                  <div className="relative flex items-start p-4">
                     <span className="font-landing-mono rounded-full border border-white/20 bg-black/40 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.16em] text-white backdrop-blur">
                       {t.label}
-                    </span>
-                    <span className="font-landing-mono rounded-full bg-black/45 px-2.5 py-1 text-[11px] font-bold text-white/90 backdrop-blur">
-                      {n} {n === 1 ? "event" : "events"}
                     </span>
                   </div>
                   <div className="relative mt-auto p-4">
