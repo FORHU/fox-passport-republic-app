@@ -187,7 +187,7 @@ export function DashboardHeader({
                     href={link.href}
                     className={
                       isActive
-                        ? "px-3.5 py-1.5 lg:px-4 lg:py-2 rounded-full text-xs lg:text-sm font-bold text-black bg-accent shadow-[0_0_15px_rgba(204,255,0,0.3)] transition-all whitespace-nowrap"
+                        ? "px-3.5 py-1.5 lg:px-4 lg:py-2 rounded-full text-xs lg:text-sm font-bold text-black bg-accent transition-all whitespace-nowrap"
                         : "px-3 py-1.5 lg:px-3.5 lg:py-2 rounded-full text-xs lg:text-sm font-medium text-white/65 hover:text-white hover:bg-white/10 transition-colors whitespace-nowrap"
                     }
                   >
@@ -275,7 +275,7 @@ export function DashboardHeader({
           className="md:hidden fixed bottom-4 left-3 right-3 z-50 flex items-center justify-around px-2"
           style={{
             height: 60,
-            background: "rgba(15,17,26,0.92)",
+            background: "rgba(20,22,27,0.92)",
             backdropFilter: "blur(24px)",
             WebkitBackdropFilter: "blur(24px)",
             border: "1px solid color-mix(in srgb, var(--color-white) 12%, transparent)",
@@ -298,7 +298,7 @@ export function DashboardHeader({
                 <span
                   className="material-symbols-outlined text-[20px]"
                   style={{
-                    color: isActive ? "#ccff00" : "rgba(255,255,255,0.45)",
+                    color: isActive ? "#C4E85A" : "rgba(255,255,255,0.45)",
                     fontVariationSettings: isActive ? "'FILL' 1" : "'FILL' 0",
                   }}
                 >
@@ -307,7 +307,7 @@ export function DashboardHeader({
                 <span
                   className="text-[9px] font-bold truncate max-w-full px-1"
                   style={{
-                    color: isActive ? "#ccff00" : "rgba(255,255,255,0.45)",
+                    color: isActive ? "#C4E85A" : "rgba(255,255,255,0.45)",
                   }}
                 >
                   {link.label}
@@ -408,15 +408,15 @@ export function WelcomeBanner({
   return (
     <div className="flex flex-col lg:flex-row justify-between items-start lg:items-end gap-6 mb-10">
       <div>
-        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 border border-accent/30 shadow-[0_0_15px_rgba(204,255,0,0.1)] mb-3">
-          <span className="flex h-2 w-2 rounded-full bg-accent shadow-[0_0_10px_#ccff00] animate-pulse" />
+        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 border border-accent/30 mb-3">
+          <span className="flex h-2 w-2 rounded-full bg-accent animate-pulse" />
           <span className="text-xs font-bold uppercase tracking-widest text-white/90">
             Creator Studio
           </span>
         </div>
         <h1 className="text-2xl sm:text-3xl lg:text-5xl font-display font-bold mb-1.5 leading-tight">
           Welcome back,{" "}
-          <span className="bg-gradient-to-r from-purple-400 via-pink-400 to-orange-400 bg-clip-text text-transparent">
+          <span className="text-white">
             {user?.name?.split(" ")[0] || "Creator"}!
           </span>
         </h1>
@@ -469,7 +469,7 @@ export function WelcomeBanner({
         <div className="relative" ref={menuRef}>
           <button
             onClick={onToggleCreateMenu}
-            className="w-full sm:w-auto px-6 py-3 rounded-full bg-accent text-black font-bold flex items-center justify-center gap-2 text-sm shadow-[0_0_20px_rgba(204,255,0,0.3)] hover:shadow-[0_0_30px_rgba(204,255,0,0.5)] hover:scale-105 transition-all"
+            className="w-full sm:w-auto px-6 py-3 rounded-full bg-accent text-black font-bold flex items-center justify-center gap-2 text-sm hover:scale-105 transition-all"
           >
             <span className="material-symbols-outlined text-[18px]">
               add_circle

@@ -40,7 +40,7 @@ export default function MobilePassportView({ user }: Props) {
           right: 0,
           height: 320,
           background:
-            "radial-gradient(circle at 30% 0%, rgba(204,255,0,0.1), transparent 60%)",
+            "radial-gradient(circle at 30% 0%, rgba(196,232,90,0.1), transparent 60%)",
           pointerEvents: "none",
           zIndex: 0,
         }}
@@ -196,7 +196,7 @@ export default function MobilePassportView({ user }: Props) {
                       height: 78,
                       borderRadius: "50%",
                       border: "2px dashed var(--accent-text)",
-                      background: "rgba(204,255,0,0.08)",
+                      background: "rgba(196,232,90,0.08)",
                       display: "flex",
                       alignItems: "center",
                       justifyContent: "center",

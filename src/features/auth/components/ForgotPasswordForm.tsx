@@ -65,7 +65,7 @@ export default function ForgotPasswordForm() {
         <button
           type="submit"
           disabled={forgotPasswordMutation.isPending}
-          className="btn-neon w-full py-3 sm:py-4 mt-2 rounded-xl bg-accent text-black font-bold text-sm sm:text-lg hover:shadow-[0_0_20px_rgba(204,255,0,0.4)] transition-all flex items-center justify-center gap-2 disabled:opacity-70"
+          className="btn-neon w-full py-3 sm:py-4 mt-2 rounded-xl bg-accent text-black font-bold text-sm sm:text-lg transition-all flex items-center justify-center gap-2 disabled:opacity-70"
         >
           {forgotPasswordMutation.isPending ? (
             <Loader2 className="animate-spin w-5 h-5" />

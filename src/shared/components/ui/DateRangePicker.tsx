@@ -130,7 +130,7 @@ function CompactDatePicker({
     startValue && endValue && ds > startValue && ds < endValue;
 
   return (
-    <div className="bg-black/95 border border-white/10 rounded-2xl p-4 w-[280px] shadow-[0_0_30px_rgba(0,0,0,0.5)]">
+    <div className="bg-black/95 border border-white/10 rounded-2xl p-4 w-[280px]">
       <div className="flex items-center justify-between mb-3">
         <button
           onClick={prevMonth}
@@ -186,7 +186,7 @@ function CompactDatePicker({
                   ? "bg-gradient-to-r from-accent/10 via-accent/15 to-accent/10"
                   : "",
                 sel
-                  ? "bg-accent text-black rounded-full z-10 shadow-[0_0_12px_rgba(204,255,0,0.4)] scale-105"
+                  ? "bg-accent text-black rounded-full z-10 scale-105"
                   : "",
                 !sel && !disabledCell
                   ? "text-white/90 hover:bg-white/10 hover:rounded-full hover:scale-105 cursor-pointer active:scale-95"

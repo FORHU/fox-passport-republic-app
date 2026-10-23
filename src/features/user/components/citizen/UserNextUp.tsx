@@ -1,5 +1,6 @@
 import React from "react";
 import Link from "next/link";
+import { SectionHeader } from "./SectionHeader";
 
 interface BookingEvent {
   id: string;
@@ -56,21 +57,16 @@ export const UserNextUp: React.FC<UserNextUpProps> = ({
   className = "",
 }) => {
   return (
-    <section className={`reveal-on-scroll flex flex-col ${className}`}>
-      <div className="flex items-center justify-between mb-6">
-        <h3 className="text-xl font-display font-bold text-white flex items-center gap-2">
-          <span className="material-symbols-outlined text-accent animate-pulse">
-            airplane_ticket
-          </span>
-          Next Up
-        </h3>
-        <Link
-          className="text-sm text-gray-400 hover:text-white transition-colors"
-          href="/booking"
-        >
-          View all tickets
-        </Link>
-      </div>
+    <section
+      aria-labelledby="next-up-title"
+      className={`reveal-on-scroll flex flex-col ${className}`}
+    >
+      <SectionHeader
+        id="next-up-title"
+        title="Next up"
+        icon="airplane_ticket"
+        link={{ href: "/booking", label: "All bookings" }}
+      />
 
       <div className="glass-panel rounded-3xl flex flex-col flex-1 divide-y divide-white/5 overflow-hidden">
         {isLoading ? (
@@ -79,15 +75,30 @@ export const UserNextUp: React.FC<UserNextUpProps> = ({
           </div>
         ) : bookings.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-16 text-center px-6">
-            <span className="material-symbols-outlined text-4xl text-white/20 mb-3">
+            <span
+              className="material-symbols-outlined text-4xl text-white/20 mb-3"
+              aria-hidden="true"
+            >
               event_busy
             </span>
-            <p className="text-sm font-bold text-white/40 mb-1">
+            <p className="text-sm font-bold text-white/60 mb-1">
               No upcoming events
             </p>
-            <p className="text-xs text-text-muted">
+            <p className="text-sm text-text-muted mb-5">
               Bookings and event requests you make will show up here.
             </p>
+            <Link
+              href="/packages"
+              className="inline-flex items-center gap-1 text-sm font-bold text-accent hover:underline underline-offset-4"
+            >
+              Browse events
+              <span
+                className="material-symbols-outlined text-[16px]"
+                aria-hidden="true"
+              >
+                arrow_forward
+              </span>
+            </Link>
           </div>
         ) : (
           bookings.map((booking) => {
@@ -111,7 +122,7 @@ export const UserNextUp: React.FC<UserNextUpProps> = ({
                 className="flex items-center gap-4 p-4 hover:bg-white/5 transition-colors group"
               >
                 <div className="flex flex-col items-center justify-center w-14 h-14 rounded-2xl bg-surface-highlight/60 shrink-0">
-                  <span className="text-[10px] font-bold text-accent uppercase leading-none">
+                  <span className="text-[11px] font-bold text-accent uppercase leading-none">
                     {date
                       ? date.toLocaleDateString(undefined, { month: "short" })
                       : "—"}
@@ -124,8 +135,11 @@ export const UserNextUp: React.FC<UserNextUpProps> = ({
                   <h4 className="text-white font-bold text-sm truncate group-hover:text-accent transition-colors">
                     {booking.event?.name || "Event Booking"}
                   </h4>
-                  <p className="text-xs text-text-muted flex items-center gap-1 mt-0.5 truncate">
-                    <span className="material-symbols-outlined text-[12px]">
+                  <p className="text-xs text-text-muted flex items-center gap-1 mt-1 truncate">
+                    <span
+                      className="material-symbols-outlined text-[14px]"
+                      aria-hidden="true"
+                    >
                       location_on
                     </span>
                     {location}
@@ -134,7 +148,7 @@ export const UserNextUp: React.FC<UserNextUpProps> = ({
                   </p>
                 </div>
                 <span
-                  className={`text-[10px] font-bold uppercase px-2.5 py-1 rounded-full shrink-0 ${style.bg} ${style.color}`}
+                  className={`text-[11px] font-bold uppercase px-2.5 py-1 rounded-full shrink-0 ${style.bg} ${style.color}`}
                 >
                   {style.label}
                 </span>

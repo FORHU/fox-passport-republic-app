@@ -79,7 +79,7 @@ function StampCard({ stamp, index }: { stamp: Stamp; index: number }) {
       style={{ transform: `rotate(${tilt}deg)` }}
     >
       {/* Stamp paper */}
-      <div className="relative rounded-xl bg-[#f3efe3] p-2 shadow-[0_10px_22px_rgba(0,0,0,0.55)] ring-1 ring-black/10">
+      <div className="relative rounded-xl bg-[#FAFAF9] p-2 shadow-[0_10px_22px_rgba(0,0,0,0.55)] ring-1 ring-black/10">
         <div className="relative aspect-[4/5] overflow-hidden border border-dashed border-black/15 bg-black/10">
           {stamp.imageUrl ? (
             <Image
@@ -99,13 +99,13 @@ function StampCard({ stamp, index }: { stamp: Stamp; index: number }) {
                   className="h-12 w-12 object-contain"
                   style={{
                     filter:
-                      "brightness(0) invert(1) drop-shadow(0 0 5px #ccff00)",
+                      "brightness(0) invert(1)",
                   }}
                 />
               </div>
             </div>
           )}
-          <div className="absolute inset-0 bg-gradient-to-t from-accent via-black to-transparent" />
+          <div className="absolute inset-0 bg-linear-to-t from-black/90 via-black/40 to-transparent" />
           <div className="absolute bottom-0 left-0 right-0 p-3">
             <h3 className="text-white font-display font-bold text-sm leading-tight drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)] line-clamp-3">
               {stamp.eventName}
@@ -231,7 +231,7 @@ export default function PassportStampsClient({ userId }: Props) {
 
               <Link
                 href="/categories"
-                className="relative z-10 inline-flex items-center gap-2 rounded-full bg-accent px-7 py-3 text-sm font-bold text-black transition-all hover:-translate-y-0.5 hover:shadow-[0_0_20px_rgba(204,255,0,0.4)]"
+                className="relative z-10 inline-flex items-center gap-2 rounded-full bg-accent px-7 py-3 text-sm font-bold text-black transition-all hover:-translate-y-0.5"
               >
                 <span className="material-symbols-outlined text-[18px]">
                   explore

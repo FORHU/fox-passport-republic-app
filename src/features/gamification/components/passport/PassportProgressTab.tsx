@@ -73,8 +73,8 @@ export function PassportProgressTab({
               key={path.path}
               className="relative flex flex-col items-center text-center rounded-3xl overflow-hidden p-5 gap-3"
               style={{
-                background: `radial-gradient(ellipse at 50% 0%, ${path.color}18 0%, transparent 70%), color-mix(in srgb, var(--color-white) 3%, transparent)`,
-                border: `1px solid ${path.color}22`,
+                background: `radial-gradient(ellipse at 50% 0%, color-mix(in srgb, ${path.color} 9%, transparent) 0%, transparent 70%), color-mix(in srgb, var(--color-white) 3%, transparent)`,
+                border: `1px solid color-mix(in srgb, ${path.color} 13%, transparent)`,
               }}
             >
               {/* Glow orb */}
@@ -114,7 +114,7 @@ export function PassportProgressTab({
                     style={{
                       width: `${pct}%`,
                       backgroundColor: path.color,
-                      boxShadow: `0 0 6px ${path.color}80`,
+                      boxShadow: "none",
                     }}
                   />
                 </div>
@@ -182,7 +182,7 @@ export function PassportProgressTab({
       </section>
 
       {/* Mastery Guides Section */}
-      <section className="bg-gradient-to-br from-accent/10 to-transparent border border-accent/10 rounded-[3rem] p-8 relative overflow-hidden group">
+      <section className="bg-accent/5 border border-accent/10 rounded-[3rem] p-8 relative overflow-hidden group">
         <div className="absolute top-0 right-0 w-48 h-48 bg-accent/5 rounded-full blur-[60px] -mr-24 -mt-24 group-hover:bg-accent/10 transition-all duration-700"></div>
         <h3 className="text-lg font-display font-bold text-white mb-8 relative z-10 flex items-center gap-2">
           <span className="material-symbols-outlined text-accent">
@@ -230,33 +230,33 @@ export function PassportProgressTab({
             activePathTypes.includes("serviceFoxer") ||
             activePathTypes.includes("performerFoxer")) && (
             <div className="space-y-4">
-              <p className="text-[10px] font-black text-[#f97316] uppercase tracking-widest opacity-60">
+              <p className="text-[10px] font-black text-[#D99A26] uppercase tracking-widest opacity-60">
                 Foxer Career
               </p>
               <div className="space-y-3">
                 <div className="flex justify-between items-center p-4 rounded-2xl bg-white/5 border border-white/5 hover:bg-white/10 transition-all">
                   <div className="flex items-center gap-3">
-                    <span className="material-symbols-outlined text-[#f97316] text-sm">
+                    <span className="material-symbols-outlined text-[#D99A26] text-sm">
                       add_box
                     </span>
                     <span className="text-sm text-white/70">
                       Create a Listing
                     </span>
                   </div>
-                  <span className="font-mono text-sm text-[#f97316] font-bold">
+                  <span className="font-mono text-sm text-[#D99A26] font-bold">
                     +{XP_REWARDS.createListing} XP
                   </span>
                 </div>
                 <div className="flex justify-between items-center p-4 rounded-2xl bg-white/5 border border-white/5 hover:bg-white/10 transition-all">
                   <div className="flex items-center gap-3">
-                    <span className="material-symbols-outlined text-[#f97316] text-sm">
+                    <span className="material-symbols-outlined text-[#D99A26] text-sm">
                       task_alt
                     </span>
                     <span className="text-sm text-white/70">
                       Complete Event
                     </span>
                   </div>
-                  <span className="font-mono text-sm text-[#f97316] font-bold">
+                  <span className="font-mono text-sm text-[#D99A26] font-bold">
                     +{XP_REWARDS.completeEvent} XP
                   </span>
                 </div>
@@ -267,26 +267,26 @@ export function PassportProgressTab({
           {/* Organizer Path Guide */}
           {activePathTypes.includes("organizer") && (
             <div className="space-y-4">
-              <p className="text-[10px] font-black text-[#e879f9] uppercase tracking-widest opacity-60">
+              <p className="text-[10px] font-black text-[#A3A8F5] uppercase tracking-widest opacity-60">
                 Organizer Career
               </p>
               <div className="space-y-3">
                 <div className="flex justify-between items-center p-4 rounded-2xl bg-white/5 border border-white/5 hover:bg-white/10 transition-all">
                   <div className="flex items-center gap-3">
-                    <span className="material-symbols-outlined text-[#e879f9] text-sm">
+                    <span className="material-symbols-outlined text-[#A3A8F5] text-sm">
                       celebration
                     </span>
                     <span className="text-sm text-white/70">
                       Help run an event to completion
                     </span>
                   </div>
-                  <span className="font-mono text-sm text-[#e879f9] font-bold">
+                  <span className="font-mono text-sm text-[#A3A8F5] font-bold">
                     +{XP_REWARDS.organizerEventCompleted} XP
                   </span>
                 </div>
                 <div className="flex justify-between items-center p-4 rounded-2xl bg-white/5 border border-white/5 hover:bg-white/10 transition-all">
                   <div className="flex items-center gap-3">
-                    <span className="material-symbols-outlined text-[#e879f9] text-sm">
+                    <span className="material-symbols-outlined text-[#A3A8F5] text-sm">
                       qr_code_scanner
                     </span>
                     <span className="text-sm text-white/70">
@@ -297,7 +297,7 @@ export function PassportProgressTab({
                       </span>
                     </span>
                   </div>
-                  <span className="font-mono text-sm text-[#e879f9] font-bold">
+                  <span className="font-mono text-sm text-[#A3A8F5] font-bold">
                     +{XP_REWARDS.organizerGuestCheckedIn} XP
                   </span>
                 </div>
@@ -308,33 +308,33 @@ export function PassportProgressTab({
           {/* Event Foxer Path Guide */}
           {activePathTypes.includes("eventFoxer") && (
             <div className="space-y-4">
-              <p className="text-[10px] font-black text-[#3b82f6] uppercase tracking-widest opacity-60">
+              <p className="text-[10px] font-black text-[#5C62D6] uppercase tracking-widest opacity-60">
                 Event Foxer Career
               </p>
               <div className="space-y-3">
                 <div className="flex justify-between items-center p-4 rounded-2xl bg-white/5 border border-white/5 hover:bg-white/10 transition-all">
                   <div className="flex items-center gap-3">
-                    <span className="material-symbols-outlined text-[#3b82f6] text-sm">
+                    <span className="material-symbols-outlined text-[#5C62D6] text-sm">
                       celebration
                     </span>
                     <span className="text-sm text-white/70">
                       Complete an Event
                     </span>
                   </div>
-                  <span className="font-mono text-sm text-[#3b82f6] font-bold">
+                  <span className="font-mono text-sm text-[#5C62D6] font-bold">
                     +{XP_REWARDS.completeEvent} XP
                   </span>
                 </div>
                 <div className="flex justify-between items-center p-4 rounded-2xl bg-white/5 border border-white/5 hover:bg-white/10 transition-all">
                   <div className="flex items-center gap-3">
-                    <span className="material-symbols-outlined text-[#3b82f6] text-sm">
+                    <span className="material-symbols-outlined text-[#5C62D6] text-sm">
                       star_rate
                     </span>
                     <span className="text-sm text-white/70">
                       Earn a 5-Star Review
                     </span>
                   </div>
-                  <span className="font-mono text-sm text-[#3b82f6] font-bold">
+                  <span className="font-mono text-sm text-[#5C62D6] font-bold">
                     +{XP_REWARDS.receive5StarReview} XP
                   </span>
                 </div>
@@ -345,44 +345,44 @@ export function PassportProgressTab({
           {/* Venue Foxer Path Guide */}
           {activePathTypes.includes("venueFoxer") && (
             <div className="space-y-4">
-              <p className="text-[10px] font-black text-[#a855f7] uppercase tracking-widest opacity-60">
+              <p className="text-[10px] font-black text-[#A3A8F5] uppercase tracking-widest opacity-60">
                 Venue Foxer Career
               </p>
               <div className="space-y-3">
                 <div className="flex justify-between items-center p-4 rounded-2xl bg-white/5 border border-white/5 hover:bg-white/10 transition-all">
                   <div className="flex items-center gap-3">
-                    <span className="material-symbols-outlined text-[#a855f7] text-sm">
+                    <span className="material-symbols-outlined text-[#A3A8F5] text-sm">
                       domain_add
                     </span>
                     <span className="text-sm text-white/70">List a Venue</span>
                   </div>
-                  <span className="font-mono text-sm text-[#a855f7] font-bold">
+                  <span className="font-mono text-sm text-[#A3A8F5] font-bold">
                     +{XP_REWARDS.uploadVenue} XP
                   </span>
                 </div>
                 <div className="flex justify-between items-center p-4 rounded-2xl bg-white/5 border border-white/5 hover:bg-white/10 transition-all">
                   <div className="flex items-center gap-3">
-                    <span className="material-symbols-outlined text-[#a855f7] text-sm">
+                    <span className="material-symbols-outlined text-[#A3A8F5] text-sm">
                       assured_workload
                     </span>
                     <span className="text-sm text-white/70">
                       Venue Approved
                     </span>
                   </div>
-                  <span className="font-mono text-sm text-[#a855f7] font-bold">
+                  <span className="font-mono text-sm text-[#A3A8F5] font-bold">
                     +{XP_REWARDS.venueApproved} XP
                   </span>
                 </div>
                 <div className="flex justify-between items-center p-4 rounded-2xl bg-white/5 border border-white/5 hover:bg-white/10 transition-all">
                   <div className="flex items-center gap-3">
-                    <span className="material-symbols-outlined text-[#a855f7] text-sm">
+                    <span className="material-symbols-outlined text-[#A3A8F5] text-sm">
                       star_rate
                     </span>
                     <span className="text-sm text-white/70">
                       Venue Featured
                     </span>
                   </div>
-                  <span className="font-mono text-sm text-[#a855f7] font-bold">
+                  <span className="font-mono text-sm text-[#A3A8F5] font-bold">
                     +{XP_REWARDS.venueFeatured} XP
                   </span>
                 </div>

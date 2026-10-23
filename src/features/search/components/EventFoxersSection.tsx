@@ -5,26 +5,26 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { type Foxer, type FoxerSpecialization } from "@/shared/api/foxers";
-import SearchPagination from "./SearchPagination";
+import { categoryLabel } from "@/features/search/helpers/labels";
 
 const FALLBACK_AVATAR =
   "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=400&auto=format&fit=crop";
 
 function SpecializationChip({ spec }: { spec: FoxerSpecialization }) {
-  const label = spec.category.replace(/_/g, " ");
+  const label = categoryLabel(spec.category);
   if (spec.source === "earned") {
     return (
-      <span className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[9px] font-bold uppercase tracking-wide bg-yellow-400/15 border border-yellow-400/40 text-yellow-300">
-        <span className="material-symbols-outlined text-[10px] fill-current">
+      <span className="inline-flex items-center gap-1 rounded-full border border-accent/40 bg-accent/10 px-2.5 py-1 text-xs font-bold text-(--accent-text)">
+        <span aria-hidden className="material-symbols-outlined text-[14px] fill-current">
           star
         </span>
         {label}
+        <span className="sr-only">(earned through bookings)</span>
       </span>
     );
   }
   return (
-    <span className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[9px] font-bold uppercase tracking-wide bg-white/5 border border-white/15 text-white/50">
-      <span className="material-symbols-outlined text-[10px]">label</span>
+    <span className="inline-flex items-center rounded-full border border-white/15 bg-white/5 px-2.5 py-1 text-xs font-bold text-white/70">
       {label}
     </span>
   );
@@ -39,51 +39,39 @@ function getPrimaryRole(foxer: Foxer): string {
   return "";
 }
 
-const ROLE_META: Record<
-  string,
-  { label: string; description: string; color: string }
-> = {
+const ROLE_META: Record<string, { label: string; description: string }> = {
   eventFoxer: {
     label: "Event Foxer",
-    description: "Plans & coordinates your entire event end-to-end",
-    color: "#ff00aa",
+    description: "Plans and runs your whole event, from venue to crew.",
   },
   gearFoxer: {
     label: "Gear Foxer",
-    description: "Rents out equipment — sound, lighting & décor",
-    color: "#a78bfa",
+    description: "Rents out equipment: sound, lighting and décor.",
   },
   serviceFoxer: {
     label: "Talent Foxer",
-    description: "Provides services like catering, design & staffing",
-    color: "#00d2ff",
+    description: "Provides catering, design and staffing.",
   },
   performerFoxer: {
     label: "Performer Foxer",
-    description: "Provides photography, DJ, live music & more",
-    color: "#f59e0b",
+    description: "Photography, DJs, live music and hosts.",
   },
   venueFoxer: {
     label: "Venue Foxer",
-    description: "Provides the space for your event",
-    color: "var(--accent-text)",
+    description: "Provides the space for your event.",
   },
 };
 
 function getRoleMeta(foxer: Foxer) {
-  const roles = foxer.roleType ?? [];
-  if (roles.includes("eventFoxer")) return ROLE_META.eventFoxer;
-  if (roles.includes("gearFoxer")) return ROLE_META.gearFoxer;
-  if (roles.includes("serviceFoxer")) return ROLE_META.serviceFoxer;
-  if (roles.includes("performerFoxer")) return ROLE_META.performerFoxer;
-  return {
-    label: "Foxer",
-    description: "FoxPassport verified professional",
-    color: "var(--color-white)",
-  };
+  return (
+    ROLE_META[getPrimaryRole(foxer)] ?? {
+      label: "Foxer",
+      description: "FoxPassport verified professional",
+    }
+  );
 }
 
-function VenueCarousel({ images }: { images: string[] }) {
+function VenueCarousel({ images, name }: { images: string[]; name: string }) {
   const scrollRef = useRef<HTMLDivElement>(null);
 
   const scroll = useCallback(
@@ -99,16 +87,16 @@ function VenueCarousel({ images }: { images: string[] }) {
     <div className="relative">
       <div
         ref={scrollRef}
-        className="flex gap-3 overflow-x-auto snap-x snap-mandatory hide-scrollbar scroll-smooth"
+        className="flex gap-3 overflow-x-auto snap-x snap-mandatory hide-scrollbar motion-safe:scroll-smooth"
       >
         {images.map((img, idx) => (
           <div
             key={idx}
-            className="relative h-24 w-36 shrink-0 snap-start rounded-2xl overflow-hidden border border-white/10"
+            className="relative h-24 w-36 shrink-0 snap-start overflow-hidden rounded-2xl border border-white/10"
           >
             <Image
               src={img}
-              alt="Venue"
+              alt={`${name}'s venue, photo ${idx + 1}`}
               fill
               sizes="144px"
               className="object-cover"
@@ -121,18 +109,20 @@ function VenueCarousel({ images }: { images: string[] }) {
           <button
             type="button"
             onClick={scroll(-1)}
-            className="absolute left-0 top-1/2 -translate-x-1/2 -translate-y-1/2 h-7 w-7 rounded-full bg-black/80 border border-white/10 flex items-center justify-center text-white/70 hover:text-white hover:bg-black cursor-pointer z-20"
+            aria-label="Previous venue photo"
+            className="absolute left-0 top-1/2 z-20 flex h-10 w-10 -translate-x-1/3 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full border border-white/10 bg-black/80 text-white/80 hover:bg-black hover:text-white"
           >
-            <span className="material-symbols-outlined text-[16px]">
+            <span aria-hidden className="material-symbols-outlined text-[18px]">
               chevron_left
             </span>
           </button>
           <button
             type="button"
             onClick={scroll(1)}
-            className="absolute right-0 top-1/2 translate-x-1/2 -translate-y-1/2 h-7 w-7 rounded-full bg-black/80 border border-white/10 flex items-center justify-center text-white/70 hover:text-white hover:bg-black cursor-pointer z-20"
+            aria-label="Next venue photo"
+            className="absolute right-0 top-1/2 z-20 flex h-10 w-10 translate-x-1/3 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full border border-white/10 bg-black/80 text-white/80 hover:bg-black hover:text-white"
           >
-            <span className="material-symbols-outlined text-[16px]">
+            <span aria-hidden className="material-symbols-outlined text-[18px]">
               chevron_right
             </span>
           </button>
@@ -147,6 +137,7 @@ function FoxerCard({ foxer }: { foxer: Foxer }) {
 
   const isHost = foxer.roleType?.includes("eventFoxer");
   const hasTemplates = (foxer.eventTemplates?.length ?? 0) > 0;
+  const firstName = foxer.name?.split(" ")[0] || foxer.name;
 
   const portfolioImages = (
     isHost && hasTemplates
@@ -171,6 +162,10 @@ function FoxerCard({ foxer }: { foxer: Foxer }) {
       : [...new Set(foxer.services.flatMap((s) => s.tags))].slice(0, 4);
 
   const roleMeta = getRoleMeta(foxer);
+  const primaryRole = getPrimaryRole(foxer);
+  const specs = (foxer.foxerSpecializations ?? []).filter(
+    (s) => s.roleType === primaryRole,
+  );
 
   const bio =
     isHost && hasTemplates
@@ -182,120 +177,104 @@ function FoxerCard({ foxer }: { foxer: Foxer }) {
     : FALLBACK_AVATAR;
 
   return (
-    <div className="group glass-card rounded-[2rem] p-8 h-130 shrink-0 w-[82vw] max-w-75 sm:w-auto sm:max-w-none snap-center overflow-hidden transition-all duration-300 card-hover-effect relative flex flex-col">
+    <article className="group glass-card relative flex min-w-0 flex-col rounded-[2rem] border border-white/10 p-6 transition-colors hover:border-accent/50">
       <Link
         href={`/foxer/${foxer.id}`}
         className="absolute inset-0 z-0 rounded-[2rem]"
         aria-label={`View ${foxer.name}'s profile`}
-      >
-        <span className="sr-only">View Profile</span>
-      </Link>
+      />
 
-      <div className="flex items-start justify-between gap-2 mb-3 relative z-10 pointer-events-none">
-        <div className="flex gap-3 sm:gap-4 min-w-0">
-          <div className="relative shrink-0">
-            <Image
-              src={avatarUrl}
-              alt={foxer.name}
-              width={64}
-              height={64}
-              className="h-12 w-12 sm:h-16 sm:w-16 rounded-full object-cover border-2 border-surface-highlight group-hover:scale-105 transition-transform"
-              onError={(e) => {
-                (e.target as HTMLImageElement).src = FALLBACK_AVATAR;
-              }}
-            />
-            <div className="absolute bottom-0 right-0 h-3 w-3 sm:h-4 sm:w-4 rounded-full bg-green-500 border-2 border-surface-highlight ring-2 ring-black" />
-          </div>
-          <div className="min-w-0">
-            <p className="font-display font-bold text-base sm:text-xl text-white leading-snug">
+      <div className="pointer-events-none relative z-10 flex items-start gap-4">
+        <Image
+          src={avatarUrl}
+          alt=""
+          width={64}
+          height={64}
+          className="h-14 w-14 shrink-0 rounded-full border-2 border-surface-highlight object-cover sm:h-16 sm:w-16"
+          onError={(e) => {
+            (e.target as HTMLImageElement).src = FALLBACK_AVATAR;
+          }}
+        />
+        <div className="min-w-0 flex-1">
+          <div className="flex items-start justify-between gap-3">
+            <h3 className="min-w-0 font-display text-lg font-bold leading-snug text-white sm:text-xl">
               {foxer.name}{" "}
-              <span className="material-symbols-outlined text-primary align-middle text-[15px] sm:text-[18px] fill-current">
+              <span
+                aria-hidden
+                className="material-symbols-outlined fill-current align-middle text-[18px] text-(--accent-text)"
+              >
                 verified
               </span>
+              <span className="sr-only">(verified)</span>
+            </h3>
+            <p className="flex shrink-0 items-center gap-1 pt-0.5 text-base font-bold text-white">
+              5.0
+              <span
+                aria-hidden
+                className="material-symbols-outlined fill-current text-[16px] text-yellow-400"
+              >
+                star
+              </span>
+              <span className="sr-only">rating</span>
             </p>
-            <div
-              className="text-xs sm:text-sm font-semibold"
-              style={{ color: roleMeta.color }}
-            >
-              {roleMeta.label}
-            </div>
           </div>
-        </div>
-        <div className="text-right shrink-0">
-          <div className="flex items-center justify-end gap-1 font-bold text-sm sm:text-base text-white">
-            5.0{" "}
-            <span className="material-symbols-outlined text-yellow-400 text-[14px] sm:text-[16px] fill-current">
-              star
-            </span>
-          </div>
-          <div className="text-[10px] sm:text-xs text-text-muted">
-            {foxer.city}
-          </div>
+          <p className="text-sm font-semibold text-(--accent-text)">
+            {roleMeta.label}
+            {foxer.city && (
+              <span className="font-normal text-white/60"> · {foxer.city}</span>
+            )}
+          </p>
         </div>
       </div>
 
-      <p className="text-xs text-white/40 mb-5 relative z-10 pointer-events-none pl-15 sm:pl-20">
+      <p className="pointer-events-none relative z-10 mt-3 text-sm text-white/60">
         {roleMeta.description}
       </p>
 
       {bio && (
-        <p className="text-sm text-text-muted leading-snug mb-4 relative z-10 pointer-events-none line-clamp-2">
+        <p className="pointer-events-none relative z-10 mt-4 line-clamp-2 text-sm leading-snug text-white/70">
           {bio}
         </p>
       )}
 
-      <div className="flex flex-wrap gap-1.5 mb-4 relative z-10">
+      <div className="pointer-events-none relative z-10 mt-4 flex flex-wrap gap-1.5">
         {tags.length > 0 ? (
           tags.map((tag, idx) => (
             <span
               key={idx}
-              className="rounded-lg bg-black/30 px-2 py-1 text-[10px] font-bold text-gray-400 border border-white/5 group-hover:text-white transition-colors"
+              className="rounded-lg border border-white/10 bg-black/30 px-2.5 py-1 text-xs font-bold text-white/70"
             >
-              {tag}
+              {categoryLabel(tag)}
             </span>
           ))
         ) : (
-          <span className="rounded-lg bg-black/30 px-2 py-1 text-[10px] font-bold text-gray-400 border border-white/5">
+          <span className="rounded-lg border border-white/10 bg-black/30 px-2.5 py-1 text-xs font-bold text-white/70">
             Creative Services
           </span>
         )}
+        {specs.map((s, i) => (
+          <SpecializationChip key={i} spec={s} />
+        ))}
       </div>
 
-      {(() => {
-        const primaryRole = getPrimaryRole(foxer);
-        const specs = (foxer.foxerSpecializations ?? []).filter(
-          (s) => s.roleType === primaryRole,
-        );
-        if (specs.length === 0) return null;
-        return (
-          <div className="flex flex-wrap gap-1.5 mb-6 relative z-10">
-            {specs.map((s, i) => (
-              <SpecializationChip key={i} spec={s} />
-            ))}
-          </div>
-        );
-      })()}
-
       {isHost && venueImages.length > 0 ? (
-        <div className="mb-8 relative z-10">
-          <p className="text-[9px] uppercase tracking-widest text-white/35 font-bold mb-2 pointer-events-none">
+        <div className="relative z-10 mt-5">
+          <p className="pointer-events-none mb-2 text-xs font-bold text-white/60">
             Venues
           </p>
-          <div className="pointer-events-auto">
-            <VenueCarousel images={venueImages} />
-          </div>
+          <VenueCarousel images={venueImages} name={foxer.name} />
         </div>
       ) : (
         portfolioImages.length > 0 && (
-          <div className="flex justify-between gap-3 mb-8 relative z-10 pointer-events-none">
+          <div className="pointer-events-none relative z-10 mt-5 flex gap-3">
             {portfolioImages.map((img, idx) => (
               <div
                 key={idx}
-                className="relative h-20 flex-1 rounded-2xl overflow-hidden border border-white/10 group-hover:scale-105 transition-transform duration-300 first:-rotate-3 last:rotate-3"
+                className="relative h-20 flex-1 overflow-hidden rounded-2xl border border-white/10"
               >
                 <Image
                   src={img}
-                  alt="Work"
+                  alt={`Work by ${foxer.name}, ${idx + 1}`}
                   fill
                   sizes="120px"
                   className="object-cover"
@@ -306,118 +285,70 @@ function FoxerCard({ foxer }: { foxer: Foxer }) {
         )
       )}
 
-      <div className="flex gap-3 relative z-20 mt-auto pt-2">
+      <div className="relative z-20 mt-auto flex gap-3 pt-6">
         <button
+          type="button"
           onClick={(e) => {
             e.preventDefault();
             e.stopPropagation();
             router.push(`/match/${foxer.id}`);
           }}
-          className="flex-1 rounded-full bg-linear-to-r from-[#8b5cf6] to-[#a855f7] py-2.5 text-xs font-bold text-white hover:opacity-90 transition-opacity hover:shadow-[0_0_15px_rgba(139,92,246,0.5)] flex items-center justify-center cursor-pointer"
+          className="flex h-11 flex-1 cursor-pointer items-center justify-center rounded-full bg-accent px-4 text-sm font-bold text-black transition-colors hover:bg-accent-hover"
         >
-          Match Me
+          Plan with {firstName}
         </button>
         <button
+          type="button"
+          aria-label={`Favourite ${foxer.name}`}
           onClick={(e) => {
             e.preventDefault();
             e.stopPropagation();
           }}
-          className="h-10 w-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-gray-400 hover:text-white hover:bg-white/10 transition-colors group/heart cursor-pointer"
+          className="flex h-11 w-11 cursor-pointer items-center justify-center rounded-full border border-white/10 bg-white/5 text-white/60 transition-colors hover:bg-white/10 hover:text-white"
         >
-          <span className="material-symbols-outlined text-[18px] group-hover/heart:scale-125 transition-transform">
+          <span aria-hidden className="material-symbols-outlined text-[18px]">
             favorite
           </span>
         </button>
       </div>
-    </div>
+    </article>
   );
 }
 
 function SkeletonCard() {
   return (
-    <div className="glass-card rounded-[2rem] p-8 h-130 shrink-0 w-[82vw] max-w-75 sm:w-auto sm:max-w-none snap-center animate-pulse space-y-4">
+    <div className="glass-card h-80 animate-pulse space-y-4 rounded-[2rem] p-6">
       <div className="flex gap-4">
         <div className="h-16 w-16 rounded-full bg-white/10" />
         <div className="flex-1 space-y-2 pt-2">
-          <div className="h-4 w-32 bg-white/10 rounded" />
-          <div className="h-3 w-24 bg-white/5 rounded" />
+          <div className="h-4 w-32 rounded bg-white/10" />
+          <div className="h-3 w-24 rounded bg-white/5" />
         </div>
       </div>
-      <div className="h-3 w-full bg-white/5 rounded" />
-      <div className="h-3 w-3/4 bg-white/5 rounded" />
-      <div className="flex gap-2">
-        {[1, 2, 3].map((j) => (
-          <div key={j} className="h-6 w-16 bg-white/5 rounded-lg" />
-        ))}
-      </div>
-      <div className="h-12 w-full bg-white/5 rounded-full" />
+      <div className="h-3 w-full rounded bg-white/5" />
+      <div className="h-3 w-3/4 rounded bg-white/5" />
+      <div className="h-11 w-full rounded-full bg-white/5" />
     </div>
   );
 }
 
-interface EventFoxersSectionProps {
-  items: Foxer[];
-  isFetching: boolean;
-  page: number;
-  totalPages: number;
-  onPageChange: (page: number) => void;
-}
-
-export default function EventFoxersSection({
+/** Event Foxer cards, or skeletons while the first page loads. */
+export default function EventFoxerList({
   items,
-  isFetching,
-  page,
-  totalPages,
-  onPageChange,
-}: EventFoxersSectionProps) {
+  loading,
+  skeletons = 3,
+}: {
+  items: Foxer[];
+  loading: boolean;
+  skeletons?: number;
+}) {
   return (
-    <section className="space-y-6">
-      <div className="flex items-end justify-between">
-        <div>
-          <h2 className="text-3xl font-display font-bold tracking-tight text-white">
-            Event Foxers
-          </h2>
-          <p className="text-white/50 text-sm mt-1">
-            Event Foxers who specialize in your vibe.
-          </p>
-        </div>
-        <span className="flex items-center gap-2 text-xs text-white/40">
-          <span className="h-2 w-2 rounded-full bg-success animate-pulse" />
-          Live
-        </span>
-      </div>
-
-      {isFetching && items.length === 0 ? (
-        <div className="flex overflow-x-auto gap-4 pb-4 snap-x snap-mandatory hide-scrollbar md:grid md:grid-cols-2 md:gap-8 md:pb-0 md:overflow-visible">
-          {Array.from({ length: 2 }).map((_, i) => (
+    <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
+      {loading
+        ? Array.from({ length: skeletons }).map((_, i) => (
             <SkeletonCard key={i} />
-          ))}
-        </div>
-      ) : items.length === 0 ? (
-        <div className="text-center py-16 glass-card rounded-[2rem]">
-          <span className="material-symbols-outlined text-[56px] text-white/20">
-            search_off
-          </span>
-          <h3 className="text-xl font-bold text-white mt-2">
-            No Event Foxers found
-          </h3>
-          <p className="text-white/60 text-sm max-w-sm mx-auto">
-            Try widening your search radius or adjusting the category.
-          </p>
-        </div>
-      ) : (
-        <div className="flex overflow-x-auto gap-4 pb-4 snap-x snap-mandatory hide-scrollbar md:grid md:grid-cols-2 md:gap-8 md:pb-0 md:overflow-visible">
-          {items.map((foxer) => (
-            <FoxerCard key={foxer.id} foxer={foxer} />
-          ))}
-        </div>
-      )}
-
-      <SearchPagination
-        page={page}
-        totalPages={totalPages}
-        onPageChange={onPageChange}
-      />
-    </section>
+          ))
+        : items.map((foxer) => <FoxerCard key={foxer.id} foxer={foxer} />)}
+    </div>
   );
 }

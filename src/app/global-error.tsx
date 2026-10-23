@@ -10,7 +10,7 @@ export default function GlobalError({
   return (
     <html>
       <body>
-        <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-red-50 to-red-100">
+        <div className="min-h-screen flex items-center justify-center bg-red-50">
           <div className="text-center max-w-md mx-auto">
             <h1 className="text-3xl font-bold text-red-900 mb-4">
               Something went wrong

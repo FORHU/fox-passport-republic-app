@@ -177,7 +177,7 @@ export default function SearchableDropdown({
               width: rect.width,
             }}
           >
-            <div className="glass-card rounded-xl border border-white/10 p-1.5 shadow-[0_0_30px_rgba(0,0,0,0.5)]">
+            <div className="glass-card rounded-xl border border-white/10 p-1.5">
               <div className="relative">
                 <input
                   autoFocus

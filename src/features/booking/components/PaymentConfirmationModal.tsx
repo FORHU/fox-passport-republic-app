@@ -43,7 +43,7 @@ export default function PaymentConfirmationModal({
       <section
         aria-labelledby="payment-confirmation-title"
         aria-modal="true"
-        className="relative w-full max-w-2xl overflow-hidden rounded-[2.5rem] border border-white/15 bg-surface p-10 shadow-[0_0_80px_rgba(204,255,0,0.12)] animate-in fade-in zoom-in-95 slide-in-from-bottom-4 duration-300"
+        className="relative w-full max-w-2xl overflow-hidden rounded-[2.5rem] border border-white/15 bg-surface p-10 animate-in fade-in zoom-in-95 slide-in-from-bottom-4 duration-300"
         role="dialog"
       >
         <div className="pointer-events-none absolute -right-20 -top-24 h-56 w-56 rounded-full bg-accent/15 blur-3xl" />
@@ -60,7 +60,7 @@ export default function PaymentConfirmationModal({
         </button>
 
         <div className="relative">
-          <div className="mb-6 flex h-16 w-16 items-center justify-center rounded-2xl border border-accent/30 bg-accent/10 text-accent shadow-[0_0_28px_rgba(204,255,0,0.16)]">
+          <div className="mb-6 flex h-16 w-16 items-center justify-center rounded-2xl border border-accent/30 bg-accent/10 text-accent">
             <span className="material-symbols-outlined text-[32px]">
               verified_user
             </span>
@@ -106,7 +106,7 @@ export default function PaymentConfirmationModal({
               Go back
             </button>
             <button
-              className="group relative flex items-center justify-center gap-2 overflow-hidden rounded-2xl bg-accent px-4 py-4 text-sm font-bold text-black shadow-[0_0_24px_rgba(204,255,0,0.2)] transition-all hover:bg-[#d9ff4d] hover:shadow-[0_0_34px_rgba(204,255,0,0.35)] active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-80 disabled:active:scale-100"
+              className="group relative flex items-center justify-center gap-2 overflow-hidden rounded-2xl bg-accent px-4 py-4 text-sm font-bold text-black transition-all hover:bg-[#CBEB6E] active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-80 disabled:active:scale-100"
               disabled={isSubmitting}
               onClick={onConfirm}
               type="button"

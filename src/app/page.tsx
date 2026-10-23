@@ -17,7 +17,6 @@ export const metadata: Metadata = {
 // Server component: import leaves directly, not feature barrels, so the whole
 // client graph of each feature doesn't get pulled into this page's bundle.
 import JourneyLanding from "@/features/landing/journey/JourneyLanding";
-import WelcomeGuide from "@/features/onboarding/components/WelcomeGuide";
 
 // --- Search Results Components ---
 import Link from "next/link";
@@ -179,8 +178,9 @@ async function HomeContent({ searchParams }: HomePageProps) {
   ]);
 
   return (
+    // No WelcomeGuide here: a modal over the first visit hid the page before it
+    // had said anything, and repeated what the page itself shows.
     <HydrationBoundary state={dehydrate(queryClient)}>
-      <WelcomeGuide />
       <JourneyLanding />
     </HydrationBoundary>
   );
@@ -198,11 +198,9 @@ export default async function Home({ searchParams }: HomePageProps) {
         <FacebookAuthErrorToast />
       </Suspense>
       <Suspense
-        fallback={
-          <div className="min-h-screen flex items-center justify-center">
-            Loading...
-          </div>
-        }
+        // The landing's own canvas colour, so there is no flash of plain text
+        // before the hero.
+        fallback={<div aria-busy="true" className="min-h-screen bg-canvas" />}
       >
         <HomeContent searchParams={searchParams} />
       </Suspense>

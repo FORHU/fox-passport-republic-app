@@ -21,11 +21,11 @@ const EVENT_CATEGORY_OPTIONS = [
   { value: "other", label: "Other" },
 ];
 
-const ACCENT = "#ff00aa";
+const ACCENT = "#5C62D6";
 
 const LABEL = "text-sm font-bold text-white/80 uppercase tracking-wider";
 const INPUT =
-  "w-full bg-white/5 border border-white/10 rounded-xl py-3 px-4 text-white placeholder:text-white/30 focus:outline-none focus:border-[#ff00aa]/50 focus:bg-white/10 transition-colors";
+  "w-full bg-white/5 border border-white/10 rounded-xl py-3 px-4 text-white placeholder:text-white/30 focus:outline-none focus:border-[#5C62D6]/50 focus:bg-white/10 transition-colors";
 
 export default function HostApplicationClient() {
   const { mutate: applyRole, isPending } = useApplyRole();

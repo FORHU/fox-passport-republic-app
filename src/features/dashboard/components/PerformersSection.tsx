@@ -76,7 +76,7 @@ export function PerformersSection({
       <div className="flex justify-between items-center">
         <div>
           <div className="flex items-center gap-2">
-            <span className="flex h-2.5 w-2.5 rounded-full bg-amber-400 shadow-[0_0_10px_#f59e0b] animate-pulse" />
+            <span className="flex h-2.5 w-2.5 rounded-full bg-amber-400 animate-pulse" />
             <h2 className="text-2xl font-display font-bold flex items-center gap-2 text-white">
               <span className="material-symbols-outlined text-amber-400 text-2xl">
                 theater_comedy
@@ -113,7 +113,7 @@ export function PerformersSection({
             return (
               <div
                 key={sv.id}
-                className={`relative group bg-surface/80 border border-amber-500/15 rounded-2xl overflow-hidden hover:border-amber-400/50 hover:shadow-[0_0_25px_rgba(245,158,11,0.15)] transition-all duration-300 flex flex-col ${
+                className={`relative group bg-surface/80 border border-amber-500/15 rounded-2xl overflow-hidden hover:border-amber-400/50 transition-all duration-300 flex flex-col ${
                   onEdit ? "cursor-pointer" : ""
                 }`}
                 onClick={() => onEdit?.(sv.id)}
@@ -134,7 +134,7 @@ export function PerformersSection({
                       className="object-cover group-hover:scale-105 transition-transform duration-500"
                     />
                   ) : (
-                    <div className="w-full h-full bg-linear-to-br from-amber-950/40 via-purple-950/20 to-black flex items-center justify-center">
+                    <div className="w-full h-full bg-white/5 flex items-center justify-center">
                       <span className="material-symbols-outlined text-amber-400/40 text-5xl">
                         {catMeta.icon}
                       </span>
