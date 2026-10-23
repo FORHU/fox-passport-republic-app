@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useMemo, useState } from "react";
-import Link from "next/link";
+import { SectionHeader } from "./SectionHeader";
 import {
   useCalendarBookings,
   toMonthItems,
@@ -71,37 +71,33 @@ export const UserCalendarWidget: React.FC<UserCalendarWidgetProps> = ({
       : [];
 
   return (
-    <section className={`reveal-on-scroll flex flex-col ${className}`}>
-      <div className="flex items-center justify-between mb-6">
-        <h3 className="text-xl font-display font-bold text-white flex items-center gap-2">
-          <span className="material-symbols-outlined text-secondary">
-            calendar_month
-          </span>
-          My Calendar
-        </h3>
-        <Link
-          href="/calendar"
-          className="text-sm text-gray-400 hover:text-white transition-colors flex items-center gap-1"
-        >
-          Full Calendar{" "}
-          <span className="material-symbols-outlined text-[16px]">
-            arrow_forward
-          </span>
-        </Link>
-      </div>
+    <section
+      aria-labelledby="calendar-title"
+      className={`reveal-on-scroll flex flex-col ${className}`}
+    >
+      <SectionHeader
+        id="calendar-title"
+        title="Calendar"
+        icon="calendar_month"
+        link={{ href: "/calendar", label: "Open calendar" }}
+      />
 
-      <div className="glass-panel rounded-[2.5rem] p-5 flex flex-col flex-1 h-full">
+      <div className="glass-panel rounded-3xl p-5 flex flex-col flex-1 h-full">
         <div className="flex items-center justify-between mb-3">
           <button
             type="button"
             onClick={goToPrevMonth}
-            className="h-7 w-7 rounded-lg hover:bg-white/10 flex items-center justify-center text-white/50 hover:text-white transition-colors"
+            aria-label="Previous month"
+            className="h-9 w-9 rounded-lg hover:bg-white/10 flex items-center justify-center text-white/50 hover:text-white transition-colors"
           >
-            <span className="material-symbols-outlined text-[16px]">
+            <span
+              className="material-symbols-outlined text-[18px]"
+              aria-hidden="true"
+            >
               chevron_left
             </span>
           </button>
-          <p className="text-sm font-bold text-white">
+          <p className="text-sm font-bold text-white" aria-live="polite">
             {viewDate.toLocaleString("default", {
               month: "long",
               year: "numeric",
@@ -110,19 +106,23 @@ export const UserCalendarWidget: React.FC<UserCalendarWidgetProps> = ({
           <button
             type="button"
             onClick={goToNextMonth}
-            className="h-7 w-7 rounded-lg hover:bg-white/10 flex items-center justify-center text-white/50 hover:text-white transition-colors"
+            aria-label="Next month"
+            className="h-9 w-9 rounded-lg hover:bg-white/10 flex items-center justify-center text-white/50 hover:text-white transition-colors"
           >
-            <span className="material-symbols-outlined text-[16px]">
+            <span
+              className="material-symbols-outlined text-[18px]"
+              aria-hidden="true"
+            >
               chevron_right
             </span>
           </button>
         </div>
 
-        <div className="grid grid-cols-7 mb-1">
+        <div className="grid grid-cols-7 mb-1" aria-hidden="true">
           {WEEKDAYS.map((d) => (
             <div
               key={d}
-              className="text-center text-[9px] text-white/40 font-bold py-1 tracking-wider"
+              className="text-center text-[11px] text-white/50 font-bold py-1 tracking-wider"
             >
               {d}
             </div>
@@ -136,12 +136,25 @@ export const UserCalendarWidget: React.FC<UserCalendarWidgetProps> = ({
             const mine = dayHasType(day, true);
             const received = dayHasType(day, false);
             const isSelected = selectedDay === day;
+            const count = monthItems.filter(
+              (item) => day >= item.startDay && day <= item.endDay,
+            ).length;
+            const label = `${new Date(year, month, day).toLocaleDateString(
+              undefined,
+              { weekday: "long", month: "long", day: "numeric" },
+            )}${isToday ? ", today" : ""}, ${
+              count === 0
+                ? "nothing booked"
+                : `${count} ${count === 1 ? "booking" : "bookings"}`
+            }`;
 
             return (
               <button
                 key={day}
                 type="button"
                 onClick={() => setSelectedDay(isSelected ? null : day)}
+                aria-label={label}
+                aria-pressed={isSelected}
                 className="h-9 flex flex-col items-center justify-center gap-0.5 group"
               >
                 <span
@@ -149,13 +162,16 @@ export const UserCalendarWidget: React.FC<UserCalendarWidgetProps> = ({
                     isSelected
                       ? "bg-white text-black"
                       : isToday
-                        ? "border-2 border-sky-400 text-sky-400"
+                        ? "border-2 border-current text-accent"
                         : "text-white/80 group-hover:bg-white/10"
                   }`}
                 >
                   {day}
                 </span>
-                <span className="flex items-center gap-0.5 h-1">
+                <span
+                  className="flex items-center gap-0.5 h-1"
+                  aria-hidden="true"
+                >
                   {mine && <span className="h-1 w-1 rounded-full bg-accent" />}
                   {received && (
                     <span className="h-1 w-1 rounded-full bg-purple-400" />
@@ -169,19 +185,15 @@ export const UserCalendarWidget: React.FC<UserCalendarWidgetProps> = ({
         <div className="flex items-center flex-wrap gap-x-4 gap-y-2 mt-3 pt-3 border-t border-white/10">
           <div className="flex items-center gap-1.5">
             <span className="h-1.5 w-1.5 rounded-full bg-accent" />
-            <span className="text-[10px] text-white/50">My Bookings</span>
+            <span className="text-[11px] text-white/60">My bookings</span>
           </div>
           <div className="flex items-center gap-1.5">
             <span className="h-1.5 w-1.5 rounded-full bg-purple-400" />
-            <span className="text-[10px] text-white/50">Booked by Others</span>
+            <span className="text-[11px] text-white/60">Booked by others</span>
           </div>
           <div className="flex items-center gap-1.5">
-            <span className="h-2.5 w-2.5 rounded-full border border-sky-400" />
-            <span className="text-[10px] text-white/50">Today</span>
-          </div>
-          <div className="flex items-center gap-1.5">
-            <span className="h-2.5 w-2.5 rounded-full bg-white" />
-            <span className="text-[10px] text-white/50">Selected</span>
+            <span className="h-2.5 w-2.5 rounded-full border border-current text-accent" />
+            <span className="text-[11px] text-white/60">Today</span>
           </div>
         </div>
 
@@ -203,7 +215,7 @@ export const UserCalendarWidget: React.FC<UserCalendarWidgetProps> = ({
                   <span className="text-xs text-white font-medium truncate flex-1">
                     {item.title}
                   </span>
-                  <span className="text-[10px] text-text-muted shrink-0">
+                  <span className="text-[11px] text-text-muted shrink-0">
                     {isMine(item.type) ? "Yours" : "Booked by someone"}
                   </span>
                 </div>

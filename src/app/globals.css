@@ -964,38 +964,20 @@ body {
   --color-neutral-400: oklch(43.9% 0 0);
 }
 
-.landing-chart-background {
+/* The landing's floor-plan section sits on drafting paper: a fine grid with
+ * a heavier line every fifth square, in the landing's own chart inks. */
+.landing-plan-grid {
   background-color: var(--canvas);
   background-image:
-    radial-gradient(
-      ellipse 56rem 36rem at 2% 8%,
-      transparent 63%,
-      var(--landing-chart-line) 63.15%,
-      transparent 63.3%
-    ),
-    radial-gradient(
-      ellipse 52rem 34rem at 98% 68%,
-      transparent 61%,
-      var(--landing-chart-line) 61.15%,
-      transparent 61.3%
-    ),
-    radial-gradient(
-      ellipse 38rem 25rem at 100% 0%,
-      transparent 70%,
-      var(--landing-chart-route) 70.15%,
-      transparent 70.3%
-    ),
-    radial-gradient(var(--landing-chart-dot) 0.7px, transparent 0.9px);
+    linear-gradient(var(--landing-chart-dot) 1px, transparent 1px),
+    linear-gradient(90deg, var(--landing-chart-dot) 1px, transparent 1px),
+    linear-gradient(var(--landing-chart-line) 1px, transparent 1px),
+    linear-gradient(90deg, var(--landing-chart-line) 1px, transparent 1px);
   background-size:
-    100% 100%,
-    100% 100%,
-    100% 100%,
-    32px 32px;
-  background-position:
-    center,
-    center,
-    center,
-    0 0;
+    120px 120px,
+    120px 120px,
+    24px 24px,
+    24px 24px;
 }
 
 /* The lime accent stays bright as a fill — with real black text on it — but
@@ -1061,7 +1043,7 @@ body {
   background: rgb(14 16 24 / 0.06);
 }
 .light .text-text-muted {
-  color: rgb(14 16 24 / 0.6);
+  color: rgb(14 16 24 / 0.68);
 }
 .light .custom-scrollbar::-webkit-scrollbar-track {
   background: rgb(14 16 24 / 0.04) !important;
@@ -1228,6 +1210,132 @@ body {
 .light [class~="text-accent/60"],
 .light .group:hover [class~="group-hover:text-accent/60"] {
   color: color-mix(in srgb, #4d7c0f 60%, transparent);
+}
+
+/* Faded ink. Secondary text is text-white/30…/70, which on black is soft grey
+ * but as ink on the light canvas falls under WCAG AA (text-white/40 is about
+ * 2.6:1, /50 about 3.5:1). Light mode lifts each step to a readable strength
+ * and keeps their order, so the hierarchy survives:
+ *   /20 → 48% (≈3.3:1, icons and large text)   /25–/35 → 62% (≈5.2:1)
+ *   /40–/45 → 64%   /50–/55 → 68%   /60–/65 → 72%   /70–/75 → 80%
+ * These rules are unlayered and would beat `hover:text-white`, so they stand
+ * aside while the element (or its `group`) is hovered and has a hover colour
+ * of its own. */
+.light
+  :is([class~="text-white/20"]):not([class*="hover:text-"]:hover):not(
+    [class*="group-hover:text-"]:is(.group:hover *)
+  ) {
+  color: color-mix(in srgb, var(--color-white) 48%, transparent);
+}
+.light
+  :is(
+    [class~="text-white/25"],
+    [class~="text-white/30"],
+    [class~="text-white/35"]
+  ):not([class*="hover:text-"]:hover):not(
+    [class*="group-hover:text-"]:is(.group:hover *)
+  ) {
+  color: color-mix(in srgb, var(--color-white) 62%, transparent);
+}
+.light
+  :is([class~="text-white/40"], [class~="text-white/45"]):not(
+    [class*="hover:text-"]:hover
+  ):not([class*="group-hover:text-"]:is(.group:hover *)) {
+  color: color-mix(in srgb, var(--color-white) 64%, transparent);
+}
+.light
+  :is([class~="text-white/50"], [class~="text-white/55"]):not(
+    [class*="hover:text-"]:hover
+  ):not([class*="group-hover:text-"]:is(.group:hover *)) {
+  color: color-mix(in srgb, var(--color-white) 68%, transparent);
+}
+.light
+  :is([class~="text-white/60"], [class~="text-white/65"]):not(
+    [class*="hover:text-"]:hover
+  ):not([class*="group-hover:text-"]:is(.group:hover *)) {
+  color: color-mix(in srgb, var(--color-white) 72%, transparent);
+}
+.light
+  :is([class~="text-white/70"], [class~="text-white/75"]):not(
+    [class*="hover:text-"]:hover
+  ):not([class*="group-hover:text-"]:is(.group:hover *)) {
+  color: color-mix(in srgb, var(--color-white) 80%, transparent);
+}
+
+/* Hover colours in the same range, lifted the same way so a hover still
+ * reads as a step up from the lifted resting colour. */
+.light
+  :is(
+    [class~="hover:text-white/50"]:hover,
+    [class~="hover:text-white/60"]:hover,
+    .group:hover [class~="group-hover:text-white/50"],
+    .group:hover [class~="group-hover:text-white/60"]
+  ) {
+  color: color-mix(in srgb, var(--color-white) 76%, transparent);
+}
+.light
+  :is(
+    [class~="hover:text-white/70"]:hover,
+    [class~="hover:text-white/80"]:hover,
+    .group:hover [class~="group-hover:text-white/70"],
+    .group:hover [class~="group-hover:text-white/80"]
+  ) {
+  color: color-mix(in srgb, var(--color-white) 88%, transparent);
+}
+
+/* Placeholders (placeholder:text-white/20…/40) — about 4.6:1. */
+.light
+  :is(
+    [class~="placeholder:text-white/20"],
+    [class~="placeholder:text-white/25"],
+    [class~="placeholder:text-white/30"],
+    [class~="placeholder:text-white/40"]
+  )::placeholder {
+  color: color-mix(in srgb, var(--color-white) 58%, transparent);
+}
+
+/* Form fields need a visible edge (WCAG 1.4.11, 3:1). Their border-white/5…/20
+ * hairlines vanish on white, so light mode draws them at about 3:1. Cards and
+ * dividers keep their soft borders; shadows already separate those. Error and
+ * focus borders are left to their own classes. */
+.light
+  :is(
+    input:not([type="checkbox"], [type="radio"], [type="range"]),
+    select,
+    textarea
+  )[class*="border-white/"]:not(
+    :focus,
+    [aria-invalid="true"],
+    [class*="border-red"]
+  ) {
+  border-color: rgb(14 16 24 / 0.42);
+}
+
+/* Focus in lime is about 1.2:1 on white. Use the readable dark lime, as for
+ * lime text above. */
+.light
+  :is(
+    [class~="focus:border-accent"],
+    [class~="focus:border-accent/30"],
+    [class~="focus:border-accent/40"],
+    [class~="focus:border-accent/50"],
+    [class~="focus:border-accent/60"]
+  ):focus,
+.light [class~="focus-within:border-accent/30"]:focus-within {
+  border-color: #4d7c0f;
+}
+.light
+  :is([class~="focus:ring-accent"], [class~="focus:ring-accent/50"]):focus {
+  --tw-ring-color: #4d7c0f;
+}
+
+/* Role and category hues (ROLE_BADGE …) used as text: pale on white. Text
+ * that uses `roleTextColor()` mixes in this much ink — none on dark. */
+:root {
+  --hue-ink-mix: 0%;
+}
+.light {
+  --hue-ink-mix: 45%;
 }
 
 /* Gradient fills built from those pale shades (the lime avatar, the amber

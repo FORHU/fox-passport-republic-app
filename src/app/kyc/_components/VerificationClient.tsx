@@ -6,7 +6,11 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useAuthStore } from "@/shared/auth/useAuthStore";
 import { PROFILE_QUERY_KEY } from "@/shared/auth/profile";
-import { ROLE_BADGE, type RoleType } from "@/shared/constants/roles";
+import {
+  ROLE_BADGE,
+  roleTextColor,
+  type RoleType,
+} from "@/shared/constants/roles";
 import api from "@/shared/lib/axios";
 import { useResendOtp, useVerifyEmail } from "@/features/auth/hooks/useAuth";
 import LandingHeader from "@/features/landing/components/sections/LandingHeader";
@@ -116,12 +120,12 @@ export function VerificationClient() {
                 style={
                   emailVerified
                     ? {
-                        color: "#22c55e",
+                        color: roleTextColor("#22c55e"),
                         borderColor: "#22c55e55",
                         background: "#22c55e1a",
                       }
                     : {
-                        color: "#f97316",
+                        color: roleTextColor("#f97316"),
                         borderColor: "#f9731655",
                         background: "#f973161a",
                       }
@@ -229,14 +233,14 @@ export function VerificationClient() {
                     >
                       <span
                         className="text-sm font-semibold"
-                        style={{ color: badge?.color }}
+                        style={{ color: badge && roleTextColor(badge.color) }}
                       >
                         {badge?.label ?? r.roleType}
                       </span>
                       <span className="flex items-center gap-3">
                         <span
                           className="text-[11px] font-bold"
-                          style={{ color: status.color }}
+                          style={{ color: roleTextColor(status.color) }}
                         >
                           {status.label}
                         </span>

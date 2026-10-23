@@ -1,131 +1,34 @@
 "use client";
 
 import { useRouter, useSearchParams } from "next/navigation";
-import { useState, useEffect, useRef } from "react";
-import { createPortal } from "react-dom";
-import MapboxLocationPicker from "./MapboxLocationPicker";
+import { useState, useRef } from "react";
 import { CascadingLocationFields } from "@/shared/components/ui/CascadingLocationFields";
+import { StyledSelect } from "@/shared/components/ui/StyledSelect";
 import { Money } from "@/shared/components/ui/Money";
 
-const CATEGORIES = ["wedding", "corporate", "birthday", "social", "other"];
+export const EVENT_KINDS = [
+  { value: "", label: "Any kind of event" },
+  { value: "wedding", label: "Wedding" },
+  { value: "corporate", label: "Corporate" },
+  { value: "birthday", label: "Birthday" },
+  { value: "social", label: "Social" },
+  { value: "other", label: "Other" },
+];
 
-function CategoryDropdown({
-  value,
-  onChange,
-}: {
-  value: string;
-  onChange: (val: string) => void;
-}) {
-  const [open, setOpen] = useState(false);
-  const ref = useRef<HTMLDivElement>(null);
-  const menuRef = useRef<HTMLDivElement>(null);
+/** Every URL param the search page filters on; clearing them all also
+ * clears the leftovers of the old map picker (label, lat, lng). */
+export const FILTER_PARAMS = [
+  "q",
+  "category",
+  "country",
+  "city",
+  "maxPrice",
+  "label",
+  "lat",
+  "lng",
+] as const;
 
-  useEffect(() => {
-    if (!open) return;
-    const handler = (e: MouseEvent) => {
-      const target = e.target as Node;
-      if (
-        ref.current &&
-        !ref.current.contains(target) &&
-        menuRef.current &&
-        !menuRef.current.contains(target)
-      )
-        setOpen(false);
-    };
-    document.addEventListener("mousedown", handler);
-    return () => document.removeEventListener("mousedown", handler);
-  }, [open]);
-
-  const selected = value ? CATEGORIES.find((c) => c === value) : "";
-
-  return (
-    <div ref={ref} className="relative">
-      <button
-        type="button"
-        onClick={() => setOpen((o) => !o)}
-        className="w-full flex items-center justify-between bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-white text-sm focus:outline-none focus:border-accent/50 transition-all"
-      >
-        <span className={selected ? "capitalize text-white" : "text-white/30"}>
-          {selected || "All categories"}
-        </span>
-        <span
-          className={`material-symbols-outlined text-lg text-white/40 transition-transform duration-200 ${
-            open ? "rotate-180" : ""
-          }`}
-        >
-          expand_more
-        </span>
-      </button>
-
-      {open &&
-        createPortal(
-          <div
-            ref={menuRef}
-            className="fixed z-101 w-(--cat-w) animate-in fade-in zoom-in-95 duration-150"
-            style={{
-              top: "var(--cat-top)",
-              left: "var(--cat-left)",
-            }}
-            onClick={(e) => {
-              e.stopPropagation();
-              setOpen(false);
-            }}
-          >
-            <div className="glass-card rounded-xl border border-white/10 p-1.5 shadow-[0_0_30px_rgba(0,0,0,0.5)]">
-              <button
-                type="button"
-                onClick={() => onChange("")}
-                className={`w-full text-left px-3 py-2 rounded-lg text-sm capitalize transition-all ${
-                  !value
-                    ? "bg-accent/15 text-accent font-bold"
-                    : "text-white/70 hover:bg-white/10 hover:text-white"
-                }`}
-              >
-                All categories
-              </button>
-              {CATEGORIES.map((cat) => (
-                <button
-                  key={cat}
-                  type="button"
-                  onClick={() => onChange(cat)}
-                  className={`w-full text-left px-3 py-2 rounded-lg text-sm capitalize transition-all ${
-                    value === cat
-                      ? "bg-accent/15 text-accent font-bold"
-                      : "text-white/70 hover:bg-white/10 hover:text-white"
-                  }`}
-                >
-                  {cat}
-                </button>
-              ))}
-            </div>
-          </div>,
-          document.body,
-        )}
-
-      <DropdownPositioner triggerRef={ref} open={open} cssVar="cat" />
-    </div>
-  );
-}
-
-function DropdownPositioner({
-  triggerRef,
-  open,
-  cssVar,
-}: {
-  triggerRef: React.RefObject<HTMLElement | null>;
-  open: boolean;
-  cssVar: string;
-}) {
-  useEffect(() => {
-    if (!open || !triggerRef.current) return;
-    const rect = triggerRef.current.getBoundingClientRect();
-    const el = document.documentElement;
-    el.style.setProperty(`--${cssVar}-top`, `${rect.bottom + 4}px`);
-    el.style.setProperty(`--${cssVar}-left`, `${rect.left}px`);
-    el.style.setProperty(`--${cssVar}-w`, `${rect.width}px`);
-  }, [open, triggerRef, cssVar]);
-  return null;
-}
+const MAX_PRICE = 500000;
 
 interface SearchFiltersProps {
   onClose?: () => void;
@@ -136,59 +39,37 @@ export default function SearchFilters({ onClose }: SearchFiltersProps = {}) {
   const searchParams = useSearchParams();
 
   const searchParamsStr = searchParams?.toString() || "";
+  const category = searchParams?.get("category") || "";
+  const country = searchParams?.get("country") || "";
+  const city = searchParams?.get("city") || "";
 
-  const [category, setCategory] = useState(
-    () => searchParams?.get("category") || "",
-  );
-  const [country, setCountry] = useState(
-    () => searchParams?.get("country") || "",
-  );
-  const [city, setCity] = useState(() => searchParams?.get("city") || "");
-  const [label, setLabel] = useState(() => searchParams?.get("label") || "");
-  const [lat, setLat] = useState<number | undefined>(() =>
-    searchParams?.get("lat") ? Number(searchParams.get("lat")) : undefined,
-  );
-  const [lng, setLng] = useState<number | undefined>(() =>
-    searchParams?.get("lng") ? Number(searchParams.get("lng")) : undefined,
-  );
+  // Max price is typed, so it keeps a draft until it's committed.
   const [maxPrice, setMaxPrice] = useState(
     () => searchParams?.get("maxPrice") || "",
   );
-
   const [prevParamsStr, setPrevParamsStr] = useState(searchParamsStr);
-
   if (searchParamsStr !== prevParamsStr) {
     setPrevParamsStr(searchParamsStr);
-    setCategory(searchParams?.get("category") || "");
-    setCountry(searchParams?.get("country") || "");
-    setCity(searchParams?.get("city") || "");
-    setLabel(searchParams?.get("label") || "");
-    setLat(
-      searchParams?.get("lat") ? Number(searchParams.get("lat")) : undefined,
-    );
-    setLng(
-      searchParams?.get("lng") ? Number(searchParams.get("lng")) : undefined,
-    );
     setMaxPrice(searchParams?.get("maxPrice") || "");
   }
 
+  // A changed filter starts the results again from page 1.
   const updateParams = (updates: Record<string, string | undefined>) => {
-    const params = new URLSearchParams(searchParams?.toString() || "");
+    const params = new URLSearchParams(searchParamsStr);
     Object.entries(updates).forEach(([key, value]) => {
-      if (value) {
-        params.set(key, value);
-      } else {
-        params.delete(key);
-      }
+      if (value) params.set(key, value);
+      else params.delete(key);
     });
+    params.delete("page");
     router.push(`/search?${params.toString()}`, { scroll: false });
   };
 
   const commitMaxPrice = (raw: string) => {
     const clamped =
-      raw === "" ? "" : String(Math.min(500000, Math.max(0, Number(raw))));
-    setMaxPrice(clamped === "0" ? "" : clamped);
-    updateParams({ maxPrice: clamped === "0" ? "" : clamped });
+      raw === "" ? "" : String(Math.min(MAX_PRICE, Math.max(0, Number(raw))));
+    const next = clamped === "0" ? "" : clamped;
+    setMaxPrice(next);
+    updateParams({ maxPrice: next });
   };
 
   // Debounce while typing so filtering updates live without needing Enter/blur
@@ -201,123 +82,93 @@ export default function SearchFilters({ onClose }: SearchFiltersProps = {}) {
     maxPriceDebounceRef.current = setTimeout(() => commitMaxPrice(raw), 400);
   };
 
-  const activeFiltersCount = [category, country, city, label, maxPrice].filter(
-    Boolean,
-  ).length;
+  // Country alone narrows nothing (results filter on city), so it isn't
+  // counted; a city counts once.
+  const activeFiltersCount = [category, city, searchParams?.get("maxPrice")]
+    .filter(Boolean).length;
 
+  const labelClass =
+    "mb-2 block text-xs font-bold uppercase tracking-wider text-white/70";
   const inputClass =
-    "w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-white text-sm placeholder:text-white/30 focus:outline-none focus:border-accent/50";
+    "w-full rounded-xl border border-white/10 bg-white/5 px-4 py-2.5 text-sm text-white placeholder:text-white/50 focus:border-accent/50 focus:outline-none";
 
   return (
-    <div className="bg-surface border border-white/10 rounded-2xl p-6 space-y-6 h-fit">
+    <div className="h-fit space-y-6 rounded-2xl border border-white/10 bg-surface p-6">
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <span className="h-2 w-2 rounded-full bg-accent animate-pulse" />
-          <h3 className="text-lg font-display font-bold tracking-tight text-white">
-            Filters
-          </h3>
+        <h2 className="flex items-center gap-2 font-display text-lg font-bold tracking-tight text-white">
+          Filters
           {activeFiltersCount > 0 && (
-            <span className="ml-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-accent text-black">
+            <span className="rounded-full bg-accent px-2 py-0.5 text-xs font-bold text-black">
               {activeFiltersCount}
+              <span className="sr-only"> active</span>
             </span>
           )}
-        </div>
+        </h2>
         {onClose && (
           <button
             type="button"
             onClick={onClose}
             aria-label="Close filters"
-            className="p-1 rounded-lg text-white/50 hover:text-white hover:bg-white/10 transition-colors"
+            className="rounded-lg p-1 text-white/60 transition-colors hover:bg-white/10 hover:text-white"
           >
-            <span className="material-symbols-outlined text-lg">close</span>
+            <span aria-hidden className="material-symbols-outlined text-lg">
+              close
+            </span>
           </button>
         )}
       </div>
 
-      {/* Category */}
-      <div className="space-y-2">
-        <label className="block text-xs font-bold text-white/50 uppercase tracking-wider">
-          Category Vibe
+      <div>
+        <label htmlFor="filter-kind" className={labelClass}>
+          Kind of event
         </label>
-        <CategoryDropdown
+        <StyledSelect
+          id="filter-kind"
           value={category}
-          onChange={(val) => {
-            setCategory(val);
-            updateParams({ category: val });
-          }}
+          options={EVENT_KINDS}
+          onChange={(val) => updateParams({ category: val })}
+          className="py-2.5"
         />
+        <p className="mt-1.5 text-xs text-white/60">Applies to Event Foxers.</p>
       </div>
 
-      {/* City / Area */}
-      <div className="space-y-2">
-        <label className="block text-xs font-bold text-white/50 uppercase tracking-wider">
-          City / Area
-        </label>
+      <fieldset>
+        <legend className={labelClass}>Location</legend>
         {/* Country, then City — locked until a country is picked. */}
         <CascadingLocationFields
           value={{ country, state: "", city }}
           withState={false}
           className="grid grid-cols-1 gap-2"
-          onChange={(next) => {
-            if (next.country !== country) {
-              setCountry(next.country);
-              setCity(next.city);
-              updateParams({
-                country: next.country,
-                city: next.city,
-                label: next.city,
-              });
-              return;
-            }
-            setCity(next.city);
-            if (next.city) {
-              updateParams({ city: next.city, label: next.city });
-              return;
-            }
-            // Clearing the city clears the epicenter too, so no stale place
-            // stays on screen or in the active-filter count.
-            setLabel("");
-            setLat(undefined);
-            setLng(undefined);
-            updateParams({ city: "", label: "", lat: "", lng: "" });
-          }}
+          labelClassName="mb-1.5 block text-xs text-white/60"
+          onChange={(next) =>
+            updateParams({
+              country: next.country,
+              city: next.city,
+              label: undefined,
+              lat: undefined,
+              lng: undefined,
+            })
+          }
         />
-      </div>
+      </fieldset>
 
-      {/* Mapbox Epicenter */}
-      <MapboxLocationPicker
-        label="Epicenter Location"
-        value={label}
-        lat={lat}
-        lng={lng}
-        onChange={({ label: l, lat: la, lng: ln }) => {
-          setLabel(l);
-          setLat(la);
-          setLng(ln);
-          updateParams({
-            label: l,
-            lat: la?.toString(),
-            lng: ln?.toString(),
-            city: l.split(",")[0] || city,
-          });
-        }}
-      />
-
-      {/* Max Price */}
-      <div className="space-y-2">
-        <label className="block text-xs font-bold text-white/50 uppercase tracking-wider">
-          Max Price:{" "}
-          <span className="text-accent">
+      <div>
+        <label htmlFor="filter-max-price" className={labelClass}>
+          Max price:{" "}
+          <span className="text-(--accent-text)">
             {maxPrice ? <Money amount={maxPrice} /> : "Any"}
           </span>
         </label>
         <input
+          id="filter-max-price"
           type="number"
+          inputMode="numeric"
           min={0}
-          max={500000}
+          max={MAX_PRICE}
           step={1000}
           value={maxPrice}
           placeholder="Any"
+          aria-describedby="filter-max-price-help"
           onChange={(e) => onMaxPriceInput(e.target.value)}
           onBlur={(e) => {
             if (maxPriceDebounceRef.current)
@@ -331,14 +182,16 @@ export default function SearchFilters({ onClose }: SearchFiltersProps = {}) {
               commitMaxPrice((e.target as HTMLInputElement).value);
             }
           }}
-          className={`${inputClass} [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none`}
+          className={`${inputClass} [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none`}
         />
         <input
           type="range"
           min={0}
-          max={500000}
+          max={MAX_PRICE}
           step={1000}
           value={maxPrice || 0}
+          aria-label="Max price"
+          aria-describedby="filter-max-price-help"
           onChange={(e) => setMaxPrice(e.target.value)}
           onMouseUp={(e) =>
             commitMaxPrice((e.target as HTMLInputElement).value)
@@ -347,8 +200,11 @@ export default function SearchFilters({ onClose }: SearchFiltersProps = {}) {
             commitMaxPrice((e.target as HTMLInputElement).value)
           }
           onKeyUp={(e) => commitMaxPrice((e.target as HTMLInputElement).value)}
-          className="w-full accent-accent"
+          className="mt-3 w-full accent-accent"
         />
+        <p id="filter-max-price-help" className="mt-1.5 text-xs text-white/60">
+          Per booking, or per day where a listing is priced daily.
+        </p>
       </div>
 
       <div className="space-y-2 pt-2">
@@ -356,40 +212,22 @@ export default function SearchFilters({ onClose }: SearchFiltersProps = {}) {
           <button
             type="button"
             onClick={onClose}
-            className="w-full py-3 rounded-xl bg-accent text-black font-bold text-sm hover:bg-accent-hover transition-all shadow-[0_0_20px_rgba(204,255,0,0.3)] flex items-center justify-center gap-2"
+            className="flex w-full items-center justify-center gap-2 rounded-xl bg-accent py-3 text-sm font-bold text-black transition-colors hover:bg-accent-hover"
           >
-            <span>Show Results</span>
-            {activeFiltersCount > 0 && (
-              <span className="text-[11px] font-bold px-1.5 py-0.5 rounded-full bg-black/20 text-black">
-                {activeFiltersCount}
-              </span>
-            )}
+            Show results
           </button>
         )}
-
         <button
           type="button"
           onClick={() => {
-            setCategory("");
-            setCountry("");
-            setCity("");
-            setLabel("");
-            setLat(undefined);
-            setLng(undefined);
             setMaxPrice("");
-            updateParams({
-              category: "",
-              country: "",
-              city: "",
-              label: "",
-              lat: undefined,
-              lng: undefined,
-              maxPrice: "",
-            });
+            updateParams(
+              Object.fromEntries(FILTER_PARAMS.map((k) => [k, undefined])),
+            );
           }}
-          className="w-full py-2.5 rounded-xl bg-white/5 border border-white/10 text-white/60 text-sm font-bold hover:bg-white/10 hover:text-white transition-all"
+          className="w-full rounded-xl border border-white/10 bg-white/5 py-2.5 text-sm font-bold text-white/70 transition-colors hover:bg-white/10 hover:text-white"
         >
-          Clear Filters
+          Clear search and filters
         </button>
       </div>
     </div>

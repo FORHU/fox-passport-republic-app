@@ -52,7 +52,7 @@ export default function LandingHeader({
   onSignIn,
   search,
 }: LandingHeaderProps) {
-  const { isAuthenticated, isLoading, openLogin } = useAuthStore();
+  const { isAuthenticated, isLoading, openLogin, openSignup } = useAuthStore();
   const handleSignIn = onSignIn ?? openLogin;
   const [menuOpen, setMenuOpen] = useState(false);
   // Nothing until the store hydrates, so signed-in users never flash the landing tabs.
@@ -87,9 +87,10 @@ export default function LandingHeader({
                 />
               </div>
               <div className="relative">
-                <h2 className="text-sm sm:text-2xl font-display font-bold tracking-tight text-white group-hover:text-accent transition-colors">
+                {/* Not a heading: the page's own h1 comes first in the outline. */}
+                <span className="block text-sm sm:text-2xl font-display font-bold tracking-tight text-white group-hover:text-accent transition-colors">
                   FoxPassport
-                </h2>
+                </span>
                 <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-accent group-hover:w-full transition-all duration-300"></span>
               </div>
             </Link>
@@ -161,6 +162,17 @@ export default function LandingHeader({
                   <div className="absolute inset-0 bg-white translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-out z-0"></div>
                 </button>
               )}
+              {/* New visitors are who this header is for, so sign-up gets the
+                  accent. From sm up; on a phone it is in the menu. */}
+              {!isLoading && !isAuthenticated && (
+                <button
+                  type="button"
+                  onClick={openSignup}
+                  className="hidden sm:flex items-center rounded-full bg-accent px-6 py-2.5 text-sm font-extrabold text-black hover:bg-accent-hover transition-colors cursor-pointer"
+                >
+                  Sign up
+                </button>
+              )}
               {isAuthenticated && (
                 <div className="flex items-center gap-2 sm:gap-3">
                   <NotificationBell />
@@ -206,12 +218,21 @@ export default function LandingHeader({
                         </SheetClose>
                       ))}
                     </nav>
-                    <SheetFooter className="p-6">
+                    <SheetFooter className="p-6 gap-2">
+                      <SheetClose asChild>
+                        <button
+                          type="button"
+                          onClick={openSignup}
+                          className="w-full rounded-full bg-accent px-6 py-3 text-sm font-extrabold text-black hover:bg-accent-hover transition-colors cursor-pointer"
+                        >
+                          Sign up
+                        </button>
+                      </SheetClose>
                       <SheetClose asChild>
                         <button
                           type="button"
                           onClick={handleSignIn}
-                          className="w-full rounded-full bg-accent px-6 py-3 text-sm font-extrabold text-black hover:bg-accent-hover transition-colors cursor-pointer"
+                          className="w-full rounded-full border border-white/15 px-6 py-3 text-sm font-bold text-white hover:bg-white/10 transition-colors cursor-pointer"
                         >
                           Sign In
                         </button>
